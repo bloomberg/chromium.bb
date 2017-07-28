@@ -122,7 +122,8 @@ def write_disabled_extension_list(entry_id, data, data_file, data_helper_file):
   if data:
     var_name = 'kDisabledExtensionsForEntry' + str(entry_id)
     # define the list
-    data_helper_file.write('const char* %s[%d] = {\n' % (var_name, len(data)))
+    data_helper_file.write(
+        'const char* const %s[%d] = {\n' % (var_name, len(data)))
     for item in data:
       write_string(item, data_helper_file)
       data_helper_file.write(',\n')
@@ -253,7 +254,7 @@ def write_machine_model_info(entry_id, is_exception, exception_id,
     model_name_var_name = 'kMachineModelNameForEntry' + str(entry_id)
     if is_exception:
       model_name_var_name += 'Exception' + str(exception_id)
-    data_helper_file.write('const char* %s[%d] = {\n' %
+    data_helper_file.write('const char* const %s[%d] = {\n' %
                            (model_name_var_name, len(machine_model_name)))
     for item in machine_model_name:
       write_string(item, data_helper_file)

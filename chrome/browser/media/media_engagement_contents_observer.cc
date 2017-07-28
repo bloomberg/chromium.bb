@@ -40,34 +40,39 @@ constexpr double kScoreAutoplayAllowed = 0.7;
 const gfx::Size MediaEngagementContentsObserver::kSignificantSize =
     gfx::Size(200, 140);
 
-const char* MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName =
-    "Media.Engagement.ScoreAtPlayback";
+const char* const
+    MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName =
+        "Media.Engagement.ScoreAtPlayback";
 
-const char* MediaEngagementContentsObserver::kUkmEntryName =
+const char* const MediaEngagementContentsObserver::kUkmEntryName =
     "Media.Engagement.SessionFinished";
 
-const char* MediaEngagementContentsObserver::kUkmMetricPlaybacksTotalName =
-    "Playbacks.Total";
+const char* const
+    MediaEngagementContentsObserver::kUkmMetricPlaybacksTotalName =
+        "Playbacks.Total";
 
-const char* MediaEngagementContentsObserver::kUkmMetricVisitsTotalName =
+const char* const MediaEngagementContentsObserver::kUkmMetricVisitsTotalName =
     "Visits.Total";
 
-const char* MediaEngagementContentsObserver::kUkmMetricEngagementScoreName =
-    "Engagement.Score";
+const char* const
+    MediaEngagementContentsObserver::kUkmMetricEngagementScoreName =
+        "Engagement.Score";
 
-const char* MediaEngagementContentsObserver::kUkmMetricPlaybacksDeltaName =
-    "Playbacks.Delta";
+const char* const
+    MediaEngagementContentsObserver::kUkmMetricPlaybacksDeltaName =
+        "Playbacks.Delta";
 
-const char* MediaEngagementContentsObserver::
+const char* const MediaEngagementContentsObserver::
     kHistogramSignificantNotAddedFirstTimeName =
         "Media.Engagement.SignificantPlayers.PlayerNotAdded.FirstTime";
 
-const char* MediaEngagementContentsObserver::
+const char* const MediaEngagementContentsObserver::
     kHistogramSignificantNotAddedAfterFirstTimeName =
         "Media.Engagement.SignificantPlayers.PlayerNotAdded.AfterFirstTime";
 
-const char* MediaEngagementContentsObserver::kHistogramSignificantRemovedName =
-    "Media.Engagement.SignificantPlayers.PlayerRemoved";
+const char* const
+    MediaEngagementContentsObserver::kHistogramSignificantRemovedName =
+        "Media.Engagement.SignificantPlayers.PlayerRemoved";
 
 const int MediaEngagementContentsObserver::kMaxInsignificantPlaybackReason =
     static_cast<int>(MediaEngagementContentsObserver::

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/login/login_interstitial_delegate.h"
 
-content::InterstitialPageDelegate::TypeID
+const content::InterstitialPageDelegate::TypeID
     LoginInterstitialDelegate::kTypeForTesting =
         &LoginInterstitialDelegate::kTypeForTesting;
 

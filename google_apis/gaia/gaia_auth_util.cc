@@ -27,8 +27,7 @@ namespace {
 const char kGmailDomain[] = "gmail.com";
 const char kGooglemailDomain[] = "googlemail.com";
 
-const void* kURLRequestUserDataKey =
-    static_cast<const void*>(&kURLRequestUserDataKey);
+const void* const kURLRequestUserDataKey = &kURLRequestUserDataKey;
 
 std::string CanonicalizeEmailImpl(const std::string& email_address,
                                   bool change_googlemail_to_gmail) {

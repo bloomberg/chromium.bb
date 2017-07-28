@@ -25,14 +25,14 @@ namespace update_client {
 namespace {
 
 // This is an ECDSA prime256v1 named-curve key.
-const int kKeyVersion = 7;
+constexpr int kKeyVersion = 7;
 const char kKeyPubBytesBase64[] =
     "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEj0QKufXIOBN30DtKeOYA5NV64FfY"
     "HDou4sGqtcNUIlxpTzIbO45rB45QILhW6aDTwwjWLR1YCqpEAGICvFs8dQ==";
 
 // The ETag header carries the ECSDA signature of the protocol response, if
 // signing has been used.
-const char kHeaderEtag[] = "ETag";
+constexpr const char* kHeaderEtag = "ETag";
 
 // The server uses the optional X-Retry-After header to indicate that the
 // current request should not be attempted again. Any response received along
@@ -46,16 +46,10 @@ const char kHeaderEtag[] = "ETag";
 // The value of the header is the number of seconds to wait before trying to do
 // a subsequent update check. The upper bound for the number of seconds to wait
 // before trying to do a subsequent update check is capped at 24 hours.
-const char kHeaderXRetryAfter[] = "X-Retry-After";
-const int64_t kMaxRetryAfterSec = 24 * 60 * 60;
+constexpr const char* kHeaderXRetryAfter = "X-Retry-After";
+constexpr int64_t kMaxRetryAfterSec = 24 * 60 * 60;
 
 }  // namespace
-
-// This value is chosen not to conflict with network errors defined by
-// net/base/net_error_list.h. The callers don't have to handle this error in
-// any meaningful way, but this value may be reported in UMA stats, therefore
-// avoiding collisions with known network errors is desirable.
-int RequestSender::kErrorResponseNotTrusted = -10000;
 
 RequestSender::RequestSender(const scoped_refptr<Configurator>& config)
     : config_(config), use_signing_(false) {}

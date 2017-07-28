@@ -26,8 +26,8 @@ class SandboxOriginDatabase;
 class STORAGE_EXPORT SandboxPrioritizedOriginDatabase
     : public SandboxOriginDatabaseInterface {
  public:
-  static const base::FilePath::CharType* kPrimaryDirectory;
-  static const base::FilePath::CharType* kPrimaryOriginFile;
+  static const base::FilePath::CharType* const kPrimaryDirectory;
+  static const base::FilePath::CharType* const kPrimaryOriginFile;
 
   SandboxPrioritizedOriginDatabase(const base::FilePath& file_system_directory,
                                    leveldb::Env* env_override);

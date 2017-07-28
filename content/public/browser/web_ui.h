@@ -31,7 +31,7 @@ class CONTENT_EXPORT WebUI {
  public:
   // An opaque identifier used to identify a WebUI. This can only be compared to
   // kNoWebUI or other WebUI types. See GetWebUIType.
-  typedef void* TypeID;
+  typedef const void* TypeID;
 
   // A special WebUI type that signifies that a given page would not use the
   // Web UI system.

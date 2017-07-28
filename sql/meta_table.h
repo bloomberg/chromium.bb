@@ -25,8 +25,8 @@ class SQL_EXPORT MetaTable {
   // some point a read error and the database should not be memory-mapped, while
   // |kMmapSuccess| indicates that the entire file was read at some point and
   // can be memory-mapped without constraint.
-  static int64_t kMmapFailure;
-  static int64_t kMmapSuccess;
+  static constexpr int64_t kMmapFailure = -2;
+  static constexpr int64_t kMmapSuccess = -1;
 
   // Returns true if the 'meta' table exists.
   static bool DoesTableExist(Connection* db);

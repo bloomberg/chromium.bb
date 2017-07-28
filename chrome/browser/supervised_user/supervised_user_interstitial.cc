@@ -106,7 +106,7 @@ class TabCloser : public content::WebContentsUserData<TabCloser> {
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabCloser);
 
-content::InterstitialPageDelegate::TypeID
+const content::InterstitialPageDelegate::TypeID
     SupervisedUserInterstitial::kTypeForTesting =
         &SupervisedUserInterstitial::kTypeForTesting;
 

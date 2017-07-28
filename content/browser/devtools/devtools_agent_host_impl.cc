@@ -37,13 +37,13 @@ base::LazyInstance<base::ObserverList<DevToolsAgentHostObserver>>::Leaky
     g_observers = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
-char DevToolsAgentHost::kTypePage[] = "page";
-char DevToolsAgentHost::kTypeFrame[] = "iframe";
-char DevToolsAgentHost::kTypeSharedWorker[] = "shared_worker";
-char DevToolsAgentHost::kTypeServiceWorker[] = "service_worker";
-char DevToolsAgentHost::kTypeBrowser[] = "browser";
-char DevToolsAgentHost::kTypeGuest[] = "webview";
-char DevToolsAgentHost::kTypeOther[] = "other";
+const char DevToolsAgentHost::kTypePage[] = "page";
+const char DevToolsAgentHost::kTypeFrame[] = "iframe";
+const char DevToolsAgentHost::kTypeSharedWorker[] = "shared_worker";
+const char DevToolsAgentHost::kTypeServiceWorker[] = "service_worker";
+const char DevToolsAgentHost::kTypeBrowser[] = "browser";
+const char DevToolsAgentHost::kTypeGuest[] = "webview";
+const char DevToolsAgentHost::kTypeOther[] = "other";
 int DevToolsAgentHostImpl::s_attached_count_ = 0;
 int DevToolsAgentHostImpl::s_force_creation_count_ = 0;
 

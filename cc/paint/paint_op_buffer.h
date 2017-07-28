@@ -168,7 +168,7 @@ class CC_PAINT_EXPORT PaintOp {
   static constexpr bool kHasPaintFlags = false;
   // Since skip and type fit in a uint32_t, this is the max size of skip.
   static constexpr size_t kMaxSkip = static_cast<size_t>(1 << 24);
-  static SkRect kUnsetRect;
+  static const SkRect kUnsetRect;
 };
 
 class CC_PAINT_EXPORT PaintOpWithFlags : public PaintOp {

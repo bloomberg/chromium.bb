@@ -44,7 +44,7 @@ class NET_EXPORT SimplePathBuilderDelegate : public CertPathBuilderDelegate {
   const size_t min_rsa_modulus_length_bits_;
 };
 
-extern CertErrorId kRsaModulusTooSmall;
+extern const CertErrorId kRsaModulusTooSmall;
 
 }  // namespace net
 

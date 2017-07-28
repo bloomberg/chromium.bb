@@ -41,7 +41,7 @@ class SSLBlockingPage
     : public security_interstitials::SecurityInterstitialPage {
  public:
   // Interstitial type, used in tests.
-  static InterstitialPageDelegate::TypeID kTypeForTesting;
+  static const InterstitialPageDelegate::TypeID kTypeForTesting;
 
   ~SSLBlockingPage() override;
 

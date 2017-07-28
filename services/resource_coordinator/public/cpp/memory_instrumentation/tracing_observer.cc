@@ -18,7 +18,7 @@ using base::trace_event::ProcessMemoryDump;
 namespace {
 
 const int kTraceEventNumArgs = 1;
-const char* kTraceEventArgNames[] = {"dumps"};
+const char* const kTraceEventArgNames[] = {"dumps"};
 const unsigned char kTraceEventArgTypes[] = {TRACE_VALUE_TYPE_CONVERTABLE};
 
 bool IsMemoryInfraTracingEnabled() {

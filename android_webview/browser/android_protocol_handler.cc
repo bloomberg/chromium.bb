@@ -37,7 +37,7 @@ using base::android::ScopedJavaLocalRef;
 
 namespace {
 
-void* kPreviouslyFailedKey = &kPreviouslyFailedKey;
+const void* const kPreviouslyFailedKey = &kPreviouslyFailedKey;
 
 void MarkRequestAsFailed(net::URLRequest* request) {
   request->SetUserData(kPreviouslyFailedKey,

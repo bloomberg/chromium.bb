@@ -65,7 +65,7 @@ const int kMaxFetcherRetries = 8;
 
 // Name of the GAIA cookie that is being observed to detect when available
 // accounts have changed in the content-area.
-const char* kGaiaCookieName = "APISID";
+const char* const kGaiaCookieName = "APISID";
 
 enum GaiaCookieRequestType {
   ADD_ACCOUNT,

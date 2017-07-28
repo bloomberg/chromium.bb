@@ -63,7 +63,7 @@ GL_EXPORT extern const char kUsePassthroughCmdDecoder[];
 GL_EXPORT extern const char kDisableGLDrawingForTests[];
 GL_EXPORT extern const char kOverrideUseSoftwareGLForTests[];
 
-GL_EXPORT extern const char* kGLSwitchesCopiedFromGpuProcessHost[];
+GL_EXPORT extern const char* const kGLSwitchesCopiedFromGpuProcessHost[];
 GL_EXPORT extern const int kGLSwitchesCopiedFromGpuProcessHostNumSwitches;
 
 }  // namespace switches

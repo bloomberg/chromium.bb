@@ -35,7 +35,7 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
   void MediaResized(const gfx::Size& size, const MediaPlayerId& id) override;
 
   static const gfx::Size kSignificantSize;
-  static const char* kHistogramScoreAtPlaybackName;
+  static const char* const kHistogramScoreAtPlaybackName;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaEngagementContentsObserverTest,
@@ -151,19 +151,19 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
       const MediaPlayerId& id,
       MediaEngagementContentsObserver::InsignificantHistogram histogram);
 
-  static const char* kHistogramSignificantNotAddedAfterFirstTimeName;
-  static const char* kHistogramSignificantNotAddedFirstTimeName;
-  static const char* kHistogramSignificantRemovedName;
+  static const char* const kHistogramSignificantNotAddedAfterFirstTimeName;
+  static const char* const kHistogramSignificantNotAddedFirstTimeName;
+  static const char* const kHistogramSignificantRemovedName;
   static const int kMaxInsignificantPlaybackReason;
 
   // Record the score and change in score to UKM.
   void RecordUkmMetrics();
 
-  static const char* kUkmEntryName;
-  static const char* kUkmMetricPlaybacksTotalName;
-  static const char* kUkmMetricVisitsTotalName;
-  static const char* kUkmMetricEngagementScoreName;
-  static const char* kUkmMetricPlaybacksDeltaName;
+  static const char* const kUkmEntryName;
+  static const char* const kUkmMetricPlaybacksTotalName;
+  static const char* const kUkmMetricVisitsTotalName;
+  static const char* const kUkmMetricEngagementScoreName;
+  static const char* const kUkmMetricPlaybacksDeltaName;
 
   bool is_visible_ = false;
   bool significant_playback_recorded_ = false;

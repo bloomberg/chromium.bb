@@ -14,19 +14,20 @@
 namespace ntp_snippets {
 
 // Keep sorted, and keep nullptr at the end.
-const base::Feature*(kAllFeatures[]) = {&kArticleSuggestionsFeature,
-                                        &kBookmarkSuggestionsFeature,
-                                        &kCategoryOrder,
-                                        &kCategoryRanker,
-                                        &kBreakingNewsPushFeature,
-                                        &kForeignSessionsSuggestionsFeature,
-                                        &kIncreasedVisibility,
-                                        &kKeepPrefetchedContentSuggestions,
-                                        &kNotificationsFeature,
-                                        &kPhysicalWebPageSuggestionsFeature,
-                                        &kPublisherFaviconsFromNewServerFeature,
-                                        &kRecentOfflineTabSuggestionsFeature,
-                                        nullptr};
+const base::Feature* const kAllFeatures[] = {
+    &kArticleSuggestionsFeature,
+    &kBookmarkSuggestionsFeature,
+    &kCategoryOrder,
+    &kCategoryRanker,
+    &kBreakingNewsPushFeature,
+    &kForeignSessionsSuggestionsFeature,
+    &kIncreasedVisibility,
+    &kKeepPrefetchedContentSuggestions,
+    &kNotificationsFeature,
+    &kPhysicalWebPageSuggestionsFeature,
+    &kPublisherFaviconsFromNewServerFeature,
+    &kRecentOfflineTabSuggestionsFeature,
+    nullptr};
 
 const base::Feature kArticleSuggestionsFeature{
     "NTPArticleSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};

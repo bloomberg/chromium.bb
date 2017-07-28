@@ -20,7 +20,7 @@ class URLRequestUserData : public base::SupportsUserData::Data {
   int render_process_id() const { return render_process_id_; }
   int render_frame_id() const { return render_frame_id_; }
 
-  static const void* kUserDataKey;
+  static const void* const kUserDataKey;
 
  private:
   int render_process_id_;

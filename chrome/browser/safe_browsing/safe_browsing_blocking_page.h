@@ -47,7 +47,7 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
   typedef security_interstitials::BaseSafeBrowsingErrorUI
       BaseSafeBrowsingErrorUI;
   // Interstitial type, used in tests.
-  static content::InterstitialPageDelegate::TypeID kTypeForTesting;
+  static const content::InterstitialPageDelegate::TypeID kTypeForTesting;
 
   ~SafeBrowsingBlockingPage() override;
 

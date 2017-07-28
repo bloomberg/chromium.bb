@@ -53,12 +53,12 @@ namespace protocol {
 
 namespace {
 
-static const char kPng[] = "png";
-static const char kJpeg[] = "jpeg";
-static int kDefaultScreenshotQuality = 80;
-static int kFrameRetryDelayMs = 100;
-static int kCaptureRetryLimit = 2;
-static int kMaxScreencastFramesInFlight = 2;
+constexpr const char* kPng = "png";
+constexpr const char* kJpeg = "jpeg";
+constexpr int kDefaultScreenshotQuality = 80;
+constexpr int kFrameRetryDelayMs = 100;
+constexpr int kCaptureRetryLimit = 2;
+constexpr int kMaxScreencastFramesInFlight = 2;
 
 std::string EncodeImage(const gfx::Image& image,
                         const std::string& format,

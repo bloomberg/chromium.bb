@@ -119,7 +119,7 @@ struct POLICY_EXPORT SchemaData {
   const RestrictionNode* restriction_nodes;
 
   const int* int_enums;
-  const char** string_enums;
+  const char* const* string_enums;
 };
 
 }  // namespace internal

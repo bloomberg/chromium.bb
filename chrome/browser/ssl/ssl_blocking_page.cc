@@ -116,7 +116,7 @@ std::unique_ptr<ChromeMetricsHelper> CreateMetricsHelper(
 }  // namespace
 
 // static
-InterstitialPageDelegate::TypeID SSLBlockingPage::kTypeForTesting =
+const InterstitialPageDelegate::TypeID SSLBlockingPage::kTypeForTesting =
     &SSLBlockingPage::kTypeForTesting;
 
 // static

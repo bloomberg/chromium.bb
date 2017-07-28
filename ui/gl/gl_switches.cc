@@ -129,7 +129,7 @@ const char kUsePassthroughCmdDecoder[] = "use-passthrough-cmd-decoder";
 // This is the list of switches passed from this file that are passed from the
 // GpuProcessHost to the GPU Process. Add your switch to this list if you need
 // to read it in the GPU process, else don't add it.
-const char* kGLSwitchesCopiedFromGpuProcessHost[] = {
+const char* const kGLSwitchesCopiedFromGpuProcessHost[] = {
     kDisableGpuVsync,
     kDisableD3D11,
     kEnableGPUServiceLogging,

@@ -29,18 +29,18 @@ namespace {
 bool g_allow_port_in_urls = false;
 
 // Sorted by decreasing likelihood according to HTTP archive.
-const char* kFontMimeTypes[] = {"font/woff2",
-                                "application/x-font-woff",
-                                "application/font-woff",
-                                "application/font-woff2",
-                                "font/x-woff",
-                                "application/x-font-ttf",
-                                "font/woff",
-                                "font/ttf",
-                                "application/x-font-otf",
-                                "x-font/woff",
-                                "application/font-sfnt",
-                                "application/font-ttf"};
+const char* const kFontMimeTypes[] = {"font/woff2",
+                                      "application/x-font-woff",
+                                      "application/font-woff",
+                                      "application/font-woff2",
+                                      "font/x-woff",
+                                      "application/x-font-ttf",
+                                      "font/woff",
+                                      "font/ttf",
+                                      "application/x-font-otf",
+                                      "x-font/woff",
+                                      "application/font-sfnt",
+                                      "application/font-ttf"};
 
 bool IsNoStore(const net::URLRequest& response) {
   if (response.was_cached())

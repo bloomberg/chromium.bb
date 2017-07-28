@@ -24,7 +24,7 @@ namespace ntp_snippets {
 // If you add a base::Feature below, you must add it to this list. It is used in
 // internal pages to list relevant parameters and settings.
 //
-extern const base::Feature*(kAllFeatures[]);
+extern const base::Feature* const kAllFeatures[];
 
 // Features to turn individual providers/categories on/off.
 // TODO(jkrcal): Rename to kRemoteSuggestionsFeature.

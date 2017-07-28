@@ -135,8 +135,6 @@ bool InSameTreePosition(FrameTreeNode* frame_tree_node,
 
 }  // namespace
 
-int NavigationEntryImpl::kInvalidBindings = -1;
-
 NavigationEntryImpl::TreeNode::TreeNode(TreeNode* parent,
                                         FrameNavigationEntry* frame_entry)
     : parent(parent), frame_entry(frame_entry) {}
