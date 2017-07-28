@@ -75,7 +75,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
-@CommandLineParameter({"", "enable-features=" + ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE})
+@CommandLineParameter({"", "disable-features=" + ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE})
 public class OmniboxTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
