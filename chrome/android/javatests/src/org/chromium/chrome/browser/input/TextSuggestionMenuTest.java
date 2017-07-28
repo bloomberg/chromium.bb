@@ -9,6 +9,7 @@ import android.view.View;
 
 import org.junit.Assert;
 
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.R;
@@ -17,7 +18,9 @@ import org.chromium.content.browser.input.SuggestionsPopupWindow;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.concurrent.TimeoutException;
 
@@ -38,9 +41,18 @@ public class TextSuggestionMenuTest extends ChromeActivityTestCaseBase<ChromeAct
     }
 
     @LargeTest
+    @RetryOnFailure
     public void testDeleteMisspelledWord() throws InterruptedException, TimeoutException {
         loadUrl(URL);
         final ContentViewCore cvc = getActivity().getActivityTab().getContentViewCore();
+        WebContents webContents = cvc.getWebContents();
+
+        // The spell checker is called asynchronously, in an idle-time callback. By waiting for an
+        // idle-time callback of our own to be called, we can hopefully ensure that the spell
+        // checker has been run before we try to tap on the misspelled word.
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                webContents, "window.requestIdleTimeCallback(() -> {});");
+
         DOMUtils.focusNode(cvc.getWebContents(), "div");
         DOMUtils.clickNode(cvc, "div");
 
