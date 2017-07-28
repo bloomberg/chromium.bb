@@ -67,13 +67,22 @@ constexpr size_t kRecentlyClosedItems = 3;
 // was too slow.
 constexpr int kUpdatesToSkipUnderHeavyLoad = 10;
 
-// The delay before updating the JumpList to prevent update storms.
-constexpr base::TimeDelta kDelayForJumplistUpdate =
-    base::TimeDelta::FromMilliseconds(3500);
+// The delay before updating the JumpList for users who haven't used it in a
+// session. A delay of 2000 ms is chosen to coalesce more updates when tabs are
+// closed rapidly.
+constexpr base::TimeDelta kLongDelayForUpdate =
+    base::TimeDelta::FromMilliseconds(2000);
+
+// The delay before updating the JumpList for users who haven used it in a
+// session. A delay of 500 ms is used to not only make the update happen almost
+// immediately, but also prevent update storms when tabs are closed rapidly via
+// Ctrl-W.
+constexpr base::TimeDelta kShortDelayForUpdate =
+    base::TimeDelta::FromMilliseconds(500);
 
 // The maximum allowed time for JumpListUpdater::BeginUpdate. Updates taking
 // longer than this are discarded to prevent bogging down slow machines.
-constexpr base::TimeDelta kTimeOutForJumplistBeginUpdate =
+constexpr base::TimeDelta kTimeOutForBeginUpdate =
     base::TimeDelta::FromMilliseconds(500);
 
 // The maximum allowed time for adding most visited pages custom category via
@@ -82,7 +91,7 @@ constexpr base::TimeDelta kTimeOutForAddCustomCategory =
     base::TimeDelta::FromMilliseconds(320);
 
 // The maximum allowed time for JumpListUpdater::CommitUpdate.
-constexpr base::TimeDelta kTimeOutForJumplistCommitUpdate =
+constexpr base::TimeDelta kTimeOutForCommitUpdate =
     base::TimeDelta::FromMilliseconds(1000);
 
 // Appends the common switches to each shell link.
@@ -319,7 +328,10 @@ void JumpList::InitializeTimerForUpdate() {
   } else {
     // base::Unretained is safe since |this| is guaranteed to outlive timer_.
     timer_.Start(
-        FROM_HERE, kDelayForJumplistUpdate,
+        FROM_HERE,
+        profile_->GetUserData(chrome::kJumpListIconDirname)
+            ? kShortDelayForUpdate
+            : kLongDelayForUpdate,
         base::Bind(&JumpList::ProcessNotifications, base::Unretained(this)));
   }
 }
@@ -716,7 +728,7 @@ void JumpList::CreateNewJumpListAndNotifyOS(
   // If JumpListUpdater::BeginUpdate takes longer than the maximum allowed time,
   // abort the current update as it's very likely the following steps will also
   // take a long time, and skip the next |kUpdatesToSkipUnderHeavyLoad| updates.
-  if (begin_update_timer.Elapsed() >= kTimeOutForJumplistBeginUpdate) {
+  if (begin_update_timer.Elapsed() >= kTimeOutForBeginUpdate) {
     update_transaction->update_timeout = true;
     return;
   }
@@ -794,7 +806,7 @@ void JumpList::CreateNewJumpListAndNotifyOS(
 
   // If CommitUpdate call takes longer than the maximum allowed time, skip the
   // next |kUpdatesToSkipUnderHeavyLoad| updates.
-  if (commit_update_timer.Elapsed() >= kTimeOutForJumplistCommitUpdate)
+  if (commit_update_timer.Elapsed() >= kTimeOutForCommitUpdate)
     update_transaction->update_timeout = true;
 
   if (commit_success) {
