@@ -20,6 +20,14 @@ AlertCoordinator* ErrorCoordinator(NSError* error,
                                    ProceduralBlock dismissAction,
                                    UIViewController* viewController);
 
+// Returns a message to display, as an error, to the user. This message
+// contains:
+//  * localized description (if any)
+//  * domain name
+//  * error code
+//  * underlying errors recursively (only the domain name and the error code)
+NSString* DialogMessageFromError(NSError* error);
+
 // Returns the sign in alert coordinator for |error|, with no associated
 // action. An action should be added before starting it.
 AlertCoordinator* ErrorCoordinatorNoItem(NSError* error,
