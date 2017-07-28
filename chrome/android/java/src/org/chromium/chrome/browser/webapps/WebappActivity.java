@@ -305,8 +305,8 @@ public class WebappActivity extends SingleTabActivity {
     }
 
     @Override
-    public void onDeferredStartup() {
-        super.onDeferredStartup();
+    protected void initDeferredStartupForActivity() {
+        super.initDeferredStartupForActivity();
 
         WebappDataStorage storage =
                 WebappRegistry.getInstance().getWebappDataStorage(mWebappInfo.id());

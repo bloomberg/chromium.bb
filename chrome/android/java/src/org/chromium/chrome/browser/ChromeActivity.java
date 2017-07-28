@@ -968,13 +968,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     /**
      * Actions that may be run at some point after startup. Place tasks that are not critical to the
-     * startup path here.  This method will be called automatically and should not be called
-     * directly by subclasses.
-     *
-     * Overriding methods should queue tasks on the DeferredStartupHandler before or after calling
-     * super depending on whether the tasks should run before or after these ones.
+     * startup path here.  This method will be called automatically.
      */
-    protected void onDeferredStartup() {
+    private void onDeferredStartup() {
         initDeferredStartupForActivity();
         ProcessInitializationHandler.getInstance().initializeDeferredStartupTasks();
         DeferredStartupHandler.getInstance().queueDeferredTasksOnIdleHandler();
@@ -982,8 +978,12 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     /**
      * All deferred startup tasks that require the activity rather than the app should go here.
+     *
+     * Overriding methods should queue tasks on the DeferredStartupHandler before or after calling
+     * super depending on whether the tasks should run before or after these ones.
      */
-    private void initDeferredStartupForActivity() {
+    @CallSuper
+    protected void initDeferredStartupForActivity() {
         DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
             @Override
             public void run() {

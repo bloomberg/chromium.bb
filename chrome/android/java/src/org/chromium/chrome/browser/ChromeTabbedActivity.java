@@ -1533,8 +1533,8 @@ public class ChromeTabbedActivity
     }
 
     @Override
-    protected void onDeferredStartup() {
-        super.onDeferredStartup();
+    protected void initDeferredStartupForActivity() {
+        super.initDeferredStartupForActivity();
         DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
             @Override
             public void run() {
