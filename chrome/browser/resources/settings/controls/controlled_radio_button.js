@@ -13,6 +13,7 @@ Polymer({
   properties: {
     checked: {
       type: Boolean,
+      value: false,
       reflectToAttribute: true,
       observer: 'checkedChanged_',
     },
