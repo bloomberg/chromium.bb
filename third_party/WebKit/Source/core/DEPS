@@ -20,6 +20,5 @@ include_rules = [
     # We do not want any new dependencies on Web(Local|Remote)FrameBase.h until
     # we resolve the control layer.
     "!core/frame/WebLocalFrameBase.h",
-    "!core/frame/WebRemoteFrameBase.h",
     "!core/frame/WebRemoteFrameImpl.h",
 ]

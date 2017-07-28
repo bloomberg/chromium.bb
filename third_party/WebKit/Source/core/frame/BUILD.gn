@@ -141,7 +141,6 @@ blink_core_sources("frame") {
     "WebLocalFrameBase.h",
     "WebLocalFrameImpl.cpp",
     "WebLocalFrameImpl.h",
-    "WebRemoteFrameBase.h",
     "WebViewFrameWidget.cpp",
     "WebViewFrameWidget.h",
     "csp/CSPDirective.h",
