@@ -20,7 +20,7 @@ ScopedJavaSurface::ScopedJavaSurface(
     : auto_release_(true),
       is_protected_(false) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  DCHECK(env->IsInstanceOf(surface.obj(), Surface_clazz(env)));
+  DCHECK(env->IsInstanceOf(surface.obj(), android_view_Surface_clazz(env)));
   j_surface_.Reset(surface);
 }
 
