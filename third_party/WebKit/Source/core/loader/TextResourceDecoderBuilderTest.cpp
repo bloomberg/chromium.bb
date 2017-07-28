@@ -10,13 +10,25 @@
 
 namespace blink {
 
-static const WTF::TextEncoding DefaultEncodingForURL(const char* url) {
+static const WTF::TextEncoding DefaultEncodingForUrlAndContentType(
+    const char* url,
+    const char* content_type) {
   std::unique_ptr<DummyPageHolder> page_holder =
       DummyPageHolder::Create(IntSize(0, 0));
   Document& document = page_holder->GetDocument();
   document.SetURL(KURL(NullURL(), url));
-  TextResourceDecoderBuilder decoder_builder("text/html", g_null_atom);
+  TextResourceDecoderBuilder decoder_builder(content_type, g_null_atom);
   return decoder_builder.BuildFor(&document)->Encoding();
+}
+
+static const WTF::TextEncoding DefaultEncodingForURL(const char* url) {
+  return DefaultEncodingForUrlAndContentType(url, "text/html");
+}
+
+TEST(TextResourceDecoderBuilderTest, defaultEncodingForJsonIsUTF8) {
+  EXPECT_EQ(WTF::TextEncoding("UTF-8"),
+            DefaultEncodingForUrlAndContentType(
+                "https://udarenieru.ru/1.2/dealers/", "application/json"));
 }
 
 TEST(TextResourceDecoderBuilderTest, defaultEncodingComesFromTopLevelDomain) {

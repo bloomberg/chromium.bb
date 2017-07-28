@@ -16,6 +16,7 @@ class PLATFORM_EXPORT TextResourceDecoderOptions final {
   enum ContentType {
     kPlainTextContent,
     kHTMLContent,
+    kJSONContent,
     kXMLContent,
     kCSSContent,
     kMaxContentType = kCSSContent
