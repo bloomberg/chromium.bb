@@ -15,6 +15,8 @@
 #include "net/base/escape.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "url/third_party/mozilla/url_parse.h"
 
@@ -47,29 +49,34 @@ scoped_refptr<base::RefCountedMemory> GetUserImageInternal(
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(account_id);
 
-  // Always use the 100% scaling. These source images are 256x256, and are
-  // downscaled to ~64x64 for use in WebUI pages. Therefore, they are big enough
-  // for device scale factors up to 4. We do not use SCALE_FACTOR_NONE, as we
-  // specifically want 100% scale images to not transmit more data than needed.
+  ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_100P;
+  // Use the scaling that matches primary display. These source images are
+  // 96x96 and often used at that size in WebUI pages.
+  display::Screen* screen = display::Screen::GetScreen();
+  if (screen) {
+    scale_factor = ui::GetSupportedScaleFactor(
+        screen->GetPrimaryDisplay().device_scale_factor());
+  }
+
   if (user) {
     if (user->has_image_bytes())
       return user->image_bytes();
     if (user->image_is_stub()) {
       return ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
-          IDR_LOGIN_DEFAULT_USER, ui::SCALE_FACTOR_100P);
+          IDR_LOGIN_DEFAULT_USER, scale_factor);
     }
     if (user->HasDefaultImage()) {
       return ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
           chromeos::default_user_image::kDefaultImageResourceIDs
               [user->image_index()],
-          ui::SCALE_FACTOR_100P);
+          scale_factor);
     }
     NOTREACHED() << "User with custom image missing data bytes";
   } else {
     LOG(ERROR) << "User not found: " << account_id.GetUserEmail();
   }
   return ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
-      IDR_LOGIN_DEFAULT_USER, ui::SCALE_FACTOR_100P);
+      IDR_LOGIN_DEFAULT_USER, scale_factor);
 }
 
 }  // namespace
