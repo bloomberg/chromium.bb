@@ -5,13 +5,13 @@
 /* TODO(dzhioev): support RTL. http://crbug.com/423354 */
 
 :host {
-  -webkit-user-select: none;
   background-color: var(--google-yellow-500);
   color: white;
   display: block;
   font-family: 'Roboto';
   font-weight: 300;
   height: 100%;
+  user-select: none;
 }
 
 neon-animated-pages {
@@ -52,4 +52,3 @@ iron-icon {
   height: 48px;
   width: 48px;
 }
-

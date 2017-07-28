@@ -25,10 +25,10 @@ header {
 #print-preview #navbar-container {
   -webkit-border-end: 1px solid #c8c8c8;
   -webkit-box-orient: vertical;
-  -webkit-user-select: none;
   background-color: white;
   display: -webkit-box;
   position: relative;
+  user-select: none;
   width: 310px;
   z-index: 2;
 }
@@ -163,7 +163,6 @@ span.hint {
 }
 
 span.hint.visible {
-  -webkit-user-select: text;
   animation-duration: 200ms;
   animation-fill-mode: forwards;
   color: rgb(140, 20, 20);
@@ -171,6 +170,7 @@ span.hint.visible {
   margin-bottom: -5px;
   margin-top: 5px;
   padding-bottom: 5px;
+  user-select: text;
 }
 
 span.hint.closing {
@@ -208,7 +208,7 @@ select {
 }
 
 label {
-  -webkit-user-select: none;
+  user-select: none;
 }
 
 .hidden-section {

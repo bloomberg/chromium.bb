@@ -31,7 +31,6 @@ body {
 }
 
 button {
-  -webkit-user-select: none;
   background-image: -webkit-linear-gradient(#ededed, #ededed 38%, #dedede);
   border: 1px solid rgba(0, 0, 0, 0.25);
   border-radius: 2px;
@@ -42,5 +41,5 @@ button {
   min-width: 65px;
   padding: 8px 13px;
   text-shadow: 0 1px 0 rgb(240, 240, 240);
+  user-select: none;
 }
-

@@ -154,9 +154,9 @@ body.fakebox-focused #cursor {
 }
 
 #most-visited {
-  -webkit-user-select: none;
   margin-top: 64px;
   text-align: -webkit-center;
+  user-select: none;
 }
 
 /* Non-Google pages have no Fakebox, so don't need top margin. */
@@ -253,7 +253,6 @@ html[dir=rtl] #mv-notice-x {
 }
 
 #attribution {
-  -webkit-user-select: none;
   bottom: 0;
   color: #fff;
   cursor: default;
@@ -263,6 +262,7 @@ html[dir=rtl] #mv-notice-x {
   position: fixed;
   right: 8px;
   text-align: left;
+  user-select: none;
   z-index: -1;
 }
 

@@ -31,8 +31,8 @@ ul {
 li {
   -webkit-border-start: 6px solid transparent;
   -webkit-padding-start: 18px;
-  -webkit-user-select: none;
   cursor: pointer;
+  user-select: none;
 }
 
 li:hover {

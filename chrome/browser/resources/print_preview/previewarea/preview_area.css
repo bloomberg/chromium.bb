@@ -4,10 +4,10 @@
 
 #preview-area.preview-area {
   -webkit-box-flex: 1;
-  -webkit-user-select: none;
   background-color: #e6e6e6;
   overflow: hidden;
   position: relative;
+  user-select: none;
 }
 
 .preview-area-plugin-wrapper {
@@ -37,7 +37,6 @@
 }
 
 #preview-area .preview-area-overlay-layer {
-  -webkit-user-select: none;
   background: #e6e6e6;
   height: 100%;
   margin: 0;
@@ -47,6 +46,7 @@
   /* overlayFadeInTransitionDelay = pluginFadeOutTransitionDelay +
    *     pluginFadeOutTransitionDuration = 350ms */
   transition-delay: 350ms;
+  user-select: none;
   width: 100%;
   z-index: 1;
 }

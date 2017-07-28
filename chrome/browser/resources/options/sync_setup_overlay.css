@@ -9,7 +9,7 @@
 }
 
 #sync-setup-overlay * form {
-  -webkit-user-select: none;
+  user-select: none;
 }
 
 #sync-setup-overlay * .content-area {
@@ -61,10 +61,10 @@
 }
 
 #sync-setup-overlay {
-  -webkit-user-select: none;
   background-color: white;
   margin-bottom: 6px;
   margin-top: 6px;
+  user-select: none;
   width: 500px;
 }
 
@@ -186,7 +186,7 @@
 }
 
 #choose-data-types-form {
-  -webkit-user-select: none;
+  user-select: none;
 }
 
 #chooseDataTypesRadio {

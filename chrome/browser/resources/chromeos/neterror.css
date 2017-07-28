@@ -31,7 +31,7 @@ a {
 }
 
 .icon {
-  -webkit-user-select: none;
+  user-select: none;
 }
 
 .icon-generic {

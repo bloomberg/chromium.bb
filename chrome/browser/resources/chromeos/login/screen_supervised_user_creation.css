@@ -365,13 +365,13 @@ input.supervised-user-creation-manager-password,
 
 #supervised-user-creation-image-grid {
   -webkit-user-drag: none;
-  -webkit-user-select: none;
   display: inline-block;
   height: 264px;
   margin: 0;
   outline: none;
   overflow: hidden;
   padding: 0;
+  user-select: none;
   width: 400px;
 }
 

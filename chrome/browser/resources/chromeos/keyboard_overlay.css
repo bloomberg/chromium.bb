@@ -3,12 +3,12 @@
  * found in the LICENSE file. */
 
 body {
-  -webkit-user-select: none;
   background: #fff;
   font-size: 100%;
   margin: 0;
   overflow: hidden;
   padding: 0;
+  user-select: none;
 }
 
 .keyboard-overlay-keyboard {

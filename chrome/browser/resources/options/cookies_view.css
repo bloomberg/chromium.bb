@@ -89,7 +89,7 @@ html[dir=rtl] list.cookie-list > .deletable-item > .close-button {
 }
 
 list.cookie-list > .deletable-item[selected] .cookie-site {
-  -webkit-user-select: text;
+  user-select: text;
 }
 
 .cookie-data {
@@ -106,7 +106,7 @@ list.cookie-list > .deletable-item[selected] .cookie-site {
 }
 
 list.cookie-list > .deletable-item[selected] .cookie-data {
-  -webkit-user-select: text;
+  user-select: text;
 }
 
 
@@ -181,7 +181,7 @@ list.cookie-list > .deletable-item[selected] .cookie-data {
 }
 
 list.cookie-list > .deletable-item[selected] .cookie-details {
-  -webkit-user-select: text;
+  user-select: text;
 }
 
 .cookie-details-table {

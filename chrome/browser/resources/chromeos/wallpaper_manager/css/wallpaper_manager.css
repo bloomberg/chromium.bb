@@ -60,12 +60,12 @@ body {
 
 #categories-list > li {
   -webkit-box-align: center;
-  -webkit-user-select: none;
   border-top: 4px solid transparent;
   color: #777;
   display: -webkit-box;
   height: 50px;
   transition: border-top 130ms ease;
+  user-select: none;
 }
 
 #categories-list:not([disabled]) > li:hover {

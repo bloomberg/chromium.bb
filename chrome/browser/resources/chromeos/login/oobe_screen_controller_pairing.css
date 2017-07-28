@@ -6,12 +6,12 @@
 /* TODO(xdai): Remove the hard-coded font-family for 'Roboto'. */
 
 :host {
-  -webkit-user-select: none;
   background: white;
   display: block;
   font-family: 'Roboto';
   height: 600px;
   position: relative;
+  user-select: none;
   width: 720px;
 }
 
