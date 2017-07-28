@@ -5,7 +5,6 @@
 #include "components/ntp_snippets/breaking_news/breaking_news_suggestions_provider.h"
 
 #include "base/bind.h"
-#include "base/json/json_writer.h"
 #include "base/time/clock.h"
 #include "components/ntp_snippets/breaking_news/breaking_news_listener.h"
 #include "components/ntp_snippets/category.h"
@@ -36,7 +35,7 @@ BreakingNewsSuggestionsProvider::BreakingNewsSuggestionsProvider(
                  base::Unretained(this)));
   // Unretained because |this| owns |breaking_news_listener_|.
   breaking_news_raw_data_provider_->StartListening(
-      base::Bind(&BreakingNewsSuggestionsProvider::OnNewContentSuggestion,
+      base::Bind(&BreakingNewsSuggestionsProvider::OnNewRemoteSuggestion,
                  base::Unretained(this)));
 }
 
@@ -44,29 +43,18 @@ BreakingNewsSuggestionsProvider::~BreakingNewsSuggestionsProvider() {
   breaking_news_raw_data_provider_->StopListening();
 }
 
-void BreakingNewsSuggestionsProvider::OnNewContentSuggestion(
-    std::unique_ptr<base::Value> content) {
-  DCHECK(content);
-  const base::Time receive_time = clock_->Now();
-  FetchedCategoriesVector categories;
-  if (!JsonToCategories(*content, &categories, receive_time)) {
-    std::string content_json;
-    base::JSONWriter::Write(*content, &content_json);
-    LOG(WARNING) << "Received invalid breaking news: " << content_json;
-    return;
-  }
-  DCHECK_EQ(categories.size(), static_cast<size_t>(1));
-  auto& fetched_category = categories[0];
-  Category category = fetched_category.category;
-  DCHECK(category.IsKnownCategory(KnownCategories::BREAKING_NEWS));
+void BreakingNewsSuggestionsProvider::OnNewRemoteSuggestion(
+    std::unique_ptr<RemoteSuggestion> remote_suggestion) {
+  std::vector<std::unique_ptr<RemoteSuggestion>> suggestions;
+  suggestions.push_back(std::move(remote_suggestion));
   if (database_->IsInitialized()) {
-    database_->SaveSnippets(fetched_category.suggestions);
+    database_->SaveSnippets(suggestions);
   } else {
     // TODO(mamir): Check how often a breaking news is received before DB is
     // initialized.
     LOG(WARNING) << "Cannot store breaking news, database is not initialized.";
   }
-  NotifyNewSuggestions(std::move(fetched_category.suggestions));
+  NotifyNewSuggestions(std::move(suggestions));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

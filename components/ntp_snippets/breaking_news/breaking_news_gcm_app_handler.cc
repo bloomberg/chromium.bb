@@ -4,6 +4,7 @@
 
 #include "components/ntp_snippets/breaking_news/breaking_news_gcm_app_handler.h"
 
+#include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/gcm_profile_service.h"
@@ -46,20 +47,21 @@ BreakingNewsGCMAppHandler::~BreakingNewsGCMAppHandler() {
 }
 
 void BreakingNewsGCMAppHandler::StartListening(
-    OnNewContentCallback on_new_content_callback) {
+    OnNewRemoteSuggestionCallback on_new_remote_suggestion_callback) {
 #if !defined(OS_ANDROID)
   NOTREACHED()
       << "The BreakingNewsGCMAppHandler should only be used on Android.";
 #endif
   Subscribe();
-  on_new_content_callback_ = std::move(on_new_content_callback);
+  on_new_remote_suggestion_callback_ =
+      std::move(on_new_remote_suggestion_callback);
   gcm_driver_->AddAppHandler(kBreakingNewsGCMAppID, this);
 }
 
 void BreakingNewsGCMAppHandler::StopListening() {
   DCHECK_EQ(gcm_driver_->GetAppHandler(kBreakingNewsGCMAppID), this);
   gcm_driver_->RemoveAppHandler(kBreakingNewsGCMAppID);
-  on_new_content_callback_ = OnNewContentCallback();
+  on_new_remote_suggestion_callback_ = OnNewRemoteSuggestionCallback();
   subscription_manager_->Unsubscribe();
 }
 
@@ -162,7 +164,20 @@ void BreakingNewsGCMAppHandler::RegisterProfilePrefs(
 
 void BreakingNewsGCMAppHandler::OnJsonSuccess(
     std::unique_ptr<base::Value> content) {
-  on_new_content_callback_.Run(std::move(content));
+  DCHECK(content);
+  std::vector<FetchedCategory> fetched_categories;
+  if (!JsonToCategories(*content, &fetched_categories,
+                        /*fetch_time=*/base::Time::Now())) {
+    std::string content_json;
+    base::JSONWriter::Write(*content, &content_json);
+    LOG(WARNING) << "Received invalid breaking news: " << content_json;
+    return;
+  }
+  DCHECK_EQ(1u, fetched_categories.size());
+  DCHECK_EQ(1u, fetched_categories[0].suggestions.size());
+
+  on_new_remote_suggestion_callback_.Run(
+      std::move(fetched_categories[0].suggestions[0]));
 }
 
 void BreakingNewsGCMAppHandler::OnJsonError(const std::string& json_str,

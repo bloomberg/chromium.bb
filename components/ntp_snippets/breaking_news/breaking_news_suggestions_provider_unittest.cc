@@ -16,8 +16,10 @@
 #include "components/ntp_snippets/breaking_news/breaking_news_listener.h"
 #include "components/ntp_snippets/breaking_news/breaking_news_suggestions_provider.h"
 #include "components/ntp_snippets/mock_content_suggestions_provider_observer.h"
+#include "components/ntp_snippets/remote/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ntp_snippets::test::RemoteSuggestionBuilder;
 using testing::_;
 using testing::Eq;
 using testing::Property;
@@ -31,9 +33,17 @@ namespace {
 
 class MockBreakingNewsListener : public BreakingNewsListener {
  public:
-  MOCK_METHOD1(StartListening, void(OnNewContentCallback callback));
+  MOCK_METHOD1(StartListening, void(OnNewRemoteSuggestionCallback callback));
   MOCK_METHOD0(StopListening, void());
 };
+
+base::Time GetDefaultCreationTime() {
+  base::Time out_time;
+  EXPECT_TRUE(base::Time::FromUTCString("2015-11-04T00:00:01Z", &out_time));
+  return out_time;
+}
+
+}  // namespace
 
 class BreakingNewsSuggestionsProviderTest : public testing::Test {
  public:
@@ -59,7 +69,7 @@ class BreakingNewsSuggestionsProviderTest : public testing::Test {
         database_dir_.GetPath(), task_runner);
 
     EXPECT_CALL(*listener_, StartListening(_))
-        .WillOnce(SaveArg<0>(&on_new_content_callback_))
+        .WillOnce(SaveArg<0>(&on_new_remote_suggestion_callback_))
         .RetiresOnSaturation();
     // The observer will be updated with an empty list upon loading the
     // database.
@@ -82,7 +92,8 @@ class BreakingNewsSuggestionsProviderTest : public testing::Test {
     return out_time;
   }
 
-  BreakingNewsListener::OnNewContentCallback on_new_content_callback_;
+  BreakingNewsListener::OnNewRemoteSuggestionCallback
+      on_new_remote_suggestion_callback_;
   base::MessageLoop message_loop_;
   StrictMock<MockBreakingNewsListener>* listener_;
   std::unique_ptr<BreakingNewsSuggestionsProvider> provider_;
@@ -93,21 +104,20 @@ class BreakingNewsSuggestionsProviderTest : public testing::Test {
 TEST_F(BreakingNewsSuggestionsProviderTest,
        ShouldPropagatePushedNewsWithoutModifyingToObserver) {
   InitializeBreakingNewsSuggestionsProvider();
-  std::string json =
-      "{\"categories\" : [{"
-      "  \"id\": 8,"
-      "  \"localizedTitle\": \"Breaking News\","
-      "  \"suggestions\" : [{"
-      "    \"ids\" : [\"http://localhost/id\"],"
-      "    \"title\" : \"Title string\","
-      "    \"snippet\" : \"Snippet string\","
-      "    \"fullPageUrl\" : \"http://localhost/fullUrl\","
-      "    \"creationTime\" : \"2016-06-30T11:01:37.000Z\","
-      "    \"expirationTime\" : \"2016-07-01T11:01:37.000Z\","
-      "    \"attribution\" : \"Attribution string\","
-      "    \"imageUrl\" : \"http://localhost/foobar.jpg\" "
-      "  }]"
-      "}]}";
+
+  std::unique_ptr<RemoteSuggestion> suggestion =
+      RemoteSuggestionBuilder()
+          .AddId("http://localhost/id")
+          .SetTitle("Title string")
+          .SetSnippet("Snippet string")
+          .SetUrl("http://localhost/fullUrl")
+          .SetAmpUrl("")
+          .SetPublishDate(GetDefaultCreationTime())
+          .SetExpiryDate(base::Time::Now() + base::TimeDelta::FromHours(1))
+          .SetPublisher("Attribution string")
+          .SetImageUrl("http://localhost/foobar.jpg")
+          .SetFetchDate(base::Time::Now())
+          .Build();
 
   // TODO(mamir): Test imageUrl and expirationTime. They aren't directly
   // testable because they aren't part of ContentSuggestion. However, they could
@@ -128,12 +138,10 @@ TEST_F(BreakingNewsSuggestionsProviderTest,
               Property(&ContentSuggestion::url,
                        GURL("http://localhost/fullUrl")),
               Property(&ContentSuggestion::publish_date,
-                       StringToTime("2016-06-30T11:01:37.000Z")),
+                       GetDefaultCreationTime()),
               Property(&ContentSuggestion::publisher_name,
-                       base::UTF8ToUTF16("Attribution string"))
-
-                  ))));
-  on_new_content_callback_.Run(base::JSONReader().ReadToValue(json));
+                       base::UTF8ToUTF16("Attribution string"))))));
+  on_new_remote_suggestion_callback_.Run(std::move(suggestion));
 }
 
 TEST_F(BreakingNewsSuggestionsProviderTest,
@@ -146,7 +154,5 @@ TEST_F(BreakingNewsSuggestionsProviderTest,
   provider_->ClearHistory(base::Time::UnixEpoch(), base::Time::Max(),
                           base::Callback<bool(const GURL& url)>());
 }
-
-}  // namespace
 
 }  // namespace ntp_snippets
