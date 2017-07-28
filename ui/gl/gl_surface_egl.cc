@@ -610,7 +610,7 @@ bool GLSurfaceEGL::InitializeOneOff(EGLNativeDisplayType native_display) {
 
 // static
 void GLSurfaceEGL::ShutdownOneOff() {
-  ResetANGLEPlatform(g_display);
+  angle::ResetPlatform(g_display);
 
   if (g_display != EGL_NO_DISPLAY)
     eglTerminate(g_display);
@@ -733,7 +733,7 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(
 
     // Init ANGLE platform now that we have the global display.
     if (supports_angle_d3d || supports_angle_opengl || supports_angle_null) {
-      if (!InitializeANGLEPlatform(display)) {
+      if (!angle::InitializePlatform(display)) {
         LOG(ERROR) << "ANGLE Platform initialization failed.";
       }
     }
