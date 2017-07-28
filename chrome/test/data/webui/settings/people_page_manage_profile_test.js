@@ -3,75 +3,70 @@
 // found in the LICENSE file.
 
 cr.define('settings_people_page_manage_profile', function() {
-  /**
-   * @constructor
-   * @implements {settings.ManageProfileBrowserProxy}
-   * @extends {TestBrowserProxy}
-   */
-  var TestManageProfileBrowserProxy = function() {
-    TestBrowserProxy.call(this, [
-      'getAvailableIcons',
-      'setProfileIconToGaiaAvatar',
-      'setProfileIconToDefaultAvatar',
-      'setProfileName',
-      'getProfileShortcutStatus',
-      'addProfileShortcut',
-      'removeProfileShortcut',
-    ]);
+  /** @implements {settings.ManageProfileBrowserProxy} */
+  class TestManageProfileBrowserProxy extends TestBrowserProxy {
+    constructor() {
+      super([
+        'getAvailableIcons',
+        'setProfileIconToGaiaAvatar',
+        'setProfileIconToDefaultAvatar',
+        'setProfileName',
+        'getProfileShortcutStatus',
+        'addProfileShortcut',
+        'removeProfileShortcut',
+      ]);
 
-    /** @private {!ProfileShortcutStatus} */
-    this.profileShortcutStatus_ = ProfileShortcutStatus.PROFILE_SHORTCUT_FOUND;
-  };
-
-  TestManageProfileBrowserProxy.prototype = {
-    __proto__: TestBrowserProxy.prototype,
+      /** @private {!ProfileShortcutStatus} */
+      this.profileShortcutStatus_ =
+          ProfileShortcutStatus.PROFILE_SHORTCUT_FOUND;
+    }
 
     /** @param {!ProfileShortcutStatus} status */
-    setProfileShortcutStatus: function(status) {
+    setProfileShortcutStatus(status) {
       this.profileShortcutStatus_ = status;
-    },
+    }
 
     /** @override */
-    getAvailableIcons: function() {
+    getAvailableIcons() {
       this.methodCalled('getAvailableIcons');
       return Promise.resolve([
         {url: 'fake-icon-1.png', label: 'fake-icon-1'},
         {url: 'fake-icon-2.png', label: 'fake-icon-2'},
         {url: 'gaia-icon.png', label: 'gaia-icon', isGaiaAvatar: true}
       ]);
-    },
+    }
 
     /** @override */
-    setProfileIconToGaiaAvatar: function() {
+    setProfileIconToGaiaAvatar() {
       this.methodCalled('setProfileIconToGaiaAvatar');
-    },
+    }
 
     /** @override */
-    setProfileIconToDefaultAvatar: function(iconUrl) {
+    setProfileIconToDefaultAvatar(iconUrl) {
       this.methodCalled('setProfileIconToDefaultAvatar', [iconUrl]);
-    },
+    }
 
     /** @override */
-    setProfileName: function(name) {
+    setProfileName(name) {
       this.methodCalled('setProfileName', [name]);
-    },
+    }
 
     /** @override */
-    getProfileShortcutStatus: function() {
+    getProfileShortcutStatus() {
       this.methodCalled('getProfileShortcutStatus');
       return Promise.resolve([this.profileShortcutStatus_]);
-    },
+    }
 
     /** @override */
-    addProfileShortcut: function() {
+    addProfileShortcut() {
       this.methodCalled('addProfileShortcut');
-    },
+    }
 
     /** @override */
-    removeProfileShortcut: function() {
+    removeProfileShortcut() {
       this.methodCalled('removeProfileShortcut');
-    },
-  };
+    }
+  }
 
   function registerManageProfileTests() {
     suite('ManageProfileTests', function() {

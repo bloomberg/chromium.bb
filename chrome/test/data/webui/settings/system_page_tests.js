@@ -5,28 +5,22 @@
 /** @const {boolean} */
 var HARDWARE_ACCELERATION_AT_STARTUP = true;
 
-/**
- * @constructor
- * @extends {TestBrowserProxy}
- * @implements {settings.SystemPageBrowserProxy}
- */
-function TestSystemPageBrowserProxy() {
-  TestBrowserProxy.call(this, ['showProxySettings']);
-}
-
-TestSystemPageBrowserProxy.prototype = {
-  __proto__: TestBrowserProxy.prototype,
+/** @implements {settings.SystemPageBrowserProxy} */
+class TestSystemPageBrowserProxy extends TestBrowserProxy {
+  constructor() {
+    super(['showProxySettings']);
+  }
 
   /** @override */
-  showProxySettings: function() {
+  showProxySettings() {
     this.methodCalled('showProxySettings');
-  },
+  }
 
   /** @override */
-  wasHardwareAccelerationEnabledAtStartup: function() {
+  wasHardwareAccelerationEnabledAtStartup() {
     return HARDWARE_ACCELERATION_AT_STARTUP;
-  },
-};
+  }
+}
 
 suite('settings system page', function() {
   /** @type {TestSystemPageBrowserProxy} */

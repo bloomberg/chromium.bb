@@ -10,32 +10,29 @@ cr.define('settings_main_page', function() {
    * TestProxy).
    *
    * @implements {SearchManager}
-   * @extends {TestBrowserProxy}
    */
-  var TestSearchManager = function() {
-    TestBrowserProxy.call(this, [
-      'search',
-    ]);
+  class TestSearchManager extends TestBrowserProxy {
+    constructor() {
+      super([
+        'search',
+      ]);
 
-    /** @private {boolean} */
-    this.matchesFound_ = true;
+      /** @private {boolean} */
+      this.matchesFound_ = true;
 
-    /** @private {?settings.SearchRequest} */
-    this.searchRequest_ = null;
-  }
-
-  TestSearchManager.prototype = {
-    __proto__: TestBrowserProxy.prototype,
+      /** @private {?settings.SearchRequest} */
+      this.searchRequest_ = null;
+    }
 
     /**
      * @param {boolean} matchesFound
      */
-    setMatchesFound: function(matchesFound) {
+    setMatchesFound(matchesFound) {
       this.matchesFound_ = matchesFound;
-    },
+    }
 
     /** @override */
-    search: function(text, page) {
+    search(text, page) {
       this.methodCalled('search', text);
 
       if (this.searchRequest_ == null || !this.searchRequest_.isSame(text)) {
@@ -45,8 +42,8 @@ cr.define('settings_main_page', function() {
         this.searchRequest_.resolver.resolve(this.searchRequest_);
       }
       return this.searchRequest_.resolver.promise;
-    },
-  };
+    }
+  }
 
   function registerTests() {
     var settingsPrefs = null;

@@ -6,30 +6,26 @@ cr.define('settings', function() {
   /**
    * A test version of LifetimeBrowserProxy.
    *
-   * @constructor
    * @implements {settings.LifetimeBrowserProxy}
-   * @extends {TestBrowserProxy}
    */
-  var TestLifetimeBrowserProxy = function() {
-    var methodNames = ['restart', 'relaunch'];
-    if (cr.isChromeOS)
-      methodNames.push('signOutAndRestart', 'factoryReset');
+  class TestLifetimeBrowserProxy extends TestBrowserProxy {
+    constructor() {
+      var methodNames = ['restart', 'relaunch'];
+      if (cr.isChromeOS)
+        methodNames.push('signOutAndRestart', 'factoryReset');
 
-    TestBrowserProxy.call(this, methodNames);
-  };
-
-  TestLifetimeBrowserProxy.prototype = {
-    __proto__: TestBrowserProxy.prototype,
+      super(methodNames);
+    }
 
     /** @override */
-    restart: function() {
+    restart() {
       this.methodCalled('restart');
-    },
+    }
 
     /** @override */
-    relaunch: function() {
+    relaunch() {
       this.methodCalled('relaunch');
-    },
+    }
   };
 
   if (cr.isChromeOS) {

@@ -2,44 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @constructor
- * @implements {settings.FontsBrowserProxy}
- * @extends {TestBrowserProxy}
- */
-var TestFontsBrowserProxy = function() {
-  TestBrowserProxy.call(this, [
-    'fetchFontsData',
-    'observeAdvancedFontExtensionAvailable',
-    'openAdvancedFontSettings',
-  ]);
+/** @implements {settings.FontsBrowserProxy} */
+class TestFontsBrowserProxy extends TestBrowserProxy {
+  constructor() {
+    super([
+      'fetchFontsData',
+      'observeAdvancedFontExtensionAvailable',
+      'openAdvancedFontSettings',
+    ]);
 
-  /** @private {!FontsData} */
-  this.fontsData_ = {
-    'fontList': [['font name', 'alternate', 'ltr']],
-    'encodingList': [['encoding name', 'alternate', 'ltr']],
-  };
-};
-
-TestFontsBrowserProxy.prototype = {
-  __proto__: TestBrowserProxy.prototype,
+    /** @private {!FontsData} */
+    this.fontsData_ = {
+      'fontList': [['font name', 'alternate', 'ltr']],
+      'encodingList': [['encoding name', 'alternate', 'ltr']],
+    };
+  }
 
   /** @override */
-  fetchFontsData: function() {
+  fetchFontsData() {
     this.methodCalled('fetchFontsData');
     return Promise.resolve(this.fontsData_);
-  },
+  }
 
   /** @override */
-  observeAdvancedFontExtensionAvailable: function() {
+  observeAdvancedFontExtensionAvailable() {
     this.methodCalled('observeAdvancedFontExtensionAvailable');
-  },
+  }
 
   /** @override */
-  openAdvancedFontSettings: function() {
+  openAdvancedFontSettings() {
     this.methodCalled('openAdvancedFontSettings');
-  },
-};
+  }
+}
 
 var fontsPage = null;
 

@@ -3,43 +3,37 @@
 // found in the LICENSE file.
 
 cr.define('settings', function() {
-  /**
-   * @constructor
-   * @implements {settings.LanguagesBrowserProxy}
-   * @extends {TestBrowserProxy}
-   */
-  var TestLanguagesBrowserProxy = function() {
-    var methodNames = [];
-    if (cr.isChromeOS || cr.isWindows)
-      methodNames.push('getProspectiveUILanguage');
+  /** @implements {settings.LanguagesBrowserProxy} */
+  class TestLanguagesBrowserProxy extends TestBrowserProxy {
+    constructor() {
+      var methodNames = [];
+      if (cr.isChromeOS || cr.isWindows)
+        methodNames.push('getProspectiveUILanguage');
 
-    TestBrowserProxy.call(this, methodNames);
+      super(methodNames);
 
-    /** @private {!LanguageSettingsPrivate} */
-    this.languageSettingsPrivate_ = new settings.FakeLanguageSettingsPrivate();
+      /** @private {!LanguageSettingsPrivate} */
+      this.languageSettingsPrivate_ =
+          new settings.FakeLanguageSettingsPrivate();
 
-    /** @private {!InputMethodPrivate} */
-    this.inputMethodPrivate_ = new settings.FakeInputMethodPrivate();
-  };
-
-  TestLanguagesBrowserProxy.prototype = {
-    __proto__: TestBrowserProxy.prototype,
+      /** @private {!InputMethodPrivate} */
+      this.inputMethodPrivate_ = new settings.FakeInputMethodPrivate();
+    }
 
     /** @override */
-    getLanguageSettingsPrivate: function() {
+    getLanguageSettingsPrivate() {
       return this.languageSettingsPrivate_;
-    },
+    }
 
     /** @override */
-    getInputMethodPrivate: function() {
+    getInputMethodPrivate() {
       return this.inputMethodPrivate_;
-    },
-  };
+    }
+  }
 
   if (cr.isChromeOS || cr.isWindows) {
     /** @override */
-    TestLanguagesBrowserProxy.prototype.getProspectiveUILanguage =
-        function() {
+    TestLanguagesBrowserProxy.prototype.getProspectiveUILanguage = function() {
       this.methodCalled('getProspectiveUILanguage');
       return Promise.resolve('en-US');
     };

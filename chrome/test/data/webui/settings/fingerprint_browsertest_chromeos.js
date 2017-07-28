@@ -2,104 +2,98 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @constructor
- * @implements {settings.FingerprintBrowserProxy}
- * @extends {TestBrowserProxy}
- */
-var TestFingerprintBrowserProxy = function() {
-  TestBrowserProxy.call(this, [
-    'getFingerprintsList',
-    'getNumFingerprints',
-    'startEnroll',
-    'cancelCurrentEnroll',
-    'getEnrollmentLabel',
-    'removeEnrollment',
-    'changeEnrollmentLabel',
-    'startAuthentication',
-    'endCurrentAuthentication',
-  ]);
+/** @implements {settings.FingerprintBrowserProxy} */
+class TestFingerprintBrowserProxy extends TestBrowserProxy {
+  constructor() {
+    super([
+      'getFingerprintsList',
+      'getNumFingerprints',
+      'startEnroll',
+      'cancelCurrentEnroll',
+      'getEnrollmentLabel',
+      'removeEnrollment',
+      'changeEnrollmentLabel',
+      'startAuthentication',
+      'endCurrentAuthentication',
+    ]);
 
-  /** @private {!Array<string>} */
-  this.fingerprintsList_ = [];
-};
-
-TestFingerprintBrowserProxy.prototype = {
-  __proto__: TestBrowserProxy.prototype,
+    /** @private {!Array<string>} */
+    this.fingerprintsList_ = [];
+  }
 
   /** @ param {!Array<string>} fingerprints */
-  setFingerprints: function(fingerprints) {
+  setFingerprints(fingerprints) {
     this.fingerprintsList_ = fingerprints.slice();
-  },
+  }
 
   /**
    * @param {settings.FingerprintResultType} result
    * @param {boolean} complete
    */
-  scanReceived: function(result, complete) {
+  scanReceived(result, complete) {
     if (complete)
       this.fingerprintsList_.push('New Label');
 
     cr.webUIListenerCallback('on-fingerprint-scan-received', {
       result: result, isComplete: complete
     });
-  },
+  }
 
   /** @override */
-  getFingerprintsList: function() {
+  getFingerprintsList() {
     this.methodCalled('getFingerprintsList');
     /** @type {settings.FingerprintInfo} */
     var fingerprintInfo = {fingerprintsList: this.fingerprintsList_.slice(),
         isMaxed: this.fingerprintsList_.length >= 5};
     return Promise.resolve(fingerprintInfo);
-  },
+  }
 
   /** @override */
-  getNumFingerprints: function() {
+  getNumFingerprints() {
     this.methodCalled('getNumFingerprints');
     return Promise.resolve(fingerprintsList_.length);
-  },
+  }
 
   /** @override */
-  startEnroll: function () {
+  startEnroll() {
     this.methodCalled('startEnroll');
-  },
+  }
 
   /** @override */
-  cancelCurrentEnroll: function() {
+  cancelCurrentEnroll() {
     this.methodCalled('cancelCurrentEnroll');
-  },
+  }
 
   /** @override */
-  getEnrollmentLabel: function(index) {
+  getEnrollmentLabel(index) {
     this.methodCalled('getEnrollmentLabel');
     return Promise.resolve(this.fingerprintsList_[index]);
-  },
+  }
 
   /** @override */
-  removeEnrollment: function(index) {
+  removeEnrollment(index) {
     this.fingerprintsList_.splice(index, 1);
     this.methodCalled('removeEnrollment', index);
     return Promise.resolve(true);
-  },
+  }
 
   /** @override */
-  changeEnrollmentLabel: function(index, newLabel) {
+  changeEnrollmentLabel(index, newLabel) {
     this.fingerprintsList_[index] = newLabel;
     this.methodCalled('changeEnrollmentLabel', index, newLabel);
     return Promise.resolve(true);
-  },
+  }
 
   /** @override */
-  startAuthentication: function () {
+  startAuthentication() {
     this.methodCalled('startAuthentication');
-  },
+  }
 
   /** @override */
-  endCurrentAuthentication: function() {
+  endCurrentAuthentication() {
     this.methodCalled('endCurrentAuthentication');
-  },
-};
+  }
+}
 
 suite('settings-fingerprint-list', function() {
   /** @type {?SettingsFingerprintListElement} */

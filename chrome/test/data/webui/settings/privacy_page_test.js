@@ -3,64 +3,57 @@
 // found in the LICENSE file.
 
 cr.define('settings_privacy_page', function() {
-  /**
-   * @constructor
-   * @extends {TestBrowserProxy}
-   * @implements {settings.ClearBrowsingDataBrowserProxy}
-   */
-  function TestClearBrowsingDataBrowserProxy() {
-    TestBrowserProxy.call(
-        this, ['initialize', 'clearBrowsingData', 'getImportantSites']);
+  /** @implements {settings.ClearBrowsingDataBrowserProxy} */
+  class TestClearBrowsingDataBrowserProxy extends TestBrowserProxy {
+    constructor() {
+      super(['initialize', 'clearBrowsingData', 'getImportantSites']);
 
-    /**
-     * The promise to return from |clearBrowsingData|.
-     * Allows testing code to test what happens after the call is made, and
-     * before the browser responds.
-     * @private {?Promise}
-     */
-    this.clearBrowsingDataPromise_ = null;
+      /**
+       * The promise to return from |clearBrowsingData|.
+       * Allows testing code to test what happens after the call is made, and
+       * before the browser responds.
+       * @private {?Promise}
+       */
+      this.clearBrowsingDataPromise_ = null;
 
-    /**
-     * Response for |getImportantSites|.
-     * @private {!Array<!ImportantSite>}
-     */
-    this.importantSites_ = [];
-  }
-
-  TestClearBrowsingDataBrowserProxy.prototype = {
-    __proto__: TestBrowserProxy.prototype,
+      /**
+       * Response for |getImportantSites|.
+       * @private {!Array<!ImportantSite>}
+       */
+      this.importantSites_ = [];
+    }
 
     /** @param {!Promise} promise */
-    setClearBrowsingDataPromise: function(promise) {
+    setClearBrowsingDataPromise(promise) {
       this.clearBrowsingDataPromise_ = promise;
-    },
+    }
 
     /** @override */
-    clearBrowsingData: function(dataTypes, timePeriod, importantSites) {
+    clearBrowsingData(dataTypes, timePeriod, importantSites) {
       this.methodCalled(
           'clearBrowsingData', [dataTypes, timePeriod, importantSites]);
       cr.webUIListenerCallback('browsing-data-removing', true);
       return this.clearBrowsingDataPromise_ !== null ?
           this.clearBrowsingDataPromise_ : Promise.resolve();
-    },
+    }
 
     /** @param {!Array<!ImportantSite>} sites */
-    setImportantSites: function(sites) {
+    setImportantSites(sites) {
       this.importantSites_ = sites;
-    },
+    }
 
     /** @override */
-    getImportantSites: function() {
+    getImportantSites() {
       this.methodCalled('getImportantSites');
       return Promise.resolve(this.importantSites_);
-    },
+    }
 
     /** @override */
-    initialize: function() {
+    initialize() {
       this.methodCalled('initialize');
       return Promise.resolve(false);
-    },
-  };
+    }
+  }
 
   function getClearBrowsingDataPrefs() {
     return {
@@ -84,7 +77,7 @@ cr.define('settings_privacy_page', function() {
         }
       }
     };
-  };
+  }
 
   function registerNativeCertificateManagerTests() {
     suite('NativeCertificateManager', function() {

@@ -2,33 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @constructor
- * @implements {settings.AndroidAppsBrowserProxy}
- * @extends {TestBrowserProxy}
- */
-function TestAndroidAppsBrowserProxy() {
-  TestBrowserProxy.call(this, [
-    'requestAndroidAppsInfo',
-    'showAndroidAppsSettings',
-  ]);
-}
-
-TestAndroidAppsBrowserProxy.prototype = {
-  __proto__: TestBrowserProxy.prototype,
+/** @implements {settings.AndroidAppsBrowserProxy} */
+class TestAndroidAppsBrowserProxy extends TestBrowserProxy {
+  constructor() {
+    super([
+      'requestAndroidAppsInfo',
+      'showAndroidAppsSettings',
+    ]);
+  }
 
   /** @override */
-  requestAndroidAppsInfo: function() {
+  requestAndroidAppsInfo() {
     this.methodCalled('requestAndroidAppsInfo');
     this.setAndroidAppsState(false, false);
-  },
+  }
 
   /** override */
-  showAndroidAppsSettings: function(keyboardAction) {
+  showAndroidAppsSettings(keyboardAction) {
     this.methodCalled('showAndroidAppsSettings');
-  },
+  }
 
-  setAndroidAppsState: function(playStoreEnabled, settingsAppAvailable) {
+  setAndroidAppsState(playStoreEnabled, settingsAppAvailable) {
     // We need to make sure to pass a new object here, otherwise the property
     // change event may not get fired in the listener.
     var appsInfo = {
@@ -36,5 +30,5 @@ TestAndroidAppsBrowserProxy.prototype = {
       settingsAppAvailable: settingsAppAvailable,
     };
     cr.webUIListenerCallback('android-apps-info-update', appsInfo);
-  },
-};
+  }
+}
