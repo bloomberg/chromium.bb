@@ -17,7 +17,6 @@ public_headers = [
   "//media/base/subsample_entry.h",
   "//media/base/video_codecs.h",
   "//media/base/video_types.h",
-  "//media/base/watch_time_keys.h",
 ]
 
 traits_headers = [ "//media/base/ipc/media_param_traits_macros.h" ]
@@ -44,5 +43,4 @@ type_mappings = [
   "media.mojom.VideoCodec=media::VideoCodec",
   "media.mojom.VideoCodecProfile=media::VideoCodecProfile",
   "media.mojom.VideoPixelFormat=media::VideoPixelFormat",
-  "media.mojom.WatchTimeKey=media::WatchTimeKey",
 ]

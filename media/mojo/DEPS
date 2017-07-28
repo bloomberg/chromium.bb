@@ -1,12 +1,9 @@
 include_rules = [
-  "+components/ukm/test_ukm_recorder.h",
-
+  "+services/service_manager",
   "+mojo/common",
   "+mojo/converters",
   "+mojo/logging",
   "+mojo/public",
-  "+services/metrics",
-  "+services/service_manager",
 
   # media/mojo is not part of "media" target and should not use MEDIA_EXPORT.
   "-media/base/media_export.h"

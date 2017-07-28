@@ -798,8 +798,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   OverlayInfo overlay_info_;
 
-  mojom::WatchTimeRecorderProvider* watch_time_recorder_provider_;
-
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
 
