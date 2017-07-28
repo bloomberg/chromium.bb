@@ -16,6 +16,10 @@
 
 namespace blink {
 
+// ModuleScriptFetcher emits FetchParameters to ResourceFetcher
+// (via ScriptResource::Fetch). Then, it keeps track of the fetch progress by
+// being a ResourceOwner. Finally, it returns its client a fetched resource as
+// ModuleScriptCreationParams.
 class CORE_EXPORT ModuleScriptFetcher
     : public GarbageCollectedFinalized<ModuleScriptFetcher>,
       public ResourceOwner<ScriptResource> {

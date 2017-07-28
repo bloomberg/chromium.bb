@@ -161,7 +161,7 @@ void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
 void ModuleScriptLoader::NotifyFetchFinished(
     const WTF::Optional<ModuleScriptCreationParams>& params) {
   // Note: "conditions" referred in Step 7 is implemented in
-  // wasModuleLoadSuccessful().
+  // WasModuleLoadSuccessful() in ModuleScriptFetcher.cpp.
   // Step 7. If any of the following conditions are met, set moduleMap[url] to
   // null, asynchronously complete this algorithm with null, and abort these
   // steps.
