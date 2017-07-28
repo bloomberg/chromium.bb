@@ -141,6 +141,8 @@ RenderProcessImpl::RenderProcessImpl(
                         "--wasm-disable-structured-cloning");
   SetV8FlagIfFeature(features::kSharedArrayBuffer,
                      "--harmony-sharedarraybuffer");
+  SetV8FlagIfNotFeature(features::kSharedArrayBuffer,
+                        "--no-harmony-sharedarraybuffer");
 
   SetV8FlagIfFeature(features::kWebAssemblyTrapHandler, "--wasm-trap-handler");
 #if defined(OS_LINUX) && defined(ARCH_CPU_X86_64) && !defined(OS_ANDROID)
