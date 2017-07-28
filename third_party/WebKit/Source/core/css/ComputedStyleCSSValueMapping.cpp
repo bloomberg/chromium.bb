@@ -766,9 +766,9 @@ static CSSIdentifierValue* ValueForFontStyle(const ComputedStyle& style) {
       FontSelectionValueStyle(style.GetFontDescription().Style()));
 }
 
-static CSSIdentifierValue* ValueForFontWeight(const ComputedStyle& style) {
-  return CSSIdentifierValue::Create(
-      FontSelectionValueWeight(style.GetFontDescription().Weight()));
+static CSSPrimitiveValue* ValueForFontWeight(const ComputedStyle& style) {
+  return CSSPrimitiveValue::Create(style.GetFontDescription().Weight(),
+                                   CSSPrimitiveValue::UnitType::kNumber);
 }
 
 static CSSIdentifierValue* ValueForFontVariantCaps(const ComputedStyle& style) {

@@ -27,9 +27,6 @@ class FontFaceCacheTest : public ::testing::Test {
   void SetUp() override;
 
   void ClearCache();
-  void AppendTestFaceForCapabilities(const CSSValueID& stretch,
-                                     const CSSValueID& style,
-                                     const CSSValueID& weight);
   void AppendTestFaceForCapabilities(const CSSValue& stretch,
                                      const CSSValue& style,
                                      const CSSValue& weight);
@@ -53,16 +50,6 @@ void FontFaceCacheTest::SetUp() {
 
 void FontFaceCacheTest::ClearCache() {
   cache_.ClearAll();
-}
-
-void FontFaceCacheTest::AppendTestFaceForCapabilities(
-    const CSSValueID& stretch,
-    const CSSValueID& style,
-    const CSSValueID& weight) {
-  CSSIdentifierValue* stretch_value = CSSIdentifierValue::Create(stretch);
-  CSSIdentifierValue* weight_value = CSSIdentifierValue::Create(style);
-  CSSIdentifierValue* style_value = CSSIdentifierValue::Create(weight);
-  AppendTestFaceForCapabilities(*stretch_value, *style_value, *weight_value);
 }
 
 void FontFaceCacheTest::AppendTestFaceForCapabilities(const CSSValue& stretch,
@@ -106,18 +93,33 @@ FontDescription FontFaceCacheTest::FontDescriptionForRequest(
 }
 
 TEST_F(FontFaceCacheTest, Instantiate) {
-  AppendTestFaceForCapabilities(CSSValueUltraExpanded, CSSValueBold,
-                                CSSValueItalic);
-  AppendTestFaceForCapabilities(CSSValueCondensed, CSSValueBold,
-                                CSSValueItalic);
+  CSSIdentifierValue* stretch_value_expanded =
+      CSSIdentifierValue::Create(CSSValueUltraExpanded);
+  CSSIdentifierValue* stretch_value_condensed =
+      CSSIdentifierValue::Create(CSSValueCondensed);
+  CSSPrimitiveValue* weight_value = CSSPrimitiveValue::Create(
+      BoldWeightValue(), CSSPrimitiveValue::UnitType::kNumber);
+  CSSIdentifierValue* style_value = CSSIdentifierValue::Create(CSSValueItalic);
+
+  AppendTestFaceForCapabilities(*stretch_value_expanded, *style_value,
+                                *weight_value);
+  AppendTestFaceForCapabilities(*stretch_value_condensed, *style_value,
+                                *weight_value);
   ASSERT_EQ(cache_.GetNumSegmentedFacesForTesting(), 2ul);
 }
 
 TEST_F(FontFaceCacheTest, SimpleWidthMatch) {
-  AppendTestFaceForCapabilities(CSSValueUltraExpanded, CSSValueNormal,
-                                CSSValueNormal);
-  AppendTestFaceForCapabilities(CSSValueCondensed, CSSValueNormal,
-                                CSSValueNormal);
+  CSSIdentifierValue* stretch_value_expanded =
+      CSSIdentifierValue::Create(CSSValueUltraExpanded);
+  CSSIdentifierValue* stretch_value_condensed =
+      CSSIdentifierValue::Create(CSSValueCondensed);
+  CSSPrimitiveValue* weight_value = CSSPrimitiveValue::Create(
+      NormalWeightValue(), CSSPrimitiveValue::UnitType::kNumber);
+  CSSIdentifierValue* style_value = CSSIdentifierValue::Create(CSSValueNormal);
+  AppendTestFaceForCapabilities(*stretch_value_expanded, *style_value,
+                                *weight_value);
+  AppendTestFaceForCapabilities(*stretch_value_condensed, *style_value,
+                                *weight_value);
   ASSERT_EQ(cache_.GetNumSegmentedFacesForTesting(), 2ul);
 
   const FontDescription& description_condensed = FontDescriptionForRequest(
@@ -140,12 +142,12 @@ TEST_F(FontFaceCacheTest, SimpleWeightMatch) {
   CSSIdentifierValue* stretch_value =
       CSSIdentifierValue::Create(CSSValueNormal);
   CSSIdentifierValue* style_value = CSSIdentifierValue::Create(CSSValueNormal);
-  CSSIdentifierValue* weight_value_black =
-      CSSIdentifierValue::Create(CSSValue900);
+  CSSPrimitiveValue* weight_value_black =
+      CSSPrimitiveValue::Create(900, CSSPrimitiveValue::UnitType::kNumber);
   AppendTestFaceForCapabilities(*stretch_value, *style_value,
                                 *weight_value_black);
-  CSSIdentifierValue* weight_value_thin =
-      CSSIdentifierValue::Create(CSSValue100);
+  CSSPrimitiveValue* weight_value_thin =
+      CSSPrimitiveValue::Create(100, CSSPrimitiveValue::UnitType::kNumber);
   AppendTestFaceForCapabilities(*stretch_value, *style_value,
                                 *weight_value_thin);
   ASSERT_EQ(cache_.GetNumSegmentedFacesForTesting(), 2ul);
@@ -209,8 +211,9 @@ TEST_F(FontFaceCacheTest, MatchCombinations) {
                         CSSIdentifierValue::Create(CSSValueExpanded)};
   CSSValue* slopes[] = {CSSIdentifierValue::Create(CSSValueNormal),
                         CSSIdentifierValue::Create(CSSValueItalic)};
-  CSSValue* weights[] = {CSSIdentifierValue::Create(CSSValue100),
-                         CSSIdentifierValue::Create(CSSValue900)};
+  CSSValue* weights[] = {
+      CSSPrimitiveValue::Create(100, CSSPrimitiveValue::UnitType::kNumber),
+      CSSPrimitiveValue::Create(900, CSSPrimitiveValue::UnitType::kNumber)};
 
   Vector<FontSelectionValue> width_choices = {CondensedWidthValue(),
                                               ExpandedWidthValue()};
