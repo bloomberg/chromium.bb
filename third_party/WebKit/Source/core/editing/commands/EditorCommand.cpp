@@ -2212,12 +2212,9 @@ static bool EnabledRangeInRichlyEditableText(LocalFrame& frame,
   if (source == kCommandFromMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return false;
-  return frame.Selection()
-             .ComputeVisibleSelectionInDOMTreeDeprecated()
-             .IsRange() &&
-         frame.Selection()
-             .ComputeVisibleSelectionInDOMTreeDeprecated()
-             .IsContentRichlyEditable();
+  const VisibleSelection& selection =
+      frame.Selection().ComputeVisibleSelectionInDOMTree();
+  return selection.IsRange() && selection.IsContentRichlyEditable();
 }
 
 static bool EnabledRedo(LocalFrame& frame, Event*, EditorCommandSource) {
