@@ -35,8 +35,8 @@ namespace {
 
 const size_t kNumSampleHosts = 50;
 const size_t kReportReadinessThreshold = 50;
-const float kMinOriginConfidenceToTriggerPreconnect = 0.75;
-const float kMinOriginConfidenceToTriggerPreresolve = 0.2;
+const float kMinOriginConfidenceToTriggerPreconnect = 0.75f;
+const float kMinOriginConfidenceToTriggerPreresolve = 0.2f;
 
 // For reporting events of interest that are not tied to any navigation.
 enum ReportingEvent {
