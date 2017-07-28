@@ -1501,6 +1501,17 @@ String AXNodeObject::AriaAutoComplete() const {
   return String();
 }
 
+namespace {
+
+bool MarkerTypeIsUsedForAccessibility(DocumentMarker::MarkerType type) {
+  return DocumentMarker::MarkerTypes(
+             DocumentMarker::kSpelling | DocumentMarker::kGrammar |
+             DocumentMarker::kTextMatch | DocumentMarker::kActiveSuggestion)
+      .Contains(type);
+}
+
+}  // namespace
+
 void AXNodeObject::Markers(Vector<DocumentMarker::MarkerType>& marker_types,
                            Vector<AXRange>& marker_ranges) const {
   if (!GetNode() || !GetDocument() || !GetDocument()->View())
@@ -1510,18 +1521,10 @@ void AXNodeObject::Markers(Vector<DocumentMarker::MarkerType>& marker_types,
   DocumentMarkerVector markers = marker_controller.MarkersFor(GetNode());
   for (size_t i = 0; i < markers.size(); ++i) {
     DocumentMarker* marker = markers[i];
-    switch (marker->GetType()) {
-      case DocumentMarker::kSpelling:
-      case DocumentMarker::kGrammar:
-      case DocumentMarker::kTextMatch:
-      case DocumentMarker::kActiveSuggestion:
-        marker_types.push_back(marker->GetType());
-        marker_ranges.push_back(
-            AXRange(marker->StartOffset(), marker->EndOffset()));
-        break;
-      case DocumentMarker::kComposition:
-        // No need for accessibility to know about these marker types.
-        break;
+    if (MarkerTypeIsUsedForAccessibility(marker->GetType())) {
+      marker_types.push_back(marker->GetType());
+      marker_ranges.push_back(
+          AXRange(marker->StartOffset(), marker->EndOffset()));
     }
   }
 }
