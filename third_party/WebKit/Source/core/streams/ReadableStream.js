@@ -30,8 +30,6 @@
   const _underlyingSource = v8.createPrivateSymbol('[[underlyingSource]]');
   const _controlledReadableStream =
       v8.createPrivateSymbol('[[controlledReadableStream]]');
-  const _queue = v8.createPrivateSymbol('[[queue]]');
-  const _totalQueuedSize = v8.createPrivateSymbol('[[totalQueuedSize]]');
   const _strategySize = v8.createPrivateSymbol('[[strategySize]]');
   const _strategyHWM = v8.createPrivateSymbol('[[strategyHWM]]');
 
@@ -44,7 +42,6 @@
   const EXTERNALLY_CONTROLLED = 0b10000;
 
   const undefined = global.undefined;
-  const Infinity = global.Infinity;
 
   const defineProperty = global.Object.defineProperty;
   const callFunction = v8.uncurryThis(global.Function.prototype.call);
@@ -53,17 +50,16 @@
   const TypeError = global.TypeError;
   const RangeError = global.RangeError;
 
-  const Number = global.Number;
-  const Number_isNaN = Number.isNaN;
-  const Number_isFinite = Number.isFinite;
-
   const Promise = global.Promise;
   const thenPromise = v8.uncurryThis(Promise.prototype.then);
   const Promise_resolve = v8.simpleBind(Promise.resolve, Promise);
   const Promise_reject = v8.simpleBind(Promise.reject, Promise);
 
   // From CommonOperations.js
-  const { hasOwnPropertyNoThrow } = binding.streamOperations;
+  const { _queue, _queueTotalSize, hasOwnPropertyNoThrow, rejectPromise,
+          resolvePromise, markPromiseAsHandled, DequeueValue,
+          EnqueueValueWithSize,
+          ValidateAndNormalizeQueuingStrategy } = binding.streamOperations;
 
   const streamErrors = binding.streamErrors;
   const errCancelLockedStream =
@@ -99,32 +95,6 @@
   const errCannotPipeLockedStream = 'Cannot pipe a locked stream';
   const errCannotPipeToALockedStream = 'Cannot pipe to a locked stream';
   const errDestinationStreamClosed = 'Destination stream closed';
-
-  // TODO(ricea): Share these with WritableStream.
-  function internalError() {
-    throw new RangeError('ReadableStream Internal Error');
-  }
-
-  function rejectPromise(p, reason) {
-    if (!v8.isPromise(p)) {
-      internalError();
-    }
-    v8.rejectPromise(p, reason);
-  }
-
-  function resolvePromise(p, value) {
-    if (!v8.isPromise(p)) {
-      internalError();
-    }
-    v8.resolvePromise(p, value);
-  }
-
-  function markPromiseAsHandled(p) {
-    if (!v8.isPromise(p)) {
-      internalError();
-    }
-    v8.markPromiseAsHandled(p);
-  }
 
   class ReadableStream {
     constructor() {
@@ -447,7 +417,7 @@
       this[_underlyingSource] = underlyingSource;
 
       this[_queue] = new binding.SimpleQueue();
-      this[_totalQueuedSize] = 0;
+      this[_queueTotalSize] = 0;
 
       this[_readableStreamDefaultControllerBits] = 0b0;
       if (isExternallyControlled === true) {
@@ -775,8 +745,7 @@
   }
 
   function ReadableStreamDefaultControllerGetDesiredSize(controller) {
-    const queueSize = GetTotalQueueSize(controller);
-    return controller[_strategyHWM] - queueSize;
+    return controller[_strategyHWM] - controller[_queueTotalSize];
   }
 
   function IsReadableStream(x) {
@@ -1036,46 +1005,8 @@
   }
 
   //
-  // Queue-with-sizes
-  //
-
-  function DequeueValue(controller) {
-    const result = controller[_queue].shift();
-    controller[_totalQueuedSize] -= result.size;
-    return result.value;
-  }
-
-  function EnqueueValueWithSize(controller, value, size) {
-    size = Number(size);
-    if (Number_isNaN(size) || size === +Infinity || size < 0) {
-      throw new RangeError(streamErrors.invalidSize);
-    }
-
-    controller[_totalQueuedSize] += size;
-    controller[_queue].push({value, size});
-  }
-
-  function GetTotalQueueSize(controller) { return controller[_totalQueuedSize]; }
-
-  //
   // Other helpers
   //
-
-  function ValidateAndNormalizeQueuingStrategy(size, highWaterMark) {
-    if (size !== undefined && typeof size !== 'function') {
-      throw new TypeError(streamErrors.sizeNotAFunction);
-    }
-
-    highWaterMark = Number(highWaterMark);
-    if (Number_isNaN(highWaterMark)) {
-      throw new RangeError(streamErrors.invalidHWM);
-    }
-    if (highWaterMark < 0) {
-      throw new RangeError(streamErrors.invalidHWM);
-    }
-
-    return {size, highWaterMark};
-  }
 
   // Modified from InvokeOrNoop in spec
   function CallOrNoop(O, P, arg, nameForError) {
@@ -1089,7 +1020,6 @@
 
     return callFunction(method, O, arg);
   }
-
 
   // Modified from PromiseInvokeOrNoop in spec
   function PromiseCallOrNoop(O, P, arg, nameForError) {
