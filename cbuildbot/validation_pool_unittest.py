@@ -132,7 +132,7 @@ class FakeBuilderRun(object):
 
 
 # pylint: disable=protected-access
-class MoxBase(cros_test_lib.MockTestCase, cros_test_lib.MoxTestCase):
+class _MoxBase(cros_test_lib.MockTestCase, cros_test_lib.MoxTestCase):
   """Base class for other test suites with numbers mocks patched in."""
 
   def setUp(self):
@@ -200,7 +200,7 @@ class FakeValidationPool(partial_mock.PartialMock):
     pass
 
 
-class TestSubmitChange(MoxBase):
+class TestSubmitChange(_MoxBase):
   """Test suite related to submitting changes."""
 
   def setUp(self):
@@ -267,7 +267,7 @@ class TestSubmitChange(MoxBase):
     self.assertFalse(self._TestSubmitChange(['NEW']))
 
 
-class ValidationFailureOrTimeout(MoxBase):
+class ValidationFailureOrTimeout(_MoxBase):
   """Tests that HandleValidationFailure and HandleValidationTimeout functions.
 
   These tests check that HandleValidationTimeout and HandleValidationFailure
@@ -368,7 +368,7 @@ class ValidationFailureOrTimeout(MoxBase):
     self._AssertActions(self._patches, [constants.CL_ACTION_FORGIVEN])
 
 
-class TestCoreLogic(MoxBase):
+class TestCoreLogic(_MoxBase):
   """Tests resolution and applying logic of validation_pool.ValidationPool."""
 
   def setUp(self):
@@ -1377,7 +1377,7 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
     return ''
 
 
-class TestPrintLinks(MoxBase):
+class TestPrintLinks(_MoxBase):
   """Tests that change links can be printed."""
   def testPrintLinks(self):
     changes = self.GetPatches(3)
@@ -1388,7 +1388,7 @@ class TestPrintLinks(MoxBase):
       validation_pool.ValidationPool.PrintLinksToChanges(changes)
 
 
-class TestCreateDisjointTransactions(MoxBase):
+class TestCreateDisjointTransactions(_MoxBase):
   """Test the CreateDisjointTransactions function."""
 
   def setUp(self):
@@ -1523,7 +1523,7 @@ class MockValidationPool(partial_mock.PartialMock):
   RemoveReady = None
 
 
-class BaseSubmitPoolTestCase(MoxBase):
+class BaseSubmitPoolTestCase(_MoxBase):
   """Test full ability to submit and reject CL pools."""
 
   # Whether all slave builds passed. This would affect the submission
