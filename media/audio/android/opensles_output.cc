@@ -23,6 +23,28 @@
     }                                           \
   } while (0)
 
+// On N MR1+ we want to use high buffer sizes for power saving. Per Android
+// audio team, this should be in N MR1+ SDK, but it's not, so use a defined()
+// check instead of __API_LEVEL__ check.
+#if !defined(SL_ANDROID_KEY_PERFORMANCE_MODE)
+#define SL_ANDROID_KEY_PERFORMANCE_MODE \
+  ((const SLchar*)"androidPerformanceMode")
+
+// No specific performance requirement. Allows HW and SW pre/post processing.
+#define SL_ANDROID_PERFORMANCE_NONE ((SLuint32)0x00000000)
+
+// Priority given to latency. No HW or software pre/post processing. This is the
+// default if no performance mode is specified.
+#define SL_ANDROID_PERFORMANCE_LATENCY ((SLuint32)0x00000001)
+
+// Priority given to latency while still allowing HW pre and post processing.
+#define SL_ANDROID_PERFORMANCE_LATENCY_EFFECTS ((SLuint32)0x00000002)
+
+// Priority given to power saving if latency is not a concern. Allows HW and SW
+// pre/post processing.
+#define SL_ANDROID_PERFORMANCE_POWER_SAVING ((SLuint32)0x00000003)
+#endif
+
 namespace media {
 
 OpenSLESOutputStream::OpenSLESOutputStream(AudioManagerAndroid* manager,
@@ -52,9 +74,17 @@ OpenSLESOutputStream::OpenSLESOutputStream(AudioManagerAndroid* manager,
       buffer_size_bytes_(have_float_output_
                              ? bytes_per_frame_ * params.frames_per_buffer()
                              : params.GetBytesPerBuffer()),
+      performance_mode_(SL_ANDROID_PERFORMANCE_NONE),
       delay_calculator_(samples_per_second_) {
   DVLOG(2) << "OpenSLESOutputStream::OpenSLESOutputStream("
            << "stream_type=" << stream_type << ")";
+
+  if (AudioManagerAndroid::SupportsPerformanceModeForOutput()) {
+    if (params.latency_tag() == AudioLatency::LATENCY_PLAYBACK)
+      performance_mode_ = SL_ANDROID_PERFORMANCE_POWER_SAVING;
+    else if (params.latency_tag() == AudioLatency::LATENCY_RTC)
+      performance_mode_ = SL_ANDROID_PERFORMANCE_LATENCY_EFFECTS;
+  }
 
   audio_bus_ = AudioBus::Create(params);
 
@@ -307,11 +337,19 @@ bool OpenSLESOutputStream::CreatePlayer() {
 
   // Set configuration using the stream type provided at construction.
   LOG_ON_FAILURE_AND_RETURN(
-      (*player_config)->SetConfiguration(player_config,
-                                         SL_ANDROID_KEY_STREAM_TYPE,
-                                         &stream_type_,
-                                         sizeof(SLint32)),
+      (*player_config)
+          ->SetConfiguration(player_config, SL_ANDROID_KEY_STREAM_TYPE,
+                             &stream_type_, sizeof(SLint32)),
       false);
+
+  // Set configuration using the stream type provided at construction.
+  if (performance_mode_ > SL_ANDROID_PERFORMANCE_NONE) {
+    LOG_ON_FAILURE_AND_RETURN(
+        (*player_config)
+            ->SetConfiguration(player_config, SL_ANDROID_KEY_PERFORMANCE_MODE,
+                               &performance_mode_, sizeof(SLuint32)),
+        false);
+  }
 
   // Realize the player object in synchronous mode.
   LOG_ON_FAILURE_AND_RETURN(

@@ -147,6 +147,10 @@ class OpenSLESOutputStream : public MuteableAudioOutputStream {
   int bytes_per_frame_;
   size_t buffer_size_bytes_;
 
+  // On API level 25+ we can provide hints to OpenSLES about what type of
+  // content the stream is being used for.
+  SLuint32 performance_mode_;
+
   // Used to calculate the delay value for each OnMoreData() call.
   AudioTimestampHelper delay_calculator_;
 

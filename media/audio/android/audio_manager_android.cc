@@ -288,6 +288,12 @@ bool AudioManagerAndroid::RegisterAudioManager(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
+// static
+bool AudioManagerAndroid::SupportsPerformanceModeForOutput() {
+  return base::android::BuildInfo::GetInstance()->sdk_int() >=
+         base::android::SDK_VERSION_NOUGAT_MR1;
+}
+
 void AudioManagerAndroid::SetMute(JNIEnv* env,
                                   const JavaParamRef<jobject>& obj,
                                   jboolean muted) {
@@ -339,8 +345,16 @@ AudioParameters AudioManagerAndroid::GetPreferredOutputStreamParameters(
       channel_layout = input_params.channel_layout();
     }
 
-    buffer_size = GetOptimalOutputFrameSize(
-        sample_rate, ChannelLayoutToChannelCount(channel_layout));
+    // For high latency playback on supported platforms, pass through the
+    // requested buffer size; this provides significant power savings (~25%) and
+    // reduces the potential for glitches under load.
+    if (SupportsPerformanceModeForOutput() &&
+        input_params.latency_tag() == AudioLatency::LATENCY_PLAYBACK) {
+      buffer_size = input_params.frames_per_buffer();
+    } else {
+      buffer_size = GetOptimalOutputFrameSize(
+          sample_rate, ChannelLayoutToChannelCount(channel_layout));
+    }
   }
 
   int user_buffer_size = GetUserBufferSize();
