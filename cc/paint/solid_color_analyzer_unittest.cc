@@ -138,6 +138,20 @@ TEST_F(SolidColorAnalyzerTest, DrawRectClipped) {
   EXPECT_FALSE(IsSolidColor());
 }
 
+TEST_F(SolidColorAnalyzerTest, DrawRectClippedDifference) {
+  Initialize();
+  PaintFlags flags;
+  SkColor color = SkColorSetARGB(255, 11, 22, 33);
+  flags.setColor(color);
+  SkRect drawRect = SkRect::MakeWH(200, 200);
+  canvas()->clipRect(drawRect, SkClipOp::kIntersect, false);
+  SkRect differenceRect = SkRect::MakeXYWH(50, 50, 200, 200);
+  // Using difference should always make this fail.
+  canvas()->clipRect(differenceRect, SkClipOp::kDifference, false);
+  canvas()->drawRect(drawRect, flags);
+  EXPECT_FALSE(IsSolidColor());
+}
+
 TEST_F(SolidColorAnalyzerTest, DrawRectWithTranslateNotSolid) {
   Initialize();
   PaintFlags flags;
