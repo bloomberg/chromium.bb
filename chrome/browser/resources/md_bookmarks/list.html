@@ -18,7 +18,7 @@
             calc(var(--card-padding-side) - var(--splitter-width));
       }
 
-      #bookmarksCard {
+      #list {
         @apply(--shadow-elevation-2dp);
         background-color: #fff;
         margin: 0 auto;
@@ -38,7 +38,7 @@
         user-select: none;
       }
     </style>
-    <iron-list items="[[displayedList_]]" id="bookmarksCard"
+    <iron-list id="list" items="[[displayedList_]]"
         hidden$="[[isEmptyList_(displayedList_.length)]]" role="list">
       <template>
         <bookmarks-item item-id="[[item.id]]" draggable="true"

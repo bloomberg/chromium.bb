@@ -51,6 +51,14 @@ cr.define('bookmarks', function() {
       return this.dialogs_.size > 0;
     },
 
+    /**
+     * Clears the stored focus element, so that focus does not restore when all
+     * dialogs are closed.
+     */
+    clearFocus: function() {
+      this.previousFocusElement_ = null;
+    },
+
     /** @private */
     updatePreviousFocus_: function() {
       this.previousFocusElement_ = this.getFocusedElement_();
@@ -82,7 +90,7 @@ cr.define('bookmarks', function() {
 
         assert(this.dialogs_.delete(dialog));
         // Focus the originally focused element if there are no more dialogs.
-        if (!this.hasOpenDialog())
+        if (!this.hasOpenDialog() && this.previousFocusElement_)
           this.previousFocusElement_.focus();
 
         dialog.removeEventListener('close', closeListener);

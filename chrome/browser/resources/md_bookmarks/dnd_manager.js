@@ -463,12 +463,22 @@ cr.define('bookmarks', function() {
         // Complete the drag by moving all dragged items to the drop
         // destination.
         var dropInfo = this.calculateDropInfo_(this.dropDestination_);
-        this.dragInfo_.dragData.elements.forEach((item) => {
-          chrome.bookmarks.move(item.id, {
-            parentId: dropInfo.parentId,
-            index: dropInfo.index == -1 ? undefined : dropInfo.index
+        var shouldHighlight = this.shouldHighlight_(this.dropDestination_);
+
+        var movePromises = this.dragInfo_.dragData.elements.map((item) => {
+          return new Promise((resolve) => {
+            chrome.bookmarks.move(item.id, {
+              parentId: dropInfo.parentId,
+              index: dropInfo.index == -1 ? undefined : dropInfo.index
+            }, resolve);
           });
         });
+
+        if (shouldHighlight) {
+          bookmarks.ApiListener.trackUpdatedItems();
+          Promise.all(movePromises)
+              .then(() => bookmarks.ApiListener.highlightUpdatedItems());
+        }
       }
 
       this.clearDragData_();
@@ -520,10 +530,16 @@ cr.define('bookmarks', function() {
         e.preventDefault();
 
         var dropInfo = this.calculateDropInfo_(this.dropDestination_);
-        if (dropInfo.index != -1)
-          chrome.bookmarkManagerPrivate.drop(dropInfo.parentId, dropInfo.index);
-        else
-          chrome.bookmarkManagerPrivate.drop(dropInfo.parentId);
+        var index = dropInfo.index != -1 ? dropInfo.index : undefined;
+        var shouldHighlight = this.shouldHighlight_(this.dropDestination_);
+
+        if (shouldHighlight)
+          bookmarks.ApiListener.trackUpdatedItems();
+
+        chrome.bookmarkManagerPrivate.drop(
+            dropInfo.parentId, index,
+            shouldHighlight ? bookmarks.ApiListener.highlightUpdatedItems :
+                              undefined);
       }
 
       this.clearDragData_();
@@ -859,6 +875,15 @@ cr.define('bookmarks', function() {
         return false;
 
       return !this.dragInfo_.isDraggingChildBookmark(overElement.itemId);
+    },
+
+    /**
+     * @param {DropDestination} dropDestination
+     * @private
+     */
+    shouldHighlight_: function(dropDestination) {
+      return isBookmarkItem(dropDestination.element) ||
+          isBookmarkList(dropDestination.element);
     },
 
     /** @param {bookmarks.TimerProxy} timerProxy */

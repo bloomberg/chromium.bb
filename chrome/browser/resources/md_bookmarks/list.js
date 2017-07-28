@@ -20,7 +20,7 @@ Polymer({
       type: Array,
       value: function() {
         // Use an empty list during initialization so that the databinding to
-        // hide #bookmarksCard takes effect.
+        // hide #list takes effect.
         return [];
       },
     },
@@ -50,7 +50,7 @@ Polymer({
   },
 
   attached: function() {
-    var list = /** @type {IronListElement} */ (this.$.bookmarksCard);
+    var list = /** @type {IronListElement} */ (this.$.list);
     list.scrollTarget = this;
 
     this.watch('displayedIds_', function(state) {
@@ -64,8 +64,17 @@ Polymer({
     });
     this.updateFromStore();
 
-    this.$.bookmarksCard.addEventListener(
+    this.$.list.addEventListener(
         'keydown', this.onItemKeydown_.bind(this), true);
+
+    /** @private {function(!Event)} */
+    this.boundOnHighlightItems_ = this.onHighlightItems_.bind(this);
+    document.addEventListener('highlight-items', this.boundOnHighlightItems_);
+  },
+
+  detached: function() {
+    document.removeEventListener(
+        'highlight-items', this.boundOnHighlightItems_);
   },
 
   /** @return {HTMLElement} */
@@ -108,6 +117,20 @@ Polymer({
     this.scrollTop = 0;
   },
 
+  /**
+   * Scroll the list so that |itemId| is visible, if it is not already.
+   * @param {string} itemId
+   * @private
+   */
+  scrollToId_: function(itemId) {
+    var index = this.displayedIds_.indexOf(itemId);
+    var list = this.$.list;
+    if (index >= 0 && index < list.firstVisibleIndex ||
+        index > list.lastVisibleIndex) {
+      list.scrollToIndex(index);
+    }
+  },
+
   /** @private */
   emptyListMessage_: function() {
     var emptyListMessage = this.searchTerm_ ? 'noSearchResults' : 'emptyList';
@@ -129,7 +152,7 @@ Polymer({
    * @private
    */
   getIndexForItemElement_: function(el) {
-    return this.$.bookmarksCard.modelForElement(el).index;
+    return this.$.list.modelForElement(el).index;
   },
 
   /**
@@ -137,12 +160,35 @@ Polymer({
    * @private
    */
   onOpenItemMenu_: function(e) {
-    var index = this.displayedIds_.indexOf(
-        /** @type {BookmarksItemElement} */ (e.path[0]).itemId);
-    var list = this.$.bookmarksCard;
     // If the item is not visible, scroll to it before rendering the menu.
-    if (index < list.firstVisibleIndex || index > list.lastVisibleIndex)
-      list.scrollToIndex(index);
+    this.scrollToId_(/** @type {BookmarksItemElement} */ (e.path[0]).itemId);
+  },
+
+  /**
+   * Highlight a list of items by selecting them, scrolling them into view and
+   * focusing the first item.
+   * @param {Event} e
+   * @private
+   */
+  onHighlightItems_: function(e) {
+    // Ensure that we only select items which are actually being displayed.
+    // This should only matter if an unrelated update to the bookmark model
+    // happens with the perfect timing to end up in a tracked batch update.
+    var toHighlight = /** @type {!Array<string>} */
+        (e.detail.filter((item) => this.displayedIds_.indexOf(item) != -1));
+
+    assert(toHighlight.length > 0);
+    var leadId = toHighlight[0];
+    this.dispatch(
+        bookmarks.actions.selectAll(toHighlight, this.getState(), leadId));
+
+    // Allow iron-list time to render additions to the list.
+    this.async(function() {
+      this.scrollToId_(leadId);
+      var leadIndex = this.displayedIds_.indexOf(leadId);
+      assert(leadIndex != -1);
+      this.$.list.focusItem(leadIndex);
+    });
   },
 
   /**
@@ -151,7 +197,7 @@ Polymer({
    */
   onItemKeydown_: function(e) {
     var handled = true;
-    var list = this.$.bookmarksCard;
+    var list = this.$.list;
     var focusMoved = false;
     var focusedIndex =
         this.getIndexForItemElement_(/** @type {HTMLElement} */ (e.target));

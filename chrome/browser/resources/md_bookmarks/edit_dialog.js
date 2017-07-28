@@ -127,7 +127,9 @@ Polymer({
       chrome.bookmarks.update(this.editItem_.id, edit);
     } else {
       edit['parentId'] = this.parentId_;
-      chrome.bookmarks.create(edit);
+      bookmarks.ApiListener.trackUpdatedItems();
+      chrome.bookmarks.create(
+          edit, bookmarks.ApiListener.highlightUpdatedItems);
     }
     this.$.dialog.close();
   },

@@ -289,6 +289,8 @@ cr.define('bookmarks', function() {
           var id = Array.from(itemIds)[0];
           this.dispatch(bookmarks.actions.selectFolder(
               assert(state.nodes[id].parentId), state.nodes));
+          bookmarks.DialogFocusManager.getInstance().clearFocus();
+          this.fire('highlight-items', [id]);
           break;
         case Command.DELETE:
           var idList = Array.from(this.minimizeDeletionSet_(itemIds));
@@ -345,8 +347,10 @@ cr.define('bookmarks', function() {
         case Command.PASTE:
           var selectedFolder = state.selectedFolder;
           var selectedItems = state.selection.items;
+          bookmarks.ApiListener.trackUpdatedItems();
           chrome.bookmarkManagerPrivate.paste(
-              selectedFolder, Array.from(selectedItems));
+              selectedFolder, Array.from(selectedItems),
+              bookmarks.ApiListener.highlightUpdatedItems);
           break;
         default:
           assert(false);

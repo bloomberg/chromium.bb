@@ -10,7 +10,8 @@ suiteSetup(function() {
       this.initialized_ = true;
 
       this.lastAction_ = null;
-      this.acceptInit_ = false;
+      /** @type {?PromiseResolver} */
+      this.initPromise_ = null;
       this.enableReducers_ = false;
       /** @type {!Map<string, !PromiseResolver>} */
       this.resolverMap_ = new Map();
@@ -21,8 +22,10 @@ suiteSetup(function() {
 
       /** @override */
       init: function(state) {
-        if (this.acceptInit_)
+        if (this.initPromise_) {
           bookmarks.Store.prototype.init.call(this, state);
+          this.initPromise_.resolve();
+        }
       },
 
       get lastAction() {
@@ -77,10 +80,14 @@ suiteSetup(function() {
         this.notifyObservers_(this.data);
       },
 
-      // Call in order to accept data from an init call to the TestStore once.
+      /**
+       * Call in order to accept data from an init call to the TestStore once.
+       * @return {Promise} Promise which resolves when the store is initialized.
+       */
       acceptInitOnce: function() {
-        this.acceptInit_ = true;
+        this.initPromise_ = new PromiseResolver();
         this.initialized_ = false;
+        return this.initPromise_.promise;
       },
 
       /**
