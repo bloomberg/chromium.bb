@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
@@ -95,8 +94,7 @@ UkmService::UkmService(PrefService* pref_service,
   scheduler_.reset(new ukm::UkmRotationScheduler(rotate_callback,
                                                  get_upload_interval_callback));
 
-  for (auto& provider : metrics_providers_)
-    provider->Init();
+  metrics_providers_.Init();
 
   StoreWhitelistedEntries();
 
@@ -126,8 +124,7 @@ void UkmService::EnableReporting() {
   if (reporting_service_.reporting_active())
     return;
 
-  for (auto& provider : metrics_providers_)
-    provider->OnRecordingEnabled();
+  metrics_providers_.OnRecordingEnabled();
 
   if (!initialize_started_)
     Initialize();
@@ -141,8 +138,7 @@ void UkmService::DisableReporting() {
 
   reporting_service_.DisableReporting();
 
-  for (auto& provider : metrics_providers_)
-    provider->OnRecordingDisabled();
+  metrics_providers_.OnRecordingDisabled();
 
   scheduler_->Stop();
   Flush();
@@ -171,8 +167,7 @@ void UkmService::OnAppEnterBackground() {
   scheduler_->Stop();
 
   // Give providers a chance to persist ukm data as part of being backgrounded.
-  for (auto& provider : metrics_providers_)
-    provider->OnAppEnterBackground();
+  metrics_providers_.OnAppEnterBackground();
 
   Flush();
 }
@@ -201,7 +196,7 @@ void UkmService::ResetClientId() {
 
 void UkmService::RegisterMetricsProvider(
     std::unique_ptr<metrics::MetricsProvider> provider) {
-  metrics_providers_.push_back(std::move(provider));
+  metrics_providers_.RegisterMetricsProvider(std::move(provider));
 }
 
 // static
@@ -217,12 +212,8 @@ void UkmService::StartInitTask() {
   client_id_ = LoadOrGenerateClientId(pref_service_);
   session_id_ = LoadSessionId(pref_service_);
 
-  base::Closure barrier = base::BarrierClosure(
-      metrics_providers_.size(), base::Bind(&UkmService::FinishedInitTask,
-                                            self_ptr_factory_.GetWeakPtr()));
-  for (auto& provider : metrics_providers_) {
-    provider->AsyncInit(barrier);
-  }
+  metrics_providers_.AsyncInit(base::Bind(&UkmService::FinishedInitTask,
+                                          self_ptr_factory_.GetWeakPtr()));
 }
 
 void UkmService::FinishedInitTask() {
@@ -259,9 +250,8 @@ void UkmService::BuildAndStoreLog() {
   metrics::MetricsLog::RecordCoreSystemProfile(client_,
                                                report.mutable_system_profile());
 
-  for (auto& provider : metrics_providers_) {
-    provider->ProvideSystemProfileMetrics(report.mutable_system_profile());
-  }
+  metrics_providers_.ProvideSystemProfileMetrics(
+      report.mutable_system_profile());
 
   std::string serialized_log;
   report.SerializeToString(&serialized_log);

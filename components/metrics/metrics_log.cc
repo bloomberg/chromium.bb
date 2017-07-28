@@ -21,6 +21,7 @@
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/metrics/delegating_provider.h"
 #include "components/metrics/environment_recorder.h"
 #include "components/metrics/histogram_encoder.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -199,14 +200,12 @@ void MetricsLog::RecordHistogramDelta(const std::string& histogram_name,
 }
 
 void MetricsLog::RecordPreviousSessionData(
-    const std::vector<std::unique_ptr<MetricsProvider>>& metrics_providers) {
-  for (const auto& provider : metrics_providers) {
-    provider->ProvidePreviousSessionData(uma_proto());
-  }
+    DelegatingProvider* delegating_provider) {
+  delegating_provider->ProvidePreviousSessionData(uma_proto());
 }
 
 void MetricsLog::RecordCurrentSessionData(
-    const std::vector<std::unique_ptr<MetricsProvider>>& metrics_providers,
+    DelegatingProvider* delegating_provider,
     base::TimeDelta incremental_uptime,
     base::TimeDelta uptime) {
   DCHECK(!closed_);
@@ -221,9 +220,7 @@ void MetricsLog::RecordCurrentSessionData(
   if (local_state_->GetBoolean(prefs::kMetricsResetIds))
     UMA_HISTOGRAM_BOOLEAN("UMA.IsClonedInstall", true);
 
-  for (const auto& provider : metrics_providers) {
-    provider->ProvideCurrentSessionData(uma_proto());
-  }
+  delegating_provider->ProvideCurrentSessionData(uma_proto());
 }
 
 bool MetricsLog::HasEnvironment() const {
@@ -273,7 +270,7 @@ void MetricsLog::WriteRealtimeStabilityAttributes(
 }
 
 std::string MetricsLog::RecordEnvironment(
-    const std::vector<std::unique_ptr<MetricsProvider>>& metrics_providers,
+    DelegatingProvider* delegating_provider,
     int64_t install_date,
     int64_t metrics_reporting_enabled_date) {
   DCHECK(!HasEnvironment());
@@ -301,8 +298,7 @@ std::string MetricsLog::RecordEnvironment(
   cpu->set_signature(cpu_info.signature());
   cpu->set_num_cores(base::SysInfo::NumberOfProcessors());
 
-  for (size_t i = 0; i < metrics_providers.size(); ++i)
-    metrics_providers[i]->ProvideSystemProfileMetrics(system_profile);
+  delegating_provider->ProvideSystemProfileMetrics(system_profile);
 
   EnvironmentRecorder recorder(local_state_);
   std::string serialized_proto =

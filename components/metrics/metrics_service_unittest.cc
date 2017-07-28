@@ -191,7 +191,8 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAtProviderRequest) {
   // saved from a previous session.
   TestMetricsServiceClient client;
   TestMetricsLog log("client", 1, &client, GetLocalState());
-  log.RecordEnvironment(std::vector<std::unique_ptr<MetricsProvider>>(), 0, 0);
+  DelegatingProvider delegating_provider;
+  log.RecordEnvironment(&delegating_provider, 0, 0);
 
   // Record stability build time and version from previous session, so that
   // stability metrics (including exited cleanly flag) won't be cleared.
@@ -261,7 +262,8 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   // saved from a previous session.
   TestMetricsServiceClient client;
   TestMetricsLog log("client", 1, &client, GetLocalState());
-  log.RecordEnvironment(std::vector<std::unique_ptr<MetricsProvider>>(), 0, 0);
+  DelegatingProvider delegating_provider;
+  log.RecordEnvironment(&delegating_provider, 0, 0);
 
   // Record stability build time and version from previous session, so that
   // stability metrics (including exited cleanly flag) won't be cleared.
