@@ -42,7 +42,7 @@ enum VAVDADecoderFailure {
 
 // Buffer format to use for output buffers backing PictureBuffers. This is the
 // format decoded frames in VASurfaces are converted into.
-const gfx::BufferFormat kAllocatePictureFormat = gfx::BufferFormat::BGRA_8888;
+const gfx::BufferFormat kAllocatePictureFormat = gfx::BufferFormat::BGRX_8888;
 const gfx::BufferFormat kImportPictureFormat = gfx::BufferFormat::YVU_420;
 }
 
@@ -693,6 +693,9 @@ void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(size_t num_pics,
 static VideoPixelFormat BufferFormatToVideoPixelFormat(
     gfx::BufferFormat format) {
   switch (format) {
+    case gfx::BufferFormat::BGRX_8888:
+      return PIXEL_FORMAT_XRGB;
+
     case gfx::BufferFormat::BGRA_8888:
       return PIXEL_FORMAT_ARGB;
 
