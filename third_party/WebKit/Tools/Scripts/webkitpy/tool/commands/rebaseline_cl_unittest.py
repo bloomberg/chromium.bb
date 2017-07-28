@@ -18,6 +18,7 @@ from webkitpy.tool.commands.rebaseline_unittest import BaseTestCase
 
 
 class RebaselineCLTest(BaseTestCase, LoggingTestCase):
+
     command_constructor = RebaselineCL
 
     def setUp(self):
@@ -110,7 +111,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             'dry_run': False,
             'only_changed_tests': False,
             'trigger_jobs': True,
-            'fill_missing': False,
+            'fill_missing': None,
             'optimize': True,
             'results_directory': None,
             'verbose': False,
@@ -216,10 +217,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             'INFO: There are some builders with no results:\n',
             'INFO:   MOCK Try Linux\n',
             'INFO:   MOCK Try Mac\n',
-            'INFO: Would you like to try to fill in missing results with\n'
-            'available results? This assumes that layout test results\n'
-            'for the platforms with missing results are the same as\n'
-            'results on other platforms.\n',
+            'INFO: Would you like to continue?\n',
             'INFO: Aborting.\n',
         ])
 
@@ -236,10 +234,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             'INFO: Finished try jobs found for all try bots.\n',
             'INFO: There are some builders with no results:\n',
             'INFO:   MOCK Try Linux\n',
-            'INFO: Would you like to try to fill in missing results with\n'
-            'available results? This assumes that layout test results\n'
-            'for the platforms with missing results are the same as\n'
-            'results on other platforms.\n',
+            'INFO: Would you like to continue?\n',
             'INFO: Aborting.\n',
         ])
 
@@ -276,11 +271,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             'INFO:   MOCK Try Win\n',
             'INFO: There are some builders with no results:\n',
             'INFO:   MOCK Try Linux\n',
-            'INFO: Would you like to try to fill in missing results with\n'
-            'available results? This assumes that layout test results\n'
-            'for the platforms with missing results are the same as\n'
-            'results on other platforms.\n',
-            'INFO: Aborting.\n'
+            'INFO: Would you like to continue?\n',
+            'INFO: Aborting.\n',
         ])
 
     def test_execute_with_only_changed_tests_option(self):
@@ -384,7 +376,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             'webkit-patch rebaseline-cl to fetch new baselines.\n',
         ])
 
-    def test_execute_missing_results_aborts(self):
+    def test_execute_missing_results_with_no_fill_missing_prompts(self):
         self.tool.buildbot.set_results(Build('MOCK Try Win', 5000), None)
         exit_code = self.command.execute(self.command_options(), [], self.tool)
         self.assertEqual(exit_code, 1)
@@ -395,11 +387,8 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
              '/MOCK_Try_Win/5000/layout-test-results/results.html\n'),
             'INFO: There are some builders with no results:\n',
             'INFO:   MOCK Try Win\n',
-            'INFO: Would you like to try to fill in missing results with\n'
-            'available results? This assumes that layout test results\n'
-            'for the platforms with missing results are the same as\n'
-            'results on other platforms.\n',
-            'INFO: Aborting.\n'
+            'INFO: Would you like to continue?\n',
+            'INFO: Aborting.\n',
         ])
 
     def test_execute_missing_results_with_fill_missing_continues(self):
