@@ -14917,6 +14917,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time taken to create a single download in the history DB.</summary>
 </histogram>
 
+<histogram name="Download.Database.IsAvailable" enum="BooleanAvailable">
+  <owner>xingliu@chromium.org</owner>
+  <summary>
+    Records whether the download database is available when database startup
+    completes, before starting any pending downloads.  If the database is
+    available, it will provide the next download id. Or no download history will
+    be persisted.
+  </summary>
+</histogram>
+
 <histogram name="Download.Database.QueryDownloadDuration" units="ms">
   <owner>asanka@chromium.org</owner>
   <summary>Time taken to query all downloads from history DB.</summary>

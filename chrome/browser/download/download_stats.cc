@@ -50,3 +50,7 @@ void RecordDownloadOpenMethod(ChromeDownloadOpenMethod open_method) {
                             open_method,
                             DOWNLOAD_OPEN_METHOD_LAST_ENTRY);
 }
+
+void RecordDatabaseAvailability(bool is_available) {
+  UMA_HISTOGRAM_BOOLEAN("Download.Database.IsAvailable", is_available);
+}

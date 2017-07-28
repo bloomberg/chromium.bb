@@ -243,12 +243,16 @@ class ChromeDownloadManagerDelegateTest
   DownloadPrefs* download_prefs();
   PrefService* pref_service();
 
+  const std::vector<uint32_t>& download_ids() const { return download_ids_; }
+  void GetNextId(uint32_t next_id) { download_ids_.emplace_back(next_id); }
+
  private:
   sync_preferences::TestingPrefServiceSyncable* pref_service_;
   base::ScopedTempDir test_download_dir_;
   std::unique_ptr<content::MockDownloadManager> download_manager_;
   std::unique_ptr<TestChromeDownloadManagerDelegate> delegate_;
   MockWebContentsDelegate web_contents_delegate_;
+  std::vector<uint32_t> download_ids_;
 };
 
 ChromeDownloadManagerDelegateTest::ChromeDownloadManagerDelegateTest()
@@ -613,6 +617,30 @@ TEST_F(ChromeDownloadManagerDelegateTest, BlockedByPolicy) {
             result.interrupt_reason);
 
   VerifyAndClearExpectations();
+}
+
+TEST_F(ChromeDownloadManagerDelegateTest, WithoutHistoryDbNextId) {
+  content::DownloadIdCallback id_callback = base::Bind(
+      &ChromeDownloadManagerDelegateTest::GetNextId, base::Unretained(this));
+  delegate()->GetNextId(id_callback);
+  delegate()->GetNextId(id_callback);
+  // When download database fails to initialize, id will be set to
+  // |content::DownloadItem::kInvalidId|.
+  delegate()->GetDownloadIdReceiverCallback().Run(
+      content::DownloadItem::kInvalidId);
+  std::vector<uint32_t> expected_ids = std::vector<uint32_t>{1u, 2u};
+  EXPECT_EQ(expected_ids, download_ids());
+}
+
+TEST_F(ChromeDownloadManagerDelegateTest, WithHistoryDbNextId) {
+  content::DownloadIdCallback id_callback = base::Bind(
+      &ChromeDownloadManagerDelegateTest::GetNextId, base::Unretained(this));
+  delegate()->GetNextId(id_callback);
+  delegate()->GetNextId(id_callback);
+  // Simulates a valid download database with no records.
+  delegate()->GetDownloadIdReceiverCallback().Run(1u);
+  std::vector<uint32_t> expected_ids = std::vector<uint32_t>{1u, 2u};
+  EXPECT_EQ(expected_ids, download_ids());
 }
 
 #if defined(FULL_SAFE_BROWSING)
