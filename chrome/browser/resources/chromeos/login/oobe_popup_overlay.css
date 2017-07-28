@@ -34,7 +34,6 @@
 
 .oobe-popup h1 {
   -webkit-padding-end: 24px;
-  -webkit-user-select: none;
   background: linear-gradient(white, #F8F8F8);
   color: rgb(83, 99, 125);
   font-size: 105%;
@@ -42,6 +41,7 @@
   margin: 0;
   padding: 10px 15px 8px 15px;
   text-shadow: white 0 1px 2px;
+  user-select: none;
 }
 
 .popup-content-area {

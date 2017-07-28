@@ -138,12 +138,12 @@ paper-item:hover {
 }
 
 paper-menu {
-  -webkit-user-select: none;
   color: rgba(0, 0, 0, 0.87);
   overflow-x: hidden;
   overflow-y: auto;
   padding-bottom: 0;
   padding-top: 4px;
+  user-select: none;
 }
 
 #search-input-container {
@@ -256,4 +256,3 @@ paper-menu {
   white-space: nowrap;
   width: 275px;
 }
-

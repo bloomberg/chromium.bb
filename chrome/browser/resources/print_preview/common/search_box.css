@@ -3,18 +3,18 @@
  * found in the LICENSE file. */
 
 .search-box {
-  -webkit-user-select: none;
   position: relative;
+  user-select: none;
 }
 
 .search-box-icon {
-  -webkit-user-select: none;
   display: inline-block;
   height: 1em;
   left: 8px;
   position: absolute;
   right: 8px;
   top: 6px;
+  user-select: none;
   width: 1em;
 }
 

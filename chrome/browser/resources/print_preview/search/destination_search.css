@@ -24,11 +24,11 @@
 }
 
 #destination-search .account-select-label {
-  -webkit-user-select: none;
   height: 2em;
   line-height: 2em;
   overflow: hidden;
   text-overflow: ellipsis;
+  user-select: none;
   white-space: nowrap;
 }
 
@@ -42,8 +42,8 @@
 }
 
 #destination-search .search-box {
-  -webkit-user-select: none;
   margin: 14px;
+  user-select: none;
 }
 
 #destination-search .lists {
@@ -52,8 +52,8 @@
 }
 
 #destination-search .lists > * {
-  -webkit-user-select: none;
   padding: 0 14px 18px;
+  user-select: none;
 }
 
 #destination-search .lists > :last-child {
@@ -95,7 +95,7 @@
 
 #destination-search .cloudprint-promo {
   -webkit-box-align: center;
-  -webkit-user-select: none;
+  user-select: none;
 }
 
 #destination-search .cloudprint-promo .sign-in[is='action-link'] {

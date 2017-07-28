@@ -8,13 +8,13 @@
 
 #user-image-grid {
   -webkit-user-drag: none;
-  -webkit-user-select: none;
   height: 264px;
   margin: 10px;
   outline: none;
   /* Necessary for correct metrics calculation by grid.js. */
   overflow: hidden;
   padding: 0;
+  user-select: none;
   width: 530px;
 }
 
