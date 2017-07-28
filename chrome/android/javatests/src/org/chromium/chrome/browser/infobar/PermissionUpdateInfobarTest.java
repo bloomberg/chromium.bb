@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
@@ -164,6 +165,8 @@ public class PermissionUpdateInfobarTest {
         }
     }
 
+    // Flaky: http://crbug.com/749369
+    @RetryOnFailure
     @Test
     @MediumTest
     public void testInfobarFrameNavigationForGeolocation()
