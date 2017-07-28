@@ -10,7 +10,7 @@ import android.preference.PreferenceGroup;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
-import android.text.style.StyleSpan;
+import android.text.style.TextAppearanceSpan;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
@@ -45,7 +45,7 @@ public class ExpandablePreferenceGroup extends PreferenceGroup {
                 new SpannableStringBuilder(getContext().getResources().getString(resourceId));
         String prefCount = String.format(Locale.getDefault(), " - %d", count);
         spannable.append(prefCount);
-        spannable.setSpan(new StyleSpan(R.style.RobotoMediumStyle), 0,
+        spannable.setSpan(new TextAppearanceSpan(getContext(), R.style.RobotoMediumStyle), 0,
                 spannable.length() - prefCount.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         // Color the first part of the title blue.
