@@ -34,6 +34,7 @@ class MockSessionManagerClient : public SessionManagerClient {
   MOCK_METHOD0(NotifySupervisedUserCreationStarted, void(void));
   MOCK_METHOD0(NotifySupervisedUserCreationFinished, void(void));
   MOCK_METHOD0(StartDeviceWipe, void(void));
+  MOCK_METHOD1(StartTPMFirmwareUpdate, void(const std::string&));
   MOCK_METHOD0(RequestLockScreen, void(void));
   MOCK_METHOD0(NotifyLockScreenShown, void(void));
   MOCK_METHOD0(NotifyLockScreenDismissed, void(void));
