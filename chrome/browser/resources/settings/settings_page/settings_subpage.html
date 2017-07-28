@@ -62,7 +62,7 @@
           aria-label="$i18n{back}" class="icon-arrow-back">
       </button>
       <h1>[[pageTitle]]</h1>
-      <content select=".subpage-title-extra"></content>
+      <slot name="subpage-title-extra"></slot>
       <template is="dom-if" if="[[learnMoreUrl]]">
         <a id="learnMore" aria-label="$i18n{learnMore}"
             href="[[learnMoreUrl]]" target="_blank">

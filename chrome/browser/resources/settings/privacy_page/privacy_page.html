@@ -123,7 +123,7 @@
               no-set-pref>
             <template is="dom-if" if="[[showRestart_]]" restamp>
               <paper-button on-tap="onRestartTap_" id="restart"
-                  class="more-actions">
+                  slot="more-actions">
                 $i18n{restart}
               </paper-button>
             </template>
@@ -459,7 +459,7 @@
       </template>
       <template is="dom-if" route-path="/cookies/detail" no-search>
         <settings-subpage page-title="[[pageTitle]]">
-          <paper-button class="subpage-title-extra secondary-button"
+          <paper-button slot="subpage-title-extra" class="secondary-button"
               on-tap="onRemoveAllCookiesFromSite_">
             $i18n{siteSettingsCookieRemoveAll}
           </paper-button>

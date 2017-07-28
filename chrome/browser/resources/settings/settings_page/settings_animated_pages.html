@@ -25,13 +25,13 @@
         position: static;
       }
 
-      neon-animated-pages ::content > .iron-selected {
+      neon-animated-pages ::slotted(.iron-selected) {
         position: static;
       }
     </style>
     <neon-animated-pages id="animatedPages" attr-for-selected="route-path"
         on-iron-select="onIronSelect_">
-      <content select="*"></content>
+      <slot></slot>
     </neon-animated-pages>
   </template>
   <script src="settings_animated_pages.js"></script>

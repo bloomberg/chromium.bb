@@ -31,7 +31,7 @@
       }
 
       #labelWrapper,
-      ::content .more-actions {
+      ::slotted([slot='more-actions']) {
         -webkit-margin-end: var(--settings-control-label-spacing);
       }
 
@@ -46,7 +46,7 @@
         <div id="label" class="label">[[label]]</div>
         <div id="subLabel" class="secondary label">[[subLabel]]</div>
       </div>
-      <content select=".more-actions"></content>
+      <slot name="more-actions"></slot>
       <template is="dom-if" if="[[hasPrefPolicyIndicator(pref.*)]]">
         <cr-policy-pref-indicator pref="[[pref]]" icon-aria-label="[[label]]">
         </cr-policy-pref-indicator>
