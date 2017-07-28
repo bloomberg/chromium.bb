@@ -3818,18 +3818,21 @@
       name: "place-content",
       longhands: ["align-content", "justify-content"],
       api_class: true,
+      api_methods: ["parseShorthand"],
       runtime_flag: "CSSGridLayout",
     },
     {
       name: "place-items",
       longhands: ["align-items", "justify-items"],
       api_class: true,
+      api_methods: ["parseShorthand"],
       runtime_flag: "CSSGridLayout",
     },
     {
       name: "place-self",
       longhands: ["align-self", "justify-self"],
       api_class: true,
+      api_methods: ["parseShorthand"],
       runtime_flag: "CSSGridLayout",
     },
     {
