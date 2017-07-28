@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"

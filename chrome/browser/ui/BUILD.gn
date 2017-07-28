@@ -2616,8 +2616,6 @@ split_static_library("ui") {
         "cocoa/autofill/card_unmask_prompt_view_bridge.h",
         "cocoa/autofill/card_unmask_prompt_view_bridge.mm",
         "cocoa/autofill/card_unmask_prompt_view_views.mm",
-        "cocoa/autofill/down_arrow_popup_menu_cell.h",
-        "cocoa/autofill/down_arrow_popup_menu_cell.mm",
         "cocoa/autofill/layout_view.h",
         "cocoa/autofill/layout_view.mm",
         "cocoa/autofill/password_generation_popup_view_bridge.h",
