@@ -113,7 +113,7 @@ void BluetoothTestMac::InitWithoutDefaultAdapter() {
     mock_central_manager_.reset(
         new ScopedMockCentralManager([[MockCentralManager alloc] init]));
     [mock_central_manager_->get() setBluetoothTestMac:this];
-    [mock_central_manager_->get() setState:CBManagerStateUnsupported];
+    [mock_central_manager_->get() setState:CBCentralManagerStateUnsupported];
     adapter_mac_->SetCentralManagerForTesting((id)mock_central_manager_->get());
   }
 }
@@ -129,7 +129,7 @@ void BluetoothTestMac::InitWithFakeAdapter() {
     mock_central_manager_.reset(
         new ScopedMockCentralManager([[MockCentralManager alloc] init]));
     mock_central_manager_->get().bluetoothTestMac = this;
-    [mock_central_manager_->get() setState:CBManagerStatePoweredOn];
+    [mock_central_manager_->get() setState:CBCentralManagerStatePoweredOn];
     adapter_mac_->SetCentralManagerForTesting((id)mock_central_manager_->get());
   }
 }
@@ -140,7 +140,7 @@ void BluetoothTestMac::ResetEventCounts() {
 }
 
 void BluetoothTestMac::SimulateAdapterPoweredOff() {
-  [mock_central_manager_->get() setState:CBManagerStatePoweredOff];
+  [mock_central_manager_->get() setState:CBCentralManagerStatePoweredOff];
 
   for (BluetoothDevice* device : adapter_->GetDevices()) {
     MockCBPeripheral* peripheral_mock = GetMockCBPeripheral(device);

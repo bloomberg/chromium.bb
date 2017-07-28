@@ -40,6 +40,14 @@ const int kPollIntervalMs = 500;
 
 namespace device {
 
+CBCentralManagerState GetCBManagerState(CBCentralManager* manager) {
+#if defined(MAC_OS_X_VERSION_10_13)
+  return static_cast<CBCentralManagerState>([manager state]);
+#else
+  return [manager state];
+#endif
+}
+
 // static
 base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
     const InitCallback& init_callback) {
@@ -158,8 +166,9 @@ bool BluetoothAdapterMac::IsInitialized() const {
 bool BluetoothAdapterMac::IsPresent() const {
   bool is_present = !address_.empty();
   if (IsLowEnergyAvailable()) {
-    is_present = is_present || ([low_energy_central_manager_ state] !=
-                                CBManagerStateUnsupported);
+    is_present =
+        is_present || (GetCBManagerState(low_energy_central_manager_) !=
+                       CBCentralManagerStateUnsupported);
   }
   return is_present;
 }
@@ -167,8 +176,9 @@ bool BluetoothAdapterMac::IsPresent() const {
 bool BluetoothAdapterMac::IsPowered() const {
   bool is_powered = classic_powered_;
   if (IsLowEnergyAvailable()) {
-    is_powered = is_powered || ([low_energy_central_manager_ state] ==
-                                CBManagerStatePoweredOn);
+    is_powered =
+        is_powered || (GetCBManagerState(low_energy_central_manager_) ==
+                       CBCentralManagerStatePoweredOn);
   }
   return is_powered;
 }
@@ -592,17 +602,18 @@ void BluetoothAdapterMac::LowEnergyDeviceUpdated(
   }
 }
 
-// TODO(crbug.com/511025): Handle state < CBManagerStatePoweredOff.
+// TODO(crbug.com/511025): Handle state < CBCentralManagerStatePoweredOff.
 void BluetoothAdapterMac::LowEnergyCentralManagerUpdatedState() {
   VLOG(1) << "Central manager state updated: "
           << [low_energy_central_manager_ state];
-  // A state with a value lower than CBManagerStatePoweredOn implies that
+  // A state with a value lower than CBCentralManagerStatePoweredOn implies that
   // scanning has stopped and that any connected peripherals have been
   // disconnected. Call DidDisconnectPeripheral manually to update the devices'
   // states since macOS doesn't call it.
   // See
   // https://developer.apple.com/reference/corebluetooth/cbcentralmanagerdelegate/1518888-centralmanagerdidupdatestate?language=objc
-  if ([low_energy_central_manager_ state] < CBManagerStatePoweredOn) {
+  if (GetCBManagerState(low_energy_central_manager_) <
+      CBCentralManagerStatePoweredOn) {
     VLOG(1)
         << "Central no longer powered on. Notifying of device disconnection.";
     for (BluetoothDevice* device : GetDevices()) {
