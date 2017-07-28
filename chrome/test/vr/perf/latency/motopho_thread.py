@@ -9,11 +9,11 @@ import threading
 
 class MotophoThread(threading.Thread):
   """Handles the running of the Motopho script and extracting results."""
-  def __init__(self, num_samples):
+  def __init__(self):
     threading.Thread.__init__(self)
-    self._num_samples = num_samples
     self._latencies = []
     self._correlations = []
+    self._thread_can_die = False
     # Threads can't be restarted, so in order to gather multiple samples, we
     # need to either re-create the thread for every iteration or use a loop
     # and locks in a single thread -> use the latter solution.
@@ -22,8 +22,10 @@ class MotophoThread(threading.Thread):
     self.BlockNextIteration()
 
   def run(self):
-    for _ in xrange(self._num_samples):
+    while True:
       self._WaitForIterationStart()
+      if self._thread_can_die:
+        break
       self._ResetEndLock()
       motopho_output = ""
       try:
@@ -36,17 +38,17 @@ class MotophoThread(threading.Thread):
       if "FAIL" in motopho_output:
         logging.error('Failed to get latency, logging raw output: %s',
                       motopho_output)
-        raise RuntimeError('Failed to get latency - correlation likely too low')
-
-      current_num_samples = len(self._latencies)
-      for line in motopho_output.split("\n"):
-        if 'Motion-to-photon latency:' in line:
-          self._latencies.append(float(line.split(" ")[-2]))
-        if 'Max correlation is' in line:
-          self._correlations.append(float(line.split(' ')[-1]))
-        if (len(self._latencies) > current_num_samples and
-            len(self._correlations) > current_num_samples):
-          break;
+        self._failed_iteration = True
+      else:
+        current_num_samples = len(self._latencies)
+        for line in motopho_output.split("\n"):
+          if 'Motion-to-photon latency:' in line:
+            self._latencies.append(float(line.split(" ")[-2]))
+          if 'Max correlation is' in line:
+            self._correlations.append(float(line.split(' ')[-1]))
+          if (len(self._latencies) > current_num_samples and
+              len(self._correlations) > current_num_samples):
+            break;
       self._EndIteration()
 
   def _WaitForIterationStart(self):
@@ -60,11 +62,17 @@ class MotophoThread(threading.Thread):
     """Blocks the thread from starting the next iteration without a signal."""
     self._start_lock.clear()
 
+  def Terminate(self):
+    """Tells the thread that it should self-terminate."""
+    self._thread_can_die = True
+    self._start_lock.set()
+
   def _EndIteration(self):
     self._finish_lock.set()
 
   def _ResetEndLock(self):
     self._finish_lock.clear()
+    self._failed_iteration = False
 
   def WaitForIterationEnd(self, timeout):
     """Waits until the thread says it's finished or times out.
@@ -81,3 +89,7 @@ class MotophoThread(threading.Thread):
   @property
   def correlations(self):
     return self._correlations
+
+  @property
+  def failed_iteration(self):
+    return self._failed_iteration
