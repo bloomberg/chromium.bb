@@ -8,144 +8,138 @@ cr.define('certificate_manager_page', function() {
    * for allowing tests to know when a method was called, as well as
    * specifying mock responses.
    *
-   * @constructor
    * @implements {settings.CertificatesBrowserProxy}
-   * @extends {TestBrowserProxy}
    */
-  var TestCertificatesBrowserProxy = function() {
-    TestBrowserProxy.call(this, [
-      'deleteCertificate',
-      'editCaCertificateTrust',
-      'exportCertificate',
-      'exportPersonalCertificate',
-      'exportPersonalCertificatePasswordSelected',
-      'getCaCertificateTrust',
-      'importCaCertificate',
-      'importCaCertificateTrustSelected',
-      'importPersonalCertificate',
-      'importPersonalCertificatePasswordSelected',
-      'importServerCertificate',
-      'refreshCertificates',
-      'viewCertificate',
-    ]);
+  class TestCertificatesBrowserProxy extends TestBrowserProxy {
+    constructor() {
+      super([
+        'deleteCertificate',
+        'editCaCertificateTrust',
+        'exportCertificate',
+        'exportPersonalCertificate',
+        'exportPersonalCertificatePasswordSelected',
+        'getCaCertificateTrust',
+        'importCaCertificate',
+        'importCaCertificateTrustSelected',
+        'importPersonalCertificate',
+        'importPersonalCertificatePasswordSelected',
+        'importServerCertificate',
+        'refreshCertificates',
+        'viewCertificate',
+      ]);
 
-    /** @private {!CaTrustInfo} */
-    this.caTrustInfo_ = {ssl: true, email: true, objSign: true};
+      /** @private {!CaTrustInfo} */
+      this.caTrustInfo_ = {ssl: true, email: true, objSign: true};
 
-    /** @private {?CertificatesError} */
-    this.certificatesError_ = null;
-  };
+      /** @private {?CertificatesError} */
+      this.certificatesError_ = null;
+    }
 
-  TestCertificatesBrowserProxy.prototype = {
-    __proto__: TestBrowserProxy.prototype,
-
-    /**
-     * @param {!CaTrustInfo} caTrustInfo
-     */
-    setCaCertificateTrust: function(caTrustInfo) {
+    /** @param {!CaTrustInfo} caTrustInfo */
+    setCaCertificateTrust(caTrustInfo) {
       this.caTrustInfo_ = caTrustInfo;
-    },
+    }
 
     /** @override */
-    getCaCertificateTrust: function(id) {
+    getCaCertificateTrust(id) {
       this.methodCalled('getCaCertificateTrust', id);
       return Promise.resolve(this.caTrustInfo_);
-    },
+    }
 
     /** @override */
-    importServerCertificate: function() {
+    importServerCertificate() {
       this.methodCalled('importServerCertificate');
       return Promise.resolve();
-    },
+    }
 
     /** @override */
-    importCaCertificate: function() {
+    importCaCertificate() {
       this.methodCalled('importCaCertificate');
       return Promise.resolve('dummyName');
-    },
+    }
 
     /** @override */
-    importCaCertificateTrustSelected: function(ssl, email, objSign) {
+    importCaCertificateTrustSelected(ssl, email, objSign) {
       this.methodCalled('importCaCertificateTrustSelected', {
         ssl: ssl, email: email, objSign: objSign,
       });
       return this.fulfillRequest_();
-    },
+    }
 
     /** @override */
-    editCaCertificateTrust: function(id, ssl, email, objSign) {
+    editCaCertificateTrust(id, ssl, email, objSign) {
       this.methodCalled('editCaCertificateTrust', {
         id: id, ssl: ssl, email: email, objSign: objSign,
       });
       return this.fulfillRequest_();
-    },
+    }
 
     /**
      * Forces some of the browser proxy methods to start returning errors.
      */
-    forceCertificatesError: function() {
+    forceCertificatesError() {
       this.certificatesError_ = /** @type {!CertificatesError} */ ({
         title: 'DummyError', description: 'DummyDescription'
       });
-    },
+    }
 
     /**
      * @return {!Promise} A promise that is resolved or rejected based on the
      * value of |certificatesError_|.
      * @private
      */
-    fulfillRequest_: function() {
+    fulfillRequest_() {
       return this.certificatesError_ === null ?
           Promise.resolve() : Promise.reject(this.certificatesError_);
-    },
+    }
 
     /** @override */
-    deleteCertificate: function(id) {
+    deleteCertificate(id) {
       this.methodCalled('deleteCertificate', id);
       return this.fulfillRequest_();
-    },
+    }
 
     /** @override */
-    exportPersonalCertificatePasswordSelected: function(password) {
+    exportPersonalCertificatePasswordSelected(password) {
       this.resolverMap_.get(
           'exportPersonalCertificatePasswordSelected').resolve(password);
       return this.fulfillRequest_();
-    },
+    }
 
     /** @override */
-    importPersonalCertificate: function(useHardwareBacked) {
+    importPersonalCertificate(useHardwareBacked) {
       this.methodCalled('importPersonalCertificate', useHardwareBacked);
       return Promise.resolve(true);
-    },
+    }
 
     /** @override */
-    importPersonalCertificatePasswordSelected: function(password) {
+    importPersonalCertificatePasswordSelected(password) {
       this.resolverMap_.get(
           'importPersonalCertificatePasswordSelected').resolve(password);
       return this.fulfillRequest_();
-    },
+    }
 
     /** @override */
-    refreshCertificates: function() {
+    refreshCertificates() {
       this.methodCalled('refreshCertificates');
-    },
+    }
 
     /** @override */
-    viewCertificate: function(id) {
+    viewCertificate(id) {
       this.methodCalled('viewCertificate', id);
-    },
+    }
 
     /** @override */
-    exportCertificate: function(id) {
+    exportCertificate(id) {
       this.methodCalled('exportCertificate', id);
-    },
+    }
 
     /** @override */
-    exportPersonalCertificate: function(id) {
+    exportPersonalCertificate(id) {
       this.methodCalled('exportPersonalCertificate', id);
       return Promise.resolve();
-    },
-  };
+    }
+  }
 
   /** @return {!Certificate} */
   function createSampleCertificate() {

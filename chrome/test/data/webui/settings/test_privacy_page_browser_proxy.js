@@ -2,54 +2,48 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @constructor
- * @extends {TestBrowserProxy}
- * @implements {settings.PrivacyPageBrowserProxy}
- */
-function TestPrivacyPageBrowserProxy() {
-  TestBrowserProxy.call(this, [
-    'getMetricsReporting',
-    'getSafeBrowsingExtendedReporting',
-    'setMetricsReportingEnabled',
-    'setSafeBrowsingExtendedReportingEnabled',
-    'showManageSSLCertificates',
-  ]);
-}
+/** @implements {settings.PrivacyPageBrowserProxy} */
+class TestPrivacyPageBrowserProxy extends TestBrowserProxy {
+  constructor() {
+    super([
+      'getMetricsReporting',
+      'getSafeBrowsingExtendedReporting',
+      'setMetricsReportingEnabled',
+      'setSafeBrowsingExtendedReportingEnabled',
+      'showManageSSLCertificates',
+    ]);
 
-TestPrivacyPageBrowserProxy.prototype = {
-  __proto__: TestBrowserProxy.prototype,
-
-  /** @type {!MetricsReporting} */
-  metricsReporting: {
-    enabled: true,
-    managed: true,
-  },
+    /** @type {!MetricsReporting} */
+    this.metricsReporting = {
+      enabled: true,
+      managed: true,
+    };
+  }
 
   /** @override */
-  getMetricsReporting: function() {
+  getMetricsReporting() {
     this.methodCalled('getMetricsReporting');
     return Promise.resolve(this.metricsReporting);
-  },
+  }
 
   /** @override */
-  setMetricsReportingEnabled: function(enabled) {
+  setMetricsReportingEnabled(enabled) {
     this.methodCalled('setMetricsReportingEnabled', enabled);
-  },
+  }
 
   /** @override */
-  showManageSSLCertificates: function() {
+  showManageSSLCertificates() {
     this.methodCalled('showManageSSLCertificates');
-  },
+  }
 
   /** @override */
-  getSafeBrowsingExtendedReporting: function() {
+  getSafeBrowsingExtendedReporting() {
     this.methodCalled('getSafeBrowsingExtendedReporting');
     return Promise.resolve(true);
-  },
+  }
 
   /** @override */
-  setSafeBrowsingExtendedReportingEnabled: function(enabled) {
+  setSafeBrowsingExtendedReportingEnabled(enabled) {
     this.methodCalled('setSafeBrowsingExtendedReportingEnabled', enabled);
-  },
-};
+  }
+}

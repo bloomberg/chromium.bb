@@ -2,49 +2,43 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @constructor
- * @implements {settings.ChromeCleanupProxy}
- * @extends {TestBrowserProxy}
- */
-var TestChromeCleanupProxy = function() {
-  TestBrowserProxy.call(this, [
-    'dismissCleanupPage',
-    'registerChromeCleanerObserver',
-    'restartComputer',
-    'setLogsUploadPermission',
-    'startCleanup',
-  ]);
-};
-
-TestChromeCleanupProxy.prototype = {
-  __proto__: TestBrowserProxy.prototype,
+/** @implements {settings.ChromeCleanupProxy} */
+class TestChromeCleanupProxy extends TestBrowserProxy {
+  constructor() {
+    super([
+      'dismissCleanupPage',
+      'registerChromeCleanerObserver',
+      'restartComputer',
+      'setLogsUploadPermission',
+      'startCleanup',
+    ]);
+  }
 
   /** @override */
-  dismissCleanupPage: function() {
+  dismissCleanupPage() {
     this.methodCalled('dismissCleanupPage');
-  },
+  }
 
   /** @override */
-  registerChromeCleanerObserver: function() {
+  registerChromeCleanerObserver() {
     this.methodCalled('registerChromeCleanerObserver');
-  },
+  }
 
   /** @override */
-  restartComputer: function() {
+  restartComputer() {
     this.methodCalled('restartComputer');
-  },
+  }
 
   /** @override */
-  setLogsUploadPermission: function(enabled) {
+  setLogsUploadPermission(enabled) {
     this.methodCalled('setLogsUploadPermission', enabled);
-  },
+  }
 
   /** @override */
-  startCleanup: function(logsUploadEnabled) {
+  startCleanup(logsUploadEnabled) {
     this.methodCalled('startCleanup', logsUploadEnabled);
   }
-};
+}
 
 var chromeCleanupPage = null;
 

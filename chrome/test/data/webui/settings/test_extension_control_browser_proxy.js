@@ -2,28 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @constructor
- * @implements {settings.ExtensionControlBrowserProxy}
- * @extends {TestBrowserProxy}
- */
-function TestExtensionControlBrowserProxy() {
-  TestBrowserProxy.call(this, [
-    'disableExtension',
-    'manageExtension',
-  ]);
-}
-
-TestExtensionControlBrowserProxy.prototype = {
-  __proto__: TestBrowserProxy.prototype,
+/** @implements {settings.ExtensionControlBrowserProxy} */
+class TestExtensionControlBrowserProxy extends TestBrowserProxy {
+  constructor() {
+    super([
+      'disableExtension',
+      'manageExtension',
+    ]);
+  }
 
   /** @override */
-  disableExtension: function(extensionId) {
+  disableExtension(extensionId) {
     this.methodCalled('disableExtension', extensionId);
-  },
+  }
 
   /** @override */
-  manageExtension: function(extensionId) {
+  manageExtension(extensionId) {
     this.methodCalled('manageExtension', extensionId);
-  },
-};
+  }
+}
