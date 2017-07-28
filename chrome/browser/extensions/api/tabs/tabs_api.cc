@@ -1174,9 +1174,17 @@ bool TabsUpdateFunction::RunAsync() {
 
   // Navigate the tab to a new location if the url is different.
   bool is_async = false;
-  if (params->update_properties.url.get() &&
-      !UpdateURL(*params->update_properties.url, tab_id, &is_async)) {
-    return false;
+  if (params->update_properties.url.get()) {
+    std::string updated_url = *params->update_properties.url;
+    if (browser->profile()->GetProfileType() == Profile::INCOGNITO_PROFILE &&
+        !chrome::IsURLAllowedInIncognito(GURL(updated_url),
+                                         browser->profile())) {
+      error_ = ErrorUtils::FormatErrorMessage(
+          keys::kURLsNotAllowedInIncognitoError, updated_url);
+      return false;
+    }
+    if (!UpdateURL(updated_url, tab_id, &is_async))
+      return false;
   }
 
   bool active = false;
