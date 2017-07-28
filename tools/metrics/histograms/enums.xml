@@ -4988,11 +4988,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-2005166181" label="ja-Latn"/>
   <int value="-1999171202" label="lv"/>
   <int value="-1994870905" label="lt"/>
+  <int value="-1898669966" label="zh-CN"/>
   <int value="-1855113037" label="vi"/>
   <int value="-1828586117" label="de"/>
   <int value="-1823968882" label="zh"/>
   <int value="-1791051166" label="ha"/>
   <int value="-1760672594" label="mr"/>
+  <int value="-1735828230" label="zh-TW"/>
   <int value="-1696927720" label="la"/>
   <int value="-1690250140" label="ja"/>
   <int value="-1566592213" label="hi-Latn"/>
@@ -5001,8 +5003,10 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1284862637" label="ru"/>
   <int value="-1273588087" label="kn"/>
   <int value="-1211529228" label="gd"/>
+  <int value="-1159958698" label="tl"/>
   <int value="-1117024738" label="zh-Latn"/>
   <int value="-1100371650" label="sn"/>
+  <int value="-1052948093" label="jw"/>
   <int value="-1048980531" label="ur"/>
   <int value="-1042449480" label="cy"/>
   <int value="-1033645590" label="fil"/>
@@ -5059,6 +5063,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="526531379" label="ml"/>
   <int value="538270200" label="uk"/>
   <int value="596295208" label="bs"/>
+  <int value="632444664" label="yue-HK"/>
   <int value="673577439" label="cs"/>
   <int value="796588925" label="yo"/>
   <int value="804120371" label="jv"/>
