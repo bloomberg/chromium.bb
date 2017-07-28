@@ -3,18 +3,18 @@
 // found in the LICENSE file.
 
 #include "base/containers/flat_set.h"
-#include "cc/test/fake_external_begin_frame_source.h"
-#include "cc/test/fake_surface_observer.h"
-#include "cc/test/mock_compositor_frame_sink_support_client.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/compositor_frame_helpers.h"
+#include "components/viz/test/fake_external_begin_frame_source.h"
+#include "components/viz/test/fake_surface_observer.h"
+#include "components/viz/test/mock_compositor_frame_sink_support_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using cc::test::MockCompositorFrameSinkSupportClient;
+using viz::test::MockCompositorFrameSinkSupportClient;
 using viz::test::MakeCompositorFrame;
 using testing::_;
 using testing::Eq;
@@ -48,14 +48,14 @@ SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id, uint32_t local_id) {
 }  // namespace
 
 class FakeExternalBeginFrameSourceClient
-    : public cc::FakeExternalBeginFrameSource::Client {
+    : public FakeExternalBeginFrameSource::Client {
  public:
   FakeExternalBeginFrameSourceClient() = default;
   ~FakeExternalBeginFrameSourceClient() = default;
 
   bool has_observers() const { return observer_count_ > 0; }
 
-  // cc::FakeExternalBeginFrameSource::Client implementation:
+  // FakeExternalBeginFrameSource::Client implementation:
   void OnAddObserver(BeginFrameObserver* obs) override { ++observer_count_; }
 
   void OnRemoveObserver(BeginFrameObserver* obs) override {
@@ -128,7 +128,7 @@ class SurfaceSynchronizationTest : public testing::Test {
         surface_id);
   }
 
-  cc::FakeExternalBeginFrameSource* begin_frame_source() {
+  FakeExternalBeginFrameSource* begin_frame_source() {
     return begin_frame_source_.get();
   }
 
@@ -141,14 +141,14 @@ class SurfaceSynchronizationTest : public testing::Test {
     begin_frame_source_->TestOnBeginFrame(args);
   }
 
-  cc::FakeSurfaceObserver& surface_observer() { return surface_observer_; }
+  FakeSurfaceObserver& surface_observer() { return surface_observer_; }
 
   // testing::Test:
   void SetUp() override {
     testing::Test::SetUp();
 
     begin_frame_source_ =
-        base::MakeUnique<cc::FakeExternalBeginFrameSource>(0.f, false);
+        base::MakeUnique<FakeExternalBeginFrameSource>(0.f, false);
     begin_frame_source_->SetClient(&begin_frame_source_client_);
     now_src_ = base::MakeUnique<base::SimpleTestTickClock>();
     frame_sink_manager_.surface_manager()->AddObserver(&surface_observer_);
@@ -202,9 +202,9 @@ class SurfaceSynchronizationTest : public testing::Test {
 
  private:
   FrameSinkManagerImpl frame_sink_manager_;
-  cc::FakeSurfaceObserver surface_observer_;
+  FakeSurfaceObserver surface_observer_;
   FakeExternalBeginFrameSourceClient begin_frame_source_client_;
-  std::unique_ptr<cc::FakeExternalBeginFrameSource> begin_frame_source_;
+  std::unique_ptr<FakeExternalBeginFrameSource> begin_frame_source_;
   std::unique_ptr<base::SimpleTestTickClock> now_src_;
   std::unordered_map<FrameSinkId,
                      std::unique_ptr<CompositorFrameSinkSupport>,

@@ -25,8 +25,6 @@
 #include "build/build_config.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
-#include "cc/test/fake_external_begin_frame_source.h"
-#include "cc/test/fake_surface_observer.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/common/quads/copy_output_request.h"
@@ -36,6 +34,8 @@
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/test/begin_frame_args_test.h"
+#include "components/viz/test/fake_external_begin_frame_source.h"
+#include "components/viz/test/fake_surface_observer.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
@@ -2441,7 +2441,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ReturnedResources) {
 // This test verifies that when the compositor_frame_sink_id changes, the old
 // resources are not returned.
 TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
-  cc::FakeSurfaceObserver manager_observer;
+  viz::FakeSurfaceObserver manager_observer;
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   viz::SurfaceManager* manager = factory->GetContextFactoryPrivate()
                                      ->GetFrameSinkManager()
@@ -3442,7 +3442,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
       gfx::Rect());
   view_->SetSize(view_rect.size());
 
-  cc::FakeSurfaceObserver observer;
+  viz::FakeSurfaceObserver observer;
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   viz::SurfaceManager* surface_manager = factory->GetContextFactoryPrivate()
                                              ->GetFrameSinkManager()

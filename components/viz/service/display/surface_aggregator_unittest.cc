@@ -21,7 +21,6 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/test/fake_compositor_frame_sink_support_client.h"
 #include "cc/test/fake_resource_provider.h"
-#include "cc/test/fake_surface_observer.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
@@ -31,6 +30,7 @@
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/test/compositor_frame_helpers.h"
+#include "components/viz/test/fake_surface_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -271,7 +271,7 @@ class SurfaceAggregatorTest : public testing::Test {
 
  protected:
   FrameSinkManagerImpl manager_;
-  cc::FakeSurfaceObserver observer_;
+  FakeSurfaceObserver observer_;
   cc::FakeCompositorFrameSinkSupportClient fake_client_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
   SurfaceAggregator aggregator_;

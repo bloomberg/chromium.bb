@@ -6,7 +6,6 @@
 #include "base/bind.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/texture_draw_quad.h"
-#include "cc/test/fake_external_begin_frame_source.h"
 #include "components/exo/buffer.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
@@ -15,6 +14,7 @@
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/test/begin_frame_args_test.h"
+#include "components/viz/test/fake_external_begin_frame_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/aura/env.h"
@@ -329,7 +329,7 @@ TEST_F(SurfaceTest, Commit) {
 }
 
 TEST_F(SurfaceTest, SendsBeginFrameAcks) {
-  cc::FakeExternalBeginFrameSource source(0.f, false);
+  viz::FakeExternalBeginFrameSource source(0.f, false);
   gfx::Size buffer_size(1, 1);
   auto buffer = base::MakeUnique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D, 0,

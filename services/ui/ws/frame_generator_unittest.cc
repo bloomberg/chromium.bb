@@ -6,9 +6,9 @@
 
 #include "base/macros.h"
 #include "cc/quads/render_pass.h"
-#include "cc/test/fake_external_begin_frame_source.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/test/begin_frame_args_test.h"
+#include "components/viz/test/fake_external_begin_frame_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ui {
@@ -113,7 +113,7 @@ class FrameGeneratorTest : public testing::Test {
     testing::Test::SetUp();
 
     frame_generator_ = base::MakeUnique<FrameGenerator>();
-    begin_frame_source_ = base::MakeUnique<cc::FakeExternalBeginFrameSource>(
+    begin_frame_source_ = base::MakeUnique<viz::FakeExternalBeginFrameSource>(
         kRefreshRate, kTickAutomatically);
 
     // FrameGenerator requires a valid SurfaceInfo before generating
@@ -169,7 +169,7 @@ class FrameGeneratorTest : public testing::Test {
   TestClientBinding* binding() { return binding_; }
 
  private:
-  std::unique_ptr<cc::FakeExternalBeginFrameSource> begin_frame_source_;
+  std::unique_ptr<viz::FakeExternalBeginFrameSource> begin_frame_source_;
   std::unique_ptr<FrameGenerator> frame_generator_;
   TestClientBinding* binding_ = nullptr;
   int next_sequence_number_ = 1;

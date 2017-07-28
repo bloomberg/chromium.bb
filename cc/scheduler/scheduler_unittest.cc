@@ -16,11 +16,11 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/scheduler_test_common.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/fake_delay_based_time_source.h"
+#include "components/viz/test/fake_external_begin_frame_source.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,7 +43,7 @@ base::TimeDelta kSlowDuration = base::TimeDelta::FromSeconds(1);
 base::TimeDelta kFastDuration = base::TimeDelta::FromMilliseconds(1);
 
 class FakeSchedulerClient : public SchedulerClient,
-                            public FakeExternalBeginFrameSource::Client {
+                            public viz::FakeExternalBeginFrameSource::Client {
  public:
   FakeSchedulerClient()
       : inside_begin_impl_frame_(false),
@@ -266,7 +266,7 @@ class SchedulerTest : public testing::Test {
         base::MakeUnique<viz::FakeDelayBasedTimeSource>(now_src_.get(),
                                                         task_runner_.get())));
     fake_external_begin_frame_source_.reset(
-        new FakeExternalBeginFrameSource(0.f, false));
+        new viz::FakeExternalBeginFrameSource(0.f, false));
     fake_external_begin_frame_source_->SetClient(client_.get());
     synthetic_frame_source_.reset(new viz::DelayBasedBeginFrameSource(
         base::MakeUnique<viz::FakeDelayBasedTimeSource>(now_src_.get(),
@@ -437,7 +437,7 @@ class SchedulerTest : public testing::Test {
     return args;
   }
 
-  FakeExternalBeginFrameSource* fake_external_begin_frame_source() const {
+  viz::FakeExternalBeginFrameSource* fake_external_begin_frame_source() const {
     return fake_external_begin_frame_source_.get();
   }
 
@@ -453,7 +453,7 @@ class SchedulerTest : public testing::Test {
 
   std::unique_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<OrderedSimpleTaskRunner> task_runner_;
-  std::unique_ptr<FakeExternalBeginFrameSource>
+  std::unique_ptr<viz::FakeExternalBeginFrameSource>
       fake_external_begin_frame_source_;
   std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_frame_source_;
   std::unique_ptr<viz::SyntheticBeginFrameSource> unthrottled_frame_source_;

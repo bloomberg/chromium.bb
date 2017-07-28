@@ -4,11 +4,11 @@
 
 #include <stddef.h>
 
-#include "cc/test/fake_external_begin_frame_source.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_client.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/test/begin_frame_source_test.h"
+#include "components/viz/test/fake_external_begin_frame_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {
@@ -140,14 +140,14 @@ TEST_F(FrameSinkManagerTest, PrimaryBeginFrameSource) {
   begin_frame_source->AddObserver(&obs);
 
   FakeFrameSinkManagerClient root1(FrameSinkId(1, 1), &manager_);
-  std::unique_ptr<cc::FakeExternalBeginFrameSource> external_source1 =
-      base::MakeUnique<cc::FakeExternalBeginFrameSource>(60.f, false);
+  std::unique_ptr<FakeExternalBeginFrameSource> external_source1 =
+      base::MakeUnique<FakeExternalBeginFrameSource>(60.f, false);
   manager_.RegisterBeginFrameSource(external_source1.get(),
                                     root1.frame_sink_id());
 
   FakeFrameSinkManagerClient root2(FrameSinkId(2, 2), &manager_);
-  std::unique_ptr<cc::FakeExternalBeginFrameSource> external_source2 =
-      base::MakeUnique<cc::FakeExternalBeginFrameSource>(60.f, false);
+  std::unique_ptr<FakeExternalBeginFrameSource> external_source2 =
+      base::MakeUnique<FakeExternalBeginFrameSource>(60.f, false);
   manager_.RegisterBeginFrameSource(external_source2.get(),
                                     root2.frame_sink_id());
 

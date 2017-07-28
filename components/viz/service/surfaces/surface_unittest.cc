@@ -4,7 +4,6 @@
 
 #include "components/viz/service/surfaces/surface.h"
 #include "base/memory/ptr_util.h"
-#include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/scheduler_test_common.h"
 #include "components/viz/common/quads/copy_output_result.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
@@ -13,6 +12,7 @@
 #include "components/viz/service/surfaces/surface_dependency_tracker.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/compositor_frame_helpers.h"
+#include "components/viz/test/fake_external_begin_frame_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 

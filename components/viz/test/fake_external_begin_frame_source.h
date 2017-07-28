@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_FAKE_EXTERNAL_BEGIN_FRAME_SOURCE_H_
-#define CC_TEST_FAKE_EXTERNAL_BEGIN_FRAME_SOURCE_H_
+#ifndef COMPONENTS_VIZ_TEST_FAKE_EXTERNAL_BEGIN_FRAME_SOURCE_H_
+#define COMPONENTS_VIZ_TEST_FAKE_EXTERNAL_BEGIN_FRAME_SOURCE_H_
 
 #include <set>
 
@@ -17,14 +17,14 @@ namespace base {
 class SimpleTestTickClock;
 }  // namespace base
 
-namespace cc {
+namespace viz {
 
-class FakeExternalBeginFrameSource : public viz::BeginFrameSource {
+class FakeExternalBeginFrameSource : public BeginFrameSource {
  public:
   class Client {
    public:
-    virtual void OnAddObserver(viz::BeginFrameObserver* obs) = 0;
-    virtual void OnRemoveObserver(viz::BeginFrameObserver* obs) = 0;
+    virtual void OnAddObserver(BeginFrameObserver* obs) = 0;
+    virtual void OnRemoveObserver(BeginFrameObserver* obs) = 0;
   };
 
   explicit FakeExternalBeginFrameSource(double refresh_rate,
@@ -34,20 +34,19 @@ class FakeExternalBeginFrameSource : public viz::BeginFrameSource {
   void SetClient(Client* client) { client_ = client; }
   void SetPaused(bool paused);
 
-  // viz::BeginFrameSource implementation.
-  void AddObserver(viz::BeginFrameObserver* obs) override;
-  void RemoveObserver(viz::BeginFrameObserver* obs) override;
-  void DidFinishFrame(viz::BeginFrameObserver* obs) override;
+  // BeginFrameSource implementation.
+  void AddObserver(BeginFrameObserver* obs) override;
+  void RemoveObserver(BeginFrameObserver* obs) override;
+  void DidFinishFrame(BeginFrameObserver* obs) override;
   bool IsThrottled() const override;
 
-  viz::BeginFrameArgs CreateBeginFrameArgs(
-      viz::BeginFrameArgs::CreationLocation location);
-  viz::BeginFrameArgs CreateBeginFrameArgs(
-      viz::BeginFrameArgs::CreationLocation location,
-      base::SimpleTestTickClock* now_src);
+  BeginFrameArgs CreateBeginFrameArgs(
+      BeginFrameArgs::CreationLocation location);
+  BeginFrameArgs CreateBeginFrameArgs(BeginFrameArgs::CreationLocation location,
+                                      base::SimpleTestTickClock* now_src);
   uint64_t next_begin_frame_number() const { return next_begin_frame_number_; }
 
-  void TestOnBeginFrame(const viz::BeginFrameArgs& args);
+  void TestOnBeginFrame(const BeginFrameArgs& args);
 
   size_t num_observers() const { return observers_.size(); }
 
@@ -58,16 +57,16 @@ class FakeExternalBeginFrameSource : public viz::BeginFrameSource {
   const double milliseconds_per_frame_;
   Client* client_ = nullptr;
   bool paused_ = false;
-  viz::BeginFrameArgs current_args_;
-  uint64_t next_begin_frame_number_ = viz::BeginFrameArgs::kStartingFrameNumber;
-  std::set<viz::BeginFrameObserver*> observers_;
-  base::CancelableCallback<void(const viz::BeginFrameArgs&)> begin_frame_task_;
+  BeginFrameArgs current_args_;
+  uint64_t next_begin_frame_number_ = BeginFrameArgs::kStartingFrameNumber;
+  std::set<BeginFrameObserver*> observers_;
+  base::CancelableCallback<void(const BeginFrameArgs&)> begin_frame_task_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<FakeExternalBeginFrameSource> weak_ptr_factory_;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_TEST_FAKE_EXTERNAL_BEGIN_FRAME_SOURCE_H_
+#endif  // COMPONENTS_VIZ_TEST_FAKE_EXTERNAL_BEGIN_FRAME_SOURCE_H_
