@@ -954,6 +954,12 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
   GetLocalFrameClient().DidCreateNewDocument();
 }
 
+void DocumentLoader::WillCommitNavigation() {
+  if (GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument())
+    return;
+  probe::willCommitLoad(frame_, this);
+}
+
 void DocumentLoader::DidCommitNavigation() {
   if (GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument())
     return;
@@ -1072,6 +1078,9 @@ void DocumentLoader::InstallNewDocument(
 
   bool user_gesture_bit_set = frame_->HasReceivedUserGesture() ||
                               frame_->HasReceivedUserGestureBeforeNavigation();
+
+  if (reason == InstallNewDocumentReason::kNavigation)
+    WillCommitNavigation();
 
   Document* document = frame_->DomWindow()->InstallNewDocument(
       mime_type,
