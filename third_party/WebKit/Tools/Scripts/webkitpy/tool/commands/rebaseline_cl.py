@@ -42,9 +42,11 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
                 help='Do not trigger any try jobs.'),
             optparse.make_option(
                 '--fill-missing', dest='fill_missing', action='store_true',
-                default=False,
+                default=None,
                 help='If some platforms have no try job results, use results '
                      'from try job results of other platforms.'),
+            optparse.make_option(
+                '--no-fill-missing', dest='fill_missing', action='store_false'),
             self.no_optimize_option,
             self.results_directory_option,
         ])
@@ -54,6 +56,8 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         self._tool = tool
         self.git_cl = self.git_cl or GitCL(tool)
 
+        # The WPT manifest is required when iterating through tests
+        # TestBaselineSet if there are any tests in web-platform-tests.
         # TODO(qyearsley): Consider calling ensure_manifest in WebKitPatch.
         # See: crbug.com/698294
         WPTManifest.ensure_manifest(tool)
@@ -81,16 +85,19 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             _log.info('There are some builders with no results:')
             self._log_builder_list(builders_without_results)
 
-        if not options.fill_missing and builders_without_results:
-            options.fill_missing = self._tool.user.confirm(
-                'Would you like to try to fill in missing results with\n'
-                'available results? This assumes that layout test results\n'
-                'for the platforms with missing results are the same as\n'
-                'results on other platforms.',
+        if options.fill_missing is None and builders_without_results:
+            should_continue = self._tool.user.confirm(
+                'Would you like to continue?',
                 default=self._tool.user.DEFAULT_NO)
-            if not options.fill_missing:
+            if not should_continue:
                 _log.info('Aborting.')
                 return 1
+            options.fill_missing = self._tool.user.confirm(
+                'Would you like to try to fill in missing results with\n'
+                'available results?\n'
+                'Note: This will generally yield correct results\n'
+                'as long as the results are not platform-specific.',
+                default=self._tool.user.DEFAULT_NO)
 
         if args:
             test_baseline_set = self._make_test_baseline_set_for_tests(
