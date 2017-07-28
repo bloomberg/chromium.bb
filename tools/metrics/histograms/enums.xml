@@ -32581,6 +32581,7 @@ from previous Chrome versions.
   <int value="1" label="SAFE"/>
   <int value="2" label="BLOCKED"/>
   <int value="3" label="ABANDONED"/>
+  <int value="4" label="NOT_SUPPORTED"/>
 </enum>
 
 <enum name="SavePasswordPromptResponseType">

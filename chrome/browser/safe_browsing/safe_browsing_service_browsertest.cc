@@ -1491,9 +1491,6 @@ class SafeBrowsingServiceWebSocketTest
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceWebSocketTest,
                        MalwareWebSocketBlocked) {
-  // This test currently only passes when the network service is enabled.
-  if (!base::FeatureList::IsEnabled(features::kNetworkService))
-    return;
   GURL main_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
   // This constructs the URL with the same logic as malware_websocket.html.
   GURL resolved = main_url.Resolve("/safe_browsing/malware-ws");
@@ -2273,9 +2270,6 @@ class V4SafeBrowsingServiceWebSocketTest
 // deleted when the old database backend is removed.
 IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceWebSocketTest,
                        MalwareWebSocketBlocked) {
-  // This test currently only passes when the network service is enabled.
-  if (!base::FeatureList::IsEnabled(features::kNetworkService))
-    return;
   GURL main_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
   // This constructs the URL with the same logic as malware_websocket.html.
   GURL resolved = main_url.Resolve("/safe_browsing/malware-ws");

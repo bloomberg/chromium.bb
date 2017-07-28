@@ -1232,7 +1232,8 @@ bool ChromeContentRendererClient::WillSendRequest(
     const blink::WebURL& url,
     std::vector<std::unique_ptr<content::URLLoaderThrottle>>* throttles,
     GURL* new_url) {
-  if (UsingSafeBrowsingMojoService()) {
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+    InitSafeBrowsingIfNecessary();
     RenderFrame* render_frame = content::RenderFrame::FromWebFrame(frame);
     throttles->push_back(
         base::MakeUnique<safe_browsing::RendererURLLoaderThrottle>(
@@ -1334,8 +1335,7 @@ bool ChromeContentRendererClient::IsExtensionOrSharedModuleWhitelisted(
 
 std::unique_ptr<blink::WebSocketHandshakeThrottle>
 ChromeContentRendererClient::CreateWebSocketHandshakeThrottle() {
-  if (!UsingSafeBrowsingMojoService())
-    return nullptr;
+  InitSafeBrowsingIfNecessary();
   return base::MakeUnique<safe_browsing::WebSocketSBHandshakeThrottle>(
       safe_browsing_.get());
 }
@@ -1632,12 +1632,9 @@ ChromeContentRendererClient::GetTaskSchedulerInitParams() {
       GetRendererTaskSchedulerInitParamsFromCommandLine();
 }
 
-bool ChromeContentRendererClient::UsingSafeBrowsingMojoService() {
+void ChromeContentRendererClient::InitSafeBrowsingIfNecessary() {
   if (safe_browsing_)
-    return true;
-  if (!base::FeatureList::IsEnabled(features::kNetworkService))
-    return false;
+    return;
   RenderThread::Get()->GetConnector()->BindInterface(
       content::mojom::kBrowserServiceName, &safe_browsing_);
-  return true;
 }

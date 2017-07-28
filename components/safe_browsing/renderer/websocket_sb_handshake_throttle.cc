@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -61,6 +62,12 @@ void WebSocketSBHandshakeThrottle::ThrottleHandshake(
       std::string(), load_flags, content::RESOURCE_TYPE_SUB_RESOURCE, false,
       base::BindOnce(&WebSocketSBHandshakeThrottle::OnCheckResult,
                      weak_factory_.GetWeakPtr()));
+
+  // This use of base::Unretained() is safe because the handler will not be
+  // called after |url_checker_| is destroyed, and it is owned by this object.
+  url_checker_.set_connection_error_handler(
+      base::BindOnce(&WebSocketSBHandshakeThrottle::OnConnectionError,
+                     base::Unretained(this)));
 }
 
 void WebSocketSBHandshakeThrottle::OnCheckResult(bool proceed,
@@ -80,6 +87,17 @@ void WebSocketSBHandshakeThrottle::OnCheckResult(bool proceed,
         "WebSocket connection to %s failed safe browsing check",
         url_.spec().c_str())));
   }
+  // |this| is destroyed here.
+}
+
+void WebSocketSBHandshakeThrottle::OnConnectionError() {
+  DCHECK_EQ(result_, Result::UNKNOWN);
+
+  url_checker_.reset();
+  // Make the destructor record NOT_SUPPORTED in the result histogram.
+  result_ = Result::NOT_SUPPORTED;
+  // Don't record the time elapsed because it's unlikely to be meaningful.
+  callbacks_->OnSuccess();
   // |this| is destroyed here.
 }
 
