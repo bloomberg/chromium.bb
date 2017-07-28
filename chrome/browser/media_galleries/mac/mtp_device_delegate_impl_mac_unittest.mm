@@ -12,17 +12,15 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media_galleries/mac/mtp_device_delegate_impl_mac.h"
 #include "components/storage_monitor/image_capture_device_manager.h"
 #include "components/storage_monitor/test_storage_monitor.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -151,17 +149,13 @@ const char kTestFileContents[] = "test";
 
 class MTPDeviceDelegateImplMacTest : public testing::Test {
  public:
-  MTPDeviceDelegateImplMacTest() : camera_(NULL), delegate_(NULL) {}
+  MTPDeviceDelegateImplMacTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        camera_(NULL),
+        delegate_(NULL) {}
 
   void SetUp() override {
-    ui_thread_.reset(new content::TestBrowserThread(
-        content::BrowserThread::UI, &message_loop_));
-    file_thread_.reset(new content::TestBrowserThread(
-        content::BrowserThread::FILE, &message_loop_));
-    io_thread_.reset(new content::TestBrowserThread(
-        content::BrowserThread::IO));
-    ASSERT_TRUE(io_thread_->Start());
-
     storage_monitor::TestStorageMonitor* monitor =
         storage_monitor::TestStorageMonitor::CreateAndInstall();
     manager_.SetNotifications(monitor->receiver());
@@ -184,8 +178,6 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
     delegate_->CancelPendingTasksAndDeleteDelegate();
 
     storage_monitor::TestStorageMonitor::Destroy();
-
-    io_thread_->Stop();
   }
 
   void OnError(base::WaitableEvent* event, base::File::Error error) {
@@ -243,8 +235,7 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
       base::Bind(&MTPDeviceDelegateImplMacTest::OnError,
                  base::Unretained(this),
                  &wait));
-    base::RunLoop loop;
-    loop.RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
     EXPECT_TRUE(wait.IsSignaled());
     *info = info_;
     return error_;
@@ -261,8 +252,7 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
         base::Bind(&MTPDeviceDelegateImplMacTest::OnError,
                    base::Unretained(this),
                    &wait));
-    base::RunLoop loop;
-    loop.RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
     wait.Wait();
     return error_;
   }
@@ -280,18 +270,15 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
         base::Bind(&MTPDeviceDelegateImplMacTest::OnError,
                    base::Unretained(this),
                    &wait));
-    base::RunLoop loop;
-    loop.RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
     wait.Wait();
     return error_;
   }
 
  protected:
-  base::MessageLoopForUI message_loop_;
-  // Note: threads must be made in this order: UI > FILE > IO
-  std::unique_ptr<content::TestBrowserThread> ui_thread_;
-  std::unique_ptr<content::TestBrowserThread> file_thread_;
-  std::unique_ptr<content::TestBrowserThread> io_thread_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+
   base::ScopedTempDir temp_dir_;
   storage_monitor::ImageCaptureDeviceManager manager_;
   MockMTPICCameraDevice* camera_;
@@ -363,8 +350,7 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestOverlappedReadDir) {
   // Signal the delegate that no files are coming.
   delegate_->NoMoreItems();
 
-  base::RunLoop loop;
-  loop.RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   wait.Wait();
 
   EXPECT_EQ(base::File::FILE_OK, error_);
