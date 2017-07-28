@@ -697,7 +697,10 @@ mojom("mojo_bindings") {
   }
 
   if (safe_browsing_mode == 1) {
-    sources += [ "safe_browsing/safe_archive_analyzer.mojom" ]
+    sources += [
+      "safe_browsing/phishing_detector.mojom",
+      "safe_browsing/safe_archive_analyzer.mojom",
+    ]
   }
 
   public_deps = [

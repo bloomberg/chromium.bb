@@ -131,10 +131,6 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_RequestFileSystemAccessAsyncResponse,
                     int  /* request_id */,
                     bool /* allowed */)
 
-// Sent when the profile changes the kSafeBrowsingEnabled preference.
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetClientSidePhishingDetection,
-                    bool /* enable_phishing_detection */)
-
 // Notifies the renderer whether hiding/showing the browser controls is enabled,
 // what the current state should be, and whether or not to animate to the
 // proper state.

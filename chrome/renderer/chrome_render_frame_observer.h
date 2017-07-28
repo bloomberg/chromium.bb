@@ -14,6 +14,10 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
+#if defined(SAFE_BROWSING_CSD)
+#include "chrome/common/safe_browsing/phishing_detector.mojom.h"
+#endif
+
 namespace gfx {
 class Size;
 }
@@ -31,6 +35,9 @@ class TranslateHelper;
 class ChromeRenderFrameObserver
     : public content::RenderFrameObserver,
       public chrome::mojom::ImageContextMenuRenderer,
+#if defined(SAFE_BROWSING_CSD)
+      public chrome::mojom::PhishingDetector,
+#endif
       public chrome::mojom::ThumbnailCapturer {
  public:
   explicit ChromeRenderFrameObserver(content::RenderFrame* render_frame);
@@ -54,6 +61,11 @@ class ChromeRenderFrameObserver
   // chrome::mojom::ImageContextMenuRenderer:
   void RequestReloadImageForContextNode() override;
 
+#if defined(SAFE_BROWSING_CSD)
+  // chrome::mojom::PhishingDetector:
+  void SetClientSidePhishingDetection(bool enable_phishing_detection) override;
+#endif
+
   // chrome::mojom::ThumbnailCapturer:
   void RequestThumbnailForContextNode(
       int32_t thumbnail_min_area_pixels,
@@ -64,6 +76,10 @@ class ChromeRenderFrameObserver
   // Mojo handlers.
   void OnImageContextMenuRendererRequest(
       chrome::mojom::ImageContextMenuRendererRequest request);
+#if defined(SAFE_BROWSING_CSD)
+  void OnPhishingDetectorRequest(
+      chrome::mojom::PhishingDetectorRequest request);
+#endif
   void OnThumbnailCapturerRequest(
       chrome::mojom::ThumbnailCapturerRequest request);
 
@@ -93,6 +109,10 @@ class ChromeRenderFrameObserver
 
   mojo::BindingSet<chrome::mojom::ImageContextMenuRenderer>
       image_context_menu_renderer_bindings_;
+
+#if defined(SAFE_BROWSING_CSD)
+  mojo::BindingSet<chrome::mojom::PhishingDetector> phishing_detector_bindings_;
+#endif
 
   mojo::BindingSet<chrome::mojom::ThumbnailCapturer>
       thumbnail_capturer_bindings_;
