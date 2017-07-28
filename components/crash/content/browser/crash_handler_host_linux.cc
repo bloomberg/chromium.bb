@@ -27,10 +27,11 @@
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "breakpad/src/client/linux/handler/exception_handler.h"
 #include "breakpad/src/client/linux/minidump_writer/linux_dumper.h"
@@ -104,9 +105,8 @@ CrashHandlerHostLinux::CrashHandlerHostLinux(const std::string& process_type,
 #endif
       file_descriptor_watcher_(FROM_HERE),
       shutting_down_(false),
-      worker_pool_token_(base::SequencedWorkerPool::GetSequenceToken()) {
-  write_dump_file_sequence_checker_.DetachFromSequence();
-
+      blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})) {
   int fds[2];
   // We use SOCK_SEQPACKET rather than SOCK_DGRAM to prevent the process from
   // sending datagrams to other sockets on the system. The sandbox may prevent
@@ -390,26 +390,23 @@ void CrashHandlerHostLinux::FindCrashingThreadAndDump(
   info->upload = upload_;
 #endif
 
-
-  BrowserThread::GetBlockingPool()->PostSequencedWorkerTask(
-      worker_pool_token_,
+  BreakpadInfo* info_ptr = info.get();
+  blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&CrashHandlerHostLinux::WriteDumpFile,
-                 base::Unretained(this),
-                 base::Passed(&info),
-                 base::Passed(&crash_context),
-                 crashing_pid,
-                 signal_fd));
+      base::BindOnce(&CrashHandlerHostLinux::WriteDumpFile,
+                     base::Unretained(this), info_ptr,
+                     base::Passed(&crash_context), crashing_pid),
+      base::BindOnce(&CrashHandlerHostLinux::QueueCrashDumpTask,
+                     base::Unretained(this), base::Passed(&info), signal_fd));
 }
 
-void CrashHandlerHostLinux::WriteDumpFile(std::unique_ptr<BreakpadInfo> info,
+void CrashHandlerHostLinux::WriteDumpFile(BreakpadInfo* info,
                                           std::unique_ptr<char[]> crash_context,
-                                          pid_t crashing_pid,
-                                          int signal_fd) {
-  DCHECK(write_dump_file_sequence_checker_.CalledOnValidSequence());
+                                          pid_t crashing_pid) {
+  base::ThreadRestrictions::AssertIOAllowed();
 
   // Set |info->distro| here because base::GetLinuxDistro() needs to run on a
-  // blocking thread.
+  // blocking sequence.
   std::string distro = base::GetLinuxDistro();
   info->distro_length = distro.length();
   // Freed in CrashDumpTask().
@@ -458,13 +455,6 @@ void CrashHandlerHostLinux::WriteDumpFile(std::unique_ptr<BreakpadInfo> info,
   info->log_filename = minidump_log_filename_str;
 #endif
   info->pid = crashing_pid;
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&CrashHandlerHostLinux::QueueCrashDumpTask,
-                 base::Unretained(this),
-                 base::Passed(&info),
-                 signal_fd));
 }
 
 void CrashHandlerHostLinux::QueueCrashDumpTask(
