@@ -94,11 +94,12 @@ void CompositorAnimationPlayer::NotifyAnimationAborted(
 void CompositorAnimationPlayer::NotifyAnimationTakeover(
     base::TimeTicks monotonic_time,
     int target_property,
-    double animation_start_time,
+    base::TimeTicks animation_start_time,
     std::unique_ptr<cc::AnimationCurve> curve) {
   if (delegate_) {
     delegate_->NotifyAnimationTakeover(
-        (monotonic_time - base::TimeTicks()).InSecondsF(), animation_start_time,
+        (monotonic_time - base::TimeTicks()).InSecondsF(),
+        (animation_start_time - base::TimeTicks()).InSecondsF(),
         std::move(curve));
   }
 }

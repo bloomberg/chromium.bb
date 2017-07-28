@@ -622,8 +622,7 @@ void AnimationPlayer::MarkAnimationsForDeletion(base::TimeTicks monotonic_time,
       AnimationEvent aborted_event(
           AnimationEvent::TAKEOVER, element_id_, group_id,
           animations_[i]->target_property_id(), monotonic_time);
-      aborted_event.animation_start_time =
-          animations_[i]->start_time().since_origin().InSecondsF();
+      aborted_event.animation_start_time = animations_[i]->start_time();
       const ScrollOffsetAnimationCurve* scroll_offset_animation_curve =
           animations_[i]->curve()->ToScrollOffsetAnimationCurve();
       aborted_event.curve = scroll_offset_animation_curve->Clone();

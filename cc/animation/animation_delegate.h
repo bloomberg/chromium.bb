@@ -24,12 +24,10 @@ class CC_ANIMATION_EXPORT AnimationDelegate {
                                       int target_property,
                                       int group) = 0;
 
-  // TODO(miu): Fix inconsistency in passing time values: |animation_start_time|
-  // should be of type base::TimeTicks. http://crbug.com/747598
   virtual void NotifyAnimationTakeover(
       base::TimeTicks monotonic_time,
       int target_property,
-      double animation_start_time,
+      base::TimeTicks animation_start_time,
       std::unique_ptr<AnimationCurve> curve) = 0;
 
  protected:

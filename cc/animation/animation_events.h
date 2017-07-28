@@ -43,9 +43,7 @@ struct CC_ANIMATION_EXPORT AnimationEvent {
   FilterOperations filters;
 
   // For continuing a scroll offset animation on the main thread.
-  // TODO(miu): Fix inconsistency in passing time values: |animation_start_time|
-  // should be of type base::TimeTicks. http://crbug.com/747598
-  double animation_start_time;
+  base::TimeTicks animation_start_time;
   std::unique_ptr<AnimationCurve> curve;
 };
 

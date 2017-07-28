@@ -356,7 +356,7 @@ class COMPOSITOR_EXPORT LayerAnimator
   void NotifyAnimationTakeover(
       base::TimeTicks monotonic_time,
       int target_property,
-      double animation_start_time,
+      base::TimeTicks animation_start_time,
       std::unique_ptr<cc::AnimationCurve> curve) override {}
 
   // Implementation of LayerThreadedAnimationDelegate.
