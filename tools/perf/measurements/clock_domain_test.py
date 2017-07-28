@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from telemetry import benchmark
+from telemetry import decorators
 from telemetry.testing import tab_test_case
 from telemetry.timeline import tracing_config
 from tracing.trace_data import trace_data
@@ -17,6 +18,7 @@ class ClockDomainTest(tab_test_case.TabTestCase):
   # (since when doing Android tracing there are two different devices,
   # so the clock domains will be different)
   @benchmark.Disabled('android')
+  @decorators.Isolated
   def testTelemetryUsesChromeClockDomain(self):
 
     tracing_controller = self._browser.platform.tracing_controller
