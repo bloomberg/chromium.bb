@@ -569,6 +569,32 @@ static bool IsBoundary(TextGranularity granularity) {
          granularity == TextGranularity::kDocumentBoundary;
 }
 
+VisiblePosition SelectionModifier::ComputeModifyPosition(
+    SelectionModifyAlteration alter,
+    SelectionModifyDirection direction,
+    TextGranularity granularity) {
+  switch (direction) {
+    case SelectionModifyDirection::kRight:
+      if (alter == SelectionModifyAlteration::kMove)
+        return ModifyMovingRight(granularity);
+      return ModifyExtendingRight(granularity);
+    case SelectionModifyDirection::kForward:
+      if (alter == SelectionModifyAlteration::kExtend)
+        return ModifyExtendingForward(granularity);
+      return ModifyMovingForward(granularity);
+    case SelectionModifyDirection::kLeft:
+      if (alter == SelectionModifyAlteration::kMove)
+        return ModifyMovingLeft(granularity);
+      return ModifyExtendingLeft(granularity);
+    case SelectionModifyDirection::kBackward:
+      if (alter == SelectionModifyAlteration::kExtend)
+        return ModifyExtendingBackward(granularity);
+      return ModifyMovingBackward(granularity);
+  }
+  NOTREACHED() << static_cast<int>(direction);
+  return VisiblePosition();
+}
+
 bool SelectionModifier::Modify(SelectionModifyAlteration alter,
                                SelectionModifyDirection direction,
                                TextGranularity granularity) {
@@ -583,34 +609,8 @@ bool SelectionModifier::Modify(SelectionModifyAlteration alter,
 
   bool was_range = selection_.IsRange();
   VisiblePosition original_start_position = selection_.VisibleStart();
-  VisiblePosition position;
-  switch (direction) {
-    case SelectionModifyDirection::kRight:
-      if (alter == SelectionModifyAlteration::kMove)
-        position = ModifyMovingRight(granularity);
-      else
-        position = ModifyExtendingRight(granularity);
-      break;
-    case SelectionModifyDirection::kForward:
-      if (alter == SelectionModifyAlteration::kExtend)
-        position = ModifyExtendingForward(granularity);
-      else
-        position = ModifyMovingForward(granularity);
-      break;
-    case SelectionModifyDirection::kLeft:
-      if (alter == SelectionModifyAlteration::kMove)
-        position = ModifyMovingLeft(granularity);
-      else
-        position = ModifyExtendingLeft(granularity);
-      break;
-    case SelectionModifyDirection::kBackward:
-      if (alter == SelectionModifyAlteration::kExtend)
-        position = ModifyExtendingBackward(granularity);
-      else
-        position = ModifyMovingBackward(granularity);
-      break;
-  }
-
+  VisiblePosition position =
+      ComputeModifyPosition(alter, direction, granularity);
   if (position.IsNull())
     return false;
 
