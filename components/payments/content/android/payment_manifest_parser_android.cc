@@ -49,7 +49,7 @@ class ParseCallback {
 
     for (size_t i = 0; i < web_app_manifest_urls.size(); ++i) {
       bool is_valid_uri = Java_PaymentManifestParser_addUri(
-          env, juris.obj(), base::checked_cast<int>(i),
+          env, juris, base::checked_cast<int>(i),
           base::android::ConvertUTF8ToJavaString(
               env, web_app_manifest_urls[i].spec()));
       DCHECK(is_valid_uri);
@@ -61,7 +61,7 @@ class ParseCallback {
 
     for (size_t i = 0; i < supported_origins.size(); ++i) {
       bool is_valid_uri = Java_PaymentManifestParser_addUri(
-          env, jorigins.obj(), base::checked_cast<int>(i),
+          env, jorigins, base::checked_cast<int>(i),
           base::android::ConvertUTF8ToJavaString(
               env, supported_origins[i].Serialize()));
       DCHECK(is_valid_uri);
@@ -69,7 +69,7 @@ class ParseCallback {
 
     // Can trigger synchronous deletion of PaymentManifestParserAndroid.
     Java_ManifestParseCallback_onPaymentMethodManifestParseSuccess(
-        env, jcallback_, juris.obj(), jorigins.obj(), all_origins_supported);
+        env, jcallback_, juris, jorigins, all_origins_supported);
   }
 
   // Copies web app manifest into Java.
@@ -92,7 +92,7 @@ class ParseCallback {
       DCHECK_GE(100U, section->fingerprints.size());
 
       Java_PaymentManifestParser_addSectionToManifest(
-          env, jmanifest.obj(), base::checked_cast<int>(i),
+          env, jmanifest, base::checked_cast<int>(i),
           base::android::ConvertUTF8ToJavaString(env, section->id),
           section->min_version,
           base::checked_cast<int>(section->fingerprints.size()));
@@ -100,7 +100,7 @@ class ParseCallback {
       for (size_t j = 0; j < section->fingerprints.size(); ++j) {
         const std::vector<uint8_t>& fingerprint = section->fingerprints[j];
         Java_PaymentManifestParser_addFingerprintToSection(
-            env, jmanifest.obj(), base::checked_cast<int>(i),
+            env, jmanifest, base::checked_cast<int>(i),
             base::checked_cast<int>(j),
             base::android::ToJavaByteArray(env, fingerprint));
       }
@@ -108,7 +108,7 @@ class ParseCallback {
 
     // Can trigger synchronous deletion of PaymentManifestParserAndroid.
     Java_ManifestParseCallback_onWebAppManifestParseSuccess(env, jcallback_,
-                                                            jmanifest.obj());
+                                                            jmanifest);
   }
 
  private:

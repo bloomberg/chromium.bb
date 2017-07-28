@@ -30,8 +30,7 @@ PlatformSensorProviderAndroid::~PlatformSensorProviderAndroid() = default;
 
 void PlatformSensorProviderAndroid::SetSensorManagerToNullForTesting() {
   JNIEnv* env = AttachCurrentThread();
-  Java_PlatformSensorProvider_setSensorManagerToNullForTesting(env,
-                                                               j_object_.obj());
+  Java_PlatformSensorProvider_setSensorManagerToNullForTesting(env, j_object_);
 }
 
 void PlatformSensorProviderAndroid::CreateSensorInternal(
@@ -40,7 +39,7 @@ void PlatformSensorProviderAndroid::CreateSensorInternal(
     const CreateSensorCallback& callback) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> sensor = Java_PlatformSensorProvider_createSensor(
-      env, j_object_.obj(), static_cast<jint>(type));
+      env, j_object_, static_cast<jint>(type));
 
   if (!sensor.obj()) {
     callback.Run(nullptr);

@@ -77,7 +77,7 @@ void DialogOverlayImpl::CompleteInit(JNIEnv* env,
   if (ui::WindowAndroid* window = cvc_->GetWindowAndroid()) {
     ScopedJavaLocalRef<jobject> token = window->GetWindowToken();
     if (!token.is_null())
-      Java_DialogOverlayImpl_onWindowToken(env, obj.obj(), token);
+      Java_DialogOverlayImpl_onWindowToken(env, obj, token);
     // else we will send one if we get a callback from |cvc_|.
   }
 }
@@ -94,7 +94,7 @@ void DialogOverlayImpl::Stop() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = obj_.get(env);
   if (!obj.is_null())
-    Java_DialogOverlayImpl_onDismissed(env, obj.obj());
+    Java_DialogOverlayImpl_onDismissed(env, obj);
 
   obj_.reset();
 }
@@ -116,7 +116,7 @@ void DialogOverlayImpl::GetCompositorOffset(
       point = view->GetLocationOfContainerViewOnScreen();
   }
 
-  Java_DialogOverlayImpl_receiveCompositorOffset(env, rect.obj(), point.x(),
+  Java_DialogOverlayImpl_receiveCompositorOffset(env, rect, point.x(),
                                                  point.y());
 }
 
@@ -174,14 +174,14 @@ void DialogOverlayImpl::OnAttachedToWindow() {
 
   ScopedJavaLocalRef<jobject> obj = obj_.get(env);
   if (!obj.is_null())
-    Java_DialogOverlayImpl_onWindowToken(env, obj.obj(), token);
+    Java_DialogOverlayImpl_onWindowToken(env, obj, token);
 }
 
 void DialogOverlayImpl::OnDetachedFromWindow() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = obj_.get(env);
   if (!obj.is_null())
-    Java_DialogOverlayImpl_onWindowToken(env, obj.obj(), nullptr);
+    Java_DialogOverlayImpl_onWindowToken(env, obj, nullptr);
 }
 
 static jint RegisterSurface(JNIEnv* env,

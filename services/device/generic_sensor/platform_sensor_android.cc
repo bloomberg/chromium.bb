@@ -26,7 +26,7 @@ PlatformSensorAndroid::PlatformSensorAndroid(
   JNIEnv* env = AttachCurrentThread();
   j_object_.Reset(java_sensor);
 
-  Java_PlatformSensor_initPlatformSensorAndroid(env, j_object_.obj(),
+  Java_PlatformSensor_initPlatformSensorAndroid(env, j_object_,
                                                 reinterpret_cast<jlong>(this));
 }
 
@@ -37,38 +37,38 @@ PlatformSensorAndroid::~PlatformSensorAndroid() {
 mojom::ReportingMode PlatformSensorAndroid::GetReportingMode() {
   JNIEnv* env = AttachCurrentThread();
   return static_cast<mojom::ReportingMode>(
-      Java_PlatformSensor_getReportingMode(env, j_object_.obj()));
+      Java_PlatformSensor_getReportingMode(env, j_object_));
 }
 
 PlatformSensorConfiguration PlatformSensorAndroid::GetDefaultConfiguration() {
   JNIEnv* env = AttachCurrentThread();
   jdouble frequency =
-      Java_PlatformSensor_getDefaultConfiguration(env, j_object_.obj());
+      Java_PlatformSensor_getDefaultConfiguration(env, j_object_);
   return PlatformSensorConfiguration(frequency);
 }
 
 double PlatformSensorAndroid::GetMaximumSupportedFrequency() {
   JNIEnv* env = AttachCurrentThread();
-  return Java_PlatformSensor_getMaximumSupportedFrequency(env, j_object_.obj());
+  return Java_PlatformSensor_getMaximumSupportedFrequency(env, j_object_);
 }
 
 bool PlatformSensorAndroid::StartSensor(
     const PlatformSensorConfiguration& configuration) {
   JNIEnv* env = AttachCurrentThread();
-  return Java_PlatformSensor_startSensor(env, j_object_.obj(),
+  return Java_PlatformSensor_startSensor(env, j_object_,
                                          configuration.frequency());
 }
 
 void PlatformSensorAndroid::StopSensor() {
   JNIEnv* env = AttachCurrentThread();
-  Java_PlatformSensor_stopSensor(env, j_object_.obj());
+  Java_PlatformSensor_stopSensor(env, j_object_);
 }
 
 bool PlatformSensorAndroid::CheckSensorConfiguration(
     const PlatformSensorConfiguration& configuration) {
   JNIEnv* env = AttachCurrentThread();
   return Java_PlatformSensor_checkSensorConfiguration(
-      env, j_object_.obj(), configuration.frequency());
+      env, j_object_, configuration.frequency());
 }
 
 void PlatformSensorAndroid::NotifyPlatformSensorError(
