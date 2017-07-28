@@ -51,11 +51,12 @@ class SerializationWarningTest : public testing::Test {
     warning_observer_.set_last_warning(mojo::internal::VALIDATION_ERROR_NONE);
 
     mojo::internal::SerializationContext context;
-    mojo::internal::FixedBufferForTesting buf(
-        mojo::internal::PrepareToSerialize<MojomType>(obj, &context));
-    typename mojo::internal::MojomTypeTraits<MojomType>::Data* data;
-    mojo::internal::Serialize<MojomType>(obj, &buf, &data, &context);
-
+    mojo::Message message(0, 0, 0, 0, nullptr);
+    typename mojo::internal::MojomTypeTraits<MojomType>::Data::BufferWriter
+        writer;
+    mojo::internal::PrepareToSerialize<MojomType>(obj, &context);
+    mojo::internal::Serialize<MojomType>(obj, message.payload_buffer(), &writer,
+                                         &context);
     EXPECT_EQ(expected_warning, warning_observer_.last_warning());
   }
 
@@ -66,12 +67,12 @@ class SerializationWarningTest : public testing::Test {
     warning_observer_.set_last_warning(mojo::internal::VALIDATION_ERROR_NONE);
 
     mojo::internal::SerializationContext context;
-    mojo::internal::FixedBufferForTesting buf(
-        mojo::internal::PrepareToSerialize<MojomType>(obj, &context));
-    typename mojo::internal::MojomTypeTraits<MojomType>::Data* data;
-    mojo::internal::Serialize<MojomType>(obj, &buf, &data, validate_params,
-                                         &context);
-
+    mojo::Message message(0, 0, 0, 0, nullptr);
+    typename mojo::internal::MojomTypeTraits<MojomType>::Data::BufferWriter
+        writer;
+    mojo::internal::PrepareToSerialize<MojomType>(obj, &context);
+    mojo::internal::Serialize<MojomType>(obj, message.payload_buffer(), &writer,
+                                         validate_params, &context);
     EXPECT_EQ(expected_warning, warning_observer_.last_warning());
   }
 
@@ -83,10 +84,12 @@ class SerializationWarningTest : public testing::Test {
     warning_observer_.set_last_warning(mojo::internal::VALIDATION_ERROR_NONE);
 
     mojo::internal::SerializationContext context;
-    mojo::internal::FixedBufferForTesting buf(
-        mojo::internal::PrepareToSerialize<MojomType>(obj, false, &context));
-    typename mojo::internal::MojomTypeTraits<MojomType>::Data* data;
-    mojo::internal::Serialize<MojomType>(obj, &buf, &data, false, &context);
+    mojo::Message message(0, 0, 0, 0, nullptr);
+    typename mojo::internal::MojomTypeTraits<MojomType>::Data::BufferWriter
+        writer;
+    mojo::internal::PrepareToSerialize<MojomType>(obj, false, &context);
+    mojo::internal::Serialize<MojomType>(obj, message.payload_buffer(), &writer,
+                                         false, &context);
 
     EXPECT_EQ(expected_warning, warning_observer_.last_warning());
   }

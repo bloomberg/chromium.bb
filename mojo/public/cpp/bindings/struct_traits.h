@@ -52,13 +52,10 @@ namespace mojo {
 //      return value or reference of base::Optional<T>/WTF::Optional<T>, if T
 //      has the right *Traits defined.
 //
-//      During serialization, getters for string/struct/array/map/union fields
-//      are called twice (one for size calculation and one for actual
-//      serialization). If you want to return a value (as opposed to a
-//      reference) from these getters, you have to be sure that constructing and
-//      copying the returned object is really cheap.
-//
-//      Getters for fields of other types are called once.
+//      During serialization, getters for all fields are called exactly once. It
+//      is therefore reasonably effecient for a getter to construct and return
+//      temporary value in the event that it cannot return a readily
+//      serializable reference to some existing object.
 //
 //   2. A static Read() method to set the contents of a |T| instance from a
 //      DataViewType.
@@ -78,9 +75,10 @@ namespace mojo {
 //
 //        static bool IsNull(const T& input);
 //
-//      If this method returns true, it is guaranteed that none of the getters
-//      (described in section 1) will be called for the same |input|. So you
-//      don't have to check whether |input| is null in those getters.
+//      This method is called exactly once during serialization, and if it
+//      returns |true|, it is guaranteed that none of the getters (described in
+//      section 1) will be called for the same |input|. So you don't have to
+//      check whether |input| is null in those getters.
 //
 //      If it is not defined, |T| instances are always considered non-null.
 //

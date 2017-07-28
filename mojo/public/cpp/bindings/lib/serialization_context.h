@@ -87,10 +87,7 @@ class MOJO_CPP_BINDINGS_EXPORT SerializationContext {
 
   // Prepares a new serialized message based on the state accumulated by this
   // SerializationContext so far.
-  void PrepareMessage(uint32_t message_name,
-                      uint32_t flags,
-                      size_t payload_size,
-                      Message* message);
+  void PrepareMessage(uint32_t message_name, uint32_t flags, Message* message);
 
   const std::vector<mojo::ScopedHandle>* handles() { return &handles_; }
   std::vector<mojo::ScopedHandle>* mutable_handles() { return &handles_; }

@@ -22,38 +22,21 @@ struct Serializer<StringDataView, MaybeConstUserType> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
   using Traits = StringTraits<UserType>;
 
-  static size_t PrepareToSerialize(MaybeConstUserType& input,
-                                   SerializationContext* context) {
-    const bool is_null = CallIsNullIfExists<Traits>(input);
-    context->PushNextNullState(is_null);
-    if (is_null)
-      return 0;
-
-    void* custom_context = CustomContextHelper<Traits>::SetUp(input, context);
-    return Align(sizeof(String_Data) +
-                 CallWithContext(Traits::GetSize, input, custom_context));
-  }
+  static void PrepareToSerialize(MaybeConstUserType& input,
+                                 SerializationContext* context) {}
 
   static void Serialize(MaybeConstUserType& input,
                         Buffer* buffer,
-                        String_Data** output,
+                        String_Data::BufferWriter* writer,
                         SerializationContext* context) {
-    if (context->IsNextFieldNull()) {
-      *output = nullptr;
+    if (CallIsNullIfExists<Traits>(input))
       return;
-    }
 
-    void* custom_context = CustomContextHelper<Traits>::GetNext(context);
-
-    String_Data* result = String_Data::New(
-        CallWithContext(Traits::GetSize, input, custom_context), buffer);
-    if (result) {
-      memcpy(result->storage(),
-             CallWithContext(Traits::GetData, input, custom_context),
-             CallWithContext(Traits::GetSize, input, custom_context));
-    }
-    *output = result;
-
+    void* custom_context = CustomContextHelper<Traits>::SetUp(input, context);
+    const size_t size = CallWithContext(Traits::GetSize, input, custom_context);
+    writer->Allocate(size, buffer);
+    memcpy((*writer)->storage(),
+           CallWithContext(Traits::GetData, input, custom_context), size);
     CustomContextHelper<Traits>::TearDown(input, custom_context);
   }
 
