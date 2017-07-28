@@ -67,8 +67,12 @@ class SmoothnessTop25(_Smoothness):
       def SetExpectations(self):
         self.DisableStory('http://www.cnn.com', [story_module.expectations.ALL],
                           'crbug.com/528474')
-        self.DisableStory('http://www.amazon.com', [story_module.expectations.ALL],
+        self.DisableStory('http://www.amazon.com',
+                          [story_module.expectations.ALL],
                           'crbug.com/667432')
+        self.DisableStory('https://mail.google.com/mail/',
+                          [story_module.expectations.ALL_WIN],
+                          'crbug.com/750147')
     return StoryExpectations()
 
 
