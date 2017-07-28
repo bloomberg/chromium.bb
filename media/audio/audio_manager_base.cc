@@ -277,6 +277,7 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
       // Turn off effects that weren't requested.
       output_params.set_effects(params.effects() & output_params.effects());
     }
+    output_params.set_latency_tag(params.latency_tag());
   }
 
   std::unique_ptr<DispatcherParams> dispatcher_params =

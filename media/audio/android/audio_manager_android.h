@@ -69,6 +69,11 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
 
   static bool RegisterAudioManager(JNIEnv* env);
 
+  // Indicates if there's support for the OpenSLES performance mode keys. See
+  // OpenSLESOutputStream for specific details. Essentially this allows for low
+  // power audio when large buffer sizes can be used.
+  static bool SupportsPerformanceModeForOutput();
+
   void SetMute(JNIEnv* env,
                const base::android::JavaParamRef<jobject>& obj,
                jboolean muted);
