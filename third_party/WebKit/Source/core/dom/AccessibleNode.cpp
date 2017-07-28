@@ -383,23 +383,19 @@ const AtomicString& AccessibleNode::GetPropertyOrARIAAttribute(
 }
 
 // static
-AccessibleNode* AccessibleNode::GetPropertyOrARIAAttribute(
+Element* AccessibleNode::GetPropertyOrARIAAttribute(
     Element* element,
     AOMRelationProperty property) {
   if (!element)
     return nullptr;
 
   if (AccessibleNode* result = GetProperty(element, property))
-    return result;
+    return result->element();
 
   // Fall back on the equivalent ARIA attribute.
   QualifiedName attribute = GetCorrespondingARIAAttribute(property);
   AtomicString value = element->FastGetAttribute(attribute);
-  Element* target = element->GetTreeScope().getElementById(value);
-  if (!target)
-    return nullptr;
-
-  return target->accessibleNode();
+  return element->GetTreeScope().getElementById(value);
 }
 
 // static

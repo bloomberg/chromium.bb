@@ -387,9 +387,7 @@ Element* AXObject::GetAOMPropertyOrARIAAttribute(
   if (!element)
     return nullptr;
 
-  AccessibleNode* target =
-      AccessibleNode::GetPropertyOrARIAAttribute(element, property);
-  return target ? target->element() : nullptr;
+  return AccessibleNode::GetPropertyOrARIAAttribute(element, property);
 }
 
 bool AXObject::HasAOMProperty(AOMRelationListProperty property,

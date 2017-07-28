@@ -101,7 +101,8 @@ class AXContentNodeDataSparseAttributeAdapter
                           const WebAXObject& value) override {
     switch (attribute) {
       case WebAXObjectAttribute::kAriaActiveDescendant:
-        dst_->AddIntAttribute(ui::AX_ATTR_ACTIVEDESCENDANT_ID, value.AxID());
+        // TODO(dmazzoni): WebAXObject::ActiveDescendant currently returns
+        // more information than the sparse interface does.
         break;
       case WebAXObjectAttribute::kAriaDetails:
         dst_->AddIntAttribute(ui::AX_ATTR_DETAILS_ID, value.AxID());

@@ -24,9 +24,6 @@ BrowserAccessibilityEvent* BrowserAccessibilityEvent::Create(
     case ui::AX_EVENT_ALERT:
       win_event_type = EVENT_SYSTEM_ALERT;
       break;
-    case ui::AX_EVENT_AUTOCORRECTION_OCCURED:
-      win_event_type = IA2_EVENT_OBJECT_ATTRIBUTE_CHANGED;
-      break;
     case ui::AX_EVENT_CHILDREN_CHANGED:
       win_event_type = EVENT_OBJECT_REORDER;
       break;

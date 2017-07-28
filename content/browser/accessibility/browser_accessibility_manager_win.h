@@ -66,7 +66,22 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
 
  protected:
   // AXTreeDelegate methods.
+  void OnTreeDataChanged(ui::AXTree* tree,
+                         const ui::AXTreeData& old_tree_data,
+                         const ui::AXTreeData& new_tree_data) override;
   void OnNodeCreated(ui::AXTree* tree, ui::AXNode* node) override;
+  void OnNodeDataWillChange(ui::AXTree* tree,
+                            const ui::AXNodeData& old_node_data,
+                            const ui::AXNodeData& new_node_data) override;
+  void OnStateChanged(ui::AXTree* tree,
+                      ui::AXNode* node,
+                      ui::AXState state,
+                      bool new_value) override;
+  void OnIntAttributeChanged(ui::AXTree* tree,
+                             ui::AXNode* node,
+                             ui::AXIntAttribute attr,
+                             int32_t old_value,
+                             int32_t new_value) override;
   void OnAtomicUpdateFinished(
       ui::AXTree* tree,
       bool root_changed,
