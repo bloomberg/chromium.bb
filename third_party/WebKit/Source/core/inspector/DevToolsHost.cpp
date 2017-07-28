@@ -139,8 +139,9 @@ void DevToolsHost::EvaluateScript(const String& expression) {
                                  v8::MicrotasksScope::kRunMicrotasks);
   v8::Local<v8::String> source =
       V8AtomicString(script_state->GetIsolate(), expression.Utf8().data());
-  V8ScriptRunner::CompileAndRunInternalScript(
-      source, script_state->GetIsolate(), String(), TextPosition());
+  V8ScriptRunner::CompileAndRunInternalScript(script_state, source,
+                                              script_state->GetIsolate(),
+                                              String(), TextPosition());
 }
 
 void DevToolsHost::DisconnectClient() {

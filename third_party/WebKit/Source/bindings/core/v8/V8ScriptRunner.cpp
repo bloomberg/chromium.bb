@@ -406,46 +406,49 @@ std::unique_ptr<CompileFn> SelectCompileFunction(V8CacheOptions cache_options,
 }  // namespace
 
 v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
+    ScriptState* script_state,
     const ScriptSourceCode& source,
-    v8::Isolate* isolate,
     AccessControlStatus access_control_status,
     V8CacheOptions cache_options) {
+  v8::Isolate* isolate = script_state->GetIsolate();
   if (source.Source().length() >= v8::String::kMaxLength) {
     V8ThrowException::ThrowError(isolate, "Source file too large.");
     return v8::Local<v8::Script>();
   }
   return CompileScript(
-      V8String(isolate, source.Source()), source.Url(), source.SourceMapUrl(),
-      source.StartPosition(), isolate, source.GetResource(), source.Streamer(),
+      script_state, V8String(isolate, source.Source()), source.Url(),
+      source.SourceMapUrl(), source.StartPosition(), source.GetResource(),
+      source.Streamer(),
       source.GetResource() ? source.GetResource()->CacheHandler() : nullptr,
       access_control_status, cache_options);
 }
 
 v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
+    ScriptState* script_state,
     const String& code,
     const String& file_name,
     const String& source_map_url,
     const TextPosition& text_position,
-    v8::Isolate* isolate,
     CachedMetadataHandler* cache_metadata_handler,
     AccessControlStatus access_control_status,
     V8CacheOptions v8_cache_options) {
+  v8::Isolate* isolate = script_state->GetIsolate();
   if (code.length() >= v8::String::kMaxLength) {
     V8ThrowException::ThrowError(isolate, "Source file too large.");
     return v8::Local<v8::Script>();
   }
-  return CompileScript(V8String(isolate, code), file_name, source_map_url,
-                       text_position, isolate, nullptr, nullptr,
+  return CompileScript(script_state, V8String(isolate, code), file_name,
+                       source_map_url, text_position, nullptr, nullptr,
                        cache_metadata_handler, access_control_status,
                        v8_cache_options);
 }
 
 v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
+    ScriptState* script_state,
     v8::Local<v8::String> code,
     const String& file_name,
     const String& source_map_url,
     const TextPosition& script_start_position,
-    v8::Isolate* isolate,
     ScriptResource* resource,
     ScriptStreamer* streamer,
     CachedMetadataHandler* cache_handler,
@@ -458,7 +461,7 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
   // TODO(maxlg): probe will use a execution context once
   // DocumentWriteEvaluator::EnsureEvaluationContext provide script state, see
   // https://crbug.com/746961.
-  probe::V8Compile probe(nullptr, file_name,
+  probe::V8Compile probe(ExecutionContext::From(script_state), file_name,
                          script_start_position.line_.ZeroBasedInt(),
                          script_start_position.column_.ZeroBasedInt());
 
@@ -467,6 +470,7 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
 
   // NOTE: For compatibility with WebCore, ScriptSourceCode's line starts at
   // 1, whereas v8 starts at 0.
+  v8::Isolate* isolate = script_state->GetIsolate();
   v8::ScriptOrigin origin(
       V8String(isolate, file_name),
       v8::Integer::New(isolate, script_start_position.line_.ZeroBasedInt()),
@@ -577,14 +581,16 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledScript(
 }
 
 v8::MaybeLocal<v8::Value> V8ScriptRunner::CompileAndRunInternalScript(
+    ScriptState* script_state,
     v8::Local<v8::String> source,
     v8::Isolate* isolate,
     const String& file_name,
     const TextPosition& script_start_position) {
   v8::Local<v8::Script> script;
-  if (!V8ScriptRunner::CompileScript(
-           source, file_name, String(), script_start_position, isolate, nullptr,
-           nullptr, nullptr, kSharableCrossOrigin, kV8CacheOptionsDefault)
+  if (!V8ScriptRunner::CompileScript(script_state, source, file_name, String(),
+                                     script_start_position, nullptr, nullptr,
+                                     nullptr, kSharableCrossOrigin,
+                                     kV8CacheOptionsDefault)
            .ToLocal(&script))
     return v8::MaybeLocal<v8::Value>();
 

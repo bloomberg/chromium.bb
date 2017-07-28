@@ -127,7 +127,7 @@ v8::Local<v8::Value> ScriptController::ExecuteScriptAndReturnValue(
     try_catch.SetVerbose(true);
 
     v8::Local<v8::Script> script;
-    if (!V8ScriptRunner::CompileScript(source, GetIsolate(),
+    if (!V8ScriptRunner::CompileScript(ScriptState::From(context), source,
                                        access_control_status, v8_cache_options)
              .ToLocal(&script))
       return result;
