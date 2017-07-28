@@ -784,6 +784,10 @@ void LayerTreeImpl::PushPageScaleFactorAndLimits(const float* page_scale_factor,
     changed_page_scale |= page_scale_factor_->PushPendingToActive();
   }
 
+  // TODO(pdr): Simplify the logic here and the equivalent logic in
+  // ScrollTree::PushScrollUpdatesFromMainThread where two types of changes
+  // are detected: whether the current value changed, and whether the pushes
+  // have any effect.
   if (changed_page_scale)
     DidUpdatePageScale();
 

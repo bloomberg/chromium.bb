@@ -1414,12 +1414,20 @@ void ScrollTree::PushScrollUpdatesFromMainThread(
         GetOrCreateSyncedScrollOffset(id);
 
     bool changed = synced_scroll_offset->PushFromMainThread(map_entry.second);
+
     // If we are committing directly to the active tree, push pending to active
     // here.
     if (property_trees()->is_active)
       changed |= synced_scroll_offset->PushPendingToActive();
 
-    if (changed)
+    // If the pushed main thread scroll offset differs from the current scroll
+    // offset (accounting for delta), ensure DidUpdateScrollOffset is called to
+    // update the TransformNode's scroll offset. We also need to ensure
+    // scrollbar geometries are updated if the underlying scroll offset changes.
+    // TODO(pdr): This is confusing because we need to account for multiple
+    // cases where the value is dirty.
+    if (changed || map_entry.second != synced_scroll_offset->Current(
+                                           property_trees()->is_active))
       sync_tree->DidUpdateScrollOffset(id);
   }
 }
