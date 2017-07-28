@@ -40,7 +40,9 @@ viz::RendererSettings CreateRendererSettings(
       base::FeatureList::IsEnabled(features::kColorCorrectRendering) ||
       command_line->HasSwitch(switches::kEnableHDR);
   renderer_settings.resource_settings = CreateResourceSettings(image_targets);
-
+  renderer_settings.show_overdraw_feedback =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          cc::switches::kShowOverdrawFeedback);
   renderer_settings.disallow_non_exact_resource_reuse =
       command_line->HasSwitch(cc::switches::kDisallowNonExactResourceReuse);
   renderer_settings.allow_antialiasing =

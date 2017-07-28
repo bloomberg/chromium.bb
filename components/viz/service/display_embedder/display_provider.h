@@ -13,6 +13,8 @@ namespace viz {
 
 class BeginFrameSource;
 class Display;
+class FrameSinkId;
+class RendererSettings;
 
 // Handles creating Display and related classes for FrameSinkManagerImpl.
 class DisplayProvider {
@@ -24,6 +26,7 @@ class DisplayProvider {
   virtual std::unique_ptr<Display> CreateDisplay(
       const FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
+      const RendererSettings& renderer_settings,
       std::unique_ptr<BeginFrameSource>* begin_frame_source) = 0;
 };
 
