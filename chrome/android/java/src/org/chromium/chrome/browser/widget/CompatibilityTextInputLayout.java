@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.widget;
 
 import android.content.Context;
 import android.support.design.widget.TextInputLayout;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +27,12 @@ public class CompatibilityTextInputLayout extends TextInputLayout {
 
     public CompatibilityTextInputLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
+    }
+
+    @Override
+    public void setError(CharSequence error) {
+        super.setError(error);
+        if (TextUtils.isEmpty(error)) setErrorEnabled(false);
     }
 
     @Override
