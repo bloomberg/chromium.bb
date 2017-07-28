@@ -31,22 +31,19 @@ TEST_F('SettingsBasicPageBrowserTest', 'DISABLED_Load', function() {
    * This fake SearchManager just hides and re-displays the sections on search.
    *
    * @implements {SearchManager}
-   * @extends {TestBrowserProxy}
    */
-  var TestSearchManager = function() {
-    TestBrowserProxy.call(this, [
-      'search',
-    ]);
+  class TestSearchManager extends TestBrowserProxy {
+    constructor() {
+      super([
+        'search',
+      ]);
 
-    /** @private {?settings.SearchRequest} */
-    this.searchRequest_ = null;
-  }
-
-  TestSearchManager.prototype = {
-    __proto__: TestBrowserProxy.prototype,
+      /** @private {?settings.SearchRequest} */
+      this.searchRequest_ = null;
+    }
 
     /** @override */
-    search: function(text, page) {
+    search(text, page) {
       if (this.searchRequest_ == null || !this.searchRequest_.isSame(text)) {
         this.searchRequest_ = new settings.SearchRequest(
             text, document.createElement('div'));
@@ -68,8 +65,8 @@ TEST_F('SettingsBasicPageBrowserTest', 'DISABLED_Load', function() {
         }.bind(this), 0);
       }
       return this.searchRequest_.resolver.promise;
-    },
-  };
+    }
+  }
 
   // Register mocha tests.
   suite('SettingsPage', function() {

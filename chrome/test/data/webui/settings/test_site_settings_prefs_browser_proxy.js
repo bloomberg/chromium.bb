@@ -56,73 +56,69 @@ var prefsEmpty = {
  * for allowing tests to know when a method was called, as well as
  * specifying mock responses.
  *
- * @constructor
  * @implements {settings.SiteSettingsPrefsBrowserProxy}
- * @extends {TestBrowserProxy}
  */
-var TestSiteSettingsPrefsBrowserProxy = function() {
-  TestBrowserProxy.call(this, [
-    'fetchUsbDevices',
-    'fetchZoomLevels',
-    'getCookieDetails',
-    'getDefaultValueForContentType',
-    'getExceptionList',
-    'getOriginPermissions',
-    'isPatternValid',
-    'observeProtocolHandlers',
-    'observeProtocolHandlersEnabledState',
-    'reloadCookies',
-    'removeCookie',
-    'removeProtocolHandler',
-    'removeUsbDevice',
-    'removeZoomLevel',
-    'resetCategoryPermissionForPattern',
-    'setCategoryPermissionForPattern',
-    'setDefaultValueForContentType',
-    'setOriginPermissions',
-    'setProtocolDefault',
-    'updateIncognitoStatus',
-  ]);
+class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
+  constructor() {
+    super([
+      'fetchUsbDevices',
+      'fetchZoomLevels',
+      'getCookieDetails',
+      'getDefaultValueForContentType',
+      'getExceptionList',
+      'getOriginPermissions',
+      'isPatternValid',
+      'observeProtocolHandlers',
+      'observeProtocolHandlersEnabledState',
+      'reloadCookies',
+      'removeCookie',
+      'removeProtocolHandler',
+      'removeUsbDevice',
+      'removeZoomLevel',
+      'resetCategoryPermissionForPattern',
+      'setCategoryPermissionForPattern',
+      'setDefaultValueForContentType',
+      'setOriginPermissions',
+      'setProtocolDefault',
+      'updateIncognitoStatus',
+    ]);
 
-  /** @private {boolean} */
-  this.hasIncognito_ = false;
+    /** @private {boolean} */
+    this.hasIncognito_ = false;
 
-  /** @private {!SiteSettingsPref} */
-  this.prefs_ = prefsEmpty;
+    /** @private {!SiteSettingsPref} */
+    this.prefs_ = prefsEmpty;
 
-  /** @private {!Array<ZoomLevelEntry>} */
-  this.zoomList_ = [];
+    /** @private {!Array<ZoomLevelEntry>} */
+    this.zoomList_ = [];
 
-  /** @private {!Array<!UsbDeviceEntry>} */
-  this.usbDevices_ = [];
+    /** @private {!Array<!UsbDeviceEntry>} */
+    this.usbDevices_ = [];
 
-  /** @private {!Array<!ProtocolEntry>} */
-  this.protocolHandlers_ = [];
+    /** @private {!Array<!ProtocolEntry>} */
+    this.protocolHandlers_ = [];
 
-  /** @private {?CookieList} */
-  this.cookieDetails_ = null;
+    /** @private {?CookieList} */
+    this.cookieDetails_ = null;
 
-  /** @private {boolean} */
-  this.isPatternValid_ = true;
-};
-
-TestSiteSettingsPrefsBrowserProxy.prototype = {
-  __proto__: TestBrowserProxy.prototype,
+    /** @private {boolean} */
+    this.isPatternValid_ = true;
+  }
 
   /**
    * Pretends an incognito session started or ended.
    * @param {boolean} hasIncognito True for session started.
    */
-  setIncognito: function(hasIncognito) {
+  setIncognito(hasIncognito) {
     this.hasIncognito_ = hasIncognito;
     cr.webUIListenerCallback('onIncognitoStatusChanged', hasIncognito);
-  },
+  }
 
   /**
    * Sets the prefs to use when testing.
    * @param {!SiteSettingsPref} prefs The prefs to set.
    */
-  setPrefs: function(prefs) {
+  setPrefs(prefs) {
     this.prefs_ = prefs;
 
     // Notify all listeners that their data may be out of date.
@@ -132,61 +128,61 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
           settings.ContentSettingsTypes[type],
           '');
     }
-  },
+  }
 
   /**
    * Sets the prefs to use when testing.
    * @param {!Array<ZoomLevelEntry>} list The zoom list to set.
    */
-  setZoomList: function(list) {
+  setZoomList(list) {
     this.zoomList_ = list;
-  },
+  }
 
   /**
    * Sets the prefs to use when testing.
    * @param {!Array<UsbDeviceEntry>} list The usb device entry list to set.
    */
-  setUsbDevices: function(list) {
+  setUsbDevices(list) {
     // Shallow copy of the passed-in array so mutation won't impact the source
     this.usbDevices_ = list.slice();
-  },
+  }
 
   /**
    * Sets the prefs to use when testing.
    * @param {!Array<ProtocolEntry>} list The protocol handlers list to set.
    */
-  setProtocolHandlers: function(list) {
+  setProtocolHandlers(list) {
     // Shallow copy of the passed-in array so mutation won't impact the source
     this.protocolHandlers_ = list.slice();
-  },
+  }
 
   /** @override */
-  setDefaultValueForContentType: function(contentType, defaultValue) {
+  setDefaultValueForContentType(contentType, defaultValue) {
     this.methodCalled(
         'setDefaultValueForContentType', [contentType, defaultValue]);
-  },
+  }
 
   /** @override */
-  setOriginPermissions: function(origin, contentTypes, blanketSetting) {
+  setOriginPermissions(origin, contentTypes, blanketSetting) {
     this.methodCalled(
         'setOriginPermissions', [origin, contentTypes, blanketSetting]);
-  },
+  }
 
   /** @override */
-  getCookieDetails: function(site) {
+  getCookieDetails(site) {
     this.methodCalled('getCookieDetails', site);
     return Promise.resolve(this.cookieDetails_  || {id: '', children: []});
-  },
+  }
 
   /**
    * @param {!CookieList} cookieList
    */
-  setCookieDetails: function(cookieList) {
+  setCookieDetails(cookieList) {
     this.cookieDetails_ = cookieList;
-  },
+  }
 
   /** @override */
-  getDefaultValueForContentType: function(contentType) {
+  getDefaultValueForContentType(contentType) {
     this.methodCalled('getDefaultValueForContentType', contentType);
 
     var pref = undefined;
@@ -228,10 +224,10 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
 
     assert(pref != undefined, 'Pref is missing for ' + contentType);
     return Promise.resolve(pref);
-  },
+  }
 
   /** @override */
-  getExceptionList: function(contentType) {
+  getExceptionList(contentType) {
     this.methodCalled('getExceptionList', contentType);
 
     var pref = undefined;
@@ -280,32 +276,32 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
     }
 
     return Promise.resolve(pref);
-  },
+  }
 
   /** @override */
-  isPatternValid: function(pattern) {
+  isPatternValid(pattern) {
     this.methodCalled('isPatternValid', pattern);
     return Promise.resolve(this.isPatternValid_);
-  },
+  }
 
   /**
    * Specify whether isPatternValid should succeed or fail.
    */
-  setIsPatternValid: function(isValid) {
+  setIsPatternValid(isValid) {
     this.isPatternValid_ = isValid;
-  },
+  }
 
   /** @override */
-  resetCategoryPermissionForPattern: function(
+  resetCategoryPermissionForPattern(
       primaryPattern, secondaryPattern, contentType, incognito) {
     this.methodCalled(
         'resetCategoryPermissionForPattern',
         [primaryPattern, secondaryPattern, contentType, incognito]);
     return Promise.resolve();
-  },
+  }
 
   /** @override */
-  getOriginPermissions: function(origin, contentTypes) {
+  getOriginPermissions(origin, contentTypes) {
     this.methodCalled('getOriginPermissions', [origin, contentTypes]);
 
     var exceptionList = [];
@@ -353,74 +349,74 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
       })
     }, this);
     return Promise.resolve(exceptionList);
-  },
+  }
 
   /** @override */
-  setCategoryPermissionForPattern: function(
+  setCategoryPermissionForPattern(
       primaryPattern, secondaryPattern, contentType, value, incognito) {
     this.methodCalled(
         'setCategoryPermissionForPattern',
         [primaryPattern, secondaryPattern, contentType, value, incognito]);
     return Promise.resolve();
-  },
+  }
 
   /** @override */
-  fetchZoomLevels: function() {
+  fetchZoomLevels() {
     cr.webUIListenerCallback('onZoomLevelsChanged', this.zoomList_);
     this.methodCalled('fetchZoomLevels');
-  },
+  }
 
   /** @override */
-  reloadCookies: function() {
+  reloadCookies() {
     return Promise.resolve({id: null, children: []});
-  },
+  }
 
   /** @override */
-  removeCookie: function(path) {
+  removeCookie(path) {
     this.methodCalled('removeCookie', path);
-  },
+  }
 
   /** @override */
-  removeZoomLevel: function(host) {
+  removeZoomLevel(host) {
     this.methodCalled('removeZoomLevel', [host]);
-  },
+  }
 
   /** @override */
-  fetchUsbDevices: function() {
+  fetchUsbDevices() {
     this.methodCalled('fetchUsbDevices');
     return Promise.resolve(this.usbDevices_);
-  },
+  }
 
   /** @override */
-  removeUsbDevice: function() {
+  removeUsbDevice() {
     this.methodCalled('removeUsbDevice', arguments);
-  },
+  }
 
   /** @override */
-  observeProtocolHandlers: function() {
+  observeProtocolHandlers() {
     cr.webUIListenerCallback('setHandlersEnabled', true);
     cr.webUIListenerCallback('setProtocolHandlers', this.protocolHandlers_);
     this.methodCalled('observeProtocolHandlers');
-  },
+  }
 
   /** @override */
-  observeProtocolHandlersEnabledState: function() {
+  observeProtocolHandlersEnabledState() {
     cr.webUIListenerCallback('setHandlersEnabled', true);
     this.methodCalled('observeProtocolHandlersEnabledState');
-  },
+  }
 
   /** @override */
-  setProtocolDefault: function() {
+  setProtocolDefault() {
     this.methodCalled('setProtocolDefault', arguments);
-  },
+  }
 
   /** @override */
-  removeProtocolHandler: function() {
+  removeProtocolHandler() {
     this.methodCalled('removeProtocolHandler', arguments);
-  },
+  }
 
   /** @override */
-  updateIncognitoStatus: function() {
+  updateIncognitoStatus() {
     this.methodCalled('updateIncognitoStatus', arguments);
   }
-};
+}

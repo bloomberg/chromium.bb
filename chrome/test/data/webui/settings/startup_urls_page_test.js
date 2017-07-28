@@ -3,66 +3,60 @@
 // found in the LICENSE file.
 
 cr.define('settings_startup_urls_page', function() {
-  /**
-   * @constructor
-   * @implements {settings.StartupUrlsPageBrowserProxy}
-   * @extends {TestBrowserProxy}
-   */
-  function TestStartupUrlsPageBrowserProxy() {
-    TestBrowserProxy.call(this, [
-      'addStartupPage',
-      'editStartupPage',
-      'loadStartupPages',
-      'removeStartupPage',
-      'useCurrentPages',
-      'validateStartupPage',
-    ]);
+  /** @implements {settings.StartupUrlsPageBrowserProxy} */
+  class TestStartupUrlsPageBrowserProxy extends TestBrowserProxy {
+    constructor() {
+      super([
+        'addStartupPage',
+        'editStartupPage',
+        'loadStartupPages',
+        'removeStartupPage',
+        'useCurrentPages',
+        'validateStartupPage',
+      ]);
 
-    /** @private {boolean} */
-    this.urlIsValid_ = true;
-  }
-
-  TestStartupUrlsPageBrowserProxy.prototype = {
-    __proto__: TestBrowserProxy.prototype,
+      /** @private {boolean} */
+      this.urlIsValid_ = true;
+    }
 
     /** @param {boolean} isValid */
-    setUrlValidity: function(isValid) {
+    setUrlValidity(isValid) {
       this.urlIsValid_ = isValid;
-    },
+    }
 
     /** @override */
-    addStartupPage: function(url) {
+    addStartupPage(url) {
       this.methodCalled('addStartupPage', url);
       return Promise.resolve(this.urlIsValid_);
-    },
+    }
 
     /** @override */
-    editStartupPage: function(modelIndex, url) {
+    editStartupPage(modelIndex, url) {
       this.methodCalled('editStartupPage', [modelIndex, url]);
       return Promise.resolve(this.urlIsValid_);
-    },
+    }
 
     /** @override */
-    loadStartupPages: function() {
+    loadStartupPages() {
       this.methodCalled('loadStartupPages');
-    },
+    }
 
     /** @override */
-    removeStartupPage: function(modelIndex) {
+    removeStartupPage(modelIndex) {
       this.methodCalled('removeStartupPage', modelIndex);
-    },
+    }
 
     /** @override */
-    useCurrentPages: function() {
+    useCurrentPages() {
       this.methodCalled('useCurrentPages');
-    },
+    }
 
     /** @override */
-    validateStartupPage: function(url) {
+    validateStartupPage(url) {
       this.methodCalled('validateStartupPage', url);
       return Promise.resolve(this.urlIsValid_);
-    },
-  };
+    }
+  }
 
   suite('StartupUrlDialog', function() {
     /** @type {?SettingsStartupUrlDialogElement} */

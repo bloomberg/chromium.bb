@@ -8,46 +8,42 @@ cr.define('settings_default_browser', function() {
    * for allowing tests to know when a method was called, as well as
    * specifying mock responses.
    *
-   * @constructor
    * @implements {settings.DefaultBrowserBrowserProxy}
-   * @extends {TestBrowserProxy}
    */
-  var TestDefaultBrowserBrowserProxy = function() {
-    TestBrowserProxy.call(this, [
-      'requestDefaultBrowserState',
-      'setAsDefaultBrowser',
-    ]);
+  class TestDefaultBrowserBrowserProxy extends TestBrowserProxy {
+    constructor() {
+      super([
+        'requestDefaultBrowserState',
+        'setAsDefaultBrowser',
+      ]);
 
-    /** @private {!DefaultBrowserInfo} */
-    this.defaultBrowserInfo_ = {
-      canBeDefault: true,
-      isDefault: false,
-      isDisabledByPolicy: false,
-      isUnknownError: false
-    };
-  };
-
-  TestDefaultBrowserBrowserProxy.prototype = {
-    __proto__: TestBrowserProxy.prototype,
+      /** @private {!DefaultBrowserInfo} */
+      this.defaultBrowserInfo_ = {
+        canBeDefault: true,
+        isDefault: false,
+        isDisabledByPolicy: false,
+        isUnknownError: false
+      };
+    }
 
     /** @override */
-    requestDefaultBrowserState: function() {
+    requestDefaultBrowserState() {
       this.methodCalled('requestDefaultBrowserState');
       return Promise.resolve(this.defaultBrowserInfo_);
-    },
+    }
 
     /** @override */
-    setAsDefaultBrowser: function() {
+    setAsDefaultBrowser() {
       this.methodCalled('setAsDefaultBrowser');
-    },
+    }
 
     /**
      * Sets the response to be returned by |requestDefaultBrowserState|.
      * @param {!DefaultBrowserInfo} info Fake info for testing.
      */
-    setDefaultBrowserInfo: function(info) {
+    setDefaultBrowserInfo(info) {
       this.defaultBrowserInfo_ = info;
-    },
+    }
   }
 
   function registerDefaultBrowserPageTests() {

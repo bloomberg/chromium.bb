@@ -2,46 +2,40 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @constructor
- * @implements {settings.ImportDataBrowserProxy}
- * @extends {TestBrowserProxy}
- */
-var TestImportDataBrowserProxy = function() {
-  TestBrowserProxy.call(this, [
-    'initializeImportDialog',
-    'importFromBookmarksFile',
-    'importData',
-  ]);
+/** @implements {settings.ImportDataBrowserProxy} */
+class TestImportDataBrowserProxy extends TestBrowserProxy {
+  constructor() {
+    super([
+      'initializeImportDialog',
+      'importFromBookmarksFile',
+      'importData',
+    ]);
 
-  /** @private {!Array<!settings.BrowserProfile} */
-  this.browserProfiles_ = [];
-};
-
-TestImportDataBrowserProxy.prototype = {
-  __proto__: TestBrowserProxy.prototype,
+    /** @private {!Array<!settings.BrowserProfile} */
+    this.browserProfiles_ = [];
+  }
 
   /** @param {!Array<!settings.BrowserProfile} browserProfiles */
-  setBrowserProfiles: function(browserProfiles) {
+  setBrowserProfiles(browserProfiles) {
     this.browserProfiles_ = browserProfiles;
-  },
+  }
 
   /** @override */
-  initializeImportDialog: function() {
+  initializeImportDialog() {
     this.methodCalled('initializeImportDialog');
     return Promise.resolve(this.browserProfiles_.slice());
-  },
+  }
 
   /** @override */
-  importFromBookmarksFile: function() {
+  importFromBookmarksFile() {
     this.methodCalled('importFromBookmarksFile');
-  },
+  }
 
   /** @override */
-  importData: function(browserProfileIndex) {
+  importData(browserProfileIndex) {
     this.methodCalled('importData', browserProfileIndex);
-  },
-};
+  }
+}
 
 suite('ImportDataDialog', function() {
   /** @type {!Array<!settings.BrowserProfile} */

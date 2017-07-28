@@ -3,63 +3,57 @@
 // found in the LICENSE file.
 
 cr.define('reset_page', function() {
-  /**
-   * @constructor
-   * @implements {settings.ResetBrowserProxy}
-   * @extends {TestBrowserProxy}
-   */
-  var TestResetBrowserProxy = function() {
-    TestBrowserProxy.call(this, [
-      'performResetProfileSettings',
-      'onHideResetProfileDialog',
-      'onHideResetProfileBanner',
-      'onShowResetProfileDialog',
-      'showReportedSettings',
-      'getTriggeredResetToolName',
-      'onPowerwashDialogShow',
-    ]);
-  };
-
-  TestResetBrowserProxy.prototype = {
-    __proto__: TestBrowserProxy.prototype,
+  /** @implements {settings.ResetBrowserProxy} */
+  class TestResetBrowserProxy extends TestBrowserProxy {
+    constructor() {
+      super([
+        'performResetProfileSettings',
+        'onHideResetProfileDialog',
+        'onHideResetProfileBanner',
+        'onShowResetProfileDialog',
+        'showReportedSettings',
+        'getTriggeredResetToolName',
+        'onPowerwashDialogShow',
+      ]);
+    }
 
     /** @override */
-    performResetProfileSettings: function(sendSettings, requestOrigin) {
+    performResetProfileSettings(sendSettings, requestOrigin) {
       this.methodCalled('performResetProfileSettings', requestOrigin);
       return Promise.resolve();
-    },
+    }
 
     /** @override */
-    onHideResetProfileDialog: function() {
+    onHideResetProfileDialog() {
       this.methodCalled('onHideResetProfileDialog');
-    },
+    }
 
     /** @override */
-    onHideResetProfileBanner: function() {
+    onHideResetProfileBanner() {
       this.methodCalled('onHideResetProfileBanner');
-    },
+    }
 
     /** @override */
-    onShowResetProfileDialog: function() {
+    onShowResetProfileDialog() {
       this.methodCalled('onShowResetProfileDialog');
-    },
+    }
 
     /** @override */
-    showReportedSettings: function() {
+    showReportedSettings() {
       this.methodCalled('showReportedSettings');
-    },
+    }
 
     /** @override */
-    getTriggeredResetToolName: function() {
+    getTriggeredResetToolName() {
       this.methodCalled('getTriggeredResetToolName');
       return Promise.resolve('WonderfulAV');
-    },
+    }
 
     /** @override */
-    onPowerwashDialogShow: function() {
+    onPowerwashDialogShow() {
       this.methodCalled('onPowerwashDialogShow');
-    },
-  };
+    }
+  }
 
   return {
     TestResetBrowserProxy: TestResetBrowserProxy,
