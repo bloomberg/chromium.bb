@@ -23,7 +23,7 @@ class CORE_EXPORT WorkletModuleResponsesMap
  public:
   // Used for notifying results of ReadOrCreateEntry(). See comments on the
   // function for details.
-  class Client : public GarbageCollectedMixin {
+  class CORE_EXPORT Client : public GarbageCollectedMixin {
    public:
     virtual ~Client() {}
     virtual void OnRead(const ModuleScriptCreationParams&) = 0;

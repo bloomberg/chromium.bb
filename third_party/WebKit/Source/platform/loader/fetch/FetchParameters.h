@@ -45,8 +45,7 @@ class SecurityOrigin;
 // ResourceFetcher::requestResource to avoid the method having too many
 // arguments.
 class PLATFORM_EXPORT FetchParameters {
-  STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(FetchParameters);
+  DISALLOW_NEW();
 
  public:
   enum DeferOption { kNoDefer, kLazyLoad, kIdleLoad };
