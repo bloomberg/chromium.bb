@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_SETTINGS_WINDOW_MANAGER_H_
-#define CHROME_BROWSER_UI_SETTINGS_WINDOW_MANAGER_H_
+#ifndef CHROME_BROWSER_UI_SETTINGS_WINDOW_MANAGER_CHROMEOS_H_
+#define CHROME_BROWSER_UI_SETTINGS_WINDOW_MANAGER_CHROMEOS_H_
 
 #include <map>
 #include <string>
@@ -21,8 +21,9 @@ namespace chrome {
 
 class SettingsWindowManagerObserver;
 
-// Class for managing settings windows when --enable-settings-window is enabled.
-// TODO(stevenjb): Remove flag comment if enabled by default.
+// Manages Settings windows for CrOS. Each Profile is associated with a single
+// Browser window for Settings that will be created when the Settings UI is
+// first opened and reused for any Settings links while it exists.
 
 class SettingsWindowManager {
  public:
@@ -57,4 +58,4 @@ class SettingsWindowManager {
 
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_UI_SETTINGS_WINDOW_MANAGER_H_
+#endif  // CHROME_BROWSER_UI_SETTINGS_WINDOW_MANAGER_CHROMEOS_H_

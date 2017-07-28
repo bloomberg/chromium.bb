@@ -16,10 +16,6 @@
 
 class Profile;
 
-namespace base {
-class CommandLine;
-}
-
 namespace content {
 class WebContents;
 }
@@ -41,9 +37,6 @@ class BrowserNavigatorTest : public InProcessBrowserTest,
   void RunSuppressTest(WindowOpenDisposition disposition);
   void RunUseNonIncognitoWindowTest(const GURL& url);
   void RunDoNothingIfIncognitoIsForcedTest(const GURL& url);
-
-  // InProcessBrowserTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override;
 
   // content::NotificationObserver:
   void Observe(int type,

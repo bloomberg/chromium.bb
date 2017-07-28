@@ -90,7 +90,6 @@ extern const char kDisablePrintPreview[];
 extern const char kDisablePromptOnRepost[];
 extern const char kDisablePushApiBackgroundMode[];
 extern const char kDisableSearchGeolocationDisclosure[];
-extern const char kDisableSettingsWindow[];
 extern const char kDisableWebNotificationCustomLayouts[];
 extern const char kDisableZeroBrowsersOpenForTests[];
 extern const char kDiskCacheDir[];
@@ -125,7 +124,6 @@ extern const char kEnablePowerOverlay[];
 extern const char kEnablePrintPreviewRegisterPromos[];
 extern const char kEnableProfiling[];
 extern const char kEnablePushApiBackgroundMode[];
-extern const char kEnableSettingsWindow[];
 extern const char kEnableSiteSettings[];
 extern const char kEnableSupervisedUserManagedBookmarksFolder[];
 extern const char kEnableTabAudioMuting[];
@@ -355,7 +353,6 @@ bool ExtensionsDisabled(const base::CommandLine& command_line);
 bool ExtensionsDisabled();
 bool MdFeedbackEnabled();
 bool MdPolicyPageEnabled();
-bool SettingsWindowEnabled();
 
 #if defined(OS_CHROMEOS)
 bool PowerOverlayEnabled();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/settings_window_manager.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/settings_window_manager_observer.h"
+#include "chrome/browser/ui/settings_window_manager_observer_chromeos.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
@@ -49,8 +49,7 @@ void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
       browser->window()->Show();
       return;
     }
-    NavigateParams params(browser, gurl,
-                          ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+    NavigateParams params(browser, gurl, ui::PAGE_TRANSITION_AUTO_BOOKMARK);
     params.window_action = NavigateParams::SHOW_WINDOW;
     params.user_gesture = true;
     chrome::Navigate(&params);
@@ -86,10 +85,8 @@ bool SettingsWindowManager::IsSettingsBrowser(Browser* browser) const {
           iter->second == browser->session_id().id());
 }
 
-SettingsWindowManager::SettingsWindowManager() {
-}
+SettingsWindowManager::SettingsWindowManager() {}
 
-SettingsWindowManager::~SettingsWindowManager() {
-}
+SettingsWindowManager::~SettingsWindowManager() {}
 
 }  // namespace chrome

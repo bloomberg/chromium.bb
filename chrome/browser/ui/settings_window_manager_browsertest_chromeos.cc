@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/settings_window_manager.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 
 #include <stddef.h>
 
@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/settings_window_manager_observer.h"
+#include "chrome/browser/ui/settings_window_manager_observer_chromeos.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -62,10 +62,6 @@ class SettingsWindowManagerTest : public InProcessBrowserTest {
     settings_manager_->RemoveObserver(&observer_);
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(::switches::kEnableSettingsWindow);
-  }
-
   Profile* CreateTestProfile() {
     CHECK(!test_profile_);
 
@@ -74,11 +70,8 @@ class SettingsWindowManagerTest : public InProcessBrowserTest {
     profile_manager->CreateProfileAsync(
         profile_manager->GenerateNextProfileDirectoryPath(),
         base::Bind(&SettingsWindowManagerTest::ProfileInitialized,
-                   base::Unretained(this),
-                   run_loop.QuitClosure()),
-        base::string16(),
-        std::string(),
-        std::string());
+                   base::Unretained(this), run_loop.QuitClosure()),
+        base::string16(), std::string(), std::string());
     run_loop.Run();
 
     return test_profile_;
@@ -118,7 +111,6 @@ class SettingsWindowManagerTest : public InProcessBrowserTest {
 
   DISALLOW_COPY_AND_ASSIGN(SettingsWindowManagerTest);
 };
-
 
 IN_PROC_BROWSER_TEST_F(SettingsWindowManagerTest, OpenSettingsWindow) {
   // Open a settings window.

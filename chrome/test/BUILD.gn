@@ -1510,7 +1510,7 @@ test("browser_tests") {
       "../browser/ui/search/local_ntp_browsertest.cc",
       "../browser/ui/search/new_tab_page_interceptor_browsertest.cc",
       "../browser/ui/search_engines/search_engine_tab_helper_browsertest.cc",
-      "../browser/ui/settings_window_manager_browsertest.cc",
+      "../browser/ui/settings_window_manager_browsertest_chromeos.cc",
       "../browser/ui/startup/startup_browser_creator_browsertest.cc",
       "../browser/ui/startup/startup_browser_creator_corrupt_profiles_browsertest_win.cc",
       "../browser/ui/startup/startup_browser_creator_triggered_reset_browsertest_win.cc",

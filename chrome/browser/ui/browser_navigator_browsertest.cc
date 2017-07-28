@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/browser_navigator_browsertest.h"
 
-#include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -22,7 +21,6 @@
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -75,6 +73,13 @@ GURL ShortenUberURL(const GURL& url) {
     return url;
   url_string.replace(0, long_prefix.length(), short_prefix);
   return GURL(url_string);
+}
+
+void ShowSettings(Browser* browser) {
+  // chrome::ShowSettings just calls ShowSettingsSubPageInTabbedBrowser on
+  // non chromeos, but we want to test tab navigation here so call
+  // ShowSettingsSubPageInTabbedBrowser directly.
+  chrome::ShowSettingsSubPageInTabbedBrowser(browser, std::string());
 }
 
 }  // namespace
@@ -206,12 +211,6 @@ void BrowserNavigatorTest::RunDoNothingIfIncognitoIsForcedTest(
             browser->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
-void BrowserNavigatorTest::SetUpCommandLine(base::CommandLine* command_line) {
-  // Disable settings-in-a-window so that we can use the settings page and
-  // sub-pages to test browser navigation.
-  command_line->AppendSwitch(::switches::kDisableSettingsWindow);
-}
-
 void BrowserNavigatorTest::Observe(
     int type,
     const content::NotificationSource& source,
@@ -219,7 +218,6 @@ void BrowserNavigatorTest::Observe(
   DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED, type);
   ++created_tab_contents_count_;
 }
-
 
 namespace {
 
@@ -1123,7 +1121,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    chrome::ShowSettings(browser());
+    ShowSettings(browser());
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
@@ -1142,7 +1140,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    chrome::ShowSettings(browser());
+    ShowSettings(browser());
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
@@ -1164,7 +1162,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    chrome::ShowSettings(browser());
+    ShowSettings(browser());
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
@@ -1186,7 +1184,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    chrome::ShowSettings(browser());
+    ShowSettings(browser());
     observer.Wait();
   }
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
@@ -1201,7 +1199,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    chrome::ShowSettings(browser());
+    ShowSettings(browser());
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
@@ -1213,7 +1211,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    chrome::ShowSettings(browser());
+    ShowSettings(browser());
     observer.Wait();
   }
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
@@ -1228,7 +1226,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    chrome::ShowClearBrowsingDataDialog(browser());
+    chrome::ShowSettingsSubPageInTabbedBrowser(
+        browser(), chrome::kClearBrowserDataSubPage);
     observer.Wait();
   }
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
@@ -1242,7 +1241,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    chrome::ShowClearBrowsingDataDialog(browser());
+    chrome::ShowSettingsSubPageInTabbedBrowser(
+        browser(), chrome::kClearBrowserDataSubPage);
     observer.Wait();
   }
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
@@ -1256,7 +1256,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    chrome::ShowSettings(browser());
+    ShowSettings(browser());
     observer.Wait();
   }
   {
@@ -1269,7 +1269,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   }
 
   // This load should simply cause a tab switch.
-  chrome::ShowSettings(browser());
+  ShowSettings(browser());
 
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(GetSettingsURL(),
@@ -1293,7 +1293,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, CloseSingletonTab) {
     content::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::NotificationService::AllSources());
-    chrome::ShowSettings(browser());
+    ShowSettings(browser());
     observer.Wait();
   }
 

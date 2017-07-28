@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
@@ -25,17 +24,14 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
-#include "chrome/browser/ui/settings_window_manager.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/md_bookmarks/md_bookmarks_ui.h"
 #include "chrome/browser/ui/webui/site_settings_helper.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/signin/core/browser/signin_header_helper.h"
-#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/constants.h"
@@ -49,6 +45,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/genius_app/app_id.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/extension_registry.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -274,28 +271,27 @@ void ShowSettings(Browser* browser) {
 }
 
 void ShowSettingsSubPage(Browser* browser, const std::string& sub_page) {
-  if (::switches::SettingsWindowEnabled()) {
-    ShowSettingsSubPageForProfile(browser->profile(), sub_page);
-    return;
-  }
+#if defined(OS_CHROMEOS)
+  ShowSettingsSubPageForProfile(browser->profile(), sub_page);
+#else
   ShowSettingsSubPageInTabbedBrowser(browser, sub_page);
+#endif
 }
 
 void ShowSettingsSubPageForProfile(Profile* profile,
                                    const std::string& sub_page) {
   std::string sub_page_path = sub_page;
 
-  if (::switches::SettingsWindowEnabled()) {
-    base::RecordAction(base::UserMetricsAction("ShowOptions"));
-    SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
-        profile, GetSettingsUrl(sub_page_path));
-    return;
-  }
+#if defined(OS_CHROMEOS)
+  base::RecordAction(base::UserMetricsAction("ShowOptions"));
+  SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
+      profile, GetSettingsUrl(sub_page_path));
+#else
   Browser* browser = chrome::FindTabbedBrowser(profile, false);
-  if (!browser) {
+  if (!browser)
     browser = new Browser(Browser::CreateParams(profile, true));
-  }
   ShowSettingsSubPageInTabbedBrowser(browser, sub_page_path);
+#endif
 }
 
 void ShowSettingsSubPageInTabbedBrowser(Browser* browser,
@@ -313,10 +309,9 @@ void ShowContentSettingsExceptions(Browser* browser,
       browser, GenerateContentSettingsExceptionsSubPage(content_settings_type));
 }
 
-void ShowContentSettingsExceptionsInWindow(
+void ShowContentSettingsExceptionsForProfile(
     Profile* profile,
     ContentSettingsType content_settings_type) {
-  DCHECK(switches::SettingsWindowEnabled());
   ShowSettingsSubPageForProfile(
       profile, GenerateContentSettingsExceptionsSubPage(content_settings_type));
 }
@@ -346,15 +341,15 @@ void ShowImportDialog(Browser* browser) {
 
 void ShowAboutChrome(Browser* browser) {
   base::RecordAction(UserMetricsAction("AboutChrome"));
-  if (::switches::SettingsWindowEnabled()) {
-    SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
-        browser->profile(), GURL(kChromeUIHelpURL));
-    return;
-  }
+#if defined(OS_CHROMEOS)
+  SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
+      browser->profile(), GURL(kChromeUIHelpURL));
+#else
   NavigateParams params(
       GetSingletonTabNavigateParams(browser, GURL(kChromeUIHelpURL)));
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(browser, params);
+#endif
 }
 
 void ShowSearchEngineSettings(Browser* browser) {

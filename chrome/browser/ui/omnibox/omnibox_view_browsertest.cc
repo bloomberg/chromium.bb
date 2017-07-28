@@ -5,7 +5,6 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -29,7 +28,6 @@
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -56,6 +54,10 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/point.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#endif
 
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
@@ -1867,16 +1869,24 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CutTextToClipboard) {
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EditSearchEngines) {
-  // Disable settings-in-a-window to simplify test.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ::switches::kDisableSettingsWindow);
-  OmniboxView* omnibox_view = NULL;
+  OmniboxView* omnibox_view = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
+#if defined(OS_CHROMEOS)
+  EXPECT_FALSE(
+      chrome::SettingsWindowManager::GetInstance()->FindBrowserForProfile(
+          browser()->profile()));
+#endif
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_EDIT_SEARCH_ENGINES));
   ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+#if defined(OS_CHROMEOS)
+  EXPECT_TRUE(
+      chrome::SettingsWindowManager::GetInstance()->FindBrowserForProfile(
+          browser()->profile()));
+#else
   const std::string target_url =
       std::string(chrome::kChromeUISettingsURL) + chrome::kSearchEnginesSubPage;
   EXPECT_EQ(ASCIIToUTF16(target_url), omnibox_view->GetText());
+#endif
   EXPECT_FALSE(omnibox_view->model()->popup_model()->IsOpen());
 }
 

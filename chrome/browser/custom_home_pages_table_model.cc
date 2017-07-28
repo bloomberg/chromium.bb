@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/settings_window_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -25,6 +24,10 @@
 #include "ui/base/models/table_model_observer.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#endif
 
 struct CustomHomePagesTableModel::Entry {
   Entry() : task_id(base::CancelableTaskTracker::kBadTaskId) {}
@@ -206,11 +209,13 @@ bool CustomHomePagesTableModel::ShouldIncludeBrowser(Browser* browser) {
   // Do not include incognito browsers.
   if (browser->profile() != profile_)
     return false;
+#if defined(OS_CHROMEOS)
   // Do not include the Settings window.
   if (chrome::SettingsWindowManager::GetInstance()->IsSettingsBrowser(
           browser)) {
     return false;
   }
+#endif
   return true;
 }
 
