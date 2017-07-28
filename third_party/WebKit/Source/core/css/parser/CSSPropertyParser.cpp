@@ -1529,87 +1529,6 @@ bool CSSPropertyParser::ConsumeGridShorthand(bool important) {
   return true;
 }
 
-bool CSSPropertyParser::ConsumePlaceContentShorthand(bool important) {
-  DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
-  DCHECK_EQ(shorthandForProperty(CSSPropertyPlaceContent).length(),
-            static_cast<unsigned>(2));
-
-  CSSValue* align_content_value =
-      CSSPropertyAlignmentUtils::ConsumeSimplifiedContentPosition(range_);
-  if (!align_content_value)
-    return false;
-  CSSValue* justify_content_value =
-      range_.AtEnd()
-          ? align_content_value
-          : CSSPropertyAlignmentUtils::ConsumeSimplifiedContentPosition(range_);
-  if (!justify_content_value)
-    return false;
-  if (!range_.AtEnd())
-    return false;
-
-  AddParsedProperty(CSSPropertyAlignContent, CSSPropertyPlaceContent,
-                    *align_content_value, important);
-  AddParsedProperty(CSSPropertyJustifyContent, CSSPropertyPlaceContent,
-                    *justify_content_value, important);
-  return true;
-}
-
-bool CSSPropertyParser::ConsumePlaceItemsShorthand(bool important) {
-  DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
-  DCHECK_EQ(shorthandForProperty(CSSPropertyPlaceItems).length(),
-            static_cast<unsigned>(2));
-
-  // align-items property does not allow the 'auto' value.
-  if (IdentMatches<CSSValueAuto>(range_.Peek().Id()))
-    return false;
-
-  CSSValue* align_items_value =
-      CSSPropertyAlignmentUtils::ConsumeSimplifiedItemPosition(range_);
-  if (!align_items_value)
-    return false;
-  CSSValue* justify_items_value =
-      range_.AtEnd()
-          ? align_items_value
-          : CSSPropertyAlignmentUtils::ConsumeSimplifiedItemPosition(range_);
-  if (!justify_items_value)
-    return false;
-
-  if (!range_.AtEnd())
-    return false;
-
-  AddParsedProperty(CSSPropertyAlignItems, CSSPropertyPlaceItems,
-                    *align_items_value, important);
-  AddParsedProperty(CSSPropertyJustifyItems, CSSPropertyPlaceItems,
-                    *justify_items_value, important);
-  return true;
-}
-
-bool CSSPropertyParser::ConsumePlaceSelfShorthand(bool important) {
-  DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
-  DCHECK_EQ(shorthandForProperty(CSSPropertyPlaceSelf).length(),
-            static_cast<unsigned>(2));
-
-  CSSValue* align_self_value =
-      CSSPropertyAlignmentUtils::ConsumeSimplifiedItemPosition(range_);
-  if (!align_self_value)
-    return false;
-  CSSValue* justify_self_value =
-      range_.AtEnd()
-          ? align_self_value
-          : CSSPropertyAlignmentUtils::ConsumeSimplifiedItemPosition(range_);
-  if (!justify_self_value)
-    return false;
-
-  if (!range_.AtEnd())
-    return false;
-
-  AddParsedProperty(CSSPropertyAlignSelf, CSSPropertyPlaceSelf,
-                    *align_self_value, important);
-  AddParsedProperty(CSSPropertyJustifySelf, CSSPropertyPlaceSelf,
-                    *justify_self_value, important);
-  return true;
-}
-
 bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
                                        bool important) {
   DCHECK(context_);
@@ -1686,12 +1605,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
       return ConsumeGridTemplateShorthand(CSSPropertyGridTemplate, important);
     case CSSPropertyGrid:
       return ConsumeGridShorthand(important);
-    case CSSPropertyPlaceContent:
-      return ConsumePlaceContentShorthand(important);
-    case CSSPropertyPlaceItems:
-      return ConsumePlaceItemsShorthand(important);
-    case CSSPropertyPlaceSelf:
-      return ConsumePlaceSelfShorthand(important);
     default:
       return false;
   }
