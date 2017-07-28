@@ -272,7 +272,7 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
                    task_runner_));
   }
 
-  input_manager_ = base::MakeUnique<vr::UiInputManager>(scene_, this);
+  input_manager_ = base::MakeUnique<vr::UiInputManager>(scene_);
   ui_renderer_ = base::MakeUnique<vr::UiRenderer>(scene_, content_texture_id_,
                                                   vr_shell_renderer_.get());
 }
@@ -639,7 +639,7 @@ void VrShellGl::OnContentUp(const gfx::PointF& normalized_hit_point) {
       MakeMouseEvent(blink::WebInputEvent::kMouseUp, normalized_hit_point));
 }
 
-void VrShellGl::OnContentFlingBegin(
+void VrShellGl::OnContentFlingStart(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& normalized_hit_point) {
   UpdateGesture(normalized_hit_point, *gesture);

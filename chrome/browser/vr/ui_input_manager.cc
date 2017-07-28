@@ -4,6 +4,8 @@
 
 #include "chrome/browser/vr/ui_input_manager.h"
 
+#include <algorithm>
+
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/ui_scene.h"
@@ -26,12 +28,25 @@ gfx::Point3F GetRayPoint(const gfx::Point3F& rayOrigin,
   return rayOrigin + gfx::ScaleVector3d(rayVector, scale);
 }
 
+bool IsScrollEvent(const GestureList& list) {
+  if (list.empty()) {
+    return false;
+  }
+  // We assume that we only need to consider the first gesture in the list.
+  blink::WebInputEvent::Type type = list.front()->GetType();
+  if (type == blink::WebInputEvent::kGestureScrollBegin ||
+      type == blink::WebInputEvent::kGestureScrollEnd ||
+      type == blink::WebInputEvent::kGestureScrollUpdate ||
+      type == blink::WebInputEvent::kGestureFlingStart ||
+      type == blink::WebInputEvent::kGestureFlingCancel) {
+    return true;
+  }
+  return false;
+}
+
 }  // namespace
 
-UiInputManagerDelegate::~UiInputManagerDelegate() = default;
-
-UiInputManager::UiInputManager(UiScene* scene, UiInputManagerDelegate* delegate)
-    : scene_(scene), delegate_(delegate) {}
+UiInputManager::UiInputManager(UiScene* scene) : scene_(scene) {}
 
 UiInputManager::~UiInputManager() {}
 
@@ -49,6 +64,8 @@ void UiInputManager::HandleInput(const gfx::Vector3dF& laser_direction,
                          &target_local_point);
 
   UiElement* target_element = nullptr;
+  // TODO(vollick): this should be replaced with a formal notion of input
+  // capture.
   if (input_locked_element_) {
     gfx::Point3F plane_intersection_point;
     float distance_to_plane;
@@ -60,7 +77,19 @@ void UiInputManager::HandleInput(const gfx::Vector3dF& laser_direction,
     }
     target_element = input_locked_element_;
   } else if (!in_scroll_ && !in_click_) {
+    // TODO(vollick): support hit test opacity. I.e., we may want to dispatch to
+    // one of the elements in the list of records. For the moment, we will
+    // assume that dispatch is to the first.
     target_element = *out_reticle_render_target;
+    if (target_element && IsScrollEvent(*gesture_list)) {
+      UiElement* ancestor = target_element;
+      while (!ancestor->scrollable() && ancestor->parent()) {
+        ancestor = ancestor->parent();
+      }
+      if (ancestor->scrollable()) {
+        target_element = ancestor;
+      }
+    }
   }
 
   SendFlingCancel(gesture_list, target_local_point);
@@ -99,9 +128,8 @@ void UiInputManager::SendFlingCancel(GestureList* gesture_list,
   }
 
   // Scrolling currently only supported on content window.
-  DCHECK_EQ(fling_target_->fill(), Fill::CONTENT);
-  delegate_->OnContentFlingCancel(std::move(gesture_list->front()),
-                                  target_point);
+  DCHECK(fling_target_->scrollable());
+  fling_target_->OnFlingCancel(std::move(gesture_list->front()), target_point);
   gesture_list->erase(gesture_list->begin());
   fling_target_ = nullptr;
 }
@@ -121,21 +149,20 @@ void UiInputManager::SendScrollEnd(GestureList* gesture_list,
     DCHECK_EQ(gesture_list->front()->GetType(),
               blink::WebInputEvent::kGestureScrollEnd);
   }
-  // Scrolling currently only supported on content window.
-  DCHECK_EQ(input_locked_element_->fill(), Fill::CONTENT);
+  DCHECK(input_locked_element_->scrollable());
   if (gesture_list->empty() || (gesture_list->front()->GetType() !=
                                 blink::WebInputEvent::kGestureScrollEnd)) {
     return;
   }
   DCHECK_LE(gesture_list->size(), 2LU);
-  delegate_->OnContentScrollEnd(std::move(gesture_list->front()), target_point);
+  input_locked_element_->OnScrollEnd(std::move(gesture_list->front()),
+                                     target_point);
   gesture_list->erase(gesture_list->begin());
   if (!gesture_list->empty()) {
     DCHECK_EQ(gesture_list->front()->GetType(),
               blink::WebInputEvent::kGestureFlingStart);
-    delegate_->OnContentFlingBegin(std::move(gesture_list->front()),
-                                   target_point);
     fling_target_ = input_locked_element_;
+    fling_target_->OnFlingStart(std::move(gesture_list->front()), target_point);
     gesture_list->erase(gesture_list->begin());
   }
   input_locked_element_ = nullptr;
@@ -149,7 +176,7 @@ bool UiInputManager::SendScrollBegin(UiElement* target,
     return false;
   }
   // Scrolling currently only supported on content window.
-  if (target->fill() != Fill::CONTENT) {
+  if (!target->scrollable()) {
     return false;
   }
   if (gesture_list->empty() || (gesture_list->front()->GetType() !=
@@ -159,8 +186,8 @@ bool UiInputManager::SendScrollBegin(UiElement* target,
   input_locked_element_ = target;
   in_scroll_ = true;
 
-  delegate_->OnContentScrollBegin(std::move(gesture_list->front()),
-                                  target_point);
+  input_locked_element_->OnScrollBegin(std::move(gesture_list->front()),
+                                       target_point);
   gesture_list->erase(gesture_list->begin());
   return true;
 }
@@ -176,9 +203,9 @@ void UiInputManager::SendScrollUpdate(GestureList* gesture_list,
     return;
   }
   // Scrolling currently only supported on content window.
-  DCHECK_EQ(input_locked_element_->fill(), Fill::CONTENT);
-  delegate_->OnContentScrollUpdate(std::move(gesture_list->front()),
-                                   target_point);
+  DCHECK(input_locked_element_->scrollable());
+  input_locked_element_->OnScrollUpdate(std::move(gesture_list->front()),
+                                        target_point);
   gesture_list->erase(gesture_list->begin());
 }
 
@@ -186,11 +213,7 @@ void UiInputManager::SendHoverLeave(UiElement* target) {
   if (!hover_target_ || (target == hover_target_)) {
     return;
   }
-  if (hover_target_->fill() == Fill::CONTENT) {
-    delegate_->OnContentLeave();
-  } else {
-    hover_target_->OnHoverLeave();
-  }
+  hover_target_->OnHoverLeave();
   hover_target_ = nullptr;
 }
 
@@ -199,11 +222,7 @@ bool UiInputManager::SendHoverEnter(UiElement* target,
   if (!target || target == hover_target_) {
     return false;
   }
-  if (target->fill() == Fill::CONTENT) {
-    delegate_->OnContentEnter(target_point);
-  } else {
-    target->OnHoverEnter(target_point);
-  }
+  target->OnHoverEnter(target_point);
   hover_target_ = target;
   return true;
 }
@@ -212,18 +231,16 @@ void UiInputManager::SendHoverMove(const gfx::PointF& target_point) {
   if (!hover_target_) {
     return;
   }
-  if (hover_target_->fill() == Fill::CONTENT) {
-    // TODO(mthiesse, vollick): Content is currently way too sensitive to mouse
-    // moves for how noisy the controller is. It's almost impossible to click a
-    // link without unintentionally starting a drag event. For this reason we
-    // disable mouse moves, only delivering a down and up event.
-    if (in_click_) {
-      return;
-    }
-    delegate_->OnContentMove(target_point);
-  } else {
-    hover_target_->OnMove(target_point);
+
+  // TODO(mthiesse, vollick): Content is currently way too sensitive to mouse
+  // moves for how noisy the controller is. It's almost impossible to click a
+  // link without unintentionally starting a drag event. For this reason we
+  // disable mouse moves, only delivering a down and up event.
+  if (hover_target_->fill() == Fill::CONTENT && in_click_) {
+    return;
   }
+
+  hover_target_->OnMove(target_point);
 }
 
 void UiInputManager::SendButtonDown(UiElement* target,
@@ -239,12 +256,7 @@ void UiInputManager::SendButtonDown(UiElement* target,
   }
   input_locked_element_ = target;
   in_click_ = true;
-  if (!target) {
-    return;
-  }
-  if (target->fill() == Fill::CONTENT) {
-    delegate_->OnContentDown(target_point);
-  } else {
+  if (target) {
     target->OnButtonDown(target_point);
   }
 }
@@ -266,11 +278,7 @@ void UiInputManager::SendButtonUp(UiElement* target,
   }
   DCHECK(input_locked_element_ == target);
   input_locked_element_ = nullptr;
-  if (target->fill() == Fill::CONTENT) {
-    delegate_->OnContentUp(target_point);
-  } else {
-    target->OnButtonUp(target_point);
-  }
+  target->OnButtonUp(target_point);
 }
 
 void UiInputManager::GetVisualTargetElement(

@@ -61,6 +61,17 @@ void UiElement::OnButtonDown(const gfx::PointF& position) {}
 
 void UiElement::OnButtonUp(const gfx::PointF& position) {}
 
+void UiElement::OnFlingStart(std::unique_ptr<blink::WebGestureEvent> gesture,
+                             const gfx::PointF& position) {}
+void UiElement::OnFlingCancel(std::unique_ptr<blink::WebGestureEvent> gesture,
+                              const gfx::PointF& position) {}
+void UiElement::OnScrollBegin(std::unique_ptr<blink::WebGestureEvent> gesture,
+                              const gfx::PointF& position) {}
+void UiElement::OnScrollUpdate(std::unique_ptr<blink::WebGestureEvent> gesture,
+                               const gfx::PointF& position) {}
+void UiElement::OnScrollEnd(std::unique_ptr<blink::WebGestureEvent> gesture,
+                            const gfx::PointF& position) {}
+
 void UiElement::PrepareToDraw() {}
 
 void UiElement::Animate(const base::TimeTicks& time) {

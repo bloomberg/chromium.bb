@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/vr/elements/ui_element_debug_id.h"
 #include "chrome/browser/vr/test/mock_browser_interface.h"
+#include "chrome/browser/vr/test/mock_content_input_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -71,6 +72,7 @@ class UiSceneManagerTest : public testing::Test {
   std::unique_ptr<MockBrowserInterface> browser_;
   std::unique_ptr<UiScene> scene_;
   std::unique_ptr<UiSceneManager> manager_;
+  MockContentInputDelegate content_input_delegate_;
   base::TimeTicks current_time_;
 };
 
