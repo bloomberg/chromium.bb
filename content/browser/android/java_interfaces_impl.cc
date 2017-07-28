@@ -56,7 +56,7 @@ void BindInterfaceRegistryForWebContents(
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_InterfaceRegistrarImpl_createInterfaceRegistryForWebContents(
       env, request.PassMessagePipe().release().value(),
-      web_contents->GetJavaWebContents().obj());
+      web_contents->GetJavaWebContents());
 }
 
 void BindInterfaceRegistryForRenderFrameHost(
@@ -65,7 +65,7 @@ void BindInterfaceRegistryForRenderFrameHost(
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_InterfaceRegistrarImpl_createInterfaceRegistryForRenderFrameHost(
       env, request.PassMessagePipe().release().value(),
-      render_frame_host->GetJavaRenderFrameHost().obj());
+      render_frame_host->GetJavaRenderFrameHost());
 }
 
 }  // namespace content

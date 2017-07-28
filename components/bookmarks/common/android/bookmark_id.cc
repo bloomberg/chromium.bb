@@ -9,11 +9,13 @@
 namespace bookmarks {
 namespace android {
 
-long JavaBookmarkIdGetId(JNIEnv* env, jobject obj) {
+long JavaBookmarkIdGetId(JNIEnv* env,
+                         const base::android::JavaRef<jobject>& obj) {
   return Java_BookmarkId_getId(env, obj);
 }
 
-int JavaBookmarkIdGetType(JNIEnv* env, jobject obj) {
+int JavaBookmarkIdGetType(JNIEnv* env,
+                          const base::android::JavaRef<jobject>& obj) {
   return Java_BookmarkId_getType(env, obj);
 }
 

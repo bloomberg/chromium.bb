@@ -47,7 +47,7 @@ ChildAccountInfoFetcherAndroid::ChildAccountInfoFetcherAndroid(
 
 ChildAccountInfoFetcherAndroid::~ChildAccountInfoFetcherAndroid() {
   Java_ChildAccountInfoFetcher_destroy(base::android::AttachCurrentThread(),
-                                       j_child_account_info_fetcher_.obj());
+                                       j_child_account_info_fetcher_);
 }
 
 void SetIsChildAccount(JNIEnv* env,

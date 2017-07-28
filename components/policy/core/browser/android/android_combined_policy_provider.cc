@@ -33,7 +33,7 @@ AndroidCombinedPolicyProvider::AndroidCombinedPolicyProvider(
 }
 
 AndroidCombinedPolicyProvider::~AndroidCombinedPolicyProvider() {
-  Java_CombinedPolicyProvider_linkNative(AttachCurrentThread(), 0, jobject());
+  Java_CombinedPolicyProvider_linkNative(AttachCurrentThread(), 0, nullptr);
   java_combined_policy_provider_.Reset();
 }
 

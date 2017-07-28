@@ -28,7 +28,7 @@ NFCHost::NFCHost(WebContents* web_contents)
   JNIEnv* env = base::android::AttachCurrentThread();
 
   java_nfc_host_.Reset(
-      Java_NfcHost_create(env, web_contents_->GetJavaWebContents().obj(), id_));
+      Java_NfcHost_create(env, web_contents_->GetJavaWebContents(), id_));
 
   if (ServiceManagerConnection::GetForProcess()) {
     service_manager::Connector* connector =

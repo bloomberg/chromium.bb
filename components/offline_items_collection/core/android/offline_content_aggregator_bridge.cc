@@ -38,7 +38,7 @@ void GetVisualsForItemHelperCallback(ScopedJavaGlobalRef<jobject> j_callback,
                                      const OfflineItemVisuals* visuals) {
   JNIEnv* env = AttachCurrentThread();
   Java_OfflineContentAggregatorBridge_onVisualsAvailable(
-      env, j_callback.obj(), ConvertUTF8ToJavaString(env, id.name_space),
+      env, j_callback, ConvertUTF8ToJavaString(env, id.name_space),
       ConvertUTF8ToJavaString(env, id.id),
       OfflineItemVisualsBridge::CreateOfflineItemVisuals(env, visuals));
 }
@@ -77,7 +77,7 @@ OfflineContentAggregatorBridge::~OfflineContentAggregatorBridge() {
   provider_->RemoveObserver(this);
 
   Java_OfflineContentAggregatorBridge_onNativeDestroyed(AttachCurrentThread(),
-                                                        java_ref_.obj());
+                                                        java_ref_);
 }
 
 jboolean OfflineContentAggregatorBridge::AreItemsAvailable(
@@ -162,7 +162,7 @@ void OfflineContentAggregatorBridge::OnItemsAvailable(
     return;
 
   JNIEnv* env = AttachCurrentThread();
-  Java_OfflineContentAggregatorBridge_onItemsAvailable(env, java_ref_.obj());
+  Java_OfflineContentAggregatorBridge_onItemsAvailable(env, java_ref_);
 }
 
 void OfflineContentAggregatorBridge::OnItemsAdded(
@@ -172,8 +172,7 @@ void OfflineContentAggregatorBridge::OnItemsAdded(
 
   JNIEnv* env = AttachCurrentThread();
   Java_OfflineContentAggregatorBridge_onItemsAdded(
-      env, java_ref_.obj(),
-      OfflineItemBridge::CreateOfflineItemList(env, items));
+      env, java_ref_, OfflineItemBridge::CreateOfflineItemList(env, items));
 }
 
 void OfflineContentAggregatorBridge::OnItemRemoved(const ContentId& id) {
@@ -182,7 +181,7 @@ void OfflineContentAggregatorBridge::OnItemRemoved(const ContentId& id) {
 
   JNIEnv* env = AttachCurrentThread();
   Java_OfflineContentAggregatorBridge_onItemRemoved(
-      env, java_ref_.obj(), ConvertUTF8ToJavaString(env, id.name_space),
+      env, java_ref_, ConvertUTF8ToJavaString(env, id.name_space),
       ConvertUTF8ToJavaString(env, id.id));
 }
 
@@ -192,7 +191,7 @@ void OfflineContentAggregatorBridge::OnItemUpdated(const OfflineItem& item) {
 
   JNIEnv* env = AttachCurrentThread();
   Java_OfflineContentAggregatorBridge_onItemUpdated(
-      env, java_ref_.obj(), OfflineItemBridge::CreateOfflineItem(env, &item));
+      env, java_ref_, OfflineItemBridge::CreateOfflineItem(env, &item));
 }
 
 }  // namespace android
