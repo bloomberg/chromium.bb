@@ -6281,6 +6281,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3"
       label="Secure cookie that was skipped because of strict secure cookie
              rules would have been deleted in non-strict secure cookie case"/>
+  <int value="4" label="Equivalent cookie (with identical value) was found"/>
 </enum>
 
 <enum name="CookieDeletionCause">

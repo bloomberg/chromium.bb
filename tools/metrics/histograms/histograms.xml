@@ -9691,6 +9691,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Cookie.AgeForNonSecureCrossSiteRequest" units="days">
+  <owner>mkwst@chromium.org</owner>
+  <summary>
+    Records the age (in days) of the oldest cookie delivered along with a
+    non-secure, cross-site request. Recorded when setting the `Cookie` header
+    for a given request.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.AgeForNonSecureSameSiteRequest" units="days">
+  <owner>mkwst@chromium.org</owner>
+  <summary>
+    Records the age (in days) of the oldest cookie delivered along with a
+    non-secure, same-site request. Recorded when setting the `Cookie` header for
+    a given request.
+  </summary>
+</histogram>
+
 <histogram name="Cookie.BackingStoreUpdateResults" enum="BackingStoreResults">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -9709,7 +9727,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Cookie.CookieDeleteEquivalent" enum="CookieDeleteEquivalent">
-  <owner>jww@chromium.org</owner>
+  <owner>mkwst@chromium.org</owner>
   <summary>
     Record when at attempt is made to delete an equivalent cookie on a set
     cookie operation and when such a cookie is found and deleted. Also measure

@@ -3286,6 +3286,75 @@ TEST_F(URLRequestTest, StrictSecureCookiesOnSecureOrigin) {
   }
 }
 
+TEST_F(URLRequestTest, CookieAgeMetrics) {
+  EmbeddedTestServer http_server;
+  http_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  EmbeddedTestServer https_server(EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  ASSERT_TRUE(http_server.Start());
+  ASSERT_TRUE(https_server.Start());
+
+  TestNetworkDelegate network_delegate;
+  default_context_.set_network_delegate(&network_delegate);
+  base::HistogramTester histograms;
+
+  const std::string kHost = "example.test";
+  const std::string kCrossHost = "cross-origin.test";
+
+  // Set a test cookie.
+  {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> req(default_context_.CreateRequest(
+        http_server.GetURL(kHost, "/set-cookie?cookie=value"), DEFAULT_PRIORITY,
+        &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->Start();
+    base::RunLoop().Run();
+    ASSERT_EQ(1, network_delegate.set_cookie_count());
+  }
+
+  // Make a secure request to `example.test`: we shouldn't record data.
+  {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> req(default_context_.CreateRequest(
+        https_server.GetURL(kHost, "/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->Start();
+    base::RunLoop().Run();
+    histograms.ExpectTotalCount("Cookie.AgeForNonSecureCrossSiteRequest", 0);
+    histograms.ExpectTotalCount("Cookie.AgeForNonSecureSameSiteRequest", 0);
+  }
+
+  // Make a non-secure same-site request.
+  {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> req(default_context_.CreateRequest(
+        http_server.GetURL(kHost, "/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_first_party_for_cookies(http_server.GetURL(kHost, "/"));
+    req->set_initiator(url::Origin(http_server.GetURL(kHost, "/")));
+    req->Start();
+    base::RunLoop().Run();
+    histograms.ExpectTotalCount("Cookie.AgeForNonSecureCrossSiteRequest", 0);
+    histograms.ExpectTotalCount("Cookie.AgeForNonSecureSameSiteRequest", 1);
+  }
+
+  // Make a non-secure cross-site request.
+  {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> req(default_context_.CreateRequest(
+        http_server.GetURL(kHost, "/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_first_party_for_cookies(http_server.GetURL(kCrossHost, "/"));
+    req->set_initiator(url::Origin(http_server.GetURL(kCrossHost, "/")));
+    req->Start();
+    base::RunLoop().Run();
+    histograms.ExpectTotalCount("Cookie.AgeForNonSecureCrossSiteRequest", 1);
+    histograms.ExpectTotalCount("Cookie.AgeForNonSecureSameSiteRequest", 1);
+  }
+}
+
 // Tests that a request is cancelled while entering suspend mode. Uses mocks
 // rather than a spawned test server because the connection used to talk to
 // the test server is affected by entering suspend mode on Android.
