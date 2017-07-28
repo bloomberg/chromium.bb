@@ -912,6 +912,9 @@
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_DETAILS" desc="Text for the drop down menu which allows the user to see the printer details.">
       Details
     </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_EDIT" desc="Text for the drop down menu which allows the user to edit the printer details.">
+      Edit
+    </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_REMOVE" desc="Text for the drop down menu which allows the user to remove the selected printer.">
       Remove
     </message>
@@ -1025,6 +1028,12 @@
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_REQUIRE_INTERNET_MESSAGE" desc="The message shown when there is no internet access to set up a printer.">
       Connect to the internet to add a printer
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_DIALOG_TITLE" desc="Text for the title of the dialog that is used to edit a CUPS printer's information.">
+      Edit printer
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_BUTTON" desc="Text for the button which allows the user to save the modification of a CUPS printer.">
+      Save
     </message>
   </if>
   <message name="IDS_SETTINGS_PRINTING_CLOUD_PRINTERS" desc="In Printing Settings, the title of the google cloud printers setting section.">
