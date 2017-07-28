@@ -2394,6 +2394,7 @@ uploading your change for review.  These are checked by presubmit scripts.
 <!-- Generated from chrome/browser/bad_message.h -->
 
   <int value="0" label="WRLHH_LOGGING_STOPPED_BAD_STATE"/>
+  <int value="1" label="PPH_EXTRA_PREVIEW_MESSAGE"/>
 </enum>
 
 <enum name="BadMessageReasonContent">
