@@ -1,6 +1,4 @@
-7chars.
-Some line with 29 characters.
-
+Test css.getPlatformFontsForNode method.
 
 Running test: testFirstLetterPseudoClass
 Font #0

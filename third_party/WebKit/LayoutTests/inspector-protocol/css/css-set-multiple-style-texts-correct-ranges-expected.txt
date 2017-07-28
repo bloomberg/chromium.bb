@@ -1,5 +1,4 @@
 Verifies that the range of i-th payload corresponds to the state at the end of i-th edit; not the state at the end of all edits in setStyleTexts operation.
-
 ==== Initial style sheet text ====
 #test {
     box-sizing: border-box;

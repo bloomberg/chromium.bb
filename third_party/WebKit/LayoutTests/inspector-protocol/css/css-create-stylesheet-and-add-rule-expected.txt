@@ -1,4 +1,4 @@
-Inspected contents
+Tests that rules could be added to the existing and newly created stylesheets.
 Style sheet added: regular (stylesheet.css)
 Dumping matched rules: 
 *#inspected* {    regular

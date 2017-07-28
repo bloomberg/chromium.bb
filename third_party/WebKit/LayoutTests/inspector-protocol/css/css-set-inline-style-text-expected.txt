@@ -1,5 +1,4 @@
 The test verifies functionality of protocol method CSS.setStyleTexts for inline elements.
-
 ==== Initial style sheet text ====
 color: red;
 

@@ -1,10 +1,4 @@
-Test
-
-=== Get the Document ===
-
-
-=== Get immediate children of the body ===
-
+Test that matching styles report pseudo element styles.
 
 === Request matching styles for #for-pseudo::before ===
 

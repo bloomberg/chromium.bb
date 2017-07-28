@@ -1,7 +1,4 @@
-Class Selector
-
-ID Selector
-
+Test rule usage tracking
 Used rules offsets: 5
 0
 36

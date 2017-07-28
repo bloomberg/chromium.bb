@@ -1,3 +1,4 @@
+Tests CSS.setRuleSelector method
 ==== Initial style sheet text ====
 * {
     box-sizing: border-box;
