@@ -133,10 +133,15 @@ ChromeRenderFrameObserver::ChromeRenderFrameObserver(
   if (!render_frame->IsMainFrame())
     return;
 
+#if defined(SAFE_BROWSING_CSD)
+  registry_.AddInterface(
+      base::Bind(&ChromeRenderFrameObserver::OnPhishingDetectorRequest,
+                 base::Unretained(this)));
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kDisableClientSidePhishingDetection))
-    OnSetClientSidePhishingDetection(true);
+    SetClientSidePhishingDetection(true);
+#endif
   translate_helper_ = new translate::TranslateHelper(
       render_frame, chrome::ISOLATED_WORLD_ID_TRANSLATE,
       extensions::kExtensionScheme);
@@ -164,8 +169,6 @@ bool ChromeRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderFrameObserver, message)
     IPC_MESSAGE_HANDLER(ChromeFrameMsg_GetWebApplicationInfo,
                         OnGetWebApplicationInfo)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetClientSidePhishingDetection,
-                        OnSetClientSidePhishingDetection)
 #if BUILDFLAG(ENABLE_PRINTING)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintNodeUnderContextMenu,
                         OnPrintNodeUnderContextMenu)
@@ -299,16 +302,16 @@ void ChromeRenderFrameObserver::OnGetWebApplicationInfo() {
                                                        web_app_info));
 }
 
-void ChromeRenderFrameObserver::OnSetClientSidePhishingDetection(
-    bool enable_phishing_detection) {
 #if defined(SAFE_BROWSING_CSD)
+void ChromeRenderFrameObserver::SetClientSidePhishingDetection(
+    bool enable_phishing_detection) {
   phishing_classifier_ =
       enable_phishing_detection
           ? safe_browsing::PhishingClassifierDelegate::Create(render_frame(),
                                                               nullptr)
           : nullptr;
-#endif
 }
+#endif
 
 void ChromeRenderFrameObserver::DidFinishLoad() {
   WebLocalFrame* frame = render_frame()->GetWebFrame();
@@ -428,6 +431,13 @@ void ChromeRenderFrameObserver::OnImageContextMenuRendererRequest(
     chrome::mojom::ImageContextMenuRendererRequest request) {
   image_context_menu_renderer_bindings_.AddBinding(this, std::move(request));
 }
+
+#if defined(SAFE_BROWSING_CSD)
+void ChromeRenderFrameObserver::OnPhishingDetectorRequest(
+    chrome::mojom::PhishingDetectorRequest request) {
+  phishing_detector_bindings_.AddBinding(this, std::move(request));
+}
+#endif
 
 void ChromeRenderFrameObserver::OnThumbnailCapturerRequest(
     chrome::mojom::ThumbnailCapturerRequest request) {
