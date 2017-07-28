@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/gpu_process_callback.h"
-
 #include "base/android/scoped_java_ref.h"
 #include "base/android/unguessable_token_android.h"
 #include "content/browser/android/scoped_surface_request_manager.h"
@@ -42,10 +40,6 @@ base::android::ScopedJavaLocalRef<jobject> GetViewSurface(
   gl::ScopedJavaSurface surface_view =
       gpu::GpuSurfaceTracker::GetInstance()->AcquireJavaSurface(surface_id);
   return base::android::ScopedJavaLocalRef<jobject>(surface_view.j_surface());
-}
-
-bool RegisterGpuProcessCallback(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace content

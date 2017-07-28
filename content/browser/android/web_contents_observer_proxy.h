@@ -65,7 +65,6 @@ class WebContentsObserverProxy : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(WebContentsObserverProxy);
 };
 
-bool RegisterWebContentsObserverProxy(JNIEnv* env);
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_ANDROID_WEB_CONTENTS_OBSERVER_PROXY_H_

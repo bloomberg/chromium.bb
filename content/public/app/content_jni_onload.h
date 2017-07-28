@@ -13,9 +13,6 @@
 namespace content {
 namespace android {
 
-// Returns true if JNI registration succeeded.
-CONTENT_EXPORT bool OnJNIOnLoadRegisterJNI(JNIEnv* env);
-
 // Returns true if initialization succeeded.
 CONTENT_EXPORT bool OnJNIOnLoadInit();
 

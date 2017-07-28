@@ -82,12 +82,6 @@ void InterstitialPageDelegateAndroid::CommandReceived(
   }
 }
 
-// static
-bool InterstitialPageDelegateAndroid
-    ::RegisterInterstitialPageDelegateAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& obj,
                   const JavaParamRef<jstring>& html_content) {

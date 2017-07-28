@@ -31,9 +31,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
 #endif
 
 bool OnJNIOnLoadRegisterJNI(JNIEnv* env) {
-  if (!content::android::OnJNIOnLoadRegisterJNI(env))
-    return false;
-
 #if BUILDFLAG(ENABLE_VR)
   // Register manually when on the browser process.
   if (!base::android::IsSelectiveJniRegistrationEnabled(env)) {

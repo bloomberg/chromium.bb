@@ -47,11 +47,6 @@ void RemoveShellView(const JavaRef<jobject>& shell_view) {
                                 shell_view);
 }
 
-// Register native methods
-bool RegisterShellManager(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 static void Init(JNIEnv* env,
                  const JavaParamRef<jclass>& clazz,
                  const JavaParamRef<jobject>& obj) {

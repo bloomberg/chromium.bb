@@ -16,10 +16,6 @@
 namespace content {
 namespace android {
 
-bool OnJNIOnLoadRegisterJNI(JNIEnv* env) {
-  return content::EnsureJniRegistered(env);
-}
-
 bool OnJNIOnLoadInit() {
   if (!base::android::OnJNIOnLoadInit())
     return false;

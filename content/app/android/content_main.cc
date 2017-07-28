@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/app/android/content_main.h"
-
 #include <memory>
 
 #include "base/lazy_instance.h"
@@ -46,10 +44,6 @@ static jint Start(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
 void SetContentMainDelegate(ContentMainDelegate* delegate) {
   DCHECK(!g_content_main_delegate.Get().get());
   g_content_main_delegate.Get().reset(delegate);
-}
-
-bool RegisterContentMain(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace content

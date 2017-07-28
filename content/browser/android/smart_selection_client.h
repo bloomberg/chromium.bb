@@ -55,8 +55,6 @@ class SmartSelectionClient {
   DISALLOW_COPY_AND_ASSIGN(SmartSelectionClient);
 };
 
-bool RegisterSmartSelectionClient(JNIEnv* env);
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_ANDROID_SMART_SELECTION_CLIENT_H_

@@ -31,10 +31,6 @@ ConvertResourceRequestBodyToJavaArray(JNIEnv* env,
 
 }  // namespace
 
-bool RegisterResourceRequestBody(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 base::android::ScopedJavaLocalRef<jbyteArray>
 CreateResourceRequestBodyFromBytes(
     JNIEnv* env,

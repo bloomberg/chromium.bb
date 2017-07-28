@@ -10,10 +10,6 @@
 
 namespace content {
 
-// Register all content JNI functions now, rather than waiting for the process
-// of fully loading the native library to complete.
-bool EnsureJniRegistered(JNIEnv* env);
-
 // Do the intialization of content needed immediately after the native library
 // has loaded.
 // This is designed to be used as a hook function to be passed to

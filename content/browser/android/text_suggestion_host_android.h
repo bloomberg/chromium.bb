@@ -95,8 +95,6 @@ class TextSuggestionHostAndroid : public RenderWidgetHostConnector,
   TimeoutMonitor spellcheck_menu_timeout_;
 };
 
-bool RegisterTextSuggestionHost(JNIEnv* env);
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_ANDROID_TEXT_SUGGESTION_HOST_ANDROID_H_

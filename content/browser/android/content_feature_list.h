@@ -5,8 +5,6 @@
 #ifndef CONTENT_BROWSER_ANDROID_CONTENT_FEATURE_LIST_H_
 #define CONTENT_BROWSER_ANDROID_CONTENT_FEATURE_LIST_H_
 
-#include <jni.h>
-
 #include "base/feature_list.h"
 
 namespace content {
@@ -14,8 +12,6 @@ namespace android {
 
 // Alphabetical:
 extern const base::Feature kRequestUnbufferedDispatch;
-
-bool RegisterContentFeatureListJni(JNIEnv* env);
 
 }  // namespace android
 }  // namespace content

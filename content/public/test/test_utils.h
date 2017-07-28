@@ -99,11 +99,6 @@ void EnableFeatureWithParam(const base::Feature& feature,
                             const std::string& param_value,
                             base::CommandLine* command_line);
 
-#if defined(OS_ANDROID)
-// Registers content/browser JNI bindings necessary for some types of tests.
-bool RegisterJniForTesting(JNIEnv* env);
-#endif
-
 // Helper class to Run and Quit the message loop. Run and Quit can only happen
 // once per instance. Make a new instance for each use. Calling Quit after Run
 // has returned is safe and has no effect.

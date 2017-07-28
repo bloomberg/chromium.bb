@@ -32,10 +32,6 @@ void Init(JNIEnv* env,
   (new SelectionPopupController(env, obj, web_contents))->Initialize();
 }
 
-bool RegisterSelectionPopupController(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 SelectionPopupController::SelectionPopupController(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

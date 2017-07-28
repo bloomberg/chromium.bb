@@ -31,10 +31,6 @@ static ScopedJavaLocalRef<jobject> GetSingletonJavaContentVideoView(
     return ScopedJavaLocalRef<jobject>();
 }
 
-bool ContentVideoView::RegisterContentVideoView(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 ContentVideoView* ContentVideoView::GetInstance() {
   return g_content_video_view;
 }

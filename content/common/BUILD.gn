@@ -37,8 +37,6 @@ source_set("common") {
     "accessibility_messages.h",
     "accessibility_mode.h",
     "all_messages.h",
-    "android/common_jni_registrar.cc",
-    "android/common_jni_registrar.h",
     "android/gin_java_bridge_errors.cc",
     "android/gin_java_bridge_errors.h",
     "android/gin_java_bridge_value.cc",

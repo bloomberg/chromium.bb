@@ -271,7 +271,6 @@ if (current_cpu != "x64") {
     sources = [
       "linker_test_apk/chromium_linker_test_android.cc",
       "linker_test_apk/chromium_linker_test_linker_tests.cc",
-      "linker_test_apk/chromium_linker_test_linker_tests.h",
     ]
 
     deps = [

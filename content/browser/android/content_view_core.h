@@ -356,8 +356,6 @@ class ContentViewCore : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(ContentViewCore);
 };
 
-bool RegisterContentViewCore(JNIEnv* env);
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_ANDROID_CONTENT_VIEW_CORE_H_

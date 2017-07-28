@@ -244,7 +244,6 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   DISALLOW_COPY_AND_ASSIGN(WebContentsAccessibilityAndroid);
 };
 
-bool RegisterWebContentsAccessibilityAndroid(JNIEnv* env);
 }
 
 #endif  // CONTENT_BROWSER_ACCESSIBILITY_WEB_CONTENTS_ACCESSIBILITY_ANDROID_H_

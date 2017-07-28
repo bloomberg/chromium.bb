@@ -181,11 +181,6 @@ ScopedJavaLocalRef<jobject> FromNativePtr(JNIEnv* env,
   return web_contents_android->GetJavaObject();
 }
 
-// static
-bool WebContentsAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 WebContentsAndroid::WebContentsAndroid(WebContentsImpl* web_contents)
     : web_contents_(web_contents),
       navigation_controller_(&(web_contents->GetController())),

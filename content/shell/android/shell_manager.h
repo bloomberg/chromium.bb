@@ -27,9 +27,6 @@ base::android::ScopedJavaLocalRef<jobject> CreateShellView(Shell* shell);
 // Removes a previously created shell view.
 void RemoveShellView(const base::android::JavaRef<jobject>& shell_view);
 
-// Registers the ShellManager native methods.
-bool RegisterShellManager(JNIEnv* env);
-
 void ShellAttachLayer(blink::WebLayer* layer);
 void ShellRemoveLayer(blink::WebLayer* layer);
 }  // namespace content

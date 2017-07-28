@@ -49,9 +49,5 @@ static jboolean IsEnabled(JNIEnv* env,
   return base::FeatureList::IsEnabled(*feature);
 }
 
-bool RegisterContentFeatureListJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace android
 }  // namespace content

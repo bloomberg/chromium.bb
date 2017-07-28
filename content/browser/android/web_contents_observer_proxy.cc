@@ -269,7 +269,4 @@ void WebContentsObserverProxy::SetToBaseURLForDataURLIfNeeded(
   }
 }
 
-bool RegisterWebContentsObserverProxy(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 }  // namespace content

@@ -141,10 +141,6 @@ void AppWebMessagePort::OnMessagesAvailable() {
   Java_AppWebMessagePort_onMessagesAvailable(env, obj);
 }
 
-bool RegisterAppWebMessagePort(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 void InitializeAppWebMessagePortPair(
     JNIEnv* env,
     const base::android::JavaParamRef<jclass>& jcaller,

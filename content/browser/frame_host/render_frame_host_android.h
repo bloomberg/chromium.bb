@@ -27,8 +27,6 @@ class RenderFrameHostImpl;
 // native counterpart.
 class RenderFrameHostAndroid : public base::SupportsUserData::Data {
  public:
-  static bool Register(JNIEnv* env);
-
   RenderFrameHostAndroid(
       RenderFrameHostImpl* render_frame_host,
       service_manager::mojom::InterfaceProviderPtr interface_provider_ptr);

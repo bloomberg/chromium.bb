@@ -11,12 +11,6 @@ using base::android::JavaParamRef;
 namespace content {
 
 // static
-bool BackgroundSyncNetworkObserverAndroid::Observer::RegisterNetworkObserver(
-    JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 scoped_refptr<BackgroundSyncNetworkObserverAndroid::Observer>
 BackgroundSyncNetworkObserverAndroid::Observer::Create(
     base::Callback<void(net::NetworkChangeNotifier::ConnectionType)> callback) {

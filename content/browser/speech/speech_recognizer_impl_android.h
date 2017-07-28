@@ -51,8 +51,6 @@ class CONTENT_EXPORT SpeechRecognizerImplAndroid : public SpeechRecognizer {
   void OnRecognitionEnd(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj);
 
-  static bool RegisterSpeechRecognizer(JNIEnv* env);
-
  private:
   enum State {
     STATE_IDLE = 0,

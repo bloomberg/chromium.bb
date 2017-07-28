@@ -21,11 +21,6 @@ using base::android::ScopedJavaLocalRef;
 
 namespace content {
 
-// static
-bool RenderFrameHostAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 RenderFrameHostAndroid::RenderFrameHostAndroid(
     RenderFrameHostImpl* render_frame_host,
     service_manager::mojom::InterfaceProviderPtr interface_provider_ptr)
