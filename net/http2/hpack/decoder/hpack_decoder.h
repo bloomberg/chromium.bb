@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_HTTP2_HPACK_DECODER_HTTP2_HPACK_DECODER_H_
-#define NET_HTTP2_HPACK_DECODER_HTTP2_HPACK_DECODER_H_
+#ifndef NET_HTTP2_HPACK_DECODER_HPACK_DECODER_H_
+#define NET_HTTP2_HPACK_DECODER_HPACK_DECODER_H_
 
-// Decodes HPACK blocks, calls an Http2HpackDecoderListener with the decoded
-// header entries. Also notifies the listener of errors and of the boundaries of
-// the HPACK blocks.
+// Decodes HPACK blocks, calls an HpackDecoderListener with the decoded header
+// entries. Also notifies the listener of errors and of the boundaries of the
+// HPACK blocks.
 
 // TODO(jamessynge): Add feature allowing an HpackEntryDecoderListener
 // sub-class (and possibly others) to be passed in for counting events,
@@ -34,13 +34,13 @@
 
 namespace net {
 namespace test {
-class Http2HpackDecoderPeer;
+class HpackDecoderPeer;
 }  // namespace test
 
-class HTTP2_EXPORT_PRIVATE Http2HpackDecoder {
+class HTTP2_EXPORT_PRIVATE HpackDecoder {
  public:
-  Http2HpackDecoder(HpackDecoderListener* listener, size_t max_string_size);
-  virtual ~Http2HpackDecoder();
+  HpackDecoder(HpackDecoderListener* listener, size_t max_string_size);
+  virtual ~HpackDecoder();
 
   void set_listener(HpackDecoderListener* listener);
   HpackDecoderListener* listener() const;
@@ -99,7 +99,7 @@ class HTTP2_EXPORT_PRIVATE Http2HpackDecoder {
   size_t EstimateMemoryUsage() const;
 
  private:
-  friend class test::Http2HpackDecoderPeer;
+  friend class test::HpackDecoderPeer;
 
   // Reports an error to the listener IF this is the first error detected.
   void ReportError(Http2StringPiece error_message);
@@ -117,9 +117,9 @@ class HTTP2_EXPORT_PRIVATE Http2HpackDecoder {
   // Has an error been detected?
   bool error_detected_;
 
-  DISALLOW_COPY_AND_ASSIGN(Http2HpackDecoder);
+  DISALLOW_COPY_AND_ASSIGN(HpackDecoder);
 };
 
 }  // namespace net
 
-#endif  // NET_HTTP2_HPACK_DECODER_HTTP2_HPACK_DECODER_H_
+#endif  // NET_HTTP2_HPACK_DECODER_HPACK_DECODER_H_

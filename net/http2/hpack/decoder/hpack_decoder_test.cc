@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/http2/hpack/decoder/http2_hpack_decoder.h"
+#include "net/http2/hpack/decoder/hpack_decoder.h"
 
-// Tests of Http2HpackDecoder.
+// Tests of HpackDecoder.
 
 #include <tuple>
 #include <utility>
@@ -41,12 +41,12 @@ class HpackDecoderStatePeer {
     return &state->decoder_tables_;
   }
 };
-class Http2HpackDecoderPeer {
+class HpackDecoderPeer {
  public:
-  static HpackDecoderState* GetDecoderState(Http2HpackDecoder* decoder) {
+  static HpackDecoderState* GetDecoderState(HpackDecoder* decoder) {
     return &decoder->decoder_state_;
   }
-  static HpackDecoderTables* GetDecoderTables(Http2HpackDecoder* decoder) {
+  static HpackDecoderTables* GetDecoderTables(HpackDecoder* decoder) {
     return HpackDecoderStatePeer::GetDecoderTables(GetDecoderState(decoder));
   }
 };
@@ -69,17 +69,17 @@ class MockHpackDecoderListener : public HpackDecoderListener {
   MOCK_METHOD1(OnHeaderErrorDetected, void(Http2StringPiece error_message));
 };
 
-class Http2HpackDecoderTest : public ::testing::TestWithParam<bool>,
-                              public HpackDecoderListener {
+class HpackDecoderTest : public ::testing::TestWithParam<bool>,
+                         public HpackDecoderListener {
  protected:
   // Note that we initialize the random number generator with the same seed
   // for each individual test, therefore the order in which the tests are
   // executed does not effect the sequence produced by the RNG within any
   // one test.
-  Http2HpackDecoderTest() : decoder_(this, 4096) {
+  HpackDecoderTest() : decoder_(this, 4096) {
     fragment_the_hpack_block_ = GetParam();
   }
-  ~Http2HpackDecoderTest() override {}
+  ~HpackDecoderTest() override {}
 
   void OnHeaderListStart() override {
     ASSERT_FALSE(saw_start_);
@@ -125,7 +125,7 @@ class Http2HpackDecoderTest : public ::testing::TestWithParam<bool>,
   }
 
   AssertionResult DecodeBlock(Http2StringPiece block) {
-    VLOG(1) << "Http2HpackDecoderTest::DecodeBlock";
+    VLOG(1) << "HpackDecoderTest::DecodeBlock";
 
     VERIFY_FALSE(decoder_.error_detected());
     VERIFY_TRUE(error_messages_.empty());
@@ -168,7 +168,7 @@ class Http2HpackDecoderTest : public ::testing::TestWithParam<bool>,
   }
 
   const HpackDecoderTables& GetDecoderTables() {
-    return *Http2HpackDecoderPeer::GetDecoderTables(&decoder_);
+    return *HpackDecoderPeer::GetDecoderTables(&decoder_);
   }
   const HpackStringPair* Lookup(size_t index) {
     return GetDecoderTables().Lookup(index);
@@ -180,8 +180,7 @@ class Http2HpackDecoderTest : public ::testing::TestWithParam<bool>,
     return GetDecoderTables().header_table_size_limit();
   }
   void set_header_table_size_limit(size_t size) {
-    Http2HpackDecoderPeer::GetDecoderTables(&decoder_)->DynamicTableSizeUpdate(
-        size);
+    HpackDecoderPeer::GetDecoderTables(&decoder_)->DynamicTableSizeUpdate(size);
   }
 
   // dynamic_index is one-based, because that is the way RFC 7541 shows it.
@@ -213,7 +212,7 @@ class Http2HpackDecoderTest : public ::testing::TestWithParam<bool>,
   }
 
   Http2Random random_;
-  Http2HpackDecoder decoder_;
+  HpackDecoder decoder_;
   testing::StrictMock<MockHpackDecoderListener> mock_listener_;
   HpackHeaderEntries header_entries_;
   std::vector<Http2String> error_messages_;
@@ -221,13 +220,13 @@ class Http2HpackDecoderTest : public ::testing::TestWithParam<bool>,
   bool saw_start_ = false;
   bool saw_end_ = false;
 };
-INSTANTIATE_TEST_CASE_P(AllWays, Http2HpackDecoderTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(AllWays, HpackDecoderTest, ::testing::Bool());
 
 // Test based on RFC 7541, section C.3: Request Examples without Huffman Coding.
 // This section shows several consecutive header lists, corresponding to HTTP
 // requests, on the same connection.
 // http://httpwg.org/specs/rfc7541.html#rfc.section.C.3
-TEST_P(Http2HpackDecoderTest, C3_RequestExamples) {
+TEST_P(HpackDecoderTest, C3_RequestExamples) {
   // C.3.1 First Request
   Http2String hpack_block = HpackExampleToStringOrDie(R"(
       82                                      | == Indexed - Add ==
@@ -362,7 +361,7 @@ TEST_P(Http2HpackDecoderTest, C3_RequestExamples) {
 // This section shows the same examples as the previous section but uses
 // Huffman encoding for the literal values.
 // http://httpwg.org/specs/rfc7541.html#rfc.section.C.4
-TEST_P(Http2HpackDecoderTest, C4_RequestExamplesWithHuffmanEncoding) {
+TEST_P(HpackDecoderTest, C4_RequestExamplesWithHuffmanEncoding) {
   // C.4.1 First Request
   Http2String hpack_block = HpackExampleToStringOrDie(R"(
       82                                      | == Indexed - Add ==
@@ -511,7 +510,7 @@ TEST_P(Http2HpackDecoderTest, C4_RequestExamplesWithHuffmanEncoding) {
 // SETTINGS_HEADER_TABLE_SIZE is set to the value of 256 octets, causing
 // some evictions to occur.
 // http://httpwg.org/specs/rfc7541.html#rfc.section.C.5
-TEST_P(Http2HpackDecoderTest, C5_ResponseExamples) {
+TEST_P(HpackDecoderTest, C5_ResponseExamples) {
   set_header_table_size_limit(256);
 
   // C.5.1 First Response
@@ -737,7 +736,7 @@ TEST_P(Http2HpackDecoderTest, C5_ResponseExamples) {
 // evictions to occur. The eviction mechanism uses the length of the decoded
 // literal values, so the same evictions occur as in the previous section.
 // http://httpwg.org/specs/rfc7541.html#rfc.section.C.6
-TEST_P(Http2HpackDecoderTest, C6_ResponseExamplesWithHuffmanEncoding) {
+TEST_P(HpackDecoderTest, C6_ResponseExamplesWithHuffmanEncoding) {
   set_header_table_size_limit(256);
 
   // C.5.1 First Response
@@ -954,7 +953,7 @@ TEST_P(Http2HpackDecoderTest, C6_ResponseExamplesWithHuffmanEncoding) {
 }
 
 // Confirm that the table size can be changed, but at most twice.
-TEST_P(Http2HpackDecoderTest, ProcessesOptionalTableSizeUpdates) {
+TEST_P(HpackDecoderTest, ProcessesOptionalTableSizeUpdates) {
   EXPECT_EQ(Http2SettingsInfo::DefaultHeaderTableSize(),
             header_table_size_limit());
   // One update allowed.
@@ -990,7 +989,7 @@ TEST_P(Http2HpackDecoderTest, ProcessesOptionalTableSizeUpdates) {
     EXPECT_EQ(0u, current_header_table_size());
     EXPECT_TRUE(header_entries_.empty());
   }
-  // An error has been detected, so calls to Http2HpackDecoder::DecodeFragment
+  // An error has been detected, so calls to HpackDecoder::DecodeFragment
   // should return immediately.
   DecodeBuffer db("\x80");
   EXPECT_FALSE(decoder_.DecodeFragment(&db));
@@ -999,7 +998,7 @@ TEST_P(Http2HpackDecoderTest, ProcessesOptionalTableSizeUpdates) {
 }
 
 // Confirm that the table size can be changed when required, but at most twice.
-TEST_P(Http2HpackDecoderTest, ProcessesRequiredTableSizeUpdate) {
+TEST_P(HpackDecoderTest, ProcessesRequiredTableSizeUpdate) {
   // One update required, two allowed, one provided, followed by a header.
   decoder_.ApplyHeaderTableSizeSetting(1024);
   decoder_.ApplyHeaderTableSizeSetting(2048);
@@ -1055,7 +1054,7 @@ TEST_P(Http2HpackDecoderTest, ProcessesRequiredTableSizeUpdate) {
 }
 
 // Confirm that required size updates are validated.
-TEST_P(Http2HpackDecoderTest, InvalidRequiredSizeUpdate) {
+TEST_P(HpackDecoderTest, InvalidRequiredSizeUpdate) {
   // Require a size update, but provide one that isn't small enough (must be
   // zero or one, in this case).
   decoder_.ApplyHeaderTableSizeSetting(1);
@@ -1073,7 +1072,7 @@ TEST_P(Http2HpackDecoderTest, InvalidRequiredSizeUpdate) {
 }
 
 // Confirm that required size updates are indeed required before the end.
-TEST_P(Http2HpackDecoderTest, RequiredTableSizeChangeBeforeEnd) {
+TEST_P(HpackDecoderTest, RequiredTableSizeChangeBeforeEnd) {
   decoder_.ApplyHeaderTableSizeSetting(1024);
   EXPECT_FALSE(DecodeBlock(""));
   EXPECT_EQ(1u, error_messages_.size());
@@ -1084,7 +1083,7 @@ TEST_P(Http2HpackDecoderTest, RequiredTableSizeChangeBeforeEnd) {
 
 // Confirm that required size updates are indeed required before an
 // indexed header.
-TEST_P(Http2HpackDecoderTest, RequiredTableSizeChangeBeforeIndexedHeader) {
+TEST_P(HpackDecoderTest, RequiredTableSizeChangeBeforeIndexedHeader) {
   decoder_.ApplyHeaderTableSizeSetting(1024);
   HpackBlockBuilder hbb;
   hbb.AppendIndexedHeader(1);
@@ -1099,7 +1098,7 @@ TEST_P(Http2HpackDecoderTest, RequiredTableSizeChangeBeforeIndexedHeader) {
 // Confirm that required size updates are indeed required before an indexed
 // header name.
 // TODO(jamessynge): Move some of these to hpack_decoder_state_test.cc.
-TEST_P(Http2HpackDecoderTest, RequiredTableSizeChangeBeforeIndexedHeaderName) {
+TEST_P(HpackDecoderTest, RequiredTableSizeChangeBeforeIndexedHeaderName) {
   decoder_.ApplyHeaderTableSizeSetting(1024);
   HpackBlockBuilder hbb;
   hbb.AppendNameIndexAndLiteralValue(HpackEntryType::kIndexedLiteralHeader, 2,
@@ -1114,7 +1113,7 @@ TEST_P(Http2HpackDecoderTest, RequiredTableSizeChangeBeforeIndexedHeaderName) {
 
 // Confirm that required size updates are indeed required before a literal
 // header name.
-TEST_P(Http2HpackDecoderTest, RequiredTableSizeChangeBeforeLiteralName) {
+TEST_P(HpackDecoderTest, RequiredTableSizeChangeBeforeLiteralName) {
   decoder_.ApplyHeaderTableSizeSetting(1024);
   HpackBlockBuilder hbb;
   hbb.AppendLiteralNameAndValue(HpackEntryType::kNeverIndexedLiteralHeader,
@@ -1130,7 +1129,7 @@ TEST_P(Http2HpackDecoderTest, RequiredTableSizeChangeBeforeLiteralName) {
 // Confirm that an excessively long varint is detected, in this case an
 // index of 127, but with lots of additional high-order 0 bits provided,
 // too many to be allowed.
-TEST_P(Http2HpackDecoderTest, InvalidIndexedHeaderVarint) {
+TEST_P(HpackDecoderTest, InvalidIndexedHeaderVarint) {
   EXPECT_TRUE(decoder_.StartDecodingBlock());
   DecodeBuffer db("\xff\x80\x80\x80\x80\x80\x80\x80\x80\x80\x80\x00");
   EXPECT_FALSE(decoder_.DecodeFragment(&db));
@@ -1145,7 +1144,7 @@ TEST_P(Http2HpackDecoderTest, InvalidIndexedHeaderVarint) {
 
 // Confirm that an invalid index into the tables is detected, in this case an
 // index of 0.
-TEST_P(Http2HpackDecoderTest, InvalidIndex) {
+TEST_P(HpackDecoderTest, InvalidIndex) {
   EXPECT_TRUE(decoder_.StartDecodingBlock());
   DecodeBuffer db("\x80");
   EXPECT_FALSE(decoder_.DecodeFragment(&db));
@@ -1159,7 +1158,7 @@ TEST_P(Http2HpackDecoderTest, InvalidIndex) {
 }
 
 // Confirm that EndDecodingBlock detects a truncated HPACK block.
-TEST_P(Http2HpackDecoderTest, TruncatedBlock) {
+TEST_P(HpackDecoderTest, TruncatedBlock) {
   HpackBlockBuilder hbb;
   hbb.AppendDynamicTableSizeUpdate(3000);
   EXPECT_EQ(3u, hbb.size());
@@ -1183,7 +1182,7 @@ TEST_P(Http2HpackDecoderTest, TruncatedBlock) {
 }
 
 // Confirm that an oversized string is detected, ending decoding.
-TEST_P(Http2HpackDecoderTest, OversizeStringDetected) {
+TEST_P(HpackDecoderTest, OversizeStringDetected) {
   HpackBlockBuilder hbb;
   hbb.AppendLiteralNameAndValue(HpackEntryType::kNeverIndexedLiteralHeader,
                                 false, "name", false, "some data.");

@@ -13,9 +13,9 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "net/http2/hpack/decoder/hpack_decoder.h"
 #include "net/http2/hpack/decoder/hpack_decoder_listener.h"
 #include "net/http2/hpack/decoder/hpack_decoder_tables.h"
-#include "net/http2/hpack/decoder/http2_hpack_decoder.h"
 #include "net/http2/hpack/hpack_string.h"
 #include "net/http2/hpack/http2_hpack_constants.h"
 #include "net/spdy/core/hpack/hpack_header_table.h"
@@ -140,7 +140,7 @@ class SPDY_EXPORT_PRIVATE HpackDecoderAdapter {
   ListenerAdapter listener_adapter_;
 
   // The actual decoder.
-  Http2HpackDecoder hpack_decoder_;
+  HpackDecoder hpack_decoder_;
 
   // How much encoded data this decoder is willing to buffer.
   size_t max_decode_buffer_size_bytes_;

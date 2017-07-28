@@ -39,12 +39,12 @@ class HpackDecoderStatePeer {
   }
 };
 
-class Http2HpackDecoderPeer {
+class HpackDecoderPeer {
  public:
-  static HpackDecoderState* GetDecoderState(Http2HpackDecoder* decoder) {
+  static HpackDecoderState* GetDecoderState(HpackDecoder* decoder) {
     return &decoder->decoder_state_;
   }
-  static HpackDecoderTables* GetDecoderTables(Http2HpackDecoder* decoder) {
+  static HpackDecoderTables* GetDecoderTables(HpackDecoder* decoder) {
     return HpackDecoderStatePeer::GetDecoderTables(GetDecoderState(decoder));
   }
 };
@@ -60,7 +60,7 @@ class HpackDecoderAdapterPeer {
   }
 
   HpackDecoderTables* GetDecoderTables() {
-    return Http2HpackDecoderPeer::GetDecoderTables(&decoder_->hpack_decoder_);
+    return HpackDecoderPeer::GetDecoderTables(&decoder_->hpack_decoder_);
   }
 
   const HpackStringPair* GetTableEntry(uint32_t index) {
