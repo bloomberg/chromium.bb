@@ -1344,12 +1344,6 @@ void Layer::OnTransformAnimated(const gfx::Transform& transform) {
   inputs_.transform = transform;
 }
 
-void Layer::OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) {
-  // Do nothing. Scroll deltas will be sent from the compositor thread back
-  // to the main thread in the same manner as during non-animated
-  // compositor-driven scrolling.
-}
-
 bool Layer::HasTickingAnimationForTesting() const {
   return layer_tree_host_
              ? GetMutatorHost()->HasTickingAnimationForTesting(element_id())
