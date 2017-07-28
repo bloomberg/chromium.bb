@@ -34,12 +34,13 @@ void FrameSinkManagerClientBinding::InvalidateFrameSinkId(
 void FrameSinkManagerClientBinding::CreateRootCompositorFrameSink(
     const viz::FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,
+    const viz::RendererSettings& renderer_settings,
     viz::mojom::CompositorFrameSinkAssociatedRequest request,
     viz::mojom::CompositorFrameSinkClientPtr client,
     viz::mojom::DisplayPrivateAssociatedRequest display_private_request) {
   frame_sink_manager_->CreateRootCompositorFrameSink(
-      frame_sink_id, surface_handle, std::move(request), std::move(client),
-      std::move(display_private_request));
+      frame_sink_id, surface_handle, renderer_settings, std::move(request),
+      std::move(client), std::move(display_private_request));
 }
 
 void FrameSinkManagerClientBinding::CreateCompositorFrameSink(

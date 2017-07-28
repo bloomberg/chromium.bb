@@ -84,6 +84,7 @@ void FrameSinkManagerImpl::InvalidateFrameSinkId(
 void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
     const FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,
+    const RendererSettings& renderer_settings,
     mojom::CompositorFrameSinkAssociatedRequest request,
     mojom::CompositorFrameSinkClientPtr client,
     mojom::DisplayPrivateAssociatedRequest display_private_request) {
@@ -93,8 +94,8 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
   DCHECK(display_provider_);
 
   std::unique_ptr<BeginFrameSource> begin_frame_source;
-  auto display = display_provider_->CreateDisplay(frame_sink_id, surface_handle,
-                                                  &begin_frame_source);
+  auto display = display_provider_->CreateDisplay(
+      frame_sink_id, surface_handle, renderer_settings, &begin_frame_source);
 
   compositor_frame_sinks_[frame_sink_id] =
       base::MakeUnique<GpuRootCompositorFrameSink>(

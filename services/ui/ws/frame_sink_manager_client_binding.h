@@ -33,6 +33,7 @@ class FrameSinkManagerClientBinding : public viz::mojom::FrameSinkManager {
   void CreateRootCompositorFrameSink(
       const viz::FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
+      const viz::RendererSettings& renderer_settings,
       viz::mojom::CompositorFrameSinkAssociatedRequest request,
       viz::mojom::CompositorFrameSinkClientPtr client,
       viz::mojom::DisplayPrivateAssociatedRequest display_private_request)

@@ -6,6 +6,9 @@
 
 #include <utility>
 
+#include "base/command_line.h"
+#include "cc/base/switches.h"
+#include "components/viz/common/display/renderer_settings.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/server_window.h"
@@ -31,12 +34,17 @@ void ServerWindowCompositorFrameSinkManager::CreateRootCompositorFrameSink(
     viz::mojom::CompositorFrameSinkAssociatedRequest sink_request,
     viz::mojom::CompositorFrameSinkClientPtr client,
     viz::mojom::DisplayPrivateAssociatedRequest display_request) {
+  viz::RendererSettings settings;
+  settings.show_overdraw_feedback =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          cc::switches::kShowOverdrawFeedback);
+
   // TODO(fsamuel): AcceleratedWidget cannot be transported over IPC for Mac
   // or Android. We should instead use GpuSurfaceTracker here on those
   // platforms.
   frame_sink_manager_->CreateRootCompositorFrameSink(
-      frame_sink_id_, widget, std::move(sink_request), std::move(client),
-      std::move(display_request));
+      frame_sink_id_, widget, settings, std::move(sink_request),
+      std::move(client), std::move(display_request));
 }
 
 void ServerWindowCompositorFrameSinkManager::CreateCompositorFrameSink(
