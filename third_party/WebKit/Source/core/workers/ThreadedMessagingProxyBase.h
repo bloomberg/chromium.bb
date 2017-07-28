@@ -58,8 +58,7 @@ class CORE_EXPORT ThreadedMessagingProxyBase
                             std::unique_ptr<SourceLocation>);
   void PostMessageToPageInspector(int session_id, const String&);
 
-  // 'virtual' for testing.
-  virtual void WorkerThreadTerminated();
+  void WorkerThreadTerminated();
 
   // Number of live messaging proxies, used by leak detection.
   static int ProxyCount();
