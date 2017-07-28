@@ -69,7 +69,9 @@ class CC_EXPORT TextureDrawQuad : public DrawQuad {
   };
   OverlayResources overlay_resources;
 
-  ResourceId resource_id() const { return resources.ids[kResourceIdIndex]; }
+  viz::ResourceId resource_id() const {
+    return resources.ids[kResourceIdIndex];
+  }
   const gfx::Size& resource_size_in_pixels() const {
     return overlay_resources.size_in_pixels[kResourceIdIndex];
   }

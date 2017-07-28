@@ -24,7 +24,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_provider.h"
-#include "cc/base/resource_id.h"
 #include "cc/cc_export.h"
 #include "cc/output/output_surface.h"
 #include "cc/resources/release_callback_impl.h"
@@ -36,6 +35,7 @@
 #include "components/viz/common/quads/resource_format.h"
 #include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/quads/texture_mailbox.h"
+#include "components/viz/common/resources/resource_id.h"
 #include "components/viz/common/resources/resource_settings.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -69,8 +69,8 @@ class CC_EXPORT ResourceProvider
   struct Resource;
 
  public:
-  using ResourceIdArray = std::vector<ResourceId>;
-  using ResourceIdMap = std::unordered_map<ResourceId, ResourceId>;
+  using ResourceIdArray = std::vector<viz::ResourceId>;
+  using ResourceIdMap = std::unordered_map<viz::ResourceId, viz::ResourceId>;
   enum TextureHint {
     TEXTURE_HINT_DEFAULT = 0x0,
     TEXTURE_HINT_IMMUTABLE = 0x1,
@@ -118,48 +118,49 @@ class CC_EXPORT ResourceProvider
   bool IsRenderBufferFormatSupported(viz::ResourceFormat format) const;
 
   // Checks whether a resource is in use by a consumer.
-  bool InUseByConsumer(ResourceId id);
+  bool InUseByConsumer(viz::ResourceId id);
 
-  bool IsLost(ResourceId id);
+  bool IsLost(viz::ResourceId id);
 
-  void LoseResourceForTesting(ResourceId id);
-  void EnableReadLockFencesForTesting(ResourceId id);
+  void LoseResourceForTesting(viz::ResourceId id);
+  void EnableReadLockFencesForTesting(viz::ResourceId id);
 
   // Producer interface.
 
   ResourceType default_resource_type() const {
     return settings_.default_resource_type;
   }
-  ResourceType GetResourceType(ResourceId id);
-  GLenum GetResourceTextureTarget(ResourceId id);
-  bool IsImmutable(ResourceId id);
-  TextureHint GetTextureHint(ResourceId id);
+  ResourceType GetResourceType(viz::ResourceId id);
+  GLenum GetResourceTextureTarget(viz::ResourceId id);
+  bool IsImmutable(viz::ResourceId id);
+  TextureHint GetTextureHint(viz::ResourceId id);
 
   // Creates a resource of the default resource type.
-  ResourceId CreateResource(const gfx::Size& size,
-                            TextureHint hint,
-                            viz::ResourceFormat format,
-                            const gfx::ColorSpace& color_space);
+  viz::ResourceId CreateResource(const gfx::Size& size,
+                                 TextureHint hint,
+                                 viz::ResourceFormat format,
+                                 const gfx::ColorSpace& color_space);
 
   // Creates a resource for a particular texture target (the distinction between
   // texture targets has no effect in software mode).
-  ResourceId CreateGpuMemoryBufferResource(const gfx::Size& size,
-                                           TextureHint hint,
-                                           viz::ResourceFormat format,
-                                           gfx::BufferUsage usage,
-                                           const gfx::ColorSpace& color_space);
+  viz::ResourceId CreateGpuMemoryBufferResource(
+      const gfx::Size& size,
+      TextureHint hint,
+      viz::ResourceFormat format,
+      gfx::BufferUsage usage,
+      const gfx::ColorSpace& color_space);
 
   // Wraps an external texture mailbox into a GL resource.
-  ResourceId CreateResourceFromTextureMailbox(
+  viz::ResourceId CreateResourceFromTextureMailbox(
       const viz::TextureMailbox& mailbox,
       std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl);
 
-  ResourceId CreateResourceFromTextureMailbox(
+  viz::ResourceId CreateResourceFromTextureMailbox(
       const viz::TextureMailbox& mailbox,
       std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl,
       bool read_lock_fences_enabled);
 
-  void DeleteResource(ResourceId id);
+  void DeleteResource(viz::ResourceId id);
   // In the case of GPU resources, we may need to flush the GL context to ensure
   // that texture deletions are seen in a timely fashion. This function should
   // be called after texture deletions that may happen during an idle state.
@@ -167,7 +168,7 @@ class CC_EXPORT ResourceProvider
 
   // Update pixels from image, copying source_rect (in image) to dest_offset (in
   // the resource).
-  void CopyToResource(ResourceId id,
+  void CopyToResource(viz::ResourceId id,
                       const uint8_t* image,
                       const gfx::Size& image_size);
 
@@ -211,8 +212,9 @@ class CC_EXPORT ResourceProvider
   // Once a set of resources have been received, they may or may not be used.
   // This declares what set of resources are currently in use from the child,
   // releasing any other resources back to the child.
-  void DeclareUsedResourcesFromChild(int child,
-                                     const ResourceIdSet& resources_from_child);
+  void DeclareUsedResourcesFromChild(
+      int child,
+      const viz::ResourceIdSet& resources_from_child);
 
   // Receives resources from the parent, moving them from mailboxes. Resource
   // IDs passed are in the child namespace.
@@ -237,7 +239,7 @@ class CC_EXPORT ResourceProvider
   class CC_EXPORT ScopedReadLockGL {
    public:
     ScopedReadLockGL(ResourceProvider* resource_provider,
-                     ResourceId resource_id);
+                     viz::ResourceId resource_id);
     ~ScopedReadLockGL();
 
     unsigned texture_id() const { return texture_id_; }
@@ -247,7 +249,7 @@ class CC_EXPORT ResourceProvider
 
    private:
     ResourceProvider* resource_provider_;
-    ResourceId resource_id_;
+    viz::ResourceId resource_id_;
     unsigned texture_id_;
     GLenum target_;
     gfx::Size size_;
@@ -259,10 +261,10 @@ class CC_EXPORT ResourceProvider
   class CC_EXPORT ScopedSamplerGL {
    public:
     ScopedSamplerGL(ResourceProvider* resource_provider,
-                    ResourceId resource_id,
+                    viz::ResourceId resource_id,
                     GLenum filter);
     ScopedSamplerGL(ResourceProvider* resource_provider,
-                    ResourceId resource_id,
+                    viz::ResourceId resource_id,
                     GLenum unit,
                     GLenum filter);
     ~ScopedSamplerGL();
@@ -284,7 +286,7 @@ class CC_EXPORT ResourceProvider
   class CC_EXPORT ScopedWriteLockGL {
    public:
     ScopedWriteLockGL(ResourceProvider* resource_provider,
-                      ResourceId resource_id,
+                      viz::ResourceId resource_id,
                       bool create_mailbox);
     ~ScopedWriteLockGL();
 
@@ -309,7 +311,7 @@ class CC_EXPORT ResourceProvider
 
    private:
     ResourceProvider* resource_provider_;
-    ResourceId resource_id_;
+    viz::ResourceId resource_id_;
     unsigned texture_id_;
     GLenum target_;
     viz::ResourceFormat format_;
@@ -363,7 +365,7 @@ class CC_EXPORT ResourceProvider
   class CC_EXPORT ScopedReadLockSoftware {
    public:
     ScopedReadLockSoftware(ResourceProvider* resource_provider,
-                           ResourceId resource_id);
+                           viz::ResourceId resource_id);
     ~ScopedReadLockSoftware();
 
     const SkBitmap* sk_bitmap() const {
@@ -375,7 +377,7 @@ class CC_EXPORT ResourceProvider
 
    private:
     ResourceProvider* resource_provider_;
-    ResourceId resource_id_;
+    viz::ResourceId resource_id_;
     SkBitmap sk_bitmap_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSoftware);
@@ -384,7 +386,7 @@ class CC_EXPORT ResourceProvider
   class CC_EXPORT ScopedReadLockSkImage {
    public:
     ScopedReadLockSkImage(ResourceProvider* resource_provider,
-                          ResourceId resource_id);
+                          viz::ResourceId resource_id);
     ~ScopedReadLockSkImage();
 
     const SkImage* sk_image() const { return sk_image_.get(); }
@@ -393,7 +395,7 @@ class CC_EXPORT ResourceProvider
 
    private:
     ResourceProvider* resource_provider_;
-    ResourceId resource_id_;
+    viz::ResourceId resource_id_;
     sk_sp<SkImage> sk_image_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSkImage);
@@ -402,7 +404,7 @@ class CC_EXPORT ResourceProvider
   class CC_EXPORT ScopedWriteLockSoftware {
    public:
     ScopedWriteLockSoftware(ResourceProvider* resource_provider,
-                            ResourceId resource_id);
+                            viz::ResourceId resource_id);
     ~ScopedWriteLockSoftware();
 
     SkBitmap& sk_bitmap() { return sk_bitmap_; }
@@ -415,7 +417,7 @@ class CC_EXPORT ResourceProvider
 
    private:
     ResourceProvider* resource_provider_;
-    ResourceId resource_id_;
+    viz::ResourceId resource_id_;
     SkBitmap sk_bitmap_;
     gfx::ColorSpace color_space_;
     base::ThreadChecker thread_checker_;
@@ -426,7 +428,7 @@ class CC_EXPORT ResourceProvider
   class CC_EXPORT ScopedWriteLockGpuMemoryBuffer {
    public:
     ScopedWriteLockGpuMemoryBuffer(ResourceProvider* resource_provider,
-                                   ResourceId resource_id);
+                                   viz::ResourceId resource_id);
     ~ScopedWriteLockGpuMemoryBuffer();
     gfx::GpuMemoryBuffer* GetGpuMemoryBuffer();
     // Will return the invalid color space unless
@@ -437,7 +439,7 @@ class CC_EXPORT ResourceProvider
 
    private:
     ResourceProvider* resource_provider_;
-    ResourceId resource_id_;
+    viz::ResourceId resource_id_;
     viz::ResourceFormat format_;
     gfx::BufferUsage usage_;
     gfx::Size size_;
@@ -502,10 +504,10 @@ class CC_EXPORT ResourceProvider
 
   // For tests only! This prevents detecting uninitialized reads.
   // Use SetPixels or LockForWrite to allocate implicitly.
-  void AllocateForTesting(ResourceId id);
+  void AllocateForTesting(viz::ResourceId id);
 
   // For tests only!
-  void CreateForTesting(ResourceId id);
+  void CreateForTesting(viz::ResourceId id);
 
   // Sets the current read fence. If a resource is locked for read
   // and has read fences enabled, the resource will not allow writes
@@ -513,31 +515,31 @@ class CC_EXPORT ResourceProvider
   void SetReadLockFence(Fence* fence) { current_read_lock_fence_ = fence; }
 
   // Indicates if we can currently lock this resource for write.
-  bool CanLockForWrite(ResourceId id);
+  bool CanLockForWrite(viz::ResourceId id);
 
   // Indicates if this resource may be used for a hardware overlay plane.
-  bool IsOverlayCandidate(ResourceId id);
+  bool IsOverlayCandidate(viz::ResourceId id);
 
   // Return the format of the underlying buffer that can be used for scanout.
-  gfx::BufferFormat GetBufferFormat(ResourceId id);
+  gfx::BufferFormat GetBufferFormat(viz::ResourceId id);
 
 #if defined(OS_ANDROID)
   // Indicates if this resource is backed by an Android SurfaceTexture, and thus
   // can't really be promoted to an overlay.
-  bool IsBackedBySurfaceTexture(ResourceId id);
+  bool IsBackedBySurfaceTexture(viz::ResourceId id);
 
   // Indicates if this resource wants to receive promotion hints.
-  bool WantsPromotionHint(ResourceId id);
+  bool WantsPromotionHint(viz::ResourceId id);
 
   // Return the number of resources that request promotion hints.
   size_t CountPromotionHintRequestsForTesting();
 #endif
 
-  void WaitSyncTokenIfNeeded(ResourceId id);
+  void WaitSyncTokenIfNeeded(viz::ResourceId id);
 
   static GLint GetActiveTextureUnit(gpu::gles2::GLES2Interface* gl);
 
-  void ValidateResource(ResourceId id) const;
+  void ValidateResource(viz::ResourceId id) const;
 
   GLenum GetImageTextureTarget(gfx::BufferUsage usage,
                                viz::ResourceFormat format);
@@ -622,7 +624,7 @@ class CC_EXPORT ResourceProvider
     void WaitSyncToken(gpu::gles2::GLES2Interface* gl);
 
     int child_id;
-    ResourceId id_in_child;
+    viz::ResourceId id_in_child;
     unsigned gl_id;
     // Pixel buffer used for set pixels without unnecessary copying.
     unsigned gl_pixel_buffer_id;
@@ -691,7 +693,7 @@ class CC_EXPORT ResourceProvider
 
     DISALLOW_COPY_AND_ASSIGN(Resource);
   };
-  using ResourceMap = std::unordered_map<ResourceId, Resource>;
+  using ResourceMap = std::unordered_map<viz::ResourceId, Resource>;
 
   struct Child {
     Child();
@@ -710,19 +712,19 @@ class CC_EXPORT ResourceProvider
            resource->read_lock_fence->HasPassed();
   }
 
-  ResourceId CreateGLTexture(const gfx::Size& size,
-                             TextureHint hint,
-                             ResourceType type,
-                             viz::ResourceFormat format,
-                             gfx::BufferUsage usage,
-                             const gfx::ColorSpace& color_space);
-  ResourceId CreateBitmap(const gfx::Size& size,
-                          const gfx::ColorSpace& color_space);
-  Resource* InsertResource(ResourceId id, Resource resource);
-  Resource* GetResource(ResourceId id);
-  const Resource* LockForRead(ResourceId id);
-  void UnlockForRead(ResourceId id);
-  Resource* LockForWrite(ResourceId id);
+  viz::ResourceId CreateGLTexture(const gfx::Size& size,
+                                  TextureHint hint,
+                                  ResourceType type,
+                                  viz::ResourceFormat format,
+                                  gfx::BufferUsage usage,
+                                  const gfx::ColorSpace& color_space);
+  viz::ResourceId CreateBitmap(const gfx::Size& size,
+                               const gfx::ColorSpace& color_space);
+  Resource* InsertResource(viz::ResourceId id, Resource resource);
+  Resource* GetResource(viz::ResourceId id);
+  const Resource* LockForRead(viz::ResourceId id);
+  void UnlockForRead(viz::ResourceId id);
+  Resource* LockForWrite(viz::ResourceId id);
   void UnlockForWrite(Resource* resource);
 
   void PopulateSkBitmapWithResource(SkBitmap* sk_bitmap,
@@ -732,7 +734,7 @@ class CC_EXPORT ResourceProvider
                                     Resource* resource);
 
   void TransferResource(Resource* source,
-                        ResourceId id,
+                        viz::ResourceId id,
                         TransferableResource* resource);
   enum DeleteStyle {
     NORMAL,
@@ -751,7 +753,9 @@ class CC_EXPORT ResourceProvider
   // Binds the given GL resource to a texture target for sampling using the
   // specified filter for both minification and magnification. Returns the
   // texture target used. The resource must be locked for reading.
-  GLenum BindForSampling(ResourceId resource_id, GLenum unit, GLenum filter);
+  GLenum BindForSampling(viz::ResourceId resource_id,
+                         GLenum unit,
+                         GLenum filter);
 
   // Returns null if we do not have a viz::ContextProvider.
   gpu::gles2::GLES2Interface* ContextGL() const;
@@ -790,7 +794,7 @@ class CC_EXPORT ResourceProvider
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   BlockingTaskRunner* blocking_main_thread_task_runner_;
   bool lost_context_provider_;
-  ResourceId next_id_;
+  viz::ResourceId next_id_;
   ResourceMap resources_;
   int next_child_;
   ChildMap children_;
@@ -812,7 +816,7 @@ class CC_EXPORT ResourceProvider
 
 #if defined(OS_ANDROID)
   // Set of resource Ids that would like to be notified about promotion hints.
-  ResourceIdSet wants_promotion_hints_set_;
+  viz::ResourceIdSet wants_promotion_hints_set_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ResourceProvider);

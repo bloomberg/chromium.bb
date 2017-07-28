@@ -70,7 +70,7 @@ class CC_EXPORT RasterBufferProvider {
   virtual bool CanPartialRasterIntoProvidedResource() const = 0;
 
   // Returns true if the indicated resource is ready to draw.
-  virtual bool IsResourceReadyToDraw(ResourceId id) const = 0;
+  virtual bool IsResourceReadyToDraw(viz::ResourceId id) const = 0;
 
   // Calls the provided |callback| when the provided |resources| are ready to
   // draw. Returns a callback ID which can be used to track this callback.

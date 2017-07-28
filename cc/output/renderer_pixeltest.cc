@@ -137,7 +137,7 @@ void CreateTestTwoColoredTextureDrawQuad(const gfx::Rect& rect,
       pixels[i * rect.width() + k] = pixel_stripe_color;
     }
   }
-  ResourceId resource = resource_provider->CreateResource(
+  viz::ResourceId resource = resource_provider->CreateResource(
       rect.size(), ResourceProvider::TEXTURE_HINT_IMMUTABLE, viz::RGBA_8888,
       gfx::ColorSpace());
   resource_provider->CopyToResource(
@@ -173,7 +173,7 @@ void CreateTestTextureDrawQuad(const gfx::Rect& rect,
   size_t num_pixels = static_cast<size_t>(rect.width()) * rect.height();
   std::vector<uint32_t> pixels(num_pixels, pixel_color);
 
-  ResourceId resource = resource_provider->CreateResource(
+  viz::ResourceId resource = resource_provider->CreateResource(
       rect.size(), ResourceProvider::TEXTURE_HINT_IMMUTABLE, viz::RGBA_8888,
       gfx::ColorSpace());
   resource_provider->CopyToResource(
@@ -243,19 +243,22 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
   EXPECT_EQ(media::VideoFrame::NumPlanes(video_frame->format()),
             resources.release_callbacks.size());
 
-  ResourceId y_resource = resource_provider->CreateResourceFromTextureMailbox(
-      resources.mailboxes[media::VideoFrame::kYPlane],
-      SingleReleaseCallbackImpl::Create(
-          resources.release_callbacks[media::VideoFrame::kYPlane]));
-  ResourceId u_resource = resource_provider->CreateResourceFromTextureMailbox(
-      resources.mailboxes[media::VideoFrame::kUPlane],
-      SingleReleaseCallbackImpl::Create(
-          resources.release_callbacks[media::VideoFrame::kUPlane]));
-  ResourceId v_resource = resource_provider->CreateResourceFromTextureMailbox(
-      resources.mailboxes[media::VideoFrame::kVPlane],
-      SingleReleaseCallbackImpl::Create(
-          resources.release_callbacks[media::VideoFrame::kVPlane]));
-  ResourceId a_resource = 0;
+  viz::ResourceId y_resource =
+      resource_provider->CreateResourceFromTextureMailbox(
+          resources.mailboxes[media::VideoFrame::kYPlane],
+          SingleReleaseCallbackImpl::Create(
+              resources.release_callbacks[media::VideoFrame::kYPlane]));
+  viz::ResourceId u_resource =
+      resource_provider->CreateResourceFromTextureMailbox(
+          resources.mailboxes[media::VideoFrame::kUPlane],
+          SingleReleaseCallbackImpl::Create(
+              resources.release_callbacks[media::VideoFrame::kUPlane]));
+  viz::ResourceId v_resource =
+      resource_provider->CreateResourceFromTextureMailbox(
+          resources.mailboxes[media::VideoFrame::kVPlane],
+          SingleReleaseCallbackImpl::Create(
+              resources.release_callbacks[media::VideoFrame::kVPlane]));
+  viz::ResourceId a_resource = 0;
   if (with_alpha) {
     a_resource = resource_provider->CreateResourceFromTextureMailbox(
         resources.mailboxes[media::VideoFrame::kAPlane],
@@ -318,9 +321,10 @@ void CreateTestY16TextureDrawQuad_FromVideoFrame(
   EXPECT_EQ(1u, resources.mailboxes.size());
   EXPECT_EQ(1u, resources.release_callbacks.size());
 
-  ResourceId y_resource = resource_provider->CreateResourceFromTextureMailbox(
-      resources.mailboxes[0],
-      SingleReleaseCallbackImpl::Create(resources.release_callbacks[0]));
+  viz::ResourceId y_resource =
+      resource_provider->CreateResourceFromTextureMailbox(
+          resources.mailboxes[0],
+          SingleReleaseCallbackImpl::Create(resources.release_callbacks[0]));
 
   TextureDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -549,14 +553,14 @@ void CreateTestYUVVideoDrawQuad_NV12(const SharedQuadState* shared_state,
   const gfx::Size uv_tex_size = media::VideoFrame::PlaneSize(
       media::PIXEL_FORMAT_NV12, media::VideoFrame::kUVPlane, rect.size());
 
-  ResourceId y_resource = resource_provider->CreateResource(
+  viz::ResourceId y_resource = resource_provider->CreateResource(
       rect.size(), ResourceProvider::TEXTURE_HINT_DEFAULT,
       resource_provider->YuvResourceFormat(8), gfx::ColorSpace());
-  ResourceId u_resource = resource_provider->CreateResource(
+  viz::ResourceId u_resource = resource_provider->CreateResource(
       uv_tex_size, ResourceProvider::TEXTURE_HINT_DEFAULT, viz::RGBA_8888,
       gfx::ColorSpace());
-  ResourceId v_resource = u_resource;
-  ResourceId a_resource = 0;
+  viz::ResourceId v_resource = u_resource;
+  viz::ResourceId a_resource = 0;
 
   std::vector<uint8_t> y_pixels(ya_tex_size.GetArea(), y);
   resource_provider->CopyToResource(y_resource, y_pixels.data(), ya_tex_size);
@@ -2017,7 +2021,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
     rect.Inset(6, 6, 4, 4);
   }
 
-  ResourceId mask_resource_id = this->resource_provider_->CreateResource(
+  viz::ResourceId mask_resource_id = this->resource_provider_->CreateResource(
       mask_rect.size(), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       viz::RGBA_8888, gfx::ColorSpace());
 
@@ -2110,7 +2114,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
     rect.Inset(6, 6, 4, 4);
   }
 
-  ResourceId mask_resource_id = this->resource_provider_->CreateResource(
+  viz::ResourceId mask_resource_id = this->resource_provider_->CreateResource(
       mask_rect.size(), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       viz::RGBA_8888, gfx::ColorSpace());
 
@@ -2844,7 +2848,7 @@ TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
   draw_point_color(&canvas, 1, 1, SK_ColorGREEN);
 
   gfx::Size tile_size(2, 2);
-  ResourceId resource = this->resource_provider_->CreateResource(
+  viz::ResourceId resource = this->resource_provider_->CreateResource(
       tile_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, viz::RGBA_8888,
       gfx::ColorSpace());
 
@@ -2889,7 +2893,7 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadNearestNeighbor) {
   draw_point_color(&canvas, 1, 1, SK_ColorGREEN);
 
   gfx::Size tile_size(2, 2);
-  ResourceId resource = this->resource_provider_->CreateResource(
+  viz::ResourceId resource = this->resource_provider_->CreateResource(
       tile_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, viz::RGBA_8888,
       gfx::ColorSpace());
 
@@ -2937,7 +2941,7 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadLinear) {
   }
 
   gfx::Size tile_size(2, 2);
-  ResourceId resource = this->resource_provider_->CreateResource(
+  viz::ResourceId resource = this->resource_provider_->CreateResource(
       tile_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, viz::RGBA_8888,
       gfx::ColorSpace());
 
@@ -3297,7 +3301,7 @@ TEST_F(GLRendererPixelTest, TextureQuadBatching) {
     inset_rect.Inset(6, 6, 4, 4);
   }
 
-  ResourceId resource = this->resource_provider_->CreateResource(
+  viz::ResourceId resource = this->resource_provider_->CreateResource(
       mask_rect.size(), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       viz::RGBA_8888, gfx::ColorSpace());
 
@@ -3476,7 +3480,7 @@ TEST_P(ColorTransformPixelTest, Basic) {
     SharedQuadState* shared_state =
         CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
 
-    ResourceId resource = resource_provider_->CreateResource(
+    viz::ResourceId resource = resource_provider_->CreateResource(
         rect.size(), ResourceProvider::TEXTURE_HINT_IMMUTABLE, viz::RGBA_8888,
         src_color_space_);
     resource_provider_->CopyToResource(resource, input_colors.data(),

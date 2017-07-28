@@ -1342,7 +1342,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   int root_pass_id = 1;
   RenderPass* root_pass;
 
-  ResourceId mask = resource_provider_->CreateResource(
+  viz::ResourceId mask = resource_provider_->CreateResource(
       gfx::Size(20, 12), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       resource_provider_->best_texture_format(), gfx::ColorSpace());
   resource_provider_->AllocateForTesting(mask);
@@ -1811,8 +1811,9 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
                           GL_TEXTURE_2D, gfx::Size(256, 256), true, false);
   std::unique_ptr<SingleReleaseCallbackImpl> release_callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
-  ResourceId resource_id = resource_provider->CreateResourceFromTextureMailbox(
-      mailbox, std::move(release_callback));
+  viz::ResourceId resource_id =
+      resource_provider->CreateResourceFromTextureMailbox(
+          mailbox, std::move(release_callback));
   bool premultiplied_alpha = false;
   bool flipped = false;
   bool nearest_neighbor = false;
@@ -1973,8 +1974,9 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
                           gfx::Size(256, 256), true, false);
   std::unique_ptr<SingleReleaseCallbackImpl> release_callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
-  ResourceId resource_id = resource_provider->CreateResourceFromTextureMailbox(
-      mailbox, std::move(release_callback));
+  viz::ResourceId resource_id =
+      resource_provider->CreateResourceFromTextureMailbox(
+          mailbox, std::move(release_callback));
   bool premultiplied_alpha = false;
   bool flipped = false;
   bool nearest_neighbor = false;
@@ -2174,8 +2176,9 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
                           GL_TEXTURE_2D, gfx::Size(256, 256), true, false);
   std::unique_ptr<SingleReleaseCallbackImpl> release_callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
-  ResourceId resource_id = resource_provider->CreateResourceFromTextureMailbox(
-      mailbox, std::move(release_callback));
+  viz::ResourceId resource_id =
+      resource_provider->CreateResourceFromTextureMailbox(
+          mailbox, std::move(release_callback));
 
   for (int i = 0; i < 65; i++) {
     int root_pass_id = 1;

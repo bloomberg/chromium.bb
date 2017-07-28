@@ -826,7 +826,7 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
 }
 
 void HeadsUpDisplayLayerImpl::EvictHudQuad(const RenderPassList& list) {
-  ResourceId evict_resource_id = resources_.back()->id();
+  viz::ResourceId evict_resource_id = resources_.back()->id();
   // This iterates over the render pass list of quads to evict the hud quad
   // appended during render pass preparation. We need this eviction when we
   // have a context loss during SkSurface creation in UpdateHudTexture, and
@@ -834,7 +834,7 @@ void HeadsUpDisplayLayerImpl::EvictHudQuad(const RenderPassList& list) {
   for (const auto& render_pass : list) {
     for (auto it = render_pass->quad_list.begin();
          it != render_pass->quad_list.end(); ++it) {
-      for (ResourceId resource_id : it->resources) {
+      for (viz::ResourceId resource_id : it->resources) {
         if (resource_id == evict_resource_id) {
           render_pass->quad_list.EraseAndInvalidateAllPointers(it);
           return;

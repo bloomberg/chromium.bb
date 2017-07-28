@@ -27,7 +27,7 @@ std::unique_ptr<FakeMaskLayerImpl> FakeMaskLayerImpl::Create(
       new FakeMaskLayerImpl(tree_impl, id, raster_source, mask_type));
 }
 
-void FakeMaskLayerImpl::GetContentsResourceId(ResourceId* resource_id,
+void FakeMaskLayerImpl::GetContentsResourceId(viz::ResourceId* resource_id,
                                               gfx::Size* resource_size,
                                               gfx::SizeF* mask_uv_size) const {
   *resource_id = 0;

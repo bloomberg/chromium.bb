@@ -128,7 +128,7 @@ std::unique_ptr<cc::CompositorFrame> RenderingTest::ConstructEmptyFrame() {
 }
 
 std::unique_ptr<cc::CompositorFrame> RenderingTest::ConstructFrame(
-    cc::ResourceId resource_id) {
+    viz::ResourceId resource_id) {
   std::unique_ptr<cc::CompositorFrame> compositor_frame(ConstructEmptyFrame());
   cc::TransferableResource resource;
   resource.id = resource_id;

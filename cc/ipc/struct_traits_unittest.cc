@@ -688,7 +688,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
                                 SurfaceDrawQuadType::FALLBACK, nullptr);
 
   const gfx::Rect rect4(1234, 5678, 9101112, 13141516);
-  const ResourceId resource_id4(1337);
+  const viz::ResourceId resource_id4(1337);
   const RenderPassId render_pass_id = 1234u;
   const gfx::RectF mask_uv_rect(0, 0, 1337.1f, 1234.2f);
   const gfx::Size mask_texture_size(1234, 5678);
@@ -703,7 +703,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
                            filters_origin, tex_coord_rect);
 
   const gfx::Rect rect5(123, 567, 91011, 131415);
-  const ResourceId resource_id5(1337);
+  const viz::ResourceId resource_id5(1337);
   const float vertex_opacity[4] = {1.f, 2.f, 3.f, 4.f};
   const bool premultiplied_alpha = true;
   const gfx::PointF uv_top_left(12.1f, 34.2f);
@@ -723,7 +723,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
                             nearest_neighbor, secure_output_only);
 
   const gfx::Rect rect6(321, 765, 11109, 151413);
-  const ResourceId resource_id6(1234);
+  const viz::ResourceId resource_id6(1234);
   const gfx::Size resource_size_in_pixels(1234, 5678);
   const gfx::Transform matrix(16.1f, 15.3f, 14.3f, 13.7f, 12.2f, 11.4f, 10.4f,
                               9.8f, 8.1f, 7.3f, 6.3f, 5.7f, 4.8f, 3.4f, 2.4f,

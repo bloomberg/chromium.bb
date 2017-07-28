@@ -115,7 +115,7 @@ class CompositorFrameSinkSupportTest : public testing::Test {
     support_->EvictCurrentSurface();
   }
 
-  void SubmitCompositorFrameWithResources(cc::ResourceId* resource_ids,
+  void SubmitCompositorFrameWithResources(ResourceId* resource_ids,
                                           size_t num_resource_ids) {
     auto frame = test::MakeCompositorFrame();
     for (size_t i = 0u; i < num_resource_ids; ++i) {
@@ -130,7 +130,7 @@ class CompositorFrameSinkSupportTest : public testing::Test {
               local_surface_id_);
   }
 
-  void UnrefResources(cc::ResourceId* ids_to_unref,
+  void UnrefResources(ResourceId* ids_to_unref,
                       int* counts_to_unref,
                       size_t num_ids_to_unref) {
     std::vector<cc::ReturnedResource> unref_array;
@@ -144,11 +144,10 @@ class CompositorFrameSinkSupportTest : public testing::Test {
     support_->UnrefResources(unref_array);
   }
 
-  void CheckReturnedResourcesMatchExpected(
-      cc::ResourceId* expected_returned_ids,
-      int* expected_returned_counts,
-      size_t expected_resources,
-      gpu::SyncToken expected_sync_token) {
+  void CheckReturnedResourcesMatchExpected(ResourceId* expected_returned_ids,
+                                           int* expected_returned_counts,
+                                           size_t expected_resources,
+                                           gpu::SyncToken expected_sync_token) {
     const std::vector<cc::ReturnedResource>& actual_resources =
         fake_support_client_.returned_resources();
     ASSERT_EQ(expected_resources, actual_resources.size());
@@ -191,7 +190,7 @@ class CompositorFrameSinkSupportTest : public testing::Test {
 // Tests submitting a frame with resources followed by one with no resources
 // with no resource provider action in between.
 TEST_F(CompositorFrameSinkSupportTest, ResourceLifetimeSimple) {
-  cc::ResourceId first_frame_ids[] = {1, 2, 3};
+  ResourceId first_frame_ids[] = {1, 2, 3};
   SubmitCompositorFrameWithResources(first_frame_ids,
                                      arraysize(first_frame_ids));
 
@@ -205,14 +204,14 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetimeSimple) {
   // make all resources of first frame available to be returned.
   SubmitCompositorFrameWithResources(NULL, 0);
 
-  cc::ResourceId expected_returned_ids[] = {1, 2, 3};
+  ResourceId expected_returned_ids[] = {1, 2, 3};
   int expected_returned_counts[] = {1, 1, 1};
   // Resources were never consumed so no sync token should be set.
   CheckReturnedResourcesMatchExpected(
       expected_returned_ids, expected_returned_counts,
       arraysize(expected_returned_counts), gpu::SyncToken());
 
-  cc::ResourceId third_frame_ids[] = {4, 5, 6};
+  ResourceId third_frame_ids[] = {4, 5, 6};
   SubmitCompositorFrameWithResources(third_frame_ids,
                                      arraysize(third_frame_ids));
 
@@ -224,11 +223,11 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetimeSimple) {
 
   // The forth frame references no resources of third frame and thus should
   // make all resources of third frame available to be returned.
-  cc::ResourceId forth_frame_ids[] = {7, 8, 9};
+  ResourceId forth_frame_ids[] = {7, 8, 9};
   SubmitCompositorFrameWithResources(forth_frame_ids,
                                      arraysize(forth_frame_ids));
 
-  cc::ResourceId forth_expected_returned_ids[] = {4, 5, 6};
+  ResourceId forth_expected_returned_ids[] = {4, 5, 6};
   int forth_expected_returned_counts[] = {1, 1, 1};
   // Resources were never consumed so no sync token should be set.
   CheckReturnedResourcesMatchExpected(
@@ -240,7 +239,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetimeSimple) {
 // with the resource provider holding everything alive.
 TEST_F(CompositorFrameSinkSupportTest,
        ResourceLifetimeSimpleWithProviderHoldingAlive) {
-  cc::ResourceId first_frame_ids[] = {1, 2, 3};
+  ResourceId first_frame_ids[] = {1, 2, 3};
   SubmitCompositorFrameWithResources(first_frame_ids,
                                      arraysize(first_frame_ids));
 
@@ -270,7 +269,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   // Submitting an empty frame causes previous resources referenced by the
   // previous frame to be returned to client.
   SubmitCompositorFrameWithResources(nullptr, 0);
-  cc::ResourceId expected_returned_ids[] = {1, 2, 3};
+  ResourceId expected_returned_ids[] = {1, 2, 3};
   int expected_returned_counts[] = {1, 1, 1};
   CheckReturnedResourcesMatchExpected(
       expected_returned_ids, expected_returned_counts,
@@ -280,7 +279,7 @@ TEST_F(CompositorFrameSinkSupportTest,
 // Tests referencing a resource, unref'ing it to zero, then using it again
 // before returning it to the client.
 TEST_F(CompositorFrameSinkSupportTest, ResourceReusedBeforeReturn) {
-  cc::ResourceId first_frame_ids[] = {7};
+  ResourceId first_frame_ids[] = {7};
   SubmitCompositorFrameWithResources(first_frame_ids,
                                      arraysize(first_frame_ids));
 
@@ -310,7 +309,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceReusedBeforeReturn) {
 // Tests having resources referenced multiple times, as if referenced by
 // multiple providers.
 TEST_F(CompositorFrameSinkSupportTest, ResourceRefMultipleTimes) {
-  cc::ResourceId first_frame_ids[] = {3, 4};
+  ResourceId first_frame_ids[] = {3, 4};
   SubmitCompositorFrameWithResources(first_frame_ids,
                                      arraysize(first_frame_ids));
 
@@ -318,7 +317,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceRefMultipleTimes) {
   RefCurrentFrameResources();
   RefCurrentFrameResources();
 
-  cc::ResourceId second_frame_ids[] = {4, 5};
+  ResourceId second_frame_ids[] = {4, 5};
   SubmitCompositorFrameWithResources(second_frame_ids,
                                      arraysize(second_frame_ids));
 
@@ -340,7 +339,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceRefMultipleTimes) {
   //  5 -> 3
   {
     SCOPED_TRACE("unref all 3");
-    cc::ResourceId ids_to_unref[] = {3, 4, 5};
+    ResourceId ids_to_unref[] = {3, 4, 5};
     int counts[] = {1, 1, 1};
     UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
 
@@ -349,7 +348,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceRefMultipleTimes) {
 
     UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
     SubmitCompositorFrameWithResources(nullptr, 0);
-    cc::ResourceId expected_returned_ids[] = {3};
+    ResourceId expected_returned_ids[] = {3};
     int expected_returned_counts[] = {1};
     CheckReturnedResourcesMatchExpected(
         expected_returned_ids, expected_returned_counts,
@@ -361,12 +360,12 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceRefMultipleTimes) {
   //  5 -> 1
   {
     SCOPED_TRACE("unref 4 and 5");
-    cc::ResourceId ids_to_unref[] = {4, 5};
+    ResourceId ids_to_unref[] = {4, 5};
     int counts[] = {1, 1};
     UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
     SubmitCompositorFrameWithResources(nullptr, 0);
 
-    cc::ResourceId expected_returned_ids[] = {5};
+    ResourceId expected_returned_ids[] = {5};
     int expected_returned_counts[] = {1};
     CheckReturnedResourcesMatchExpected(
         expected_returned_ids, expected_returned_counts,
@@ -377,12 +376,12 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceRefMultipleTimes) {
   // the returned count is correct.
   {
     SCOPED_TRACE("unref only 4");
-    cc::ResourceId ids_to_unref[] = {4};
+    ResourceId ids_to_unref[] = {4};
     int counts[] = {2};
     UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
     SubmitCompositorFrameWithResources(nullptr, 0);
 
-    cc::ResourceId expected_returned_ids[] = {4};
+    ResourceId expected_returned_ids[] = {4};
     int expected_returned_counts[] = {2};
     CheckReturnedResourcesMatchExpected(
         expected_returned_ids, expected_returned_counts,
@@ -391,7 +390,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceRefMultipleTimes) {
 }
 
 TEST_F(CompositorFrameSinkSupportTest, ResourceLifetime) {
-  cc::ResourceId first_frame_ids[] = {1, 2, 3};
+  ResourceId first_frame_ids[] = {1, 2, 3};
   SubmitCompositorFrameWithResources(first_frame_ids,
                                      arraysize(first_frame_ids));
 
@@ -404,12 +403,12 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetime) {
   // The second frame references some of the same resources, but some different
   // ones. We expect to receive back resource 1 with a count of 1 since it was
   // only referenced by the first frame.
-  cc::ResourceId second_frame_ids[] = {2, 3, 4};
+  ResourceId second_frame_ids[] = {2, 3, 4};
   SubmitCompositorFrameWithResources(second_frame_ids,
                                      arraysize(second_frame_ids));
   {
     SCOPED_TRACE("second frame");
-    cc::ResourceId expected_returned_ids[] = {1};
+    ResourceId expected_returned_ids[] = {1};
     int expected_returned_counts[] = {1};
     CheckReturnedResourcesMatchExpected(
         expected_returned_ids, expected_returned_counts,
@@ -420,13 +419,13 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetime) {
   // receive back all resources from the first and second frames. Resource IDs 2
   // and 3 will have counts of 2, since they were used in both frames, and
   // resource ID 4 will have a count of 1.
-  cc::ResourceId third_frame_ids[] = {10, 11, 12, 13};
+  ResourceId third_frame_ids[] = {10, 11, 12, 13};
   SubmitCompositorFrameWithResources(third_frame_ids,
                                      arraysize(third_frame_ids));
 
   {
     SCOPED_TRACE("third frame");
-    cc::ResourceId expected_returned_ids[] = {2, 3, 4};
+    ResourceId expected_returned_ids[] = {2, 3, 4};
     int expected_returned_counts[] = {2, 2, 1};
     CheckReturnedResourcesMatchExpected(
         expected_returned_ids, expected_returned_counts,
@@ -436,7 +435,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetime) {
   // Simulate a ResourceProvider taking a ref on all of the resources.
   RefCurrentFrameResources();
 
-  cc::ResourceId fourth_frame_ids[] = {12, 13};
+  ResourceId fourth_frame_ids[] = {12, 13};
   SubmitCompositorFrameWithResources(fourth_frame_ids,
                                      arraysize(fourth_frame_ids));
 
@@ -451,7 +450,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetime) {
   // Release resources associated with the first RefCurrentFrameResources() call
   // first.
   {
-    cc::ResourceId ids_to_unref[] = {10, 11, 12, 13};
+    ResourceId ids_to_unref[] = {10, 11, 12, 13};
     int counts[] = {1, 1, 1, 1};
     UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
   }
@@ -465,7 +464,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetime) {
   }
 
   {
-    cc::ResourceId ids_to_unref[] = {12, 13};
+    ResourceId ids_to_unref[] = {12, 13};
     int counts[] = {1, 1};
     UnrefResources(ids_to_unref, counts, arraysize(ids_to_unref));
   }
@@ -480,7 +479,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetime) {
 
   {
     SCOPED_TRACE("fourth frame, second unref");
-    cc::ResourceId expected_returned_ids[] = {10, 11, 12, 13};
+    ResourceId expected_returned_ids[] = {10, 11, 12, 13};
     int expected_returned_counts[] = {1, 1, 2, 2};
     CheckReturnedResourcesMatchExpected(
         expected_returned_ids, expected_returned_counts,

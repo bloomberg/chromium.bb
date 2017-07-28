@@ -29,7 +29,6 @@ using cc::FilterOperations;
 using cc::PictureDrawQuad;
 using cc::RenderPass;
 using cc::RenderPassDrawQuad;
-using cc::ResourceId;
 using cc::ResourceProvider;
 using cc::SharedQuadState;
 using cc::SolidColorDrawQuad;
@@ -40,6 +39,7 @@ using cc::TransferableResource;
 using cc::StreamVideoDrawQuad;
 using cc::YUVVideoDrawQuad;
 using gfx::Transform;
+using viz::ResourceId;
 
 namespace content {
 namespace {

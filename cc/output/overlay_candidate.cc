@@ -256,7 +256,7 @@ bool OverlayCandidate::IsOccluded(const OverlayCandidate& candidate,
 // static
 bool OverlayCandidate::FromDrawQuadResource(ResourceProvider* resource_provider,
                                             const DrawQuad* quad,
-                                            ResourceId resource_id,
+                                            viz::ResourceId resource_id,
                                             bool y_flipped,
                                             OverlayCandidate* candidate) {
   if (!resource_provider->IsOverlayCandidate(resource_id))

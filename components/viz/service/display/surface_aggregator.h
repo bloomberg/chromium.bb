@@ -118,8 +118,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   void CopyQuadsToPass(
       const cc::QuadList& source_quad_list,
       const cc::SharedQuadStateList& source_shared_quad_state_list,
-      const std::unordered_map<cc::ResourceId, cc::ResourceId>&
-          resource_to_child_map,
+      const std::unordered_map<ResourceId, ResourceId>& resource_to_child_map,
       const gfx::Transform& target_transform,
       const ClipData& clip_rect,
       cc::RenderPass* dest_pass,

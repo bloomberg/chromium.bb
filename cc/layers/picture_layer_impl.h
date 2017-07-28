@@ -76,7 +76,7 @@ class CC_EXPORT PictureLayerImpl
   WhichTree GetTree() const;
 
   // Mask-related functions.
-  void GetContentsResourceId(ResourceId* resource_id,
+  void GetContentsResourceId(viz::ResourceId* resource_id,
                              gfx::Size* resource_size,
                              gfx::SizeF* resource_uv_size) const override;
 

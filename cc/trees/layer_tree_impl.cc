@@ -1605,7 +1605,7 @@ void LayerTreeImpl::set_ui_resource_request_queue(
   ui_resource_request_queue_ = std::move(queue);
 }
 
-ResourceId LayerTreeImpl::ResourceIdForUIResource(UIResourceId uid) const {
+viz::ResourceId LayerTreeImpl::ResourceIdForUIResource(UIResourceId uid) const {
   return layer_tree_host_impl_->ResourceIdForUIResource(uid);
 }
 

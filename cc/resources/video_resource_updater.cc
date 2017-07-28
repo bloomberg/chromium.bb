@@ -242,9 +242,10 @@ VideoResourceUpdater::AllocateResource(const gfx::Size& plane_size,
                                        bool immutable_hint) {
   // TODO(danakj): Abstract out hw/sw resource create/delete from
   // ResourceProvider and stop using ResourceProvider in this class.
-  const ResourceId resource_id = resource_provider_->CreateResource(
-      plane_size, immutable_hint ? ResourceProvider::TEXTURE_HINT_IMMUTABLE
-                                 : ResourceProvider::TEXTURE_HINT_DEFAULT,
+  const viz::ResourceId resource_id = resource_provider_->CreateResource(
+      plane_size,
+      immutable_hint ? ResourceProvider::TEXTURE_HINT_IMMUTABLE
+                     : ResourceProvider::TEXTURE_HINT_DEFAULT,
       format, color_space);
   DCHECK_NE(resource_id, 0u);
 
@@ -687,7 +688,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
 // static
 void VideoResourceUpdater::RecycleResource(
     base::WeakPtr<VideoResourceUpdater> updater,
-    ResourceId resource_id,
+    viz::ResourceId resource_id,
     const gpu::SyncToken& sync_token,
     bool lost_resource,
     BlockingTaskRunner* main_thread_task_runner) {

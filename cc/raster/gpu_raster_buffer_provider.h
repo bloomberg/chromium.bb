@@ -40,7 +40,7 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
   viz::ResourceFormat GetResourceFormat(bool must_support_alpha) const override;
   bool IsResourceSwizzleRequired(bool must_support_alpha) const override;
   bool CanPartialRasterIntoProvidedResource() const override;
-  bool IsResourceReadyToDraw(ResourceId id) const override;
+  bool IsResourceReadyToDraw(viz::ResourceId id) const override;
   uint64_t SetReadyToDrawCallback(
       const ResourceProvider::ResourceIdArray& resource_ids,
       const base::Closure& callback,
@@ -63,7 +63,7 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
    public:
     RasterBufferImpl(GpuRasterBufferProvider* client,
                      ResourceProvider* resource_provider,
-                     ResourceId resource_id,
+                     viz::ResourceId resource_id,
                      bool async_worker_context_enabled,
                      bool resource_has_previous_content);
     ~RasterBufferImpl() override;

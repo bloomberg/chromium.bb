@@ -86,7 +86,7 @@ static void RasterizeSource(
 GpuRasterBufferProvider::RasterBufferImpl::RasterBufferImpl(
     GpuRasterBufferProvider* client,
     ResourceProvider* resource_provider,
-    ResourceId resource_id,
+    viz::ResourceId resource_id,
     bool async_worker_context_enabled,
     bool resource_has_previous_content)
     : client_(client),
@@ -210,7 +210,7 @@ bool GpuRasterBufferProvider::CanPartialRasterIntoProvidedResource() const {
 }
 
 bool GpuRasterBufferProvider::IsResourceReadyToDraw(
-    ResourceId resource_id) const {
+    viz::ResourceId resource_id) const {
   if (!async_worker_context_enabled_)
     return true;
 

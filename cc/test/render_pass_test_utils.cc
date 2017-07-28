@@ -86,7 +86,7 @@ void AddRenderPassQuad(RenderPass* to_pass, RenderPass* contributing_pass) {
 
 void AddRenderPassQuad(RenderPass* to_pass,
                        RenderPass* contributing_pass,
-                       ResourceId mask_resource_id,
+                       viz::ResourceId mask_resource_id,
                        gfx::Transform transform,
                        SkBlendMode blend_mode) {
   gfx::Rect output_rect = contributing_pass->output_rect;
@@ -120,32 +120,32 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
       gpu::CommandBufferId::FromUnsafeValue(0x123), 30);
   *sync_token_for_mailbox_tebxture = kSyncTokenForMailboxTextureQuad;
 
-  ResourceId resource1 = resource_provider->CreateResource(
+  viz::ResourceId resource1 = resource_provider->CreateResource(
       gfx::Size(45, 5), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       resource_provider->best_texture_format(), gfx::ColorSpace());
   resource_provider->AllocateForTesting(resource1);
-  ResourceId resource2 = resource_provider->CreateResource(
+  viz::ResourceId resource2 = resource_provider->CreateResource(
       gfx::Size(346, 61), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       resource_provider->best_texture_format(), gfx::ColorSpace());
   resource_provider->AllocateForTesting(resource2);
-  ResourceId resource3 = resource_provider->CreateResource(
+  viz::ResourceId resource3 = resource_provider->CreateResource(
       gfx::Size(12, 134), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       resource_provider->best_texture_format(), gfx::ColorSpace());
   resource_provider->AllocateForTesting(resource3);
-  ResourceId resource4 = resource_provider->CreateResource(
+  viz::ResourceId resource4 = resource_provider->CreateResource(
       gfx::Size(56, 12), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       resource_provider->best_texture_format(), gfx::ColorSpace());
   resource_provider->AllocateForTesting(resource4);
   gfx::Size resource5_size(73, 26);
-  ResourceId resource5 = resource_provider->CreateResource(
+  viz::ResourceId resource5 = resource_provider->CreateResource(
       resource5_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       resource_provider->best_texture_format(), gfx::ColorSpace());
   resource_provider->AllocateForTesting(resource5);
-  ResourceId resource6 = resource_provider->CreateResource(
+  viz::ResourceId resource6 = resource_provider->CreateResource(
       gfx::Size(64, 92), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       resource_provider->best_texture_format(), gfx::ColorSpace());
   resource_provider->AllocateForTesting(resource6);
-  ResourceId resource7 = resource_provider->CreateResource(
+  viz::ResourceId resource7 = resource_provider->CreateResource(
       gfx::Size(9, 14), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       resource_provider->best_texture_format(), gfx::ColorSpace());
   resource_provider->AllocateForTesting(resource7);
@@ -157,8 +157,9 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
       SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback));
   viz::TextureMailbox mailbox(gpu_mailbox, kSyncTokenForMailboxTextureQuad,
                               target);
-  ResourceId resource8 = resource_provider->CreateResourceFromTextureMailbox(
-      mailbox, std::move(callback));
+  viz::ResourceId resource8 =
+      resource_provider->CreateResourceFromTextureMailbox(mailbox,
+                                                          std::move(callback));
   resource_provider->AllocateForTesting(resource8);
 
   SharedQuadState* shared_state = to_pass->CreateAndAppendSharedQuadState();
@@ -229,7 +230,7 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
                     gfx::RectF(0, 0, 100, 100), gfx::Size(100, 100), false,
                     false);
 
-  ResourceId plane_resources[4];
+  viz::ResourceId plane_resources[4];
   for (int i = 0; i < 4; ++i) {
     plane_resources[i] = resource_provider->CreateResource(
         gfx::Size(20, 12), ResourceProvider::TEXTURE_HINT_IMMUTABLE,

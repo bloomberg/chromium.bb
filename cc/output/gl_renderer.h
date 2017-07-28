@@ -193,15 +193,15 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void FlushTextureQuadCache(BoundGeometry flush_binding);
   void DrawTileQuad(const TileDrawQuad* quad, const gfx::QuadF* clip_region);
   void DrawContentQuad(const ContentDrawQuadBase* quad,
-                       ResourceId resource_id,
+                       viz::ResourceId resource_id,
                        const gfx::QuadF* clip_region);
   void DrawContentQuadAA(const ContentDrawQuadBase* quad,
-                         ResourceId resource_id,
+                         viz::ResourceId resource_id,
                          const gfx::Transform& device_transform,
                          const gfx::QuadF& aa_quad,
                          const gfx::QuadF* clip_region);
   void DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
-                           ResourceId resource_id,
+                           viz::ResourceId resource_id,
                            const gfx::QuadF* clip_region);
   void DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
                         const gfx::QuadF* clip_region);

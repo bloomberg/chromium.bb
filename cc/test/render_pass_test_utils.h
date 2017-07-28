@@ -52,7 +52,7 @@ void AddRenderPassQuad(RenderPass* to_pass, RenderPass* contributing_pass);
 // Adds a render pass quad with the given mask resource, filter, and transform.
 void AddRenderPassQuad(RenderPass* to_pass,
                        RenderPass* contributing_pass,
-                       ResourceId mask_resource_id,
+                       viz::ResourceId mask_resource_id,
                        gfx::Transform transform,
                        SkBlendMode blend_mode);
 

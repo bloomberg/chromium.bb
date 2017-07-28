@@ -26,8 +26,8 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient {
                            std::unique_ptr<cc::LayerTreeFrameSink> frame_sink);
   ~LayerTreeFrameSinkHolder() override;
 
-  bool HasReleaseCallbackForResource(cc::ResourceId id);
-  void SetResourceReleaseCallback(cc::ResourceId id,
+  bool HasReleaseCallbackForResource(viz::ResourceId id);
+  void SetResourceReleaseCallback(viz::ResourceId id,
                                   const viz::ReleaseCallback& callback);
   int AllocateResourceId();
   base::WeakPtr<LayerTreeFrameSinkHolder> GetWeakPtr();
@@ -52,7 +52,7 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient {
  private:
   // A collection of callbacks used to release resources.
   using ResourceReleaseCallbackMap =
-      base::flat_map<cc::ResourceId, viz::ReleaseCallback>;
+      base::flat_map<viz::ResourceId, viz::ReleaseCallback>;
   ResourceReleaseCallbackMap release_callbacks_;
 
   SurfaceTreeHost* surface_tree_host_;

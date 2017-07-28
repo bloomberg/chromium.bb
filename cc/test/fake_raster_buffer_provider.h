@@ -26,7 +26,7 @@ class FakeRasterBufferProviderImpl : public RasterBufferProvider {
   viz::ResourceFormat GetResourceFormat(bool must_support_alpha) const override;
   bool IsResourceSwizzleRequired(bool must_support_alpha) const override;
   bool CanPartialRasterIntoProvidedResource() const override;
-  bool IsResourceReadyToDraw(ResourceId id) const override;
+  bool IsResourceReadyToDraw(viz::ResourceId id) const override;
   uint64_t SetReadyToDrawCallback(
       const ResourceProvider::ResourceIdArray& resource_ids,
       const base::Callback<void()>& callback,

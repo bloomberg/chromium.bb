@@ -1776,7 +1776,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   ResourceProvider::ResourceIdArray resources;
   for (const auto& render_pass : frame->render_passes) {
     for (auto* quad : render_pass->quad_list) {
-      for (ResourceId resource_id : quad->resources)
+      for (viz::ResourceId resource_id : quad->resources)
         resources.push_back(resource_id);
     }
   }
@@ -4093,7 +4093,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
 
   // Allow for multiple creation requests with the same UIResourceId.  The
   // previous resource is simply deleted.
-  ResourceId id = ResourceIdForUIResource(uid);
+  viz::ResourceId id = ResourceIdForUIResource(uid);
   if (id)
     DeleteUIResource(uid);
 
@@ -4180,7 +4180,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
 }
 
 void LayerTreeHostImpl::DeleteUIResource(UIResourceId uid) {
-  ResourceId id = ResourceIdForUIResource(uid);
+  viz::ResourceId id = ResourceIdForUIResource(uid);
   if (id) {
     if (has_valid_layer_tree_frame_sink_)
       resource_provider_->DeleteResource(id);
@@ -4208,7 +4208,8 @@ void LayerTreeHostImpl::EvictAllUIResources() {
   client_->RenewTreePriority();
 }
 
-ResourceId LayerTreeHostImpl::ResourceIdForUIResource(UIResourceId uid) const {
+viz::ResourceId LayerTreeHostImpl::ResourceIdForUIResource(
+    UIResourceId uid) const {
   UIResourceMap::const_iterator iter = ui_resource_map_.find(uid);
   if (iter != ui_resource_map_.end())
     return iter->second.resource_id;

@@ -257,7 +257,7 @@ void LayerImpl::AppendDebugBorderQuad(RenderPass* render_pass,
   }
 }
 
-void LayerImpl::GetContentsResourceId(ResourceId* resource_id,
+void LayerImpl::GetContentsResourceId(viz::ResourceId* resource_id,
                                       gfx::Size* resource_size,
                                       gfx::SizeF* resource_uv_size) const {
   NOTREACHED();
@@ -436,7 +436,7 @@ void LayerImpl::ValidateQuadResourcesInternal(DrawQuad* quad) const {
 #if DCHECK_IS_ON()
   const ResourceProvider* resource_provider =
       layer_tree_impl_->resource_provider();
-  for (ResourceId resource_id : quad->resources)
+  for (viz::ResourceId resource_id : quad->resources)
     resource_provider->ValidateResource(resource_id);
 #endif
 }

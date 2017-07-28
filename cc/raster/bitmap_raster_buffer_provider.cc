@@ -115,7 +115,7 @@ bool BitmapRasterBufferProvider::CanPartialRasterIntoProvidedResource() const {
 }
 
 bool BitmapRasterBufferProvider::IsResourceReadyToDraw(
-    ResourceId resource_id) const {
+    viz::ResourceId resource_id) const {
   // Bitmap resources are immediately ready to draw.
   return true;
 }

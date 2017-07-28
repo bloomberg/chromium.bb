@@ -49,6 +49,7 @@ viz_component("common") {
     "resources/platform_color.h",
     "resources/resource_format_utils.cc",
     "resources/resource_format_utils.h",
+    "resources/resource_id.h",
     "resources/resource_settings.cc",
     "resources/resource_settings.h",
     "resources/shared_bitmap_manager.h",

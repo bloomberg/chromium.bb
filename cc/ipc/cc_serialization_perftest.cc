@@ -282,10 +282,10 @@ class CCSerializationPerfTest : public testing::Test {
     SkBlendMode arbitrary_blend_mode1 = SkBlendMode::kScreen;
     SkBlendMode arbitrary_blend_mode2 = SkBlendMode::kLighten;
     SkBlendMode arbitrary_blend_mode3 = SkBlendMode::kOverlay;
-    ResourceId arbitrary_resourceid1 = 55;
-    ResourceId arbitrary_resourceid2 = 47;
-    ResourceId arbitrary_resourceid3 = 23;
-    ResourceId arbitrary_resourceid4 = 16;
+    viz::ResourceId arbitrary_resourceid1 = 55;
+    viz::ResourceId arbitrary_resourceid2 = 47;
+    viz::ResourceId arbitrary_resourceid3 = 23;
+    viz::ResourceId arbitrary_resourceid4 = 16;
     SkScalar arbitrary_sigma = SkFloatToScalar(2.0f);
     gfx::ColorSpace arbitrary_color_space = gfx::ColorSpace::CreateXYZD50();
     int root_id = 14;

@@ -18,7 +18,7 @@ class FakeMaskLayerImpl : public PictureLayerImpl {
       scoped_refptr<RasterSource> raster_source,
       Layer::LayerMaskType mask_type);
 
-  void GetContentsResourceId(ResourceId* resource_id,
+  void GetContentsResourceId(viz::ResourceId* resource_id,
                              gfx::Size* resource_size,
                              gfx::SizeF* mask_uv_size) const override;
   void set_resource_size(gfx::Size resource_size) {

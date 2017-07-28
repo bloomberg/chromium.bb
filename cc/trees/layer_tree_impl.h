@@ -451,7 +451,7 @@ class CC_EXPORT LayerTreeImpl {
 
   void DidModifyTilePriorities();
 
-  ResourceId ResourceIdForUIResource(UIResourceId uid) const;
+  viz::ResourceId ResourceIdForUIResource(UIResourceId uid) const;
   void ProcessUIResourceRequestQueue();
 
   bool IsUIResourceOpaque(UIResourceId uid) const;

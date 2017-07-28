@@ -402,8 +402,7 @@ cc::SharedQuadState* SurfaceAggregator::CopySharedQuadState(
 void SurfaceAggregator::CopyQuadsToPass(
     const cc::QuadList& source_quad_list,
     const cc::SharedQuadStateList& source_shared_quad_state_list,
-    const std::unordered_map<cc::ResourceId, cc::ResourceId>&
-        child_to_parent_map,
+    const std::unordered_map<ResourceId, ResourceId>& child_to_parent_map,
     const gfx::Transform& target_transform,
     const ClipData& clip_rect,
     cc::RenderPass* dest_pass,
@@ -495,12 +494,12 @@ void SurfaceAggregator::CopyQuadsToPass(
             dest_pass->CopyFromAndAppendDrawQuad(quad, dest_shared_quad_state);
       }
       if (!child_to_parent_map.empty()) {
-        for (cc::ResourceId& resource_id : dest_quad->resources) {
+        for (ResourceId& resource_id : dest_quad->resources) {
           auto it = child_to_parent_map.find(resource_id);
           DCHECK(it != child_to_parent_map.end());
 
           DCHECK_EQ(it->first, resource_id);
-          cc::ResourceId remapped_id = it->second;
+          ResourceId remapped_id = it->second;
           resource_id = remapped_id;
         }
       }
@@ -613,7 +612,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
   }
   CHECK(debug_weak_this.get());
 
-  std::vector<cc::ResourceId> referenced_resources;
+  std::vector<ResourceId> referenced_resources;
   size_t reserve_size = frame.resource_list.size();
   referenced_resources.reserve(reserve_size);
 
@@ -702,7 +701,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
 
       if (!provider_)
         continue;
-      for (cc::ResourceId resource_id : quad->resources) {
+      for (ResourceId resource_id : quad->resources) {
         if (!child_to_parent_map.count(resource_id)) {
           invalid_frame = true;
           break;
@@ -717,8 +716,8 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
   CHECK(debug_weak_this.get());
   valid_surfaces_.insert(surface->surface_id());
 
-  cc::ResourceIdSet resource_set(std::move(referenced_resources),
-                                 base::KEEP_FIRST_OF_DUPES);
+  ResourceIdSet resource_set(std::move(referenced_resources),
+                             base::KEEP_FIRST_OF_DUPES);
   if (provider_)
     provider_->DeclareUsedResourcesFromChild(child_id, resource_set);
   CHECK(debug_weak_this.get());

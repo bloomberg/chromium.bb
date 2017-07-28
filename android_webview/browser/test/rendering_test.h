@@ -88,7 +88,7 @@ class RenderingTest : public testing::Test,
   content::SynchronousCompositor* ActiveCompositor() const;
   std::unique_ptr<cc::CompositorFrame> ConstructEmptyFrame();
   std::unique_ptr<cc::CompositorFrame> ConstructFrame(
-      cc::ResourceId resource_id);
+      viz::ResourceId resource_id);
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   std::unique_ptr<FakeWindow> window_;
   std::unique_ptr<FakeFunctor> functor_;

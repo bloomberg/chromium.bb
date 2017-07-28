@@ -109,9 +109,9 @@ void PaintedScrollbarLayerImpl::AppendQuads(
   gfx::Rect scaled_visible_thumb_quad_rect = gfx::ScaleToEnclosingRect(
       visible_thumb_quad_rect, internal_contents_scale_);
 
-  ResourceId thumb_resource_id =
+  viz::ResourceId thumb_resource_id =
       layer_tree_impl()->ResourceIdForUIResource(thumb_ui_resource_id_);
-  ResourceId track_resource_id =
+  viz::ResourceId track_resource_id =
       layer_tree_impl()->ResourceIdForUIResource(track_ui_resource_id_);
 
   if (thumb_resource_id && !visible_thumb_quad_rect.IsEmpty()) {

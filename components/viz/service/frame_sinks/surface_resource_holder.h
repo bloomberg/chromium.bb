@@ -8,9 +8,9 @@
 #include <unordered_map>
 
 #include "base/macros.h"
-#include "cc/base/resource_id.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/transferable_resource.h"
+#include "components/viz/common/resources/resource_id.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace viz {
@@ -44,7 +44,7 @@ class VIZ_SERVICE_EXPORT SurfaceResourceHolder {
   // ID we've received from the client. When this counter hits zero for a
   // particular resource, that ID is available to return to the client with
   // the most recently given non-empty sync token.
-  using ResourceIdInfoMap = std::unordered_map<cc::ResourceId, ResourceRefs>;
+  using ResourceIdInfoMap = std::unordered_map<ResourceId, ResourceRefs>;
   ResourceIdInfoMap resource_id_info_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceResourceHolder);

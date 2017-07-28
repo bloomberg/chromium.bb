@@ -260,9 +260,9 @@ std::unique_ptr<RenderPass> CreateRenderPassWithTransform(
   return pass;
 }
 
-ResourceId CreateResource(ResourceProvider* resource_provider,
-                          const gfx::Size& size,
-                          bool is_overlay_candidate) {
+viz::ResourceId CreateResource(ResourceProvider* resource_provider,
+                               const gfx::Size& size,
+                               bool is_overlay_candidate) {
   viz::TextureMailbox mailbox =
       viz::TextureMailbox(gpu::Mailbox::Generate(), gpu::SyncToken(),
                           GL_TEXTURE_2D, size, is_overlay_candidate, false);
@@ -294,7 +294,7 @@ TextureDrawQuad* CreateCandidateQuadAt(ResourceProvider* resource_provider,
   float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
   gfx::Size resource_size_in_pixels = rect.size();
   bool is_overlay_candidate = true;
-  ResourceId resource_id = CreateResource(
+  viz::ResourceId resource_id = CreateResource(
       resource_provider, resource_size_in_pixels, is_overlay_candidate);
 
   TextureDrawQuad* overlay_quad =
@@ -316,7 +316,7 @@ StreamVideoDrawQuad* CreateCandidateVideoQuadAt(
     const gfx::Transform& transform) {
   gfx::Size resource_size_in_pixels = rect.size();
   bool is_overlay_candidate = true;
-  ResourceId resource_id = CreateResource(
+  viz::ResourceId resource_id = CreateResource(
       resource_provider, resource_size_in_pixels, is_overlay_candidate);
 
   StreamVideoDrawQuad* overlay_quad =
@@ -353,7 +353,7 @@ YUVVideoDrawQuad* CreateFullscreenCandidateYUVVideoQuad(
   gfx::Rect rect = render_pass->output_rect;
   gfx::Size resource_size_in_pixels = rect.size();
   bool is_overlay_candidate = true;
-  ResourceId resource_id = CreateResource(
+  viz::ResourceId resource_id = CreateResource(
       resource_provider, resource_size_in_pixels, is_overlay_candidate);
 
   YUVVideoDrawQuad* overlay_quad =
@@ -2199,7 +2199,7 @@ class GLRendererWithOverlaysTest : public testing::Test {
   void SwapBuffersComplete() {
     renderer_->SwapBuffersComplete();
   }
-  void ReturnResourceInUseQuery(ResourceId id) {
+  void ReturnResourceInUseQuery(viz::ResourceId id) {
     ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(), id);
     gpu::TextureInUseResponse response;
     response.texture = lock.texture_id();
@@ -2400,11 +2400,11 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   Init(use_validator);
   renderer_->set_expect_overlays(true);
 
-  ResourceId resource1 =
+  viz::ResourceId resource1 =
       CreateResource(resource_provider_.get(), gfx::Size(32, 32), true);
-  ResourceId resource2 =
+  viz::ResourceId resource2 =
       CreateResource(resource_provider_.get(), gfx::Size(32, 32), true);
-  ResourceId resource3 =
+  viz::ResourceId resource3 =
       CreateResource(resource_provider_.get(), gfx::Size(32, 32), true);
 
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
@@ -2538,11 +2538,11 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAfterGpuQuery) {
   Init(use_validator);
   renderer_->set_expect_overlays(true);
 
-  ResourceId resource1 =
+  viz::ResourceId resource1 =
       CreateResource(resource_provider_.get(), gfx::Size(32, 32), true);
-  ResourceId resource2 =
+  viz::ResourceId resource2 =
       CreateResource(resource_provider_.get(), gfx::Size(32, 32), true);
-  ResourceId resource3 =
+  viz::ResourceId resource3 =
       CreateResource(resource_provider_.get(), gfx::Size(32, 32), true);
 
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
