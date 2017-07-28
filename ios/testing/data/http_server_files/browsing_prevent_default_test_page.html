@@ -22,24 +22,13 @@ found in the LICENSE file. -->
   <th>Expected result</th>
 </tr>
 
-<tr id="_webScenarioBrowsingLinkPreventDefaultOverridesHref">
+<tr>
   <td>
-    <a id="webScenarioBrowsingLinkPreventDefaultOverridesHref"
-       href="about:blank"
-       onclick="event.preventDefault();printDone();">
-      webScenarioBrowsingLinkPreventDefaultOverridesHref
-    </a>
-  </td>
-  <td>preventDefault() should override href</td>
-</tr>
-
-<tr id="_webScenarioBrowsingLinkPreventDefaultOverridesTargetBlank">
-  <td>
-    <a id="webScenarioBrowsingLinkPreventDefaultOverridesTargetBlank"
+    <a id="overrides-target-blank"
        href="about:blank"
        target="_blank"
        onclick="event.preventDefault();printDone();">
-      webScenarioBrowsingLinkPreventDefaultOverridesTargetBlank
+      Prevent Default Overrides Target Blank
     </a>
     <div class="snippet"></div>
   </td>
@@ -48,28 +37,28 @@ found in the LICENSE file. -->
   </td>
 </tr>
 
-<tr id="_webScenarioBrowsingLinkPreventDefaultOverridesStopPropagation">
+<tr>
   <td>
-    <a id="webScenarioBrowsingLinkPreventDefaultOverridesStopPropagation"
-       href="about:blank" 
+    <a id="overrides-stop-propagation"
+       href="about:blank"
        target="_blank"
        onclick="event.preventDefault();event.stopPropagation();printDone();">
-      webScenarioBrowsingLinkPreventDefaultOverridesStopPropagation
+      Prevent Default Overrides Stop Propagation
     </a>
     <div class="snippet"></div>
   </td>
   <td>preventDefault() should opverride event.stopPropagation()</td>
 </tr>
 
-<tr id="_webScenarioBrowsingLinkPreventDefaultOverridesWindowOpen">
+<tr>
   <td>
-    <a id="webScenarioBrowsingLinkPreventDefaultOverridesWindowOpen"
+    <a id="overrides-window-open"
        href="about:blank"
        target="_blank"
        onclick="event.preventDefault();
                 window.location.href='about:blank';
-                event.stopPropagation();printDone();">
-      webScenarioBrowsingLinkPreventDefaultOverridesWindowOpen
+                event.stopPropagation();">
+      Prevent Default Overrides Window Open
     </a>
     <div class="snippet"></div>
   </td>
