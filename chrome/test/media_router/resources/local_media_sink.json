@@ -1,0 +1,24 @@
+{
+  // Define the return value for getAvailableSinks API defined in
+  // TestProvider.js.
+  "getAvailableSinks": {
+    // This is the URN used by LOCAL_FILE casting mode
+    "urn:x-org.chromium.media:source:tab:0": [
+      {"id": "id1", "friendlyName": "test-sink-1"},
+      {"id": "id2", "friendlyName": "test-sink-2"}
+    ]
+  },
+
+  // Define the return value for canRoute API, the return value should be
+  // either 'true' or 'false'. The default value is 'true'.
+  "canRoute": "true",
+
+  // Define the return value for createRoute API. Since the return type of
+  // createRoute is a Promise, here we just need to define
+  // if return successful result or error.
+  // The value for 'passed' should be either 'true' or 'false'.
+  // If it is 'false', you also need to give the corresponding
+  // error message. If it is 'true', the error message will be ignored.
+  // TODO(leilei): Change keyword 'passed' to 'success'.
+  "createRoute": {"passed": "true", "errorMessage": ""}
+}

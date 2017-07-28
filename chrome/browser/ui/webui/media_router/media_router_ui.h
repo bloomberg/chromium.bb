@@ -194,6 +194,8 @@ class MediaRouterUI
                        create_session_request,
                    std::unique_ptr<MediaRouterFileDialog> file_dialog);
 
+  void InitForTest(std::unique_ptr<MediaRouterFileDialog> file_dialog);
+
  private:
   friend class MediaRouterUITest;
 
