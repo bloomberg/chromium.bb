@@ -616,7 +616,7 @@ void MetricsWebContentsObserver::OnTimingUpdated(
 
   if (committed_load_) {
     committed_load_->metrics_update_dispatcher()->UpdateMetrics(
-        render_frame_host, timing, metadata);
+        render_frame_host, timing, metadata, new_features);
   }
 }
 

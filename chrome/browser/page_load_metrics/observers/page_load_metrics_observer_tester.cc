@@ -68,14 +68,28 @@ PageLoadMetricsObserverTester::~PageLoadMetricsObserverTester() {}
 
 void PageLoadMetricsObserverTester::SimulateTimingUpdate(
     const mojom::PageLoadTiming& timing) {
-  SimulateTimingAndMetadataUpdate(timing, mojom::PageLoadMetadata());
+  SimulatePageLoadTimingUpdate(timing, mojom::PageLoadMetadata(),
+                               mojom::PageLoadFeatures());
 }
 
 void PageLoadMetricsObserverTester::SimulateTimingAndMetadataUpdate(
     const mojom::PageLoadTiming& timing,
     const mojom::PageLoadMetadata& metadata) {
+  SimulatePageLoadTimingUpdate(timing, metadata, mojom::PageLoadFeatures());
+}
+
+void PageLoadMetricsObserverTester::SimulateFeaturesUpdate(
+    const mojom::PageLoadFeatures& new_features) {
+  SimulatePageLoadTimingUpdate(mojom::PageLoadTiming(),
+                               mojom::PageLoadMetadata(), new_features);
+}
+
+void PageLoadMetricsObserverTester::SimulatePageLoadTimingUpdate(
+    const mojom::PageLoadTiming& timing,
+    const mojom::PageLoadMetadata& metadata,
+    const mojom::PageLoadFeatures& new_features) {
   observer_->OnTimingUpdated(web_contents()->GetMainFrame(), timing, metadata,
-                             mojom::PageLoadFeatures());
+                             new_features);
   // If sending the timing update caused the PageLoadMetricsUpdateDispatcher to
   // schedule a buffering timer, then fire it now so metrics are dispatched to
   // observers.
