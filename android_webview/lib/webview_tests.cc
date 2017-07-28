@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "android_webview/browser/deferred_gpu_command_service.h"
-#include "base/android/jni_android.h"
 #include "base/command_line.h"
 #include "base/test/test_suite.h"
 #include "content/public/common/content_switches.h"

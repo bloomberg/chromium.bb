@@ -5,8 +5,6 @@
 #ifndef ANDROID_WEBVIEW_LIB_WEBVIEW_JNI_ONLOAD_H_
 #define ANDROID_WEBVIEW_LIB_WEBVIEW_JNI_ONLOAD_H_
 
-#include <jni.h>
-
 namespace android_webview {
 
 bool OnJNIOnLoadInit();

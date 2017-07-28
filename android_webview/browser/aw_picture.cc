@@ -5,7 +5,6 @@
 #include "android_webview/browser/aw_picture.h"
 
 #include "android_webview/browser/java_browser_view_renderer_helper.h"
-#include "base/bind.h"
 #include "jni/AwPicture_jni.h"
 #include "third_party/skia/include/core/SkPicture.h"
 

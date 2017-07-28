@@ -6,10 +6,7 @@
 
 #include "android_webview/common/aw_version_info_values.h"
 #include "android_webview/lib/aw_main_delegate.h"
-#include "base/android/jni_android.h"
-#include "base/android/jni_registrar.h"
 #include "base/android/library_loader/library_loader_hooks.h"
-#include "base/bind.h"
 #include "content/public/app/content_jni_onload.h"
 #include "content/public/app/content_main.h"
 #include "url/url_util.h"
