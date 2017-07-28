@@ -7,6 +7,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "barcodedetection.mojom",
+    "barcodedetection_provider.mojom",
     "constants.mojom",
     "facedetection.mojom",
     "facedetection_provider.mojom",

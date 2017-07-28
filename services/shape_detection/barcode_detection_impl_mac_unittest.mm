@@ -46,7 +46,7 @@ TEST_F(BarcodeDetectionImplMacTest, ScanOneBarcode) {
   }
 
   if (@available(macOS 10.10, *)) {
-    impl_.reset(new BarcodeDetectionImplMac);
+    impl_.reset(new BarcodeDetectionImplMac());
     const std::string kInfoString = "https://www.chromium.org";
     // Generate a QR code image as a CIImage by using |qr_code_generator|.
     NSData* const qr_code_data =
