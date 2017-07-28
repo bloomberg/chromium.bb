@@ -8,7 +8,8 @@ import("//third_party/WebKit/Source/core/core_idl_files.gni")
 visibility = [ "//third_party/WebKit/*" ]
 
 compute_interfaces_info_individual("interfaces_info_individual_core") {
-  sources = core_static_interface_idl_files + core_static_dependency_idl_files +
+  sources =
+      core_static_interface_idl_files + core_static_dependency_idl_files +
       core_generated_interface_idl_files + core_generated_dependency_idl_files
   interfaces_info_file =
       "$bindings_core_output_dir/InterfacesInfoCoreIndividual.pickle"

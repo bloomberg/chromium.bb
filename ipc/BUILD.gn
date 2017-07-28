@@ -125,13 +125,9 @@ component("ipc") {
   ]
 
   if (!is_nacl_nonsfi) {
-    sources += [
-      "ipc_message_protobuf_utils.h",
-    ]
+    sources += [ "ipc_message_protobuf_utils.h" ]
 
-    public_deps += [
-      "//third_party/protobuf:protobuf_lite",
-    ]
+    public_deps += [ "//third_party/protobuf:protobuf_lite" ]
   }
 
   deps = [
@@ -245,9 +241,7 @@ if (!is_ios) {
     }
 
     if (!is_nacl_nonsfi) {
-      sources += [
-        "ipc_message_protobuf_utils_unittest.cc",
-      ]
+      sources += [ "ipc_message_protobuf_utils_unittest.cc" ]
     }
   }
 

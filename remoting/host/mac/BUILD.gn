@@ -15,7 +15,9 @@ source_set("constants") {
     "constants_mac.h",
   ]
 
-  deps = [ "//remoting/host:remoting_version" ]
+  deps = [
+    "//remoting/host:remoting_version",
+  ]
 }
 
 # remoting_me2me_host-InfoPlist.strings
