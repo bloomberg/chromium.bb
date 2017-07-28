@@ -40,6 +40,8 @@
 namespace blink {
 
 class ExecutionContext;
+class KURL;
+class SecurityOrigin;
 class WebString;
 
 class CORE_EXPORT WorkerContentSettingsClient final
@@ -54,6 +56,9 @@ class CORE_EXPORT WorkerContentSettingsClient final
 
   bool RequestFileSystemAccessSync();
   bool AllowIndexedDB(const WebString& name);
+  bool AllowRunningInsecureContent(bool enabled_per_settings,
+                                   SecurityOrigin*,
+                                   const KURL&);
 
   static const char* SupplementName();
   static WorkerContentSettingsClient* From(ExecutionContext&);

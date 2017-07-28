@@ -153,10 +153,9 @@ bool WorkerFetchContext::ShouldBlockFetchByMixedContentCheck(
     const ResourceRequest& resource_request,
     const KURL& url,
     SecurityViolationReportingPolicy reporting_policy) const {
-  // TODO(horo): We need more detailed check which is implemented in
-  // MixedContentChecker::ShouldBlockFetch().
-  return MixedContentChecker::IsMixedContent(global_scope_->GetSecurityOrigin(),
-                                             url);
+  return MixedContentChecker::ShouldBlockFetchOnWorker(
+      global_scope_, web_context_.get(), resource_request, url,
+      reporting_policy);
 }
 
 bool WorkerFetchContext::ShouldBlockFetchAsCredentialedSubresource(

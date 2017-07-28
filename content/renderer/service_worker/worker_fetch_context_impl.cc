@@ -75,6 +75,14 @@ bool WorkerFetchContextImpl::IsDataSaverEnabled() const {
   return is_data_saver_enabled_;
 }
 
+void WorkerFetchContextImpl::SetIsOnSubframe(bool is_on_sub_frame) {
+  is_on_sub_frame_ = is_on_sub_frame;
+}
+
+bool WorkerFetchContextImpl::IsOnSubframe() const {
+  return is_on_sub_frame_;
+}
+
 blink::WebURL WorkerFetchContextImpl::FirstPartyForCookies() const {
   return first_party_for_cookies_;
 }
@@ -89,6 +97,13 @@ void WorkerFetchContextImpl::DidDisplayContentWithCertificateErrors(
     const blink::WebURL& url) {
   Send(new FrameHostMsg_DidDisplayContentWithCertificateErrors(parent_frame_id_,
                                                                url));
+}
+
+void WorkerFetchContextImpl::DidRunInsecureContent(
+    const blink::WebSecurityOrigin& origin,
+    const blink::WebURL& url) {
+  Send(new FrameHostMsg_DidRunInsecureContent(
+      parent_frame_id_, GURL(origin.ToString().Utf8()), url));
 }
 
 void WorkerFetchContextImpl::SetSubresourceFilterBuilder(

@@ -2871,13 +2871,6 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
 // This test checks the behavior of mixed content blocking for the requests
 // from a dedicated worker by changing the settings in WebPreferences.
 IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest, MixedContentSettings) {
-  if (GetParam().first == OffMainThreadFetchMode::kEnabled &&
-      GetParam().second == SSLUIWorkerFetchTestType::kUseFetch) {
-    // TODO(horo): Remove this return when we implement
-    // WorkerFetchContext::ShouldBlockFetchByMixedContentCheck() correctly for
-    // off-main-thread-fetch cases.
-    return;
-  }
   ChromeContentBrowserClientForMixedContentTest browser_client;
   content::ContentBrowserClient* old_browser_client =
       content::SetBrowserClientForTesting(&browser_client);
@@ -2983,13 +2976,6 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
 // allow_running_insecure_content setting is false or
 // strict_mixed_content_checking setting is true.
 IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest, MixedContentSubFrame) {
-  if (GetParam().first == OffMainThreadFetchMode::kEnabled &&
-      GetParam().second == SSLUIWorkerFetchTestType::kUseFetch) {
-    // TODO(horo): Remove this return when we implement
-    // WorkerFetchContext::ShouldBlockFetchByMixedContentCheck() correctly for
-    // off-main-thread-fetch cases.
-    return;
-  }
   ChromeContentBrowserClientForMixedContentTest browser_client;
   content::ContentBrowserClient* old_browser_client =
       content::SetBrowserClientForTesting(&browser_client);
