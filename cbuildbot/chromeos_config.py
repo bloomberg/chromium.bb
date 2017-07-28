@@ -370,7 +370,7 @@ class HWTestList(object):
                                     **default_dict)]
 
   # pylint: disable=unused-argument
-  def CtsGtsTests(self, **kwargs):
+  def CtsGtsQualTests(self, **kwargs):
     """Return a list of HWTestConfigs for CTS, GTS tests."""
     cts_config = dict(
         pool=constants.HWTEST_CTS_POOL,
@@ -1430,7 +1430,8 @@ def GeneralTemplates(site_config, ge_build_config):
           config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
           config_lib.VMTestConfig(constants.DEV_MODE_TEST_TYPE),
           config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)],
-      hw_tests=hw_test_list.SharedPoolCanary(),
+      hw_tests=(hw_test_list.SharedPoolCanary() +
+                hw_test_list.CtsGtsQualTests()),
       paygen=True,
       signer_tests=True,
       trybot_list=True,
@@ -1440,15 +1441,6 @@ def GeneralTemplates(site_config, ge_build_config):
       image_test=True,
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
           'TOC-Canaries',
-  )
-
-  site_config.AddTemplate(
-      'release_cts_gts',
-      site_config.templates.release,
-      hw_tests=(
-          hw_test_list.CtsGtsTests() +
-          hw_test_list.SharedPoolCanary()
-      ),
   )
 
   ### Release AFDO configs.
@@ -3104,30 +3096,10 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
   _all_release_builder_boards = builder_to_boards_dict[
       config_lib.CONFIG_TEMPLATE_RELEASE]
 
-  if is_release_branch:
-    _cts_gts_boards = (
-        (boards_dict['all_release_boards'] | _all_release_builder_boards)
-        - _critical_for_chrome_boards)
-  else:
-    _cts_gts_boards = frozenset([
-        'terra',
-        'kevin',
-        'veyron_mighty',
-        'kefka'
-    ])
-
-  site_config.AddForBoards(
-      config_lib.CONFIG_TYPE_RELEASE,
-      _cts_gts_boards,
-      board_configs,
-      site_config.templates.release,
-      site_config.templates.release_cts_gts,
-  )
-
   site_config.AddForBoards(
       config_lib.CONFIG_TYPE_RELEASE,
       ((boards_dict['all_release_boards'] | _all_release_builder_boards) -
-       _critical_for_chrome_boards - _cts_gts_boards),
+       _critical_for_chrome_boards),
       board_configs,
       site_config.templates.release,
   )
