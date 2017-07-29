@@ -285,11 +285,6 @@ const base::Feature kSlimmingPaintInvalidation{
 const base::Feature kTimerThrottlingForHiddenFrames{
     "TimerThrottlingForHiddenFrames", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables token binding
-// (https://www.ietf.org/id/draft-ietf-tokbind-protocol-04.txt).
-const base::Feature kTokenBinding{"token-binding",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Groups all out-of-process iframes to a different process from the process of
 // the top document. This is a performance isolation mode.  Launch bug:
 // https://crbug.com/595987.

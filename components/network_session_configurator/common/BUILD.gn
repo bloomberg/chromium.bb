@@ -4,6 +4,8 @@
 
 static_library("common") {
   sources = [
+    "network_features.cc",
+    "network_features.h",
     "network_switch_list.h",
     "network_switches.cc",
     "network_switches.h",
