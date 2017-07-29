@@ -324,12 +324,15 @@ TEST_F(MasterHostScanCacheTest, TestRecoversFromCrashAndCleansUpWhenDeleted) {
   expected_cache_->SetHostScanResult(
       test_entries_.at(host_scan_test_util::kTetherGuid1));
 
-  // Alert the timer factory that these GUIDs will be added.
+  // Alert the timer factory that these GUIDs will be added. To ensure that the
+  // timer GUID is set in the correct order, iterate through the stored cache
+  // entries to mimic the iteration order performed in MasterHostScanCache.
+  // See crbug.com/750342.
   test_timer_factory_ = new TestTimerFactory();
-  test_timer_factory_->set_tether_network_guid_for_next_timer(
-      host_scan_test_util::kTetherGuid1);
-  test_timer_factory_->set_tether_network_guid_for_next_timer(
-      host_scan_test_util::kTetherGuid0);
+  std::unordered_map<std::string, HostScanCacheEntry> persisted_entries =
+      fake_persistent_host_scan_cache_->GetStoredCacheEntries();
+  for (const auto& it : persisted_entries)
+    test_timer_factory_->set_tether_network_guid_for_next_timer(it.first);
 
   // Create the master cache. It should have automatically picked up the
   // persisted scan results, even though they were not explicitly added.

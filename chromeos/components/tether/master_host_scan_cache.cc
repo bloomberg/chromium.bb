@@ -153,7 +153,7 @@ void MasterHostScanCache::InitializeFromPersistentCache() {
   // restore |network_host_scan_cache_|.
   std::unordered_map<std::string, HostScanCacheEntry> persisted_entries =
       persistent_host_scan_cache_->GetStoredCacheEntries();
-  for (const auto it : persisted_entries) {
+  for (const auto& it : persisted_entries) {
     SetHostScanResult(it.second);
   }
 
