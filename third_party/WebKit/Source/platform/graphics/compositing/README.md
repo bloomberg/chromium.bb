@@ -3,7 +3,7 @@
 This directory contains the implementation of the "Blink compositing algorithm".
 
 This code is owned by the [paint team][paint-team-site].
-[paint-team-site]: https://www.chromium.org/developers/paint-team
+[paint-team-site]: https://www.chromium.org/teams/paint-team
 
 This document explains the SPv2 world as it develops, not the SPv1 world it
 replaces.
@@ -40,12 +40,10 @@ required by the above.
 When `PaintChunks` can merge into an existing `cc::Layer`, they may have
 different `PropertyTreeState`s than the `PropertyTreeState` of the `cc::Layer`.
 If so, we need to *flatten* down the nodes that are different between the
-`PropertyTreeState` of the `PaintChunk` and the `cc::Layer`. This is done
-by iterating over the "innermostNode" of the `PropertyTreeState`, finding
-the sequence of transform, clip and effect nodes that need to be flattened,
-and turning them into a sequence of paired display items representing the
-transforms, clips and effects. The algorithm for this is spelled out in
-the designdoc at http://goo.gl/6xP8Oe.
+`PropertyTreeState` of the `PaintChunk` and the `cc::Layer`. This is done by
+emitting paired display items to adjust the `PaintChunk`s property tree state
+to the current state when the `PaintChunk` is consumed. See:
+[`ConversionContext::Convert`](compositing/PaintChunksToCcLayer.cpp).
 
 ### Foreign layers
 

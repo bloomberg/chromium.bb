@@ -4,8 +4,6 @@
 
 #include "platform/graphics/paint/PropertyTreeState.h"
 
-#include "platform/graphics/paint/GeometryMapper.h"
-
 namespace blink {
 
 const PropertyTreeState& PropertyTreeState::Root() {
@@ -15,27 +13,6 @@ const PropertyTreeState& PropertyTreeState::Root() {
           TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
           EffectPaintPropertyNode::Root()))));
   return *root;
-}
-
-bool PropertyTreeState::HasDirectCompositingReasons() const {
-  switch (GetInnermostNode()) {
-    case kTransform:
-      return Transform()->HasDirectCompositingReasons();
-    case kClip:
-      return Clip()->HasDirectCompositingReasons();
-    case kEffect:
-      return Effect()->HasDirectCompositingReasons();
-    default:
-      return false;
-  }
-}
-
-template <typename PropertyNode>
-bool IsAncestorOf(const PropertyNode* ancestor, const PropertyNode* child) {
-  while (child && child != ancestor) {
-    child = child->Parent();
-  }
-  return child == ancestor;
 }
 
 const CompositorElementId PropertyTreeState::GetCompositorElementId(
@@ -59,55 +36,6 @@ const CompositorElementId PropertyTreeState::GetCompositorElementId(
       !element_ids.Contains(Transform()->GetCompositorElementId()))
     return Transform()->GetCompositorElementId();
   return CompositorElementId();
-}
-
-PropertyTreeState::InnermostNode PropertyTreeState::GetInnermostNode() const {
-  // TODO(chrishtr): this is very inefficient when innermostNode() is called
-  // repeatedly.
-  bool clip_transform_strict_ancestor_of_transform =
-      clip_->LocalTransformSpace() != transform_.Get() &&
-      IsAncestorOf<TransformPaintPropertyNode>(clip_->LocalTransformSpace(),
-                                               transform_.Get());
-  bool effect_transform_strict_ancestor_of_transform =
-      effect_->LocalTransformSpace() != transform_.Get() &&
-      IsAncestorOf<TransformPaintPropertyNode>(effect_->LocalTransformSpace(),
-                                               transform_.Get());
-
-  if (!transform_->IsRoot() && clip_transform_strict_ancestor_of_transform &&
-      effect_transform_strict_ancestor_of_transform)
-    return kTransform;
-
-  bool clip_ancestor_of_effect =
-      IsAncestorOf<ClipPaintPropertyNode>(clip_.Get(), effect_->OutputClip());
-
-  if (!effect_->IsRoot() &&
-      (clip_ancestor_of_effect ||
-       // Effects that don't move pixels commute with all clips, so always apply
-       // them first when inside compatible transforms.
-       (!effect_->HasFilterThatMovesPixels() &&
-        !effect_transform_strict_ancestor_of_transform))) {
-    return kEffect;
-  }
-  if (!clip_->IsRoot())
-    return kClip;
-  return kNone;
-}
-
-const PropertyTreeState* PropertyTreeStateIterator::Next() {
-  switch (properties_.GetInnermostNode()) {
-    case PropertyTreeState::kTransform:
-      properties_.SetTransform(properties_.Transform()->Parent());
-      return &properties_;
-    case PropertyTreeState::kClip:
-      properties_.SetClip(properties_.Clip()->Parent());
-      return &properties_;
-    case PropertyTreeState::kEffect:
-      properties_.SetEffect(properties_.Effect()->Parent());
-      return &properties_;
-    case PropertyTreeState::kNone:
-      return nullptr;
-  }
-  return nullptr;
 }
 
 #if DCHECK_IS_ON()
