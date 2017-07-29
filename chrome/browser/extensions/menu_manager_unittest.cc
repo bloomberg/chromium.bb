@@ -663,14 +663,24 @@ TEST_F(MenuManagerTest, SanitizeRadioButtons) {
   ASSERT_TRUE(item1_ptr->checked());
   ASSERT_FALSE(item2_ptr->checked());
 
-  // If multiple items are checked, only the last item should get checked.
+  // If multiple items are checked and one of the items is updated to be
+  // checked, then all other items should be unchecked.
+  //
+  // Note, this case of multiple checked items (i.e. SetChecked() called more
+  // than once) followed by a call to ItemUpdated() would never happen in
+  // practice. In this hypothetical scenario, the item that was updated the
+  // latest via ItemUpdated() should remain checked.
+  //
+  // Begin with two items checked.
   item1_ptr->SetChecked(true);
   item2_ptr->SetChecked(true);
   ASSERT_TRUE(item1_ptr->checked());
   ASSERT_TRUE(item2_ptr->checked());
+  // Updating item1 to be checked should result in item2 being unchecked.
   manager_.ItemUpdated(item1_ptr->id());
-  ASSERT_FALSE(item1_ptr->checked());
-  ASSERT_TRUE(item2_ptr->checked());
+  // Item 1 should be selected as it was updated the latest.
+  ASSERT_TRUE(item1_ptr->checked());
+  ASSERT_FALSE(item2_ptr->checked());
 
   // If the checked item is removed, the new first item should get checked.
   item1_ptr->SetChecked(false);

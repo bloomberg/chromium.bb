@@ -224,6 +224,30 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
     }
     return false;
   }
+
+  // Given a menu item id, executes the item's command.
+  void ExecuteCommand(TestRenderViewContextMenu* menu,
+                      const extensions::ExtensionId& extension_id,
+                      const std::string& item_uid) {
+    MenuItem::Id id(false, MenuItem::ExtensionKey(extension_id));
+    id.string_uid = item_uid;
+    int command_id = -1;
+    ASSERT_TRUE(FindCommandId(menu, id, &command_id));
+    menu->ExecuteCommand(command_id, 0);
+  }
+
+  // Verifies a radio item's selection state (checked or unchecked).
+  void VerifyRadioItemSelectionState(
+      TestRenderViewContextMenu* menu,
+      const extensions::ExtensionId& extension_id,
+      const std::string& radio_uid,
+      bool should_be_checked) {
+    MenuItem::Id id(false, MenuItem::ExtensionKey(extension_id));
+    id.string_uid = radio_uid;
+    int command_id = -1;
+    ASSERT_TRUE(FindCommandId(menu, id, &command_id));
+    EXPECT_EQ(should_be_checked, menu->IsCommandIdChecked(command_id));
+  }
 };
 
 // Tests adding a simple context menu item.
@@ -298,6 +322,116 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, UpdateOnclick) {
   // Upon completion, the replaced onclick callbacks should not have fired.
   ASSERT_FALSE(listener_error1.was_satisfied());
   ASSERT_FALSE(listener_error2.was_satisfied());
+}
+
+// Tests that updating the first radio item in a radio list from checked to
+// unchecked should not work. The radio button should remain checked because
+// context menu radio lists should always have one item selected.
+IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest,
+                       UpdateCheckedStateOfFirstRadioItem) {
+  ExtensionTestMessageListener listener_created_radio1("created radio1 item",
+                                                       false);
+  ExtensionTestMessageListener listener_created_radio2("created radio2 item",
+                                                       false);
+  ExtensionTestMessageListener listener_created_item1("created normal item",
+                                                      false);
+  ExtensionTestMessageListener listener_created_item2(
+      "created second normal item", false);
+
+  ExtensionTestMessageListener listener_radio2_clicked("onclick radio2", false);
+  ExtensionTestMessageListener listener_item1_clicked("onclick normal item",
+                                                      false);
+  ExtensionTestMessageListener listener_radio1_updated("radio1 updated", false);
+
+  const extensions::Extension* extension =
+      LoadContextMenuExtension("radio_check");
+  ASSERT_TRUE(extension);
+
+  // Check that all menu items are created.
+  ASSERT_TRUE(listener_created_radio1.WaitUntilSatisfied());
+  ASSERT_TRUE(listener_created_radio2.WaitUntilSatisfied());
+  ASSERT_TRUE(listener_created_item1.WaitUntilSatisfied());
+  ASSERT_TRUE(listener_created_item2.WaitUntilSatisfied());
+
+  GURL page_url("http://www.google.com");
+
+  // Create and build our test context menu.
+  std::unique_ptr<TestRenderViewContextMenu> menu(
+      TestRenderViewContextMenu::Create(GetWebContents(), page_url, GURL(),
+                                        GURL()));
+
+  VerifyRadioItemSelectionState(menu.get(), extension->id(), "radio1", true);
+  VerifyRadioItemSelectionState(menu.get(), extension->id(), "radio2", false);
+
+  // Clicking the regular item calls chrome.contextMenus.update to uncheck the
+  // first radio item.
+  ExecuteCommand(menu.get(), extension->id(), "item1");
+  ASSERT_TRUE(listener_item1_clicked.WaitUntilSatisfied());
+
+  // Unchecking the second item should not deselect it. Recall that context menu
+  // radio lists should always have one item selected.
+  ASSERT_TRUE(listener_radio1_updated.WaitUntilSatisfied());
+  VerifyRadioItemSelectionState(menu.get(), extension->id(), "radio1", true);
+  VerifyRadioItemSelectionState(menu.get(), extension->id(), "radio2", false);
+}
+
+// Tests that updating a checked radio button (that is not the first item) to be
+// unchecked should not work. The radio button should remain checked because
+// context menu radio lists should always have one item selected.
+IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest,
+                       UpdateCheckedStateOfNonfirstRadioItem) {
+  ExtensionTestMessageListener listener_created_radio1("created radio1 item",
+                                                       false);
+  ExtensionTestMessageListener listener_created_radio2("created radio2 item",
+                                                       false);
+  ExtensionTestMessageListener listener_created_item1("created normal item",
+                                                      false);
+  ExtensionTestMessageListener listener_created_item2(
+      "created second normal item", false);
+
+  ExtensionTestMessageListener listener_radio2_clicked("onclick radio2", false);
+  ExtensionTestMessageListener listener_item2_clicked(
+      "onclick second normal item", false);
+  ExtensionTestMessageListener listener_radio2_updated("radio2 updated", false);
+
+  const extensions::Extension* extension =
+      LoadContextMenuExtension("radio_check");
+  ASSERT_TRUE(extension);
+
+  // Check that all menu items are created.
+  ASSERT_TRUE(listener_created_radio1.WaitUntilSatisfied());
+  ASSERT_TRUE(listener_created_radio2.WaitUntilSatisfied());
+  ASSERT_TRUE(listener_created_item1.WaitUntilSatisfied());
+
+  ASSERT_TRUE(listener_created_item2.WaitUntilSatisfied());
+
+  GURL page_url("http://www.google.com");
+
+  // Create and build our test context menu.
+  std::unique_ptr<TestRenderViewContextMenu> menu(
+      TestRenderViewContextMenu::Create(GetWebContents(), page_url, GURL(),
+                                        GURL()));
+
+  VerifyRadioItemSelectionState(menu.get(), extension->id(), "radio1", true);
+  VerifyRadioItemSelectionState(menu.get(), extension->id(), "radio2", false);
+
+  // Click on the second radio button. This should uncheck the first radio item
+  // and check the second item.
+  ExecuteCommand(menu.get(), extension->id(), "radio2");
+  ASSERT_TRUE(listener_radio2_clicked.WaitUntilSatisfied());
+  VerifyRadioItemSelectionState(menu.get(), extension->id(), "radio1", false);
+  VerifyRadioItemSelectionState(menu.get(), extension->id(), "radio2", true);
+
+  // Clicking the regular item calls chrome.contextMenus.update to uncheck the
+  // second radio item.
+  ExecuteCommand(menu.get(), extension->id(), "item2");
+  ASSERT_TRUE(listener_item2_clicked.WaitUntilSatisfied());
+
+  // Unchecking the second item should not deselect it. Recall that context menu
+  // radio lists should always have one item selected.
+  ASSERT_TRUE(listener_radio2_updated.WaitUntilSatisfied());
+  VerifyRadioItemSelectionState(menu.get(), extension->id(), "radio1", false);
+  VerifyRadioItemSelectionState(menu.get(), extension->id(), "radio2", true);
 }
 
 // Tests that setting "documentUrlPatterns" for an item properly restricts
