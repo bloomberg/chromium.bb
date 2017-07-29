@@ -73,8 +73,6 @@
          disable_gl_rgb_format)                              \
   GPU_OP(DISABLE_LARGER_THAN_SCREEN_OVERLAYS,                \
          disable_larger_than_screen_overlays)                \
-  GPU_OP(DISABLE_MULTIMONITOR_MULTISAMPLING,                 \
-         disable_multimonitor_multisampling)                 \
   GPU_OP(DISABLE_NON_EMPTY_POST_SUB_BUFFERS_FOR_ONSCREEN_SURFACES, \
          disable_non_empty_post_sub_buffers_for_onscreen_surfaces) \
   GPU_OP(DISABLE_NV12_DXGI_VIDEO,                            \

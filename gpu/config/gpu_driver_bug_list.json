@@ -1,6 +1,6 @@
 {
   "name": "gpu driver bug list",
-  "version": "10.21",
+  "version": "10.22",
   "entries": [
     {
       "id": 1,
@@ -164,17 +164,6 @@
                     "0x0a04", "0x0a16", "0x0a22", "0x0a26", "0x0a2a"],
       "features": [
         "swizzle_rgba_for_async_readpixels"
-      ]
-    },
-    {
-      "id": 30,
-      "cr_bugs": [237931],
-      "description": "Multisampling is buggy on OSX when multiple monitors are connected",
-      "os": {
-        "type": "macosx"
-      },
-      "features": [
-        "disable_multimonitor_multisampling"
       ]
     },
     {
