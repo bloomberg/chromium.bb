@@ -77,6 +77,10 @@ enum SubresourceFilterAction {
   // suppressed mode.
   kActionContentSettingsAllowedWhileUISuppressed,
 
+  // Logged when a devtools message arrives notifying us to force activation in
+  // this web contents.
+  kActionForcedActivationEnabled,
+
   kActionLastEntry
 };
 
@@ -103,6 +107,12 @@ class ChromeSubresourceFilterClient
   void WhitelistInCurrentWebContents(const GURL& url) override;
   subresource_filter::VerifiedRulesetDealer::Handle* GetRulesetDealer()
       override;
+  bool ForceActivationInCurrentWebContents() override;
+
+  // Should be called by devtools in response to a protocol command to enable ad
+  // blocking in this WebContents. Should only persist while devtools is
+  // attached.
+  void ToggleForceActivationInCurrentWebContents(bool force_activation);
 
   bool did_show_ui_for_navigation() const {
     return did_show_ui_for_navigation_;
@@ -115,10 +125,15 @@ class ChromeSubresourceFilterClient
   std::set<std::string> whitelisted_hosts_;
 
   // Owned by the profile.
-  SubresourceFilterContentSettingsManager* settings_manager_;
+  SubresourceFilterContentSettingsManager* settings_manager_ = nullptr;
 
-  content::WebContents* web_contents_;
-  bool did_show_ui_for_navigation_;
+  content::WebContents* web_contents_ = nullptr;
+  bool did_show_ui_for_navigation_ = false;
+
+  // Corresponds to a devtools command which triggers filtering on all page
+  // loads. We must be careful to ensure this boolean does not persist after the
+  // devtools window is closed, which should be handled by the devtools system.
+  bool activated_via_devtools_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSubresourceFilterClient);
 };

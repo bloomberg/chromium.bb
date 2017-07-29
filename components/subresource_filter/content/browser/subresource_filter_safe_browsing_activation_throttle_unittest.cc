@@ -99,6 +99,7 @@ class MockSubresourceFilterClient : public SubresourceFilterClient {
   }
 
   MOCK_METHOD1(ToggleNotificationVisibility, void(bool));
+  MOCK_METHOD0(ForceActivationInCurrentWebContents, bool());
 
   void ClearWhitelist() { whitelisted_hosts_.clear(); }
 

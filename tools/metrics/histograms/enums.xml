@@ -35977,6 +35977,7 @@ from previous Chrome versions.
   <int value="9" label="Content setting: wildcard update (Deprecated)"/>
   <int value="10" label="UI Suppressed (Smart Logic)"/>
   <int value="11" label="Content setting: allowed while UI suppressed"/>
+  <int value="12" label="Forced filtering toggled on via devtools"/>
 </enum>
 
 <enum name="SubresourceFilterActivationDecision">

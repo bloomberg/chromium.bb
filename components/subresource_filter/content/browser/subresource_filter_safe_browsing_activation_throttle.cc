@@ -153,6 +153,8 @@ void SubresourceFilterSafeBrowsingActivationThrottle::CheckCurrentUrl() {
 }
 
 void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
+               "SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult");
   auto* driver_factory = ContentSubresourceFilterDriverFactory::FromWebContents(
       navigation_handle()->GetWebContents());
   DCHECK(driver_factory);
@@ -165,6 +167,13 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
 
   Configuration::ActivationOptions matched_options;
   ActivationDecision activation_decision = ComputeActivation(&matched_options);
+
+  // For forced activation, keep all the options except activation_level.
+  if (client_->ForceActivationInCurrentWebContents()) {
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"), "ActivationForced");
+    activation_decision = ActivationDecision::ACTIVATED;
+    matched_options.activation_level = ActivationLevel::ENABLED;
+  }
 
   // Check for whitelisted status last, so that the client gets an accurate
   // indication of whether there would be activation otherwise.

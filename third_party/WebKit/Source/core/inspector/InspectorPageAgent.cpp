@@ -506,6 +506,10 @@ Response InspectorPageAgent::setAutoAttachToCreatedPages(bool auto_attach) {
   return Response::OK();
 }
 
+Response InspectorPageAgent::setAdBlockingEnabled(bool enable) {
+  return Response::OK();
+}
+
 Response InspectorPageAgent::reload(
     Maybe<bool> optional_bypass_cache,
     Maybe<String> optional_script_to_evaluate_on_load) {

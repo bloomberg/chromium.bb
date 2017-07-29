@@ -126,6 +126,7 @@ class CORE_EXPORT InspectorPageAgent final
                               Maybe<String> transitionType,
                               String* frame_id) override;
   protocol::Response stopLoading() override;
+  protocol::Response setAdBlockingEnabled(bool) override;
   protocol::Response getResourceTree(
       std::unique_ptr<protocol::Page::FrameResourceTree>* frame_tree) override;
   void getResourceContent(const String& frame_id,
