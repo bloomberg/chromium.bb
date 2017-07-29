@@ -72,12 +72,19 @@ class DisconnectTetheringOperationTest : public testing::Test {
   void SimulateDeviceAuthenticationAndVerifyMessageSent() {
     operation_->OnDeviceAuthenticated(test_device_);
 
-    // Verify that the message was sent successfully.
+    // Verify that the message was passed to |fake_ble_connection_manager_|
+    // correctly.
     std::vector<FakeBleConnectionManager::SentMessage>& sent_messages =
         fake_ble_connection_manager_->sent_messages();
     ASSERT_EQ(1u, sent_messages.size());
     EXPECT_EQ(test_device_, sent_messages[0].remote_device);
     EXPECT_EQ(disconnect_tethering_request_string_, sent_messages[0].message);
+
+    // Now, simulate the message being sent.
+    int last_sequence_number =
+        fake_ble_connection_manager_->last_sequence_number();
+    EXPECT_NE(last_sequence_number, -1);
+    fake_ble_connection_manager_->SetMessageSent(last_sequence_number);
   }
 
   void SimulateConnectionTimeout() {
