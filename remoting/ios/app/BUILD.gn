@@ -49,6 +49,8 @@ source_set("common_source_set") {
     "host_view_controller.h",
     "host_view_controller.mm",
     "main.mm",
+    "physical_keyboard_detector.h",
+    "physical_keyboard_detector.mm",
     "pin_entry_view.h",
     "pin_entry_view.mm",
     "remoting_theme.h",

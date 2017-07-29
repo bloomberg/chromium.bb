@@ -11,6 +11,7 @@
 #include <memory>
 
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
+#import "remoting/ios/app/physical_keyboard_detector.h"
 #import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/app/settings/remoting_settings_view_controller.h"
 #import "remoting/ios/client_gestures.h"
@@ -92,6 +93,11 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   [self.view addSubview:_floatingButton];
 
   [self applyInputMode];
+
+  _clientKeyboard = [[ClientKeyboard alloc] init];
+  _clientKeyboard.delegate = self;
+  [self.view addSubview:_clientKeyboard];
+  // TODO(nicholss): need to pass some keyboard injection interface here.
 }
 
 - (void)viewDidUnload {
@@ -118,6 +124,19 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   // Call onSurfaceChanged here to cover that case.
   [_client surfaceChanged:self.view.frame];
   [self resizeHostToFitIfNeeded];
+
+  [PhysicalKeyboardDetector detectOnView:self.view
+                                callback:^(BOOL hasPhysicalKeyboard) {
+                                  if (hasPhysicalKeyboard) {
+                                    _clientKeyboard.hasPhysicalKeyboard =
+                                        hasPhysicalKeyboard;
+
+                                    // Directly make the client keyboard first
+                                    // responder so that it can immediately
+                                    // handle key inputs.
+                                    [self showKeyboard];
+                                  }
+                                }];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -170,19 +189,10 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 #pragma mark - Keyboard
 
 - (BOOL)isKeyboardActive {
-  if (_clientKeyboard) {
-    return [_clientKeyboard isFirstResponder];
-  }
-  return NO;
+  return [_clientKeyboard isFirstResponder];
 }
 
 - (void)showKeyboard {
-  if (!_clientKeyboard) {
-    _clientKeyboard = [[ClientKeyboard alloc] init];
-    _clientKeyboard.delegate = self;
-    [self.view addSubview:_clientKeyboard];
-    // TODO(nicholss): need to pass some keyboard injection interface here.
-  }
   [_clientKeyboard becomeFirstResponder];
 }
 
@@ -304,24 +314,27 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
                        message:nil
                 preferredStyle:UIAlertControllerStyleActionSheet];
 
-  if ([self isKeyboardActive]) {
-    void (^hideKeyboardHandler)(UIAlertAction*) = ^(UIAlertAction*) {
-      [self hideKeyboard];
-      [_actionImageView setActive:NO animated:YES];
-    };
-    [alert addAction:[UIAlertAction actionWithTitle:l10n_util::GetNSString(
-                                                        IDS_HIDE_KEYBOARD)
-                                              style:UIAlertActionStyleDefault
-                                            handler:hideKeyboardHandler]];
-  } else {
-    void (^showKeyboardHandler)(UIAlertAction*) = ^(UIAlertAction*) {
-      [self showKeyboard];
-      [_actionImageView setActive:NO animated:YES];
-    };
-    [alert addAction:[UIAlertAction actionWithTitle:l10n_util::GetNSString(
-                                                        IDS_SHOW_KEYBOARD)
-                                              style:UIAlertActionStyleDefault
-                                            handler:showKeyboardHandler]];
+  if (!_clientKeyboard.hasPhysicalKeyboard) {
+    // These are only needed for soft keyboard.
+    if ([self isKeyboardActive]) {
+      void (^hideKeyboardHandler)(UIAlertAction*) = ^(UIAlertAction*) {
+        [self hideKeyboard];
+        [_actionImageView setActive:NO animated:YES];
+      };
+      [alert addAction:[UIAlertAction actionWithTitle:l10n_util::GetNSString(
+                                                          IDS_HIDE_KEYBOARD)
+                                                style:UIAlertActionStyleDefault
+                                              handler:hideKeyboardHandler]];
+    } else {
+      void (^showKeyboardHandler)(UIAlertAction*) = ^(UIAlertAction*) {
+        [self showKeyboard];
+        [_actionImageView setActive:NO animated:YES];
+      };
+      [alert addAction:[UIAlertAction actionWithTitle:l10n_util::GetNSString(
+                                                          IDS_SHOW_KEYBOARD)
+                                                style:UIAlertActionStyleDefault
+                                              handler:showKeyboardHandler]];
+    }
   }
 
   remoting::GestureInterpreter::InputMode currentInputMode =
