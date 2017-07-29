@@ -743,7 +743,6 @@ void MenuManager::SanitizeRadioList(const MenuItem::OwnedList& item_list) {
   auto i = item_list.begin();
   while (i != item_list.end()) {
     if ((*i)->type() != MenuItem::RADIO) {
-      ++i;
       break;
     }
 
@@ -780,16 +779,21 @@ bool MenuManager::ItemUpdated(const MenuItem::Id& id) {
   MenuItem* menu_item = GetItemById(id);
   DCHECK(menu_item);
 
+  const extensions::MenuItem::OwnedList* list;
   if (menu_item->parent_id()) {
-    SanitizeRadioList(GetItemById(*menu_item->parent_id())->children());
+    list = &(GetItemById(*menu_item->parent_id())->children());
   } else {
     auto i = context_items_.find(menu_item->id().extension_key);
     if (i == context_items_.end()) {
       NOTREACHED();
       return false;
     }
-    SanitizeRadioList(i->second);
+    list = &(i->second);
   }
+
+  // If we selected a radio item, unselect all other items in its group.
+  if (menu_item->type() == MenuItem::RADIO && menu_item->checked())
+    RadioItemSelected(menu_item);
 
   return true;
 }
