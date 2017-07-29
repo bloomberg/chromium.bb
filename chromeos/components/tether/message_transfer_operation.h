@@ -38,15 +38,17 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
       const cryptauth::SecureChannel::Status& new_status) override;
   void OnMessageReceived(const cryptauth::RemoteDevice& remote_device,
                          const std::string& payload) override;
+  void OnMessageSent(int sequence_number) override {}
 
  protected:
   // Unregisters |remote_device| for the MessageType returned by
   // GetMessageTypeForConnection().
   void UnregisterDevice(const cryptauth::RemoteDevice& remote_device);
 
-  // Sends |message_wrapper|'s message to |remote_device|.
-  void SendMessageToDevice(const cryptauth::RemoteDevice& remote_device,
-                           std::unique_ptr<MessageWrapper> message_wrapper);
+  // Sends |message_wrapper|'s message to |remote_device| and returns the
+  // associated message's sequence number.
+  int SendMessageToDevice(const cryptauth::RemoteDevice& remote_device,
+                          std::unique_ptr<MessageWrapper> message_wrapper);
 
   // Callback executed whena device is authenticated (i.e., it is in a state
   // which allows messages to be sent/received). Should be overridden by derived

@@ -162,11 +162,11 @@ void MessageTransferOperation::UnregisterDevice(
   }
 }
 
-void MessageTransferOperation::SendMessageToDevice(
+int MessageTransferOperation::SendMessageToDevice(
     const cryptauth::RemoteDevice& remote_device,
     std::unique_ptr<MessageWrapper> message_wrapper) {
-  connection_manager_->SendMessage(remote_device,
-                                   message_wrapper->ToRawMessage());
+  return connection_manager_->SendMessage(remote_device,
+                                          message_wrapper->ToRawMessage());
 }
 
 bool MessageTransferOperation::ShouldWaitForResponse() {

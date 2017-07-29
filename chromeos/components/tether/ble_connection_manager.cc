@@ -119,10 +119,10 @@ void BleConnectionManager::ConnectionMetadata::SetSecureChannel(
   secure_channel_->Initialize();
 }
 
-void BleConnectionManager::ConnectionMetadata::SendMessage(
+int BleConnectionManager::ConnectionMetadata::SendMessage(
     const std::string& payload) {
   DCHECK(GetStatus() == cryptauth::SecureChannel::Status::AUTHENTICATED);
-  secure_channel_->SendMessage(std::string(kTetherFeature), payload);
+  return secure_channel_->SendMessage(std::string(kTetherFeature), payload);
 }
 
 void BleConnectionManager::ConnectionMetadata::OnSecureChannelStatusChanged(
@@ -164,6 +164,13 @@ void BleConnectionManager::ConnectionMetadata::OnMessageReceived(
   }
 
   manager_->SendMessageReceivedEvent(remote_device_, payload);
+}
+
+void BleConnectionManager::ConnectionMetadata::OnMessageSent(
+    cryptauth::SecureChannel* secure_channel,
+    int sequence_number) {
+  DCHECK(secure_channel_.get() == secure_channel);
+  manager_->SendMessageSentEvent(sequence_number);
 }
 
 BleConnectionManager::BleConnectionManager(
@@ -267,7 +274,7 @@ void BleConnectionManager::UnregisterRemoteDevice(
   UpdateConnectionAttempts();
 }
 
-void BleConnectionManager::SendMessage(
+int BleConnectionManager::SendMessage(
     const cryptauth::RemoteDevice& remote_device,
     const std::string& message) {
   ConnectionMetadata* connection_metadata =
@@ -279,13 +286,13 @@ void BleConnectionManager::SendMessage(
                   << "Device ID: \""
                   << remote_device.GetTruncatedDeviceIdForLogs() << "\", "
                   << "Message: \"" << message << "\"";
-    return;
+    return -1;
   }
 
   PA_LOG(INFO) << "SendMessage(): Device ID: \""
                << remote_device.GetTruncatedDeviceIdForLogs() << "\", "
                << "Message: \"" << message << "\"";
-  connection_metadata->SendMessage(message);
+  return connection_metadata->SendMessage(message);
 }
 
 bool BleConnectionManager::GetStatusForDevice(
@@ -504,6 +511,14 @@ void BleConnectionManager::SendSecureChannelStatusChangeEvent(
   for (auto& observer : observer_list_) {
     observer.OnSecureChannelStatusChanged(remote_device, old_status,
                                           new_status);
+  }
+}
+
+void BleConnectionManager::SendMessageSentEvent(int sequence_number) {
+  PA_LOG(INFO) << "Message sent successfully; sequence number: "
+               << sequence_number;
+  for (auto& observer : observer_list_) {
+    observer.OnMessageSent(sequence_number);
   }
 }
 

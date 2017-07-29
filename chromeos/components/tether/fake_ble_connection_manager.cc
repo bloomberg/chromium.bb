@@ -57,6 +57,11 @@ void FakeBleConnectionManager::ReceiveMessage(
   SendMessageReceivedEvent(remote_device, payload);
 }
 
+void FakeBleConnectionManager::SetMessageSent(int sequence_number) {
+  DCHECK(sequence_number < next_sequence_number_);
+  SendMessageSentEvent(sequence_number);
+}
+
 void FakeBleConnectionManager::RegisterRemoteDevice(
     const cryptauth::RemoteDevice& remote_device,
     const MessageType& connection_reason) {
@@ -74,10 +79,11 @@ void FakeBleConnectionManager::UnregisterRemoteDevice(
   }
 }
 
-void FakeBleConnectionManager::SendMessage(
+int FakeBleConnectionManager::SendMessage(
     const cryptauth::RemoteDevice& remote_device,
     const std::string& message) {
   sent_messages_.push_back({remote_device, message});
+  return next_sequence_number_++;
 }
 
 bool FakeBleConnectionManager::GetStatusForDevice(
