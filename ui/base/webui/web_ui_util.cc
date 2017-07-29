@@ -88,15 +88,41 @@ bool ParseScaleFactor(const base::StringPiece& identifier,
   return true;
 }
 
-void ParsePathAndScale(const GURL& url,
-                       std::string* path,
-                       float* scale_factor) {
+// Parse a formatted frame index string into int and sets to |frame_index|.
+bool ParseFrameIndex(const base::StringPiece& identifier, int* frame_index) {
+  *frame_index = -1;
+  if (identifier.empty()) {
+    LOG(WARNING) << "Invalid frame index format: " << identifier;
+    return false;
+  }
+
+  if (*identifier.rbegin() != ']') {
+    LOG(WARNING) << "Invalid frame index format: " << identifier;
+    return false;
+  }
+
+  unsigned frame = 0;
+  if (!base::StringToUint(identifier.substr(0, identifier.length() - 1),
+                          &frame)) {
+    LOG(WARNING) << "Invalid frame index format: " << identifier;
+    return false;
+  }
+  *frame_index = static_cast<int>(frame);
+  return true;
+}
+
+void ParsePathAndImageSpec(const GURL& url,
+                           std::string* path,
+                           float* scale_factor,
+                           int* frame_index) {
   *path = net::UnescapeURLComponent(
       url.path().substr(1),
       net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
           net::UnescapeRule::SPACES);
   if (scale_factor)
     *scale_factor = 1.0f;
+  if (frame_index)
+    *frame_index = -1;
 
   // Detect and parse resource string ending in @<scale>x.
   std::size_t pos = path->rfind('@');
@@ -113,6 +139,33 @@ void ParsePathAndScale(const GURL& url,
     if (scale_factor)
       *scale_factor = factor;
   }
+
+  // Detect and parse resource string ending in [<frame>].
+  pos = path->rfind('[');
+  if (pos != std::string::npos) {
+    base::StringPiece stripped_path(*path);
+    int index;
+
+    if (ParseFrameIndex(
+            stripped_path.substr(pos + 1, stripped_path.length() - pos - 1),
+            &index)) {
+      // Strip frame index specification from path.
+      stripped_path.remove_suffix(stripped_path.length() - pos);
+      stripped_path.CopyToString(path);
+    }
+    if (frame_index)
+      *frame_index = index;
+  }
+}
+
+void ParsePathAndScale(const GURL& url,
+                       std::string* path,
+                       float* scale_factor) {
+  ParsePathAndImageSpec(url, path, scale_factor, nullptr);
+}
+
+void ParsePathAndFrame(const GURL& url, std::string* path, int* frame_index) {
+  ParsePathAndImageSpec(url, path, nullptr, frame_index);
 }
 
 void SetLoadTimeDataDefaults(const std::string& app_locale,

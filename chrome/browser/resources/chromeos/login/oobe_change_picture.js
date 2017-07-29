@@ -122,7 +122,7 @@ Polymer({
         this.sendSelectImage_(image.dataset.type, '');
         break;
       case CrPicture.SelectionTypes.DEFAULT:
-        this.sendSelectImage_(image.dataset.type, image.src);
+        this.sendSelectImage_(image.dataset.type, image.dataset.url);
         break;
       default:
         assertNotReached('Selected unknown image type');
@@ -196,7 +196,7 @@ Polymer({
    * @private
    */
   getImageSrc_: function(selectedItem) {
-    return (selectedItem && selectedItem.src) || '';
+    return (selectedItem && selectedItem.dataset.url) || '';
   },
 
   /**

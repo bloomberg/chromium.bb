@@ -177,7 +177,7 @@ Polymer({
           this.browserProxy_.selectOldImage();
         break;
       case CrPicture.SelectionTypes.DEFAULT:
-        this.browserProxy_.selectDefaultImage(image.src);
+        this.browserProxy_.selectDefaultImage(image.dataset.url);
         break;
       default:
         assertNotReached('Selected unknown image type');
@@ -237,7 +237,7 @@ Polymer({
    * @private
    */
   getImageSrc_: function(selectedItem) {
-    return (selectedItem && selectedItem.src) || '';
+    return (selectedItem && selectedItem.dataset.url) || '';
   },
 
   /**

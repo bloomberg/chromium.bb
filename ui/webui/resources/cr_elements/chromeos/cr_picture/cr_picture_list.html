@@ -69,13 +69,16 @@
         <!-- Shows and selects the current profile picture. -->
         <img id="profileImage" role="radio"
             data-type$="[[selectionTypesEnum_.PROFILE]]"
-            src="[[profileImageUrl_]]" hidden="[[!profileImageUrl_]]"
+            data-url$="[[profileImageUrl_]]"
+            src="[[getImgSrc_(profileImageUrl_)]]"
+            hidden="[[!profileImageUrl_]]"
             srcset="[[getImgSrc2x_(profileImageUrl_)]]"
             title="[[profileImageLoadingLabel]]">
         <!-- Shows and selects the previously selected ('old') picture. -->
         <img id="oldImage" role="radio"
             data-type$="[[selectionTypesEnum_.OLD]]"
             data-image-index$="[[oldImageIndex_]]"
+            data-url$="[[oldImageUrl_]]"
             src="[[oldImageUrl_]]" hidden="[[!oldImageUrl_]]"
             title="[[oldImageLabel]]">
         <!-- Shows the list of available images to select from. -->
@@ -83,7 +86,8 @@
           <img role="radio"
               data-type$="[[selectionTypesEnum_.DEFAULT]]"
               data-index$="[[index]]" data-image-index$="[[item.index]]"
-              src="[[item.url]]"
+              data-url$="[[item.url]]"
+              src="[[getImgSrc_(item.url)]]"
               srcset="[[getImgSrc2x_(item.url)]]" title="[[item.title]]">
         </template>
       </iron-selector>

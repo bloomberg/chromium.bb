@@ -81,8 +81,10 @@ void ThemeSource::StartDataRequest(
     const content::URLDataSource::GotDataCallback& callback) {
   // Default scale factor if not specified.
   float scale = 1.0f;
+  // All frames by default if not specified.
+  int frame = -1;
   std::string parsed_path;
-  webui::ParsePathAndScale(GetThemeUrl(path), &parsed_path, &scale);
+  webui::ParsePathAndImageSpec(GetThemeUrl(path), &parsed_path, &scale, &frame);
 
   if (IsNewTabCssPath(parsed_path)) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -132,14 +134,20 @@ void ThemeSource::StartDataRequest(
   const float max_scale = ui::GetScaleForScaleFactor(
       ResourceBundle::GetSharedInstance().GetMaxScaleFactor());
   const float unreasonable_scale = max_scale * 32;
-  if ((resource_id == -1) || (scale >= unreasonable_scale)) {
+  // TODO(reveman): Add support frames beyond 0 (crbug.com/750064).
+  if ((resource_id == -1) || (scale >= unreasonable_scale) || (frame > 0)) {
     // Either we have no data to send back, or the requested scale is
     // unreasonably large.  This shouldn't happen normally, as chrome://theme/
     // URLs are only used by WebUI pages and component extensions.  However, the
     // user can also enter these into the omnibox, so we need to fail
     // gracefully.
     callback.Run(nullptr);
-  } else if ((GetMimeType(path) == "image/png") && (scale > max_scale)) {
+  } else if ((GetMimeType(path) == "image/png") &&
+             ((scale > max_scale) || (frame != -1))) {
+    // This will extract and scale frame 0 of animated images.
+    // TODO(reveman): Support scaling of animated images and avoid scaling and
+    // re-encode when specific frame is specified (crbug.com/750064).
+    DCHECK_LE(frame, 0);
     SendThemeImage(callback, resource_id, scale);
   } else {
     SendThemeBitmap(callback, resource_id, scale);
