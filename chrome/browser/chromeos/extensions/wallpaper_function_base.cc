@@ -7,6 +7,8 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/cancellation_flag.h"
+#include "base/task_scheduler/lazy_task_runner.h"
+#include "base/task_scheduler/task_traits.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/login/login_state.h"
@@ -26,6 +28,17 @@ const char* const kWallpaperLayoutArrays[] = {
 };
 
 const int kWallpaperLayoutCount = arraysize(kWallpaperLayoutArrays);
+
+base::LazySequencedTaskRunner g_blocking_task_runner =
+    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits(base::MayBlock(),
+                         base::TaskPriority::USER_BLOCKING,
+                         base::TaskShutdownBehavior::BLOCK_SHUTDOWN));
+base::LazySequencedTaskRunner g_non_blocking_task_runner =
+    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits(base::MayBlock(),
+                         base::TaskPriority::USER_VISIBLE,
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
 
 }  // namespace
 
@@ -105,6 +118,14 @@ WallpaperFunctionBase::WallpaperFunctionBase() {
 }
 
 WallpaperFunctionBase::~WallpaperFunctionBase() {
+}
+
+base::SequencedTaskRunner* WallpaperFunctionBase::GetBlockingTaskRunner() {
+  return wallpaper_api_util::g_blocking_task_runner.Get().get();
+}
+
+base::SequencedTaskRunner* WallpaperFunctionBase::GetNonBlockingTaskRunner() {
+  return wallpaper_api_util::g_non_blocking_task_runner.Get().get();
 }
 
 void WallpaperFunctionBase::StartDecode(const std::vector<char>& data) {

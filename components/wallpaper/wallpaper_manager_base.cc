@@ -58,11 +58,6 @@ const unsigned kLoadMaxDelayMs = 2000;
 // color.
 const SkColor kDefaultWallpaperColor = SK_ColorGRAY;
 
-#if DCHECK_IS_ON()
-base::LazyInstance<base::SequenceChecker>::Leaky g_wallpaper_sequence_checker =
-    LAZY_INSTANCE_INITIALIZER;
-#endif
-
 // The path ids for directories.
 int dir_user_data_path_id = -1;            // chrome::DIR_USER_DATA
 int dir_chromeos_wallpapers_path_id = -1;  // chrome::DIR_CHROMEOS_WALLPAPERS
@@ -140,9 +135,9 @@ MovableOnDestroyCallback::~MovableOnDestroyCallback() {
     callback_.Run();
 }
 
-void AssertCalledOnWallpaperSequence() {
+void AssertCalledOnWallpaperSequence(base::SequencedTaskRunner* task_runner) {
 #if DCHECK_IS_ON()
-  DCHECK(g_wallpaper_sequence_checker.Get().CalledOnValidSequence());
+  DCHECK(task_runner->RunsTasksInCurrentSequence());
 #endif
 }
 
