@@ -7,18 +7,14 @@
 
 #include <memory>
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
-#include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
-#include "components/viz/common/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/graphics/OffscreenCanvasFrameDispatcher.h"
-#include "platform/graphics/StaticBitmapImage.h"
+#include "platform/graphics/OffscreenCanvasResourceProvider.h"
 #include "platform/wtf/Compiler.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
 
 namespace blink {
-
-class WebGraphicsContext3DProviderWrapper;
 
 class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
     : public OffscreenCanvasFrameDispatcher,
@@ -74,32 +70,10 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
   bool needs_begin_frame_ = false;
   int pending_compositor_frames_ = 0;
 
-  unsigned next_resource_id_;
-
-  struct FrameResource {
-    RefPtr<StaticBitmapImage> image_;
-    std::unique_ptr<viz::SharedBitmap> shared_bitmap_;
-
-    // context_provider_ is associated with texture_id_ and image_id.
-    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
-    GLuint texture_id_ = 0;
-    GLuint image_id_ = 0;
-
-    bool spare_lock_ = true;
-    gpu::Mailbox mailbox_;
-
-    FrameResource() {}
-    ~FrameResource();
-  };
-
-  std::unique_ptr<FrameResource> recycleable_resource_;
-  std::unique_ptr<FrameResource> createOrRecycleFrameResource();
-
   void SetNeedsBeginFrameInternal();
 
-  typedef HashMap<unsigned, std::unique_ptr<FrameResource>> ResourceMap;
-  void ReclaimResourceInternal(const ResourceMap::iterator&);
-  ResourceMap resources_;
+  std::unique_ptr<OffscreenCanvasResourceProvider>
+      offscreen_canvas_resource_provider_;
 
   bool VerifyImageSize(const IntSize);
   void PostImageToPlaceholder(RefPtr<StaticBitmapImage>);
@@ -110,13 +84,6 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
   int placeholder_canvas_id_;
 
   viz::BeginFrameAck current_begin_frame_ack_;
-
-  void SetTransferableResourceToSharedBitmap(viz::TransferableResource&,
-                                             RefPtr<StaticBitmapImage>);
-  void SetTransferableResourceToSharedGPUContext(viz::TransferableResource&,
-                                                 RefPtr<StaticBitmapImage>);
-  void SetTransferableResourceToStaticBitmapImage(viz::TransferableResource&,
-                                                  RefPtr<StaticBitmapImage>);
 };
 
 }  // namespace blink
