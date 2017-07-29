@@ -365,8 +365,8 @@ static_library("renderer") {
       "//printing",
     ]
     sources += [
-      "printing/chrome_print_web_view_helper_delegate.cc",
-      "printing/chrome_print_web_view_helper_delegate.h",
+      "printing/chrome_print_render_frame_helper_delegate.cc",
+      "printing/chrome_print_render_frame_helper_delegate.h",
     ]
     if (enable_print_preview) {
       sources += [

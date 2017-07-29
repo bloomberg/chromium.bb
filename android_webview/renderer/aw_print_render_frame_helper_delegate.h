@@ -5,7 +5,7 @@
 #ifndef ANDROID_WEBVIEW_RENDERER_AW_PRINT_WEB_VIEW_HELPER_DELEGATE_H_
 #define ANDROID_WEBVIEW_RENDERER_AW_PRINT_WEB_VIEW_HELPER_DELEGATE_H_
 
-#include "components/printing/renderer/print_web_view_helper.h"
+#include "components/printing/renderer/print_render_frame_helper.h"
 
 namespace android_webview {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/renderer/aw_print_web_view_helper_delegate.h"
+#include "android_webview/renderer/aw_print_render_frame_helper_delegate.h"
 
 #include "third_party/WebKit/public/web/WebElement.h"
 
