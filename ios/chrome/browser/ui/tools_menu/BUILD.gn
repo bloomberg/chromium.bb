@@ -23,6 +23,7 @@ source_set("tools_menu") {
     "tools_popup_controller.mm",
   ]
   deps = [
+    ":configuration",
     "//base",
     "//base:i18n",
     "//components/feature_engagement",
@@ -39,7 +40,6 @@ source_set("tools_menu") {
     "//ios/chrome/common",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/user_feedback",
-    "//ios/shared/chrome/browser/ui/tools_menu",
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web:user_agent",
@@ -48,6 +48,18 @@ source_set("tools_menu") {
   libs = [
     "QuartzCore.framework",
     "UIKit.framework",
+  ]
+}
+
+source_set("configuration") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "tools_menu_configuration.h",
+    "tools_menu_configuration.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/web:user_agent",
   ]
 }
 
@@ -65,7 +77,8 @@ source_set("unit_tests") {
     "//ios/chrome/browser:browser",
     "//ios/chrome/browser/ui/commands:commands",
     "//ios/chrome/browser/ui/reading_list:reading_list_ui",
-    "//ios/shared/chrome/browser/ui/tools_menu",
+    "//ios/chrome/browser/ui/tools_menu",
+    "//ios/chrome/browser/ui/tools_menu:configuration",
     "//ios/web:user_agent",
     "//testing/gtest",
   ]

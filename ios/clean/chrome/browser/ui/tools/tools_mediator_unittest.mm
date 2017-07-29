@@ -5,11 +5,11 @@
 #import "ios/clean/chrome/browser/ui/tools/tools_mediator.h"
 
 #include "base/memory/ptr_util.h"
+#import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_consumer.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_mediator_private.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_menu_item.h"
 #import "ios/shared/chrome/browser/ui/toolbar/toolbar_test_util.h"
-#import "ios/shared/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "testing/gtest_mac.h"

@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/shared/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
+#import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 
 // Total number of possible menu items.
 const int kToolsMenuNumberOfItems = 15;
