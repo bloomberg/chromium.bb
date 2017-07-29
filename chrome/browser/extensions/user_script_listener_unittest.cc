@@ -24,7 +24,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "net/base/request_priority.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -208,7 +207,6 @@ class UserScriptListenerTest : public testing::Test {
         .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
         .AppendASCII("1.0.0.0");
     UnpackedInstaller::Create(service_)->Load(extension_path);
-    content::RunAllBlockingPoolTasksUntilIdle();
   }
 
   void UnloadTestExtension() {
@@ -233,6 +231,7 @@ namespace {
 
 TEST_F(UserScriptListenerTest, DelayAndUpdate) {
   LoadTestExtension();
+  base::RunLoop().RunUntilIdle();
 
   net::TestDelegate delegate;
   net::TestURLRequestContext context;
@@ -250,6 +249,7 @@ TEST_F(UserScriptListenerTest, DelayAndUpdate) {
 
 TEST_F(UserScriptListenerTest, DelayAndUnload) {
   LoadTestExtension();
+  base::RunLoop().RunUntilIdle();
 
   net::TestDelegate delegate;
   net::TestURLRequestContext context;
@@ -287,6 +287,7 @@ TEST_F(UserScriptListenerTest, NoDelayNoExtension) {
 
 TEST_F(UserScriptListenerTest, NoDelayNotMatching) {
   LoadTestExtension();
+  base::RunLoop().RunUntilIdle();
 
   net::TestDelegate delegate;
   net::TestURLRequestContext context;
@@ -302,6 +303,7 @@ TEST_F(UserScriptListenerTest, NoDelayNotMatching) {
 
 TEST_F(UserScriptListenerTest, MultiProfile) {
   LoadTestExtension();
+  base::RunLoop().RunUntilIdle();
 
   // Fire up a second profile and have it load an extension with a content
   // script.
@@ -347,6 +349,7 @@ TEST_F(UserScriptListenerTest, MultiProfile) {
 // throttles.
 TEST_F(UserScriptListenerTest, ResumeBeforeStart) {
   LoadTestExtension();
+  base::RunLoop().RunUntilIdle();
   net::TestDelegate delegate;
   net::TestURLRequestContext context;
   GURL url(kMatchingUrl);
