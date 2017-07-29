@@ -99,7 +99,6 @@ copy("deb_packaging_files") {
     "debian/changelog.template",
     "debian/control.template",
     "debian/debian.menu",
-    "debian/expected_deps_ia32_jessie",
     "debian/expected_deps_x64_jessie",
     "debian/postinst",
     "debian/postrm",
@@ -135,7 +134,6 @@ if (!is_chromeos) {
     sources = [
       "rpm/build.sh",
       "rpm/chrome.spec.template",
-      "rpm/expected_deps_i386",
       "rpm/expected_deps_x86_64",
     ]
     outputs = [
