@@ -1,16 +1,14 @@
+# Respectful Code Reviews
+## A Guide for Code Reviewers
 
-## Respectful Code Reviews
-### A Few Opinionated Suggestions
-<center>groby@, last changed 10/02/2016</center>
-<center>go/cr-respect</center>
-
+_For the code author counterpart, see
+__[Respectful Changes](cl_respect.md)__._
 
 ## Do
 
-
 #### Assume competence & goodwill
 
-We attract competent people - and that means even when they're wrong, it most likely comes from lack of information, not from inability. A "bad" CL usually means one of the parties is in possession of information the other one isn't aware of. 
+We attract competent people - and that means even when they're wrong, it most likely comes from lack of information, not from inability. A "bad" CL usually means one of the parties is in possession of information the other one isn't aware of.
 
 #### Discuss in person
 
@@ -18,7 +16,7 @@ If there is a disagreement, have a quick in-person/video/IM chat to sort out wha
 
 #### Explain why
 
-It might be obvious to you that some code is wrong, but it's probably not obvious to the author — or they wouldn't have written it that way. So please don't say "This is wrong". Instead, explain at least what the right way looks like. Or even better, explain *why* they should do things differently. And if you're the slightest bit uncertain, "Maybe I'm missing something, but…" is a helpful sentence. Remember, assume competence. 
+It might be obvious to you that some code is wrong, but it's probably not obvious to the author — or they wouldn't have written it that way. So please don't say "This is wrong". Instead, explain at least what the right way looks like. Or even better, explain *why* they should do things differently. And if you're the slightest bit uncertain, "Maybe I'm missing something, but…" is a helpful sentence. Remember, assume competence.
 
 #### Ask for the why
 
@@ -26,7 +24,7 @@ If it is unclear why the author is doing things a certain way, feel free to ask 
 
 #### Find an end
 
-If you like things neat, it's tempting to go over a code review over and over until it's perfect, dragging it out for longer than necessary. It's soul-deadening for the recipient, though. Keep in mind that "LGTM" does not mean "I vouch my immortal soul this will never fail", but "looks good to me". If it looks good, move on. (That doesn't mean you shouldn't be thorough. It's a judgment call.) And if there are bigger refactorings to be done, move them to a new CL. 
+If you like things neat, it's tempting to go over a code review over and over until it's perfect, dragging it out for longer than necessary. It's soul-deadening for the recipient, though. Keep in mind that "LGTM" does not mean "I vouch my immortal soul this will never fail", but "looks good to me". If it looks good, move on. (That doesn't mean you shouldn't be thorough. It's a judgment call.) And if there are bigger refactorings to be done, move them to a new CL.
 
 #### Reply within a reasonable timeframe
 
@@ -38,13 +36,11 @@ If you will be on vacation or otherwise OOO for more than a few days, please set
 
 It's very easy to get into the mindset of "find ALL the flaws", but acknowledging the positives both helps keep things civil, and brightens the recipient's day. No need to be all fake smiles, but if there's a good decision, or if somebody takes on a really grungy task, acknowledging that is a nice thing to do. And on the converse, a "thank you" to the reviewers is occasionally a nice thing, too.
 
-
 ## Don't
-
 
 #### Don't shame people
 
-"How could you not see this" is a very unhelpful thing to say. Assume that your colleagues do their best, but occasionally make mistakes. That's why we have code reviews - to spot those mistakes. While flawless CLs are awesome, flawed ones are the norm. 
+"How could you not see this" is a very unhelpful thing to say. Assume that your colleagues do their best, but occasionally make mistakes. That's why we have code reviews - to spot those mistakes. While flawless CLs are awesome, flawed ones are the norm.
 
 #### Don't use extreme or very negative language
 
