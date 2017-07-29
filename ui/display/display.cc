@@ -61,7 +61,8 @@ int64_t internal_display_id_ = -1;
 }  // namespace
 
 bool CompareDisplayIds(int64_t id1, int64_t id2) {
-  DCHECK_NE(id1, id2);
+  if (id1 == id2)
+    return false;
   // Output index is stored in the first 8 bits. See GetDisplayIdFromEDID
   // in edid_parser.cc.
   int index_1 = id1 & 0xFF;
