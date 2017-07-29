@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/histogram_tester.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/subresource_filter/subresource_filter_content_settings_manager.h"
 #include "chrome/browser/subresource_filter/subresource_filter_test_harness.h"
@@ -14,6 +15,7 @@
 #include "components/subresource_filter/core/common/activation_list.h"
 #include "components/subresource_filter/core/common/activation_scope.h"
 #include "components/subresource_filter/core/common/load_policy.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -185,4 +187,38 @@ TEST_F(SubresourceFilterTest, RefreshMetadataOnActivation) {
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             GetSettingsManager()->GetSitePermission(url));
   EXPECT_NE(nullptr, GetSettingsManager()->GetSiteMetadata(url));
+}
+
+TEST_F(SubresourceFilterTest, ToggleForceActivation) {
+  base::HistogramTester histogram_tester;
+  const char actions_histogram[] = "SubresourceFilter.Actions";
+  const GURL url("https://example.test/");
+
+  // Navigate initially, should be no activation.
+  SimulateNavigateAndCommit(url, main_rfh());
+  EXPECT_FALSE(GetClient()->ForceActivationInCurrentWebContents());
+  EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
+  EXPECT_EQ(nullptr, GetSettingsManager()->GetSiteMetadata(url));
+
+  // Simulate opening devtools and forcing activation.
+  histogram_tester.ExpectBucketCount(actions_histogram,
+                                     kActionForcedActivationEnabled, 0);
+  GetClient()->ToggleForceActivationInCurrentWebContents(true);
+  histogram_tester.ExpectBucketCount(actions_histogram,
+                                     kActionForcedActivationEnabled, 1);
+  EXPECT_TRUE(GetClient()->ForceActivationInCurrentWebContents());
+
+  SimulateNavigateAndCommit(url, main_rfh());
+  EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(main_rfh()));
+  EXPECT_FALSE(GetClient()->did_show_ui_for_navigation());
+  EXPECT_EQ(nullptr, GetSettingsManager()->GetSiteMetadata(url));
+
+  // Simulate closing devtools.
+  GetClient()->ToggleForceActivationInCurrentWebContents(false);
+  EXPECT_FALSE(GetClient()->ForceActivationInCurrentWebContents());
+
+  SimulateNavigateAndCommit(url, main_rfh());
+  EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
+  histogram_tester.ExpectBucketCount(actions_histogram,
+                                     kActionForcedActivationEnabled, 1);
 }

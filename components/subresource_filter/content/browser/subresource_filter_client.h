@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_CLIENT_H_
-#define COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_CLIENT_H_
+#ifndef COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_SUBRESOURCE_FILTER_CLIENT_H_
+#define COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_SUBRESOURCE_FILTER_CLIENT_H_
 
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
 #include "content/public/browser/web_contents.h"
@@ -42,8 +42,12 @@ class SubresourceFilterClient {
   virtual void WhitelistInCurrentWebContents(const GURL& url) = 0;
 
   virtual VerifiedRulesetDealer::Handle* GetRulesetDealer() = 0;
+
+  // Returns whether this navigation should be forced to be activated. This is
+  // currently only used for devtools.
+  virtual bool ForceActivationInCurrentWebContents() = 0;
 };
 
 }  // namespace subresource_filter
 
-#endif  // COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_CLIENT_H_
+#endif  // COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_SUBRESOURCE_FILTER_CLIENT_H_
