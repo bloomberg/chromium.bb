@@ -76,8 +76,7 @@ class NewTabTrackerEventTest : public testing::Test {
   }
 
   void TearDown() override {
-    metrics::DesktopSessionDurationTracker::Get()->RemoveObserver(
-        new_tab_tracker_.get());
+    new_tab_tracker_->RemoveDurationTrackerObserver();
     metrics::DesktopSessionDurationTracker::CleanupForTesting();
   }
 
@@ -118,10 +117,10 @@ TEST_F(NewTabTrackerEventTest, TestOnSessionTimeMet) {
 
 namespace {
 
-class NewTabTrackerFeatureEngagementTrackerTest : public testing::Test {
+class NewTabTrackerFeatureEngagementTest : public testing::Test {
  public:
-  NewTabTrackerFeatureEngagementTrackerTest() = default;
-  ~NewTabTrackerFeatureEngagementTrackerTest() override = default;
+  NewTabTrackerFeatureEngagementTest() = default;
+  ~NewTabTrackerFeatureEngagementTest() override = default;
 
   // testing::Test:
   void SetUp() override {
@@ -170,8 +169,7 @@ class NewTabTrackerFeatureEngagementTrackerTest : public testing::Test {
   }
 
   void TearDown() override {
-    metrics::DesktopSessionDurationTracker::Get()->RemoveObserver(
-        new_tab_tracker_.get());
+    new_tab_tracker_->RemoveDurationTrackerObserver();
     metrics::DesktopSessionDurationTracker::CleanupForTesting();
 
     // This is required to ensure each test can define its own params.
@@ -200,7 +198,7 @@ class NewTabTrackerFeatureEngagementTrackerTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   std::map<std::string, base::FieldTrial*> trials_;
 
-  DISALLOW_COPY_AND_ASSIGN(NewTabTrackerFeatureEngagementTrackerTest);
+  DISALLOW_COPY_AND_ASSIGN(NewTabTrackerFeatureEngagementTest);
 };
 
 }  // namespace
@@ -209,7 +207,7 @@ class NewTabTrackerFeatureEngagementTrackerTest : public testing::Test {
 
 // Test that a promo is not shown if the user uses a New Tab.
 // If OnNewTabOpened() is called, the ShouldShowPromo() should return false.
-TEST_F(NewTabTrackerFeatureEngagementTrackerTest, TestShouldNotShowPromo) {
+TEST_F(NewTabTrackerFeatureEngagementTest, TestShouldNotShowPromo) {
   EXPECT_FALSE(new_tab_tracker_->ShouldShowPromo());
 
   new_tab_tracker_->OnSessionTimeMet();
@@ -225,7 +223,7 @@ TEST_F(NewTabTrackerFeatureEngagementTrackerTest, TestShouldNotShowPromo) {
 // Test that a promo is shown if the session time is met and an omnibox
 // navigation occurs. If OnSessionTimeMet() and OnOmniboxNavigation()
 // are called, ShouldShowPromo() should return true.
-TEST_F(NewTabTrackerFeatureEngagementTrackerTest, TestShouldShowPromo) {
+TEST_F(NewTabTrackerFeatureEngagementTest, TestShouldShowPromo) {
   EXPECT_FALSE(new_tab_tracker_->ShouldShowPromo());
 
   new_tab_tracker_->OnSessionTimeMet();
@@ -235,7 +233,7 @@ TEST_F(NewTabTrackerFeatureEngagementTrackerTest, TestShouldShowPromo) {
 }
 
 // Test that the prefs for session time is being correctly set.
-TEST_F(NewTabTrackerFeatureEngagementTrackerTest, TestPrefs) {
+TEST_F(NewTabTrackerFeatureEngagementTest, TestPrefs) {
   EXPECT_FALSE(
       new_tab_tracker_->GetPrefs()->GetBoolean(prefs::kNewTabInProductHelp));
 
@@ -248,7 +246,7 @@ TEST_F(NewTabTrackerFeatureEngagementTrackerTest, TestPrefs) {
 }
 
 // Test that the correct duration of session is being recorded.
-TEST_F(NewTabTrackerFeatureEngagementTrackerTest, TestOnSessionEnded) {
+TEST_F(NewTabTrackerFeatureEngagementTest, TestOnSessionEnded) {
   metrics::DesktopSessionDurationTracker::Observer* observer =
       dynamic_cast<FakeNewTabTracker*>(new_tab_tracker_.get());
 
