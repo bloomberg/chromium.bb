@@ -2239,15 +2239,11 @@ class LayerTreeHostScrollTestImplSideInvalidation
         EXPECT_EQ(outer_viewport_offsets_[2], host_impl->active_tree()
                                                   ->OuterViewportScrollLayer()
                                                   ->CurrentScrollOffset());
+        EndTest();
         break;
       default:
         NOTREACHED();
     }
-  }
-
-  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    if (++num_of_draws_ == 4)
-      EndTest();
   }
 
   void AfterTest() override {
@@ -2262,7 +2258,6 @@ class LayerTreeHostScrollTestImplSideInvalidation
 
   // Impl thread.
   int num_of_activations_ = 0;
-  int num_of_draws_ = 0;
   int num_of_main_frames_ = 0;
   bool invalidated_on_impl_thread_ = false;
   CompletionEvent* impl_side_invalidation_event_ = nullptr;
