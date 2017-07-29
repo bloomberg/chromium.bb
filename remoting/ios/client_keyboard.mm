@@ -13,6 +13,11 @@
 // TODO(nicholss): Look into inputView - The custom input view to display when
 // the receiver becomes the first responder
 
+@interface ClientKeyboard () {
+  UIView* _inputView;
+}
+@end
+
 @implementation ClientKeyboard
 
 @synthesize autocapitalizationType = _autocapitalizationType;
@@ -20,6 +25,8 @@
 @synthesize keyboardAppearance = _keyboardAppearance;
 @synthesize keyboardType = _keyboardType;
 @synthesize spellCheckingType = _spellCheckingType;
+
+@synthesize hasPhysicalKeyboard = _hasPhysicalKeyboard;
 
 @synthesize delegate = _delegate;
 
@@ -34,6 +41,8 @@
     _autocorrectionType = UITextAutocorrectionTypeNo;
     _keyboardType = UIKeyboardTypeDefault;
     _spellCheckingType = UITextSpellCheckingTypeNo;
+
+    self.hasPhysicalKeyboard = NO;
   }
   return self;
 }
@@ -62,6 +71,23 @@
   return nil;
 }
 
+- (UIView*)inputView {
+  return _inputView;
+}
+
 #pragma mark - UITextInputTraits
+
+#pragma mark - Properties
+
+- (void)setHasPhysicalKeyboard:(BOOL)hasPhysicalKeyboard {
+  _hasPhysicalKeyboard = hasPhysicalKeyboard;
+
+  // If the physical keyboard is presented, we hide the soft keyboard by
+  // replacing it with an empty view (nil will show the default soft keyboard).
+  // iPad will show a soft keyboard with only a toolbar when the physical
+  // keyboard is presented.
+  _inputView =
+      hasPhysicalKeyboard ? [[UIView alloc] initWithFrame:CGRectZero] : nil;
+}
 
 @end
