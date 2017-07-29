@@ -27,9 +27,9 @@ This is only an estimate. The **gitiles** view may differ.
 
 ### Review changes online with gerrit's links to gitiles:
 
-1.  Upload a patch to gerrit, or receive a review request.  
+1.  Upload a patch to gerrit, or receive a review request.
     e.g. https://chromium-review.googlesource.com/c/572236
-2.  View a specific .md file.  
+2.  View a specific .md file.
     e.g. https://chromium-review.googlesource.com/c/572236/2/docs/README.md
 3.  Click on **gitiles** link at top of page.
 
@@ -100,6 +100,8 @@ used when committed.
 
 ### General Development
 *   [Code Reviews](code_reviews.md) - Code review requirements and guidelines
+*   [Respectful Code Reviews](cr_respect.md) - A guide for code reviewers
+*   [Respectful Changes](cl_respect.md) - A guide for code authors
 *   [Closure Compilation](closure_compilation.md) - The _Closure_ JavaScript
     compiler
 *   [Threading and Tasks in Chrome](threading_and_tasks.md) - How to run tasks
