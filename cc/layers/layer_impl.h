@@ -343,7 +343,12 @@ class CC_EXPORT LayerImpl {
 
   virtual std::unique_ptr<base::DictionaryValue> LayerTreeAsJson();
 
+  // This includes |layer_property_changed_| and property_trees changes.
   bool LayerPropertyChanged() const;
+  // Only checks |layer_property_changed_|. Used in damage_tracker to determine
+  // if there is a contributing content damage not from property_trees changes
+  // in animaiton.
+  bool LayerPropertyChangedNotFromPropertyTrees() const;
 
   void ResetChangeTracking();
 

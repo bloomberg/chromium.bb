@@ -57,6 +57,15 @@ struct StructTraits<cc::mojom::RenderPassDataView,
     return input->has_transparent_background;
   }
 
+  static bool cache_render_pass(const std::unique_ptr<cc::RenderPass>& input) {
+    return input->cache_render_pass;
+  }
+
+  static bool has_damage_from_contributing_content(
+      const std::unique_ptr<cc::RenderPass>& input) {
+    return input->has_damage_from_contributing_content;
+  }
+
   static const cc::QuadList& quad_list(
       const std::unique_ptr<cc::RenderPass>& input) {
     return input->quad_list;

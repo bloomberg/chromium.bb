@@ -25,8 +25,7 @@ std::unique_ptr<DamageTracker> DamageTracker::Create() {
   return base::WrapUnique(new DamageTracker());
 }
 
-DamageTracker::DamageTracker()
-  : mailboxId_(0) {}
+DamageTracker::DamageTracker() : mailboxId_(0) {}
 
 DamageTracker::~DamageTracker() {}
 
@@ -175,10 +174,15 @@ void DamageTracker::ComputeSurfaceDamage(RenderSurfaceImpl* render_surface) {
   DamageAccumulator damage_from_surface_mask =
       TrackDamageFromSurfaceMask(render_surface->MaskLayer());
   DamageAccumulator damage_from_leftover_rects = TrackDamageFromLeftoverRects();
+  // True if any layer is removed.
+  has_damage_from_contributing_content_ |=
+      !damage_from_leftover_rects.IsEmpty();
 
   if (render_surface->SurfacePropertyChangedOnlyFromDescendant()) {
     damage_for_this_update_ = DamageAccumulator();
     damage_for_this_update_.Union(render_surface->content_rect());
+    // True if there is surface property change from descendant.
+    has_damage_from_contributing_content_ |= !damage_for_this_update_.IsEmpty();
   } else {
     // TODO(shawnsingh): can we clamp this damage to the surface's content rect?
     // (affects performance, but not correctness)
@@ -258,6 +262,7 @@ DamageTracker::DamageAccumulator DamageTracker::TrackDamageFromSurfaceMask(
 void DamageTracker::PrepareForUpdate() {
   mailboxId_++;
   damage_for_this_update_ = DamageAccumulator();
+  has_damage_from_contributing_content_ = false;
 }
 
 DamageTracker::DamageAccumulator DamageTracker::TrackDamageFromLeftoverRects() {
@@ -364,7 +369,6 @@ void DamageTracker::AccumulateDamageFromLayer(LayerImpl* layer) {
   // its target RenderSurface, even if that layer owns the target RenderSurface
   // itself. To consider how a layer's target surface contributes to the
   // ancestor surface, ExtendDamageForRenderSurface() must be called instead.
-
   bool layer_is_new = false;
   LayerRectMapData& data = RectDataForLayer(layer->id(), &layer_is_new);
   gfx::Rect old_rect_in_target_space = data.rect_;
@@ -380,18 +384,25 @@ void DamageTracker::AccumulateDamageFromLayer(LayerImpl* layer) {
     // The layer's old region is now exposed on the target surface, too.
     // Note old_rect_in_target_space is already in target space.
     damage_for_this_update_.Union(old_rect_in_target_space);
-    return;
+  } else {
+    // If the layer properties haven't changed, then the the target surface is
+    // only affected by the layer's damaged area, which could be empty.
+    gfx::Rect damage_rect =
+        gfx::UnionRects(layer->update_rect(), layer->damage_rect());
+    damage_rect.Intersect(gfx::Rect(layer->bounds()));
+
+    if (!damage_rect.IsEmpty()) {
+      gfx::Rect damage_rect_in_target_space = MathUtil::MapEnclosingClippedRect(
+          layer->DrawTransform(), damage_rect);
+      damage_for_this_update_.Union(damage_rect_in_target_space);
+    }
   }
 
-  // If the layer properties haven't changed, then the the target surface is
-  // only affected by the layer's damaged area, which could be empty.
-  gfx::Rect damage_rect =
-      gfx::UnionRects(layer->update_rect(), layer->damage_rect());
-  damage_rect.Intersect(gfx::Rect(layer->bounds()));
-  if (!damage_rect.IsEmpty()) {
-    gfx::Rect damage_rect_in_target_space =
-        MathUtil::MapEnclosingClippedRect(layer->DrawTransform(), damage_rect);
-    damage_for_this_update_.Union(damage_rect_in_target_space);
+  // Property changes from animaiton will not be considered as damage from
+  // contributing content.
+  if (layer_is_new || layer->LayerPropertyChangedNotFromPropertyTrees() ||
+      !layer->update_rect().IsEmpty() || !layer->damage_rect().IsEmpty()) {
+    has_damage_from_contributing_content_ |= !damage_for_this_update_.IsEmpty();
   }
 }
 
@@ -456,6 +467,9 @@ void DamageTracker::AccumulateDamageFromRenderSurface(
     ExpandDamageInsideRectWithFilters(surface_rect_in_target_space,
                                       background_filters);
   }
+
+  // True if any changes from contributing render surface.
+  has_damage_from_contributing_content_ |= !damage_for_this_update_.IsEmpty();
 }
 
 bool DamageTracker::DamageAccumulator::GetAsRect(gfx::Rect* rect) {

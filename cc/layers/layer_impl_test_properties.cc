@@ -13,6 +13,7 @@ namespace cc {
 LayerImplTestProperties::LayerImplTestProperties(LayerImpl* owning_layer)
     : owning_layer(owning_layer),
       double_sided(true),
+      cache_render_surface(false),
       force_render_surface(false),
       is_container_for_fixed_position_layers(false),
       should_flatten_transform(true),

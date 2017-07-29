@@ -829,10 +829,13 @@ TEST_F(StructTraitsTest, RenderPass) {
   background_filters.Append(FilterOperation::CreateSaturateFilter(2.f));
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateXYZD50();
   const bool has_transparent_background = true;
+  const bool cache_render_pass = false;
+  const bool has_damage_from_contributing_content = false;
   std::unique_ptr<RenderPass> input = RenderPass::Create();
   input->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
                 filters, background_filters, color_space,
-                has_transparent_background);
+                has_transparent_background, cache_render_pass,
+                has_damage_from_contributing_content);
 
   SharedQuadState* shared_state_1 = input->CreateAndAppendSharedQuadState();
   shared_state_1->SetAll(
@@ -947,10 +950,13 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   SkColorSpaceTransferFn fn = {1, 0, 1, 0, 0, 0, 1};
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateCustom(to_XYZD50, fn);
   const bool has_transparent_background = true;
+  const bool cache_render_pass = false;
+  const bool has_damage_from_contributing_content = false;
   std::unique_ptr<RenderPass> input = RenderPass::Create();
   input->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
                 FilterOperations(), FilterOperations(), color_space,
-                has_transparent_background);
+                has_transparent_background, cache_render_pass,
+                has_damage_from_contributing_content);
 
   // Unlike the previous test, don't add any quads to the list; we need to
   // verify that the serialization code can deal with that.

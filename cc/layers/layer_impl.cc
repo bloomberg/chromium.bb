@@ -426,6 +426,10 @@ bool LayerImpl::LayerPropertyChanged() const {
   return false;
 }
 
+bool LayerImpl::LayerPropertyChangedNotFromPropertyTrees() const {
+  return layer_property_changed_;
+}
+
 void LayerImpl::NoteLayerPropertyChanged() {
   layer_property_changed_ = true;
   layer_tree_impl()->set_needs_update_draw_properties();

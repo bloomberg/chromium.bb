@@ -776,7 +776,7 @@ void EffectTree::UpdateIsDrawn(EffectNode* node, EffectNode* parent_node) {
   // 2) Nodes that have a background filter.
   // 3) Nodes with animating screen space opacity on main thread or pending tree
   //    are drawn if their parent is drawn irrespective of their opacity.
-  if (node->has_copy_request)
+  if (node->has_copy_request || node->cache_render_surface)
     node->is_drawn = true;
   else if (EffectiveOpacity(node) == 0.f &&
            (!node->has_potential_opacity_animation ||

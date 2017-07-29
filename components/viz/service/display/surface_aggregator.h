@@ -200,6 +200,10 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // should not have their damage rects clipped to the root damage rect.
   base::flat_set<cc::RenderPassId> copy_request_passes_;
 
+  // This is the set of aggregated pass ids that has damage from contributing
+  // content.
+  base::flat_set<cc::RenderPassId> contributing_content_damaged_passes_;
+
   // This maps each aggregated pass id to the set of (aggregated) pass ids
   // that its cc::RenderPassDrawQuads depend on
   base::flat_map<cc::RenderPassId, base::flat_set<cc::RenderPassId>>
@@ -211,6 +215,10 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // True if the frame that's currently being aggregated has copy requests.
   // This is valid during Aggregate after PrewalkTree is called.
   bool has_copy_requests_;
+
+  // True if the frame that's currently being aggregated has cached render
+  // passes. This is valid during Aggregate after PrewalkTree is called.
+  bool has_cached_render_passes_;
 
   // Tracks UMA stats for SurfaceDrawQuads during a call to Aggregate().
   SurfaceDrawQuadUmaStats uma_stats_;

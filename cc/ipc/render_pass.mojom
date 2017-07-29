@@ -20,5 +20,7 @@ struct RenderPass {
   cc.mojom.FilterOperations background_filters;
   gfx.mojom.ColorSpace color_space;
   bool has_transparent_background;
+  bool cache_render_pass = false;
+  bool has_damage_from_contributing_content = false;
   array<DrawQuad> quad_list;
 };

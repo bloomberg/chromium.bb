@@ -189,6 +189,9 @@ TEST_F(DamageTrackerTest, SanityCheckTestTreeWithOneSurface) {
       &root_damage_rect));
 
   EXPECT_EQ(gfx::Rect(500, 500).ToString(), root_damage_rect.ToString());
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, SanityCheckTestTreeWithTwoSurfaces) {
@@ -217,6 +220,13 @@ TEST_F(DamageTrackerTest, SanityCheckTestTreeWithTwoSurfaces) {
   EXPECT_EQ(gfx::Rect(190, 190, 16, 18).ToString(),
             child_damage_rect.ToString());
   EXPECT_EQ(gfx::Rect(500, 500).ToString(), root_damage_rect.ToString());
+
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_TRUE(GetRenderSurface(child1)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForUpdateRects) {
@@ -261,6 +271,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForUpdateRects) {
   EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
       &root_damage_rect));
   EXPECT_EQ(gfx::Rect(120, 125, 1, 2).ToString(), root_damage_rect.ToString());
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForLayerDamageRects) {
@@ -318,6 +331,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForLayerDamageRects) {
       &root_damage_rect));
   EXPECT_EQ(true, root_damage_rect.Contains(gfx::Rect(120, 125, 1, 2)));
   EXPECT_EQ(true, root_damage_rect.Contains(gfx::Rect(110, 115, 3, 4)));
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForLayerUpdateAndDamageRects) {
@@ -364,6 +380,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForLayerUpdateAndDamageRects) {
   EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
       &root_damage_rect));
   EXPECT_EQ(true, root_damage_rect.Contains(gfx::Rect(105, 110, 17, 18)));
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForPropertyChanges) {
@@ -388,6 +407,12 @@ TEST_F(DamageTrackerTest, VerifyDamageForPropertyChanges) {
   EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
       &root_damage_rect));
   EXPECT_EQ(expected_rect.ToString(), root_damage_rect.ToString());
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_TRUE(GetRenderSurface(child)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 
   // CASE 2: If a layer moves due to property change, it damages both the new
   //         location and the old (exposed) location. The old location is the
@@ -415,6 +440,111 @@ TEST_F(DamageTrackerTest, VerifyDamageForPropertyChanges) {
   EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
       &root_damage_rect));
   EXPECT_FLOAT_RECT_EQ(expected_rect, root_damage_rect);
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  // Transform from browser animation should not be considered as damage from
+  // contributing layer since it is applied to the whole layer which has a
+  // render surface.
+  EXPECT_FALSE(GetRenderSurface(child)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
+}
+
+TEST_F(DamageTrackerTest,
+       VerifyDamageForPropertyChangesFromContributingContents) {
+  LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
+  LayerImpl* child1 = root->test_properties()->children[0];
+  LayerImpl* child2 = root->test_properties()->children[1];
+  LayerImpl* grandchild1 = child1->test_properties()->children[0];
+
+  // CASE 1: The child1's opacity changed.
+  ClearDamageForAllSurfaces(root);
+  root->layer_tree_impl()->SetOpacityMutated(child1->element_id(), 0.5f);
+  EmulateDrawingOneFrame(root);
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_FALSE(GetRenderSurface(child1)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
+
+  // CASE 2: The layer2's opacity changed.
+  child2->test_properties()->force_render_surface = true;
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  EmulateDrawingOneFrame(root);
+  ClearDamageForAllSurfaces(root);
+  root->layer_tree_impl()->SetOpacityMutated(child2->element_id(), 0.5f);
+  EmulateDrawingOneFrame(root);
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_FALSE(GetRenderSurface(child1)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
+
+  // CASE 3: The grandchild1's opacity changed.
+  grandchild1->test_properties()->force_render_surface = true;
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  EmulateDrawingOneFrame(root);
+  ClearDamageForAllSurfaces(root);
+  root->layer_tree_impl()->SetOpacityMutated(grandchild1->element_id(), 0.5f);
+  EmulateDrawingOneFrame(root);
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_TRUE(GetRenderSurface(child1)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+}
+
+TEST_F(DamageTrackerTest,
+       VerifyDamageForUpdateAndDamageRectsFromContributingContents) {
+  LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
+  LayerImpl* child1 = root->test_properties()->children[0];
+  LayerImpl* child2 = root->test_properties()->children[1];
+  LayerImpl* grandchild1 = child1->test_properties()->children[0];
+
+  // CASE 1: Adding the layer1's damage rect and update rect should cause the
+  // corresponding damage to the surface.
+  child1->SetDrawsContent(true);
+  ClearDamageForAllSurfaces(root);
+  child1->AddDamageRect(gfx::Rect(105, 106, 12, 15));
+  child1->SetUpdateRect(gfx::Rect(115, 116, 12, 15));
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  EmulateDrawingOneFrame(root);
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_TRUE(GetRenderSurface(child1)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+
+  // CASE 2: Adding the layer2's damage rect and update rect should cause the
+  // corresponding damage to the surface.
+  ClearDamageForAllSurfaces(root);
+  child2->AddDamageRect(gfx::Rect(11, 11, 12, 15));
+  child2->SetUpdateRect(gfx::Rect(12, 12, 12, 15));
+  EmulateDrawingOneFrame(root);
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_FALSE(GetRenderSurface(child1)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
+
+  // CASE 3: Adding the grandchild1's damage rect and update rect should cause
+  // the corresponding damage to the surface.
+  ClearDamageForAllSurfaces(root);
+  grandchild1->AddDamageRect(gfx::Rect(1, 0, 2, 5));
+  grandchild1->SetUpdateRect(gfx::Rect(2, 1, 2, 5));
+  EmulateDrawingOneFrame(root);
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_TRUE(GetRenderSurface(child1)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageWhenSurfaceRemoved) {
@@ -434,6 +564,9 @@ TEST_F(DamageTrackerTest, VerifyDamageWhenSurfaceRemoved) {
       &root_damage_rect));
   EXPECT_EQ(gfx::Rect(290, 290, 16, 18).ToString(),
             root_damage_rect.ToString());
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForTransformedLayer) {
@@ -461,6 +594,14 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedLayer) {
   EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
       &root_damage_rect));
   EXPECT_EQ(gfx::Rect(85, 85, 45, 45).ToString(), root_damage_rect.ToString());
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  // Layer's layer_property_changed_ should be considered as damage to render
+  // surface.
+  EXPECT_TRUE(GetRenderSurface(child)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 
   // With the anchor on the layer's center, now we can test the rotation more
   // intuitively, since it applies about the layer's anchor.
@@ -479,6 +620,15 @@ TEST_F(DamageTrackerTest, VerifyDamageForTransformedLayer) {
   EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
       &root_damage_rect));
   EXPECT_EQ(expected_rect.ToString(), root_damage_rect.ToString());
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  // Transform from browser animation should not be considered as damage from
+  // contributing layer since it is applied to the whole layer which has a
+  // render surface.
+  EXPECT_FALSE(GetRenderSurface(child)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForPerspectiveClippedLayer) {
@@ -533,6 +683,12 @@ TEST_F(DamageTrackerTest, VerifyDamageForPerspectiveClippedLayer) {
       &root_damage_rect));
   gfx::Rect damage_we_care_about = gfx::Rect(gfx::Size(500, 500));
   EXPECT_TRUE(root_damage_rect.Contains(damage_we_care_about));
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_FALSE(GetRenderSurface(child)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForBlurredSurface) {
@@ -543,11 +699,17 @@ TEST_F(DamageTrackerTest, VerifyDamageForBlurredSurface) {
   FilterOperations filters;
   filters.Append(FilterOperation::CreateBlurFilter(5.f));
 
-  // Setting the filter will damage the whole surface.
+  // Setting the filter should not damage the conrresponding render surface.
   ClearDamageForAllSurfaces(root);
   surface->test_properties()->filters = filters;
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
+  EXPECT_FALSE(GetRenderSurface(root)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
+  EXPECT_FALSE(GetRenderSurface(surface)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
 
   // Setting the update rect should cause the corresponding damage to the
   // surface, blurred based on the size of the blur filter.
@@ -563,6 +725,12 @@ TEST_F(DamageTrackerTest, VerifyDamageForBlurredSurface) {
   EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
       &root_damage_rect));
   EXPECT_EQ(gfx::Rect(286, 287, 33, 34), root_damage_rect);
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_TRUE(GetRenderSurface(surface)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
@@ -578,10 +746,10 @@ TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
       SkBlurImageFilter::Make(2, 2, nullptr)));
 
   // Setting the filter will damage the whole surface.
-  ClearDamageForAllSurfaces(root);
   child->test_properties()->force_render_surface = true;
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
+  ClearDamageForAllSurfaces(root);
   child->layer_tree_impl()->SetFilterMutated(child->element_id(), filters);
   EmulateDrawingOneFrame(root);
   EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
@@ -594,6 +762,13 @@ TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
 
   // gfx::Rect(0, 0, 30, 30), expanded by 6px for the 2px blur filter.
   EXPECT_EQ(gfx::Rect(-6, -6, 42, 42), child_damage_rect);
+
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_FALSE(GetRenderSurface(child)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
 
   // CASE 1: Setting the update rect should damage the whole surface (for now)
   ClearDamageForAllSurfaces(root);
@@ -611,6 +786,13 @@ TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
   // gfx::Rect(0, 0, 1, 1), expanded by 6px for the 2px blur filter.
   EXPECT_EQ(gfx::Rect(-6, -6, 13, 13), child_damage_rect);
 
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_TRUE(GetRenderSurface(child)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+
   // CASE 2: No changes, so should not damage the surface.
   ClearDamageForAllSurfaces(root);
   EmulateDrawingOneFrame(root);
@@ -623,6 +805,13 @@ TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
   // Should not be expanded by the blur filter.
   EXPECT_EQ(gfx::Rect(), root_damage_rect);
   EXPECT_EQ(gfx::Rect(), child_damage_rect);
+
+  EXPECT_FALSE(GetRenderSurface(root)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
+  EXPECT_FALSE(GetRenderSurface(child)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForTransformedImageFilter) {
@@ -908,6 +1097,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingLayer) {
   EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
       &root_damage_rect));
   EXPECT_EQ(gfx::Rect(400, 380, 6, 8).ToString(), root_damage_rect.ToString());
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 
   // CASE 2: If the layer is removed, its entire old layer becomes exposed, not
   //         just the last update rect.
@@ -932,6 +1124,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingLayer) {
       &root_damage_rect));
   EXPECT_EQ(gfx::Rect(100, 100, 30, 30).ToString(),
             root_damage_rect.ToString());
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForNewUnchangedLayer) {
@@ -968,6 +1163,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForNewUnchangedLayer) {
   EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
       &root_damage_rect));
   EXPECT_EQ(gfx::Rect(400, 380, 6, 8).ToString(), root_damage_rect.ToString());
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForMultipleLayers) {
@@ -1002,6 +1200,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForMultipleLayers) {
       &root_damage_rect));
   EXPECT_EQ(gfx::Rect(100, 100, 303, 284).ToString(),
             root_damage_rect.ToString());
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForNestedSurfaces) {
@@ -1028,6 +1229,18 @@ TEST_F(DamageTrackerTest, VerifyDamageForNestedSurfaces) {
       &root_damage_rect));
   EXPECT_EQ(gfx::Rect(200, 200, 6, 8).ToString(), child_damage_rect.ToString());
   EXPECT_EQ(gfx::Rect(300, 300, 6, 8).ToString(), root_damage_rect.ToString());
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_TRUE(GetRenderSurface(child1)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_FALSE(GetRenderSurface(child2)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
+  EXPECT_FALSE(GetRenderSurface(grand_child1)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
 
   // CASE 2: Same as previous case, but with additional damage elsewhere that
   //         should be properly unioned.
@@ -1046,6 +1259,18 @@ TEST_F(DamageTrackerTest, VerifyDamageForNestedSurfaces) {
   EXPECT_EQ(gfx::Rect(200, 200, 6, 8).ToString(), child_damage_rect.ToString());
   EXPECT_EQ(gfx::Rect(11, 11, 295, 297).ToString(),
             root_damage_rect.ToString());
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_TRUE(GetRenderSurface(child1)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_FALSE(GetRenderSurface(child2)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
+  EXPECT_FALSE(GetRenderSurface(grand_child1)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForSurfaceChangeFromDescendantLayer) {
@@ -1082,6 +1307,13 @@ TEST_F(DamageTrackerTest, VerifyDamageForSurfaceChangeFromDescendantLayer) {
   // space).
   EXPECT_EQ(gfx::Rect(290, 290, 16, 23).ToString(),
             root_damage_rect.ToString());
+
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_TRUE(GetRenderSurface(child1)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForSurfaceChangeFromAncestorLayer) {
@@ -1122,6 +1354,13 @@ TEST_F(DamageTrackerTest, VerifyDamageForSurfaceChangeFromAncestorLayer) {
   //  - new child1 surface in target space: gfx::Rect(240, 240, 16, 18)
   EXPECT_EQ(gfx::Rect(240, 240, 66, 68).ToString(),
             root_damage_rect.ToString());
+
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_FALSE(GetRenderSurface(child1)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingRenderSurfaces) {
@@ -1145,6 +1384,10 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingRenderSurfaces) {
       &root_damage_rect));
   EXPECT_EQ(gfx::Rect(290, 290, 16, 18).ToString(),
             root_damage_rect.ToString());
+
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 
   // CASE 2: If a descendant surface appears, its entire old area becomes
   //         exposed.
@@ -1178,6 +1421,9 @@ TEST_F(DamageTrackerTest, VerifyDamageForAddingAndRemovingRenderSurfaces) {
             child_damage_rect.ToString());
   EXPECT_EQ(gfx::Rect(290, 290, 16, 18).ToString(),
             root_damage_rect.ToString());
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, VerifyNoDamageWhenNothingChanged) {
@@ -1197,6 +1443,9 @@ TEST_F(DamageTrackerTest, VerifyNoDamageWhenNothingChanged) {
       &root_damage_rect));
   EXPECT_TRUE(child_damage_rect.IsEmpty());
   EXPECT_TRUE(root_damage_rect.IsEmpty());
+  EXPECT_FALSE(GetRenderSurface(root)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
 
   // CASE 2: If nothing changes twice in a row, the damage rect should still be
   //         empty.
@@ -1210,6 +1459,9 @@ TEST_F(DamageTrackerTest, VerifyNoDamageWhenNothingChanged) {
       &root_damage_rect));
   EXPECT_TRUE(child_damage_rect.IsEmpty());
   EXPECT_TRUE(root_damage_rect.IsEmpty());
+  EXPECT_FALSE(GetRenderSurface(root)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, VerifyNoDamageForUpdateRectThatDoesNotDrawContent) {
@@ -1230,6 +1482,9 @@ TEST_F(DamageTrackerTest, VerifyNoDamageForUpdateRectThatDoesNotDrawContent) {
       &root_damage_rect));
   EXPECT_TRUE(child_damage_rect.IsEmpty());
   EXPECT_TRUE(root_damage_rect.IsEmpty());
+  EXPECT_FALSE(GetRenderSurface(root)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageForMask) {
@@ -1276,6 +1531,13 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
       &child_damage_rect));
   EXPECT_EQ(gfx::Rect(30, 30).ToString(), child_damage_rect.ToString());
 
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_FALSE(GetRenderSurface(child)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
+
   // CASE 2: a property change on the mask layer should damage the entire
   //         target surface.
 
@@ -1297,6 +1559,13 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
   EXPECT_TRUE(GetRenderSurface(child)->damage_tracker()->GetDamageRectIfValid(
       &child_damage_rect));
   EXPECT_EQ(gfx::Rect(30, 30).ToString(), child_damage_rect.ToString());
+
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_FALSE(GetRenderSurface(child)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
 
   // CASE 3: removing the mask also damages the entire target surface.
   //
@@ -1324,6 +1593,10 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
   EXPECT_TRUE(GetRenderSurface(child)->damage_tracker()->GetDamageRectIfValid(
       &child_damage_rect));
   EXPECT_EQ(gfx::Rect(30, 30).ToString(), child_damage_rect.ToString());
+
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, DamageWhenAddedExternally) {
@@ -1345,6 +1618,9 @@ TEST_F(DamageTrackerTest, DamageWhenAddedExternally) {
   EXPECT_EQ(gfx::UnionRects(gfx::Rect(15, 16, 32, 33),
                             gfx::Rect(100 + 10, 100 + 11, 12, 13)).ToString(),
             root_damage_rect.ToString());
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 
   // Case 2: An additional sanity check that adding damage works even when
   //         nothing on the layer tree changed.
@@ -1357,6 +1633,9 @@ TEST_F(DamageTrackerTest, DamageWhenAddedExternally) {
   EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
       &root_damage_rect));
   EXPECT_EQ(gfx::Rect(30, 31, 14, 15).ToString(), root_damage_rect.ToString());
+  EXPECT_FALSE(GetRenderSurface(root)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageWithNoContributingLayers) {
@@ -1374,6 +1653,9 @@ TEST_F(DamageTrackerTest, VerifyDamageWithNoContributingLayers) {
   EXPECT_TRUE(
       target_surface->damage_tracker()->GetDamageRectIfValid(&damage_rect));
   EXPECT_TRUE(damage_rect.IsEmpty());
+  EXPECT_FALSE(GetRenderSurface(root_ptr)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, VerifyDamageAccumulatesUntilReset) {
@@ -1392,6 +1674,9 @@ TEST_F(DamageTrackerTest, VerifyDamageAccumulatesUntilReset) {
   EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
       &root_damage_rect));
   EXPECT_EQ(gfx::Rect(110, 111, 1, 2).ToString(), root_damage_rect.ToString());
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 
   // New damage, without having cleared the previous damage, should be unioned
   // to the previous one.
@@ -1402,6 +1687,9 @@ TEST_F(DamageTrackerTest, VerifyDamageAccumulatesUntilReset) {
       &root_damage_rect));
   EXPECT_EQ(gfx::Rect(110, 111, 11, 16).ToString(),
             root_damage_rect.ToString());
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 
   // If we notify the damage tracker that we drew the damaged area, then damage
   // should be emptied.
@@ -1409,6 +1697,9 @@ TEST_F(DamageTrackerTest, VerifyDamageAccumulatesUntilReset) {
   EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
       &root_damage_rect));
   EXPECT_TRUE(root_damage_rect.IsEmpty());
+  EXPECT_FALSE(GetRenderSurface(root)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
 
   // Damage should remain empty even after one frame, since there's yet no new
   // damage.
@@ -1417,6 +1708,9 @@ TEST_F(DamageTrackerTest, VerifyDamageAccumulatesUntilReset) {
   EXPECT_TRUE(GetRenderSurface(root)->damage_tracker()->GetDamageRectIfValid(
       &root_damage_rect));
   EXPECT_TRUE(root_damage_rect.IsEmpty());
+  EXPECT_FALSE(GetRenderSurface(root)
+                   ->damage_tracker()
+                   ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, HugeDamageRect) {
@@ -1453,6 +1747,9 @@ TEST_F(DamageTrackerTest, HugeDamageRect) {
     gfx::Rect damage_we_care_about = gfx::Rect(i, i);
     EXPECT_LE(damage_we_care_about.right(), root_damage_rect.right());
     EXPECT_LE(damage_we_care_about.bottom(), root_damage_rect.bottom());
+    EXPECT_TRUE(GetRenderSurface(root)
+                    ->damage_tracker()
+                    ->has_damage_from_contributing_content());
   }
 }
 
@@ -1480,6 +1777,9 @@ TEST_F(DamageTrackerTest, DamageRectTooBig) {
       &damage_rect));
   EXPECT_EQ(GetRenderSurface(root)->content_rect(),
             GetRenderSurface(root)->GetDamageRect());
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, DamageRectTooBigWithFilter) {
@@ -1511,6 +1811,9 @@ TEST_F(DamageTrackerTest, DamageRectTooBigWithFilter) {
       &damage_rect));
   EXPECT_EQ(GetRenderSurface(root)->content_rect(),
             GetRenderSurface(root)->GetDamageRect());
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurface) {
@@ -1559,6 +1862,13 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurface) {
       gfx::ToEnclosingRect(GetRenderSurface(child1)->DrawableContentRect())));
   EXPECT_EQ(damage_rect, GetRenderSurface(root)->GetDamageRect());
 
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_TRUE(GetRenderSurface(child1)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+
   // Add new damage, without changing properties, which goes down a different
   // path in the damage tracker.
   root->layer_tree_impl()->ResetAllChangeTracking();
@@ -1587,6 +1897,13 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurface) {
   EXPECT_TRUE(damage_rect.Contains(
       gfx::ToEnclosingRect(GetRenderSurface(child1)->DrawableContentRect())));
   EXPECT_EQ(damage_rect, GetRenderSurface(root)->GetDamageRect());
+
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_TRUE(GetRenderSurface(child1)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 }
 
 TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurfaceWithFilter) {
@@ -1641,6 +1958,13 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurfaceWithFilter) {
       gfx::ToEnclosingRect(GetRenderSurface(child1)->DrawableContentRect())));
   EXPECT_EQ(damage_rect, GetRenderSurface(root)->GetDamageRect());
 
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_TRUE(GetRenderSurface(child1)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+
   // Add new damage, without changing properties, which goes down a different
   // path in the damage tracker.
   root->layer_tree_impl()->ResetAllChangeTracking();
@@ -1669,6 +1993,13 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurfaceWithFilter) {
   EXPECT_TRUE(damage_rect.Contains(
       gfx::ToEnclosingRect(GetRenderSurface(child1)->DrawableContentRect())));
   EXPECT_EQ(damage_rect, GetRenderSurface(root)->GetDamageRect());
+
+  EXPECT_TRUE(GetRenderSurface(root)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
+  EXPECT_TRUE(GetRenderSurface(child1)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 }
 
 }  // namespace

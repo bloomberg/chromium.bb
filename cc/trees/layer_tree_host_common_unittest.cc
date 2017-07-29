@@ -10166,5 +10166,245 @@ TEST_F(LayerTreeHostCommonTest, SurfaceContentsScaleChangeWithCopyRequestTest) {
   EXPECT_EQ(gfx::Rect(10, 10), test_layer->drawable_content_rect());
 }
 
+TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCacheRenderSurface) {
+  FakeImplTaskRunnerProvider task_runner_provider;
+  TestTaskGraphRunner task_graph_runner;
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
+  host_impl.CreatePendingTree();
+
+  std::unique_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl.pending_tree(), 1);
+  root->SetBounds(gfx::Size(50, 50));
+  root->SetDrawsContent(true);
+  LayerImpl* root_layer = root.get();
+
+  std::unique_ptr<LayerImpl> cache_grand_parent =
+      LayerImpl::Create(host_impl.pending_tree(), 2);
+  cache_grand_parent->SetBounds(gfx::Size(40, 40));
+  cache_grand_parent->SetDrawsContent(true);
+  LayerImpl* cache_grand_parent_layer = cache_grand_parent.get();
+
+  std::unique_ptr<LayerImpl> cache_parent =
+      LayerImpl::Create(host_impl.pending_tree(), 3);
+  cache_parent->SetBounds(gfx::Size(30, 30));
+  cache_parent->SetDrawsContent(true);
+  cache_parent->test_properties()->force_render_surface = true;
+  LayerImpl* cache_parent_layer = cache_parent.get();
+
+  std::unique_ptr<LayerImpl> cache_render_surface =
+      LayerImpl::Create(host_impl.pending_tree(), 4);
+  cache_render_surface->SetBounds(gfx::Size(20, 20));
+  cache_render_surface->SetDrawsContent(true);
+  cache_render_surface->test_properties()->cache_render_surface = true;
+  LayerImpl* cache_layer = cache_render_surface.get();
+
+  std::unique_ptr<LayerImpl> cache_child =
+      LayerImpl::Create(host_impl.pending_tree(), 5);
+  cache_child->SetBounds(gfx::Size(20, 20));
+  cache_child->SetDrawsContent(true);
+  LayerImpl* cache_child_layer = cache_child.get();
+
+  std::unique_ptr<LayerImpl> cache_grand_child =
+      LayerImpl::Create(host_impl.pending_tree(), 6);
+  cache_grand_child->SetBounds(gfx::Size(20, 20));
+  cache_grand_child->SetDrawsContent(true);
+  LayerImpl* cache_grand_child_layer = cache_grand_child.get();
+
+  std::unique_ptr<LayerImpl> cache_grand_parent_sibling_before =
+      LayerImpl::Create(host_impl.pending_tree(), 7);
+  cache_grand_parent_sibling_before->SetBounds(gfx::Size(40, 40));
+  cache_grand_parent_sibling_before->SetDrawsContent(true);
+  LayerImpl* cache_grand_parent_sibling_before_layer =
+      cache_grand_parent_sibling_before.get();
+
+  std::unique_ptr<LayerImpl> cache_grand_parent_sibling_after =
+      LayerImpl::Create(host_impl.pending_tree(), 8);
+  cache_grand_parent_sibling_after->SetBounds(gfx::Size(40, 40));
+  cache_grand_parent_sibling_after->SetDrawsContent(true);
+  LayerImpl* cache_grand_parent_sibling_after_layer =
+      cache_grand_parent_sibling_after.get();
+
+  cache_child->test_properties()->AddChild(std::move(cache_grand_child));
+  cache_render_surface->test_properties()->AddChild(std::move(cache_child));
+  cache_parent->test_properties()->AddChild(std::move(cache_render_surface));
+  cache_grand_parent->test_properties()->AddChild(std::move(cache_parent));
+  root->test_properties()->AddChild(
+      std::move(cache_grand_parent_sibling_before));
+  root->test_properties()->AddChild(std::move(cache_grand_parent));
+  root->test_properties()->AddChild(
+      std::move(cache_grand_parent_sibling_after));
+  host_impl.pending_tree()->SetRootLayerForTesting(std::move(root));
+
+  // Hide the cache_grand_parent and its subtree. But cache a render surface in
+  // that hidden subtree on cache_layer. Also hide the cache grand child and its
+  // subtree.
+  cache_grand_parent_layer->test_properties()->hide_layer_and_subtree = true;
+  cache_grand_parent_sibling_before_layer->test_properties()
+      ->hide_layer_and_subtree = true;
+  cache_grand_parent_sibling_after_layer->test_properties()
+      ->hide_layer_and_subtree = true;
+  cache_grand_child_layer->test_properties()->hide_layer_and_subtree = true;
+
+  RenderSurfaceList render_surface_list;
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      root_layer, root_layer->bounds(), &render_surface_list);
+  inputs.can_adjust_raster_scales = true;
+  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
+
+  // We should have four render surfaces, one for the root, one for the grand
+  // parent since it has opacity and two drawing descendants, one for the parent
+  // since it owns a surface, and one for the cache_layer.
+  ASSERT_EQ(4u, render_surface_list.size());
+  EXPECT_EQ(static_cast<uint64_t>(root_layer->id()),
+            render_surface_list.at(0)->id());
+  EXPECT_EQ(static_cast<uint64_t>(cache_grand_parent_layer->id()),
+            render_surface_list.at(1)->id());
+  EXPECT_EQ(static_cast<uint64_t>(cache_parent_layer->id()),
+            render_surface_list.at(2)->id());
+  EXPECT_EQ(static_cast<uint64_t>(cache_layer->id()),
+            render_surface_list.at(3)->id());
+
+  // The root render surface should have 2 contributing layers.
+  EXPECT_EQ(2, GetRenderSurface(root_layer)->num_contributors());
+  EXPECT_TRUE(root_layer->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(cache_grand_parent_layer->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(cache_grand_parent_sibling_before_layer
+                   ->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(cache_grand_parent_sibling_after_layer
+                   ->contributes_to_drawn_render_surface());
+
+  // Nothing actually draws into the cache parent, so only the cache_layer will
+  // appear in its list, since it needs to be drawn for the cache render
+  // surface.
+  ASSERT_EQ(1, GetRenderSurface(cache_parent_layer)->num_contributors());
+  EXPECT_FALSE(cache_parent_layer->contributes_to_drawn_render_surface());
+
+  // The cache layer's render surface should have 2 contributing layers.
+  ASSERT_EQ(2, GetRenderSurface(cache_layer)->num_contributors());
+  EXPECT_TRUE(cache_layer->contributes_to_drawn_render_surface());
+  EXPECT_TRUE(cache_child_layer->contributes_to_drawn_render_surface());
+  EXPECT_FALSE(cache_grand_child_layer->contributes_to_drawn_render_surface());
+
+  // cache_grand_parent, cache_parent shouldn't be drawn because they are
+  // hidden, but the cache_layer and cache_child should be drawn for the cache
+  // render surface. cache grand child should not be drawn as its hidden even in
+  // the cache render surface.
+  EffectTree& tree =
+      root_layer->layer_tree_impl()->property_trees()->effect_tree;
+  EffectNode* node = tree.Node(cache_grand_parent_layer->effect_tree_index());
+  EXPECT_FALSE(node->is_drawn);
+  node = tree.Node(cache_parent_layer->effect_tree_index());
+  EXPECT_FALSE(node->is_drawn);
+  node = tree.Node(cache_layer->effect_tree_index());
+  EXPECT_TRUE(node->is_drawn);
+  node = tree.Node(cache_child_layer->effect_tree_index());
+  EXPECT_TRUE(node->is_drawn);
+  node = tree.Node(cache_grand_child_layer->effect_tree_index());
+  EXPECT_FALSE(node->is_drawn);
+
+  // Though cache_layer is drawn, it shouldn't contribute to drawn surface as
+  // its actually hidden.
+  EXPECT_FALSE(GetRenderSurface(cache_layer)->contributes_to_drawn_surface());
+}
+
+TEST_F(LayerTreeHostCommonTest, VisibleRectInNonRootCacheRenderSurface) {
+  LayerImpl* root = root_layer_for_testing();
+  root->SetBounds(gfx::Size(50, 50));
+  root->SetDrawsContent(true);
+  root->SetMasksToBounds(true);
+
+  LayerImpl* cache_render_surface_layer = AddChild<LayerImpl>(root);
+  cache_render_surface_layer->SetBounds(gfx::Size(120, 120));
+  cache_render_surface_layer->SetDrawsContent(true);
+  cache_render_surface_layer->test_properties()->cache_render_surface = true;
+
+  LayerImpl* copy_layer = AddChild<LayerImpl>(cache_render_surface_layer);
+  copy_layer->SetBounds(gfx::Size(100, 100));
+  copy_layer->SetDrawsContent(true);
+  copy_layer->test_properties()->force_render_surface = true;
+
+  LayerImpl* copy_child = AddChild<LayerImpl>(copy_layer);
+  copy_child->SetPosition(gfx::PointF(40.f, 40.f));
+  copy_child->SetBounds(gfx::Size(20, 20));
+  copy_child->SetDrawsContent(true);
+
+  LayerImpl* copy_clip = AddChild<LayerImpl>(copy_layer);
+  copy_clip->SetBounds(gfx::Size(55, 55));
+  copy_clip->SetMasksToBounds(true);
+
+  LayerImpl* copy_clipped_child = AddChild<LayerImpl>(copy_clip);
+  copy_clipped_child->SetPosition(gfx::PointF(40.f, 40.f));
+  copy_clipped_child->SetBounds(gfx::Size(20, 20));
+  copy_clipped_child->SetDrawsContent(true);
+
+  LayerImpl* cache_surface = AddChild<LayerImpl>(copy_clip);
+  cache_surface->SetPosition(gfx::PointF(45.f, 45.f));
+  cache_surface->SetBounds(gfx::Size(20, 20));
+  cache_surface->SetDrawsContent(true);
+
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(gfx::Rect(120, 120),
+            cache_render_surface_layer->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(100, 100), copy_layer->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(20, 20), copy_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(15, 15), copy_clipped_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(10, 10), cache_surface->visible_layer_rect());
+
+  // Case 2: When the non root cache render surface layer is clipped.
+  cache_render_surface_layer->SetBounds(gfx::Size(50, 50));
+  cache_render_surface_layer->SetMasksToBounds(true);
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(gfx::Rect(50, 50),
+            cache_render_surface_layer->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(50, 50), copy_layer->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(10, 10), copy_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(10, 10), copy_clipped_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(5, 5), cache_surface->visible_layer_rect());
+
+  // Case 3: When there is device scale factor.
+  float device_scale_factor = 2.f;
+  ExecuteCalculateDrawProperties(root, device_scale_factor);
+  EXPECT_EQ(gfx::Rect(50, 50),
+            cache_render_surface_layer->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(50, 50), copy_layer->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(10, 10), copy_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(10, 10), copy_clipped_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(5, 5), cache_surface->visible_layer_rect());
+
+  // Case 4: When the non root cache render surface layer is clipped and there
+  // is a copy request layer beneath it.
+  copy_layer->test_properties()->copy_requests.push_back(
+      viz::CopyOutputRequest::CreateRequest(
+          base::Bind(&EmptyCopyOutputCallback)));
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  DCHECK(!copy_layer->test_properties()->copy_requests.empty());
+  ExecuteCalculateDrawProperties(root);
+  DCHECK(copy_layer->test_properties()->copy_requests.empty());
+  EXPECT_EQ(gfx::Rect(50, 50),
+            cache_render_surface_layer->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(100, 100), copy_layer->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(20, 20), copy_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(15, 15), copy_clipped_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(10, 10), cache_surface->visible_layer_rect());
+
+  // Case 5: When there is another cache render surface layer under the copy
+  // request layer.
+  cache_surface->test_properties()->cache_render_surface = true;
+  copy_layer->test_properties()->copy_requests.push_back(
+      viz::CopyOutputRequest::CreateRequest(
+          base::Bind(&EmptyCopyOutputCallback)));
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  DCHECK(!copy_layer->test_properties()->copy_requests.empty());
+  ExecuteCalculateDrawProperties(root);
+  DCHECK(copy_layer->test_properties()->copy_requests.empty());
+  EXPECT_EQ(gfx::Rect(50, 50),
+            cache_render_surface_layer->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(100, 100), copy_layer->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(20, 20), copy_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(15, 15), copy_clipped_child->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(20, 20), cache_surface->visible_layer_rect());
+}
+
 }  // namespace
 }  // namespace cc

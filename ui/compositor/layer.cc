@@ -626,6 +626,7 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   new_layer->SetTransform(cc_layer_->transform());
   new_layer->SetPosition(cc_layer_->position());
   new_layer->SetBackgroundColor(cc_layer_->background_color());
+  new_layer->SetCacheRenderSurface(cc_layer_->cache_render_surface());
 
   cc_layer_ = new_layer.get();
   content_layer_ = NULL;
@@ -652,6 +653,15 @@ void Layer::SwitchCCLayerForTest() {
   scoped_refptr<cc::Layer> new_layer = cc::PictureLayer::Create(this);
   SwitchToLayer(new_layer);
   content_layer_ = new_layer;
+}
+
+// Note: The code that sets this flag would be responsible to unset it on that
+// ui::Layer. We do not want to clone this flag to a cloned layer by accident,
+// which could be a supprise. But we want to preserve it after switching to a
+// new cc::Layer. There could be a whole subtree and the root changed, but does
+// not mean we want to treat the cache all different.
+void Layer::SetCacheRenderSurface(bool cache_render_surface) {
+  cc_layer_->SetCacheRenderSurface(cache_render_surface);
 }
 
 void Layer::SetTextureMailbox(

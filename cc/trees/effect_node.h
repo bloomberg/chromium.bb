@@ -49,6 +49,7 @@ struct CC_EXPORT EffectNode {
   gfx::Size unscaled_mask_target_size;
 
   bool has_render_surface : 1;
+  bool cache_render_surface : 1;
   bool has_copy_request : 1;
   bool hidden_by_backface_visibility : 1;
   bool double_sided : 1;
@@ -83,6 +84,7 @@ struct CC_EXPORT EffectNode {
   // The layer id of the mask layer, if any, to apply to this effect
   // node's content when rendering to a surface.
   int mask_layer_id;
+  int closest_ancestor_with_cached_render_surface_id;
   int closest_ancestor_with_copy_request_id;
 
   bool operator==(const EffectNode& other) const;

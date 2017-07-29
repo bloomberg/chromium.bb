@@ -190,15 +190,17 @@ void OcclusionTracker::FinishedRenderTarget(
 
   // Readbacks always happen on render targets so we only need to check
   // for readbacks here.
-  bool target_is_only_for_copy_request =
-      finished_target_surface->HasCopyRequest() && is_hidden;
+  bool target_is_only_for_copy_request_or_force_render_surface =
+      (finished_target_surface->HasCopyRequest() ||
+       finished_target_surface->ShouldCacheRenderSurface()) &&
+      is_hidden;
 
   // If the occlusion within the surface can not be applied to things outside of
   // the surface's subtree, then clear the occlusion here so it won't be used.
   if (finished_target_surface->HasMask() ||
       finished_target_surface->draw_opacity() < 1 ||
       !finished_target_surface->UsesDefaultBlendMode() ||
-      target_is_only_for_copy_request ||
+      target_is_only_for_copy_request_or_force_render_surface ||
       finished_target_surface->Filters().HasFilterThatAffectsOpacity()) {
     stack_.back().occlusion_from_outside_target.Clear();
     stack_.back().occlusion_from_inside_target.Clear();
