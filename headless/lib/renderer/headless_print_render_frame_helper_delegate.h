@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HEADLESS_LIB_RENDERER_HEADLESS_PRINT_WEB_VIEW_HELPER_DELEGATE_H_
-#define HEADLESS_LIB_RENDERER_HEADLESS_PRINT_WEB_VIEW_HELPER_DELEGATE_H_
+#ifndef HEADLESS_LIB_RENDERER_HEADLESS_PRINT_RENDER_FRAME_HELPER_DELEGATE_H_
+#define HEADLESS_LIB_RENDERER_HEADLESS_PRINT_RENDER_FRAME_HELPER_DELEGATE_H_
 
+#include "build/build_config.h"
 #include "components/printing/renderer/print_render_frame_helper.h"
 
 namespace headless {
 
-class HeadlessPrintWebViewHelperDelegate
-    : public printing::PrintWebViewHelper::Delegate {
+class HeadlessPrintRenderFrameHelperDelegate
+    : public printing::PrintRenderFrameHelper::Delegate {
  public:
-  HeadlessPrintWebViewHelperDelegate();
-  ~HeadlessPrintWebViewHelperDelegate() override;
+  HeadlessPrintRenderFrameHelperDelegate();
+  ~HeadlessPrintRenderFrameHelperDelegate() override;
 
-  // PrintWebViewHelper Delegate implementation.
+  // PrintRenderFrameHelper Delegate implementation.
   bool CancelPrerender(content::RenderFrame* render_frame) override;
   bool IsPrintPreviewEnabled() override;
   bool OverridePrint(blink::WebLocalFrame* frame) override;
@@ -29,4 +30,4 @@ class HeadlessPrintWebViewHelperDelegate
 
 }  // namespace headless
 
-#endif  // HEADLESS_LIB_RENDERER_HEADLESS_PRINT_WEB_VIEW_HELPER_DELEGATE_H_
+#endif  // HEADLESS_LIB_RENDERER_HEADLESS_PRINT_RENDER_FRAME_HELPER_DELEGATE_H_

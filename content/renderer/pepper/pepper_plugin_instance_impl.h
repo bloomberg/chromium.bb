@@ -853,7 +853,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // print only a subset of all the pages, it is impossible to know if a call
   // to PrintPage() is the last call. Thus in PrintPage(), just store the page
   // number in |ranges_|. The hack is in PrintEnd(), where a valid |metafile_|
-  // is preserved in PrintWebViewHelper::PrintPages. This makes it possible
+  // is preserved in PrintWebFrameHelper::PrintPages. This makes it possible
   // to generate the entire PDF given the variables below:
   //
   // The most recently used metafile_, guaranteed to be valid.

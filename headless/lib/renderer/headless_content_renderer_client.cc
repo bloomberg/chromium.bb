@@ -22,8 +22,8 @@ HeadlessContentRendererClient::~HeadlessContentRendererClient() {}
 void HeadlessContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
-  new printing::PrintWebViewHelper(
-      render_frame, base::MakeUnique<HeadlessPrintWebViewHelperDelegate>());
+  new printing::PrintRenderFrameHelper(
+      render_frame, base::MakeUnique<HeadlessPrintRenderFrameHelperDelegate>());
 #endif
   new HeadlessRenderFrameControllerImpl(render_frame);
 }

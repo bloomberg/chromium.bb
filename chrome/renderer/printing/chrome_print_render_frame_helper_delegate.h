@@ -7,10 +7,10 @@
 
 #include "components/printing/renderer/print_render_frame_helper.h"
 
-class ChromePrintWebViewHelperDelegate
-    : public printing::PrintWebViewHelper::Delegate {
+class ChromePrintRenderFrameHelperDelegate
+    : public printing::PrintRenderFrameHelper::Delegate {
  public:
-  ~ChromePrintWebViewHelperDelegate() override;
+  ~ChromePrintRenderFrameHelperDelegate() override;
 
   bool CancelPrerender(content::RenderFrame* render_frame) override;
 
@@ -19,6 +19,6 @@ class ChromePrintWebViewHelperDelegate
   bool IsPrintPreviewEnabled() override;
 
   bool OverridePrint(blink::WebLocalFrame* frame) override;
-};  // class ChromePrintWebViewHelperDelegate
+};  // class ChromePrintRenderFrameHelperDelegate
 
 #endif  // CHROME_RENDERER_PRINTING_CHROME_PRINT_RENDER_FRAME_HELPER_DELEGATE_H_

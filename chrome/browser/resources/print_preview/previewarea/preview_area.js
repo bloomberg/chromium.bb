@@ -474,8 +474,8 @@ cr.define('print_preview', function() {
       this.plugin_.setAttribute('aria-live', 'polite');
       this.plugin_.setAttribute('aria-atomic', 'true');
       // NOTE: The plugin's 'id' field must be set to 'pdf-viewer' since
-      // chrome/renderer/printing/print_web_view_helper.cc actually references
-      // it.
+      // chrome/renderer/printing/print_render_frame_helper.cc actually
+      // references it.
       this.plugin_.setAttribute('id', 'pdf-viewer');
       this.getChildElement('.preview-area-plugin-wrapper')
           .appendChild(/** @type {Node} */ (this.plugin_));

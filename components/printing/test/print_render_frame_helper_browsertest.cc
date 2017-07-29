@@ -143,10 +143,10 @@ class DidPreviewPageListener : public IPC::Listener {
 
 }  // namespace
 
-class PrintWebViewHelperTestBase : public content::RenderViewTest {
+class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
  public:
-  PrintWebViewHelperTestBase() : print_render_thread_(nullptr) {}
-  ~PrintWebViewHelperTestBase() override {}
+  PrintRenderFrameHelperTestBase() : print_render_thread_(nullptr) {}
+  ~PrintRenderFrameHelperTestBase() override {}
 
  protected:
   // content::RenderViewTest:
@@ -242,7 +242,7 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
   void OnPrintPages() {
-    GetPrintWebViewHelper()->OnPrintPages();
+    GetPrintRenderFrameHelper()->OnPrintPages();
     base::RunLoop().RunUntilIdle();
   }
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
@@ -257,12 +257,13 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
   }
 
   void OnPrintPreview(const base::DictionaryValue& dict) {
-    PrintWebViewHelper* print_web_view_helper = GetPrintWebViewHelper();
-    print_web_view_helper->OnInitiatePrintPreview(false);
+    PrintRenderFrameHelper* print_render_frame_helper =
+        GetPrintRenderFrameHelper();
+    print_render_frame_helper->OnInitiatePrintPreview(false);
     base::RunLoop run_loop;
     DidPreviewPageListener filter(&run_loop);
     render_thread_->sink().AddFilter(&filter);
-    print_web_view_helper->OnPrintPreview(dict);
+    print_render_frame_helper->OnPrintPreview(dict);
     run_loop.Run();
     render_thread_->sink().RemoveFilter(&filter);
   }
@@ -270,13 +271,13 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
   void OnPrintForPrintPreview(const base::DictionaryValue& dict) {
-    GetPrintWebViewHelper()->OnPrintForPrintPreview(dict);
+    GetPrintRenderFrameHelper()->OnPrintForPrintPreview(dict);
     base::RunLoop().RunUntilIdle();
   }
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
-  PrintWebViewHelper* GetPrintWebViewHelper() {
-    return PrintWebViewHelper::Get(
+  PrintRenderFrameHelper* GetPrintRenderFrameHelper() {
+    return PrintRenderFrameHelper::Get(
         content::RenderFrame::FromWebFrame(GetMainFrame()));
   }
 
@@ -284,33 +285,33 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
   PrintMockRenderThread* print_render_thread_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelperTestBase);
+  DISALLOW_COPY_AND_ASSIGN(PrintRenderFrameHelperTestBase);
 };
 
 // RenderViewTest-based tests crash on Android
 // http://crbug.com/187500
 #if defined(OS_ANDROID)
-#define MAYBE_PrintWebViewHelperTest DISABLED_PrintWebViewHelperTest
+#define MAYBE_PrintRenderFrameHelperTest DISABLED_PrintRenderFrameHelperTest
 #else
-#define MAYBE_PrintWebViewHelperTest PrintWebViewHelperTest
+#define MAYBE_PrintRenderFrameHelperTest PrintRenderFrameHelperTest
 #endif  // defined(OS_ANDROID)
 
-class MAYBE_PrintWebViewHelperTest : public PrintWebViewHelperTestBase {
+class MAYBE_PrintRenderFrameHelperTest : public PrintRenderFrameHelperTestBase {
  public:
-  MAYBE_PrintWebViewHelperTest() {}
-  ~MAYBE_PrintWebViewHelperTest() override {}
+  MAYBE_PrintRenderFrameHelperTest() {}
+  ~MAYBE_PrintRenderFrameHelperTest() override {}
 
-  void SetUp() override { PrintWebViewHelperTestBase::SetUp(); }
+  void SetUp() override { PrintRenderFrameHelperTestBase::SetUp(); }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MAYBE_PrintWebViewHelperTest);
+  DISALLOW_COPY_AND_ASSIGN(MAYBE_PrintRenderFrameHelperTest);
 };
 
 // This tests only for platforms without print preview.
 #if !BUILDFLAG(ENABLE_PRINT_PREVIEW)
 // Tests that the renderer blocks window.print() calls if they occur too
 // frequently.
-TEST_F(MAYBE_PrintWebViewHelperTest, BlockScriptInitiatedPrinting) {
+TEST_F(MAYBE_PrintRenderFrameHelperTest, BlockScriptInitiatedPrinting) {
   // Pretend user will cancel printing.
   print_render_thread_->set_print_dialog_user_response(false);
   // Try to print with window.print() a few times.
@@ -325,7 +326,7 @@ TEST_F(MAYBE_PrintWebViewHelperTest, BlockScriptInitiatedPrinting) {
   VerifyPagesPrinted(false);
 
   // Unblock script initiated printing and verify printing works.
-  GetPrintWebViewHelper()->scripting_throttler_.Reset();
+  GetPrintRenderFrameHelper()->scripting_throttler_.Reset();
   print_render_thread_->printer()->ResetPrinter();
   PrintWithJavaScript();
   VerifyPageCount(1);
@@ -334,7 +335,7 @@ TEST_F(MAYBE_PrintWebViewHelperTest, BlockScriptInitiatedPrinting) {
 
 // Tests that the renderer always allows window.print() calls if they are user
 // initiated.
-TEST_F(MAYBE_PrintWebViewHelperTest, AllowUserOriginatedPrinting) {
+TEST_F(MAYBE_PrintRenderFrameHelperTest, AllowUserOriginatedPrinting) {
   // Pretend user will cancel printing.
   print_render_thread_->set_print_dialog_user_response(false);
   // Try to print with window.print() a few times.
@@ -373,7 +374,7 @@ TEST_F(MAYBE_PrintWebViewHelperTest, AllowUserOriginatedPrinting) {
 }
 
 // Duplicate of OnPrintPagesTest only using javascript to print.
-TEST_F(MAYBE_PrintWebViewHelperTest, PrintWithJavascript) {
+TEST_F(MAYBE_PrintRenderFrameHelperTest, PrintWithJavascript) {
   PrintWithJavaScript();
 
   VerifyPageCount(1);
@@ -384,7 +385,7 @@ TEST_F(MAYBE_PrintWebViewHelperTest, PrintWithJavascript) {
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 // Tests that printing pages work and sending and receiving messages through
 // that channel all works.
-TEST_F(MAYBE_PrintWebViewHelperTest, OnPrintPages) {
+TEST_F(MAYBE_PrintRenderFrameHelperTest, OnPrintPages) {
   LoadHTML(kHelloWorldHTML);
   OnPrintPages();
 
@@ -398,7 +399,7 @@ TEST_F(MAYBE_PrintWebViewHelperTest, OnPrintPages) {
 // to rip out and replace most of the IPC code if we ever plan to improve
 // printing, and the comment below by sverrir suggests that it doesn't do much
 // for us anyway.
-TEST_F(MAYBE_PrintWebViewHelperTest, PrintWithIframe) {
+TEST_F(MAYBE_PrintRenderFrameHelperTest, PrintWithIframe) {
   // Document that populates an iframe.
   const char html[] =
       "<html><body>Lorem Ipsum:"
@@ -480,7 +481,7 @@ const TestPageData kTestPages[] = {
 // metafile directly.
 // Same for printing via PDF on Windows.
 #if defined(OS_MACOSX) && BUILDFLAG(ENABLE_BASIC_PRINTING)
-TEST_F(MAYBE_PrintWebViewHelperTest, PrintLayoutTest) {
+TEST_F(MAYBE_PrintRenderFrameHelperTest, PrintLayoutTest) {
   bool baseline = false;
 
   EXPECT_TRUE(print_render_thread_->printer());
@@ -540,17 +541,19 @@ TEST_F(MAYBE_PrintWebViewHelperTest, PrintLayoutTest) {
 // RenderViewTest-based tests crash on Android
 // http://crbug.com/187500
 #if defined(OS_ANDROID)
-#define MAYBE_PrintWebViewHelperPreviewTest \
-  DISABLED_PrintWebViewHelperPreviewTest
+#define MAYBE_PrintRenderFrameHelperPreviewTest \
+  DISABLED_PrintRenderFrameHelperPreviewTest
 #else
-#define MAYBE_PrintWebViewHelperPreviewTest PrintWebViewHelperPreviewTest
+#define MAYBE_PrintRenderFrameHelperPreviewTest \
+  PrintRenderFrameHelperPreviewTest
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-class MAYBE_PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
+class MAYBE_PrintRenderFrameHelperPreviewTest
+    : public PrintRenderFrameHelperTestBase {
  public:
-  MAYBE_PrintWebViewHelperPreviewTest() {}
-  ~MAYBE_PrintWebViewHelperPreviewTest() override {}
+  MAYBE_PrintRenderFrameHelperPreviewTest() {}
+  ~MAYBE_PrintRenderFrameHelperPreviewTest() override {}
 
  protected:
   void VerifyPrintPreviewCancelled(bool expect_cancel) {
@@ -644,22 +647,23 @@ class MAYBE_PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MAYBE_PrintWebViewHelperPreviewTest);
+  DISALLOW_COPY_AND_ASSIGN(MAYBE_PrintRenderFrameHelperPreviewTest);
 };
 
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest, BlockScriptInitiatedPrinting) {
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, BlockScriptInitiatedPrinting) {
   LoadHTML(kHelloWorldHTML);
-  PrintWebViewHelper* print_web_view_helper = GetPrintWebViewHelper();
-  print_web_view_helper->OnSetPrintingEnabled(false);
+  PrintRenderFrameHelper* print_render_frame_helper =
+      GetPrintRenderFrameHelper();
+  print_render_frame_helper->OnSetPrintingEnabled(false);
   PrintWithJavaScript();
   VerifyPreviewRequest(false);
 
-  print_web_view_helper->OnSetPrintingEnabled(true);
+  print_render_frame_helper->OnSetPrintingEnabled(true);
   PrintWithJavaScript();
   VerifyPreviewRequest(true);
 }
 
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintWithJavaScript) {
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintWithJavaScript) {
   LoadHTML(kPrintOnUserAction);
   gfx::Size new_size(200, 100);
   Resize(new_size, false);
@@ -682,7 +686,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintWithJavaScript) {
 
 // Tests that print preview work and sending and receiving messages through
 // that channel all works.
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintPreview) {
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, OnPrintPreview) {
   LoadHTML(kHelloWorldHTML);
 
   // Fill in some dummy values.
@@ -700,7 +704,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintPreview) {
   VerifyPagesPrinted(false);
 }
 
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
        PrintPreviewHTMLWithPageMarginsCss) {
   // A simple web page with print margins css.
   const char kHTMLWithPageMarginsCss[] =
@@ -734,7 +738,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
 
 // Test to verify that print preview ignores print media css when non-default
 // margin is selected.
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
        NonDefaultMarginsSelectedIgnorePrintCss) {
   LoadHTML(kHTMLWithPageSizeCss);
 
@@ -757,7 +761,8 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
 
 // Test to verify that print preview honor print media size css when
 // PRINT_TO_PDF is selected and doesn't fit to printer default paper size.
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintToPDFSelectedHonorPrintCss) {
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
+       PrintToPDFSelectedHonorPrintCss) {
   LoadHTML(kHTMLWithPageSizeCss);
 
   // Fill in some dummy values.
@@ -781,7 +786,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintToPDFSelectedHonorPrintCss) {
 
 // Test to verify that print preview honor print margin css when PRINT_TO_PDF
 // is selected and doesn't fit to printer default paper size.
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
        PrintToPDFSelectedHonorPageMarginsCss) {
   // A simple web page with print margins css.
   const char kHTMLWithPageCss[] =
@@ -818,7 +823,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
 
 // Test to verify that print preview workflow center the html page contents to
 // fit the page size.
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewCenterToFitPage) {
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewCenterToFitPage) {
   LoadHTML(kHTMLWithPageSizeCss);
 
   // Fill in some dummy values.
@@ -840,7 +845,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewCenterToFitPage) {
 
 // Test to verify that print preview workflow scale the html page contents to
 // fit the page size.
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewShrinkToFitPage) {
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewShrinkToFitPage) {
   // A simple web page with print margins css.
   const char kHTMLWithPageCss[] =
       "<html><head><style>"
@@ -873,7 +878,8 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewShrinkToFitPage) {
 
 // Test to verify that print preview workflow honor the orientation settings
 // specified in css.
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewHonorsOrientationCss) {
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
+       PrintPreviewHonorsOrientationCss) {
   LoadHTML(kHTMLWithLandscapePageCss);
 
   // Fill in some dummy values.
@@ -895,7 +901,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewHonorsOrientationCss) {
 
 // Test to verify that print preview workflow honors the orientation settings
 // specified in css when PRINT_TO_PDF is selected.
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
        PrintToPDFSelectedHonorOrientationCss) {
   LoadHTML(kHTMLWithLandscapePageCss);
 
@@ -916,7 +922,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
   VerifyPagesPrinted(false);
 }
 
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewForMultiplePages) {
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewForMultiplePages) {
   LoadHTML(kMultipageHTML);
 
   // Fill in some dummy values.
@@ -938,7 +944,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewForMultiplePages) {
 
 // Test to verify that complete metafile is generated for a subset of pages
 // without creating draft pages.
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
        PrintPreviewForMultiplePagesWithoutDraftMode) {
   LoadHTML(kMultipageHTML);
 
@@ -962,7 +968,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
 }
 
 // Test to verify that preview generated only for one page.
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewForSelectedText) {
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewForSelectedText) {
   LoadHTML(kMultipageHTML);
   GetMainFrame()->SelectRange(blink::WebRange(1, 3));
 
@@ -984,7 +990,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewForSelectedText) {
 
 // Tests that print preview fails and receiving error messages through
 // that channel all works.
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewFail) {
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewFail) {
   LoadHTML(kHelloWorldHTML);
 
   // An empty dictionary should fail.
@@ -999,7 +1005,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewFail) {
 }
 
 // Tests that cancelling print preview works.
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewCancel) {
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewCancel) {
   LoadHTML(kLongPageHTML);
 
   const int kCancelPage = 3;
@@ -1019,7 +1025,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintPreviewCancel) {
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 // Tests that printing from print preview works and sending and receiving
 // messages through that channel all works.
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintForPrintPreview) {
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, OnPrintForPrintPreview) {
   LoadHTML(kPrintPreviewHTML);
 
   // Fill in some dummy values.
@@ -1032,9 +1038,10 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintForPrintPreview) {
 }
 
 // Tests that when printing non-default scaling values, the page size returned
-// by PrintWebViewHelper is still the real physical page size. See
+// by PrintRenderFrameHelper is still the real physical page size. See
 // crbug.com/686384
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintForPrintPreviewWithScaling) {
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
+       OnPrintForPrintPreviewWithScaling) {
   LoadHTML(kPrintPreviewHTML);
 
   // Fill in some dummy values.
@@ -1068,7 +1075,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintForPrintPreviewWithScaling) {
 
 // Tests that printing from print preview fails and receiving error messages
 // through that channel all works.
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintForPrintPreviewFail) {
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, OnPrintForPrintPreviewFail) {
   LoadHTML(kPrintPreviewHTML);
 
   // An empty dictionary should fail.
@@ -1081,7 +1088,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintForPrintPreviewFail) {
 
 // Tests that when default printer has invalid printer settings, print preview
 // receives error message.
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
        OnPrintPreviewUsingInvalidPrinterSettings) {
   LoadHTML(kPrintPreviewHTML);
 
@@ -1104,7 +1111,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
 
 // Tests that when the selected printer has invalid page settings, print preview
 // receives error message.
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
        OnPrintPreviewUsingInvalidPageSize) {
   LoadHTML(kPrintPreviewHTML);
 
@@ -1124,7 +1131,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
 
 // Tests that when the selected printer has invalid content settings, print
 // preview receives error message.
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
        OnPrintPreviewUsingInvalidContentSize) {
   LoadHTML(kPrintPreviewHTML);
 
@@ -1143,7 +1150,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
 }
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
-TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
        OnPrintForPrintPreviewUsingInvalidPrinterSettings) {
   LoadHTML(kPrintPreviewHTML);
 
