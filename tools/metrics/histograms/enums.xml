@@ -22876,6 +22876,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1302904242" label="enable-navigation-tracing"/>
   <int value="-1289678848" label="SystemDownloadManager:enabled"/>
   <int value="-1285021473" label="save-page-as-mhtml"/>
+  <int value="-1284637134" label="pull-to-refresh"/>
   <int value="-1276912933" label="enable-quick-unlock-pin"/>
   <int value="-1271563519" label="enable-appcontainer"/>
   <int value="-1269084216" label="ash-md"/>

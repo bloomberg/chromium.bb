@@ -761,6 +761,12 @@ const char kProcessType[]                   = "type";
 // pref service.
 const char kProxyServer[] = "proxy-server";
 
+// Enables or disables pull-to-refresh gesture in response to vertical
+// overscroll.
+// Set the value to '1' to enable the feature, and set to '0' to disable.
+// Defaults to disabled.
+const char kPullToRefresh[] = "pull-to-refresh";
+
 // Enables more web features over insecure connections. Designed to be used
 // for testing purposes only.
 const char kReduceSecurityForTesting[]      = "reduce-security-for-testing";
@@ -799,11 +805,6 @@ const char kRootLayerScrolls[]              = "root-layer-scrolls";
 
 // Causes the process to run as a sandbox IPC subprocess.
 const char kSandboxIPCProcess[]             = "sandbox-ipc";
-
-// Enables or disables scroll end effect in response to vertical overscroll.
-// Set the value to '1' to enable the feature, and set to '0' to disable.
-// Defaults to disabled.
-const char kScrollEndEffect[] = "scroll-end-effect";
 
 // Visibly render a border around paint rects in the web page to help debug
 // and study painting behavior.
