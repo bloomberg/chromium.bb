@@ -59,7 +59,6 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
       LineDirectionMode,
       LinePositionMode = kPositionOnContainingLine) const override;
 
-  static const StyleContentAlignmentData& ContentAlignmentNormalBehavior();
   static LayoutUnit SynthesizedBaselineFromContentBox(const LayoutBox&,
                                                       LineDirectionMode);
 
@@ -117,14 +116,11 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   LayoutUnit MainAxisContentExtentForChildIncludingScrollbar(
       const LayoutBox& child) const;
   LayoutUnit CrossAxisExtent() const;
-  LayoutUnit MainAxisExtent() const;
   LayoutUnit CrossAxisContentExtent() const;
   LayoutUnit MainAxisContentExtent(LayoutUnit content_logical_height);
   LayoutUnit ComputeMainAxisExtentForChild(const LayoutBox& child,
                                            SizeType,
                                            const Length& size) const;
-  StyleContentAlignmentData ResolvedJustifyContent() const;
-  StyleContentAlignmentData ResolvedAlignContent() const;
   LayoutUnit FlowAwareBorderStart() const;
   LayoutUnit FlowAwareBorderEnd() const;
   LayoutUnit FlowAwareBorderBefore() const;
@@ -147,7 +143,6 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
       LayoutUnit main_axis_border_and_padding,
       ChildLayoutType = kLayoutIfNeeded);
   void AdjustAlignmentForChild(LayoutBox& child, LayoutUnit);
-  ItemPosition AlignmentForChild(const LayoutBox& child) const;
   bool MainAxisLengthIsDefinite(const LayoutBox& child,
                                 const Length& flex_basis) const;
   bool CrossAxisLengthIsDefinite(const LayoutBox& child,
@@ -188,7 +183,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   void LayoutLineItems(FlexLine*, bool relayout_children, SubtreeLayoutScope&);
   void ComputeLineItemsPosition(LayoutUnit& cross_axis_offset,
                                 FlexLine*,
-                                LayoutUnit available_free_space);
+                                LayoutUnit main_axis_offset);
   void ApplyLineItemsPosition(FlexLine*);
   void LayoutColumnReverse(Vector<FlexItem>&,
                            LayoutUnit cross_axis_offset,
