@@ -212,10 +212,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_DISABLE_DEFERRED_PROXIES
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_GRADIENT_MATRIX_MATH
-#define SK_SUPPORT_LEGACY_GRADIENT_MATRIX_MATH
-#endif
-
 #ifndef SK_SUPPORT_LEGACY_DELTA_AA
 #define SK_SUPPORT_LEGACY_DELTA_AA
 #endif
