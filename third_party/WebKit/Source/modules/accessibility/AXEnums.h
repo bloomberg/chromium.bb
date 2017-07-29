@@ -142,7 +142,6 @@ enum AccessibilityState {
   kAXBusyState,
   kAXExpandedState,
   kAXFocusableState,
-  kAXFocusedState,
   kAXHaspopupState,
   kAXHoveredState,
   kAXInvisibleState,
