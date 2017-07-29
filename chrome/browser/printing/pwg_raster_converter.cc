@@ -17,7 +17,9 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
 #include "chrome/grit/generated_resources.h"
@@ -44,9 +46,7 @@ class FileHandlers {
  public:
   FileHandlers() {}
 
-  ~FileHandlers() {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  }
+  ~FileHandlers() { base::ThreadRestrictions::AssertIOAllowed(); }
 
   void Init(base::RefCountedMemory* data);
   bool IsValid();
@@ -82,7 +82,7 @@ class FileHandlers {
 };
 
 void FileHandlers::Init(base::RefCountedMemory* data) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   if (!temp_dir_.CreateUniqueTempDir())
     return;
@@ -104,15 +104,15 @@ bool FileHandlers::IsValid() {
 }
 
 // Converts PDF into PWG raster.
-// Class uses 3 threads: UI, IO and FILE.
+// Class uses UI thread, IO thread and |blocking_task_runner_|.
 // Internal workflow is following:
 // 1. Create instance on the UI thread. (files_, settings_,)
-// 2. Create file on the FILE thread.
+// 2. Create file on |blocking_task_runner_|.
 // 3. Start utility process and start conversion on the IO thread.
 // 4. Run result callback on the UI thread.
 // 5. Instance is destroyed from any thread that has the last reference.
-// 6. FileHandlers destroyed on the FILE thread.
-//    This step posts |FileHandlers| to be destroyed on the FILE thread.
+// 6. FileHandlers destroyed on |blocking_task_runner_|.
+//    This step posts |FileHandlers| to be destroyed on |blocking_task_runner_|.
 // All these steps work sequentially, so no data should be accessed
 // simultaneously by several threads.
 class PwgUtilityProcessHostClient : public content::UtilityProcessHostClient {
@@ -142,10 +142,11 @@ class PwgUtilityProcessHostClient : public content::UtilityProcessHostClient {
   void RunCallbackOnUIThread(bool success);
   void OnFilesReadyOnUIThread();
 
-  std::unique_ptr<FileHandlers, BrowserThread::DeleteOnFileThread> files_;
   PdfRenderSettings settings_;
   PwgRasterSettings bitmap_settings_;
   PWGRasterConverter::ResultCallback callback_;
+  const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
+  std::unique_ptr<FileHandlers, base::OnTaskRunnerDeleter> files_;
 
   DISALLOW_COPY_AND_ASSIGN(PwgUtilityProcessHostClient);
 };
@@ -153,7 +154,12 @@ class PwgUtilityProcessHostClient : public content::UtilityProcessHostClient {
 PwgUtilityProcessHostClient::PwgUtilityProcessHostClient(
     const PdfRenderSettings& settings,
     const PwgRasterSettings& bitmap_settings)
-    : settings_(settings), bitmap_settings_(bitmap_settings) {}
+    : settings_(settings),
+      bitmap_settings_(bitmap_settings),
+      blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
+      files_(nullptr, base::OnTaskRunnerDeleter(blocking_task_runner_)) {}
 
 PwgUtilityProcessHostClient::~PwgUtilityProcessHostClient() {
 }
@@ -167,8 +173,8 @@ void PwgUtilityProcessHostClient::Convert(
   CHECK(!files_);
   files_.reset(new FileHandlers());
 
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE, FROM_HERE,
+  blocking_task_runner_->PostTaskAndReply(
+      FROM_HERE,
       base::BindOnce(&FileHandlers::Init, base::Unretained(files_.get()),
                      base::RetainedRef(data)),
       base::BindOnce(&PwgUtilityProcessHostClient::OnFilesReadyOnUIThread,
@@ -276,8 +282,8 @@ void PWGRasterConverterImpl::Start(base::RefCountedMemory* data,
   // Rebind cancelable callback to avoid calling callback if
   // PWGRasterConverterImpl is destroyed.
   callback_.Reset(callback);
-  utility_client_ =
-      new PwgUtilityProcessHostClient(conversion_settings, bitmap_settings);
+  utility_client_ = base::MakeRefCounted<PwgUtilityProcessHostClient>(
+      conversion_settings, bitmap_settings);
   utility_client_->Convert(data, callback_.callback());
 }
 
