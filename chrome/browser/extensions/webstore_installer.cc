@@ -24,8 +24,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_scheduler/post_task.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -111,14 +109,19 @@ const base::FilePath::CharType kWebstoreDownloadFolder[] =
 
 base::FilePath* g_download_directory_for_tests = NULL;
 
-base::FilePath GetDownloadFilePath(const base::FilePath& download_directory,
-                                   const std::string& id) {
-  base::ThreadRestrictions::AssertIOAllowed();
+// Must be executed on the FILE thread.
+void GetDownloadFilePath(
+    const base::FilePath& download_directory,
+    const std::string& id,
+    const base::Callback<void(const base::FilePath&)>& callback) {
   // Ensure the download directory exists. TODO(asargent) - make this use
   // common code from the downloads system.
-  if (!base::DirectoryExists(download_directory) &&
-      !base::CreateDirectory(download_directory)) {
-    return base::FilePath();
+  if (!base::DirectoryExists(download_directory)) {
+    if (!base::CreateDirectory(download_directory)) {
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                              base::BindOnce(callback, base::FilePath()));
+      return;
+    }
   }
 
   // This is to help avoid a race condition between when we generate this
@@ -138,7 +141,8 @@ base::FilePath GetDownloadFilePath(const base::FilePath& download_directory,
         base::StringPrintf(" (%d)", uniquifier));
   }
 
-  return file;
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(callback, file));
 }
 
 void MaybeAppendAuthUserParameter(const std::string& authuser, GURL* url) {
@@ -597,14 +601,11 @@ void WebstoreInstaller::DownloadCrx(
   }
 #endif
 
-  constexpr base::TaskTraits kTraits = {
-      base::MayBlock(),                   // Needs file access.
-      base::TaskPriority::USER_BLOCKING,  // Install is triggered by UI.
-      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, kTraits,
-      base::BindOnce(&GetDownloadFilePath, download_directory, extension_id),
-      base::BindOnce(&WebstoreInstaller::StartDownload, this, extension_id));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::BindOnce(
+          &GetDownloadFilePath, download_directory, extension_id,
+          base::Bind(&WebstoreInstaller::StartDownload, this, extension_id)));
 }
 
 // http://crbug.com/165634
