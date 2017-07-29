@@ -6,13 +6,22 @@ Displays LayoutTests results.
 -->
 <style>
 body {
-  font-family: monospace;
+  font-family: sans-serif;
   min-height: 200vh;
 }
 button {
   margin-top: 4px;
 }
+
+#right-toolbar {
+  position: absolute;
+  top: 8px;
+  right: 0;
+  font-size: smaller;
+}
+
 #help {
+  font-family: sans-serif;
   box-sizing: border-box;
   position: fixed;
   width: 96vw;
@@ -25,26 +34,42 @@ button {
   box-shadow: 0 0 20px;
   overflow: auto;
 }
+#summary > p {
+  margin: 0.2em 0 0 0;
+}
+#dashboard {
+  user-select: none;
+}
+#report {
+  font-family: monospace;
+}
+#report i {
+  color: green;
+  margin-left: 2em;
+  font-size: x-large;
+  font-weight: bold;
+}
+.fix-width {
+  display: inline-block;
+  width: 7em;
+  text-align: right;
+  margin-right: 1em;
+}
 .hidden {
   display: none;
 }
 .warn {
   color: red;
 }
-.fix-width {
-  display: inline-block;
-  width: 9em;
-  text-align: right;
-}
 .h-expect {
   margin-left: 1.25em;
 }
 .expect {
-  line-height: 180%;
+  line-height: 200%;
   cursor: zoom-in;
 }
 .expect:hover {
-  /*background-color: #F4F4F4;*/
+  background-color: #F4F4F4;
 }
 .expect:focus > .details {
   visibility: visible;
@@ -111,65 +136,76 @@ button {
 }
 #filters input {
   vertical-align: middle;
+  margin-top: 0;
+  margin-bottom: 0;
 }
+
 </style>
 <body>
-<h3>layout test results viewer</h3>
-<div style="position:absolute;top:8px;right:0;font-size:smaller">go back to <a href="results.html">legacy results.html</a></div>
+<h3>Test run summary <span id="builder_name"></span></h3>
+
+<div id="right-toolbar">
+  <a id="help_button" href="javascript:GUI.toggleVisibility('help')">help</a>
+  <div style="">go back to <a href="results.html">legacy results.html</a></div>
+</div>
+
 <div id="help" class="hidden">
   <button style="position:fixed;right:30px;" onclick="GUI.toggleVisibility('help')">Close</button>
-  <pre>
-This page lets you query and display test results.
+  <p>This page lets you query and display test results.</p>
 
-<span style="font-size:larger">### Results</span>
+  <h3>Results</h3>
 
-The results are shown in either plain text, or <a href="https://chromium.googlesource.com/chromium/src/+/master/docs/testing/layout_test_expectations.md">TestExpectations</a> format.
+  <p>Select the results you are interested in with "Query" buttons.
+  Narrow down the results further with "Filter" checkboxes.</p>
 
-TestExpectations result lines usually looks like this:
+  <p>"Did not pass" query will exclude PASS and WONTFIX tests.</p>
 
-<a href="#">crbug.com/bug</a> layout/test/path/<a href="#">test.html</a> [ Status ]
+  <p>The results are shown in either plain text, or <a href="https://chromium.googlesource.com/chromium/src/+/master/docs/testing/layout_test_expectations.md">TestExpectations</a> format.</p>
 
-The interesting part here is [ Status ]. Inside TestExpectations file, [ Status ]
-can have multiple values, representing all expected results. For example:
+  <p>TestExpectations result lines usually looks like this:</p>
 
-[ Failure Slow Timeout Crash Pass ]
+<pre><a href="#">crbug.com/bug</a> layout/test/path/<a href="#">test.html</a> [ Status ]</pre>
 
-Result lines include existing expected values, and make a guess about what the new
-test expectation line should look like by merging together expected and actual
-results. The actual result will be shown in bold. For example:
+  <p>The interesting part here is [ Status ]. Inside TestExpectations file, [ Status ]
+  can have multiple values, representing all expected results. For example:</p>
 
-TestResult(PASS) + TestExpectation(Failure) => [ Pass ]
-TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]
+<pre>[ Failure Slow Timeout Crash Pass ]</pre>
 
-If you are doing a lot of TestExpectation edits, the hope is that this will make
-your job as easy as copy and paste.
+  <p>Result lines include existing expected values, and make a guess about what the new
+  test expectation line should look like by merging together expected and actual
+  results. The actual result will be shown in bold. For example:</p>
 
-<span style="font-size:larger">### Keyboard navigation</span>
+  <pre>TestResult(PASS) + TestExpectation(Failure) => [ Pass ]
+TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
 
-<b>Tab</b> to select the next test.
-<b>Enter</b> to see test details. This will automatically close other details.
-<b>S</b> to select the full name of the test under the cursor
-<b>ctrl A</b> to select text of all tests for easy copying.
+  <p>If you are doing a lot of TestExpectation edits, the hope is that this will make
+  your job as easy as copy and paste.</p>
 
-Modifiers:
+  <h3>Keyboard navigation</h3>
 
-<b>Shift</b> hold shift key to keep other details open.
-<b>Alt|Option</b> hold alt key to open details on all results (limit: 100)
-
-If you are unhappy with results, please file a bug, or fix it <a href="https://cs.chromium.org/chromium/src/third_party/WebKit/LayoutTests/fast/harness/test-expectations.html">here</a>.
-  </pre>
+  <ul>
+  <li><b>Tab</b> to select the next test.
+  <li><b>Enter</b> to see test details. This will automatically close other details.
+  <li><b>S</b> to select the full name of the test under the cursor
+  <li><b>ctrl A</b> to select text of all tests for easy copying.
+  </ul>
+  <p>Modifiers:</p>
+  <ul>
+  <li><b>Shift</b> hold shift key to keep other details open.
+  <li><b>Alt|Option</b> hold alt key to open details on all results (limit: 100)
+  </ul>
+  <p>If you are unhappy with results, please file a bug, or fix it <a href="https://cs.chromium.org/chromium/src/third_party/WebKit/LayoutTests/fast/harness/test-expectations.html">here</a>.</p>
 </div>
-<pre id="summary">
-Test run summary <a id="help_button" href="javascript:GUI.toggleVisibility('help')">(help)</a>:
-Passed     : <span id="summary_passed"></span>
-Regressions: <span id="summary_regressions"></span>
-Total      : <span id="summary_total"></span>
-Counts     : <span id="summary_details"></span>
-</pre>
-<div>Query results, refine with filters</div>
+<div id="summary">
+  <p><span class="fix-width">Passed</span><span id="summary_passed"></span></p>
+  <p><span class="fix-width">Regressions</span><span id="summary_regressions"></span></p>
+  <p><span class="fix-width">Total</span><span id="summary_total"></span></p>
+  <p><span class="fix-width">Counts</span><span id="summary_details"></span></p>
+</div>
+<hr>
 <div id="dashboard">
   <div>
-    <span class="fix-width">Query:</span>
+    <span class="fix-width">Query</span>
     <button id="button_unexpected_fail" onclick="javascript:Query.query('Unexpected failures', Filters.unexpectedFailure, true)">
       Unexpected Failure
       <span id="count_unexpected_fail"></span>
@@ -178,8 +214,8 @@ Counts     : <span id="summary_details"></span>
       Unexpected Pass
       <span id="count_unexpected_pass"></span>
     </button>
-    <button onclick="javascript:Query.query('TestExpectations', Filters.notpass, true)">
-      TestExpectations
+    <button onclick="javascript:Query.query('Did not pass', Filters.notpass, true)">
+      Did not pass
       <span id="count_testexpectations"></span>
     </button>
     <button onclick="javascript:Query.query('All', Filters.all, true)">
@@ -192,7 +228,7 @@ Counts     : <span id="summary_details"></span>
     </button>
   </div>
   <div id="filters">
-    <span class="fix-width">Filters:</span>
+    <span class="fix-width">Filters</span>
     <label id="CRASH"><input type="checkbox">Crash <span></span></label>
     <label id="TIMEOUT"><input type="checkbox">Timeout <span></span></label>
     <label id="TEXT"><input type="checkbox">Text failure <span></span></label>
@@ -206,13 +242,14 @@ Counts     : <span id="summary_details"></span>
 </div>
 
 <div id="report_header" style="margin-top:8px">
-  Tests shown: <span id="report_title" style="font-weight:bold"></span>
+  <span class="fix-width">Tests shown</span><span id="report_title" style="font-weight:bold"></span>
   in format:
     <select id="report_format" onchange="Query.generateReport()">
       <option value="plain" selected>Plain text</option>
       <option value="expectation">TestExpectations</option>
     </select>
 </div>
+<hr>
 <div id="report" style="margin-top:8px">
 </div>
 
@@ -309,16 +346,19 @@ PathParser.prototype = {
     return this.dir + "/" + this.basename + resultName;
   },
   testBaseHref: function() {
-    if (fullResults.layout_tests_dir) {
+    if (window.localStorage.getItem("testLocationOverride")) {
+      // Experimental preference.
+      // Use "window.localStorage.setItem("testLocationOverride", "file://path/to/your/LayoutTests")
+      return window.localStorage.getItem("testLocationOverride");
+    } else if (fullResults.layout_tests_dir) {
       return fullResults.layout_tests_dir;
     } else if (location.toString().indexOf('file://') == 0) {
       // tests were run locally.
-      return "../../..";
-    } else if (window.localStorage.getItem("testLocationOverride")) {
-      // Experimental preference.
-      return window.localStorage.getItem("testLocationOverride");
+      return "../../../third_party/WebKit/LayoutTests";
     } else if (fullResults.chromium_revision) {
-      return "https://crrev.com/" + fullResults.chromium_revision + "/third_party/WebKit/LayoutTests";
+      // Existing crrev list is incorrect:  https://crbug.com/750347
+      let correctedRevision = fullResults.chromium_revision.replace("refs/heads/master@{#", "").replace("}", "");
+      return "https://crrev.com/" + correctedRevision + "/third_party/WebKit/LayoutTests";
     } else {
       return "https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/LayoutTests";
     }
@@ -329,13 +369,14 @@ PathParser.prototype = {
 let Report = {
 
   getDefaultPrinter: () => {
+    let val = document.querySelector("#report_format").value;
+    window.localStorage.setItem("reportFormat", val);
     switch(document.querySelector("#report_format").value) {
       case "expectation":
         return Report.printExpectation;
       case "plain":
-        return Report.printPlainTest;
       default:
-        console.error("Unknown printer type");
+        return Report.printPlainTest;
     }
   },
 
@@ -499,7 +540,8 @@ let Query = {
   },
 
   completeReportPromise: function(traversal) {
-    this.currentResolve(traversal);
+    if (this.currentResolve)
+      this.currentResolve(traversal);
     this.currentPromise = null;
     this.currentResolve = null;
     this.currentReject = null;
@@ -509,9 +551,7 @@ let Query = {
     // Reset all filters
     for (let el of Array.from(
           document.querySelectorAll("#filters > label"))) {
-      el.classList.remove("hidden");
       el.querySelector('input').checked = true;
-      el.querySelector('span').innerText = "";
     }
   },
 
@@ -532,7 +572,6 @@ let Query = {
   },
 
   filterChanged: function(ev) {
-    console.log("filterChanged");
     this.query();
   },
 
@@ -585,7 +624,11 @@ let Query = {
     let callback = _ => {
       this.currentRAF = null;
       let pre = document.createElement("div");
-      pre.innerHTML = traversal.html.slice(index, index + chunkSize).join("\n");
+      if (traversal.html.length == 0) {
+        pre.innerHTML = "<i>None</i>";
+      } else {
+        pre.innerHTML = traversal.html.slice(index, index + chunkSize).join("\n");
+      }
       document.querySelector("#report").appendChild(pre);
       index += chunkSize;
       if (index < traversal.html.length)
@@ -642,7 +685,7 @@ let Filters = {
       }
     return true;
   },
-  notpass: test => test.actualFinal != "PASS",
+  notpass: test => test.actualFinal != "PASS" && test.expected != "WONTFIX",
   actual: tag => {  // Returns comparator for tag.
     return function(test) {
       return test.actualMap.has(tag);
@@ -658,6 +701,9 @@ let GUI = {
   initPage: function(results) {
     results.tests = GUI.convertToMap(results.tests);
     fullResults = results;
+    if (window.localStorage.getItem("reportFormat")) {
+      document.querySelector("#report_format").value = window.localStorage.getItem("reportFormat");
+    }
     GUI.optimizeResults();
     GUI.printSummary(fullResults);
     GUI.initEvents();
@@ -765,6 +811,8 @@ let GUI = {
   },
 
   printSummary: function (r) {
+    if (r.builder_name)
+      document.querySelector("#builder_name").innerText = r.builder_name;
     document.querySelector("#summary_total").innerText = r.num_passes + r.num_regressions;
     document.querySelector("#summary_passed").innerText = r.num_passes;
     document.querySelector("#summary_regressions").innerText = r.num_regressions;
@@ -774,7 +822,7 @@ let GUI = {
     let resultsText = "";
     for (let p in failures) {
       if (failures[p])
-        resultsText += p + ":" + failures[p] + " ";
+        resultsText += p.toLowerCase() + ": " + failures[p] + " ";
     }
     document.querySelector("#summary_details").innerText = resultsText;
 
