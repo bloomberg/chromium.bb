@@ -951,6 +951,14 @@ cr.define('login', function() {
     },
 
     /**
+     * Gets animated image element.
+     * @type {!HTMLImageElement}
+     */
+    get animatedImageElement() {
+      return this.querySelector('.user-image.animated-image');
+    },
+
+    /**
      * Gets name element.
      * @type {!HTMLDivElement}
      */
@@ -1161,8 +1169,10 @@ cr.define('login', function() {
      * Updates the user pod element.
      */
     update: function() {
-      this.imageElement.src = 'chrome://userimage/' + this.user.username +
+      var animatedImageSrc = 'chrome://userimage/' + this.user.username +
           '?id=' + UserPod.userImageSalt_[this.user.username];
+      this.imageElement.src = animatedImageSrc + '&frame=0';
+      this.animatedImageElement.src = animatedImageSrc;
 
       this.nameElement.textContent = this.user_.displayName;
       this.reauthNameHintElement.textContent = this.user_.displayName;
