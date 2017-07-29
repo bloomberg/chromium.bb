@@ -52,6 +52,7 @@ constexpr gfx::Insets kActionsRowPadding(8, 8, 8, 8);
 constexpr int kActionsRowHorizontalSpacing = 8;
 constexpr gfx::Insets kImageContainerPadding(0, 12, 12, 12);
 constexpr gfx::Insets kActionButtonPadding(0, 12, 0, 12);
+constexpr gfx::Insets kStatusTextPadding(4, 0, 0, 0);
 constexpr gfx::Size kActionButtonMinSize(88, 32);
 constexpr gfx::Size kIconViewSize(30, 30);
 
@@ -333,6 +334,7 @@ void NotificationViewMD::CreateOrUpdateViews(const Notification& notification) {
   CreateOrUpdateMessageView(notification);
   CreateOrUpdateCompactTitleMessageView(notification);
   CreateOrUpdateProgressBarView(notification);
+  CreateOrUpdateProgressStatusView(notification);
   CreateOrUpdateListItemViews(notification);
   CreateOrUpdateIconView(notification);
   CreateOrUpdateSmallIconView(notification);
@@ -616,6 +618,32 @@ void NotificationViewMD::CreateOrUpdateProgressBarView(
   header_row_->SetProgress(notification.progress());
 }
 
+void NotificationViewMD::CreateOrUpdateProgressStatusView(
+    const Notification& notification) {
+  if (notification.type() != NOTIFICATION_TYPE_PROGRESS ||
+      notification.progress_status().empty()) {
+    if (!status_view_)
+      return;
+    DCHECK(left_content_->Contains(status_view_));
+    delete status_view_;
+    status_view_ = nullptr;
+    return;
+  }
+
+  if (!status_view_) {
+    const gfx::FontList& font_list = views::Label().font_list().Derive(
+        1, gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
+    status_view_ = new views::Label();
+    status_view_->SetFontList(font_list);
+    status_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    status_view_->SetEnabledColor(message_center::kDimTextColor);
+    status_view_->SetBorder(views::CreateEmptyBorder(kStatusTextPadding));
+    left_content_->AddChildView(status_view_);
+  }
+
+  status_view_->SetText(notification.progress_status());
+}
+
 void NotificationViewMD::CreateOrUpdateListItemViews(
     const Notification& notification) {
   for (auto* item_view : item_views_)
@@ -809,6 +837,8 @@ void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
   for (size_t i = kMaxLinesForMessageView; i < item_views_.size(); ++i) {
     item_views_[i]->SetVisible(expanded);
   }
+  if (status_view_)
+    status_view_->SetVisible(expanded);
   header_row_->SetOverflowIndicator(
       list_items_count_ -
       (expanded ? item_views_.size() : kMaxLinesForMessageView));

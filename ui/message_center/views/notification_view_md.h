@@ -79,6 +79,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   void CreateOrUpdateMessageView(const Notification& notification);
   void CreateOrUpdateCompactTitleMessageView(const Notification& notification);
   void CreateOrUpdateProgressBarView(const Notification& notification);
+  void CreateOrUpdateProgressStatusView(const Notification& notification);
   void CreateOrUpdateListItemViews(const Notification& notification);
   void CreateOrUpdateIconView(const Notification& notification);
   void CreateOrUpdateSmallIconView(const Notification& notification);
@@ -112,6 +113,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   // Views which are dinamicallly created inside view hierarchy.
   views::Label* title_view_ = nullptr;
   BoundedLabel* message_view_ = nullptr;
+  views::Label* status_view_ = nullptr;
   ProportionalImageView* icon_view_ = nullptr;
   views::View* image_container_ = nullptr;
   ProportionalImageView* image_view_ = nullptr;
