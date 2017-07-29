@@ -100,6 +100,7 @@ class SimpleWM : public service_manager::Service,
                            const gfx::Point& cursor_location,
                            const base::Callback<void(bool)>& on_done) override;
   void OnWmCancelMoveLoop(aura::Window* window) override;
+  void OnCursorTouchVisibleChanged(bool enabled) override;
   void OnWmSetClientArea(
       aura::Window* window,
       const gfx::Insets& insets,

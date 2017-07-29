@@ -243,6 +243,11 @@ ui::mojom::EventResult WindowServerTestBase::OnAccelerator(
                                   : ui::mojom::EventResult::UNHANDLED;
 }
 
+void WindowServerTestBase::OnCursorTouchVisibleChanged(bool enabled) {
+  if (window_manager_delegate_)
+    window_manager_delegate_->OnCursorTouchVisibleChanged(enabled);
+}
+
 void WindowServerTestBase::OnWmPerformMoveLoop(
     aura::Window* window,
     ui::mojom::MoveLoopSource source,

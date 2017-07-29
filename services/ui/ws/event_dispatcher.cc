@@ -301,6 +301,7 @@ void EventDispatcher::ProcessEvent(const ui::Event& event,
   previous_accelerator_match_phase_ = match_phase;
 #endif
   event_display_id_ = display_id;
+
   if (event.IsKeyEvent()) {
     const ui::KeyEvent* key_event = event.AsKeyEvent();
     if (!key_event->is_char() && match_phase == AcceleratorMatchPhase::ANY) {
@@ -387,6 +388,11 @@ void EventDispatcher::ProcessKeyEvent(const ui::KeyEvent& event,
 }
 
 void EventDispatcher::HideCursorOnMatchedKeyEvent(const ui::KeyEvent& event) {
+  if (event.IsSynthesized()) {
+    // Don't bother performing the matching; it will be rejected anyway.
+    return;
+  }
+
   bool hide_cursor = !dont_hide_cursor_matchers_.empty();
   for (auto& matcher : dont_hide_cursor_matchers_) {
     if (matcher.MatchesEvent(event)) {
@@ -396,7 +402,7 @@ void EventDispatcher::HideCursorOnMatchedKeyEvent(const ui::KeyEvent& event) {
   }
 
   if (hide_cursor)
-    delegate_->OnEventChangesCursorVisibility(false);
+    delegate_->OnEventChangesCursorVisibility(event, false);
 }
 
 void EventDispatcher::ProcessPointerEventOnFoundTarget(
@@ -426,12 +432,17 @@ void EventDispatcher::ProcessPointerEventOnFoundTarget(
     // visibility on each mouse event. Here, we're sure that we're a non-exit
     // mouse event and FROM_TOUCH doesn't exist in mus so we shouldn't need
     // further filtering.
-    delegate_->OnEventChangesCursorVisibility(true);
+    delegate_->OnEventChangesCursorTouchVisibility(event, true);
+    delegate_->OnEventChangesCursorVisibility(event, true);
 
     SetMousePointerLocation(location_target.location_in_root,
                             location_target.display_id);
     delegate_->OnMouseCursorLocationChanged(location_target.location_in_root,
                                             location_target.display_id);
+  } else {
+    // When we have a non-touch event that wasn't synthesized, hide the mouse
+    // cursor until the next non-synthesized mouse event.
+    delegate_->OnEventChangesCursorTouchVisibility(event, false);
   }
 
   // Release capture on pointer up. For mouse we only release if there are

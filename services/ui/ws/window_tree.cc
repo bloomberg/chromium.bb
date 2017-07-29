@@ -755,6 +755,11 @@ void WindowTree::OnAccelerator(uint32_t accelerator_id,
                                           ui::Event::Clone(event));
 }
 
+void WindowTree::OnCursorTouchVisibleChanged(bool enabled) {
+  DCHECK(window_manager_internal_);
+  window_manager_internal_->OnCursorTouchVisibleChanged(enabled);
+}
+
 void WindowTree::OnDisplayDestroying(int64_t display_id) {
   DCHECK(window_manager_internal_);
   if (automatically_create_display_roots_)
@@ -2459,6 +2464,11 @@ void WindowTree::WmMoveCursorToDisplayLocation(const gfx::Point& display_pixels,
                                                int64_t display_id) {
   DCHECK(window_manager_state_);
   window_manager_state_->SetCursorLocation(display_pixels, display_id);
+}
+
+void WindowTree::WmSetCursorTouchVisible(bool enabled) {
+  DCHECK(window_manager_state_);
+  window_manager_state_->SetCursorTouchVisible(enabled);
 }
 
 void WindowTree::OnWmCreatedTopLevelWindow(uint32_t change_id,

@@ -162,6 +162,7 @@ class TestWM : public service_manager::Service,
     window_tree_host_.reset();
   }
   void OnWmDisplayModified(const display::Display& display) override {}
+  void OnCursorTouchVisibleChanged(bool enabled) override {}
   void OnWmPerformMoveLoop(aura::Window* window,
                            mojom::MoveLoopSource source,
                            const gfx::Point& cursor_location,

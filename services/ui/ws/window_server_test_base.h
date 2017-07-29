@@ -116,6 +116,7 @@ class WindowServerTestBase : public WindowServerServiceTestBase,
       const ui::Event& event,
       std::unordered_map<std::string, std::vector<uint8_t>>* properties)
       override;
+  void OnCursorTouchVisibleChanged(bool enabled) override;
   void OnWmPerformMoveLoop(aura::Window* window,
                            mojom::MoveLoopSource source,
                            const gfx::Point& cursor_location,

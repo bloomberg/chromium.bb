@@ -161,6 +161,7 @@ class WindowManager : public aura::WindowManagerDelegate,
       const ui::Event& event,
       std::unordered_map<std::string, std::vector<uint8_t>>* properties)
       override;
+  void OnCursorTouchVisibleChanged(bool enabled) override;
   void OnWmSetClientArea(
       aura::Window* window,
       const gfx::Insets& insets,

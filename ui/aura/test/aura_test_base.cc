@@ -223,6 +223,8 @@ ui::mojom::EventResult AuraTestBase::OnAccelerator(
   return ui::mojom::EventResult::HANDLED;
 }
 
+void AuraTestBase::OnCursorTouchVisibleChanged(bool enabled) {}
+
 void AuraTestBase::OnWmPerformMoveLoop(
     Window* window,
     ui::mojom::MoveLoopSource source,

@@ -98,6 +98,8 @@ mojom::EventResult MusDemoInternal::OnAccelerator(
   return mojom::EventResult::UNHANDLED;
 }
 
+void MusDemoInternal::OnCursorTouchVisibleChanged(bool enabled) {}
+
 void MusDemoInternal::OnWmPerformMoveLoop(
     aura::Window* window,
     mojom::MoveLoopSource source,

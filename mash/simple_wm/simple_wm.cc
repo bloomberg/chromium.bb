@@ -553,6 +553,8 @@ void SimpleWM::OnWmPerformMoveLoop(
 
 void SimpleWM::OnWmCancelMoveLoop(aura::Window* window) {}
 
+void SimpleWM::OnCursorTouchVisibleChanged(bool enabled) {}
+
 void SimpleWM::OnWmSetClientArea(
     aura::Window* window,
     const gfx::Insets& insets,

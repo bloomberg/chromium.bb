@@ -468,6 +468,7 @@ class AURA_EXPORT WindowTreeClient
   void OnAccelerator(uint32_t ack_id,
                      uint32_t accelerator_id,
                      std::unique_ptr<ui::Event> event) override;
+  void OnCursorTouchVisibleChanged(bool enabled) override;
 
   // Overridden from WindowManagerClient:
   void SetFrameDecorationValues(
@@ -489,6 +490,7 @@ class AURA_EXPORT WindowTreeClient
   void SetCursorVisible(bool visible) override;
   void SetCursorSize(ui::CursorSize cursor_size) override;
   void SetGlobalOverrideCursor(base::Optional<ui::CursorData> cursor) override;
+  void SetCursorTouchVisible(bool enabled) override;
   void SetKeyEventsThatDontHideCursor(
       std::vector<ui::mojom::EventMatcherPtr> cursor_key_list) override;
   void RequestClose(Window* window) override;

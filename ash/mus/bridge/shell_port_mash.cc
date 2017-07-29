@@ -178,9 +178,17 @@ bool ShellPortMash::IsMouseEventsEnabled() {
   if (GetAshConfig() == Config::MUS)
     return Shell::Get()->cursor_manager()->IsMouseEventsEnabled();
 
-  // TODO: http://crbug.com/637853
-  NOTIMPLEMENTED();
-  return true;
+  return cursor_touch_visible_;
+}
+
+void ShellPortMash::SetCursorTouchVisible(bool enabled) {
+  DCHECK_EQ(GetAshConfig(), Config::MASH);
+  window_manager_->window_manager_client()->SetCursorTouchVisible(enabled);
+}
+
+void ShellPortMash::OnCursorTouchVisibleChanged(bool enabled) {
+  DCHECK_EQ(GetAshConfig(), Config::MASH);
+  cursor_touch_visible_ = enabled;
 }
 
 std::unique_ptr<WindowResizer> ShellPortMash::CreateDragWindowResizer(

@@ -214,6 +214,10 @@ class WindowTree : public mojom::WindowTree,
                      const ui::Event& event,
                      AcceleratorCallback callback);
 
+  // Called when the cursor touch visibility bit changes. This is only called
+  // on the WindowTree associated with a WindowManager.
+  void OnCursorTouchVisibleChanged(bool enabled);
+
   // Called when a display has been removed. This is only called on the
   // WindowTree associated with a WindowManager.
   void OnDisplayDestroying(int64_t display_id);
@@ -553,6 +557,7 @@ class WindowTree : public mojom::WindowTree,
       base::Optional<ui::CursorData> cursor) override;
   void WmMoveCursorToDisplayLocation(const gfx::Point& display_pixels,
                                      int64_t display_id) override;
+  void WmSetCursorTouchVisible(bool enabled) override;
   void OnWmCreatedTopLevelWindow(uint32_t change_id,
                                  Id transport_window_id) override;
   void OnAcceleratorAck(

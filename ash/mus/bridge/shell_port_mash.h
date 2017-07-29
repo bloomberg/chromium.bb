@@ -55,6 +55,9 @@ class ShellPortMash : public ShellPort {
 
   WindowManager* window_manager() { return window_manager_; }
 
+  // Called when the window server has changed the mouse enabled state.
+  void OnCursorTouchVisibleChanged(bool enabled);
+
   // ShellPort:
   void Shutdown() override;
   Config GetAshConfig() const override;
@@ -67,6 +70,7 @@ class ShellPortMash : public ShellPort {
   void SetCursorSize(ui::CursorSize cursor_size) override;
   void SetGlobalOverrideCursor(base::Optional<ui::CursorData> cursor) override;
   bool IsMouseEventsEnabled() override;
+  void SetCursorTouchVisible(bool enabled) override;
   std::unique_ptr<WindowResizer> CreateDragWindowResizer(
       std::unique_ptr<WindowResizer> next_window_resizer,
       wm::WindowState* window_state) override;
@@ -128,6 +132,8 @@ class ShellPortMash : public ShellPort {
   std::unique_ptr<MusSpecificState> mus_state_;
 
   std::unique_ptr<DisplaySynchronizer> display_synchronizer_;
+
+  bool cursor_touch_visible_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(ShellPortMash);
 };
