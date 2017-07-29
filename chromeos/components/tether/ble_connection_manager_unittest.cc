@@ -88,17 +88,26 @@ class TestObserver : public BleConnectionManager::Observer {
     received_messages_.push_back(ReceivedMessage(remote_device, payload));
   }
 
-  std::vector<SecureChannelStatusChange>& connection_status_changes() {
+  void OnMessageSent(int sequence_number) override {
+    sent_sequence_numbers_.push_back(sequence_number);
+  }
+
+  const std::vector<SecureChannelStatusChange>& connection_status_changes() {
     return connection_status_changes_;
   }
 
-  std::vector<ReceivedMessage>& received_messages() {
+  const std::vector<ReceivedMessage>& received_messages() {
     return received_messages_;
+  }
+
+  const std::vector<int>& sent_sequence_numbers() {
+    return sent_sequence_numbers_;
   }
 
  private:
   std::vector<SecureChannelStatusChange> connection_status_changes_;
   std::vector<ReceivedMessage> received_messages_;
+  std::vector<int> sent_sequence_numbers_;
 };
 
 // Observer used in ObserverUnregisters() which unregisters a device when it
@@ -122,6 +131,8 @@ class UnregisteringObserver : public BleConnectionManager::Observer {
                          const std::string& payload) override {
     manager_->UnregisterRemoteDevice(remote_device, connection_reason_);
   }
+
+  void OnMessageSent(int sequence_number) override { NOTIMPLEMENTED(); }
 
  private:
   BleConnectionManager* manager_;
@@ -481,6 +492,7 @@ class BleConnectionManagerTest : public testing::Test {
   }
 
   void VerifyLastMessageSent(FakeSecureChannel* channel,
+                             int sequence_number,
                              const std::string& payload,
                              size_t expected_size) {
     ASSERT_EQ(expected_size, channel->sent_messages().size());
@@ -488,6 +500,15 @@ class BleConnectionManagerTest : public testing::Test {
         channel->sent_messages()[expected_size - 1];
     EXPECT_EQ(std::string(kTetherFeature), sent_message.feature);
     EXPECT_EQ(payload, sent_message.payload);
+
+    std::vector<int> sent_sequence_numbers_before_finished =
+        test_observer_->sent_sequence_numbers();
+    channel->CompleteSendingMessage(sequence_number);
+    std::vector<int> sent_sequence_numbers_after_finished =
+        test_observer_->sent_sequence_numbers();
+    EXPECT_EQ(sent_sequence_numbers_before_finished.size() + 1u,
+              sent_sequence_numbers_after_finished.size());
+    EXPECT_EQ(sequence_number, sent_sequence_numbers_after_finished.back());
   }
 
   const std::vector<cryptauth::RemoteDevice> test_devices_;
@@ -672,15 +693,15 @@ TEST_F(BleConnectionManagerTest, TestSuccessfulConnection_SendAndReceive) {
       ConnectSuccessfully(test_devices_[0], std::string(kBluetoothAddress1),
                           MessageType::TETHER_AVAILABILITY_REQUEST);
 
-  manager_->SendMessage(test_devices_[0], "request1");
-  VerifyLastMessageSent(channel, "request1", 1);
+  int sequence_number = manager_->SendMessage(test_devices_[0], "request1");
+  VerifyLastMessageSent(channel, sequence_number, "request1", 1);
 
   channel->ReceiveMessage(std::string(kTetherFeature), "response1");
   VerifyReceivedMessages(
       std::vector<ReceivedMessage>{{test_devices_[0], "response1"}});
 
-  manager_->SendMessage(test_devices_[0], "request2");
-  VerifyLastMessageSent(channel, "request2", 2);
+  sequence_number = manager_->SendMessage(test_devices_[0], "request2");
+  VerifyLastMessageSent(channel, sequence_number, "request2", 2);
 
   channel->ReceiveMessage(std::string(kTetherFeature), "response2");
   VerifyReceivedMessages(
@@ -1058,11 +1079,12 @@ TEST_F(BleConnectionManagerTest, TwoDevices_BothConnectSendAndReceive) {
       ConnectSuccessfully(test_devices_[1], std::string(kBluetoothAddress2),
                           MessageType::TETHER_AVAILABILITY_REQUEST);
 
-  manager_->SendMessage(test_devices_[0], "request1_device0");
-  VerifyLastMessageSent(channel0, "request1_device0", 1);
+  int sequence_number =
+      manager_->SendMessage(test_devices_[0], "request1_device0");
+  VerifyLastMessageSent(channel0, sequence_number, "request1_device0", 1);
 
-  manager_->SendMessage(test_devices_[1], "request1_device1");
-  VerifyLastMessageSent(channel1, "request1_device1", 1);
+  sequence_number = manager_->SendMessage(test_devices_[1], "request1_device1");
+  VerifyLastMessageSent(channel1, sequence_number, "request1_device1", 1);
 
   channel0->ReceiveMessage(std::string(kTetherFeature), "response1_device0");
   VerifyReceivedMessages(
@@ -1072,11 +1094,11 @@ TEST_F(BleConnectionManagerTest, TwoDevices_BothConnectSendAndReceive) {
   VerifyReceivedMessages(
       std::vector<ReceivedMessage>{{test_devices_[1], "response1_device1"}});
 
-  manager_->SendMessage(test_devices_[0], "request2_device0");
-  VerifyLastMessageSent(channel0, "request2_device0", 2);
+  sequence_number = manager_->SendMessage(test_devices_[0], "request2_device0");
+  VerifyLastMessageSent(channel0, sequence_number, "request2_device0", 2);
 
-  manager_->SendMessage(test_devices_[1], "request2_device1");
-  VerifyLastMessageSent(channel1, "request2_device1", 2);
+  sequence_number = manager_->SendMessage(test_devices_[1], "request2_device1");
+  VerifyLastMessageSent(channel1, sequence_number, "request2_device1", 2);
 
   channel0->ReceiveMessage(std::string(kTetherFeature), "response2_device0");
   VerifyReceivedMessages(
@@ -1180,8 +1202,8 @@ TEST_F(BleConnectionManagerTest, FourDevices_ComprehensiveTest) {
 
   // Now, device 0 authenticates and sends and receives a message.
   AuthenticateChannel(test_devices_[0]);
-  manager_->SendMessage(test_devices_[0], "request1");
-  VerifyLastMessageSent(channel0, "request1", 1);
+  int sequence_number = manager_->SendMessage(test_devices_[0], "request1");
+  VerifyLastMessageSent(channel0, sequence_number, "request1", 1);
 
   channel0->ReceiveMessage(std::string(kTetherFeature), "response1");
   VerifyReceivedMessages(
@@ -1216,8 +1238,8 @@ TEST_F(BleConnectionManagerTest, FourDevices_ComprehensiveTest) {
 
   // Now, device 3 authenticates and sends and receives a message.
   AuthenticateChannel(test_devices_[3]);
-  manager_->SendMessage(test_devices_[3], "request3");
-  VerifyLastMessageSent(channel3, "request3", 1);
+  sequence_number = manager_->SendMessage(test_devices_[3], "request3");
+  VerifyLastMessageSent(channel3, sequence_number, "request3", 1);
 
   channel3->ReceiveMessage(std::string(kTetherFeature), "response3");
   VerifyReceivedMessages(

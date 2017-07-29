@@ -67,6 +67,10 @@ class BleConnectionManager : public BleScanner::Observer {
 
     virtual void OnMessageReceived(const cryptauth::RemoteDevice& remote_device,
                                    const std::string& payload) = 0;
+
+    // Called when a message has been sent successfully; |sequence_number|
+    // corresponds to the value returned by an earlier call to SendMessage().
+    virtual void OnMessageSent(int sequence_number) = 0;
   };
 
   BleConnectionManager(
@@ -92,9 +96,12 @@ class BleConnectionManager : public BleScanner::Observer {
       const MessageType& connection_reason);
 
   // Sends |message| to |remote_device|. This function can only be called if the
-  // given device is authenticated.
-  virtual void SendMessage(const cryptauth::RemoteDevice& remote_device,
-                           const std::string& message);
+  // given device is authenticated. This function returns a sequence number for
+  // the message; if this message is sent successfully, observers will be
+  // notified and provided this number. Note that -1 is returned when the
+  // message cannot be sent.
+  virtual int SendMessage(const cryptauth::RemoteDevice& remote_device,
+                          const std::string& message);
 
   // Gets |remote_device|'s status and stores it to |status|, returning whether
   // |remote_device| is registered. If this function returns |false|, no value
@@ -127,6 +134,7 @@ class BleConnectionManager : public BleScanner::Observer {
       cryptauth::RemoteDevice remote_device,
       cryptauth::SecureChannel::Status old_status,
       cryptauth::SecureChannel::Status new_status);
+  void SendMessageSentEvent(int sequence_number);
 
  private:
   friend class BleConnectionManagerTest;
@@ -157,7 +165,7 @@ class BleConnectionManager : public BleScanner::Observer {
     bool HasSecureChannel();
     void SetSecureChannel(
         std::unique_ptr<cryptauth::SecureChannel> secure_channel);
-    void SendMessage(const std::string& payload);
+    int SendMessage(const std::string& payload);
 
     // cryptauth::SecureChannel::Observer:
     void OnSecureChannelStatusChanged(
@@ -167,6 +175,8 @@ class BleConnectionManager : public BleScanner::Observer {
     void OnMessageReceived(cryptauth::SecureChannel* secure_channel,
                            const std::string& feature,
                            const std::string& payload) override;
+    void OnMessageSent(cryptauth::SecureChannel* secure_channel,
+                       int sequence_number) override;
 
    private:
     friend class BleConnectionManagerTest;
