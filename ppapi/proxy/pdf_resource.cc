@@ -146,7 +146,7 @@ PP_Bool PDFResource::IsFeatureEnabled(PP_PDFFeature feature) {
       result = PP_TRUE;
       break;
     case PP_PDFFEATURE_PRINTING:
-      // TODO(raymes): Use PrintWebViewHelper::IsPrintingEnabled.
+      // TODO(raymes): Use PrintRenderFrameHelper::IsPrintingEnabled.
       result = PP_FALSE;
       break;
   }

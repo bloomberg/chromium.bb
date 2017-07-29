@@ -25,9 +25,9 @@
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-ChromePrintWebViewHelperDelegate::~ChromePrintWebViewHelperDelegate() {}
+ChromePrintRenderFrameHelperDelegate::~ChromePrintRenderFrameHelperDelegate() {}
 
-bool ChromePrintWebViewHelperDelegate::CancelPrerender(
+bool ChromePrintRenderFrameHelperDelegate::CancelPrerender(
     content::RenderFrame* render_frame) {
   if (!prerender::PrerenderHelper::IsPrerendering(render_frame))
     return false;
@@ -39,8 +39,8 @@ bool ChromePrintWebViewHelperDelegate::CancelPrerender(
 }
 
 // Return the PDF object element if |frame| is the out of process PDF extension.
-blink::WebElement ChromePrintWebViewHelperDelegate::GetPdfElement(
-        blink::WebLocalFrame* frame) {
+blink::WebElement ChromePrintRenderFrameHelperDelegate::GetPdfElement(
+    blink::WebLocalFrame* frame) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   GURL url = frame->GetDocument().Url();
   bool inside_print_preview = url.GetOrigin() == chrome::kChromeUIPrintURL;
@@ -60,12 +60,12 @@ blink::WebElement ChromePrintWebViewHelperDelegate::GetPdfElement(
   return blink::WebElement();
 }
 
-bool ChromePrintWebViewHelperDelegate::IsPrintPreviewEnabled() {
+bool ChromePrintRenderFrameHelperDelegate::IsPrintPreviewEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return !command_line->HasSwitch(switches::kDisablePrintPreview);
 }
 
-bool ChromePrintWebViewHelperDelegate::OverridePrint(
+bool ChromePrintRenderFrameHelperDelegate::OverridePrint(
     blink::WebLocalFrame* frame) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (!frame->GetDocument().IsPluginDocument())

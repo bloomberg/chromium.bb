@@ -44,8 +44,8 @@ bool SaveToFD(const printing::Metafile& metafile,
 namespace printing {
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
-bool PrintWebViewHelper::PrintPagesNative(blink::WebLocalFrame* frame,
-                                          int page_count) {
+bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
+                                              int page_count) {
   PdfMetafileSkia metafile(PDF_SKIA_DOCUMENT_TYPE);
   CHECK(metafile.Init());
 
@@ -69,8 +69,7 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   base::FileDescriptor fd;
 
   // Ask the browser to open a file for us.
-  Send(new PrintHostMsg_AllocateTempFileForPrinting(routing_id(),
-                                                    &fd,
+  Send(new PrintHostMsg_AllocateTempFileForPrinting(routing_id(), &fd,
                                                     &sequence_number));
   if (!SaveToFD(metafile, fd))
     return false;
@@ -82,8 +81,8 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebLocalFrame* frame,
 #else
   PrintHostMsg_DidPrintPage_Params printed_page_params;
 
-  if (!CopyMetafileDataToSharedMem(
-          metafile, &printed_page_params.metafile_data_handle)) {
+  if (!CopyMetafileDataToSharedMem(metafile,
+                                   &printed_page_params.metafile_data_handle)) {
     return false;
   }
 

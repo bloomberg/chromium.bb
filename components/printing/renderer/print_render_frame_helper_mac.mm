@@ -19,8 +19,8 @@
 namespace printing {
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
-bool PrintWebViewHelper::PrintPagesNative(blink::WebLocalFrame* frame,
-                                          int page_count) {
+bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
+                                              int page_count) {
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;
   const PrintMsg_Print_Params& print_params = params.params;
 
@@ -40,7 +40,7 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebLocalFrame* frame,
 }
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
-void PrintWebViewHelper::PrintPagesInternal(
+void PrintRenderFrameHelper::PrintPagesInternal(
     const PrintMsg_Print_Params& params,
     const std::vector<int>& printed_pages,
     int page_count,
@@ -77,15 +77,15 @@ void PrintWebViewHelper::PrintPagesInternal(
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-bool PrintWebViewHelper::RenderPreviewPage(
+bool PrintRenderFrameHelper::RenderPreviewPage(
     int page_number,
     const PrintMsg_Print_Params& print_params) {
   PrintMsg_Print_Params printParams = print_params;
   std::unique_ptr<PdfMetafileSkia> draft_metafile;
   PdfMetafileSkia* initial_render_metafile = print_preview_context_.metafile();
 
-  bool render_to_draft = print_preview_context_.IsModifiable() &&
-                         is_print_ready_metafile_sent_;
+  bool render_to_draft =
+      print_preview_context_.IsModifiable() && is_print_ready_metafile_sent_;
 
   if (render_to_draft) {
     draft_metafile.reset(new PdfMetafileSkia(PDF_SKIA_DOCUMENT_TYPE));
@@ -99,8 +99,8 @@ bool PrintWebViewHelper::RenderPreviewPage(
              print_preview_context_.total_page_count(),
              print_preview_context_.prepared_frame(), true,
              initial_render_metafile, &page_size, NULL);
-  print_preview_context_.RenderedPreviewPage(
-      base::TimeTicks::Now() - begin_time);
+  print_preview_context_.RenderedPreviewPage(base::TimeTicks::Now() -
+                                             begin_time);
 
   if (draft_metafile.get()) {
     draft_metafile->FinishDocument();
@@ -117,14 +117,14 @@ bool PrintWebViewHelper::RenderPreviewPage(
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
-void PrintWebViewHelper::RenderPage(const PrintMsg_Print_Params& params,
-                                    int page_number,
-                                    int page_count,
-                                    blink::WebLocalFrame* frame,
-                                    bool is_preview,
-                                    PdfMetafileSkia* metafile,
-                                    gfx::Size* page_size,
-                                    gfx::Rect* content_rect) {
+void PrintRenderFrameHelper::RenderPage(const PrintMsg_Print_Params& params,
+                                        int page_number,
+                                        int page_count,
+                                        blink::WebLocalFrame* frame,
+                                        bool is_preview,
+                                        PdfMetafileSkia* metafile,
+                                        gfx::Size* page_size,
+                                        gfx::Rect* content_rect) {
   double scale_factor =
       params.scale_factor >= kEpsilon ? params.scale_factor : 1.0f;
   double webkit_shrink_factor = frame->GetPrintPageShrink(page_number);
