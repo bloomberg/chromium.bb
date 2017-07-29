@@ -65,11 +65,30 @@ jboolean SpecialLocaleHandler::LoadTemplateUrls(
     return false;
 
   for (const auto& data_url : prepopulated_list) {
-    const TemplateURL* existing =
-        template_url_service_->GetTemplateURLForKeyword(
-            data_url.get()->keyword());
-    // Do not add local engines if there is already one.
-    if (existing)
+    // Attempt to see if the URL already exists in the list of template URLs.
+    //
+    // Special case Google because the keyword is mutated based on the results
+    // of the GoogleUrlTracker, so we need to rely on prepopulate ID instead
+    // of keyword only for Google.
+    //
+    // Otherwise, matching based on keyword is sufficient and preferred as
+    // some logically distinct search engines share the same prepopulate ID and
+    // only differ on keyword.
+    bool exists = template_url_service_->GetTemplateURLForKeyword(
+                      data_url->keyword()) != nullptr;
+    if (!exists &&
+        data_url->prepopulate_id == TemplateURLPrepopulateData::google.id) {
+      auto existing_urls = template_url_service_->GetTemplateURLs();
+
+      for (auto* existing_url : existing_urls) {
+        if (existing_url->prepopulate_id() ==
+            TemplateURLPrepopulateData::google.id) {
+          exists = true;
+          break;
+        }
+      }
+    }
+    if (exists)
       continue;
 
     data_url.get()->safe_for_autoreplace = true;
