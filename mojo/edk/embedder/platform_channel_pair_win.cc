@@ -13,7 +13,6 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/win/windows_version.h"
 #include "mojo/edk/embedder/platform_handle.h"
 
 namespace mojo {
@@ -113,8 +112,7 @@ PlatformChannelPair::PrepareToPassClientHandleToChildProcessAsString(
   DCHECK(handle_passing_info);
   DCHECK(client_handle_.is_valid());
 
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
-    handle_passing_info->push_back(client_handle_.get().handle);
+  handle_passing_info->push_back(client_handle_.get().handle);
 
   return base::IntToString(HandleToLong(client_handle_.get().handle));
 }

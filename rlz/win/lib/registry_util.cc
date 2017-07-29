@@ -58,9 +58,6 @@ bool HasUserKeyAccess(bool write_access) {
   }
 
   if (write_access) {
-    if (base::win::GetVersion() < base::win::VERSION_VISTA)
-      return true;
-
     if (base::GetCurrentProcessIntegrityLevel() <= base::LOW_INTEGRITY) {
       ASSERT_STRING("UserKey::HasAccess: Cannot write from Low Integrity.");
       return false;

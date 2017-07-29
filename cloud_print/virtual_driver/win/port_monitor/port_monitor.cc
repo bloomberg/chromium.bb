@@ -26,7 +26,6 @@
 #include "base/strings/string_util.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
-#include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "cloud_print/common/win/cloud_print_utils.h"
@@ -113,11 +112,7 @@ base::FilePath GetLocalAppDataLow() {
 }
 
 base::FilePath GetAppDataDir() {
-  base::FilePath file_path;
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
-    file_path = GetLocalAppDataLow();
-  else
-    PathService::Get(base::DIR_LOCAL_APP_DATA, &file_path);
+  base::FilePath file_path = GetLocalAppDataLow();
   if (file_path.empty()) {
     LOG(ERROR) << "Can't get app data dir";
   }
@@ -304,19 +299,15 @@ bool ValidateCurrentUser() {
   }
   base::win::ScopedHandle token_scoped(token);
 
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    DWORD session_id = 0;
-    DWORD dummy;
-    if (!GetTokenInformation(token_scoped.Get(), TokenSessionId,
+  DWORD session_id = 0;
+  DWORD dummy = 0;
+  if (!::GetTokenInformation(token_scoped.Get(), TokenSessionId,
                              reinterpret_cast<void*>(&session_id),
                              sizeof(DWORD), &dummy)) {
-      return false;
-    }
-    if (session_id == 0) {
-      return false;
-    }
+    return false;
   }
-  return true;
+
+  return session_id != 0;
 }
 }  // namespace
 
