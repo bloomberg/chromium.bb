@@ -258,19 +258,16 @@ public class TileGroup implements MostVisitedSites.Observer {
     }
 
     @Override
-    public void onMostVisitedURLsAvailable(final String[] titles, final String[] urls,
-            final String[] whitelistIconPaths, final int[] sources) {
+    public void onSiteSuggestionsAvailable(List<SiteSuggestion> siteSuggestions) {
         boolean removalCompleted = mPendingRemovalUrl != null;
         boolean insertionCompleted = mPendingInsertionUrl == null;
 
         Set<String> addedUrls = new HashSet<>();
         mPendingTiles = new ArrayList<>();
-        for (int i = 0; i < titles.length; i++) {
-            assert urls[i] != null; // We assume everywhere that the url is not null.
-
+        for (SiteSuggestion suggestion : siteSuggestions) {
             // TODO(dgn): Checking this should not even be necessary as the backend is supposed to
             // send non dupes URLs. Remove once https://crbug.com/703628 is fixed.
-            if (addedUrls.contains(urls[i])) continue;
+            if (addedUrls.contains(suggestion.url)) continue;
 
             // The home page tile is pinned to the first row of tiles. It will appear on
             // the position corresponding to its ranking among all tiles (obtained from the
@@ -278,20 +275,17 @@ public class TileGroup implements MostVisitedSites.Observer {
             // in the first row, it will appear on the last position of the first row.
             // Do note, that the number of tiles in a row (column number) is determined upon
             // initialization and not changed afterwards.
-            if (sources[i] == TileSource.HOMEPAGE) {
+            if (suggestion.source == TileSource.HOMEPAGE) {
                 int homeTilePosition = Math.min(mPendingTiles.size(), mNumColumns - 1);
-                mPendingTiles.add(homeTilePosition,
-                        new Tile(titles[i], urls[i], whitelistIconPaths[i], homeTilePosition,
-                                sources[i]));
+                mPendingTiles.add(homeTilePosition, new Tile(suggestion, homeTilePosition));
             } else {
-                mPendingTiles.add(new Tile(titles[i], urls[i], whitelistIconPaths[i],
-                        mPendingTiles.size(), sources[i]));
+                mPendingTiles.add(new Tile(suggestion, mPendingTiles.size()));
             }
 
-            addedUrls.add(urls[i]);
+            addedUrls.add(suggestion.url);
 
-            if (urls[i].equals(mPendingRemovalUrl)) removalCompleted = false;
-            if (urls[i].equals(mPendingInsertionUrl)) insertionCompleted = true;
+            if (suggestion.url.equals(mPendingRemovalUrl)) removalCompleted = false;
+            if (suggestion.url.equals(mPendingInsertionUrl)) insertionCompleted = true;
         }
 
         boolean expectedChangeCompleted = false;
