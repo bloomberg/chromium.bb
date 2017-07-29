@@ -68,7 +68,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "extensions/features/features.h"
-#include "net/base/host_mapping_rules.h"
 #include "net/base/logging_network_change_observer.h"
 #include "net/base/sdch_manager.h"
 #include "net/cert/caching_cert_verifier.h"
@@ -545,19 +544,8 @@ void IOThread::Init() {
   RegisterSTHObserver(ct_tree_tracker_.get());
 
   globals_->dns_probe_service.reset(new chrome_browser_net::DnsProbeService());
-  globals_->host_mapping_rules.reset(new net::HostMappingRules());
-  if (command_line.HasSwitch(switches::kHostRules)) {
-    TRACE_EVENT_BEGIN0("startup", "IOThread::InitAsync:SetRulesFromString");
-    globals_->host_mapping_rules->SetRulesFromString(
-        command_line.GetSwitchValueASCII(switches::kHostRules));
-    TRACE_EVENT_END0("startup", "IOThread::InitAsync:SetRulesFromString");
-  }
-
-  session_params_.host_mapping_rules = *globals_->host_mapping_rules.get();
   globals_->enable_brotli =
       base::FeatureList::IsEnabled(features::kBrotliEncoding);
-  session_params_.enable_token_binding =
-      base::FeatureList::IsEnabled(features::kTokenBinding);
 
   // Check for OS support of TCP FastOpen, and turn it on for all connections if
   // indicated by user.

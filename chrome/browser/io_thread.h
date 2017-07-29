@@ -78,7 +78,6 @@ class EventRouterForwarder;
 
 namespace net {
 class CTLogVerifier;
-class HostMappingRules;
 class HostResolver;
 class HttpAuthHandlerFactory;
 class HttpAuthPreferences;
@@ -155,7 +154,6 @@ class IOThread : public content::BrowserThreadDelegate {
     scoped_refptr<extensions::EventRouterForwarder>
         extension_event_router_forwarder;
 #endif
-    std::unique_ptr<net::HostMappingRules> host_mapping_rules;
     std::unique_ptr<net::NetworkQualityEstimator> network_quality_estimator;
     std::unique_ptr<net::RTTAndThroughputEstimatesObserver>
         network_quality_observer;

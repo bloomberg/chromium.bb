@@ -8,14 +8,17 @@
 #include <unordered_set>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "components/network_session_configurator/common/network_features.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/variations/variations_associated_data.h"
+#include "net/base/host_mapping_rules.h"
 #include "net/http/http_stream_factory.h"
 #include "net/quic/chromium/quic_utils_chromium.h"
 #include "net/quic/core/quic_packets.h"
@@ -408,6 +411,14 @@ void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line,
     params->testing_fixed_https_port =
         GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpsPort);
   }
+
+  if (command_line.HasSwitch(switches::kHostRules)) {
+    params->host_mapping_rules.SetRulesFromString(
+        command_line.GetSwitchValueASCII(switches::kHostRules));
+  }
+
+  params->enable_token_binding =
+      base::FeatureList::IsEnabled(features::kTokenBinding);
 }
 
 }  // namespace network_session_configurator

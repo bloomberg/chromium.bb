@@ -6,13 +6,18 @@
 
 #include <map>
 #include <memory>
+#include <string>
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/test/mock_entropy_provider.h"
+#include "base/test/scoped_feature_list.h"
+#include "components/network_session_configurator/common/network_features.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/variations/variations_associated_data.h"
+#include "net/base/host_mapping_rules.h"
+#include "net/base/host_port_pair.h"
 #include "net/http/http_stream_factory.h"
 #include "net/quic/core/crypto/crypto_protocol.h"
 #include "net/quic/core/quic_packets.h"
@@ -495,6 +500,40 @@ TEST_F(NetworkSessionConfiguratorTest, TestingFixedPorts) {
   ParseCommandLineAndFieldTrials(command_line);
   EXPECT_EQ(800, params_.testing_fixed_http_port);
   EXPECT_EQ(801, params_.testing_fixed_https_port);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, HostRules) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitchASCII(switches::kHostRules, "map *.com foo");
+  ParseCommandLineAndFieldTrials(command_line);
+
+  net::HostPortPair host_port_pair("spam.net", 80);
+  EXPECT_FALSE(params_.host_mapping_rules.RewriteHost(&host_port_pair));
+  EXPECT_EQ("spam.net", host_port_pair.host());
+
+  host_port_pair = net::HostPortPair("spam.com", 80);
+  EXPECT_TRUE(params_.host_mapping_rules.RewriteHost(&host_port_pair));
+  EXPECT_EQ("foo", host_port_pair.host());
+}
+
+TEST_F(NetworkSessionConfiguratorTest, TokenBindingDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kTokenBinding);
+
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  ParseCommandLineAndFieldTrials(command_line);
+
+  EXPECT_FALSE(params_.enable_token_binding);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, TokenBindingEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kTokenBinding);
+
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  ParseCommandLineAndFieldTrials(command_line);
+
+  EXPECT_TRUE(params_.enable_token_binding);
 }
 
 }  // namespace test
