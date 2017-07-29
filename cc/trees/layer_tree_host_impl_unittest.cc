@@ -946,7 +946,8 @@ TEST_F(LayerTreeHostImplTest, GPUMemoryForSmallLayerHistogramTest) {
       "Compositing.Renderer.GPUMemoryForTilingsInKb", 1);
 }
 
-TEST_F(LayerTreeHostImplTest, GPUMemoryForLargeLayerHistogramTest) {
+// Flaky: http://crbug.com/750377
+TEST_F(LayerTreeHostImplTest, DISABLED_GPUMemoryForLargeLayerHistogramTest) {
   base::HistogramTester histogram_tester;
   SetClientNameForMetrics("Browser");
   // With default tile size being set to 256 * 256, the following layer needs
