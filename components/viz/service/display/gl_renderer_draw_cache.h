@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_GL_RENDERER_DRAW_CACHE_H_
-#define CC_OUTPUT_GL_RENDERER_DRAW_CACHE_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_GL_RENDERER_DRAW_CACHE_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_GL_RENDERER_DRAW_CACHE_H_
 
 #include <vector>
 
@@ -11,7 +11,7 @@
 #include "cc/output/program_binding.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-namespace cc {
+namespace viz {
 
 // Collects 4 floats at a time for easy upload to GL.
 struct Float4 {
@@ -33,7 +33,7 @@ struct TexturedQuadDrawCache {
   bool is_empty = true;
 
   // Values tracked to determine if textured quads may be coalesced.
-  ProgramKey program_key;
+  cc::ProgramKey program_key;
   int resource_id = -1;
   bool needs_blending = false;
   bool nearest_neighbor = false;
@@ -51,6 +51,6 @@ struct TexturedQuadDrawCache {
   DISALLOW_COPY_AND_ASSIGN(TexturedQuadDrawCache);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_GL_RENDERER_DRAW_CACHE_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_GL_RENDERER_DRAW_CACHE_H_

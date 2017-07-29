@@ -365,9 +365,10 @@ void VideoDecoderShim::YUVConverter::Convert(
   const float* yuv_adjust = 0;
 
   if (video_format_ != frame->format()) {
-    // The constants below were taken from cc/output/gl_renderer.cc.
-    // These values are magic numbers that are used in the transformation from
-    // YUV to RGB color values.  They are taken from the following webpage:
+    // The constants below were taken from
+    // components/viz/service/display/gl_renderer.cc. These values are magic
+    // numbers that are used in the transformation from YUV to RGB color values.
+    // They are taken from the following webpage:
     // http://www.fourcc.org/fccyvrgb.php
     const float yuv_to_rgb_rec601[9] = {
         1.164f, 1.164f, 1.164f, 0.0f, -.391f, 2.018f, 1.596f, -.813f, 0.0f,

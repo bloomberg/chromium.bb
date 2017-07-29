@@ -6,13 +6,14 @@
 #define CC_OUTPUT_STATIC_GEOMETRY_BINDING_H_
 
 #include "base/macros.h"
+#include "cc/cc_export.h"
 #include "cc/output/geometry_binding.h"
 
 using gpu::gles2::GLES2Interface;
 
 namespace cc {
 
-class StaticGeometryBinding {
+class CC_EXPORT StaticGeometryBinding {
  public:
   StaticGeometryBinding(gpu::gles2::GLES2Interface* gl,
                         const gfx::RectF& quad_vertex_rect);

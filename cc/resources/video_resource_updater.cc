@@ -13,7 +13,6 @@
 #include "base/bit_cast.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
-#include "cc/output/gl_renderer.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/resource_util.h"

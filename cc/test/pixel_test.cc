@@ -11,7 +11,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/switches.h"
 #include "cc/output/compositor_frame_metadata.h"
-#include "cc/output/gl_renderer.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_output_device.h"
 #include "cc/output/software_renderer.h"
@@ -28,6 +27,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/quads/copy_output_result.h"
+#include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/test/paths.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -177,7 +177,7 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend,
   texture_mailbox_deleter_ = base::MakeUnique<TextureMailboxDeleter>(
       base::ThreadTaskRunnerHandle::Get());
 
-  renderer_ = base::MakeUnique<GLRenderer>(
+  renderer_ = base::MakeUnique<viz::GLRenderer>(
       &renderer_settings_, output_surface_.get(), resource_provider_.get(),
       texture_mailbox_deleter_.get());
   renderer_->Initialize();

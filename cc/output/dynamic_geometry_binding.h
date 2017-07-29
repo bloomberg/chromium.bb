@@ -6,6 +6,7 @@
 #define CC_OUTPUT_DYNAMIC_GEOMETRY_BINDING_H_
 
 #include "base/macros.h"
+#include "cc/cc_export.h"
 #include "cc/output/geometry_binding.h"
 
 namespace gfx {
@@ -14,7 +15,7 @@ class QuadF;
 
 namespace cc {
 
-class DynamicGeometryBinding {
+class CC_EXPORT DynamicGeometryBinding {
  public:
   explicit DynamicGeometryBinding(gpu::gles2::GLES2Interface* gl);
   void PrepareForDraw();

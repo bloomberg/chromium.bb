@@ -9,6 +9,7 @@
 
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
+#include "cc/cc_export.h"
 #include "ui/gfx/color_space.h"
 
 namespace gfx {
@@ -21,7 +22,7 @@ class GLES2Interface;
 }
 }
 
-class ColorLUTCache {
+class CC_EXPORT ColorLUTCache {
  public:
   explicit ColorLUTCache(gpu::gles2::GLES2Interface* gl,
                          bool texture_half_float_linear);

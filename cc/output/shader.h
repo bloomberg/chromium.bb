@@ -170,7 +170,7 @@ CC_EXPORT TexCoordPrecision TexCoordPrecisionRequired(
     int highp_threshold_min,
     const gfx::Size& max_size);
 
-class VertexShader {
+class CC_EXPORT VertexShader {
  public:
   VertexShader();
   void Init(gpu::gles2::GLES2Interface* context,
@@ -221,7 +221,7 @@ class VertexShader {
   int edge_location_ = -1;
 };
 
-class FragmentShader {
+class CC_EXPORT FragmentShader {
  public:
   virtual void Init(gpu::gles2::GLES2Interface* context,
                     unsigned program,
@@ -255,7 +255,7 @@ class FragmentShader {
 
   // Always use sampler2D and texture2D for the RGBA texture, regardless of the
   // specified SamplerType.
-  // TODO(ccameron): Change GLRenderer to always specify the correct
+  // TODO(ccameron): Change viz::GLRenderer to always specify the correct
   // SamplerType.
   bool ignore_sampler_type_ = false;
 
