@@ -62,7 +62,7 @@ void UpdateLegacyMultiColumnFlowThread(LayoutBox* layout_box,
     // portion size, but at least it's usually better than zero.
     column_set->EndFlow(fragment->Size().height);
 
-    column_set->ClearNeedsLayout();
+    column_set->UpdateFromNG();
   }
   // TODO(mstensho): Fix the relatively nonsensical values here (the content box
   // size of the multicol container has very little to do with the price of

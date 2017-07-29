@@ -166,6 +166,8 @@ class MultiColumnFragmentainerGroup {
   // Returns 1 or greater, never 0.
   unsigned ActualColumnCount() const;
 
+  void UpdateFromNG(LayoutUnit logical_height);
+
  private:
   LayoutUnit HeightAdjustedForRowOffset(LayoutUnit height) const;
   LayoutUnit CalculateMaxColumnHeight() const;
