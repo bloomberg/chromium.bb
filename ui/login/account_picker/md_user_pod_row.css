@@ -96,6 +96,26 @@ html[dir=rtl] .user-image-pane {
   animation: switch-image 180ms;
 }
 
+.pod.hovered .user-image {
+  display: none;
+}
+
+.pod.focused .user-image {
+  display: none;
+}
+
+.pod .animated-image {
+  display: none;
+}
+
+.pod.hovered .animated-image {
+  display: block;
+}
+
+.pod.focused .animated-image {
+  display: block;
+}
+
 .pod .badge-container {
   background: #FFF;
   border-radius: 50%;

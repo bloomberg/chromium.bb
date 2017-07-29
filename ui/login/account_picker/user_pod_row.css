@@ -106,6 +106,18 @@ html[dir=rtl] .user-image-pane {
   flex: none;
 }
 
+.pod.focused .user-image {
+  display: none;
+}
+
+.pod .animated-image {
+  display: none;
+}
+
+.pod.focused .animated-image {
+  display: block;
+}
+
 /* TODO(noms): Refactor this out into a CrOS-specific file and simplify the
  style rule once it is included on CrOS only. crbug.com/397638 */
 html:not([screen=login-add-user]) .pod .user-image {
