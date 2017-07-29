@@ -607,6 +607,7 @@ mojom("mojo_bindings") {
     "media/media_stream.mojom",
     "media/renderer_audio_output_stream_factory.mojom",
     "memory_coordinator.mojom",
+    "message_port.mojom",
     "native_types.mojom",
     "push_messaging.mojom",
     "render_frame_message_filter.mojom",

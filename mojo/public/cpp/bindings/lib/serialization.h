@@ -53,6 +53,7 @@ DataArrayType StructSerializeImpl(UserType* input) {
 template <typename MojomType, typename UserType>
 bool StructDeserializeImpl(const void* data,
                            size_t data_num_bytes,
+                           std::vector<mojo::ScopedHandle> handles,
                            UserType* output,
                            bool (*validate_func)(const void*,
                                                  ValidationContext*)) {
@@ -76,10 +77,11 @@ bool StructDeserializeImpl(const void* data,
 
   DCHECK(base::IsValueInRangeForNumericType<uint32_t>(data_num_bytes));
   ValidationContext validation_context(
-      input_buffer, static_cast<uint32_t>(data_num_bytes), 0, 0);
+      input_buffer, static_cast<uint32_t>(data_num_bytes), handles.size(), 0);
   bool result = false;
   if (validate_func(input_buffer, &validation_context)) {
     SerializationContext context;
+    *context.mutable_handles() = std::move(handles);
     result = Deserialize<MojomType>(
         reinterpret_cast<DataType*>(const_cast<void*>(input_buffer)), output,
         &context);
