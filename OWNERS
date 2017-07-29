@@ -16,4 +16,5 @@ per-file DEPS=*
 per-file PRESUBMIT*.py=dpranke@chromium.org
 per-file PRESUBMIT*.py=jochen@chromium.org
 per-file PRESUBMIT*.py=phajdan.jr@chromium.org
+per-file README.md=*
 per-file WATCHLISTS=*
