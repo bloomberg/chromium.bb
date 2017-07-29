@@ -32,8 +32,7 @@ constexpr bool kIsChildRoot = false;
 constexpr bool kHandlesFrameSinkIdInvalidation = true;
 constexpr bool kNeedsSyncPoints = true;
 
-class SurfaceAggregatorPixelTest
-    : public cc::RendererPixelTest<cc::GLRenderer> {
+class SurfaceAggregatorPixelTest : public cc::RendererPixelTest<GLRenderer> {
  public:
   SurfaceAggregatorPixelTest()
       : support_(

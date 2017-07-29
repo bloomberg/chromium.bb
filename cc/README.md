@@ -36,7 +36,7 @@ CompositorFrames from individual compositors are sent to the
 SurfaceManager (currently in the browser process).  The
 SurfaceAggregator combines all CompositorFrames together and asks
 the Display to finally draw the frame via Renderer, which is either
-a GLRenderer or a SoftwareRenderer, which finally draws the entire
+a viz::GLRenderer or a SoftwareRenderer, which finally draws the entire
 composited browser contents into a backbuffer or a bitmap, respectively.
 
 Design documents for the graphics stack can be found at

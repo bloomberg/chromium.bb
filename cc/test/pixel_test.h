@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/files/file_util.h"
-#include "cc/output/gl_renderer.h"
 #include "cc/output/software_renderer.h"
 #include "cc/quads/render_pass.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "components/viz/service/display/gl_renderer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_implementation.h"
@@ -100,16 +100,16 @@ class RendererPixelTest : public PixelTest {
 
 // Wrappers to differentiate renderers where the the output surface and viewport
 // have an externally determined size and offset.
-class GLRendererWithExpandedViewport : public GLRenderer {
+class GLRendererWithExpandedViewport : public viz::GLRenderer {
  public:
   GLRendererWithExpandedViewport(const viz::RendererSettings* settings,
                                  OutputSurface* output_surface,
                                  ResourceProvider* resource_provider,
                                  TextureMailboxDeleter* texture_mailbox_deleter)
-      : GLRenderer(settings,
-                   output_surface,
-                   resource_provider,
-                   texture_mailbox_deleter) {}
+      : viz::GLRenderer(settings,
+                        output_surface,
+                        resource_provider,
+                        texture_mailbox_deleter) {}
 };
 
 class SoftwareRendererWithExpandedViewport : public SoftwareRenderer {
@@ -120,20 +120,20 @@ class SoftwareRendererWithExpandedViewport : public SoftwareRenderer {
       : SoftwareRenderer(settings, output_surface, resource_provider) {}
 };
 
-class GLRendererWithFlippedSurface : public GLRenderer {
+class GLRendererWithFlippedSurface : public viz::GLRenderer {
  public:
   GLRendererWithFlippedSurface(const viz::RendererSettings* settings,
                                OutputSurface* output_surface,
                                ResourceProvider* resource_provider,
                                TextureMailboxDeleter* texture_mailbox_deleter)
-      : GLRenderer(settings,
-                   output_surface,
-                   resource_provider,
-                   texture_mailbox_deleter) {}
+      : viz::GLRenderer(settings,
+                        output_surface,
+                        resource_provider,
+                        texture_mailbox_deleter) {}
 };
 
-template<>
-inline void RendererPixelTest<GLRenderer>::SetUp() {
+template <>
+inline void RendererPixelTest<viz::GLRenderer>::SetUp() {
   SetUpGLRenderer(false, false);
 }
 
@@ -157,7 +157,7 @@ inline void RendererPixelTest<SoftwareRendererWithExpandedViewport>::SetUp() {
   SetUpSoftwareRenderer();
 }
 
-typedef RendererPixelTest<GLRenderer> GLRendererPixelTest;
+typedef RendererPixelTest<viz::GLRenderer> GLRendererPixelTest;
 typedef RendererPixelTest<SoftwareRenderer> SoftwareRendererPixelTest;
 
 }  // namespace cc

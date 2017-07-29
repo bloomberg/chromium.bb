@@ -9,7 +9,6 @@
 #include "base/memory/aligned_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "cc/base/math_util.h"
-#include "cc/output/gl_renderer.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "cc/quads/draw_quad.h"
@@ -19,6 +18,7 @@
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/pixel_test.h"
+#include "components/viz/service/display/gl_renderer.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "media/base/video_frame.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
@@ -643,10 +643,11 @@ void CreateTestY16TextureDrawQuad_TwoColor(
       video_resource_updater, rect, visible_rect, resource_provider);
 }
 
-typedef ::testing::Types<GLRenderer,
+typedef ::testing::Types<viz::GLRenderer,
                          SoftwareRenderer,
                          GLRendererWithExpandedViewport,
-                         SoftwareRendererWithExpandedViewport> RendererTypes;
+                         SoftwareRendererWithExpandedViewport>
+    RendererTypes;
 TYPED_TEST_CASE(RendererPixelTest, RendererTypes);
 
 template <typename RendererType>
@@ -973,7 +974,7 @@ class IntersectingQuadSoftwareTest
 
 typedef ::testing::Types<SoftwareRenderer, SoftwareRendererWithExpandedViewport>
     SoftwareRendererTypes;
-typedef ::testing::Types<GLRenderer, GLRendererWithExpandedViewport>
+typedef ::testing::Types<viz::GLRenderer, GLRendererWithExpandedViewport>
     GLRendererTypes;
 
 TYPED_TEST_CASE(IntersectingQuadPixelTest, RendererTypes);
@@ -1004,13 +1005,13 @@ SkColor GetColor(const SkColor& color) {
 }
 
 template <>
-SkColor GetColor<GLRenderer>(const SkColor& color) {
+SkColor GetColor<viz::GLRenderer>(const SkColor& color) {
   return SkColorSetARGB(SkColorGetA(color), SkColorGetB(color),
                         SkColorGetG(color), SkColorGetR(color));
 }
 template <>
 SkColor GetColor<GLRendererWithExpandedViewport>(const SkColor& color) {
-  return GetColor<GLRenderer>(color);
+  return GetColor<viz::GLRenderer>(color);
 }
 
 TYPED_TEST(IntersectingQuadPixelTest, TexturedQuads) {
@@ -2261,13 +2262,13 @@ class RendererPixelTestWithBackgroundFilter
   gfx::Rect filter_pass_layer_rect_;
 };
 
-typedef ::testing::Types<GLRenderer, SoftwareRenderer>
+typedef ::testing::Types<viz::GLRenderer, SoftwareRenderer>
     BackgroundFilterRendererTypes;
 TYPED_TEST_CASE(RendererPixelTestWithBackgroundFilter,
                 BackgroundFilterRendererTypes);
 
-typedef RendererPixelTestWithBackgroundFilter<GLRenderer>
-GLRendererPixelTestWithBackgroundFilter;
+typedef RendererPixelTestWithBackgroundFilter<viz::GLRenderer>
+    GLRendererPixelTestWithBackgroundFilter;
 
 // TODO(skaslev): The software renderer does not support filters yet.
 TEST_F(GLRendererPixelTestWithBackgroundFilter, InvertFilter) {
@@ -3271,7 +3272,7 @@ TEST_F(GLRendererPixelTest, CheckReadbackSubset) {
 TEST_F(GLRendererPixelTest, TextureQuadBatching) {
   // This test verifies that multiple texture quads using the same resource
   // get drawn correctly.  It implicitly is trying to test that the
-  // GLRenderer does the right thing with its draw quad cache.
+  // viz::GLRenderer does the right thing with its draw quad cache.
 
   gfx::Rect rect(this->device_viewport_size_);
 

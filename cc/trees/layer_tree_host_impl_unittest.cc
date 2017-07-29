@@ -37,7 +37,6 @@
 #include "cc/layers/video_layer_impl.h"
 #include "cc/layers/viewport.h"
 #include "cc/output/compositor_frame_metadata.h"
-#include "cc/output/gl_renderer.h"
 #include "cc/output/latency_info_swap_promise.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
@@ -70,6 +69,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/quads/copy_output_result.h"
+#include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "media/base/media.h"
@@ -8534,9 +8534,9 @@ TEST_F(LayerTreeHostImplTestDrawAndTestDamage, FrameIncludesDamageRect) {
   DrawFrameAndTestDamage(no_damage);
 }
 
-class GLRendererWithSetupQuadForAntialiasing : public GLRenderer {
+class GLRendererWithSetupQuadForAntialiasing : public viz::GLRenderer {
  public:
-  using GLRenderer::ShouldAntialiasQuad;
+  using viz::GLRenderer::ShouldAntialiasQuad;
 };
 
 TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {

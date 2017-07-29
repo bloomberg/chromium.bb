@@ -463,7 +463,7 @@ class CC_EXPORT ResourceProvider
     DISALLOW_COPY_AND_ASSIGN(ScopedBatchReturnResources);
   };
 
-  class Fence : public base::RefCounted<Fence> {
+  class CC_EXPORT Fence : public base::RefCounted<Fence> {
    public:
     Fence() {}
 
@@ -479,7 +479,7 @@ class CC_EXPORT ResourceProvider
     DISALLOW_COPY_AND_ASSIGN(Fence);
   };
 
-  class SynchronousFence : public ResourceProvider::Fence {
+  class CC_EXPORT SynchronousFence : public ResourceProvider::Fence {
    public:
     explicit SynchronousFence(gpu::gles2::GLES2Interface* gl);
 

@@ -13,13 +13,13 @@
 #include "cc/benchmarks/benchmark_instrumentation.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/direct_renderer.h"
-#include "cc/output/gl_renderer.h"
 #include "cc/output/software_renderer.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display/display_scheduler.h"
+#include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/service/display/surface_aggregator.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
@@ -180,9 +180,9 @@ void Display::InitializeRenderer() {
 
   if (output_surface_->context_provider()) {
     DCHECK(texture_mailbox_deleter_);
-    renderer_ = base::MakeUnique<cc::GLRenderer>(
-        &settings_, output_surface_.get(), resource_provider_.get(),
-        texture_mailbox_deleter_.get());
+    renderer_ = base::MakeUnique<GLRenderer>(&settings_, output_surface_.get(),
+                                             resource_provider_.get(),
+                                             texture_mailbox_deleter_.get());
   } else if (output_surface_->vulkan_context_provider()) {
 #if defined(ENABLE_VULKAN)
     DCHECK(texture_mailbox_deleter_);

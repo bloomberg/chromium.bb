@@ -15,6 +15,10 @@ viz_component("service") {
     "display/display_client.h",
     "display/display_scheduler.cc",
     "display/display_scheduler.h",
+    "display/gl_renderer.cc",
+    "display/gl_renderer.h",
+    "display/gl_renderer_draw_cache.cc",
+    "display/gl_renderer_draw_cache.h",
     "display/surface_aggregator.cc",
     "display/surface_aggregator.h",
     "display_embedder/buffer_queue.cc",
@@ -89,6 +93,7 @@ viz_component("service") {
     "//gpu/ipc/client",
     "//gpu/ipc/service",
     "//gpu/vulkan:features",
+    "//media",
     "//skia",
     "//ui/display/types",
   ]
@@ -96,6 +101,7 @@ viz_component("service") {
   public_deps = [
     "//base",
     "//cc",
+    "//cc/debug",
     "//cc/ipc:interfaces",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/ipc:command_buffer",
@@ -145,6 +151,7 @@ viz_source_set("unit_tests") {
   sources = [
     "display/display_scheduler_unittest.cc",
     "display/display_unittest.cc",
+    "display/gl_renderer_unittest.cc",
     "display/surface_aggregator_pixeltest.cc",
     "display/surface_aggregator_unittest.cc",
     "display_embedder/buffer_queue_unittest.cc",

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/gl_renderer.h"
+#include "components/viz/service/display/gl_renderer.h"
 
 #include <stdint.h>
 
@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "cc/output/overlay_strategy_single_on_top.h"
 #include "cc/output/overlay_strategy_underlay.h"
@@ -54,7 +55,7 @@ using testing::Mock;
 using testing::Return;
 using testing::StrictMock;
 
-namespace cc {
+namespace viz {
 
 MATCHER_P(MatchesSyncToken, sync_token, "") {
   gpu::SyncToken other;
@@ -64,14 +65,14 @@ MATCHER_P(MatchesSyncToken, sync_token, "") {
 
 class GLRendererTest : public testing::Test {
  protected:
-  RenderPass* root_render_pass() {
+  cc::RenderPass* root_render_pass() {
     return render_passes_in_draw_order_.back().get();
   }
   void DrawFrame(GLRenderer* renderer, const gfx::Size& viewport_size) {
     renderer->DrawFrame(&render_passes_in_draw_order_, 1.f, viewport_size);
   }
 
-  RenderPassList render_passes_in_draw_order_;
+  cc::RenderPassList render_passes_in_draw_order_;
 };
 
 #define EXPECT_PROGRAM_VALID(program_binding)      \
@@ -81,61 +82,61 @@ class GLRendererTest : public testing::Test {
     EXPECT_TRUE((program_binding)->initialized()); \
   } while (false)
 
-static inline SkBlendMode BlendModeToSkXfermode(BlendMode blend_mode) {
+static inline SkBlendMode BlendModeToSkXfermode(cc::BlendMode blend_mode) {
   switch (blend_mode) {
-    case BLEND_MODE_NONE:
-    case BLEND_MODE_NORMAL:
+    case cc::BLEND_MODE_NONE:
+    case cc::BLEND_MODE_NORMAL:
       return SkBlendMode::kSrcOver;
-    case BLEND_MODE_DESTINATION_IN:
+    case cc::BLEND_MODE_DESTINATION_IN:
       return SkBlendMode::kDstIn;
-    case BLEND_MODE_SCREEN:
+    case cc::BLEND_MODE_SCREEN:
       return SkBlendMode::kScreen;
-    case BLEND_MODE_OVERLAY:
+    case cc::BLEND_MODE_OVERLAY:
       return SkBlendMode::kOverlay;
-    case BLEND_MODE_DARKEN:
+    case cc::BLEND_MODE_DARKEN:
       return SkBlendMode::kDarken;
-    case BLEND_MODE_LIGHTEN:
+    case cc::BLEND_MODE_LIGHTEN:
       return SkBlendMode::kLighten;
-    case BLEND_MODE_COLOR_DODGE:
+    case cc::BLEND_MODE_COLOR_DODGE:
       return SkBlendMode::kColorDodge;
-    case BLEND_MODE_COLOR_BURN:
+    case cc::BLEND_MODE_COLOR_BURN:
       return SkBlendMode::kColorBurn;
-    case BLEND_MODE_HARD_LIGHT:
+    case cc::BLEND_MODE_HARD_LIGHT:
       return SkBlendMode::kHardLight;
-    case BLEND_MODE_SOFT_LIGHT:
+    case cc::BLEND_MODE_SOFT_LIGHT:
       return SkBlendMode::kSoftLight;
-    case BLEND_MODE_DIFFERENCE:
+    case cc::BLEND_MODE_DIFFERENCE:
       return SkBlendMode::kDifference;
-    case BLEND_MODE_EXCLUSION:
+    case cc::BLEND_MODE_EXCLUSION:
       return SkBlendMode::kExclusion;
-    case BLEND_MODE_MULTIPLY:
+    case cc::BLEND_MODE_MULTIPLY:
       return SkBlendMode::kMultiply;
-    case BLEND_MODE_HUE:
+    case cc::BLEND_MODE_HUE:
       return SkBlendMode::kHue;
-    case BLEND_MODE_SATURATION:
+    case cc::BLEND_MODE_SATURATION:
       return SkBlendMode::kSaturation;
-    case BLEND_MODE_COLOR:
+    case cc::BLEND_MODE_COLOR:
       return SkBlendMode::kColor;
-    case BLEND_MODE_LUMINOSITY:
+    case cc::BLEND_MODE_LUMINOSITY:
       return SkBlendMode::kLuminosity;
   }
   return SkBlendMode::kSrcOver;
 }
 
 // Explicitly named to be a friend in GLRenderer for shader access.
-class GLRendererShaderPixelTest : public GLRendererPixelTest {
+class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
  public:
   void SetUp() override {
-    GLRendererPixelTest::SetUp();
+    cc::GLRendererPixelTest::SetUp();
     ASSERT_FALSE(renderer()->IsContextLost());
   }
 
   void TearDown() override {
-    GLRendererPixelTest::TearDown();
+    cc::GLRendererPixelTest::TearDown();
     ASSERT_FALSE(renderer()->IsContextLost());
   }
 
-  void TestShader(const ProgramKey& program_key) {
+  void TestShader(const cc::ProgramKey& program_key) {
     renderer()->SetCurrentFrameForTesting(GLRenderer::DrawingFrame());
     const size_t kNumSrcColorSpaces = 4;
     gfx::ColorSpace src_color_spaces[kNumSrcColorSpaces] = {
@@ -157,9 +158,9 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
   }
 
   void TestBasicShaders() {
-    TestShader(ProgramKey::DebugBorder());
-    TestShader(ProgramKey::SolidColor(NO_AA));
-    TestShader(ProgramKey::SolidColor(USE_AA));
+    TestShader(cc::ProgramKey::DebugBorder());
+    TestShader(cc::ProgramKey::SolidColor(cc::NO_AA));
+    TestShader(cc::ProgramKey::SolidColor(cc::USE_AA));
   }
 
   void TestColorShaders() {
@@ -188,123 +189,135 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
           gfx::ColorSpace::CreateCustom(primaries, transfer_fns[i]);
 
       renderer()->SetCurrentFrameForTesting(GLRenderer::DrawingFrame());
-      renderer()->SetUseProgram(ProgramKey::SolidColor(NO_AA), src,
+      renderer()->SetUseProgram(cc::ProgramKey::SolidColor(cc::NO_AA), src,
                                 gfx::ColorSpace::CreateXYZD50());
       EXPECT_TRUE(renderer()->current_program_->initialized());
     }
   }
 
-  void TestShadersWithPrecision(TexCoordPrecision precision) {
+  void TestShadersWithPrecision(cc::TexCoordPrecision precision) {
     // This program uses external textures and sampler, so it won't compile
     // everywhere.
     if (context_provider()->ContextCapabilities().egl_image_external) {
-      TestShader(ProgramKey::VideoStream(precision));
+      TestShader(cc::ProgramKey::VideoStream(precision));
     }
   }
 
-  void TestShadersWithPrecisionAndBlend(TexCoordPrecision precision,
-                                        BlendMode blend_mode) {
-    TestShader(ProgramKey::RenderPass(precision, SAMPLER_TYPE_2D, blend_mode,
-                                      NO_AA, NO_MASK, false, false));
-    TestShader(ProgramKey::RenderPass(precision, SAMPLER_TYPE_2D, blend_mode,
-                                      USE_AA, NO_MASK, false, false));
+  void TestShadersWithPrecisionAndBlend(cc::TexCoordPrecision precision,
+                                        cc::BlendMode blend_mode) {
+    TestShader(cc::ProgramKey::RenderPass(precision, cc::SAMPLER_TYPE_2D,
+                                          blend_mode, cc::NO_AA, cc::NO_MASK,
+                                          false, false));
+    TestShader(cc::ProgramKey::RenderPass(precision, cc::SAMPLER_TYPE_2D,
+                                          blend_mode, cc::USE_AA, cc::NO_MASK,
+                                          false, false));
   }
 
-  void TestShadersWithPrecisionAndSampler(TexCoordPrecision precision,
-                                          SamplerType sampler) {
+  void TestShadersWithPrecisionAndSampler(cc::TexCoordPrecision precision,
+                                          cc::SamplerType sampler) {
     if (!context_provider()->ContextCapabilities().egl_image_external &&
-        sampler == SAMPLER_TYPE_EXTERNAL_OES) {
+        sampler == cc::SAMPLER_TYPE_EXTERNAL_OES) {
       // This will likely be hit in tests due to usage of osmesa.
       return;
     }
 
-    TestShader(ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA,
-                                   false, true));
-    TestShader(ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA,
-                                   false, false));
-    TestShader(ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA,
-                                   true, true));
-    TestShader(ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA,
-                                   true, false));
-    TestShader(ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA,
-                                   false, true));
-    TestShader(ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA,
-                                   false, false));
-    TestShader(ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA,
-                                   true, true));
-    TestShader(ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA,
-                                   true, false));
-    TestShader(ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE, false));
-    TestShader(ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE, false));
-    TestShader(ProgramKey::Tile(precision, sampler, USE_AA, NO_SWIZZLE, false));
-    TestShader(ProgramKey::Tile(precision, sampler, USE_AA, DO_SWIZZLE, false));
-    TestShader(ProgramKey::Tile(precision, sampler, NO_AA, NO_SWIZZLE, true));
-    TestShader(ProgramKey::Tile(precision, sampler, NO_AA, DO_SWIZZLE, true));
+    TestShader(cc::ProgramKey::Texture(precision, sampler,
+                                       cc::PREMULTIPLIED_ALPHA, false, true));
+    TestShader(cc::ProgramKey::Texture(precision, sampler,
+                                       cc::PREMULTIPLIED_ALPHA, false, false));
+    TestShader(cc::ProgramKey::Texture(precision, sampler,
+                                       cc::PREMULTIPLIED_ALPHA, true, true));
+    TestShader(cc::ProgramKey::Texture(precision, sampler,
+                                       cc::PREMULTIPLIED_ALPHA, true, false));
+    TestShader(cc::ProgramKey::Texture(
+        precision, sampler, cc::NON_PREMULTIPLIED_ALPHA, false, true));
+    TestShader(cc::ProgramKey::Texture(
+        precision, sampler, cc::NON_PREMULTIPLIED_ALPHA, false, false));
+    TestShader(cc::ProgramKey::Texture(
+        precision, sampler, cc::NON_PREMULTIPLIED_ALPHA, true, true));
+    TestShader(cc::ProgramKey::Texture(
+        precision, sampler, cc::NON_PREMULTIPLIED_ALPHA, true, false));
+    TestShader(cc::ProgramKey::Tile(precision, sampler, cc::NO_AA,
+                                    cc::NO_SWIZZLE, false));
+    TestShader(cc::ProgramKey::Tile(precision, sampler, cc::NO_AA,
+                                    cc::DO_SWIZZLE, false));
+    TestShader(cc::ProgramKey::Tile(precision, sampler, cc::USE_AA,
+                                    cc::NO_SWIZZLE, false));
+    TestShader(cc::ProgramKey::Tile(precision, sampler, cc::USE_AA,
+                                    cc::DO_SWIZZLE, false));
+    TestShader(cc::ProgramKey::Tile(precision, sampler, cc::NO_AA,
+                                    cc::NO_SWIZZLE, true));
+    TestShader(cc::ProgramKey::Tile(precision, sampler, cc::NO_AA,
+                                    cc::DO_SWIZZLE, true));
 
     // Iterate over alpha plane, nv12, and color_lut parameters.
-    UVTextureMode uv_modes[2] = {UV_TEXTURE_MODE_UV, UV_TEXTURE_MODE_U_V};
-    YUVAlphaTextureMode a_modes[2] = {YUV_NO_ALPHA_TEXTURE,
-                                      YUV_HAS_ALPHA_TEXTURE};
+    cc::UVTextureMode uv_modes[2] = {cc::UV_TEXTURE_MODE_UV,
+                                     cc::UV_TEXTURE_MODE_U_V};
+    cc::YUVAlphaTextureMode a_modes[2] = {cc::YUV_NO_ALPHA_TEXTURE,
+                                          cc::YUV_HAS_ALPHA_TEXTURE};
     for (int j = 0; j < 2; j++) {
       for (int k = 0; k < 2; k++) {
-        TestShader(
-            ProgramKey::YUVVideo(precision, sampler, a_modes[j], uv_modes[k]));
+        TestShader(cc::ProgramKey::YUVVideo(precision, sampler, a_modes[j],
+                                            uv_modes[k]));
       }
     }
   }
 
-  void TestShadersWithMasks(TexCoordPrecision precision,
-                            SamplerType sampler,
-                            BlendMode blend_mode,
+  void TestShadersWithMasks(cc::TexCoordPrecision precision,
+                            cc::SamplerType sampler,
+                            cc::BlendMode blend_mode,
                             bool mask_for_background) {
     if (!context_provider()->ContextCapabilities().egl_image_external &&
-        sampler == SAMPLER_TYPE_EXTERNAL_OES) {
+        sampler == cc::SAMPLER_TYPE_EXTERNAL_OES) {
       // This will likely be hit in tests due to usage of osmesa.
       return;
     }
 
-    TestShader(ProgramKey::RenderPass(precision, sampler, blend_mode, NO_AA,
-                                      HAS_MASK, mask_for_background, false));
-    TestShader(ProgramKey::RenderPass(precision, sampler, blend_mode, NO_AA,
-                                      HAS_MASK, mask_for_background, true));
-    TestShader(ProgramKey::RenderPass(precision, sampler, blend_mode, USE_AA,
-                                      HAS_MASK, mask_for_background, false));
-    TestShader(ProgramKey::RenderPass(precision, sampler, blend_mode, USE_AA,
-                                      HAS_MASK, mask_for_background, true));
+    TestShader(cc::ProgramKey::RenderPass(precision, sampler, blend_mode,
+                                          cc::NO_AA, cc::HAS_MASK,
+                                          mask_for_background, false));
+    TestShader(cc::ProgramKey::RenderPass(precision, sampler, blend_mode,
+                                          cc::NO_AA, cc::HAS_MASK,
+                                          mask_for_background, true));
+    TestShader(cc::ProgramKey::RenderPass(precision, sampler, blend_mode,
+                                          cc::USE_AA, cc::HAS_MASK,
+                                          mask_for_background, false));
+    TestShader(cc::ProgramKey::RenderPass(precision, sampler, blend_mode,
+                                          cc::USE_AA, cc::HAS_MASK,
+                                          mask_for_background, true));
   }
 };
 
 namespace {
 
 #if !defined(OS_ANDROID) && !defined(OS_WIN)
-static const TexCoordPrecision kPrecisionList[] = {TEX_COORD_PRECISION_MEDIUM,
-                                                   TEX_COORD_PRECISION_HIGH};
+static const cc::TexCoordPrecision kPrecisionList[] = {
+    cc::TEX_COORD_PRECISION_MEDIUM, cc::TEX_COORD_PRECISION_HIGH};
 
-static const BlendMode kBlendModeList[LAST_BLEND_MODE + 1] = {
-    BLEND_MODE_NONE,
-    BLEND_MODE_NORMAL,
-    BLEND_MODE_DESTINATION_IN,
-    BLEND_MODE_SCREEN,
-    BLEND_MODE_OVERLAY,
-    BLEND_MODE_DARKEN,
-    BLEND_MODE_LIGHTEN,
-    BLEND_MODE_COLOR_DODGE,
-    BLEND_MODE_COLOR_BURN,
-    BLEND_MODE_HARD_LIGHT,
-    BLEND_MODE_SOFT_LIGHT,
-    BLEND_MODE_DIFFERENCE,
-    BLEND_MODE_EXCLUSION,
-    BLEND_MODE_MULTIPLY,
-    BLEND_MODE_HUE,
-    BLEND_MODE_SATURATION,
-    BLEND_MODE_COLOR,
-    BLEND_MODE_LUMINOSITY,
+static const cc::BlendMode kBlendModeList[cc::LAST_BLEND_MODE + 1] = {
+    cc::BLEND_MODE_NONE,
+    cc::BLEND_MODE_NORMAL,
+    cc::BLEND_MODE_DESTINATION_IN,
+    cc::BLEND_MODE_SCREEN,
+    cc::BLEND_MODE_OVERLAY,
+    cc::BLEND_MODE_DARKEN,
+    cc::BLEND_MODE_LIGHTEN,
+    cc::BLEND_MODE_COLOR_DODGE,
+    cc::BLEND_MODE_COLOR_BURN,
+    cc::BLEND_MODE_HARD_LIGHT,
+    cc::BLEND_MODE_SOFT_LIGHT,
+    cc::BLEND_MODE_DIFFERENCE,
+    cc::BLEND_MODE_EXCLUSION,
+    cc::BLEND_MODE_MULTIPLY,
+    cc::BLEND_MODE_HUE,
+    cc::BLEND_MODE_SATURATION,
+    cc::BLEND_MODE_COLOR,
+    cc::BLEND_MODE_LUMINOSITY,
 };
 
-static const SamplerType kSamplerList[] = {
-    SAMPLER_TYPE_2D,
-    SAMPLER_TYPE_2D_RECT,
-    SAMPLER_TYPE_EXTERNAL_OES,
+static const cc::SamplerType kSamplerList[] = {
+    cc::SAMPLER_TYPE_2D, cc::SAMPLER_TYPE_2D_RECT,
+    cc::SAMPLER_TYPE_EXTERNAL_OES,
 };
 
 TEST_F(GLRendererShaderPixelTest, BasicShadersCompile) {
@@ -317,7 +330,7 @@ TEST_F(GLRendererShaderPixelTest, TestColorShadersCompile) {
 
 class PrecisionShaderPixelTest
     : public GLRendererShaderPixelTest,
-      public ::testing::WithParamInterface<TexCoordPrecision> {};
+      public ::testing::WithParamInterface<cc::TexCoordPrecision> {};
 
 TEST_P(PrecisionShaderPixelTest, ShadersCompile) {
   TestShadersWithPrecision(GetParam());
@@ -330,7 +343,7 @@ INSTANTIATE_TEST_CASE_P(PrecisionShadersCompile,
 class PrecisionBlendShaderPixelTest
     : public GLRendererShaderPixelTest,
       public ::testing::WithParamInterface<
-          std::tr1::tuple<TexCoordPrecision, BlendMode>> {};
+          std::tr1::tuple<cc::TexCoordPrecision, cc::BlendMode>> {};
 
 TEST_P(PrecisionBlendShaderPixelTest, ShadersCompile) {
   TestShadersWithPrecisionAndBlend(std::tr1::get<0>(GetParam()),
@@ -346,7 +359,7 @@ INSTANTIATE_TEST_CASE_P(
 class PrecisionSamplerShaderPixelTest
     : public GLRendererShaderPixelTest,
       public ::testing::WithParamInterface<
-          std::tr1::tuple<TexCoordPrecision, SamplerType>> {};
+          std::tr1::tuple<cc::TexCoordPrecision, cc::SamplerType>> {};
 
 TEST_P(PrecisionSamplerShaderPixelTest, ShadersCompile) {
   TestShadersWithPrecisionAndSampler(std::tr1::get<0>(GetParam()),
@@ -358,10 +371,12 @@ INSTANTIATE_TEST_CASE_P(PrecisionSamplerShadersCompile,
                         ::testing::Combine(::testing::ValuesIn(kPrecisionList),
                                            ::testing::ValuesIn(kSamplerList)));
 
-class MaskShaderPixelTest
-    : public GLRendererShaderPixelTest,
-      public ::testing::WithParamInterface<
-          std::tr1::tuple<TexCoordPrecision, SamplerType, BlendMode, bool>> {};
+class MaskShaderPixelTest : public GLRendererShaderPixelTest,
+                            public ::testing::WithParamInterface<
+                                std::tr1::tuple<cc::TexCoordPrecision,
+                                                cc::SamplerType,
+                                                cc::BlendMode,
+                                                bool>> {};
 
 TEST_P(MaskShaderPixelTest, ShadersCompile) {
   TestShadersWithMasks(
@@ -380,21 +395,21 @@ INSTANTIATE_TEST_CASE_P(MaskShadersCompile,
 
 class FakeRendererGL : public GLRenderer {
  public:
-  FakeRendererGL(const viz::RendererSettings* settings,
-                 OutputSurface* output_surface,
-                 ResourceProvider* resource_provider)
+  FakeRendererGL(const RendererSettings* settings,
+                 cc::OutputSurface* output_surface,
+                 cc::ResourceProvider* resource_provider)
       : GLRenderer(settings, output_surface, resource_provider, nullptr) {}
 
-  FakeRendererGL(const viz::RendererSettings* settings,
-                 OutputSurface* output_surface,
-                 ResourceProvider* resource_provider,
-                 TextureMailboxDeleter* texture_mailbox_deleter)
+  FakeRendererGL(const RendererSettings* settings,
+                 cc::OutputSurface* output_surface,
+                 cc::ResourceProvider* resource_provider,
+                 cc::TextureMailboxDeleter* texture_mailbox_deleter)
       : GLRenderer(settings,
                    output_surface,
                    resource_provider,
                    texture_mailbox_deleter) {}
 
-  void SetOverlayProcessor(OverlayProcessor* processor) {
+  void SetOverlayProcessor(cc::OverlayProcessor* processor) {
     overlay_processor_.reset(processor);
   }
 
@@ -410,11 +425,11 @@ class FakeRendererGL : public GLRenderer {
 class GLRendererWithDefaultHarnessTest : public GLRendererTest {
  protected:
   GLRendererWithDefaultHarnessTest() {
-    output_surface_ = FakeOutputSurface::Create3d();
+    output_surface_ = cc::FakeOutputSurface::Create3d();
     output_surface_->BindToClient(&output_surface_client_);
 
-    shared_bitmap_manager_.reset(new TestSharedBitmapManager());
-    resource_provider_ = FakeResourceProvider::Create(
+    shared_bitmap_manager_.reset(new cc::TestSharedBitmapManager());
+    resource_provider_ = cc::FakeResourceProvider::Create(
         output_surface_->context_provider(), shared_bitmap_manager_.get());
     renderer_ = base::MakeUnique<FakeRendererGL>(
         &settings_, output_surface_.get(), resource_provider_.get());
@@ -424,11 +439,11 @@ class GLRendererWithDefaultHarnessTest : public GLRendererTest {
 
   void SwapBuffers() { renderer_->SwapBuffers(std::vector<ui::LatencyInfo>()); }
 
-  viz::RendererSettings settings_;
-  FakeOutputSurfaceClient output_surface_client_;
-  std::unique_ptr<FakeOutputSurface> output_surface_;
-  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager_;
-  std::unique_ptr<ResourceProvider> resource_provider_;
+  RendererSettings settings_;
+  cc::FakeOutputSurfaceClient output_surface_client_;
+  std::unique_ptr<cc::FakeOutputSurface> output_surface_;
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<cc::ResourceProvider> resource_provider_;
   std::unique_ptr<FakeRendererGL> renderer_;
 };
 
@@ -440,11 +455,11 @@ class GLRendererWithDefaultHarnessTest : public GLRendererTest {
 class GLRendererShaderTest : public GLRendererTest {
  protected:
   GLRendererShaderTest() {
-    output_surface_ = FakeOutputSurface::Create3d();
+    output_surface_ = cc::FakeOutputSurface::Create3d();
     output_surface_->BindToClient(&output_surface_client_);
 
-    shared_bitmap_manager_.reset(new TestSharedBitmapManager());
-    resource_provider_ = FakeResourceProvider::Create(
+    shared_bitmap_manager_.reset(new cc::TestSharedBitmapManager());
+    resource_provider_ = cc::FakeResourceProvider::Create(
         output_surface_->context_provider(), shared_bitmap_manager_.get());
     renderer_.reset(new FakeRendererGL(&settings_, output_surface_.get(),
                                        resource_provider_.get()));
@@ -452,94 +467,94 @@ class GLRendererShaderTest : public GLRendererTest {
     renderer_->SetVisible(true);
   }
 
-  void TestRenderPassProgram(TexCoordPrecision precision,
-                             BlendMode blend_mode) {
-    const Program* program = renderer_->GetProgramIfInitialized(
-        ProgramKey::RenderPass(precision, SAMPLER_TYPE_2D, blend_mode, NO_AA,
-                               NO_MASK, false, false));
+  void TestRenderPassProgram(cc::TexCoordPrecision precision,
+                             cc::BlendMode blend_mode) {
+    const cc::Program* program = renderer_->GetProgramIfInitialized(
+        cc::ProgramKey::RenderPass(precision, cc::SAMPLER_TYPE_2D, blend_mode,
+                                   cc::NO_AA, cc::NO_MASK, false, false));
     EXPECT_PROGRAM_VALID(program);
     EXPECT_EQ(program, renderer_->current_program_);
   }
 
-  void TestRenderPassColorMatrixProgram(TexCoordPrecision precision,
-                                        BlendMode blend_mode) {
-    const Program* program = renderer_->GetProgramIfInitialized(
-        ProgramKey::RenderPass(precision, SAMPLER_TYPE_2D, blend_mode, NO_AA,
-                               NO_MASK, false, true));
+  void TestRenderPassColorMatrixProgram(cc::TexCoordPrecision precision,
+                                        cc::BlendMode blend_mode) {
+    const cc::Program* program = renderer_->GetProgramIfInitialized(
+        cc::ProgramKey::RenderPass(precision, cc::SAMPLER_TYPE_2D, blend_mode,
+                                   cc::NO_AA, cc::NO_MASK, false, true));
     EXPECT_PROGRAM_VALID(program);
     EXPECT_EQ(program, renderer_->current_program_);
   }
 
-  void TestRenderPassMaskProgram(TexCoordPrecision precision,
-                                 SamplerType sampler,
-                                 BlendMode blend_mode) {
-    const Program* program =
-        renderer_->GetProgramIfInitialized(ProgramKey::RenderPass(
-            precision, sampler, blend_mode, NO_AA, HAS_MASK, false, false));
+  void TestRenderPassMaskProgram(cc::TexCoordPrecision precision,
+                                 cc::SamplerType sampler,
+                                 cc::BlendMode blend_mode) {
+    const cc::Program* program = renderer_->GetProgramIfInitialized(
+        cc::ProgramKey::RenderPass(precision, sampler, blend_mode, cc::NO_AA,
+                                   cc::HAS_MASK, false, false));
     EXPECT_PROGRAM_VALID(program);
     EXPECT_EQ(program, renderer_->current_program_);
   }
 
-  void TestRenderPassMaskColorMatrixProgram(TexCoordPrecision precision,
-                                            SamplerType sampler,
-                                            BlendMode blend_mode) {
-    const Program* program =
-        renderer_->GetProgramIfInitialized(ProgramKey::RenderPass(
-            precision, sampler, blend_mode, NO_AA, HAS_MASK, false, true));
+  void TestRenderPassMaskColorMatrixProgram(cc::TexCoordPrecision precision,
+                                            cc::SamplerType sampler,
+                                            cc::BlendMode blend_mode) {
+    const cc::Program* program = renderer_->GetProgramIfInitialized(
+        cc::ProgramKey::RenderPass(precision, sampler, blend_mode, cc::NO_AA,
+                                   cc::HAS_MASK, false, true));
     EXPECT_PROGRAM_VALID(program);
     EXPECT_EQ(program, renderer_->current_program_);
   }
 
-  void TestRenderPassProgramAA(TexCoordPrecision precision,
-                               BlendMode blend_mode) {
-    const Program* program = renderer_->GetProgramIfInitialized(
-        ProgramKey::RenderPass(precision, SAMPLER_TYPE_2D, blend_mode, USE_AA,
-                               NO_MASK, false, false));
+  void TestRenderPassProgramAA(cc::TexCoordPrecision precision,
+                               cc::BlendMode blend_mode) {
+    const cc::Program* program = renderer_->GetProgramIfInitialized(
+        cc::ProgramKey::RenderPass(precision, cc::SAMPLER_TYPE_2D, blend_mode,
+                                   cc::USE_AA, cc::NO_MASK, false, false));
     EXPECT_PROGRAM_VALID(program);
     EXPECT_EQ(program, renderer_->current_program_);
   }
 
-  void TestRenderPassColorMatrixProgramAA(TexCoordPrecision precision,
-                                          BlendMode blend_mode) {
-    const Program* program = renderer_->GetProgramIfInitialized(
-        ProgramKey::RenderPass(precision, SAMPLER_TYPE_2D, blend_mode, USE_AA,
-                               NO_MASK, false, true));
+  void TestRenderPassColorMatrixProgramAA(cc::TexCoordPrecision precision,
+                                          cc::BlendMode blend_mode) {
+    const cc::Program* program = renderer_->GetProgramIfInitialized(
+        cc::ProgramKey::RenderPass(precision, cc::SAMPLER_TYPE_2D, blend_mode,
+                                   cc::USE_AA, cc::NO_MASK, false, true));
     EXPECT_PROGRAM_VALID(program);
     EXPECT_EQ(program, renderer_->current_program_);
   }
 
-  void TestRenderPassMaskProgramAA(TexCoordPrecision precision,
-                                   SamplerType sampler,
-                                   BlendMode blend_mode) {
-    const Program* program =
-        renderer_->GetProgramIfInitialized(ProgramKey::RenderPass(
-            precision, sampler, blend_mode, USE_AA, HAS_MASK, false, false));
+  void TestRenderPassMaskProgramAA(cc::TexCoordPrecision precision,
+                                   cc::SamplerType sampler,
+                                   cc::BlendMode blend_mode) {
+    const cc::Program* program = renderer_->GetProgramIfInitialized(
+        cc::ProgramKey::RenderPass(precision, sampler, blend_mode, cc::USE_AA,
+                                   cc::HAS_MASK, false, false));
     EXPECT_PROGRAM_VALID(program);
     EXPECT_EQ(program, renderer_->current_program_);
   }
 
-  void TestRenderPassMaskColorMatrixProgramAA(TexCoordPrecision precision,
-                                              SamplerType sampler,
-                                              BlendMode blend_mode) {
-    const Program* program =
-        renderer_->GetProgramIfInitialized(ProgramKey::RenderPass(
-            precision, sampler, blend_mode, USE_AA, HAS_MASK, false, true));
+  void TestRenderPassMaskColorMatrixProgramAA(cc::TexCoordPrecision precision,
+                                              cc::SamplerType sampler,
+                                              cc::BlendMode blend_mode) {
+    const cc::Program* program = renderer_->GetProgramIfInitialized(
+        cc::ProgramKey::RenderPass(precision, sampler, blend_mode, cc::USE_AA,
+                                   cc::HAS_MASK, false, true));
     EXPECT_PROGRAM_VALID(program);
     EXPECT_EQ(program, renderer_->current_program_);
   }
 
   void TestSolidColorProgramAA() {
-    const Program* program =
-        renderer_->GetProgramIfInitialized(ProgramKey::SolidColor(USE_AA));
+    const cc::Program* program = renderer_->GetProgramIfInitialized(
+        cc::ProgramKey::SolidColor(cc::USE_AA));
     EXPECT_PROGRAM_VALID(program);
     EXPECT_EQ(program, renderer_->current_program_);
   }
 
-  viz::RendererSettings settings_;
-  FakeOutputSurfaceClient output_surface_client_;
-  std::unique_ptr<FakeOutputSurface> output_surface_;
-  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager_;
-  std::unique_ptr<ResourceProvider> resource_provider_;
+  RendererSettings settings_;
+  cc::FakeOutputSurfaceClient output_surface_client_;
+  std::unique_ptr<cc::FakeOutputSurface> output_surface_;
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<cc::ResourceProvider> resource_provider_;
   std::unique_ptr<FakeRendererGL> renderer_;
 };
 
@@ -551,16 +566,16 @@ TEST_F(GLRendererWithDefaultHarnessTest, ExternalStencil) {
 
   output_surface_->set_has_external_stencil_test(true);
 
-  RenderPass* root_pass =
+  cc::RenderPass* root_pass =
       AddRenderPass(&render_passes_in_draw_order_, 1, gfx::Rect(viewport_size),
-                    gfx::Transform(), FilterOperations());
+                    gfx::Transform(), cc::FilterOperations());
   root_pass->has_transparent_background = false;
 
   DrawFrame(renderer_.get(), viewport_size);
   EXPECT_TRUE(renderer_->stencil_enabled());
 }
 
-class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
+class ForbidSynchronousCallContext : public cc::TestWebGraphicsContext3D {
  public:
   ForbidSynchronousCallContext() {}
 
@@ -659,26 +674,26 @@ class ForbidSynchronousCallContext : public TestWebGraphicsContext3D {
 };
 TEST_F(GLRendererTest, InitializationDoesNotMakeSynchronousCalls) {
   auto context = base::MakeUnique<ForbidSynchronousCallContext>();
-  auto provider = TestContextProvider::Create(std::move(context));
+  auto provider = cc::TestContextProvider::Create(std::move(context));
   provider->BindToCurrentThread();
 
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(provider)));
+  cc::FakeOutputSurfaceClient output_surface_client;
+  std::unique_ptr<cc::OutputSurface> output_surface(
+      cc::FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
-      new TestSharedBitmapManager());
-  std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface->context_provider(),
-                                   shared_bitmap_manager.get());
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new cc::TestSharedBitmapManager());
+  std::unique_ptr<cc::ResourceProvider> resource_provider =
+      cc::FakeResourceProvider::Create(output_surface->context_provider(),
+                                       shared_bitmap_manager.get());
 
-  viz::RendererSettings settings;
+  RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
 }
 
-class LoseContextOnFirstGetContext : public TestWebGraphicsContext3D {
+class LoseContextOnFirstGetContext : public cc::TestWebGraphicsContext3D {
  public:
   LoseContextOnFirstGetContext() {}
 
@@ -695,26 +710,26 @@ class LoseContextOnFirstGetContext : public TestWebGraphicsContext3D {
 
 TEST_F(GLRendererTest, InitializationWithQuicklyLostContextDoesNotAssert) {
   auto context = base::MakeUnique<LoseContextOnFirstGetContext>();
-  auto provider = TestContextProvider::Create(std::move(context));
+  auto provider = cc::TestContextProvider::Create(std::move(context));
   provider->BindToCurrentThread();
 
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(provider)));
+  cc::FakeOutputSurfaceClient output_surface_client;
+  std::unique_ptr<cc::OutputSurface> output_surface(
+      cc::FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
-      new TestSharedBitmapManager());
-  std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface->context_provider(),
-                                   shared_bitmap_manager.get());
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new cc::TestSharedBitmapManager());
+  std::unique_ptr<cc::ResourceProvider> resource_provider =
+      cc::FakeResourceProvider::Create(output_surface->context_provider(),
+                                       shared_bitmap_manager.get());
 
-  viz::RendererSettings settings;
+  RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
 }
 
-class ClearCountingContext : public TestWebGraphicsContext3D {
+class ClearCountingContext : public cc::TestWebGraphicsContext3D {
  public:
   ClearCountingContext() { test_capabilities_.discard_framebuffer = true; }
 
@@ -729,30 +744,30 @@ TEST_F(GLRendererTest, OpaqueBackground) {
   std::unique_ptr<ClearCountingContext> context_owned(new ClearCountingContext);
   ClearCountingContext* context = context_owned.get();
 
-  auto provider = TestContextProvider::Create(std::move(context_owned));
+  auto provider = cc::TestContextProvider::Create(std::move(context_owned));
   provider->BindToCurrentThread();
 
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(provider)));
+  cc::FakeOutputSurfaceClient output_surface_client;
+  std::unique_ptr<cc::OutputSurface> output_surface(
+      cc::FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
-      new TestSharedBitmapManager());
-  std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface->context_provider(),
-                                   shared_bitmap_manager.get());
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new cc::TestSharedBitmapManager());
+  std::unique_ptr<cc::ResourceProvider> resource_provider =
+      cc::FakeResourceProvider::Create(output_surface->context_provider(),
+                                       shared_bitmap_manager.get());
 
-  viz::RendererSettings settings;
+  RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
   renderer.Initialize();
   renderer.SetVisible(true);
 
   gfx::Size viewport_size(1, 1);
-  RenderPass* root_pass =
+  cc::RenderPass* root_pass =
       AddRenderPass(&render_passes_in_draw_order_, 1, gfx::Rect(viewport_size),
-                    gfx::Transform(), FilterOperations());
+                    gfx::Transform(), cc::FilterOperations());
   root_pass->has_transparent_background = false;
 
   // On DEBUG builds, render passes with opaque background clear to blue to
@@ -773,30 +788,30 @@ TEST_F(GLRendererTest, TransparentBackground) {
   std::unique_ptr<ClearCountingContext> context_owned(new ClearCountingContext);
   ClearCountingContext* context = context_owned.get();
 
-  auto provider = TestContextProvider::Create(std::move(context_owned));
+  auto provider = cc::TestContextProvider::Create(std::move(context_owned));
   provider->BindToCurrentThread();
 
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(provider)));
+  cc::FakeOutputSurfaceClient output_surface_client;
+  std::unique_ptr<cc::OutputSurface> output_surface(
+      cc::FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
-      new TestSharedBitmapManager());
-  std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface->context_provider(),
-                                   shared_bitmap_manager.get());
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new cc::TestSharedBitmapManager());
+  std::unique_ptr<cc::ResourceProvider> resource_provider =
+      cc::FakeResourceProvider::Create(output_surface->context_provider(),
+                                       shared_bitmap_manager.get());
 
-  viz::RendererSettings settings;
+  RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
   renderer.Initialize();
   renderer.SetVisible(true);
 
   gfx::Size viewport_size(1, 1);
-  RenderPass* root_pass =
+  cc::RenderPass* root_pass =
       AddRenderPass(&render_passes_in_draw_order_, 1, gfx::Rect(viewport_size),
-                    gfx::Transform(), FilterOperations());
+                    gfx::Transform(), cc::FilterOperations());
   root_pass->has_transparent_background = true;
 
   EXPECT_CALL(*context, discardFramebufferEXT(GL_FRAMEBUFFER, 1, _)).Times(1);
@@ -810,21 +825,21 @@ TEST_F(GLRendererTest, OffscreenOutputSurface) {
   std::unique_ptr<ClearCountingContext> context_owned(new ClearCountingContext);
   ClearCountingContext* context = context_owned.get();
 
-  auto provider = TestContextProvider::Create(std::move(context_owned));
+  auto provider = cc::TestContextProvider::Create(std::move(context_owned));
   provider->BindToCurrentThread();
 
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::CreateOffscreen(std::move(provider)));
+  cc::FakeOutputSurfaceClient output_surface_client;
+  std::unique_ptr<cc::OutputSurface> output_surface(
+      cc::FakeOutputSurface::CreateOffscreen(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
-      new TestSharedBitmapManager());
-  std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface->context_provider(),
-                                   shared_bitmap_manager.get());
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new cc::TestSharedBitmapManager());
+  std::unique_ptr<cc::ResourceProvider> resource_provider =
+      cc::FakeResourceProvider::Create(output_surface->context_provider(),
+                                       shared_bitmap_manager.get());
 
-  viz::RendererSettings settings;
+  RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
   renderer.Initialize();
@@ -832,7 +847,7 @@ TEST_F(GLRendererTest, OffscreenOutputSurface) {
 
   gfx::Size viewport_size(1, 1);
   AddRenderPass(&render_passes_in_draw_order_, 1, gfx::Rect(viewport_size),
-                gfx::Transform(), FilterOperations());
+                gfx::Transform(), cc::FilterOperations());
 
   EXPECT_CALL(*context, discardFramebufferEXT(GL_FRAMEBUFFER, _, _))
       .With(Args<2, 1>(ElementsAre(GL_COLOR_ATTACHMENT0)))
@@ -842,7 +857,7 @@ TEST_F(GLRendererTest, OffscreenOutputSurface) {
   Mock::VerifyAndClearExpectations(context);
 }
 
-class TextureStateTrackingContext : public TestWebGraphicsContext3D {
+class TextureStateTrackingContext : public cc::TestWebGraphicsContext3D {
  public:
   TextureStateTrackingContext() : active_texture_(GL_INVALID_ENUM) {
     test_capabilities_.egl_image_external = true;
@@ -869,21 +884,21 @@ TEST_F(GLRendererTest, ActiveTextureState) {
       new TextureStateTrackingContext);
   TextureStateTrackingContext* context = context_owned.get();
 
-  auto provider = TestContextProvider::Create(std::move(context_owned));
+  auto provider = cc::TestContextProvider::Create(std::move(context_owned));
   provider->BindToCurrentThread();
 
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(provider)));
+  cc::FakeOutputSurfaceClient output_surface_client;
+  std::unique_ptr<cc::OutputSurface> output_surface(
+      cc::FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
-      new TestSharedBitmapManager());
-  std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface->context_provider(),
-                                   shared_bitmap_manager.get());
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new cc::TestSharedBitmapManager());
+  std::unique_ptr<cc::ResourceProvider> resource_provider =
+      cc::FakeResourceProvider::Create(output_surface->context_provider(),
+                                       shared_bitmap_manager.get());
 
-  viz::RendererSettings settings;
+  RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
   renderer.Initialize();
@@ -892,9 +907,9 @@ TEST_F(GLRendererTest, ActiveTextureState) {
   // During initialization we are allowed to set any texture parameters.
   EXPECT_CALL(*context, texParameteri(_, _, _)).Times(AnyNumber());
 
-  RenderPass* root_pass =
+  cc::RenderPass* root_pass =
       AddRenderPass(&render_passes_in_draw_order_, 1, gfx::Rect(100, 100),
-                    gfx::Transform(), FilterOperations());
+                    gfx::Transform(), cc::FilterOperations());
   gpu::SyncToken mailbox_sync_token;
   AddOneOfEveryQuadType(root_pass, resource_provider.get(), 0,
                         &mailbox_sync_token);
@@ -917,12 +932,10 @@ TEST_F(GLRendererTest, ActiveTextureState) {
 
     // tile_quad is drawn with GL_NEAREST because it is not transformed or
     // scaled.
-    EXPECT_CALL(
-        *context,
-        texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-    EXPECT_CALL(
-        *context,
-        texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                                        GL_NEAREST));
+    EXPECT_CALL(*context, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+                                        GL_NEAREST));
     EXPECT_CALL(*context, drawElements(_, _, _, _));
 
     // transformed_tile_quad uses GL_LINEAR.
@@ -941,7 +954,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
   Mock::VerifyAndClearExpectations(context);
 }
 
-class NoClearRootRenderPassMockContext : public TestWebGraphicsContext3D {
+class NoClearRootRenderPassMockContext : public cc::TestWebGraphicsContext3D {
  public:
   MOCK_METHOD1(clear, void(GLbitfield mask));
   MOCK_METHOD4(drawElements,
@@ -953,21 +966,22 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
       new NoClearRootRenderPassMockContext);
   NoClearRootRenderPassMockContext* mock_context = mock_context_owned.get();
 
-  auto provider = TestContextProvider::Create(std::move(mock_context_owned));
+  auto provider =
+      cc::TestContextProvider::Create(std::move(mock_context_owned));
   provider->BindToCurrentThread();
 
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(provider)));
+  cc::FakeOutputSurfaceClient output_surface_client;
+  std::unique_ptr<cc::OutputSurface> output_surface(
+      cc::FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
-      new TestSharedBitmapManager());
-  std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface->context_provider(),
-                                   shared_bitmap_manager.get());
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new cc::TestSharedBitmapManager());
+  std::unique_ptr<cc::ResourceProvider> resource_provider =
+      cc::FakeResourceProvider::Create(output_surface->context_provider(),
+                                       shared_bitmap_manager.get());
 
-  viz::RendererSettings settings;
+  RendererSettings settings;
   settings.should_clear_root_render_pass = false;
 
   FakeRendererGL renderer(&settings, output_surface.get(),
@@ -978,15 +992,15 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
   gfx::Size viewport_size(10, 10);
 
   int child_pass_id = 2;
-  RenderPass* child_pass = AddRenderPass(
+  cc::RenderPass* child_pass = AddRenderPass(
       &render_passes_in_draw_order_, child_pass_id, gfx::Rect(viewport_size),
-      gfx::Transform(), FilterOperations());
+      gfx::Transform(), cc::FilterOperations());
   AddQuad(child_pass, gfx::Rect(viewport_size), SK_ColorBLUE);
 
   int root_pass_id = 1;
-  RenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                                        root_pass_id, gfx::Rect(viewport_size),
-                                        gfx::Transform(), FilterOperations());
+  cc::RenderPass* root_pass = AddRenderPass(
+      &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
+      gfx::Transform(), cc::FilterOperations());
   AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorGREEN);
 
   AddRenderPassQuad(root_pass, child_pass);
@@ -1004,11 +1018,13 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
       EXPECT_CALL(*mock_context, drawElements(_, _, _, _)).Times(1);
 
   // The second render pass is the root one, clearing should be prevented.
-  EXPECT_CALL(*mock_context, clear(clear_bits)).Times(0).After(
-      first_render_pass);
+  EXPECT_CALL(*mock_context, clear(clear_bits))
+      .Times(0)
+      .After(first_render_pass);
 
-  EXPECT_CALL(*mock_context, drawElements(_, _, _, _)).Times(AnyNumber()).After(
-      first_render_pass);
+  EXPECT_CALL(*mock_context, drawElements(_, _, _, _))
+      .Times(AnyNumber())
+      .After(first_render_pass);
 
   renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
   DrawFrame(&renderer, viewport_size);
@@ -1018,7 +1034,7 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
   Mock::VerifyAndClearExpectations(&mock_context);
 }
 
-class ScissorTestOnClearCheckingGLES2Interface : public TestGLES2Interface {
+class ScissorTestOnClearCheckingGLES2Interface : public cc::TestGLES2Interface {
  public:
   ScissorTestOnClearCheckingGLES2Interface() = default;
 
@@ -1041,21 +1057,21 @@ class ScissorTestOnClearCheckingGLES2Interface : public TestGLES2Interface {
 TEST_F(GLRendererTest, ScissorTestWhenClearing) {
   auto gl_owned = base::MakeUnique<ScissorTestOnClearCheckingGLES2Interface>();
 
-  auto provider = TestContextProvider::Create(std::move(gl_owned));
+  auto provider = cc::TestContextProvider::Create(std::move(gl_owned));
   provider->BindToCurrentThread();
 
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(provider)));
+  cc::FakeOutputSurfaceClient output_surface_client;
+  std::unique_ptr<cc::OutputSurface> output_surface(
+      cc::FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
-      new TestSharedBitmapManager());
-  std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface->context_provider(),
-                                   shared_bitmap_manager.get());
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new cc::TestSharedBitmapManager());
+  std::unique_ptr<cc::ResourceProvider> resource_provider =
+      cc::FakeResourceProvider::Create(output_surface->context_provider(),
+                                       shared_bitmap_manager.get());
 
-  viz::RendererSettings settings;
+  RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
   renderer.Initialize();
@@ -1066,22 +1082,22 @@ TEST_F(GLRendererTest, ScissorTestWhenClearing) {
 
   gfx::Rect grand_child_rect(25, 25);
   int grand_child_pass_id = 3;
-  RenderPass* grand_child_pass =
+  cc::RenderPass* grand_child_pass =
       AddRenderPass(&render_passes_in_draw_order_, grand_child_pass_id,
-                    grand_child_rect, gfx::Transform(), FilterOperations());
+                    grand_child_rect, gfx::Transform(), cc::FilterOperations());
   AddClippedQuad(grand_child_pass, grand_child_rect, SK_ColorYELLOW);
 
   gfx::Rect child_rect(50, 50);
   int child_pass_id = 2;
-  RenderPass* child_pass =
+  cc::RenderPass* child_pass =
       AddRenderPass(&render_passes_in_draw_order_, child_pass_id, child_rect,
-                    gfx::Transform(), FilterOperations());
+                    gfx::Transform(), cc::FilterOperations());
   AddQuad(child_pass, child_rect, SK_ColorBLUE);
 
   int root_pass_id = 1;
-  RenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                                        root_pass_id, gfx::Rect(viewport_size),
-                                        gfx::Transform(), FilterOperations());
+  cc::RenderPass* root_pass = AddRenderPass(
+      &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
+      gfx::Transform(), cc::FilterOperations());
   AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorGREEN);
 
   AddRenderPassQuad(root_pass, child_pass);
@@ -1091,11 +1107,11 @@ TEST_F(GLRendererTest, ScissorTestWhenClearing) {
   DrawFrame(&renderer, viewport_size);
 }
 
-class DiscardCheckingGLES2Interface : public TestGLES2Interface {
+class DiscardCheckingGLES2Interface : public cc::TestGLES2Interface {
  public:
   DiscardCheckingGLES2Interface() = default;
 
-  void InitializeTestContext(TestWebGraphicsContext3D* context) override {
+  void InitializeTestContext(cc::TestWebGraphicsContext3D* context) override {
     context->set_have_post_sub_buffer(true);
     context->set_have_discard_framebuffer(true);
   }
@@ -1117,20 +1133,20 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
   auto gl_owned = base::MakeUnique<DiscardCheckingGLES2Interface>();
   auto* gl = gl_owned.get();
 
-  auto provider = TestContextProvider::Create(std::move(gl_owned));
+  auto provider = cc::TestContextProvider::Create(std::move(gl_owned));
   provider->BindToCurrentThread();
 
-  FakeOutputSurfaceClient output_surface_client;
-  auto output_surface = FakeOutputSurface::Create3d(std::move(provider));
+  cc::FakeOutputSurfaceClient output_surface_client;
+  auto output_surface = cc::FakeOutputSurface::Create3d(std::move(provider));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
-      new TestSharedBitmapManager());
-  std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface->context_provider(),
-                                   shared_bitmap_manager.get());
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new cc::TestSharedBitmapManager());
+  std::unique_ptr<cc::ResourceProvider> resource_provider =
+      cc::FakeResourceProvider::Create(output_surface->context_provider(),
+                                       shared_bitmap_manager.get());
 
-  viz::RendererSettings settings;
+  RendererSettings settings;
   settings.partial_swap_enabled = true;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
@@ -1143,9 +1159,9 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
   {
     // Partial frame, should not discard.
     int root_pass_id = 1;
-    RenderPass* root_pass = AddRenderPass(
+    cc::RenderPass* root_pass = AddRenderPass(
         &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
-        gfx::Transform(), FilterOperations());
+        gfx::Transform(), cc::FilterOperations());
     AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorGREEN);
     root_pass->damage_rect = gfx::Rect(2, 2, 3, 3);
 
@@ -1157,9 +1173,9 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
   {
     // Full frame, should discard.
     int root_pass_id = 1;
-    RenderPass* root_pass = AddRenderPass(
+    cc::RenderPass* root_pass = AddRenderPass(
         &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
-        gfx::Transform(), FilterOperations());
+        gfx::Transform(), cc::FilterOperations());
     AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorGREEN);
     root_pass->damage_rect = root_pass->output_rect;
 
@@ -1172,9 +1188,9 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
     // Full frame, external scissor is set, should not discard.
     output_surface->set_has_external_stencil_test(true);
     int root_pass_id = 1;
-    RenderPass* root_pass = AddRenderPass(
+    cc::RenderPass* root_pass = AddRenderPass(
         &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
-        gfx::Transform(), FilterOperations());
+        gfx::Transform(), cc::FilterOperations());
     AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorGREEN);
     root_pass->damage_rect = root_pass->output_rect;
     root_pass->has_transparent_background = false;
@@ -1187,9 +1203,9 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
   }
 }
 
-class DrawElementsGLES2Interface : public TestGLES2Interface {
+class DrawElementsGLES2Interface : public cc::TestGLES2Interface {
  public:
-  void InitializeTestContext(TestWebGraphicsContext3D* context) override {
+  void InitializeTestContext(cc::TestWebGraphicsContext3D* context) override {
     context->set_have_post_sub_buffer(true);
   }
 
@@ -1204,14 +1220,14 @@ class GLRendererSkipTest : public GLRendererTest {
     auto gl_owned = base::MakeUnique<StrictMock<DrawElementsGLES2Interface>>();
     gl_ = gl_owned.get();
 
-    auto provider = TestContextProvider::Create(std::move(gl_owned));
+    auto provider = cc::TestContextProvider::Create(std::move(gl_owned));
     provider->BindToCurrentThread();
 
-    output_surface_ = FakeOutputSurface::Create3d(std::move(provider));
+    output_surface_ = cc::FakeOutputSurface::Create3d(std::move(provider));
     output_surface_->BindToClient(&output_surface_client_);
 
-    shared_bitmap_manager_.reset(new TestSharedBitmapManager());
-    resource_provider_ = FakeResourceProvider::Create(
+    shared_bitmap_manager_.reset(new cc::TestSharedBitmapManager());
+    resource_provider_ = cc::FakeResourceProvider::Create(
         output_surface_->context_provider(), shared_bitmap_manager_.get());
     settings_.partial_swap_enabled = true;
     renderer_ = base::MakeUnique<FakeRendererGL>(
@@ -1221,11 +1237,11 @@ class GLRendererSkipTest : public GLRendererTest {
   }
 
   StrictMock<DrawElementsGLES2Interface>* gl_;
-  viz::RendererSettings settings_;
-  FakeOutputSurfaceClient output_surface_client_;
-  std::unique_ptr<FakeOutputSurface> output_surface_;
-  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager_;
-  std::unique_ptr<ResourceProvider> resource_provider_;
+  RendererSettings settings_;
+  cc::FakeOutputSurfaceClient output_surface_client_;
+  std::unique_ptr<cc::FakeOutputSurface> output_surface_;
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<cc::ResourceProvider> resource_provider_;
   std::unique_ptr<FakeRendererGL> renderer_;
 };
 
@@ -1236,9 +1252,9 @@ TEST_F(GLRendererSkipTest, DrawQuad) {
   gfx::Rect quad_rect = gfx::Rect(20, 20, 20, 20);
 
   int root_pass_id = 1;
-  RenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                                        root_pass_id, gfx::Rect(viewport_size),
-                                        gfx::Transform(), FilterOperations());
+  cc::RenderPass* root_pass = AddRenderPass(
+      &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
+      gfx::Transform(), cc::FilterOperations());
   root_pass->damage_rect = gfx::Rect(0, 0, 25, 25);
   AddQuad(root_pass, quad_rect, SK_ColorGREEN);
 
@@ -1251,9 +1267,9 @@ TEST_F(GLRendererSkipTest, SkipVisibleRect) {
   gfx::Rect quad_rect = gfx::Rect(0, 0, 40, 40);
 
   int root_pass_id = 1;
-  RenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                                        root_pass_id, gfx::Rect(viewport_size),
-                                        gfx::Transform(), FilterOperations());
+  cc::RenderPass* root_pass = AddRenderPass(
+      &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
+      gfx::Transform(), cc::FilterOperations());
   root_pass->damage_rect = gfx::Rect(0, 0, 10, 10);
   AddQuad(root_pass, quad_rect, SK_ColorGREEN);
   root_pass->shared_quad_state_list.front()->is_clipped = true;
@@ -1272,9 +1288,9 @@ TEST_F(GLRendererSkipTest, SkipClippedQuads) {
   gfx::Rect quad_rect = gfx::Rect(25, 25, 90, 90);
 
   int root_pass_id = 1;
-  RenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                                        root_pass_id, gfx::Rect(viewport_size),
-                                        gfx::Transform(), FilterOperations());
+  cc::RenderPass* root_pass = AddRenderPass(
+      &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
+      gfx::Transform(), cc::FilterOperations());
   root_pass->damage_rect = gfx::Rect(0, 0, 25, 25);
   AddClippedQuad(root_pass, quad_rect, SK_ColorGREEN);
   root_pass->quad_list.front()->rect = gfx::Rect(20, 20, 20, 20);
@@ -1291,18 +1307,18 @@ TEST_F(GLRendererTest, DrawFramePreservesFramebuffer) {
   // the correct framebuffer during rendering, if changed.
   // Note: there is one path that will set it to 0, but that is after the render
   // has finished.
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<FakeOutputSurface> output_surface(
-      FakeOutputSurface::Create3d());
+  cc::FakeOutputSurfaceClient output_surface_client;
+  std::unique_ptr<cc::FakeOutputSurface> output_surface(
+      cc::FakeOutputSurface::Create3d());
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
-      new TestSharedBitmapManager());
-  std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface->context_provider(),
-                                   shared_bitmap_manager.get());
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new cc::TestSharedBitmapManager());
+  std::unique_ptr<cc::ResourceProvider> resource_provider =
+      cc::FakeResourceProvider::Create(output_surface->context_provider(),
+                                       shared_bitmap_manager.get());
 
-  viz::RendererSettings settings;
+  RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
   renderer.Initialize();
@@ -1313,9 +1329,9 @@ TEST_F(GLRendererTest, DrawFramePreservesFramebuffer) {
   gfx::Rect quad_rect = gfx::Rect(20, 20, 20, 20);
 
   int root_pass_id = 1;
-  RenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                                        root_pass_id, gfx::Rect(viewport_size),
-                                        gfx::Transform(), FilterOperations());
+  cc::RenderPass* root_pass = AddRenderPass(
+      &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
+      gfx::Transform(), cc::FilterOperations());
   AddClippedQuad(root_pass, quad_rect, SK_ColorGREEN);
 
   unsigned fbo;
@@ -1337,13 +1353,13 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
 
   gfx::Rect child_rect(50, 50);
   int child_pass_id = 2;
-  RenderPass* child_pass;
+  cc::RenderPass* child_pass;
 
   int root_pass_id = 1;
-  RenderPass* root_pass;
+  cc::RenderPass* root_pass;
 
-  viz::ResourceId mask = resource_provider_->CreateResource(
-      gfx::Size(20, 12), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
+  ResourceId mask = resource_provider_->CreateResource(
+      gfx::Size(20, 12), cc::ResourceProvider::TEXTURE_HINT_IMMUTABLE,
       resource_provider_->best_texture_format(), gfx::ColorSpace());
   resource_provider_->AllocateForTesting(mask);
 
@@ -1363,38 +1379,34 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   matrix[13] = matrix[14] = 0;
   matrix[15] = matrix[16] = matrix[17] = matrix[19] = 0;
   matrix[18] = 1;
-  FilterOperations filters;
+  cc::FilterOperations filters;
   filters.Append(
-      FilterOperation::CreateReferenceFilter(SkColorFilterImageFilter::Make(
+      cc::FilterOperation::CreateReferenceFilter(SkColorFilterImageFilter::Make(
           SkColorFilter::MakeMatrixFilterRowMajor255(matrix), nullptr)));
 
   gfx::Transform transform_causing_aa;
   transform_causing_aa.Rotate(20.0);
 
-  for (int i = 0; i <= LAST_BLEND_MODE; ++i) {
-    BlendMode blend_mode = static_cast<BlendMode>(i);
+  for (int i = 0; i <= cc::LAST_BLEND_MODE; ++i) {
+    cc::BlendMode blend_mode = static_cast<cc::BlendMode>(i);
     SkBlendMode xfer_mode = BlendModeToSkXfermode(blend_mode);
-    settings_.force_blending_with_shaders = (blend_mode != BLEND_MODE_NONE);
+    settings_.force_blending_with_shaders = (blend_mode != cc::BLEND_MODE_NONE);
     // RenderPassProgram
     render_passes_in_draw_order_.clear();
     child_pass =
         AddRenderPass(&render_passes_in_draw_order_, child_pass_id, child_rect,
-                      gfx::Transform(), FilterOperations());
+                      gfx::Transform(), cc::FilterOperations());
 
     root_pass = AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
                               gfx::Rect(viewport_size), gfx::Transform(),
-                              FilterOperations());
+                              cc::FilterOperations());
 
-    AddRenderPassQuad(root_pass,
-                      child_pass,
-                      0,
-                      gfx::Transform(),
-                      xfer_mode);
+    AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(), xfer_mode);
 
     renderer_->DecideRenderPassAllocationsForFrame(
         render_passes_in_draw_order_);
     DrawFrame(renderer_.get(), viewport_size);
-    TestRenderPassProgram(TEX_COORD_PRECISION_MEDIUM, blend_mode);
+    TestRenderPassProgram(cc::TEX_COORD_PRECISION_MEDIUM, blend_mode);
 
     // RenderPassColorMatrixProgram
     render_passes_in_draw_order_.clear();
@@ -1404,37 +1416,34 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
 
     root_pass = AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
                               gfx::Rect(viewport_size), gfx::Transform(),
-                              FilterOperations());
+                              cc::FilterOperations());
 
     AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(), xfer_mode);
 
     renderer_->DecideRenderPassAllocationsForFrame(
         render_passes_in_draw_order_);
     DrawFrame(renderer_.get(), viewport_size);
-    TestRenderPassColorMatrixProgram(TEX_COORD_PRECISION_MEDIUM, blend_mode);
+    TestRenderPassColorMatrixProgram(cc::TEX_COORD_PRECISION_MEDIUM,
+                                     blend_mode);
 
     // RenderPassMaskProgram
     render_passes_in_draw_order_.clear();
 
     child_pass =
         AddRenderPass(&render_passes_in_draw_order_, child_pass_id, child_rect,
-                      gfx::Transform(), FilterOperations());
+                      gfx::Transform(), cc::FilterOperations());
 
     root_pass = AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
                               gfx::Rect(viewport_size), gfx::Transform(),
-                              FilterOperations());
+                              cc::FilterOperations());
 
-    AddRenderPassQuad(root_pass,
-                      child_pass,
-                      mask,
-                      gfx::Transform(),
-                      xfer_mode);
+    AddRenderPassQuad(root_pass, child_pass, mask, gfx::Transform(), xfer_mode);
 
     renderer_->DecideRenderPassAllocationsForFrame(
         render_passes_in_draw_order_);
     DrawFrame(renderer_.get(), viewport_size);
-    TestRenderPassMaskProgram(TEX_COORD_PRECISION_MEDIUM, SAMPLER_TYPE_2D,
-                              blend_mode);
+    TestRenderPassMaskProgram(cc::TEX_COORD_PRECISION_MEDIUM,
+                              cc::SAMPLER_TYPE_2D, blend_mode);
 
     // RenderPassMaskColorMatrixProgram
     render_passes_in_draw_order_.clear();
@@ -1444,37 +1453,34 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
 
     root_pass = AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
                               gfx::Rect(viewport_size), gfx::Transform(),
-                              FilterOperations());
+                              cc::FilterOperations());
 
     AddRenderPassQuad(root_pass, child_pass, mask, gfx::Transform(), xfer_mode);
 
     renderer_->DecideRenderPassAllocationsForFrame(
         render_passes_in_draw_order_);
     DrawFrame(renderer_.get(), viewport_size);
-    TestRenderPassMaskColorMatrixProgram(TEX_COORD_PRECISION_MEDIUM,
-                                         SAMPLER_TYPE_2D, blend_mode);
+    TestRenderPassMaskColorMatrixProgram(cc::TEX_COORD_PRECISION_MEDIUM,
+                                         cc::SAMPLER_TYPE_2D, blend_mode);
 
     // RenderPassProgramAA
     render_passes_in_draw_order_.clear();
 
     child_pass =
         AddRenderPass(&render_passes_in_draw_order_, child_pass_id, child_rect,
-                      transform_causing_aa, FilterOperations());
+                      transform_causing_aa, cc::FilterOperations());
 
     root_pass = AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
                               gfx::Rect(viewport_size), gfx::Transform(),
-                              FilterOperations());
+                              cc::FilterOperations());
 
-    AddRenderPassQuad(root_pass,
-                      child_pass,
-                      0,
-                      transform_causing_aa,
+    AddRenderPassQuad(root_pass, child_pass, 0, transform_causing_aa,
                       xfer_mode);
 
     renderer_->DecideRenderPassAllocationsForFrame(
         render_passes_in_draw_order_);
     DrawFrame(renderer_.get(), viewport_size);
-    TestRenderPassProgramAA(TEX_COORD_PRECISION_MEDIUM, blend_mode);
+    TestRenderPassProgramAA(cc::TEX_COORD_PRECISION_MEDIUM, blend_mode);
 
     // RenderPassColorMatrixProgramAA
     render_passes_in_draw_order_.clear();
@@ -1484,7 +1490,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
 
     root_pass = AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
                               gfx::Rect(viewport_size), gfx::Transform(),
-                              FilterOperations());
+                              cc::FilterOperations());
 
     AddRenderPassQuad(root_pass, child_pass, 0, transform_causing_aa,
                       xfer_mode);
@@ -1492,30 +1498,28 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
     renderer_->DecideRenderPassAllocationsForFrame(
         render_passes_in_draw_order_);
     DrawFrame(renderer_.get(), viewport_size);
-    TestRenderPassColorMatrixProgramAA(TEX_COORD_PRECISION_MEDIUM, blend_mode);
+    TestRenderPassColorMatrixProgramAA(cc::TEX_COORD_PRECISION_MEDIUM,
+                                       blend_mode);
 
     // RenderPassMaskProgramAA
     render_passes_in_draw_order_.clear();
 
     child_pass =
         AddRenderPass(&render_passes_in_draw_order_, child_pass_id, child_rect,
-                      transform_causing_aa, FilterOperations());
+                      transform_causing_aa, cc::FilterOperations());
 
     root_pass = AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
                               gfx::Rect(viewport_size), gfx::Transform(),
-                              FilterOperations());
+                              cc::FilterOperations());
 
-    AddRenderPassQuad(root_pass,
-                      child_pass,
-                      mask,
-                      transform_causing_aa,
+    AddRenderPassQuad(root_pass, child_pass, mask, transform_causing_aa,
                       xfer_mode);
 
     renderer_->DecideRenderPassAllocationsForFrame(
         render_passes_in_draw_order_);
     DrawFrame(renderer_.get(), viewport_size);
-    TestRenderPassMaskProgramAA(TEX_COORD_PRECISION_MEDIUM, SAMPLER_TYPE_2D,
-                                blend_mode);
+    TestRenderPassMaskProgramAA(cc::TEX_COORD_PRECISION_MEDIUM,
+                                cc::SAMPLER_TYPE_2D, blend_mode);
 
     // RenderPassMaskColorMatrixProgramAA
     render_passes_in_draw_order_.clear();
@@ -1525,7 +1529,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
 
     root_pass = AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
                               gfx::Rect(viewport_size), transform_causing_aa,
-                              FilterOperations());
+                              cc::FilterOperations());
 
     AddRenderPassQuad(root_pass, child_pass, mask, transform_causing_aa,
                       xfer_mode);
@@ -1533,8 +1537,8 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
     renderer_->DecideRenderPassAllocationsForFrame(
         render_passes_in_draw_order_);
     DrawFrame(renderer_.get(), viewport_size);
-    TestRenderPassMaskColorMatrixProgramAA(TEX_COORD_PRECISION_MEDIUM,
-                                           SAMPLER_TYPE_2D, blend_mode);
+    TestRenderPassMaskColorMatrixProgramAA(cc::TEX_COORD_PRECISION_MEDIUM,
+                                           cc::SAMPLER_TYPE_2D, blend_mode);
   }
 }
 
@@ -1543,11 +1547,11 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
 TEST_F(GLRendererShaderTest, DrawRenderPassQuadSkipsAAForClippingTransform) {
   gfx::Rect child_rect(50, 50);
   int child_pass_id = 2;
-  RenderPass* child_pass;
+  cc::RenderPass* child_pass;
 
   gfx::Size viewport_size(100, 100);
   int root_pass_id = 1;
-  RenderPass* root_pass;
+  cc::RenderPass* root_pass;
 
   gfx::Transform transform_preventing_aa;
   transform_preventing_aa.ApplyPerspectiveDepth(40.0);
@@ -1557,17 +1561,17 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadSkipsAAForClippingTransform) {
   // Verify that the test transform and test rect actually do cause the clipped
   // flag to trigger. Otherwise we are not testing the intended scenario.
   bool clipped = false;
-  MathUtil::MapQuad(transform_preventing_aa, gfx::QuadF(gfx::RectF(child_rect)),
-                    &clipped);
+  cc::MathUtil::MapQuad(transform_preventing_aa,
+                        gfx::QuadF(gfx::RectF(child_rect)), &clipped);
   ASSERT_TRUE(clipped);
 
   child_pass =
       AddRenderPass(&render_passes_in_draw_order_, child_pass_id, child_rect,
-                    transform_preventing_aa, FilterOperations());
+                    transform_preventing_aa, cc::FilterOperations());
 
   root_pass = AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
                             gfx::Rect(viewport_size), gfx::Transform(),
-                            FilterOperations());
+                            cc::FilterOperations());
 
   AddRenderPassQuad(root_pass, child_pass, 0, transform_preventing_aa,
                     SkBlendMode::kSrcOver);
@@ -1577,14 +1581,14 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadSkipsAAForClippingTransform) {
 
   // If use_aa incorrectly ignores clipping, it will use the
   // RenderPassProgramAA shader instead of the RenderPassProgram.
-  TestRenderPassProgram(TEX_COORD_PRECISION_MEDIUM, BLEND_MODE_NONE);
+  TestRenderPassProgram(cc::TEX_COORD_PRECISION_MEDIUM, cc::BLEND_MODE_NONE);
 }
 
 TEST_F(GLRendererShaderTest, DrawSolidColorShader) {
   gfx::Size viewport_size(30, 30);  // Don't translate out of the viewport.
   gfx::Size quad_size(3, 3);
   int root_pass_id = 1;
-  RenderPass* root_pass;
+  cc::RenderPass* root_pass;
 
   gfx::Transform pixel_aligned_transform_causing_aa;
   pixel_aligned_transform_causing_aa.Translate(25.5f, 25.5f);
@@ -1592,7 +1596,7 @@ TEST_F(GLRendererShaderTest, DrawSolidColorShader) {
 
   root_pass = AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
                             gfx::Rect(viewport_size), gfx::Transform(),
-                            FilterOperations());
+                            cc::FilterOperations());
   AddTransformedQuad(root_pass, gfx::Rect(quad_size), SK_ColorYELLOW,
                      pixel_aligned_transform_causing_aa);
 
@@ -1602,14 +1606,14 @@ TEST_F(GLRendererShaderTest, DrawSolidColorShader) {
   TestSolidColorProgramAA();
 }
 
-class OutputSurfaceMockContext : public TestWebGraphicsContext3D {
+class OutputSurfaceMockContext : public cc::TestWebGraphicsContext3D {
  public:
   OutputSurfaceMockContext() { test_capabilities_.post_sub_buffer = true; }
 
   // Specifically override methods even if they are unused (used in conjunction
   // with StrictMock). We need to make sure that GLRenderer does not issue
   // framebuffer-related GLuint calls directly. Instead these are supposed to go
-  // through the OutputSurface abstraction.
+  // through the cc::OutputSurface abstraction.
   MOCK_METHOD2(bindFramebuffer, void(GLenum target, GLuint framebuffer));
   MOCK_METHOD3(reshapeWithScaleFactor,
                void(int width, int height, float scale_factor));
@@ -1617,13 +1621,13 @@ class OutputSurfaceMockContext : public TestWebGraphicsContext3D {
                void(GLenum mode, GLsizei count, GLenum type, GLintptr offset));
 };
 
-class MockOutputSurface : public OutputSurface {
+class MockOutputSurface : public cc::OutputSurface {
  public:
-  explicit MockOutputSurface(scoped_refptr<viz::ContextProvider> provider)
-      : OutputSurface(std::move(provider)) {}
+  explicit MockOutputSurface(scoped_refptr<ContextProvider> provider)
+      : cc::OutputSurface(std::move(provider)) {}
   virtual ~MockOutputSurface() {}
 
-  void BindToClient(OutputSurfaceClient*) override {}
+  void BindToClient(cc::OutputSurfaceClient*) override {}
 
   MOCK_METHOD0(EnsureBackbuffer, void());
   MOCK_METHOD0(DiscardBackbuffer, void());
@@ -1636,10 +1640,12 @@ class MockOutputSurface : public OutputSurface {
   MOCK_METHOD0(BindFramebuffer, void());
   MOCK_METHOD1(SetDrawRectangle, void(const gfx::Rect&));
   MOCK_METHOD0(GetFramebufferCopyTextureFormat, GLenum());
-  MOCK_METHOD1(SwapBuffers_, void(OutputSurfaceFrame& frame));  // NOLINT
-  void SwapBuffers(OutputSurfaceFrame frame) override { SwapBuffers_(frame); }
+  MOCK_METHOD1(SwapBuffers_, void(cc::OutputSurfaceFrame& frame));  // NOLINT
+  void SwapBuffers(cc::OutputSurfaceFrame frame) override {
+    SwapBuffers_(frame);
+  }
   MOCK_CONST_METHOD0(GetOverlayCandidateValidator,
-                     OverlayCandidateValidator*());
+                     cc::OverlayCandidateValidator*());
   MOCK_CONST_METHOD0(IsDisplayedAsOverlayPlane, bool());
   MOCK_CONST_METHOD0(GetOverlayTextureId, unsigned());
   MOCK_CONST_METHOD0(SurfaceIsSuspendForRecycle, bool());
@@ -1652,16 +1658,16 @@ class MockOutputSurfaceTest : public GLRendererTest {
   void SetUp() override {
     auto context = base::MakeUnique<StrictMock<OutputSurfaceMockContext>>();
     context_ = context.get();
-    auto provider = TestContextProvider::Create(std::move(context));
+    auto provider = cc::TestContextProvider::Create(std::move(context));
     provider->BindToCurrentThread();
     output_surface_ =
         base::MakeUnique<StrictMock<MockOutputSurface>>(std::move(provider));
 
-    FakeOutputSurfaceClient output_surface_client_;
+    cc::FakeOutputSurfaceClient output_surface_client_;
     output_surface_->BindToClient(&output_surface_client_);
 
-    shared_bitmap_manager_.reset(new TestSharedBitmapManager());
-    resource_provider_ = FakeResourceProvider::Create(
+    shared_bitmap_manager_.reset(new cc::TestSharedBitmapManager());
+    resource_provider_ = cc::FakeResourceProvider::Create(
         output_surface_->context_provider(), shared_bitmap_manager_.get());
 
     renderer_.reset(new FakeRendererGL(&settings_, output_surface_.get(),
@@ -1680,9 +1686,9 @@ class MockOutputSurfaceTest : public GLRendererTest {
                  const gfx::Size& viewport_size,
                  bool transparent) {
     int render_pass_id = 1;
-    RenderPass* render_pass = AddRenderPass(
+    cc::RenderPass* render_pass = AddRenderPass(
         &render_passes_in_draw_order_, render_pass_id, gfx::Rect(viewport_size),
-        gfx::Transform(), FilterOperations());
+        gfx::Transform(), cc::FilterOperations());
     AddQuad(render_pass, gfx::Rect(viewport_size), SK_ColorGREEN);
     render_pass->has_transparent_background = transparent;
 
@@ -1702,12 +1708,12 @@ class MockOutputSurfaceTest : public GLRendererTest {
                          viewport_size);
   }
 
-  viz::RendererSettings settings_;
-  FakeOutputSurfaceClient output_surface_client_;
+  RendererSettings settings_;
+  cc::FakeOutputSurfaceClient output_surface_client_;
   OutputSurfaceMockContext* context_ = nullptr;
   std::unique_ptr<StrictMock<MockOutputSurface>> output_surface_;
-  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager_;
-  std::unique_ptr<ResourceProvider> resource_provider_;
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<cc::ResourceProvider> resource_provider_;
   std::unique_ptr<FakeRendererGL> renderer_;
 };
 
@@ -1723,22 +1729,23 @@ TEST_F(MockOutputSurfaceTest, BackbufferDiscard) {
   Mock::VerifyAndClearExpectations(output_surface_.get());
 }
 
-class TestOverlayProcessor : public OverlayProcessor {
+class TestOverlayProcessor : public cc::OverlayProcessor {
  public:
-  class Strategy : public OverlayProcessor::Strategy {
+  class Strategy : public cc::OverlayProcessor::Strategy {
    public:
     Strategy() {}
     ~Strategy() override {}
     MOCK_METHOD4(Attempt,
-                 bool(ResourceProvider* resource_provider,
-                      RenderPass* render_pass,
-                      OverlayCandidateList* candidates,
+                 bool(cc::ResourceProvider* resource_provider,
+                      cc::RenderPass* render_pass,
+                      cc::OverlayCandidateList* candidates,
                       std::vector<gfx::Rect>* content_bounds));
   };
 
-  class Validator : public OverlayCandidateValidator {
+  class Validator : public cc::OverlayCandidateValidator {
    public:
-    void GetStrategies(OverlayProcessor::StrategyList* strategies) override {}
+    void GetStrategies(
+        cc::OverlayProcessor::StrategyList* strategies) override {}
 
     // Returns true if draw quads can be represented as CALayers (Mac only).
     MOCK_METHOD0(AllowCALayerOverlays, bool());
@@ -1750,11 +1757,11 @@ class TestOverlayProcessor : public OverlayProcessor {
     // to be traditionally composited. Candidates with |overlay_handled| set to
     // true must also have their |display_rect| converted to integer
     // coordinates if necessary.
-    void CheckOverlaySupport(OverlayCandidateList* surfaces) {}
+    void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) {}
   };
 
-  explicit TestOverlayProcessor(OutputSurface* surface)
-      : OverlayProcessor(surface) {}
+  explicit TestOverlayProcessor(cc::OutputSurface* surface)
+      : cc::OverlayProcessor(surface) {}
   ~TestOverlayProcessor() override {}
   void Initialize() override {
     strategy_ = new Strategy();
@@ -1766,25 +1773,25 @@ class TestOverlayProcessor : public OverlayProcessor {
 
 void MailboxReleased(const gpu::SyncToken& sync_token,
                      bool lost_resource,
-                     BlockingTaskRunner* main_thread_task_runner) {}
+                     cc::BlockingTaskRunner* main_thread_task_runner) {}
 
-void IgnoreCopyResult(std::unique_ptr<viz::CopyOutputResult> result) {}
+void IgnoreCopyResult(std::unique_ptr<CopyOutputResult> result) {}
 
 TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<FakeOutputSurface> output_surface(
-      FakeOutputSurface::Create3d());
+  cc::FakeOutputSurfaceClient output_surface_client;
+  std::unique_ptr<cc::FakeOutputSurface> output_surface(
+      cc::FakeOutputSurface::Create3d());
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
-      new TestSharedBitmapManager());
-  std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface->context_provider(),
-                                   shared_bitmap_manager.get());
-  std::unique_ptr<TextureMailboxDeleter> mailbox_deleter(
-      new TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get()));
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new cc::TestSharedBitmapManager());
+  std::unique_ptr<cc::ResourceProvider> resource_provider =
+      cc::FakeResourceProvider::Create(output_surface->context_provider(),
+                                       shared_bitmap_manager.get());
+  std::unique_ptr<cc::TextureMailboxDeleter> mailbox_deleter(
+      new cc::TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get()));
 
-  viz::RendererSettings settings;
+  RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get(), mailbox_deleter.get());
   renderer.Initialize();
@@ -1799,28 +1806,27 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   output_surface->SetOverlayCandidateValidator(validator.get());
 
   gfx::Size viewport_size(1, 1);
-  RenderPass* root_pass =
+  cc::RenderPass* root_pass =
       AddRenderPass(&render_passes_in_draw_order_, 1, gfx::Rect(viewport_size),
-                    gfx::Transform(), FilterOperations());
+                    gfx::Transform(), cc::FilterOperations());
   root_pass->has_transparent_background = false;
   root_pass->copy_requests.push_back(
-      viz::CopyOutputRequest::CreateRequest(base::BindOnce(&IgnoreCopyResult)));
+      CopyOutputRequest::CreateRequest(base::BindOnce(&IgnoreCopyResult)));
 
-  viz::TextureMailbox mailbox =
-      viz::TextureMailbox(gpu::Mailbox::Generate(), gpu::SyncToken(),
-                          GL_TEXTURE_2D, gfx::Size(256, 256), true, false);
-  std::unique_ptr<SingleReleaseCallbackImpl> release_callback =
-      SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
-  viz::ResourceId resource_id =
-      resource_provider->CreateResourceFromTextureMailbox(
-          mailbox, std::move(release_callback));
+  TextureMailbox mailbox =
+      TextureMailbox(gpu::Mailbox::Generate(), gpu::SyncToken(), GL_TEXTURE_2D,
+                     gfx::Size(256, 256), true, false);
+  std::unique_ptr<cc::SingleReleaseCallbackImpl> release_callback =
+      cc::SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
+  ResourceId resource_id = resource_provider->CreateResourceFromTextureMailbox(
+      mailbox, std::move(release_callback));
   bool premultiplied_alpha = false;
   bool flipped = false;
   bool nearest_neighbor = false;
   float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 
-  TextureDrawQuad* overlay_quad =
-      root_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+  cc::TextureDrawQuad* overlay_quad =
+      root_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
   overlay_quad->SetNew(
       root_pass->CreateAndAppendSharedQuadState(), gfx::Rect(viewport_size),
       gfx::Rect(viewport_size), gfx::Rect(viewport_size), resource_id,
@@ -1842,10 +1848,10 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   // Without a copy request Attempt() should be called once.
   root_pass =
       AddRenderPass(&render_passes_in_draw_order_, 1, gfx::Rect(viewport_size),
-                    gfx::Transform(), FilterOperations());
+                    gfx::Transform(), cc::FilterOperations());
   root_pass->has_transparent_background = false;
 
-  overlay_quad = root_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+  overlay_quad = root_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
   overlay_quad->SetNew(
       root_pass->CreateAndAppendSharedQuadState(), gfx::Rect(viewport_size),
       gfx::Rect(viewport_size), gfx::Rect(viewport_size), resource_id,
@@ -1864,10 +1870,10 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   // not be called.
   root_pass =
       AddRenderPass(&render_passes_in_draw_order_, 1, gfx::Rect(viewport_size),
-                    gfx::Transform(), FilterOperations());
+                    gfx::Transform(), cc::FilterOperations());
   root_pass->has_transparent_background = false;
 
-  overlay_quad = root_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+  overlay_quad = root_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
   overlay_quad->SetNew(
       root_pass->CreateAndAppendSharedQuadState(), gfx::Rect(viewport_size),
       gfx::Rect(viewport_size), gfx::Rect(viewport_size), resource_id,
@@ -1880,37 +1886,39 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   DrawFrame(&renderer, viewport_size);
 }
 
-class SingleOverlayOnTopProcessor : public OverlayProcessor {
+class SingleOverlayOnTopProcessor : public cc::OverlayProcessor {
  public:
-  class SingleOverlayValidator : public OverlayCandidateValidator {
+  class SingleOverlayValidator : public cc::OverlayCandidateValidator {
    public:
     void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
-      strategies->push_back(base::MakeUnique<OverlayStrategySingleOnTop>(this));
-      strategies->push_back(base::MakeUnique<OverlayStrategyUnderlay>(this));
+      strategies->push_back(
+          base::MakeUnique<cc::OverlayStrategySingleOnTop>(this));
+      strategies->push_back(
+          base::MakeUnique<cc::OverlayStrategyUnderlay>(this));
     }
 
     bool AllowCALayerOverlays() override { return false; }
     bool AllowDCLayerOverlays() override { return false; }
 
-    void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
+    void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) override {
       ASSERT_EQ(1U, surfaces->size());
-      OverlayCandidate& candidate = surfaces->back();
+      cc::OverlayCandidate& candidate = surfaces->back();
       candidate.overlay_handled = true;
     }
   };
 
-  explicit SingleOverlayOnTopProcessor(OutputSurface* surface)
+  explicit SingleOverlayOnTopProcessor(cc::OutputSurface* surface)
       : OverlayProcessor(surface) {}
 
   void Initialize() override {
     strategies_.push_back(
-        base::MakeUnique<OverlayStrategySingleOnTop>(&validator_));
+        base::MakeUnique<cc::OverlayStrategySingleOnTop>(&validator_));
   }
 
   SingleOverlayValidator validator_;
 };
 
-class WaitSyncTokenCountingContext : public TestWebGraphicsContext3D {
+class WaitSyncTokenCountingContext : public cc::TestWebGraphicsContext3D {
  public:
   MOCK_METHOD1(waitSyncToken, void(const GLbyte* sync_token));
 };
@@ -1930,27 +1938,27 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
       new WaitSyncTokenCountingContext);
   WaitSyncTokenCountingContext* context = context_owned.get();
 
-  auto provider = TestContextProvider::Create(std::move(context_owned));
+  auto provider = cc::TestContextProvider::Create(std::move(context_owned));
   provider->BindToCurrentThread();
 
   MockOverlayScheduler overlay_scheduler;
   provider->support()->SetScheduleOverlayPlaneCallback(base::Bind(
       &MockOverlayScheduler::Schedule, base::Unretained(&overlay_scheduler)));
 
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<OutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(provider)));
+  cc::FakeOutputSurfaceClient output_surface_client;
+  std::unique_ptr<cc::OutputSurface> output_surface(
+      cc::FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
-      new TestSharedBitmapManager());
-  std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface->context_provider(),
-                                   shared_bitmap_manager.get());
-  std::unique_ptr<TextureMailboxDeleter> mailbox_deleter(
-      new TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get()));
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new cc::TestSharedBitmapManager());
+  std::unique_ptr<cc::ResourceProvider> resource_provider =
+      cc::FakeResourceProvider::Create(output_surface->context_provider(),
+                                       shared_bitmap_manager.get());
+  std::unique_ptr<cc::TextureMailboxDeleter> mailbox_deleter(
+      new cc::TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get()));
 
-  viz::RendererSettings settings;
+  RendererSettings settings;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get(), mailbox_deleter.get());
   renderer.Initialize();
@@ -1962,21 +1970,20 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   renderer.SetOverlayProcessor(processor);
 
   gfx::Size viewport_size(1, 1);
-  RenderPass* root_pass =
+  cc::RenderPass* root_pass =
       AddRenderPass(&render_passes_in_draw_order_, 1, gfx::Rect(viewport_size),
-                    gfx::Transform(), FilterOperations());
+                    gfx::Transform(), cc::FilterOperations());
   root_pass->has_transparent_background = false;
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
                             gpu::CommandBufferId::FromUnsafeValue(0x123), 29);
-  viz::TextureMailbox mailbox =
-      viz::TextureMailbox(gpu::Mailbox::Generate(), sync_token, GL_TEXTURE_2D,
-                          gfx::Size(256, 256), true, false);
-  std::unique_ptr<SingleReleaseCallbackImpl> release_callback =
-      SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
-  viz::ResourceId resource_id =
-      resource_provider->CreateResourceFromTextureMailbox(
-          mailbox, std::move(release_callback));
+  TextureMailbox mailbox =
+      TextureMailbox(gpu::Mailbox::Generate(), sync_token, GL_TEXTURE_2D,
+                     gfx::Size(256, 256), true, false);
+  std::unique_ptr<cc::SingleReleaseCallbackImpl> release_callback =
+      cc::SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
+  ResourceId resource_id = resource_provider->CreateResourceFromTextureMailbox(
+      mailbox, std::move(release_callback));
   bool premultiplied_alpha = false;
   bool flipped = false;
   bool nearest_neighbor = false;
@@ -1984,9 +1991,10 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   gfx::PointF uv_top_left(0, 0);
   gfx::PointF uv_bottom_right(1, 1);
 
-  TextureDrawQuad* overlay_quad =
-      root_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-  SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
+  cc::TextureDrawQuad* overlay_quad =
+      root_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
+  cc::SharedQuadState* shared_state =
+      root_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), gfx::Rect(viewport_size),
                        gfx::Rect(viewport_size), gfx::Rect(viewport_size),
                        false, 1, SkBlendMode::kSrcOver, 0);
@@ -2008,12 +2016,12 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   DrawFrame(&renderer, viewport_size);
 }
 
-class PartialSwapMockGLES2Interface : public TestGLES2Interface {
+class PartialSwapMockGLES2Interface : public cc::TestGLES2Interface {
  public:
   explicit PartialSwapMockGLES2Interface(bool support_dc_layers)
       : support_dc_layers_(support_dc_layers) {}
 
-  void InitializeTestContext(TestWebGraphicsContext3D* context) override {
+  void InitializeTestContext(cc::TestWebGraphicsContext3D* context) override {
     context->set_have_post_sub_buffer(true);
     context->set_enable_dc_layers(support_dc_layers_);
   }
@@ -2036,19 +2044,19 @@ class GLRendererPartialSwapTest : public GLRendererTest {
         base::MakeUnique<PartialSwapMockGLES2Interface>(set_draw_rectangle);
     auto* gl = gl_owned.get();
 
-    auto provider = TestContextProvider::Create(std::move(gl_owned));
+    auto provider = cc::TestContextProvider::Create(std::move(gl_owned));
     provider->BindToCurrentThread();
 
-    FakeOutputSurfaceClient output_surface_client;
-    std::unique_ptr<FakeOutputSurface> output_surface(
-        FakeOutputSurface::Create3d(std::move(provider)));
+    cc::FakeOutputSurfaceClient output_surface_client;
+    std::unique_ptr<cc::FakeOutputSurface> output_surface(
+        cc::FakeOutputSurface::Create3d(std::move(provider)));
     output_surface->BindToClient(&output_surface_client);
 
-    std::unique_ptr<ResourceProvider> resource_provider =
-        FakeResourceProvider::Create(output_surface->context_provider(),
-                                     nullptr);
+    std::unique_ptr<cc::ResourceProvider> resource_provider =
+        cc::FakeResourceProvider::Create(output_surface->context_provider(),
+                                         nullptr);
 
-    viz::RendererSettings settings;
+    RendererSettings settings;
     settings.partial_swap_enabled = partial_swap;
     FakeRendererGL renderer(&settings, output_surface.get(),
                             resource_provider.get());
@@ -2060,9 +2068,9 @@ class GLRendererPartialSwapTest : public GLRendererTest {
 
     for (int i = 0; i < 2; ++i) {
       int root_pass_id = 1;
-      RenderPass* root_pass = AddRenderPass(
+      cc::RenderPass* root_pass = AddRenderPass(
           &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
-          gfx::Transform(), FilterOperations());
+          gfx::Transform(), cc::FilterOperations());
       AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorGREEN);
 
       testing::Sequence seq;
@@ -2090,11 +2098,10 @@ class GLRendererPartialSwapTest : public GLRendererTest {
         // The scissor is flipped, so subtract the y coord and height from the
         // bottom of the GL viewport.
         EXPECT_CALL(
-            *gl,
-            Scissor(output_rectangle.x(),
-                    viewport_size.height() - output_rectangle.y() -
-                        output_rectangle.height(),
-                    output_rectangle.width(), output_rectangle.height()))
+            *gl, Scissor(output_rectangle.x(),
+                         viewport_size.height() - output_rectangle.y() -
+                             output_rectangle.height(),
+                         output_rectangle.width(), output_rectangle.height()))
             .InSequence(seq);
       }
 
@@ -2131,12 +2138,12 @@ TEST_F(GLRendererPartialSwapTest, SetDrawRectangle_NoPartialSwap) {
   RunTest(false, true);
 }
 
-class DCLayerValidator : public OverlayCandidateValidator {
+class DCLayerValidator : public cc::OverlayCandidateValidator {
  public:
-  void GetStrategies(OverlayProcessor::StrategyList* strategies) override {}
+  void GetStrategies(cc::OverlayProcessor::StrategyList* strategies) override {}
   bool AllowCALayerOverlays() override { return false; }
   bool AllowDCLayerOverlays() override { return true; }
-  void CheckOverlaySupport(OverlayCandidateList* surfaces) override {}
+  void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) override {}
 };
 
 bool IsSRGBColorSpace(GLColorSpace color_space) {
@@ -2153,18 +2160,19 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
   auto gl_owned = base::MakeUnique<PartialSwapMockGLES2Interface>(true);
   auto* gl = gl_owned.get();
 
-  auto provider = TestContextProvider::Create(std::move(gl_owned));
+  auto provider = cc::TestContextProvider::Create(std::move(gl_owned));
   provider->BindToCurrentThread();
 
-  FakeOutputSurfaceClient output_surface_client;
-  std::unique_ptr<FakeOutputSurface> output_surface(
-      FakeOutputSurface::Create3d(std::move(provider)));
+  cc::FakeOutputSurfaceClient output_surface_client;
+  std::unique_ptr<cc::FakeOutputSurface> output_surface(
+      cc::FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<ResourceProvider> resource_provider =
-      FakeResourceProvider::Create(output_surface->context_provider(), nullptr);
+  std::unique_ptr<cc::ResourceProvider> resource_provider =
+      cc::FakeResourceProvider::Create(output_surface->context_provider(),
+                                       nullptr);
 
-  viz::RendererSettings settings;
+  RendererSettings settings;
   settings.partial_swap_enabled = true;
   FakeRendererGL renderer(&settings, output_surface.get(),
                           resource_provider.get());
@@ -2179,40 +2187,39 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
 
   gfx::Size viewport_size(100, 100);
 
-  viz::TextureMailbox mailbox =
-      viz::TextureMailbox(gpu::Mailbox::Generate(), gpu::SyncToken(),
-                          GL_TEXTURE_2D, gfx::Size(256, 256), true, false);
-  std::unique_ptr<SingleReleaseCallbackImpl> release_callback =
-      SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
-  viz::ResourceId resource_id =
-      resource_provider->CreateResourceFromTextureMailbox(
-          mailbox, std::move(release_callback));
+  TextureMailbox mailbox =
+      TextureMailbox(gpu::Mailbox::Generate(), gpu::SyncToken(), GL_TEXTURE_2D,
+                     gfx::Size(256, 256), true, false);
+  std::unique_ptr<cc::SingleReleaseCallbackImpl> release_callback =
+      cc::SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
+  ResourceId resource_id = resource_provider->CreateResourceFromTextureMailbox(
+      mailbox, std::move(release_callback));
   uint32_t texture_id;
   {
-    ResourceProvider::ScopedReadLockGL read_lock(resource_provider.get(),
-                                                 resource_id);
+    cc::ResourceProvider::ScopedReadLockGL read_lock(resource_provider.get(),
+                                                     resource_id);
     texture_id = read_lock.texture_id();
   }
 
   for (int i = 0; i < 65; i++) {
     int root_pass_id = 1;
-    RenderPass* root_pass = AddRenderPass(
+    cc::RenderPass* root_pass = AddRenderPass(
         &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
-        gfx::Transform(), FilterOperations());
+        gfx::Transform(), cc::FilterOperations());
     gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
     if (i == 0) {
       gfx::Rect rect(0, 0, 100, 100);
       gfx::RectF tex_coord_rect(0, 0, 1, 1);
-      SharedQuadState* shared_state =
+      cc::SharedQuadState* shared_state =
           root_pass->CreateAndAppendSharedQuadState();
       shared_state->SetAll(gfx::Transform(), rect, rect, rect, false, 1,
                            SkBlendMode::kSrcOver, 0);
-      YUVVideoDrawQuad* quad =
-          root_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
+      cc::YUVVideoDrawQuad* quad =
+          root_pass->CreateAndAppendDrawQuad<cc::YUVVideoDrawQuad>();
       quad->SetNew(shared_state, rect, rect, rect, tex_coord_rect,
                    tex_coord_rect, rect.size(), rect.size(), resource_id,
                    resource_id, resource_id, resource_id,
-                   YUVVideoDrawQuad::REC_601, color_space, 0, 1.0, 8);
+                   cc::YUVVideoDrawQuad::REC_601, color_space, 0, 1.0, 8);
     }
 
     // A bunch of initialization that happens.
@@ -2251,7 +2258,7 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
 
 class GLRendererWithMockContextTest : public ::testing::Test {
  protected:
-  class MockContextSupport : public TestContextSupport {
+  class MockContextSupport : public cc::TestContextSupport {
    public:
     MockContextSupport() {}
     MOCK_METHOD1(SetAggressivelyFreeResources,
@@ -2261,23 +2268,24 @@ class GLRendererWithMockContextTest : public ::testing::Test {
   void SetUp() override {
     auto context_support = base::MakeUnique<MockContextSupport>();
     context_support_ptr_ = context_support.get();
-    auto context_provider = TestContextProvider::Create(
-        TestWebGraphicsContext3D::Create(), std::move(context_support));
+    auto context_provider = cc::TestContextProvider::Create(
+        cc::TestWebGraphicsContext3D::Create(), std::move(context_support));
     context_provider->BindToCurrentThread();
-    output_surface_ = FakeOutputSurface::Create3d(std::move(context_provider));
+    output_surface_ =
+        cc::FakeOutputSurface::Create3d(std::move(context_provider));
     output_surface_->BindToClient(&output_surface_client_);
-    resource_provider_ = FakeResourceProvider::Create(
+    resource_provider_ = cc::FakeResourceProvider::Create(
         output_surface_->context_provider(), nullptr);
     renderer_ = base::MakeUnique<GLRenderer>(&settings_, output_surface_.get(),
                                              resource_provider_.get(), nullptr);
     renderer_->Initialize();
   }
 
-  viz::RendererSettings settings_;
-  FakeOutputSurfaceClient output_surface_client_;
+  RendererSettings settings_;
+  cc::FakeOutputSurfaceClient output_surface_client_;
   MockContextSupport* context_support_ptr_;
-  std::unique_ptr<OutputSurface> output_surface_;
-  std::unique_ptr<ResourceProvider> resource_provider_;
+  std::unique_ptr<cc::OutputSurface> output_surface_;
+  std::unique_ptr<cc::ResourceProvider> resource_provider_;
   std::unique_ptr<GLRenderer> renderer_;
 };
 
@@ -2292,23 +2300,23 @@ TEST_F(GLRendererWithMockContextTest,
   Mock::VerifyAndClearExpectations(context_support_ptr_);
 }
 
-class SwapWithBoundsMockGLES2Interface : public TestGLES2Interface {
+class SwapWithBoundsMockGLES2Interface : public cc::TestGLES2Interface {
  public:
-  void InitializeTestContext(TestWebGraphicsContext3D* context) override {
+  void InitializeTestContext(cc::TestWebGraphicsContext3D* context) override {
     context->set_have_swap_buffers_with_bounds(true);
   }
 };
 
-class ContentBoundsOverlayProcessor : public OverlayProcessor {
+class ContentBoundsOverlayProcessor : public cc::OverlayProcessor {
  public:
   class Strategy : public OverlayProcessor::Strategy {
    public:
     explicit Strategy(const std::vector<gfx::Rect>& content_bounds)
         : content_bounds_(content_bounds) {}
     ~Strategy() override {}
-    bool Attempt(ResourceProvider* resource_provider,
-                 RenderPass* render_pass,
-                 OverlayCandidateList* candidates,
+    bool Attempt(cc::ResourceProvider* resource_provider,
+                 cc::RenderPass* render_pass,
+                 cc::OverlayCandidateList* candidates,
                  std::vector<gfx::Rect>* content_bounds) override {
       content_bounds->insert(content_bounds->end(), content_bounds_.begin(),
                              content_bounds_.end());
@@ -2318,7 +2326,7 @@ class ContentBoundsOverlayProcessor : public OverlayProcessor {
     const std::vector<gfx::Rect> content_bounds_;
   };
 
-  ContentBoundsOverlayProcessor(OutputSurface* surface,
+  ContentBoundsOverlayProcessor(cc::OutputSurface* surface,
                                 const std::vector<gfx::Rect>& content_bounds)
       : OverlayProcessor(surface), content_bounds_(content_bounds) {}
 
@@ -2336,26 +2344,26 @@ class GLRendererSwapWithBoundsTest : public GLRendererTest {
   void RunTest(const std::vector<gfx::Rect>& content_bounds) {
     auto gl_owned = base::MakeUnique<SwapWithBoundsMockGLES2Interface>();
 
-    auto provider = TestContextProvider::Create(std::move(gl_owned));
+    auto provider = cc::TestContextProvider::Create(std::move(gl_owned));
     provider->BindToCurrentThread();
 
-    FakeOutputSurfaceClient output_surface_client;
-    std::unique_ptr<FakeOutputSurface> output_surface(
-        FakeOutputSurface::Create3d(std::move(provider)));
+    cc::FakeOutputSurfaceClient output_surface_client;
+    std::unique_ptr<cc::FakeOutputSurface> output_surface(
+        cc::FakeOutputSurface::Create3d(std::move(provider)));
     output_surface->BindToClient(&output_surface_client);
 
-    std::unique_ptr<ResourceProvider> resource_provider =
-        FakeResourceProvider::Create(output_surface->context_provider(),
-                                     nullptr);
+    std::unique_ptr<cc::ResourceProvider> resource_provider =
+        cc::FakeResourceProvider::Create(output_surface->context_provider(),
+                                         nullptr);
 
-    viz::RendererSettings settings;
+    RendererSettings settings;
     FakeRendererGL renderer(&settings, output_surface.get(),
                             resource_provider.get());
     renderer.Initialize();
     EXPECT_EQ(true, renderer.use_swap_with_bounds());
     renderer.SetVisible(true);
 
-    OverlayProcessor* processor =
+    cc::OverlayProcessor* processor =
         new ContentBoundsOverlayProcessor(output_surface.get(), content_bounds);
     processor->Initialize();
     renderer.SetOverlayProcessor(processor);
@@ -2366,7 +2374,7 @@ class GLRendererSwapWithBoundsTest : public GLRendererTest {
       int root_pass_id = 1;
       AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
                     gfx::Rect(viewport_size), gfx::Transform(),
-                    FilterOperations());
+                    cc::FilterOperations());
 
       renderer.DecideRenderPassAllocationsForFrame(
           render_passes_in_draw_order_);
@@ -2393,4 +2401,4 @@ TEST_F(GLRendererSwapWithBoundsTest, NonEmpty) {
 }
 
 }  // namespace
-}  // namespace cc
+}  // namespace viz

@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "cc/cc_export.h"
 #include "cc/output/shader.h"
 #include "components/viz/common/gpu/context_provider.h"
 
@@ -24,7 +25,7 @@ class GLES2Interface;
 
 namespace cc {
 
-class ProgramBindingBase {
+class CC_EXPORT ProgramBindingBase {
  public:
   ProgramBindingBase();
   ~ProgramBindingBase();
@@ -155,7 +156,7 @@ struct ProgramKeyHash {
   }
 };
 
-class Program : public ProgramBindingBase {
+class CC_EXPORT Program : public ProgramBindingBase {
  public:
   Program() {}
 

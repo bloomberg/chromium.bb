@@ -13,7 +13,6 @@
 #include "cc/base/filter_operation.h"
 #include "cc/base/region.h"
 #include "cc/output/ca_layer_overlay.h"
-#include "cc/output/gl_renderer.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
@@ -36,6 +35,7 @@
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "components/viz/common/quads/texture_mailbox.h"
+#include "components/viz/service/display/gl_renderer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -2114,12 +2114,12 @@ TEST_F(DCLayerOverlayTest, TransparentOnTop) {
   }
 }
 
-class OverlayInfoRendererGL : public GLRenderer {
+class OverlayInfoRendererGL : public viz::GLRenderer {
  public:
   OverlayInfoRendererGL(const viz::RendererSettings* settings,
                         OutputSurface* output_surface,
                         ResourceProvider* resource_provider)
-      : GLRenderer(settings, output_surface, resource_provider, NULL),
+      : viz::GLRenderer(settings, output_surface, resource_provider, NULL),
         expect_overlays_(false) {}
 
   MOCK_METHOD2(DoDrawQuad,
@@ -2129,10 +2129,10 @@ class OverlayInfoRendererGL : public GLRenderer {
     SetCurrentFrameForTesting(frame);
   }
 
-  using GLRenderer::BeginDrawingFrame;
+  using viz::GLRenderer::BeginDrawingFrame;
 
   void FinishDrawingFrame() override {
-    GLRenderer::FinishDrawingFrame();
+    viz::GLRenderer::FinishDrawingFrame();
 
     if (!expect_overlays_) {
       EXPECT_EQ(0U, current_frame()->overlay_list.size());
@@ -2331,7 +2331,7 @@ TEST_F(GLRendererWithOverlaysTest, NoValidatorNoOverlay) {
   Mock::VerifyAndClearExpectations(&scheduler_);
 }
 
-// GLRenderer skips drawing occluded quads when partial swap is enabled.
+// viz::GLRenderer skips drawing occluded quads when partial swap is enabled.
 TEST_F(GLRendererWithOverlaysTest, OccludedQuadNotDrawnWhenPartialSwapEnabled) {
   provider_->TestContext3d()->set_have_post_sub_buffer(true);
   settings_.partial_swap_enabled = true;
@@ -2363,7 +2363,7 @@ TEST_F(GLRendererWithOverlaysTest, OccludedQuadNotDrawnWhenPartialSwapEnabled) {
   Mock::VerifyAndClearExpectations(&scheduler_);
 }
 
-// GLRenderer skips drawing occluded quads when empty swap is enabled.
+// viz::GLRenderer skips drawing occluded quads when empty swap is enabled.
 TEST_F(GLRendererWithOverlaysTest, OccludedQuadNotDrawnWhenEmptySwapAllowed) {
   provider_->TestContext3d()->set_have_commit_overlay_planes(true);
   bool use_validator = true;
