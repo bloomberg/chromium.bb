@@ -1,0 +1,37 @@
+Tests that console prompt keyboard events work.
+
+Adding first message: First
+multiline command
+Setting prompt text: Second
+multiline command
+
+Test that arrow Up stays in the same command
+{"startLine":1,"startColumn":0,"endLine":1,"endColumn":0}
+Prompt text:Second
+multiline command
+
+Test that ArrowUp+shift stays in the same command
+{"startLine":0,"startColumn":0,"endLine":0,"endColumn":1}
+Prompt text:Second
+multiline command
+
+Test that arrow Up from the first line loads previous command
+{"startLine":0,"startColumn":0,"endLine":0,"endColumn":0}
+Prompt text:First
+multiline command
+
+Test that arrow Down stays in the same command
+{"startLine":0,"startColumn":0,"endLine":0,"endColumn":0}
+Prompt text:First
+multiline command
+
+Test that ArrowDown+shift stays in the same command
+{"startLine":1,"startColumn":0,"endLine":1,"endColumn":1}
+Prompt text:First
+multiline command
+
+Test that arrow Down from the first line loads next command
+{"startLine":1,"startColumn":0,"endLine":1,"endColumn":0}
+Prompt text:Second
+multiline command
+
