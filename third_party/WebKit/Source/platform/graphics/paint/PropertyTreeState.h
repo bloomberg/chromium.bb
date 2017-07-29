@@ -56,50 +56,6 @@ class PLATFORM_EXPORT PropertyTreeState {
   const CompositorElementId GetCompositorElementId(
       const CompositorElementIdSet& element_ids) const;
 
-  enum InnermostNode {
-    kNone,  // None means that all nodes are their root values
-    kTransform,
-    kClip,
-    kEffect,
-  };
-
-  // There is always a well-defined order in which the transform, clip
-  // and effects of a PropertyTreeState apply. This method returns which
-  // of them applies first to content drawn with this PropertyTreeState.
-  // Note that it may be the case that multiple nodes from the same tree apply
-  // before any from another tree. This can happen, for example, if multiple
-  // effects or clips apply to a descendant transform state from the transform
-  // node.
-  //
-  // This method is meant to be used in concert with
-  // |PropertyTreeStateIterator|, which allows one to iterate over the nodes in
-  // the order in which they apply.
-  //
-  // Example:
-  //
-  //  Transform tree      Clip tree      Effect tree
-  //  ~~~~~~~~~~~~~~      ~~~~~~~~~      ~~~~~~~~~~~
-  //       Root              Root            Root
-  //        |                 |               |
-  //        T                 C               E
-  //
-  // Suppose that PropertyTreeState(T, C, E).innerMostNode() is E, and
-  // PropertytreeState(T, C, Root).innermostNode() is C. Then a PaintChunk
-  // that has propertyTreeState = PropertyTreeState(T, C, E) can be painted
-  // with the following display list structure:
-  //
-  // [BeginTransform] [BeginClip] [BeginEffect] PaintChunk drawings
-  //    [EndEffect] [EndClip] [EndTransform]
-  //
-  // The PropertyTreeStateIterator will behave like this:
-  //
-  // PropertyTreeStateIterator iterator(PropertyTreeState(T, C, E));
-  // DCHECK(iterator.innermostNode() == Effect);
-  // DCHECK(iterator.next()->innermostNode() == Clip);
-  // DCHECK(iterator.next()->innermostNode() == Transform);
-  // DCHECK(iterator.next()->innermostNode() == None);
-  InnermostNode GetInnermostNode() const;
-
   // See PaintPropertyNode::Changed().
   bool Changed(const PropertyTreeState& relative_to_state) const {
     return Transform()->Changed(*relative_to_state.Transform()) ||
@@ -128,21 +84,6 @@ inline bool operator==(const PropertyTreeState& a, const PropertyTreeState& b) {
   return a.Transform() == b.Transform() && a.Clip() == b.Clip() &&
          a.Effect() == b.Effect();
 }
-
-// Iterates over the sequence transforms, clips and effects for a
-// PropertyTreeState between that state and the "root" state (all nodes equal
-// to *::Root()), in the order that they apply.
-//
-// See also PropertyTreeState::innermostNode for a more detailed example.
-class PLATFORM_EXPORT PropertyTreeStateIterator {
- public:
-  PropertyTreeStateIterator(const PropertyTreeState& properties)
-      : properties_(properties) {}
-  const PropertyTreeState* Next();
-
- private:
-  PropertyTreeState properties_;
-};
 
 #if DCHECK_IS_ON()
 
