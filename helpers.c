@@ -147,7 +147,7 @@ int drv_bo_from_format(struct bo *bo, uint32_t stride, uint32_t aligned_height, 
 	 *  - the chroma stride is 16 bytes aligned, i.e., the luma's strides
 	 *    is 32 bytes aligned.
 	 */
-	if (bo->format == DRM_FORMAT_YVU420_ANDROID) {
+	if (format == DRM_FORMAT_YVU420_ANDROID) {
 		assert(aligned_height == bo->height);
 		assert(stride == ALIGN(stride, 32));
 	}
