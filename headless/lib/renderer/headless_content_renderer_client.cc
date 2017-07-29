@@ -9,8 +9,8 @@
 #include "printing/features/features.h"
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
-#include "components/printing/renderer/print_web_view_helper.h"
-#include "headless/lib/renderer/headless_print_web_view_helper_delegate.h"
+#include "components/printing/renderer/print_render_frame_helper.h"
+#include "headless/lib/renderer/headless_print_render_frame_helper_delegate.h"
 #endif
 
 namespace headless {

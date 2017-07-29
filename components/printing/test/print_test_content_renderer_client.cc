@@ -5,7 +5,7 @@
 #include "components/printing/test/print_test_content_renderer_client.h"
 
 #include "base/memory/ptr_util.h"
-#include "components/printing/renderer/print_web_view_helper.h"
+#include "components/printing/renderer/print_render_frame_helper.h"
 #include "printing/features/features.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 

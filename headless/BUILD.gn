@@ -344,8 +344,8 @@ component("headless") {
     sources += [
       "lib/browser/headless_print_manager.cc",
       "lib/browser/headless_print_manager.h",
-      "lib/renderer/headless_print_web_view_helper_delegate.cc",
-      "lib/renderer/headless_print_web_view_helper_delegate.h",
+      "lib/renderer/headless_print_render_frame_helper_delegate.cc",
+      "lib/renderer/headless_print_render_frame_helper_delegate.h",
     ]
   }
 

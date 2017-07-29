@@ -5,7 +5,7 @@
 #ifndef HEADLESS_LIB_RENDERER_HEADLESS_PRINT_WEB_VIEW_HELPER_DELEGATE_H_
 #define HEADLESS_LIB_RENDERER_HEADLESS_PRINT_WEB_VIEW_HELPER_DELEGATE_H_
 
-#include "components/printing/renderer/print_web_view_helper.h"
+#include "components/printing/renderer/print_render_frame_helper.h"
 
 namespace headless {
 

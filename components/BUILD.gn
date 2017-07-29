@@ -487,7 +487,7 @@ if (!is_ios) {
     }
 
     if (enable_basic_printing || enable_print_preview) {
-      sources += [ "printing/test/print_web_view_helper_browsertest.cc" ]
+      sources += [ "printing/test/print_render_frame_helper_browsertest.cc" ]
       deps += [ "//components/printing/test:test_support" ]
     }
   }

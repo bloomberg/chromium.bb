@@ -161,8 +161,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
-#include "chrome/renderer/printing/chrome_print_web_view_helper_delegate.h"
-#include "components/printing/renderer/print_web_view_helper.h"
+#include "chrome/renderer/printing/chrome_print_render_frame_helper_delegate.h"
+#include "components/printing/renderer/print_render_frame_helper.h"
 #include "printing/print_settings.h"
 #endif
 
