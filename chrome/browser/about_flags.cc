@@ -1513,11 +1513,9 @@ const FeatureEntry kFeatureEntries[] = {
      kOsMac | kOsWin | kOsCrOS | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kMojoVideoEncodeAccelerator)},
 #if defined(OS_WIN)
-    {
-        "enable-hdr", flag_descriptions::kEnableHDRName,
-        flag_descriptions::kEnableHDRDescription, kOsWin,
-        SINGLE_VALUE_TYPE(switches::kEnableHDR),
-    },
+    {"enable-hdr", flag_descriptions::kEnableHDRName,
+     flag_descriptions::kEnableHDRDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kHighDynamicRange)},
 #endif  // OS_WIN
 #if defined(USE_ASH)
     {

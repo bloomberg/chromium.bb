@@ -1178,7 +1178,8 @@ bool DirectCompositionSurfaceWin::Resize(const gfx::Size& size,
                                          float scale_factor,
                                          ColorSpace color_space,
                                          bool has_alpha) {
-  if ((size == GetSize()) && (has_alpha == has_alpha_))
+  bool is_hdr = color_space == ColorSpace::SCRGB_LINEAR;
+  if (size == GetSize() && has_alpha == has_alpha_ && is_hdr == is_hdr_)
     return true;
 
   // Force a resize and redraw (but not a move, activate, etc.).
@@ -1188,6 +1189,7 @@ bool DirectCompositionSurfaceWin::Resize(const gfx::Size& size,
     return false;
   }
   size_ = size;
+  is_hdr_ = is_hdr;
   has_alpha_ = has_alpha;
   ui::ScopedReleaseCurrent release_current(this);
   return RecreateRootSurface();
@@ -1271,8 +1273,8 @@ void DirectCompositionSurfaceWin::WaitForSnapshotRendering() {
 }
 
 bool DirectCompositionSurfaceWin::RecreateRootSurface() {
-  root_surface_ = new DirectCompositionChildSurfaceWin(size_, has_alpha_,
-                                                       enable_dc_layers_);
+  root_surface_ = new DirectCompositionChildSurfaceWin(
+      size_, is_hdr_, has_alpha_, enable_dc_layers_);
   return root_surface_->Initialize();
 }
 

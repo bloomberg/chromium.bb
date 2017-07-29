@@ -22997,6 +22997,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-898499262" label="ImprovedA2HS:enabled"/>
   <int value="-898005938" label="disable-pinch-virtual-viewport"/>
   <int value="-894214299" label="fill-on-account-select:enabled"/>
+  <int value="-894185031" label="HighDynamicRange:disabled"/>
   <int value="-891856063" label="MidiManagerAndroid:enabled"/>
   <int value="-885601782" label="enable-contextual-search"/>
   <int value="-884864731" label="WebPaymentsSingleAppUiSkip:enabled"/>
@@ -23188,6 +23189,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-250721831" label="AndroidAutofillAccessibility:disabled"/>
   <int value="-248223420" label="AutofillKeyboardAccessory:disabled"/>
   <int value="-241353344" label="MidiManagerWinrt:disabled"/>
+  <int value="-239616243" label="HighDynamicRange:enabled"/>
   <int value="-234966279" label="PointerEvent:disabled"/>
   <int value="-234687894"
       label="NonValidatingReloadOnRefreshContentV2:disabled"/>

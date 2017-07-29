@@ -147,7 +147,7 @@ Display::Display(int64_t id, const gfx::Rect& bounds)
                                           : gfx::ColorSpace::CreateSRGB()),
       color_depth_(DEFAULT_BITS_PER_PIXEL),
       depth_per_component_(DEFAULT_BITS_PER_COMPONENT) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHDR)) {
+  if (base::FeatureList::IsEnabled(features::kHighDynamicRange)) {
     color_depth_ = HDR_BITS_PER_PIXEL;
     depth_per_component_ = HDR_BITS_PER_COMPONENT;
   }

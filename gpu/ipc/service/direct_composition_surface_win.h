@@ -97,6 +97,7 @@ class GPU_EXPORT DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
 
   gfx::Size size_ = gfx::Size(1, 1);
   bool enable_dc_layers_ = false;
+  bool is_hdr_ = false;
   bool has_alpha_ = true;
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
   scoped_refptr<DirectCompositionChildSurfaceWin> root_surface_;

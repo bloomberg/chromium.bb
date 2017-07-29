@@ -43,9 +43,6 @@ const char kScreenConfig[] = "screen-config";
 // This is for debugging on linux desktop.
 const char kUseFirstDisplayAsInternal[] = "use-first-display-as-internal";
 
-// Use an fp16 scRGB swap chain compatible with HDR output.
-const char kEnableHDR[] = "enable-hdr";
-
 #if defined(OS_CHROMEOS)
 const char kDisableDisplayColorCalibration[] =
     "disable-display-color-calibration";
@@ -55,3 +52,10 @@ const char kEnableUnifiedDesktop[] = "ash-enable-unified-desktop";
 #endif
 
 }  // namespace switches
+
+namespace features {
+
+const base::Feature kHighDynamicRange{"HighDynamicRange",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+}  // namespace features

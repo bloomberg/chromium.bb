@@ -40,10 +40,12 @@ IDCompositionSurface* g_current_surface;
 
 DirectCompositionChildSurfaceWin::DirectCompositionChildSurfaceWin(
     const gfx::Size& size,
+    bool is_hdr,
     bool has_alpha,
     bool enable_dc_layers)
     : gl::GLSurfaceEGL(),
       size_(size),
+      is_hdr_(is_hdr),
       has_alpha_(has_alpha),
       enable_dc_layers_(enable_dc_layers) {}
 
@@ -85,9 +87,7 @@ void DirectCompositionChildSurfaceWin::InitializeSurface() {
   DCHECK(!dcomp_surface_);
   DCHECK(!swap_chain_);
   DXGI_FORMAT output_format =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHDR)
-          ? DXGI_FORMAT_R16G16B16A16_FLOAT
-          : DXGI_FORMAT_B8G8R8A8_UNORM;
+      is_hdr_ ? DXGI_FORMAT_R16G16B16A16_FLOAT : DXGI_FORMAT_B8G8R8A8_UNORM;
   if (enable_dc_layers_) {
     // Always treat as premultiplied, because an underlay could cause it to
     // become transparent.
