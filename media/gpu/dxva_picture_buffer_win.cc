@@ -4,6 +4,7 @@
 
 #include "media/gpu/dxva_picture_buffer_win.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "media/gpu/dxva_video_decode_accelerator_win.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
@@ -21,6 +22,7 @@ namespace {
 
 void LogDXVAError(int line) {
   LOG(ERROR) << "Error in dxva_picture_buffer_win.cc on line " << line;
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DXVAVDA.PictureBufferErrorLine", line);
 }
 
 // These GLImage subclasses are just used to hold references to the underlying

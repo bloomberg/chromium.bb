@@ -29919,6 +29919,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.DXVAVDA.PictureBufferErrorLine">
+  <owner>jbauman@chromium.org</owner>
+  <owner>sandersd@chromium.org</owner>
+  <summary>
+    Whenever an error is logged from the DXVAVDA picture buffer code, this
+    records the line in dxva_picture_buffer_win.cc where the failure occurred.
+    This histogram can only meaningfully be compared between different
+    versions of Chromium if no line numbers in that file changed between those
+    versions.
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.CdmFileIO.FileSizeKBOnError" units="KB">
   <owner>xhwang@chromium.org</owner>
   <summary>
