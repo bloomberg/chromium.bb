@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
-#include "content/common/accessibility_mode.h"
 #include "content/common/ax_content_node_data.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "ui/accessibility/ax_modes.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_source.h"
 
@@ -37,8 +37,7 @@ class BlinkAXTreeSource
                               AXContentNodeData,
                               AXContentTreeData> {
  public:
-  BlinkAXTreeSource(RenderFrameImpl* render_frame,
-                    AccessibilityMode mode);
+  BlinkAXTreeSource(RenderFrameImpl* render_frame, ui::AXMode mode);
   ~BlinkAXTreeSource() override;
 
   // Freeze caches the document, accessibility root, and current focused
@@ -56,8 +55,8 @@ class BlinkAXTreeSource
   // Walks up the ancestor chain to see if this is a descendant of the root.
   bool IsInTree(blink::WebAXObject node) const;
 
-  AccessibilityMode accessibility_mode() { return accessibility_mode_; }
-  void SetAccessibilityMode(AccessibilityMode new_mode);
+  ui::AXMode accessibility_mode() { return accessibility_mode_; }
+  void SetAccessibilityMode(ui::AXMode new_mode);
 
   // Set the id of the node to fetch image data for. Normally the content
   // of images is not part of the accessibility tree, but one node at a
@@ -113,7 +112,7 @@ class BlinkAXTreeSource
 
   RenderFrameImpl* render_frame_;
 
-  AccessibilityMode accessibility_mode_;
+  ui::AXMode accessibility_mode_;
 
   // An explicit root to use, otherwise it's taken from the WebDocument.
   blink::WebAXObject explicit_root_;

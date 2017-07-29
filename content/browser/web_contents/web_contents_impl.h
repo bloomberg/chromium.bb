@@ -32,7 +32,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/wake_lock/wake_lock_context_host.h"
-#include "content/common/accessibility_mode.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/download_url_parameters.h"
@@ -51,6 +50,7 @@
 #include "services/device/public/interfaces/wake_lock.mojom.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/WebKit/public/platform/WebDragOperation.h"
+#include "ui/accessibility/ax_modes.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
@@ -239,11 +239,11 @@ class CONTENT_EXPORT WebContentsImpl
   void WasUnOccluded();
 
   // Broadcasts the mode change to all frames.
-  void SetAccessibilityMode(AccessibilityMode mode);
+  void SetAccessibilityMode(ui::AXMode mode);
 
   // Adds the given accessibility mode to the current accessibility mode
   // bitmap.
-  void AddAccessibilityMode(AccessibilityMode mode);
+  void AddAccessibilityMode(ui::AXMode mode);
 
 #if !defined(OS_ANDROID)
   // Set a temporary zoom level for the frames associated with this WebContents.
@@ -521,7 +521,7 @@ class CONTENT_EXPORT WebContentsImpl
                       const std::string& encoding) override;
   WebContents* GetAsWebContents() override;
   bool IsNeverVisible() override;
-  AccessibilityMode GetAccessibilityMode() const override;
+  ui::AXMode GetAccessibilityMode() const override;
   void AccessibilityEventReceived(
       const std::vector<AXEventNotificationDetails>& details) override;
   void AccessibilityLocationChangesReceived(
@@ -1599,7 +1599,7 @@ class CONTENT_EXPORT WebContentsImpl
 
   // The accessibility mode for all frames. This is queried when each frame
   // is created, and broadcast to all frames when it changes.
-  AccessibilityMode accessibility_mode_;
+  ui::AXMode accessibility_mode_;
 
   // Monitors power levels for audio streams associated with this WebContents.
   AudioStreamMonitor audio_stream_monitor_;

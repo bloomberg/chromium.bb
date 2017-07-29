@@ -18,9 +18,9 @@
 #include "content/common/cursors/webcursor.h"
 #include "ipc/ipc_mojo_param_traits.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "ui/accessibility/ax_modes.h"
 
 namespace content {
-class AccessibilityMode;
 class MessagePort;
 }
 
@@ -64,8 +64,8 @@ struct CONTENT_EXPORT ParamTraits<content::MessagePort> {
 };
 
 template <>
-struct CONTENT_EXPORT ParamTraits<content::AccessibilityMode> {
-  typedef content::AccessibilityMode param_type;
+struct CONTENT_EXPORT ParamTraits<ui::AXMode> {
+  typedef ui::AXMode param_type;
   static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,

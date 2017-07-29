@@ -33,7 +33,7 @@ namespace content {
 class TestRenderAccessibilityImpl : public RenderAccessibilityImpl {
  public:
   explicit TestRenderAccessibilityImpl(RenderFrameImpl* render_frame)
-      : RenderAccessibilityImpl(render_frame, kAccessibilityModeComplete) {}
+      : RenderAccessibilityImpl(render_frame, ui::kAXModeComplete) {}
 
   void SendPendingAccessibilityEvents() {
     RenderAccessibilityImpl::SendPendingAccessibilityEvents();
@@ -66,9 +66,7 @@ class RenderAccessibilityImplTest : public RenderViewTest {
      RenderViewTest::TearDown();
   }
 
-  void SetMode(AccessibilityMode mode) {
-    frame()->OnSetAccessibilityMode(mode);
-  }
+  void SetMode(ui::AXMode mode) { frame()->OnSetAccessibilityMode(mode); }
 
   void GetAllAccEvents(
       std::vector<AccessibilityHostMsg_EventParams>* param_list) {

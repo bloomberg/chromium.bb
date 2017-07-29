@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_ACCESSIBILITY_MODE_ENUMS_H_
-#define CONTENT_COMMON_ACCESSIBILITY_MODE_ENUMS_H_
+#ifndef UI_ACCESSIBILITY_PLATFORM_AX_MODE_H_
+#define UI_ACCESSIBILITY_PLATFORM_AX_MODE_H_
 
-namespace content {
+namespace ui {
 
-class AccessibilityMode {
+class AXMode {
  public:
   // Native accessibility APIs, specific to each platform, are enabled.
   // When this mode is set that indicates the presence of a third-party
@@ -47,8 +47,8 @@ class AccessibilityMode {
   // for all accessibility nodes that come from web content.
   static constexpr uint32_t kHTML = 1 << 4;
 
-  constexpr AccessibilityMode() : flags_(0) {}
-  constexpr AccessibilityMode(uint32_t flags) : flags_(flags) {}
+  constexpr AXMode() : flags_(0) {}
+  constexpr AXMode(uint32_t flags) : flags_(flags) {}
 
   bool has_mode(uint32_t flag) const { return (flags_ & flag) > 0; }
 
@@ -58,7 +58,7 @@ class AccessibilityMode {
 
   uint32_t mode() const { return flags_; }
 
-  bool operator==(AccessibilityMode rhs) const {
+  bool operator==(AXMode rhs) const {
     if (flags_ == rhs.flags_)
       return true;
     return false;
@@ -66,9 +66,9 @@ class AccessibilityMode {
 
   bool is_mode_off() const { return flags_ == 0; }
 
-  bool operator!=(AccessibilityMode rhs) const { return !(*this == rhs); }
+  bool operator!=(AXMode rhs) const { return !(*this == rhs); }
 
-  AccessibilityMode& operator|=(const AccessibilityMode& rhs) {
+  AXMode& operator|=(const AXMode& rhs) {
     flags_ |= rhs.flags_;
     return *this;
   }
@@ -77,17 +77,16 @@ class AccessibilityMode {
   uint32_t flags_;
 };
 
-static constexpr AccessibilityMode kAccessibilityModeWebContentsOnly(
-    AccessibilityMode::kWebContents | AccessibilityMode::kInlineTextBoxes |
-    AccessibilityMode::kScreenReader |
-    AccessibilityMode::kHTML);
+static constexpr AXMode kAXModeWebContentsOnly(AXMode::kWebContents |
+                                               AXMode::kInlineTextBoxes |
+                                               AXMode::kScreenReader |
+                                               AXMode::kHTML);
 
-static constexpr AccessibilityMode kAccessibilityModeComplete(
-    AccessibilityMode::kNativeAPIs | AccessibilityMode::kWebContents |
-    AccessibilityMode::kInlineTextBoxes |
-    AccessibilityMode::kScreenReader |
-    AccessibilityMode::kHTML);
+static constexpr AXMode kAXModeComplete(AXMode::kNativeAPIs |
+                                        AXMode::kWebContents |
+                                        AXMode::kInlineTextBoxes |
+                                        AXMode::kScreenReader | AXMode::kHTML);
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_COMMON_ACCESSIBILITY_MODE_ENUMS_H_
+#endif  // UI_ACCESSIBILITY_PLATFORM_AX_MODE_H_

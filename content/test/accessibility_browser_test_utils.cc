@@ -35,7 +35,7 @@ AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
 
 AccessibilityNotificationWaiter::AccessibilityNotificationWaiter(
     WebContents* web_contents,
-    AccessibilityMode accessibility_mode,
+    ui::AXMode accessibility_mode,
     ui::AXEvent event_type)
     : event_to_wait_for_(event_type),
       loop_runner_(new MessageLoopRunner()),

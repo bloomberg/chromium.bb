@@ -23,9 +23,9 @@
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/common/accessibility_messages.h"
-#include "content/common/accessibility_mode.h"
 #include "content/public/common/content_client.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_modes.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/base/win/accessibility_ids_win.h"
@@ -36,8 +36,7 @@
 // modes when Windows screen readers are used. For example, certain roles use
 // the HTML tag name. Input fields require their type attribute to be exposed.
 const uint32_t kScreenReaderAndHTMLAccessibilityModes =
-    content::AccessibilityMode::kScreenReader |
-    content::AccessibilityMode::kHTML;
+    ui::AXMode::kScreenReader | ui::AXMode::kHTML;
 
 namespace content {
 
@@ -59,7 +58,7 @@ const GUID GUID_IAccessibleContentDocument = {
 
 const base::char16 BrowserAccessibilityComWin::kEmbeddedCharacter = L'\xfffc';
 
-void AddAccessibilityModeFlags(AccessibilityMode mode_flags) {
+void AddAccessibilityModeFlags(ui::AXMode mode_flags) {
   BrowserAccessibilityStateImpl::GetInstance()->AddAccessibilityModeFlags(
       mode_flags);
 }
@@ -638,7 +637,7 @@ BrowserAccessibilityComWin::get_modelChange(IA2TableModelChange* model_change) {
 STDMETHODIMP BrowserAccessibilityComWin::get_cellAt(long row,
                                                     long column,
                                                     IUnknown** cell) {
-  AddAccessibilityModeFlags(AccessibilityMode::kScreenReader);
+  AddAccessibilityModeFlags(ui::AXMode::kScreenReader);
   return AXPlatformNodeWin::get_cellAt(row, column, cell);
 }
 
@@ -735,7 +734,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_table(IUnknown** table) {
 STDMETHODIMP BrowserAccessibilityComWin::get_nCharacters(LONG* n_characters) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_CHARACTERS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes |
-                            AccessibilityMode::kInlineTextBoxes);
+                            ui::AXMode::kInlineTextBoxes);
   if (!owner())
     return E_FAIL;
 
@@ -777,7 +776,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_characterExtents(
     LONG* out_height) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CHARACTER_EXTENTS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes |
-                            AccessibilityMode::kInlineTextBoxes);
+                            ui::AXMode::kInlineTextBoxes);
   if (!owner())
     return E_FAIL;
 
@@ -911,7 +910,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_textAtOffset(
     BSTR* text) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_TEXT_AT_OFFSET);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes |
-                            AccessibilityMode::kInlineTextBoxes);
+                            ui::AXMode::kInlineTextBoxes);
   if (!owner())
     return E_FAIL;
 
@@ -959,7 +958,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_textBeforeOffset(
     BSTR* text) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_TEXT_BEFORE_OFFSET);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes |
-                            AccessibilityMode::kInlineTextBoxes);
+                            ui::AXMode::kInlineTextBoxes);
   if (!owner())
     return E_FAIL;
 
@@ -993,7 +992,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_textAfterOffset(
     BSTR* text) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_TEXT_AFTER_OFFSET);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes |
-                            AccessibilityMode::kInlineTextBoxes);
+                            ui::AXMode::kInlineTextBoxes);
   if (!owner())
     return E_FAIL;
 
@@ -1075,7 +1074,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_offsetAtPoint(
     LONG* offset) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_OFFSET_AT_POINT);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes |
-                            AccessibilityMode::kInlineTextBoxes);
+                            ui::AXMode::kInlineTextBoxes);
   if (!owner())
     return E_FAIL;
 
@@ -1095,7 +1094,7 @@ STDMETHODIMP BrowserAccessibilityComWin::scrollSubstringTo(
     IA2ScrollType scroll_type) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_SUBSTRING_TO);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes |
-                            AccessibilityMode::kInlineTextBoxes);
+                            ui::AXMode::kInlineTextBoxes);
   // TODO(dmazzoni): adjust this for the start and end index, too.
   return scrollTo(scroll_type);
 }
@@ -1108,7 +1107,7 @@ STDMETHODIMP BrowserAccessibilityComWin::scrollSubstringToPoint(
     LONG y) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_SUBSTRING_TO_POINT);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes |
-                            AccessibilityMode::kInlineTextBoxes);
+                            ui::AXMode::kInlineTextBoxes);
   if (!owner())
     return E_FAIL;
 
@@ -2032,7 +2031,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_clippedSubstringBounds(
     int* out_height) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CLIPPED_SUBSTRING_BOUNDS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes |
-                            AccessibilityMode::kInlineTextBoxes);
+                            ui::AXMode::kInlineTextBoxes);
   // TODO(dmazzoni): fully support this API by intersecting the
   // rect with the container's rect.
   return get_unclippedSubstringBounds(start_index, end_index, out_x, out_y,
@@ -2048,7 +2047,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_unclippedSubstringBounds(
     int* out_height) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_UNCLIPPED_SUBSTRING_BOUNDS);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes |
-                            AccessibilityMode::kInlineTextBoxes);
+                            ui::AXMode::kInlineTextBoxes);
   if (!owner())
     return E_FAIL;
 
@@ -2076,7 +2075,7 @@ STDMETHODIMP BrowserAccessibilityComWin::scrollToSubstring(
     unsigned int end_index) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SCROLL_TO_SUBSTRING);
   AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes |
-                            AccessibilityMode::kInlineTextBoxes);
+                            ui::AXMode::kInlineTextBoxes);
   if (!owner())
     return E_FAIL;
 

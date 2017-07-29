@@ -99,7 +99,7 @@ void TestRenderFrame::CollapseSelection() {
   OnCollapseSelection();
 }
 
-void TestRenderFrame::SetAccessibilityMode(AccessibilityMode new_mode) {
+void TestRenderFrame::SetAccessibilityMode(ui::AXMode new_mode) {
   OnSetAccessibilityMode(new_mode);
 }
 

@@ -41,7 +41,7 @@ class RenderFrameImpl;
 // on-screen keyboard should be shown.
 //
 // An instance of this class belongs to RenderFrameImpl. Accessibility is
-// initialized based on the AccessibilityMode of RenderFrameImpl; it lazily
+// initialized based on the ui::AXMode of RenderFrameImpl; it lazily
 // starts as Off or EditableTextOnly depending on the operating system, and
 // switches to Complete if assistive technology is detected or a flag is set.
 //
@@ -65,8 +65,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl
       RenderFrameImpl* render_frame,
       AXContentTreeUpdate* response);
 
-  RenderAccessibilityImpl(RenderFrameImpl* render_frame,
-                          AccessibilityMode mode);
+  RenderAccessibilityImpl(RenderFrameImpl* render_frame, ui::AXMode mode);
   ~RenderAccessibilityImpl() override;
 
   // RenderAccessibility implementation.
