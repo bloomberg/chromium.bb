@@ -182,7 +182,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
     WebMediaPlayerDelegate* delegate,
     std::unique_ptr<RendererFactorySelector> renderer_factory_selector,
-    linked_ptr<UrlIndex> url_index,
+    UrlIndex* url_index,
     std::unique_ptr<WebMediaPlayerParams> params)
     : frame_(frame),
       delegate_state_(DelegateState::GONE),

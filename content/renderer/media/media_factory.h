@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/buildflag.h"
 #include "media/base/renderer_factory_selector.h"
@@ -175,7 +174,7 @@ class MediaFactory {
   std::unique_ptr<media::CdmFactory> cdm_factory_;
 
   // Media resource cache, lazily initialized.
-  linked_ptr<media::UrlIndex> url_index_;
+  std::unique_ptr<media::UrlIndex> url_index_;
 
   // EncryptedMediaClient attached to this frame; lazily initialized.
   std::unique_ptr<media::WebEncryptedMediaClientImpl>

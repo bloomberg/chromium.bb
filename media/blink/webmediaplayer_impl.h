@@ -14,7 +14,6 @@
 #include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -101,7 +100,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
       WebMediaPlayerDelegate* delegate,
       std::unique_ptr<RendererFactorySelector> renderer_factory_selector,
-      linked_ptr<UrlIndex> url_index,
+      UrlIndex* url_index,
       std::unique_ptr<WebMediaPlayerParams> params);
   ~WebMediaPlayerImpl() override;
 
@@ -622,7 +621,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   std::unique_ptr<base::TickClock> tick_clock_;
 
   BufferedDataSourceHostImpl buffered_data_source_host_;
-  linked_ptr<UrlIndex> url_index_;
+  UrlIndex* url_index_;
 
   // Video rendering members.
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
