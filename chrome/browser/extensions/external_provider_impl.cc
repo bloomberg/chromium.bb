@@ -54,7 +54,6 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "components/user_manager/user.h"
 #else
 #include "chrome/browser/extensions/default_apps.h"
 #endif
