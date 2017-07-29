@@ -236,7 +236,7 @@ class WebMediaPlayerImplTest : public testing::Test {
 
     wmpi_ = base::MakeUnique<WebMediaPlayerImpl>(
         web_local_frame_, &client_, nullptr, &delegate_,
-        std::move(factory_selector), url_index_,
+        std::move(factory_selector), url_index_.get(),
         base::MakeUnique<WebMediaPlayerParams>(
             std::move(media_log), WebMediaPlayerParams::DeferLoadCB(),
             scoped_refptr<SwitchableAudioRendererSink>(),
@@ -379,7 +379,7 @@ class WebMediaPlayerImplTest : public testing::Test {
   blink::WebView* web_view_;
   blink::WebLocalFrame* web_local_frame_;
 
-  linked_ptr<media::UrlIndex> url_index_;
+  std::unique_ptr<media::UrlIndex> url_index_;
 
   // Audio hardware configuration.
   AudioParameters audio_parameters_;
