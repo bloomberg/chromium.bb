@@ -85,7 +85,6 @@
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
 #include "chromeos/network/onc/onc_utils.h"
-#include "components/user_manager/user.h"
 #endif
 
 using base::Value;

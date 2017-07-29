@@ -6,7 +6,6 @@
 #define ASH_PUBLIC_CPP_WALLPAPER_STRUCT_TRAITS_H_
 
 #include "ash/public/interfaces/wallpaper.mojom.h"
-#include "components/user_manager/user.h"
 #include "components/wallpaper/wallpaper_info.h"
 
 namespace base {
