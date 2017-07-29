@@ -203,7 +203,7 @@ void FrameTreeNode::RemoveChild(FrameTreeNode* child) {
 }
 
 void FrameTreeNode::ResetForNewProcess() {
-  current_frame_host()->set_last_committed_url(GURL());
+  current_frame_host()->SetLastCommittedUrl(GURL());
   blame_context_.TakeSnapshot();
 
   // Remove child nodes from the tree, then delete them. This destruction
@@ -243,7 +243,7 @@ void FrameTreeNode::SetOriginalOpener(FrameTreeNode* opener) {
 void FrameTreeNode::SetCurrentURL(const GURL& url) {
   if (!has_committed_real_load_ && url != url::kAboutBlankURL)
     has_committed_real_load_ = true;
-  current_frame_host()->set_last_committed_url(url);
+  current_frame_host()->SetLastCommittedUrl(url);
   blame_context_.TakeSnapshot();
 }
 

@@ -2117,7 +2117,8 @@ RenderProcessHostImpl::GetProcessResourceCoordinator() {
     process_resource_coordinator_ =
         base::MakeUnique<resource_coordinator::ResourceCoordinatorInterface>(
             ServiceManagerConnection::GetForProcess()->GetConnector(),
-            resource_coordinator::CoordinationUnitType::kProcess);
+            resource_coordinator::CoordinationUnitType::kProcess,
+            base::GetProcId(GetHandle()));
   }
   return process_resource_coordinator_.get();
 }

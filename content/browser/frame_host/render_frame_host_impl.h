@@ -283,9 +283,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Allows FrameTreeNode::SetCurrentURL to update this frame's last committed
   // URL.  Do not call this directly, since we rely on SetCurrentURL to track
   // whether a real load has committed or not.
-  void set_last_committed_url(const GURL& url) {
-    last_committed_url_ = url;
-  }
+  void SetLastCommittedUrl(const GURL& url);
 
   // The most recent non-net-error URL to commit in this frame.  In almost all
   // cases, use GetLastCommittedURL instead.
@@ -590,7 +588,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Returns the Mojo ImageDownloader service.
   const content::mojom::ImageDownloaderPtr& GetMojoImageDownloader();
 
-  // Returns the interface to the Global Resource Coordinator
+  // Returns the interface to the Global Resource Coordinator.
   resource_coordinator::ResourceCoordinatorInterface*
   GetFrameResourceCoordinator() override;
 
