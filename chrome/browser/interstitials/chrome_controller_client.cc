@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/process/launch.h"
+#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
@@ -39,8 +40,7 @@ using content::Referrer;
 namespace {
 
 #if !defined(OS_CHROMEOS)
-void LaunchDateAndTimeSettingsOnFileThread() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+void LaunchDateAndTimeSettingsImpl() {
 // The code for each OS is completely separate, in order to avoid bugs like
 // https://crbug.com/430877 . ChromeOS is handled on the UI thread.
 #if defined(OS_ANDROID)
@@ -108,8 +108,7 @@ void LaunchDateAndTimeSettingsOnFileThread() {
   base::LaunchProcess(command, options);
 
 #else
-  NOTREACHED();
-
+#error Unsupported target architecture.
 #endif
   // Don't add code here! (See the comment at the beginning of the function.)
 }
@@ -145,8 +144,8 @@ void ChromeControllerClient::LaunchDateAndTimeSettings() {
   chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
                                         chrome::kDateTimeSubPage);
 #else
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::BindOnce(&LaunchDateAndTimeSettingsOnFileThread));
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+                           base::BindOnce(&LaunchDateAndTimeSettingsImpl));
 #endif
 }
