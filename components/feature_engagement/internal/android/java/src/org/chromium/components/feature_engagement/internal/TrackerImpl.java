@@ -8,6 +8,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.components.feature_engagement.TriggerState;
 
 /**
  * Java side of the JNI bridge between TrackerImpl in Java
@@ -42,6 +43,13 @@ public class TrackerImpl implements Tracker {
     }
 
     @Override
+    @TriggerState
+    public int getTriggerState(String feature) {
+        assert mNativePtr != 0;
+        return nativeGetTriggerState(mNativePtr, feature);
+    }
+
+    @Override
     public void dismissed(String feature) {
         assert mNativePtr != 0;
         nativeDismissed(mNativePtr, feature);
@@ -72,6 +80,8 @@ public class TrackerImpl implements Tracker {
 
     private native void nativeNotifyEvent(long nativeTrackerImplAndroid, String event);
     private native boolean nativeShouldTriggerHelpUI(long nativeTrackerImplAndroid, String feature);
+    @TriggerState
+    private native int nativeGetTriggerState(long nativeTrackerImplAndroid, String feature);
     private native void nativeDismissed(long nativeTrackerImplAndroid, String feature);
     private native boolean nativeIsInitialized(long nativeTrackerImplAndroid);
     private native void nativeAddOnInitializedCallback(

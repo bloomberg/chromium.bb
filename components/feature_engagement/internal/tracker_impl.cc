@@ -187,6 +187,29 @@ bool TrackerImpl::ShouldTriggerHelpUI(const base::Feature& feature) {
   return result.NoErrors();
 }
 
+Tracker::TriggerState TrackerImpl::GetTriggerState(
+    const base::Feature& feature) {
+  if (!IsInitialized()) {
+    DVLOG(2) << "TriggerState for " << feature.name << ": "
+             << static_cast<int>(Tracker::TriggerState::NOT_READY);
+    return Tracker::TriggerState::NOT_READY;
+  }
+
+  ConditionValidator::Result result = condition_validator_->MeetsConditions(
+      feature, configuration_->GetFeatureConfig(feature), *event_model_,
+      *availability_model_, time_provider_->GetCurrentDay());
+
+  if (result.trigger_ok) {
+    DVLOG(2) << "TriggerState for " << feature.name << ": "
+             << static_cast<int>(Tracker::TriggerState::HAS_NOT_BEEN_DISPLAYED);
+    return Tracker::TriggerState::HAS_NOT_BEEN_DISPLAYED;
+  }
+
+  DVLOG(2) << "TriggerState for " << feature.name << ": "
+           << static_cast<int>(Tracker::TriggerState::HAS_BEEN_DISPLAYED);
+  return Tracker::TriggerState::HAS_BEEN_DISPLAYED;
+}
+
 void TrackerImpl::Dismissed(const base::Feature& feature) {
   DVLOG(2) << "Dismissing " << feature.name;
   condition_validator_->NotifyDismissed(feature);

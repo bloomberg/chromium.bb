@@ -78,6 +78,7 @@ TEST_F(OnceConditionValidatorTest, EnabledFeatureShouldTriggerOnce) {
                                  event_model_, availability_model_, 0u);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.session_rate_ok);
+  EXPECT_FALSE(result.trigger_ok);
 }
 
 TEST_F(OnceConditionValidatorTest,
