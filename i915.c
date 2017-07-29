@@ -207,6 +207,21 @@ static int i915_align_dimensions(struct bo *bo, uint32_t tiling, uint32_t *strid
 		break;
 	}
 
+	/*
+	 * The alignment calculated above is based on the full size luma plane and to have chroma
+	 * planes properly aligned with subsampled formats, we need to multiply luma alignment by
+	 * subsampling factor.
+	 */
+	switch (bo->format) {
+	case DRM_FORMAT_YVU420_ANDROID:
+	case DRM_FORMAT_YVU420:
+		horizontal_alignment *= 2;
+		/* Fall through */
+	case DRM_FORMAT_NV12:
+		vertical_alignment *= 2;
+		break;
+	}
+
 	*aligned_height = ALIGN(bo->height, vertical_alignment);
 	if (i915->gen > 3) {
 		*stride = ALIGN(*stride, horizontal_alignment);
@@ -294,13 +309,6 @@ static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32
 	ret = i915_align_dimensions(bo, bo->tiling, &stride, &height);
 	if (ret)
 		return ret;
-
-	/*
-	 * Align the Y plane to 128 bytes so the chroma planes would be aligned
-	 * to 64 byte boundaries. This is an Intel HW requirement.
-	 */
-	if (format == DRM_FORMAT_YVU420)
-		stride = ALIGN(stride, 128);
 
 	/*
 	 * HAL_PIXEL_FORMAT_YV12 requires that the buffer's height not be aligned.
