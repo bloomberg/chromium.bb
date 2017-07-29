@@ -2474,10 +2474,10 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
                        bsize, ctx_none, INT64_MAX);
 
       if (none_rdc.rate < INT_MAX) {
-        none_rdc.rate += cpi->partition_cost[pl][PARTITION_NONE];
+        none_rdc.rate += x->partition_cost[pl][PARTITION_NONE];
         none_rdc.rdcost = RDCOST(x->rdmult, none_rdc.rate, none_rdc.dist);
 #if CONFIG_SUPERTX
-        none_rate_nocoef += cpi->partition_cost[pl][PARTITION_NONE];
+        none_rate_nocoef += x->partition_cost[pl][PARTITION_NONE];
 #endif
       }
 
@@ -2653,11 +2653,11 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
   }
 
   if (last_part_rdc.rate < INT_MAX) {
-    last_part_rdc.rate += cpi->partition_cost[pl][partition];
+    last_part_rdc.rate += x->partition_cost[pl][partition];
     last_part_rdc.rdcost =
         RDCOST(x->rdmult, last_part_rdc.rate, last_part_rdc.dist);
 #if CONFIG_SUPERTX
-    last_part_rate_nocoef += cpi->partition_cost[pl][partition];
+    last_part_rate_nocoef += x->partition_cost[pl][partition];
 #endif
   }
 
@@ -2732,16 +2732,16 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
         encode_sb(cpi, td, tile_info, tp, mi_row + y_idx, mi_col + x_idx,
                   OUTPUT_ENABLED, split_subsize, pc_tree->split[i], NULL);
 
-      chosen_rdc.rate += cpi->partition_cost[pl][PARTITION_NONE];
+      chosen_rdc.rate += x->partition_cost[pl][PARTITION_NONE];
 #if CONFIG_SUPERTX
-      chosen_rate_nocoef += cpi->partition_cost[pl][PARTITION_SPLIT];
+      chosen_rate_nocoef += x->partition_cost[pl][PARTITION_SPLIT];
 #endif
     }
     if (chosen_rdc.rate < INT_MAX) {
-      chosen_rdc.rate += cpi->partition_cost[pl][PARTITION_SPLIT];
+      chosen_rdc.rate += x->partition_cost[pl][PARTITION_SPLIT];
       chosen_rdc.rdcost = RDCOST(x->rdmult, chosen_rdc.rate, chosen_rdc.dist);
 #if CONFIG_SUPERTX
-      chosen_rate_nocoef += cpi->partition_cost[pl][PARTITION_NONE];
+      chosen_rate_nocoef += x->partition_cost[pl][PARTITION_NONE];
 #endif
     }
   }
@@ -3267,10 +3267,10 @@ static void rd_test_partition3(
                                          has_rows, has_cols,
 #endif
                                          bsize);
-        sum_rdc.rate += cpi->partition_cost[pl][partition];
+        sum_rdc.rate += x->partition_cost[pl][partition];
         sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
 #if CONFIG_SUPERTX
-        sum_rate_nocoef += cpi->partition_cost[pl][partition];
+        sum_rate_nocoef += x->partition_cost[pl][partition];
 #endif
         if (sum_rdc.rdcost < best_rdc->rdcost) {
 #if CONFIG_SUPERTX
@@ -3333,7 +3333,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif
                                          bsize);
 #endif  // CONFIG_CB4X4
-  const int *partition_cost = cpi->partition_cost[pl];
+  const int *partition_cost = x->partition_cost[pl];
 #if CONFIG_SUPERTX
   int this_rate_nocoef, sum_rate_nocoef = 0, best_rate_nocoef = INT_MAX;
   int abort_flag;
@@ -4481,6 +4481,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
 
   // Initialize the left context for the new SB row
   av1_zero_left_context(xd);
+  av1_fill_mode_rates(cm, x, xd->tile_ctx);
 
 #if CONFIG_DELTA_Q
   // Reset delta for every tile
@@ -6004,7 +6005,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
     if (bsize >= BLOCK_8X8 && !dry_run) {
       for (plane = 0; plane <= 1; ++plane) {
         if (mbmi->palette_mode_info.palette_size[plane] > 0)
-          av1_tokenize_palette_sb(cpi, td, plane, t, dry_run, bsize, rate);
+          av1_tokenize_palette_sb(td, plane, t, dry_run, bsize, rate);
       }
     }
 #endif  // CONFIG_PALETTE
@@ -7258,12 +7259,12 @@ static void rd_supertx_sb(const AV1_COMP *const cpi, ThreadData *td,
         !xd->lossless[xd->mi[0]->mbmi.segment_id] && this_rate != INT_MAX) {
       if (ext_tx_set > 0)
         this_rate +=
-            cpi->inter_tx_type_costs[ext_tx_set][mbmi->tx_size][mbmi->tx_type];
+            x->inter_tx_type_costs[ext_tx_set][mbmi->tx_size][mbmi->tx_type];
     }
 #else
     if (tx_size < TX_32X32 && !xd->lossless[xd->mi[0]->mbmi.segment_id] &&
         this_rate != INT_MAX) {
-      this_rate += cpi->inter_tx_type_costs[tx_size][mbmi->tx_type];
+      this_rate += x->inter_tx_type_costs[tx_size][mbmi->tx_type];
     }
 #endif  // CONFIG_EXT_TX
     *tmp_rate = rate_uv + this_rate;

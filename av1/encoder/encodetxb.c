@@ -325,7 +325,7 @@ int av1_cost_coeffs_txb(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
   cost = av1_cost_bit(xd->fc->txb_skip[txs_ctx][txb_skip_ctx], 0);
 
 #if CONFIG_TXK_SEL
-  cost += av1_tx_type_cost(cpi, xd, mbmi->sb_type, plane, tx_size, tx_type);
+  cost += av1_tx_type_cost(cm, x, xd, mbmi->sb_type, plane, tx_size, tx_type);
 #endif
 
   for (c = 0; c < eob; ++c) {

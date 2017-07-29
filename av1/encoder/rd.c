@@ -61,17 +61,54 @@ static const uint8_t rd_thresh_block_size_factor[BLOCK_SIZES_ALL] = {
   4,  4,  8,  8
 };
 
-static void fill_mode_costs(AV1_COMP *cpi) {
-  const FRAME_CONTEXT *const fc = cpi->common.fc;
+void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
+                         FRAME_CONTEXT *fc) {
   int i, j;
+
+  if (cm->frame_type == KEY_FRAME) {
+#if CONFIG_EXT_PARTITION_TYPES
+    for (i = 0; i < PARTITION_PLOFFSET; ++i)
+      av1_cost_tokens(x->partition_cost[i], fc->partition_prob[i],
+                      av1_partition_tree);
+    for (; i < PARTITION_CONTEXTS_PRIMARY; ++i)
+      av1_cost_tokens(x->partition_cost[i], fc->partition_prob[i],
+                      av1_ext_partition_tree);
+#else
+    for (i = 0; i < PARTITION_CONTEXTS_PRIMARY; ++i)
+      av1_cost_tokens(x->partition_cost[i], fc->partition_prob[i],
+                      av1_partition_tree);
+#endif  // CONFIG_EXT_PARTITION_TYPES
+#if CONFIG_UNPOISON_PARTITION_CTX
+    for (; i < PARTITION_CONTEXTS_PRIMARY + PARTITION_BLOCK_SIZES; ++i) {
+      aom_prob p = fc->partition_prob[i][PARTITION_VERT];
+      assert(p > 0);
+      x->partition_cost[i][PARTITION_NONE] = INT_MAX;
+      x->partition_cost[i][PARTITION_HORZ] = INT_MAX;
+      x->partition_cost[i][PARTITION_VERT] = av1_cost_bit(p, 0);
+      x->partition_cost[i][PARTITION_SPLIT] = av1_cost_bit(p, 1);
+    }
+    for (; i < PARTITION_CONTEXTS_PRIMARY + 2 * PARTITION_BLOCK_SIZES; ++i) {
+      aom_prob p = fc->partition_prob[i][PARTITION_HORZ];
+      assert(p > 0);
+      x->partition_cost[i][PARTITION_NONE] = INT_MAX;
+      x->partition_cost[i][PARTITION_HORZ] = av1_cost_bit(p, 0);
+      x->partition_cost[i][PARTITION_VERT] = INT_MAX;
+      x->partition_cost[i][PARTITION_SPLIT] = av1_cost_bit(p, 1);
+    }
+    x->partition_cost[PARTITION_CONTEXTS][PARTITION_NONE] = INT_MAX;
+    x->partition_cost[PARTITION_CONTEXTS][PARTITION_HORZ] = INT_MAX;
+    x->partition_cost[PARTITION_CONTEXTS][PARTITION_VERT] = INT_MAX;
+    x->partition_cost[PARTITION_CONTEXTS][PARTITION_SPLIT] = 0;
+#endif  // CONFIG_UNPOISON_PARTITION_CTX
+  }
 
   for (i = 0; i < INTRA_MODES; ++i)
     for (j = 0; j < INTRA_MODES; ++j)
-      av1_cost_tokens_from_cdf(cpi->y_mode_costs[i][j], av1_kf_y_mode_cdf[i][j],
+      av1_cost_tokens_from_cdf(x->y_mode_costs[i][j], av1_kf_y_mode_cdf[i][j],
                                av1_intra_mode_inv);
 
   for (i = 0; i < BLOCK_SIZE_GROUPS; ++i)
-    av1_cost_tokens_from_cdf(cpi->mbmode_cost[i], fc->y_mode_cdf[i],
+    av1_cost_tokens_from_cdf(x->mbmode_cost[i], fc->y_mode_cdf[i],
                              av1_intra_mode_inv);
   const int *uv_mode_inv_map =
 #if CONFIG_CFL
@@ -81,26 +118,26 @@ static void fill_mode_costs(AV1_COMP *cpi) {
       av1_intra_mode_inv;
 #endif
   for (i = 0; i < INTRA_MODES; ++i)
-    av1_cost_tokens_from_cdf(cpi->intra_uv_mode_cost[i], fc->uv_mode_cdf[i],
+    av1_cost_tokens_from_cdf(x->intra_uv_mode_cost[i], fc->uv_mode_cdf[i],
                              uv_mode_inv_map);
 
   for (i = 0; i < SWITCHABLE_FILTER_CONTEXTS; ++i)
-    av1_cost_tokens(cpi->switchable_interp_costs[i],
+    av1_cost_tokens(x->switchable_interp_costs[i],
                     fc->switchable_interp_prob[i], av1_switchable_interp_tree);
 
 #if CONFIG_PALETTE
   for (i = 0; i < PALETTE_BLOCK_SIZES; ++i) {
-    av1_cost_tokens_from_cdf(cpi->palette_y_size_cost[i],
+    av1_cost_tokens_from_cdf(x->palette_y_size_cost[i],
                              fc->palette_y_size_cdf[i], NULL);
-    av1_cost_tokens_from_cdf(cpi->palette_uv_size_cost[i],
+    av1_cost_tokens_from_cdf(x->palette_uv_size_cost[i],
                              fc->palette_uv_size_cdf[i], NULL);
   }
 
   for (i = 0; i < PALETTE_SIZES; ++i) {
     for (j = 0; j < PALETTE_COLOR_INDEX_CONTEXTS; ++j) {
-      av1_cost_tokens_from_cdf(cpi->palette_y_color_cost[i][j],
+      av1_cost_tokens_from_cdf(x->palette_y_color_cost[i][j],
                                fc->palette_y_color_index_cdf[i][j], NULL);
-      av1_cost_tokens_from_cdf(cpi->palette_uv_color_cost[i][j],
+      av1_cost_tokens_from_cdf(x->palette_uv_color_cost[i][j],
                                fc->palette_uv_color_index_cdf[i][j], NULL);
     }
   }
@@ -108,7 +145,7 @@ static void fill_mode_costs(AV1_COMP *cpi) {
 
   for (i = 0; i < MAX_TX_DEPTH; ++i)
     for (j = 0; j < TX_SIZE_CONTEXTS; ++j)
-      av1_cost_tokens(cpi->tx_size_cost[i][j], fc->tx_size_probs[i][j],
+      av1_cost_tokens(x->tx_size_cost[i][j], fc->tx_size_probs[i][j],
                       av1_tx_size_tree[i]);
 
 #if CONFIG_EXT_TX
@@ -116,14 +153,14 @@ static void fill_mode_costs(AV1_COMP *cpi) {
     int s;
     for (s = 1; s < EXT_TX_SETS_INTER; ++s) {
       if (use_inter_ext_tx_for_txsize[s][i]) {
-        av1_cost_tokens(cpi->inter_tx_type_costs[s][i],
+        av1_cost_tokens(x->inter_tx_type_costs[s][i],
                         fc->inter_ext_tx_prob[s][i], av1_ext_tx_inter_tree[s]);
       }
     }
     for (s = 1; s < EXT_TX_SETS_INTRA; ++s) {
       if (use_intra_ext_tx_for_txsize[s][i]) {
         for (j = 0; j < INTRA_MODES; ++j)
-          av1_cost_tokens(cpi->intra_tx_type_costs[s][i][j],
+          av1_cost_tokens(x->intra_tx_type_costs[s][i][j],
                           fc->intra_ext_tx_prob[s][i][j],
                           av1_ext_tx_intra_tree[s]);
       }
@@ -132,30 +169,82 @@ static void fill_mode_costs(AV1_COMP *cpi) {
 #else
   for (i = TX_4X4; i < EXT_TX_SIZES; ++i) {
     for (j = 0; j < TX_TYPES; ++j)
-      av1_cost_tokens(cpi->intra_tx_type_costs[i][j],
-                      fc->intra_ext_tx_prob[i][j], av1_ext_tx_tree);
+      av1_cost_tokens(x->intra_tx_type_costs[i][j], fc->intra_ext_tx_prob[i][j],
+                      av1_ext_tx_tree);
   }
   for (i = TX_4X4; i < EXT_TX_SIZES; ++i) {
-    av1_cost_tokens(cpi->inter_tx_type_costs[i], fc->inter_ext_tx_prob[i],
+    av1_cost_tokens(x->inter_tx_type_costs[i], fc->inter_ext_tx_prob[i],
                     av1_ext_tx_tree);
   }
 #endif  // CONFIG_EXT_TX
 #if CONFIG_EXT_INTRA
 #if CONFIG_INTRA_INTERP
   for (i = 0; i < INTRA_FILTERS + 1; ++i)
-    av1_cost_tokens(cpi->intra_filter_cost[i], fc->intra_filter_probs[i],
+    av1_cost_tokens(x->intra_filter_cost[i], fc->intra_filter_probs[i],
                     av1_intra_filter_tree);
 #endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_LOOP_RESTORATION
-  av1_cost_tokens(cpi->switchable_restore_cost, fc->switchable_restore_prob,
+  av1_cost_tokens(x->switchable_restore_cost, fc->switchable_restore_prob,
                   av1_switchable_restore_tree);
 #endif  // CONFIG_LOOP_RESTORATION
-#if CONFIG_GLOBAL_MOTION
-  for (i = 0; i < TRANS_TYPES; ++i)
-    cpi->gmtype_cost[i] = (1 + (i > 0 ? GLOBAL_TYPE_BITS : 0))
-                          << AV1_PROB_COST_SHIFT;
-#endif  // CONFIG_GLOBAL_MOTION
+
+  if (!frame_is_intra_only(cm)) {
+    for (i = 0; i < NEWMV_MODE_CONTEXTS; ++i) {
+      x->newmv_mode_cost[i][0] = av1_cost_bit(fc->newmv_prob[i], 0);
+      x->newmv_mode_cost[i][1] = av1_cost_bit(fc->newmv_prob[i], 1);
+    }
+
+    for (i = 0; i < ZEROMV_MODE_CONTEXTS; ++i) {
+      x->zeromv_mode_cost[i][0] = av1_cost_bit(fc->zeromv_prob[i], 0);
+      x->zeromv_mode_cost[i][1] = av1_cost_bit(fc->zeromv_prob[i], 1);
+    }
+
+    for (i = 0; i < REFMV_MODE_CONTEXTS; ++i) {
+      x->refmv_mode_cost[i][0] = av1_cost_bit(fc->refmv_prob[i], 0);
+      x->refmv_mode_cost[i][1] = av1_cost_bit(fc->refmv_prob[i], 1);
+    }
+
+    for (i = 0; i < DRL_MODE_CONTEXTS; ++i) {
+      x->drl_mode_cost0[i][0] = av1_cost_bit(fc->drl_prob[i], 0);
+      x->drl_mode_cost0[i][1] = av1_cost_bit(fc->drl_prob[i], 1);
+    }
+#if CONFIG_EXT_INTER
+    for (i = 0; i < INTER_MODE_CONTEXTS; ++i)
+      av1_cost_tokens(x->inter_compound_mode_cost[i],
+                      fc->inter_compound_mode_probs[i],
+                      av1_inter_compound_mode_tree);
+#if CONFIG_COMPOUND_SINGLEREF
+    for (i = 0; i < INTER_MODE_CONTEXTS; ++i)
+      av1_cost_tokens(x->inter_singleref_comp_mode_cost[i],
+                      fc->inter_singleref_comp_mode_probs[i],
+                      av1_inter_singleref_comp_mode_tree);
+#endif  // CONFIG_COMPOUND_SINGLEREF
+#if CONFIG_INTERINTRA
+    for (i = 0; i < BLOCK_SIZE_GROUPS; ++i)
+      av1_cost_tokens(x->interintra_mode_cost[i], fc->interintra_mode_prob[i],
+                      av1_interintra_mode_tree);
+#endif  // CONFIG_INTERINTRA
+#endif  // CONFIG_EXT_INTER
+#if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+    for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; i++) {
+      av1_cost_tokens(x->motion_mode_cost[i], fc->motion_mode_prob[i],
+                      av1_motion_mode_tree);
+    }
+#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+    for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; i++) {
+      x->motion_mode_cost1[i][0] = av1_cost_bit(fc->obmc_prob[i], 0);
+      x->motion_mode_cost1[i][1] = av1_cost_bit(fc->obmc_prob[i], 1);
+    }
+#endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+#if CONFIG_MOTION_VAR && CONFIG_NCOBMC_ADAPT_WEIGHT
+    for (i = ADAPT_OVERLAP_BLOCK_8X8; i < ADAPT_OVERLAP_BLOCKS; ++i) {
+      av1_cost_tokens(x->ncobmc_mode_cost[i], fc->ncobmc_mode_prob[i],
+                      av1_ncobmc_mode_tree);
+    }
+#endif  // CONFIG_MOTION_VAR && CONFIG_NCOBMC_ADAPT_WEIGHT
+#endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+  }
 }
 
 void av1_fill_token_costs(av1_coeff_cost *c,
@@ -384,103 +473,11 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
 
   if (cpi->oxcf.pass != 1) {
     av1_fill_token_costs(x->token_costs, cm->fc->coef_probs);
-
-    if (cm->frame_type == KEY_FRAME) {
-#if CONFIG_EXT_PARTITION_TYPES
-      for (i = 0; i < PARTITION_PLOFFSET; ++i)
-        av1_cost_tokens(cpi->partition_cost[i], cm->fc->partition_prob[i],
-                        av1_partition_tree);
-      for (; i < PARTITION_CONTEXTS_PRIMARY; ++i)
-        av1_cost_tokens(cpi->partition_cost[i], cm->fc->partition_prob[i],
-                        av1_ext_partition_tree);
-#else
-      for (i = 0; i < PARTITION_CONTEXTS_PRIMARY; ++i)
-        av1_cost_tokens(cpi->partition_cost[i], cm->fc->partition_prob[i],
-                        av1_partition_tree);
-#endif  // CONFIG_EXT_PARTITION_TYPES
-#if CONFIG_UNPOISON_PARTITION_CTX
-      for (; i < PARTITION_CONTEXTS_PRIMARY + PARTITION_BLOCK_SIZES; ++i) {
-        aom_prob p = cm->fc->partition_prob[i][PARTITION_VERT];
-        assert(p > 0);
-        cpi->partition_cost[i][PARTITION_NONE] = INT_MAX;
-        cpi->partition_cost[i][PARTITION_HORZ] = INT_MAX;
-        cpi->partition_cost[i][PARTITION_VERT] = av1_cost_bit(p, 0);
-        cpi->partition_cost[i][PARTITION_SPLIT] = av1_cost_bit(p, 1);
-      }
-      for (; i < PARTITION_CONTEXTS_PRIMARY + 2 * PARTITION_BLOCK_SIZES; ++i) {
-        aom_prob p = cm->fc->partition_prob[i][PARTITION_HORZ];
-        assert(p > 0);
-        cpi->partition_cost[i][PARTITION_NONE] = INT_MAX;
-        cpi->partition_cost[i][PARTITION_HORZ] = av1_cost_bit(p, 0);
-        cpi->partition_cost[i][PARTITION_VERT] = INT_MAX;
-        cpi->partition_cost[i][PARTITION_SPLIT] = av1_cost_bit(p, 1);
-      }
-      cpi->partition_cost[PARTITION_CONTEXTS][PARTITION_NONE] = INT_MAX;
-      cpi->partition_cost[PARTITION_CONTEXTS][PARTITION_HORZ] = INT_MAX;
-      cpi->partition_cost[PARTITION_CONTEXTS][PARTITION_VERT] = INT_MAX;
-      cpi->partition_cost[PARTITION_CONTEXTS][PARTITION_SPLIT] = 0;
-#endif  // CONFIG_UNPOISON_PARTITION_CTX
-    }
-
-    fill_mode_costs(cpi);
-
-    if (!frame_is_intra_only(cm)) {
-      for (i = 0; i < NEWMV_MODE_CONTEXTS; ++i) {
-        cpi->newmv_mode_cost[i][0] = av1_cost_bit(cm->fc->newmv_prob[i], 0);
-        cpi->newmv_mode_cost[i][1] = av1_cost_bit(cm->fc->newmv_prob[i], 1);
-      }
-
-      for (i = 0; i < ZEROMV_MODE_CONTEXTS; ++i) {
-        cpi->zeromv_mode_cost[i][0] = av1_cost_bit(cm->fc->zeromv_prob[i], 0);
-        cpi->zeromv_mode_cost[i][1] = av1_cost_bit(cm->fc->zeromv_prob[i], 1);
-      }
-
-      for (i = 0; i < REFMV_MODE_CONTEXTS; ++i) {
-        cpi->refmv_mode_cost[i][0] = av1_cost_bit(cm->fc->refmv_prob[i], 0);
-        cpi->refmv_mode_cost[i][1] = av1_cost_bit(cm->fc->refmv_prob[i], 1);
-      }
-
-      for (i = 0; i < DRL_MODE_CONTEXTS; ++i) {
-        cpi->drl_mode_cost0[i][0] = av1_cost_bit(cm->fc->drl_prob[i], 0);
-        cpi->drl_mode_cost0[i][1] = av1_cost_bit(cm->fc->drl_prob[i], 1);
-      }
-#if CONFIG_EXT_INTER
-      for (i = 0; i < INTER_MODE_CONTEXTS; ++i)
-        av1_cost_tokens((int *)cpi->inter_compound_mode_cost[i],
-                        cm->fc->inter_compound_mode_probs[i],
-                        av1_inter_compound_mode_tree);
-#if CONFIG_COMPOUND_SINGLEREF
-      for (i = 0; i < INTER_MODE_CONTEXTS; ++i)
-        av1_cost_tokens((int *)cpi->inter_singleref_comp_mode_cost[i],
-                        cm->fc->inter_singleref_comp_mode_probs[i],
-                        av1_inter_singleref_comp_mode_tree);
-#endif  // CONFIG_COMPOUND_SINGLEREF
-#if CONFIG_INTERINTRA
-      for (i = 0; i < BLOCK_SIZE_GROUPS; ++i)
-        av1_cost_tokens((int *)cpi->interintra_mode_cost[i],
-                        cm->fc->interintra_mode_prob[i],
-                        av1_interintra_mode_tree);
-#endif  // CONFIG_INTERINTRA
-#endif  // CONFIG_EXT_INTER
-#if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
-      for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; i++) {
-        av1_cost_tokens_from_cdf(cpi->motion_mode_cost[i],
-                                 cm->fc->motion_mode_cdf[i], NULL);
-      }
-#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
-      for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; i++) {
-        cpi->motion_mode_cost1[i][0] = av1_cost_bit(cm->fc->obmc_prob[i], 0);
-        cpi->motion_mode_cost1[i][1] = av1_cost_bit(cm->fc->obmc_prob[i], 1);
-      }
-#endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
-#if CONFIG_MOTION_VAR && CONFIG_NCOBMC_ADAPT_WEIGHT
-      for (i = ADAPT_OVERLAP_BLOCK_8X8; i < ADAPT_OVERLAP_BLOCKS; ++i) {
-        av1_cost_tokens((int *)cpi->ncobmc_mode_cost[i],
-                        cm->fc->ncobmc_mode_prob[i], av1_ncobmc_mode_tree);
-      }
-#endif
-#endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
-    }
+#if CONFIG_GLOBAL_MOTION
+    for (i = 0; i < TRANS_TYPES; ++i)
+      cpi->gmtype_cost[i] = (1 + (i > 0 ? GLOBAL_TYPE_BITS : 0))
+                            << AV1_PROB_COST_SHIFT;
+#endif  // CONFIG_GLOBAL_MOTION
   }
 }
 
@@ -915,8 +912,8 @@ YV12_BUFFER_CONFIG *av1_get_scaled_ref_frame(const AV1_COMP *cpi,
 }
 
 #if CONFIG_DUAL_FILTER
-int av1_get_switchable_rate(const AV1_COMP *cpi, const MACROBLOCKD *xd) {
-  const AV1_COMMON *const cm = &cpi->common;
+int av1_get_switchable_rate(const AV1_COMMON *const cm, MACROBLOCK *x,
+                            const MACROBLOCKD *xd) {
   if (cm->interp_filter == SWITCHABLE) {
     const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
     int inter_filter_cost = 0;
@@ -928,7 +925,7 @@ int av1_get_switchable_rate(const AV1_COMP *cpi, const MACROBLOCKD *xd) {
            has_subpel_mv_component(xd->mi[0], xd, dir + 2))) {
         const int ctx = av1_get_pred_context_switchable_interp(xd, dir);
         inter_filter_cost +=
-            cpi->switchable_interp_costs[ctx][mbmi->interp_filter[dir]];
+            x->switchable_interp_costs[ctx][mbmi->interp_filter[dir]];
       }
     }
     return SWITCHABLE_INTERP_RATE_FACTOR * inter_filter_cost;
@@ -937,13 +934,13 @@ int av1_get_switchable_rate(const AV1_COMP *cpi, const MACROBLOCKD *xd) {
   }
 }
 #else
-int av1_get_switchable_rate(const AV1_COMP *cpi, const MACROBLOCKD *xd) {
-  const AV1_COMMON *const cm = &cpi->common;
+int av1_get_switchable_rate(const AV1_COMMON *const cm, MACROBLOCK *x,
+                            const MACROBLOCKD *xd) {
   if (cm->interp_filter == SWITCHABLE) {
     const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
     const int ctx = av1_get_pred_context_switchable_interp(xd);
     return SWITCHABLE_INTERP_RATE_FACTOR *
-           cpi->switchable_interp_costs[ctx][mbmi->interp_filter];
+           x->switchable_interp_costs[ctx][mbmi->interp_filter];
   }
   return 0;
 }

@@ -319,8 +319,7 @@ static INLINE void add_token(TOKENEXTRA **t,
 #endif  // !CONFIG_PVQ || CONFIG_VAR_TX
 
 #if CONFIG_PALETTE
-void av1_tokenize_palette_sb(const AV1_COMP *cpi,
-                             const struct ThreadData *const td, int plane,
+void av1_tokenize_palette_sb(const struct ThreadData *const td, int plane,
                              TOKENEXTRA **t, RUN_TYPE dry_run, BLOCK_SIZE bsize,
                              int *rate) {
   assert(plane == 0 || plane == 1);
@@ -360,8 +359,8 @@ void av1_tokenize_palette_sb(const AV1_COMP *cpi,
           color_map, plane_block_width, i, j, n, color_order, &color_new_idx);
       assert(color_new_idx >= 0 && color_new_idx < n);
       if (calc_rate) {
-        this_rate += cpi->palette_y_color_cost[n - PALETTE_MIN_SIZE][color_ctx]
-                                              [color_new_idx];
+        this_rate += x->palette_y_color_cost[n - PALETTE_MIN_SIZE][color_ctx]
+                                            [color_new_idx];
       }
       (*t)->token = color_new_idx;
       (*t)->palette_cdf = palette_cdf[n - PALETTE_MIN_SIZE][color_ctx];

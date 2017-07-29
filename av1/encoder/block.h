@@ -149,15 +149,6 @@ struct macroblock {
   uint8_t *above_pred_buf;
   uint8_t *left_pred_buf;
 #endif  // CONFIG_MOTION_VAR
-#if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
-  int motion_mode_cost[BLOCK_SIZES_ALL][MOTION_MODES];
-#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
-  int motion_mode_cost1[BLOCK_SIZES_ALL][2];
-#endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
-#if CONFIG_MOTION_VAR && CONFIG_NCOBMC_ADAPT_WEIGHT
-  int ncobmc_mode_cost[ADAPT_OVERLAP_BLOCKS][MAX_NCOBMC_MODES];
-#endif  // CONFIG_MOTION_VAR && CONFIG_NCOBMC_ADAPT_WEIGHT
-#endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
 #if CONFIG_PALETTE
   PALETTE_BUFFER *palette_buffer;
@@ -180,6 +171,68 @@ struct macroblock {
 
   // note that token_costs is the cost when eob node is skipped
   av1_coeff_cost token_costs[TX_SIZES];
+
+  // mode costs
+  int mbmode_cost[BLOCK_SIZE_GROUPS][INTRA_MODES];
+  int newmv_mode_cost[NEWMV_MODE_CONTEXTS][2];
+  int zeromv_mode_cost[ZEROMV_MODE_CONTEXTS][2];
+  int refmv_mode_cost[REFMV_MODE_CONTEXTS][2];
+  int drl_mode_cost0[DRL_MODE_CONTEXTS][2];
+
+#if CONFIG_EXT_INTER
+  int inter_compound_mode_cost[INTER_MODE_CONTEXTS][INTER_COMPOUND_MODES];
+#if CONFIG_COMPOUND_SINGLEREF
+  int inter_singleref_comp_mode_cost[INTER_MODE_CONTEXTS]
+                                    [INTER_SINGLEREF_COMP_MODES];
+#endif  // CONFIG_COMPOUND_SINGLEREF
+#if CONFIG_INTERINTRA
+  int interintra_mode_cost[BLOCK_SIZE_GROUPS][INTERINTRA_MODES];
+#endif  // CONFIG_INTERINTRA
+#endif  // CONFIG_EXT_INTER
+#if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+  int motion_mode_cost[BLOCK_SIZES_ALL][MOTION_MODES];
+#if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+  int motion_mode_cost1[BLOCK_SIZES_ALL][2];
+#endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+#if CONFIG_MOTION_VAR && CONFIG_NCOBMC_ADAPT_WEIGHT
+  int ncobmc_mode_cost[ADAPT_OVERLAP_BLOCKS][MAX_NCOBMC_MODES];
+#endif  // CONFIG_MOTION_VAR && CONFIG_NCOBMC_ADAPT_WEIGHT
+#endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+  int intra_uv_mode_cost[INTRA_MODES][UV_INTRA_MODES];
+  int y_mode_costs[INTRA_MODES][INTRA_MODES][INTRA_MODES];
+  int switchable_interp_costs[SWITCHABLE_FILTER_CONTEXTS][SWITCHABLE_FILTERS];
+#if CONFIG_EXT_PARTITION_TYPES
+  int partition_cost[PARTITION_CONTEXTS + CONFIG_UNPOISON_PARTITION_CTX]
+                    [EXT_PARTITION_TYPES];
+#else
+  int partition_cost[PARTITION_CONTEXTS + CONFIG_UNPOISON_PARTITION_CTX]
+                    [PARTITION_TYPES];
+#endif  // CONFIG_EXT_PARTITION_TYPES
+#if CONFIG_PALETTE
+  int palette_y_size_cost[PALETTE_BLOCK_SIZES][PALETTE_SIZES];
+  int palette_uv_size_cost[PALETTE_BLOCK_SIZES][PALETTE_SIZES];
+  int palette_y_color_cost[PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS]
+                          [PALETTE_COLORS];
+  int palette_uv_color_cost[PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS]
+                           [PALETTE_COLORS];
+#endif  // CONFIG_PALETTE
+  int tx_size_cost[TX_SIZES - 1][TX_SIZE_CONTEXTS][TX_SIZES];
+#if CONFIG_EXT_TX
+  int inter_tx_type_costs[EXT_TX_SETS_INTER][EXT_TX_SIZES][TX_TYPES];
+  int intra_tx_type_costs[EXT_TX_SETS_INTRA][EXT_TX_SIZES][INTRA_MODES]
+                         [TX_TYPES];
+#else
+  int intra_tx_type_costs[EXT_TX_SIZES][TX_TYPES][TX_TYPES];
+  int inter_tx_type_costs[EXT_TX_SIZES][TX_TYPES];
+#endif  // CONFIG_EXT_TX
+#if CONFIG_EXT_INTRA
+#if CONFIG_INTRA_INTERP
+  int intra_filter_cost[INTRA_FILTERS + 1][INTRA_FILTERS];
+#endif  // CONFIG_INTRA_INTERP
+#endif  // CONFIG_EXT_INTRA
+#if CONFIG_LOOP_RESTORATION
+  int switchable_restore_cost[RESTORE_SWITCHABLE_TYPES];
+#endif  // CONFIG_LOOP_RESTORATION
 
   int optimize;
 

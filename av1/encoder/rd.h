@@ -557,7 +557,8 @@ void av1_initialize_me_consts(const struct AV1_COMP *cpi, MACROBLOCK *x,
 void av1_model_rd_from_var_lapndz(int64_t var, unsigned int n,
                                   unsigned int qstep, int *rate, int64_t *dist);
 
-int av1_get_switchable_rate(const struct AV1_COMP *cpi, const MACROBLOCKD *xd);
+int av1_get_switchable_rate(const AV1_COMMON *const cm, MACROBLOCK *x,
+                            const MACROBLOCKD *xd);
 
 int av1_raster_block_offset(BLOCK_SIZE plane_bsize, int raster_block,
                             int stride);
@@ -611,6 +612,9 @@ void av1_setup_pred_block(const MACROBLOCKD *xd,
 
 int av1_get_intra_cost_penalty(int qindex, int qdelta,
                                aom_bit_depth_t bit_depth);
+
+void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
+                         FRAME_CONTEXT *fc);
 
 #ifdef __cplusplus
 }  // extern "C"
