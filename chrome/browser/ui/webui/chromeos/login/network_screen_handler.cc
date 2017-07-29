@@ -168,6 +168,20 @@ void NetworkScreenHandler::DeclareLocalizedValues(
   builder->Add("timezoneSectionTitle", IDS_TIMEZONE_SECTION_TITLE);
   builder->Add("networkSectionTitle", IDS_NETWORK_SECTION_TITLE);
   builder->Add("networkSectionHint", IDS_NETWORK_SECTION_HINT);
+  builder->Add("advancedOptionsSectionTitle",
+               IDS_OOBE_ADVANCED_OPTIONS_SCREEN_TITLE);
+  builder->Add("advancedOptionsEEBootstrappingTitle",
+               IDS_OOBE_ADVANCED_OPTIONS_EE_BOOTSTRAPPING_TITLE);
+  builder->Add("advancedOptionsEEBootstrappingSubtitle",
+               IDS_OOBE_ADVANCED_OPTIONS_EE_BOOTSTRAPPING_SUBTITLE);
+  builder->Add("advancedOptionsCFMSetupTitle",
+               IDS_OOBE_ADVANCED_OPTIONS_CFM_SETUP_TITLE);
+  builder->Add("advancedOptionsCFMSetupSubtitle",
+               IDS_OOBE_ADVANCED_OPTIONS_CFM_SETUP_SUBTITLE);
+  builder->Add("advancedOptionsDeviceRequisitionTitle",
+               IDS_OOBE_ADVANCED_OPTIONS_DEVICE_REQUISITION_TITLE);
+  builder->Add("advancedOptionsDeviceRequisitionSubtitle",
+               IDS_OOBE_ADVANCED_OPTIONS_DEVICE_REQUISITION_SUBTITLE);
 
   builder->Add("languageDropdownTitle", IDS_LANGUAGE_DROPDOWN_TITLE);
   builder->Add("languageDropdownLabel", IDS_LANGUAGE_DROPDOWN_LABEL);

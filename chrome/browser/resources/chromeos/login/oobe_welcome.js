@@ -259,6 +259,15 @@ Polymer({
   },
 
   /**
+   * Handle "launch-advanced-options" button for "Welcome" screen.
+   *
+   * @private
+   */
+  onWelcomeLaunchAdvancedOptions_: function() {
+    this.showScreen_('oobeAdvancedOptionsScreen');
+  },
+
+  /**
    * Handle "Language" button for "Welcome" screen.
    *
    * @private
@@ -503,5 +512,43 @@ Polymer({
       return;
 
     this.screen.onTimezoneSelected_(item.value);
+  },
+
+  /** ******************** AdvancedOptions section ******************* */
+
+  /**
+   * Handle "OK" button for "AdvancedOptions Selection" screen.
+   *
+   * @private
+   */
+  closeAdvancedOptionsSection_: function() {
+    this.showScreen_('welcomeScreen');
+  },
+
+  /**
+   * Handle click on "Enable remote enrollment" option.
+   *
+   * @private
+   */
+  onEEBootstrappingClicked_: function() {
+    cr.ui.Oobe.handleAccelerator(ACCELERATOR_BOOTSTRAPPING_SLAVE);
+  },
+
+  /**
+   * Handle click on "Set up as CFM device" option.
+   *
+   * @private
+   */
+  onCFMBootstrappingClicked_: function() {
+    cr.ui.Oobe.handleAccelerator(ACCELERATOR_DEVICE_REQUISITION_REMORA);
+  },
+
+  /**
+   * Handle click on "Device requisition" option.
+   *
+   * @private
+   */
+  onDeviceRequisitionClicked_: function() {
+    cr.ui.Oobe.handleAccelerator(ACCELERATOR_DEVICE_REQUISITION);
   },
 });
