@@ -36,10 +36,17 @@ class CC_EXPORT DamageTracker {
       LayerTreeImpl* layer_tree_impl,
       const RenderSurfaceList& render_surface_list);
 
-  void DidDrawDamagedArea() { current_damage_ = DamageAccumulator(); }
+  void DidDrawDamagedArea() {
+    current_damage_ = DamageAccumulator();
+    has_damage_from_contributing_content_ = false;
+  }
   void AddDamageNextUpdate(const gfx::Rect& dmg) { current_damage_.Union(dmg); }
 
   bool GetDamageRectIfValid(gfx::Rect* rect);
+
+  bool has_damage_from_contributing_content() const {
+    return has_damage_from_contributing_content_;
+  }
 
  private:
   DamageTracker();
@@ -141,6 +148,8 @@ class CC_EXPORT DamageTracker {
 
   unsigned int mailboxId_;
   DamageAccumulator current_damage_;
+  // Damage from contributing render surface and layer
+  bool has_damage_from_contributing_content_;
 
   // Damage accumulated since the last call to PrepareForUpdate().
   DamageAccumulator damage_for_this_update_;

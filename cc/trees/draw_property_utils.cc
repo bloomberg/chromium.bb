@@ -557,7 +557,7 @@ static void SetSurfaceIsClipped(const ClipTree& clip_tree,
     is_clipped = false;
   } else if (render_surface->ClipTreeIndex() ==
              render_surface->render_target()->ClipTreeIndex()) {
-    // There is no clip between between the render surface and its target, so
+    // There is no clip between the render surface and its target, so
     // the surface need not be clipped.
     is_clipped = false;
   } else {
@@ -666,17 +666,22 @@ static gfx::Rect LayerVisibleRect(PropertyTrees* property_trees,
                                   LayerImpl* layer) {
   const EffectNode* effect_node =
       property_trees->effect_tree.Node(layer->effect_tree_index());
+  int effect_ancestor_with_cache_render_surface =
+      effect_node->closest_ancestor_with_cached_render_surface_id;
   int effect_ancestor_with_copy_request =
       effect_node->closest_ancestor_with_copy_request_id;
-  bool non_root_copy_request =
-      effect_ancestor_with_copy_request > EffectTree::kContentsRootNodeId;
+  int lower_effect_closest_ancestor =
+      std::max(effect_ancestor_with_cache_render_surface,
+               effect_ancestor_with_copy_request);
+  bool non_root_copy_request_or_cache_render_surface =
+      lower_effect_closest_ancestor > EffectTree::kContentsRootNodeId;
   gfx::Rect layer_content_rect = gfx::Rect(layer->bounds());
   gfx::RectF accumulated_clip_in_root_space;
-  if (non_root_copy_request) {
+  if (non_root_copy_request_or_cache_render_surface) {
     bool include_expanding_clips = true;
     ConditionalClip accumulated_clip = ComputeAccumulatedClip(
         property_trees, include_expanding_clips, layer->clip_tree_index(),
-        effect_ancestor_with_copy_request);
+        lower_effect_closest_ancestor);
     if (!accumulated_clip.is_clipped)
       return layer_content_rect;
     accumulated_clip_in_root_space = accumulated_clip.clip_rect;
@@ -688,8 +693,8 @@ static gfx::Rect LayerVisibleRect(PropertyTrees* property_trees,
   }
 
   const EffectNode* root_effect_node =
-      non_root_copy_request
-          ? property_trees->effect_tree.Node(effect_ancestor_with_copy_request)
+      non_root_copy_request_or_cache_render_surface
+          ? property_trees->effect_tree.Node(lower_effect_closest_ancestor)
           : property_trees->effect_tree.Node(EffectTree::kContentsRootNodeId);
   ConditionalClip accumulated_clip_in_layer_space =
       ComputeTargetRectInLocalSpace(

@@ -44,6 +44,7 @@ struct DataForRecursion {
   int clip_tree_parent;
   int effect_tree_parent;
   int scroll_tree_parent;
+  int closest_ancestor_with_cached_render_surface;
   int closest_ancestor_with_copy_request;
   uint32_t main_thread_scrolling_reasons;
   SkColor safe_opaque_background_color;
@@ -581,6 +582,14 @@ static inline bool DoubleSided(LayerImpl* layer) {
   return layer->test_properties()->double_sided;
 }
 
+static inline bool CacheRenderSurface(Layer* layer) {
+  return layer->cache_render_surface();
+}
+
+static inline bool CacheRenderSurface(LayerImpl* layer) {
+  return layer->test_properties()->cache_render_surface;
+}
+
 static inline bool ForceRenderSurface(Layer* layer) {
   return layer->force_render_surface_for_testing();
 }
@@ -787,6 +796,10 @@ bool ShouldCreateRenderSurface(LayerType* layer,
   if (ForceRenderSurface(layer))
     return true;
 
+  // If we cache it.
+  if (CacheRenderSurface(layer))
+    return true;
+
   // If we'll make a copy of the layer's contents.
   if (HasCopyRequest(layer))
     return true;
@@ -893,6 +906,7 @@ bool AddEffectNodeIfNeeded(
   node->blend_mode = BlendMode(layer);
   node->unscaled_mask_target_size = layer->bounds();
   node->has_render_surface = should_create_render_surface;
+  node->cache_render_surface = CacheRenderSurface(layer);
   node->has_copy_request = HasCopyRequest(layer);
   node->filters = Filters(layer);
   node->background_filters = BackgroundFilters(layer);
@@ -905,6 +919,10 @@ bool AddEffectNodeIfNeeded(
   node->is_currently_animating_filter = FilterIsAnimating(layer);
   node->effect_changed = PropertyChanged(layer);
   node->subtree_has_copy_request = SubtreeHasCopyRequest(layer);
+  node->closest_ancestor_with_cached_render_surface_id =
+      CacheRenderSurface(layer)
+          ? node_id
+          : data_from_ancestor.closest_ancestor_with_cached_render_surface;
   node->closest_ancestor_with_copy_request_id =
       HasCopyRequest(layer)
           ? node_id
@@ -938,6 +956,8 @@ bool AddEffectNodeIfNeeded(
     node->clip_id = ClipTree::kViewportNodeId;
   }
 
+  data_for_children->closest_ancestor_with_cached_render_surface =
+      node->closest_ancestor_with_cached_render_surface_id;
   data_for_children->closest_ancestor_with_copy_request =
       node->closest_ancestor_with_copy_request_id;
   data_for_children->effect_tree_parent = node_id;
@@ -1238,6 +1258,8 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.clip_tree_parent = ClipTree::kRootNodeId;
   data_for_recursion.effect_tree_parent = EffectTree::kInvalidNodeId;
   data_for_recursion.scroll_tree_parent = ScrollTree::kRootNodeId;
+  data_for_recursion.closest_ancestor_with_cached_render_surface =
+      EffectTree::kInvalidNodeId;
   data_for_recursion.closest_ancestor_with_copy_request =
       EffectTree::kInvalidNodeId;
   data_for_recursion.page_scale_layer = page_scale_layer;

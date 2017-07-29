@@ -28,6 +28,9 @@ bool StructTraits<cc::mojom::RenderPassDataView,
   if (!(*out)->id)
     return false;
   (*out)->has_transparent_background = data.has_transparent_background();
+  (*out)->cache_render_pass = data.cache_render_pass();
+  (*out)->has_damage_from_contributing_content =
+      data.has_damage_from_contributing_content();
 
   mojo::ArrayDataView<cc::mojom::DrawQuadDataView> quads;
   data.GetQuadListDataView(&quads);

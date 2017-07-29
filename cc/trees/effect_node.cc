@@ -17,6 +17,7 @@ EffectNode::EffectNode()
       screen_space_opacity(1.f),
       blend_mode(SkBlendMode::kSrcOver),
       has_render_surface(false),
+      cache_render_surface(false),
       has_copy_request(false),
       hidden_by_backface_visibility(false),
       double_sided(false),
@@ -32,6 +33,7 @@ EffectNode::EffectNode()
       clip_id(0),
       target_id(1),
       mask_layer_id(Layer::INVALID_ID),
+      closest_ancestor_with_cached_render_surface_id(-1),
       closest_ancestor_with_copy_request_id(-1) {}
 
 EffectNode::EffectNode(const EffectNode& other) = default;
@@ -41,6 +43,7 @@ bool EffectNode::operator==(const EffectNode& other) const {
          stable_id == other.stable_id && opacity == other.opacity &&
          screen_space_opacity == other.screen_space_opacity &&
          has_render_surface == other.has_render_surface &&
+         cache_render_surface == other.cache_render_surface &&
          has_copy_request == other.has_copy_request &&
          filters == other.filters &&
          background_filters == other.background_filters &&
@@ -62,6 +65,8 @@ bool EffectNode::operator==(const EffectNode& other) const {
          subtree_has_copy_request == other.subtree_has_copy_request &&
          transform_id == other.transform_id && clip_id == other.clip_id &&
          target_id == other.target_id && mask_layer_id == other.mask_layer_id &&
+         closest_ancestor_with_cached_render_surface_id ==
+             other.closest_ancestor_with_cached_render_surface_id &&
          closest_ancestor_with_copy_request_id ==
              other.closest_ancestor_with_copy_request_id;
 }
@@ -72,6 +77,7 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("stable_id", stable_id);
   value->SetDouble("opacity", opacity);
   value->SetBoolean("has_render_surface", has_render_surface);
+  value->SetBoolean("cache_render_surface", cache_render_surface);
   value->SetBoolean("has_copy_request", has_copy_request);
   value->SetBoolean("double_sided", double_sided);
   value->SetBoolean("is_drawn", is_drawn);
@@ -85,6 +91,8 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("clip_id", clip_id);
   value->SetInteger("target_id", target_id);
   value->SetInteger("mask_layer_id", mask_layer_id);
+  value->SetInteger("closest_ancestor_with_cached_render_surface_id",
+                    closest_ancestor_with_cached_render_surface_id);
   value->SetInteger("closest_ancestor_with_copy_request_id",
                     closest_ancestor_with_copy_request_id);
 }

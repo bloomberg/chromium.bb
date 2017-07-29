@@ -301,6 +301,7 @@ static void AddSurfaceToRenderSurfaceList(
   // pixel-moving filters)
   const FilterOperations& filters = render_surface->Filters();
   bool is_occlusion_immune = render_surface->HasCopyRequest() ||
+                             render_surface->ShouldCacheRenderSurface() ||
                              filters.HasReferenceFilter() ||
                              filters.HasFilterThatMovesPixels();
   if (is_occlusion_immune) {

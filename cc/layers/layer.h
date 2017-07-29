@@ -268,6 +268,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     inputs_.did_scroll_callback = std::move(callback);
   }
 
+  void SetCacheRenderSurface(bool cache_render_surface);
+  bool cache_render_surface() const { return cache_render_surface_; }
+
   void SetForceRenderSurfaceForTesting(bool force_render_surface);
   bool force_render_surface_for_testing() const {
     return force_render_surface_for_testing_;
@@ -637,6 +640,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool should_flatten_transform_from_property_tree_ : 1;
   bool draws_content_ : 1;
   bool should_check_backface_visibility_ : 1;
+  // Force use of and cache render surface.
+  bool cache_render_surface_ : 1;
   bool force_render_surface_for_testing_ : 1;
   bool subtree_property_changed_ : 1;
   bool may_contain_video_ : 1;

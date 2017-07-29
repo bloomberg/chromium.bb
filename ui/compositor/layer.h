@@ -418,6 +418,12 @@ class COMPOSITOR_EXPORT Layer
     return frame_size_in_dip_;
   }
 
+  // Force use of and cache render surface. Note that this also disables
+  // occlusion culling in favor of efficient caching. This should
+  // only be used when paying the cost of creating a render
+  // surface even if layer is invisible is not a problem.
+  void SetCacheRenderSurface(bool cache_render_surface);
+
  private:
   friend class LayerOwner;
   class LayerMirror;

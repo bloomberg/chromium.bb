@@ -628,6 +628,14 @@ bool DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
   }
   DCHECK(texture->id());
 
+  if (render_pass->cache_render_pass &&
+      !render_pass->has_damage_from_contributing_content) {
+    return false;
+  }
+
+  if (current_frame()->ComputeScissorRectForRenderPass().IsEmpty())
+    return false;
+
   if (BindFramebufferToTexture(texture)) {
     InitializeViewport(current_frame(), render_pass->output_rect,
                        gfx::Rect(render_pass->output_rect.size()),

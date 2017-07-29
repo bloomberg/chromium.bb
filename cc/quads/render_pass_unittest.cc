@@ -79,11 +79,14 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
   background_filters.Append(FilterOperation::CreateInvertFilter(1.0));
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
   bool has_transparent_background = true;
+  bool cache_render_pass = false;
+  bool has_damage_from_contributing_content = false;
 
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
                filters, background_filters, color_space,
-               has_transparent_background);
+               has_transparent_background, cache_render_pass,
+               has_damage_from_contributing_content);
   pass->copy_requests.push_back(viz::CopyOutputRequest::CreateEmptyRequest());
 
   // Stick a quad in the pass, this should not get copied.
@@ -129,10 +132,13 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
   background_filters.Append(FilterOperation::CreateInvertFilter(1.0));
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateXYZD50();
   bool has_transparent_background = true;
+  bool cache_render_pass = false;
+  bool has_damage_from_contributing_content = false;
 
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetAll(id, output_rect, damage_rect, transform_to_root, filters,
-               background_filters, color_space, has_transparent_background);
+               background_filters, color_space, has_transparent_background,
+               cache_render_pass, has_damage_from_contributing_content);
 
   // Two quads using one shared state.
   SharedQuadState* shared_state1 = pass->CreateAndAppendSharedQuadState();
@@ -180,12 +186,15 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
   contrib_background_filters.Append(FilterOperation::CreateSaturateFilter(1));
   gfx::ColorSpace contrib_color_space = gfx::ColorSpace::CreateSCRGBLinear();
   bool contrib_has_transparent_background = true;
+  bool contrib_cache_render_pass = false;
+  bool contrib_has_damage_from_contributing_content = false;
 
   std::unique_ptr<RenderPass> contrib = RenderPass::Create();
   contrib->SetAll(contrib_id, contrib_output_rect, contrib_damage_rect,
                   contrib_transform_to_root, contrib_filters,
                   contrib_background_filters, contrib_color_space,
-                  contrib_has_transparent_background);
+                  contrib_has_transparent_background, contrib_cache_render_pass,
+                  contrib_has_damage_from_contributing_content);
 
   SharedQuadState* contrib_shared_state =
       contrib->CreateAndAppendSharedQuadState();
@@ -230,10 +239,13 @@ TEST(RenderPassTest, CopyAllWithCulledQuads) {
   background_filters.Append(FilterOperation::CreateInvertFilter(1.0));
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSCRGBLinear();
   bool has_transparent_background = true;
+  bool cache_render_pass = false;
+  bool has_damage_from_contributing_content = false;
 
   std::unique_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetAll(id, output_rect, damage_rect, transform_to_root, filters,
-               background_filters, color_space, has_transparent_background);
+               background_filters, color_space, has_transparent_background,
+               cache_render_pass, has_damage_from_contributing_content);
 
   // A shared state with a quad.
   SharedQuadState* shared_state1 = pass->CreateAndAppendSharedQuadState();

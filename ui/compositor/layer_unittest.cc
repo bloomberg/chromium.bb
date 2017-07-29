@@ -735,6 +735,7 @@ TEST_F(LayerWithDelegateTest, Cloning) {
   layer->SetLayerInverted(true);
   const float temperature = 0.8f;
   layer->SetLayerTemperature(temperature);
+  layer->SetCacheRenderSurface(true);
 
   auto clone = layer->Clone();
 
@@ -744,6 +745,9 @@ TEST_F(LayerWithDelegateTest, Cloning) {
   EXPECT_EQ(SK_ColorRED, clone->GetTargetColor());
   EXPECT_TRUE(clone->layer_inverted());
   EXPECT_FLOAT_EQ(temperature, clone->GetTargetTemperature());
+  // Cloning should not preserve cache_render_surface flag.
+  EXPECT_NE(layer->cc_layer_for_testing()->cache_render_surface(),
+            clone->cc_layer_for_testing()->cache_render_surface());
 
   layer->SetTransform(gfx::Transform());
   layer->SetColor(SK_ColorGREEN);
@@ -1995,6 +1999,23 @@ TEST_F(LayerWithRealCompositorTest, SwitchCCLayerSolidColorWhileAnimating) {
       root->GetAnimator()->IsAnimatingProperty(LayerAnimationElement::COLOR));
   EXPECT_EQ(transparent, root->background_color());
   EXPECT_EQ(transparent, root->GetTargetColor());
+}
+
+// Tests that when a layer with cache_render_surface flag has its CC layer
+// switched, that the cache_render_surface flag is maintained.
+TEST_F(LayerWithRealCompositorTest, SwitchCCLayerCacheRenderSurface) {
+  std::unique_ptr<Layer> root(CreateLayer(LAYER_TEXTURED));
+  std::unique_ptr<Layer> l1(CreateLayer(LAYER_TEXTURED));
+  GetCompositor()->SetRootLayer(root.get());
+  root->Add(l1.get());
+
+  l1->SetCacheRenderSurface(true);
+
+  // Change l1's cc::Layer.
+  l1->SwitchCCLayerForTest();
+
+  // Ensure that the cache_render_surface flag is maintained.
+  EXPECT_TRUE(l1->cc_layer_for_testing()->cache_render_surface());
 }
 
 // Tests that the animators in the layer tree is added to the

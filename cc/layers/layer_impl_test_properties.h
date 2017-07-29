@@ -36,6 +36,7 @@ struct CC_EXPORT LayerImplTestProperties {
 
   LayerImpl* owning_layer;
   bool double_sided;
+  bool cache_render_surface;
   bool force_render_surface;
   bool is_container_for_fixed_position_layers;
   bool should_flatten_transform;

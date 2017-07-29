@@ -90,6 +90,7 @@ Layer::Layer()
       should_flatten_transform_from_property_tree_(false),
       draws_content_(false),
       should_check_backface_visibility_(false),
+      cache_render_surface_(false),
       force_render_surface_for_testing_(false),
       subtree_property_changed_(false),
       may_contain_video_(false),
@@ -921,6 +922,15 @@ void Layer::SetTouchActionRegion(TouchActionRegion touch_action_region) {
     return;
 
   inputs_.touch_action_region = std::move(touch_action_region);
+  SetPropertyTreesNeedRebuild();
+  SetNeedsCommit();
+}
+
+void Layer::SetCacheRenderSurface(bool cache) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (cache_render_surface_ == cache)
+    return;
+  cache_render_surface_ = cache;
   SetPropertyTreesNeedRebuild();
   SetNeedsCommit();
 }

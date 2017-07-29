@@ -330,6 +330,8 @@ void ParamTraits<cc::RenderPass>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.background_filters);
   WriteParam(m, p.color_space);
   WriteParam(m, p.has_transparent_background);
+  WriteParam(m, p.cache_render_pass);
+  WriteParam(m, p.has_damage_from_contributing_content);
   WriteParam(m, base::checked_cast<uint32_t>(p.quad_list.size()));
 
   cc::SharedQuadStateList::ConstIterator shared_quad_state_iter =
@@ -441,6 +443,9 @@ bool ParamTraits<cc::RenderPass>::Read(const base::Pickle* m,
   cc::FilterOperations background_filters;
   gfx::ColorSpace color_space;
   bool has_transparent_background;
+  bool cache_render_pass;
+  bool has_damage_from_contributing_content;
+
   uint32_t quad_list_size;
 
   if (!ReadParam(m, iter, &id) || !ReadParam(m, iter, &output_rect) ||
@@ -450,11 +455,14 @@ bool ParamTraits<cc::RenderPass>::Read(const base::Pickle* m,
       !ReadParam(m, iter, &background_filters) ||
       !ReadParam(m, iter, &color_space) ||
       !ReadParam(m, iter, &has_transparent_background) ||
+      !ReadParam(m, iter, &cache_render_pass) ||
+      !ReadParam(m, iter, &has_damage_from_contributing_content) ||
       !ReadParam(m, iter, &quad_list_size))
     return false;
 
   p->SetAll(id, output_rect, damage_rect, transform_to_root_target, filters,
-            background_filters, color_space, has_transparent_background);
+            background_filters, color_space, has_transparent_background,
+            cache_render_pass, has_damage_from_contributing_content);
 
   cc::DrawQuad* last_draw_quad = nullptr;
   for (uint32_t i = 0; i < quad_list_size; ++i) {
@@ -568,6 +576,10 @@ void ParamTraits<cc::RenderPass>::Log(const param_type& p, std::string* l) {
   LogParam(p.color_space, l);
   l->append(", ");
   LogParam(p.has_transparent_background, l);
+  l->append(", ");
+  LogParam(p.cache_render_pass, l);
+  l->append(", ");
+  LogParam(p.has_damage_from_contributing_content, l);
   l->append(", ");
 
   l->append("[");
