@@ -83,14 +83,16 @@ class PepperWebPluginImpl : public blink::WebPlugin {
  private:
   friend class base::DeleteHelper<PepperWebPluginImpl>;
 
-  virtual ~PepperWebPluginImpl();
-  struct InitData;
+  ~PepperWebPluginImpl() override;
 
-  std::unique_ptr<InitData>
-      init_data_;  // Cleared upon successful initialization.
+  // Cleared upon successful initialization.
+  struct InitData;
+  std::unique_ptr<InitData> init_data_;
+
   // True if the instance represents the entire document in a frame instead of
   // being an embedded resource.
-  bool full_frame_;
+  const bool full_frame_;
+
   std::unique_ptr<PluginInstanceThrottlerImpl> throttler_;
   scoped_refptr<PepperPluginInstanceImpl> instance_;
   gfx::Rect plugin_rect_;

@@ -75,7 +75,7 @@ class FakeWebPlugin : public WebPlugin {
   bool IsPlaceholder() override { return false; }
 
  protected:
-  virtual ~FakeWebPlugin();
+  ~FakeWebPlugin() override;
 
   WebPluginContainer* Container() const { return container_; }
 

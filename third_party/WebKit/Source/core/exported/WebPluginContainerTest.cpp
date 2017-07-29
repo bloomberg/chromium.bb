@@ -132,6 +132,8 @@ class TestPlugin : public FakeWebPlugin {
   void PrintPage(int page_number, WebCanvas*) override;
 
  private:
+  ~TestPlugin() override {}
+
   TestPluginWebFrameClient* const test_client_;
 };
 
@@ -501,6 +503,8 @@ class EventTestPlugin : public FakeWebPlugin {
   size_t GetCoalescedEventCount() { return coalesced_event_count_; }
 
  private:
+  ~EventTestPlugin() override {}
+
   size_t coalesced_event_count_;
   WebInputEvent::Type last_event_type_;
   IntPoint last_event_location_;
@@ -1045,6 +1049,9 @@ TEST_F(WebPluginContainerTest, TopmostAfterDetachTest) {
       EXPECT_FALSE(Container()->IsRectTopmost(topmost_rect));
       FakeWebPlugin::Destroy();
     }
+
+   private:
+    ~TopmostPlugin() override {}
   };
 
   RegisterMockedURL("plugin_container.html");
@@ -1101,6 +1108,8 @@ class CompositedPlugin : public FakeWebPlugin {
   }
 
  private:
+  ~CompositedPlugin() override {}
+
   std::unique_ptr<WebLayer> layer_;
 };
 
