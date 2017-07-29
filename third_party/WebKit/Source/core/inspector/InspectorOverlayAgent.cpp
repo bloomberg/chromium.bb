@@ -28,6 +28,7 @@
 
 #include "core/inspector/InspectorOverlayAgent.h"
 
+#include <algorithm>
 #include <memory>
 
 #include "bindings/core/v8/ScriptController.h"
@@ -551,9 +552,9 @@ bool InspectorOverlayAgent::HandleInputEvent(const WebInputEvent& input_event) {
     if (mouse_event.GetType() == WebInputEvent::kMouseMove)
       handled = HandleMouseMove(mouse_event);
     else if (mouse_event.GetType() == WebInputEvent::kMouseDown)
-      handled = HandleMouseDown();
+      handled = HandleMouseDown(mouse_event);
     else if (mouse_event.GetType() == WebInputEvent::kMouseUp)
-      handled = HandleMouseUp();
+      handled = HandleMouseUp(mouse_event);
 
     if (handled)
       return true;
@@ -697,6 +698,7 @@ void InspectorOverlayAgent::RebuildOverlayPage() {
   DrawQuadHighlight();
   DrawPausedInDebuggerMessage();
   DrawViewSize();
+  DrawScreenshotBorder();
 }
 
 static std::unique_ptr<protocol::DictionaryValue> BuildObjectForSize(
@@ -768,6 +770,22 @@ void InspectorOverlayAgent::DrawPausedInDebuggerMessage() {
 void InspectorOverlayAgent::DrawViewSize() {
   if (resize_timer_active_ && draw_view_size_)
     EvaluateInOverlay("drawViewSize", "");
+}
+
+void InspectorOverlayAgent::DrawScreenshotBorder() {
+  if (!screenshot_mode_)
+    return;
+  VisualViewport& visual_viewport =
+      frame_impl_->GetFrame()->GetPage()->GetVisualViewport();
+  IntPoint p1 = visual_viewport.RootFrameToViewport(screenshot_anchor_);
+  IntPoint p2 = visual_viewport.RootFrameToViewport(screenshot_position_);
+  std::unique_ptr<protocol::DictionaryValue> data =
+      protocol::DictionaryValue::create();
+  data->setInteger("x1", p1.X());
+  data->setInteger("y1", p1.Y());
+  data->setInteger("x2", p2.X());
+  data->setInteger("y2", p2.Y());
+  EvaluateInOverlay("drawScreenshotBorder", std::move(data));
 }
 
 float InspectorOverlayAgent::WindowToViewportScale() const {
@@ -944,6 +962,7 @@ void InspectorOverlayAgent::ClearInternal() {
   resize_timer_active_ = false;
   paused_in_debugger_message_ = String();
   inspect_mode_ = kNotSearching;
+  screenshot_mode_ = false;
   timer_.Stop();
   page_overlay_.reset();
   InnerHideHighlight();
@@ -970,6 +989,21 @@ void InspectorOverlayAgent::PageLayoutInvalidated(bool resized) {
 bool InspectorOverlayAgent::HandleMouseMove(const WebMouseEvent& event) {
   if (!ShouldSearchForNode())
     return false;
+
+  if (event.GetModifiers() & WebInputEvent::kControlKey) {
+    InnerHideHighlight();
+    hovered_node_for_inspect_mode_.Clear();
+    if (screenshot_mode_) {
+      screenshot_position_ = RoundedIntPoint(event.PositionInRootFrame());
+      ScheduleUpdate();
+    }
+    return true;
+  }
+
+  if (screenshot_mode_) {
+    screenshot_mode_ = false;
+    ScheduleUpdate();
+  }
 
   LocalFrame* frame = frame_impl_->GetFrame();
   if (!frame || !frame->View() || frame->ContentLayoutItem().IsNull())
@@ -1019,10 +1053,22 @@ bool InspectorOverlayAgent::HandleMouseMove(const WebMouseEvent& event) {
   return true;
 }
 
-bool InspectorOverlayAgent::HandleMouseDown() {
+bool InspectorOverlayAgent::HandleMouseDown(const WebMouseEvent& event) {
   swallow_next_mouse_up_ = false;
+  screenshot_mode_ = false;
   if (!ShouldSearchForNode())
     return false;
+
+  if ((event.GetModifiers() & WebInputEvent::kControlKey) &&
+      (event.GetModifiers() & WebInputEvent::kLeftButtonDown)) {
+    InnerHideHighlight();
+    hovered_node_for_inspect_mode_.Clear();
+    screenshot_mode_ = true;
+    screenshot_anchor_ = RoundedIntPoint(event.PositionInRootFrame());
+    screenshot_position_ = screenshot_anchor_;
+    ScheduleUpdate();
+    return true;
+  }
 
   if (hovered_node_for_inspect_mode_) {
     swallow_next_mouse_up_ = true;
@@ -1033,7 +1079,30 @@ bool InspectorOverlayAgent::HandleMouseDown() {
   return false;
 }
 
-bool InspectorOverlayAgent::HandleMouseUp() {
+bool InspectorOverlayAgent::HandleMouseUp(const WebMouseEvent& event) {
+  if (screenshot_mode_) {
+    screenshot_mode_ = false;
+    float scale = 1.0f;
+    IntPoint p1 = screenshot_anchor_;
+    IntPoint p2 = screenshot_position_;
+    if (LocalFrame* frame = frame_impl_->GetFrame()) {
+      scale = frame->GetPage()->PageScaleFactor();
+      p1 = frame->View()->RootFrameToContents(p1);
+      p2 = frame->View()->RootFrameToContents(p2);
+    }
+    int min_x = std::min(p1.X(), p2.X());
+    int max_x = std::max(p1.X(), p2.X());
+    int min_y = std::min(p1.Y(), p2.Y());
+    int max_y = std::max(p1.Y(), p2.Y());
+    GetFrontend()->screenshotRequested(protocol::Page::Viewport::create()
+                                           .setX(min_x)
+                                           .setY(min_y)
+                                           .setWidth(max_x - min_x)
+                                           .setHeight(max_y - min_y)
+                                           .setScale(scale)
+                                           .build());
+    return true;
+  }
   if (swallow_next_mouse_up_) {
     swallow_next_mouse_up_ = false;
     return true;
@@ -1119,6 +1188,7 @@ Response InspectorOverlayAgent::SetSearchingForNode(
     Maybe<protocol::Overlay::HighlightConfig> highlight_inspector_object) {
   if (search_mode == kNotSearching) {
     inspect_mode_ = search_mode;
+    screenshot_mode_ = false;
     ScheduleUpdate();
     hovered_node_for_inspect_mode_.Clear();
     InnerHideHighlight();

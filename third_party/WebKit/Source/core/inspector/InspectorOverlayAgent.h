@@ -146,6 +146,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   void DrawQuadHighlight();
   void DrawPausedInDebuggerMessage();
   void DrawViewSize();
+  void DrawScreenshotBorder();
 
   float WindowToViewportScale() const;
 
@@ -163,8 +164,8 @@ class CORE_EXPORT InspectorOverlayAgent final
   void ClearInternal();
   void UpdateAllLifecyclePhases();
 
-  bool HandleMouseDown();
-  bool HandleMouseUp();
+  bool HandleMouseDown(const WebMouseEvent&);
+  bool HandleMouseUp(const WebMouseEvent&);
   bool HandleGestureEvent(const WebGestureEvent&);
   bool HandleTouchEvent(const WebTouchEvent&);
   bool HandleMouseMove(const WebMouseEvent&);
@@ -219,6 +220,9 @@ class CORE_EXPORT InspectorOverlayAgent final
   SearchMode inspect_mode_;
   std::unique_ptr<InspectorHighlightConfig> inspect_mode_highlight_config_;
   int backend_node_id_to_inspect_;
+  bool screenshot_mode_ = false;
+  IntPoint screenshot_anchor_;
+  IntPoint screenshot_position_;
 };
 
 }  // namespace blink

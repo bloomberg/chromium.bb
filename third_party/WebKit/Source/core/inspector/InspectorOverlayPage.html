@@ -758,6 +758,30 @@ function drawHighlight(highlight, context)
     return { bounds: bounds };
 }
 
+function drawScreenshotBorder(rect)
+{
+    var context = window.context;
+    context.save();
+    context.fillStyle = "rgba(0, 0, 0, 0.2)";
+    context.beginPath();
+    context.moveTo(rect.x1 - 0.5, rect.y1 - 0.5);
+    context.lineTo(rect.x1 - 0.5, rect.y2 + 0.5);
+    context.lineTo(rect.x2 + 0.5, rect.y2 + 0.5);
+    context.lineTo(rect.x2 + 0.5, rect.y1 - 0.5);
+    context.lineTo(rect.x1 - 0.5, rect.y1 - 0.5);
+    context.fill();
+    context.strokeStyle = "rgba(255, 255, 255, 0.9)";
+    context.lineWidth = 1;
+    context.beginPath();
+    context.moveTo(rect.x1 - 0.5, rect.y1 - 0.5);
+    context.lineTo(rect.x1 - 0.5, rect.y2 + 0.5);
+    context.lineTo(rect.x2 + 0.5, rect.y2 + 0.5);
+    context.lineTo(rect.x2 + 0.5, rect.y1 - 0.5);
+    context.lineTo(rect.x1 - 0.5, rect.y1 - 0.5);
+    context.stroke();
+    context.restore();
+}
+
 function setPlatform(platform)
 {
     window.platform = platform;
