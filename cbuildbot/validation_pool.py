@@ -41,14 +41,6 @@ from chromite.lib import triage_lib
 site_config = config_lib.GetConfig()
 
 
-# We import mox so that w/in ApplyPoolIntoRepo, if a mox exception is
-# thrown, we don't cover it up.
-try:
-  import mox
-except ImportError:
-  mox = None
-
-
 PRE_CQ = constants.PRE_CQ
 CQ = constants.CQ
 
@@ -805,9 +797,6 @@ class ValidationPool(object):
       except (KeyboardInterrupt, RuntimeError, SystemExit):
         raise
       except Exception as e:
-        if mox is not None and isinstance(e, mox.Error):
-          raise
-
         msg = (
             'Unhandled exception occurred while applying changes: %s\n\n'
             'To be safe, we have kicked out all of the CLs, so that the '

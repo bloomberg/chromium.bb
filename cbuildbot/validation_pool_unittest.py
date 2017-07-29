@@ -9,11 +9,9 @@ from __future__ import print_function
 import collections
 import contextlib
 import copy
-import functools
 import httplib
 import itertools
 import mock
-import mox
 import os
 import pickle
 import tempfile
@@ -200,7 +198,7 @@ class FakeValidationPool(partial_mock.PartialMock):
     pass
 
 
-class TestSubmitChange(_Base, cros_test_lib.MoxTestCase):
+class TestSubmitChange(_Base):
   """Test suite related to submitting changes."""
 
   def setUp(self):
@@ -224,26 +222,24 @@ class TestSubmitChange(_Base, cros_test_lib.MoxTestCase):
         dryrun=False)
     pool._run = FakeBuilderRun(self.fake_db)
     pool._run.attrs.metadata.UpdateWithDict({'build_id': build_id})
-    pool._helper_pool = self.mox.CreateMock(patch_series.HelperPool)
-    helper = self.mox.CreateMock(validation_pool.gerrit.GerritHelper)
+
+    helper = mock.Mock(gerrit.GerritHelper)
+    self.PatchObject(pool._helper_pool, 'ForChange', return_value=helper)
+    self.PatchObject(helper, 'QuerySingleRecord', side_effect=iter(results))
+    self.PatchObject(helper, 'SetReview')
+    self.PatchObject(pool, '_InsertCLActionToDatabase')
     pool._helper_pool.host = ''
     helper.host = ''
 
-    # Prepare replay script.
-    pool._helper_pool.ForChange(change).AndReturn(helper)
-    pool._helper_pool.ForChange(change).AndReturn(helper)
-    helper.SubmitChange(change, dryrun=False)
-    pool._InsertCLActionToDatabase(change, mox.IgnoreArg(), mox.IgnoreArg())
-    for result in results:
-      helper.QuerySingleRecord(change.gerrit_number).AndReturn(result)
-    if results[-1]['status'] == 'SUBMITTED':
-      helper.SetReview(change, msg=mox.IgnoreArg())
-    self.mox.ReplayAll()
-
-    # Verify results.
     retval = validation_pool.ValidationPool._SubmitChangeUsingGerrit(
-        pool, change, reason=mox.IgnoreArg())
-    self.mox.VerifyAll()
+        pool, change)
+
+    expected_query_calls = [mock.call(change.gerrit_number)] * len(results)
+    helper.QuerySingleRecord.assert_has_calls(expected_query_calls)
+
+    if results[-1]['status'] == 'SUBMITTED':
+      helper.SetReview.assert_called()
+
     return retval
 
   def testSubmitChangeMerged(self):
@@ -372,13 +368,13 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
   """Tests resolution and applying logic of validation_pool.ValidationPool."""
 
   def setUp(self):
-    self.mox.StubOutWithMock(patch_series.PatchSeries, 'Apply')
-    self.mox.StubOutWithMock(patch_series.PatchSeries, 'ApplyChange')
-    self.mox.StubOutWithMock(patch_series.PatchSeries, 'FetchChanges')
+    self.PatchObject(patch_series.PatchSeries, 'Apply')
+    self.PatchObject(patch_series.PatchSeries, 'ApplyChange')
+    self.PatchObject(patch_series.PatchSeries, 'FetchChanges')
     self.patch_mock = self.StartPatcher(MockPatchSeries())
     funcs = ['SendNotification', '_SubmitChangeUsingGerrit']
     for func in funcs:
-      self.mox.StubOutWithMock(validation_pool.ValidationPool, func)
+      self.PatchObject(validation_pool.ValidationPool, func)
     self.PatchObject(gerrit, 'GetGerritPatchInfoWithPatchQueries',
                      side_effect=lambda x: x)
     self.StartPatcher(parallel_unittest.ParallelMock())
@@ -394,53 +390,19 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
              '_HandleFailedToApplyDueToInflightConflict']
     if handlers:
       for func in funcs:
-        self.mox.StubOutWithMock(pool, func)
+        self.PatchObject(pool, func)
     return pool
 
   def MakeFailure(self, patch, inflight=True):
     return cros_patch.ApplyPatchException(patch, inflight=inflight)
-
-  def GetPool(self, changes, applied=(), tot=(), inflight=(), **kwargs):
-    pool = self.MakePool(
-        candidates=changes, applied=[], fake_db=self.fake_db, **kwargs)
-    applied = list(applied)
-    tot = [self.MakeFailure(x, inflight=False) for x in tot]
-    inflight = [self.MakeFailure(x, inflight=True) for x in inflight]
-    # pylint: disable=E1120,E1123
-    patch_series.PatchSeries.Apply(
-        changes, manifest=mox.IgnoreArg()).AndReturn((applied, tot, inflight))
-
-    for patch in applied:
-      pool.HandleApplySuccess(patch, mox.IgnoreArg()).AndReturn(None)
-
-    if tot:
-      pool._HandleApplyFailure(tot).AndReturn(None)
-
-    for failure in inflight:
-      pool._HandleFailedToApplyDueToInflightConflict(
-          failure.patch).AndReturn(None)
-
-    # We stash this on the pool object so we can reuse it during validation.
-    # We could stash this in the test instances, but that would break
-    # for any tests that do multiple pool instances.
-
-    pool._test_data = (changes, applied, tot, inflight)
-
-    return pool
 
   def testApplySlavePool(self):
     """Verifies that slave calls ApplyChange() directly for each patch."""
     slave_pool = self.MakePool(is_master=False)
     patches = self.GetPatches(3)
     slave_pool.candidates = patches
-    # pylint: disable=E1120, E1123
-    patch_series.PatchSeries.FetchChanges(patches, manifest=mox.IgnoreArg())
-    for patch in patches:
-      patch_series.PatchSeries.ApplyChange(patch, manifest=mox.IgnoreArg())
 
-    self.mox.ReplayAll()
     self.assertEqual(True, slave_pool.ApplyPoolIntoRepo())
-    self.mox.VerifyAll()
 
   def runApply(self, pool, result):
     self.assertEqual(result, pool.ApplyPoolIntoRepo())
@@ -452,37 +414,6 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
     self.assertEqual(set(failed_inflight).intersection(expected_inflight),
                      expected_inflight)
 
-  def testPatchSeriesInteraction(self):
-    """Verify the interaction between PatchSeries and ValidationPool.
-
-    Effectively, this validates data going into PatchSeries, and coming back
-    out; verifies the hand off to _Handle* functions, but no deeper.
-    """
-    patches = self.GetPatches(3)
-
-    apply_pool = self.GetPool(patches, applied=patches, handlers=True)
-    all_inflight = self.GetPool(patches, inflight=patches, handlers=True)
-    all_tot = self.GetPool(patches, tot=patches, handlers=True)
-    mixed = self.GetPool(patches, tot=patches[0:1], inflight=patches[1:2],
-                         applied=patches[2:3], handlers=True)
-
-    self.mox.ReplayAll()
-    self.runApply(apply_pool, True)
-    self.runApply(all_inflight, False)
-    self.runApply(all_tot, False)
-    self.runApply(mixed, True)
-    self.mox.VerifyAll()
-
-  def testHandleApplySuccess(self):
-    """Validate steps taken for successfull application."""
-    patch = self.GetPatches(1)
-    pool = self.MakePool(fake_db=self.fake_db)
-    pool.SendNotification(patch, mox.StrContains('has picked up your change'),
-                          build_log=mox.IgnoreArg())
-    self.mox.ReplayAll()
-    pool.HandleApplySuccess(patch, build_log=mox.IgnoreArg())
-    self.mox.VerifyAll()
-
   def testHandleApplyFailure(self):
     failures = [cros_patch.ApplyPatchException(x) for x in self.GetPatches(4)]
 
@@ -491,23 +422,10 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
     master_pool = self.MakePool(dryrun=False)
     slave_pool = self.MakePool(is_master=False)
 
-    self.mox.StubOutWithMock(gerrit.GerritHelper, 'RemoveReady')
+    self.PatchObject(gerrit.GerritHelper, 'RemoveReady')
 
-    for failure in notified_patches:
-      master_pool.SendNotification(
-          failure.patch,
-          mox.StrContains('failed to apply your change'),
-          failure=mox.IgnoreArg())
-      # This pylint suppressin shouldn't be necessary, but pylint is invalidly
-      # thinking that the first arg isn't passed in; we suppress it to suppress
-      # the pylnt bug.
-      # pylint: disable=E1120
-      gerrit.GerritHelper.RemoveReady(failure.patch, dryrun=False)
-
-    self.mox.ReplayAll()
     master_pool._HandleApplyFailure(notified_patches)
     slave_pool._HandleApplyFailure(unnotified_patches)
-    self.mox.VerifyAll()
 
   def _setUpSubmit(self):
     pool = self.MakePool(dryrun=False, handlers=True)
@@ -524,59 +442,43 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
   def testSubmitPoolFailures(self):
     """Tests that a fatal exception is raised."""
     pool, patches, _failed = self._setUpSubmit()
-    patch1, patch2, patch3 = patches
+    patch1 = patches[0]
 
-    pool._SubmitChangeUsingGerrit(patch1, reason=None).AndReturn(True)
-    pool._SubmitChangeUsingGerrit(patch2, reason=None).AndReturn(False)
+    # Return True for patch1, False otherwise.
+    # pylint: disable=unused-argument
+    def _isp1(p, *args, **kwargs):
+      return p == patch1
+    pool._SubmitChangeUsingGerrit.configure_mock(side_effect=_isp1)
 
-    pool._HandleCouldNotSubmit(patch2, mox.IgnoreArg()).InAnyOrder()
-    pool._HandleCouldNotSubmit(patch3, mox.IgnoreArg()).InAnyOrder()
-
-    # pylint: disable=E1120,E1123
-    patch_series.PatchSeries.Apply(set()).AndReturn(([], [], []))
-    self.mox.ReplayAll()
+    patch_series.PatchSeries.Apply.configure_mock(return_value=([], [], []))
 
     mock_manifest = mock.MagicMock()
     with mock.patch.object(git.ManifestCheckout, 'Cached', new=mock_manifest):
       self.assertRaises(validation_pool.FailedToSubmitAllChangesException,
                         pool.SubmitPool)
-    self.mox.VerifyAll()
 
   def testSubmitPool(self):
     """Tests that we can submit a pool of patches."""
-    pool, patches, failed = self._setUpSubmit()
+    pool, _, __ = self._setUpSubmit()
     reason = 'fake reason'
+    pool._SubmitChangeUsingGerrit.configure_mock(return_value=True)
+    patch_series.PatchSeries.Apply.configure_mock(return_value=([], [], []))
 
-    for patch in patches:
-      pool._SubmitChangeUsingGerrit(patch, reason=reason).AndReturn(True)
-
-    pool._HandleApplyFailure(failed)
-
-    # pylint: disable=E1120,E1123
-    patch_series.PatchSeries.Apply(set()).AndReturn(([], [], []))
-    self.mox.ReplayAll()
     mock_manifest = mock.MagicMock()
     with mock.patch.object(git.ManifestCheckout, 'Cached', new=mock_manifest):
       pool.SubmitPool(reason=reason)
-    self.mox.VerifyAll()
 
   def testSubmitNonManifestChanges(self):
     """Simple test to make sure we can submit non-manifest changes."""
     pool, patches, _failed = self._setUpSubmit()
     pool.non_manifest_changes = patches[:]
     reason = 'fake reason'
-
-    for patch in patches:
-      pool._SubmitChangeUsingGerrit(patch, reason=reason).AndReturn(True)
-
-    # pylint: disable=E1120,E1123
-    patch_series.PatchSeries.Apply(set()).AndReturn(([], [], []))
+    pool._SubmitChangeUsingGerrit.configure_mock(return_value=True)
+    patch_series.PatchSeries.Apply.configure_mock(return_value=([], [], []))
 
     mock_manifest = mock.MagicMock()
-    self.mox.ReplayAll()
     with mock.patch.object(git.ManifestCheckout, 'Cached', new=mock_manifest):
       pool.SubmitNonManifestChanges(reason=reason)
-    self.mox.VerifyAll()
 
   def testSubmitAccumulation(self):
     """Tests ValidationPool.SubmitChanges.
@@ -588,41 +490,28 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
     pool.non_manifest_changes = patches[:1]
     reason = 'fake reason'
 
-    # pylint: disable=E1120,E1123
     error = mock.Mock(patch=patches[1])
-    patch_series.PatchSeries.Apply(
-        set(patches[1:])).AndReturn(
-            ([patches[2]],
-             [error],
-             []))
+    patch_series.PatchSeries.Apply.configure_mock(
+        return_value=([patches[2]], [error], []))
 
-    self.mox.StubOutWithMock(patch_series.PatchSeries, 'GetGitRepoForChange')
-    for i, patch in enumerate(patches):
-      # pylint: disable=E1120,E1123
-      patch_series.PatchSeries.GetGitRepoForChange(
-          mox.IgnoreArg(), strict=False
-          ).AndReturn('foo_repo' if i > 0 else None)
+    git_repo_returns = [None] + ['foo_repo'] * (len(patches) - 1)
+    self.PatchObject(patch_series.PatchSeries, 'GetGitRepoForChange',
+                     side_effect=git_repo_returns)
 
-    self.mox.StubOutWithMock(validation_pool.ValidationPool,
-                             'SubmitLocalChanges')
-    pool.SubmitLocalChanges(
-        {'foo_repo': {patches[2]:reason}}
-        ).AndReturn((set((patches[2],)), {}))
+    self.PatchObject(validation_pool.ValidationPool, 'SubmitLocalChanges',
+                     return_value=(set((patches[2],)), {}))
 
-    for patch in pool.non_manifest_changes:
-      pool._SubmitChangeUsingGerrit(patch, reason=reason).AndReturn(True)
+    pool._SubmitChangeUsingGerrit.configure_mock(return_value=True)
 
     pool._HandleCouldNotSubmit(patches[1], error)
 
     mock_manifest = mock.MagicMock()
-    self.mox.ReplayAll()
     verified_cls = {c:reason for c in patches}
     with mock.patch.object(git.ManifestCheckout, 'Cached', new=mock_manifest):
       submitted, errors = pool.SubmitChanges(verified_cls)
 
     self.assertEqual(submitted, set((patches[0], patches[2])))
     self.assertEqual(errors, {patches[1]: error})
-    self.mox.VerifyAll()
 
   def testPushRepoBranchPushesOnce(self):
     """Tests that PushRepoBranch pushes once if there is no error."""
@@ -645,7 +534,7 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
 
   def testUnhandledExceptions(self):
     """Test that CQ doesn't loop due to unhandled Exceptions."""
-    pool, patches, _failed = self._setUpSubmit()
+    pool, _, _failed = self._setUpSubmit()
 
     pool.candidates = pool.applied
     pool.applied = []
@@ -653,19 +542,10 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
     class MyException(Exception):
       """"Unique Exception used for testing."""
 
-    def VerifyCQError(patch, error):
-      cq_error = validation_pool.InternalCQError(patch, error.message)
-      return str(error) == str(cq_error)
+    patch_series.PatchSeries.Apply.configure_mock(side_effect=MyException)
+    pool._HandleApplyFailure.configure_mock(return_valu=None)
 
-    # pylint: disable=E1120,E1123
-    patch_series.PatchSeries.Apply(
-        patches, manifest=mox.IgnoreArg()).AndRaise(MyException)
-    errors = [mox.Func(functools.partial(VerifyCQError, x)) for x in patches]
-    pool._HandleApplyFailure(errors).AndReturn(None)
-
-    self.mox.ReplayAll()
     self.assertRaises(MyException, pool.ApplyPoolIntoRepo)
-    self.mox.VerifyAll()
 
   def testFilterDependencyErrors(self):
     """Verify that dependency errors are correctly filtered out."""
@@ -674,12 +554,10 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
                  zip(self.GetPatches(2), failures)]
     failures[0].patch.approval_timestamp = time.time()
     failures[-1].patch.approval_timestamp = time.time()
-    self.mox.ReplayAll()
     pool = self.MakePool()
     pool.filtered_set = set(self.GetPatches(4))
     result = pool._FilterDependencyErrors(failures)
     self.assertEquals(set(failures[:-1]), set(result))
-    self.mox.VerifyAll()
 
   def testFilterSpeculativeErrors(self):
     """Filter out dependency errors for speculative patches."""
@@ -687,12 +565,10 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
     failures += [cros_patch.DependencyError(x, y) for x, y in
                  zip(self.GetPatches(2), failures)]
     self.PatchObject(failures[-1].patch, 'HasReadyFlag', return_value=False)
-    self.mox.ReplayAll()
     pool = self.MakePool()
     pool.filtered_set = set(self.GetPatches(2))
     result = pool._FilterDependencyErrors(failures)
     self.assertEquals(set(failures[:-1]), set(result))
-    self.mox.VerifyAll()
 
   def testFilterDependencyErrorsOnFilteredChanges(self):
     """Test FilterDependencyErrors on filtered changes."""
@@ -751,7 +627,6 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
     # Non-manifest patches that aren't commit ready should be skipped.
     filtered_patches = filtered_patches[:-1]
 
-    self.mox.ReplayAll()
     results = validation_pool.ValidationPool._FilterNonCrosProjects(
         patches + non_cros_patches, manifest)
 
@@ -770,22 +645,12 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
     directory = '/tmp/dontmattah'
     repo = repository.RepoRepository(directory, directory, 'master', depth=1)
     builder_run = FakeBuilderRun(self.fake_db)
-    self.mox.StubOutWithMock(repo, 'Sync')
-    self.mox.StubOutWithMock(validation_pool.ValidationPool, 'AcquireChanges')
-    self.mox.StubOutWithMock(time, 'sleep')
-    self.mox.StubOutWithMock(tree_status, 'WaitForTreeStatus')
-
-    # 1) Test, tree open -> get changes and finish.
-    tree_status.WaitForTreeStatus(
-        period=mox.IgnoreArg(),
-        throttled_ok=mox.IgnoreArg(),
-        timeout=mox.IgnoreArg()).AndReturn(constants.TREE_OPEN)
-    repo.Sync()
-    # pylint: disable=no-value-for-parameter
-    validation_pool.ValidationPool.AcquireChanges(
-        mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(True)
-
-    self.mox.ReplayAll()
+    self.PatchObject(repo, 'Sync')
+    acquire_changes_mock = self.PatchObject(
+        validation_pool.ValidationPool, 'AcquireChanges', return_value=True)
+    self.PatchObject(time, 'sleep')
+    tree_status_mock = self.PatchObject(
+        tree_status, 'WaitForTreeStatus', return_value=constants.TREE_OPEN)
 
     query = constants.CQ_READY_QUERY
     pool = validation_pool.ValidationPool.AcquirePool(
@@ -793,26 +658,12 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
         check_tree_open=True, builder_run=builder_run)
 
     self.assertTrue(pool.tree_was_open)
-    self.mox.VerifyAll()
-    self.mox.ResetAll()
+    tree_status_mock.assert_called()
+    acquire_changes_mock.assert_called()
 
     # 2) Test, tree open -> need to loop at least once to get changes.
-    tree_status.WaitForTreeStatus(
-        period=mox.IgnoreArg(),
-        throttled_ok=mox.IgnoreArg(),
-        timeout=mox.IgnoreArg()).AndReturn(constants.TREE_OPEN)
-    repo.Sync()
-    validation_pool.ValidationPool.AcquireChanges(
-        mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(False)
-    time.sleep(validation_pool.ValidationPool.SLEEP_TIMEOUT)
-    tree_status.WaitForTreeStatus(
-        period=mox.IgnoreArg(),
-        throttled_ok=mox.IgnoreArg(),
-        timeout=mox.IgnoreArg()).AndReturn(constants.TREE_OPEN)
-    repo.Sync()
-    validation_pool.ValidationPool.AcquireChanges(
-        mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(True)
-    self.mox.ReplayAll()
+    acquire_changes_mock.reset_mock()
+    acquire_changes_mock.configure_mock(side_effect=iter([False, True]))
 
     query = constants.CQ_READY_QUERY
     pool = validation_pool.ValidationPool.AcquirePool(
@@ -820,19 +671,12 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
         check_tree_open=True, builder_run=builder_run)
 
     self.assertTrue(pool.tree_was_open)
-    self.mox.VerifyAll()
-    self.mox.ResetAll()
+    self.assertEqual(acquire_changes_mock.call_count, 2)
 
     # 3) Test, tree throttled -> use exponential fallback logic.
-    tree_status.WaitForTreeStatus(
-        period=mox.IgnoreArg(),
-        throttled_ok=mox.IgnoreArg(),
-        timeout=mox.IgnoreArg()).AndReturn(constants.TREE_THROTTLED)
-    repo.Sync()
-    validation_pool.ValidationPool.AcquireChanges(
-        mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(True)
-
-    self.mox.ReplayAll()
+    acquire_changes_mock.reset_mock()
+    acquire_changes_mock.configure_mock(return_value=True, side_effect=None)
+    tree_status_mock.configure_mock(return_value=constants.TREE_THROTTLED)
 
     query = constants.CQ_READY_QUERY
     pool = validation_pool.ValidationPool.AcquirePool(
@@ -887,12 +731,8 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
   def testFilterChangesForThrottledTree(self):
     """Tests that we can correctly apply exponential fallback."""
     patches = self.GetPatches(4)
-    self.mox.StubOutWithMock(validation_pool.ValidationPool, '_GetFailStreak')
-
-    #
-    # Test when tree is open.
-    #
-    self.mox.ReplayAll()
+    streak_mock = self.PatchObject(
+        validation_pool.ValidationPool, '_GetFailStreak')
 
     # Perform test.
     slave_pool = self.MakePool(candidates=patches, tree_was_open=True)
@@ -901,16 +741,13 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
     # Validate results.
     self.assertEqual(len(slave_pool.candidates), 4)
     self.assertIsNone(slave_pool.filtered_set)
-    self.mox.VerifyAll()
-    self.mox.ResetAll()
 
     #
     # Test when tree is closed with a streak of 1.
     #
 
     # pylint: disable=no-value-for-parameter
-    validation_pool.ValidationPool._GetFailStreak().AndReturn(1)
-    self.mox.ReplayAll()
+    streak_mock.configure_mock(return_value=1)
 
     # Perform test.
     slave_pool = self.MakePool(candidates=patches, tree_was_open=False)
@@ -919,17 +756,12 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
     # Validate results.
     self.assertEqual(len(slave_pool.candidates), 2)
     self.assertEqual(len(slave_pool.filtered_set), 2)
-    self.mox.VerifyAll()
-    self.mox.ResetAll()
 
     #
     # Test when tree is closed with a streak of 2.
     #
 
-    # pylint: disable=no-value-for-parameter
-    validation_pool.ValidationPool._GetFailStreak().AndReturn(2)
-    self.mox.ReplayAll()
-
+    streak_mock.configure_mock(return_value=2)
     # Perform test.
     slave_pool = self.MakePool(candidates=patches, tree_was_open=False)
     slave_pool.FilterChangesForThrottledTree()
@@ -937,16 +769,13 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
     # Validate results.
     self.assertEqual(len(slave_pool.candidates), 1)
     self.assertEqual(len(slave_pool.filtered_set), 3)
-    self.mox.VerifyAll()
-    self.mox.ResetAll()
 
     #
     # Test when tree is closed with a streak of many.
     #
 
     # pylint: disable=no-value-for-parameter
-    validation_pool.ValidationPool._GetFailStreak().AndReturn(200)
-    self.mox.ReplayAll()
+    streak_mock.configure_mock(return_value=200)
 
     # Perform test.
     slave_pool = self.MakePool(candidates=patches, tree_was_open=False)
@@ -955,7 +784,6 @@ class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
     # Validate results.
     self.assertEqual(len(slave_pool.candidates), 1)
     self.assertEqual(len(slave_pool.filtered_set), 3)
-    self.mox.VerifyAll()
 
   def _UpdatedDependencyMap(self, dependency_map):
     pool = self.MakePool()
