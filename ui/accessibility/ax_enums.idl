@@ -5,6 +5,7 @@
 // TODO(nektar): Migrate entire file to Mojoq.
 // These should be kept in sync with third_party/WebKit/public/web/WebAXEnums.h
 // until the Chromium and Blink trees are merged.
+// Must also be kept in sync with chrome/common/extensions/api/automation.idl.
 [camel_case_enum_to_string=true] namespace ui {
 
   // For new entries to the following four enums, also add to

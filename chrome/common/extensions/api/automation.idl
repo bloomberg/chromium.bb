@@ -206,7 +206,6 @@
     editable,
     expanded,
     focusable,
-    focused,
     haspopup,
     horizontal,
     hovered,

@@ -208,7 +208,6 @@ enum WebAXState {
   kWebAXStateBusy,
   kWebAXStateExpanded,
   kWebAXStateFocusable,
-  kWebAXStateFocused,
   kWebAXStateHaspopup,
   kWebAXStateHovered,
   kWebAXStateInvisible,

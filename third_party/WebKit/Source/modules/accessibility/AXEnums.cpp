@@ -144,7 +144,6 @@ STATIC_ASSERT_ENUM(kWebAXRoleWindow, kWindowRole);
 STATIC_ASSERT_ENUM(kWebAXStateBusy, kAXBusyState);
 STATIC_ASSERT_ENUM(kWebAXStateExpanded, kAXExpandedState);
 STATIC_ASSERT_ENUM(kWebAXStateFocusable, kAXFocusableState);
-STATIC_ASSERT_ENUM(kWebAXStateFocused, kAXFocusedState);
 STATIC_ASSERT_ENUM(kWebAXStateHaspopup, kAXHaspopupState);
 STATIC_ASSERT_ENUM(kWebAXStateHovered, kAXHoveredState);
 STATIC_ASSERT_ENUM(kWebAXStateInvisible, kAXInvisibleState);

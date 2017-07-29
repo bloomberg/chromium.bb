@@ -67,12 +67,22 @@ def CheckMatchingEnum(ax_enums,
   src = ax_enums[ax_enum_name]
   dst = automation_enums[automation_enum_name]
   for value in src:
-    if InitialLowerCamelCase(value) not in dst:
+    lower_value = InitialLowerCamelCase(value)
+    if lower_value in dst:
+      dst.remove(lower_value)  # Any remaining at end are extra and a mismatch.
+    else:
       errs.append(output_api.PresubmitError(
           'Found %s.%s in %s, but did not find %s.%s in %s' % (
               ax_enum_name, value, AX_IDL,
               automation_enum_name, InitialLowerCamelCase(value),
               AUTOMATION_IDL)))
+  #  Should be no remaining items
+  for value in dst:
+      errs.append(output_api.PresubmitError(
+          'Found %s.%s in %s, but did not find %s.%s in %s' % (
+              automation_enum_name, value, AUTOMATION_IDL,
+              ax_enum_name, InitialLowerCamelCase(value),
+              AX_IDL)))
 
 def CheckEnumsMatch(input_api, output_api):
   repo_root = input_api.change.RepositoryRoot()
