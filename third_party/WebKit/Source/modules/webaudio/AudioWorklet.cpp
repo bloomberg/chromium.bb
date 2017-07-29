@@ -10,6 +10,7 @@
 #include "core/workers/WorkerClients.h"
 #include "modules/webaudio/AudioWorkletMessagingProxy.h"
 #include "modules/webaudio/AudioWorkletThread.h"
+#include "modules/webaudio/BaseAudioContext.h"
 
 namespace blink {
 
@@ -19,11 +20,27 @@ AudioWorklet* AudioWorklet::Create(LocalFrame* frame) {
 
 AudioWorklet::AudioWorklet(LocalFrame* frame) : Worklet(frame) {}
 
-AudioWorklet::~AudioWorklet() {}
+AudioWorklet::~AudioWorklet() {
+  contexts_.clear();
+}
+
+void AudioWorklet::RegisterContext(BaseAudioContext* context) {
+  DCHECK(!contexts_.Contains(context));
+  contexts_.insert(context);
+}
+
+void AudioWorklet::UnregisterContext(BaseAudioContext* context) {
+  // This may be called multiple times from BaseAudioContext.
+  if (!contexts_.Contains(context))
+    return;
+
+  contexts_.erase(context);
+}
 
 bool AudioWorklet::NeedsToCreateGlobalScope() {
-  // For now, create only one global scope per document.
-  // TODO(nhiroki): Revisit this later.
+  // TODO(hongchan): support multiple WorkletGlobalScopes, one scope per a
+  // BaseAudioContext. In order to do it, FindAvailableGlobalScope() needs to
+  // be inherited and rewritten.
   return GetNumberOfGlobalScopes() == 0;
 }
 
@@ -39,6 +56,7 @@ WorkletGlobalScopeProxy* AudioWorklet::CreateGlobalScope() {
 }
 
 DEFINE_TRACE(AudioWorklet) {
+  visitor->Trace(contexts_);
   Worklet::Trace(visitor);
 }
 

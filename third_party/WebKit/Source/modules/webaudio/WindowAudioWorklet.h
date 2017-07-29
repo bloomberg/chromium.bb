@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class BaseAudioContext;
 class LocalDOMWindow;
 
 class MODULES_EXPORT WindowAudioWorklet final
@@ -23,6 +24,7 @@ class MODULES_EXPORT WindowAudioWorklet final
 
  public:
   static AudioWorklet* audioWorklet(LocalDOMWindow&);
+  static AudioWorklet* audioWorklet(BaseAudioContext*);
 
   void ContextDestroyed(ExecutionContext*) override;
 
