@@ -244,9 +244,4 @@ skia::NativeDrawingContext PrintingContextAndroid::context() const {
   return nullptr;
 }
 
-// static
-bool PrintingContextAndroid::RegisterPrintingContext(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace printing

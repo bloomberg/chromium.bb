@@ -5,8 +5,6 @@
 #ifndef PRINTING_PRINTING_CONTEXT_ANDROID_H_
 #define PRINTING_PRINTING_CONTEXT_ANDROID_H_
 
-#include <jni.h>
-
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
@@ -55,9 +53,6 @@ class PRINTING_EXPORT PrintingContextAndroid : public PrintingContext {
   void Cancel() override;
   void ReleaseContext() override;
   skia::NativeDrawingContext context() const override;
-
-  // Registers JNI bindings for RegisterContext.
-  static bool RegisterPrintingContext(JNIEnv* env);
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> j_printing_context_;
