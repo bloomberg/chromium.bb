@@ -88,8 +88,6 @@ class CONTENT_EXPORT WebContentsViewAura
   // animates in, or the content window animates out).
   void CompleteOverscrollNavigation(OverscrollMode mode);
 
-  void OverscrollUpdateForWebContentsDelegate(float delta_y);
-
   ui::TouchSelectionController* GetSelectionController() const;
   TouchSelectionControllerClientAura* GetSelectionControllerClient() const;
 

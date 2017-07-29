@@ -94,11 +94,6 @@ namespace {
 WebContentsViewAura::RenderWidgetHostViewCreateFunction
     g_create_render_widget_host_view = nullptr;
 
-bool IsScrollEndEffectEnabled() {
-  return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kScrollEndEffect) == "1";
-}
-
 RenderWidgetHostViewAura* ToRenderWidgetHostViewAura(
     RenderWidgetHostView* view) {
   if (!view || (RenderViewHostFactory::has_factory() &&
@@ -648,12 +643,6 @@ void WebContentsViewAura::CompleteOverscrollNavigation(OverscrollMode mode) {
     selection_controller->HideAndDisallowShowingAutomatically();
 }
 
-void WebContentsViewAura::OverscrollUpdateForWebContentsDelegate(
-    float delta_y) {
-  if (web_contents_->GetDelegate() && IsScrollEndEffectEnabled())
-    web_contents_->GetDelegate()->OverscrollUpdate(delta_y);
-}
-
 ui::TouchSelectionController* WebContentsViewAura::GetSelectionController()
     const {
   RenderWidgetHostViewAura* view =
@@ -1040,33 +1029,22 @@ gfx::Size WebContentsViewAura::GetDisplaySize() const {
 }
 
 bool WebContentsViewAura::OnOverscrollUpdate(float delta_x, float delta_y) {
-  if (current_overscroll_gesture_ == OVERSCROLL_NONE)
+  if (current_overscroll_gesture_ != OVERSCROLL_EAST &&
+      current_overscroll_gesture_ != OVERSCROLL_WEST) {
     return false;
-
-  if (current_overscroll_gesture_ == OVERSCROLL_NORTH ||
-      current_overscroll_gesture_ == OVERSCROLL_SOUTH) {
-    OverscrollUpdateForWebContentsDelegate(delta_y);
-    return delta_y != 0;
   }
+
   return navigation_overlay_->relay_delegate()->OnOverscrollUpdate(delta_x,
                                                                    delta_y);
 }
 
 void WebContentsViewAura::OnOverscrollComplete(OverscrollMode mode) {
-  if (web_contents_->GetDelegate() &&
-      IsScrollEndEffectEnabled() &&
-      (mode == OVERSCROLL_NORTH || mode == OVERSCROLL_SOUTH)) {
-    web_contents_->GetDelegate()->OverscrollComplete();
-  }
   CompleteOverscrollNavigation(mode);
 }
 
 void WebContentsViewAura::OnOverscrollModeChange(OverscrollMode old_mode,
                                                  OverscrollMode new_mode,
                                                  OverscrollSource source) {
-  if (old_mode == OVERSCROLL_NORTH || old_mode == OVERSCROLL_SOUTH)
-    OverscrollUpdateForWebContentsDelegate(0);
-
   current_overscroll_gesture_ = new_mode;
   navigation_overlay_->relay_delegate()->OnOverscrollModeChange(
       old_mode, new_mode, source);

@@ -177,13 +177,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   // gestures.
   virtual bool CanOverscrollContent() const;
 
-  // Callback that allows vertical overscroll activies to be communicated to the
-  // delegate. |delta_y| is the total amount of overscroll.
-  virtual void OverscrollUpdate(float delta_y) {}
-
-  // Invoked when a vertical overscroll completes.
-  virtual void OverscrollComplete() {}
-
   // Invoked prior to showing before unload handler confirmation dialog.
   virtual void WillRunBeforeUnloadConfirm() {}
 
