@@ -187,7 +187,7 @@ void DamageTracker::ComputeSurfaceDamage(RenderSurfaceImpl* render_surface) {
 
     gfx::Rect damage_rect;
     bool is_rect_valid = damage_for_this_update_.GetAsRect(&damage_rect);
-    if (is_rect_valid) {
+    if (is_rect_valid && !damage_rect.IsEmpty()) {
       damage_rect = render_surface->Filters().MapRect(
           damage_rect, render_surface->SurfaceScale().matrix());
       damage_for_this_update_ = DamageAccumulator();
@@ -331,9 +331,9 @@ void DamageTracker::ExpandDamageInsideRectWithFilters(
     const FilterOperations& filters) {
   gfx::Rect damage_rect;
   bool is_valid_rect = damage_for_this_update_.GetAsRect(&damage_rect);
-  // If the damage accumulated so far isn't a valid rect, then there is no point
-  // in trying to make it bigger.
-  if (!is_valid_rect)
+  // If the damage accumulated so far isn't a valid rect or empty, then there is
+  // no point in trying to make it bigger.
+  if (!is_valid_rect || damage_rect.IsEmpty())
     return;
 
   // Compute the pixels in the background of the surface that could be affected
