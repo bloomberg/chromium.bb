@@ -20,6 +20,7 @@
 #include "chromeos/components/tether/network_connection_handler_tether_delegate.h"
 #include "chromeos/components/tether/network_host_scan_cache.h"
 #include "chromeos/components/tether/notification_presenter.h"
+#include "chromeos/components/tether/notification_remover.h"
 #include "chromeos/components/tether/persistent_host_scan_cache_impl.h"
 #include "chromeos/components/tether/tether_connector.h"
 #include "chromeos/components/tether/tether_disconnector_impl.h"
@@ -213,6 +214,9 @@ void Initializer::OnBluetoothAdapterAdvertisingIntervalSet(
   master_host_scan_cache_ = base::MakeUnique<MasterHostScanCache>(
       base::MakeUnique<TimerFactory>(), active_host_.get(),
       network_host_scan_cache_.get(), persistent_host_scan_cache_.get());
+  notification_remover_ = base::MakeUnique<NotificationRemover>(
+      network_state_handler_, notification_presenter_,
+      master_host_scan_cache_.get(), active_host_.get());
   keep_alive_scheduler_ = base::MakeUnique<KeepAliveScheduler>(
       active_host_.get(), ble_connection_manager_.get(),
       master_host_scan_cache_.get(), device_id_tether_network_guid_map_.get());

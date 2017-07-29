@@ -49,6 +49,7 @@ class MasterHostScanCache;
 class NetworkConfigurationRemover;
 class NetworkHostScanCache;
 class NotificationPresenter;
+class NotificationRemover;
 class PersistentHostScanCache;
 class TetherConnector;
 class TetherDisconnector;
@@ -135,6 +136,7 @@ class Initializer : public OAuth2TokenService::Observer {
   std::unique_ptr<PersistentHostScanCache> persistent_host_scan_cache_;
   std::unique_ptr<NetworkHostScanCache> network_host_scan_cache_;
   std::unique_ptr<MasterHostScanCache> master_host_scan_cache_;
+  std::unique_ptr<NotificationRemover> notification_remover_;
   std::unique_ptr<KeepAliveScheduler> keep_alive_scheduler_;
   std::unique_ptr<base::DefaultClock> clock_;
   std::unique_ptr<HostScanner> host_scanner_;
