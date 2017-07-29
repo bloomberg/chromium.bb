@@ -44,7 +44,7 @@ bool g_got_message = false;
 base::FilePath GetFilePathForJSResource(const std::string& path) {
   base::ThreadRestrictions::ScopedAllowIO allow_io_from_test_callbacks;
 
-  std::string binding_path = "gen/" + path + ".js";
+  std::string binding_path = "gen/" + path;
 #if defined(OS_WIN)
   base::ReplaceChars(binding_path, "//", "\\", &binding_path);
 #endif
@@ -60,7 +60,7 @@ bool GetResource(const std::string& id,
   base::ThreadRestrictions::ScopedAllowIO allow_io_from_test_callbacks;
 
   std::string contents;
-  if (base::EndsWith(id, ".mojom", base::CompareCase::SENSITIVE)) {
+  if (base::EndsWith(id, ".mojom.js", base::CompareCase::SENSITIVE)) {
     CHECK(base::ReadFileToString(GetFilePathForJSResource(id), &contents))
         << id;
   } else {
@@ -222,7 +222,7 @@ bool IsGeneratedResourceAvailable(const std::string& resource_path) {
 // it from the browser to the page and back.
 IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndPing) {
   if (!IsGeneratedResourceAvailable(
-          "content/test/data/web_ui_test_mojo_bindings.mojom"))
+          "content/test/data/web_ui_test_mojo_bindings.mojom.js"))
     return;
 
   g_got_message = false;

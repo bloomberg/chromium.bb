@@ -2,19 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-define('main', [
-    'mojo/public/js/bindings',
-    'content/test/data/web_ui_test_mojo_bindings.mojom',
-    'content/public/renderer/frame_interfaces',
-], function (bindings, webUITest, interfaceProvider) {
-  var browserTarget;
+var browserTarget = new content.mojom.BrowserTargetPtr;
+Mojo.bindInterface(content.mojom.BrowserTarget.name,
+                   mojo.makeRequest(browserTarget).handle);
 
-  return function() {
-    browserTarget = new webUITest.BrowserTargetPtr(
-        interfaceProvider.getInterface(webUITest.BrowserTarget.name));
-
-    browserTarget.start().then(function() {
-      browserTarget.stop();
-    });
-  };
+browserTarget.start().then(function() {
+  browserTarget.stop();
 });
