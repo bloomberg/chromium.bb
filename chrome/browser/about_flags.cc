@@ -1605,13 +1605,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOverscrollStartThresholdName,
      flag_descriptions::kOverscrollStartThresholdDescription, kOsAura,
      MULTI_VALUE_TYPE(kOverscrollStartThresholdChoices)},
-#endif  // USE_AURA
-    {"scroll-end-effect", flag_descriptions::kScrollEndEffectName,
-     flag_descriptions::kScrollEndEffectDescription, kOsCrOS,
-     ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(switches::kScrollEndEffect,
+    {"pull-to-refresh", flag_descriptions::kPullToRefreshName,
+     flag_descriptions::kPullToRefreshDescription, kOsAura,
+     ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(switches::kPullToRefresh,
                                          "1",
-                                         switches::kScrollEndEffect,
+                                         switches::kPullToRefresh,
                                          "0")},
+#endif  // USE_AURA
     {"enable-touch-drag-drop", flag_descriptions::kTouchDragDropName,
      flag_descriptions::kTouchDragDropDescription, kOsWin | kOsCrOS,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableTouchDragDrop,

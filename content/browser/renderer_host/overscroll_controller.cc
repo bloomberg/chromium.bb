@@ -19,9 +19,9 @@ namespace content {
 
 namespace {
 
-bool IsScrollEndEffectEnabled() {
+bool IsPullToRefreshEnabled() {
   return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kScrollEndEffect) == "1";
+             switches::kPullToRefresh) == "1";
 }
 
 bool IsGestureEventFromTouchpad(const blink::WebInputEvent& event) {
@@ -397,10 +397,10 @@ bool OverscrollController::ProcessOverscroll(float delta_x,
            fabs(overscroll_delta_y_) > fabs(overscroll_delta_x_) * kMinRatio)
     new_mode = overscroll_delta_y_ > 0.f ? OVERSCROLL_SOUTH : OVERSCROLL_NORTH;
 
-  // The vertical oversrcoll currently does not have any UX effects other then
-  // for the scroll end effect, so testing if it is enabled.
+  // The vertical overscroll is used for pull-to-refresh. Enable it only if
+  // pull-to-refresh is enabled.
   if ((new_mode == OVERSCROLL_SOUTH || new_mode == OVERSCROLL_NORTH) &&
-      !IsScrollEndEffectEnabled())
+      !IsPullToRefreshEnabled())
     new_mode = OVERSCROLL_NONE;
 
   if (overscroll_mode_ == OVERSCROLL_NONE) {
