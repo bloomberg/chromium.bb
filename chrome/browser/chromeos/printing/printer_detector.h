@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "chromeos/printing/ppd_provider.h"
 #include "chromeos/printing/printer_configuration.h"
 
 namespace chromeos {
@@ -27,6 +28,15 @@ namespace chromeos {
 //
 class CHROMEOS_EXPORT PrinterDetector {
  public:
+  // The result of a detection.
+  struct DetectedPrinter {
+    // Printer information
+    Printer printer;
+
+    // Additional metadata used to find a driver.
+    PpdProvider::PrinterSearchData ppd_search_data;
+  };
+
   class Observer {
    public:
     virtual ~Observer() = default;
@@ -34,7 +44,8 @@ class CHROMEOS_EXPORT PrinterDetector {
     // Called with a collection of printers as they are discovered.  On each
     // call |printers| is the full set of known printers; it is not
     // incremental; printers may be added or removed.
-    virtual void OnPrintersFound(const std::vector<Printer>& printers) = 0;
+    virtual void OnPrintersFound(
+        const std::vector<DetectedPrinter>& printers) = 0;
 
     // Called when we are done with the initial scan for printers.  We may
     // still call OnPrintersFound if the set of available printers
@@ -55,7 +66,7 @@ class CHROMEOS_EXPORT PrinterDetector {
   virtual void RemoveObserver(Observer* observer) = 0;
 
   // Get the current list of known printers.
-  virtual std::vector<Printer> GetPrinters() = 0;
+  virtual std::vector<DetectedPrinter> GetPrinters() = 0;
 };
 
 }  // namespace chromeos

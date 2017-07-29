@@ -105,7 +105,8 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   void HandleStopDiscovery(const base::ListValue* args);
 
   // PrinterDetector::Observer implementations:
-  void OnPrintersFound(const std::vector<Printer>& printers) override;
+  void OnPrintersFound(
+      const std::vector<PrinterDetector::DetectedPrinter>& printers) override;
   void OnPrinterScanComplete() override;
 
   // Invokes debugd to add the printer to CUPS.  If |ipp_everywhere| is true,

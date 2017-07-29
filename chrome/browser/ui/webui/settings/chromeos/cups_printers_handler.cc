@@ -582,16 +582,17 @@ void CupsPrintersHandler::HandleStopDiscovery(const base::ListValue* args) {
 }
 
 void CupsPrintersHandler::OnPrintersFound(
-    const std::vector<Printer>& printers) {
+    const std::vector<PrinterDetector::DetectedPrinter>& printers) {
   std::unique_ptr<base::ListValue> printers_list =
       base::MakeUnique<base::ListValue>();
   // Filter out already-configured printers as we go.
   SyncedPrintersManager* printers_manager =
       SyncedPrintersManagerFactory::GetForBrowserContext(profile_);
   if (printers_manager != nullptr) {
-    for (const auto& printer : printers) {
-      if (printers_manager->GetPrinter(printer.id()).get() == nullptr) {
-        printers_list->Append(GetPrinterInfo(printer));
+    for (const auto& detected_printer : printers) {
+      if (printers_manager->GetPrinter(detected_printer.printer.id()).get() ==
+          nullptr) {
+        printers_list->Append(GetPrinterInfo(detected_printer.printer));
       }
     }
   } else {

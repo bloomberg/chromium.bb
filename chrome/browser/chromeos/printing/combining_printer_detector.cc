@@ -31,7 +31,8 @@ class ObserverDelegate : public PrinterDetector::Observer {
       : parent_(parent), observer_(this) {
     observer_.Add(detector);
   }
-  void OnPrintersFound(const std::vector<Printer>& printers) override;
+  void OnPrintersFound(
+      const std::vector<PrinterDetector::DetectedPrinter>& printers) override;
   void OnPrinterScanComplete() override;
 
  private:
@@ -68,13 +69,13 @@ class CombiningPrinterDetectorImpl : public CombiningPrinterDetector {
   // it's the entry point for ObserverDelegates to pass along those messages
   // into this class.
   void OnPrintersFound(const ObserverDelegate* source,
-                       const std::vector<Printer>& printers) {
+                       const std::vector<DetectedPrinter>& printers) {
     // If this object doesn't know about the delegate trying to update its
     // printers, we missed delegate registration somehow, which shouldn't
     // happen.
     DCHECK(base::ContainsKey(printers_, source));
     printers_[source] = printers;
-    std::vector<Printer> all_printers = GetPrinters();
+    const std::vector<DetectedPrinter> all_printers = GetPrinters();
     for (PrinterDetector::Observer& observer : observer_list_) {
       observer.OnPrintersFound(all_printers);
     }
@@ -99,8 +100,8 @@ class CombiningPrinterDetectorImpl : public CombiningPrinterDetector {
   }
 
   // Aggregate the printers from all underlying sources and return them.
-  std::vector<Printer> GetPrinters() override {
-    std::vector<Printer> ret;
+  std::vector<DetectedPrinter> GetPrinters() override {
+    std::vector<DetectedPrinter> ret;
     for (const auto& entry : printers_) {
       ret.insert(ret.end(), entry.second.begin(), entry.second.end());
     }
@@ -116,7 +117,7 @@ class CombiningPrinterDetectorImpl : public CombiningPrinterDetector {
  private:
   // Map from observer delegate to the most recent list of printers from that
   // observer.
-  std::map<const ObserverDelegate*, std::vector<Printer>> printers_;
+  std::map<const ObserverDelegate*, std::vector<DetectedPrinter>> printers_;
 
   // Map from observer delegate to whether or not that observer has completed
   // its scan.
@@ -135,7 +136,8 @@ class CombiningPrinterDetectorImpl : public CombiningPrinterDetector {
   std::vector<PrinterDetector*> detectors_;
 };
 
-void ObserverDelegate::OnPrintersFound(const std::vector<Printer>& printers) {
+void ObserverDelegate::OnPrintersFound(
+    const std::vector<PrinterDetector::DetectedPrinter>& printers) {
   parent_->OnPrintersFound(this, printers);
 }
 

@@ -46,6 +46,9 @@ struct SetUpPrinterData {
   // The printer being set up.
   std::unique_ptr<Printer> printer;
 
+  // Additional metadata for driver finding.
+  PpdProvider::PrinterSearchData ppd_search_data;
+
   // The usb device causing this setup flow.
   scoped_refptr<device::UsbDevice> device;
 
@@ -100,7 +103,7 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
   }
 
   // PrinterDetector interface function.
-  std::vector<Printer> GetPrinters() override {
+  std::vector<DetectedPrinter> GetPrinters() override {
     base::AutoLock auto_lock(pp_lock_);
     return GetPrintersLocked();
   }
@@ -115,9 +118,9 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
   }
 
  private:
-  std::vector<Printer> GetPrintersLocked() {
+  std::vector<DetectedPrinter> GetPrintersLocked() {
     pp_lock_.AssertAcquired();
-    std::vector<Printer> printers;
+    std::vector<DetectedPrinter> printers;
     printers.reserve(present_printers_.size());
     for (const auto& entry : present_printers_) {
       printers.push_back(*entry.second);
@@ -209,12 +212,14 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
     data->is_new = true;
 
     // Look for an exact match based on USB ids.
+    //
+    // TODO(justincarlson) -- Ppd resolution should move into the top level
+    // printers manager.
+    data->ppd_search_data.usb_vendor_id = device->vendor_id();
+    data->ppd_search_data.usb_product_id = device->product_id();
     scoped_refptr<PpdProvider> ppd_provider = CreatePpdProvider(profile_);
-    PpdProvider::PrinterSearchData printer_search_data;
-    printer_search_data.usb_vendor_id = device->vendor_id();
-    printer_search_data.usb_product_id = device->product_id();
     ppd_provider->ResolvePpdReference(
-        printer_search_data,
+        data->ppd_search_data,
         base::Bind(&UsbPrinterDetectorImpl::ResolveUsbIdsDone,
                    weak_ptr_factory_.GetWeakPtr(), ppd_provider,
                    base::Passed(std::move(data))));
@@ -278,8 +283,12 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
       // it to present_printers_;
       deferred_printer_removals_.erase(data->device->guid());
     } else {
+      auto detected_printer = base::MakeUnique<DetectedPrinter>();
+      detected_printer->printer = *(data->printer);
+      detected_printer->ppd_search_data = data->ppd_search_data;
       base::AutoLock auto_lock(pp_lock_);
-      present_printers_.emplace(data->device->guid(), std::move(data->printer));
+      present_printers_.emplace(data->device->guid(),
+                                std::move(detected_printer));
       if (started_) {
         observer_list_->Notify(FROM_HERE,
                                &PrinterDetector::Observer::OnPrintersFound,
@@ -293,7 +302,7 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
   // Map from USB GUID to Printer that we have detected as being currently
   // plugged in and have finished processing.  Note present_printers_ may be
   // accessed from multiple threads, so is protected by pp_lock_.
-  std::map<std::string, std::unique_ptr<Printer>> present_printers_;
+  std::map<std::string, std::unique_ptr<DetectedPrinter>> present_printers_;
   base::Lock pp_lock_;
 
   // If the usb device is removed before we've finished processing it, we'll
