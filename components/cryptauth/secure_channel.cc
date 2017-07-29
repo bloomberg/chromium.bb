@@ -56,11 +56,10 @@ std::string SecureChannel::StatusToString(const Status& status) {
   }
 }
 
-SecureChannel::PendingMessage::PendingMessage() {}
-
-SecureChannel::PendingMessage::PendingMessage(
-    const std::string& feature, const std::string& payload)
-    : feature(feature), payload(payload) {}
+SecureChannel::PendingMessage::PendingMessage(const std::string& feature,
+                                              const std::string& payload,
+                                              int sequence_number)
+    : feature(feature), payload(payload), sequence_number(sequence_number) {}
 
 SecureChannel::PendingMessage::~PendingMessage() {}
 
@@ -88,11 +87,17 @@ void SecureChannel::Initialize() {
   TransitionToStatus(Status::CONNECTING);
 }
 
-void SecureChannel::SendMessage(
-    const std::string& feature, const std::string& payload) {
+int SecureChannel::SendMessage(const std::string& feature,
+                               const std::string& payload) {
   DCHECK(status_ == Status::AUTHENTICATED);
-  queued_messages_.push_back(PendingMessage(feature, payload));
+
+  int sequence_number = next_sequence_number_;
+  next_sequence_number_++;
+
+  queued_messages_.push_back(PendingMessage(feature, payload, sequence_number));
   ProcessMessageQueue();
+
+  return sequence_number;
 }
 
 void SecureChannel::Disconnect() {
@@ -155,6 +160,10 @@ void SecureChannel::OnSendCompleted(const cryptauth::Connection& connection,
 
   if (success && status_ != Status::DISCONNECTED) {
     pending_message_.reset();
+
+    for (auto& observer : observer_list_)
+      observer.OnMessageSent(this, wire_message.sequence_number());
+
     ProcessMessageQueue();
     return;
   }
@@ -180,9 +189,8 @@ void SecureChannel::TransitionToStatus(const Status& new_status) {
   Status old_status = status_;
   status_ = new_status;
 
-  for (auto& observer : observer_list_) {
+  for (auto& observer : observer_list_)
     observer.OnSecureChannelStatusChanged(this, old_status, status_);
-  }
 }
 
 void SecureChannel::Authenticate() {
@@ -215,16 +223,18 @@ void SecureChannel::ProcessMessageQueue() {
                << "payload: \"" << pending_message_->payload << "\""
                << "}";
 
-  secure_context_->Encode(pending_message_->payload,
-                          base::Bind(&SecureChannel::OnMessageEncoded,
-                                     weak_ptr_factory_.GetWeakPtr(),
-                                     pending_message_->feature));
+  secure_context_->Encode(
+      pending_message_->payload,
+      base::Bind(&SecureChannel::OnMessageEncoded,
+                 weak_ptr_factory_.GetWeakPtr(), pending_message_->feature,
+                 pending_message_->sequence_number));
 }
 
-void SecureChannel::OnMessageEncoded(
-    const std::string& feature, const std::string& encoded_message) {
+void SecureChannel::OnMessageEncoded(const std::string& feature,
+                                     int sequence_number,
+                                     const std::string& encoded_message) {
   connection_->SendMessage(base::MakeUnique<cryptauth::WireMessage>(
-      encoded_message, feature));
+      encoded_message, feature, sequence_number));
 }
 
 void SecureChannel::OnMessageDecoded(
@@ -235,9 +245,8 @@ void SecureChannel::OnMessageDecoded(
                << "payload: \"" << decoded_message << "\""
                << "}";
 
-  for (auto& observer : observer_list_) {
+  for (auto& observer : observer_list_)
     observer.OnMessageReceived(this, feature, decoded_message);
-  }
 }
 
 void SecureChannel::OnAuthenticationResult(
