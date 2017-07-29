@@ -60,6 +60,10 @@ class CC_EXPORT DCLayerOverlay {
   // If |rpdq| is present, then the renderer must draw the filter effects and
   // copy the result into an IOSurface.
   const RenderPassDrawQuad* rpdq = nullptr;
+  // This is the color-space the texture should be displayed as. If invalid,
+  // then the default for the texture should be used. For YUV textures, that's
+  // normally BT.709.
+  gfx::ColorSpace color_space;
 };
 
 typedef std::vector<DCLayerOverlay> DCLayerOverlayList;

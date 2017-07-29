@@ -330,6 +330,8 @@
 #define glScheduleCALayerSharedStateCHROMIUM \
   GLES2_GET_FUN(ScheduleCALayerSharedStateCHROMIUM)
 #define glScheduleCALayerCHROMIUM GLES2_GET_FUN(ScheduleCALayerCHROMIUM)
+#define glSetColorSpaceForScanoutCHROMIUM \
+  GLES2_GET_FUN(SetColorSpaceForScanoutCHROMIUM)
 #define glScheduleCALayerInUseQueryCHROMIUM \
   GLES2_GET_FUN(ScheduleCALayerInUseQueryCHROMIUM)
 #define glCommitOverlayPlanesCHROMIUM GLES2_GET_FUN(CommitOverlayPlanesCHROMIUM)

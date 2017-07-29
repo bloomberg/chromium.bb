@@ -1840,6 +1840,13 @@ error::Error GLES2DecoderPassthroughImpl::HandleScheduleDCLayerCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::HandleSetColorSpaceForScanoutCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  NOTIMPLEMENTED();
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::HandleGenPathsCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {

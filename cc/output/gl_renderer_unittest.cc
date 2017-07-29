@@ -2022,6 +2022,8 @@ class PartialSwapMockGLES2Interface : public TestGLES2Interface {
   MOCK_METHOD1(Disable, void(GLenum cap));
   MOCK_METHOD4(Scissor, void(GLint x, GLint y, GLsizei width, GLsizei height));
   MOCK_METHOD1(SetEnableDCLayersCHROMIUM, void(GLboolean enable));
+  MOCK_METHOD2(SetColorSpaceForScanoutCHROMIUM,
+               void(GLuint texture_id, GLColorSpace color_space));
 
  private:
   bool support_dc_layers_;
@@ -2137,6 +2139,12 @@ class DCLayerValidator : public OverlayCandidateValidator {
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override {}
 };
 
+bool IsSRGBColorSpace(GLColorSpace color_space) {
+  gfx::ColorSpace* real_color_space =
+      reinterpret_cast<gfx::ColorSpace*>(color_space);
+  return *real_color_space == gfx::ColorSpace::CreateSRGB();
+}
+
 // Test that SetEnableDCLayersCHROMIUM is properly called when enabling
 // and disabling DC layers.
 TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
@@ -2179,12 +2187,19 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
   viz::ResourceId resource_id =
       resource_provider->CreateResourceFromTextureMailbox(
           mailbox, std::move(release_callback));
+  uint32_t texture_id;
+  {
+    ResourceProvider::ScopedReadLockGL read_lock(resource_provider.get(),
+                                                 resource_id);
+    texture_id = read_lock.texture_id();
+  }
 
   for (int i = 0; i < 65; i++) {
     int root_pass_id = 1;
     RenderPass* root_pass = AddRenderPass(
         &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
         gfx::Transform(), FilterOperations());
+    gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
     if (i == 0) {
       gfx::Rect rect(0, 0, 100, 100);
       gfx::RectF tex_coord_rect(0, 0, 1, 1);
@@ -2197,7 +2212,7 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
       quad->SetNew(shared_state, rect, rect, rect, tex_coord_rect,
                    tex_coord_rect, rect.size(), rect.size(), resource_id,
                    resource_id, resource_id, resource_id,
-                   YUVVideoDrawQuad::REC_601, gfx::ColorSpace(), 0, 1.0, 8);
+                   YUVVideoDrawQuad::REC_601, color_space, 0, 1.0, 8);
     }
 
     // A bunch of initialization that happens.
@@ -2221,6 +2236,11 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
       EXPECT_CALL(*gl, SetEnableDCLayersCHROMIUM(GL_TRUE));
     else
       EXPECT_CALL(*gl, SetEnableDCLayersCHROMIUM(GL_FALSE));
+
+    if (i == 0) {
+      EXPECT_CALL(*gl, SetColorSpaceForScanoutCHROMIUM(
+                           texture_id, ::testing::Truly(IsSRGBColorSpace)));
+    }
 
     renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
     DrawFrame(&renderer, viewport_size);

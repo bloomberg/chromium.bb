@@ -28,6 +28,7 @@ DCLayerOverlayProcessor::DCLayerResult FromYUVQuad(
   ca_layer_overlay->resources = quad->resources;
   ca_layer_overlay->contents_rect = quad->ya_tex_coord_rect;
   ca_layer_overlay->filter = GL_LINEAR;
+  ca_layer_overlay->color_space = quad->video_color_space;
   return DCLayerOverlayProcessor::DC_LAYER_SUCCESS;
 }
 

@@ -1021,6 +1021,9 @@ void GLES2InterfaceStub::ScheduleCALayerCHROMIUM(
     GLuint /* edge_aa_mask */,
     const GLfloat* /* bounds_rect */,
     GLuint /* filter */) {}
+void GLES2InterfaceStub::SetColorSpaceForScanoutCHROMIUM(
+    GLuint /* texture_id */,
+    GLColorSpace /* color_space */) {}
 void GLES2InterfaceStub::ScheduleCALayerInUseQueryCHROMIUM(
     GLsizei /* count */,
     const GLuint* /* textures */) {}

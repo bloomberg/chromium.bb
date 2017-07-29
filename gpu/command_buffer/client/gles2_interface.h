@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 
 extern "C" typedef struct _ClientBuffer* ClientBuffer;
+extern "C" typedef struct _GLColorSpace* GLColorSpace;
 
 namespace gpu {
 namespace gles2 {

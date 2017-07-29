@@ -590,6 +590,9 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
 
   // TODO(jbauman): Use correct colorspace.
   gfx::ColorSpace src_color_space = gfx::ColorSpace::CreateREC709();
+  if (params.image[0]->color_space().IsValid()) {
+    src_color_space = params.image[0]->color_space();
+  }
   base::win::ScopedComPtr<ID3D11VideoContext1> context1;
   if (SUCCEEDED(video_context_.CopyTo(context1.GetAddressOf()))) {
     context1->VideoProcessorSetStreamColorSpace1(
@@ -615,16 +618,47 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   if (SUCCEEDED(swap_chain_.CopyTo(swap_chain3.GetAddressOf()))) {
     DXGI_COLOR_SPACE_TYPE color_space =
         gfx::ColorSpaceWin::GetDXGIColorSpace(output_color_space);
+    if (is_yuy2_swapchain_) {
+      // Swapchains with YUY2 textures can't have RGB color spaces.
+      switch (color_space) {
+        case DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709:
+        case DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709:
+          color_space = DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P709;
+          break;
+
+        case DXGI_COLOR_SPACE_RGB_STUDIO_G22_NONE_P709:
+          color_space = DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709;
+          break;
+
+        case DXGI_COLOR_SPACE_RGB_STUDIO_G22_NONE_P2020:
+          color_space = DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P2020;
+          break;
+
+        case DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020:
+        case DXGI_COLOR_SPACE_RGB_STUDIO_G2084_NONE_P2020:
+          color_space = DXGI_COLOR_SPACE_YCBCR_STUDIO_G2084_LEFT_P2020;
+          break;
+
+        case DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P2020:
+          color_space = DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P2020;
+          break;
+
+        default:
+          break;
+      }
+    }
     HRESULT hr = swap_chain3->SetColorSpace1(color_space);
-    CHECK(SUCCEEDED(hr));
-    if (context1) {
-      context1->VideoProcessorSetOutputColorSpace1(video_processor_.Get(),
-                                                   color_space);
-    } else {
-      D3D11_VIDEO_PROCESSOR_COLOR_SPACE d3d11_color_space =
-          gfx::ColorSpaceWin::GetD3D11ColorSpace(output_color_space);
-      video_context_->VideoProcessorSetOutputColorSpace(video_processor_.Get(),
-                                                        &d3d11_color_space);
+
+    if (SUCCEEDED(hr)) {
+      if (context1) {
+        context1->VideoProcessorSetOutputColorSpace1(video_processor_.Get(),
+                                                     color_space);
+      } else {
+        D3D11_VIDEO_PROCESSOR_COLOR_SPACE d3d11_color_space =
+            gfx::ColorSpaceWin::GetD3D11ColorSpace(output_color_space);
+        video_context_->VideoProcessorSetOutputColorSpace(
+            video_processor_.Get(), &d3d11_color_space);
+      }
     }
   }
 

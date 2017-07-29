@@ -3322,7 +3322,7 @@ void GLRenderer::ScheduleDCLayers() {
 
   scoped_refptr<DCLayerOverlaySharedState> shared_state;
   size_t copied_render_pass_count = 0;
-  for (const DCLayerOverlay& dc_layer_overlay :
+  for (DCLayerOverlay& dc_layer_overlay :
        current_frame()->dc_layer_overlay_list) {
     DCHECK(!dc_layer_overlay.rpdq);
 
@@ -3365,6 +3365,11 @@ void GLRenderer::ScheduleDCLayers() {
       gl_->ScheduleDCLayerSharedStateCHROMIUM(
           dc_layer_overlay.shared_state->opacity, is_clipped, clip_rect,
           z_order, transform);
+    }
+    if (ids_to_send > 0) {
+      gl_->SetColorSpaceForScanoutCHROMIUM(
+          texture_ids[0],
+          reinterpret_cast<GLColorSpace>(&dc_layer_overlay.color_space));
     }
     gl_->ScheduleDCLayerCHROMIUM(ids_to_send, texture_ids, contents_rect,
                                  dc_layer_overlay.background_color,

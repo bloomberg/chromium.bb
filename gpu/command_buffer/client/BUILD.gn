@@ -161,6 +161,13 @@ component("gles2_implementation") {
     "//gpu/command_buffer/common:gles2_utils",
     "//ui/gfx/geometry",
   ]
+
+  if (!is_nacl) {
+    deps += [
+      "//ui/gfx:color_space",
+      "//ui/gfx/ipc/color",
+    ]
+  }
 }
 
 # Library emulates GLES2 using command_buffers.
@@ -185,6 +192,13 @@ component("gles2_implementation_no_check") {
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
+
+  if (!is_nacl) {
+    deps += [
+      "//ui/gfx:color_space",
+      "//ui/gfx/ipc/color",
+    ]
+  }
 }
 
 component("gles2_c_lib") {

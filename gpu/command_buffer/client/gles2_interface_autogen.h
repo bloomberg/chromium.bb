@@ -774,6 +774,8 @@ virtual void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                                      GLuint edge_aa_mask,
                                      const GLfloat* bounds_rect,
                                      GLuint filter) = 0;
+virtual void SetColorSpaceForScanoutCHROMIUM(GLuint texture_id,
+                                             GLColorSpace color_space) = 0;
 virtual void ScheduleCALayerInUseQueryCHROMIUM(GLsizei count,
                                                const GLuint* textures) = 0;
 virtual void CommitOverlayPlanesCHROMIUM() = 0;
