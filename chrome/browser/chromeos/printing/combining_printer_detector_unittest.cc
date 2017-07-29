@@ -67,17 +67,19 @@ class FakePrinterDetector : public PrinterDetector {
     observer_list_.RemoveObserver(observer);
   }
 
-  std::vector<Printer> GetPrinters() override {
-    std::vector<Printer> printers;
+  std::vector<DetectedPrinter> GetPrinters() override {
+    std::vector<DetectedPrinter> printers;
     for (const std::string& id : printer_ids_) {
-      printers.push_back(Printer(id));
+      DetectedPrinter detected;
+      detected.printer.set_id(id);
+      printers.push_back(detected);
     }
     return printers;
   }
 
  private:
   void Notify() {
-    std::vector<Printer> printers = GetPrinters();
+    const std::vector<DetectedPrinter> printers = GetPrinters();
     for (PrinterDetector::Observer& observer : observer_list_) {
       observer.OnPrintersFound(printers);
     }
@@ -117,7 +119,8 @@ class PrintingCombiningPrinterDetectorTest : public testing::Test,
     printers_ = combining_detector_->GetPrinters();
   }
 
-  void OnPrintersFound(const std::vector<Printer>& printers) override {
+  void OnPrintersFound(
+      const std::vector<PrinterDetector::DetectedPrinter>& printers) override {
     printers_ = printers;
   }
 
@@ -131,8 +134,8 @@ class PrintingCombiningPrinterDetectorTest : public testing::Test,
     std::vector<std::string> sorted_expected(expected_ids.begin(),
                                              expected_ids.end());
     std::vector<std::string> sorted_actual;
-    for (const Printer& printer : printers_) {
-      sorted_actual.push_back(printer.id());
+    for (const PrinterDetector::DetectedPrinter& printer : printers_) {
+      sorted_actual.push_back(printer.printer.id());
     }
     std::sort(sorted_expected.begin(), sorted_expected.end());
     std::sort(sorted_actual.begin(), sorted_actual.end());
@@ -147,7 +150,7 @@ class PrintingCombiningPrinterDetectorTest : public testing::Test,
   bool scan_complete_ = false;
 
   // The printers in the most recent OnPrintersFound call.
-  std::vector<Printer> printers_;
+  std::vector<PrinterDetector::DetectedPrinter> printers_;
 
   // The fake detectors plugged into the combining detector.
   std::vector<FakePrinterDetector*> fake_detectors_;
