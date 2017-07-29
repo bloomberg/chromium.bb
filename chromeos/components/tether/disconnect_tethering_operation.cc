@@ -48,7 +48,7 @@ DisconnectTetheringOperation::DisconnectTetheringOperation(
     : MessageTransferOperation(
           std::vector<cryptauth::RemoteDevice>{device_to_connect},
           connection_manager),
-      device_id_(device_to_connect.GetDeviceId()),
+      remote_device_(device_to_connect),
       has_authenticated_(false) {}
 
 DisconnectTetheringOperation::~DisconnectTetheringOperation() {}
@@ -64,7 +64,7 @@ void DisconnectTetheringOperation::RemoveObserver(Observer* observer) {
 void DisconnectTetheringOperation::NotifyObserversOperationFinished(
     bool success) {
   for (auto& observer : observer_list_) {
-    observer.OnOperationFinished(device_id_, success);
+    observer.OnOperationFinished(remote_device_.GetDeviceId(), success);
   }
 }
 
@@ -73,9 +73,9 @@ void DisconnectTetheringOperation::OnDeviceAuthenticated(
   DCHECK(remote_devices().size() == 1u && remote_devices()[0] == remote_device);
   has_authenticated_ = true;
 
-  SendMessageToDevice(remote_device, base::MakeUnique<MessageWrapper>(
-                                         DisconnectTetheringRequest()));
-  UnregisterDevice(remote_device);
+  disconnect_message_sequence_number_ = SendMessageToDevice(
+      remote_device,
+      base::MakeUnique<MessageWrapper>(DisconnectTetheringRequest()));
 }
 
 void DisconnectTetheringOperation::OnOperationFinished() {
@@ -88,6 +88,13 @@ MessageType DisconnectTetheringOperation::GetMessageTypeForConnection() {
 
 bool DisconnectTetheringOperation::ShouldWaitForResponse() {
   return false;
+}
+
+void DisconnectTetheringOperation::OnMessageSent(int sequence_number) {
+  if (sequence_number != disconnect_message_sequence_number_)
+    return;
+
+  UnregisterDevice(remote_device_);
 }
 
 }  // namespace tether

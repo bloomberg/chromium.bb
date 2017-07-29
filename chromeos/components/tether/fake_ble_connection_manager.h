@@ -32,7 +32,10 @@ class FakeBleConnectionManager : public BleConnectionManager {
   void ReceiveMessage(const cryptauth::RemoteDevice& remote_device,
                       const std::string& payload);
   void SetMessageSent(int sequence_number);
+
   std::vector<SentMessage>& sent_messages() { return sent_messages_; }
+  // Returns -1 if no sequence numbers have been used yet.
+  int last_sequence_number() { return next_sequence_number_ - 1; }
 
   // BleConnectionManager:
   void RegisterRemoteDevice(const cryptauth::RemoteDevice& remote_device,

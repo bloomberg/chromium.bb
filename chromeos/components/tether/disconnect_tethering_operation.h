@@ -59,12 +59,14 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
   void OnOperationFinished() override;
   MessageType GetMessageTypeForConnection() override;
   bool ShouldWaitForResponse() override;
+  void OnMessageSent(int sequence_number) override;
 
  private:
   friend class DisconnectTetheringOperationTest;
 
   base::ObserverList<Observer> observer_list_;
-  std::string device_id_;
+  cryptauth::RemoteDevice remote_device_;
+  int disconnect_message_sequence_number_ = -1;
   bool has_authenticated_;
 
   DISALLOW_COPY_AND_ASSIGN(DisconnectTetheringOperation);
