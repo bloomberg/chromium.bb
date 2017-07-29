@@ -103,6 +103,8 @@ class FlexItem {
 
   bool HasAutoMarginsInCrossAxis() const;
 
+  void UpdateAutoMarginsInMainAxis(LayoutUnit auto_margin_offset);
+
   FlexLayoutAlgorithm* algorithm;
   LayoutBox* box;
   const LayoutUnit flex_base_content_size;
@@ -163,6 +165,14 @@ class FlexLine {
   // remaining_free_space unchanged.
   LayoutUnit ApplyMainAxisAutoMarginAdjustment();
 
+  // Computes & sets desired_position on the FlexItems on this line.
+  // Before calling this function, the items need to be laid out with
+  // flexed_content_size set as the override main axis size, and
+  // cross_axis_size needs to be set correctly on each flex item (to the size
+  // the item has without stretching).
+  void ComputeLineItemsPosition(LayoutUnit main_axis_offset,
+                                LayoutUnit& cross_axis_offset);
+
   FlexLayoutAlgorithm* algorithm;
   Vector<FlexItem> line_items;
   const LayoutUnit container_logical_width;
@@ -193,6 +203,29 @@ class FlexLine {
   LayoutUnit max_ascent;
 };
 
+// This class implements the CSS Flexbox layout algorithm:
+//   https://drafts.csswg.org/css-flexbox/
+//
+// Expected usage is as follows:
+//    Vector<FlexItem> flex_items;
+//    for (each child) {
+//       flex_items.emplace_back(...caller must compute these values...)
+//     }
+//     LayoutUnit cross_axis_offset = border + padding;
+//     FlexLayoutAlgorithm algorithm(Style(), MainAxisLength(), flex_items);
+//     while ((FlexLine* line = algorithm.ComputenextLine(LogicalWidth()))) {
+//       // Compute main axis size, using sum_hypothetical_main_size if
+//       // indefinite
+//       line->SetContainerMainInnerSize(MainAxisSize(
+//           line->sum_hypothetical_main_size));
+//        line->FreezeInflexibleItems();
+//        while (!current_line->ResolveFlexibleLengths()) { continue; }
+//        // Now, lay out the items, forcing their main axis size to
+//        // item.flexed_content_size
+//        LayoutUnit main_axis_offset = border + padding + scrollbar;
+//        line->ComputeLineItemsPosition(main_axis_offset, cross_axis_offset);
+//     }
+//     // The final position of each flex item is in item.desired_location
 class FlexLayoutAlgorithm {
   WTF_MAKE_NONCOPYABLE(FlexLayoutAlgorithm);
 
@@ -221,6 +254,15 @@ class FlexLayoutAlgorithm {
   static StyleContentAlignmentData ResolvedAlignContent(const ComputedStyle&);
   static ItemPosition AlignmentForChild(const ComputedStyle& flexbox_style,
                                         const ComputedStyle& child_style);
+
+  static LayoutUnit InitialContentPositionOffset(
+      LayoutUnit available_free_space,
+      const StyleContentAlignmentData&,
+      unsigned number_of_items);
+  static LayoutUnit ContentDistributionSpaceBetweenChildren(
+      LayoutUnit available_free_space,
+      const StyleContentAlignmentData&,
+      unsigned number_of_items);
 
  private:
   bool IsMultiline() const { return style_->FlexWrap() != EFlexWrap::kNowrap; }
