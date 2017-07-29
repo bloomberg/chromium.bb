@@ -969,7 +969,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
                                          LayoutUnit block_left_edge,
                                          LayoutUnit width,
                                          const AtomicString&,
-                                         bool found_box);
+                                         InlineBox*);
   void MarkLinesDirtyInBlockRange(LayoutUnit logical_top,
                                   LayoutUnit logical_bottom,
                                   RootInlineBox* highest = nullptr);
