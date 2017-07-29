@@ -3092,3 +3092,8 @@ crbug.com/749738 [ Win7 Debug ] http/tests/devtools/console/console-format-es6-2
 crbug.com/749738 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/console/console-format-es6-2.js [ Timeout ]
 crbug.com/749965 [ Win7 Debug ] media/controls/controls-video-keynav.html [ Failure ]
 crbug.com/750310 [ Win7 Debug ] virtual/off-main-thread-fetch/http/tests/inspector/network/network-blocked-reason.html [ Timeout ]
+
+# clang/win switch
+crbug.com/750446 [ Win10 ] images/color-profile-layer.html [ NeedsManualRebaseline ]
+crbug.com/750446 [ Win10 ] virtual/gpu-rasterization/images/color-profile-clip.html [ NeedsManualRebaseline ]
+crbug.com/750447 [ Win7 ] storage/indexeddb/key-type-array.html [ Crash ]
