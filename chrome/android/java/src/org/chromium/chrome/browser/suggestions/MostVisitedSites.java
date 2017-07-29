@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.suggestions;
 
 import org.chromium.base.annotations.CalledByNative;
 
+import java.util.List;
+
 import javax.annotation.Nullable;
 
 /**
@@ -16,21 +18,8 @@ public interface MostVisitedSites {
      * An interface for handling events in {@link MostVisitedSites}.
      */
     interface Observer {
-        /**
-         * This is called when the list of most visited URLs is initially available or updated.
-         * Parameters guaranteed to be non-null.
-         *
-         * @param titles Array of most visited url page titles.
-         * @param urls Array of most visited URLs, including popular URLs if
-         *             available and necessary (i.e. there aren't enough most
-         *             visited URLs).
-         * @param whitelistIconPaths The paths to the icon image files for whitelisted tiles, empty
-         *                           strings otherwise.
-         * @param sources For each tile, the {@code TileSource} that generated the tile.
-         */
-        @CalledByNative("Observer")
-        void onMostVisitedURLsAvailable(
-                String[] titles, String[] urls, String[] whitelistIconPaths, int[] sources);
+        /** This is called when the list of most visited URLs is initially available or updated. */
+        void onSiteSuggestionsAvailable(List<SiteSuggestion> siteSuggestions);
 
         /**
          * This is called when a previously uncached icon has been fetched.
@@ -38,7 +27,6 @@ public interface MostVisitedSites {
          *
          * @param siteUrl URL of site with newly-cached icon.
          */
-        @CalledByNative("Observer")
         void onIconMadeAvailable(String siteUrl);
     }
 

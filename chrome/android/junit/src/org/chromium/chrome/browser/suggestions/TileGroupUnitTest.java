@@ -445,7 +445,7 @@ public class TileGroupUnitTest {
     /**
      * Notifies the tile group of new tiles created from the provided URLs. Requires
      * {@link TileGroup#startObserving(int, int)} to have been called on the tile group under test.
-     * @see TileGroup#onMostVisitedURLsAvailable(String[], String[], String[], int[])
+     * @see TileGroup#onSiteSuggestionsAvailable(List)
      */
     private void notifyTileUrlsAvailable(String... urls) {
         assertNotNull("MostVisitedObserver has not been registered.", mTileGroupDelegate.mObserver);
@@ -454,8 +454,9 @@ public class TileGroupUnitTest {
         String[] whitelistIconPaths = new String[urls.length];
         int[] sources = new int[urls.length];
         for (int i = 0; i < urls.length; ++i) whitelistIconPaths[i] = "";
-        mTileGroupDelegate.mObserver.onMostVisitedURLsAvailable(
-                titles, urls, whitelistIconPaths, sources);
+        mTileGroupDelegate.mObserver.onSiteSuggestionsAvailable(
+                MostVisitedSitesBridge.buildSiteSuggestions(
+                        titles, urls, whitelistIconPaths, sources));
     }
 
     /** {@link #initialiseTileGroup(boolean, String...)} override that does not defer loads. */

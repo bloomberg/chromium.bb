@@ -35,14 +35,26 @@ public class Tile implements OfflinableSuggestion {
      * Empty otherwise.
      * @param index The index of this tile in the list of tiles.
      * @param source The {@code TileSource} that generated this tile.
+     * @deprecated Use {@link #Tile(SiteSuggestion, int)} instead.
      */
+    @Deprecated
     public Tile(
             String title, String url, String whitelistIconPath, int index, @TileSource int source) {
+        // TODO(dgn): Remove once all the tests are updated.
         mTitle = title;
         mUrl = url;
         mWhitelistIconPath = whitelistIconPath;
         mIndex = index;
         mSource = source;
+    }
+
+    /**
+     * @param suggestion The site data we want to populate the tile with.
+     * @param index The index of this tile in the list of tiles.
+     */
+    public Tile(SiteSuggestion suggestion, int index) {
+        this(suggestion.title, suggestion.url, suggestion.whitelistIconPath, index,
+                suggestion.source);
     }
 
     /**
