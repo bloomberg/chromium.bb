@@ -223,20 +223,6 @@ void MessageLoop::RemoveDestructionObserver(
   destruction_observers_.RemoveObserver(destruction_observer);
 }
 
-void MessageLoop::QuitWhenIdle() {
-  DCHECK_EQ(this, current());
-  DCHECK(run_loop_client_->GetTopMostRunLoop())
-      << "Must be inside Run to call QuitWhenIdle";
-  run_loop_client_->GetTopMostRunLoop()->QuitWhenIdle();
-}
-
-void MessageLoop::QuitNow() {
-  DCHECK_EQ(this, current());
-  DCHECK(run_loop_client_->GetTopMostRunLoop())
-      << "Must be inside Run to call Quit";
-  pump_->Quit();
-}
-
 bool MessageLoop::IsType(Type type) const {
   return type_ == type;
 }
@@ -367,7 +353,7 @@ void MessageLoop::Run() {
 
 void MessageLoop::Quit() {
   DCHECK_EQ(this, current());
-  QuitNow();
+  pump_->Quit();
 }
 
 void MessageLoop::SetThreadTaskRunnerHandle() {
