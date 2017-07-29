@@ -236,6 +236,8 @@ class CORE_EXPORT LayoutMultiColumnSet : public LayoutBlockFlow {
 
   LayoutRect LocalVisualRect() const override;
 
+  void UpdateFromNG();
+
  protected:
   LayoutMultiColumnSet(LayoutFlowThread*);
 
