@@ -382,7 +382,7 @@ void WebContentsAccessibilityAndroid::UpdateEnabledState(bool enabled) {
     // this WebContents if that succeeded.
     accessibility_state->OnScreenReaderDetected();
     if (accessibility_state->IsAccessibleBrowser())
-      web_contents_->AddAccessibilityMode(kAccessibilityModeComplete);
+      web_contents_->AddAccessibilityMode(ui::kAXModeComplete);
   } else {
     // Note that disabling part is not useful at this moment since the mode will
     // be enabled again almost immediately for the renderer process that just

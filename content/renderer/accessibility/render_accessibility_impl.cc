@@ -73,10 +73,9 @@ void RenderAccessibilityImpl::SnapshotAccessibilityTree(
   if (!root.UpdateLayoutAndCheckValidity())
     return;
   BlinkAXTreeSource tree_source(
-      render_frame,
-      AccessibilityMode::kNativeAPIs | AccessibilityMode::kWebContents |
-          AccessibilityMode::kInlineTextBoxes |
-          AccessibilityMode::kScreenReader | AccessibilityMode::kHTML);
+      render_frame, ui::AXMode::kNativeAPIs | ui::AXMode::kWebContents |
+                        ui::AXMode::kInlineTextBoxes |
+                        ui::AXMode::kScreenReader | ui::AXMode::kHTML);
   tree_source.SetRoot(root);
   ScopedFreezeBlinkAXTreeSource freeze(&tree_source);
   BlinkAXTreeSerializer serializer(&tree_source);
@@ -85,7 +84,7 @@ void RenderAccessibilityImpl::SnapshotAccessibilityTree(
 }
 
 RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
-                                                 AccessibilityMode mode)
+                                                 ui::AXMode mode)
     : RenderFrameObserver(render_frame),
       render_frame_(render_frame),
       tree_source_(render_frame, mode),
@@ -109,7 +108,7 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
 #if !defined(OS_ANDROID)
   // Inline text boxes can be enabled globally on all except Android.
   // On Android they can be requested for just a specific node.
-  if (mode.has_mode(AccessibilityMode::kInlineTextBoxes))
+  if (mode.has_mode(ui::AXMode::kInlineTextBoxes))
     settings->SetInlineTextBoxAccessibilityEnabled(true);
 #endif
 
@@ -127,7 +126,7 @@ RenderAccessibilityImpl::~RenderAccessibilityImpl() {
 }
 
 void RenderAccessibilityImpl::AccessibilityModeChanged() {
-  AccessibilityMode new_mode = render_frame_->accessibility_mode();
+  ui::AXMode new_mode = render_frame_->accessibility_mode();
   if (tree_source_.accessibility_mode() == new_mode)
     return;
   tree_source_.SetAccessibilityMode(new_mode);
@@ -141,7 +140,7 @@ void RenderAccessibilityImpl::AccessibilityModeChanged() {
     if (web_view) {
       WebSettings* settings = web_view->GetSettings();
       if (settings) {
-        if (new_mode.has_mode(AccessibilityMode::kInlineTextBoxes)) {
+        if (new_mode.has_mode(ui::AXMode::kInlineTextBoxes)) {
           settings->SetInlineTextBoxAccessibilityEnabled(true);
           tree_source_.GetRoot().LoadInlineTextBoxes();
         } else {

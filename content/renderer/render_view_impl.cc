@@ -2326,9 +2326,8 @@ bool RenderViewImpl::DidTapMultipleTargets(
     const WebVector<WebRect>& target_rects) {
   // Never show a disambiguation popup when accessibility is enabled,
   // as this interferes with "touch exploration".
-  AccessibilityMode accessibility_mode =
-      GetMainRenderFrame()->accessibility_mode();
-  if (accessibility_mode == kAccessibilityModeComplete)
+  ui::AXMode accessibility_mode = GetMainRenderFrame()->accessibility_mode();
+  if (accessibility_mode == ui::kAXModeComplete)
     return false;
 
   // The touch_rect, target_rects and zoom_rect are in the outer viewport

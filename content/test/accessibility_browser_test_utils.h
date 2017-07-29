@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/accessibility_mode.h"
+#include "ui/accessibility/ax_modes.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree.h"
 
@@ -25,10 +25,9 @@ class WebContents;
 class AccessibilityNotificationWaiter {
  public:
   explicit AccessibilityNotificationWaiter(WebContents* web_contents);
-  AccessibilityNotificationWaiter(
-      WebContents* web_contents,
-      AccessibilityMode accessibility_mode,
-      ui::AXEvent event);
+  AccessibilityNotificationWaiter(WebContents* web_contents,
+                                  ui::AXMode accessibility_mode,
+                                  ui::AXEvent event);
   AccessibilityNotificationWaiter(
       RenderFrameHostImpl* frame_host,
        ui::AXEvent event);

@@ -7,23 +7,23 @@ cr.define('accessibility', function() {
 
   // Note: keep these values in sync with the values in
   // content/common/accessibility_mode_enums.h
-  const AccessibilityMode = {
+  const AXMode = {
     kNativeAPIs: 1 << 0,
     kWebContents: 1 << 1,
     kInlineTextBoxes: 1 << 2,
     kScreenReader: 1 << 3,
     kHTML: 1 << 4,
 
-    get kAccessibilityModeWebContentsOnly() {
-      return AccessibilityMode.kWebContents |
-        AccessibilityMode.kInlineTextBoxes | AccessibilityMode.kScreenReader |
-        AccessibilityMode.kHTML;
+    get kAXModeWebContentsOnly() {
+      return AXMode.kWebContents |
+        AXMode.kInlineTextBoxes | AXMode.kScreenReader |
+        AXMode.kHTML;
     },
 
-    get kAccessibilityModeComplete() {
-      return AccessibilityMode.kNativeAPIs | AccessibilityMode.kWebContents |
-        AccessibilityMode.kInlineTextBoxes | AccessibilityMode.kScreenReader |
-        AccessibilityMode.kHTML;
+    get kAXModeComplete() {
+      return AXMode.kNativeAPIs | AXMode.kWebContents |
+        AXMode.kInlineTextBoxes | AXMode.kScreenReader |
+        AXMode.kHTML;
     }
   };
 
@@ -110,12 +110,12 @@ cr.define('accessibility', function() {
       siteInfo.appendChild(formatValue(data, properties[j]));
     row.appendChild(siteInfo);
 
-    row.appendChild(createModeElement(AccessibilityMode.kNativeAPIs, data))
-    row.appendChild(createModeElement(AccessibilityMode.kWebContents, data))
-    row.appendChild(createModeElement(AccessibilityMode.kInlineTextBoxes,
+    row.appendChild(createModeElement(AXMode.kNativeAPIs, data))
+    row.appendChild(createModeElement(AXMode.kWebContents, data))
+    row.appendChild(createModeElement(AXMode.kInlineTextBoxes,
       data))
-    row.appendChild(createModeElement(AccessibilityMode.kScreenReader, data))
-    row.appendChild(createModeElement(AccessibilityMode.kHTML, data))
+    row.appendChild(createModeElement(AXMode.kScreenReader, data))
+    row.appendChild(createModeElement(AXMode.kHTML, data))
 
     row.appendChild(document.createTextNode(' | '));
 
@@ -154,15 +154,15 @@ cr.define('accessibility', function() {
 
   function getNameForAccessibilityMode(mode) {
     switch (mode) {
-      case AccessibilityMode.kNativeAPIs:
+      case AXMode.kNativeAPIs:
         return "native"
-      case AccessibilityMode.kWebContents:
+      case AXMode.kWebContents:
         return "web"
-      case AccessibilityMode.kInlineTextBoxes:
+      case AXMode.kInlineTextBoxes:
         return "inline text"
-      case AccessibilityMode.kScreenReader:
+      case AXMode.kScreenReader:
         return "screen reader"
-      case AccessibilityMode.kHTML:
+      case AXMode.kHTML:
         return "html"
     }
     return "unknown"

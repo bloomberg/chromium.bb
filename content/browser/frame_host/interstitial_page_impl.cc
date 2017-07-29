@@ -417,11 +417,11 @@ InterstitialPage* InterstitialPageImpl::GetAsInterstitialPage() {
   return this;
 }
 
-AccessibilityMode InterstitialPageImpl::GetAccessibilityMode() const {
+ui::AXMode InterstitialPageImpl::GetAccessibilityMode() const {
   if (web_contents_)
     return static_cast<WebContentsImpl*>(web_contents_)->GetAccessibilityMode();
   else
-    return AccessibilityMode();
+    return ui::AXMode();
 }
 
 void InterstitialPageImpl::Cut() {

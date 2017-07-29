@@ -128,9 +128,9 @@ bool LegacyRenderWidgetHostHWND::Init() {
                                            IID_PPV_ARGS(&window_accessible_));
   DCHECK(SUCCEEDED(hr));
 
-  AccessibilityMode mode =
+  ui::AXMode mode =
       BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode();
-  if (!mode.has_mode(AccessibilityMode::kNativeAPIs)) {
+  if (!mode.has_mode(ui::AXMode::kNativeAPIs)) {
     // Attempt to detect screen readers or other clients who want full
     // accessibility support, by seeing if they respond to this event.
     NotifyWinEvent(EVENT_SYSTEM_ALERT, hwnd(), kIdScreenReaderHoneyPot,
@@ -175,7 +175,7 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
     // enable basic accessibility support. (Full screen reader support is
     // detected later when specific more advanced APIs are accessed.)
     BrowserAccessibilityStateImpl::GetInstance()->AddAccessibilityModeFlags(
-        AccessibilityMode::kNativeAPIs | AccessibilityMode::kWebContents);
+        ui::AXMode::kNativeAPIs | ui::AXMode::kWebContents);
     return static_cast<LRESULT>(0L);
   }
 

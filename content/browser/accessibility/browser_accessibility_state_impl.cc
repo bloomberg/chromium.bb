@@ -93,7 +93,7 @@ void BrowserAccessibilityStateImpl::OnScreenReaderDetected() {
 }
 
 void BrowserAccessibilityStateImpl::EnableAccessibility() {
-  AddAccessibilityModeFlags(kAccessibilityModeComplete);
+  AddAccessibilityModeFlags(ui::kAXModeComplete);
 }
 
 void BrowserAccessibilityStateImpl::DisableAccessibility() {
@@ -101,10 +101,10 @@ void BrowserAccessibilityStateImpl::DisableAccessibility() {
 }
 
 void BrowserAccessibilityStateImpl::ResetAccessibilityModeValue() {
-  accessibility_mode_ = AccessibilityMode();
+  accessibility_mode_ = ui::AXMode();
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceRendererAccessibility)) {
-    accessibility_mode_ = kAccessibilityModeComplete;
+    accessibility_mode_ = ui::kAXModeComplete;
   }
 }
 
@@ -118,7 +118,7 @@ void BrowserAccessibilityStateImpl::ResetAccessibilityMode() {
 }
 
 bool BrowserAccessibilityStateImpl::IsAccessibleBrowser() {
-  return accessibility_mode_ == kAccessibilityModeComplete;
+  return accessibility_mode_ == ui::kAXModeComplete;
 }
 
 void BrowserAccessibilityStateImpl::AddHistogramCallback(
@@ -152,29 +152,28 @@ void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
 }
 #endif
 
-void BrowserAccessibilityStateImpl::AddAccessibilityModeFlags(
-    AccessibilityMode mode) {
+void BrowserAccessibilityStateImpl::AddAccessibilityModeFlags(ui::AXMode mode) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableRendererAccessibility)) {
     return;
   }
 
-  AccessibilityMode previous_mode = accessibility_mode_;
+  ui::AXMode previous_mode = accessibility_mode_;
   accessibility_mode_ |= mode;
   if (accessibility_mode_ == previous_mode)
     return;
 
   // Retrieve only newly added modes for the purposes of logging.
   int new_mode_flags = mode.mode() & (~previous_mode.mode());
-  if (new_mode_flags & AccessibilityMode::kNativeAPIs)
+  if (new_mode_flags & ui::AXMode::kNativeAPIs)
     RecordNewAccessibilityModeFlags(UMA_AX_MODE_NATIVE_APIS);
-  if (new_mode_flags & AccessibilityMode::kWebContents)
+  if (new_mode_flags & ui::AXMode::kWebContents)
     RecordNewAccessibilityModeFlags(UMA_AX_MODE_WEB_CONTENTS);
-  if (new_mode_flags & AccessibilityMode::kInlineTextBoxes)
+  if (new_mode_flags & ui::AXMode::kInlineTextBoxes)
     RecordNewAccessibilityModeFlags(UMA_AX_MODE_INLINE_TEXT_BOXES);
-  if (new_mode_flags & AccessibilityMode::kScreenReader)
+  if (new_mode_flags & ui::AXMode::kScreenReader)
     RecordNewAccessibilityModeFlags(UMA_AX_MODE_SCREEN_READER);
-  if (new_mode_flags & AccessibilityMode::kHTML)
+  if (new_mode_flags & ui::AXMode::kHTML)
     RecordNewAccessibilityModeFlags(UMA_AX_MODE_HTML);
 
   std::vector<WebContentsImpl*> web_contents_vector =
@@ -184,10 +183,10 @@ void BrowserAccessibilityStateImpl::AddAccessibilityModeFlags(
 }
 
 void BrowserAccessibilityStateImpl::RemoveAccessibilityModeFlags(
-    AccessibilityMode mode) {
+    ui::AXMode mode) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceRendererAccessibility) &&
-      mode == kAccessibilityModeComplete) {
+      mode == ui::kAXModeComplete) {
     return;
   }
 

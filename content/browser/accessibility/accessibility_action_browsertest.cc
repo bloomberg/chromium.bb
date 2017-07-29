@@ -78,9 +78,8 @@ class AccessibilityActionBrowserTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, FocusAction) {
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         kAccessibilityModeComplete,
-                                         ui::AX_EVENT_LOAD_COMPLETE);
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_LOAD_COMPLETE);
   GURL url("data:text/html,"
            "<button>One</button>"
            "<button>Two</button>"
@@ -92,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, FocusAction) {
   ASSERT_NE(nullptr, target);
 
   AccessibilityNotificationWaiter waiter2(
-      shell()->web_contents(), kAccessibilityModeComplete, ui::AX_EVENT_FOCUS);
+      shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_FOCUS);
   GetManager()->SetFocus(*target);
   waiter2.WaitForNotification();
 
@@ -104,9 +103,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
                        IncrementDecrementActions) {
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         kAccessibilityModeComplete,
-                                         ui::AX_EVENT_LOAD_COMPLETE);
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_LOAD_COMPLETE);
   GURL url("data:text/html,"
            "<input type=range min=2 value=8 max=10 step=2>");
   NavigateToURL(shell(), url);
@@ -119,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
   // Increment, should result in value changing from 8 to 10.
   {
     AccessibilityNotificationWaiter waiter2(shell()->web_contents(),
-                                            kAccessibilityModeComplete,
+                                            ui::kAXModeComplete,
                                             ui::AX_EVENT_VALUE_CHANGED);
     GetManager()->Increment(*target);
     waiter2.WaitForNotification();
@@ -129,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
   // Increment, should result in value staying the same (max).
   {
     AccessibilityNotificationWaiter waiter2(shell()->web_contents(),
-                                            kAccessibilityModeComplete,
+                                            ui::kAXModeComplete,
                                             ui::AX_EVENT_VALUE_CHANGED);
     GetManager()->Increment(*target);
     waiter2.WaitForNotification();
@@ -139,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
   // Decrement, should result in value changing from 10 to 8.
   {
     AccessibilityNotificationWaiter waiter2(shell()->web_contents(),
-                                            kAccessibilityModeComplete,
+                                            ui::kAXModeComplete,
                                             ui::AX_EVENT_VALUE_CHANGED);
     GetManager()->Decrement(*target);
     waiter2.WaitForNotification();
@@ -150,9 +148,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, CanvasGetImage) {
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         kAccessibilityModeComplete,
-                                         ui::AX_EVENT_LOAD_COMPLETE);
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_LOAD_COMPLETE);
   GURL url("data:text/html,"
            "<body>"
            "<canvas aria-label='canvas' id='c' width='4' height='2'></canvas>"
@@ -178,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, CanvasGetImage) {
   ASSERT_NE(nullptr, target);
 
   AccessibilityNotificationWaiter waiter2(shell()->web_contents(),
-                                          kAccessibilityModeComplete,
+                                          ui::kAXModeComplete,
                                           ui::AX_EVENT_IMAGE_FRAME_UPDATED);
   GetManager()->GetImageData(*target, gfx::Size());
   waiter2.WaitForNotification();
@@ -200,9 +197,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, CanvasGetImage) {
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, CanvasGetImageScale) {
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         kAccessibilityModeComplete,
-                                         ui::AX_EVENT_LOAD_COMPLETE);
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_LOAD_COMPLETE);
   GURL url("data:text/html,"
            "<body>"
            "<canvas aria-label='canvas' id='c' width='40' height='20'></canvas>"
@@ -222,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, CanvasGetImageScale) {
   ASSERT_NE(nullptr, target);
 
   AccessibilityNotificationWaiter waiter2(shell()->web_contents(),
-                                          kAccessibilityModeComplete,
+                                          ui::kAXModeComplete,
                                           ui::AX_EVENT_IMAGE_FRAME_UPDATED);
   GetManager()->GetImageData(*target, gfx::Size(4, 4));
   waiter2.WaitForNotification();
@@ -244,9 +240,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, CanvasGetImageScale) {
 IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ImgElementGetImage) {
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         kAccessibilityModeComplete,
-                                         ui::AX_EVENT_LOAD_COMPLETE);
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_LOAD_COMPLETE);
   GURL url("data:text/html,"
            "<body>"
            "<img src='data:image/gif;base64,R0lGODdhAgADAKEDAAAA//"
@@ -260,7 +255,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ImgElementGetImage) {
   ASSERT_NE(nullptr, target);
 
   AccessibilityNotificationWaiter waiter2(shell()->web_contents(),
-                                          kAccessibilityModeComplete,
+                                          ui::kAXModeComplete,
                                           ui::AX_EVENT_IMAGE_FRAME_UPDATED);
   GetManager()->GetImageData(*target, gfx::Size());
   waiter2.WaitForNotification();

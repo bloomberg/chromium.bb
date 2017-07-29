@@ -2238,17 +2238,17 @@ void RenderFrameImpl::OnDeleteSurroundingTextInCodePoints(int before,
   frame_->DeleteSurroundingTextInCodePoints(before, after);
 }
 
-void RenderFrameImpl::OnSetAccessibilityMode(AccessibilityMode new_mode) {
+void RenderFrameImpl::OnSetAccessibilityMode(ui::AXMode new_mode) {
   if (accessibility_mode_ == new_mode)
     return;
-  AccessibilityMode old_mode = accessibility_mode_;
+  ui::AXMode old_mode = accessibility_mode_;
   accessibility_mode_ = new_mode;
 
-  if (new_mode.has_mode(AccessibilityMode::kWebContents) &&
-      !old_mode.has_mode(AccessibilityMode::kWebContents)) {
+  if (new_mode.has_mode(ui::AXMode::kWebContents) &&
+      !old_mode.has_mode(ui::AXMode::kWebContents)) {
     render_accessibility_ = new RenderAccessibilityImpl(this, new_mode);
-  } else if (!new_mode.has_mode(AccessibilityMode::kWebContents) &&
-             old_mode.has_mode(AccessibilityMode::kWebContents)) {
+  } else if (!new_mode.has_mode(ui::AXMode::kWebContents) &&
+             old_mode.has_mode(ui::AXMode::kWebContents)) {
     // Note: this isn't called automatically by the destructor because
     // there'd be no point in calling it in frame teardown, only if there's
     // an accessibility mode change but the frame is persisting.

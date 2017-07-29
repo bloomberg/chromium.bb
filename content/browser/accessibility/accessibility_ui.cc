@@ -72,7 +72,7 @@ std::unique_ptr<base::DictionaryValue> BuildTargetDescriptor(
     const GURL& favicon_url,
     int process_id,
     int route_id,
-    AccessibilityMode accessibility_mode,
+    ui::AXMode accessibility_mode,
     base::ProcessHandle handle = base::kNullProcessHandle) {
   std::unique_ptr<base::DictionaryValue> target_data(
       new base::DictionaryValue());
@@ -90,7 +90,7 @@ std::unique_ptr<base::DictionaryValue> BuildTargetDescriptor(
     RenderViewHost* rvh) {
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       WebContents::FromRenderViewHost(rvh));
-  AccessibilityMode accessibility_mode;
+  ui::AXMode accessibility_mode;
 
   std::string title;
   GURL url;
@@ -144,15 +144,15 @@ bool HandleRequestCallback(BrowserContext* current_context,
 
   base::DictionaryValue data;
   data.Set("list", std::move(rvh_list));
-  AccessibilityMode mode =
+  ui::AXMode mode =
       BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode();
   bool disabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableRendererAccessibility);
-  bool native = mode.has_mode(AccessibilityMode::kNativeAPIs);
-  bool web = mode.has_mode(AccessibilityMode::kWebContents);
-  bool text = mode.has_mode(AccessibilityMode::kInlineTextBoxes);
-  bool screenreader = mode.has_mode(AccessibilityMode::kScreenReader);
-  bool html = mode.has_mode(AccessibilityMode::kHTML);
+  bool native = mode.has_mode(ui::AXMode::kNativeAPIs);
+  bool web = mode.has_mode(ui::AXMode::kWebContents);
+  bool text = mode.has_mode(ui::AXMode::kInlineTextBoxes);
+  bool screenreader = mode.has_mode(ui::AXMode::kScreenReader);
+  bool html = mode.has_mode(ui::AXMode::kHTML);
 
   // The "native" and "web" flags are disabled if
   // --disable-renderer-accessibility is set.
@@ -234,22 +234,22 @@ void AccessibilityUI::ToggleAccessibility(const base::ListValue* args) {
     return;
   auto* web_contents =
       static_cast<WebContentsImpl*>(WebContents::FromRenderViewHost(rvh));
-  AccessibilityMode current_mode = web_contents->GetAccessibilityMode();
+  ui::AXMode current_mode = web_contents->GetAccessibilityMode();
 
-  if (mode & AccessibilityMode::kNativeAPIs)
-    current_mode.set_mode(AccessibilityMode::kNativeAPIs, true);
+  if (mode & ui::AXMode::kNativeAPIs)
+    current_mode.set_mode(ui::AXMode::kNativeAPIs, true);
 
-  if (mode & AccessibilityMode::kWebContents)
-    current_mode.set_mode(AccessibilityMode::kWebContents, true);
+  if (mode & ui::AXMode::kWebContents)
+    current_mode.set_mode(ui::AXMode::kWebContents, true);
 
-  if (mode & AccessibilityMode::kInlineTextBoxes)
-    current_mode.set_mode(AccessibilityMode::kInlineTextBoxes, true);
+  if (mode & ui::AXMode::kInlineTextBoxes)
+    current_mode.set_mode(ui::AXMode::kInlineTextBoxes, true);
 
-  if (mode & AccessibilityMode::kScreenReader)
-    current_mode.set_mode(AccessibilityMode::kScreenReader, true);
+  if (mode & ui::AXMode::kScreenReader)
+    current_mode.set_mode(ui::AXMode::kScreenReader, true);
 
-  if (mode & AccessibilityMode::kHTML)
-    current_mode.set_mode(AccessibilityMode::kHTML, true);
+  if (mode & ui::AXMode::kHTML)
+    current_mode.set_mode(ui::AXMode::kHTML, true);
 
   web_contents->SetAccessibilityMode(current_mode);
 }
@@ -267,17 +267,17 @@ void AccessibilityUI::SetGlobalFlag(const base::ListValue* args) {
     return;
   }
 
-  AccessibilityMode new_mode;
+  ui::AXMode new_mode;
   if (flag_name_str == kNative) {
-    new_mode = AccessibilityMode::kNativeAPIs;
+    new_mode = ui::AXMode::kNativeAPIs;
   } else if (flag_name_str == kWeb) {
-    new_mode = AccessibilityMode::kWebContents;
+    new_mode = ui::AXMode::kWebContents;
   } else if (flag_name_str == kText) {
-    new_mode = AccessibilityMode::kInlineTextBoxes;
+    new_mode = ui::AXMode::kInlineTextBoxes;
   } else if (flag_name_str == kScreenReader) {
-    new_mode = AccessibilityMode::kScreenReader;
+    new_mode = ui::AXMode::kScreenReader;
   } else if (flag_name_str == kHTML) {
-    new_mode = AccessibilityMode::kHTML;
+    new_mode = ui::AXMode::kHTML;
   } else {
     NOTREACHED();
     return;
@@ -285,18 +285,18 @@ void AccessibilityUI::SetGlobalFlag(const base::ListValue* args) {
 
   // It doesn't make sense to enable one of the flags that depends on
   // web contents without enabling web contents accessibility too.
-  if (enabled && (new_mode.has_mode(AccessibilityMode::kInlineTextBoxes) ||
-                  new_mode.has_mode(AccessibilityMode::kScreenReader) ||
-                  new_mode.has_mode(AccessibilityMode::kHTML))) {
-    new_mode.set_mode(AccessibilityMode::kWebContents, true);
+  if (enabled && (new_mode.has_mode(ui::AXMode::kInlineTextBoxes) ||
+                  new_mode.has_mode(ui::AXMode::kScreenReader) ||
+                  new_mode.has_mode(ui::AXMode::kHTML))) {
+    new_mode.set_mode(ui::AXMode::kWebContents, true);
   }
 
   // Similarly if you disable web accessibility we should remove all
   // flags that depend on it.
-  if (!enabled && new_mode.has_mode(AccessibilityMode::kWebContents)) {
-    new_mode.set_mode(AccessibilityMode::kInlineTextBoxes, true);
-    new_mode.set_mode(AccessibilityMode::kScreenReader, true);
-    new_mode.set_mode(AccessibilityMode::kHTML, true);
+  if (!enabled && new_mode.has_mode(ui::AXMode::kWebContents)) {
+    new_mode.set_mode(ui::AXMode::kInlineTextBoxes, true);
+    new_mode.set_mode(ui::AXMode::kScreenReader, true);
+    new_mode.set_mode(ui::AXMode::kHTML, true);
   }
 
   BrowserAccessibilityStateImpl* state =
@@ -334,8 +334,8 @@ void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {
       static_cast<WebContentsImpl*>(WebContents::FromRenderViewHost(rvh));
   // No matter the state of the current web_contents, we want to force the mode
   // because we are about to show the accessibility tree
-  web_contents->SetAccessibilityMode(AccessibilityMode(
-      AccessibilityMode::kNativeAPIs | AccessibilityMode::kWebContents));
+  web_contents->SetAccessibilityMode(
+      ui::AXMode(ui::AXMode::kNativeAPIs | ui::AXMode::kWebContents));
 
   std::unique_ptr<AccessibilityTreeFormatter> formatter;
   if (g_show_internal_accessibility_tree)

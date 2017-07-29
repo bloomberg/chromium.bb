@@ -179,11 +179,11 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual std::string GetDefaultMediaDeviceID(MediaStreamType type);
 
   // Get the accessibility mode for the WebContents that owns this frame.
-  virtual AccessibilityMode GetAccessibilityMode() const;
+  virtual ui::AXMode GetAccessibilityMode() const;
 
   // Called when accessibility events or location changes are received
   // from a render frame, when the accessibility mode has the
-  // AccessibilityMode::kWebContents flag set.
+  // ui::AXMode::kWebContents flag set.
   virtual void AccessibilityEventReceived(
       const std::vector<AXEventNotificationDetails>& details) {}
   virtual void AccessibilityLocationChangesReceived(

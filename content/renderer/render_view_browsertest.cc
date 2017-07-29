@@ -24,7 +24,6 @@
 #include "cc/trees/layer_tree_host.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/service_worker/service_worker_network_provider.h"
-#include "content/common/accessibility_mode.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
@@ -83,6 +82,7 @@
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
+#include "ui/accessibility/ax_modes.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -2007,17 +2007,16 @@ TEST_F(RenderViewImplTest, OnSetAccessibilityMode) {
   ASSERT_TRUE(frame()->accessibility_mode().is_mode_off());
   ASSERT_FALSE(frame()->render_accessibility());
 
-  frame()->SetAccessibilityMode(kAccessibilityModeWebContentsOnly);
-  ASSERT_TRUE(frame()->accessibility_mode() ==
-              kAccessibilityModeWebContentsOnly);
+  frame()->SetAccessibilityMode(ui::kAXModeWebContentsOnly);
+  ASSERT_TRUE(frame()->accessibility_mode() == ui::kAXModeWebContentsOnly);
   ASSERT_TRUE(frame()->render_accessibility());
 
-  frame()->SetAccessibilityMode(AccessibilityMode());
+  frame()->SetAccessibilityMode(ui::AXMode());
   ASSERT_TRUE(frame()->accessibility_mode().is_mode_off());
   ASSERT_FALSE(frame()->render_accessibility());
 
-  frame()->SetAccessibilityMode(kAccessibilityModeComplete);
-  ASSERT_TRUE(frame()->accessibility_mode() == kAccessibilityModeComplete);
+  frame()->SetAccessibilityMode(ui::kAXModeComplete);
+  ASSERT_TRUE(frame()->accessibility_mode() == ui::kAXModeComplete);
   ASSERT_TRUE(frame()->render_accessibility());
 }
 

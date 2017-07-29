@@ -199,10 +199,8 @@ ScopedFreezeBlinkAXTreeSource::~ScopedFreezeBlinkAXTreeSource() {
 }
 
 BlinkAXTreeSource::BlinkAXTreeSource(RenderFrameImpl* render_frame,
-                                     AccessibilityMode mode)
-    : render_frame_(render_frame),
-      accessibility_mode_(mode),
-      frozen_(false) {}
+                                     ui::AXMode mode)
+    : render_frame_(render_frame), accessibility_mode_(mode), frozen_(false) {}
 
 BlinkAXTreeSource::~BlinkAXTreeSource() {
 }
@@ -244,7 +242,7 @@ bool BlinkAXTreeSource::IsInTree(WebAXObject node) const {
   return false;
 }
 
-void BlinkAXTreeSource::SetAccessibilityMode(AccessibilityMode new_mode) {
+void BlinkAXTreeSource::SetAccessibilityMode(ui::AXMode new_mode) {
   if (accessibility_mode_ == new_mode)
     return;
   accessibility_mode_ = new_mode;
@@ -451,7 +449,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   // The following set of attributes are only accessed when the accessibility
   // mode is set to screen reader mode, otherwise only the more basic
   // attributes are populated.
-  if (accessibility_mode_.has_mode(AccessibilityMode::kScreenReader)) {
+  if (accessibility_mode_.has_mode(ui::AXMode::kScreenReader)) {
     blink::WebString web_placeholder = src.Placeholder(nameFrom);
     if (!web_placeholder.IsEmpty())
       dst->AddStringAttribute(ui::AX_ATTR_PLACEHOLDER, web_placeholder.Utf8());
@@ -780,7 +778,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
     WebElement element = node.To<WebElement>();
     is_iframe = element.HasHTMLTagName("iframe");
 
-    if (accessibility_mode_.has_mode(AccessibilityMode::kHTML)) {
+    if (accessibility_mode_.has_mode(ui::AXMode::kHTML)) {
       // TODO(ctguil): The tagName in WebKit is lower cased but
       // HTMLElement::nodeName calls localNameUpper. Consider adding
       // a WebElement method that returns the original lower cased tagName.

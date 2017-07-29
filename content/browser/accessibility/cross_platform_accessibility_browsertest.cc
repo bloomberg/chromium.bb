@@ -45,7 +45,7 @@ class CrossPlatformAccessibilityBrowserTest : public ContentBrowserTest {
   // Tell the renderer to send an accessibility tree, then wait for the
   // notification that it's been received.
   const ui::AXTree& GetAXTree(
-      AccessibilityMode accessibility_mode = kAccessibilityModeComplete) {
+      ui::AXMode accessibility_mode = ui::kAXModeComplete) {
     AccessibilityNotificationWaiter waiter(
         shell()->web_contents(),
         accessibility_mode,

@@ -10,8 +10,8 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "content/common/accessibility_mode.h"
 #include "content/public/browser/browser_accessibility_state.h"
+#include "ui/accessibility/ax_modes.h"
 
 namespace content {
 
@@ -49,15 +49,15 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
 
   void UpdateHistogramsForTesting() override;
 
-  AccessibilityMode accessibility_mode() const { return accessibility_mode_; };
+  ui::AXMode accessibility_mode() const { return accessibility_mode_; };
 
   // Adds the given accessibility mode flags to the current accessibility
   // mode bitmap.
-  void AddAccessibilityModeFlags(AccessibilityMode mode);
+  void AddAccessibilityModeFlags(ui::AXMode mode);
 
   // Remove the given accessibility mode flags from the current accessibility
   // mode bitmap.
-  void RemoveAccessibilityModeFlags(AccessibilityMode mode);
+  void RemoveAccessibilityModeFlags(ui::AXMode mode);
 
   // Accessibility objects can have the "hot tracked" state set when
   // the mouse is hovering over them, but this makes tests flaky because
@@ -87,7 +87,7 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
 
   void UpdatePlatformSpecificHistograms();
 
-  AccessibilityMode accessibility_mode_;
+  ui::AXMode accessibility_mode_;
 
   std::vector<base::Closure> histogram_callbacks_;
 

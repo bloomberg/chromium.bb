@@ -263,13 +263,13 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     // Load the url, then enable accessibility.
     NavigateToURL(shell(), url);
     AccessibilityNotificationWaiter accessibility_waiter(
-        web_contents, kAccessibilityModeComplete, ui::AX_EVENT_NONE);
+        web_contents, ui::kAXModeComplete, ui::AX_EVENT_NONE);
     accessibility_waiter.WaitForNotification();
   } else {
     // Enable accessibility, then load the test html and wait for the
     // "load complete" AX event.
     AccessibilityNotificationWaiter accessibility_waiter(
-        web_contents, kAccessibilityModeComplete, ui::AX_EVENT_LOAD_COMPLETE);
+        web_contents, ui::kAXModeComplete, ui::AX_EVENT_LOAD_COMPLETE);
     NavigateToURL(shell(), url);
     accessibility_waiter.WaitForNotification();
   }

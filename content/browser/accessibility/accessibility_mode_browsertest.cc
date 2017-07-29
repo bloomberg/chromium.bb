@@ -7,7 +7,6 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/accessibility_mode.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -18,6 +17,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/accessibility_browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_modes.h"
 
 namespace content {
 
@@ -73,9 +73,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, AccessibilityModeComplete) {
   ASSERT_TRUE(web_contents()->GetAccessibilityMode().is_mode_off());
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents());
-  web_contents()->AddAccessibilityMode(kAccessibilityModeComplete);
-  EXPECT_TRUE(web_contents()->GetAccessibilityMode() ==
-              kAccessibilityModeComplete);
+  web_contents()->AddAccessibilityMode(ui::kAXModeComplete);
+  EXPECT_TRUE(web_contents()->GetAccessibilityMode() == ui::kAXModeComplete);
   waiter.WaitForNotification();
   EXPECT_NE(nullptr, GetManager());
 }
@@ -86,9 +85,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityModeTest,
   ASSERT_TRUE(web_contents()->GetAccessibilityMode().is_mode_off());
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents());
-  web_contents()->AddAccessibilityMode(kAccessibilityModeWebContentsOnly);
+  web_contents()->AddAccessibilityMode(ui::kAXModeWebContentsOnly);
   EXPECT_TRUE(web_contents()->GetAccessibilityMode() ==
-              kAccessibilityModeWebContentsOnly);
+              ui::kAXModeWebContentsOnly);
   waiter.WaitForNotification();
   // No BrowserAccessibilityManager expected for this mode.
   EXPECT_EQ(nullptr, GetManager());
@@ -98,16 +97,15 @@ IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, AddingModes) {
   NavigateToURL(shell(), GURL(kMinimalPageDataURL));
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents());
-  web_contents()->AddAccessibilityMode(kAccessibilityModeWebContentsOnly);
+  web_contents()->AddAccessibilityMode(ui::kAXModeWebContentsOnly);
   EXPECT_TRUE(web_contents()->GetAccessibilityMode() ==
-              kAccessibilityModeWebContentsOnly);
+              ui::kAXModeWebContentsOnly);
   waiter.WaitForNotification();
   EXPECT_EQ(nullptr, GetManager());
 
   AccessibilityNotificationWaiter waiter2(shell()->web_contents());
-  web_contents()->AddAccessibilityMode(kAccessibilityModeComplete);
-  EXPECT_TRUE(web_contents()->GetAccessibilityMode() ==
-              kAccessibilityModeComplete);
+  web_contents()->AddAccessibilityMode(ui::kAXModeComplete);
+  EXPECT_TRUE(web_contents()->GetAccessibilityMode() == ui::kAXModeComplete);
   waiter2.WaitForNotification();
   EXPECT_NE(nullptr, GetManager());
 }
@@ -119,9 +117,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityModeTest,
 #if !defined(OS_ANDROID)
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         kAccessibilityModeComplete,
-                                         ui::AX_EVENT_LOAD_COMPLETE);
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_LOAD_COMPLETE);
   GURL url("data:text/html,<p>Para</p>");
   NavigateToURL(shell(), url);
   waiter.WaitForNotification();
@@ -144,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityModeTest,
 
   AccessibilityNotificationWaiter waiter(
       shell()->web_contents(),
-      AccessibilityMode::kNativeAPIs | AccessibilityMode::kWebContents,
+      ui::AXMode::kNativeAPIs | ui::AXMode::kWebContents,
       ui::AX_EVENT_LOAD_COMPLETE);
   GURL url("data:text/html,<p>Para</p>");
   NavigateToURL(shell(), url);
@@ -161,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, AddScreenReaderModeFlag) {
 
   AccessibilityNotificationWaiter waiter(
       shell()->web_contents(),
-      AccessibilityMode::kNativeAPIs | AccessibilityMode::kWebContents,
+      ui::AXMode::kNativeAPIs | ui::AXMode::kWebContents,
       ui::AX_EVENT_LOAD_COMPLETE);
   GURL url("data:text/html,<input aria-label=Foo placeholder=Bar>");
   NavigateToURL(shell(), url);
@@ -172,10 +169,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, AddScreenReaderModeFlag) {
   EXPECT_FALSE(textbox->HasStringAttribute(ui::AX_ATTR_PLACEHOLDER));
   int original_id = textbox->GetId();
 
-  AccessibilityNotificationWaiter waiter2(
-      shell()->web_contents(), AccessibilityMode(), ui::AX_EVENT_LOAD_COMPLETE);
+  AccessibilityNotificationWaiter waiter2(shell()->web_contents(), ui::AXMode(),
+                                          ui::AX_EVENT_LOAD_COMPLETE);
   BrowserAccessibilityStateImpl::GetInstance()->AddAccessibilityModeFlags(
-      AccessibilityMode::kScreenReader);
+      ui::AXMode::kScreenReader);
   waiter2.WaitForNotification();
 
   const BrowserAccessibility* textbox2 = FindNode(
