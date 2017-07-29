@@ -7,9 +7,9 @@
 
 #include <memory>
 
-namespace resource_coordinator {
+#include "services/resource_coordinator/coordination_unit/coordination_unit_impl_unittest_util.h"
 
-class CoordinationUnitImpl;
+namespace resource_coordinator {
 
 // The following coordination unit graph topology is created to emulate a
 // scenario when a single tab are executes in a single process:
@@ -25,9 +25,9 @@ class CoordinationUnitImpl;
 struct MockSingleTabInSingleProcessCoordinationUnitGraph {
   MockSingleTabInSingleProcessCoordinationUnitGraph();
   ~MockSingleTabInSingleProcessCoordinationUnitGraph();
-  std::unique_ptr<CoordinationUnitImpl> frame;
-  std::unique_ptr<CoordinationUnitImpl> process;
-  std::unique_ptr<CoordinationUnitImpl> tab;
+  TestCoordinationUnitWrapper frame;
+  TestCoordinationUnitWrapper process;
+  TestCoordinationUnitWrapper tab;
 };
 
 // The following coordination unit graph topology is created to emulate a
@@ -47,8 +47,8 @@ struct MockMultipleTabsInSingleProcessCoordinationUnitGraph
     : public MockSingleTabInSingleProcessCoordinationUnitGraph {
   MockMultipleTabsInSingleProcessCoordinationUnitGraph();
   ~MockMultipleTabsInSingleProcessCoordinationUnitGraph();
-  std::unique_ptr<CoordinationUnitImpl> other_frame;
-  std::unique_ptr<CoordinationUnitImpl> other_tab;
+  TestCoordinationUnitWrapper other_frame;
+  TestCoordinationUnitWrapper other_tab;
 };
 
 // The following coordination unit graph topology is created to emulate a
@@ -71,8 +71,8 @@ struct MockSingleTabWithMultipleProcessesCoordinationUnitGraph
     : public MockSingleTabInSingleProcessCoordinationUnitGraph {
   MockSingleTabWithMultipleProcessesCoordinationUnitGraph();
   ~MockSingleTabWithMultipleProcessesCoordinationUnitGraph();
-  std::unique_ptr<CoordinationUnitImpl> child_frame;
-  std::unique_ptr<CoordinationUnitImpl> other_process;
+  TestCoordinationUnitWrapper child_frame;
+  TestCoordinationUnitWrapper other_process;
 };
 
 // The following coordination unit graph topology is created to emulate a
@@ -97,8 +97,8 @@ struct MockMultipleTabsWithMultipleProcessesCoordinationUnitGraph
     : public MockMultipleTabsInSingleProcessCoordinationUnitGraph {
   MockMultipleTabsWithMultipleProcessesCoordinationUnitGraph();
   ~MockMultipleTabsWithMultipleProcessesCoordinationUnitGraph();
-  std::unique_ptr<CoordinationUnitImpl> child_frame;
-  std::unique_ptr<CoordinationUnitImpl> other_process;
+  TestCoordinationUnitWrapper child_frame;
+  TestCoordinationUnitWrapper other_process;
 };
 
 }  // namespace resource_coordinator

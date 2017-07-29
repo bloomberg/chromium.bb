@@ -8,7 +8,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
-#include "services/resource_coordinator/coordination_unit/coordination_unit_factory.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl_unittest_util.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_provider_impl.h"
@@ -147,18 +146,10 @@ TEST_F(CoordinationUnitImplTest, AddChildBasic) {
   CoordinationUnitID frame2_cu_id(CoordinationUnitType::kFrame, std::string());
   CoordinationUnitID frame3_cu_id(CoordinationUnitType::kFrame, std::string());
 
-  std::unique_ptr<CoordinationUnitImpl> tab_cu =
-      coordination_unit_factory::CreateCoordinationUnit(
-          tab_cu_id, service_context_ref_factory()->CreateRef());
-  std::unique_ptr<CoordinationUnitImpl> frame1_cu =
-      coordination_unit_factory::CreateCoordinationUnit(
-          frame1_cu_id, service_context_ref_factory()->CreateRef());
-  std::unique_ptr<CoordinationUnitImpl> frame2_cu =
-      coordination_unit_factory::CreateCoordinationUnit(
-          frame2_cu_id, service_context_ref_factory()->CreateRef());
-  std::unique_ptr<CoordinationUnitImpl> frame3_cu =
-      coordination_unit_factory::CreateCoordinationUnit(
-          frame3_cu_id, service_context_ref_factory()->CreateRef());
+  auto tab_cu = CreateCoordinationUnit(tab_cu_id);
+  auto frame1_cu = CreateCoordinationUnit(frame1_cu_id);
+  auto frame2_cu = CreateCoordinationUnit(frame2_cu_id);
+  auto frame3_cu = CreateCoordinationUnit(frame3_cu_id);
 
   tab_cu->AddChild(frame1_cu->id());
   tab_cu->AddChild(frame2_cu->id());
@@ -174,15 +165,9 @@ TEST_F(CoordinationUnitImplDeathTest, AddChildOnCyclicReference) {
   CoordinationUnitID frame2_cu_id(CoordinationUnitType::kFrame, std::string());
   CoordinationUnitID frame3_cu_id(CoordinationUnitType::kFrame, std::string());
 
-  std::unique_ptr<CoordinationUnitImpl> frame1_cu =
-      coordination_unit_factory::CreateCoordinationUnit(
-          frame1_cu_id, service_context_ref_factory()->CreateRef());
-  std::unique_ptr<CoordinationUnitImpl> frame2_cu =
-      coordination_unit_factory::CreateCoordinationUnit(
-          frame2_cu_id, service_context_ref_factory()->CreateRef());
-  std::unique_ptr<CoordinationUnitImpl> frame3_cu =
-      coordination_unit_factory::CreateCoordinationUnit(
-          frame3_cu_id, service_context_ref_factory()->CreateRef());
+  auto frame1_cu = CreateCoordinationUnit(frame1_cu_id);
+  auto frame2_cu = CreateCoordinationUnit(frame2_cu_id);
+  auto frame3_cu = CreateCoordinationUnit(frame3_cu_id);
 
   frame1_cu->AddChild(frame2_cu->id());
   frame2_cu->AddChild(frame3_cu->id());
@@ -196,15 +181,9 @@ TEST_F(CoordinationUnitImplTest, AddChildOnCyclicReference) {
   CoordinationUnitID frame2_cu_id(CoordinationUnitType::kFrame, std::string());
   CoordinationUnitID frame3_cu_id(CoordinationUnitType::kFrame, std::string());
 
-  std::unique_ptr<CoordinationUnitImpl> frame1_cu =
-      coordination_unit_factory::CreateCoordinationUnit(
-          frame1_cu_id, service_context_ref_factory()->CreateRef());
-  std::unique_ptr<CoordinationUnitImpl> frame2_cu =
-      coordination_unit_factory::CreateCoordinationUnit(
-          frame2_cu_id, service_context_ref_factory()->CreateRef());
-  std::unique_ptr<CoordinationUnitImpl> frame3_cu =
-      coordination_unit_factory::CreateCoordinationUnit(
-          frame3_cu_id, service_context_ref_factory()->CreateRef());
+  auto frame1_cu = CreateCoordinationUnit(frame1_cu_id);
+  auto frame2_cu = CreateCoordinationUnit(frame2_cu_id);
+  auto frame3_cu = CreateCoordinationUnit(frame3_cu_id);
 
   frame1_cu->AddChild(frame2_cu->id());
   frame2_cu->AddChild(frame3_cu->id());

@@ -23,7 +23,9 @@ std::unique_ptr<service_manager::Service> ResourceCoordinatorService::Create() {
 ResourceCoordinatorService::ResourceCoordinatorService()
     : weak_factory_(this) {}
 
-ResourceCoordinatorService::~ResourceCoordinatorService() = default;
+ResourceCoordinatorService::~ResourceCoordinatorService() {
+  ref_factory_.reset();
+}
 
 void ResourceCoordinatorService::OnStart() {
   ref_factory_.reset(new service_manager::ServiceContextRefFactory(

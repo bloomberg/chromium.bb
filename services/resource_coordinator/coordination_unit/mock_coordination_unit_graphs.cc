@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "services/resource_coordinator/coordination_unit/coordination_unit_factory.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
 
@@ -18,20 +18,19 @@ namespace resource_coordinator {
 
 namespace {
 
-std::unique_ptr<CoordinationUnitImpl> CreateCoordinationUnit(
-    CoordinationUnitType type) {
+TestCoordinationUnitWrapper CreateCoordinationUnit(CoordinationUnitType type) {
   CoordinationUnitID cu_id(type, std::string());
-  return coordination_unit_factory::CreateCoordinationUnit(cu_id, nullptr);
+  return TestCoordinationUnitWrapper(
+      CoordinationUnitImpl::CreateCoordinationUnit(cu_id, nullptr));
 }
 
 }  // namespace
 
 MockSingleTabInSingleProcessCoordinationUnitGraph::
-    MockSingleTabInSingleProcessCoordinationUnitGraph() {
-  frame = CreateCoordinationUnit(CoordinationUnitType::kFrame);
-  process = CreateCoordinationUnit(CoordinationUnitType::kProcess);
-  tab = CreateCoordinationUnit(CoordinationUnitType::kWebContents);
-
+    MockSingleTabInSingleProcessCoordinationUnitGraph()
+    : frame(CreateCoordinationUnit(CoordinationUnitType::kFrame)),
+      process(CreateCoordinationUnit(CoordinationUnitType::kProcess)),
+      tab(CreateCoordinationUnit(CoordinationUnitType::kWebContents)) {
   tab->AddChild(frame->id());
   process->AddChild(frame->id());
 }
@@ -40,10 +39,9 @@ MockSingleTabInSingleProcessCoordinationUnitGraph::
     ~MockSingleTabInSingleProcessCoordinationUnitGraph() = default;
 
 MockMultipleTabsInSingleProcessCoordinationUnitGraph::
-    MockMultipleTabsInSingleProcessCoordinationUnitGraph() {
-  other_frame = CreateCoordinationUnit(CoordinationUnitType::kFrame);
-  other_tab = CreateCoordinationUnit(CoordinationUnitType::kWebContents);
-
+    MockMultipleTabsInSingleProcessCoordinationUnitGraph()
+    : other_frame(CreateCoordinationUnit(CoordinationUnitType::kFrame)),
+      other_tab(CreateCoordinationUnit(CoordinationUnitType::kWebContents)) {
   other_tab->AddChild(other_frame->id());
   process->AddChild(other_frame->id());
 }
@@ -52,10 +50,9 @@ MockMultipleTabsInSingleProcessCoordinationUnitGraph::
     ~MockMultipleTabsInSingleProcessCoordinationUnitGraph() = default;
 
 MockSingleTabWithMultipleProcessesCoordinationUnitGraph::
-    MockSingleTabWithMultipleProcessesCoordinationUnitGraph() {
-  child_frame = CreateCoordinationUnit(CoordinationUnitType::kFrame);
-  other_process = CreateCoordinationUnit(CoordinationUnitType::kProcess);
-
+    MockSingleTabWithMultipleProcessesCoordinationUnitGraph()
+    : child_frame(CreateCoordinationUnit(CoordinationUnitType::kFrame)),
+      other_process(CreateCoordinationUnit(CoordinationUnitType::kProcess)) {
   frame->AddChild(child_frame->id());
   tab->AddChild(child_frame->id());
   other_process->AddChild(child_frame->id());
@@ -65,10 +62,9 @@ MockSingleTabWithMultipleProcessesCoordinationUnitGraph::
     ~MockSingleTabWithMultipleProcessesCoordinationUnitGraph() = default;
 
 MockMultipleTabsWithMultipleProcessesCoordinationUnitGraph::
-    MockMultipleTabsWithMultipleProcessesCoordinationUnitGraph() {
-  child_frame = CreateCoordinationUnit(CoordinationUnitType::kFrame);
-  other_process = CreateCoordinationUnit(CoordinationUnitType::kProcess);
-
+    MockMultipleTabsWithMultipleProcessesCoordinationUnitGraph()
+    : child_frame(CreateCoordinationUnit(CoordinationUnitType::kFrame)),
+      other_process(CreateCoordinationUnit(CoordinationUnitType::kProcess)) {
   other_frame->AddChild(child_frame->id());
   other_tab->AddChild(child_frame->id());
   other_process->AddChild(child_frame->id());

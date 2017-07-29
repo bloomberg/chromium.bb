@@ -23,16 +23,25 @@ class UkmEntryBuilder;
 
 namespace resource_coordinator {
 
-CoordinationUnitManager::CoordinationUnitManager() = default;
+CoordinationUnitManager::CoordinationUnitManager() {
+  CoordinationUnitImpl::AssertNoActiveCoordinationUnits();
+}
 
-CoordinationUnitManager::~CoordinationUnitManager() = default;
+CoordinationUnitManager::~CoordinationUnitManager() {
+  // TODO(oysteine): Keep the map of coordination units as a member of this
+  // class, rather than statically inside CoordinationUnitImpl, to avoid this
+  // manual lifetime management.
+  CoordinationUnitImpl::ClearAllCoordinationUnits();
+}
 
 void CoordinationUnitManager::OnStart(
     service_manager::BinderRegistry* registry,
     service_manager::ServiceContextRefFactory* service_ref_factory) {
-  registry->AddInterface(base::Bind(&CoordinationUnitProviderImpl::Create,
-                                    base::Unretained(service_ref_factory),
-                                    base::Unretained(this)));
+  provider_ =
+      base::MakeUnique<CoordinationUnitProviderImpl>(service_ref_factory, this);
+
+  registry->AddInterface(base::Bind(&CoordinationUnitProviderImpl::Bind,
+                                    base::Unretained(provider_.get())));
 }
 
 void CoordinationUnitManager::RegisterObserver(
