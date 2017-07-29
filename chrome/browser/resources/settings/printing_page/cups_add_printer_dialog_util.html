@@ -117,13 +117,13 @@
 
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
       <div class="title" slot="title">
-        <content select=".dialog-title"></content>
+        <slot name="dialog-title"></slot>
       </div>
       <div class="body" slot="body">
-        <content select=".dialog-body"></content>
+        <slot name="dialog-body"></slot>
       </div>
       <div class="button-container" slot="button-container">
-        <content select=".dialog-buttons"></content>
+        <slot name="dialog-buttons"></slot>
       </div>
     </dialog>
   </template>

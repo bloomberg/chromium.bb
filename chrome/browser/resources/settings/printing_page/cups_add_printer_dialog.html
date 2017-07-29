@@ -21,7 +21,7 @@
         width: 100%;
       }
 
-      .dialog-body .center {
+      [slot='dialog-body'] .center {
         display: flex;
         justify-content: center;
         position: absolute;
@@ -42,15 +42,15 @@
         width: 15px;
       }
 
-      .dialog-buttons {
+      [slot='dialog-buttons'] {
         display: flex;
         justify-content: space-between;
         width: 100%;
       }
     </style>
     <add-printer-dialog>
-      <div class="dialog-title">$i18n{addPrintersNearbyTitle}</div>
-      <div class="dialog-body">
+      <div slot="dialog-title">$i18n{addPrintersNearbyTitle}</div>
+      <div slot="dialog-body">
         <add-printer-list printers="[[discoveredPrinters]]"
             selected-printer="{{selectedPrinter}}">
         </add-printer-list>
@@ -62,7 +62,7 @@
           <span>$i18n{searchingNearbyPrinters}</span>
         </div>
       </div>
-      <div class="dialog-buttons">
+      <div slot="dialog-buttons">
         <div>  <!-- Left group -->
           <paper-button id="manuallyAddPrinterButton" class="secondary-button"
               on-tap="switchToManualAddDialog_">
@@ -149,16 +149,16 @@
         background-color: var(--paper-green-100);
         padding: 10px 20px;
       }
-      
-      .dialog-buttons {
+
+      [slot='dialog-buttons'] {
         display: flex;
         justify-content: space-between;
         width: 100%;
       }
     </style>
     <add-printer-dialog>
-      <div class="dialog-title">$i18n{addPrintersManuallyTitle}</div>
-      <div class="dialog-body">
+      <div slot="dialog-title">$i18n{addPrintersManuallyTitle}</div>
+      <div slot="dialog-body">
         <div class="settings-box first two-line">
           <div class="start">
             <div class="label">$i18n{printerName}</div>
@@ -223,7 +223,7 @@
           <span>$i18n{printerFound}</span>
         </div>
       </div>
-      <div class="dialog-buttons">
+      <div slot="dialog-buttons">
         <div>  <!-- Left group -->
           <paper-button class="secondary-button"
               on-tap="switchToDiscoveryDialog_">
@@ -291,8 +291,8 @@
       }
     </style>
     <add-printer-dialog>
-      <div class="dialog-title">$i18n{selectManufacturerAndModelTitle}</div>
-      <div class="dialog-body">
+      <div slot="dialog-title">$i18n{selectManufacturerAndModelTitle}</div>
+      <div slot="dialog-body">
         <div class="settings-box two-line">
           <div class="start">
             <div class="label">$i18n{printerManufacturer}</div>
@@ -329,7 +329,7 @@
           Driver not found (exact error message TBD)
         </div>
       </div>
-      <div class="dialog-buttons">
+      <div slot="dialog-buttons">
         <paper-button class="cancel-button secondary-button"
             on-tap="onCancelTap_">
           $i18n{cancelButtonText}
@@ -349,18 +349,18 @@
 <dom-module id="add-printer-configuring-dialog">
   <template>
     <style include="settings-shared">
-      .dialog-body {
+      [slot='dialog-body'] {
         padding-top: 140px;
         text-align: center;
       }
     </style>
     <add-printer-dialog>
-      <div class="dialog-title">[[dialogTitle]]</div>
-      <div class="dialog-body">
+      <div slot="dialog-title">[[dialogTitle]]</div>
+      <div slot="dialog-body">
         <paper-spinner active></paper-spinner>
         <div id="configuringMessage">$i18n{printerConfiguringMessage}</div>
       </div>
-      <div class="dialog-buttons">
+      <div slot="dialog-buttons">
         <paper-button class="cancel-button secondary-button"
             on-tap="onCancelConfiguringTap_">
           $i18n{cancelButtonText}
