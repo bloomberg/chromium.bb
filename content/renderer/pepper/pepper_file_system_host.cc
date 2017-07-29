@@ -33,8 +33,7 @@ PepperFileSystemHost::PepperFileSystemHost(RendererPpapiHost* host,
       renderer_ppapi_host_(host),
       type_(type),
       opened_(false),
-      called_open_(false),
-      weak_factory_(this) {}
+      called_open_(false) {}
 
 PepperFileSystemHost::PepperFileSystemHost(RendererPpapiHost* host,
                                            PP_Instance instance,
@@ -46,8 +45,7 @@ PepperFileSystemHost::PepperFileSystemHost(RendererPpapiHost* host,
       type_(type),
       opened_(true),
       root_url_(root_url),
-      called_open_(true),
-      weak_factory_(this) {}
+      called_open_(true) {}
 
 PepperFileSystemHost::~PepperFileSystemHost() {}
 
@@ -105,12 +103,9 @@ int32_t PepperFileSystemHost::OnHostMsgOpen(
       ChildThreadImpl::current()->file_system_dispatcher();
   reply_context_ = context->MakeReplyMessageContext();
   file_system_dispatcher->OpenFileSystem(
-      document_url.GetOrigin(),
-      file_system_type,
-      base::Bind(&PepperFileSystemHost::DidOpenFileSystem,
-                 weak_factory_.GetWeakPtr()),
-      base::Bind(&PepperFileSystemHost::DidFailOpenFileSystem,
-                 weak_factory_.GetWeakPtr()));
+      document_url.GetOrigin(), file_system_type,
+      base::Bind(&PepperFileSystemHost::DidOpenFileSystem, AsWeakPtr()),
+      base::Bind(&PepperFileSystemHost::DidFailOpenFileSystem, AsWeakPtr()));
   return PP_OK_COMPLETIONPENDING;
 }
 

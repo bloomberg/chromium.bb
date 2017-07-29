@@ -74,8 +74,6 @@ class PepperFileSystemHost
   GURL root_url_;
   bool called_open_;  // whether open has been called.
 
-  base::WeakPtrFactory<PepperFileSystemHost> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(PepperFileSystemHost);
 };
 
