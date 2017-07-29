@@ -28,6 +28,7 @@ class FakeSecureChannel : public SecureChannel {
 
   void ChangeStatus(const Status& new_status);
   void ReceiveMessage(const std::string& feature, const std::string& payload);
+  void CompleteSendingMessage(int sequence_number);
 
   std::vector<Observer*> observers() { return observers_; }
 
@@ -35,13 +36,14 @@ class FakeSecureChannel : public SecureChannel {
 
   // SecureChannel:
   void Initialize() override;
-  void SendMessage(const std::string& feature,
-                   const std::string& payload) override;
+  int SendMessage(const std::string& feature,
+                  const std::string& payload) override;
   void Disconnect() override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
 
  private:
+  int next_sequence_number_ = 0;
   std::vector<Observer*> observers_;
   std::vector<SentMessage> sent_messages_;
 

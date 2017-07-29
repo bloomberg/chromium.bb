@@ -38,11 +38,21 @@ void FakeSecureChannel::ReceiveMessage(const std::string& feature,
   }
 }
 
+void FakeSecureChannel::CompleteSendingMessage(int sequence_number) {
+  DCHECK(next_sequence_number_ > sequence_number);
+  // Copy to prevent channel from being removed during handler.
+  std::vector<Observer*> observers_copy = observers_;
+  for (auto* observer : observers_copy) {
+    observer->OnMessageSent(this, sequence_number);
+  }
+}
+
 void FakeSecureChannel::Initialize() {}
 
-void FakeSecureChannel::SendMessage(const std::string& feature,
-                                    const std::string& payload) {
+int FakeSecureChannel::SendMessage(const std::string& feature,
+                                   const std::string& payload) {
   sent_messages_.push_back(SentMessage(feature, payload));
+  return next_sequence_number_++;
 }
 
 void FakeSecureChannel::Disconnect() {

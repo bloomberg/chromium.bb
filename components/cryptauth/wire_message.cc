@@ -181,6 +181,11 @@ std::string WireMessage::Serialize() const {
   return header_string + json_body;
 }
 
+WireMessage::WireMessage(const std::string& payload,
+                         const std::string& feature,
+                         int sequence_number)
+    : payload_(payload), feature_(feature), sequence_number_(sequence_number) {}
+
 WireMessage::WireMessage(const std::string& payload, const std::string& feature)
     : payload_(payload), feature_(feature) {}
 

@@ -59,6 +59,11 @@ class SecureChannel : public ConnectionObserver {
         SecureChannel* secure_channel,
         const std::string& feature,
         const std::string& payload) = 0;
+
+    // Called when a message has been sent successfully; |sequence_number|
+    // corresponds to the value returned by an earlier call to SendMessage().
+    virtual void OnMessageSent(SecureChannel* secure_channel,
+                               int sequence_number) {}
   };
 
   class Factory {
@@ -82,8 +87,11 @@ class SecureChannel : public ConnectionObserver {
 
   virtual void Initialize();
 
-  virtual void SendMessage(const std::string& feature,
-                           const std::string& payload);
+  // Sends a message over the connection and returns a sequence number. If the
+  // message is successfully sent, observers will be notified that the message
+  // has been sent and will be provided this sequence number.
+  virtual int SendMessage(const std::string& feature,
+                          const std::string& payload);
 
   virtual void Disconnect();
 
@@ -115,19 +123,22 @@ class SecureChannel : public ConnectionObserver {
   // end up being sent over the wire; before that can be done, the payload must
   // be encrypted.
   struct PendingMessage {
-    PendingMessage();
-    PendingMessage(const std::string& feature, const std::string& payload);
+    PendingMessage(const std::string& feature,
+                   const std::string& payload,
+                   int sequence_number);
     virtual ~PendingMessage();
 
     const std::string feature;
     const std::string payload;
+    const int sequence_number;
   };
 
   void TransitionToStatus(const Status& new_status);
   void Authenticate();
   void ProcessMessageQueue();
-  void OnMessageEncoded(
-      const std::string& feature, const std::string& encoded_message);
+  void OnMessageEncoded(const std::string& feature,
+                        int sequence_number,
+                        const std::string& encoded_message);
   void OnMessageDecoded(
       const std::string& feature, const std::string& decoded_message);
   void OnAuthenticationResult(
@@ -140,6 +151,7 @@ class SecureChannel : public ConnectionObserver {
   std::unique_ptr<SecureContext> secure_context_;
   std::deque<PendingMessage> queued_messages_;
   std::unique_ptr<PendingMessage> pending_message_;
+  int next_sequence_number_ = 0;
   base::ObserverList<Observer> observer_list_;
   base::WeakPtrFactory<SecureChannel> weak_ptr_factory_;
 
