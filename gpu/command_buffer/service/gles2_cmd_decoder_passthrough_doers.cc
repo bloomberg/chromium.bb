@@ -2532,6 +2532,10 @@ error::Error GLES2DecoderPassthroughImpl::DoFramebufferTexture2DMultisampleEXT(
     GLuint texture,
     GLint level,
     GLsizei samples) {
+  if (!feature_info_->feature_flags().multisampled_render_to_texture) {
+    return error::kUnknownCommand;
+  }
+
   glFramebufferTexture2DMultisampleEXT(
       target, attachment, textarget,
       GetTextureServiceID(texture, resources_, false), level, samples);
