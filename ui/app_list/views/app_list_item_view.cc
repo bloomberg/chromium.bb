@@ -76,13 +76,10 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
       icon_(new views::ImageView),
       title_(new views::Label),
       progress_bar_(new views::ProgressBar),
+      shadow_animator_(this),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
-  if (!is_fullscreen_app_list_enabled_) {
-    shadow_animator_ = new ImageShadowAnimator(this);
-    shadow_animator_->animation()->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
-    shadow_animator_->SetStartAndEndShadows(IconStartShadows(),
-                                            IconEndShadows());
-  }
+  shadow_animator_.animation()->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
+  shadow_animator_.SetStartAndEndShadows(IconStartShadows(), IconEndShadows());
 
   icon_->set_can_process_events_within_subtree(false);
   icon_->SetVerticalAlignment(views::ImageView::LEADING);
@@ -138,10 +135,7 @@ void AppListItemView::SetIcon(const gfx::ImageSkia& icon) {
       icon,
       skia::ImageOperations::RESIZE_BEST,
       gfx::Size(kGridIconDimension, kGridIconDimension)));
-  if (shadow_animator_)
-    shadow_animator_->SetOriginalImage(resized);
-  else
-    icon_->SetImage(resized);
+  shadow_animator_.SetOriginalImage(resized);
 }
 
 void AppListItemView::SetUIState(UIState ui_state) {
@@ -272,15 +266,13 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
 
 void AppListItemView::StateChanged(ButtonState old_state) {
   if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
-    if (shadow_animator_)
-      shadow_animator_->animation()->Show();
+    shadow_animator_.animation()->Show();
     // Show the hover/tap highlight: for tap, lighter highlight replaces darker
     // keyboard selection; for mouse hover, keyboard selection takes precedence.
     if (!apps_grid_view_->IsSelectedView(this) || state() == STATE_PRESSED)
       SetItemIsHighlighted(true);
   } else {
-    if (shadow_animator_)
-      shadow_animator_->animation()->Hide();
+    shadow_animator_.animation()->Hide();
     SetItemIsHighlighted(false);
     if (item_weak_)
       item_weak_->set_highlighted(false);
