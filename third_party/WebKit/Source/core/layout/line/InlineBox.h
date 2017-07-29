@@ -345,7 +345,7 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
                                       LayoutUnit visible_right_edge,
                                       LayoutUnit ellipsis_width,
                                       LayoutUnit& truncated_width,
-                                      bool&,
+                                      InlineBox**,
                                       LayoutUnit logical_left_offset);
 
 #if DCHECK_IS_ON()
