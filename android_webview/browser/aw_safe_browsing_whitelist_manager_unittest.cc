@@ -467,4 +467,22 @@ TEST_F(AwSafeBrowsingWhitelistManagerTest,
   EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("http://com/")));
 }
 
+TEST_F(AwSafeBrowsingWhitelistManagerTest,
+       VerifyNonWsNonHttpSchemeInUrlsAreNotWhitelisted) {
+  std::vector<std::string> whitelist;
+  whitelist.push_back("google.com");
+  SetWhitelist(std::move(whitelist), true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("file://a/b/test")));
+  EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("mailto:google.com/")));
+  EXPECT_FALSE(wm_->IsURLWhitelisted(GURL("data:google.com/")));
+
+  // However FTP, HTTP and WS should work
+  EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("ftp://google.com/")));
+  EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("http://google.com/")));
+  EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("ws://google.com/")));
+  EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("https://google.com/")));
+  EXPECT_TRUE(wm_->IsURLWhitelisted(GURL("wss://google.com/")));
+}
+
 }  // namespace android_webview
