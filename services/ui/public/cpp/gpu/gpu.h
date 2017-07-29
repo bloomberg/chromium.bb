@@ -46,8 +46,8 @@ class Gpu : public gpu::GpuChannelHostFactory,
 
   void CreateJpegDecodeAccelerator(
       media::mojom::GpuJpegDecodeAcceleratorRequest jda_request);
-  void CreateVideoEncodeAccelerator(
-      media::mojom::VideoEncodeAcceleratorRequest vea_request);
+  void CreateVideoEncodeAcceleratorProvider(
+      media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request);
 
   // gpu::GpuChannelEstablishFactory:
   void EstablishGpuChannel(

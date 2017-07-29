@@ -32,6 +32,10 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 // time the Client can send a RequestEncodingParametersChange() to the VEA. None
 // of these messages are acknowledged.
 
+interface VideoEncodeAcceleratorProvider {
+  CreateVideoEncodeAccelerator(VideoEncodeAccelerator& request);
+};
+
 interface VideoEncodeAccelerator {
   // See media::VideoEncodeAccelerator::Error
   enum Error {

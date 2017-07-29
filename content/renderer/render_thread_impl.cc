@@ -1459,15 +1459,14 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
       cmd_line->HasSwitch(switches::kEnableGpuMemoryBufferVideoFrames);
 #endif
 
-  media::mojom::VideoEncodeAcceleratorPtr vea;
-  gpu_->CreateVideoEncodeAccelerator(mojo::MakeRequest(&vea));
-  media::mojom::VideoEncodeAcceleratorPtrInfo unbound_vea = vea.PassInterface();
+  media::mojom::VideoEncodeAcceleratorProviderPtr vea_provider;
+  gpu_->CreateVideoEncodeAcceleratorProvider(mojo::MakeRequest(&vea_provider));
 
   gpu_factories_.push_back(GpuVideoAcceleratorFactoriesImpl::Create(
       std::move(gpu_channel_host), base::ThreadTaskRunnerHandle::Get(),
       media_task_runner, std::move(media_context_provider),
       enable_gpu_memory_buffer_video_frames, buffer_to_texture_target_map_,
-      enable_video_accelerator, std::move(unbound_vea)));
+      enable_video_accelerator, vea_provider.PassInterface()));
   return gpu_factories_.back().get();
 }
 

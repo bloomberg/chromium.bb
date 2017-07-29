@@ -53,6 +53,8 @@ component("services") {
     "mojo_renderer_service.h",
     "mojo_video_decoder_service.cc",
     "mojo_video_decoder_service.h",
+    "mojo_video_encode_accelerator_provider.cc",
+    "mojo_video_encode_accelerator_provider.h",
     "mojo_video_encode_accelerator_service.cc",
     "mojo_video_encode_accelerator_service.h",
     "test_mojo_media_client.cc",
