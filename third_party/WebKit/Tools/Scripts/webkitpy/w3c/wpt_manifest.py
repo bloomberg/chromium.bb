@@ -56,6 +56,8 @@ class WPTManifest(object):
 
     @memoized
     def all_wpt_tests(self):
+        # TODO(qyearsley): Rename this method to indicate that it
+        # returns wpt test file paths, which may not be "test names".
         if 'items' not in self.raw_dict:
             return []
 

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
+
 from webkitpy.common.checkout.git_mock import MockGit
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.net.buildbot import Build
@@ -298,17 +300,65 @@ class TestImporterTest(LoggingTestCase):
                 ]
             ])
 
-    def test_delete_orphaned_baselines(self):
+    def test_delete_orphaned_baselines_basic(self):
         host = MockHost()
         importer = TestImporter(host)
         dest_path = importer.dest_path
-        host.filesystem.write_text_file(dest_path + '/b-expected.txt', '')
-        host.filesystem.write_text_file(dest_path + '/b.x-expected.txt', '')
-        host.filesystem.write_text_file(dest_path + '/b.x.html', '')
+        host.filesystem.write_text_file(
+            dest_path + '/MANIFEST.json',
+            json.dumps({
+                'items': {
+                    'testharness': {
+                        'a.html': [['/a.html', {}]],
+                    },
+                    'manual': {},
+                    'reftest': {},
+                },
+            }))
+        host.filesystem.write_text_file(dest_path + '/a.html', '')
+        host.filesystem.write_text_file(dest_path + '/a-expected.txt', '')
+        host.filesystem.write_text_file(dest_path + '/orphaned-expected.txt', '')
         importer._delete_orphaned_baselines()
-        self.assertFalse(host.filesystem.exists(dest_path + '/b-expected.txt'))
-        self.assertTrue(host.filesystem.exists(dest_path + '/b.x-expected.txt'))
-        self.assertTrue(host.filesystem.exists(dest_path + '/b.x.html'))
+        self.assertFalse(host.filesystem.exists(dest_path + '/orphaned-expected.txt'))
+        self.assertTrue(host.filesystem.exists(dest_path + '/a-expected.txt'))
+
+    def test_delete_orphaned_baselines_worker_js_tests(self):
+        # This test checks that baselines for existing tests shouldn't be
+        # deleted, even if the test name isn't the same as the file name.
+        host = MockHost()
+        importer = TestImporter(host)
+        dest_path = importer.dest_path
+        host.filesystem.write_text_file(
+            dest_path + '/MANIFEST.json',
+            json.dumps({
+                'items': {
+                    'testharness': {
+                        'a.any.js': [
+                            ['/a.any.html', {}],
+                            ['/a.any.worker.html', {}],
+                        ],
+                        'b.worker.js': [['/b.worker.html', {}]],
+                        'c.html': [
+                            ['/c.html?q=1', {}],
+                            ['/c.html?q=2', {}],
+                        ],
+                    },
+                    'manual': {},
+                    'reftest': {},
+                },
+            }))
+        host.filesystem.write_text_file(dest_path + '/a.any.js', '')
+        host.filesystem.write_text_file(dest_path + '/a.any-expected.txt', '')
+        host.filesystem.write_text_file(dest_path + '/a.any.worker-expected.txt', '')
+        host.filesystem.write_text_file(dest_path + '/b.worker.js', '')
+        host.filesystem.write_text_file(dest_path + '/b.worker-expected.txt', '')
+        host.filesystem.write_text_file(dest_path + '/c.html', '')
+        host.filesystem.write_text_file(dest_path + '/c-expected.txt', '')
+        importer._delete_orphaned_baselines()
+        self.assertTrue(host.filesystem.exists(dest_path + '/a.any-expected.txt'))
+        self.assertTrue(host.filesystem.exists(dest_path + '/a.any.worker-expected.txt'))
+        self.assertTrue(host.filesystem.exists(dest_path + '/b.worker-expected.txt'))
+        self.assertTrue(host.filesystem.exists(dest_path + '/c-expected.txt'))
 
     def test_clear_out_dest_path(self):
         host = MockHost()
