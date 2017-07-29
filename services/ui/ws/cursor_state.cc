@@ -36,6 +36,11 @@ class CursorState::StateSnapshot {
     cursor_size_ = cursor_size;
   }
 
+  bool cursor_touch_visible() const { return cursor_touch_visible_; }
+  void set_cursor_touch_visible(bool enabled) {
+    cursor_touch_visible_ = enabled;
+  }
+
  private:
   // An optional cursor set by the window manager which overrides per-window
   // requests.
@@ -49,10 +54,16 @@ class CursorState::StateSnapshot {
 
   // Whether the cursor is visible.
   bool visible_ = true;
+
+  // An extra visibility check separate from user control which shows/hides
+  // based on whether the last event was a touch or a mouse event.
+  bool cursor_touch_visible_ = true;
 };
 
-CursorState::CursorState(DisplayManager* display_manager)
+CursorState::CursorState(DisplayManager* display_manager,
+                         CursorStateDelegate* delegate)
     : display_manager_(display_manager),
+      delegate_(delegate),
       current_state_(base::MakeUnique<StateSnapshot>()),
       state_on_unlock_(base::MakeUnique<StateSnapshot>()) {}
 
@@ -78,6 +89,11 @@ void CursorState::UnlockCursor() {
   DCHECK_GE(cursor_lock_count_, 0);
   if (cursor_lock_count_ > 0)
     return;
+
+  if (current_state_->cursor_touch_visible() !=
+      state_on_unlock_->cursor_touch_visible()) {
+    NotifyCursorTouchVisibleChanged(state_on_unlock_->cursor_touch_visible());
+  }
 
   *current_state_ = *state_on_unlock_;
   SetPlatformCursorSize();
@@ -112,6 +128,20 @@ void CursorState::SetCursorSize(ui::CursorSize cursor_size) {
   }
 }
 
+void CursorState::SetCursorTouchVisible(bool enabled) {
+  state_on_unlock_->set_cursor_touch_visible(enabled);
+  if (cursor_lock_count_ == 0 && current_state_->cursor_touch_visible() !=
+                                     state_on_unlock_->cursor_touch_visible()) {
+    current_state_->set_cursor_touch_visible(enabled);
+    NotifyCursorTouchVisibleChanged(enabled);
+    SetPlatformCursor();
+  }
+}
+
+void CursorState::NotifyCursorTouchVisibleChanged(bool enabled) {
+  delegate_->OnCursorTouchVisibleChanged(enabled);
+}
+
 void CursorState::SetPlatformCursorSize() {
   DisplayManager* manager = display_manager_;
   for (Display* display : manager->displays())
@@ -125,7 +155,7 @@ void CursorState::SetPlatformCursor() {
       display->SetNativeCursor(cursor);
   };
 
-  if (current_state_->visible()) {
+  if (current_state_->visible() && current_state_->cursor_touch_visible()) {
     if (current_state_->global_override_cursor().has_value())
       set_on_all(current_state_->global_override_cursor().value());
     else

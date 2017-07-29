@@ -27,6 +27,7 @@ static_library("lib") {
     "cursor_location_manager.h",
     "cursor_state.cc",
     "cursor_state.h",
+    "cursor_state_delegate.h",
     "default_access_policy.cc",
     "default_access_policy.h",
     "display.cc",

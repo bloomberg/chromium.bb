@@ -464,6 +464,10 @@ ui::mojom::EventResult WindowManager::OnAccelerator(
   return iter->second->OnAccelerator(id, event, properties);
 }
 
+void WindowManager::OnCursorTouchVisibleChanged(bool enabled) {
+  ShellPortMash::Get()->OnCursorTouchVisibleChanged(enabled);
+}
+
 void WindowManager::OnWmSetClientArea(
     aura::Window* window,
     const gfx::Insets& insets,

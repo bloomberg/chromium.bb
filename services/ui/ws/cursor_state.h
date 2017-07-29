@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/optional.h"
+#include "services/ui/ws/cursor_state_delegate.h"
 #include "ui/base/cursor/cursor_data.h"
 
 namespace ui {
@@ -21,7 +22,7 @@ class DisplayManager;
 // Owns all the state about if and how the cursor is displayed in mus.
 class CursorState {
  public:
-  explicit CursorState(DisplayManager* display_manager);
+  CursorState(DisplayManager* display_manager, CursorStateDelegate* delegate);
   ~CursorState();
 
   // Sets the normal cursor which would be used if the window manager hasn't
@@ -42,9 +43,16 @@ class CursorState {
   // Sets the cursor size.
   void SetCursorSize(ui::CursorSize cursor_size);
 
+  // Sets whether the cursor is hidden because the user is interacting with the
+  // touch screen.
+  void SetCursorTouchVisible(bool enabled);
+
  private:
   // A snapshot of the cursor state at a specific time.
   class StateSnapshot;
+
+  // Notifies the window manager when the value of mouse events enabled changes.
+  void NotifyCursorTouchVisibleChanged(bool enabled);
 
   // Synchronizes cursor set data with all platform displays.
   void SetPlatformCursorSize();
@@ -54,6 +62,9 @@ class CursorState {
 
   // Contains are the displays we notify on cursor changes.
   DisplayManager* display_manager_;
+
+  // Receives messages when mouse events enabled changes.
+  CursorStateDelegate* delegate_;
 
   // Number of times LockCursor() has been invoked without a corresponding
   // UnlockCursor().

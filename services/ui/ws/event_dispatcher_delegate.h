@@ -60,7 +60,11 @@ class EventDispatcherDelegate {
   virtual void OnMouseCursorLocationChanged(const gfx::Point& point,
                                             int64_t display_id) = 0;
 
-  virtual void OnEventChangesCursorVisibility(bool visible) = 0;
+  virtual void OnEventChangesCursorVisibility(const ui::Event& event,
+                                              bool visible) = 0;
+
+  virtual void OnEventChangesCursorTouchVisibility(const ui::Event& event,
+                                                   bool visible) = 0;
 
   // Dispatches an event to the specific client.
   virtual void DispatchInputEventToWindow(ServerWindow* target,

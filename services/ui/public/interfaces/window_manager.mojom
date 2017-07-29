@@ -242,6 +242,10 @@ interface WindowManager {
   // |ack_id| is non-zero the accelerator matches a PRE_TARGET and must be
   // acknowledged by WindowManagerClient::OnAcceleratorAck().
   OnAccelerator(uint32 ack_id, uint32 accelerator_id, ui.mojom.Event event);
+
+  // Whenever the visibility of the mouse cursor changes due to touch on the
+  // server, the window manager gets notified of the change.
+  OnCursorTouchVisibleChanged(bool enabled);
 };
 
 struct WmAccelerator {
@@ -350,6 +354,10 @@ interface WindowManagerClient {
   // Moves the cursor to the given location on the given display.
   WmMoveCursorToDisplayLocation(gfx.mojom.Point display_pixels,
                                 int64 display_id);
+
+  // The cursor is hidden and shown by touch events naturally, but the
+  // window manager also can manually show/hide it for features.
+  WmSetCursorTouchVisible(bool enabled);
 
   // Response from WmCreateTopLevelWindow() informing the client of the id for
   // the new window.

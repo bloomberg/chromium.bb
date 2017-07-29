@@ -1839,6 +1839,11 @@ void WindowTreeClient::OnAccelerator(uint32_t ack_id,
     window_manager_client_->OnAcceleratorAck(ack_id, result, properties);
 }
 
+void WindowTreeClient::OnCursorTouchVisibleChanged(bool enabled) {
+  if (window_manager_client_)
+    window_manager_delegate_->OnCursorTouchVisibleChanged(enabled);
+}
+
 void WindowTreeClient::SetFrameDecorationValues(
     ui::mojom::FrameDecorationValuesPtr values) {
   if (window_manager_client_) {
@@ -1926,6 +1931,11 @@ void WindowTreeClient::SetGlobalOverrideCursor(
     base::Optional<ui::CursorData> cursor) {
   if (window_manager_client_)
     window_manager_client_->WmSetGlobalOverrideCursor(std::move(cursor));
+}
+
+void WindowTreeClient::SetCursorTouchVisible(bool enabled) {
+  if (window_manager_client_)
+    window_manager_client_->WmSetCursorTouchVisible(enabled);
 }
 
 void WindowTreeClient::SetKeyEventsThatDontHideCursor(

@@ -81,6 +81,7 @@ class TestWindowManagerDelegate : public aura::WindowManagerDelegate {
       override {
     return ui::mojom::EventResult::UNHANDLED;
   }
+  void OnCursorTouchVisibleChanged(bool enabled) override {}
   void OnWmPerformMoveLoop(aura::Window* window,
                            mojom::MoveLoopSource source,
                            const gfx::Point& cursor_location,

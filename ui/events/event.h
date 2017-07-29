@@ -114,6 +114,8 @@ class EVENTS_EXPORT Event {
   bool IsAltGrDown() const { return (flags_ & EF_ALTGR_DOWN) != 0; }
   bool IsCapsLockOn() const { return (flags_ & EF_CAPS_LOCK_ON) != 0; }
 
+  bool IsSynthesized() const { return (flags_ & EF_IS_SYNTHESIZED) != 0; }
+
   bool IsCancelModeEvent() const {
     return type_ == ET_CANCEL_MODE;
   }

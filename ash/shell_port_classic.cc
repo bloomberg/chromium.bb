@@ -98,6 +98,12 @@ bool ShellPortClassic::IsMouseEventsEnabled() {
   return Shell::Get()->cursor_manager()->IsMouseEventsEnabled();
 }
 
+void ShellPortClassic::SetCursorTouchVisible(bool enabled) {
+  // This is only implemented on the mash side; in classic ash we just use the
+  // ::wm::CursorManager.
+  NOTREACHED();
+}
+
 std::unique_ptr<WindowResizer> ShellPortClassic::CreateDragWindowResizer(
     std::unique_ptr<WindowResizer> next_window_resizer,
     wm::WindowState* window_state) {

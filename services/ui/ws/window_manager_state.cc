@@ -137,7 +137,7 @@ WindowManagerState::QueuedEvent::~QueuedEvent() {}
 WindowManagerState::WindowManagerState(WindowTree* window_tree)
     : window_tree_(window_tree),
       event_dispatcher_(this),
-      cursor_state_(window_tree_->display_manager()) {
+      cursor_state_(window_tree_->display_manager(), this) {
   frame_decoration_values_ = mojom::FrameDecorationValues::New();
   frame_decoration_values_->max_title_bar_button_width = 0u;
 
@@ -212,6 +212,10 @@ void WindowManagerState::SetKeyEventsThatDontHideCursor(
     std::vector<::ui::mojom::EventMatcherPtr> dont_hide_cursor_list) {
   event_dispatcher()->SetKeyEventsThatDontHideCursor(
       std::move(dont_hide_cursor_list));
+}
+
+void WindowManagerState::SetCursorTouchVisible(bool enabled) {
+  cursor_state_.SetCursorTouchVisible(enabled);
 }
 
 void WindowManagerState::SetDragDropSourceWindow(
@@ -665,8 +669,22 @@ void WindowManagerState::OnMouseCursorLocationChanged(
   // cursor location.
 }
 
-void WindowManagerState::OnEventChangesCursorVisibility(bool visible) {
+void WindowManagerState::OnEventChangesCursorVisibility(const ui::Event& event,
+                                                        bool visible) {
+  if (event.IsSynthesized())
+    return;
   cursor_state_.SetCursorVisible(visible);
+}
+
+void WindowManagerState::OnEventChangesCursorTouchVisibility(
+    const ui::Event& event,
+    bool visible) {
+  if (event.IsSynthesized())
+    return;
+
+  // Setting cursor touch visibility needs to cause a callback which notifies a
+  // caller so we can dispatch the state change to the window manager.
+  cursor_state_.SetCursorTouchVisible(visible);
 }
 
 void WindowManagerState::DispatchInputEventToWindow(ServerWindow* target,
@@ -806,6 +824,10 @@ void WindowManagerState::OnWindowEmbeddedAppDisconnected(ServerWindow* window) {
     }
   }
   NOTREACHED();
+}
+
+void WindowManagerState::OnCursorTouchVisibleChanged(bool enabled) {
+  window_tree_->OnCursorTouchVisibleChanged(enabled);
 }
 
 }  // namespace ws

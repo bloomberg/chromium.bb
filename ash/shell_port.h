@@ -108,6 +108,15 @@ class ASH_EXPORT ShellPort {
       base::Optional<ui::CursorData> cursor) = 0;
   virtual bool IsMouseEventsEnabled() = 0;
 
+  // Tells the window server to enable or disable whether the cursor is visible
+  // due to touch events. This is a separate bit that gets set automatically
+  // when there is a touch event or a mouse event, but some things in ash want
+  // to manually flip this bit.
+  //
+  // Fat interface for just ShellPortMash so we can conditionally access it
+  // from within //ash/magnifier/.
+  virtual void SetCursorTouchVisible(bool enabled) = 0;
+
   // Shows the context menu for the wallpaper or shelf at |location_in_screen|.
   void ShowContextMenu(const gfx::Point& location_in_screen,
                        ui::MenuSourceType source_type);

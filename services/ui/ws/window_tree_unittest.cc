@@ -528,23 +528,6 @@ TEST_F(WindowTreeTest, CursorChangesWhenEnteringWindowWithDifferentCursor) {
   EXPECT_EQ(ui::CursorType::kIBeam, cursor_type());
 }
 
-TEST_F(WindowTreeTest, TouchesDontChangeCursor) {
-  TestWindowTreeClient* embed_client = nullptr;
-  WindowTree* tree = nullptr;
-  ServerWindow* window = nullptr;
-  EXPECT_NO_FATAL_FAILURE(SetupEventTargeting(&embed_client, &tree, &window));
-
-  // Let's create a pointer event outside the window and then move the pointer
-  // inside.
-  DispatchEventAndAckImmediately(CreateMouseMoveEvent(5, 5));
-  window->SetCursor(ui::CursorData(ui::CursorType::kIBeam));
-  EXPECT_EQ(ui::CursorType::kPointer, cursor_type());
-
-  // With a touch event, we shouldn't update the cursor.
-  DispatchEventAndAckImmediately(CreatePointerDownEvent(21, 22));
-  EXPECT_EQ(ui::CursorType::kPointer, cursor_type());
-}
-
 TEST_F(WindowTreeTest, DragOutsideWindow) {
   TestWindowTreeClient* embed_client = nullptr;
   WindowTree* tree = nullptr;

@@ -516,6 +516,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
                      std::unique_ptr<ui::Event> event) override {
     NOTIMPLEMENTED();
   }
+  void OnCursorTouchVisibleChanged(bool enabled) override { NOTIMPLEMENTED(); }
 
   TestChangeTracker tracker_;
 
