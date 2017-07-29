@@ -2,11 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/toolchain/toolchain.gni")
+
 config("usrsctp_config") {
   include_dirs = [
     "usrsctplib/usrsctplib",
     "usrsctplib/usrsctplib/netinet",
   ]
+  if (is_clang && llvm_force_head_revision) {
+    cflags = [
+      # TODO(hans): https://crbug.com/749197
+      "-Wno-pragma-pack",
+    ]
+  }
 }
 
 config("usrsctp_warnings") {
