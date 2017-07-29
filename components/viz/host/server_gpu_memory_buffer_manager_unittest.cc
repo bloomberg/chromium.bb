@@ -61,8 +61,8 @@ class TestGpuService : public ui::mojom::GpuService {
   void CreateJpegDecodeAccelerator(
       media::mojom::GpuJpegDecodeAcceleratorRequest jda_request) override {}
 
-  void CreateVideoEncodeAccelerator(
-      media::mojom::VideoEncodeAcceleratorRequest vea_request) override {}
+  void CreateVideoEncodeAcceleratorProvider(
+      media::mojom::VideoEncodeAcceleratorProviderRequest request) override {}
 
   void CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,

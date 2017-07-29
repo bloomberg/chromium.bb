@@ -57,7 +57,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       bool enable_gpu_memory_buffer_video_frames,
       const viz::BufferToTextureTargetMap& image_texture_targets,
       bool enable_video_accelerator,
-      media::mojom::VideoEncodeAcceleratorPtrInfo unbound_vea);
+      media::mojom::VideoEncodeAcceleratorProviderPtrInfo unbound_vea_provider);
 
   // media::GpuVideoAcceleratorFactories implementation.
   bool IsGpuVideoAcceleratorEnabled() override;
@@ -113,7 +113,10 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       bool enable_gpu_memory_buffer_video_frames,
       const viz::BufferToTextureTargetMap& image_texture_targets,
       bool enable_video_accelerator,
-      media::mojom::VideoEncodeAcceleratorPtrInfo unbound_vea);
+      media::mojom::VideoEncodeAcceleratorProviderPtrInfo unbound_vea_provider);
+
+  void BindVideoEncodeAcceleratorProviderOnTaskRunner(
+      media::mojom::VideoEncodeAcceleratorProviderPtrInfo unbound_vea_provider);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -136,7 +139,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
 
   gpu::GpuMemoryBufferManager* const gpu_memory_buffer_manager_;
 
-  media::mojom::VideoEncodeAcceleratorPtrInfo unbound_vea_;
+  media::mojom::VideoEncodeAcceleratorProviderPtr vea_provider_;
 
   // For sending requests to allocate shared memory in the Browser process.
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;

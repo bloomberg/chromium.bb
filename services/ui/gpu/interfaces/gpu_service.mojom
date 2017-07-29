@@ -28,8 +28,9 @@ interface GpuService {
   // Creates a new JpegDecodeAccelerator and binds it to |jda|.
   CreateJpegDecodeAccelerator(media.mojom.GpuJpegDecodeAccelerator& jda);
 
-  // Creates a new VideoEncodeAccelerator and binds it to |vea|.
-  CreateVideoEncodeAccelerator(media.mojom.VideoEncodeAccelerator& vea);
+  // Creates a VideoEncodeAcceleratorProvider and binds it to |vea_provider|.
+  CreateVideoEncodeAcceleratorProvider(
+      media.mojom.VideoEncodeAcceleratorProvider& vea_provider);
 
   CreateGpuMemoryBuffer(gfx.mojom.GpuMemoryBufferId id,
                         gfx.mojom.Size size,

@@ -97,11 +97,13 @@ void GpuClient::CreateJpegDecodeAccelerator(
     host->gpu_service()->CreateJpegDecodeAccelerator(std::move(jda_request));
 }
 
-void GpuClient::CreateVideoEncodeAccelerator(
-    media::mojom::VideoEncodeAcceleratorRequest vea_request) {
+void GpuClient::CreateVideoEncodeAcceleratorProvider(
+    media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request) {
   GpuProcessHost* host = GpuProcessHost::Get();
-  if (host)
-    host->gpu_service()->CreateVideoEncodeAccelerator(std::move(vea_request));
+  if (!host)
+    return;
+  host->gpu_service()->CreateVideoEncodeAcceleratorProvider(
+      std::move(vea_provider_request));
 }
 
 void GpuClient::CreateGpuMemoryBuffer(
