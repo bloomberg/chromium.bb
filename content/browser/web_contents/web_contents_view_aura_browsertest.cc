@@ -31,7 +31,6 @@
 #include "content/public/browser/overscroll_configuration.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -60,38 +59,6 @@ void GiveItSomeTime() {
       base::TimeDelta::FromMillisecondsD(10));
   run_loop.Run();
 }
-
-// WebContentsDelegate which tracks vertical overscroll updates.
-class VerticalOverscrollTracker : public content::WebContentsDelegate {
- public:
-  VerticalOverscrollTracker() : count_(0), completed_(false) {}
-  ~VerticalOverscrollTracker() override {}
-
-  int num_overscroll_updates() const {
-    return count_;
-  }
-
-  bool overscroll_completed() const {
-    return completed_;
-  }
-
-  void Reset() {
-    count_ = 0;
-    completed_ = false;
-  }
-
- private:
-  bool CanOverscrollContent() const override { return true; }
-
-  void OverscrollUpdate(float delta_y) override { ++count_; }
-
-  void OverscrollComplete() override { completed_ = true; }
-
-  int count_;
-  bool completed_;
-
-  DISALLOW_COPY_AND_ASSIGN(VerticalOverscrollTracker);
-};
 
 }  //namespace
 
@@ -1065,159 +1032,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       EXPECT_EQ(10, ExecuteScriptAndExtractInt("touchmoveCount"));
     else
       EXPECT_GT(10, ExecuteScriptAndExtractInt("touchmoveCount"));
-  }
-}
-
-// Test that vertical overscroll updates are sent only when a user overscrolls
-// vertically. Flaky on several platforms. https://crbug.com/679420
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
-#define MAYBE_VerticalOverscroll DISABLED_VerticalOverscroll
-#else
-#define MAYBE_VerticalOverscroll VerticalOverscroll
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_VerticalOverscroll) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kScrollEndEffect, "1");
-
-  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("about:blank"));
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-  VerticalOverscrollTracker tracker;
-  web_contents->SetDelegate(&tracker);
-
-  // This test triggers a large number of animations. Speed them up to ensure
-  // the test completes within its time limit.
-  ui::ScopedAnimationDurationScaleMode fast_duration_mode(
-      ui::ScopedAnimationDurationScaleMode::FAST_DURATION);
-
-  aura::Window* content = web_contents->GetContentNativeView();
-  ui::EventSink* sink = content->GetHost()->event_sink();
-  gfx::Rect bounds = content->GetBoundsInRootWindow();
-
-  // Overscroll horizontally.
-  {
-    int kXStep = bounds.width() / 10;
-    gfx::Point location(bounds.right() - kXStep, bounds.y() + 5);
-    base::TimeTicks timestamp = ui::EventTimeForNow();
-    ui::TouchEvent press(
-        ui::ET_TOUCH_PRESSED, location, timestamp,
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-    ui::EventDispatchDetails details = sink->OnEventFromSource(&press);
-    ASSERT_FALSE(details.dispatcher_destroyed);
-    WaitAFrame();
-    location -= gfx::Vector2d(kXStep, 0);
-    timestamp += base::TimeDelta::FromMilliseconds(10);
-
-    while (location.x() > bounds.x() + kXStep) {
-      ui::TouchEvent inc(
-          ui::ET_TOUCH_MOVED, location, timestamp,
-          ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-      details = sink->OnEventFromSource(&inc);
-      ASSERT_FALSE(details.dispatcher_destroyed);
-      WaitAFrame();
-      location -= gfx::Vector2d(10, 0);
-      timestamp += base::TimeDelta::FromMilliseconds(10);
-    }
-
-    ui::TouchEvent release(
-        ui::ET_TOUCH_RELEASED, location, timestamp,
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-    details = sink->OnEventFromSource(&release);
-    ASSERT_FALSE(details.dispatcher_destroyed);
-    WaitAFrame();
-
-    EXPECT_EQ(0, tracker.num_overscroll_updates());
-    EXPECT_FALSE(tracker.overscroll_completed());
-  }
-
-  // Overscroll vertically.
-  {
-    tracker.Reset();
-
-    int kYStep = bounds.height() / 10;
-    gfx::Point location(bounds.x() + 10, bounds.y() + kYStep);
-    base::TimeTicks timestamp = ui::EventTimeForNow();
-    ui::TouchEvent press(
-        ui::ET_TOUCH_PRESSED, location, timestamp,
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-    ui::EventDispatchDetails details = sink->OnEventFromSource(&press);
-    ASSERT_FALSE(details.dispatcher_destroyed);
-    WaitAFrame();
-    location += gfx::Vector2d(0, kYStep);
-    timestamp += base::TimeDelta::FromMilliseconds(10);
-
-    while (location.y() < bounds.bottom() - kYStep) {
-      ui::TouchEvent inc(
-          ui::ET_TOUCH_MOVED, location, timestamp,
-          ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-      details = sink->OnEventFromSource(&inc);
-      ASSERT_FALSE(details.dispatcher_destroyed);
-      WaitAFrame();
-      location += gfx::Vector2d(0, kYStep);
-      timestamp += base::TimeDelta::FromMilliseconds(10);
-    }
-
-    ui::TouchEvent release(
-        ui::ET_TOUCH_RELEASED, location, timestamp,
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-    details = sink->OnEventFromSource(&release);
-    ASSERT_FALSE(details.dispatcher_destroyed);
-    WaitAFrame();
-
-    EXPECT_LT(0, tracker.num_overscroll_updates());
-    EXPECT_TRUE(tracker.overscroll_completed());
-  }
-
-  // Start out overscrolling vertically, then switch directions and finish
-  // overscrolling horizontally.
-  {
-    tracker.Reset();
-
-    int kXStep = bounds.width() / 10;
-    int kYStep = bounds.height() / 10;
-    gfx::Point location = bounds.origin() + gfx::Vector2d(0, kYStep);
-    base::TimeTicks timestamp = ui::EventTimeForNow();
-    ui::TouchEvent press(
-        ui::ET_TOUCH_PRESSED, location, timestamp,
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-    ui::EventDispatchDetails details = sink->OnEventFromSource(&press);
-    ASSERT_FALSE(details.dispatcher_destroyed);
-    WaitAFrame();
-    location += gfx::Vector2d(0, kYStep);
-    timestamp += base::TimeDelta::FromMilliseconds(10);
-
-    for (size_t i = 0; i < 3; ++i) {
-      ui::TouchEvent inc(
-          ui::ET_TOUCH_MOVED, location, timestamp,
-          ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-      details = sink->OnEventFromSource(&inc);
-      ASSERT_FALSE(details.dispatcher_destroyed);
-      WaitAFrame();
-      location += gfx::Vector2d(0, kYStep);
-      timestamp += base::TimeDelta::FromMilliseconds(10);
-    }
-
-    while (location.x() < bounds.right() - kXStep) {
-      ui::TouchEvent inc(
-          ui::ET_TOUCH_MOVED, location, timestamp,
-          ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-      details = sink->OnEventFromSource(&inc);
-      ASSERT_FALSE(details.dispatcher_destroyed);
-      WaitAFrame();
-      location += gfx::Vector2d(kXStep, 0);
-      timestamp += base::TimeDelta::FromMilliseconds(10);
-    }
-
-    ui::TouchEvent release(
-        ui::ET_TOUCH_RELEASED, location, timestamp,
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-    details = sink->OnEventFromSource(&release);
-    ASSERT_FALSE(details.dispatcher_destroyed);
-    WaitAFrame();
-
-    EXPECT_LT(0, tracker.num_overscroll_updates());
-    EXPECT_FALSE(tracker.overscroll_completed());
   }
 }
 
