@@ -105,16 +105,17 @@ do_package() {
   # link-time code rewriting, but it might leave the symbol dependency in
   # place -- there are no guarantees.
   BAD_DIFF=0
-  diff -u "$SCRIPTDIR/expected_deps_$ARCHITECTURE" \
-      <(echo "${DETECTED_DEPENDS}" | \
-        LANG=C sort | \
-        grep -v '^ld-linux.*\(GLIBC_2\.3\)') \
-      || BAD_DIFF=1
+  if [ -r "$SCRIPTDIR/expected_deps_$ARCHITECTURE" ]; then
+    diff -u "$SCRIPTDIR/expected_deps_$ARCHITECTURE" \
+        <(echo "${DETECTED_DEPENDS}" | \
+          LANG=C sort | \
+          grep -v '^ld-linux.*\(GLIBC_2\.3\)') \
+        || BAD_DIFF=1
+  fi
   if [ $BAD_DIFF -ne 0 ] && [ -z "${IGNORE_DEPS_CHANGES:-}" ]; then
     echo
     echo "ERROR: Shared library dependencies changed!"
     echo "If this is intentional, please update:"
-    echo "chrome/installer/linux/rpm/expected_deps_i386"
     echo "chrome/installer/linux/rpm/expected_deps_x86_64"
     echo
     exit $BAD_DIFF

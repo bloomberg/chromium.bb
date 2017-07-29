@@ -295,13 +295,14 @@ echo "$DPKG_SHLIB_DEPS" | sed 's/, /\n/g' | LANG=C sort > actual
 
 # Compare the expected dependency list to the generated list.
 BAD_DIFF=0
-diff -u "$SCRIPTDIR/expected_deps_${TARGETARCH}_${TARGET_DISTRO}" actual || \
-  BAD_DIFF=1
+if [ -r "$SCRIPTDIR/expected_deps_${TARGETARCH}_${TARGET_DISTRO}" ]; then
+  diff -u "$SCRIPTDIR/expected_deps_${TARGETARCH}_${TARGET_DISTRO}" actual || \
+    BAD_DIFF=1
+fi
 if [ $BAD_DIFF -ne 0 ] && [ -z "${IGNORE_DEPS_CHANGES:-}" ]; then
   echo
   echo "ERROR: Shared library dependencies changed!"
   echo "If this is intentional, please update:"
-  echo "chrome/installer/linux/debian/expected_deps_ia32_jessie"
   echo "chrome/installer/linux/debian/expected_deps_x64_jessie"
   echo
   exit $BAD_DIFF
