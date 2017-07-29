@@ -4,8 +4,10 @@
 
 #include "ui/message_center/message_center.h"
 
+#include "base/command_line.h"
 #include "base/observer_list.h"
 #include "ui/message_center/message_center_impl.h"
+#include "ui/message_center/message_center_switches.h"
 
 namespace message_center {
 
@@ -32,6 +34,12 @@ void MessageCenter::Shutdown() {
   DCHECK(g_message_center);
   delete g_message_center;
   g_message_center = NULL;
+}
+
+// static
+bool MessageCenter::IsNewStyleNotificationEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableMessageCenterNewStyleNotification);
 }
 
 MessageCenter::MessageCenter() {
