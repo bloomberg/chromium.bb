@@ -24,14 +24,11 @@ const int kTwoHoursInMinutes = 120;
 namespace feature_engagement {
 
 NewTabTracker::NewTabTracker(Profile* profile)
-    : duration_tracker_(metrics::DesktopSessionDurationTracker::Get()),
-      profile_(profile) {
-  duration_tracker_->AddObserver(this);
+    : profile_(profile), duration_tracker_observer_(this) {
+  AddDurationTrackerObserver();
 }
 
-NewTabTracker::NewTabTracker()
-    : duration_tracker_(metrics::DesktopSessionDurationTracker::Get()),
-      profile_(nullptr) {}
+NewTabTracker::NewTabTracker() : NewTabTracker(nullptr) {}
 
 NewTabTracker::~NewTabTracker() = default;
 
@@ -63,6 +60,23 @@ void NewTabTracker::OnOmniboxFocused() {
     ShowPromo();
 }
 
+bool NewTabTracker::ShouldShowPromo() {
+  return GetFeatureTracker()->ShouldTriggerHelpUI(kIPHNewTabFeature);
+}
+
+void NewTabTracker::AddDurationTrackerObserver() {
+  duration_tracker_observer_.Add(metrics::DesktopSessionDurationTracker::Get());
+}
+
+void NewTabTracker::RemoveDurationTrackerObserver() {
+  duration_tracker_observer_.Remove(
+      metrics::DesktopSessionDurationTracker::Get());
+}
+
+bool NewTabTracker::HasEnoughSessionTimeElapsed() {
+  return GetPrefs()->GetInteger(prefs::kSessionTimeTotal) >= kTwoHoursInMinutes;
+}
+
 void NewTabTracker::ShowPromo() {
   GetPrefs()->SetBoolean(prefs::kNewTabInProductHelp, true);
   // TODO(crbug.com/737830): Call the promo.
@@ -71,20 +85,12 @@ void NewTabTracker::ShowPromo() {
   GetFeatureTracker()->Dismissed(kIPHNewTabFeature);
 }
 
-bool NewTabTracker::ShouldShowPromo() {
-  return GetFeatureTracker()->ShouldTriggerHelpUI(kIPHNewTabFeature);
-}
-
 Tracker* NewTabTracker::GetFeatureTracker() {
   return TrackerFactory::GetForBrowserContext(profile_);
 }
 
 PrefService* NewTabTracker::GetPrefs() {
   return profile_->GetPrefs();
-}
-
-bool NewTabTracker::HasEnoughSessionTimeElapsed() {
-  return GetPrefs()->GetInteger(prefs::kSessionTimeTotal) >= kTwoHoursInMinutes;
 }
 
 void NewTabTracker::UpdateSessionTime(base::TimeDelta elapsed) {
@@ -106,7 +112,7 @@ void NewTabTracker::OnSessionEnded(base::TimeDelta delta) {
   UpdateSessionTime(delta);
   if (HasEnoughSessionTimeElapsed()) {
     OnSessionTimeMet();
-    duration_tracker_->RemoveObserver(this);
+    RemoveDurationTrackerObserver();
   }
 }
 
