@@ -43,9 +43,7 @@ class BASE_EXPORT RunLoop {
 
   // Run the current RunLoop::Delegate. This blocks until Quit is called. Before
   // calling Run, be sure to grab the QuitClosure in order to stop the
-  // RunLoop::Delegate asynchronously. MessageLoop::QuitWhenIdle and QuitNow
-  // will also trigger a return from Run (if RunLoop::Delegate happens to be a
-  // MessageLoop...), but those are deprecated.
+  // RunLoop::Delegate asynchronously.
   void Run();
 
   // Run the current RunLoop::Delegate until it doesn't find any tasks or
@@ -66,12 +64,11 @@ class BASE_EXPORT RunLoop {
   // called from another thread (will quit soon but tasks that were already
   // queued on this RunLoop will get to run first).
   //
-  // There can be other nested RunLoops servicing the same task queue
-  // (MessageLoop); Quitting one RunLoop has no bearing on the others. Quit()
-  // and QuitWhenIdle() can be called before, during or after Run(). If called
-  // before Run(), Run() will return immediately when called. Calling Quit() or
-  // QuitWhenIdle() after the RunLoop has already finished running has no
-  // effect.
+  // There can be other nested RunLoops servicing the same task queue. Quitting
+  // one RunLoop has no bearing on the others. Quit() and QuitWhenIdle() can be
+  // called before, during or after Run(). If called before Run(), Run() will
+  // return immediately when called. Calling Quit() or QuitWhenIdle() after the
+  // RunLoop has already finished running has no effect.
   //
   // WARNING: You must NEVER assume that a call to Quit() or QuitWhenIdle() will
   // terminate the targetted message loop. If a nested run loop continues
