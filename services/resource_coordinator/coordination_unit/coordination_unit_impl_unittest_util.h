@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/message_loop/message_loop.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_manager.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_provider_impl.h"
 #include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
@@ -20,6 +21,26 @@ namespace resource_coordinator {
 
 struct CoordinationUnitID;
 
+class TestCoordinationUnitWrapper {
+ public:
+  TestCoordinationUnitWrapper(CoordinationUnitImpl* impl) : impl_(impl) {
+    DCHECK(impl);
+  }
+  ~TestCoordinationUnitWrapper() { impl_->Destruct(); }
+
+  CoordinationUnitImpl* operator->() const { return impl_; }
+
+  TestCoordinationUnitWrapper(TestCoordinationUnitWrapper&& other)
+      : impl_(other.impl_) {}
+
+  CoordinationUnitImpl* get() const { return impl_; }
+
+ private:
+  CoordinationUnitImpl* impl_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestCoordinationUnitWrapper);
+};
+
 class CoordinationUnitImplTestBase : public testing::Test {
  public:
   CoordinationUnitImplTestBase();
@@ -28,10 +49,8 @@ class CoordinationUnitImplTestBase : public testing::Test {
   // testing::Test:
   void TearDown() override;
 
-  std::unique_ptr<CoordinationUnitImpl> CreateCoordinationUnit(
-      CoordinationUnitID cu_id);
-  std::unique_ptr<CoordinationUnitImpl> CreateCoordinationUnit(
-      CoordinationUnitType type);
+  TestCoordinationUnitWrapper CreateCoordinationUnit(CoordinationUnitID cu_id);
+  TestCoordinationUnitWrapper CreateCoordinationUnit(CoordinationUnitType type);
 
  protected:
   service_manager::ServiceContextRefFactory* service_context_ref_factory() {

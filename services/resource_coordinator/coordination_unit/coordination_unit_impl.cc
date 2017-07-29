@@ -10,6 +10,8 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_graph_observer.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/web_contents_coordination_unit_impl.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 
 namespace resource_coordinator {
@@ -21,7 +23,8 @@ namespace resource_coordinator {
 
 namespace {
 
-using CUIDMap = std::unordered_map<CoordinationUnitID, CoordinationUnitImpl*>;
+using CUIDMap = std::unordered_map<CoordinationUnitID,
+                                   std::unique_ptr<CoordinationUnitImpl>>;
 
 CUIDMap& g_cu_map() {
   static CUIDMap* instance = new CUIDMap();
@@ -37,19 +40,57 @@ const FrameCoordinationUnitImpl* CoordinationUnitImpl::ToFrameCoordinationUnit(
   return static_cast<const FrameCoordinationUnitImpl*>(coordination_unit);
 }
 
+void CoordinationUnitImpl::AssertNoActiveCoordinationUnits() {
+  CHECK(g_cu_map().empty());
+}
+
+void CoordinationUnitImpl::ClearAllCoordinationUnits() {
+  g_cu_map().clear();
+}
+
+CoordinationUnitImpl* CoordinationUnitImpl::CreateCoordinationUnit(
+    const CoordinationUnitID& id,
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
+  std::unique_ptr<CoordinationUnitImpl> new_cu;
+
+  switch (id.type) {
+    case CoordinationUnitType::kFrame:
+      new_cu = base::MakeUnique<FrameCoordinationUnitImpl>(
+          id, std::move(service_ref));
+      break;
+    case CoordinationUnitType::kProcess:
+      new_cu = base::MakeUnique<ProcessCoordinationUnitImpl>(
+          id, std::move(service_ref));
+      break;
+    case CoordinationUnitType::kWebContents:
+      new_cu = base::MakeUnique<WebContentsCoordinationUnitImpl>(
+          id, std::move(service_ref));
+      break;
+    default:
+      new_cu =
+          base::MakeUnique<CoordinationUnitImpl>(id, std::move(service_ref));
+  }
+  CoordinationUnitImpl* new_cu_ptr = new_cu.get();
+  auto it = g_cu_map().insert(std::make_pair(new_cu->id(), std::move(new_cu)));
+  DCHECK(it.second);  // Inserted successfully
+
+  return new_cu_ptr;
+}
+
+void CoordinationUnitImpl::Destruct() {
+  size_t erased_count = g_cu_map().erase(id_);
+  // After this point |this| is destructed and should not be accessed anymore.
+  DCHECK_EQ(erased_count, 1u);
+}
+
 CoordinationUnitImpl::CoordinationUnitImpl(
     const CoordinationUnitID& id,
     std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : id_(id.type, id.id) {
-  auto it = g_cu_map().insert(std::make_pair(id_, this));
-  DCHECK(it.second);  // Inserted successfully
-
+    : id_(id.type, id.id), binding_(this) {
   service_ref_ = std::move(service_ref);
 }
 
 CoordinationUnitImpl::~CoordinationUnitImpl() {
-  g_cu_map().erase(id_);
-
   for (CoordinationUnitImpl* child : children_) {
     child->RemoveParent(this);
   }
@@ -57,6 +98,10 @@ CoordinationUnitImpl::~CoordinationUnitImpl() {
   for (CoordinationUnitImpl* parent : parents_) {
     parent->RemoveChild(this);
   }
+}
+
+void CoordinationUnitImpl::Bind(mojom::CoordinationUnitRequest request) {
+  binding_.Bind(std::move(request));
 }
 
 bool CoordinationUnitImpl::SelfOrParentHasFlagSet(StateFlags state) {
@@ -146,7 +191,7 @@ void CoordinationUnitImpl::AddChild(const CoordinationUnitID& child_id) {
 
   auto child_iter = g_cu_map().find(child_id);
   if (child_iter != g_cu_map().end()) {
-    CoordinationUnitImpl* child = child_iter->second;
+    CoordinationUnitImpl* child = child_iter->second.get();
     // In order to avoid cyclic reference inside the coordination unit graph. If
     // |child| is one of the ancestors of |this| coordination unit, then |child|
     // should not be added, abort this operation. If |this| coordination unit is
@@ -186,7 +231,7 @@ void CoordinationUnitImpl::RemoveChild(const CoordinationUnitID& child_id) {
     return;
   }
 
-  CoordinationUnitImpl* child = child_iter->second;
+  CoordinationUnitImpl* child = child_iter->second.get();
 
   DCHECK(child->id_ == child_id);
   DCHECK(child != this);

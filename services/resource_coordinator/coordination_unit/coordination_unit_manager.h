@@ -24,6 +24,7 @@ namespace resource_coordinator {
 
 class CoordinationUnitImpl;
 class CoordinationUnitGraphObserver;
+class CoordinationUnitProviderImpl;
 
 // The CoordinationUnitManager is a singleton that encapsulates all
 // aspects of Coordination Units within the resource_coordinator service.
@@ -57,6 +58,7 @@ class CoordinationUnitManager {
  private:
   std::vector<std::unique_ptr<CoordinationUnitGraphObserver>> observers_;
   ukm::MojoUkmRecorder* ukm_recorder_ = nullptr;
+  std::unique_ptr<CoordinationUnitProviderImpl> provider_;
 
   static void Create(
       service_manager::ServiceContextRefFactory* service_ref_factory);

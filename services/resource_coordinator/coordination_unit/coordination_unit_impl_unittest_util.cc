@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "services/resource_coordinator/coordination_unit/coordination_unit_factory.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
 #include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
 
 namespace resource_coordinator {
@@ -32,13 +32,14 @@ void CoordinationUnitImplTestBase::TearDown() {
   base::RunLoop().RunUntilIdle();
 }
 
-std::unique_ptr<CoordinationUnitImpl>
+TestCoordinationUnitWrapper
 CoordinationUnitImplTestBase::CreateCoordinationUnit(CoordinationUnitID cu_id) {
-  return coordination_unit_factory::CreateCoordinationUnit(
-      cu_id, service_context_ref_factory()->CreateRef());
+  return TestCoordinationUnitWrapper(
+      CoordinationUnitImpl::CreateCoordinationUnit(
+          cu_id, service_context_ref_factory()->CreateRef()));
 }
 
-std::unique_ptr<CoordinationUnitImpl>
+TestCoordinationUnitWrapper
 CoordinationUnitImplTestBase::CreateCoordinationUnit(
     CoordinationUnitType type) {
   CoordinationUnitID cu_id(type, std::string());

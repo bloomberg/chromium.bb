@@ -6,7 +6,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/process/process_handle.h"
-#include "services/resource_coordinator/coordination_unit/coordination_unit_factory.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_graph_observer.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl_unittest_util.h"
@@ -113,15 +112,9 @@ TEST_F(CoordinationUnitGraphObserverTest, CallbacksInvoked) {
                                       std::string());
   CoordinationUnitID frame_cu_id(CoordinationUnitType::kFrame, std::string());
 
-  std::unique_ptr<CoordinationUnitImpl> process_coordination_unit =
-      coordination_unit_factory::CreateCoordinationUnit(
-          process_cu_id, service_context_ref_factory()->CreateRef());
-  std::unique_ptr<CoordinationUnitImpl> root_frame_coordination_unit =
-      coordination_unit_factory::CreateCoordinationUnit(
-          root_frame_cu_id, service_context_ref_factory()->CreateRef());
-  std::unique_ptr<CoordinationUnitImpl> frame_coordination_unit =
-      coordination_unit_factory::CreateCoordinationUnit(
-          frame_cu_id, service_context_ref_factory()->CreateRef());
+  auto process_coordination_unit = CreateCoordinationUnit(process_cu_id);
+  auto root_frame_coordination_unit = CreateCoordinationUnit(root_frame_cu_id);
+  auto frame_coordination_unit = CreateCoordinationUnit(frame_cu_id);
 
   coordination_unit_manager().OnCoordinationUnitCreated(
       process_coordination_unit.get());
