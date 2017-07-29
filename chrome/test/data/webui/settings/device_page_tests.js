@@ -238,6 +238,15 @@ cr.define('device_page_tests', function() {
         },
       },
       settings: {
+        // TODO(afakhry): Write tests to validate the Night Light slider
+        // behavior with 24-hour setting.
+        clock: {
+          use_24hour_clock: {
+            key: 'settings.clock.use_24hour_clock',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: false,
+          },
+        },
         touchpad: {
           enable_tap_to_click: {
             key: 'settings.touchpad.enable_tap_to_click',
