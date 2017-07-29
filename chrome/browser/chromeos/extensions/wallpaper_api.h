@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_function_base.h"
 #include "chrome/common/extensions/api/wallpaper.h"
 #include "components/signin/core/account_id/account_id.h"

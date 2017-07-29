@@ -12,6 +12,10 @@
 #include "extensions/browser/extension_function.h"
 #include "ui/gfx/image/image_skia.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace wallpaper_api_util {
 
 extern const char kCancelWallpaperMessage[];
@@ -29,6 +33,11 @@ void RecordCustomWallpaperLayout(const wallpaper::WallpaperLayout& layout);
 class WallpaperFunctionBase : public AsyncExtensionFunction {
  public:
   WallpaperFunctionBase();
+
+  // For tasks that are worth blocking shutdown, i.e. saving user's custom
+  // wallpaper.
+  static base::SequencedTaskRunner* GetBlockingTaskRunner();
+  static base::SequencedTaskRunner* GetNonBlockingTaskRunner();
 
  protected:
   ~WallpaperFunctionBase() override;
