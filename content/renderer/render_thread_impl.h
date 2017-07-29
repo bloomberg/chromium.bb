@@ -381,7 +381,7 @@ class CONTENT_EXPORT RenderThreadImpl
   // Returns a SingleThreadTaskRunner instance corresponding to the message loop
   // of the thread on which file operations should be run. Must be called
   // on the renderer's main thread.
-  scoped_refptr<base::SingleThreadTaskRunner> GetFileThreadTaskRunner();
+  scoped_refptr<base::TaskRunner> GetFileThreadTaskRunner();
 
   // Returns a SingleThreadTaskRunner instance corresponding to the message loop
   // of the thread on which media operations should be run. Must be called
@@ -681,9 +681,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // This message loop should be destructed before the RenderThreadImpl
   // shuts down Blink.
   std::unique_ptr<base::MessageLoop> main_message_loop_;
-
-  // A lazily initiated thread on which file operations are run.
-  std::unique_ptr<base::Thread> file_thread_;
 
   // May be null if overridden by ContentRendererClient.
   std::unique_ptr<blink::scheduler::WebThreadBase> compositor_thread_;

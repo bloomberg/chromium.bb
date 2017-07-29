@@ -33,6 +33,7 @@
 
 #include <memory>
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Forward.h"
@@ -238,6 +239,15 @@ struct CrossThreadCopier<mojo::InterfacePtrInfo<Interface>> {
   using Type = mojo::InterfacePtrInfo<Interface>;
   static Type Copy(Type ptr_info) {
     return ptr_info;  // This is in fact a move.
+  }
+};
+
+template <typename Interface>
+struct CrossThreadCopier<mojo::InterfaceRequest<Interface>> {
+  STATIC_ONLY(CrossThreadCopier);
+  using Type = mojo::InterfaceRequest<Interface>;
+  static Type Copy(Type request) {
+    return request;  // This is in fact a move.
   }
 };
 

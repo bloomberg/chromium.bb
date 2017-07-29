@@ -5,6 +5,7 @@
 #include "platform/blob/BlobBytesProvider.h"
 
 #include "base/numerics/safe_conversions.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"
 
@@ -114,8 +115,9 @@ void BlobBytesProvider::RequestAsFile(uint64_t source_offset,
                                       base::File file,
                                       uint64_t file_offset,
                                       RequestAsFileCallback callback) {
-  // TODO(mek): Make sure this code runs on a thread that is allowed to do
-  // file IO.
+  DCHECK(!Platform::Current()->FileTaskRunner() ||
+         Platform::Current()->FileTaskRunner()->RunsTasksInCurrentSequence());
+
   if (!file.IsValid()) {
     std::move(callback).Run(WTF::nullopt);
     return;
