@@ -182,6 +182,41 @@ addition you are required to inform when the feature has been dismissed:
 tracker->Dismissed(feature_engagement::kIPHMyFunFeature);
 ```
 
+#### Inspecting whether IPH has already been triggered for a feature
+
+Sometimes additional tracking is required to figure out if in-product help for a
+particular feature should be shown, and sometimes this is costly. If the
+in-product help has already been shown for that feature, it might not be
+necessary any more to do the additional tracking of state.
+
+To check if the triggering condition has already been fulfilled (i.e. can not
+currently be triggered again), you can call:
+
+```c++
+// TriggerState is { HAS_BEEN_DISPLAYED, HAS_NOT_BEEN_DISPLAYED, NOT_READY }.
+Tracker::TriggerState trigger_state =
+    GetTriggerState(feature_engagement::kIPHMyFunFeature);
+```
+
+Inspecting this state requires the Tracker to already have been initialized,
+else `NOT_READY` is always returned. See `IsInitialized()` and
+`AddOnInitializedCallback(...)` for how to ensure the call to this is delayed.
+
+##### A note about TriggerState naming
+
+Typically, the `FeatureConfig` (see below) for any particular in-product help
+requires the configuration for `event_trigger` to have a comparator value of
+`==0`, i.e. that it is a requirement that the particular in-product help has
+never been shown within the search window. The values of the `TriggerState` enum
+reflects this typical usage, whereas technically, this is the correct
+interpretation of the states:
+
+*   `HAS_BEEN_DISPLAYED`: `event_trigger` condition is NOT met and in-product
+    help will not be displayed if `Tracker` is asked.
+*   `HAS_NOT_BEEN_DISPLAYED`: `event_trigger` condition is met and in-product
+    help might be displayed if `Tracker` is asked.
+*   `NOT_READY`: `Tracker` not fully initialized yet, so it is unable to
+    inspect the state.
 
 ### Configuring UMA
 

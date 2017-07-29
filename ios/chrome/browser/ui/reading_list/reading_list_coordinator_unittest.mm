@@ -108,6 +108,8 @@ class TrackerStub : public feature_engagement::Tracker {
  public:
   MOCK_METHOD1(NotifyEvent, void(const std::string&));
   MOCK_METHOD1(ShouldTriggerHelpUI, bool(const base::Feature& feature));
+  MOCK_METHOD1(GetTriggerState,
+               Tracker::TriggerState(const base::Feature& feature));
   MOCK_METHOD1(Dismissed, void(const base::Feature& feature));
   MOCK_METHOD0(IsInitialized, bool());
   MOCK_METHOD1(AddOnInitializedCallback, void(OnInitializedCallback callback));

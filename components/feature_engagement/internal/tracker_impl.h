@@ -34,6 +34,7 @@ class TrackerImpl : public Tracker, public base::SupportsUserData {
   // Tracker implementation.
   void NotifyEvent(const std::string& event) override;
   bool ShouldTriggerHelpUI(const base::Feature& feature) override;
+  Tracker::TriggerState GetTriggerState(const base::Feature& feature) override;
   void Dismissed(const base::Feature& feature) override;
   bool IsInitialized() override;
   void AddOnInitializedCallback(OnInitializedCallback callback) override;

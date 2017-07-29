@@ -37,5 +37,15 @@ if (is_android) {
       "//base:base_java",
       "//third_party/android_tools:android_support_annotations_java",
     ]
+
+    srcjar_deps = [ ":public_java_enums_srcjar" ]
+  }
+
+  java_cpp_enum("public_java_enums_srcjar") {
+    visibility = [ ":*" ]
+
+    sources = [
+      "tracker.h",
+    ]
   }
 }

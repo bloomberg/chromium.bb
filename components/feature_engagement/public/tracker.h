@@ -30,6 +30,17 @@ namespace feature_engagement {
 // appropriate to show it or not.
 class Tracker : public KeyedService {
  public:
+  // Describes the state of whether in-product helps has already been displayed
+  // enough times or not within the bounds of the configuration for a
+  // base::Feature. NOT_READY is returned if the Tracker has not been
+  // initialized yet before the call to GetTriggerState(...).
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.feature_engagement
+  enum class TriggerState : int {
+    HAS_BEEN_DISPLAYED = 0,
+    HAS_NOT_BEEN_DISPLAYED = 1,
+    NOT_READY = 2
+  };
+
 #if defined(OS_ANDROID)
   // Returns a Java object of the type Tracker for the given Tracker.
   static base::android::ScopedJavaLocalRef<jobject> GetJavaObject(
@@ -57,6 +68,17 @@ class Tracker : public KeyedService {
   // of feature enlightenment ends.
   virtual bool ShouldTriggerHelpUI(const base::Feature& feature)
       WARN_UNUSED_RESULT = 0;
+
+  // This function can be called to query if a particular |feature| meets its
+  // particular precondition for triggering within the bounds of the current
+  // feature configuration.
+  // Calling this method requires the Tracker to already have been initialized.
+  // See IsInitialized() and AddOnInitializedCallback(...) for how to ensure
+  // the call to this is delayed.
+  // This function can typically be used to ensure that expensive operations
+  // for tracking other state related to in-product help do not happen if
+  // in-product help has already been displayed for the given |feature|.
+  virtual TriggerState GetTriggerState(const base::Feature& feature) = 0;
 
   // Must be called after display of feature enlightenment finishes for a
   // particular |feature|.

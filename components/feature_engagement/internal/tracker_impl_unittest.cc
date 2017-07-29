@@ -563,6 +563,54 @@ TEST_F(TrackerImplTest, TestTriggering) {
   VerifyHistograms(true, 1, 3, true, 1, 2, true, 0, 4);
 }
 
+TEST_F(TrackerImplTest, TestTriggerStateInspection) {
+  // Before initialization has finished, NOT_READY should always be returned.
+  EXPECT_EQ(Tracker::TriggerState::NOT_READY,
+            tracker_->GetTriggerState(kTestFeatureFoo));
+  EXPECT_EQ(Tracker::TriggerState::NOT_READY,
+            tracker_->GetTriggerState(kTestFeatureQux));
+
+  // Ensure all initialization is finished.
+  StoringInitializedCallback callback;
+  tracker_->AddOnInitializedCallback(base::Bind(
+      &StoringInitializedCallback::OnInitialized, base::Unretained(&callback)));
+  base::RunLoop().RunUntilIdle();
+  base::UserActionTester user_action_tester;
+
+  EXPECT_EQ(Tracker::TriggerState::HAS_NOT_BEEN_DISPLAYED,
+            tracker_->GetTriggerState(kTestFeatureFoo));
+  EXPECT_EQ(Tracker::TriggerState::HAS_NOT_BEEN_DISPLAYED,
+            tracker_->GetTriggerState(kTestFeatureBar));
+
+  // The first time a feature triggers it should be shown.
+  EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
+  VerifyEventTriggerEvents(kTestFeatureFoo, 1u);
+  EXPECT_EQ(Tracker::TriggerState::HAS_BEEN_DISPLAYED,
+            tracker_->GetTriggerState(kTestFeatureFoo));
+
+  // Trying to show again should keep state as displayed.
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureFoo));
+  VerifyEventTriggerEvents(kTestFeatureFoo, 1u);
+  EXPECT_EQ(Tracker::TriggerState::HAS_BEEN_DISPLAYED,
+            tracker_->GetTriggerState(kTestFeatureFoo));
+
+  // Other features should also be kept at not having been displayed.
+  EXPECT_FALSE(tracker_->ShouldTriggerHelpUI(kTestFeatureBar));
+  VerifyEventTriggerEvents(kTestFeatureBar, 0);
+  EXPECT_EQ(Tracker::TriggerState::HAS_NOT_BEEN_DISPLAYED,
+            tracker_->GetTriggerState(kTestFeatureBar));
+
+  // Dismiss foo and show qux, which should update TriggerState of bar, and keep
+  // TriggerState for foo.
+  tracker_->Dismissed(kTestFeatureFoo);
+  EXPECT_TRUE(tracker_->ShouldTriggerHelpUI(kTestFeatureBar));
+  VerifyEventTriggerEvents(kTestFeatureBar, 1);
+  EXPECT_EQ(Tracker::TriggerState::HAS_BEEN_DISPLAYED,
+            tracker_->GetTriggerState(kTestFeatureFoo));
+  EXPECT_EQ(Tracker::TriggerState::HAS_BEEN_DISPLAYED,
+            tracker_->GetTriggerState(kTestFeatureBar));
+}
+
 TEST_F(TrackerImplTest, TestNotifyEvent) {
   StoringInitializedCallback callback;
   tracker_->AddOnInitializedCallback(base::Bind(

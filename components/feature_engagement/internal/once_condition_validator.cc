@@ -26,6 +26,8 @@ ConditionValidator::Result OnceConditionValidator::MeetsConditions(
 
   result.config_ok = config.valid;
 
+  result.trigger_ok =
+      shown_features_.find(feature.name) == shown_features_.end();
   result.session_rate_ok =
       shown_features_.find(feature.name) == shown_features_.end();
 
