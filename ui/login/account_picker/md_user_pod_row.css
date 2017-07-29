@@ -200,6 +200,10 @@ html[dir=rtl] .pod.focused:not(.multiprofiles-policy-applied) .auth-container {
   width: 24px;
 }
 
+.auth-container .custom-icon-shown .submit-button {
+  margin: 11px 0 5px 0;
+}
+
 .name-container {
   transition: transform 180ms;
 }
@@ -267,12 +271,14 @@ html[dir=rtl] .pod.focused:not(.multiprofiles-policy-applied) .auth-container {
   width: 160px;
 }
 
-.custom-icon-shown.password-container {
-  padding-left: 8px;
+.custom-icon-shown .password-container {
+  -webkit-padding-start: 8px;
+  height: 39px;
+  margin-top: 1px;
   width: 145px;
 }
 
-.capslock-on .custom-icon-shown.password-container {
+.capslock-on .custom-icon-shown .password-container {
   width: 125px;
 }
 
@@ -313,6 +319,10 @@ html[dir=rtl] .pod.focused:not(.multiprofiles-policy-applied) .auth-container {
   --iron-icon-width: 22px;
   opacity: 0.34;
   padding: 13px 0 5px;
+}
+
+.custom-icon-shown .capslock-hint {
+  padding: 12px 0 6px;
 }
 
 .input-present .capslock-hint {
