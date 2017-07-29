@@ -77,6 +77,7 @@ public class SuggestionsRecyclerView extends RecyclerView {
      * Whether the {@link SuggestionsRecyclerView} and its children should react to touch events.
      */
     private boolean mTouchEnabled = true;
+    private boolean mScrollEnabled = true;
 
     /** The ui config for this view. */
     private UiConfig mUiConfig;
@@ -136,6 +137,24 @@ public class SuggestionsRecyclerView extends RecyclerView {
         mGestureDetector.onTouchEvent(ev);
         if (!mTouchEnabled) return true;
         return super.onInterceptTouchEvent(ev);
+    }
+
+    /**
+     * Toggle whether scrolling is enabled.
+     */
+    public void setScrollEnabled(boolean enabled) {
+        mScrollEnabled = enabled;
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (ev.getActionMasked() == MotionEvent.ACTION_DOWN && !mScrollEnabled) {
+            setLayoutFrozen(true);
+        } else if (ev.getActionMasked() == MotionEvent.ACTION_UP
+                || ev.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+            setLayoutFrozen(false);
+        }
+        return super.dispatchTouchEvent(ev);
     }
 
     @Override

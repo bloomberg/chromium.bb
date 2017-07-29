@@ -131,8 +131,10 @@ public class SuggestionsBottomSheetContent
             public void onContentStateChanged(@BottomSheet.SheetState int contentState) {
                 if (contentState == BottomSheet.SHEET_STATE_HALF) {
                     SuggestionsMetrics.recordSurfaceHalfVisible();
+                    mRecyclerView.setScrollEnabled(false);
                 } else if (contentState == BottomSheet.SHEET_STATE_FULL) {
                     SuggestionsMetrics.recordSurfaceFullyVisible();
+                    mRecyclerView.setScrollEnabled(true);
                 }
             }
 
