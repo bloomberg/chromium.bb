@@ -122,13 +122,7 @@ static int NumberOfWaveOutBuffers() {
     return buffers;
   }
 
-  // Use 4 buffers for Vista, 3 for everyone else:
-  //  - The entire Windows audio stack was rewritten for Windows Vista and wave
-  //    out performance was degraded compared to XP.
-  //  - The regression was fixed in Windows 7 and most configurations will work
-  //    with 2, but some (e.g., some Sound Blasters) still need 3.
-  //  - Some XP configurations (even multi-processor ones) also need 3.
-  return (base::win::GetVersion() == base::win::VERSION_VISTA) ? 4 : 3;
+  return 3;
 }
 
 AudioManagerWin::AudioManagerWin(std::unique_ptr<AudioThread> audio_thread,

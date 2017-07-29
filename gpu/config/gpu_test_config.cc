@@ -302,12 +302,6 @@ bool GPUTestBotConfig::CurrentConfigMatches(
 
 // static
 bool GPUTestBotConfig::GpuBlacklistedOnBot() {
-#if defined(OS_WIN)
-  // Blacklist rule #79 disables all Gpu acceleration before Windows 7.
-  if (base::win::GetVersion() <= base::win::VERSION_VISTA) {
-    return true;
-  }
-#endif
   return false;
 }
 

@@ -19,7 +19,6 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_propvariant.h"
 #include "base/win/scoped_variant.h"
-#include "base/win/windows_version.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/media_switches.h"
 
@@ -203,12 +202,6 @@ static bool IsSupportedInternal() {
     DVLOG(1) << "Forcing usage of Windows WaveXxx APIs";
     return false;
   }
-
-  // Microsoft does not plan to make the Core Audio APIs available for use
-  // with earlier versions of Windows, including Microsoft Windows Server 2003,
-  // Windows XP, Windows Millennium Edition, Windows 2000, and Windows 98.
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return false;
 
   // The audio core APIs are implemented in the Mmdevapi.dll and Audioses.dll
   // system components.

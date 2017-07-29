@@ -17,7 +17,6 @@
 #include "base/sync_socket.h"
 #include "base/time/time.h"
 #include "base/win/scoped_com_initializer.h"
-#include "base/win/windows_version.h"
 #include "media/audio/audio_device_info_accessor_for_tests.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
@@ -452,11 +451,9 @@ TEST_F(WinAudioTest, PCMWaveStreamPlay200HzToneLowLatency) {
       audio_manager_device_info_->GetDefaultOutputStreamParameters();
   int sample_rate = params.sample_rate();
   uint32_t samples_10_ms = sample_rate / 100;
-  int n = 1;
-  (base::win::GetVersion() <= base::win::VERSION_XP) ? n = 5 : n = 1;
   AudioOutputStream* oas = audio_manager_->MakeAudioOutputStream(
       AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                      CHANNEL_LAYOUT_MONO, sample_rate, 16, n * samples_10_ms),
+                      CHANNEL_LAYOUT_MONO, sample_rate, 16, samples_10_ms),
       std::string(), AudioManager::LogCallback());
   ASSERT_TRUE(NULL != oas);
 

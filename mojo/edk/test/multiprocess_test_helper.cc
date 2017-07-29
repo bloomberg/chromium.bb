@@ -33,9 +33,7 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/mach_port_broker.h"
 #endif
 

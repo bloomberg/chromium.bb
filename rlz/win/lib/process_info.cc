@@ -25,9 +25,6 @@ HRESULT GetElevationType(PTOKEN_ELEVATION_TYPE elevation) {
 
   *elevation = TokenElevationTypeDefault;
 
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return E_FAIL;
-
   HANDLE process_token;
   if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &process_token))
     return HRESULT_FROM_WIN32(GetLastError());
@@ -45,39 +42,6 @@ HRESULT GetElevationType(PTOKEN_ELEVATION_TYPE elevation) {
   return S_OK;
 }
 
-// based on http://msdn2.microsoft.com/en-us/library/aa376389.aspx
-bool GetUserGroup(long* group) {
-  if (!group)
-    return false;
-
-  *group = 0;
-
-  // groups are listed in DECREASING order of importance
-  // (eg. If a user is a member of both the admin group and
-  // the power user group, it is more useful to list the user
-  // as an admin)
-  DWORD user_groups[] =  {DOMAIN_ALIAS_RID_ADMINS,
-                          DOMAIN_ALIAS_RID_POWER_USERS};
-  SID_IDENTIFIER_AUTHORITY nt_authority = {SECURITY_NT_AUTHORITY};
-
-  for (size_t i = 0; i < arraysize(user_groups) && *group == 0; ++i) {
-    PSID current_group;
-    if (AllocateAndInitializeSid(&nt_authority, 2,
-                                 SECURITY_BUILTIN_DOMAIN_RID,
-                                 user_groups[i], 0, 0, 0, 0,
-                                 0, 0, &current_group)) {
-      BOOL current_level;
-      if (CheckTokenMembership(NULL, current_group, &current_level) &&
-          current_level) {
-        *group = user_groups[i];
-      }
-
-      FreeSid(current_group);
-    }
-  }
-
-  return group != 0;
-}
 }  //anonymous
 
 
@@ -99,7 +63,7 @@ bool ProcessInfo::HasAdminRights() {
   if (!evaluated) {
     if (IsRunningAsSystem()) {
       has_rights = true;
-    } else if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    } else {
       TOKEN_ELEVATION_TYPE elevation;
       if (SUCCEEDED(GetElevationType(&elevation))) {
         base::IntegrityLevel level = base::GetCurrentProcessIntegrityLevel();
@@ -108,10 +72,6 @@ bool ProcessInfo::HasAdminRights() {
                        (level == base::HIGH_INTEGRITY);
         }
       }
-    } else {
-      long group = 0;
-      if (GetUserGroup(&group))
-        has_rights = (group == DOMAIN_ALIAS_RID_ADMINS);
     }
   }
 

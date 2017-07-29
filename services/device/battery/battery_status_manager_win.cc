@@ -11,7 +11,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/win/message_window.h"
-#include "base/win/windows_version.h"
 #include "services/device/battery/battery_status_manager.h"
 
 namespace device {
@@ -120,17 +119,11 @@ class BatteryStatusObserver {
   }
 
   HPOWERNOTIFY RegisterNotification(LPCGUID power_setting) {
-    if (base::win::GetVersion() < base::win::VERSION_VISTA)
-      return NULL;
-
     return RegisterPowerSettingNotification(window_->hwnd(), power_setting,
                                             DEVICE_NOTIFY_WINDOW_HANDLE);
   }
 
   BOOL UnregisterNotification(HPOWERNOTIFY handle) {
-    if (base::win::GetVersion() < base::win::VERSION_VISTA)
-      return FALSE;
-
     return UnregisterPowerSettingNotification(handle);
   }
 
