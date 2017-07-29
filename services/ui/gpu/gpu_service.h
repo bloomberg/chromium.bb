@@ -108,7 +108,7 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
     return gpu_channel_manager_->share_group();
   }
 
-  void UpdateGpuInfoPlatform();
+  void UpdateGpuInfoPlatform(base::OnceClosure on_gpu_info_updated);
 
   // gpu::GpuChannelManagerDelegate:
   void DidCreateOffscreenContext(const GURL& active_url) override;

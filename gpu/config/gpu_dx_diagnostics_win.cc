@@ -11,7 +11,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/win/scoped_com_initializer.h"
+#include "base/win/com_init_util.h"
 #include "gpu/config/gpu_info_collector.h"
 
 namespace gpu {
@@ -92,16 +92,15 @@ void RecurseDiagnosticTree(DxDiagNode* output,
 }  // namespace anonymous
 
 bool GetDxDiagnostics(DxDiagNode* output) {
+  // CLSID_DxDiagProvider is configured as an STA only object.
+  base::win::AssertComApartmentType(base::win::ComApartmentType::STA);
+
   HRESULT hr;
   bool success = false;
-  base::win::ScopedCOMInitializer com_initializer;
-
   IDxDiagProvider* provider = NULL;
-  hr = CoCreateInstance(CLSID_DxDiagProvider,
-                         NULL,
-                         CLSCTX_INPROC_SERVER,
-                         IID_IDxDiagProvider,
-                         reinterpret_cast<void**>(&provider));
+  hr = CoCreateInstance(CLSID_DxDiagProvider, NULL, CLSCTX_INPROC_SERVER,
+                        IID_IDxDiagProvider,
+                        reinterpret_cast<void**>(&provider));
   if (SUCCEEDED(hr)) {
     DXDIAG_INIT_PARAMS params = { sizeof(params) };
     params.dwDxDiagHeaderVersion = DXDIAG_DX9_SDK_VERSION;

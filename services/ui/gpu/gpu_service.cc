@@ -9,6 +9,8 @@
 #include "base/lazy_instance.h"
 #include "base/memory/shared_memory.h"
 #include "base/run_loop.h"
+#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/viz/common/gpu/in_process_context_provider.h"
@@ -16,6 +18,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
+#include "gpu/config/dx_diag_node.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
@@ -290,18 +293,27 @@ void GpuService::RequestCompleteGpuInfo(
                               wrap_callback));
     return;
   }
-  UpdateGpuInfoPlatform();
-  callback.Run(gpu_info_);
+  DCHECK(main_runner_->BelongsToCurrentThread());
+
+  UpdateGpuInfoPlatform(base::BindOnce(
+      IgnoreResult(&base::TaskRunner::PostTask), main_runner_, FROM_HERE,
+      base::BindOnce(
+          [](GpuService* gpu_service,
+             const RequestCompleteGpuInfoCallback& callback) {
+            callback.Run(gpu_service->gpu_info_);
 #if defined(OS_WIN)
-  if (!in_host_process_) {
-    // The unsandboxed GPU process fulfilled its duty. Rest in peace.
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
-  }
+            if (!gpu_service->in_host_process_) {
+              // The unsandboxed GPU process fulfilled its duty. Rest
+              // in peace.
+              base::RunLoop::QuitCurrentWhenIdleDeprecated();
+            }
 #endif
+          },
+          this, callback)));
 }
 
 #if defined(OS_MACOSX)
-void GpuService::UpdateGpuInfoPlatform() {
+void GpuService::UpdateGpuInfoPlatform(base::OnceClosure on_gpu_info_updated) {
   DCHECK(main_runner_->BelongsToCurrentThread());
   // gpu::CollectContextGraphicsInfo() is already called during gpu process
   // initialization (see GpuInit::InitializeAndStartSandbox()) on non-mac
@@ -327,23 +339,42 @@ void GpuService::UpdateGpuInfoPlatform() {
       break;
   }
   gpu::SetKeysForCrashLogging(gpu_info_);
+  std::move(on_gpu_info_updated).Run();
 }
 #elif defined(OS_WIN)
-void GpuService::UpdateGpuInfoPlatform() {
+void GpuService::UpdateGpuInfoPlatform(base::OnceClosure on_gpu_info_updated) {
   DCHECK(main_runner_->BelongsToCurrentThread());
   // GPU full info collection should only happen on un-sandboxed GPU process
   // or single process/in-process gpu mode on Windows.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   DCHECK(command_line->HasSwitch("disable-gpu-sandbox") || in_host_process_);
 
-  // This is slow, but it's the only thing the unsandboxed GPU process does,
-  // and GpuDataManager prevents us from sending multiple collecting requests,
-  // so it's OK to be blocking.
-  gpu::GetDxDiagnostics(&gpu_info_.dx_diagnostics);
-  gpu_info_.dx_diagnostics_info_state = gpu::kCollectInfoSuccess;
+  // We can continue on shutdown here because we're not writing any critical
+  // state in this task.
+  base::PostTaskAndReplyWithResult(
+      base::CreateCOMSTATaskRunnerWithTraits(
+          {base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
+          .get(),
+      FROM_HERE, base::BindOnce([]() {
+        gpu::DxDiagNode dx_diag_node;
+        gpu::GetDxDiagnostics(&dx_diag_node);
+        return dx_diag_node;
+      }),
+      base::BindOnce(
+          [](GpuService* gpu_service, base::OnceClosure on_gpu_info_updated,
+             const gpu::DxDiagNode& dx_diag_node) {
+            gpu_service->gpu_info_.dx_diagnostics = dx_diag_node;
+            gpu_service->gpu_info_.dx_diagnostics_info_state =
+                gpu::kCollectInfoSuccess;
+            std::move(on_gpu_info_updated).Run();
+          },
+          this, std::move(on_gpu_info_updated)));
 }
 #else
-void GpuService::UpdateGpuInfoPlatform() {}
+void GpuService::UpdateGpuInfoPlatform(base::OnceClosure on_gpu_info_updated) {
+  std::move(on_gpu_info_updated).Run();
+}
 #endif
 
 void GpuService::DidCreateOffscreenContext(const GURL& active_url) {
