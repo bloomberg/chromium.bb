@@ -559,38 +559,35 @@ IntSize PaintLayerScrollableArea::MaximumScrollOffsetInt() const {
   return ToIntSize(-ScrollOrigin() + (content_size - visible_size));
 }
 
-IntRect PaintLayerScrollableArea::VisibleContentRect(
-    IncludeScrollbarsInRect scrollbar_inclusion) const {
-  int vertical_scrollbar_width = 0;
-  int horizontal_scrollbar_height = 0;
-  if (scrollbar_inclusion == kExcludeScrollbars) {
-    vertical_scrollbar_width =
-        (VerticalScrollbar() && !VerticalScrollbar()->IsOverlayScrollbar())
-            ? VerticalScrollbar()->ScrollbarThickness()
-            : 0;
-    horizontal_scrollbar_height =
-        (HorizontalScrollbar() && !HorizontalScrollbar()->IsOverlayScrollbar())
-            ? HorizontalScrollbar()->ScrollbarThickness()
-            : 0;
-  }
-
-  // TODO(szager): Handle fractional scroll offsets correctly.
-  return IntRect(
-      FlooredIntPoint(ScrollPosition()),
-      IntSize(max(0, Layer()->size().Width() - vertical_scrollbar_width),
-              max(0, Layer()->size().Height() - horizontal_scrollbar_height)));
-}
-
 void PaintLayerScrollableArea::VisibleSizeChanged() {
   ShowOverlayScrollbars();
 }
 
-int PaintLayerScrollableArea::VisibleHeight() const {
-  return Layer()->size().Height();
-}
+IntRect PaintLayerScrollableArea::VisibleContentRect(
+    IncludeScrollbarsInRect scrollbar_inclusion) const {
+  // VisibleContentRect is conceptually the same as the box's client rect.
+  int border_width = Box().BorderWidth().Round();
+  int border_height = Box().BorderHeight().Round();
+  int horizontal_scrollbar_height = 0;
+  int vertical_scrollbar_width = 0;
+  if (scrollbar_inclusion == kExcludeScrollbars) {
+    horizontal_scrollbar_height =
+        (HorizontalScrollbar() && !HorizontalScrollbar()->IsOverlayScrollbar())
+            ? HorizontalScrollbar()->ScrollbarThickness()
+            : 0;
+    vertical_scrollbar_width =
+        (VerticalScrollbar() && !VerticalScrollbar()->IsOverlayScrollbar())
+            ? VerticalScrollbar()->ScrollbarThickness()
+            : 0;
+  }
 
-int PaintLayerScrollableArea::VisibleWidth() const {
-  return Layer()->size().Width();
+  // TOOO(szager): Handle fractional scroll offsets correctly.
+  return IntRect(
+      FlooredIntPoint(ScrollPosition()),
+      IntSize(max(0, Layer()->size().Width() - vertical_scrollbar_width -
+                         border_width),
+              max(0, Layer()->size().Height() - horizontal_scrollbar_height -
+                         border_height)));
 }
 
 LayoutSize PaintLayerScrollableArea::ClientSize() const {
