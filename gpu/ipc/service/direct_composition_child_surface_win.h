@@ -18,6 +18,7 @@ namespace gpu {
 class GPU_EXPORT DirectCompositionChildSurfaceWin : public gl::GLSurfaceEGL {
  public:
   DirectCompositionChildSurfaceWin(const gfx::Size& size,
+                                   bool is_hdr,
                                    bool has_alpha,
                                    bool enable_dc_layers);
 
@@ -64,6 +65,7 @@ class GPU_EXPORT DirectCompositionChildSurfaceWin : public gl::GLSurfaceEGL {
   EGLSurface real_surface_ = 0;
   bool first_swap_ = true;
   const gfx::Size size_;
+  const bool is_hdr_;
   const bool has_alpha_;
   const bool enable_dc_layers_;
   gfx::Rect swap_rect_;

@@ -37,8 +37,7 @@ viz::RendererSettings CreateRendererSettings(
   renderer_settings.show_overdraw_feedback =
       command_line->HasSwitch(cc::switches::kShowOverdrawFeedback);
   renderer_settings.enable_color_correct_rendering =
-      base::FeatureList::IsEnabled(features::kColorCorrectRendering) ||
-      command_line->HasSwitch(switches::kEnableHDR);
+      base::FeatureList::IsEnabled(features::kColorCorrectRendering);
   renderer_settings.resource_settings = CreateResourceSettings(image_targets);
   renderer_settings.show_overdraw_feedback =
       base::CommandLine::ForCurrentProcess()->HasSwitch(

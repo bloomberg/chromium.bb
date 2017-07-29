@@ -326,12 +326,6 @@ bool RenderViewHostImpl::CreateRenderView(
   params->page_zoom_level = delegate_->GetPendingPageZoomLevel();
 
   bool force_srgb_image_decode_color_space = false;
-  // Pretend that HDR displays are sRGB so that we do not have inconsistent
-  // coloring.
-  // TODO(ccameron): Disable this once color correct rasterization is functional
-  // https://crbug.com/701942
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHDR))
-    force_srgb_image_decode_color_space = true;
   // When color correct rendering is enabled, the image_decode_color_space
   // parameter should not be used (and all users of it should be using sRGB).
   if (base::FeatureList::IsEnabled(features::kColorCorrectRendering))

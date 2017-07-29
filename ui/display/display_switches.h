@@ -6,6 +6,7 @@
 #define UI_DISPLAY_DISPLAY_SWITCHES_H_
 
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "ui/display/display_export.h"
 
@@ -20,7 +21,6 @@ DISPLAY_EXPORT extern const char kHostWindowBounds[];
 DISPLAY_EXPORT extern const char kScreenConfig[];
 DISPLAY_EXPORT extern const char kSecondaryDisplayLayout[];
 DISPLAY_EXPORT extern const char kUseFirstDisplayAsInternal[];
-DISPLAY_EXPORT extern const char kEnableHDR[];
 
 #if defined(OS_CHROMEOS)
 DISPLAY_EXPORT extern const char kDisableDisplayColorCalibration[];
@@ -28,5 +28,11 @@ DISPLAY_EXPORT extern const char kEnableUnifiedDesktop[];
 #endif
 
 }  // namespace switches
+
+namespace features {
+
+DISPLAY_EXPORT extern const base::Feature kHighDynamicRange;
+
+}  // namespace features
 
 #endif  // UI_DISPLAY_DISPLAY_SWITCHES_H_

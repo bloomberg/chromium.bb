@@ -23,7 +23,7 @@ namespace media {
 
 bool IsColorSpaceSupported(const media::VideoColorSpace& color_space) {
   bool color_management =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHDR) ||
+      base::FeatureList::IsEnabled(features::kHighDynamicRange) ||
       base::FeatureList::IsEnabled(media::kVideoColorManagement);
   switch (color_space.primaries) {
     case media::VideoColorSpace::PrimaryID::EBU_3213_E:

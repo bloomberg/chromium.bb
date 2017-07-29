@@ -192,7 +192,7 @@ class DISPLAY_EXPORT Display final {
     maximum_cursor_size_ = size;
   }
 
-  // The full color space of the display.
+  // The color space of the display.
   gfx::ColorSpace color_space() const { return color_space_; }
   void set_color_space(const gfx::ColorSpace& color_space) {
     color_space_ = color_space;

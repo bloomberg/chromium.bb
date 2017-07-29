@@ -338,7 +338,7 @@ void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {
 void Compositor::SetDisplayColorSpace(const gfx::ColorSpace& color_space) {
   blending_color_space_ = color_space;
   output_color_space_ = blending_color_space_;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHDR)) {
+  if (base::FeatureList::IsEnabled(features::kHighDynamicRange)) {
     blending_color_space_ = gfx::ColorSpace::CreateExtendedSRGB();
     output_color_space_ = gfx::ColorSpace::CreateSCRGBLinear();
   }
