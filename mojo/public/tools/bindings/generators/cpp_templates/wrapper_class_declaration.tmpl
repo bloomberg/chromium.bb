@@ -79,7 +79,7 @@ class {{export_attribute}} {{struct.name}} {
                           size_t data_num_bytes,
                           UserType* output) {
     return mojo::internal::StructDeserializeImpl<{{struct.name}}::DataView>(
-        data, data_num_bytes, output, Validate);
+        data, data_num_bytes, std::vector<mojo::ScopedHandle>(), output, Validate);
   }
 
   template <typename UserType>
@@ -87,6 +87,14 @@ class {{export_attribute}} {{struct.name}} {
                           UserType* output) {
     return {{struct.name}}::Deserialize(
         input.size() == 0 ? nullptr : &input.front(), input.size(), output);
+  }
+
+  template <typename UserType>
+  static bool DeserializeFromMessage(mojo::Message input,
+                                     UserType* output) {
+    return mojo::internal::StructDeserializeImpl<{{struct.name}}::DataView>(
+        input.payload(), input.payload_num_bytes(),
+        std::move(*input.mutable_handles()), output, Validate);
   }
 
 {#--- Struct members #}
