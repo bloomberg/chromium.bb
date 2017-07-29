@@ -188,6 +188,9 @@ const char* const kBrowserViewKey = "__BROWSER_VIEW__";
 // The number of milliseconds between loading animation frames.
 const int kLoadingAnimationFrameTimeMs = 30;
 
+// See SetDisableRevealerDelayForTesting().
+bool g_disable_revealer_delay_for_testing = false;
+
 // Paints the horizontal border separating the Bookmarks Bar from the Toolbar
 // or page content according to |at_top| with |color|.
 void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
@@ -463,6 +466,11 @@ void BrowserView::Paint1pxHorizontalLine(gfx::Canvas* canvas,
   cc::PaintFlags flags;
   flags.setColor(color);
   canvas->sk_canvas()->drawRect(gfx::RectFToSkRect(rect), flags);
+}
+
+// static
+void BrowserView::SetDisableRevealerDelayForTesting(bool disable) {
+  g_disable_revealer_delay_for_testing = disable;
 }
 
 void BrowserView::InitStatusBubble() {
@@ -776,6 +784,7 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   }
 
   UpdateUIForContents(new_contents);
+  RevealTabStripIfNeeded();
 
   // Layout for DevTools _before_ setting the both main and devtools WebContents
   // to avoid toggling the size of any of them.
@@ -1853,6 +1862,22 @@ views::Widget* BrowserView::GetWidget() {
 
 const views::Widget* BrowserView::GetWidget() const {
   return View::GetWidget();
+}
+
+void BrowserView::RevealTabStripIfNeeded() {
+  if (!immersive_mode_controller_->IsEnabled())
+    return;
+
+  std::unique_ptr<ImmersiveRevealedLock> revealer(
+      immersive_mode_controller_->GetRevealedLock(
+          ImmersiveModeController::ANIMATE_REVEAL_YES));
+  auto delete_revealer = base::BindOnce(
+      [](std::unique_ptr<ImmersiveRevealedLock>) {}, std::move(revealer));
+  constexpr auto kDefaultDelay = base::TimeDelta::FromSeconds(1);
+  constexpr auto kZeroDelay = base::TimeDelta::FromSeconds(0);
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, std::move(delete_revealer),
+      g_disable_revealer_delay_for_testing ? kZeroDelay : kDefaultDelay);
 }
 
 void BrowserView::GetAccessiblePanes(std::vector<views::View*>* panes) {
