@@ -11,4 +11,11 @@ URLLoaderRequestHandler::MaybeCreateSubresourceFactory() {
   return nullptr;
 }
 
+bool URLLoaderRequestHandler::MaybeCreateLoaderForResponse(
+    const ResourceResponseHead& response,
+    mojom::URLLoaderPtr* loader,
+    mojom::URLLoaderClientRequest* client_request) {
+  return false;
+}
+
 }  // namespace content

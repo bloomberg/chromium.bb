@@ -70,6 +70,9 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient,
   void FollowRedirect();
   void SetPriority(net::RequestPriority priority, int32_t intra_priority_value);
 
+  // Disconnects the client connection and releases the URLLoader.
+  void DisconnectClient();
+
  private:
   ThrottlingURLLoader(
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
@@ -122,7 +125,7 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient,
     DEFERRED_RESPONSE
   };
   DeferredStage deferred_stage_ = DEFERRED_NONE;
-  bool cancelled_by_throttle_ = false;
+  bool loader_cancelled_ = false;
 
   std::unique_ptr<URLLoaderThrottle> throttle_;
 

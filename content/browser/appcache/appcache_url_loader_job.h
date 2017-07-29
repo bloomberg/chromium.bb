@@ -111,6 +111,13 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
     sub_resource_handler_ = std::move(handler);
   }
 
+  // Binds to the URLLoaderRequest instance passed in the |request| parameter.
+  // The URLLoaderClient instance is passed in the |client| parameter. This
+  // enables the client to receive notifications/data, etc for the ensuing
+  // URL load.
+  void BindRequest(mojom::URLLoaderClientPtr client,
+                   mojom::URLLoaderRequest request);
+
  protected:
   // AppCacheJob::Create() creates this instance.
   friend class AppCacheJob;
