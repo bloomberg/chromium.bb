@@ -557,5 +557,15 @@
     "prefix": "presentation",
     "base": "receiver",
     "args": ["--force-presentation-receiver-for-testing"]
+  },
+  {
+    "prefix": "mojo-blobs",
+    "base": "external/wpt/FileAPI",
+    "args": ["--enable-features=MojoBlobs"]
+  },
+  {
+    "prefix": "mojo-blobs",
+    "base": "fast/files",
+    "args": ["--enable-features=MojoBlobs"]
   }
 ]

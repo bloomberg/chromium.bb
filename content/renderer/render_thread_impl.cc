@@ -2342,14 +2342,8 @@ void RenderThreadImpl::ClearMemory() {
   }
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-RenderThreadImpl::GetFileThreadTaskRunner() {
-  DCHECK(message_loop()->task_runner()->BelongsToCurrentThread());
-  if (!file_thread_) {
-    file_thread_.reset(new base::Thread("Renderer::FILE"));
-    file_thread_->Start();
-  }
-  return file_thread_->task_runner();
+scoped_refptr<base::TaskRunner> RenderThreadImpl::GetFileThreadTaskRunner() {
+  return blink_platform_impl_->BaseFileTaskRunner();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
