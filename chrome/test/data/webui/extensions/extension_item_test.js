@@ -71,6 +71,7 @@ cr.define('extension_item_tests', function() {
     ClickableItems: 'clickable items',
     Warnings: 'warnings',
     SourceIndicator: 'source indicator',
+    EnableToggle: 'toggle is disabled when necessary',
   };
 
   function registerTests() {
@@ -210,7 +211,7 @@ cr.define('extension_item_tests', function() {
       test(assert(TestNames.SourceIndicator), function() {
         expectFalse(extension_test_util.isVisible(item, '#source-indicator'));
         item.set('data.location', 'UNPACKED');
-        Polymer.dom.flush()
+        Polymer.dom.flush();
         expectTrue(extension_test_util.isVisible(item, '#source-indicator'));
         var icon = item.$$('#source-indicator iron-icon');
         assertTrue(!!icon);
@@ -233,6 +234,13 @@ cr.define('extension_item_tests', function() {
         item.set('data.controlledInfo', null);
         Polymer.dom.flush();
         expectFalse(extension_test_util.isVisible(item, '#source-indicator'));
+      });
+
+      test(assert(TestNames.EnableToggle), function() {
+        expectFalse(item.$['enable-toggle'].disabled);
+        item.set('data.userMayModify', false);
+        Polymer.dom.flush();
+        expectTrue(item.$['enable-toggle'].disabled);
       });
     });
   }

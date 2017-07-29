@@ -169,6 +169,11 @@ TEST_F('CrExtensionsBrowserTest', 'ExtensionItemSourceIndicatorTest',
   mocha.grep(assert(extension_item_tests.TestNames.SourceIndicator)).run();
 });
 
+TEST_F('CrExtensionsBrowserTest', 'ExtensionItemEnableToggleTest', function() {
+  extension_item_tests.registerTests();
+  mocha.grep(assert(extension_item_tests.TestNames.EnableToggle)).run();
+});
+
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Detail View Tests
 

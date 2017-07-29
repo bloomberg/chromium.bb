@@ -256,7 +256,7 @@
         </paper-button>
         <paper-toggle-button id="enable-toggle" class="action-button"
             checked="[[isEnabled_(data.state)]]" on-change="onEnableChange_"
-            enabled="[[isEnableToggleEnabled_(data)]]"
+            disabled="[[!isEnableToggleEnabled_(data.*)]]"
             hidden$="[[!showEnableToggle_(data.*)]]">
         </paper-toggle-button>
       </div>

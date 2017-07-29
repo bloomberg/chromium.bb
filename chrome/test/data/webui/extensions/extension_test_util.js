@@ -166,29 +166,32 @@ cr.define('extension_test_util', function() {
     var id = opt_properties && opt_properties.hasOwnProperty('id') ?
         opt_properties[id] : 'a'.repeat(32);
     var baseUrl = 'chrome-extension://' + id + '/';
-    return Object.assign({
-      commands: [],
-      dependentExtensions: [],
-      description: 'This is an extension',
-      disableReasons: {
-        suspiciousInstall: false,
-        corruptInstall: false,
-        updateRequired: false,
-      },
-      homePage: {specified: false, url: ''},
-      iconUrl: 'chrome://extension-icon/' + id + '/24/0',
-      id: id,
-      incognitoAccess: {isEnabled: true, isActive: false},
-      location: 'FROM_STORE',
-      manifestErrors: [],
-      name: 'Wonderful Extension',
-      runtimeErrors: [],
-      permissions: [],
-      state: 'ENABLED',
-      type: 'EXTENSION',
-      version: '2.0',
-      views: [{url: baseUrl + 'foo.html'}, {url: baseUrl + 'bar.html'}],
-    }, opt_properties);
+    return Object.assign(
+        {
+          commands: [],
+          dependentExtensions: [],
+          description: 'This is an extension',
+          disableReasons: {
+            suspiciousInstall: false,
+            corruptInstall: false,
+            updateRequired: false,
+          },
+          homePage: {specified: false, url: ''},
+          iconUrl: 'chrome://extension-icon/' + id + '/24/0',
+          id: id,
+          incognitoAccess: {isEnabled: true, isActive: false},
+          location: 'FROM_STORE',
+          manifestErrors: [],
+          name: 'Wonderful Extension',
+          runtimeErrors: [],
+          permissions: [],
+          state: 'ENABLED',
+          type: 'EXTENSION',
+          userMayModify: true,
+          version: '2.0',
+          views: [{url: baseUrl + 'foo.html'}, {url: baseUrl + 'bar.html'}],
+        },
+        opt_properties);
   }
 
   /**

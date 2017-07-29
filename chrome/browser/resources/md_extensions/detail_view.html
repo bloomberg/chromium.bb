@@ -134,7 +134,7 @@
         <paper-toggle-button id="enable-toggle"
             checked="[[isEnabled_(data.state)]]"
             on-change="onEnableChange_"
-            enabled="[[isEnableToggleEnabled_(data)]]">
+            disabled="[[!isEnableToggleEnabled_(data.*)]]">
         </paper-toggle-button>
       </div>
       <div class="section">
