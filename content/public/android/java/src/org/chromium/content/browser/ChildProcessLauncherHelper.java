@@ -87,6 +87,17 @@ public class ChildProcessLauncherHelper {
     private final ChildProcessLauncher.Delegate mLauncherDelegate =
             new ChildProcessLauncher.Delegate() {
                 @Override
+                public ChildProcessConnection getBoundConnection(
+                        ChildConnectionAllocator connectionAllocator,
+                        ChildProcessConnection.ServiceCallback serviceCallback) {
+                    if (sSpareSandboxedConnection == null) {
+                        return null;
+                    }
+                    return sSpareSandboxedConnection.getConnection(
+                            connectionAllocator, serviceCallback);
+                }
+
+                @Override
                 public void onBeforeConnectionAllocated(Bundle bundle) {
                     populateServiceBundle(bundle, mCreationParams);
                 }
@@ -421,26 +432,8 @@ public class ChildProcessLauncherHelper {
 
         final ChildConnectionAllocator connectionAllocator = getConnectionAllocator(
                 ContextUtils.getApplicationContext(), mCreationParams, sandboxed);
-        if (sSpareSandboxedConnection != null && !sSpareSandboxedConnection.isEmpty()
-                && sSpareSandboxedConnection.isForAllocator(connectionAllocator)) {
-            // Use the warmed-up connection.
-            ChildProcessLauncher.BoundConnectionProvider connectionProvider =
-                    new ChildProcessLauncher.BoundConnectionProvider() {
-                        @Override
-                        public ChildProcessConnection getConnection(
-                                ChildProcessConnection.ServiceCallback serviceCallback) {
-                            return sSpareSandboxedConnection.getConnection(
-                                    connectionAllocator, serviceCallback);
-                        }
-                    };
-            mLauncher = ChildProcessLauncher.createWithBoundConnectionProvider(
-                    LauncherThread.getHandler(), mLauncherDelegate, commandLine, filesToBeMapped,
-                    connectionProvider, binderCallback);
-        } else {
-            mLauncher = ChildProcessLauncher.createWithConnectionAllocator(
-                    LauncherThread.getHandler(), mLauncherDelegate, commandLine, filesToBeMapped,
-                    connectionAllocator, binderCallback);
-        }
+        mLauncher = new ChildProcessLauncher(LauncherThread.getHandler(), mLauncherDelegate,
+                commandLine, filesToBeMapped, connectionAllocator, binderCallback);
     }
 
     public int getPid() {
