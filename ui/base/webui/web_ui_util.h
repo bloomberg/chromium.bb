@@ -34,15 +34,33 @@ UI_BASE_EXPORT std::string GetPngDataUrl(const unsigned char* data,
 UI_BASE_EXPORT WindowOpenDisposition
     GetDispositionFromClick(const base::ListValue* args, int start_index);
 
-// Pares a formatted scale factor string into float and sets to |scale_factor|.
+// Parse a formatted scale factor string into float and sets to |scale_factor|.
 UI_BASE_EXPORT bool ParseScaleFactor(const base::StringPiece& identifier,
                                      float* scale_factor);
+
+// Parses a URL containing some path [{frame}]@{scale}x. If it contains a
+// scale factor then it is returned and the associated part of the URL is
+// removed from the returned  |path|, otherwise the default scale factor is
+// returned and |path| is left intact. If it contains a frame index then it
+// is returned and the associated part of the URL is removed from the
+// returned |path|, otherwise the default frame index is returned and |path|
+// is left intact.
+UI_BASE_EXPORT void ParsePathAndImageSpec(const GURL& url,
+                                          std::string* path,
+                                          float* scale_factor,
+                                          int* frame_index);
 
 // Parses a URL containing some path @{scale}x. If it does not contain a scale
 // factor then the default scale factor is returned.
 UI_BASE_EXPORT void ParsePathAndScale(const GURL& url,
                                       std::string* path,
                                       float* scale_factor);
+
+// Parses a URL containing some path [{frame}]. If it does not contain a frame
+// index then the default frame index is returned.
+UI_BASE_EXPORT void ParsePathAndFrame(const GURL& url,
+                                      std::string* path,
+                                      int* frame_index);
 
 // Helper function to set some default values (e.g., font family, size,
 // language, and text direction) into the given dictionary. Requires an

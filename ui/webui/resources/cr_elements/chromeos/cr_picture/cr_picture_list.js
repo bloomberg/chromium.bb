@@ -113,7 +113,7 @@ Polymer({
    */
   setSelectedImageUrl(imageUrl) {
     var image = this.$.selector.items.find(function(image) {
-      return image.src == imageUrl;
+      return image.dataset.url == imageUrl;
     });
     if (image) {
       this.setSelectedImage_(image);
@@ -221,6 +221,20 @@ Polymer({
   },
 
   /**
+   * Returns the image to use for 'src'.
+   * @param {string} url
+   * @return {string}
+   * @private
+   */
+  getImgSrc_: function(url) {
+    // Use first frame of animated user images.
+    if (url.startsWith('chrome://theme'))
+      return url + '[0]';
+
+    return url;
+  },
+
+  /**
    * Returns the 2x (high dpi) image to use for 'srcset' for chrome://theme
    * images. Note: 'src' will still be used as the 1x candidate as per the HTML
    * spec.
@@ -229,8 +243,8 @@ Polymer({
    * @private
    */
   getImgSrc2x_: function(url) {
-    if (url.indexOf('chrome://theme') != 0)
+    if (!url.startsWith('chrome://theme'))
       return '';
-    return url + '@2x 2x';
+    return url + '[0]@2x 2x';
   },
 });
