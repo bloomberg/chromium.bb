@@ -445,6 +445,12 @@ void SelectionController::UpdateSelectionForMouseDrag(
 
   const VisibleSelectionInFlatTree& visible_selection =
       Selection().ComputeVisibleSelectionInFlatTree();
+  if (visible_selection.IsNone()) {
+    // TODO(editing-dev): This is an urgent fix to crbug.com/745501. We should
+    // find the root cause and replace this by a proper fix.
+    return;
+  }
+
   const PositionInFlatTree& adjusted_position =
       AdjustPositionRespectUserSelectAll(target, visible_selection.Start(),
                                          visible_selection.End(),
