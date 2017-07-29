@@ -18,46 +18,11 @@
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_environment_variable_override.h"
 #include "base/win/pe_image.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-
-// Overrides |variables_name| to |value| for the lifetime of this class. Upon
-// destruction, the previous value is restored.
-class ScopedEnvironmentVariableOverride {
- public:
-  ScopedEnvironmentVariableOverride(const std::string& variable_name,
-                                    const std::string& value);
-  ~ScopedEnvironmentVariableOverride();
-
- private:
-  std::unique_ptr<base::Environment> environment_;
-  std::string variable_name_;
-  bool overridden_;
-  bool was_set_;
-  std::string old_value_;
-};
-
-ScopedEnvironmentVariableOverride::ScopedEnvironmentVariableOverride(
-    const std::string& variable_name,
-    const std::string& value)
-    : environment_(base::Environment::Create()),
-      variable_name_(variable_name),
-      overridden_(false),
-      was_set_(false) {
-  was_set_ = environment_->GetVar(variable_name, &old_value_);
-  overridden_ = environment_->SetVar(variable_name, value);
-}
-
-ScopedEnvironmentVariableOverride::~ScopedEnvironmentVariableOverride() {
-  if (overridden_) {
-    if (was_set_)
-      environment_->SetVar(variable_name_, old_value_);
-    else
-      environment_->UnSetVar(variable_name_);
-  }
-}
 
 // Creates a truncated copy of the current executable at |location| path to
 // mimic a module with an invalid NT header.
@@ -113,7 +78,8 @@ TEST(ModuleInfoUtilTest, GetCertificateInfoSigned) {
 }
 
 TEST(ModuleInfoUtilTest, GetEnvironmentVariablesMapping) {
-  ScopedEnvironmentVariableOverride scoped_override("foo", "C:\\bar\\");
+  base::test::ScopedEnvironmentVariableOverride scoped_override("foo",
+                                                                "C:\\bar\\");
 
   // The mapping for these variables will be retrieved.
   std::vector<base::string16> environment_variables = {
