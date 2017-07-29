@@ -160,11 +160,19 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // AppCacheHost::Observer override
   void OnCacheSelectionComplete(AppCacheHost* host) override;
 
-  // URLLoaderRequestHandler override
+  // Network service loading
+
+  // URLLoaderRequestHandler overrides
+  // These functions are invoked for loading AppCache content for the frame and
+  // for subresources.
   void MaybeCreateLoader(const ResourceRequest& resource_request,
                          ResourceContext* resource_context,
                          LoaderCallback callback) override;
   mojom::URLLoaderFactoryPtr MaybeCreateSubresourceFactory() override;
+  bool MaybeCreateLoaderForResponse(
+      const ResourceResponseHead& response,
+      mojom::URLLoaderPtr* loader,
+      mojom::URLLoaderClientRequest* client_request) override;
 
   // Data members -----------------------------------------------
 
@@ -235,8 +243,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
   // the AppCache, we delete the job.
   std::unique_ptr<AppCacheJob> navigation_request_job_;
 
-  // In the network service world, points to the getter for the network URL
-  // loader.
+  // Points to the getter for the network URL loader.
   scoped_refptr<URLLoaderFactoryGetter> network_url_loader_factory_getter_;
 
   friend class content::AppCacheRequestHandlerTest;

@@ -105,7 +105,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       : resource_request_(std::move(resource_request)),
         resource_context_(resource_context),
         default_url_loader_factory_getter_(default_url_loader_factory_getter),
-        owner_(owner) {}
+        owner_(owner),
+        response_loader_binding_(this) {}
 
   ~URLLoaderRequestController() override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -177,6 +178,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   // This could be called multiple times.
   void Restart() {
     handler_index_ = 0;
+    received_response_ = false;
     MaybeStartLoader(StartLoaderCallback());
   }
 
@@ -213,6 +215,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       factory = default_url_loader_factory_getter_->GetBlobFactory()->get();
     } else {
       factory = default_url_loader_factory_getter_->GetNetworkFactory()->get();
+      default_loader_used_ = true;
     }
     url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
         factory,
@@ -226,6 +229,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   void FollowRedirect() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(url_loader_);
+
+    DCHECK(!response_url_loader_);
 
     url_loader_->FollowRedirect();
   }
@@ -242,6 +247,13 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       const ResourceResponseHead& head,
       const base::Optional<net::SSLInfo>& ssl_info,
       mojom::DownloadedTempFilePtr downloaded_file) override {
+    received_response_ = true;
+    // If the default loader (network) was used to handle the URL load request
+    // we need to see if the handlers want to potentially create a new loader
+    // for the response. e.g. AppCache.
+    if (MaybeCreateLoaderForResponse(head))
+      return;
+
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&NavigationURLLoaderNetworkService::OnReceiveResponse,
@@ -277,10 +289,49 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
 
   void OnComplete(
       const ResourceRequestCompletionStatus& completion_status) override {
+    if (completion_status.error_code != net::OK && !received_response_) {
+      // If the default loader (network) was used to handle the URL load
+      // request we need to see if the handlers want to potentially create a
+      // new loader for the response. e.g. AppCache.
+      if (MaybeCreateLoaderForResponse(ResourceResponseHead()))
+        return;
+    }
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&NavigationURLLoaderNetworkService::OnComplete, owner_,
                    completion_status));
+  }
+
+  // Returns true if a handler wants to handle the response, i.e. return a
+  // different response. For e.g. AppCache may have fallback content to be
+  // returned for a TLD.
+  bool MaybeCreateLoaderForResponse(const ResourceResponseHead& response) {
+    if (!default_loader_used_)
+      return false;
+
+    // URLLoaderClient request pointer for response loaders, i.e loaders created
+    // for handing responses received from the network URLLoader.
+    mojom::URLLoaderClientRequest response_client_request;
+
+    for (size_t index = 0; index < handlers_.size(); ++index) {
+      if (handlers_[index]->MaybeCreateLoaderForResponse(
+              response, &response_url_loader_, &response_client_request)) {
+        OnResponseHandlerFound(std::move(response_client_request));
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Called if we find a handler who delivers different content for the URL.
+  void OnResponseHandlerFound(
+      mojom::URLLoaderClientRequest response_client_request) {
+    response_loader_binding_.Bind(std::move(response_client_request));
+    // We reset this flag as we expect a new response from the handler.
+    default_loader_used_ = false;
+    // Disconnect from the network loader to stop receiving further data
+    // or notifications for the URL.
+    url_loader_->DisconnectClient();
   }
 
   std::vector<std::unique_ptr<URLLoaderRequestHandler>> handlers_;
@@ -304,6 +355,22 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
 
   // This is referenced only on the UI thread.
   base::WeakPtr<NavigationURLLoaderNetworkService> owner_;
+
+  // Set to true if the default URLLoader (network service) was used for the
+  // current navigation.
+  bool default_loader_used_ = false;
+
+  // URLLoaderClient binding for loaders created for responses received from the
+  // network loader.
+  mojo::Binding<mojom::URLLoaderClient> response_loader_binding_;
+
+  // URLLoader instance for response loaders, i.e loaders created for handing
+  // responses received from the network URLLoader.
+  mojom::URLLoaderPtr response_url_loader_;
+
+  // Set to true if we receive a valid response from a URLLoader, i.e.
+  // URLLoaderClient::OnReceivedResponse() is called.
+  bool received_response_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderRequestController);
 };

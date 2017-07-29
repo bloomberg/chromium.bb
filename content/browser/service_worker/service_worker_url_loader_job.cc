@@ -251,8 +251,10 @@ void ServiceWorkerURLLoaderJob::DidDispatchFetchEvent(
   // ServiceWorker, we have to check the security level of the responses.
   const net::HttpResponseInfo* main_script_http_info =
       version->GetMainScriptHttpResponseInfo();
-  DCHECK(main_script_http_info);
-  ssl_info_ = main_script_http_info->ssl_info;
+  // TODO(kinuko)
+  // Fix this here.
+  if (main_script_http_info)
+    ssl_info_ = main_script_http_info->ssl_info;
 
   std::move(loader_callback_)
       .Run(base::Bind(&ServiceWorkerURLLoaderJob::StartResponse,

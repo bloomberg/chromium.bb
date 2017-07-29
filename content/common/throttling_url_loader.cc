@@ -93,7 +93,7 @@ void ThrottlingURLLoader::FollowRedirect() {
 
 void ThrottlingURLLoader::SetPriority(net::RequestPriority priority,
                                       int32_t intra_priority_value) {
-  if (!url_loader_ && !cancelled_by_throttle_) {
+  if (!url_loader_ && !loader_cancelled_) {
     DCHECK_EQ(DEFERRED_START, deferred_stage_);
     priority_info_ =
         base::MakeUnique<PriorityInfo>(priority, intra_priority_value);
@@ -101,6 +101,12 @@ void ThrottlingURLLoader::SetPriority(net::RequestPriority priority,
   }
 
   url_loader_->SetPriority(priority, intra_priority_value);
+}
+
+void ThrottlingURLLoader::DisconnectClient() {
+  client_binding_.Close();
+  url_loader_ = nullptr;
+  loader_cancelled_ = true;
 }
 
 ThrottlingURLLoader::ThrottlingURLLoader(
@@ -128,12 +134,12 @@ void ThrottlingURLLoader::Start(
     const ResourceRequest& url_request,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
-  DCHECK(!cancelled_by_throttle_);
+  DCHECK(!loader_cancelled_);
 
   if (throttle_) {
     bool deferred = false;
     throttle_->WillStartRequest(url_request, &deferred);
-    if (cancelled_by_throttle_)
+    if (loader_cancelled_)
       return;
 
     if (deferred) {
@@ -186,12 +192,12 @@ void ThrottlingURLLoader::OnReceiveResponse(
     const base::Optional<net::SSLInfo>& ssl_info,
     mojom::DownloadedTempFilePtr downloaded_file) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
-  DCHECK(!cancelled_by_throttle_);
+  DCHECK(!loader_cancelled_);
 
   if (throttle_) {
     bool deferred = false;
     throttle_->WillProcessResponse(&deferred);
-    if (cancelled_by_throttle_)
+    if (loader_cancelled_)
       return;
 
     if (deferred) {
@@ -211,12 +217,12 @@ void ThrottlingURLLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const ResourceResponseHead& response_head) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
-  DCHECK(!cancelled_by_throttle_);
+  DCHECK(!loader_cancelled_);
 
   if (throttle_) {
     bool deferred = false;
     throttle_->WillRedirectRequest(redirect_info, &deferred);
-    if (cancelled_by_throttle_)
+    if (loader_cancelled_)
       return;
 
     if (deferred) {
@@ -234,7 +240,7 @@ void ThrottlingURLLoader::OnReceiveRedirect(
 void ThrottlingURLLoader::OnDataDownloaded(int64_t data_len,
                                            int64_t encoded_data_len) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
-  DCHECK(!cancelled_by_throttle_);
+  DCHECK(!loader_cancelled_);
 
   forwarding_client_->OnDataDownloaded(data_len, encoded_data_len);
 }
@@ -244,7 +250,7 @@ void ThrottlingURLLoader::OnUploadProgress(
     int64_t total_size,
     OnUploadProgressCallback ack_callback) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
-  DCHECK(!cancelled_by_throttle_);
+  DCHECK(!loader_cancelled_);
 
   forwarding_client_->OnUploadProgress(current_position, total_size,
                                        std::move(ack_callback));
@@ -253,14 +259,14 @@ void ThrottlingURLLoader::OnUploadProgress(
 void ThrottlingURLLoader::OnReceiveCachedMetadata(
     const std::vector<uint8_t>& data) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
-  DCHECK(!cancelled_by_throttle_);
+  DCHECK(!loader_cancelled_);
 
   forwarding_client_->OnReceiveCachedMetadata(data);
 }
 
 void ThrottlingURLLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
-  DCHECK(!cancelled_by_throttle_);
+  DCHECK(!loader_cancelled_);
 
   forwarding_client_->OnTransferSizeUpdated(transfer_size_diff);
 }
@@ -268,7 +274,7 @@ void ThrottlingURLLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
 void ThrottlingURLLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
-  DCHECK(!cancelled_by_throttle_);
+  DCHECK(!loader_cancelled_);
 
   forwarding_client_->OnStartLoadingResponseBody(std::move(body));
 }
@@ -276,7 +282,7 @@ void ThrottlingURLLoader::OnStartLoadingResponseBody(
 void ThrottlingURLLoader::OnComplete(
     const ResourceRequestCompletionStatus& status) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
-  DCHECK(!cancelled_by_throttle_);
+  DCHECK(!loader_cancelled_);
 
   forwarding_client_->OnComplete(status);
 }
@@ -284,24 +290,20 @@ void ThrottlingURLLoader::OnComplete(
 void ThrottlingURLLoader::CancelWithError(int error_code) {
   // TODO(yzshen): Support a mode that cancellation also deletes the disk cache
   // entry.
-  if (cancelled_by_throttle_)
+  if (loader_cancelled_)
     return;
-
-  cancelled_by_throttle_ = true;
 
   ResourceRequestCompletionStatus request_complete_data;
   request_complete_data.error_code = error_code;
   request_complete_data.completion_time = base::TimeTicks::Now();
 
   deferred_stage_ = DEFERRED_NONE;
-  client_binding_.Close();
-  url_loader_ = nullptr;
-
+  DisconnectClient();
   forwarding_client_->OnComplete(request_complete_data);
 }
 
 void ThrottlingURLLoader::Resume() {
-  if (cancelled_by_throttle_ || deferred_stage_ == DEFERRED_NONE)
+  if (loader_cancelled_ || deferred_stage_ == DEFERRED_NONE)
     return;
 
   switch (deferred_stage_) {

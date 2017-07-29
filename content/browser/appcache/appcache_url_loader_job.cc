@@ -223,16 +223,20 @@ void AppCacheURLLoaderJob::SetSubresourceLoadInfo(
   default_url_loader_factory_getter_ = default_url_loader;
 }
 
-void AppCacheURLLoaderJob::Start(mojom::URLLoaderRequest request,
-                                 mojom::URLLoaderClientPtr client) {
+void AppCacheURLLoaderJob::BindRequest(mojom::URLLoaderClientPtr client,
+                                       mojom::URLLoaderRequest request) {
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(request));
 
-  binding_.set_connection_error_handler(base::Bind(
-      &AppCacheURLLoaderJob::OnConnectionError, StaticAsWeakPtr(this)));
-
   client_ = std::move(client);
 
+  binding_.set_connection_error_handler(base::Bind(
+      &AppCacheURLLoaderJob::OnConnectionError, StaticAsWeakPtr(this)));
+}
+
+void AppCacheURLLoaderJob::Start(mojom::URLLoaderRequest request,
+                                 mojom::URLLoaderClientPtr client) {
+  BindRequest(std::move(client), std::move(request));
   // Send the cached AppCacheResponse if any.
   if (info_.get())
     SendResponseInfo();
@@ -271,8 +275,8 @@ void AppCacheURLLoaderJob::OnResponseInfoLoaded(
     if (is_range_request())
       SetupRangeResponse();
 
-    if (IsResourceTypeFrame(request_.resource_type)) {
-      DCHECK(!main_resource_loader_callback_.is_null());
+    if (IsResourceTypeFrame(request_.resource_type) &&
+        main_resource_loader_callback_) {
       std::move(main_resource_loader_callback_)
           .Run(base::Bind(&AppCacheURLLoaderJob::Start, StaticAsWeakPtr(this)));
     }

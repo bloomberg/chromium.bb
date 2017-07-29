@@ -302,6 +302,10 @@ void AppCacheRequestHandler::DeliverAppCachedResponse(
     host_->NotifyMainResourceIsNamespaceEntry(namespace_entry_url);
 
   job_->DeliverAppCachedResponse(manifest_url, cache_id, entry, is_fallback);
+  // In the network service world, we need to release the AppCacheJob instance
+  // created for handling navigation requests. These instances will get
+  // destroyed when the client disconnects.
+  navigation_request_job_.release();
 }
 
 void AppCacheRequestHandler::DeliverErrorResponse() {
@@ -309,6 +313,10 @@ void AppCacheRequestHandler::DeliverErrorResponse() {
   DCHECK_EQ(kAppCacheNoCacheId, cache_id_);
   DCHECK(manifest_url_.is_empty());
   job_->DeliverErrorResponse();
+  // In the network service world, we need to release the AppCacheJob instance
+  // created for handling navigation requests. These instances will get
+  // destroyed when the client disconnects.
+  navigation_request_job_.release();
 }
 
 void AppCacheRequestHandler::DeliverNetworkResponse() {
@@ -316,6 +324,9 @@ void AppCacheRequestHandler::DeliverNetworkResponse() {
   DCHECK_EQ(kAppCacheNoCacheId, cache_id_);
   DCHECK(manifest_url_.is_empty());
   job_->DeliverNetworkResponse();
+  // In the network service world, we need to destroy the AppCacheJob instance
+  // created for handling navigation requests.
+  navigation_request_job_.reset(nullptr);
 }
 
 void AppCacheRequestHandler::OnPrepareToRestart() {
@@ -354,8 +365,10 @@ std::unique_ptr<AppCacheJob> AppCacheRequestHandler::CreateJob(
 
 std::unique_ptr<AppCacheJob> AppCacheRequestHandler::MaybeCreateJobForFallback(
     net::NetworkDelegate* network_delegate) {
-  if (!base::FeatureList::IsEnabled(features::kNetworkService))
+  if (!base::FeatureList::IsEnabled(features::kNetworkService) ||
+      IsMainResourceType(resource_type_)) {
     return CreateJob(network_delegate);
+  }
   // In network service land, the job initiates a fallback request. We reuse
   // the existing job to deliver the fallback response.
   DCHECK(job_.get());
@@ -593,6 +606,26 @@ AppCacheRequestHandler::MaybeCreateSubresourceFactory() {
       network_url_loader_factory_getter_.get(), appcache_host_, &factory_ptr);
 
   return factory_ptr;
+}
+
+bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
+    const ResourceResponseHead& response,
+    mojom::URLLoaderPtr* loader,
+    mojom::URLLoaderClientRequest* client_request) {
+  request_->AsURLLoaderRequest()->set_response(response);
+  // The AppCacheJob will get destroyed when the client connection is
+  // dropped.
+  AppCacheJob* job = MaybeLoadFallbackForResponse(nullptr);
+  if (job) {
+    mojom::URLLoaderClientPtr client;
+    *client_request = mojo::MakeRequest(&client);
+    mojom::URLLoaderRequest loader_request = mojo::MakeRequest(loader);
+
+    job->AsURLLoaderJob()->BindRequest(std::move(client),
+                                       std::move(loader_request));
+    return true;
+  }
+  return false;
 }
 
 }  // namespace content

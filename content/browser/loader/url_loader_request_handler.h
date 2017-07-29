@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "content/public/common/url_loader_factory.mojom.h"
+#include "net/url_request/redirect_info.h"
 
 namespace content {
 
@@ -39,6 +40,17 @@ class CONTENT_EXPORT URLLoaderRequestHandler {
   // going forward. Subclasses who want to handle subresource requests etc may
   // want to override this to return a custom factory.
   virtual mojom::URLLoaderFactoryPtr MaybeCreateSubresourceFactory();
+
+  // Returns true if the handler creates a loader for the |response| passed.
+  // An example of where this is used is AppCache, where the handler returns
+  // fallback content for the response passed in.
+  // The URLLoader interface pointer is returned in the |loader| parameter.
+  // The interface request for the URLLoaderClient is returned in the
+  // |client_request| parameter.
+  virtual bool MaybeCreateLoaderForResponse(
+      const ResourceResponseHead& response,
+      mojom::URLLoaderPtr* loader,
+      mojom::URLLoaderClientRequest* client_request);
 };
 
 }  // namespace content
