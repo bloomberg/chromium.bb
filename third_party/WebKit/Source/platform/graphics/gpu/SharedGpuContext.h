@@ -37,10 +37,13 @@ class PLATFORM_EXPORT SharedGpuContext {
   SharedGpuContext();
   void CreateContextProviderOnMainThread(WaitableEvent*);
   void CreateContextProviderIfNeeded();
+  void SetContextProvider(std::unique_ptr<WebGraphicsContext3DProvider>&&);
 
   ContextProviderFactory context_provider_factory_ = nullptr;
-  std::unique_ptr<WebGraphicsContext3DProviderWrapper> context_provider_;
+  std::unique_ptr<WebGraphicsContext3DProviderWrapper>
+      context_provider_wrapper_;
   friend class WTF::ThreadSpecific<SharedGpuContext>;
+  bool context_provider_creation_failed_ = false;
 };
 
 }  // blink
