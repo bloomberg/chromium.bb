@@ -350,7 +350,6 @@ void av1_tokenize_palette_sb(const struct ThreadData *const td, int plane,
   // The first color index does not use context or entropy.
   (*t)->token = color_map[0];
   (*t)->palette_cdf = NULL;
-  (*t)->skip_eob_node = 0;
   ++(*t);
 
   const int n = pmi->palette_size[plane];
@@ -375,7 +374,6 @@ void av1_tokenize_palette_sb(const struct ThreadData *const td, int plane,
       }
       (*t)->token = color_new_idx;
       (*t)->palette_cdf = palette_cdf[n - PALETTE_MIN_SIZE][color_ctx];
-      (*t)->skip_eob_node = 0;
       ++(*t);
     }
   }

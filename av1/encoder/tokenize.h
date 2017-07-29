@@ -45,7 +45,6 @@ typedef struct {
   const aom_prob *context_tree;
   EXTRABIT extra;
   uint8_t token;
-  uint8_t skip_eob_node;
 } TOKENEXTRA;
 
 extern const aom_tree_index av1_coef_tree[];
