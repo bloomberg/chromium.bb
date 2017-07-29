@@ -1135,7 +1135,6 @@
       api_class: true,
       api_methods: ["parseSingleValue"],
       converter: "ConvertFlags<Containment>",
-      runtime_flag: "CSSContainment",
       name_for_methods: "Contain",
       type_name: "Containment",
       field_template: "storage_only",

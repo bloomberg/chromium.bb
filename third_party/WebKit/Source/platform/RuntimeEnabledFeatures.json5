@@ -236,10 +236,6 @@
       status: "experimental",
     },
     {
-      name: "CSSContainment",
-      status: "stable",
-    },
-    {
       name: "CSSDisplayContents",
       status: "experimental",
     },
