@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -96,8 +97,16 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   enum class Type { NONE, MEMORY, IOSURFACE, DXGI_IMAGE };
   virtual Type GetType() const;
 
+  void SetColorSpaceForScanout(const gfx::ColorSpace& color_space) {
+    color_space_ = color_space;
+  }
+
+  const gfx::ColorSpace& color_space() const { return color_space_; }
+
  protected:
   virtual ~GLImage() {}
+
+  gfx::ColorSpace color_space_;
 
  private:
   friend class base::RefCounted<GLImage>;

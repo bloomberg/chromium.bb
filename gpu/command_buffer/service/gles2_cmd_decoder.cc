@@ -70,11 +70,13 @@
 #include "third_party/angle/src/image_util/loadimage.h"
 #include "third_party/smhasher/src/City.h"
 #include "ui/gfx/buffer_types.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/ipc/color/gfx_param_traits.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/ca_renderer_layer_params.h"
@@ -12240,6 +12242,48 @@ error::Error GLES2DecoderImpl::HandleScheduleDCLayerCHROMIUM(
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glScheduleDCLayerCHROMIUM",
                        "failed to schedule DCLayer");
   }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleSetColorSpaceForScanoutCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::SetColorSpaceForScanoutCHROMIUM& c = *static_cast<
+      const volatile gles2::cmds::SetColorSpaceForScanoutCHROMIUM*>(cmd_data);
+
+  GLuint texture_id = c.texture_id;
+  GLsizei color_space_size = c.color_space_size;
+  const char* data = static_cast<const char*>(
+      GetAddressAndCheckSize(c.shm_id, c.shm_offset, color_space_size));
+  if (!data)
+    return error::kOutOfBounds;
+
+  // Make a copy to reduce the risk of a time of check to time of use attack.
+  std::vector<char> color_space_data(data, data + color_space_size);
+  base::Pickle color_space_pickle(color_space_data.data(), color_space_size);
+  base::PickleIterator iterator(color_space_pickle);
+  gfx::ColorSpace color_space;
+  if (!IPC::ParamTraits<gfx::ColorSpace>::Read(&color_space_pickle, &iterator,
+                                               &color_space))
+    return error::kOutOfBounds;
+
+  scoped_refptr<gl::GLImage> image;
+  TextureRef* ref = texture_manager()->GetTexture(texture_id);
+  if (!ref) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glSetColorSpaceForScanoutCHROMIUM",
+                       "unknown texture");
+    return error::kNoError;
+  }
+  Texture::ImageState image_state;
+  image =
+      ref->texture()->GetLevelImage(ref->texture()->target(), 0, &image_state);
+  if (!image) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glSetColorSpaceForScanoutCHROMIUM",
+                       "unsupported texture format");
+    return error::kNoError;
+  }
+
+  image->SetColorSpaceForScanout(color_space);
   return error::kNoError;
 }
 

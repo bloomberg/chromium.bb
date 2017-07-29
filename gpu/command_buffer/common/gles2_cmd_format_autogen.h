@@ -13737,6 +13737,62 @@ static_assert(offsetof(ScheduleCALayerCHROMIUM, shm_id) == 20,
 static_assert(offsetof(ScheduleCALayerCHROMIUM, shm_offset) == 24,
               "offset of ScheduleCALayerCHROMIUM shm_offset should be 24");
 
+struct SetColorSpaceForScanoutCHROMIUM {
+  typedef SetColorSpaceForScanoutCHROMIUM ValueType;
+  static const CommandId kCmdId = kSetColorSpaceForScanoutCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _texture_id,
+            GLuint _shm_id,
+            GLuint _shm_offset,
+            GLsizei _color_space_size) {
+    SetHeader();
+    texture_id = _texture_id;
+    shm_id = _shm_id;
+    shm_offset = _shm_offset;
+    color_space_size = _color_space_size;
+  }
+
+  void* Set(void* cmd,
+            GLuint _texture_id,
+            GLuint _shm_id,
+            GLuint _shm_offset,
+            GLsizei _color_space_size) {
+    static_cast<ValueType*>(cmd)->Init(_texture_id, _shm_id, _shm_offset,
+                                       _color_space_size);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t texture_id;
+  uint32_t shm_id;
+  uint32_t shm_offset;
+  int32_t color_space_size;
+};
+
+static_assert(sizeof(SetColorSpaceForScanoutCHROMIUM) == 20,
+              "size of SetColorSpaceForScanoutCHROMIUM should be 20");
+static_assert(offsetof(SetColorSpaceForScanoutCHROMIUM, header) == 0,
+              "offset of SetColorSpaceForScanoutCHROMIUM header should be 0");
+static_assert(
+    offsetof(SetColorSpaceForScanoutCHROMIUM, texture_id) == 4,
+    "offset of SetColorSpaceForScanoutCHROMIUM texture_id should be 4");
+static_assert(offsetof(SetColorSpaceForScanoutCHROMIUM, shm_id) == 8,
+              "offset of SetColorSpaceForScanoutCHROMIUM shm_id should be 8");
+static_assert(
+    offsetof(SetColorSpaceForScanoutCHROMIUM, shm_offset) == 12,
+    "offset of SetColorSpaceForScanoutCHROMIUM shm_offset should be 12");
+static_assert(
+    offsetof(SetColorSpaceForScanoutCHROMIUM, color_space_size) == 16,
+    "offset of SetColorSpaceForScanoutCHROMIUM color_space_size should be 16");
+
 struct ScheduleCALayerInUseQueryCHROMIUMImmediate {
   typedef ScheduleCALayerInUseQueryCHROMIUMImmediate ValueType;
   static const CommandId kCmdId = kScheduleCALayerInUseQueryCHROMIUMImmediate;

@@ -2181,6 +2181,14 @@ void GLES2TraceImplementation::ScheduleCALayerCHROMIUM(
                                filter);
 }
 
+void GLES2TraceImplementation::SetColorSpaceForScanoutCHROMIUM(
+    GLuint texture_id,
+    GLColorSpace color_space) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "GLES2Trace::SetColorSpaceForScanoutCHROMIUM");
+  gl_->SetColorSpaceForScanoutCHROMIUM(texture_id, color_space);
+}
+
 void GLES2TraceImplementation::ScheduleCALayerInUseQueryCHROMIUM(
     GLsizei count,
     const GLuint* textures) {

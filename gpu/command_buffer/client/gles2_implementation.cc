@@ -48,6 +48,11 @@
 #include "gpu/command_buffer/client/gpu_switches.h"
 #endif
 
+#if !defined(__native_client__)
+#include "ui/gfx/color_space.h"
+#include "ui/gfx/ipc/color/gfx_param_traits.h"
+#endif
+
 namespace gpu {
 namespace gles2 {
 
@@ -4993,6 +4998,33 @@ void GLES2Implementation::ScheduleDCLayerSharedStateCHROMIUM(
   memcpy(mem + 4, transform, 16 * sizeof(GLfloat));
   helper_->ScheduleDCLayerSharedStateCHROMIUM(opacity, is_clipped, z_order,
                                               buffer.shm_id(), buffer.offset());
+}
+
+void GLES2Implementation::SetColorSpaceForScanoutCHROMIUM(
+    GLuint texture_id,
+    GLColorSpace color_space) {
+#if defined(__native_client__)
+  // Including gfx::ColorSpace would bring Skia and a lot of other code into
+  // NaCl's IRT.
+  SetGLError(GL_INVALID_VALUE, "GLES2::SetColorSpaceForScanoutCHROMIUM",
+             "not supported");
+#else
+  gfx::ColorSpace* gfx_color_space =
+      reinterpret_cast<gfx::ColorSpace*>(color_space);
+  base::Pickle color_space_data;
+  IPC::ParamTraits<gfx::ColorSpace>::Write(&color_space_data, *gfx_color_space);
+
+  ScopedTransferBufferPtr buffer(color_space_data.size(), helper_,
+                                 transfer_buffer_);
+  if (!buffer.valid() || buffer.size() < color_space_data.size()) {
+    SetGLError(GL_OUT_OF_MEMORY, "GLES2::SetColorSpaceForScanoutCHROMIUM",
+               "out of memory");
+    return;
+  }
+  memcpy(buffer.address(), color_space_data.data(), color_space_data.size());
+  helper_->SetColorSpaceForScanoutCHROMIUM(
+      texture_id, buffer.shm_id(), buffer.offset(), color_space_data.size());
+#endif
 }
 
 void GLES2Implementation::ScheduleDCLayerCHROMIUM(

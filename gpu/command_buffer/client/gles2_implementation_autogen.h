@@ -1054,6 +1054,9 @@ void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                              const GLfloat* bounds_rect,
                              GLuint filter) override;
 
+void SetColorSpaceForScanoutCHROMIUM(GLuint texture_id,
+                                     GLColorSpace color_space) override;
+
 void ScheduleCALayerInUseQueryCHROMIUM(GLsizei count,
                                        const GLuint* textures) override;
 

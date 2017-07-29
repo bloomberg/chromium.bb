@@ -1501,6 +1501,12 @@ void GL_APIENTRY GLES2ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
       bounds_rect, filter);
 }
 void GL_APIENTRY
+GLES2SetColorSpaceForScanoutCHROMIUM(GLuint texture_id,
+                                     GLColorSpace color_space) {
+  gles2::GetGLContext()->SetColorSpaceForScanoutCHROMIUM(texture_id,
+                                                         color_space);
+}
+void GL_APIENTRY
 GLES2ScheduleCALayerInUseQueryCHROMIUM(GLsizei count, const GLuint* textures) {
   gles2::GetGLContext()->ScheduleCALayerInUseQueryCHROMIUM(count, textures);
 }
@@ -2904,6 +2910,11 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glScheduleCALayerCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glScheduleCALayerCHROMIUM),
+    },
+    {
+        "glSetColorSpaceForScanoutCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glSetColorSpaceForScanoutCHROMIUM),
     },
     {
         "glScheduleCALayerInUseQueryCHROMIUM",
