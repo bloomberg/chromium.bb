@@ -307,6 +307,7 @@ html element audio
     property autoplay
     property buffered
     property canPlayType
+    property captureStream
     property controls
     property controlsList
     property crossOrigin
@@ -1030,6 +1031,7 @@ html element video
     property autoplay
     property buffered
     property canPlayType
+    property captureStream
     property controls
     property controlsList
     property crossOrigin

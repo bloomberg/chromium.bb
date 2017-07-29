@@ -620,7 +620,7 @@
     },
     {
       name: "MediaCaptureFromVideo",
-      status: "experimental",
+      status: "stable",
     },
     // Set to reflect the MediaCastOverlayButton feature.
     {
