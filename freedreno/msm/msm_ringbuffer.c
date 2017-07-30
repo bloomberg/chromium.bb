@@ -589,12 +589,12 @@ drm_private struct fd_ringbuffer * msm_ringbuffer_new(struct fd_pipe *pipe,
 		uint32_t size)
 {
 	struct msm_ringbuffer *msm_ring;
-	struct fd_ringbuffer *ring = NULL;
+	struct fd_ringbuffer *ring;
 
 	msm_ring = calloc(1, sizeof(*msm_ring));
 	if (!msm_ring) {
 		ERROR_MSG("allocation failed");
-		goto fail;
+		return NULL;
 	}
 
 	if (size == 0) {
@@ -614,8 +614,4 @@ drm_private struct fd_ringbuffer * msm_ringbuffer_new(struct fd_pipe *pipe,
 	ring_cmd_new(ring, size);
 
 	return ring;
-fail:
-	if (ring)
-		fd_ringbuffer_del(ring);
-	return NULL;
 }
