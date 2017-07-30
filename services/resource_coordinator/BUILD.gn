@@ -16,8 +16,6 @@ source_set("lib") {
     "coordination_unit/coordination_unit_graph_observer.h",
     "coordination_unit/coordination_unit_impl.cc",
     "coordination_unit/coordination_unit_impl.h",
-    "coordination_unit/coordination_unit_introspector_impl.cc",
-    "coordination_unit/coordination_unit_introspector_impl.h",
     "coordination_unit/coordination_unit_manager.cc",
     "coordination_unit/coordination_unit_manager.h",
     "coordination_unit/coordination_unit_provider_impl.cc",
