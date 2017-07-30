@@ -17,6 +17,13 @@ const char kProcessTypeDaemon[] = "daemon";
 const char kProcessTypeDesktop[] = "desktop";
 const char kProcessTypeHost[] = "host";
 const char kProcessTypeRdpDesktopSession[] = "rdp_desktop_session";
+const char kProcessTypeEvaluateCapability[] = "evaluate_capability";
+
+const char kEvaluateCapabilitySwitchName[] = "evaluate-type";
+
+const char kEvaluateTest[] = "test";
+const char kEvaluateCrash[] = "crash";
+const char kEvaluateForward[] = "forward";
 
 const char kParentWindowSwitchName[] = "parent-window";
 

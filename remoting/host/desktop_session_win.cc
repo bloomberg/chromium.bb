@@ -38,6 +38,7 @@
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/sas_injector.h"
 #include "remoting/host/screen_resolution.h"
+#include "remoting/host/switches.h"
 // MIDL-generated declarations and definitions.
 #include "remoting/host/win/chromoting_lib.h"
 #include "remoting/host/win/host_service.h"
