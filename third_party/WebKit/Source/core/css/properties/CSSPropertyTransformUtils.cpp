@@ -33,18 +33,18 @@ bool ConsumeNumbers(CSSParserTokenRange& args,
 }
 
 bool ConsumePerspective(CSSParserTokenRange& args,
-                        const CSSParserContext* context,
+                        const CSSParserContext& context,
                         CSSFunctionValue*& transform_value,
                         bool use_legacy_parsing) {
   CSSPrimitiveValue* parsed_value = CSSPropertyParserHelpers::ConsumeLength(
-      args, context->Mode(), kValueRangeNonNegative);
+      args, context.Mode(), kValueRangeNonNegative);
   if (!parsed_value && use_legacy_parsing) {
     double perspective;
     if (!CSSPropertyParserHelpers::ConsumeNumberRaw(args, perspective) ||
         perspective < 0) {
       return false;
     }
-    context->Count(WebFeature::kUnitlessPerspectiveInTransformProperty);
+    context.Count(WebFeature::kUnitlessPerspectiveInTransformProperty);
     parsed_value = CSSPrimitiveValue::Create(
         perspective, CSSPrimitiveValue::UnitType::kPixels);
   }
@@ -77,7 +77,7 @@ bool ConsumeTranslate3d(CSSParserTokenRange& args,
 }
 
 CSSValue* ConsumeTransformValue(CSSParserTokenRange& range,
-                                const CSSParserContext* context,
+                                const CSSParserContext& context,
                                 bool use_legacy_parsing) {
   CSSValueID function_id = range.Peek().FunctionId();
   if (function_id == CSSValueInvalid)
@@ -96,14 +96,14 @@ CSSValue* ConsumeTransformValue(CSSParserTokenRange& range,
     case CSSValueSkewY:
     case CSSValueSkew:
       parsed_value = CSSPropertyParserHelpers::ConsumeAngle(
-          args, *context, WebFeature::kUnitlessZeroAngleTransform);
+          args, context, WebFeature::kUnitlessZeroAngleTransform);
       if (!parsed_value)
         return nullptr;
       if (function_id == CSSValueSkew &&
           CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(args)) {
         transform_value->Append(*parsed_value);
         parsed_value = CSSPropertyParserHelpers::ConsumeAngle(
-            args, *context, WebFeature::kUnitlessZeroAngleTransform);
+            args, context, WebFeature::kUnitlessZeroAngleTransform);
         if (!parsed_value)
           return nullptr;
       }
@@ -135,21 +135,21 @@ CSSValue* ConsumeTransformValue(CSSParserTokenRange& range,
     case CSSValueTranslateY:
     case CSSValueTranslate:
       parsed_value = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
-          args, context->Mode(), kValueRangeAll);
+          args, context.Mode(), kValueRangeAll);
       if (!parsed_value)
         return nullptr;
       if (function_id == CSSValueTranslate &&
           CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(args)) {
         transform_value->Append(*parsed_value);
         parsed_value = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
-            args, context->Mode(), kValueRangeAll);
+            args, context.Mode(), kValueRangeAll);
         if (!parsed_value)
           return nullptr;
       }
       break;
     case CSSValueTranslateZ:
       parsed_value = CSSPropertyParserHelpers::ConsumeLength(
-          args, context->Mode(), kValueRangeAll);
+          args, context.Mode(), kValueRangeAll);
       break;
     case CSSValueMatrix:
     case CSSValueMatrix3d:
@@ -168,12 +168,12 @@ CSSValue* ConsumeTransformValue(CSSParserTokenRange& range,
         return nullptr;
       }
       parsed_value = CSSPropertyParserHelpers::ConsumeAngle(
-          args, *context, WebFeature::kUnitlessZeroAngleTransform);
+          args, context, WebFeature::kUnitlessZeroAngleTransform);
       if (!parsed_value)
         return nullptr;
       break;
     case CSSValueTranslate3d:
-      if (!ConsumeTranslate3d(args, context->Mode(), transform_value))
+      if (!ConsumeTranslate3d(args, context.Mode(), transform_value))
         return nullptr;
       break;
     default:
@@ -198,7 +198,7 @@ CSSValue* CSSPropertyTransformUtils::ConsumeTransformList(
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   do {
     CSSValue* parsed_transform_value =
-        ConsumeTransformValue(range, &context, local_context.UseAliasParsing());
+        ConsumeTransformValue(range, context, local_context.UseAliasParsing());
     if (!parsed_transform_value)
       return nullptr;
     list->Append(*parsed_transform_value);

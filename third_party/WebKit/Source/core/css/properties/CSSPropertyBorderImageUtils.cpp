@@ -27,7 +27,7 @@ static CSSIdentifierValue* ConsumeBorderImageRepeatKeyword(
 
 CSSValue* CSSPropertyBorderImageUtils::ConsumeWebkitBorderImage(
     CSSParserTokenRange& range,
-    const CSSParserContext* context) {
+    const CSSParserContext& context) {
   CSSValue* source = nullptr;
   CSSValue* slice = nullptr;
   CSSValue* width = nullptr;
@@ -41,7 +41,7 @@ CSSValue* CSSPropertyBorderImageUtils::ConsumeWebkitBorderImage(
 
 bool CSSPropertyBorderImageUtils::ConsumeBorderImageComponents(
     CSSParserTokenRange& range,
-    const CSSParserContext* context,
+    const CSSParserContext& context,
     CSSValue*& source,
     CSSValue*& slice,
     CSSValue*& width,
@@ -50,7 +50,7 @@ bool CSSPropertyBorderImageUtils::ConsumeBorderImageComponents(
     bool default_fill) {
   do {
     if (!source) {
-      source = CSSPropertyParserHelpers::ConsumeImageOrNone(range, context);
+      source = CSSPropertyParserHelpers::ConsumeImageOrNone(range, &context);
       if (source)
         continue;
     }

@@ -12,7 +12,7 @@ const CSSValue* CSSPropertyAPIWebkitBorderImage::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {
-  return CSSPropertyBorderImageUtils::ConsumeWebkitBorderImage(range, &context);
+  return CSSPropertyBorderImageUtils::ConsumeWebkitBorderImage(range, context);
 }
 
 }  // namespace blink
