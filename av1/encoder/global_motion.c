@@ -244,16 +244,13 @@ static unsigned char *downconvert_frame(YV12_BUFFER_CONFIG *frm,
                                         int bit_depth) {
   int i, j;
   uint16_t *orig_buf = CONVERT_TO_SHORTPTR(frm->y_buffer);
-  if (!frm->y_buffer_8bit)
-    frm->y_buffer_8bit =
-        malloc(frm->y_height * frm->y_stride * sizeof(*frm->y_buffer_8bit));
-
+  uint8_t *buf_8bit = frm->y_buffer_8bit;
+  assert(!buf_8bit);
   for (i = 0; i < frm->y_height; ++i)
     for (j = 0; j < frm->y_width; ++j)
-      frm->y_buffer_8bit[i * frm->y_stride + j] =
+      buf_8bit[i * frm->y_stride + j] =
           orig_buf[i * frm->y_stride + j] >> (bit_depth - 8);
-
-  return frm->y_buffer_8bit;
+  return buf_8bit;
 }
 #endif
 
