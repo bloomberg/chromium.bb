@@ -36,10 +36,6 @@ void ResourceCoordinatorService::OnStart() {
                                     base::Unretained(ref_factory_.get()),
                                     base::Unretained(this)));
 
-  registry_.AddInterface(
-      base::Bind(&CoordinationUnitIntrospectorImpl::BindToInterface,
-                 base::Unretained(&introspector_)));
-
   // Register new |CoordinationUnitGraphObserver| implementations here.
   auto tab_signal_generator_impl = base::MakeUnique<TabSignalGeneratorImpl>();
   registry_.AddInterface(
