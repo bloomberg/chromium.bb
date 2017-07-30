@@ -175,10 +175,10 @@ CSSIdentifierValue* ConsumeIdent(CSSParserTokenRange& range) {
 template <typename Func, typename... Args>
 CSSValueList* ConsumeCommaSeparatedList(Func callback,
                                         CSSParserTokenRange& range,
-                                        Args... args) {
+                                        Args&&... args) {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   do {
-    CSSValue* value = callback(range, args...);
+    CSSValue* value = callback(range, std::forward<Args>(args)...);
     if (!value)
       return nullptr;
     list->Append(*value);

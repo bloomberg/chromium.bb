@@ -42,7 +42,7 @@ CSSValue* ConsumeAnimationValue(CSSPropertyID property,
           ConsumeAnimationIterationCount(range);
     case CSSPropertyAnimationName:
       return CSSPropertyAnimationNameUtils::ConsumeAnimationName(
-          range, &context, use_legacy_parsing);
+          range, context, use_legacy_parsing);
     case CSSPropertyAnimationPlayState:
       return CSSPropertyParserHelpers::ConsumeIdent<CSSValueRunning,
                                                     CSSValuePaused>(range);

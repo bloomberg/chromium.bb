@@ -18,7 +18,7 @@ class CSSPropertyAnimationNameUtils {
 
  public:
   static CSSValue* ConsumeAnimationName(CSSParserTokenRange&,
-                                        const CSSParserContext*,
+                                        const CSSParserContext&,
                                         bool allow_quoted_name);
 };
 

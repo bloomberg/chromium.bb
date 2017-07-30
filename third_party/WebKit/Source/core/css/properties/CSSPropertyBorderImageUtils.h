@@ -18,9 +18,9 @@ class CSSPropertyBorderImageUtils {
 
  public:
   static CSSValue* ConsumeWebkitBorderImage(CSSParserTokenRange&,
-                                            const CSSParserContext*);
+                                            const CSSParserContext&);
   static bool ConsumeBorderImageComponents(CSSParserTokenRange&,
-                                           const CSSParserContext*,
+                                           const CSSParserContext&,
                                            CSSValue*& source,
                                            CSSValue*& slice,
                                            CSSValue*& width,

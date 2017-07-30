@@ -11,14 +11,14 @@ namespace blink {
 
 CSSValue* CSSPropertyAnimationNameUtils::ConsumeAnimationName(
     CSSParserTokenRange& range,
-    const CSSParserContext* context,
+    const CSSParserContext& context,
     bool allow_quoted_name) {
   if (range.Peek().Id() == CSSValueNone)
     return CSSPropertyParserHelpers::ConsumeIdent(range);
 
   if (allow_quoted_name && range.Peek().GetType() == kStringToken) {
     // Legacy support for strings in prefixed animations.
-    context->Count(WebFeature::kQuotedAnimationName);
+    context.Count(WebFeature::kQuotedAnimationName);
 
     const CSSParserToken& token = range.ConsumeIncludingWhitespace();
     if (EqualIgnoringASCIICase(token.Value(), "none"))

@@ -24,7 +24,7 @@ bool CSSShorthandPropertyAPIWebkitMaskBoxImage::parseShorthand(
   CSSValue* repeat = nullptr;
 
   if (!CSSPropertyBorderImageUtils::ConsumeBorderImageComponents(
-          range, &context, source, slice, width, outset, repeat, true)) {
+          range, context, source, slice, width, outset, repeat, true)) {
     return false;
   }
 
