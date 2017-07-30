@@ -20,7 +20,11 @@ class ListValue;
 namespace safe_browsing {
 // Features list
 extern const base::Feature kAdSamplerTriggerFeature;
+extern const base::Feature kGoogleBrandedPhishingWarning;
 extern const base::Feature kLocalDatabaseManagerEnabled;
+extern const base::Feature kPasswordFieldOnFocusPinging;
+extern const base::Feature kPasswordProtectionInterstitial;
+extern const base::Feature kProtectedPasswordEntryPinging;
 extern const base::Feature kThreatDomDetailsTagAndAttributeFeature;
 extern const base::Feature kV4OnlyEnabled;
 

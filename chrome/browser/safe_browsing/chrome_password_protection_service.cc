@@ -18,13 +18,16 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -37,6 +40,10 @@ namespace {
 
 // The number of user gestures we trace back for login event attribution.
 const int kPasswordEventAttributionUserGestureLimit = 2;
+
+// If user specifically mark a site as legitimate, we will keep this decision
+// for 2 days.
+const int kOverrideVerdictCacheDurationSec = 2 * 24 * 60 * 60;
 
 }  // namespace
 
@@ -197,8 +204,57 @@ void ChromePasswordProtectionService::ShowPhishingInterstitial(
   ui_manager_->DisplayBlockingPage(resource);
 }
 
+void ChromePasswordProtectionService::UpdateSecurityState(
+    safe_browsing::SBThreatType threat_type,
+    content::WebContents* web_contents) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  content::NavigationEntry* entry =
+      web_contents->GetController().GetVisibleEntry();
+  if (!ui_manager_ || !entry)
+    return;
+
+  const GURL url = entry->GetURL();
+  const GURL url_with_empty_path = url.GetWithEmptyPath();
+  if (threat_type == SB_THREAT_TYPE_SAFE) {
+    ui_manager_->RemoveWhitelistUrlSet(url_with_empty_path, web_contents,
+                                       false /* from_pending_only */);
+    // Overrides cached verdicts.
+    LoginReputationClientResponse verdict;
+    GetCachedVerdict(url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+                     &verdict);
+    verdict.set_verdict_type(LoginReputationClientResponse::SAFE);
+    verdict.set_cache_duration_sec(kOverrideVerdictCacheDurationSec);
+    CacheVerdict(url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+                 &verdict, base::Time::Now());
+    return;
+  }
+
+  safe_browsing::SBThreatType current_threat_type = SB_THREAT_TYPE_UNUSED;
+  // If user already click-through interstitial warning, or if there's already
+  // a dangerous security state showing, we'll override it.
+  if (ui_manager_->IsUrlWhitelistedOrPendingForWebContents(
+          url_with_empty_path, false,
+          web_contents->GetController().GetVisibleEntry(), web_contents, false,
+          &current_threat_type)) {
+    DCHECK_NE(SB_THREAT_TYPE_UNUSED, current_threat_type);
+    if (current_threat_type == threat_type)
+      return;
+    // Resets previous threat type.
+    ui_manager_->RemoveWhitelistUrlSet(url_with_empty_path, web_contents,
+                                       false /* from_pending_only */);
+  }
+  ui_manager_->AddToWhitelistUrlSet(url_with_empty_path, web_contents, true,
+                                    threat_type);
+}
+
 ChromePasswordProtectionService::ChromePasswordProtectionService(
-    Profile* profile)
-    : PasswordProtectionService(nullptr, nullptr, nullptr, nullptr),
+    Profile* profile,
+    scoped_refptr<HostContentSettingsMap> content_setting_map,
+    scoped_refptr<SafeBrowsingUIManager> ui_manager)
+    : PasswordProtectionService(nullptr,
+                                nullptr,
+                                nullptr,
+                                content_setting_map.get()),
+      ui_manager_(ui_manager),
       profile_(profile) {}
 }  // namespace safe_browsing

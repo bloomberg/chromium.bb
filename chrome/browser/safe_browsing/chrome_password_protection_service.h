@@ -56,6 +56,12 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   PasswordProtectionService::SyncAccountType GetSyncAccountType() override;
 
+  // Update security state for the current |web_contents| based on
+  // |threat_type|, such that page info bubble will show appropriate status
+  // when user clicks on the security chip.
+  void UpdateSecurityState(SBThreatType threat_type,
+                           content::WebContents* web_contents) override;
+
   FRIEND_TEST_ALL_PREFIXES(
       ChromePasswordProtectionServiceTest,
       VerifyFinchControlForLowReputationPingSBEROnlyNoIncognito);
@@ -69,11 +75,16 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       VerifyFinchControlForLowReputationPingAllButNoIncognito);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
                            VerifyGetSyncAccountType);
+  FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
+                           VerifyUpdateSecurityState);
 
  private:
   friend class MockChromePasswordProtectionService;
   // Constructor used for tests only.
-  explicit ChromePasswordProtectionService(Profile* profile);
+  ChromePasswordProtectionService(
+      Profile* profile,
+      scoped_refptr<HostContentSettingsMap> content_setting_map,
+      scoped_refptr<SafeBrowsingUIManager> ui_manager);
 
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   // Profile associated with this instance.

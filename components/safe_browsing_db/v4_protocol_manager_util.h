@@ -125,6 +125,9 @@ enum SBThreatType {
 
   // Url detected by password protection service.
   SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING,
+
+  // Password reuse detected on low reputation page,
+  SB_THREAT_TYPE_PASSWORD_REUSE,
 };
 
 using SBThreatTypeSet = base::flat_set<SBThreatType>;

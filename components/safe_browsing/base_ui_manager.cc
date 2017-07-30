@@ -43,6 +43,7 @@ class WhitelistUrlSet : public base::SupportsUserData::Data {
     return true;
   }
   void RemovePending(const GURL& url) { pending_.erase(url); }
+  void Remove(const GURL& url) { map_.erase(url); }
   void Insert(const GURL url, SBThreatType threat_type) {
     if (Contains(url, nullptr))
       return;
@@ -166,7 +167,8 @@ void BaseUIManager::OnBlockingPageDone(
                            resource.threat_type);
     } else if (web_contents) {
       // |web_contents| doesn't exist if the tab has been closed.
-      RemoveFromPendingWhitelistUrlSet(whitelist_url, web_contents);
+      RemoveWhitelistUrlSet(whitelist_url, web_contents,
+                            true /* from_pending_only */);
     }
   }
 }
@@ -310,9 +312,9 @@ const GURL BaseUIManager::default_safe_page() const {
   return GURL(url::kAboutBlankURL);
 }
 
-void BaseUIManager::RemoveFromPendingWhitelistUrlSet(
-    const GURL& whitelist_url,
-    WebContents* web_contents) {
+void BaseUIManager::RemoveWhitelistUrlSet(const GURL& whitelist_url,
+                                          WebContents* web_contents,
+                                          bool from_pending_only) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // A WebContents might not exist if the tab has been closed.
@@ -342,6 +344,11 @@ void BaseUIManager::RemoveFromPendingWhitelistUrlSet(
   // blocking pages are dismissed.
   if (site_list && site_list->ContainsPending(whitelist_url, nullptr))
     site_list->RemovePending(whitelist_url);
+
+  if (!from_pending_only && site_list &&
+      site_list->Contains(whitelist_url, nullptr)) {
+    site_list->Remove(whitelist_url);
+  }
 
   // Notify security UI that security state has changed.
   web_contents->DidChangeVisibleSecurityState();

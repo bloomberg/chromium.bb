@@ -22,9 +22,22 @@ namespace safe_browsing {
 const base::Feature kAdSamplerTriggerFeature{"SafeBrowsingAdSamplerTrigger",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kGoogleBrandedPhishingWarning{
+    "PasswordProtectionGoogleBrandedPhishingWarning",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kLocalDatabaseManagerEnabled{
     "SafeBrowsingV4LocalDatabaseManagerEnabled",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPasswordFieldOnFocusPinging{
+    "PasswordFieldOnFocusPinging", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPasswordProtectionInterstitial{
+    "PasswordProtectionInterstitial", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kProtectedPasswordEntryPinging{
+    "ProtectedPasswordEntryPinging", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Specifies which non-resource HTML Elements to collect based on their tag and
 // attributes. It's a single param containing a comma-separated list of pairs.
@@ -48,7 +61,11 @@ constexpr struct {
   bool probabilistically_enabled;
 } kExperimentalFeatures[]{
     {&kAdSamplerTriggerFeature, false},
+    {&kGoogleBrandedPhishingWarning, false},
     {&kLocalDatabaseManagerEnabled, true},
+    {&kPasswordFieldOnFocusPinging, true},
+    {&kPasswordProtectionInterstitial, false},
+    {&kProtectedPasswordEntryPinging, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kV4OnlyEnabled, true},
 };
