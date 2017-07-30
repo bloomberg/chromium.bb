@@ -1,6 +1,0 @@
-PASS getComputedStyle(p, '::first-letter').color is green
-FAIL getComputedStyle(p, '::first-letter').color should be rgb(0, 128, 0). Was rgb(255, 0, 0).
-PASS successfullyParsed is true
-
-TEST COMPLETE
-hover me.

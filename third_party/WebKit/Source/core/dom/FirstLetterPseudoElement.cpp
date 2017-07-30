@@ -296,6 +296,8 @@ void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects() {
           : ToLayoutText(next_layout_object)->OriginalText();
   DCHECK(old_text.Impl());
 
+  // :first-letter inehrits from the parent of the text. It may not be
+  // this->Parent() when e.g., <div><span>text</span></div>.
   ComputedStyle* pseudo_style =
       StyleForFirstLetter(next_layout_object->Parent());
   GetLayoutObject()->SetStyle(pseudo_style);
@@ -341,23 +343,28 @@ void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects() {
 }
 
 void FirstLetterPseudoElement::DidRecalcStyle() {
-  if (!GetLayoutObject())
+  LayoutObject* layout_object = this->GetLayoutObject();
+  if (!layout_object)
     return;
+
+  // :first-letter inehrits from the parent of the text. It may not be
+  // this->Parent() when e.g., <div><span>text</span></div>.
+  DCHECK(remaining_text_layout_object_);
+  ComputedStyle* pseudo_style =
+      StyleForFirstLetter(remaining_text_layout_object_->Parent());
+  DCHECK(pseudo_style);
+  layout_object->SetStyle(pseudo_style);
 
   // The layoutObjects inside pseudo elements are anonymous so they don't get
   // notified of recalcStyle and must have
   // the style propagated downward manually similar to
   // LayoutObject::propagateStyleToAnonymousChildren.
-  LayoutObject* layout_object = this->GetLayoutObject();
   for (LayoutObject* child = layout_object->NextInPreOrder(layout_object);
        child; child = child->NextInPreOrder(layout_object)) {
     // We need to re-calculate the correct style for the first letter element
     // and then apply that to the container and the text fragment inside.
-    if (child->Style()->StyleType() == kPseudoIdFirstLetter &&
-        remaining_text_layout_object_) {
-      if (ComputedStyle* pseudo_style =
-              StyleForFirstLetter(remaining_text_layout_object_->Parent()))
-        child->SetPseudoStyle(pseudo_style);
+    if (child->Style()->StyleType() == kPseudoIdFirstLetter) {
+      child->SetPseudoStyle(pseudo_style);
       continue;
     }
 

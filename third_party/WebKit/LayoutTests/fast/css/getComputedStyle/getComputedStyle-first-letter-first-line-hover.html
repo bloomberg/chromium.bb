@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<script src="../../../resources/js-test.js"></script>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
 <style>
 #p { color: red }
 #p::first-line { color: green }
@@ -9,10 +10,14 @@
 <p id="p">Hover me.</p>
 <script>
 var green = "rgb(0, 128, 0)";
-shouldBe("getComputedStyle(p, '::first-letter').color", "green");
+test(() => {
+  assert_equals(getComputedStyle(p, '::first-letter').color, green);
+}, 'before :hover');
 
-if (eventSender)
-    eventSender.mouseMoveTo(p.offsetLeft+1, p.offsetTop+1);
+test(() => {
+  if (eventSender)
+    eventSender.mouseMoveTo(p.offsetLeft + 1, p.offsetTop + 1);
 
-shouldBe("getComputedStyle(p, '::first-letter').color", "green");
+  assert_equals(getComputedStyle(p, '::first-letter').color, green);
+}, 'after :hover');
 </script>
