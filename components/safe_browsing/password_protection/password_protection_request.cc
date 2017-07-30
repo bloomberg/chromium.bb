@@ -42,6 +42,7 @@ PasswordProtectionRequest::PasswordProtectionRequest(
       password_field_exists_(password_field_exists),
       password_protection_service_(pps),
       request_timeout_in_ms_(request_timeout_in_ms),
+      request_proto_(base::MakeUnique<LoginReputationClientRequest>()),
       weakptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE ||
@@ -109,7 +110,6 @@ void PasswordProtectionRequest::CheckCachedVerdicts() {
 }
 
 void PasswordProtectionRequest::FillRequestProto() {
-  request_proto_ = base::MakeUnique<LoginReputationClientRequest>();
   request_proto_->set_page_url(main_frame_url_.spec());
   request_proto_->set_trigger_type(trigger_type_);
   password_protection_service_->FillUserPopulation(trigger_type_,
@@ -266,13 +266,16 @@ void PasswordProtectionRequest::OnURLFetchComplete(
     Finish(PasswordProtectionService::RESPONSE_MALFORMED, nullptr);
 }
 
+bool PasswordProtectionRequest::IsSyncPasswordReuse() const {
+  return saved_domain_ == std::string(password_manager::kSyncPasswordDomain);
+}
+
 void PasswordProtectionRequest::Finish(
     PasswordProtectionService::RequestOutcome outcome,
     std::unique_ptr<LoginReputationClientResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   tracker_.TryCancelAll();
-  bool is_sync_password =
-      saved_domain_ == std::string(password_manager::kSyncPasswordDomain);
+  bool is_sync_password = IsSyncPasswordReuse();
   if (trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
     UMA_HISTOGRAM_ENUMERATION(kPasswordOnFocusRequestOutcomeHistogramName,
                               outcome, PasswordProtectionService::MAX_OUTCOME);

@@ -29357,6 +29357,14 @@ from previous Chrome versions.
   <int value="3" label="Phishing"/>
 </enum>
 
+<enum name="PasswordProtectionWarningAction">
+  <int value="0" label="Shown"/>
+  <int value="1" label="Change password"/>
+  <int value="2" label="Ignore"/>
+  <int value="3" label="Close"/>
+  <int value="4" label="Mark as legitimate"/>
+</enum>
+
 <enum name="PasswordReusePasswordFieldDetected">
   <int value="0" label="No password field"/>
   <int value="1" label="Has password field"/>

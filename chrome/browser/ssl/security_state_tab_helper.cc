@@ -195,6 +195,9 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
       case safe_browsing::SB_THREAT_TYPE_URL_UNWANTED:
         return security_state::MALICIOUS_CONTENT_STATUS_UNWANTED_SOFTWARE;
         break;
+      case safe_browsing::SB_THREAT_TYPE_PASSWORD_REUSE:
+      // TODO(jialiul): return appropriate malicious content status when
+      // PageInfo class is ready to handle this new threat type.
       case safe_browsing::SB_THREAT_TYPE_URL_BINARY_MALWARE:
       case safe_browsing::SB_THREAT_TYPE_EXTENSION:
       case safe_browsing::SB_THREAT_TYPE_BLACKLISTED_RESOURCE:

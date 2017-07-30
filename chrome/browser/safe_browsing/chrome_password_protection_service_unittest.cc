@@ -19,13 +19,18 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/variations/variations_params_manager.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -65,8 +70,13 @@ class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
 class MockChromePasswordProtectionService
     : public ChromePasswordProtectionService {
  public:
-  explicit MockChromePasswordProtectionService(Profile* profile)
-      : ChromePasswordProtectionService(profile),
+  explicit MockChromePasswordProtectionService(
+      Profile* profile,
+      scoped_refptr<HostContentSettingsMap> content_setting_map,
+      scoped_refptr<SafeBrowsingUIManager> ui_manager)
+      : ChromePasswordProtectionService(profile,
+                                        content_setting_map,
+                                        ui_manager),
         is_incognito_(false),
         is_extended_reporting_(false),
         is_history_sync_enabled_(false) {}
@@ -92,11 +102,6 @@ class MockChromePasswordProtectionService
     return static_cast<MockSafeBrowsingUIManager*>(ui_manager_.get());
   }
 
-  void CacheVerdict(const GURL& url,
-                    LoginReputationClientRequest::TriggerType trigger_type,
-                    LoginReputationClientResponse* verdict,
-                    const base::Time& receive_time) override {}
-
  protected:
   friend class ChromePasswordProtectionServiceTest;
 
@@ -116,15 +121,21 @@ class ChromePasswordProtectionServiceTest
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled, true);
-    service_ = base::MakeUnique<MockChromePasswordProtectionService>(profile());
-    service_->SetUIManager(new testing::StrictMock<MockSafeBrowsingUIManager>(
-        SafeBrowsingService::CreateSafeBrowsingService()));
+    HostContentSettingsMap::RegisterProfilePrefs(test_pref_service_.registry());
+    content_setting_map_ = new HostContentSettingsMap(
+        &test_pref_service_, false /* incognito */, false /* guest_profile */,
+        false /* store_last_modified */);
+    service_ = base::MakeUnique<MockChromePasswordProtectionService>(
+        profile(), content_setting_map_,
+        new testing::StrictMock<MockSafeBrowsingUIManager>(
+            SafeBrowsingService::CreateSafeBrowsingService()));
   }
 
   void TearDown() override {
     base::RunLoop().RunUntilIdle();
     service_.reset();
     request_ = nullptr;
+    content_setting_map_->ShutdownOnUIThread();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -196,6 +207,8 @@ class ChromePasswordProtectionServiceTest
  protected:
   variations::testing::VariationParamsManager params_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;
+  sync_preferences::TestingPrefServiceSyncable test_pref_service_;
+  scoped_refptr<HostContentSettingsMap> content_setting_map_;
   std::unique_ptr<MockChromePasswordProtectionService> service_;
   scoped_refptr<PasswordProtectionRequest> request_;
   std::unique_ptr<LoginReputationClientResponse> verdict_;
@@ -496,5 +509,34 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetSyncAccountType) {
   SetUpSyncAccount("example.edu");
   EXPECT_EQ(LoginReputationClientRequest::PasswordReuseEvent::GSUITE,
             service_->GetSyncAccountType());
+}
+
+TEST_F(ChromePasswordProtectionServiceTest, VerifyUpdateSecurityState) {
+  GURL url("http://password_reuse_url.com");
+  NavigateAndCommit(url);
+  SBThreatType current_threat_type = SB_THREAT_TYPE_UNUSED;
+  ASSERT_FALSE(service_->ui_manager()->IsUrlWhitelistedOrPendingForWebContents(
+      url, false, web_contents()->GetController().GetVisibleEntry(),
+      web_contents(), false, &current_threat_type));
+  EXPECT_EQ(SB_THREAT_TYPE_UNUSED, current_threat_type);
+
+  service_->UpdateSecurityState(SB_THREAT_TYPE_PASSWORD_REUSE, web_contents());
+  ASSERT_TRUE(service_->ui_manager()->IsUrlWhitelistedOrPendingForWebContents(
+      url, false, web_contents()->GetController().GetVisibleEntry(),
+      web_contents(), false, &current_threat_type));
+  EXPECT_EQ(SB_THREAT_TYPE_PASSWORD_REUSE, current_threat_type);
+
+  service_->UpdateSecurityState(safe_browsing::SB_THREAT_TYPE_SAFE,
+                                web_contents());
+  current_threat_type = SB_THREAT_TYPE_UNUSED;
+  ASSERT_FALSE(service_->ui_manager()->IsUrlWhitelistedOrPendingForWebContents(
+      url, false, web_contents()->GetController().GetVisibleEntry(),
+      web_contents(), false, &current_threat_type));
+  EXPECT_EQ(SB_THREAT_TYPE_UNUSED, current_threat_type);
+  LoginReputationClientResponse verdict;
+  EXPECT_EQ(
+      LoginReputationClientResponse::SAFE,
+      service_->GetCachedVerdict(
+          url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT, &verdict));
 }
 }  // namespace safe_browsing

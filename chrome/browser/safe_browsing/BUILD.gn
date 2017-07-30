@@ -234,6 +234,7 @@ static_library("safe_browsing") {
         "v4_test_utils.h",
       ]
       deps += [
+        "//components/content_settings/core/browser:browser",
         "//components/safe_browsing/common:safe_browsing_prefs",
         "//components/safe_browsing_db:safe_browsing_db",
       ]
