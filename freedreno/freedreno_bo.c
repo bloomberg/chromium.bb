@@ -138,6 +138,7 @@ fd_bo_from_dmabuf(struct fd_device *dev, int fd)
 	pthread_mutex_lock(&table_lock);
 	ret = drmPrimeFDToHandle(dev->fd, fd, &handle);
 	if (ret) {
+		pthread_mutex_unlock(&table_lock);
 		return NULL;
 	}
 
