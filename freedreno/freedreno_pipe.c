@@ -36,18 +36,18 @@
 struct fd_pipe *
 fd_pipe_new(struct fd_device *dev, enum fd_pipe_id id)
 {
-	struct fd_pipe *pipe = NULL;
+	struct fd_pipe *pipe;
 	uint64_t val;
 
 	if (id > FD_PIPE_MAX) {
 		ERROR_MSG("invalid pipe id: %d", id);
-		goto fail;
+		return NULL;
 	}
 
 	pipe = dev->funcs->pipe_new(dev, id);
 	if (!pipe) {
 		ERROR_MSG("allocation failed");
-		goto fail;
+		return NULL;
 	}
 
 	pipe->dev = dev;
@@ -57,10 +57,6 @@ fd_pipe_new(struct fd_device *dev, enum fd_pipe_id id)
 	pipe->gpu_id = val;
 
 	return pipe;
-fail:
-	if (pipe)
-		fd_pipe_del(pipe);
-	return NULL;
 }
 
 void fd_pipe_del(struct fd_pipe *pipe)
