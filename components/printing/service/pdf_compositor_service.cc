@@ -42,7 +42,7 @@ std::unique_ptr<service_manager::Service> PdfCompositorService::Create(
   return base::MakeUnique<printing::PdfCompositorService>(creator);
 }
 
-void PdfCompositorService::OnStart() {
+void PdfCompositorService::PrepareToStart() {
   // Set up discardable memory manager.
   discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
   context()->connector()->BindInterface(content::mojom::kBrowserServiceName,
@@ -53,6 +53,10 @@ void PdfCompositorService::OnStart() {
   DCHECK(discardable_shared_memory_manager_);
   base::DiscardableMemoryAllocator::SetInstance(
       discardable_shared_memory_manager_.get());
+}
+
+void PdfCompositorService::OnStart() {
+  PrepareToStart();
 
   ref_factory_ = base::MakeUnique<service_manager::ServiceContextRefFactory>(
       base::Bind(&service_manager::ServiceContext::RequestQuit,

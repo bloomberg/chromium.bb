@@ -43,7 +43,8 @@ void PdfCompositorImpl::CompositePdf(
       base::MakeUnique<base::SharedMemory>(memory_handle, true);
   if (!shm->Map(memory_size)) {
     DLOG(ERROR) << "CompositePdf: Shared memory map failed.";
-    std::move(callback).Run(mojo::ScopedSharedBufferHandle());
+    std::move(callback).Run(mojom::PdfCompositor::Status::HANDLE_MAP_ERROR,
+                            mojo::ScopedSharedBufferHandle());
     return;
   }
 
@@ -51,14 +52,16 @@ void PdfCompositorImpl::CompositePdf(
   int page_count = SkMultiPictureDocumentReadPageCount(&stream);
   if (!page_count) {
     DLOG(ERROR) << "CompositePdf: No page is read.";
-    std::move(callback).Run(mojo::ScopedSharedBufferHandle());
+    std::move(callback).Run(mojom::PdfCompositor::Status::CONTENT_FORMAT_ERROR,
+                            mojo::ScopedSharedBufferHandle());
     return;
   }
 
   std::vector<SkDocumentPage> pages(page_count);
   if (!SkMultiPictureDocumentRead(&stream, pages.data(), page_count)) {
     DLOG(ERROR) << "CompositePdf: Page reading failed.";
-    std::move(callback).Run(mojo::ScopedSharedBufferHandle());
+    std::move(callback).Run(mojom::PdfCompositor::Status::CONTENT_FORMAT_ERROR,
+                            mojo::ScopedSharedBufferHandle());
     return;
   }
 
@@ -80,7 +83,8 @@ void PdfCompositorImpl::CompositePdf(
   DCHECK(mapping);
   wstream.copyToAndReset(mapping.get());
 
-  std::move(callback).Run(std::move(buffer));
+  std::move(callback).Run(mojom::PdfCompositor::Status::SUCCESS,
+                          std::move(buffer));
 }
 
 }  // namespace printing

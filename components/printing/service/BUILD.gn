@@ -4,6 +4,7 @@
 
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
+import("//services/service_manager/public/tools/test/service_test.gni")
 
 static_library("service") {
   sources = [
@@ -32,4 +33,50 @@ static_library("service") {
 service_manifest("pdf_compositor_manifest") {
   name = "pdf_compositor"
   source = "pdf_compositor_manifest.json"
+}
+
+service("pdf_compositor_test_service") {
+  testonly = true
+
+  sources = [
+    "test_service_main.cc",
+  ]
+
+  deps = [
+    ":service",
+    "//base",
+    "//base/test:test_support",
+  ]
+}
+
+service_test("pdf_compositor_service_unittest") {
+  testonly = true
+
+  sources = [
+    "pdf_compositor_service_unittest.cc",
+  ]
+
+  catalog = ":pdf_compositor_service_unittest_catalog"
+
+  include_dirs = [ "testing/gmock/include" ]
+  deps = [
+    ":pdf_compositor_test_service",
+    "//base",
+    "//components/printing/service/public/interfaces",
+    "//mojo/common",
+    "//services/service_manager/public/cpp:service_test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
+service_manifest("pdf_compositor_service_unittest_manifest") {
+  name = "pdf_compositor_service_unittest"
+  source = "pdf_compositor_service_unittest_manifest.json"
+}
+
+catalog("pdf_compositor_service_unittest_catalog") {
+  testonly = true
+  embedded_services = [ ":pdf_compositor_service_unittest_manifest" ]
+  standalone_services = [ ":pdf_compositor_manifest" ]
 }

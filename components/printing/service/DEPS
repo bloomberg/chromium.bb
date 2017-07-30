@@ -8,3 +8,9 @@ include_rules = [
   "+skia",
   "+third_party/skia",
 ]
+
+specific_include_rules = {
+  "test_service_main\.cc": [
+    "+services/service_manager/public/c",
+  ]
+}
