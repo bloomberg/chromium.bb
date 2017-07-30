@@ -7,6 +7,8 @@
 
 namespace remoting {
 
+// "--elevate=<binary>" requests |binary| to be launched elevated (possibly
+// causing a UAC prompt).
 extern const char kElevateSwitchName[];
 
 // "--help" prints the usage message.
@@ -28,6 +30,17 @@ extern const char kProcessTypeDaemon[];
 extern const char kProcessTypeDesktop[];
 extern const char kProcessTypeHost[];
 extern const char kProcessTypeRdpDesktopSession[];
+extern const char kProcessTypeEvaluateCapability[];
+
+extern const char kEvaluateCapabilitySwitchName[];
+
+// Values for kEvaluateCapabilitySwitchName.
+// Executes EvaluateTest() function, this is for test purpose only.
+extern const char kEvaluateTest[];
+// Executes EvaluateCrash() function, this is for test purpose only.
+extern const char kEvaluateCrash[];
+// Executes EvaluateForward() function, this is for test purpose only.
+extern const char kEvaluateForward[];
 
 // Used to pass the HWND for the parent process to a child process.
 extern const char kParentWindowSwitchName[];
