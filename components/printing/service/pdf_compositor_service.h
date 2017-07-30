@@ -33,6 +33,8 @@ class PdfCompositorService : public service_manager::Service {
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
+  virtual void PrepareToStart();
+
  private:
   // The creator of this service.
   // Currently contains the service creator's user agent string if given,
