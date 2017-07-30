@@ -101,6 +101,8 @@
          disable_webgl_rgb_multisampling_usage)              \
   GPU_OP(DISALLOW_LARGE_INSTANCED_DRAW,                      \
          disallow_large_instanced_draw)                      \
+  GPU_OP(DONT_DISABLE_WEBGL_WHEN_COMPOSITOR_CONTEXT_LOST,    \
+         dont_disable_webgl_when_compositor_context_lost)    \
   GPU_OP(DONT_REMOVE_INVARIANT_FOR_FRAGMENT_INPUT,           \
          dont_remove_invariant_for_fragment_input)           \
   GPU_OP(ETC1_POWER_OF_TWO_ONLY,                             \

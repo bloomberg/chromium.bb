@@ -55,6 +55,7 @@
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_driver_bug_list.h"
+#include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/ipc/host/shader_disk_cache.h"
 #include "gpu/ipc/service/switches.h"
 #include "ipc/ipc_channel_handle.h"
@@ -887,8 +888,13 @@ void GpuProcessHost::DidLoseContext(bool offscreen,
     // context is a serious event and blame the loss on all live
     // offscreen contexts. This more robustly handles situations where
     // the GPU process may not actually detect the context loss in the
-    // offscreen context.
-    BlockLiveOffscreenContexts();
+    // offscreen context. However, situations have been seen where the
+    // compositor's context can be lost due to driver bugs (as of this
+    // writing, on Android), so allow that possibility.
+    if (!GpuDataManagerImpl::GetInstance()->IsDriverBugWorkaroundActive(
+            gpu::DONT_DISABLE_WEBGL_WHEN_COMPOSITOR_CONTEXT_LOST)) {
+      BlockLiveOffscreenContexts();
+    }
     return;
   }
 
