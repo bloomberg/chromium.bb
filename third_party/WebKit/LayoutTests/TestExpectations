@@ -2777,13 +2777,6 @@ crbug.com/683800 [ Win7 Debug ] external/wpt/selection/ [ Failure Pass ]
 # CQ and Rebaseline-cl for crrev.com/2626973005 does not include this
 crbug.com/680407 [ Mac ] fast/forms/select/menulist-appearance-basic.html [ NeedsManualRebaseline ]
 
-# To unblock crrev.com/586633
-crbug.com/630695 fast/gradients/css3-radial-gradients.html [ Pass Failure ]
-crbug.com/630695 fast/gradients/radial-centered.html [ Pass Failure ]
-crbug.com/630695 fast/gradients/unprefixed-radial-gradients.html [ Pass Failure ]
-
-
-
 # Importing 'fetch' tests from WPT.
 crbug.com/705490 external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
 
