@@ -57,17 +57,17 @@ public class ProfileDataCache implements ProfileDownloader.Observer {
         public String givenName;
     }
 
-    private final HashMap<String, CacheEntry> mCacheEntries = new HashMap<>();
-
+    private final Context mContext;
+    private final Profile mProfile;
+    private final int mImageSize;
     private final Drawable mPlaceholderImage;
     private final ObserverList<Observer> mObservers = new ObserverList<>();
+    private final HashMap<String, CacheEntry> mCacheEntries = new HashMap<>();
 
-    private final Context mContext;
-    private Profile mProfile;
-
-    public ProfileDataCache(Context context, Profile profile) {
+    public ProfileDataCache(Context context, Profile profile, int imageSize) {
         mContext = context;
         mProfile = profile;
+        mImageSize = imageSize;
 
         mPlaceholderImage =
                 AppCompatResources.getDrawable(context, R.drawable.logo_avatar_anonymous);
@@ -82,12 +82,10 @@ public class ProfileDataCache implements ProfileDownloader.Observer {
         ThreadUtils.assertOnUiThread();
         assert !mObservers.isEmpty();
 
-        int imageSizePx =
-                mContext.getResources().getDimensionPixelSize(R.dimen.signin_account_image_size);
         for (int i = 0; i < accounts.size(); i++) {
             if (mCacheEntries.get(accounts.get(i)) == null) {
                 ProfileDownloader.startFetchingAccountInfoFor(
-                        mContext, mProfile, accounts.get(i), imageSizePx, true);
+                        mContext, mProfile, accounts.get(i), mImageSize, true);
             }
         }
     }

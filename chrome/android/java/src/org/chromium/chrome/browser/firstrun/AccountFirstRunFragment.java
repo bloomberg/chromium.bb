@@ -41,8 +41,9 @@ public class AccountFirstRunFragment extends FirstRunPage implements AccountSign
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        int imageSize = getResources().getDimensionPixelSize(R.dimen.signin_account_image_size);
         ProfileDataCache profileDataCache =
-                new ProfileDataCache(getActivity(), Profile.getLastUsedProfile());
+                new ProfileDataCache(getActivity(), Profile.getLastUsedProfile(), imageSize);
         boolean isChildAccount = getProperties().getBoolean(IS_CHILD_ACCOUNT);
         String forceAccountTo = getProperties().getString(FORCE_SIGNIN_ACCOUNT_TO);
         AccountSigninView.Listener listener = new AccountSigninView.Listener() {
