@@ -645,9 +645,6 @@ external/wpt/css/css-writing-modes-3/text-combine-upright-value-digits4-002.html
 external/wpt/css/css-writing-modes-3/text-combine-upright-value-digits4-003.html [ Skip ]
 
 # Untriaged: Tests don't complete.
-external/wpt/html/browsers/browsing-the-web/navigating-across-documents/008.html [ Skip ]
-external/wpt/html/browsers/browsing-the-web/navigating-across-documents/009.html [ Skip ]
-external/wpt/html/browsers/browsing-the-web/navigating-across-documents/010.html [ Skip ]
 external/wpt/html/browsers/browsing-the-web/unloading-documents/unload/006.html [ Skip ]
 external/wpt/html/browsers/history/the-history-interface/001.html [ Skip ]
 external/wpt/html/browsers/history/the-history-interface/002.html [ Skip ]
