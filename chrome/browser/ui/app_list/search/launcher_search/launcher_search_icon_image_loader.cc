@@ -38,8 +38,7 @@ LauncherSearchIconImageLoader::LauncherSearchIconImageLoader(
       icon_size_(icon_dimension, icon_dimension),
       error_reporter_(std::move(error_reporter)) {}
 
-LauncherSearchIconImageLoader::~LauncherSearchIconImageLoader() {
-}
+LauncherSearchIconImageLoader::~LauncherSearchIconImageLoader() = default;
 
 void LauncherSearchIconImageLoader::LoadResources() {
   DCHECK(custom_icon_image_.isNull());
@@ -69,7 +68,6 @@ void LauncherSearchIconImageLoader::LoadResources() {
     return;
   }
 
-  // Update() is called when custom icon is loaded.
   LoadIconResourceFromExtension();
 }
 
@@ -127,7 +125,8 @@ void LauncherSearchIconImageLoader::OnCustomIconLoaded(
   }
 
   const bool previously_unbadged = custom_icon_image_.isNull();
-  custom_icon_image_ = image;
+  custom_icon_image_ = gfx::ImageSkiaOperations::CreateResizedImage(
+      image, skia::ImageOperations::RESIZE_BEST, icon_size_);
   NotifyObserversIconImageChange();
 
   // If custom_icon_image_ is not set before, extension icon moves from main
