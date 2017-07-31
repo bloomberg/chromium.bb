@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/night_light_controller.mojom.h"
-#include "ash/session/session_observer.h"
+#include "ash/shell_observer.h"
 #include "ash/system/night_light/time_of_day.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -22,13 +22,11 @@ class PrefService;
 
 namespace ash {
 
-class SessionController;
-
 // Controls the NightLight feature that adjusts the color temperature of the
 // screen.
 class ASH_EXPORT NightLightController
     : public NON_EXPORTED_BASE(mojom::NightLightController),
-      public SessionObserver {
+      public ShellObserver {
  public:
   using ScheduleType = mojom::NightLightController::ScheduleType;
 
@@ -72,13 +70,13 @@ class ASH_EXPORT NightLightController
     virtual ~Observer() {}
   };
 
-  explicit NightLightController(SessionController* session_controller);
+  NightLightController();
   ~NightLightController() override;
 
   // Returns true if the NightLight feature is enabled in the flags.
   static bool IsFeatureEnabled();
 
-  static void RegisterPrefs(PrefRegistrySimple* registry);
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   AnimationDuration animation_duration() const { return animation_duration_; }
   AnimationDuration last_animation_duration() const {
@@ -109,8 +107,8 @@ class ASH_EXPORT NightLightController
   // AnimationDurationType::kShort.
   void Toggle();
 
-  // ash::SessionObserver:
-  void OnActiveUserSessionChanged(const AccountId& account_id) override;
+  // ShellObserver:
+  void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
 
   // ash::mojom::NightLightController:
   void SetCurrentGeoposition(mojom::SimpleGeopositionPtr position) override;
@@ -162,10 +160,6 @@ class ASH_EXPORT NightLightController
   // automatic status changes of NightLight which always use an
   // AnimationDurationType::kLong.
   void ScheduleNextToggle(base::TimeDelta delay);
-
-  // The observed session controller instance from which we know when to
-  // initialize the NightLight settings from the user preferences.
-  SessionController* const session_controller_;
 
   std::unique_ptr<Delegate> delegate_;
 

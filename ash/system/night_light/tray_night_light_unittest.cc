@@ -36,7 +36,7 @@ class TrayNightLightTest : public AshTestBase {
     AshTestBase::SetUp();
     GetSessionControllerClient()->Reset();
     GetSessionControllerClient()->AddUserSession(kFakeUserEmail);
-    Shell::RegisterPrefs(pref_service_.registry());
+    Shell::RegisterProfilePrefs(pref_service_.registry());
 
     ash_test_helper()->test_shell_delegate()->set_active_user_pref_service(
         &pref_service_);
@@ -53,11 +53,6 @@ class TrayNightLightTest : public AshTestBase {
 // Tests that when NightLight is active, its tray icon in the System Tray is
 // visible.
 TEST_F(TrayNightLightTest, TestNightLightTrayVisibility) {
-  if (Shell::GetAshConfig() == Config::MASH) {
-    // PrefChangeRegistrar doesn't work on mash. crbug.com/721961.
-    return;
-  }
-
   SystemTray* tray = GetPrimarySystemTray();
   TrayNightLight* tray_night_light = tray->tray_night_light();
   NightLightController* controller = Shell::Get()->night_light_controller();

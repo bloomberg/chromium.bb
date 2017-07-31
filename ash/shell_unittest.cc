@@ -19,12 +19,16 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_helper.h"
+#include "ash/test_shell_delegate.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/prefs/testing_pref_service.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -127,6 +131,22 @@ class SimpleMenuDelegate : public ui::SimpleMenuModel::Delegate {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SimpleMenuDelegate);
+};
+
+class TestShellObserver : public ShellObserver {
+ public:
+  TestShellObserver() = default;
+  ~TestShellObserver() override = default;
+
+  // ShellObserver:
+  void OnActiveUserPrefServiceChanged(PrefService* pref_service) override {
+    last_pref_service_ = pref_service;
+  }
+
+  PrefService* last_pref_service_ = nullptr;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestShellObserver);
 };
 
 }  // namespace
@@ -527,6 +547,51 @@ class ShellTest2 : public AshTestBase {
 TEST_F(ShellTest2, DontCrashWhenWindowDeleted) {
   window_.reset(new aura::Window(NULL));
   window_->Init(ui::LAYER_NOT_DRAWN);
+}
+
+class ShellPrefsTest : public NoSessionAshTestBase {
+ public:
+  ShellPrefsTest() = default;
+  ~ShellPrefsTest() override = default;
+
+  // testing::Test:
+  void SetUp() override {
+    NoSessionAshTestBase::SetUp();
+    Shell::RegisterProfilePrefs(pref_service1_.registry());
+    Shell::RegisterProfilePrefs(pref_service2_.registry());
+  }
+
+  // Must outlive Shell.
+  TestingPrefServiceSimple pref_service1_;
+  TestingPrefServiceSimple pref_service2_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ShellPrefsTest);
+};
+
+// Verifies that ShellObserver is notified for PrefService changes.
+TEST_F(ShellPrefsTest, Observer) {
+  TestShellObserver observer;
+  Shell::Get()->AddShellObserver(&observer);
+
+  // Setup 2 users.
+  TestSessionControllerClient* session = GetSessionControllerClient();
+  session->AddUserSession("user1@test.com");
+  session->AddUserSession("user2@test.com");
+
+  // Login notifies observers of the user pref service.
+  ash_test_helper()->test_shell_delegate()->set_active_user_pref_service(
+      &pref_service1_);
+  session->SwitchActiveUser(AccountId::FromUserEmail("user1@test.com"));
+  EXPECT_EQ(&pref_service1_, observer.last_pref_service_);
+
+  // Switching users notifies observers of the new user pref service.
+  ash_test_helper()->test_shell_delegate()->set_active_user_pref_service(
+      &pref_service2_);
+  session->SwitchActiveUser(AccountId::FromUserEmail("user2@test.com"));
+  EXPECT_EQ(&pref_service2_, observer.last_pref_service_);
+
+  Shell::Get()->RemoveShellObserver(&observer);
 }
 
 }  // namespace ash

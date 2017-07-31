@@ -133,8 +133,8 @@ class NightLightTest : public AshTestBase {
 
     AshTestBase::SetUp();
     CreateTestUserSessions();
-    Shell::RegisterPrefs(user1_pref_service_.registry());
-    Shell::RegisterPrefs(user2_pref_service_.registry());
+    Shell::RegisterProfilePrefs(user1_pref_service_.registry());
+    Shell::RegisterProfilePrefs(user2_pref_service_.registry());
 
     // Simulate user 1 login.
     InjectTestPrefService(&user1_pref_service_);
@@ -177,11 +177,6 @@ class NightLightTest : public AshTestBase {
 // Tests toggling NightLight on / off and makes sure the observer is updated and
 // the layer temperatures are modified.
 TEST_F(NightLightTest, TestToggle) {
-  if (Shell::GetAshConfig() == Config::MASH) {
-    // PrefChangeRegistrar doesn't work on mash. crbug.com/721961.
-    return;
-  }
-
   UpdateDisplay("800x600,800x600");
 
   TestObserver observer;
@@ -201,11 +196,6 @@ TEST_F(NightLightTest, TestToggle) {
 
 // Tests setting the temperature in various situations.
 TEST_F(NightLightTest, TestSetTemperature) {
-  if (Shell::GetAshConfig() == Config::MASH) {
-    // PrefChangeRegistrar doesn't work on mash. crbug.com/721961.
-    return;
-  }
-
   UpdateDisplay("800x600,800x600");
 
   TestObserver observer;
@@ -250,11 +240,6 @@ TEST_F(NightLightTest, TestSetTemperature) {
 // Tests that switching users retrieves NightLight settings for the active
 // user's prefs.
 TEST_F(NightLightTest, TestUserSwitchAndSettingsPersistence) {
-  if (Shell::GetAshConfig() == Config::MASH) {
-    // PrefChangeRegistrar doesn't work on mash. crbug.com/721961.
-    return;
-  }
-
   // Test start with user1 logged in.
   NightLightController* controller = GetController();
   SetNightLightEnabled(true);
@@ -289,11 +274,6 @@ TEST_F(NightLightTest, TestUserSwitchAndSettingsPersistence) {
 // Tests that changes from outside NightLightControlled to the NightLight
 // Preferences are seen by the controlled and applied properly.
 TEST_F(NightLightTest, TestOutsidePreferencesChangesAreApplied) {
-  if (Shell::GetAshConfig() == Config::MASH) {
-    // PrefChangeRegistrar doesn't work on mash. crbug.com/721961.
-    return;
-  }
-
   // Test start with user1 logged in.
   NightLightController* controller = GetController();
   user1_pref_service()->SetBoolean(prefs::kNightLightEnabled, true);
@@ -312,11 +292,6 @@ TEST_F(NightLightTest, TestOutsidePreferencesChangesAreApplied) {
 
 // Tests transitioning from kNone to kCustom and back to kNone schedule types.
 TEST_F(NightLightTest, TestScheduleNoneToCustomTransition) {
-  if (Shell::GetAshConfig() == Config::MASH) {
-    // PrefChangeRegistrar doesn't work on mash. crbug.com/721961.
-    return;
-  }
-
   NightLightController* controller = GetController();
   // Now is 6:00 PM.
   delegate()->SetFakeNow(TimeOfDay(18 * 60));
@@ -360,11 +335,6 @@ TEST_F(NightLightTest, TestScheduleNoneToCustomTransition) {
 // Tests what happens when the time now reaches the end of the NightLight
 // interval when NightLight mode is on.
 TEST_F(NightLightTest, TestCustomScheduleReachingEndTime) {
-  if (Shell::GetAshConfig() == Config::MASH) {
-    // PrefChangeRegistrar doesn't work on mash. crbug.com/721961.
-    return;
-  }
-
   NightLightController* controller = GetController();
   delegate()->SetFakeNow(TimeOfDay(18 * 60));
   controller->SetCustomStartTime(TimeOfDay(15 * 60));
@@ -398,11 +368,6 @@ TEST_F(NightLightTest, TestCustomScheduleReachingEndTime) {
 // Tests that user toggles from the system menu or system settings override any
 // status set by an automatic schedule.
 TEST_F(NightLightTest, TestExplicitUserTogglesWhileScheduleIsActive) {
-  if (Shell::GetAshConfig() == Config::MASH) {
-    // PrefChangeRegistrar doesn't work on mash. crbug.com/721961.
-    return;
-  }
-
   // Start with the below custom schedule, where NightLight is off.
   //
   //      15:00               20:00          23:00
@@ -450,11 +415,6 @@ TEST_F(NightLightTest, TestExplicitUserTogglesWhileScheduleIsActive) {
 // shouldn't change the current status, only updates the timer but doesn't
 // change the status.
 TEST_F(NightLightTest, TestChangingStartTimesThatDontChangeTheStatus) {
-  if (Shell::GetAshConfig() == Config::MASH) {
-    // PrefChangeRegistrar doesn't work on mash. crbug.com/721961.
-    return;
-  }
-
   //       16:00        18:00         22:00
   // <----- + ----------- + ----------- + ----->
   //        |             |             |
@@ -498,11 +458,6 @@ TEST_F(NightLightTest, TestChangingStartTimesThatDontChangeTheStatus) {
 
 // Tests the behavior of the sunset to sunrise automatic schedule type.
 TEST_F(NightLightTest, TestSunsetSunrise) {
-  if (Shell::GetAshConfig() == Config::MASH) {
-    // PrefChangeRegistrar doesn't work on mash. crbug.com/721961.
-    return;
-  }
-
   //      16:00         18:00     20:00      22:00              5:00
   // <----- + ----------- + ------- + -------- + --------------- + ------->
   //        |             |         |          |                 |
@@ -555,11 +510,6 @@ TEST_F(NightLightTest, TestSunsetSunrise) {
 // Tests the behavior of the sunset to sunrise automatic schedule type when the
 // client sets the geoposition.
 TEST_F(NightLightTest, TestSunsetSunriseGeoposition) {
-  if (Shell::GetAshConfig() == Config::MASH) {
-    // PrefChangeRegistrar doesn't work on mash. crbug.com/721961.
-    return;
-  }
-
   // Position 1 sunset and sunrise times.
   //
   //      16:00       20:00               4:00
