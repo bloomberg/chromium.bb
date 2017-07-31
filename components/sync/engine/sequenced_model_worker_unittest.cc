@@ -11,7 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/test/scoped_async_task_scheduler.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/timer/timer.h"
@@ -45,7 +45,7 @@ class SequencedModelWorkerTest : public testing::Test {
   // This is the work that will be scheduled to be done on the DB sequence.
   SyncerError DoWork() {
     EXPECT_TRUE(task_runner_->RunsTasksInCurrentSequence());
-    main_message_loop_.task_runner()->PostTask(
+    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     did_do_work_ = true;
     return SYNCER_OK;
@@ -56,7 +56,7 @@ class SequencedModelWorkerTest : public testing::Test {
   void Timeout() {
     ADD_FAILURE()
         << "Timed out waiting for work to be done on the DB sequence.";
-    main_message_loop_.task_runner()->PostTask(
+    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
 
@@ -68,8 +68,7 @@ class SequencedModelWorkerTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop main_message_loop_;
-  base::test::ScopedAsyncTaskScheduler task_scheduler_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   bool did_do_work_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_refptr<SequencedModelWorker> worker_;
