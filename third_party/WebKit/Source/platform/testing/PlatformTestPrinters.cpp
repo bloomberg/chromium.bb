@@ -22,7 +22,6 @@ std::ostream& operator<<(std::ostream& os, const ResourceError& error) {
             << ", isAccessCheck = " << error.IsAccessCheck()
             << ", isTimeout = " << error.IsTimeout()
             << ", staleCopyInCache = " << error.StaleCopyInCache()
-            << ", wasIgnoredByHandler = " << error.WasIgnoredByHandler()
             << ", isCacheMiss = " << error.IsCacheMiss();
 }
 
