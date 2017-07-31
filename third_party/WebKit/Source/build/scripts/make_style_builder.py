@@ -29,7 +29,7 @@
 
 import sys
 
-import css_properties
+from core.css import css_properties
 import json5_generator
 from name_utilities import lower_first, upper_camel_case
 import template_expander

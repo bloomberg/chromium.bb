@@ -23,7 +23,7 @@ scripts_for_json5_files = [
 ]
 
 css_properties_files =
-    scripts_for_json5_files + [ "$_scripts_dir/css_properties.py" ]
+    scripts_for_json5_files + [ "$_scripts_dir/core/css/css_properties.py" ]
 
 make_event_factory_files = scripts_for_json5_files + [
                              "$_scripts_dir/make_event_factory.py",
