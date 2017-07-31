@@ -8,6 +8,7 @@
 #include "udis86.h"
 #endif
 
+#include <libkern/OSAtomic.h>
 #include <mach-o/dyld.h>
 #include <mach/mach_init.h>
 #include <mach/vm_map.h>
@@ -95,12 +96,24 @@ typedef	struct	{
 }	BranchIsland;
 
 /**************************
+*
+*	Statistics
+*
+**************************/
+static volatile int64_t __attribute__((__aligned__((sizeof(int64_t)))))
+    g_mach_override_allocation_attempts = 0;
+
+/**************************
 *	
 *	Funky Protos
 *	
 **************************/
 #pragma mark	-
 #pragma mark	(Funky Protos)
+
+u_int64_t mach_override_ptr_allocation_attempts() {
+  return OSAtomicAdd64(0, &g_mach_override_allocation_attempts);
+}
 
 	mach_error_t
 allocateBranchIsland(
@@ -399,6 +412,7 @@ allocateBranchIsland(
 		assert( sizeof( BranchIsland ) <= PAGE_SIZE );
 		vm_address_t page = 0;
 #if defined(__i386__)
+		OSAtomicAdd64(1, &g_mach_override_allocation_attempts);
 		err = vm_allocate( mach_task_self(), &page, PAGE_SIZE, VM_FLAGS_ANYWHERE );
 		if( err == err_none )
 			*island = (BranchIsland*) page;
@@ -425,6 +439,7 @@ allocateBranchIsland(
 
 		while( !err && !allocated && page < last ) {
 
+			OSAtomicAdd64(1, &g_mach_override_allocation_attempts);
 			err = vm_allocate( task_self, &page, PAGE_SIZE, 0 );
 			if( err == err_none )
 				allocated = 1;
@@ -455,6 +470,7 @@ allocateBranchIsland(
 			err = KERN_NO_SPACE;
 #endif
 	} else {
+		OSAtomicAdd64(1, &g_mach_override_allocation_attempts);
 		void *block = malloc( sizeof( BranchIsland ) );
 		if( block )
 			*island = block;

@@ -37,6 +37,18 @@ mach_override_ptr(
     const void *overrideFunctionAddress,
     void **originalFunctionReentryIsland );
 
+/****************************************************************************************
+	mach_override_ptr makes multiple allocation attempts with vm_allocate or malloc,
+  until a suitable address is found for the branch islands. This method returns the
+  global number of such attempts made by all mach_override_ptr calls so far. This
+  statistic is provided for testing purposes and it can be off, if mach_override_ptr
+  is called by multiple threads.
+
+	@result									<-	Total number of vm_allocate calls so far.
+
+	************************************************************************************/
+u_int64_t mach_override_ptr_allocation_attempts();
+
 __END_DECLS
 
 /****************************************************************************************

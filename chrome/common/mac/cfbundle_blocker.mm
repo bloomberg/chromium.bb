@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/common/mac/cfbundle_blocker.h"
+#include "chrome/common/mac/cfbundle_blocker_private.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #import <Foundation/Foundation.h>
@@ -17,28 +18,14 @@
 #include "base/strings/sys_string_conversions.h"
 #include "third_party/mach_override/mach_override.h"
 
-extern "C" {
-
-// _CFBundleLoadExecutableAndReturnError is the internal implementation that
-// results in a dylib being loaded via dlopen. Both CFBundleLoadExecutable and
-// CFBundleLoadExecutableAndReturnError are funneled into this routine. Other
-// CFBundle functions may also call directly into here, perhaps due to
-// inlining their calls to CFBundleLoadExecutable.
-//
-// See CF-476.19/CFBundle.c (10.5.8), CF-550.43/CFBundle.c (10.6.8), and
-// CF-635/Bundle.c (10.7.0) and the disassembly of the shipping object code.
-//
-// Because this is a private function not declared by
-// <CoreFoundation/CoreFoundation.h>, provide a declaration here.
-Boolean _CFBundleLoadExecutableAndReturnError(CFBundleRef bundle,
-                                              Boolean force_global,
-                                              CFErrorRef* error);
-
-}  // extern "C"
-
 namespace chrome {
 namespace common {
 namespace mac {
+
+// Call this to execute the original implementation of
+// _CFBundleLoadExecutableAndReturnError.
+_CFBundleLoadExecutableAndReturnError_Type
+    g_original_underscore_cfbundle_load_executable_and_return_error;
 
 namespace {
 
@@ -142,15 +129,6 @@ bool IsBundlePathBlocked(NSString* bundle_path) {
   return false;
 }
 
-typedef Boolean (*_CFBundleLoadExecutableAndReturnError_Type)(CFBundleRef,
-                                                              Boolean,
-                                                              CFErrorRef*);
-
-// Call this to execute the original implementation of
-// _CFBundleLoadExecutableAndReturnError.
-_CFBundleLoadExecutableAndReturnError_Type
-    g_original_underscore_cfbundle_load_executable_and_return_error;
-
 Boolean ChromeCFBundleLoadExecutableAndReturnError(CFBundleRef bundle,
                                                    Boolean force_global,
                                                    CFErrorRef* error) {
@@ -226,7 +204,7 @@ Boolean ChromeCFBundleLoadExecutableAndReturnError(CFBundleRef bundle,
 
 }  // namespace
 
-void EnableCFBundleBlocker() {
+bool EnableCFBundleBlocker() {
   mach_error_t err = mach_override_ptr(
       reinterpret_cast<void*>(_CFBundleLoadExecutableAndReturnError),
       reinterpret_cast<void*>(ChromeCFBundleLoadExecutableAndReturnError),
@@ -235,7 +213,9 @@ void EnableCFBundleBlocker() {
   if (err != err_none) {
     DLOG(WARNING) << "mach_override _CFBundleLoadExecutableAndReturnError: "
                   << err;
+    return false;
   }
+  return true;
 }
 
 namespace {
