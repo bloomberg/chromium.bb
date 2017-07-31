@@ -23208,6 +23208,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-192389983" label="NoStatePrefetch:enabled"/>
   <int value="-183246373" label="enable-multilingual-spellchecker"/>
   <int value="-181093956" label="ScrollAnchoring:enabled"/>
+  <int value="-170986053" label="EnableManualFallbacksFilling:enabled"/>
   <int value="-165756594" label="enable-touch-feedback"/>
   <int value="-159877930" label="MaterialDesignUserManager:disabled"/>
   <int value="-158549277" label="enable-embeddedsearch-api"/>
@@ -23914,6 +23915,7 @@ from previous Chrome versions.
   <int value="2137347307" label="enable-drive-apps-in-app-list"/>
   <int value="2137599770" label="enable-win32k-renderer-lockdown"/>
   <int value="2141463681" label="enable-offer-upload-credit-cards"/>
+  <int value="2142979536" label="EnableManualFallbacksFilling:disabled"/>
 </enum>
 
 <enum name="LoginDatabaseInitError">
