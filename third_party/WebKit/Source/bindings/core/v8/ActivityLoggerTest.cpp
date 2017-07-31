@@ -7,7 +7,7 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/frame/FrameTestHelpers.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/Base64.h"

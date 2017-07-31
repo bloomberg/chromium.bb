@@ -5,7 +5,7 @@
 #include "core/animation/ElementAnimation.h"
 #include "core/css/PropertyDescriptor.h"
 #include "core/css/PropertyRegistration.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/page/Page.h"
 #include "core/testing/sim/SimCompositor.h"
 #include "core/testing/sim/SimDisplayItemList.h"

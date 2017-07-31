@@ -8,7 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/Deprecation.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/ThreadableLoadingContext.h"
 #include "core/loader/WorkerFetchContext.h"
@@ -43,8 +43,8 @@ ThreadedMessagingProxyBase::ThreadedMessagingProxyBase(
 
   if (RuntimeEnabledFeatures::OffMainThreadFetchEnabled()) {
     Document* document = ToDocument(execution_context_);
-    WebLocalFrameBase* web_frame =
-        WebLocalFrameBase::FromFrame(document->GetFrame());
+    WebLocalFrameImpl* web_frame =
+        WebLocalFrameImpl::FromFrame(document->GetFrame());
     std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context =
         web_frame->Client()->CreateWorkerFetchContext();
     DCHECK(web_worker_fetch_context);

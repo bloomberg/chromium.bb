@@ -9,7 +9,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/UseCounter.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/workers/DedicatedWorkerMessagingProxy.h"
 #include "core/workers/WorkerContentSettingsClient.h"
 #include "public/platform/WebContentSettingsClient.h"
@@ -47,8 +47,8 @@ const AtomicString& Worker::InterfaceName() const {
 InProcessWorkerMessagingProxy* Worker::CreateInProcessWorkerMessagingProxy(
     ExecutionContext* context) {
   Document* document = ToDocument(context);
-  WebLocalFrameBase* web_frame =
-      WebLocalFrameBase::FromFrame(document->GetFrame());
+  WebLocalFrameImpl* web_frame =
+      WebLocalFrameImpl::FromFrame(document->GetFrame());
 
   WorkerClients* worker_clients = WorkerClients::Create();
   CoreInitializer::GetInstance().ProvideLocalFileSystemToWorker(
