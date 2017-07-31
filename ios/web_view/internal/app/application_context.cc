@@ -28,10 +28,7 @@ ApplicationContext* ApplicationContext::GetInstance() {
   return base::Singleton<ApplicationContext>::get();
 }
 
-ApplicationContext::ApplicationContext()
-    : local_state_task_runner_(JsonPrefStore::GetTaskRunnerForFile(
-          GetLocalStatePath(),
-          web::WebThread::GetBlockingPool())) {
+ApplicationContext::ApplicationContext() {
   net_log_ = base::MakeUnique<net_log::ChromeNetLog>();
 
   SetApplicationLocale(l10n_util::GetLocaleOverride());
@@ -74,8 +71,15 @@ PrefService* ApplicationContext::GetLocalState() {
     PrefProxyConfigTrackerImpl::RegisterPrefs(pref_registry.get());
     ssl_config::SSLConfigServiceManager::RegisterPrefs(pref_registry.get());
 
-    scoped_refptr<PersistentPrefStore> user_pref_store = new JsonPrefStore(
-        GetLocalStatePath(), local_state_task_runner_, nullptr);
+    base::FilePath local_state_path;
+    PathService::Get(base::DIR_APP_DATA, &local_state_path);
+    local_state_path =
+        local_state_path.Append(FILE_PATH_LITERAL("ChromeWebView"));
+    local_state_path =
+        local_state_path.Append(FILE_PATH_LITERAL("Local State"));
+
+    scoped_refptr<PersistentPrefStore> user_pref_store =
+        new JsonPrefStore(std::move(local_state_path));
 
     PrefServiceFactory factory;
     factory.set_user_prefs(user_pref_store);
@@ -112,15 +116,6 @@ WebViewIOThread* ApplicationContext::GetWebViewIOThread() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(web_view_io_thread_.get());
   return web_view_io_thread_.get();
-}
-
-base::FilePath ApplicationContext::GetLocalStatePath() {
-  base::FilePath local_state_path;
-  PathService::Get(base::DIR_APP_DATA, &local_state_path);
-  local_state_path =
-      local_state_path.Append(FILE_PATH_LITERAL("ChromeWebView"));
-  local_state_path = local_state_path.Append(FILE_PATH_LITERAL("Local State"));
-  return local_state_path;
 }
 
 void ApplicationContext::SetApplicationLocale(const std::string& locale) {
