@@ -145,7 +145,7 @@ class GeneratedIconImageSource : public gfx::CanvasImageSource {
 void OnIconsLoaded(
     WebApplicationInfo web_app_info,
     const base::Callback<void(const WebApplicationInfo&)> callback,
-    const gfx::ImageFamily& image_family) {
+    gfx::ImageFamily image_family) {
   for (gfx::ImageFamily::const_iterator it = image_family.begin();
        it != image_family.end();
        ++it) {

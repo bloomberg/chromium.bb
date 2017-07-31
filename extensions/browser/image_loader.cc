@@ -338,7 +338,7 @@ void ImageLoader::ReplyBackWithImageFamily(
     image_family.Add(it->second);
   }
 
-  callback.Run(image_family);
+  callback.Run(std::move(image_family));
 }
 
 }  // namespace extensions

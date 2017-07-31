@@ -47,11 +47,11 @@ class ImageLoaderTest : public ExtensionsTest {
     image_ = image;
   }
 
-  void OnImageFamilyLoaded(const gfx::ImageFamily& image_family) {
+  void OnImageFamilyLoaded(gfx::ImageFamily image_family) {
     image_loaded_count_++;
     if (quit_in_image_loaded_)
       base::RunLoop::QuitCurrentWhenIdleDeprecated();
-    image_family_ = image_family.Clone();
+    image_family_ = std::move(image_family);
   }
 
   void WaitForImageLoad() {

@@ -29,8 +29,7 @@ namespace extensions {
 class Extension;
 
 typedef base::Callback<void(const gfx::Image&)> ImageLoaderImageCallback;
-typedef base::Callback<void(const gfx::ImageFamily&)>
-    ImageLoaderImageFamilyCallback;
+typedef base::Callback<void(gfx::ImageFamily)> ImageLoaderImageFamilyCallback;
 
 // This class is responsible for asynchronously loading extension images and
 // calling a callback when an image is loaded.

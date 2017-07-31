@@ -100,7 +100,7 @@ void UpdateAllShortcutsForShortcutInfo(
 
 void OnImageLoaded(std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
                    web_app::ShortcutInfoCallback callback,
-                   const gfx::ImageFamily& image_family) {
+                   gfx::ImageFamily image_family) {
   // If the image failed to load (e.g. if the resource being loaded was empty)
   // use the standard application icon.
   if (image_family.empty()) {
@@ -116,12 +116,7 @@ void OnImageLoaded(std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
     image_skia.MakeThreadSafe();
     shortcut_info->favicon.Add(gfx::Image(image_skia));
   } else {
-    // TODO(mgiuca): Move |image_family| instead of copying it. This copy
-    // results in a refcount of 2 for the duration of the callback, leading to a
-    // data race decrementing the refcount. This requires a change to the
-    // ImageLoaderImageFamilyCallback interface (to pass by value).
-    // https://crbug.com/749342.
-    shortcut_info->favicon = image_family.Clone();
+    shortcut_info->favicon = std::move(image_family);
   }
 
   callback.Run(std::move(shortcut_info));
