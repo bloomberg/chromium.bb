@@ -199,8 +199,7 @@ void CastWebView::DidFinishNavigation(
 void CastWebView::DidFailLoad(content::RenderFrameHost* render_frame_host,
                               const GURL& validated_url,
                               int error_code,
-                              const base::string16& error_description,
-                              bool was_ignored_by_handler) {
+                              const base::string16& error_description) {
   // Only report an error if we are the main frame.  See b/8433611.
   if (render_frame_host->GetParent()) {
     LOG(ERROR) << "Got error on sub-iframe: url=" << validated_url.spec()

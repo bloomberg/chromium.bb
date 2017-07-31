@@ -62,12 +62,10 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {};
 
   // The RenderFrameHostImpl has failed to load the document.
-  virtual void DidFailLoadWithError(
-      RenderFrameHostImpl* render_frame_host,
-      const GURL& url,
-      int error_code,
-      const base::string16& error_description,
-      bool was_ignored_by_handler) {}
+  virtual void DidFailLoadWithError(RenderFrameHostImpl* render_frame_host,
+                                    const GURL& url,
+                                    int error_code,
+                                    const base::string16& error_description) {}
 
   // The RenderFrameHostImpl has committed a navigation. The Navigator is
   // responsible for resetting |navigation_handle| at the end of this method and

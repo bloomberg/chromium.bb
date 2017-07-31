@@ -719,11 +719,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const base::TimeTicks& navigation_start);
   void OnDidFailProvisionalLoadWithError(
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params);
-  void OnDidFailLoadWithError(
-      const GURL& url,
-      int error_code,
-      const base::string16& error_description,
-      bool was_ignored_by_handler);
+  void OnDidFailLoadWithError(const GURL& url,
+                              int error_code,
+                              const base::string16& error_description);
   void OnDidCommitProvisionalLoad(const IPC::Message& msg);
   void OnUpdateState(const PageState& state);
   void OnBeforeUnloadACK(
