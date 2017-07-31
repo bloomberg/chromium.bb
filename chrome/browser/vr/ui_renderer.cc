@@ -161,8 +161,7 @@ void UiRenderer::DrawElements(const gfx::Transform& view_proj_matrix,
 void UiRenderer::DrawElement(const gfx::Transform& view_proj_matrix,
                              const UiElement& element) {
   DCHECK_GE(element.draw_phase(), 0);
-  gfx::Transform transform =
-      view_proj_matrix * element.screen_space_transform();
+  gfx::Transform transform = view_proj_matrix * element.world_space_transform();
 
   switch (element.fill()) {
     case Fill::OPAQUE_GRADIENT: {
@@ -203,8 +202,8 @@ std::vector<const UiElement*> UiRenderer::GetElementsInDrawOrder(
               if (first->draw_phase() != second->draw_phase()) {
                 return first->draw_phase() < second->draw_phase();
               } else {
-                return first->screen_space_transform().matrix().get(2, 3) <
-                       second->screen_space_transform().matrix().get(2, 3);
+                return first->world_space_transform().matrix().get(2, 3) <
+                       second->world_space_transform().matrix().get(2, 3);
               }
             });
 
