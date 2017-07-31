@@ -81,6 +81,8 @@ class CONTENT_EXPORT DWriteFontCollectionProxy
 
   bool CreateFamily(UINT32 family_index);
 
+  void SetSenderOverride(IPC::Sender* sender) { sender_override_ = sender; }
+
  private:
   IPC::Sender* GetSender();
 
