@@ -339,6 +339,7 @@ EXPERIMENT_LIST="
     lpf_direct
     uv_lvl
     no_frame_context_signaling
+    txmg
 "
 CONFIG_LIST="
     dependency_tracking
