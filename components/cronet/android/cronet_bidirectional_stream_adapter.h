@@ -31,11 +31,12 @@ class IOBufferWithByteBuffer;
 // Convenient wrapper to hold Java references and data to represent the pending
 // data to be written.
 struct PendingWriteData {
-  PendingWriteData(JNIEnv* env,
-                   jobjectArray jwrite_buffer_list,
-                   jintArray jwrite_buffer_pos_list,
-                   jintArray jwrite_buffer_limit_list,
-                   jboolean jwrite_end_of_stream);
+  PendingWriteData(
+      JNIEnv* env,
+      const base::android::JavaRef<jobjectArray>& jwrite_buffer_list,
+      const base::android::JavaRef<jintArray>& jwrite_buffer_pos_list,
+      const base::android::JavaRef<jintArray>& jwrite_buffer_limit_list,
+      jboolean jwrite_end_of_stream);
   ~PendingWriteData();
 
   // Arguments passed in from Java. Retain a global ref so they won't get GC-ed

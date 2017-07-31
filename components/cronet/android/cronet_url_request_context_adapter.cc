@@ -953,8 +953,8 @@ void CronetURLRequestContextAdapter::GetCertVerifierDataOnNetworkThread() {
   }
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_CronetUrlRequestContext_onGetCertVerifierData(
-      env, jcronet_url_request_context_.obj(),
-      base::android::ConvertUTF8ToJavaString(env, encoded_data).obj());
+      env, jcronet_url_request_context_,
+      base::android::ConvertUTF8ToJavaString(env, encoded_data));
 }
 
 int CronetURLRequestContextAdapter::default_load_flags() const {
@@ -975,7 +975,7 @@ void CronetURLRequestContextAdapter::OnEffectiveConnectionTypeChanged(
     net::EffectiveConnectionType effective_connection_type) {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
   Java_CronetUrlRequestContext_onEffectiveConnectionTypeChanged(
-      base::android::AttachCurrentThread(), jcronet_url_request_context_.obj(),
+      base::android::AttachCurrentThread(), jcronet_url_request_context_,
       effective_connection_type);
 }
 
@@ -994,7 +994,7 @@ void CronetURLRequestContextAdapter::OnRTTOrThroughputEstimatesComputed(
           : INT32_MAX;
 
   Java_CronetUrlRequestContext_onRTTOrThroughputEstimatesComputed(
-      base::android::AttachCurrentThread(), jcronet_url_request_context_.obj(),
+      base::android::AttachCurrentThread(), jcronet_url_request_context_,
       http_rtt_ms, transport_rtt_ms, downstream_throughput_kbps);
 }
 
@@ -1082,7 +1082,7 @@ void CronetURLRequestContextAdapter::StopNetLogOnNetworkThread() {
 
 void CronetURLRequestContextAdapter::StopNetLogCompleted() {
   Java_CronetUrlRequestContext_stopNetLogCompleted(
-      base::android::AttachCurrentThread(), jcronet_url_request_context_.obj());
+      base::android::AttachCurrentThread(), jcronet_url_request_context_);
 }
 
 std::unique_ptr<base::DictionaryValue>
