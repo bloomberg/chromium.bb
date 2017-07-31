@@ -5160,13 +5160,18 @@ void WebGLRenderingContextBase::texImage2D(ExecutionContext* execution_context,
 
 PassRefPtr<Image> WebGLRenderingContextBase::VideoFrameToImage(
     HTMLVideoElement* video) {
-  IntSize size(video->videoWidth(), video->videoHeight());
-  ImageBuffer* buf = generated_image_cache_.GetImageBuffer(size);
+  const IntSize& visible_size = video->videoVisibleSize();
+  if (visible_size.IsEmpty()) {
+    SynthesizeGLError(GL_INVALID_VALUE, "tex(Sub)Image2D",
+                      "video visible size is empty");
+    return nullptr;
+  }
+  ImageBuffer* buf = generated_image_cache_.GetImageBuffer(visible_size);
   if (!buf) {
     SynthesizeGLError(GL_OUT_OF_MEMORY, "texImage2D", "out of memory");
     return nullptr;
   }
-  IntRect dest_rect(0, 0, size.Width(), size.Height());
+  IntRect dest_rect(0, 0, visible_size.Width(), visible_size.Height());
   video->PaintCurrentFrame(buf->Canvas(), dest_rect, nullptr);
   return buf->NewImageSnapshot();
 }

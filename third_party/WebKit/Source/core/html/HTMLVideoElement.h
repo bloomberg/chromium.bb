@@ -65,6 +65,8 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   unsigned videoWidth() const;
   unsigned videoHeight() const;
 
+  IntSize videoVisibleSize() const;
+
   // Fullscreen
   void webkitEnterFullscreen();
   void webkitExitFullscreen();
