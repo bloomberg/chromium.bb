@@ -328,6 +328,13 @@ const char kEnableIdleTimeSpellCheckingDescription[] =
     "Make spell-checking code run only when the browser is idle, so that input "
     "latency is reduced, especially when editing long articles, emails, etc.";
 
+const char kEnableManualFallbacksFillingName[] =
+    "Manual fallbacks for password manager forms filling";
+const char kEnableManualFallbacksFillingDescription[] =
+    "If enabled, then if user clicks on the password field on a form, popup "
+    "might contain generation fallbacks or 'Show all saved passwords' "
+    "fallback.";
+
 const char kEnableMaterialDesignBookmarksName[] =
     "Enable Material Design bookmarks";
 const char kEnableMaterialDesignBookmarksDescription[] =

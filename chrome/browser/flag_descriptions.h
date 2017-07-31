@@ -227,6 +227,9 @@ extern const char kEnableHttpFormWarningDescription[];
 extern const char kEnableIdleTimeSpellCheckingName[];
 extern const char kEnableIdleTimeSpellCheckingDescription[];
 
+extern const char kEnableManualFallbacksFillingName[];
+extern const char kEnableManualFallbacksFillingDescription[];
+
 extern const char kEnableMaterialDesignBookmarksName[];
 extern const char kEnableMaterialDesignBookmarksDescription[];
 
