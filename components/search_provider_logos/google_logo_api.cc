@@ -268,7 +268,7 @@ std::unique_ptr<EncodedLogo> GoogleNewParseLogoResponse(
   bool is_animated = false;
   const base::DictionaryValue* image = nullptr;
   if (ddljson->GetDictionary("large_image", &image)) {
-    image->GetBoolean("is_animated", &is_animated);
+    image->GetBoolean("is_animated_gif", &is_animated);
 
     // If animated, get the URL for the animated image.
     if (is_animated) {
