@@ -93,10 +93,10 @@ TEST_F(BufferViewTest, Read) {
   EXPECT_EQ(0xFEDCBA9876543210ULL, buffer.read<uint64_t>(0));
 
   EXPECT_EQ(0x00, buffer.read<uint8_t>(9));
-  EXPECT_DEATH(buffer.read<uint8_t>(10), "Check failed");
+  EXPECT_DEATH(buffer.read<uint8_t>(10), "");
 
   EXPECT_EQ(0x0010FEDCU, buffer.read<uint32_t>(6));
-  EXPECT_DEATH(buffer.read<uint32_t>(7), "Check failed");
+  EXPECT_DEATH(buffer.read<uint32_t>(7), "");
 }
 
 TEST_F(BufferViewTest, Write) {
@@ -110,10 +110,10 @@ TEST_F(BufferViewTest, Write) {
             std::vector<uint8_t>(buffer.begin(), buffer.end()));
 
   buffer.write<uint8_t>(9, 0xFF);
-  EXPECT_DEATH(buffer.write<uint8_t>(10, 0xFF), "Check failed");
+  EXPECT_DEATH(buffer.write<uint8_t>(10, 0xFF), "");
 
   buffer.write<uint32_t>(6, 0xFFFFFFFF);
-  EXPECT_DEATH(buffer.write<uint32_t>(7, 0xFFFFFFFF), "Check failed");
+  EXPECT_DEATH(buffer.write<uint32_t>(7, 0xFFFFFFFF), "");
 }
 
 }  // namespace zucchini
