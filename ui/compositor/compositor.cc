@@ -43,6 +43,7 @@
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/compositor_vsync_manager.h"
 #include "ui/compositor/dip_util.h"
+#include "ui/compositor/external_begin_frame_client.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator_collection.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -58,12 +59,14 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
                        ui::ContextFactory* context_factory,
                        ui::ContextFactoryPrivate* context_factory_private,
                        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                       bool enable_surface_synchronization)
+                       bool enable_surface_synchronization,
+                       bool external_begin_frames_enabled)
     : context_factory_(context_factory),
       context_factory_private_(context_factory_private),
       frame_sink_id_(frame_sink_id),
       task_runner_(task_runner),
       vsync_manager_(new CompositorVSyncManager()),
+      external_begin_frames_enabled_(external_begin_frames_enabled),
       layer_animator_collection_(this),
       scheduled_timeout_(base::TimeTicks()),
       allow_locks_to_extend_timeout_(false),
@@ -164,6 +167,9 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
 
   settings.disallow_non_exact_resource_reuse =
       command_line->HasSwitch(cc::switches::kDisallowNonExactResourceReuse);
+
+  settings.wait_for_all_pipeline_stages_before_draw =
+      command_line->HasSwitch(cc::switches::kRunAllCompositorStagesBeforeDraw);
 
   base::TimeTicks before_create = base::TimeTicks::Now();
 
@@ -436,6 +442,34 @@ gfx::AcceleratedWidget Compositor::widget() const {
 
 scoped_refptr<CompositorVSyncManager> Compositor::vsync_manager() const {
   return vsync_manager_;
+}
+
+void Compositor::IssueExternalBeginFrame(const viz::BeginFrameArgs& args) {
+  DCHECK(external_begin_frames_enabled_);
+  if (context_factory_private_)
+    context_factory_private_->IssueExternalBeginFrame(this, args);
+}
+
+void Compositor::SetExternalBeginFrameClient(ExternalBeginFrameClient* client) {
+  DCHECK(external_begin_frames_enabled_);
+  external_begin_frame_client_ = client;
+  if (needs_external_begin_frames_)
+    external_begin_frame_client_->OnNeedsExternalBeginFrames(true);
+}
+
+void Compositor::OnDisplayDidFinishFrame(const viz::BeginFrameAck& ack) {
+  DCHECK(external_begin_frames_enabled_);
+  if (external_begin_frame_client_)
+    external_begin_frame_client_->OnDisplayDidFinishFrame(ack);
+}
+
+void Compositor::OnNeedsExternalBeginFrames(bool needs_begin_frames) {
+  DCHECK(external_begin_frames_enabled_);
+  if (external_begin_frame_client_) {
+    external_begin_frame_client_->OnNeedsExternalBeginFrames(
+        needs_begin_frames);
+  }
+  needs_external_begin_frames_ = needs_begin_frames;
 }
 
 void Compositor::AddObserver(CompositorObserver* observer) {

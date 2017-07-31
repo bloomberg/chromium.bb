@@ -95,6 +95,14 @@ void Display::Initialize(DisplayClient* client,
   }
 }
 
+void Display::AddObserver(DisplayObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void Display::RemoveObserver(DisplayObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void Display::SetLocalSurfaceId(const LocalSurfaceId& id,
                                 float device_scale_factor) {
   if (current_surface_id_.local_surface_id() == id &&
@@ -420,6 +428,11 @@ bool Display::SurfaceHasUndrawnFrame(const SurfaceId& surface_id) const {
     return false;
 
   return surface->HasUndrawnActiveFrame();
+}
+
+void Display::DidFinishFrame(const BeginFrameAck& ack) {
+  for (auto& observer : observers_)
+    observer.OnDisplayDidFinishFrame(ack);
 }
 
 const SurfaceId& Display::CurrentSurfaceId() {

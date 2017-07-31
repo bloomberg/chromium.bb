@@ -24,6 +24,7 @@
 #include "cc/output/vulkan_in_process_context_provider.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/raster/task_graph_runner.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/gl_helper.h"
@@ -186,13 +187,44 @@ bool IsCALayersDisabledFromCommandLine() {
 
 namespace content {
 
+class ExternalBeginFrameController : public viz::ExternalBeginFrameSourceClient,
+                                     public viz::DisplayObserver {
+ public:
+  explicit ExternalBeginFrameController(ui::Compositor* compositor)
+      : begin_frame_source_(this), compositor_(compositor) {}
+  ~ExternalBeginFrameController() override {}
+
+  // Issue a BeginFrame with the given |args|.
+  void IssueExternalBeginFrame(const viz::BeginFrameArgs& args) {
+    begin_frame_source_.OnBeginFrame(args);
+  }
+
+  viz::BeginFrameSource* begin_frame_source() { return &begin_frame_source_; }
+
+ private:
+  // viz::ExternalBeginFrameSourceClient implementation.
+  void OnNeedsBeginFrames(bool needs_begin_frames) override {
+    compositor_->OnNeedsExternalBeginFrames(needs_begin_frames);
+  }
+
+  // viz::DisplayObserver implementation.
+  void OnDisplayDidFinishFrame(const viz::BeginFrameAck& ack) override {
+    compositor_->OnDisplayDidFinishFrame(ack);
+  }
+
+  viz::ExternalBeginFrameSource begin_frame_source_;
+  ui::Compositor* compositor_ = nullptr;
+};
+
 struct GpuProcessTransportFactory::PerCompositorData {
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   BrowserCompositorOutputSurface* display_output_surface = nullptr;
-  // Either |synthetic_begin_frame_source| or |gpu_vsync_begin_frame_source| is
-  // valid but not both at the same time.
+  // Exactly one of |synthetic_begin_frame_source|,
+  // |gpu_vsync_begin_frame_source|, and |external_begin_frame_source| is valid
+  // at the same time.
   std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_begin_frame_source;
   std::unique_ptr<GpuVSyncBeginFrameSource> gpu_vsync_begin_frame_source;
+  std::unique_ptr<ExternalBeginFrameController> external_begin_frame_controller;
   ReflectorImpl* reflector = nullptr;
   std::unique_ptr<viz::Display> display;
   bool output_is_secure = false;
@@ -219,6 +251,9 @@ GpuProcessTransportFactory::GpuProcessTransportFactory(
       disable_display_vsync_ = true;
     }
   }
+
+  if (command_line->HasSwitch(cc::switches::kRunAllCompositorStagesBeforeDraw))
+    wait_for_all_pipeline_stages_before_draw_ = true;
 
   task_graph_runner_->Start("CompositorTileWorker1",
                             base::SimpleThread::Options());
@@ -486,7 +521,6 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
   BrowserCompositorOutputSurface::UpdateVSyncParametersCallback vsync_callback =
       base::Bind(&ui::Compositor::SetDisplayVSyncParameters, compositor);
-  viz::BeginFrameSource* begin_frame_source = nullptr;
   GpuVSyncControl* gpu_vsync_control = nullptr;
 
   std::unique_ptr<BrowserCompositorOutputSurface> display_output_surface;
@@ -560,27 +594,31 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
   std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_begin_frame_source;
   std::unique_ptr<GpuVSyncBeginFrameSource> gpu_vsync_begin_frame_source;
+  std::unique_ptr<ExternalBeginFrameController> external_begin_frame_controller;
 
-  if (!begin_frame_source) {
-    if (!disable_display_vsync_) {
-      if (gpu_vsync_control && IsGpuVSyncSignalSupported()) {
-        gpu_vsync_begin_frame_source =
-            base::MakeUnique<GpuVSyncBeginFrameSource>(gpu_vsync_control);
-        begin_frame_source = gpu_vsync_begin_frame_source.get();
-      } else {
-        synthetic_begin_frame_source =
-            base::MakeUnique<viz::DelayBasedBeginFrameSource>(
-                base::MakeUnique<viz::DelayBasedTimeSource>(
-                    compositor->task_runner().get()));
-        begin_frame_source = synthetic_begin_frame_source.get();
-      }
+  viz::BeginFrameSource* begin_frame_source = nullptr;
+  if (compositor->external_begin_frames_enabled()) {
+    external_begin_frame_controller =
+        base::MakeUnique<ExternalBeginFrameController>(compositor.get());
+    begin_frame_source = external_begin_frame_controller->begin_frame_source();
+  } else if (!disable_display_vsync_) {
+    if (gpu_vsync_control && IsGpuVSyncSignalSupported()) {
+      gpu_vsync_begin_frame_source =
+          base::MakeUnique<GpuVSyncBeginFrameSource>(gpu_vsync_control);
+      begin_frame_source = gpu_vsync_begin_frame_source.get();
     } else {
       synthetic_begin_frame_source =
-          base::MakeUnique<viz::BackToBackBeginFrameSource>(
+          base::MakeUnique<viz::DelayBasedBeginFrameSource>(
               base::MakeUnique<viz::DelayBasedTimeSource>(
                   compositor->task_runner().get()));
       begin_frame_source = synthetic_begin_frame_source.get();
     }
+  } else {
+    synthetic_begin_frame_source =
+        base::MakeUnique<viz::BackToBackBeginFrameSource>(
+            base::MakeUnique<viz::DelayBasedTimeSource>(
+                compositor->task_runner().get()));
+    begin_frame_source = synthetic_begin_frame_source.get();
   }
 
 #if defined(OS_WIN)
@@ -593,11 +631,16 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   } else if (data->gpu_vsync_begin_frame_source) {
     GetFrameSinkManager()->UnregisterBeginFrameSource(
         data->gpu_vsync_begin_frame_source.get());
+  } else if (data->external_begin_frame_controller) {
+    GetFrameSinkManager()->UnregisterBeginFrameSource(
+        data->external_begin_frame_controller->begin_frame_source());
+    data->display->RemoveObserver(data->external_begin_frame_controller.get());
   }
 
   auto scheduler = base::MakeUnique<viz::DisplayScheduler>(
       begin_frame_source, compositor->task_runner().get(),
-      display_output_surface->capabilities().max_frames_pending);
+      display_output_surface->capabilities().max_frames_pending,
+      wait_for_all_pipeline_stages_before_draw_);
 
   // The Display owns and uses the |display_output_surface| created above.
   data->display = base::MakeUnique<viz::Display>(
@@ -612,6 +655,11 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   // until we have reset |data->display|.
   data->synthetic_begin_frame_source = std::move(synthetic_begin_frame_source);
   data->gpu_vsync_begin_frame_source = std::move(gpu_vsync_begin_frame_source);
+  data->external_begin_frame_controller =
+      std::move(external_begin_frame_controller);
+
+  if (data->external_begin_frame_controller)
+    data->display->AddObserver(data->external_begin_frame_controller.get());
 
   // The |delegated_output_surface| is given back to the compositor, it
   // delegates to the Display as its root surface. Importantly, it shares the
@@ -673,6 +721,10 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
   } else if (data->gpu_vsync_begin_frame_source) {
     GetFrameSinkManager()->UnregisterBeginFrameSource(
         data->gpu_vsync_begin_frame_source.get());
+  } else if (data->external_begin_frame_controller) {
+    GetFrameSinkManager()->UnregisterBeginFrameSource(
+        data->external_begin_frame_controller->begin_frame_source());
+    data->display->RemoveObserver(data->external_begin_frame_controller.get());
   }
   per_compositor_data_.erase(it);
   if (per_compositor_data_.empty()) {
@@ -795,6 +847,18 @@ void GpuProcessTransportFactory::SetDisplayVSyncParameters(
   } else if (data->gpu_vsync_begin_frame_source) {
     data->gpu_vsync_begin_frame_source->OnVSync(timebase, interval);
   }
+}
+
+void GpuProcessTransportFactory::IssueExternalBeginFrame(
+    ui::Compositor* compositor,
+    const viz::BeginFrameArgs& args) {
+  PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
+  if (it == per_compositor_data_.end())
+    return;
+  PerCompositorData* data = it->second.get();
+  DCHECK(data);
+  if (data->external_begin_frame_controller)
+    data->external_begin_frame_controller->IssueExternalBeginFrame(args);
 }
 
 void GpuProcessTransportFactory::SetOutputIsSecure(ui::Compositor* compositor,

@@ -115,6 +115,12 @@ class CC_EXPORT LayerTreeSettings {
   // in ResourcePool. Only used for layout or pixel tests, as non-deterministic
   // resource sizes can lead to floating point error and noise in these tests.
   bool disallow_non_exact_resource_reuse = false;
+
+  // Whether the Scheduler should wait for all pipeline stages before attempting
+  // to draw. If |true|, they will block indefinitely until all stages have
+  // completed the current BeginFrame before triggering their own BeginFrame
+  // deadlines.
+  bool wait_for_all_pipeline_stages_before_draw = false;
 };
 
 }  // namespace cc

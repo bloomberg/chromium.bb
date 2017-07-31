@@ -69,6 +69,7 @@ namespace ui {
 
 class Compositor;
 class CompositorVSyncManager;
+class ExternalBeginFrameClient;
 class LatencyInfo;
 class Layer;
 class Reflector;
@@ -133,6 +134,8 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
   virtual void SetDisplayVSyncParameters(ui::Compositor* compositor,
                                          base::TimeTicks timebase,
                                          base::TimeDelta interval) = 0;
+  virtual void IssueExternalBeginFrame(ui::Compositor* compositor,
+                                       const viz::BeginFrameArgs& args) = 0;
 
   virtual void SetOutputIsSecure(Compositor* compositor, bool secure) = 0;
 };
@@ -188,7 +191,8 @@ class COMPOSITOR_EXPORT Compositor
              ui::ContextFactory* context_factory,
              ui::ContextFactoryPrivate* context_factory_private,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-             bool enable_surface_synchronization);
+             bool enable_surface_synchronization,
+             bool external_begin_frames_enabled = false);
   ~Compositor() override;
 
   ui::ContextFactory* context_factory() { return context_factory_; }
@@ -290,6 +294,24 @@ class COMPOSITOR_EXPORT Compositor
 
   // Returns the vsync manager for this compositor.
   scoped_refptr<CompositorVSyncManager> vsync_manager() const;
+
+  bool external_begin_frames_enabled() {
+    return external_begin_frames_enabled_;
+  }
+
+  void SetExternalBeginFrameClient(ExternalBeginFrameClient* client);
+
+  // The ExternalBeginFrameClient calls this to issue a BeginFrame with the
+  // given |args|.
+  void IssueExternalBeginFrame(const viz::BeginFrameArgs& args);
+
+  // Called by the ContextFactory when a BeginFrame was completed by the Display
+  // if the enable_external_begin_frames setting is true.
+  void OnDisplayDidFinishFrame(const viz::BeginFrameAck& ack);
+
+  // Called by the ContextFactory to signal whether BeginFrames are needed by
+  // the compositor if the enable_external_begin_frames setting is true.
+  void OnNeedsExternalBeginFrames(bool needs_begin_frames);
 
   // Returns the main thread task runner this compositor uses. Users of the
   // compositor generally shouldn't use this.
@@ -420,6 +442,10 @@ class COMPOSITOR_EXPORT Compositor
 
   // The manager of vsync parameters for this compositor.
   scoped_refptr<CompositorVSyncManager> vsync_manager_;
+
+  bool external_begin_frames_enabled_;
+  ExternalBeginFrameClient* external_begin_frame_client_ = nullptr;
+  bool needs_external_begin_frames_ = false;
 
   // The device scale factor of the monitor that this compositor is compositing
   // layers on.

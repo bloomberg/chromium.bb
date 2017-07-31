@@ -551,6 +551,9 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   settings.disallow_non_exact_resource_reuse =
       cmd.HasSwitch(cc::switches::kDisallowNonExactResourceReuse);
 
+  settings.wait_for_all_pipeline_stages_before_draw =
+      cmd.HasSwitch(cc::switches::kRunAllCompositorStagesBeforeDraw);
+
   return settings;
 }
 

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "cc/output/output_surface_client.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/resources/returned_resource.h"
@@ -44,6 +45,13 @@ namespace viz {
 class DisplayClient;
 class SharedBitmapManager;
 
+class VIZ_SERVICE_EXPORT DisplayObserver {
+ public:
+  virtual ~DisplayObserver() {}
+
+  virtual void OnDisplayDidFinishFrame(const BeginFrameAck& ack) = 0;
+};
+
 // A Display produces a surface that can be used to draw to a physical display
 // (OutputSurface). The client is responsible for creating and sizing the
 // surface IDs used to draw into the display and deciding when to draw.
@@ -64,6 +72,9 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
 
   void Initialize(DisplayClient* client, SurfaceManager* surface_manager);
 
+  void AddObserver(DisplayObserver* observer);
+  void RemoveObserver(DisplayObserver* observer);
+
   // device_scale_factor is used to communicate to the external window system
   // what scale this was rendered at.
   void SetLocalSurfaceId(const LocalSurfaceId& id, float device_scale_factor);
@@ -81,6 +92,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   bool SurfaceDamaged(const SurfaceId& surface_id,
                       const BeginFrameAck& ack) override;
   void SurfaceDiscarded(const SurfaceId& surface_id) override;
+  void DidFinishFrame(const BeginFrameAck& ack) override;
 
   // OutputSurfaceClient implementation.
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override;
@@ -106,6 +118,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   const RendererSettings settings_;
 
   DisplayClient* client_ = nullptr;
+  base::ObserverList<DisplayObserver> observers_;
   SurfaceManager* surface_manager_ = nullptr;
   const FrameSinkId frame_sink_id_;
   SurfaceId current_surface_id_;
