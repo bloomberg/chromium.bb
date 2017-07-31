@@ -77,9 +77,9 @@ void UiInputManager::HandleInput(const gfx::Vector3dF& laser_direction,
     }
     target_element = input_locked_element_;
   } else if (!in_scroll_ && !in_click_) {
-    // TODO(vollick): support hit test opacity. I.e., we may want to dispatch to
-    // one of the elements in the list of records. For the moment, we will
-    // assume that dispatch is to the first.
+    // TODO(vollick): support multiple dispatch. We may want to, for example,
+    // dispatch raw events to several elements we hit (imagine nested horizontal
+    // and vertical scrollers). Currently, we only dispatch to one "winner".
     target_element = *out_reticle_render_target;
     if (target_element && IsScrollEvent(*gesture_list)) {
       UiElement* ancestor = target_element;
