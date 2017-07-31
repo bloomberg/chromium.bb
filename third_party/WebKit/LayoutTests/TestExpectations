@@ -783,6 +783,9 @@ crbug.com/699347 virtual/mojo-loading/http/tests/security/setDomainRelaxationFor
 # expectation files. The following tests with [ Failure ] don't have failure
 # expectation files because they contain local path names.
 # Use crbug.com/490511 for untriaged failures.
+crbug.com/749492 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/008.html [ Skip ]
+crbug.com/749492 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/009.html [ Skip ]
+crbug.com/749492 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/010.html [ Skip ]
 crbug.com/490511 external/wpt/html/browsers/offline/application-cache-api/api_update.html [ Failure Pass ]
 crbug.com/490511 [ Linux Win ] external/wpt/html/rendering/bindings/the-input-element-as-a-text-entry-widget/unrecognized-type-should-fallback-as-text-type.html [ Failure ]
 crbug.com/108417 external/wpt/html/rendering/non-replaced-elements/tables/table-border-1.html [ Failure ]
