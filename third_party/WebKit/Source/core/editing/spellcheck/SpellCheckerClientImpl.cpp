@@ -100,8 +100,13 @@ void SpellCheckerClientImpl::ToggleSpellCheckingEnabled() {
   LocalFrame* const frame = ToLocalFrame(web_view_->FocusedCoreFrame());
   if (!frame)
     return;
-  const VisibleSelection visible_selection =
-      frame->Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
+
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  const VisibleSelection& visible_selection =
+      frame->Selection().ComputeVisibleSelectionInDOMTree();
   // If a selection is in an editable element spell check its content.
   Element* const root_editable_element =
       visible_selection.RootEditableElement();
