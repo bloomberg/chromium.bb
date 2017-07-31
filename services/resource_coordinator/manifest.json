@@ -4,6 +4,9 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
+        "coordination_unit_introspector": [
+          "resource_coordinator::mojom::CoordinationUnitIntrospector"
+        ],
         "coordination_unit": [ "resource_coordinator::mojom::CoordinationUnitProvider" ],
         "service_callbacks": [ "resource_coordinator::mojom::ServiceCallbacks" ],
         "tab_signal": [ "resource_coordinator::mojom::TabSignalGenerator" ],

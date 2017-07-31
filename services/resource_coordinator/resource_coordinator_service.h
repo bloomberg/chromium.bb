@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
+#include "services/resource_coordinator/coordination_unit/coordination_unit_introspector_impl.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_manager.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -49,6 +50,7 @@ class ResourceCoordinatorService : public service_manager::Service {
   service_manager::BinderRegistry registry_;
   std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
   CoordinationUnitManager coordination_unit_manager_;
+  CoordinationUnitIntrospectorImpl introspector_;
   std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder_;
 
   // WeakPtrFactory members should always come last so WeakPtrs are destructed

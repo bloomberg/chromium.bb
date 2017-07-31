@@ -461,6 +461,7 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
     pmd->process_type = response.second.process_type;
     pmd->chrome_dump = std::move(response.second.dump_ptr->chrome_dump);
     pmd->os_dump = CreatePublicOSDump(*os_dumps[pid]);
+    pmd->pid = pid;
     tracing_observer_->AddOsDumpToTraceIfEnabled(
         request->args, pid, pmd->os_dump.get(), &os_dumps[pid]->memory_maps);
   }

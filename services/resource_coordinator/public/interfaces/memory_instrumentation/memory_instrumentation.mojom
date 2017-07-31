@@ -119,6 +119,13 @@ struct ProcessMemoryDump {
   ProcessType process_type;
   OSMemDump os_dump;
   ChromeMemDump chrome_dump;
+
+  // |pid| is necessary to correlate a ProcessMemoryDump with the URLs for the
+  // process, which is obtained from the ResourceCoordinator service. In a
+  // future world where both ResourceCoordinator and MemoryInstrumentation are
+  // less in flux, they will probably be merged into a single service, and this
+  // parameter can be removed.
+  mojo.common.mojom.ProcessId pid;
 };
 
 
