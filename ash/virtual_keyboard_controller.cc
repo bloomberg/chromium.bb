@@ -28,7 +28,7 @@ namespace {
 
 // Checks if virtual keyboard is force-enabled by enable-virtual-keyboard flag.
 bool IsVirtualKeyboardEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
       keyboard::switches::kEnableVirtualKeyboard);
 }
 
@@ -81,7 +81,7 @@ VirtualKeyboardController::~VirtualKeyboardController() {
 }
 
 void VirtualKeyboardController::OnTabletModeStarted() {
-  if (!IsVirtualKeyboardEnabled()) {
+  if (IsVirtualKeyboardEnabled()) {
     SetKeyboardEnabled(true);
   } else {
     UpdateKeyboardEnabled();
@@ -89,7 +89,7 @@ void VirtualKeyboardController::OnTabletModeStarted() {
 }
 
 void VirtualKeyboardController::OnTabletModeEnded() {
-  if (!IsVirtualKeyboardEnabled()) {
+  if (IsVirtualKeyboardEnabled()) {
     SetKeyboardEnabled(false);
   } else {
     UpdateKeyboardEnabled();
@@ -186,7 +186,7 @@ void VirtualKeyboardController::UpdateDevices() {
 }
 
 void VirtualKeyboardController::UpdateKeyboardEnabled() {
-  if (!IsVirtualKeyboardEnabled()) {
+  if (IsVirtualKeyboardEnabled()) {
     SetKeyboardEnabled(Shell::Get()
                            ->tablet_mode_controller()
                            ->IsTabletModeWindowManagerEnabled());
