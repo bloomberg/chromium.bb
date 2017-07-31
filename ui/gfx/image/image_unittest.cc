@@ -50,26 +50,6 @@ TEST_F(ImageTest, EmptyImage) {
   EXPECT_TRUE(image.IsEmpty());
   EXPECT_EQ(0, image.Width());
   EXPECT_EQ(0, image.Height());
-
-  // Test the copy constructor.
-  gfx::Image imageCopy(image);
-  EXPECT_TRUE(imageCopy.IsEmpty());
-  EXPECT_EQ(0, imageCopy.Width());
-  EXPECT_EQ(0, imageCopy.Height());
-
-  // Test calling SwapRepresentations() with an empty image.
-  gfx::Image image2(gt::CreateImageSkia(25, 25));
-  EXPECT_FALSE(image2.IsEmpty());
-  EXPECT_EQ(25, image2.Width());
-  EXPECT_EQ(25, image2.Height());
-
-  image.SwapRepresentations(&image2);
-  EXPECT_FALSE(image.IsEmpty());
-  EXPECT_EQ(25, image.Width());
-  EXPECT_EQ(25, image.Height());
-  EXPECT_TRUE(image2.IsEmpty());
-  EXPECT_EQ(0, image2.Width());
-  EXPECT_EQ(0, image2.Height());
 }
 
 // Test constructing a gfx::Image from an empty PlatformImage.
@@ -590,28 +570,6 @@ TEST_F(ImageTest, SkBitmapConversionPreservesTransparency) {
   }
 }
 
-TEST_F(ImageTest, SwapRepresentations) {
-  const size_t kRepCount = kUsesSkiaNatively ? 1U : 2U;
-
-  gfx::Image image1(gt::CreateImageSkia(25, 25));
-  const gfx::ImageSkia* image_skia1 = image1.ToImageSkia();
-  EXPECT_EQ(1U, image1.RepresentationCount());
-
-  gfx::Image image2(gt::CreatePlatformImage());
-  const gfx::ImageSkia* image_skia2 = image2.ToImageSkia();
-  gt::PlatformImage platform_image = gt::ToPlatformType(image2);
-  EXPECT_EQ(kRepCount, image2.RepresentationCount());
-
-  image1.SwapRepresentations(&image2);
-
-  EXPECT_EQ(image_skia2, image1.ToImageSkia());
-  EXPECT_TRUE(gt::PlatformImagesEqual(platform_image,
-                                      gt::ToPlatformType(image1)));
-  EXPECT_EQ(image_skia1, image2.ToImageSkia());
-  EXPECT_EQ(kRepCount, image1.RepresentationCount());
-  EXPECT_EQ(1U, image2.RepresentationCount());
-}
-
 TEST_F(ImageTest, Copy) {
   const size_t kRepCount = kUsesSkiaNatively ? 1U : 2U;
 
@@ -645,6 +603,39 @@ TEST_F(ImageTest, Assign) {
   EXPECT_EQ(1U, image1.RepresentationCount());
   EXPECT_EQ(1U, image2.RepresentationCount());
   EXPECT_EQ(image1.ToSkBitmap(), image2.ToSkBitmap());
+}
+
+TEST_F(ImageTest, Move) {
+  const size_t kRepCount = kUsesSkiaNatively ? 1U : 2U;
+
+  gfx::Image image1(gt::CreateImageSkia(25, 25));
+  EXPECT_EQ(25, image1.Width());
+  EXPECT_EQ(25, image1.Height());
+  gfx::Image image2(std::move(image1));
+  EXPECT_EQ(25, image2.Width());
+  EXPECT_EQ(25, image2.Height());
+
+  EXPECT_EQ(0U, image1.RepresentationCount());
+  EXPECT_EQ(1U, image2.RepresentationCount());
+
+  EXPECT_TRUE(gt::IsPlatformImageValid(gt::ToPlatformType(image2)));
+  EXPECT_EQ(0U, image1.RepresentationCount());
+  EXPECT_EQ(kRepCount, image2.RepresentationCount());
+}
+
+TEST_F(ImageTest, MoveAssign) {
+  gfx::Image image1(gt::CreatePlatformImage());
+  EXPECT_EQ(25, image1.Width());
+  EXPECT_EQ(25, image1.Height());
+  // Assignment must be on a separate line to the declaration in order to test
+  // move assignment operator (instead of move constructor).
+  gfx::Image image2;
+  image2 = std::move(image1);
+  EXPECT_EQ(25, image2.Width());
+  EXPECT_EQ(25, image2.Height());
+
+  EXPECT_EQ(0U, image1.RepresentationCount());
+  EXPECT_EQ(1U, image2.RepresentationCount());
 }
 
 TEST_F(ImageTest, MultiResolutionImageSkia) {

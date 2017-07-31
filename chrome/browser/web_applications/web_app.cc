@@ -116,7 +116,12 @@ void OnImageLoaded(std::unique_ptr<web_app::ShortcutInfo> shortcut_info,
     image_skia.MakeThreadSafe();
     shortcut_info->favicon.Add(gfx::Image(image_skia));
   } else {
-    shortcut_info->favicon = image_family;
+    // TODO(mgiuca): Move |image_family| instead of copying it. This copy
+    // results in a refcount of 2 for the duration of the callback, leading to a
+    // data race decrementing the refcount. This requires a change to the
+    // ImageLoaderImageFamilyCallback interface (to pass by value).
+    // https://crbug.com/749342.
+    shortcut_info->favicon = image_family.Clone();
   }
 
   callback.Run(std::move(shortcut_info));
