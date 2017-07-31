@@ -18,7 +18,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/installation_notifier.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
@@ -1207,12 +1207,9 @@ class DownloadContentDelegate : public URLFetcherDelegate {
     return;
   }
   __weak DownloadManagerController* weakSelf = self;
-  base::PostTaskAndReplyWithResult(
-      web::WebThread::GetBlockingPool()
-          ->GetTaskRunnerWithShutdownBehavior(
-              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)
-          .get(),
-      FROM_HERE, base::BindBlockArc(^{
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+      base::BindBlockArc(^{
         return CreateDirectory(downloadsDirectoryPath);
       }),
       base::BindBlockArc(^(bool directoryCreated) {
@@ -1238,8 +1235,6 @@ class DownloadContentDelegate : public URLFetcherDelegate {
                                 _contentFetcherDelegate.get());
   _fetcher->SetRequestContext(
       _webState->GetBrowserState()->GetRequestContext());
-  base::SequencedWorkerPool::SequenceToken sequenceToken =
-      web::WebThread::GetBlockingPool()->GetSequenceToken();
   _fetcher->SaveResponseToFileAtPath(
       _downloadFilePath,
       base::CreateSequencedTaskRunnerWithTraits(
