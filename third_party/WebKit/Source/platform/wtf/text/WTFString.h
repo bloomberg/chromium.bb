@@ -384,6 +384,22 @@ class WTF_EXPORT String {
   int64_t ToInt64(bool* ok = 0) const;
   uint64_t ToUInt64(bool* ok = 0) const;
 
+  // These functions accepts:
+  //  - leading '+'
+  //  - numbers without leading zeros such as ".5"
+  //  - numbers ending with "." such as "3."
+  //  - scientific notation
+  //  - leading whitespace (IsASCIISpace, not IsHTMLSpace)
+  //  - no trailing whitespace
+  //  - no trailing garbage
+  //  - no numbers such as "NaN" "Infinity"
+  //
+  // A huge absolute number which a double/float can't represent is accepted,
+  // and +Infinity or -Infinity is returned.
+  //
+  // A small absolute numbers which a double/float can't represent is accepted,
+  // and 0 is returned
+  //
   // FIXME: Like the strict functions above, these give false for "ok" when
   // there is trailing garbage.  Like the non-strict functions above, these
   // return the value when there is trailing garbage.  It would be better if
