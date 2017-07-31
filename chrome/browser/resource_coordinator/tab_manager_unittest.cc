@@ -132,22 +132,22 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
     return web_contents;
   }
 
-  std::unique_ptr<NavigationHandle> CreateTabAndNavigation() {
+  std::unique_ptr<NavigationHandle> CreateTabAndNavigation(const char* url) {
     content::TestWebContents* web_contents =
         content::TestWebContents::Create(profile(), nullptr);
     return content::NavigationHandle::CreateNavigationHandleForTesting(
-        GURL(kTestUrl), web_contents->GetMainFrame());
-  }
-
-  void MaybeThrottleNavigations(TabManager* tab_manager) {
-    MaybeThrottleNavigations(tab_manager, 1);
+        GURL(url), web_contents->GetMainFrame());
   }
 
   // Simulate creating 3 tabs and their navigations.
-  void MaybeThrottleNavigations(TabManager* tab_manager, size_t loading_slots) {
-    nav_handle1_ = CreateTabAndNavigation();
-    nav_handle2_ = CreateTabAndNavigation();
-    nav_handle3_ = CreateTabAndNavigation();
+  void MaybeThrottleNavigations(TabManager* tab_manager,
+                                size_t loading_slots = 1,
+                                const char* url1 = kTestUrl,
+                                const char* url2 = kTestUrl,
+                                const char* url3 = kTestUrl) {
+    nav_handle1_ = CreateTabAndNavigation(url1);
+    nav_handle2_ = CreateTabAndNavigation(url2);
+    nav_handle3_ = CreateTabAndNavigation(url3);
     contents1_ = nav_handle1_->GetWebContents();
     contents2_ = nav_handle2_->GetWebContents();
     contents3_ = nav_handle3_->GetWebContents();
@@ -873,6 +873,35 @@ TEST_F(TabManagerTest, BackgroundTabLoadingSlots) {
   EXPECT_FALSE(tab_manager3.IsNavigationDelayedForTest(nav_handle1_.get()));
   EXPECT_FALSE(tab_manager3.IsNavigationDelayedForTest(nav_handle2_.get()));
   EXPECT_FALSE(tab_manager3.IsNavigationDelayedForTest(nav_handle3_.get()));
+}
+
+TEST_F(TabManagerTest, BackgroundTabsLoadingOrdering) {
+  TabManager* tab_manager = g_browser_process->GetTabManager();
+  base::SimpleTestTickClock test_clock;
+  tab_manager->set_test_tick_clock(&test_clock);
+
+  MaybeThrottleNavigations(
+      tab_manager, 1, kTestUrl,
+      chrome::kChromeUISettingsURL,  // Using internal page URL for tab 2.
+      kTestUrl);
+  tab_manager->GetWebContentsData(contents1_)
+      ->DidStartNavigation(nav_handle1_.get());
+
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents1_));
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents2_));
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents3_));
+  EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle1_.get()));
+  EXPECT_TRUE(tab_manager->IsNavigationDelayedForTest(nav_handle2_.get()));
+  EXPECT_TRUE(tab_manager->IsNavigationDelayedForTest(nav_handle3_.get()));
+
+  // Simulate tab 1 has finished loading. Tab 3 should be loaded before tab 2,
+  // because tab 2 is internal page.
+  tab_manager->GetWebContentsData(contents1_)->DidStopLoading();
+
+  EXPECT_FALSE(tab_manager->IsTabLoadingForTest(contents2_));
+  EXPECT_TRUE(tab_manager->IsTabLoadingForTest(contents3_));
+  EXPECT_TRUE(tab_manager->IsNavigationDelayedForTest(nav_handle2_.get()));
+  EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle3_.get()));
 }
 
 }  // namespace resource_coordinator

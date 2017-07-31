@@ -1118,6 +1118,8 @@ TabManager::MaybeThrottleNavigation(BackgroundTabNavigationThrottle* throttle) {
   GetWebContentsData(navigation_handle->GetWebContents())
       ->SetTabLoadingState(TAB_IS_NOT_LOADING);
   pending_navigations_.push_back(throttle);
+  std::stable_sort(pending_navigations_.begin(), pending_navigations_.end(),
+                   ComparePendingNavigations);
 
   StartForceLoadTimer();
   return content::NavigationThrottle::DEFER;
@@ -1209,6 +1211,21 @@ BackgroundTabNavigationThrottle* TabManager::RemovePendingNavigationIfNeeded(
     it++;
   }
   return nullptr;
+}
+
+// static
+bool TabManager::ComparePendingNavigations(
+    const BackgroundTabNavigationThrottle* first,
+    const BackgroundTabNavigationThrottle* second) {
+  bool first_is_internal_page =
+      IsInternalPage(first->navigation_handle()->GetURL());
+  bool second_is_internal_page =
+      IsInternalPage(second->navigation_handle()->GetURL());
+
+  if (first_is_internal_page != second_is_internal_page)
+    return !first_is_internal_page;
+
+  return false;
 }
 
 bool TabManager::IsTabLoadingForTest(content::WebContents* contents) const {
