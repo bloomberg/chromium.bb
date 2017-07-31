@@ -417,30 +417,26 @@ const SpdyFrameIR& SpdyFramer::SpdyControlFrameIterator::GetIR() const {
 std::unique_ptr<SpdyFrameSequence> SpdyFramer::CreateIterator(
     SpdyFramer* framer,
     std::unique_ptr<const SpdyFrameIR> frame_ir) {
-  std::unique_ptr<SpdyFrameSequence> result = nullptr;
   switch (frame_ir->frame_type()) {
     case SpdyFrameType::HEADERS: {
-      result = SpdyMakeUnique<SpdyHeaderFrameIterator>(
+      return SpdyMakeUnique<SpdyHeaderFrameIterator>(
           framer, SpdyWrapUnique(
                       static_cast<const SpdyHeadersIR*>(frame_ir.release())));
-      break;
     }
     case SpdyFrameType::PUSH_PROMISE: {
-      result = SpdyMakeUnique<SpdyPushPromiseFrameIterator>(
+      return SpdyMakeUnique<SpdyPushPromiseFrameIterator>(
           framer, SpdyWrapUnique(static_cast<const SpdyPushPromiseIR*>(
                       frame_ir.release())));
-      break;
     }
     case SpdyFrameType::DATA: {
       DVLOG(1) << "Serialize a stream end DATA frame for VTL";
       // FALLTHROUGH_INTENDED
     }
     default: {
-      result =
-          SpdyMakeUnique<SpdyControlFrameIterator>(framer, std::move(frame_ir));
+      return SpdyMakeUnique<SpdyControlFrameIterator>(framer,
+                                                      std::move(frame_ir));
     }
   }
-  return result;
 }
 
 void SpdyFramer::SerializeDataBuilderHelper(const SpdyDataIR& data_ir,
