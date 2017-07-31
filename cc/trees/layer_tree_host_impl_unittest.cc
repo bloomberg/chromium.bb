@@ -946,17 +946,16 @@ TEST_F(LayerTreeHostImplTest, GPUMemoryForSmallLayerHistogramTest) {
       "Compositing.Renderer.GPUMemoryForTilingsInKb", 1);
 }
 
-// Flaky: http://crbug.com/750377
-TEST_F(LayerTreeHostImplTest, DISABLED_GPUMemoryForLargeLayerHistogramTest) {
+TEST_F(LayerTreeHostImplTest, GPUMemoryForLargeLayerHistogramTest) {
   base::HistogramTester histogram_tester;
-  SetClientNameForMetrics("Browser");
+  SetClientNameForMetrics("Renderer");
   // With default tile size being set to 256 * 256, the following layer needs
   // 4 tiles which cost 256 * 256 * 4 * 4 / 1024 = 1024KB memory.
   TestGPUMemoryForTilings(gfx::Size(500, 500));
   histogram_tester.ExpectBucketCount(
-      "Compositing.Browser.GPUMemoryForTilingsInKb", 1024, 1);
+      "Compositing.Renderer.GPUMemoryForTilingsInKb", 1024, 1);
   histogram_tester.ExpectTotalCount(
-      "Compositing.Browser.GPUMemoryForTilingsInKb", 1);
+      "Compositing.Renderer.GPUMemoryForTilingsInKb", 1);
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollRootCallsCommitAndRedraw) {
