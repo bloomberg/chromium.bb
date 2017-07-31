@@ -1634,11 +1634,11 @@
     },
 
     'chrome_pgo_phase_1': {
-      'gn_args': 'chrome_pgo_phase=1',
+      'gn_args': 'chrome_pgo_phase=1 is_clang=false',
     },
 
     'chrome_pgo_phase_2': {
-      'gn_args': 'chrome_pgo_phase=2',
+      'gn_args': 'chrome_pgo_phase=2 is_clang=false',
     },
 
     'chrome_with_codecs': {
