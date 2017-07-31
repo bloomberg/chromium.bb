@@ -3,13 +3,6 @@
 # This file acts as a blacklist; directories and files not listed here will
 # automatically be found and imported.
 #
-# This file is read by webkitpy/w3c/directory_owners_extractor.py to decide who
-# to contact for new failures; it will read entries with the following format:
-# When removing blacklist entries:
-# * Comment out the line rather than deleting it, to show it is intentional.
-# * Change [ Skip ] to [ Pass ]
-# * Add a leading comment: ## Owners: user@example.com
-#
 # We may want to move towards importing but not running directories without
 # owners, in order to make it easier to enable or run them in the future --
 # directories that are imported but not run are listed in NeverFixTests.
@@ -17,60 +10,22 @@
 # Further documentation:
 # https://chromium.googlesource.com/chromium/src/+/master/docs/testing/layout_test_expectations.md
 
-## Owners: paint-dev@chromium.org
-# external/wpt/2dcontext [ Pass ]
-## Owners: garykac@chromium.org
-# external/wpt/clipboard-apis [ Pass ]
-## Owners: jsbell@chromium.org
-# external/wpt/FileAPI [ Pass ]
-## Owners: jsbell@chromium.org
-# external/wpt/IndexedDB [ Pass ]
-## Owners: eroman@chromium.org,rsleevi@chromium.org
-# external/wpt/WebCryptoAPI [ Pass ]
-## Owners: jsbell@chromium.org
-# external/wpt/WebIDL [ Pass ]
 external/wpt/WebIDL/invalid [ Skip ]
 external/wpt/WebIDL/readme.txt [ Skip ]
 external/wpt/WebIDL/testable_assertions.txt [ Skip ]
 external/wpt/WebIDL/valid [ Skip ]
-## Owners: blink-network-dev@chromium.org
-# external/wpt/XMLHttpRequest [ Pass ]
 external/wpt/ambient-light [ Skip ]
 external/wpt/annotation-model [ Skip ]
 external/wpt/annotation-protocol [ Skip ]
 external/wpt/annotation-vocab [ Skip ]
 external/wpt/app-uri [ Skip ]
-## Owners: timvolodine@chromium.org
-# external/wpt/battery-status [ Pass ]
-## Owners: ortuno@chromium.org,scheib@chromium.org
-# external/wpt/bluetooth [ Pass ]
-## Owners: msramek@chromium.org,mkwst@chromium.org
-# external/wpt/clear-site-data [ Pass ]
-## Owners: none; No tests in the directory.
-# external/wpt/common [ Pass ]
-## Owners: foolip@chromium.org
-# external/wpt/compat [ Pass ]
 external/wpt/config.default.json [ Skip ]
 external/wpt/conformance-checkers [ Skip ]
-## Owners: kozyatinskiy@chromium.org
-# external/wpt/console [ Pass ]
-## Owners: mkwst@chromium.org
-# external/wpt/content-security-policy [ Pass ]
-## Owners: mkwst@chromium.org
-# external/wpt/cookies [ Pass ]
-## Owners: blink-network-dev@chromium.org
-# external/wpt/cors [ Pass ]
-## Owners: kojii@chromium.org,ksakamoto@chromium.org
-# external/wpt/css-font-loading [ Pass ]
 external/wpt/css/CSS1 [ Skip ]
-## Owners: kojii@chromium.org
-# external/wpt/css/CSS2 [ Pass ]
 external/wpt/css/CSS2/LICENSE-BSD [ Skip ]
 external/wpt/css/CSS2/LICENSE-W3CD [ Skip ]
 external/wpt/css/CSS2/LICENSE-W3CTS [ Skip ]
 external/wpt/css/CSS2/Makefile [ Skip ]
-## Owners: atotic@chromium.org glebl@chromium.org
-# external/wpt/css/CSS2/abspos [ Pass ]
 external/wpt/css/CSS2/backgrounds [ Skip ]
 external/wpt/css/CSS2/bidi-005.xht [ Skip ]
 external/wpt/css/CSS2/bidi-006.xht [ Skip ]
@@ -94,9 +49,6 @@ external/wpt/css/CSS2/css-e-notation-test-2.html [ Skip ]
 external/wpt/css/CSS2/css1 [ Skip ]
 external/wpt/css/CSS2/css21-errata [ Skip ]
 external/wpt/css/CSS2/csswg-issues [ Skip ]
-## Owners: glebl@chromium.org
-# external/wpt/css/CSS2/floats [ Pass ]
-# external/wpt/css/CSS2/floats-clear [ Pass ]
 external/wpt/css/CSS2/fonts [ Skip ]
 external/wpt/css/CSS2/generate [ Skip ]
 external/wpt/css/CSS2/generated-content [ Skip ]
@@ -105,18 +57,12 @@ external/wpt/css/CSS2/inline-svg-100-percent-in-body.html [ Skip ]
 external/wpt/css/CSS2/inline-svg-intrinsic-size-100-percent-1.html [ Skip ]
 external/wpt/css/CSS2/inline-svg-intrinsic-size-100-percent-2.html [ Skip ]
 external/wpt/css/CSS2/inline-svg-margin-padding-border.html [ Skip ]
-## Owners: kojii@chromium.org
-# external/wpt/css/CSS2/linebox [ Pass ]
 external/wpt/css/CSS2/lists [ Skip ]
 external/wpt/css/CSS2/margin-padding-clear [ Skip ]
 external/wpt/css/CSS2/media [ Skip ]
-## Owners: glebl@chromium.org
-# external/wpt/css/CSS2/normal-flow [ Pass ]
 external/wpt/css/CSS2/other-formats [ Skip ]
 external/wpt/css/CSS2/page-box [ Skip ]
 external/wpt/css/CSS2/pagination [ Skip ]
-## Owners: glebl@chromium.org
-# external/wpt/css/CSS2/positioning [ Pass ]
 external/wpt/css/CSS2/run-in [ Skip ]
 external/wpt/css/CSS2/sec5 [ Skip ]
 external/wpt/css/CSS2/section-index.xht [ Skip ]
@@ -124,8 +70,6 @@ external/wpt/css/CSS2/selector [ Skip ]
 external/wpt/css/CSS2/selectors [ Skip ]
 external/wpt/css/CSS2/syntax [ Skip ]
 external/wpt/css/CSS2/tables [ Skip ]
-## Owners: kojii@chromium.org
-# external/wpt/css/CSS2/text [ Pass ]
 external/wpt/css/CSS2/ui [ Skip ]
 external/wpt/css/CSS2/values [ Skip ]
 external/wpt/css/CSS2/visudet [ Skip ]
@@ -135,8 +79,6 @@ external/wpt/css/CSS2/zindex [ Skip ]
 external/wpt/css/CSS2/zorder [ Skip ]
 external/wpt/css/WOFF2 [ Skip ]
 external/wpt/css/compositing-1 [ Skip ]
-## Owners: jfernandez@igalia.com
-# external/wpt/css/css-align-3 [ Pass ]
 external/wpt/css/css-animations-1 [ Skip ]
 external/wpt/css/css-backgrounds-3 [ Skip ]
 external/wpt/css/css-block-3 [ Skip ]
@@ -146,17 +88,10 @@ external/wpt/css/css-cascade-4 [ Skip ]
 external/wpt/css/css-color-4 [ Skip ]
 external/wpt/css/css-conditional-3 [ Skip ]
 external/wpt/css/css-counter-styles-3 [ Skip ]
-## Owners: ecobos@igalia.com
-# external/wpt/css/css-display-3 [ Pass ]
 external/wpt/css/css-exclusions-1 [ Skip ]
-## Owners: cbiesinger@chromium.org
-# external/wpt/css/css-flexbox-1 [ Pass ]
 external/wpt/css/css-fonts-3 [ Skip ]
 external/wpt/css/css-gcpm-3 [ Skip ]
-## Owners: rego@igalia.com
-# external/wpt/css/css-grid-1 [ Pass ]
 external/wpt/css/css-images-3 [ Skip ]
-## Owners: kochi@chromium.org
 external/wpt/css/css-lists-3 [ Skip ]
 external/wpt/css/css-logical-properties-1 [ Skip ]
 external/wpt/css/css-logical-props-1 [ Skip ]
@@ -164,29 +99,15 @@ external/wpt/css/css-masking-1 [ Skip ]
 external/wpt/css/css-multicol-1 [ Skip ]
 external/wpt/css/css-namespaces-3 [ Skip ]
 external/wpt/css/css-page-3 [ Skip ]
-## Owners: smcgruer@chromium.org
-# external/wpt/css/css-position-3 [ Pass ]
 external/wpt/css/css-pseudo-4 [ Skip ]
 external/wpt/css/css-regions-1 [ Skip ]
-## Owners: kojii@chromium.org
-# external/wpt/css/css-rhythm-1 [ Pass ]
-# external/wpt/css/css-scoping-1 [ Pass ]
 external/wpt/css/css-round-display-1 [ Skip ]
 external/wpt/css/css-ruby-1 [ Skip ]
-## Owners: bjonesbe@adobe.com
-# external/wpt/css/css-shapes-1 [ Pass ]
 external/wpt/css/css-speech-1 [ Skip ]
 external/wpt/css/css-syntax-3 [ Skip ]
 external/wpt/css/css-style-attr [ Skip ]
-## Owners: dgrogan@chromium.org,joysyu@google.com
-# external/wpt/css/css-tables-3 [ Pass ]
 external/wpt/css/css-text-3/hanging-punctuation [ Skip ]
-## Owners: kojii@chromium.org
-# external/wpt/css/css-text-3/i18n [ Pass ]
-# external/wpt/css/css-text-3/line-break [ Pass ]
 external/wpt/css/css-text-3/line-breaking [ Skip ]
-## Owners: kojii@chromium.org
-# external/wpt/css/css-text-3/overflow-wrap [ Pass ]
 external/wpt/css/css-text-3/support [ Skip ]
 external/wpt/css/css-text-3/tab-size [ Skip ]
 external/wpt/css/css-text-3/text-align [ Skip ]
@@ -195,26 +116,16 @@ external/wpt/css/css-text-3/text-justify [ Skip ]
 external/wpt/css/css-text-3/text-transform [ Skip ]
 external/wpt/css/css-text-3/white-space [ Skip ]
 external/wpt/css/css-text-3/word-break [ Skip ]
-## Owners: drott@chromium.org
-# external/wpt/css/css-text-decor-3 [ Pass ]
 external/wpt/css/css-transforms-1 [ Skip ]
 external/wpt/css/css-transitions-1 [ Skip ]
 external/wpt/css/css-transitions-2 [ Skip ]
-## Owners: rego@igalia.com
-# external/wpt/css/css-ui-3 [ Pass ]
 external/wpt/css/css-values-3 [ Skip ]
 external/wpt/css/css-values-4 [ Skip ]
 external/wpt/css/css-variables-1 [ Skip ]
-## Owners: kojii@chromium.org
-# external/wpt/css/css-writing-modes-3 [ Pass ]
 external/wpt/css/css3-color [ Skip ]
 external/wpt/css/css3-selectors [ Skip ]
 external/wpt/css/filter-effects-1 [ Skip ]
-## Owners: xlai@chromium.org,jinho.bang@samsung.com,hs1217.lee@samsung.com
-# external/wpt/css/geometry-1 [ Pass ]
 external/wpt/css/mediaqueries-3 [ Skip ]
-## Owners: rego@igalia.com
-# external/wpt/css/selectors4 [ Pass ]
 external/wpt/css/tools [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/README [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/align3 [ Skip ]
@@ -225,16 +136,12 @@ external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/conditional3 [ 
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/css21 [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/filters [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/background [ Skip ]
-## Owners: cbiesinger@chromium.org
-# external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox [ Pass ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/fonts3 [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/images3 [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/lists-3 [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/masking [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/multicol3 [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/ruby [ Skip ]
-## Owners: rego@igalia.com
-# external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/selectors4 [ Pass ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1 [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sync-tests-filter [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sync-tests.sh [ Skip ]
@@ -243,190 +150,34 @@ external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/text3 [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/transforms [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/ui3 [ Skip ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/values3 [ Skip ]
-## Owners: kojii@chromium.org
-# external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/variables [ Pass ]
 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/will-change [ Skip ]
 external/wpt/css/work-in-progress [ Skip ]
 external/wpt/css/.htaccess [ Skip ]
-## Owners: style-dev@chromium.org
-# external/wpt/cssom [ Pass ]
-## Owners: style-dev@chromium.org
-# external/wpt/cssom-view [ Pass ]
-## Owners: dom-dev@chromium.org
-# external/wpt/custom-elements [ Pass ]
 external/wpt/docs [ Skip ]
-## Owners: dom-dev@chromium.org
-external/wpt/dom [ Pass ]
-## Owners: dom-dev@chromium.org
-# external/wpt/domparsing [ Pass ]
-## Owners: dom-dev@chromium.org
-# external/wpt/domxpath [ Pass ]
 external/wpt/dpub-aam [ Skip ]
 external/wpt/dpub-aria [ Skip ]
-## Owners: editing-dev@chromium.org
-# external/wpt/editing [ Pass ]
-## Owners: jsbell@chromium.org
-# external/wpt/encoding [ Pass ]
-## Owners: jrummell@chromium.org
-# external/wpt/encrypted-media [ Pass ]
 external/wpt/encrypted-media/Google [ Skip ]
-## Owners: blink-network-dev@chromium.org
-# external/wpt/eventsource [ Pass ]
 external/wpt/ext-xhtml-pubid [ Skip ]
-## Owners: tyoshino@chromium.org,yhirano@chromium.org,mkwst@chromium.org,japhet@chromium.org
-# external/wpt/fetch [ Pass ]
-## Owners: none; No tests in the directory.
-# external/wpt/fonts [ Pass ]
 external/wpt/fonts/math [ Skip ]
-## Owners: foolip@chromium.org
-# external/wpt/fullscreen [ Pass ]
-## Owners: bajones@chromium.org
-# external/wpt/gamepad [ Pass ]
-## Owners: alexander.shalamov@intel.com,mikhail.pozdnyakov@intel.com,rijubrata.bhaumik@intel.com,timvolodine@chromium.org
-# external/wpt/generic-sensor [ Pass ]
-## Owners: mcasas@chromium.org
-# external/wpt/geolocation-API [ Pass ]
-## Owners: jsbell@chromium.org
-# external/wpt/hr-time [ Pass ]
-## Owners: dom-dev@chromium.org
-# external/wpt/html [ Pass ]
-## Owners: dom-dev@chromium.org
-# external/wpt/html-imports [ Pass ]
 external/wpt/html-longdesc [ Skip ]
-## Owners: rijubrata.bhaumik@intel.com,mcasas@chromium.org
-# external/wpt/html-media-capture [ Pass ]
-## Owners: loading-dev@chromium.org
-# external/wpt/http [ Pass ]
-## Owners: none; No tests in the directory.
-# external/wpt/images [ Pass ]
-## Owners: paint-dev@chromium.org
-# external/wpt/imagebitmap-renderingcontext [ Pass ]
-## Owners: smcgruer@chromium.org
-# external/wpt/infrastructure [ Pass ]
-## Owners: none; No tests in the directory.
-# external/wpt/interfaces [ Pass ]
-## Owners: dom-dev@chromium.org
-# external/wpt/innerText [ Pass ]
 external/wpt/js [ Skip ]
 external/wpt/lint [ Skip ]
 external/wpt/manifest [ Skip ]
 external/wpt/mathml [ Skip ]
-## Owners: none; No tests in the directory.
-# external/wpt/media [ Pass ]
-## Owners: mlamouri@chromium.org,zqzhang@chromium.org
-# external/wpt/mediasession [ Pass ]
-## Owners: chcunningham@chromium.org,mlamouri@chromium.org
-# external/wpt/media-capabilities
-## Owners: chcunningham@chromium.org,wolenetz@chromium.org
-# external/wpt/media-source [ Pass ]
-## Owners: mcasas@chromium.org
-# external/wpt/mediacapture-record [ Pass ]
-## Owners: phoglund@chromium.org
-# external/wpt/mediacapture-streams [ Pass ]
 external/wpt/microdata [ Skip ]
-## Owners: mkwst@chromium.org
-# external/wpt/mixed-content [ Pass ]
-## Owners: sunjian@chromium.org,panicker@chromium.org
-external/wpt/navigation-timing [ Pass ]
-## Owners: platform-capabilities@chromium.org
-# external/wpt/notifications [ Pass ]
-## Owners: paint-dev@chromium.org
-# external/wpt/offscreen-canvas [ Pass ]
 external/wpt/old-tests [ Skip ]
-## Owners: timvolodine@chromium.org,reillyg@chromium.org
-# external/wpt/orientation-event [ Pass ]
-## Owners: rouslan@chromium.org,mathp@chromium.org
-# external/wpt/payment-request [ Pass ]
-## Owners: panicker@chromium.org
-# external/wpt/page-visibility [ Pass ]
-## Owners: igrigorik@chromium.org,panicker@chromium.org
-# external/wpt/performance-timeline [ Pass ]
-## Owners: nzolghadr@chromium.org,mustaq@chromium.org
-# external/wpt/pointerevents [ Pass ]
-## Owners: chongz@chromium.org
-# external/wpt/pointerlock [ Pass ]
-## Owners: media-dev@chromium.org
-# external/wpt/presentation-api [ Pass ]
-## Owners: blink-network-dev@chromium.org
-# external/wpt/progress-events [ Pass ]
 external/wpt/proximity [ Skip ]
-## Owners: rob.buis@samsung.com
-# external/wpt/quirks-mode [ Pass ]
-## Owners: avayvod@chromium.org,mlamouri@chromium.org
-# external/wpt/remote-playback [ Pass ]
-## Owners: jochen@chromium.org,estark@chromium.org
-# external/wpt/referrer-policy [ Pass ]
-## Owners: ksakamoto@chromium.org
-# external/wpt/resource-timing [ Pass ]
-## Owners: jsbell@chromium.org
-# external/wpt/resources [ Pass ]
 external/wpt/resources/docs [ Skip ]
 external/wpt/resources/examples [ Skip ]
 external/wpt/resources/webidl2/README.md [ Skip ]
 external/wpt/resources/webidl2/test [ Skip ]
-## Owners: mlamouri@chromium.org
-# external/wpt/screen-orientation [ Pass ]
-## Owners: mkwst@chromium.org
-# external/wpt/secure-contexts [ Pass ]
-## Owners: editing-dev@chromium.org
-# external/wpt/selection [ Pass ]
-## Owners: style-dev@chromium.org
-# external/wpt/selectors [ Pass ]
 external/wpt/serve [ Skip ]
 external/wpt/serve.py [ Skip ]
 external/wpt/server-side.md [ Skip ]
-## Owners: worker-dev@chromium.org
-# external/wpt/service-workers [ Pass ]
-## Owners: jsbell@chromium.org
-# external/wpt/service-workers/cache-storage [ Pass ]
-## Owners: dom-dev@chromium.org
-# external/wpt/shadow-dom [ Pass ]
-## Owners: jsbell@chromium.org
-# external/wpt/storage [ Pass ]
-## Owners: domenic@chromium.org,ricea@chromium.org,tyoshino@chromium.org
-external/wpt/streams [ Pass ]
-## Owners: mkwst@chromium.org,jochen@chromium.org
-# external/wpt/subresource-integrity [ Pass ]
-## Owners: foolip@chromium.org
-# external/wpt/svg [ Pass ]
 external/wpt/svg/import [ Skip ]
-## Owners: chongz@chromium.org
-# external/wpt/touch-events [ Pass ]
-## Owners: dtapuska@chromium.org
-# external/wpt/uievents [ Pass ]
-## Owners: blink-network-dev@chromium.org
-# external/wpt/url [ Pass ]
-## Owners: jsbell@chromium.org
-# external/wpt/user-timing [ Pass ]
-## Owners: platform-capabilities@chromium.org
-# external/wpt/vibration [ Pass ]
-## Owners: bsheedy@chromium.org
-# external/wpt/webvr [ Pass ]
 external/wpt/wai-aria [ Skip ]
-## Owners: meade@chromium.org
-# external/wpt/web-animations [ Pass ]
-## Owners: hongchan@chromium.org, rtoy@chromium.org
-# external/wpt/webaudio [ Pass ]
-## Owners: kpaulhamus@chromium.org
-# external/wpt/webauthn [ Pass ]
 external/wpt/webdriver [ Skip ]
 external/wpt/webgl [ Skip ]
-## Owners: mek@chromium.org
-# external/wpt/webmessaging [ Pass ]
-## Owners: hta@chromium.org
-# external/wpt/webrtc [ Pass ]
-## Owners: blink-network-dev@chromium.org
-# external/wpt/websockets [ Pass ]
-## Owners: michaeln@chromium.org,jsbell@chromium.org
-# external/wpt/webstorage [ Pass ]
-## Owners: foolip@chromium.org,maksim.sisov@intel.com
-# external/wpt/webvtt [ Pass ]
-## Owners: alexander.shalamov@intel.com,kenneth.r.christiansen@intel.com,rijubrata.bhaumik@intel.com
-# external/wpt/web-nfc [ Pass ]
-## Owners: worker-dev@chromium.org
-# external/wpt/workers [ Pass ]
-## Owners: zijiehe@chromium.org
-# external/wpt/keyboard-lock [ Pass ]
 
 # Exceptions for individual files that fail due to bugs in the
 # upstream tests that we shouldn't bother importing until they are
