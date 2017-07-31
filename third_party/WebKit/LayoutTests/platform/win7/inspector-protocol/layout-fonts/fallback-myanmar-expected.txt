@@ -4,3 +4,4 @@ Test passes if a maxmium of the two first glyphs are notdef's (for Myanmar fonts
 "Arial" : 25
 
 FAIL
+
