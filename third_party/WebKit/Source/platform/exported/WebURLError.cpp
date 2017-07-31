@@ -81,9 +81,6 @@ std::ostream& operator<<(std::ostream& out, const WebURLError::Domain domain) {
     case WebURLError::Domain::kNet:
       out << "net";
       break;
-    case WebURLError::Domain::kBlinkInternal:
-      out << "blink";
-      break;
     case WebURLError::Domain::kHttp:
       out << "http";
       break;

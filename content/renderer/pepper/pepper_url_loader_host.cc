@@ -186,10 +186,10 @@ void PepperURLLoaderHost::DidFail(const WebURLError& error) {
         pp_error = PP_ERROR_NOACCESS;
         break;
     }
-  } else {
-    // It's a WebKit error.
-    pp_error = PP_ERROR_NOACCESS;
   }
+
+  if (error.is_web_security_violation)
+    pp_error = PP_ERROR_NOACCESS;
   SendUpdateToPlugin(
       base::MakeUnique<PpapiPluginMsg_URLLoader_FinishedLoading>(pp_error));
 }
