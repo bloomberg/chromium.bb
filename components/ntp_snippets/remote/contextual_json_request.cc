@@ -208,7 +208,7 @@ ContextualJsonRequest::Builder::BuildURLFetcher(
     const std::string& headers,
     const std::string& body) const {
   net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("ntp_snippets_fetch", R"(
+      net::DefineNetworkTrafficAnnotation("ntp_contextual_suggestion_fetch", R"(
         semantics {
           sender: "New Tab Page Contextual Suggestions Fetch"
           description:
@@ -223,10 +223,15 @@ ContextualJsonRequest::Builder::BuildURLFetcher(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "This feature can be disabled by the flag "
             "contextual-suggestions-carousel."
+          chrome_policy {
+            NTPContentSuggestionsEnabled {
+              NTPContentSuggestionsEnabled: False
+            }
+          }
         })");
   std::unique_ptr<net::URLFetcher> url_fetcher = net::URLFetcher::Create(
       url_, net::URLFetcher::POST, delegate, traffic_annotation);
