@@ -154,9 +154,16 @@ class CC_PAINT_EXPORT PaintOp {
   // memory buffers and so don't have their destructors run automatically.
   void DestroyThis();
 
-  static bool IsValidSkBlendMode(SkBlendMode mode) {
+  // DrawColor is more restrictive on the blend modes that can be used.
+  static bool IsValidDrawColorSkBlendMode(SkBlendMode mode) {
     return static_cast<uint32_t>(mode) <=
            static_cast<uint32_t>(SkBlendMode::kLastCoeffMode);
+  }
+
+  // PaintFlags can have more complex blend modes than DrawColor.
+  static bool IsValidPaintFlagsSkBlendMode(SkBlendMode mode) {
+    return static_cast<uint32_t>(mode) <=
+           static_cast<uint32_t>(SkBlendMode::kLastMode);
   }
 
   static bool IsValidSkClipOp(SkClipOp op) {
