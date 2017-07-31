@@ -518,12 +518,7 @@ void FetchManager::Loader::DidFinishLoading(unsigned long, double) {
 }
 
 void FetchManager::Loader::DidFail(const ResourceError& error) {
-  if (error.IsCancellation() || error.IsTimeout() ||
-      error.GetDomain() != ResourceError::Domain::kBlinkInternal)
-    Failed(String());
-  else
-    Failed("Fetch API cannot load " + error.FailingURL() + ". " +
-           error.LocalizedDescription());
+  Failed(String());
 }
 
 void FetchManager::Loader::DidFailRedirectCheck() {

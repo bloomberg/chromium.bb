@@ -81,10 +81,10 @@ void FileDownloader::DidFail(const blink::WebURLError& error) {
         status_ = ACCESS_DENIED;
         break;
     }
-  } else {
-    // It's a WebKit error.
-    status_ = ACCESS_DENIED;
   }
+
+  if (error.is_web_security_violation)
+    status_ = ACCESS_DENIED;
 
   // Delete url_loader to prevent didFinishLoading from being called, which
   // some implementations of blink::WebURLLoader will do after calling didFail.

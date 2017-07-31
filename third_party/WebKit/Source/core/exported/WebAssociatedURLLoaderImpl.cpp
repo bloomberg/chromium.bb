@@ -420,8 +420,8 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
   }
 
   if (!loader_) {
-    // FIXME: return meaningful error codes.
-    client_adapter_->DidFail(ResourceError());
+    client_adapter_->DidFail(ResourceError::CancelledDueToAccessCheckError(
+        request.Url(), ResourceRequestBlockedReason::kOther));
   }
   client_adapter_->EnableErrorNotifications();
 }
@@ -467,7 +467,7 @@ void WebAssociatedURLLoaderImpl::DocumentDestroyed() {
   if (!client_)
     return;
 
-  ReleaseClient()->DidFail(ResourceError());
+  ReleaseClient()->DidFail(ResourceError::CancelledError(KURL()));
   // |this| may be dead here.
 }
 

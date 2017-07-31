@@ -237,9 +237,14 @@ void DocumentThreadableLoader::Start(const ResourceRequest& request) {
                                                                  client_);
     ThreadableLoaderClient* client = client_;
     Clear();
-    client->DidFail(ResourceError(ResourceError::Domain::kBlinkInternal, 0,
-                                  request.Url(),
-                                  "Cross origin requests are not supported."));
+    ResourceError error = ResourceError::CancelledDueToAccessCheckError(
+        request.Url(), ResourceRequestBlockedReason::kOther,
+        "Cross origin requests are not supported.");
+    const String message = "Failed to load " + error.FailingURL() + ": " +
+                           error.LocalizedDescription();
+    loading_context_->GetExecutionContext()->AddConsoleMessage(
+        ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
+    client->DidFail(error);
     return;
   }
 
@@ -1106,8 +1111,11 @@ void DocumentThreadableLoader::LoadRequestAsync(
     // notified and |client| is null.
     if (!client)
       return;
-    client->DidFail(ResourceError(ResourceError::Domain::kBlinkInternal, 0,
-                                  request.Url(), "Failed to start loading."));
+    String message =
+        String("Failed to start loading ") + request.Url().GetString();
+    loading_context_->GetExecutionContext()->AddConsoleMessage(
+        ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
+    client->DidFail(ResourceError::CancelledError(request.Url()));
     return;
   }
 
