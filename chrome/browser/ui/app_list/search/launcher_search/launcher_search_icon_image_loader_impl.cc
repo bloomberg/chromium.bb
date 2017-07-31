@@ -27,8 +27,8 @@ LauncherSearchIconImageLoaderImpl::LauncherSearchIconImageLoaderImpl(
                                     std::move(error_reporter)),
       weak_ptr_factory_(this) {}
 
-LauncherSearchIconImageLoaderImpl::~LauncherSearchIconImageLoaderImpl() {
-}
+LauncherSearchIconImageLoaderImpl::~LauncherSearchIconImageLoaderImpl() =
+    default;
 
 const gfx::ImageSkia& LauncherSearchIconImageLoaderImpl::LoadExtensionIcon() {
   extension_icon_image_.reset(new extensions::IconImage(
@@ -44,8 +44,7 @@ void LauncherSearchIconImageLoaderImpl::LoadIconResourceFromExtension() {
   const extensions::ExtensionResource& resource =
       extension_->GetResource(file_path);
 
-  // Load image as scale factor 2.0. Resizing image to proper size depending on
-  // DPI is done in BadgedIconSource.
+  // Load image as scale factor 2.0 (crbug.com/490597).
   std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
   info_list.push_back(extensions::ImageLoader::ImageRepresentation(
       resource, extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
