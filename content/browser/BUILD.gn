@@ -1453,6 +1453,8 @@ source_set("browser") {
     "service_worker/service_worker_version.h",
     "service_worker/service_worker_write_to_cache_job.cc",
     "service_worker/service_worker_write_to_cache_job.h",
+    "shared_worker/shared_worker_content_settings_proxy_impl.cc",
+    "shared_worker/shared_worker_content_settings_proxy_impl.h",
     "shared_worker/shared_worker_host.cc",
     "shared_worker/shared_worker_host.h",
     "shared_worker/shared_worker_instance.cc",

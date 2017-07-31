@@ -374,8 +374,6 @@ target(link_target_type, "renderer") {
     "service_worker/worker_fetch_context_impl.h",
     "shared_memory_seqlock_reader.cc",
     "shared_memory_seqlock_reader.h",
-    "shared_worker/embedded_shared_worker_content_settings_client_proxy.cc",
-    "shared_worker/embedded_shared_worker_content_settings_client_proxy.h",
     "shared_worker/embedded_shared_worker_stub.cc",
     "shared_worker/embedded_shared_worker_stub.h",
     "shared_worker/shared_worker_repository.cc",

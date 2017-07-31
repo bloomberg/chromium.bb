@@ -48,6 +48,7 @@
 #include "core/probe/CoreProbes.h"
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/ParentFrameTaskRunners.h"
+#include "core/workers/SharedWorkerContentSettingsProxy.h"
 #include "core/workers/SharedWorkerGlobalScope.h"
 #include "core/workers/SharedWorkerThread.h"
 #include "core/workers/WorkerContentSettingsClient.h"
@@ -76,6 +77,7 @@
 #include "public/web/WebFrame.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebView.h"
+#include "public/web/shared_worker_content_settings_proxy.mojom-blink.h"
 
 namespace blink {
 
@@ -295,11 +297,16 @@ void WebSharedWorkerImpl::StartWorkerContext(
     const WebString& content_security_policy,
     WebContentSecurityPolicyType policy_type,
     WebAddressSpace creation_address_space,
-    bool data_saver_enabled) {
+    bool data_saver_enabled,
+    mojo::ScopedMessagePipeHandle content_settings_handle) {
   DCHECK(IsMainThread());
   url_ = url;
   name_ = name;
   creation_address_space_ = creation_address_space;
+  // Chrome doesn't use interface versioning.
+  content_settings_info_ =
+      mojom::blink::SharedWorkerContentSettingsProxyPtrInfo(
+          std::move(content_settings_handle), 0u);
   InitializeLoader(data_saver_enabled);
 }
 
@@ -337,10 +344,9 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
   CoreInitializer::GetInstance().ProvideIndexedDBClientToWorker(
       *worker_clients);
 
-  WebSecurityOrigin web_security_origin(loading_document_->GetSecurityOrigin());
   ProvideContentSettingsClientToWorker(
-      worker_clients,
-      client_->CreateWorkerContentSettingsClient(web_security_origin));
+      worker_clients, WTF::MakeUnique<SharedWorkerContentSettingsProxy>(
+                          starter_origin, std::move(content_settings_info_)));
 
   if (RuntimeEnabledFeatures::OffMainThreadFetchEnabled()) {
     std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context =

@@ -22,10 +22,6 @@
 
 struct ViewHostMsg_CreateWorker_Params;
 
-namespace IPC {
-class Message;
-}
-
 namespace content {
 
 class MessagePort;
@@ -78,15 +74,6 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
   void WorkerConnected(SharedWorkerMessageFilter* filter,
                        int connection_request_id,
                        int worker_route_id);
-  void AllowFileSystem(SharedWorkerMessageFilter* filter,
-                       int worker_route_id,
-                       const GURL& url,
-                       IPC::Message* reply_msg);
-  void AllowIndexedDB(SharedWorkerMessageFilter* filter,
-                      int worker_route_id,
-                      const GURL& url,
-                      const base::string16& name,
-                      bool* result);
 
   void OnSharedWorkerMessageFilterClosing(
       SharedWorkerMessageFilter* filter);
