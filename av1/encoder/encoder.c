@@ -4147,6 +4147,9 @@ static void encode_without_recode_loop(AV1_COMP *cpi) {
   if (cpi->unscaled_last_source != NULL)
     cpi->last_source = av1_scale_if_required(cm, cpi->unscaled_last_source,
                                              &cpi->scaled_last_source);
+#if CONFIG_HIGHBITDEPTH && CONFIG_GLOBAL_MOTION
+  cpi->source->buf_8bit_valid = 0;
+#endif
 
   if (frame_is_intra_only(cm) == 0) {
     av1_scale_references(cpi);
@@ -4200,6 +4203,15 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
 
   set_size_independent_vars(cpi);
 
+  cpi->source =
+      av1_scale_if_required(cm, cpi->unscaled_source, &cpi->scaled_source);
+  if (cpi->unscaled_last_source != NULL)
+    cpi->last_source = av1_scale_if_required(cm, cpi->unscaled_last_source,
+                                             &cpi->scaled_last_source);
+#if CONFIG_HIGHBITDEPTH && CONFIG_GLOBAL_MOTION
+  cpi->source->buf_8bit_valid = 0;
+#endif
+
   do {
     aom_clear_system_state();
 
@@ -4230,19 +4242,12 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
                                        &frame_over_shoot_limit);
     }
 
-    cpi->source =
-        av1_scale_if_required(cm, cpi->unscaled_source, &cpi->scaled_source);
-    if (cpi->unscaled_last_source != NULL)
-      cpi->last_source = av1_scale_if_required(cm, cpi->unscaled_last_source,
-                                               &cpi->scaled_last_source);
-
     if (frame_is_intra_only(cm) == 0) {
       if (loop_count > 0) {
         release_scaled_references(cpi);
       }
       av1_scale_references(cpi);
     }
-
     av1_set_quantizer(cm, q);
 
     if (loop_count == 0) setup_frame(cpi);
@@ -5893,7 +5898,9 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   if (cm->new_fb_idx == INVALID_IDX) return -1;
 
   cm->cur_frame = &pool->frame_bufs[cm->new_fb_idx];
-
+#if CONFIG_HIGHBITDEPTH && CONFIG_GLOBAL_MOTION
+  cm->cur_frame->buf.buf_8bit_valid = 0;
+#endif
 #if CONFIG_EXT_REFS
 #if !CONFIG_ALTREF2
   if (oxcf->pass == 2) {
