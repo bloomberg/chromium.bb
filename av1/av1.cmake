@@ -501,6 +501,12 @@ if (CONFIG_HASH_ME)
       "${AOM_ROOT}/third_party/vector/vector.c")
 endif ()
 
+if (CONFIG_Q_ADAPT_PROBS)
+  set(AOM_AV1_COMMON_SOURCES
+      ${AOM_AV1_COMMON_SOURCES}
+      "${AOM_ROOT}/av1/common/token_cdfs.h")
+endif ()
+
 # Setup AV1 common/decoder/encoder targets. The libaom target must exist before
 # this function is called.
 function (setup_av1_targets)

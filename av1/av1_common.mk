@@ -188,4 +188,8 @@ AV1_COMMON_SRCS-$(HAVE_SSSE3) += common/x86/highbd_convolve_2d_ssse3.c
 endif
 endif
 
+ifeq ($(CONFIG_Q_ADAPT_PROBS),yes)
+AV1_COMMON_SRCS-yes += common/token_cdfs.h
+endif
+
 $(eval $(call rtcd_h_template,av1_rtcd,av1/common/av1_rtcd_defs.pl))

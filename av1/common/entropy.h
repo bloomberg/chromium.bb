@@ -28,8 +28,7 @@ extern "C" {
 #define GROUP_DIFF_UPDATE_PROB 252
 
 #if CONFIG_Q_ADAPT_PROBS
-#define QCTX_BIN_BITS 2
-#define QCTX_BINS (1 << QCTX_BIN_BITS)
+#define TOKEN_CDF_Q_CTXS 4
 #endif  // CONFIG_Q_ADAPT_PROBS
 
 // Coefficient token alphabet
