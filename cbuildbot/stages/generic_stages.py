@@ -16,13 +16,6 @@ import tempfile
 import time
 import traceback
 
-# We import mox so that we can identify mox exceptions and pass them through
-# in our exception handling code.
-try:
-  import mox
-except ImportError:
-  mox = None
-
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import topology
@@ -708,9 +701,6 @@ class BuilderStage(object):
       if isinstance(e, failures_lib.ExitEarlyException):
         # One stage finished and exited early, not a failure.
         result = results_lib.Results.SUCCESS
-        raise
-
-      if mox is not None and isinstance(e, mox.Error):
         raise
 
       # Tell the build bot this step failed for the waterfall.
