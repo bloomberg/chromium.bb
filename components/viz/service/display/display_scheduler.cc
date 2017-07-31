@@ -471,8 +471,11 @@ void DisplayScheduler::OnBeginFrameDeadline() {
 
 void DisplayScheduler::DidFinishFrame(bool did_draw) {
   DCHECK(begin_frame_source_);
-  // TODO(eseckler): Let client know that frame was completed.
   begin_frame_source_->DidFinishFrame(this);
+
+  BeginFrameAck ack(current_begin_frame_args_.source_id,
+                    current_begin_frame_args_.sequence_number, did_draw);
+  client_->DidFinishFrame(ack);
 }
 
 void DisplayScheduler::DidSwapBuffers() {

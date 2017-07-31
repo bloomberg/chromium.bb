@@ -32,6 +32,7 @@ class VIZ_SERVICE_EXPORT DisplaySchedulerClient {
   virtual bool SurfaceDamaged(const SurfaceId& surface_id,
                               const BeginFrameAck& ack) = 0;
   virtual void SurfaceDiscarded(const SurfaceId& surface_id) = 0;
+  virtual void DidFinishFrame(const BeginFrameAck& ack) = 0;
 };
 
 class VIZ_SERVICE_EXPORT DisplayScheduler : public BeginFrameObserverBase,

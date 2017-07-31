@@ -35,6 +35,8 @@ SchedulerSettings LayerTreeSettings::ToSchedulerSettings() const {
   scheduler_settings.enable_latency_recovery = enable_latency_recovery;
   scheduler_settings.background_frame_interval =
       base::TimeDelta::FromSecondsD(1.0 / background_animation_rate);
+  scheduler_settings.wait_for_all_pipeline_stages_before_draw =
+      wait_for_all_pipeline_stages_before_draw;
   return scheduler_settings;
 }
 

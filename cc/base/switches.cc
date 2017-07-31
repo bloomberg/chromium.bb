@@ -49,6 +49,11 @@ const char kEnableTileCompression[] = "enable-tile-compression";
 // Enables the GPU benchmarking extension
 const char kEnableGpuBenchmarking[] = "enable-gpu-benchmarking";
 
+// Effectively disables pipelining of compositor frame production stages by
+// waiting for each stage to finish before completing a frame.
+const char kRunAllCompositorStagesBeforeDraw[] =
+    "run-all-compositor-stages-before-draw";
+
 // Renders a border around compositor layers to help debug and study
 // layer compositing.
 const char kShowCompositedLayerBorders[] = "show-composited-layer-borders";
