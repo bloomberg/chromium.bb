@@ -153,7 +153,7 @@ void UiScene::ApplyRecursiveTransforms(UiElement* element) {
   }
 
   transform.ConcatTransform(inheritable);
-  element->set_screen_space_transform(transform);
+  element->set_world_space_transform(transform);
   element->set_inheritable_transform(inheritable);
   element->set_dirty(false);
 }

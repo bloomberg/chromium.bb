@@ -175,7 +175,7 @@ void UiElement::AddChild(UiElement* child) {
 
 gfx::Point3F UiElement::GetCenter() const {
   gfx::Point3F center;
-  screen_space_transform_.TransformPoint(&center);
+  world_space_transform_.TransformPoint(&center);
   return center;
 }
 
@@ -185,9 +185,9 @@ gfx::PointF UiElement::GetUnitRectangleCoordinates(
   gfx::Point3F origin(0, 0, 0);
   gfx::Vector3dF x_axis(1, 0, 0);
   gfx::Vector3dF y_axis(0, 1, 0);
-  screen_space_transform_.TransformPoint(&origin);
-  screen_space_transform_.TransformVector(&x_axis);
-  screen_space_transform_.TransformVector(&y_axis);
+  world_space_transform_.TransformPoint(&origin);
+  world_space_transform_.TransformVector(&x_axis);
+  world_space_transform_.TransformVector(&y_axis);
   gfx::Vector3dF origin_to_world = world_point - origin;
   float x = gfx::DotProduct(origin_to_world, x_axis) /
             gfx::DotProduct(x_axis, x_axis);
@@ -199,8 +199,8 @@ gfx::PointF UiElement::GetUnitRectangleCoordinates(
 gfx::Vector3dF UiElement::GetNormal() const {
   gfx::Vector3dF x_axis(1, 0, 0);
   gfx::Vector3dF y_axis(0, 1, 0);
-  screen_space_transform_.TransformVector(&x_axis);
-  screen_space_transform_.TransformVector(&y_axis);
+  world_space_transform_.TransformVector(&x_axis);
+  world_space_transform_.TransformVector(&y_axis);
   gfx::Vector3dF normal = CrossProduct(y_axis, x_axis);
   normal.GetNormalized(&normal);
   return normal;
