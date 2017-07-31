@@ -81,26 +81,7 @@ crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html
 # The failure in the next line is due to virtual/gpu bots using osmesa
 # Under osmesa, skia's filter quality doesn't work correctly. This test is expected to pass
 # when we swith to swiftshader.
-crbug.com/549742 [ Linux Mac ] virtual/gpu/fast/canvas/canvas-drawImage-video-imageSmoothingEnabled.html [ Failure ]
-
-# SwiftShader test failures
-crbug.com/726075 [ Win ] compositing/3d-cube.html [ Failure ]
-crbug.com/726075 [ Win ] css3/filters/filter-repaint-composited-fallback-crash.html [ Failure ]
-crbug.com/726075 [ Win ] fast/spatial-navigation/snav-clipped-overflowed-content.html [ Failure ]
-crbug.com/726075 [ Win ] virtual/gpu/fast/canvas/2d.fillText.gradient.html [ Failure ]
-crbug.com/726075 [ Win ] virtual/gpu/fast/canvas/canvas-filter-fill-paint-gradient.html [ Failure ]
-crbug.com/726075 [ Win ] virtual/gpu/fast/canvas/canvas-filter-stroke-paint-gradient.html [ Failure ]
-crbug.com/726075 [ Win ] virtual/gpu/fast/canvas/canvas-scale-strokePath-shadow.html [ Failure ]
-
-# SwiftShader WebGL 2 failures
-crbug.com/726075 [ Win ] external/wpt/offscreen-canvas/the-offscreen-canvas/offscreencanvas.getcontext.html [ Crash ]
-crbug.com/726075 [ Win ] fast/canvas/OffscreenCanvas-zero-size-readback.html [ Crash ]
-crbug.com/726075 [ Win ] fast/canvas/webgl/webgl-sharedarraybuffer.html [ Crash ]
-crbug.com/726075 [ Win ] virtual/display_list_2d_canvas/fast/canvas/OffscreenCanvas-zero-size-readback.html [ Crash ]
-crbug.com/726075 [ Win ] virtual/display_list_2d_canvas/fast/canvas/webgl/webgl-sharedarraybuffer.html [ Crash ]
-crbug.com/726075 [ Win ] virtual/gpu/fast/canvas/OffscreenCanvas-zero-size-readback.html [ Crash ]
-crbug.com/726075 [ Win ] virtual/gpu/fast/canvas/webgl/webgl-sharedarraybuffer.html [ Crash ]
-crbug.com/726075 [ Win ] vr/requestPresent_resolve_webgl2.html [ Crash ]
+crbug.com/549742 [ Linux Mac Win ] virtual/gpu/fast/canvas/canvas-drawImage-video-imageSmoothingEnabled.html [ Failure ]
 
 crbug.com/602110 hittesting/border-hittest-with-image-fallback.html [ Failure ]
 
@@ -647,8 +628,8 @@ crbug.com/567837 fast/hidpi/static [ Skip ]
 crbug.com/676432 fullscreen/full-screen-iframe-zIndex.html [ Skip ]
 crbug.com/676432 virtual/android/fullscreen/full-screen-iframe-zIndex.html [ Skip ]
 
-crbug.com/538697 [ Win ] virtual/threaded/printing/webgl-oversized-printing.html [ Failure Crash ]
-crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash ]
+crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printing.html [ Failure Crash ]
+crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Failure Crash ]
 
 # ====== Fullscreen tests failing with feature policy ======
 # TODO(loonybear): Turn tests on once feature policy implements allowfullscreen.
@@ -2647,7 +2628,7 @@ crbug.com/709227 external/wpt/offscreen-canvas/pixel-manipulation/2d.imageData.g
 crbug.com/709227 external/wpt/offscreen-canvas/pixel-manipulation/2d.imageData.get.tiny.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/pixel-manipulation/2d.imageData.put.nonfinite.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/2d.getcontext.extraargs.worker.html [ Failure ]
-crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/offscreencanvas.getcontext.worker.html [ Failure Crash ]
+crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/offscreencanvas.getcontext.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attributes.idl.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attributes.parse.em.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/the-offscreen-canvas/size.attributes.parse.empty.worker.html [ Failure ]

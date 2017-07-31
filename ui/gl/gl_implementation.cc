@@ -82,11 +82,7 @@ GLImplementation GetNamedGLImplementation(const std::string& name) {
 }
 
 GLImplementation GetSoftwareGLImplementation() {
-#if defined(OS_WIN)
-  return kGLImplementationSwiftShaderGL;
-#else
   return kGLImplementationOSMesaGL;
-#endif
 }
 
 const char* GetGLImplementationName(GLImplementation implementation) {
