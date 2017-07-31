@@ -15,7 +15,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace base {
-class ListValue;
 class TimeTicks;
 }  // namespace base
 
@@ -59,10 +58,6 @@ class UiScene {
   // This function gets called just before rendering the elements in the
   // frame lifecycle. After this function, no element should be dirtied.
   void PrepareToDraw();
-
-  // Handle a batch of commands passed from the UI HTML.
-  void HandleCommands(std::unique_ptr<base::ListValue> commands,
-                      const base::TimeTicks& current_time);
 
   const std::vector<std::unique_ptr<UiElement>>& GetUiElements() const;
 
