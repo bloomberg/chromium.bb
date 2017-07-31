@@ -33,6 +33,7 @@
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertJavaStringToUTF8;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace cronet {
@@ -52,14 +53,15 @@ size_t SafeGetArrayLength(JNIEnv* env, JavaArrayType jarray) {
 
 }  // namespace
 
-PendingWriteData::PendingWriteData(JNIEnv* env,
-                                   jobjectArray jwrite_buffer_list,
-                                   jintArray jwrite_buffer_pos_list,
-                                   jintArray jwrite_buffer_limit_list,
-                                   jboolean jwrite_end_of_stream) {
-  this->jwrite_buffer_list.Reset(env, jwrite_buffer_list);
-  this->jwrite_buffer_pos_list.Reset(env, jwrite_buffer_pos_list);
-  this->jwrite_buffer_limit_list.Reset(env, jwrite_buffer_limit_list);
+PendingWriteData::PendingWriteData(
+    JNIEnv* env,
+    const JavaRef<jobjectArray>& jwrite_buffer_list,
+    const JavaRef<jintArray>& jwrite_buffer_pos_list,
+    const JavaRef<jintArray>& jwrite_buffer_limit_list,
+    jboolean jwrite_end_of_stream) {
+  this->jwrite_buffer_list.Reset(jwrite_buffer_list);
+  this->jwrite_buffer_pos_list.Reset(jwrite_buffer_pos_list);
+  this->jwrite_buffer_limit_list.Reset(jwrite_buffer_limit_list);
   this->jwrite_end_of_stream = jwrite_end_of_stream;
 }
 
@@ -200,8 +202,8 @@ jboolean CronetBidirectionalStreamAdapter::WritevData(
 
   std::unique_ptr<PendingWriteData> pending_write_data;
   pending_write_data.reset(
-      new PendingWriteData(env, jbyte_buffers.obj(), jbyte_buffers_pos.obj(),
-                           jbyte_buffers_limit.obj(), jend_of_stream));
+      new PendingWriteData(env, jbyte_buffers, jbyte_buffers_pos,
+                           jbyte_buffers_limit, jend_of_stream));
   for (size_t i = 0; i < buffers_array_size; ++i) {
     ScopedJavaLocalRef<jobject> jbuffer(
         env, env->GetObjectArrayElement(
@@ -250,7 +252,7 @@ void CronetBidirectionalStreamAdapter::OnStreamReady(
   DCHECK(context_->IsOnNetworkThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   cronet::Java_CronetBidirectionalStream_onStreamReady(
-      env, owner_.obj(), request_headers_sent ? JNI_TRUE : JNI_FALSE);
+      env, owner_, request_headers_sent ? JNI_TRUE : JNI_FALSE);
 }
 
 void CronetBidirectionalStreamAdapter::OnHeadersReceived(
@@ -276,9 +278,8 @@ void CronetBidirectionalStreamAdapter::OnHeadersReceived(
   }
 
   cronet::Java_CronetBidirectionalStream_onResponseHeadersReceived(
-      env, owner_.obj(), http_status_code,
-      ConvertUTF8ToJavaString(env, protocol).obj(),
-      GetHeadersArray(env, response_headers).obj(),
+      env, owner_, http_status_code, ConvertUTF8ToJavaString(env, protocol),
+      GetHeadersArray(env, response_headers),
       bidi_stream_->GetTotalReceivedBytes());
 }
 
@@ -286,7 +287,7 @@ void CronetBidirectionalStreamAdapter::OnDataRead(int bytes_read) {
   DCHECK(context_->IsOnNetworkThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   cronet::Java_CronetBidirectionalStream_onReadCompleted(
-      env, owner_.obj(), read_buffer_->byte_buffer(), bytes_read,
+      env, owner_, read_buffer_->byte_buffer(), bytes_read,
       read_buffer_->initial_position(), read_buffer_->initial_limit(),
       bidi_stream_->GetTotalReceivedBytes());
   // Free the read buffer. This lets the Java ByteBuffer be freed, if the
@@ -301,9 +302,9 @@ void CronetBidirectionalStreamAdapter::OnDataSent() {
   JNIEnv* env = base::android::AttachCurrentThread();
   // Call into Java.
   cronet::Java_CronetBidirectionalStream_onWritevCompleted(
-      env, owner_.obj(), pending_write_data_->jwrite_buffer_list.obj(),
-      pending_write_data_->jwrite_buffer_pos_list.obj(),
-      pending_write_data_->jwrite_buffer_limit_list.obj(),
+      env, owner_, pending_write_data_->jwrite_buffer_list,
+      pending_write_data_->jwrite_buffer_pos_list,
+      pending_write_data_->jwrite_buffer_limit_list,
       pending_write_data_->jwrite_end_of_stream);
   // Free the java objects. This lets the Java ByteBuffers be freed, if the
   // embedder releases it, too.
@@ -315,7 +316,7 @@ void CronetBidirectionalStreamAdapter::OnTrailersReceived(
   DCHECK(context_->IsOnNetworkThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   cronet::Java_CronetBidirectionalStream_onResponseTrailersReceived(
-      env, owner_.obj(), GetHeadersArray(env, response_trailers).obj());
+      env, owner_, GetHeadersArray(env, response_trailers));
 }
 
 void CronetBidirectionalStreamAdapter::OnFailed(int error) {
@@ -325,9 +326,9 @@ void CronetBidirectionalStreamAdapter::OnFailed(int error) {
   net::NetErrorDetails net_error_details;
   bidi_stream_->PopulateNetErrorDetails(&net_error_details);
   cronet::Java_CronetBidirectionalStream_onError(
-      env, owner_.obj(), NetErrorToUrlRequestError(error), error,
+      env, owner_, NetErrorToUrlRequestError(error), error,
       net_error_details.quic_connection_error,
-      ConvertUTF8ToJavaString(env, net::ErrorToString(error)).obj(),
+      ConvertUTF8ToJavaString(env, net::ErrorToString(error)),
       bidi_stream_->GetTotalReceivedBytes());
 }
 
@@ -409,7 +410,7 @@ void CronetBidirectionalStreamAdapter::DestroyOnNetworkThread(
   DCHECK(context_->IsOnNetworkThread());
   if (send_on_canceled) {
     JNIEnv* env = base::android::AttachCurrentThread();
-    cronet::Java_CronetBidirectionalStream_onCanceled(env, owner_.obj());
+    cronet::Java_CronetBidirectionalStream_onCanceled(env, owner_);
   }
   MaybeReportMetrics();
   delete this;
@@ -441,7 +442,7 @@ void CronetBidirectionalStreamAdapter::MaybeReportMetrics() {
   base::Time start_time = load_timing_info.request_start_time;
   base::TimeTicks start_ticks = load_timing_info.request_start;
   cronet::Java_CronetBidirectionalStream_onMetricsCollected(
-      env, owner_.obj(),
+      env, owner_,
       metrics_util::ConvertTime(start_ticks, start_ticks, start_time),
       metrics_util::ConvertTime(load_timing_info.connect_timing.dns_start,
                                 start_ticks, start_time),

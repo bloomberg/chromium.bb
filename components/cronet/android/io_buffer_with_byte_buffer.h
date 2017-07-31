@@ -33,7 +33,9 @@ class IOBufferWithByteBuffer : public net::WrappedIOBuffer {
   jint initial_position() const { return initial_position_; }
   jint initial_limit() const { return initial_limit_; }
 
-  jobject byte_buffer() const { return byte_buffer_.obj(); }
+  const base::android::JavaRef<jobject>& byte_buffer() const {
+    return byte_buffer_;
+  }
 
  private:
   ~IOBufferWithByteBuffer() override;

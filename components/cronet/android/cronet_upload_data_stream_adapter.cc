@@ -52,8 +52,7 @@ void CronetUploadDataStreamAdapter::Read(net::IOBuffer* buffer, int buf_len) {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> java_buffer(
       env, env->NewDirectByteBuffer(buffer->data(), buf_len));
-  Java_CronetUploadDataStream_readData(env, jupload_data_stream_,
-                                       java_buffer.obj());
+  Java_CronetUploadDataStream_readData(env, jupload_data_stream_, java_buffer);
 }
 
 void CronetUploadDataStreamAdapter::Rewind() {
