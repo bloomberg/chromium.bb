@@ -26,8 +26,8 @@ class CAPTURE_EXPORT ScreenCaptureMachineAndroid : public VideoCaptureMachine {
 
   // Implement org.chromium.media.ScreenCapture.nativeOnRGBAFrameAvailable.
   void OnRGBAFrameAvailable(JNIEnv* env,
-                            jobject obj,
-                            jobject buf,
+                            const base::android::JavaRef<jobject>& obj,
+                            const base::android::JavaRef<jobject>& buf,
                             jint row_stride,
                             jint left,
                             jint top,
@@ -36,11 +36,11 @@ class CAPTURE_EXPORT ScreenCaptureMachineAndroid : public VideoCaptureMachine {
                             jlong timestamp);
   // Implement org.chromium.media.ScreenCapture.nativeOnI420FrameAvailable.
   void OnI420FrameAvailable(JNIEnv* env,
-                            jobject obj,
-                            jobject y_buffer,
+                            const base::android::JavaRef<jobject>& obj,
+                            const base::android::JavaRef<jobject>& y_buffer,
                             jint y_stride,
-                            jobject u_buffer,
-                            jobject v_buffer,
+                            const base::android::JavaRef<jobject>& u_buffer,
+                            const base::android::JavaRef<jobject>& v_buffer,
                             jint uv_row_stride,
                             jint uv_pixel_stride,
                             jint left,
@@ -50,10 +50,14 @@ class CAPTURE_EXPORT ScreenCaptureMachineAndroid : public VideoCaptureMachine {
                             jlong timestamp);
 
   // Implement org.chromium.media.ScreenCapture.nativeOnActivityResult.
-  void OnActivityResult(JNIEnv* env, jobject obj, jboolean result);
+  void OnActivityResult(JNIEnv* env,
+                        const base::android::JavaRef<jobject>& obj,
+                        jboolean result);
 
   // Implement org.chromium.media.ScreenCaptuer.nativeOnOrientationChange.
-  void OnOrientationChange(JNIEnv* env, jobject obj, jint rotation);
+  void OnOrientationChange(JNIEnv* env,
+                           const base::android::JavaRef<jobject>& obj,
+                           jint rotation);
 
   // VideoCaptureMachine overrides.
   void Start(const scoped_refptr<media::ThreadSafeCaptureOracle>& oracle_proxy,

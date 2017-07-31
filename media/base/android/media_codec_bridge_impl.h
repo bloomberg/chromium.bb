@@ -38,8 +38,10 @@ class MEDIA_EXPORT MediaCodecBridgeImpl : public MediaCodecBridge {
       VideoCodec codec,
       CodecType codec_type,
       const gfx::Size& size,  // Output frame size.
-      jobject surface,        // Output surface, optional.
-      jobject media_crypto,   // MediaCrypto object, optional.
+      const base::android::JavaRef<jobject>&
+          surface,  // Output surface, optional.
+      const base::android::JavaRef<jobject>&
+          media_crypto,  // MediaCrypto object, optional.
       // Codec specific data. See MediaCodec docs.
       const std::vector<uint8_t>& csd0,
       const std::vector<uint8_t>& csd1,
@@ -60,7 +62,7 @@ class MEDIA_EXPORT MediaCodecBridgeImpl : public MediaCodecBridge {
   // nullptr on failure.
   static std::unique_ptr<MediaCodecBridge> CreateAudioDecoder(
       const AudioDecoderConfig& config,
-      jobject media_crypto);
+      const base::android::JavaRef<jobject>& media_crypto);
 
   ~MediaCodecBridgeImpl() override;
 
@@ -103,7 +105,7 @@ class MEDIA_EXPORT MediaCodecBridgeImpl : public MediaCodecBridge {
                                         void* dst,
                                         size_t num) override;
   std::string GetName() override;
-  bool SetSurface(jobject surface) override;
+  bool SetSurface(const base::android::JavaRef<jobject>& surface) override;
   void SetVideoBitrate(int bps, int frame_rate) override;
   void RequestKeyFrameSoon() override;
   bool IsAdaptivePlaybackSupported() override;

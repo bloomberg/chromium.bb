@@ -40,11 +40,11 @@ std::unique_ptr<MediaCodecBridge> CreateMediaCodecInternal(
     bool requires_software_codec) {
   TRACE_EVENT0("media", "CreateMediaCodecInternal");
 
-  jobject media_crypto =
-      codec_config->media_crypto ? codec_config->media_crypto->obj() : nullptr;
+  const base::android::JavaRef<jobject>& media_crypto =
+      codec_config->media_crypto ? *codec_config->media_crypto : nullptr;
 
   // |requires_secure_codec| implies that it's an encrypted stream.
-  DCHECK(!codec_config->requires_secure_codec || media_crypto);
+  DCHECK(!codec_config->requires_secure_codec || !media_crypto.is_null());
 
   CodecType codec_type = CodecType::kAny;
   if (codec_config->requires_secure_codec && requires_software_codec) {
@@ -60,7 +60,7 @@ std::unique_ptr<MediaCodecBridge> CreateMediaCodecInternal(
       MediaCodecBridgeImpl::CreateVideoDecoder(
           codec_config->codec, codec_type,
           codec_config->initial_expected_coded_size,
-          codec_config->surface_bundle->GetJavaSurface().obj(), media_crypto,
+          codec_config->surface_bundle->GetJavaSurface(), media_crypto,
           codec_config->csd0, codec_config->csd1, true));
 
   return codec;

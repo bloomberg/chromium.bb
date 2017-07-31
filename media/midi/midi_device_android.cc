@@ -11,6 +11,7 @@
 #include "jni/MidiDeviceAndroid_jni.h"
 #include "media/midi/midi_output_port_android.h"
 
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace midi {
@@ -26,9 +27,9 @@ std::string ConvertMaybeJavaString(JNIEnv* env,
 }
 
 MidiDeviceAndroid::MidiDeviceAndroid(JNIEnv* env,
-                                     jobject raw_device,
+                                     const JavaRef<jobject>& raw_device,
                                      MidiInputPortAndroid::Delegate* delegate)
-    : raw_device_(env, raw_device) {
+    : raw_device_(raw_device) {
   ScopedJavaLocalRef<jobjectArray> raw_input_ports =
       Java_MidiDeviceAndroid_getInputPorts(env, raw_device);
   jsize num_input_ports = env->GetArrayLength(raw_input_ports.obj());

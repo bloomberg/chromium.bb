@@ -97,14 +97,14 @@ void MediaDrmStorageBridge::OnSaveInfo(
   DCHECK(impl_);
   std::vector<uint8_t> key_set_id;
   JavaByteArrayToByteVector(
-      env, Java_PersistentInfo_keySetId(env, j_persist_info.obj()).obj(),
+      env, Java_PersistentInfo_keySetId(env, j_persist_info).obj(),
       &key_set_id);
 
   std::string mime = ConvertJavaStringToUTF8(
-      env, Java_PersistentInfo_mimeType(env, j_persist_info.obj()));
+      env, Java_PersistentInfo_mimeType(env, j_persist_info));
 
   std::string session_id = JavaBytesToString(
-      env, Java_PersistentInfo_emeId(env, j_persist_info.obj()).obj());
+      env, Java_PersistentInfo_emeId(env, j_persist_info).obj());
 
   task_runner_->PostTask(
       FROM_HERE,

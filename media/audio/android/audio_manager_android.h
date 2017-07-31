@@ -90,7 +90,7 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
       const AudioParameters& input_params) override;
 
  private:
-  jobject GetJavaAudioManager();
+  const base::android::JavaRef<jobject>& GetJavaAudioManager();
   bool HasNoAudioInputStreams();
   void SetCommunicationAudioModeOn(bool on);
   bool SetAudioDevice(const std::string& device_id);

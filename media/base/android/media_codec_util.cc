@@ -50,7 +50,7 @@ const char kVp9MimeType[] = "video/x-vnd.on2.vp9";
 
 static CodecProfileLevel MediaCodecProfileLevelToChromiumProfileLevel(
     JNIEnv* env,
-    const jobject& j_codec_profile_level) {
+    const JavaRef<jobject>& j_codec_profile_level) {
   VideoCodec codec = static_cast<VideoCodec>(
       Java_CodecProfileLevelAdapter_getCodec(env, j_codec_profile_level));
   VideoCodecProfile profile = static_cast<VideoCodecProfile>(
@@ -258,8 +258,8 @@ bool MediaCodecUtil::AddSupportedCodecProfileLevels(
       Java_MediaCodecUtil_getSupportedCodecProfileLevels(env));
   int java_array_length = env->GetArrayLength(j_codec_profile_levels.obj());
   for (int i = 0; i < java_array_length; ++i) {
-    const jobject& java_codec_profile_level =
-        env->GetObjectArrayElement(j_codec_profile_levels.obj(), i);
+    ScopedJavaLocalRef<jobject> java_codec_profile_level(
+        env, env->GetObjectArrayElement(j_codec_profile_levels.obj(), i));
     result->push_back(MediaCodecProfileLevelToChromiumProfileLevel(
         env, java_codec_profile_level));
   }

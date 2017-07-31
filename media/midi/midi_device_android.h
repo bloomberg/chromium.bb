@@ -20,7 +20,7 @@ class MidiOutputPortAndroid;
 class MidiDeviceAndroid final {
  public:
   MidiDeviceAndroid(JNIEnv* env,
-                    jobject raw_device,
+                    const base::android::JavaRef<jobject>& raw_device,
                     MidiInputPortAndroid::Delegate* delegate);
   ~MidiDeviceAndroid();
 
