@@ -440,7 +440,6 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &cpi->td.mb;
   RD_OPT *const rd = &cpi->rd;
-  int i;
   int nmv_ctx;
 
   aom_clear_system_state();
@@ -474,7 +473,7 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
   if (cpi->oxcf.pass != 1) {
     av1_fill_token_costs(x->token_costs, cm->fc->coef_probs);
 #if CONFIG_GLOBAL_MOTION
-    for (i = 0; i < TRANS_TYPES; ++i)
+    for (int i = 0; i < TRANS_TYPES; ++i)
       cpi->gmtype_cost[i] = (1 + (i > 0 ? GLOBAL_TYPE_BITS : 0))
                             << AV1_PROB_COST_SHIFT;
 #endif  // CONFIG_GLOBAL_MOTION

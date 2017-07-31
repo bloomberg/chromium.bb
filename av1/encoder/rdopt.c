@@ -6084,6 +6084,7 @@ static int check_best_zero_mv(
 #endif
   (void)mi_row;
   (void)mi_col;
+  (void)cpi;
 #if CONFIG_GLOBAL_MOTION
   if (this_mode == ZEROMV
 #if CONFIG_EXT_INTER
