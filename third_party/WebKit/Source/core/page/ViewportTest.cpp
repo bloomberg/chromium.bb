@@ -33,7 +33,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/PageScaleConstraints.h"
 #include "core/frame/Settings.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/page/Page.h"
 #include "platform/Length.h"
 #include "platform/geometry/IntPoint.h"
