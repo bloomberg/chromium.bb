@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_features.h"
@@ -17,7 +18,17 @@ namespace {
 content::mojom::NetworkContextParamsPtr CreateNetworkContextParams() {
   // TODO(mmenke): Set up parameters here (No cache, in memory cookie store,
   // etc).
-  return content::mojom::NetworkContextParams::New();
+  content::mojom::NetworkContextParamsPtr network_context_params =
+      content::mojom::NetworkContextParams::New();
+
+  // These are needed for PAC scripts that use file or data URLs (Or FTP URLs?).
+  network_context_params->enable_data_url_support = true;
+  network_context_params->enable_file_url_support = true;
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+  network_context_params->enable_ftp_url_support = true;
+#endif
+
+  return network_context_params;
 }
 
 }  // namespace

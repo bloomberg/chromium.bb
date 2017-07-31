@@ -11,10 +11,24 @@ import "url/mojo/url.mojom";
 
 // Parameters for constructing a network context.
 struct NetworkContextParams {
-  // Points to the cookie file. If null, an in-memory database is used.
+  // Points to the cookie file. Currently ignored. An in-memory cookie store is
+  // always used instead.
+  // TODO(mmenke): Respect this parameter.
   mojo.common.mojom.FilePath? cookie_path;
   // Points to the cache directory. If null, an in-memory database is used.
   mojo.common.mojom.FilePath? cache_dir;
+
+  // Enabled protocols. Note that these apply to all fetches, including those
+  // used to fetch PAC scripts.
+  
+  // True if data URLs should be supported.
+  bool enable_data_url_support = false;
+  // True if file URLs should be supported.
+  // Must be false if built without file support.
+  bool enable_file_url_support = false;
+  // True if ftp URLs should be supported.
+  // Must be false if built without FTP support.
+  bool enable_ftp_url_support = false;
 };
 
 // Represents a distinct context for making network requests, with its own

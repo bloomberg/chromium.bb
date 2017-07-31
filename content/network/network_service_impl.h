@@ -38,7 +38,7 @@ class CONTENT_EXPORT NetworkServiceImpl : public service_manager::Service,
       std::unique_ptr<net::URLRequestContextBuilder> builder,
       net::URLRequestContext** url_request_context) override;
 
-  static std::unique_ptr<NetworkService> CreateForTesting();
+  static std::unique_ptr<NetworkServiceImpl> CreateForTesting();
 
   // These are called by NetworkContexts as they are being created and
   // destroyed.

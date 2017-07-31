@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/network/cache_url_loader.h"
 #include "content/network/network_service_impl.h"
@@ -26,7 +27,24 @@ namespace content {
 
 namespace {
 
-std::unique_ptr<net::URLRequestContext> MakeURLRequestContext() {
+void ApplyContextParamsToBuilder(
+    net::URLRequestContextBuilder* builder,
+    mojom::NetworkContextParams* network_context_params) {
+  builder->set_data_enabled(network_context_params->enable_data_url_support);
+#if !BUILDFLAG(DISABLE_FILE_SUPPORT)
+  builder->set_file_enabled(network_context_params->enable_file_url_support);
+#else  // BUILDFLAG(DISABLE_FILE_SUPPORT)
+  DCHECK(!network_context_params->enable_file_url_support);
+#endif
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+  builder->set_ftp_enabled(network_context_params->enable_ftp_url_support);
+#else  // BUILDFLAG(DISABLE_FTP_SUPPORT)
+  DCHECK(!network_context_params->enable_ftp_url_support);
+#endif
+}
+
+std::unique_ptr<net::URLRequestContext> MakeURLRequestContext(
+    mojom::NetworkContextParams* network_context_params) {
   net::URLRequestContextBuilder builder;
   net::HttpNetworkSession::Params params;
   const base::CommandLine* command_line =
@@ -68,8 +86,6 @@ std::unique_ptr<net::URLRequestContext> MakeURLRequestContext() {
   cache_params.type = net::URLRequestContextBuilder::HttpCacheParams::IN_MEMORY;
 
   builder.EnableHttpCache(cache_params);
-  builder.set_file_enabled(true);
-  builder.set_data_enabled(true);
 
   if (command_line->HasSwitch(switches::kProxyServer)) {
     net::ProxyConfig config;
@@ -82,6 +98,8 @@ std::unique_ptr<net::URLRequestContext> MakeURLRequestContext() {
     builder.set_proxy_service(net::ProxyService::CreateDirect());
   }
 
+  ApplyContextParamsToBuilder(&builder, network_context_params);
+
   return builder.Build();
 }
 
@@ -91,7 +109,7 @@ NetworkContext::NetworkContext(NetworkServiceImpl* network_service,
                                mojom::NetworkContextRequest request,
                                mojom::NetworkContextParamsPtr params)
     : network_service_(network_service),
-      url_request_context_(MakeURLRequestContext()),
+      url_request_context_(MakeURLRequestContext(params.get())),
       params_(std::move(params)),
       binding_(this, std::move(request)) {
   network_service_->RegisterNetworkContext(this);
@@ -107,9 +125,11 @@ NetworkContext::NetworkContext(
     mojom::NetworkContextParamsPtr params,
     std::unique_ptr<net::URLRequestContextBuilder> builder)
     : network_service_(nullptr),
-      url_request_context_(builder->Build()),
       params_(std::move(params)),
-      binding_(this, std::move(request)) {}
+      binding_(this, std::move(request)) {
+  ApplyContextParamsToBuilder(builder.get(), params_.get());
+  url_request_context_ = builder->Build();
+}
 
 NetworkContext::~NetworkContext() {
   // Call each URLLoaderImpl and ask it to release its net::URLRequest, as the
@@ -159,8 +179,10 @@ void NetworkContext::Cleanup() {
 
 NetworkContext::NetworkContext()
     : network_service_(nullptr),
-      url_request_context_(MakeURLRequestContext()),
-      binding_(this) {}
+      params_(mojom::NetworkContextParams::New()),
+      binding_(this) {
+  url_request_context_ = MakeURLRequestContext(params_.get());
+}
 
 void NetworkContext::OnConnectionError() {
   // Don't delete |this| in response to connection errors when it was created by

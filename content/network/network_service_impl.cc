@@ -93,7 +93,7 @@ NetworkServiceImpl::CreateNetworkContextWithBuilder(
   return network_context;
 }
 
-std::unique_ptr<NetworkService> NetworkServiceImpl::CreateForTesting() {
+std::unique_ptr<NetworkServiceImpl> NetworkServiceImpl::CreateForTesting() {
   return base::WrapUnique(new NetworkServiceImpl(nullptr));
 }
 

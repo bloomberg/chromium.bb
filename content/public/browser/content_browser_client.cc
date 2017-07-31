@@ -496,6 +496,8 @@ mojom::NetworkContextPtr ContentBrowserClient::CreateNetworkContext(
   mojom::NetworkContextPtr network_context;
   mojom::NetworkContextParamsPtr context_params =
       mojom::NetworkContextParams::New();
+  context_params->enable_data_url_support = true;
+  context_params->enable_file_url_support = true;
   GetNetworkService()->CreateNetworkContext(MakeRequest(&network_context),
                                             std::move(context_params));
   return network_context;
