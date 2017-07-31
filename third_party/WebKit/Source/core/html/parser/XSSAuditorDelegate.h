@@ -80,7 +80,7 @@ class XSSAuditorDelegate final {
   void SetReportURL(const KURL& url) { report_url_ = url; }
 
  private:
-  PassRefPtr<EncodedFormData> GenerateViolationReport(const XSSInfo&);
+  RefPtr<EncodedFormData> GenerateViolationReport(const XSSInfo&);
 
   Member<Document> document_;
   bool did_send_notifications_;

@@ -36,7 +36,7 @@
 #include "core/page/PageOverlay.h"
 #include "platform/Timer.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {

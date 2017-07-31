@@ -1877,7 +1877,7 @@ static double ComputeZOffset(const HitTestingTransformState& transform_state) {
   return backmapped_point.Z();
 }
 
-PassRefPtr<HitTestingTransformState> PaintLayer::CreateLocalTransformState(
+RefPtr<HitTestingTransformState> PaintLayer::CreateLocalTransformState(
     PaintLayer* root_layer,
     PaintLayer* container_layer,
     const LayoutRect& hit_test_rect,

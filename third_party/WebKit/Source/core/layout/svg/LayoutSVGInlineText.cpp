@@ -51,7 +51,7 @@ static RefPtr<StringImpl> NormalizeWhitespace(RefPtr<StringImpl> string) {
   return new_string;
 }
 
-LayoutSVGInlineText::LayoutSVGInlineText(Node* n, PassRefPtr<StringImpl> string)
+LayoutSVGInlineText::LayoutSVGInlineText(Node* n, RefPtr<StringImpl> string)
     : LayoutText(n, NormalizeWhitespace(std::move(string))),
       scaling_factor_(1) {}
 

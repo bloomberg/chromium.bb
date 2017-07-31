@@ -65,7 +65,7 @@ std::unique_ptr<InProcessWorkerObjectProxy> InProcessWorkerObjectProxy::Create(
 InProcessWorkerObjectProxy::~InProcessWorkerObjectProxy() {}
 
 void InProcessWorkerObjectProxy::PostMessageToWorkerObject(
-    PassRefPtr<SerializedScriptValue> message,
+    RefPtr<SerializedScriptValue> message,
     MessagePortChannelArray channels) {
   GetParentFrameTaskRunners()
       ->Get(TaskType::kPostedMessage)
@@ -77,7 +77,7 @@ void InProcessWorkerObjectProxy::PostMessageToWorkerObject(
 }
 
 void InProcessWorkerObjectProxy::ProcessMessageFromWorkerObject(
-    PassRefPtr<SerializedScriptValue> message,
+    RefPtr<SerializedScriptValue> message,
     MessagePortChannelArray channels,
     WorkerThread* worker_thread) {
   WorkerGlobalScope* global_scope =

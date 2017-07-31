@@ -25,11 +25,11 @@ class LayoutTextItem : public LayoutItem {
 
   LayoutTextItem() {}
 
-  void SetStyle(PassRefPtr<ComputedStyle> style) {
+  void SetStyle(RefPtr<ComputedStyle> style) {
     ToText()->SetStyle(std::move(style));
   }
 
-  void SetText(PassRefPtr<StringImpl> text, bool force = false) {
+  void SetText(RefPtr<StringImpl> text, bool force = false) {
     ToText()->SetText(std::move(text), force);
   }
 

@@ -91,7 +91,7 @@ RefPtr<StringImpl> LayoutTextFragment::OriginalText() const {
   return result->Substring(Start(), FragmentLength());
 }
 
-void LayoutTextFragment::SetText(PassRefPtr<StringImpl> text, bool force) {
+void LayoutTextFragment::SetText(RefPtr<StringImpl> text, bool force) {
   LayoutText::SetText(std::move(text), force);
 
   start_ = 0;
@@ -106,7 +106,7 @@ void LayoutTextFragment::SetText(PassRefPtr<StringImpl> text, bool force) {
   }
 }
 
-void LayoutTextFragment::SetTextFragment(PassRefPtr<StringImpl> text,
+void LayoutTextFragment::SetTextFragment(RefPtr<StringImpl> text,
                                          unsigned start,
                                          unsigned length) {
   LayoutText::SetText(std::move(text), false);

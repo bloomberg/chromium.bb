@@ -56,9 +56,8 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  PassRefPtr<SimpleFontData> CreateFontData(const FontDescription&) override;
-  PassRefPtr<SimpleFontData> CreateLoadingFallbackFontData(
-      const FontDescription&);
+  RefPtr<SimpleFontData> CreateFontData(const FontDescription&) override;
+  RefPtr<SimpleFontData> CreateLoadingFallbackFontData(const FontDescription&);
   void PruneTable();
 
  private:

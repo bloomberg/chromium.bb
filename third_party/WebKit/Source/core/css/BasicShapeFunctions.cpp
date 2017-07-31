@@ -281,8 +281,8 @@ static BasicShapeRadius CssValueToBasicShapeRadius(
   return BasicShapeRadius(ConvertToLength(state, ToCSSPrimitiveValue(radius)));
 }
 
-PassRefPtr<BasicShape> BasicShapeForValue(const StyleResolverState& state,
-                                          const CSSValue& basic_shape_value) {
+RefPtr<BasicShape> BasicShapeForValue(const StyleResolverState& state,
+                                      const CSSValue& basic_shape_value) {
   RefPtr<BasicShape> basic_shape;
 
   if (basic_shape_value.IsBasicShapeCircleValue()) {

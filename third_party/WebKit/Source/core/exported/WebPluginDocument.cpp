@@ -33,7 +33,7 @@
 #include "core/dom/Document.h"
 #include "core/exported/WebPluginContainerImpl.h"
 #include "core/html/PluginDocument.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

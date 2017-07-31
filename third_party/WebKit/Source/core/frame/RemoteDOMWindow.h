@@ -31,7 +31,7 @@ class RemoteDOMWindow final : public DOMWindow {
  protected:
   // Protected DOMWindow overrides:
   void SchedulePostMessage(MessageEvent*,
-                           PassRefPtr<SecurityOrigin> target,
+                           RefPtr<SecurityOrigin> target,
                            Document* source) override;
 
  private:

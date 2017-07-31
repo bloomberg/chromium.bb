@@ -60,7 +60,7 @@ class LayoutTextControlMultiLine final : public LayoutTextControl {
     return LayoutUnit(-1);
   }
 
-  PassRefPtr<ComputedStyle> CreateInnerEditorStyle(
+  RefPtr<ComputedStyle> CreateInnerEditorStyle(
       const ComputedStyle& start_style) const override;
   LayoutObject* LayoutSpecialExcludedChild(bool relayout_children,
                                            SubtreeLayoutScope&) override;

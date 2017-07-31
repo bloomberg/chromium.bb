@@ -24,7 +24,7 @@ class CORE_EXPORT DOMDataView final : public DOMArrayBufferView {
                              v8::Local<v8::Object> creation_context) override;
 
  private:
-  DOMDataView(PassRefPtr<WTF::ArrayBufferView> data_view,
+  DOMDataView(RefPtr<WTF::ArrayBufferView> data_view,
               DOMArrayBufferBase* dom_array_buffer)
       : DOMArrayBufferView(std::move(data_view), dom_array_buffer) {}
 };

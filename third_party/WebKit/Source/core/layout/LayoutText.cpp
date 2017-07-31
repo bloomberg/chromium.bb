@@ -149,7 +149,7 @@ static void MakeCapitalized(String* string, UChar previous) {
   *string = result.ToString();
 }
 
-LayoutText::LayoutText(Node* node, PassRefPtr<StringImpl> str)
+LayoutText::LayoutText(Node* node, RefPtr<StringImpl> str)
     : LayoutObject(node),
       has_tab_(false),
       lines_dirty_(false),
@@ -1452,7 +1452,7 @@ void LayoutText::SetSelectionState(SelectionState state) {
     containing_block->SetSelectionState(state);
 }
 
-void LayoutText::SetTextWithOffset(PassRefPtr<StringImpl> text,
+void LayoutText::SetTextWithOffset(RefPtr<StringImpl> text,
                                    unsigned offset,
                                    unsigned len,
                                    bool force) {
@@ -1649,7 +1649,7 @@ void LayoutText::SecureText(UChar mask) {
   }
 }
 
-void LayoutText::SetText(PassRefPtr<StringImpl> text, bool force) {
+void LayoutText::SetText(RefPtr<StringImpl> text, bool force) {
   DCHECK(text);
 
   if (!force && Equal(text_.Impl(), text.Get()))
@@ -1963,7 +1963,7 @@ void LayoutText::MomentarilyRevealLastTypedCharacter(
   secure_text_timer->RestartWithNewText(last_typed_character_offset);
 }
 
-PassRefPtr<AbstractInlineTextBox> LayoutText::FirstAbstractInlineTextBox() {
+RefPtr<AbstractInlineTextBox> LayoutText::FirstAbstractInlineTextBox() {
   return AbstractInlineTextBox::GetOrCreate(LineLayoutText(this),
                                             first_text_box_);
 }

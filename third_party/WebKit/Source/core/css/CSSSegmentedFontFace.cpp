@@ -92,7 +92,7 @@ void CSSSegmentedFontFace::RemoveFontFace(FontFace* font_face) {
   font_face->CssFontFace()->ClearSegmentedFontFace();
 }
 
-PassRefPtr<FontData> CSSSegmentedFontFace::GetFontData(
+RefPtr<FontData> CSSSegmentedFontFace::GetFontData(
     const FontDescription& font_description) {
   if (!IsValid())
     return nullptr;

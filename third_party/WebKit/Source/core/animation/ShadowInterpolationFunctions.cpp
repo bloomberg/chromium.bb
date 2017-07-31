@@ -30,8 +30,7 @@ class ShadowNonInterpolableValue : public NonInterpolableValue {
  public:
   ~ShadowNonInterpolableValue() final {}
 
-  static PassRefPtr<ShadowNonInterpolableValue> Create(
-      ShadowStyle shadow_style) {
+  static RefPtr<ShadowNonInterpolableValue> Create(ShadowStyle shadow_style) {
     return AdoptRef(new ShadowNonInterpolableValue(shadow_style));
   }
 

@@ -42,7 +42,7 @@
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/Optional.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebThread.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "v8/include/v8.h"

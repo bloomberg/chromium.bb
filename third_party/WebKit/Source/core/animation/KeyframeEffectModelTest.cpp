@@ -41,14 +41,14 @@ namespace blink {
 
 const double kDuration = 1.0;
 
-PassRefPtr<AnimatableValue> UnknownAnimatableValue(double n) {
+RefPtr<AnimatableValue> UnknownAnimatableValue(double n) {
   return AnimatableUnknown::Create(
       CSSPrimitiveValue::Create(n, CSSPrimitiveValue::UnitType::kUnknown));
 }
 
 AnimatableValueKeyframeVector KeyframesAtZeroAndOne(
-    PassRefPtr<AnimatableValue> zero_value,
-    PassRefPtr<AnimatableValue> one_value) {
+    RefPtr<AnimatableValue> zero_value,
+    RefPtr<AnimatableValue> one_value) {
   AnimatableValueKeyframeVector keyframes(2);
   keyframes[0] = AnimatableValueKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
@@ -60,14 +60,14 @@ AnimatableValueKeyframeVector KeyframesAtZeroAndOne(
 }
 
 void ExpectProperty(CSSPropertyID property,
-                    PassRefPtr<Interpolation> interpolation_value) {
+                    RefPtr<Interpolation> interpolation_value) {
   LegacyStyleInterpolation* interpolation =
       ToLegacyStyleInterpolation(interpolation_value.Get());
   ASSERT_EQ(property, interpolation->Id());
 }
 
 void ExpectDoubleValue(double expected_value,
-                       PassRefPtr<Interpolation> interpolation_value) {
+                       RefPtr<Interpolation> interpolation_value) {
   LegacyStyleInterpolation* interpolation =
       ToLegacyStyleInterpolation(interpolation_value.Get());
   RefPtr<AnimatableValue> value = interpolation->CurrentValue();

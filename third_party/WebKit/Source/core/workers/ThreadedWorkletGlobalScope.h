@@ -30,7 +30,7 @@ class CORE_EXPORT ThreadedWorkletGlobalScope : public WorkletGlobalScope {
  protected:
   ThreadedWorkletGlobalScope(const KURL&,
                              const String& user_agent,
-                             PassRefPtr<SecurityOrigin>,
+                             RefPtr<SecurityOrigin>,
                              v8::Isolate*,
                              WorkerThread*,
                              WorkerClients*);

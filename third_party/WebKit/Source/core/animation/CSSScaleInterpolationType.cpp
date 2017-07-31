@@ -86,12 +86,12 @@ class CSSScaleNonInterpolableValue : public NonInterpolableValue {
  public:
   ~CSSScaleNonInterpolableValue() final {}
 
-  static PassRefPtr<CSSScaleNonInterpolableValue> Create(const Scale& scale) {
+  static RefPtr<CSSScaleNonInterpolableValue> Create(const Scale& scale) {
     return AdoptRef(
         new CSSScaleNonInterpolableValue(scale, scale, false, false));
   }
 
-  static PassRefPtr<CSSScaleNonInterpolableValue> Merge(
+  static RefPtr<CSSScaleNonInterpolableValue> Merge(
       const CSSScaleNonInterpolableValue& start,
       const CSSScaleNonInterpolableValue& end) {
     return AdoptRef(new CSSScaleNonInterpolableValue(start.Start(), end.end(),

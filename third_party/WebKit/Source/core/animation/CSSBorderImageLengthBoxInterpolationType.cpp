@@ -76,14 +76,14 @@ struct SideTypes {
 class CSSBorderImageLengthBoxNonInterpolableValue
     : public NonInterpolableValue {
  public:
-  static PassRefPtr<CSSBorderImageLengthBoxNonInterpolableValue> Create(
+  static RefPtr<CSSBorderImageLengthBoxNonInterpolableValue> Create(
       const SideTypes& side_types,
       Vector<RefPtr<NonInterpolableValue>>&& side_non_interpolable_values) {
     return AdoptRef(new CSSBorderImageLengthBoxNonInterpolableValue(
         side_types, std::move(side_non_interpolable_values)));
   }
 
-  PassRefPtr<CSSBorderImageLengthBoxNonInterpolableValue> Clone() {
+  RefPtr<CSSBorderImageLengthBoxNonInterpolableValue> Clone() {
     return AdoptRef(new CSSBorderImageLengthBoxNonInterpolableValue(
         side_types_,
         Vector<RefPtr<NonInterpolableValue>>(side_non_interpolable_values_)));

@@ -37,7 +37,7 @@ CSSFontFaceSource::CSSFontFaceSource() : face_(nullptr) {}
 
 CSSFontFaceSource::~CSSFontFaceSource() {}
 
-PassRefPtr<SimpleFontData> CSSFontFaceSource::GetFontData(
+RefPtr<SimpleFontData> CSSFontFaceSource::GetFontData(
     const FontDescription& font_description) {
   // If the font hasn't loaded or an error occurred, then we've got nothing.
   if (!IsValid())

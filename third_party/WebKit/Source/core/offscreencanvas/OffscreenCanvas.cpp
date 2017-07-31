@@ -108,7 +108,7 @@ ImageBitmap* OffscreenCanvas::transferToImageBitmap(
   return image;
 }
 
-PassRefPtr<Image> OffscreenCanvas::GetSourceImageForCanvas(
+RefPtr<Image> OffscreenCanvas::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint hint,
     SnapshotReason reason,

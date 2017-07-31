@@ -121,7 +121,7 @@ static AtomicString FamilyNameFromSettings(
   return g_empty_atom;
 }
 
-PassRefPtr<FontData> CSSFontSelector::GetFontData(
+RefPtr<FontData> CSSFontSelector::GetFontData(
     const FontDescription& font_description,
     const AtomicString& family_name) {
   if (CSSSegmentedFontFace* face =

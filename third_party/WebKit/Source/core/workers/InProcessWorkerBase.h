@@ -13,7 +13,6 @@
 #include "core/workers/AbstractWorker.h"
 #include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 
 namespace blink {
@@ -37,7 +36,7 @@ class CORE_EXPORT InProcessWorkerBase
   ~InProcessWorkerBase() override;
 
   void postMessage(ScriptState*,
-                   PassRefPtr<SerializedScriptValue> message,
+                   RefPtr<SerializedScriptValue> message,
                    const MessagePortArray&,
                    ExceptionState&);
   static bool CanTransferArrayBuffersAndImageBitmaps() { return true; }

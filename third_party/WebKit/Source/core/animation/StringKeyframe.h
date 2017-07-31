@@ -18,7 +18,7 @@ class StyleSheetContents;
 // properties with either CSS properties or SVG attributes.
 class CORE_EXPORT StringKeyframe : public Keyframe {
  public:
-  static PassRefPtr<StringKeyframe> Create() {
+  static RefPtr<StringKeyframe> Create() {
     return AdoptRef(new StringKeyframe);
   }
 
@@ -63,9 +63,9 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
   class CSSPropertySpecificKeyframe
       : public Keyframe::PropertySpecificKeyframe {
    public:
-    static PassRefPtr<CSSPropertySpecificKeyframe> Create(
+    static RefPtr<CSSPropertySpecificKeyframe> Create(
         double offset,
-        PassRefPtr<TimingFunction> easing,
+        RefPtr<TimingFunction> easing,
         const CSSValue* value,
         EffectModel::CompositeOperation composite) {
       return AdoptRef(new CSSPropertySpecificKeyframe(offset, std::move(easing),
@@ -83,13 +83,13 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
     }
 
     bool IsNeutral() const final { return !value_; }
-    PassRefPtr<Keyframe::PropertySpecificKeyframe> NeutralKeyframe(
+    RefPtr<Keyframe::PropertySpecificKeyframe> NeutralKeyframe(
         double offset,
-        PassRefPtr<TimingFunction> easing) const final;
+        RefPtr<TimingFunction> easing) const final;
 
    private:
     CSSPropertySpecificKeyframe(double offset,
-                                PassRefPtr<TimingFunction> easing,
+                                RefPtr<TimingFunction> easing,
                                 const CSSValue* value,
                                 EffectModel::CompositeOperation composite)
         : Keyframe::PropertySpecificKeyframe(offset,
@@ -97,7 +97,7 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
                                              composite),
           value_(const_cast<CSSValue*>(value)) {}
 
-    virtual PassRefPtr<Keyframe::PropertySpecificKeyframe> CloneWithOffset(
+    virtual RefPtr<Keyframe::PropertySpecificKeyframe> CloneWithOffset(
         double offset) const;
     bool IsCSSPropertySpecificKeyframe() const override { return true; }
 
@@ -109,9 +109,9 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
   class SVGPropertySpecificKeyframe
       : public Keyframe::PropertySpecificKeyframe {
    public:
-    static PassRefPtr<SVGPropertySpecificKeyframe> Create(
+    static RefPtr<SVGPropertySpecificKeyframe> Create(
         double offset,
-        PassRefPtr<TimingFunction> easing,
+        RefPtr<TimingFunction> easing,
         const String& value,
         EffectModel::CompositeOperation composite) {
       return AdoptRef(new SVGPropertySpecificKeyframe(offset, std::move(easing),
@@ -120,19 +120,18 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
 
     const String& Value() const { return value_; }
 
-    PassRefPtr<PropertySpecificKeyframe> CloneWithOffset(
-        double offset) const final;
+    RefPtr<PropertySpecificKeyframe> CloneWithOffset(double offset) const final;
 
     const AnimatableValue* GetAnimatableValue() const final { return nullptr; }
 
     bool IsNeutral() const final { return value_.IsNull(); }
-    PassRefPtr<PropertySpecificKeyframe> NeutralKeyframe(
+    RefPtr<PropertySpecificKeyframe> NeutralKeyframe(
         double offset,
-        PassRefPtr<TimingFunction> easing) const final;
+        RefPtr<TimingFunction> easing) const final;
 
    private:
     SVGPropertySpecificKeyframe(double offset,
-                                PassRefPtr<TimingFunction> easing,
+                                RefPtr<TimingFunction> easing,
                                 const String& value,
                                 EffectModel::CompositeOperation composite)
         : Keyframe::PropertySpecificKeyframe(offset,
@@ -153,8 +152,8 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
 
   StringKeyframe(const StringKeyframe& copy_from);
 
-  PassRefPtr<Keyframe> Clone() const override;
-  PassRefPtr<Keyframe::PropertySpecificKeyframe> CreatePropertySpecificKeyframe(
+  RefPtr<Keyframe> Clone() const override;
+  RefPtr<Keyframe::PropertySpecificKeyframe> CreatePropertySpecificKeyframe(
       const PropertyHandle&) const override;
 
   bool IsStringKeyframe() const override { return true; }

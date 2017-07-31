@@ -58,7 +58,7 @@ void LayoutImageResourceStyleImage::Shutdown() {
   cached_image_ = nullptr;
 }
 
-PassRefPtr<Image> LayoutImageResourceStyleImage::GetImage(
+RefPtr<Image> LayoutImageResourceStyleImage::GetImage(
     const IntSize& size) const {
   // Generated content may trigger calls to image() while we're still pending,
   // don't assert but gracefully exit.

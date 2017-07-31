@@ -282,7 +282,7 @@ void PingLoader::SendLinkAuditPing(LocalFrame* frame,
 
 void PingLoader::SendViolationReport(LocalFrame* frame,
                                      const KURL& report_url,
-                                     PassRefPtr<EncodedFormData> report,
+                                     RefPtr<EncodedFormData> report,
                                      ViolationReportType type) {
   ResourceRequest request(report_url);
   request.SetHTTPMethod(HTTPNames::POST);

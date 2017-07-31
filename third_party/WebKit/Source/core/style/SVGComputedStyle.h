@@ -41,10 +41,10 @@ class StyleDifference;
 // instead. Keep the allocation logic, only allocating a new object if needed.
 class CORE_EXPORT SVGComputedStyle : public RefCounted<SVGComputedStyle> {
  public:
-  static PassRefPtr<SVGComputedStyle> Create() {
+  static RefPtr<SVGComputedStyle> Create() {
     return AdoptRef(new SVGComputedStyle);
   }
-  PassRefPtr<SVGComputedStyle> Copy() const {
+  RefPtr<SVGComputedStyle> Copy() const {
     return AdoptRef(new SVGComputedStyle(*this));
   }
   ~SVGComputedStyle();
@@ -85,7 +85,7 @@ class CORE_EXPORT SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   static SVGPaintType InitialStrokePaintType() { return SVG_PAINTTYPE_NONE; }
   static Color InitialStrokePaintColor() { return Color(); }
   static String InitialStrokePaintUri() { return String(); }
-  static PassRefPtr<SVGDashArray> InitialStrokeDashArray();
+  static RefPtr<SVGDashArray> InitialStrokeDashArray();
   static Length InitialStrokeDashOffset() { return Length(kFixed); }
   static float InitialStrokeMiterLimit() { return 4; }
   static UnzoomedLength InitialStrokeWidth() {
@@ -150,7 +150,7 @@ class CORE_EXPORT SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   void SetPaintOrder(EPaintOrder val) {
     svg_inherited_flags.paint_order = (int)val;
   }
-  void SetD(PassRefPtr<StylePath> d) {
+  void SetD(RefPtr<StylePath> d) {
     if (!(geometry->d == d))
       geometry.Access()->d = std::move(d);
   }
@@ -238,7 +238,7 @@ class CORE_EXPORT SVGComputedStyle : public RefCounted<SVGComputedStyle> {
     }
   }
 
-  void SetStrokeDashArray(PassRefPtr<SVGDashArray> dash_array) {
+  void SetStrokeDashArray(RefPtr<SVGDashArray> dash_array) {
     if (*stroke->dash_array != *dash_array)
       stroke.Access()->dash_array = std::move(dash_array);
   }

@@ -46,7 +46,7 @@ class CORE_EXPORT SharedBufferReader {
   USING_FAST_MALLOC(SharedBufferReader);
 
  public:
-  SharedBufferReader(PassRefPtr<const SharedBuffer>);
+  SharedBufferReader(RefPtr<const SharedBuffer>);
 
   ~SharedBufferReader();
 

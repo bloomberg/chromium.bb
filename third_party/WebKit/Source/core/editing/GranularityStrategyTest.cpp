@@ -14,7 +14,6 @@
 #include "core/html/HTMLSpanElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "testing/gtest/include/gtest/gtest.h"

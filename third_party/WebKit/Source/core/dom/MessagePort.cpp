@@ -59,7 +59,7 @@ MessagePort::~MessagePort() {
 }
 
 void MessagePort::postMessage(ScriptState* script_state,
-                              PassRefPtr<SerializedScriptValue> message,
+                              RefPtr<SerializedScriptValue> message,
                               const MessagePortArray& ports,
                               ExceptionState& exception_state) {
   if (!IsEntangled())

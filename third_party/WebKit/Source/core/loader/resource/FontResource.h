@@ -57,7 +57,7 @@ class CORE_EXPORT FontResource final : public Resource {
 
   String OtsParsingMessage() const { return ots_parsing_message_; }
 
-  PassRefPtr<FontCustomPlatformData> GetCustomFontData();
+  RefPtr<FontCustomPlatformData> GetCustomFontData();
 
   // Returns true if the loading priority of the remote font resource can be
   // lowered. The loading priority of the font can be lowered only if the

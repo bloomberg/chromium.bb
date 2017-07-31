@@ -31,10 +31,10 @@ class CSSPaintValue : public CSSImageGeneratorValue {
 
   String GetName() const;
 
-  PassRefPtr<Image> GetImage(const ImageResourceObserver&,
-                             const Document&,
-                             const ComputedStyle&,
-                             const IntSize&);
+  RefPtr<Image> GetImage(const ImageResourceObserver&,
+                         const Document&,
+                         const ComputedStyle&,
+                         const IntSize&);
   bool IsFixedSize() const { return false; }
   IntSize FixedSize(const Document&) { return IntSize(); }
 
