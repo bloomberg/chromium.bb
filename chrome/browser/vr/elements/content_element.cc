@@ -4,21 +4,30 @@
 
 #include "chrome/browser/vr/elements/content_element.h"
 
+#include "chrome/browser/vr/ui_element_renderer.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace vr {
 
 ContentElement::ContentElement(ContentInputDelegate* delegate)
     : delegate_(delegate) {
   DCHECK(delegate);
-  // TODO(vollick): the content element should draw itself through a new
-  // function on the ui element renderer similar to that used by the textured
-  // element, but allowing for external textures.
-  set_fill(Fill::CONTENT);
+  set_fill(Fill::SELF);
   set_scrollable(true);
 }
 
 ContentElement::~ContentElement() = default;
+
+void ContentElement::Render(UiElementRenderer* renderer,
+                            const gfx::Transform& view_proj_matrix) const {
+  if (!texture_id_)
+    return;
+  gfx::RectF copy_rect(0, 0, 1, 1);
+  renderer->DrawTexturedQuad(
+      texture_id_, UiElementRenderer::kTextureLocationExternal,
+      view_proj_matrix, copy_rect, opacity(), size(), corner_radius());
+}
 
 void ContentElement::OnHoverEnter(const gfx::PointF& position) {
   delegate_->OnContentEnter(position);

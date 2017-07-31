@@ -29,9 +29,6 @@ void UiScene::AddUiElement(std::unique_ptr<UiElement> element) {
 void UiScene::RemoveUiElement(int element_id) {
   for (auto it = ui_elements_.begin(); it != ui_elements_.end(); ++it) {
     if ((*it)->id() == element_id) {
-      if ((*it)->fill() == Fill::CONTENT) {
-        content_element_ = nullptr;
-      }
       ui_elements_.erase(it);
       return;
     }
@@ -162,7 +159,7 @@ void UiScene::ApplyRecursiveTransforms(UiElement* element) {
 }
 
 // TODO(mthiesse): Move this to UiSceneManager.
-void UiScene::OnGLInitialized() {
+void UiScene::OnGlInitialized() {
   gl_initialized_ = true;
   for (auto& element : ui_elements_) {
     element->Initialize();

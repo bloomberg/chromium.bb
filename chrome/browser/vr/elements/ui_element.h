@@ -48,19 +48,20 @@ enum YAnchoring {
   YBOTTOM,
 };
 
+// TODO(vollick): Make every UiElement draw itself (i.e., encapsulate rendering
+// logic in the elements). This will let us remove this enumeration and the
+// UiRender can then just iterate over elements and tell them to render
+// themselves in turn. NB: this includes the reticle and controller, which are
+// not yet represented as UiElements.
 enum Fill {
   NONE = 0,
-  // The element is filled with the content web site. Only one content element
-  // may be added to the
-  // scene.
-  CONTENT = 1,
   // The element is filled with a radial gradient as specified by the edge and
   // center color.
-  OPAQUE_GRADIENT = 2,
+  OPAQUE_GRADIENT = 1,
   // Same as OPAQUE_GRADIENT but the element is drawn as a grid.
-  GRID_GRADIENT = 3,
+  GRID_GRADIENT = 2,
   // The element draws itself.
-  SELF = 4,
+  SELF = 3,
 };
 
 class UiElement : public cc::AnimationTarget {
@@ -85,7 +86,7 @@ class UiElement : public cc::AnimationTarget {
   bool IsHitTestable() const;
 
   virtual void Render(UiElementRenderer* renderer,
-                      gfx::Transform view_proj_matrix) const;
+                      const gfx::Transform& view_proj_matrix) const;
 
   virtual void Initialize();
 

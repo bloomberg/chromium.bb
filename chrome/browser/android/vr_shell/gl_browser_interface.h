@@ -40,7 +40,7 @@ class GlBrowserInterface {
       device::mojom::VRDisplayInfoPtr* info) = 0;
   virtual void OnContentPaused(bool enabled) = 0;
   virtual void ToggleCardboardGamepad(bool enabled) = 0;
-  virtual void OnGLInitialized() = 0;
+  virtual void OnGlInitialized(unsigned int content_texture_id) = 0;
   virtual void OnWebVrFrameAvailable() = 0;
 };
 

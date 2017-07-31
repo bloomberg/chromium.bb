@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/vr_controller_model.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/transform.h"
@@ -19,60 +20,81 @@
 
 namespace vr {
 
-constexpr float kFogBrightness = 0.57f;
+class BaseRenderer;
+class BaseQuadRenderer;
+class ControllerRenderer;
+class ExternalTexturedQuadRenderer;
+class GradientGridRenderer;
+class GradientQuadRenderer;
+class LaserRenderer;
+class ReticleRenderer;
+class TexturedQuadRenderer;
+class WebVrRenderer;
 
-enum ShaderID {
-  SHADER_UNRECOGNIZED = 0,
-  EXTERNAL_TEXTURED_QUAD_VERTEX_SHADER,
-  EXTERNAL_TEXTURED_QUAD_FRAGMENT_SHADER,
-  WEBVR_VERTEX_SHADER,
-  WEBVR_FRAGMENT_SHADER,
-  RETICLE_VERTEX_SHADER,
-  RETICLE_FRAGMENT_SHADER,
-  LASER_VERTEX_SHADER,
-  LASER_FRAGMENT_SHADER,
-  GRADIENT_QUAD_VERTEX_SHADER,
-  GRADIENT_QUAD_FRAGMENT_SHADER,
-  GRADIENT_GRID_VERTEX_SHADER,
-  GRADIENT_GRID_FRAGMENT_SHADER,
-  CONTROLLER_VERTEX_SHADER,
-  CONTROLLER_FRAGMENT_SHADER,
-  TEXTURED_QUAD_VERTEX_SHADER,
-  TEXTURED_QUAD_FRAGMENT_SHADER,
-  SHADER_ID_MAX
+class VrShellRenderer : public vr::UiElementRenderer {
+ public:
+  VrShellRenderer();
+  ~VrShellRenderer() override;
+
+  // vr::UiElementRenderer interface (exposed to UI elements).
+  void DrawTexturedQuad(int texture_data_handle,
+                        TextureLocation texture_location,
+                        const gfx::Transform& view_proj_matrix,
+                        const gfx::RectF& copy_rect,
+                        float opacity,
+                        gfx::SizeF element_size,
+                        float corner_radius) override;
+  void DrawGradientQuad(const gfx::Transform& view_proj_matrix,
+                        const SkColor edge_color,
+                        const SkColor center_color,
+                        float opacity) override;
+
+  // VrShell's internal GL rendering API.
+  ExternalTexturedQuadRenderer* GetExternalTexturedQuadRenderer();
+  TexturedQuadRenderer* GetTexturedQuadRenderer();
+  WebVrRenderer* GetWebVrRenderer();
+  ReticleRenderer* GetReticleRenderer();
+  LaserRenderer* GetLaserRenderer();
+  ControllerRenderer* GetControllerRenderer();
+  GradientQuadRenderer* GetGradientQuadRenderer();
+  GradientGridRenderer* GetGradientGridRenderer();
+
+  void Flush();
+
+  gfx::Size surface_texture_size() const { return surface_texture_size_; }
+  void set_surface_texture_size(const gfx::Size& surface_texture_size) {
+    surface_texture_size_ = surface_texture_size;
+  }
+
+ private:
+  void FlushIfNecessary(BaseRenderer* renderer);
+
+  BaseRenderer* last_renderer_ = nullptr;
+
+  std::unique_ptr<ExternalTexturedQuadRenderer>
+      external_textured_quad_renderer_;
+  std::unique_ptr<TexturedQuadRenderer> textured_quad_renderer_;
+  std::unique_ptr<WebVrRenderer> webvr_renderer_;
+  std::unique_ptr<ReticleRenderer> reticle_renderer_;
+  std::unique_ptr<LaserRenderer> laser_renderer_;
+  std::unique_ptr<ControllerRenderer> controller_renderer_;
+  std::unique_ptr<GradientQuadRenderer> gradient_quad_renderer_;
+  std::unique_ptr<GradientGridRenderer> gradient_grid_renderer_;
+
+  gfx::Size surface_texture_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(VrShellRenderer);
 };
 
-struct Vertex3d {
-  float x;
-  float y;
-  float z;
-};
-
-struct RectF {
-  float x;
-  float y;
-  float width;
-  float height;
-};
-
-struct Line3d {
-  Vertex3d start;
-  Vertex3d end;
-};
-
-struct SkiaQuad {
-  int texture_data_handle;
-  gfx::Transform view_proj_matrix;
-  RectF copy_rect;
-  float opacity;
-};
-
+// TODO(vollick): move these into separate headers.
 class BaseRenderer {
  public:
   virtual ~BaseRenderer();
 
+  virtual void Flush();
+
  protected:
-  BaseRenderer(ShaderID vertex_id, ShaderID fragment_id);
+  BaseRenderer(const char* vertex_src, const char* fragment_src);
 
   GLuint program_handle_;
   GLuint position_handle_;
@@ -82,7 +104,7 @@ class BaseRenderer {
 
 class BaseQuadRenderer : public BaseRenderer {
  public:
-  BaseQuadRenderer(ShaderID vertex_id, ShaderID fragment_id);
+  BaseQuadRenderer(const char* vertex_src, const char* fragment_src);
   ~BaseQuadRenderer() override;
 
   static void SetVertexBuffer();
@@ -97,22 +119,42 @@ class BaseQuadRenderer : public BaseRenderer {
   DISALLOW_COPY_AND_ASSIGN(BaseQuadRenderer);
 };
 
-class ExternalTexturedQuadRenderer : public BaseRenderer {
+class TexturedQuadRenderer : public BaseRenderer {
  public:
-  ExternalTexturedQuadRenderer();
-  ~ExternalTexturedQuadRenderer() override;
+  TexturedQuadRenderer(const char* vertex_src, const char* fragment_src);
+  TexturedQuadRenderer();
+  ~TexturedQuadRenderer() override;
 
-  // Draw the content rect in the texture quad.
-  void Draw(int texture_data_handle,
-            const gfx::Transform& view_proj_matrix,
-            const gfx::Size& surface_size,
-            const gfx::SizeF& element_size,
-            float opacity,
-            float corner_radius);
+  // Enqueues a textured quad for rendering. The GL will ultimately be issued
+  // in |Flush|.
+  void AddQuad(int texture_data_handle,
+               const gfx::Transform& view_proj_matrix,
+               const gfx::RectF& copy_rect,
+               float opacity,
+               gfx::Size surface_texture_size,
+               gfx::SizeF element_size,
+               float corner_radius);
+
+  void Flush() override;
 
   static void SetVertexBuffer();
 
+ protected:
+  virtual GLenum TextureType() const;
+
  private:
+  struct QuadData {
+    int texture_data_handle;
+    gfx::Transform view_proj_matrix;
+    gfx::RectF copy_rect;
+    float opacity;
+    gfx::Size surface_texture_size;
+    gfx::SizeF element_size;
+    float corner_radius;
+  };
+
+  float ComputePhysicalPixelWidth(const QuadData& quad) const;
+
   static GLuint vertex_buffer_;
   static GLuint index_buffer_;
 
@@ -122,36 +164,26 @@ class ExternalTexturedQuadRenderer : public BaseRenderer {
   GLuint corner_scale_handle_;
   GLuint opacity_handle_;
   GLuint texture_handle_;
+  GLuint copy_rect_handler_;
 
   // Attributes
   GLuint corner_position_handle_;
   GLuint offset_scale_handle_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExternalTexturedQuadRenderer);
-};
-
-class TexturedQuadRenderer : public BaseQuadRenderer {
- public:
-  TexturedQuadRenderer();
-  ~TexturedQuadRenderer() override;
-
-  // Draw the content rect in the texture quad.
-  void AddQuad(int texture_data_handle,
-               const gfx::Transform& view_proj_matrix,
-               const gfx::RectF& copy_rect,
-               float opacity);
-
-  void Flush();
-
- private:
-  GLuint model_view_proj_matrix_handle_;
-  GLuint copy_rect_uniform_handle_;
-  GLuint tex_uniform_handle_;
-  GLuint opacity_handle_;
-
-  std::queue<SkiaQuad> quad_queue_;
+  std::queue<QuadData> quad_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(TexturedQuadRenderer);
+};
+
+class ExternalTexturedQuadRenderer : public TexturedQuadRenderer {
+ public:
+  ExternalTexturedQuadRenderer();
+  ~ExternalTexturedQuadRenderer() override;
+
+ private:
+  GLenum TextureType() const override;
+
+  DISALLOW_COPY_AND_ASSIGN(ExternalTexturedQuadRenderer);
 };
 
 // Renders a page-generated stereo VR view.
@@ -163,7 +195,7 @@ class WebVrRenderer : public BaseQuadRenderer {
   void Draw(int texture_handle);
 
  private:
-  GLuint tex_uniform_handle_;
+  GLuint texture_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(WebVrRenderer);
 };
@@ -221,7 +253,7 @@ class ControllerRenderer : public BaseRenderer {
  private:
   GLuint model_view_proj_matrix_handle_;
   GLuint tex_coord_handle_;
-  GLuint tex_uniform_handle_;
+  GLuint texture_handle_;
   GLuint opacity_handle_;
   GLuint indices_buffer_ = 0;
   GLuint vertex_buffer_ = 0;
@@ -285,46 +317,6 @@ class GradientGridRenderer : public BaseQuadRenderer {
   GLuint lines_count_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(GradientGridRenderer);
-};
-
-class VrShellRenderer : public vr::UiElementRenderer {
- public:
-  VrShellRenderer();
-  ~VrShellRenderer() override;
-
-  // vr::UiElementRenderer interface (exposed to UI elements).
-  void DrawTexturedQuad(int texture_data_handle,
-                        const gfx::Transform& view_proj_matrix,
-                        const gfx::RectF& copy_rect,
-                        float opacity) override;
-  void DrawGradientQuad(const gfx::Transform& view_proj_matrix,
-                        const SkColor edge_color,
-                        const SkColor center_color,
-                        float opacity) override;
-
-  // VrShell's internal GL rendering API.
-  ExternalTexturedQuadRenderer* GetExternalTexturedQuadRenderer();
-  TexturedQuadRenderer* GetTexturedQuadRenderer();
-  WebVrRenderer* GetWebVrRenderer();
-  ReticleRenderer* GetReticleRenderer();
-  LaserRenderer* GetLaserRenderer();
-  ControllerRenderer* GetControllerRenderer();
-  GradientQuadRenderer* GetGradientQuadRenderer();
-  GradientGridRenderer* GetGradientGridRenderer();
-  void Flush();
-
- private:
-  std::unique_ptr<ExternalTexturedQuadRenderer>
-      external_textured_quad_renderer_;
-  std::unique_ptr<TexturedQuadRenderer> textured_quad_renderer_;
-  std::unique_ptr<WebVrRenderer> webvr_renderer_;
-  std::unique_ptr<ReticleRenderer> reticle_renderer_;
-  std::unique_ptr<LaserRenderer> laser_renderer_;
-  std::unique_ptr<ControllerRenderer> controller_renderer_;
-  std::unique_ptr<GradientQuadRenderer> gradient_quad_renderer_;
-  std::unique_ptr<GradientGridRenderer> gradient_grid_renderer_;
-
-  DISALLOW_COPY_AND_ASSIGN(VrShellRenderer);
 };
 
 }  // namespace vr

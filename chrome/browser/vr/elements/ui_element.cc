@@ -45,7 +45,7 @@ UiElement::~UiElement() {
 }
 
 void UiElement::Render(UiElementRenderer* renderer,
-                       gfx::Transform view_proj_matrix) const {
+                       const gfx::Transform& view_proj_matrix) const {
   NOTREACHED();
 }
 
