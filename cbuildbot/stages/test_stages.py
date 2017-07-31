@@ -444,10 +444,10 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
         # We add 1/10 of the branch version to the priority. This results in a
         # modest priority bump the older the branch is. Typically beta priority
         # would be dev + [1..4] and stable priority dev + [5..9].
-        self.suite_config.priority += math.ceil(cros_vers[1] / 10.0)
+        self.suite_config.priority += math.ceil(float(cros_vers[1]) / 10.0)
       except cbuildbot_run.VersionNotSetError:
         logging.debug('Could not obtain version info. %s will use initial '
-                      'priority value: %d', self.suite_config.suite,
+                      'priority value: %s', self.suite_config.suite,
                       self.suite_config.priority)
 
     build = '/'.join([self._bot_id, self.version])
