@@ -130,9 +130,10 @@ bool MediaCodecAudioDecoder::CreateMediaCodecLoop() {
   DVLOG(1) << __func__ << ": config:" << config_.AsHumanReadableString();
 
   codec_loop_.reset();
-  jobject media_crypto_obj = media_crypto_ ? media_crypto_->obj() : nullptr;
+  const base::android::JavaRef<jobject>& media_crypto =
+      media_crypto_ ? *media_crypto_ : nullptr;
   std::unique_ptr<MediaCodecBridge> audio_codec_bridge(
-      MediaCodecBridgeImpl::CreateAudioDecoder(config_, media_crypto_obj));
+      MediaCodecBridgeImpl::CreateAudioDecoder(config_, media_crypto));
   if (!audio_codec_bridge) {
     DLOG(ERROR) << __func__ << " failed: cannot create MediaCodecBridge";
     return false;

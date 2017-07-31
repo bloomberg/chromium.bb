@@ -132,7 +132,8 @@ void MidiManagerAndroid::OnInitialized(
   jsize length = env->GetArrayLength(devices);
 
   for (jsize i = 0; i < length; ++i) {
-    jobject raw_device = env->GetObjectArrayElement(devices, i);
+    base::android::ScopedJavaLocalRef<jobject> raw_device(
+        env, env->GetObjectArrayElement(devices, i));
     AddDevice(base::MakeUnique<MidiDeviceAndroid>(env, raw_device, this));
   }
   CompleteInitialization(Result::OK);

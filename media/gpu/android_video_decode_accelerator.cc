@@ -500,7 +500,7 @@ void AndroidVideoDecodeAccelerator::InitializePictureBufferManager() {
   // If we get here with a codec, then we must setSurface.
   if (media_codec_) {
     // TODO(liberato): fail on api check?
-    if (!media_codec_->SetSurface(incoming_bundle_->GetJavaSurface().obj())) {
+    if (!media_codec_->SetSurface(incoming_bundle_->GetJavaSurface())) {
       NOTIFY_ERROR(PLATFORM_FAILURE, "MediaCodec failed to switch surfaces.");
       // We're not going to use |incoming_bundle_|.
     } else {

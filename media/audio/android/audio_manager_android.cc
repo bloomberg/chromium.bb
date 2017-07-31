@@ -28,6 +28,7 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace media {
@@ -369,7 +370,7 @@ bool AudioManagerAndroid::HasNoAudioInputStreams() {
   return input_stream_count() == 0;
 }
 
-jobject AudioManagerAndroid::GetJavaAudioManager() {
+const JavaRef<jobject>& AudioManagerAndroid::GetJavaAudioManager() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   if (j_audio_manager_.is_null()) {
     // Create the Android audio manager on the audio thread.
@@ -383,7 +384,7 @@ jobject AudioManagerAndroid::GetJavaAudioManager() {
     Java_AudioManagerAndroid_init(base::android::AttachCurrentThread(),
                                   j_audio_manager_);
   }
-  return j_audio_manager_.obj();
+  return j_audio_manager_;
 }
 
 void AudioManagerAndroid::SetCommunicationAudioModeOn(bool on) {

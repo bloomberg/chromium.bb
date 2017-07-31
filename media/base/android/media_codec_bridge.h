@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/android/jni_android.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
@@ -134,7 +135,7 @@ class MEDIA_EXPORT MediaCodecBridge {
 
   // Changes the output surface for the MediaCodec. May only be used on API
   // level 23 and higher (Marshmallow).
-  virtual bool SetSurface(jobject surface) = 0;
+  virtual bool SetSurface(const base::android::JavaRef<jobject>& surface) = 0;
 
   // Sets the video encoder target bitrate and framerate.
   virtual void SetVideoBitrate(int bps, int frame_rate) = 0;
