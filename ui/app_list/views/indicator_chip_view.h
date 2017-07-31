@@ -22,6 +22,8 @@ class IndicatorChipView : public views::View {
   explicit IndicatorChipView(const base::string16& text);
   ~IndicatorChipView() override;
 
+  gfx::Rect GetLabelBoundsInScreen() const;
+
  private:
   // views::View overridden:
   gfx::Size CalculatePreferredSize() const override;

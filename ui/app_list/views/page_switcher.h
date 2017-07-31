@@ -22,6 +22,9 @@ class PageSwitcher : public views::View {
   // Shows hover for button under the point. |point| is in PageSwitcher's
   // coordinates.
   virtual void UpdateUIForDragPoint(const gfx::Point& point) = 0;
+
+  // Gets the screen bounds of the buttons in the page switcher.
+  virtual gfx::Rect GetButtonsBoundsInScreen() = 0;
 };
 
 }  // namespace app_list

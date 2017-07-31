@@ -37,6 +37,10 @@ interface AppListPresenter {
   // Starts a voice interaction session.
   StartVoiceInteractionSession();
 
-  // Sets y position of the app list bounds to |y_position_in_screen|.
-  SetYPosition(int32 y_position_in_screen);
+  // Updates y position and opacity of app list. |is_end_gesture| means it is
+  // the end of the gesture dragging of app list from shelf and should restore
+  // the opacity of the app list.
+  UpdateYPositionAndOpacity(int32 y_position_in_screen,
+                            float background_opacity,
+                            bool is_end_gesture);
 };

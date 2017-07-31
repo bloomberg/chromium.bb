@@ -34,7 +34,9 @@ void TestAppListPresenter::StartVoiceInteractionSession() {
   voice_session_count_++;
 }
 
-void TestAppListPresenter::SetYPosition(int y_position_in_screen) {
+void TestAppListPresenter::UpdateYPositionAndOpacity(int y_position_in_screen,
+                                                     float background_opacity,
+                                                     bool is_end_gesture) {
   set_y_position_count_++;
 }
 

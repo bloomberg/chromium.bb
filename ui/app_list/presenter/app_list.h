@@ -27,7 +27,9 @@ class APP_LIST_PRESENTER_EXPORT AppList : public mojom::AppList {
 
   // Helper functions to call the underlying functionality on the presenter.
   void Show(int64_t display_id);
-  void SetYPosition(int y_position_in_screen);
+  void UpdateYPositionAndOpacity(int y_position_in_screen,
+                                 float background_opacity,
+                                 bool is_end_gesture);
 
   void Dismiss();
   void ToggleAppList(int64_t display_id);

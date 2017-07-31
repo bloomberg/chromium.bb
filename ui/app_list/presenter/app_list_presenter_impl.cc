@@ -82,9 +82,13 @@ void AppListPresenterImpl::Show(int64_t display_id) {
   base::RecordAction(base::UserMetricsAction("Launcher_Show"));
 }
 
-void AppListPresenterImpl::SetYPosition(int y_position_in_screen) {
-  if (view_)
-    view_->SetYPosition(y_position_in_screen);
+void AppListPresenterImpl::UpdateYPositionAndOpacity(int y_position_in_screen,
+                                                     float background_opacity,
+                                                     bool is_end_gesture) {
+  if (view_) {
+    view_->UpdateYPositionAndOpacity(y_position_in_screen, background_opacity,
+                                     is_end_gesture);
+  }
 }
 
 void AppListPresenterImpl::Dismiss() {

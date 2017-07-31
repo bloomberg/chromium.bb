@@ -493,8 +493,11 @@ void Shell::ShowAppList() {
                       .id());
 }
 
-void Shell::SetAppListYPosition(int y_position_in_screen) {
-  app_list_->SetYPosition(y_position_in_screen);
+void Shell::UpdateAppListYPositionAndOpacity(int y_position_in_screen,
+                                             float app_list_background_opacity,
+                                             bool is_end_gesture) {
+  app_list_->UpdateYPositionAndOpacity(
+      y_position_in_screen, app_list_background_opacity, is_end_gesture);
 }
 
 void Shell::DismissAppList() {

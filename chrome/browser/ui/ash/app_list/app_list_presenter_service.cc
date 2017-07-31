@@ -53,8 +53,12 @@ void AppListPresenterService::StartVoiceInteractionSession() {
     service->StartSessionFromUserInteraction(gfx::Rect());
 }
 
-void AppListPresenterService::SetYPosition(int y_position_in_screen) {
-  GetPresenter()->SetYPosition(y_position_in_screen);
+void AppListPresenterService::UpdateYPositionAndOpacity(
+    int y_position_in_screen,
+    float background_opacity,
+    bool is_end_gesture) {
+  GetPresenter()->UpdateYPositionAndOpacity(y_position_in_screen,
+                                            background_opacity, is_end_gesture);
 }
 
 app_list::AppListPresenterImpl* AppListPresenterService::GetPresenter() {

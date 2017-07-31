@@ -27,6 +27,7 @@ class PageSwitcherHorizontal : public PageSwitcher,
   // Overridden from PageSwitcher:
   int GetPageForPoint(const gfx::Point& point) const override;
   void UpdateUIForDragPoint(const gfx::Point& point) override;
+  gfx::Rect GetButtonsBoundsInScreen() override;
 
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;

@@ -41,6 +41,16 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
                                     public SpeechUIModelObserver,
                                     public display::DisplayObserver {
  public:
+  // The height/width of the shelf from the bottom/side of the screen.
+  static constexpr int kShelfSize = 48;
+
+  // Number of the size of shelf. Used to determine the opacity of items in the
+  // app list during dragging.
+  static constexpr float kNumOfShelfSize = 2.0;
+
+  // The opacity of the app list background.
+  static constexpr float kAppListOpacity = 0.8;
+
   enum AppListState {
     // Closes |app_list_main_view_| and dismisses the delegate.
     CLOSED = 0,
@@ -127,8 +137,12 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // whether the search box is empty.
   void SetStateFromSearchBoxView(bool search_box_is_empty);
 
-  // Sets y position of the app list bounds to |y_position_in_screen|.
-  void SetYPosition(int y_position_in_screen);
+  // Updates y position and opacity of app list. |is_end_gesture| means it is
+  // the end of the gesture dragging of app list from shelf and should restore
+  // the opacity of the app list.
+  void UpdateYPositionAndOpacity(int y_position_in_screen,
+                                 float background_opacity,
+                                 bool is_end_gesture);
 
   // Gets the PaginationModel owned by this view's apps grid.
   PaginationModel* GetAppsPaginationModel();
