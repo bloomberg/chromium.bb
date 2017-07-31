@@ -95,8 +95,8 @@ class PkpTest : public CronetTestBase {
   // certificate.
   static NSData* NonMatchingHash() {
     const int length = 32;
-    const char* hash = std::string(length, '\077').c_str();
-    return [NSData dataWithBytes:hash length:length];
+    std::string hash(length, '\077');
+    return [NSData dataWithBytes:hash.c_str() length:length];
   }
 
   // Returns hash value that matches the hash of the public key certificate used
