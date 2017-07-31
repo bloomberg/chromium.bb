@@ -590,7 +590,7 @@ TextFieldSelectionDirection TextControlElement::ComputeSelectionDirection()
   const SelectionInDOMTree& selection =
       frame->Selection().GetSelectionInDOMTree();
   const Position& start = selection.ComputeStartPosition();
-  return selection.IsDirectional()
+  return frame->Selection().IsDirectional()
              ? (selection.Base() == start ? kSelectionHasForwardDirection
                                           : kSelectionHasBackwardDirection)
              : kSelectionHasNoDirection;
