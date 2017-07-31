@@ -192,8 +192,7 @@ physically local to the computer, there are, and always will be, tools for
 extracting the password from any of these places.
 
 <a name="TOC-Does-entering-JavaScript:-URLs-in-the-URL-bar-or-running-script-in-the-developer-tools-mean-there-s-an-XSS-vulnerability-"></a>
-## Does entering JavaScript: URLs in the URL bar or running script in the
-developer tools mean there's an XSS vulnerability?
+## Does entering JavaScript: URLs in the URL bar or running script in the developer tools mean there's an XSS vulnerability?
 
 No. Chrome does not attempt to prevent the user from knowingly running script
 against loaded documents, either by entering script in the Developer Tools
@@ -306,8 +305,7 @@ Since you have allowed the trust anchor to be installed onto your computer,
 Chrome assumes that you have consented to HTTPS interception. Anyone who can add
 a trust anchor to your computer can make other changes to your computer, too,
 including changing Chrome. (See also [Why aren't physically-local attacks in
-Chrome's threat model?]
-](#TOC-Why-aren-t-physically-local-attacks-in-Chrome-s-threat-model-).)
+Chrome's threat model?](#TOC-Why-aren-t-physically-local-attacks-in-Chrome-s-threat-model-).)
 
 <a name="TOC-Why-can-t-I-select-Proceed-Anyway-on-some-HTTPS-error-screens-"></a>
 ## Why can’t I select Proceed Anyway on some HTTPS error screens?
