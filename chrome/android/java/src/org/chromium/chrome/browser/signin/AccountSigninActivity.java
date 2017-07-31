@@ -122,8 +122,9 @@ public class AccountSigninActivity extends AppCompatActivity
         mView = (AccountSigninView) LayoutInflater.from(this).inflate(
                 R.layout.account_signin_view, null);
 
+        int imageSize = getResources().getDimensionPixelSize(R.dimen.signin_account_image_size);
         ProfileDataCache profileDataCache =
-                new ProfileDataCache(this, Profile.getLastUsedProfile());
+                new ProfileDataCache(this, Profile.getLastUsedProfile(), imageSize);
         String selectAccount = getIntent().getStringExtra(INTENT_SELECT_ACCOUNT);
         if (selectAccount == null) {
             mView.initFromSelectionPage(profileDataCache, false, this, this);
