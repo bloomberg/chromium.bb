@@ -5,7 +5,7 @@
 #ifndef CHROME_INSTALLER_ZUCCHINI_MAIN_UTILS_H_
 #define CHROME_INSTALLER_ZUCCHINI_MAIN_UTILS_H_
 
-#include <ostream>
+#include <iosfwd>
 
 #include "base/files/file_path.h"
 #include "chrome/installer/zucchini/zucchini.h"
@@ -26,9 +26,10 @@ class CommandLine;
 // 3. Add a new entry into |kCommands| in main_utils.cc.
 
 // Searches |command_line| for Zucchini commands. If a unique command is found,
-// runs it and logs resource usage. Otherwise prints help message to |out|.
-// Returns Zucchini status code for error handling.
+// runs it (passes |out| and |err|), and logs resource usage. Otherwise prints
+// help message to |err|. Returns Zucchini status code for error handling.
 zucchini::status::Code RunZucchiniCommand(const base::CommandLine& command_line,
-                                          std::ostream& out);
+                                          std::ostream& out,
+                                          std::ostream& err);
 
 #endif  // CHROME_INSTALLER_ZUCCHINI_MAIN_UTILS_H_
