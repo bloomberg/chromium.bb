@@ -196,7 +196,7 @@ public class AccountSigninView extends FrameLayout {
         mDelegate = delegate;
         mListener = listener;
         showConfirmSigninPageAccountTrackerServiceCheck(accountName, isDefaultAccount);
-        updateAccounts();
+        triggerUpdateAccounts();
     }
 
     private void setProfileDataCache(ProfileDataCache profileData) {
@@ -242,7 +242,7 @@ public class AccountSigninView extends FrameLayout {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        updateAccounts();
+        triggerUpdateAccounts();
         if (mProfileData != null) {
             mProfileData.addObserver(mProfileDataCacheObserver);
         }
@@ -260,7 +260,7 @@ public class AccountSigninView extends FrameLayout {
     public void onWindowVisibilityChanged(int visibility) {
         super.onWindowVisibilityChanged(visibility);
         if (visibility == View.VISIBLE) {
-            updateAccounts();
+            triggerUpdateAccounts();
             return;
         }
         if (visibility == View.INVISIBLE && mGooglePlayServicesUpdateErrorHandler != null) {
@@ -292,91 +292,86 @@ public class AccountSigninView extends FrameLayout {
     /**
      * Refresh the list of available system accounts asynchronously.
      */
-    private void updateAccounts() {
+    private void triggerUpdateAccounts() {
         if (mProfileData == null) {
             return;
         }
 
-        if (mSelectedAccountName != null) {
-            AccountManagerFacade.get().tryGetGoogleAccountNames(new Callback<List<String>>() {
-                @Override
-                public void onResult(List<String> result) {
-                    if (result.contains(mSelectedAccountName)) return;
-
-                    if (mUndoBehavior == UNDO_BACK_TO_SELECTION) {
-                        RecordUserAction.record("Signin_Undo_Signin");
-                        showSigninPage();
-                    } else {
-                        mListener.onFailedToSetForcedAccount(mSelectedAccountName);
+        AccountManagerFacade.get().getGoogleAccountNames(
+                new Callback<AccountManagerResult<List<String>>>() {
+                    @Override
+                    public void onResult(AccountManagerResult<List<String>> result) {
+                        updateAccounts(result);
                     }
-                }
-            });
+                });
+    }
+
+    private void updateAccounts(AccountManagerResult<List<String>> result) {
+        if (!ViewCompat.isAttachedToWindow(AccountSigninView.this)) {
+            // This callback is invoked after AccountSigninView is detached from window
+            // (e.g., Chrome is minimized). Updating view now is redundant and dangerous
+            // (getFragmentManager() can return null, etc.). See https://crbug.com/733117.
             return;
         }
 
-        AccountManagerFacade accountManager = AccountManagerFacade.get();
-        accountManager.getGoogleAccountNames(new Callback<AccountManagerResult<List<String>>>() {
-            @Override
-            public void onResult(AccountManagerResult<List<String>> result) {
-                if (!ViewCompat.isAttachedToWindow(AccountSigninView.this)) {
-                    // This callback is invoked after AccountSigninView is detached from window
-                    // (e.g., Chrome is minimized). Updating view now is redundant and dangerous
-                    // (getFragmentManager() can return null, etc.). See https://crbug.com/733117.
-                    return;
-                }
+        final List<String> accountNames;
+        try {
+            accountNames = result.get();
+        } catch (GmsAvailabilityException e) {
+            dismissGmsUpdatingDialog();
+            showGmsErrorDialog(e.getGmsAvailabilityReturnCode());
+            return;
+        } catch (GmsJustUpdatedException e) {
+            dismissGmsErrorDialog();
+            showGmsUpdatingDialog();
+            return;
+        } catch (AccountManagerDelegateException e) {
+            Log.e(TAG, "Unknown exception from AccountManagerFacade.", e);
+            dismissGmsErrorDialog();
+            dismissGmsUpdatingDialog();
+            return;
+        }
+        dismissGmsErrorDialog();
+        dismissGmsUpdatingDialog();
 
-                List<String> oldAccountNames = mAccountNames;
-                try {
-                    mAccountNames = result.get();
-                } catch (GmsAvailabilityException e) {
-                    dismissGmsUpdatingDialog();
-                    showGmsErrorDialog(e.getGmsAvailabilityReturnCode());
-                    return;
-                } catch (GmsJustUpdatedException e) {
-                    dismissGmsErrorDialog();
-                    showGmsUpdatingDialog();
-                    return;
-                } catch (AccountManagerDelegateException e) {
-                    Log.e(TAG, "Unknown exception from AccountManagerFacade.", e);
-                    dismissGmsErrorDialog();
-                    dismissGmsUpdatingDialog();
-                    return;
-                }
-                dismissGmsErrorDialog();
-                dismissGmsUpdatingDialog();
+        if (mSelectedAccountName != null) {
+            if (accountNames.contains(mSelectedAccountName)) return;
 
-                if (mSelectedAccountName != null) {
-                    // If sign-in completed in the mean time, return in order to avoid showing the
-                    // wrong state in the UI.
-                    return;
-                }
-
-                int oldSelectedAccount = mSigninChooseView.getSelectedAccountPosition();
-                AccountSelectionResult selection = selectAccountAfterAccountsUpdate(
-                        oldAccountNames, mAccountNames, oldSelectedAccount);
-                int accountToSelect = selection.getSelectedAccountIndex();
-                boolean shouldJumpToConfirmationScreen = selection.shouldJumpToConfirmationScreen();
-
-                mSigninChooseView.updateAccounts(mAccountNames, accountToSelect, mProfileData);
-                setUpSigninButton(!mAccountNames.isEmpty());
-                mProfileData.update(mAccountNames);
-
-                boolean selectedAccountChanged = oldAccountNames != null
-                        && !oldAccountNames.isEmpty()
-                        && (mAccountNames.isEmpty()
-                                || mAccountNames.get(accountToSelect)
-                                        .equals(oldAccountNames.get(oldSelectedAccount)));
-                if (selectedAccountChanged) {
-                    // Any dialogs that may have been showing are now invalid (they were created
-                    // for the previously selected account).
-                    ConfirmSyncDataStateMachine.cancelAllDialogs(mDelegate.getFragmentManager());
-                }
-
-                if (shouldJumpToConfirmationScreen) {
-                    showConfirmSigninPageAccountTrackerServiceCheck();
-                }
+            if (mUndoBehavior == UNDO_BACK_TO_SELECTION) {
+                RecordUserAction.record("Signin_Undo_Signin");
+                showSigninPage();
+            } else {
+                mListener.onFailedToSetForcedAccount(mSelectedAccountName);
             }
-        });
+            return;
+        }
+
+        List<String> oldAccountNames = mAccountNames;
+        mAccountNames = accountNames;
+
+        int oldSelectedAccount = mSigninChooseView.getSelectedAccountPosition();
+        AccountSelectionResult selection = selectAccountAfterAccountsUpdate(
+                oldAccountNames, mAccountNames, oldSelectedAccount);
+        int accountToSelect = selection.getSelectedAccountIndex();
+        boolean shouldJumpToConfirmationScreen = selection.shouldJumpToConfirmationScreen();
+
+        mSigninChooseView.updateAccounts(mAccountNames, accountToSelect, mProfileData);
+        setUpSigninButton(!mAccountNames.isEmpty());
+        mProfileData.update(mAccountNames);
+
+        boolean selectedAccountChanged = oldAccountNames != null && !oldAccountNames.isEmpty()
+                && (mAccountNames.isEmpty()
+                           || mAccountNames.get(accountToSelect)
+                                      .equals(oldAccountNames.get(oldSelectedAccount)));
+        if (selectedAccountChanged) {
+            // Any dialogs that may have been showing are now invalid (they were created
+            // for the previously selected account).
+            ConfirmSyncDataStateMachine.cancelAllDialogs(mDelegate.getFragmentManager());
+        }
+
+        if (shouldJumpToConfirmationScreen) {
+            showConfirmSigninPageAccountTrackerServiceCheck();
+        }
     }
 
     private boolean hasGmsError() {
@@ -496,7 +491,7 @@ public class AccountSigninView extends FrameLayout {
         mSigninChooseView.setVisibility(View.VISIBLE);
 
         setUpCancelButton();
-        updateAccounts();
+        triggerUpdateAccounts();
     }
 
     private void showConfirmSigninPage() {
