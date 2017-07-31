@@ -7,8 +7,10 @@ include_rules = [
 
     # It is allowed to depend on common chromium stuff (and itself).
     "+base",
-    "+third_party/WebKit/common",
     "+build",
+    "+net",
     "+testing/gmock/include/gmock",
     "+testing/gtest/include/gtest",
+    "+third_party/WebKit/common",
+    "+url",
 ]

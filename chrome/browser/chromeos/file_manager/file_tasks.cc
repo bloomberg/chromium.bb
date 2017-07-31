@@ -32,7 +32,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/drive/drive_api_util.h"
 #include "components/drive/drive_app_registry.h"
-#include "components/mime_util/mime_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
@@ -44,6 +43,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
 #include "storage/browser/fileapi/file_system_url.h"
+#include "third_party/WebKit/common/mime_util/mime_util.h"
 
 using extensions::Extension;
 using extensions::api::file_manager_private::Verb;
@@ -425,7 +425,7 @@ bool IsGoodMatchFileHandler(
   // regard it as good match.
   if (file_handler_info.types.count("text/*")) {
     for (const auto& entry : entries) {
-      if (mime_util::IsUnsupportedTextMimeType(entry.mime_type))
+      if (blink::IsUnsupportedTextMimeType(entry.mime_type))
         return false;
     }
   }

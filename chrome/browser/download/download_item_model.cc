@@ -24,11 +24,11 @@
 #include "chrome/common/safe_browsing/download_file_types.pb.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/mime_util/mime_util.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "net/base/mime_util.h"
+#include "third_party/WebKit/common/mime_util/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/text/bytes_formatting.h"
@@ -531,16 +531,17 @@ bool DownloadItemModel::IsMalicious() const {
 }
 
 bool DownloadItemModel::HasSupportedImageMimeType() const {
-  if (mime_util::IsSupportedImageMimeType(download_->GetMimeType())) {
+  if (blink::IsSupportedImageMimeType(download_->GetMimeType())) {
     return true;
   }
 
   std::string mime;
   base::FilePath::StringType extension_with_dot =
       download_->GetTargetFilePath().FinalExtension();
-  if (!extension_with_dot.empty() && net::GetWellKnownMimeTypeFromExtension(
-                                         extension_with_dot.substr(1), &mime) &&
-      mime_util::IsSupportedImageMimeType(mime)) {
+  if (!extension_with_dot.empty() &&
+      net::GetWellKnownMimeTypeFromExtension(extension_with_dot.substr(1),
+                                             &mime) &&
+      blink::IsSupportedImageMimeType(mime)) {
     return true;
   }
 

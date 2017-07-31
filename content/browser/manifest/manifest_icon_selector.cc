@@ -8,7 +8,7 @@
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/mime_util/mime_util.h"
+#include "third_party/WebKit/common/mime_util/mime_util.h"
 
 namespace content {
 
@@ -31,7 +31,7 @@ GURL ManifestIconSelector::FindBestMatchingIcon(
 
     // Check for supported image MIME types.
     if (!icon.type.empty() &&
-        !mime_util::IsSupportedImageMimeType(base::UTF16ToUTF8(icon.type))) {
+        !blink::IsSupportedImageMimeType(base::UTF16ToUTF8(icon.type))) {
       continue;
     }
 

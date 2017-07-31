@@ -16,12 +16,12 @@
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "components/mime_util/mime_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item.h"
 #include "jni/DownloadInfo_jni.h"
 #include "jni/DownloadItem_jni.h"
 #include "jni/DownloadManagerService_jni.h"
+#include "third_party/WebKit/common/mime_util/mime_util.h"
 
 #include "ui/base/l10n/l10n_util.h"
 
@@ -458,7 +458,7 @@ jboolean IsSupportedMimeType(
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jmime_type) {
   std::string mime_type = ConvertJavaStringToUTF8(env, jmime_type);
-  return mime_util::IsSupportedMimeType(mime_type);
+  return blink::IsSupportedMimeType(mime_type);
 }
 
 // static

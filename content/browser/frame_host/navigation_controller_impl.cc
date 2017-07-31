@@ -49,7 +49,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
-#include "components/mime_util/mime_util.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_url_handler_impl.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
@@ -80,6 +79,7 @@
 #include "media/base/mime_util.h"
 #include "net/base/escape.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/WebKit/common/mime_util/mime_util.h"
 #include "url/url_constants.h"
 
 namespace content {
@@ -551,9 +551,8 @@ NavigationEntryImpl* NavigationControllerImpl::GetLastCommittedEntry() const {
 
 bool NavigationControllerImpl::CanViewSource() const {
   const std::string& mime_type = delegate_->GetContentsMimeType();
-  bool is_viewable_mime_type =
-      mime_util::IsSupportedNonImageMimeType(mime_type) &&
-      !media::IsSupportedMediaMimeType(mime_type);
+  bool is_viewable_mime_type = blink::IsSupportedNonImageMimeType(mime_type) &&
+                               !media::IsSupportedMediaMimeType(mime_type);
   NavigationEntry* visible_entry = GetVisibleEntry();
   return visible_entry && !visible_entry->IsViewSourceMode() &&
       is_viewable_mime_type && !delegate_->GetInterstitialPage();

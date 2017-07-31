@@ -8,7 +8,6 @@ include_rules = [
   "+components/link_header_util",
   "+components/metrics",
   "+components/metrics:single_sample_metrics",
-  "+components/mime_util",
   "+components/network_session_configurator/common",
   "+components/offline_pages/features/features.h",
   "+components/offline_pages/core/request_header",

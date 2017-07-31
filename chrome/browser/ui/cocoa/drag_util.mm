@@ -12,12 +12,12 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
-#include "components/mime_util/mime_util.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_message.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
+#include "third_party/WebKit/common/mime_util/mime_util.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -43,7 +43,7 @@ BOOL IsSupportedFileURL(Profile* profile, const GURL& url) {
   // This logic mirrors |BufferedResourceHandler::ShouldDownload()|.
   // TODO(asvitkine): Refactor this out to a common location instead of
   //                  duplicating code.
-  if (mime_util::IsSupportedMimeType(mime_type))
+  if (blink::IsSupportedMimeType(mime_type))
     return YES;
 
   // Check whether there is a plugin that supports the mime type. (e.g. PDF)
