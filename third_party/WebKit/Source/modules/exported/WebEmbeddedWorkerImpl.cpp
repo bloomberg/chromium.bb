@@ -94,11 +94,6 @@ std::unique_ptr<WebEmbeddedWorker> WebEmbeddedWorker::Create(
       std::move(content_settings_client));
 }
 
-static HashSet<WebEmbeddedWorkerImpl*>& RunningWorkerInstances() {
-  DEFINE_STATIC_LOCAL(HashSet<WebEmbeddedWorkerImpl*>, set, ());
-  return set;
-}
-
 WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
     std::unique_ptr<WebServiceWorkerContextClient> client,
     std::unique_ptr<WebServiceWorkerInstalledScriptsManager>
@@ -113,8 +108,6 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
       asked_to_terminate_(false),
       pause_after_download_state_(kDontPauseAfterDownload),
       waiting_for_debugger_state_(kNotWaitingForDebugger) {
-  RunningWorkerInstances().insert(this);
-
   if (RuntimeEnabledFeatures::ServiceWorkerScriptStreamingEnabled() &&
       installed_scripts_manager) {
     installed_scripts_manager_ =
@@ -130,8 +123,6 @@ WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl() {
   // TerminateWorkerContext() must be called before the destructor.
   DCHECK(asked_to_terminate_);
 
-  DCHECK(RunningWorkerInstances().Contains(this));
-  RunningWorkerInstances().erase(this);
   DCHECK(web_view_);
 
   // Detach the client before closing the view to avoid getting called back.
