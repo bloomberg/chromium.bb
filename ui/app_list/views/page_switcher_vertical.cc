@@ -168,6 +168,9 @@ PageSwitcherButton* GetButtonByIndex(views::View* buttons, int index) {
 
 PageSwitcherVertical::PageSwitcherVertical(PaginationModel* model)
     : model_(model), buttons_(new views::View) {
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
+
   buttons_->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical, gfx::Insets(), kButtonPadding));
 
@@ -214,6 +217,10 @@ void PageSwitcherVertical::UpdateUIForDragPoint(const gfx::Point& point) {
         static_cast<PageSwitcherButton*>(buttons_->child_at(i));
     button->SetState(views::CustomButton::STATE_NORMAL);
   }
+}
+
+gfx::Rect PageSwitcherVertical::GetButtonsBoundsInScreen() {
+  return buttons_->GetBoundsInScreen();
 }
 
 gfx::Size PageSwitcherVertical::CalculatePreferredSize() const {

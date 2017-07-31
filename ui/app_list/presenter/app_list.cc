@@ -27,9 +27,13 @@ void AppList::Show(int64_t display_id) {
     presenter_->Show(display_id);
 }
 
-void AppList::SetYPosition(int y_position_in_screen) {
-  if (presenter_)
-    presenter_->SetYPosition(y_position_in_screen);
+void AppList::UpdateYPositionAndOpacity(int y_position_in_screen,
+                                        float background_opacity,
+                                        bool is_end_gesture) {
+  if (presenter_) {
+    presenter_->UpdateYPositionAndOpacity(y_position_in_screen,
+                                          background_opacity, is_end_gesture);
+  }
 }
 
 void AppList::Dismiss() {

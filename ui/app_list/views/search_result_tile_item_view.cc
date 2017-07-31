@@ -48,6 +48,9 @@ SearchResultTileItemView::SearchResultTileItemView(
   // non-null item makes the tile visible.
   SetVisible(false);
 
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
+
   if (features::IsPlayStoreAppSearchEnabled()) {
     const gfx::FontList& base_font =
         ui::ResourceBundle::GetSharedInstance().GetFontList(

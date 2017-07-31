@@ -302,6 +302,7 @@ class ASH_EXPORT ShelfLayoutManager
   void CompleteAppListDrag(const ui::GestureEvent& gesture_in_screen);
   void CancelGestureDrag();
   bool CanStartFullscreenAppListDrag(float scroll_y_hint) const;
+  float GetAppListBackgroundOpacityOnShelfOpacity();
 
   // Returns true if the gesture is swiping up on a hidden shelf or swiping down
   // on a visible shelf; other gestures should not change shelf visibility.

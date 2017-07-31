@@ -46,6 +46,9 @@ class IndicatorBackground : public views::Background {
 }  // namespace
 
 IndicatorChipView::IndicatorChipView(const base::string16& text) {
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
+
   container_ = new views::View();
   container_->set_can_process_events_within_subtree(false);
   AddChildView(container_);
@@ -67,6 +70,10 @@ IndicatorChipView::IndicatorChipView(const base::string16& text) {
 }
 
 IndicatorChipView::~IndicatorChipView() = default;
+
+gfx::Rect IndicatorChipView::GetLabelBoundsInScreen() const {
+  return label_ ? label_->GetBoundsInScreen() : gfx::Rect();
+}
 
 gfx::Size IndicatorChipView::CalculatePreferredSize() const {
   const int label_width = label_->GetPreferredSize().width();

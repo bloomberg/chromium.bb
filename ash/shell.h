@@ -543,8 +543,12 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Shows the app list on the active root window.
   void ShowAppList();
 
-  // Set y position of app list bounds to |y_location_in_screen|.
-  void SetAppListYPosition(int y_position_in_screen);
+  // Updates y position and opacity of app list. |is_end_gesture| means it is
+  // the end of the gesture dragging of app list from shelf and should restore
+  // the opacity of the app list.
+  void UpdateAppListYPositionAndOpacity(int y_position_in_screen,
+                                        float app_list_background_opacity,
+                                        bool is_end_gesture);
 
   // Dismisses the app list.
   void DismissAppList();

@@ -131,6 +131,9 @@ PageSwitcherButton* GetButtonByIndex(views::View* buttons, int index) {
 
 PageSwitcherHorizontal::PageSwitcherHorizontal(PaginationModel* model)
     : model_(model), buttons_(new views::View) {
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
+
   AddChildView(buttons_);
 
   TotalPagesChanged();
@@ -174,6 +177,10 @@ void PageSwitcherHorizontal::UpdateUIForDragPoint(const gfx::Point& point) {
         static_cast<PageSwitcherButton*>(buttons_->child_at(i));
     button->SetState(views::CustomButton::STATE_NORMAL);
   }
+}
+
+gfx::Rect PageSwitcherHorizontal::GetButtonsBoundsInScreen() {
+  return buttons_->GetBoundsInScreen();
 }
 
 gfx::Size PageSwitcherHorizontal::CalculatePreferredSize() const {

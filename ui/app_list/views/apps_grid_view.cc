@@ -22,11 +22,13 @@
 #include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/app_list_main_view.h"
+#include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/indicator_chip_view.h"
 #include "ui/app_list/views/page_switcher_horizontal.h"
 #include "ui/app_list/views/page_switcher_vertical.h"
 #include "ui/app_list/views/pulsing_block_view.h"
+#include "ui/app_list/views/search_result_tile_item_view.h"
 #include "ui/app_list/views/suggestions_container_view.h"
 #include "ui/app_list/views/tile_item_view.h"
 #include "ui/app_list/views/top_icon_animation_view.h"
@@ -1641,6 +1643,14 @@ bool AppsGridView::IsUnderOEMFolder() {
   return folder_delegate_->IsOEMFolder();
 }
 
+void AppsGridView::UpdateOpacityOfItem(views::View* view_item,
+                                       float centroid_y) {
+  float delta_y = std::max(work_area_bottom_ - centroid_y, 0.0f);
+  float opacity = std::min(
+      delta_y / (AppListView::kNumOfShelfSize * AppListView::kShelfSize), 1.0f);
+  view_item->layer()->SetOpacity(is_end_gesture_ ? 1.0f : opacity);
+}
+
 void AppsGridView::DispatchDragEventForReparent(Pointer pointer,
                                                 const gfx::Point& drag_point) {
   folder_delegate_->DispatchDragEventForReparent(pointer, drag_point);
@@ -1702,6 +1712,51 @@ void AppsGridView::OnFolderItemRemoved() {
   if (item_list_)
     item_list_->RemoveObserver(this);
   item_list_ = nullptr;
+}
+
+void AppsGridView::UpdateOpacity(float work_area_bottom, bool is_end_gesture) {
+  work_area_bottom_ = work_area_bottom;
+  is_end_gesture_ = is_end_gesture;
+
+  // Updates the opacity of suggested indicator.
+  gfx::Rect suggested_indicator_bounds =
+      suggested_apps_indicator_->GetLabelBoundsInScreen();
+  UpdateOpacityOfItem(suggested_apps_indicator_,
+                      suggested_indicator_bounds.CenterPoint().y());
+
+  // Updates the opacity of suggested apps.
+  const std::vector<SearchResultTileItemView*>& suggested_apps =
+      suggestions_container_->tile_views();
+  gfx::Rect suggested_app_bounds;
+  for (auto* suggested_app : suggested_apps) {
+    suggested_app_bounds = suggested_app->GetBoundsInScreen();
+    UpdateOpacityOfItem(suggested_app, suggested_app_bounds.CenterPoint().y());
+  }
+
+  // Updates the opacity of all apps indicator.
+  gfx::Rect all_apps_indicator_bounds =
+      all_apps_indicator_->GetLabelBoundsInScreen();
+  UpdateOpacityOfItem(all_apps_indicator_,
+                      all_apps_indicator_bounds.CenterPoint().y());
+
+  // Updates the opacity of the apps in the first page.
+  for (int i = 0; i < view_model_.view_size(); ++i) {
+    AppListItemView* item_view = GetItemViewAt(i);
+    if (item_view != drag_view_) {
+      Index index = GetIndexOfView(item_view);
+      if (index.page != 0)
+        break;
+      gfx::Rect view_bounds = view_model_.ideal_bounds(i);
+      views::View::ConvertRectToScreen(this, &view_bounds);
+      UpdateOpacityOfItem(item_view, view_bounds.CenterPoint().y());
+    }
+  }
+
+  // Updates the opacity of page switcher buttons.
+  if (page_switcher_view_) {
+    gfx::Rect switcher_bounds = page_switcher_view_->GetBoundsInScreen();
+    UpdateOpacityOfItem(page_switcher_view_, switcher_bounds.CenterPoint().y());
+  }
 }
 
 void AppsGridView::StartDragAndDropHostDrag(const gfx::Point& grid_location) {

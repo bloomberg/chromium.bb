@@ -57,8 +57,12 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // display (in which the |window| exists) the app list should be shown.
   void Show(int64_t display_id);
 
-  // Sets y position of the app list bounds to |y_position_in_screen|.
-  void SetYPosition(int y_position_in_screen);
+  // Updates y position and opacity of app list. |is_end_gesture| means it is
+  // the end of the gesture dragging of app list from shelf and should restore
+  // the opacity of the app list.
+  void UpdateYPositionAndOpacity(int y_position_in_screen,
+                                 float background_opacity,
+                                 bool is_end_gesture);
 
   // Invoked to dismiss app list. This may leave the view open but hidden from
   // the user.
