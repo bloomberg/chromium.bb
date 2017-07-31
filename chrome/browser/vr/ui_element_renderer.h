@@ -9,6 +9,7 @@
 
 namespace gfx {
 class RectF;
+class SizeF;
 class Transform;
 }  // namespace gfx
 
@@ -17,12 +18,20 @@ namespace vr {
 // This is the interface offered by VrShell's GL system to UI elements.
 class UiElementRenderer {
  public:
+  enum TextureLocation {
+    kTextureLocationLocal,
+    kTextureLocationExternal,
+  };
+
   virtual ~UiElementRenderer() {}
 
   virtual void DrawTexturedQuad(int texture_data_handle,
+                                TextureLocation texture_location,
                                 const gfx::Transform& view_proj_matrix,
                                 const gfx::RectF& copy_rect,
-                                float opacity) = 0;
+                                float opacity,
+                                gfx::SizeF element_size,
+                                float corner_radius) = 0;
 
   virtual void DrawGradientQuad(const gfx::Transform& view_proj_matrix,
                                 const SkColor edge_color,

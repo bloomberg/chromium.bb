@@ -17,6 +17,7 @@
 
 namespace vr {
 
+class ContentElement;
 class ContentInputDelegate;
 class ExclusiveScreenToast;
 class LoadingIndicator;
@@ -58,7 +59,7 @@ class UiSceneManager {
   // These methods are currently stubbed.
   void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward);
 
-  void OnGLInitialized();
+  void OnGlInitialized(unsigned int content_texture_id);
   void OnAppButtonClicked();
   void OnAppButtonGesturePerformed(UiInterface::Direction direction);
   void OnWebVrFrameAvailable();
@@ -106,7 +107,7 @@ class UiSceneManager {
   ExitPrompt* exit_prompt_ = nullptr;
   UiElement* exit_prompt_backplane_ = nullptr;
   UiElement* exit_warning_ = nullptr;
-  UiElement* main_content_ = nullptr;
+  ContentElement* main_content_ = nullptr;
   UiElement* audio_capture_indicator_ = nullptr;
   UiElement* bluetooth_connected_indicator_ = nullptr;
   UiElement* video_capture_indicator_ = nullptr;

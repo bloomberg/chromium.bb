@@ -11,6 +11,8 @@
 
 namespace vr {
 
+class UiElementRenderer;
+
 class ContentElement : public UiElement {
  public:
   explicit ContentElement(ContentInputDelegate* delegate);
@@ -32,8 +34,14 @@ class ContentElement : public UiElement {
   void OnScrollEnd(std::unique_ptr<blink::WebGestureEvent> gesture,
                    const gfx::PointF& position) override;
 
+  void Render(UiElementRenderer* renderer,
+              const gfx::Transform& view_proj_matrix) const final;
+
+  void set_texture_id(unsigned int texture_id) { texture_id_ = texture_id; }
+
  private:
-  ContentInputDelegate* delegate_;
+  ContentInputDelegate* delegate_ = nullptr;
+  unsigned int texture_id_ = 0;
 };
 
 }  // namespace vr

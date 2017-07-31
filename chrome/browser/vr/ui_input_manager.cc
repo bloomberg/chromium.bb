@@ -236,7 +236,7 @@ void UiInputManager::SendHoverMove(const gfx::PointF& target_point) {
   // moves for how noisy the controller is. It's almost impossible to click a
   // link without unintentionally starting a drag event. For this reason we
   // disable mouse moves, only delivering a down and up event.
-  if (hover_target_->fill() == Fill::CONTENT && in_click_) {
+  if (hover_target_->debug_id() == kContentQuad && in_click_) {
     return;
   }
 

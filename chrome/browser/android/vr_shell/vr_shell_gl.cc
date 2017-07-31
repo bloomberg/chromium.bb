@@ -251,7 +251,12 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
 
   InitializeRenderer();
 
-  browser_->OnGLInitialized();
+  // TODO(vollick): this is really going to the UI, not the browser. It would be
+  // nice to hold a pointer to a, possibly limited, UI interface that could be
+  // invoked synchronously on this thread (cf the post tasking to the current
+  // thread in VrGlThread). I.e., we could probably split GlBrowserInterface
+  // into parts.
+  browser_->OnGlInitialized(content_texture_id_);
 
   gfx::Size webvr_size =
       device::GvrDelegate::GetRecommendedWebVrSize(gvr_api_.get());
@@ -273,8 +278,8 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
   }
 
   input_manager_ = base::MakeUnique<vr::UiInputManager>(scene_);
-  ui_renderer_ = base::MakeUnique<vr::UiRenderer>(scene_, content_texture_id_,
-                                                  vr_shell_renderer_.get());
+  ui_renderer_ =
+      base::MakeUnique<vr::UiRenderer>(scene_, vr_shell_renderer_.get());
 }
 
 void VrShellGl::CreateContentSurface() {
@@ -773,29 +778,29 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
                                              *webvr_left_viewport_);
     buffer_viewport_list_->SetBufferViewport(GVR_RIGHT_EYE,
                                              *webvr_right_viewport_);
-    if (render_info_primary_.content_texture_size != webvr_surface_size_) {
+    if (render_info_primary_.surface_texture_size != webvr_surface_size_) {
       if (!webvr_surface_size_.width()) {
         // Don't try to resize to 0x0 pixels, drop frames until we get a
         // valid size.
         return;
       }
 
-      render_info_primary_.content_texture_size = webvr_surface_size_;
+      render_info_primary_.surface_texture_size = webvr_surface_size_;
       DVLOG(1) << __FUNCTION__ << ": resize GVR to "
-               << render_info_primary_.content_texture_size.width() << "x"
-               << render_info_primary_.content_texture_size.height();
+               << render_info_primary_.surface_texture_size.width() << "x"
+               << render_info_primary_.surface_texture_size.height();
       swap_chain_->ResizeBuffer(
           kFramePrimaryBuffer,
-          {render_info_primary_.content_texture_size.width(),
-           render_info_primary_.content_texture_size.height()});
+          {render_info_primary_.surface_texture_size.width(),
+           render_info_primary_.surface_texture_size.height()});
     }
   } else {
-    if (render_info_primary_.content_texture_size != render_size_vrshell_) {
-      render_info_primary_.content_texture_size = render_size_vrshell_;
+    if (render_info_primary_.surface_texture_size != render_size_vrshell_) {
+      render_info_primary_.surface_texture_size = render_size_vrshell_;
       swap_chain_->ResizeBuffer(
           kFramePrimaryBuffer,
-          {render_info_primary_.content_texture_size.width(),
-           render_info_primary_.content_texture_size.height()});
+          {render_info_primary_.surface_texture_size.width(),
+           render_info_primary_.surface_texture_size.height()});
     }
   }
 
@@ -846,7 +851,7 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
   scene_->PrepareToDraw();
 
   UpdateEyeInfos(render_info_primary_.head_pose, kViewportListPrimaryOffset,
-                 render_info_primary_.content_texture_size,
+                 render_info_primary_.surface_texture_size,
                  &render_info_primary_);
   ui_renderer_->Draw(render_info_primary_, controller_info_, ShouldDrawWebVr());
 

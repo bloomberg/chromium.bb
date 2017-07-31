@@ -58,7 +58,7 @@ class VrGLThread : public base::Thread,
       device::mojom::VRDisplayInfoPtr* info) override;
   void OnContentPaused(bool enabled) override;
   void ToggleCardboardGamepad(bool enabled) override;
-  void OnGLInitialized() override;
+  void OnGlInitialized(unsigned int content_texture_id) override;
   void OnWebVrFrameAvailable() override;
 
   // vr::UiBrowserInterface implementation (UI calling to VrShell).

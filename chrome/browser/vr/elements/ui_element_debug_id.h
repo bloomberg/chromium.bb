@@ -7,8 +7,11 @@
 
 namespace vr {
 
-// These identifiers may be used by UI elements to tag themselves for purposes
-// of testing or debugging.
+// These identifiers serve as stable, semantic identifiers for UI elements.
+//
+// TODO(vollick): This should become UiElementName. These identifiers will be
+// useful outside of testing and debugging code. Named as it is today, it sounds
+// as if this can be done away with in release builds, which is not true.
 enum UiElementDebugId {
   kNone = 0,
   kWebVrPermanentHttpSecurityWarning,

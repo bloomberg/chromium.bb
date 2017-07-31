@@ -286,34 +286,33 @@ void UiSceneManager::CreateSystemIndicators() {
 }
 
 void UiSceneManager::CreateContentQuad(ContentInputDelegate* delegate) {
-  std::unique_ptr<UiElement> element;
-
-  element = base::MakeUnique<ContentElement>(delegate);
-  element->set_debug_id(kContentQuad);
-  element->set_id(AllocateId());
-  element->set_draw_phase(kPhaseForeground);
-  element->set_fill(vr::Fill::CONTENT);
-  element->SetSize(kContentWidth, kContentHeight);
-  element->SetTranslate(0, kContentVerticalOffset, -kContentDistance);
-  element->SetVisible(false);
-  element->set_corner_radius(kContentCornerRadius);
-  element->animation_player().SetTransitionedProperties({TRANSFORM, BOUNDS});
-  main_content_ = element.get();
-  content_elements_.push_back(element.get());
-  scene_->AddUiElement(std::move(element));
+  std::unique_ptr<ContentElement> main_content =
+      base::MakeUnique<ContentElement>(delegate);
+  main_content->set_debug_id(kContentQuad);
+  main_content->set_id(AllocateId());
+  main_content->set_draw_phase(kPhaseForeground);
+  main_content->SetSize(kContentWidth, kContentHeight);
+  main_content->SetTranslate(0, kContentVerticalOffset, -kContentDistance);
+  main_content->SetVisible(false);
+  main_content->set_corner_radius(kContentCornerRadius);
+  main_content->animation_player().SetTransitionedProperties(
+      {TRANSFORM, BOUNDS});
+  main_content_ = main_content.get();
+  content_elements_.push_back(main_content.get());
+  scene_->AddUiElement(std::move(main_content));
 
   // Place an invisible but hittable plane behind the content quad, to keep the
   // reticle roughly planar with the content if near content.
-  element = base::MakeUnique<UiElement>();
-  element->set_debug_id(kBackplane);
-  element->set_id(AllocateId());
-  element->set_draw_phase(kPhaseForeground);
-  element->set_fill(vr::Fill::NONE);
-  element->SetSize(kBackplaneSize, kBackplaneSize);
-  element->SetTranslate(0, 0, -kTextureOffset);
-  main_content_->AddChild(element.get());
-  content_elements_.push_back(element.get());
-  scene_->AddUiElement(std::move(element));
+  std::unique_ptr<UiElement> hit_plane = base::MakeUnique<UiElement>();
+  hit_plane->set_debug_id(kBackplane);
+  hit_plane->set_id(AllocateId());
+  hit_plane->set_draw_phase(kPhaseForeground);
+  hit_plane->set_fill(vr::Fill::NONE);
+  hit_plane->SetSize(kBackplaneSize, kBackplaneSize);
+  hit_plane->SetTranslate(0, 0, -kTextureOffset);
+  main_content_->AddChild(hit_plane.get());
+  content_elements_.push_back(hit_plane.get());
+  scene_->AddUiElement(std::move(hit_plane));
 
   // Limit reticle distance to a sphere based on content distance.
   scene_->set_background_distance(
@@ -693,8 +692,9 @@ void UiSceneManager::SetIncognito(bool incognito) {
   ConfigureScene();
 }
 
-void UiSceneManager::OnGLInitialized() {
-  scene_->OnGLInitialized();
+void UiSceneManager::OnGlInitialized(unsigned int content_texture_id) {
+  main_content_->set_texture_id(content_texture_id);
+  scene_->OnGlInitialized();
 
   ConfigureScene();
 }
