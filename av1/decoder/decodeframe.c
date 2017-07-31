@@ -3701,6 +3701,15 @@ static void daala_dec_init(AV1_COMMON *const cm, daala_dec_ctx *daala_dec,
 }
 #endif  // #if CONFIG_PVQ
 
+static void dec_setup_across_tile_boundary_info(
+    const AV1_COMMON *const cm, const TileInfo *const tile_info) {
+  if (cm->width != cm->last_width || cm->height != cm->last_height ||
+      cm->tile_cols != cm->last_tile_cols ||
+      cm->tile_rows != cm->last_tile_rows) {
+    av1_setup_across_tile_boundary_info(cm, tile_info);
+  }
+}
+
 static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
                                    const uint8_t *data_end) {
   AV1_COMMON *const cm = &pbi->common;
@@ -3869,7 +3878,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       av1_zero_above_context(cm, tile_info.mi_col_start, tile_info.mi_col_end);
 #endif
 
-      av1_setup_across_tile_boundary_info(cm, &tile_info);
+      dec_setup_across_tile_boundary_info(cm, &tile_info);
 
       for (mi_row = tile_info.mi_row_start; mi_row < tile_info.mi_row_end;
            mi_row += cm->mib_size) {
@@ -4191,7 +4200,7 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
         av1_tile_init(tile_info, cm, tile_row, buf->col);
         av1_tile_init(&twd->xd.tile, cm, tile_row, buf->col);
 
-        av1_setup_across_tile_boundary_info(cm, tile_info);
+        dec_setup_across_tile_boundary_info(cm, tile_info);
 
         setup_bool_decoder(buf->data, data_end, buf->size, &cm->error,
                            &twd->bit_reader,
@@ -5246,6 +5255,22 @@ void superres_post_decode(AV1Decoder *pbi) {
 }
 #endif  // CONFIG_FRAME_SUPERRES
 
+static void dec_setup_frame_boundary_info(AV1_COMMON *const cm) {
+  if (cm->width != cm->last_width || cm->height != cm->last_height ||
+      cm->tile_cols != cm->last_tile_cols ||
+      cm->tile_rows != cm->last_tile_rows) {
+    int row, col;
+    for (row = 0; row < cm->mi_rows; ++row) {
+      MODE_INFO *mi = cm->mi + row * cm->mi_stride;
+      for (col = 0; col < cm->mi_cols; ++col) {
+        mi->mbmi.boundary_info = 0;
+        mi++;
+      }
+    }
+    av1_setup_frame_boundary_info(cm);
+  }
+}
+
 void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
                       const uint8_t *data_end, const uint8_t **p_data_end) {
   AV1_COMMON *const cm = &pbi->common;
@@ -5404,7 +5429,7 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
     av1_frameworker_unlock_stats(worker);
   }
 
-  av1_setup_frame_boundary_info(cm);
+  dec_setup_frame_boundary_info(cm);
 
   if (pbi->max_threads > 1 && !CONFIG_CB4X4 &&
 #if CONFIG_EXT_TILE

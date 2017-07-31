@@ -492,6 +492,8 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   } else {
     cm->last_width = cm->width;
     cm->last_height = cm->height;
+    cm->last_tile_cols = cm->tile_cols;
+    cm->last_tile_rows = cm->tile_rows;
     if (cm->show_frame) {
       cm->current_video_frame++;
     }

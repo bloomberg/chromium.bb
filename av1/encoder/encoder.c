@@ -4981,6 +4981,9 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     encode_with_recode_loop(cpi, size, dest);
   }
 
+  cm->last_tile_cols = cm->tile_cols;
+  cm->last_tile_rows = cm->tile_rows;
+
 #ifdef OUTPUT_YUV_SKINMAP
   if (cpi->common.current_video_frame > 1) {
     av1_compute_skin_map(cpi, yuv_skinmap_file);
@@ -5179,6 +5182,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 #if CONFIG_EXT_REFS
   }
 #endif  // CONFIG_EXT_REFS
+
   aom_free(tile_ctxs);
   aom_free(cdf_ptrs);
 }

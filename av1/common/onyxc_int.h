@@ -374,6 +374,7 @@ typedef struct AV1Common {
 
   int log2_tile_cols, log2_tile_rows;  // Used in non-large_scale_tile_coding.
   int tile_cols, tile_rows;
+  int last_tile_cols, last_tile_rows;
   int tile_width, tile_height;  // In MI units
 #if CONFIG_EXT_TILE
   unsigned int large_scale_tile;
