@@ -1,111 +1,25 @@
-function test()
-{
-    var documentNodeId;
-    var documentNodeSelector;
-    var testSelectors = [];
-    var collectedFontUsage = {};
+(async function layoutFontTest(testRunner, session) {
+  var documentNodeId = (await session.protocol.DOM.getDocument()).result.root.nodeId;
+  await session.protocol.CSS.enable();
+  var testNodes = await session.evaluate(`
+    Array.prototype.map.call(document.querySelectorAll('.test *'), e => ({selector: '#' + e.id, textContent: e.textContent}))
+  `);
 
-    InspectorTest.requestDocumentNodeId(onDocumentNodeId);
+  for (var testNode of testNodes) {
+    var nodeId = (await session.protocol.DOM.querySelector({nodeId: documentNodeId , selector: testNode.selector})).result.nodeId;
+    var response = await session.protocol.CSS.getPlatformFontsForNode({nodeId});
+    var usedFonts = response.result.fonts;
+    usedFonts.sort((a, b) => b.glyphCount - a.glyphCount);
 
-    function onDocumentNodeId(nodeId)
-    {
-        documentNodeId = nodeId;
-
-        InspectorTest.evaluateInInspectedPage(
-            'JSON.stringify(' +
-                'Array.prototype.map.call(' +
-                'document.querySelectorAll(".test *"),' +
-                'function(element) { return element.id } ));',
-            testPageElements);
+    testRunner.log(testNode.textContent);
+    testRunner.log(testNode.selector + ':');
+    for (var i = 0; i < usedFonts.length; i++) {
+      var usedFont = usedFonts[i];
+      var isLast = i === usedFonts.length - 1;
+      testRunner.log(`"${usedFont.familyName}" : ${usedFont.glyphCount}${isLast ? '' : ','}`);
     }
-
-
-    function testPageElements(result)
-    {
-        testSelectors = JSON.parse(result.result.result.value);
-        testNextPageElement();
-    }
-
-    function testNextPageElement()
-    {
-        var nextSelector = testSelectors.shift()
-        if (nextSelector) {
-            documentNodeSelector = "#" + nextSelector;
-            platformFontsForElementWithSelector(documentNodeSelector);
-        } else {
-            reportAndComplete();
-        }
-    }
-
-    function reportAndComplete()
-    {
-        postResultsToPage();
-        InspectorTest.completeTest();
-    }
-
-
-    function postResultsToPage()
-    {
-        // This interleaves the used fonts data with the page elements so that
-        // the content_shell text dump is easier to validate.
-        InspectorTest.evaluateInInspectedPage("injectCollectedResultsInPage(" +
-                                              JSON.stringify(collectedFontUsage) +
-                                              ")");
-        InspectorTest.evaluateInInspectedPage("postTestHookWithFontResults(" +
-                                              JSON.stringify(collectedFontUsage) +
-                                              ")");
-
-    }
-
-    async function platformFontsForElementWithSelector(selector)
-    {
-        var nodeId = await InspectorTest.requestNodeId(documentNodeId, selector);
-        await InspectorTest.sendCommandOrDie("CSS.enable", {});
-        var response = await InspectorTest.sendCommandOrDie("CSS.getPlatformFontsForNode", { nodeId: nodeId });
-        collectResults(response);
-        testNextPageElement();
-    }
-
-    function collectResults(response)
-    {
-        var usedFonts = response.fonts;
-        usedFonts.sort(function(a, b) {
-            return b.glyphCount - a.glyphCount;
-        });
-        collectedFontUsage[documentNodeSelector] = usedFonts;
-    }
-};
-
-
-function formatResult(selector, resultForSelector)
-{
-    var resultFormatted = selector + ":\n";
-    for (var i = 0; i < resultForSelector.length; i++) {
-        resultFormatted += '"' + resultForSelector[i].familyName + '"' +
-            " : " +
-            resultForSelector[i].glyphCount;
-        if (i + 1 < resultForSelector.length)
-            resultFormatted += ",\n";
-        else
-            resultFormatted += "\n\n";
-    }
-    return resultFormatted;
-}
-
-function injectCollectedResultsInPage(results)
-{
-    for (nodeSelector in results) {
-        var testNode = document.querySelector(nodeSelector);
-        var resultElement = document.createElement("div");
-        var resultTextPre = document.createElement("pre");
-        var resultText = formatResult(nodeSelector, results[nodeSelector]);
-        var resultTextNode = document.createTextNode(resultText);
-        resultTextPre.appendChild(resultTextNode);
-        resultElement.appendChild(resultTextPre);
-        testNode.parentNode.insertBefore(resultElement, testNode.nextSibling);
-    }
-}
-
-window.addEventListener("DOMContentLoaded", function () {
-    runTest();
-}, false);
+    testRunner.log('');
+    testNode.usedFonts = usedFonts;
+  }
+  return testNodes;
+})

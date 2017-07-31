@@ -13179,7 +13179,7 @@ crbug.com/591099 inspector-protocol/emulation/device-emulation-small-dw.js [ Fai
 crbug.com/591099 inspector-protocol/emulation/device-emulation-small.js [ Failure ]
 crbug.com/591099 inspector-protocol/layers/get-layers.js [ Failure ]
 crbug.com/591099 inspector-protocol/layers/paint-profiler.js [ Failure ]
-crbug.com/591099 inspector-protocol/layout-fonts/languages-emoji-rare-glyphs.html [ Failure ]
+crbug.com/591099 inspector-protocol/layout-fonts/languages-emoji-rare-glyphs.js [ Failure ]
 crbug.com/591099 inspector/agents-enable-disable.html [ Failure ]
 crbug.com/591099 inspector/animation/animation-KeyframeEffectReadOnly-crash.html [ Crash Failure ]
 crbug.com/591099 inspector/animation/animation-empty-web-animations.html [ Crash Failure ]
