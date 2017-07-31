@@ -1819,6 +1819,10 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
   }
 #endif
 
+  // Explicitly ignore cm here to avoid a compile warning if none of
+  // ext-intra, palette and filter-intra are enabled.
+  (void)cm;
+
 #if CONFIG_EXT_INTRA
   read_intra_angle_info(cm, xd, r);
 #endif  // CONFIG_EXT_INTRA
