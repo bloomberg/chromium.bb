@@ -621,7 +621,7 @@ Bug(none) http/tests/appcache/crash-when-navigating-away-then-back.html [ Timeou
 Bug(none) http/tests/appcache/cyrillic-uri.html [ Failure Timeout ]
 Bug(none) http/tests/appcache/different-https-origin-resource-main.html [ Timeout ]
 Bug(none) http/tests/appcache/fail-on-update-2.html [ Timeout ]
-Bug(none) http/tests/appcache/fallback.html [ Timeout ]
+Bug(none) http/tests/appcache/fallback.html [ Failure ]
 Bug(none) http/tests/appcache/local-content.html [ Timeout ]
 Bug(none) http/tests/appcache/main-resource-hash.html [ Timeout ]
 Bug(none) http/tests/appcache/main-resource-redirect.html [ Timeout ]
