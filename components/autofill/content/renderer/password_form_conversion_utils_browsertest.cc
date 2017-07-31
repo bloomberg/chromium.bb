@@ -191,7 +191,7 @@ class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
       FormsPredictionsMap* predictions,
       bool with_user_input) {
     WebFormElement form;
-    LoadWebFormFromHTML(html, &form);
+    LoadWebFormFromHTML(html, &form, nullptr);
 
     WebVector<WebFormControlElement> control_elements;
     form.GetFormControlElements(control_elements);
@@ -218,7 +218,7 @@ class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
                       const std::map<int, PasswordFormFieldPredictionType>&
                           predictions_positions) {
     WebFormElement form;
-    LoadWebFormFromHTML(html, &form);
+    LoadWebFormFromHTML(html, &form, nullptr);
 
     FormData form_data;
     ASSERT_TRUE(form_util::WebFormElementToFormData(
@@ -239,8 +239,13 @@ class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
   }
 
   // Loads the given |html| and retrieves the sole WebFormElement from it.
-  void LoadWebFormFromHTML(const std::string& html, WebFormElement* form) {
-    LoadHTML(html.c_str());
+  void LoadWebFormFromHTML(const std::string& html,
+                           WebFormElement* form,
+                           const char* origin) {
+    if (origin)
+      LoadHTMLWithUrlOverride(html.c_str(), origin);
+    else
+      LoadHTML(html.c_str());
 
     WebLocalFrame* frame = GetMainFrame();
     ASSERT_NE(nullptr, frame);
@@ -1354,12 +1359,6 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IsGaiaReauthFormIgnored) {
        {TestCase::KeyValue("continue", "passwords.google.com:443"),
         TestCase::KeyValue("rart", "")},
        true},
-      // Encoded URL is considered the same.
-      {"https://accounts.google.com",
-       {TestCase::KeyValue("continue",
-                           "https://passwords.%67oogle.com/settings"),
-        TestCase::KeyValue("rart", "")},
-       true},
       // Fully qualified domain should work as well.
       {"https://accounts.google.com",
        {TestCase::KeyValue("continue",
@@ -1391,15 +1390,9 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IsGaiaReauthFormIgnored) {
     }
     std::string html = builder->ProduceHTML();
     WebFormElement form;
-    LoadWebFormFromHTML(html, &form);
-    std::vector<WebFormControlElement> control_elements;
-    WebVector<blink::WebFormControlElement> web_control_elements;
-    form.GetFormControlElements(web_control_elements);
-    control_elements.assign(web_control_elements.begin(),
-                            web_control_elements.end());
+    LoadWebFormFromHTML(html, &form, test_case.origin);
     EXPECT_EQ(test_case.expected_form_is_reauth,
-              IsGaiaReauthenticationForm(GURL(test_case.origin).GetOrigin(),
-                                         control_elements));
+              IsGaiaReauthenticationForm(form));
   }
 }
 

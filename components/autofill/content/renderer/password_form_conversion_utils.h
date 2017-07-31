@@ -28,13 +28,8 @@ namespace autofill {
 
 struct PasswordForm;
 
-// Tests whether the given form is a GAIA reauthentication form. The form is
-// not passed directly as WebFormElement, but by specifying its |origin| and
-// |control_elements|. This is for better performance and easier testing.
-// TODO(msramek): Move this logic to the browser.
-bool IsGaiaReauthenticationForm(
-    const GURL& origin,
-    const std::vector<blink::WebFormControlElement>& control_elements);
+// Tests whether the given form is a GAIA reauthentication form.
+bool IsGaiaReauthenticationForm(const blink::WebFormElement& form);
 
 typedef std::map<
     const blink::WebFormControlElement,

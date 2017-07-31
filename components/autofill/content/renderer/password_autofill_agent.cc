@@ -1201,6 +1201,11 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
 
   std::vector<PasswordForm> password_forms;
   for (const blink::WebFormElement& form : forms) {
+    if (IsGaiaReauthenticationForm(form)) {
+      // Bail if this is a GAIA passwords site reauthentication form, so that
+      // page will be ignored.
+      return;
+    }
     if (only_visible) {
       bool is_form_visible = form_util::AreFormContentsVisible(form);
       if (logger) {

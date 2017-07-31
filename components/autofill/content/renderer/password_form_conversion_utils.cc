@@ -306,8 +306,6 @@ void FindPredictedElements(
   }
 }
 
-// TODO(crbug.com/543085): Move the reauthentication recognition code to the
-// browser.
 const char kPasswordSiteUrlRegex[] =
     "passwords(?:-[a-z-]+\\.corp)?\\.google\\.com";
 
@@ -393,15 +391,6 @@ bool GetPasswordForm(
   std::map<blink::WebInputElement, blink::WebInputElement>
       last_text_input_before_password;
   autofill::PossibleUsernamesVector other_possible_usernames;
-
-  // Bail if this is a GAIA passwords site reauthentication form, so that
-  // the form will be ignored.
-  // TODO(msramek): Move this logic to the browser, and disable filling only
-  // for the sync credential and if passwords are being synced.
-  if (IsGaiaReauthenticationForm(GURL(form.document.Url()).GetOrigin(),
-                                 form.control_elements)) {
-    return false;
-  }
 
   std::map<WebInputElement, PasswordFormFieldPredictionType> predicted_elements;
   if (form_predictions) {
@@ -649,16 +638,19 @@ bool GetPasswordForm(
 
 }  // namespace
 
-bool IsGaiaReauthenticationForm(
-    const GURL& origin,
-    const std::vector<blink::WebFormControlElement>& control_elements) {
-  if (origin != GaiaUrls::GetInstance()->gaia_url().GetOrigin())
+bool IsGaiaReauthenticationForm(const blink::WebFormElement& form) {
+  if (GURL(form.GetDocument().Url()).GetOrigin() !=
+      GaiaUrls::GetInstance()->gaia_url().GetOrigin()) {
     return false;
+  }
 
   bool has_rart_field = false;
   bool has_continue_field = false;
 
-  for (const blink::WebFormControlElement& element : control_elements) {
+  blink::WebVector<blink::WebFormControlElement> web_control_elements;
+  form.GetFormControlElements(web_control_elements);
+
+  for (const blink::WebFormControlElement& element : web_control_elements) {
     // We're only interested in the presence
     // of <input type="hidden" /> elements.
     CR_DEFINE_STATIC_LOCAL(WebString, kHidden, ("hidden"));

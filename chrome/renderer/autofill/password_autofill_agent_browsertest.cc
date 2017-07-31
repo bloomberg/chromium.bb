@@ -3028,4 +3028,33 @@ TEST_F(PasswordAutofillAgentTest, NoForm_MultipleAJAXEventsWithoutSubmission) {
   ASSERT_FALSE(static_cast<bool>(fake_driver_.password_form_submitted()));
 }
 
+// Tests that information about Gaia reauthentication form is not sent to the
+// browser, nor on load nor on user click.
+TEST_F(PasswordAutofillAgentTest, GaiaReauthenticationFormIgnored) {
+  // HTML is already loaded in test SetUp method, so information about password
+  // forms was already sent to the |fake_drive_|. Hence it should be reset.
+  fake_driver_.reset_password_forms_calls();
+
+  const char kGaiaReauthenticationFormHTML[] =
+      "<FORM id='ReauthenticationForm'>"
+      "  <INPUT type='hidden' name='continue' "
+      "value='https://passwords.google.com/'>"
+      "  <INPUT type='hidden' name='rart'>"
+      "  <INPUT type='password' id='password'/>"
+      "  <INPUT type='submit' value='Login'/>"
+      "</FORM>";
+
+  LoadHTMLWithUrlOverride(kGaiaReauthenticationFormHTML,
+                          "https://accounts.google.com");
+  UpdateOnlyPasswordElement();
+
+  // Simulate a user clicking on the password element.
+  static_cast<PageClickListener*>(autofill_agent_)
+      ->FormControlElementClicked(password_element_, false);
+
+  // Check that no information about Gaia reauthentication is not sent.
+  EXPECT_FALSE(fake_driver_.called_password_forms_parsed());
+  EXPECT_FALSE(fake_driver_.called_password_forms_rendered());
+}
+
 }  // namespace autofill
