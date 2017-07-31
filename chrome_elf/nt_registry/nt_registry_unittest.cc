@@ -348,8 +348,17 @@ TEST_F(NtRegistryTest, API_SZ) {
   std::wstring sz_val = L"blah de blah de blahhhhh.";
   const wchar_t* sz_val_name2 = L"SzTestValueEmpty";
   std::wstring sz_val2 = L"";
+  const wchar_t* sz_val_name3 = L"SzTestValueMalformed";
+  const wchar_t* sz_val_name4 = L"SzTestValueMalformed2";
+  std::wstring sz_val3 = L"malformed";
+  BYTE* sz_val3_byte = reinterpret_cast<BYTE*>(&sz_val3[0]);
+  std::vector<BYTE> malform;
+  for (size_t i = 0; i < (sz_val3.size() * sizeof(wchar_t)); i++)
+    malform.push_back(sz_val3_byte[i]);
+  const wchar_t* sz_val_name5 = L"SzTestValueSize0";
 
   // Create a subkey to play under.
+  // ------------------------------
   ASSERT_TRUE(nt::CreateRegKey(nt::HKCU, L"NTRegistry\\sz", KEY_ALL_ACCESS,
                                &key_handle));
   ASSERT_NE(key_handle, INVALID_HANDLE_VALUE);
@@ -359,16 +368,39 @@ TEST_F(NtRegistryTest, API_SZ) {
   EXPECT_FALSE(nt::QueryRegValueSZ(key_handle, sz_val_name, &get_sz));
 
   // Set
+  // ------------------------------
   EXPECT_TRUE(nt::SetRegValueSZ(key_handle, sz_val_name, sz_val));
   EXPECT_TRUE(nt::SetRegValueSZ(key_handle, sz_val_name2, sz_val2));
+  // No null terminator.
+  EXPECT_TRUE(nt::SetRegKeyValue(key_handle, sz_val_name3, REG_SZ,
+                                 malform.data(),
+                                 static_cast<DWORD>(malform.size())));
+  malform.push_back(0);
+  // Single trailing 0 byte.
+  EXPECT_TRUE(nt::SetRegKeyValue(key_handle, sz_val_name4, REG_SZ,
+                                 malform.data(),
+                                 static_cast<DWORD>(malform.size())));
+  // Size 0 value.
+  EXPECT_TRUE(nt::SetRegKeyValue(key_handle, sz_val_name5, REG_SZ, nullptr, 0));
 
   // Get
+  // ------------------------------
   EXPECT_TRUE(nt::QueryRegValueSZ(key_handle, sz_val_name, &get_sz));
   EXPECT_TRUE(get_sz.compare(sz_val) == 0);
   EXPECT_TRUE(nt::QueryRegValueSZ(key_handle, sz_val_name2, &get_sz));
   EXPECT_TRUE(get_sz.compare(sz_val2) == 0);
+  EXPECT_TRUE(nt::QueryRegValueSZ(key_handle, sz_val_name3, &get_sz));
+  // Should be adjusted under the hood to equal sz_val3.
+  EXPECT_TRUE(get_sz.compare(sz_val3) == 0);
+  EXPECT_TRUE(nt::QueryRegValueSZ(key_handle, sz_val_name4, &get_sz));
+  // Should be adjusted under the hood to equal sz_val3.
+  EXPECT_TRUE(get_sz.compare(sz_val3) == 0);
+  EXPECT_TRUE(nt::QueryRegValueSZ(key_handle, sz_val_name5, &get_sz));
+  // Should be adjusted under the hood to an empty string.
+  EXPECT_TRUE(get_sz.compare(sz_val2) == 0);
 
   // Clean up
+  // ------------------------------
   EXPECT_TRUE(nt::DeleteRegKey(key_handle));
   nt::CloseRegKey(key_handle);
 }
@@ -382,8 +414,19 @@ TEST_F(NtRegistryTest, API_MULTISZ) {
   std::wstring multi3 = L"three";
   const wchar_t* multisz_val_name2 = L"SzmultiTestValueBad";
   std::wstring multi_empty = L"";
+  const wchar_t* multisz_val_name3 = L"SzmultiTestValueMalformed";
+  const wchar_t* multisz_val_name4 = L"SzmultiTestValueMalformed2";
+  const wchar_t* multisz_val_name5 = L"SzmultiTestValueMalformed3";
+  const wchar_t* multisz_val_name6 = L"SzmultiTestValueMalformed4";
+  std::wstring multisz_val3 = L"malformed";
+  BYTE* multisz_val3_byte = reinterpret_cast<BYTE*>(&multisz_val3[0]);
+  std::vector<BYTE> malform;
+  for (size_t i = 0; i < (multisz_val3.size() * sizeof(wchar_t)); i++)
+    malform.push_back(multisz_val3_byte[i]);
+  const wchar_t* multisz_val_name7 = L"SzmultiTestValueSize0";
 
   // Create a subkey to play under.
+  // ------------------------------
   ASSERT_TRUE(nt::CreateRegKey(nt::HKCU, L"NTRegistry\\multisz", KEY_ALL_ACCESS,
                                &key_handle));
   ASSERT_NE(key_handle, INVALID_HANDLE_VALUE);
@@ -392,17 +435,44 @@ TEST_F(NtRegistryTest, API_MULTISZ) {
   multisz_val.push_back(multi1);
   multisz_val.push_back(multi2);
   multisz_val.push_back(multi3);
+
   // Set
+  // ------------------------------
   EXPECT_TRUE(
       nt::SetRegValueMULTISZ(key_handle, multisz_val_name, multisz_val));
   multisz_val.clear();
   multisz_val.push_back(multi_empty);
-  // Set
+
   EXPECT_TRUE(
       nt::SetRegValueMULTISZ(key_handle, multisz_val_name2, multisz_val));
   multisz_val.clear();
 
+  // No null terminator.
+  EXPECT_TRUE(nt::SetRegKeyValue(key_handle, multisz_val_name3, REG_MULTI_SZ,
+                                 malform.data(),
+                                 static_cast<DWORD>(malform.size())));
+  malform.push_back(0);
+  // Single trailing 0 byte.
+  EXPECT_TRUE(nt::SetRegKeyValue(key_handle, multisz_val_name4, REG_MULTI_SZ,
+                                 malform.data(),
+                                 static_cast<DWORD>(malform.size())));
+  malform.push_back(0);
+  // Two trailing 0 bytes.
+  EXPECT_TRUE(nt::SetRegKeyValue(key_handle, multisz_val_name5, REG_MULTI_SZ,
+                                 malform.data(),
+                                 static_cast<DWORD>(malform.size())));
+  malform.push_back(0);
+  // Three trailing 0 bytes.
+  EXPECT_TRUE(nt::SetRegKeyValue(key_handle, multisz_val_name6, REG_MULTI_SZ,
+                                 malform.data(),
+                                 static_cast<DWORD>(malform.size())));
+
+  // Size 0 value.
+  EXPECT_TRUE(nt::SetRegKeyValue(key_handle, multisz_val_name7, REG_MULTI_SZ,
+                                 nullptr, 0));
+
   // Get
+  // ------------------------------
   EXPECT_TRUE(
       nt::QueryRegValueMULTISZ(key_handle, multisz_val_name, &multisz_val));
   if (multisz_val.size() == 3) {
@@ -414,17 +484,58 @@ TEST_F(NtRegistryTest, API_MULTISZ) {
   }
   multisz_val.clear();
 
-  // Get
   EXPECT_TRUE(
       nt::QueryRegValueMULTISZ(key_handle, multisz_val_name2, &multisz_val));
-  if (multisz_val.size() == 1) {
-    EXPECT_TRUE(multi_empty.compare(multisz_val.at(0)) == 0);
+  EXPECT_EQ(multisz_val.size(), static_cast<DWORD>(0));
+  multisz_val.clear();
+
+  EXPECT_TRUE(
+      nt::QueryRegValueMULTISZ(key_handle, multisz_val_name3, &multisz_val));
+  if (multisz_val.size(), 1) {
+    // Should be adjusted under the hood to equal sz_val3.
+    EXPECT_TRUE(multisz_val3.compare(multisz_val.at(0)) == 0);
   } else {
     EXPECT_TRUE(false);
   }
   multisz_val.clear();
 
+  EXPECT_TRUE(
+      nt::QueryRegValueMULTISZ(key_handle, multisz_val_name4, &multisz_val));
+  if (multisz_val.size(), 1) {
+    // Should be adjusted under the hood to equal sz_val3.
+    EXPECT_TRUE(multisz_val3.compare(multisz_val.at(0)) == 0);
+  } else {
+    EXPECT_TRUE(false);
+  }
+  multisz_val.clear();
+
+  EXPECT_TRUE(
+      nt::QueryRegValueMULTISZ(key_handle, multisz_val_name5, &multisz_val));
+  if (multisz_val.size(), 1) {
+    // Should be adjusted under the hood to equal sz_val3.
+    EXPECT_TRUE(multisz_val3.compare(multisz_val.at(0)) == 0);
+  } else {
+    EXPECT_TRUE(false);
+  }
+  multisz_val.clear();
+
+  EXPECT_TRUE(
+      nt::QueryRegValueMULTISZ(key_handle, multisz_val_name6, &multisz_val));
+  if (multisz_val.size(), 1) {
+    // Should be adjusted under the hood to equal sz_val3.
+    EXPECT_TRUE(multisz_val3.compare(multisz_val.at(0)) == 0);
+  } else {
+    EXPECT_TRUE(false);
+  }
+  multisz_val.clear();
+
+  EXPECT_TRUE(
+      nt::QueryRegValueMULTISZ(key_handle, multisz_val_name7, &multisz_val));
+  // Should be adjusted under the hood to an empty string.
+  EXPECT_TRUE(multisz_val.empty());
+
   // Clean up
+  // ------------------------------
   EXPECT_TRUE(nt::DeleteRegKey(key_handle));
   nt::CloseRegKey(key_handle);
 }

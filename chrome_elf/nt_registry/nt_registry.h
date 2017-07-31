@@ -92,12 +92,10 @@ void CloseRegKey(HANDLE key);
 // Main function to query a registry value.
 // - Key handle should have been opened with CreateRegKey or OpenRegKey.
 // - Types defined in winnt.h.  E.g.: REG_DWORD, REG_SZ.
-// - Caller is responsible for calling "delete[] *out_buffer" (on success).
 bool QueryRegKeyValue(HANDLE key,
                       const wchar_t* value_name,
                       ULONG* out_type,
-                      BYTE** out_buffer,
-                      DWORD* out_size);
+                      std::vector<BYTE>* out_buffer);
 
 // Query DWORD value.
 // - WRAPPER: Function works with DWORD data type.
@@ -118,17 +116,23 @@ bool QueryRegValueDWORD(ROOT_KEY root,
                         DWORD* out_dword);
 
 // Query SZ (string) value.
-// - WRAPPER: Function works with SZ data type.
+// - WRAPPER: Function works with SZ or EXPAND_SZ data type.
 // - Key handle should have been opened with CreateRegKey or OpenRegKey.
 // - Handle will be left open.  Caller must still call CloseRegKey when done.
+// - Note: this function only returns the string up to the first end-of-string.
+//   Any string packed with embedded nulls can be accessed via the raw
+//   QueryRegKeyValue function.
 bool QueryRegValueSZ(HANDLE key,
                      const wchar_t* value_name,
                      std::wstring* out_sz);
 
 // Query SZ (string) value.
 // - WRAPPER: Function opens and closes the target key for caller, and works
-// with SZ data type.
+// with SZ or EXPAND_SZ data type.
 // - Use |wow64_override| to force redirection behaviour, or pass nt::NONE.
+// - Note: this function only returns the string up to the first end-of-string.
+//   Any string packed with embedded nulls can be accessed via the raw
+//   QueryRegKeyValue function.
 bool QueryRegValueSZ(ROOT_KEY root,
                      WOW64_OVERRIDE wow64_override,
                      const wchar_t* key_path,
