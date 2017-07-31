@@ -496,6 +496,13 @@ static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
                               const MODE_INFO *mi, aom_writer *w) {
   const MB_MODE_INFO *mbmi = &mi->mbmi;
 
+#if !CONFIG_GLOBAL_MOTION
+  // The cm parameter is only used with global_motion or with
+  // motion_var and warped_motion. In other cases, explicitly ignore
+  // it to avoid a compiler warning.
+  (void)cm;
+#endif
+
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
   MOTION_MODE last_motion_mode_allowed =
       motion_mode_allowed_wrapper(0,
