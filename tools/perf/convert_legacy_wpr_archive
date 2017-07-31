@@ -170,6 +170,7 @@ def main():
         output.write(dump_requests(archive))
       wpr_cmd = [path_util.GetWprDir() + '/replay.py',
                  '--port=8080', '--ssl_port=8089', '--no-dns_forwarding',
+                 '--inject_scripts=',
                  wpr_file]
       print wpr_cmd
       wpr_server = subprocess.Popen(' '.join(wpr_cmd), shell=True)
