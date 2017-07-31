@@ -30,6 +30,8 @@ blink_core_sources("workers") {
     "ParentFrameTaskRunners.h",
     "SharedWorker.cpp",
     "SharedWorker.h",
+    "SharedWorkerContentSettingsProxy.cpp",
+    "SharedWorkerContentSettingsProxy.h",
     "SharedWorkerGlobalScope.cpp",
     "SharedWorkerGlobalScope.h",
     "SharedWorkerReportingProxy.cpp",

@@ -10,7 +10,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 
-class GURL;
 struct ViewHostMsg_CreateWorker_Params;
 struct ViewHostMsg_CreateWorker_Reply;
 
@@ -43,13 +42,6 @@ class CONTENT_EXPORT SharedWorkerMessageFilter : public BrowserMessageFilter {
   // Message handlers.
   void OnCreateWorker(const ViewHostMsg_CreateWorker_Params& params,
                       ViewHostMsg_CreateWorker_Reply* reply);
-  void OnRequestFileSystemAccess(int worker_route_id,
-                                 const GURL& url,
-                                 IPC::Message* reply_msg);
-  void OnAllowIndexedDB(int worker_route_id,
-                        const GURL& url,
-                        const base::string16& name,
-                        bool* result);
 
   const int render_process_id_;
   ResourceContext* const resource_context_;

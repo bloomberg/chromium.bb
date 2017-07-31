@@ -31,6 +31,7 @@
 #ifndef WebSharedWorker_h
 #define WebSharedWorker_h
 
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebContentSecurityPolicy.h"
@@ -50,12 +51,14 @@ class BLINK_EXPORT WebSharedWorker {
   // lifetime as this instance.
   static WebSharedWorker* Create(WebSharedWorkerClient*);
 
-  virtual void StartWorkerContext(const WebURL& script_url,
-                                  const WebString& name,
-                                  const WebString& content_security_policy,
-                                  WebContentSecurityPolicyType,
-                                  WebAddressSpace,
-                                  bool data_saver_enabled) = 0;
+  virtual void StartWorkerContext(
+      const WebURL& script_url,
+      const WebString& name,
+      const WebString& content_security_policy,
+      WebContentSecurityPolicyType,
+      WebAddressSpace,
+      bool data_saver_enabled,
+      mojo::ScopedMessagePipeHandle content_settings_handle) = 0;
 
   // Sends a connect event to the SharedWorker context.
   virtual void Connect(std::unique_ptr<WebMessagePortChannel>) = 0;

@@ -4,8 +4,11 @@
 
 #include "content/browser/shared_worker/shared_worker_host.h"
 
+#include <utility>
+
 #include "base/metrics/histogram_macros.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
+#include "content/browser/shared_worker/shared_worker_content_settings_proxy_impl.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/shared_worker_message_filter.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
@@ -15,6 +18,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
+#include "third_party/WebKit/public/web/shared_worker_content_settings_proxy.mojom.h"
 
 namespace content {
 namespace {
@@ -74,6 +78,10 @@ SharedWorkerHost::~SharedWorkerHost() {
 }
 
 void SharedWorkerHost::Start(bool pause_on_start) {
+  blink::mojom::SharedWorkerContentSettingsProxyPtrInfo content_settings;
+  SharedWorkerContentSettingsProxyImpl::Create(
+      weak_factory_.GetWeakPtr(), mojo::MakeRequest(&content_settings));
+
   WorkerProcessMsg_CreateWorker_Params params;
   params.url = instance_->url();
   params.name = instance_->name();
@@ -83,6 +91,7 @@ void SharedWorkerHost::Start(bool pause_on_start) {
   params.pause_on_start = pause_on_start;
   params.route_id = worker_route_id_;
   params.data_saver_enabled = instance_->data_saver_enabled();
+  params.content_settings_handle = content_settings.PassHandle().release();
   Send(new WorkerProcessMsg_CreateWorker(params));
 
   for (const FilterInfo& info : filters_)
@@ -189,31 +198,23 @@ void SharedWorkerHost::WorkerConnected(int connection_request_id) {
 
 void SharedWorkerHost::AllowFileSystem(
     const GURL& url,
-    std::unique_ptr<IPC::Message> reply_msg) {
+    base::OnceCallback<void(bool)> callback) {
   GetContentClient()->browser()->AllowWorkerFileSystem(
-      url,
-      instance_->resource_context(),
-      GetRenderFrameIDsForWorker(),
+      url, instance_->resource_context(), GetRenderFrameIDsForWorker(),
       base::Bind(&SharedWorkerHost::AllowFileSystemResponse,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(&reply_msg)));
+                 weak_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
 void SharedWorkerHost::AllowFileSystemResponse(
-    std::unique_ptr<IPC::Message> reply_msg,
+    base::OnceCallback<void(bool)> callback,
     bool allowed) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  WorkerProcessHostMsg_RequestFileSystemAccessSync::WriteReplyParams(
-      reply_msg.get(),
-      allowed);
-  Send(reply_msg.release());
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  std::move(callback).Run(allowed);
 }
 
-void SharedWorkerHost::AllowIndexedDB(const GURL& url,
-                                      const base::string16& name,
-                                      bool* result) {
-  *result = GetContentClient()->browser()->AllowWorkerIndexedDB(
+bool SharedWorkerHost::AllowIndexedDB(const GURL& url,
+                                      const base::string16& name) {
+  return GetContentClient()->browser()->AllowWorkerIndexedDB(
       url, name, instance_->resource_context(), GetRenderFrameIDsForWorker());
 }
 

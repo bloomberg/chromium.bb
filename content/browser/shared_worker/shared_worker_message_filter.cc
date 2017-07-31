@@ -77,10 +77,6 @@ bool SharedWorkerMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_FORWARD(WorkerHostMsg_WorkerConnected,
                         SharedWorkerServiceImpl::GetInstance(),
                         SharedWorkerServiceImpl::WorkerConnected)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(
-        WorkerProcessHostMsg_RequestFileSystemAccessSync,
-        OnRequestFileSystemAccess)
-    IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowIndexedDB, OnAllowIndexedDB)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -97,22 +93,6 @@ void SharedWorkerMessageFilter::OnCreateWorker(
   reply->error = SharedWorkerServiceImpl::GetInstance()->CreateWorker(
       params, reply->route_id, this, resource_context_,
       WorkerStoragePartitionId(partition_));
-}
-
-void SharedWorkerMessageFilter::OnRequestFileSystemAccess(
-    int worker_route_id,
-    const GURL& url,
-    IPC::Message* reply_msg) {
-  SharedWorkerServiceImpl::GetInstance()->AllowFileSystem(this, worker_route_id,
-                                                          url, reply_msg);
-}
-
-void SharedWorkerMessageFilter::OnAllowIndexedDB(int worker_route_id,
-                                                 const GURL& url,
-                                                 const base::string16& name,
-                                                 bool* result) {
-  SharedWorkerServiceImpl::GetInstance()->AllowIndexedDB(this, worker_route_id,
-                                                         url, name, result);
 }
 
 }  // namespace content

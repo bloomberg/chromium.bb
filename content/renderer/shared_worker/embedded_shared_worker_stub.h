@@ -12,6 +12,7 @@
 #include "content/child/child_message_filter.h"
 #include "content/child/scoped_child_process_reference.h"
 #include "ipc/ipc_listener.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/WebKit/public/platform/WebAddressSpace.h"
 #include "third_party/WebKit/public/platform/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/platform/WebContentSettingsClient.h"
@@ -23,7 +24,6 @@ namespace blink {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebNotificationPresenter;
-class WebSecurityOrigin;
 class WebSharedWorker;
 }
 
@@ -54,7 +54,8 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
       blink::WebAddressSpace creation_address_space,
       bool pause_on_start,
       int route_id,
-      bool data_saver_enabled);
+      bool data_saver_enabled,
+      mojo::ScopedMessagePipeHandle content_settings_handle);
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -71,9 +72,6 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
   blink::WebNotificationPresenter* NotificationPresenter() override;
   std::unique_ptr<blink::WebApplicationCacheHost> CreateApplicationCacheHost(
       blink::WebApplicationCacheHostClient*) override;
-  std::unique_ptr<blink::WebContentSettingsClient>
-  CreateWorkerContentSettingsClient(
-      const blink::WebSecurityOrigin& origin) override;
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
   CreateServiceWorkerNetworkProvider() override;
   void SendDevToolsMessage(int session_id,

@@ -41,7 +41,6 @@ namespace blink {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebNotificationPresenter;
-class WebSecurityOrigin;
 class WebServiceWorkerNetworkProvider;
 class WebString;
 
@@ -69,14 +68,6 @@ class WebSharedWorkerClient {
   // initialization.
   virtual std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
       WebApplicationCacheHostClient*) = 0;
-
-  // Called on the main thread during initialization. WebContentSettingsClient
-  // should not retain the given WebSecurityOrigin, as the client instance is
-  // passed to worker thread while WebSecurityOrigin is not thread safe.
-  virtual std::unique_ptr<WebContentSettingsClient>
-  CreateWorkerContentSettingsClient(const WebSecurityOrigin& origin) {
-    return nullptr;
-  }
 
   // Called on the main thread during initialization.
   virtual std::unique_ptr<WebServiceWorkerNetworkProvider>

@@ -144,6 +144,7 @@
 #include "media/media_features.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "net/base/net_errors.h"
 #include "net/base/port_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -2275,7 +2276,8 @@ void RenderThreadImpl::OnCreateNewSharedWorker(
   new EmbeddedSharedWorkerStub(
       params.url, params.name, params.content_security_policy,
       params.security_policy_type, params.creation_address_space,
-      params.pause_on_start, params.route_id, params.data_saver_enabled);
+      params.pause_on_start, params.route_id, params.data_saver_enabled,
+      mojo::ScopedMessagePipeHandle(params.content_settings_handle));
 }
 
 void RenderThreadImpl::OnMemoryPressure(

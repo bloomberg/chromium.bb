@@ -443,31 +443,6 @@ void SharedWorkerServiceImpl::WorkerConnected(SharedWorkerMessageFilter* filter,
     host->WorkerConnected(connection_request_id);
 }
 
-void SharedWorkerServiceImpl::AllowFileSystem(SharedWorkerMessageFilter* filter,
-                                              int worker_route_id,
-                                              const GURL& url,
-                                              IPC::Message* reply_msg) {
-  if (SharedWorkerHost* host =
-          FindSharedWorkerHost(filter->render_process_id(), worker_route_id)) {
-    host->AllowFileSystem(url, base::WrapUnique(reply_msg));
-  } else {
-    filter->Send(reply_msg);
-    return;
-  }
-}
-
-void SharedWorkerServiceImpl::AllowIndexedDB(SharedWorkerMessageFilter* filter,
-                                             int worker_route_id,
-                                             const GURL& url,
-                                             const base::string16& name,
-                                             bool* result) {
-  if (SharedWorkerHost* host =
-          FindSharedWorkerHost(filter->render_process_id(), worker_route_id))
-    host->AllowIndexedDB(url, name, result);
-  else
-    *result = false;
-}
-
 void SharedWorkerServiceImpl::OnSharedWorkerMessageFilterClosing(
     SharedWorkerMessageFilter* filter) {
   ScopedWorkerDependencyChecker checker(this);

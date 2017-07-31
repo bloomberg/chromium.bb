@@ -72,10 +72,8 @@ class SharedWorkerHost {
   void WorkerScriptLoadFailed();
   void WorkerConnected(int connection_request_id);
   void AllowFileSystem(const GURL& url,
-                       std::unique_ptr<IPC::Message> reply_msg);
-  void AllowIndexedDB(const GURL& url,
-                      const base::string16& name,
-                      bool* result);
+                       base::OnceCallback<void(bool)> callback);
+  bool AllowIndexedDB(const GURL& url, const base::string16& name);
 
   // Terminates the given worker, i.e. based on a UI action.
   void TerminateWorker();
@@ -120,7 +118,7 @@ class SharedWorkerHost {
   void SetConnectionRequestID(SharedWorkerMessageFilter* filter,
                               int route_id,
                               int connection_request_id);
-  void AllowFileSystemResponse(std::unique_ptr<IPC::Message> reply_msg,
+  void AllowFileSystemResponse(base::OnceCallback<void(bool)> callback,
                                bool allowed);
 
   // Sends |message| to the SharedWorker.

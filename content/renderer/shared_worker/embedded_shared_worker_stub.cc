@@ -27,7 +27,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/worker_fetch_context_impl.h"
-#include "content/renderer/shared_worker/embedded_shared_worker_content_settings_client_proxy.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/InterfaceProvider.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
@@ -130,7 +129,8 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     blink::WebAddressSpace creation_address_space,
     bool pause_on_start,
     int route_id,
-    bool data_saver_enabled)
+    bool data_saver_enabled,
+    mojo::ScopedMessagePipeHandle content_settings_handle)
     : route_id_(route_id), name_(name), url_(url) {
   RenderThreadImpl::current()->AddEmbeddedWorkerRoute(route_id_, this);
   impl_ = blink::WebSharedWorker::Create(this);
@@ -144,7 +144,8 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   impl_->StartWorkerContext(
       url, blink::WebString::FromUTF16(name_),
       blink::WebString::FromUTF16(content_security_policy),
-      security_policy_type, creation_address_space, data_saver_enabled);
+      security_policy_type, creation_address_space, data_saver_enabled,
+      std::move(content_settings_handle));
 }
 
 EmbeddedSharedWorkerStub::~EmbeddedSharedWorkerStub() {
@@ -225,14 +226,6 @@ EmbeddedSharedWorkerStub::CreateApplicationCacheHost(
       base::MakeUnique<SharedWorkerWebApplicationCacheHostImpl>(client);
   app_cache_host_ = host.get();
   return std::move(host);
-}
-
-std::unique_ptr<blink::WebContentSettingsClient>
-EmbeddedSharedWorkerStub::CreateWorkerContentSettingsClient(
-    const blink::WebSecurityOrigin& origin) {
-  return base::MakeUnique<EmbeddedSharedWorkerContentSettingsClientProxy>(
-      url::Origin(origin).GetURL(), origin.IsUnique(), route_id_,
-      ChildThreadImpl::current()->thread_safe_sender());
 }
 
 std::unique_ptr<blink::WebServiceWorkerNetworkProvider>

@@ -17,6 +17,8 @@
 #include "content/common/message_port.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
+#include "mojo/public/cpp/system/handle.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "url/gurl.h"
 
 #undef IPC_MESSAGE_EXPORT
@@ -46,6 +48,8 @@ IPC_STRUCT_BEGIN(WorkerProcessMsg_CreateWorker_Params)
   IPC_STRUCT_MEMBER(bool, pause_on_start)
   IPC_STRUCT_MEMBER(int, route_id)
   IPC_STRUCT_MEMBER(bool, data_saver_enabled)
+  // For blink::mojom::SharedWorkerContentSettingsProxy
+  IPC_STRUCT_MEMBER(mojo::MessagePipeHandle, content_settings_handle)
 IPC_STRUCT_END()
 
 //-----------------------------------------------------------------------------
@@ -53,23 +57,6 @@ IPC_STRUCT_END()
 // These are messages sent from the browser to the worker process.
 IPC_MESSAGE_CONTROL1(WorkerProcessMsg_CreateWorker,
                      WorkerProcessMsg_CreateWorker_Params)
-
-//-----------------------------------------------------------------------------
-// WorkerProcessHost messages
-// These are messages sent from the worker process to the browser process.
-
-// Sent by the worker process to check whether access to file system is allowed.
-IPC_SYNC_MESSAGE_CONTROL2_1(WorkerProcessHostMsg_RequestFileSystemAccessSync,
-                            int /* worker_route_id */,
-                            GURL /* origin url */,
-                            bool /* result */)
-
-// Sent by the worker process to check whether access to IndexedDB is allowed.
-IPC_SYNC_MESSAGE_CONTROL3_1(WorkerProcessHostMsg_AllowIndexedDB,
-                            int /* worker_route_id */,
-                            GURL /* origin url */,
-                            base::string16 /* database name */,
-                            bool /* result */)
 
 //-----------------------------------------------------------------------------
 // Worker messages
