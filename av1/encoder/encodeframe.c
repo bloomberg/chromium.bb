@@ -4639,11 +4639,13 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
 #endif  // CONFIG_SPEED_REFS
     }
   }
+#if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   // TODO(yuec) Suboptimal fix. Need to implement per-block update
   for (int i = BLOCK_8X8; i < BLOCK_SIZES_ALL; i++) {
     av1_cost_tokens_from_cdf(x->motion_mode_cost[i],
                              xd->tile_ctx->motion_mode_cdf[i], NULL);
   }
+#endif
 }
 
 static void init_encode_frame_mb_context(AV1_COMP *cpi) {
@@ -4885,10 +4887,12 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
 
   av1_setup_across_tile_boundary_info(cm, tile_info);
 
+#if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   for (int i = BLOCK_8X8; i < BLOCK_SIZES_ALL; i++) {
     av1_cost_tokens_from_cdf(td->mb.motion_mode_cost[i],
                              cm->fc->motion_mode_cdf[i], NULL);
   }
+#endif
   for (mi_row = tile_info->mi_row_start; mi_row < tile_info->mi_row_end;
        mi_row += cm->mib_size) {
     encode_rd_sb_row(cpi, td, this_tile, mi_row, &tok);
