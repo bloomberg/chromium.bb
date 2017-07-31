@@ -840,7 +840,7 @@ PaintOp* DrawColorOp::Deserialize(const void* input,
                                   size_t output_size) {
   DrawColorOp* op =
       SimpleDeserialize<DrawColorOp>(input, input_size, output, output_size);
-  return op && IsValidSkBlendMode(op->mode) ? op : nullptr;
+  return op && IsValidDrawColorSkBlendMode(op->mode) ? op : nullptr;
 }
 
 PaintOp* DrawDRRectOp::Deserialize(const void* input,

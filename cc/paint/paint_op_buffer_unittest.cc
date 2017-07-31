@@ -2295,10 +2295,12 @@ TEST(PaintOpBufferTest, ValidateSkBlendMode) {
 
   // Successful first two ops.
   buffer.push<DrawColorOp>(SK_ColorMAGENTA, SkBlendMode::kDstIn);
-  buffer.push<DrawRectOp>(test_rects[0], test_flags[0]);
+  PaintFlags good_flags = test_flags[0];
+  good_flags.setBlendMode(SkBlendMode::kColorBurn);
+  buffer.push<DrawRectOp>(test_rects[0], good_flags);
 
   // Modes that are not supported by drawColor or SkPaint.
-  SkBlendMode bad_modes[] = {
+  SkBlendMode bad_modes_for_draw_color[] = {
       SkBlendMode::kOverlay,
       SkBlendMode::kDarken,
       SkBlendMode::kLighten,
@@ -2318,11 +2320,19 @@ TEST(PaintOpBufferTest, ValidateSkBlendMode) {
       static_cast<SkBlendMode>(static_cast<uint32_t>(~0)),
   };
 
-  for (size_t i = 0; i < arraysize(bad_modes); ++i) {
-    buffer.push<DrawColorOp>(SK_ColorMAGENTA, bad_modes[i]);
+  SkBlendMode bad_modes_for_flags[] = {
+      static_cast<SkBlendMode>(static_cast<uint32_t>(SkBlendMode::kLastMode) +
+                               1),
+      static_cast<SkBlendMode>(static_cast<uint32_t>(~0)),
+  };
 
+  for (size_t i = 0; i < arraysize(bad_modes_for_draw_color); ++i) {
+    buffer.push<DrawColorOp>(SK_ColorMAGENTA, bad_modes_for_draw_color[i]);
+  }
+
+  for (size_t i = 0; i < arraysize(bad_modes_for_flags); ++i) {
     PaintFlags flags = test_flags[i % test_flags.size()];
-    flags.setBlendMode(bad_modes[i]);
+    flags.setBlendMode(bad_modes_for_flags[i]);
     buffer.push<DrawRectOp>(test_rects[i % test_rects.size()], flags);
   }
 

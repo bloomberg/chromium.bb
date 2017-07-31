@@ -121,7 +121,7 @@ void PaintOpReader::Read(PaintFlags* flags) {
   Read(&flags->width_);
   Read(&flags->miter_limit_);
   ReadSimple(&flags->blend_mode_);
-  if (!PaintOp::IsValidSkBlendMode(flags->getBlendMode()))
+  if (!PaintOp::IsValidPaintFlagsSkBlendMode(flags->getBlendMode()))
     valid_ = false;
   ReadSimple(&flags->bitfields_uint_);
 
