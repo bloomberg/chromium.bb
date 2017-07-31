@@ -48,7 +48,6 @@
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/browser_state.h"
-#include "ios/web/public/web_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 
 using history::HistoryService;
@@ -188,9 +187,8 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
         service.get(), prefs, GetApplicationContext()->GetApplicationLocale(),
         service->category_ranker(), service->remote_suggestions_scheduler(),
         std::move(suggestions_fetcher),
-        base::MakeUnique<ImageFetcherImpl>(
-            CreateIOSImageDecoder(web::WebThread::GetBlockingPool()),
-            request_context.get()),
+        base::MakeUnique<ImageFetcherImpl>(CreateIOSImageDecoder(),
+                                           request_context.get()),
         base::MakeUnique<RemoteSuggestionsDatabase>(database_dir, task_runner),
         base::MakeUnique<RemoteSuggestionsStatusService>(signin_manager, prefs,
                                                          std::string()),

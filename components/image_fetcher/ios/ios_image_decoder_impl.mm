@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task_scheduler/post_task.h"
 #import "components/image_fetcher/ios/webp_decoder.h"
 #include "ios/web/public/web_thread.h"
 #include "ui/gfx/geometry/size.h"
@@ -24,7 +25,7 @@ namespace image_fetcher {
 
 class IOSImageDecoderImpl : public ImageDecoder {
  public:
-  explicit IOSImageDecoderImpl(scoped_refptr<base::TaskRunner> task_runner);
+  explicit IOSImageDecoderImpl();
   ~IOSImageDecoderImpl() override;
 
   // Note, that |desired_image_frame_size| is not supported
@@ -38,7 +39,11 @@ class IOSImageDecoderImpl : public ImageDecoder {
                                    NSData* image_data);
 
   // The task runner used to decode images if necessary.
-  const scoped_refptr<base::TaskRunner> task_runner_;
+  const scoped_refptr<base::TaskRunner> task_runner_ =
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
+  ;
 
   // The WeakPtrFactory is used to cancel callbacks if ImageFetcher is
   // destroyed during WebP decoding.
@@ -47,9 +52,7 @@ class IOSImageDecoderImpl : public ImageDecoder {
   DISALLOW_COPY_AND_ASSIGN(IOSImageDecoderImpl);
 };
 
-IOSImageDecoderImpl::IOSImageDecoderImpl(
-    scoped_refptr<base::TaskRunner> task_runner)
-    : task_runner_(std::move(task_runner)), weak_factory_(this) {
+IOSImageDecoderImpl::IOSImageDecoderImpl() : weak_factory_(this) {
   DCHECK(task_runner_.get());
 }
 
@@ -102,9 +105,8 @@ void IOSImageDecoderImpl::CreateUIImageAndRunCallback(
   callback.Run(empty_image);
 }
 
-std::unique_ptr<ImageDecoder> CreateIOSImageDecoder(
-    scoped_refptr<base::TaskRunner> task_runner) {
-  return base::MakeUnique<IOSImageDecoderImpl>(std::move(task_runner));
+std::unique_ptr<ImageDecoder> CreateIOSImageDecoder() {
+  return base::MakeUnique<IOSImageDecoderImpl>();
 }
 
 }  // namespace image_fetcher
