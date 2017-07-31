@@ -58,6 +58,7 @@ ExtensionInstallDialogController::ExtensionInstallDialogController(
   base::scoped_nsobject<NSWindow> window([[ConstrainedWindowCustomWindow alloc]
       initWithContentRect:[[view_controller_ view] bounds]]);
   [[window contentView] addSubview:[view_controller_ view]];
+  [window setBackgroundColor:[NSColor whiteColor]];
 
   base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc] initWithCustomWindow:window]);
