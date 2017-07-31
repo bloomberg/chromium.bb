@@ -72,14 +72,15 @@ class PLATFORM_EXPORT ResourceError final {
       : domain_(domain),
         error_code_(error_code),
         failing_url_(failing_url),
-        localized_description_(localized_description),
-        is_null_(false) {}
+        localized_description_(localized_description) {
+    DCHECK_NE(domain, Domain::kEmpty);
+  }
 
   // Makes a deep copy. Useful for when you need to use a ResourceError on
   // another thread.
   ResourceError Copy() const;
 
-  bool IsNull() const { return is_null_; }
+  bool IsNull() const { return domain_ == Domain::kEmpty; }
 
   Domain GetDomain() const { return domain_; }
   int ErrorCode() const { return error_code_; }
@@ -126,7 +127,6 @@ class PLATFORM_EXPORT ResourceError final {
   int error_code_ = 0;
   KURL failing_url_;
   String localized_description_;
-  bool is_null_ = true;
   bool is_access_check_ = false;
   bool stale_copy_in_cache_ = false;
   bool was_ignored_by_handler_ = false;
