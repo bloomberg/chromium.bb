@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
-#include "build/build_config.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_features.h"
@@ -134,14 +133,7 @@ IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest, ReturnToTopSite) {
       DepictFrameTree(root()));
 }
 
-// Crashes on Win only. https://crbug.com/746063
-#if defined(OS_WIN)
-#define MAYBE_NavigateSubframeToTopSite DISABLED_NavigateSubframeToTopSite
-#else
-#define MAYBE_NavigateSubframeToTopSite NavigateSubframeToTopSite
-#endif
-IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
-                       MAYBE_NavigateSubframeToTopSite) {
+IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest, NavigateSubframeToTopSite) {
   if (content::AreAllSitesIsolatedForTesting())
     return;  // Top Document Isolation is disabled in this mode.
 
@@ -203,15 +195,8 @@ IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest, NavigateToSubframeSite) {
       DepictFrameTree(root()));
 }
 
-// Crashes on Win only. https://crbug.com/746063
-#if defined(OS_WIN)
-#define MAYBE_NavigateToSubframeSiteWithPopup \
-  DISABLED_NavigateToSubframeSiteWithPopup
-#else
-#define MAYBE_NavigateToSubframeSiteWithPopup NavigateToSubframeSiteWithPopup
-#endif
 IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
-                       MAYBE_NavigateToSubframeSiteWithPopup) {
+                       NavigateToSubframeSiteWithPopup) {
   if (content::AreAllSitesIsolatedForTesting())
     return;  // Top Document Isolation is disabled in this mode.
 
@@ -298,15 +283,8 @@ IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
       DepictFrameTree(root()));
 }
 
-// Crashes on Win only. https://crbug.com/746063
-#if defined(OS_WIN)
-#define MAYBE_NavigateToSubframeSiteWithPopup2 \
-  DISABLED_NavigateToSubframeSiteWithPopup2
-#else
-#define MAYBE_NavigateToSubframeSiteWithPopup2 NavigateToSubframeSiteWithPopup2
-#endif
 IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
-                       MAYBE_NavigateToSubframeSiteWithPopup2) {
+                       NavigateToSubframeSiteWithPopup2) {
   if (content::AreAllSitesIsolatedForTesting())
     return;  // Top Document Isolation is disabled in this mode.
 
@@ -421,13 +399,7 @@ IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest,
       DepictFrameTree(root()));
 }
 
-// Crashes on Win only. https://crbug.com/746063
-#if defined(OS_WIN)
-#define MAYBE_FrameForSitesInHistory DISABLED_FrameForSitesInHistory
-#else
-#define MAYBE_FrameForSitesInHistory FrameForSitesInHistory
-#endif
-IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest, MAYBE_FrameForSitesInHistory) {
+IN_PROC_BROWSER_TEST_F(TopDocumentIsolationTest, FramesForSitesInHistory) {
   if (content::AreAllSitesIsolatedForTesting())
     return;  // Top Document Isolation is disabled in this mode.
 
