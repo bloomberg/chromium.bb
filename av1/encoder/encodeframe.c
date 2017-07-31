@@ -1546,8 +1546,8 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
   MACROBLOCK *x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
 #else
-  const MACROBLOCK *x = &td->mb;
-  const MACROBLOCKD *const xd = &x->e_mbd;
+  MACROBLOCK *x = &td->mb;
+  MACROBLOCKD *const xd = &x->e_mbd;
 #endif
   const MODE_INFO *const mi = xd->mi[0];
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
