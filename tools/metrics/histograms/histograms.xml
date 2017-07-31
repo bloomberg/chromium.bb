@@ -22281,6 +22281,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram base="true" name="Extensions.TimeYieldedBetweenContentScriptRuns"
+    units="ms">
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    Time elapsed between two asynchronously-injected content script runs.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.ToolstripLoadTime" units="ms">
   <obsolete>
     Deprecated 04/2016 as doesn't have data nor owner.
@@ -99599,6 +99607,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="DocumentEnd" label="Scripts with run_at: document_end."/>
   <suffix name="DocumentIdle" label="Scripts with run_at: document_idle."/>
   <affected-histogram name="Extensions.InjectedScriptExecutionTime"/>
+  <affected-histogram name="Extensions.TimeYieldedBetweenContentScriptRuns"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="V8SpecialApps" separator=".">
