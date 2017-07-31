@@ -122,22 +122,6 @@ ItemPosition FlexItem::Alignment() const {
                                                 box->StyleRef());
 }
 
-void FlexItem::UpdateAutoMarginsInMainAxis(LayoutUnit auto_margin_offset) {
-  DCHECK_GE(auto_margin_offset, LayoutUnit());
-
-  if (algorithm->IsHorizontalFlow()) {
-    if (box->Style()->MarginLeft().IsAuto())
-      box->SetMarginLeft(auto_margin_offset);
-    if (box->Style()->MarginRight().IsAuto())
-      box->SetMarginRight(auto_margin_offset);
-  } else {
-    if (box->Style()->MarginTop().IsAuto())
-      box->SetMarginTop(auto_margin_offset);
-    if (box->Style()->MarginBottom().IsAuto())
-      box->SetMarginBottom(auto_margin_offset);
-  }
-}
-
 void FlexLine::FreezeViolations(Vector<FlexItem*>& violations) {
   for (size_t i = 0; i < violations.size(); ++i) {
     DCHECK(!violations[i]->frozen) << i;
@@ -279,82 +263,6 @@ LayoutUnit FlexLine::ApplyMainAxisAutoMarginAdjustment() {
       remaining_free_space / number_of_auto_margins;
   remaining_free_space = LayoutUnit();
   return size_of_auto_margin;
-}
-
-void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_offset,
-                                        LayoutUnit& cross_axis_offset) {
-  // Recalculate the remaining free space. The adjustment for flex factors
-  // between 0..1 means we can't just use remainingFreeSpace here.
-  remaining_free_space = container_main_inner_size;
-  for (size_t i = 0; i < line_items.size(); ++i) {
-    FlexItem& flex_item = line_items[i];
-    DCHECK(!flex_item.box->IsOutOfFlowPositioned());
-    remaining_free_space -= flex_item.FlexedMarginBoxSize();
-  }
-
-  const StyleContentAlignmentData justify_content =
-      FlexLayoutAlgorithm::ResolvedJustifyContent(*algorithm->Style());
-
-  LayoutUnit auto_margin_offset = ApplyMainAxisAutoMarginAdjustment();
-  const LayoutUnit available_free_space = remaining_free_space;
-  main_axis_offset += FlexLayoutAlgorithm::InitialContentPositionOffset(
-      available_free_space, justify_content, line_items.size());
-  LayoutUnit max_descent;  // Used when align-items: baseline.
-  LayoutUnit max_child_cross_axis_extent;
-  bool should_flip_main_axis = !algorithm->Style()->IsColumnFlexDirection() &&
-                               !algorithm->IsLeftToRightFlow();
-  for (size_t i = 0; i < line_items.size(); ++i) {
-    FlexItem& flex_item = line_items[i];
-
-    DCHECK(!flex_item.box->IsOutOfFlowPositioned());
-
-    flex_item.UpdateAutoMarginsInMainAxis(auto_margin_offset);
-
-    LayoutUnit child_cross_axis_margin_box_extent;
-    if (flex_item.Alignment() == kItemPositionBaseline &&
-        !flex_item.HasAutoMarginsInCrossAxis()) {
-      LayoutUnit ascent = flex_item.MarginBoxAscent();
-      LayoutUnit descent =
-          (flex_item.CrossAxisMarginExtent() + flex_item.cross_axis_size) -
-          ascent;
-
-      max_ascent = std::max(max_ascent, ascent);
-      max_descent = std::max(max_descent, descent);
-
-      child_cross_axis_margin_box_extent = max_ascent + max_descent;
-    } else {
-      child_cross_axis_margin_box_extent =
-          flex_item.cross_axis_size + flex_item.CrossAxisMarginExtent();
-    }
-    max_child_cross_axis_extent = std::max(max_child_cross_axis_extent,
-                                           child_cross_axis_margin_box_extent);
-
-    main_axis_offset += flex_item.FlowAwareMarginStart();
-
-    LayoutUnit child_main_extent = flex_item.FlexedBorderBoxSize();
-    // In an RTL column situation, this will apply the margin-right/margin-end
-    // on the left. This will be fixed later in flipForRightToLeftColumn.
-    flex_item.desired_location = LayoutPoint(
-        should_flip_main_axis
-            ? container_logical_width - main_axis_offset - child_main_extent
-            : main_axis_offset,
-        cross_axis_offset + flex_item.FlowAwareMarginBefore());
-    main_axis_offset += child_main_extent + flex_item.FlowAwareMarginEnd();
-
-    if (i != line_items.size() - 1) {
-      // The last item does not get extra space added.
-      main_axis_offset +=
-          FlexLayoutAlgorithm::ContentDistributionSpaceBetweenChildren(
-              available_free_space, justify_content, line_items.size());
-    }
-  }
-
-  main_axis_extent = main_axis_offset;
-
-  this->cross_axis_offset = cross_axis_offset;
-  cross_axis_extent = max_child_cross_axis_extent;
-
-  cross_axis_offset += max_child_cross_axis_extent;
 }
 
 FlexLayoutAlgorithm::FlexLayoutAlgorithm(const ComputedStyle* style,
@@ -520,45 +428,6 @@ ItemPosition FlexLayoutAlgorithm::AlignmentForChild(
   }
 
   return align;
-}
-
-LayoutUnit FlexLayoutAlgorithm::InitialContentPositionOffset(
-    LayoutUnit available_free_space,
-    const StyleContentAlignmentData& data,
-    unsigned number_of_items) {
-  if (data.GetPosition() == kContentPositionFlexEnd)
-    return available_free_space;
-  if (data.GetPosition() == kContentPositionCenter)
-    return available_free_space / 2;
-  if (data.Distribution() == kContentDistributionSpaceAround) {
-    if (available_free_space > 0 && number_of_items)
-      return available_free_space / (2 * number_of_items);
-
-    return available_free_space / 2;
-  }
-  if (data.Distribution() == kContentDistributionSpaceEvenly) {
-    if (available_free_space > 0 && number_of_items)
-      return available_free_space / (number_of_items + 1);
-    // Fallback to 'center'
-    return available_free_space / 2;
-  }
-  return LayoutUnit();
-}
-
-LayoutUnit FlexLayoutAlgorithm::ContentDistributionSpaceBetweenChildren(
-    LayoutUnit available_free_space,
-    const StyleContentAlignmentData& data,
-    unsigned number_of_items) {
-  if (available_free_space > 0 && number_of_items > 1) {
-    if (data.Distribution() == kContentDistributionSpaceBetween)
-      return available_free_space / (number_of_items - 1);
-    if (data.Distribution() == kContentDistributionSpaceAround ||
-        data.Distribution() == kContentDistributionStretch)
-      return available_free_space / number_of_items;
-    if (data.Distribution() == kContentDistributionSpaceEvenly)
-      return available_free_space / (number_of_items + 1);
-  }
-  return LayoutUnit();
 }
 
 }  // namespace blink
