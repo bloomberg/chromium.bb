@@ -1884,18 +1884,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_TRUE(shell()->web_contents()->GetController().CanGoForward());
 }
 
-// The test fails with Android ASAN with changes in v8 that seem unrelated.
-//   See http://crbug.com/428329.
-#if defined(OS_ANDROID) && defined(THREAD_SANITIZER)
-#define MAYBE_ClearPendingWebUIOnCommit DISABLED_ClearPendingWebUIOnCommit
-#else
-#define MAYBE_ClearPendingWebUIOnCommit ClearPendingWebUIOnCommit
-#endif
 // Ensure that pending_and_current_web_ui_ is cleared when a URL commits.
 // Otherwise it might get picked up by InitRenderView when granting bindings
 // to other RenderViewHosts.  See http://crbug.com/330811.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
-                       MAYBE_ClearPendingWebUIOnCommit) {
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ClearPendingWebUIOnCommit) {
   // Visit a WebUI page with bindings.
   GURL webui_url(GURL(std::string(kChromeUIScheme) + "://" +
                       std::string(kChromeUIGpuHost)));
