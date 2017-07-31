@@ -31,6 +31,7 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
   bool HasVideo() const override { return false; }
   bool HasAudio() const override { return false; }
   WebSize NaturalSize() const override;
+  WebSize VisibleRect() const override;
   bool Paused() const override { return false; }
   bool Seeking() const override { return false; }
   double Duration() const override { return 0.0; }

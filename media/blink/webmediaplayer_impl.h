@@ -146,6 +146,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Dimensions of the video.
   blink::WebSize NaturalSize() const override;
 
+  blink::WebSize VisibleRect() const override;
+
   // Getters of playback state.
   bool Paused() const override;
   bool Seeking() const override;
@@ -335,7 +337,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Returns the current video frame from |compositor_|. Blocks until the
   // compositor can return the frame.
-  scoped_refptr<VideoFrame> GetCurrentFrameFromCompositor();
+  scoped_refptr<VideoFrame> GetCurrentFrameFromCompositor() const;
 
   // Called when the demuxer encounters encrypted streams.
   void OnEncryptedMediaInitData(EmeInitDataType init_data_type,
@@ -764,8 +766,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Whether the use of a surface layer instead of a video layer is enabled.
   bool surface_layer_for_video_enabled_ = false;
 
-  gfx::Size last_uploaded_frame_size_;
-  base::TimeDelta last_uploaded_frame_timestamp_;
+  mutable gfx::Size last_uploaded_frame_size_;
+  mutable base::TimeDelta last_uploaded_frame_timestamp_;
 
   base::CancelableCallback<void(base::TimeTicks)> frame_time_report_cb_;
 
