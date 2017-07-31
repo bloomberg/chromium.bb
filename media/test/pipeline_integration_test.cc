@@ -608,7 +608,7 @@ TEST_F(PipelineIntegrationTest, PlaybackWithAudioTrackDisabledThenEnabled) {
   // Disable audio.
   std::vector<MediaTrack::Id> empty;
   pipeline_->OnEnabledAudioTracksChanged(empty);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   // Seek to flush the pipeline and ensure there's no prerolled audio data.
   ASSERT_TRUE(Seek(base::TimeDelta()));
@@ -625,7 +625,7 @@ TEST_F(PipelineIntegrationTest, PlaybackWithAudioTrackDisabledThenEnabled) {
   std::vector<MediaTrack::Id> audio_track_id;
   audio_track_id.push_back("2");
   pipeline_->OnEnabledAudioTracksChanged(audio_track_id);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   // Restart playback from 500ms position.
   ASSERT_TRUE(Seek(k500ms));
@@ -641,7 +641,7 @@ TEST_F(PipelineIntegrationTest, PlaybackWithVideoTrackDisabledThenEnabled) {
 
   // Disable video.
   pipeline_->OnSelectedVideoTrackChanged(base::nullopt);
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   // Seek to flush the pipeline and ensure there's no prerolled video data.
   ASSERT_TRUE(Seek(base::TimeDelta()));
@@ -660,7 +660,7 @@ TEST_F(PipelineIntegrationTest, PlaybackWithVideoTrackDisabledThenEnabled) {
 
   // Re-enable video.
   pipeline_->OnSelectedVideoTrackChanged(MediaTrack::Id("1"));
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   // Seek to flush video pipeline and reset the video hash again to clear state
   // if some prerolled frames got hashed after enabling video.
@@ -1199,7 +1199,7 @@ TEST_F(PipelineIntegrationTest, MediaSource_Remove_Updates_BufferedRanges) {
 
   source.RemoveRange(base::TimeDelta::FromMilliseconds(1000),
                      base::TimeDelta::FromMilliseconds(k320WebMFileDurationMs));
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 
   buffered_ranges = pipeline_->GetBufferedTimeRanges();
   EXPECT_EQ(1u, buffered_ranges.size());
@@ -1235,7 +1235,7 @@ TEST_F(PipelineIntegrationTest, MediaSource_FillUp_Buffer) {
     source.EvictCodedFrames(media_time, file->data_size());
     ASSERT_TRUE(
         source.AppendAtTime(media_time, file->data(), file->data_size()));
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
 
     buffered_ranges = pipeline_->GetBufferedTimeRanges();
   } while (buffered_ranges.size() == 1 &&
