@@ -80,7 +80,7 @@ TEST(GoogleNewLogoApiTest, ParsesAnimatedImage) {
   "ddljson": {
     "target_url": "/target",
     "large_image": {
-      "is_animated": true,
+      "is_animated_gif": true,
       "url": "https://www.doodle.com/image.gif"
     },
     "cta_data_uri": "data:image/png;base64,YWJj"
