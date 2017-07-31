@@ -30,72 +30,16 @@
 #include <stdarg.h>
 
 #include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/WTFExport.h"
 
+// New code shouldn't use this function. This function will be deprecated.
+void vprintf_stderr_common(const char* format, va_list args);
+
 // WTFLogAlways() is deprecated. crbug.com/638849
 WTF_EXPORT PRINTF_FORMAT(1, 2)  // NOLINT
     void WTFLogAlways(const char* format, ...);
-
-namespace WTF {
-
-#if !DCHECK_IS_ON()
-
-#define WTF_CREATE_SCOPED_LOGGER(...) ((void)0)
-#define WTF_CREATE_SCOPED_LOGGER_IF(...) ((void)0)
-#define WTF_APPEND_SCOPED_LOGGER(...) ((void)0)
-
-#else
-
-// ScopedLogger wraps log messages in parentheses, with indentation proportional
-// to the number of instances. This makes it easy to see the flow of control in
-// the output, particularly when instrumenting recursive functions.
-//
-// NOTE: This class is a debugging tool, not intended for use by checked-in
-// code. Please do not remove it.
-//
-class WTF_EXPORT ScopedLogger {
-  WTF_MAKE_NONCOPYABLE(ScopedLogger);
-
- public:
-  // The first message is passed to the constructor.  Additional messages for
-  // the same scope can be added with log(). If condition is false, produce no
-  // output and do not create a scope.
-  PRINTF_FORMAT(3, 4) ScopedLogger(bool condition, const char* format, ...);
-  ~ScopedLogger();
-  PRINTF_FORMAT(2, 3) void Log(const char* format, ...);
-
- private:
-  FRIEND_TEST_ALL_PREFIXES(AssertionsTest, ScopedLogger);
-  using PrintFunctionPtr = void (*)(const char* format, va_list args);
-
-  // Note: not thread safe.
-  static void SetPrintFuncForTests(PrintFunctionPtr);
-
-  void Init(const char* format, va_list args);
-  void WriteNewlineIfNeeded();
-  void Indent();
-  void Print(const char* format, ...);
-  void PrintIndent();
-  static ScopedLogger*& Current();
-
-  ScopedLogger* const parent_;
-  bool multiline_;  // The ')' will go on the same line if there is only one
-                    // entry.
-  static PrintFunctionPtr print_func_;
-};
-
-#define WTF_CREATE_SCOPED_LOGGER(name, ...) \
-  WTF::ScopedLogger name(true, __VA_ARGS__)
-#define WTF_CREATE_SCOPED_LOGGER_IF(name, condition, ...) \
-  WTF::ScopedLogger name(condition, __VA_ARGS__)
-#define WTF_APPEND_SCOPED_LOGGER(name, ...) (name.Log(__VA_ARGS__))
-
-#endif  // !DCHECK_IS_ON()
-
-}  // namespace WTF
 
 #define DCHECK_AT(assertion, file, line)                            \
   LAZY_STREAM(logging::LogMessage(file, line, #assertion).stream(), \

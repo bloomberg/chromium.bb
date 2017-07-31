@@ -6,7 +6,6 @@
 
 #include "platform/wtf/text/StringBuilder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <stdio.h>
 
 namespace WTF {
 
@@ -35,42 +34,5 @@ TEST(AssertionsTest, Assertions) {
   SECURITY_CHECK(true);
   EXPECT_DEATH_IF_SUPPORTED(SECURITY_CHECK(false), "");
 };
-
-#if DCHECK_IS_ON()
-static const int kPrinterBufferSize = 256;
-static char g_buffer[kPrinterBufferSize];
-static StringBuilder g_builder;
-
-static void Vprint(const char* format, va_list args) {
-  int written = vsnprintf(g_buffer, kPrinterBufferSize, format, args);
-  if (written > 0 && written < kPrinterBufferSize)
-    g_builder.Append(g_buffer);
-}
-
-TEST(AssertionsTest, ScopedLogger) {
-  ScopedLogger::SetPrintFuncForTests(Vprint);
-  {
-    WTF_CREATE_SCOPED_LOGGER(a, "a1");
-    {
-      WTF_CREATE_SCOPED_LOGGER_IF(b, false, "b1");
-      {
-        WTF_CREATE_SCOPED_LOGGER(c, "c");
-        { WTF_CREATE_SCOPED_LOGGER(d, "d %d %s", -1, "hello"); }
-      }
-      WTF_APPEND_SCOPED_LOGGER(b, "b2");
-    }
-    WTF_APPEND_SCOPED_LOGGER(a, "a2 %.1f", 0.5);
-  }
-
-  EXPECT_EQ(
-      "( a1\n"
-      "  ( c\n"
-      "    ( d -1 hello )\n"
-      "  )\n"
-      "  a2 0.5\n"
-      ")\n",
-      g_builder.ToString());
-};
-#endif  // DCHECK_IS_ON()
 
 }  // namespace WTF
