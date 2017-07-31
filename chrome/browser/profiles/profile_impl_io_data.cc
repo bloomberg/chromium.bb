@@ -555,8 +555,7 @@ void ProfileImplIOData::InitializeInternal(
       io_thread_globals->data_use_ascriber.get());
   SetUpJobFactoryDefaultsForBuilder(
       builder, std::move(request_interceptors),
-      std::move(profile_params->protocol_handler_interceptor),
-      io_thread_globals->system_request_context->host_resolver());
+      std::move(profile_params->protocol_handler_interceptor));
 
   builder->set_reporting_policy(MaybeCreateReportingPolicy());
 }

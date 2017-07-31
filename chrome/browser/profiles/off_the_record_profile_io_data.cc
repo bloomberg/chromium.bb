@@ -220,9 +220,7 @@ void OffTheRecordProfileIOData::InitializeInternal(
   AddProtocolHandlersToBuilder(builder, protocol_handlers);
   SetUpJobFactoryDefaultsForBuilder(
       builder, std::move(request_interceptors),
-      std::move(profile_params->protocol_handler_interceptor),
-      profile_params->io_thread->globals()
-          ->system_request_context->host_resolver());
+      std::move(profile_params->protocol_handler_interceptor));
 }
 
 void OffTheRecordProfileIOData::OnMainRequestContextCreated(

@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -19,7 +20,20 @@ namespace {
 
 content::mojom::NetworkContextParamsPtr CreateMainNetworkContextParams() {
   // TODO(mmenke): Set up parameters here.
-  return content::mojom::NetworkContextParams::New();
+  content::mojom::NetworkContextParamsPtr network_context_params =
+      content::mojom::NetworkContextParams::New();
+
+  // NOTE(mmenke): Keep these protocol handlers and
+  // ProfileIOData::SetUpJobFactoryDefaultsForBuilder in sync with
+  // ProfileIOData::IsHandledProtocol().
+  // TODO(mmenke): Find a better way of handling tracking supported schemes.
+  network_context_params->enable_data_url_support = true;
+  network_context_params->enable_file_url_support = true;
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+  network_context_params->enable_ftp_url_support = true;
+#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
+
+  return network_context_params;
 }
 
 }  // namespace

@@ -376,19 +376,20 @@ class ProfileIOData {
       net::NetworkDelegate* network_delegate,
       net::HostResolver* host_resolver) const;
 
-  // Does common setup of the URLRequestJobFactories. Adds default
-  // ProtocolHandlers to |builder|, and adds URLRequestInterceptors in front of
-  // them as needed.
+  // Does common setup of the URLRequestJobFactories. Adds
+  // |request_interceptors| and some default ProtocolHandlers to |builder|, adds
+  // URLRequestInterceptors in front of them as needed.
+  //
+  // Unlike SetUpJobFactoryDefaults, leaves configuring data, file, and ftp
+  // support to the ProfileNetworkContextService.
   //
   // |protocol_handler_interceptor| is configured to intercept URLRequests
   //     before all other URLRequestInterceptors, if non-null.
-  // |host_resolver| is needed to set up the FtpProtocolHandler.
   void SetUpJobFactoryDefaultsForBuilder(
       net::URLRequestContextBuilder* builder,
       content::URLRequestInterceptorScopedVector request_interceptors,
       std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
-          protocol_handler_interceptor,
-      net::HostResolver* host_resolver) const;
+          protocol_handler_interceptor) const;
 
   // Called when the Profile is destroyed. |context_getters| must include all
   // URLRequestContextGetters that refer to the ProfileIOData's

@@ -39,7 +39,7 @@ class URLLoaderImpl;
 // URLRequestContext. When that happens, the consumer takes ownership of the
 // NetworkContext directly, has direct access to its URLRequestContext, and is
 // responsible for destroying it before the NetworkService.
-class NetworkContext : public mojom::NetworkContext {
+class CONTENT_EXPORT NetworkContext : public mojom::NetworkContext {
  public:
   NetworkContext(NetworkServiceImpl* network_service,
                  mojom::NetworkContextRequest request,
@@ -53,7 +53,7 @@ class NetworkContext : public mojom::NetworkContext {
 
   ~NetworkContext() override;
 
-  CONTENT_EXPORT static std::unique_ptr<NetworkContext> CreateForTesting();
+  static std::unique_ptr<NetworkContext> CreateForTesting();
 
   net::URLRequestContext* url_request_context() {
     return url_request_context_.get();
