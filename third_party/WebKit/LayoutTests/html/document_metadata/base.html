@@ -27,11 +27,11 @@ shouldBeTrue("endsWith(document.querySelector('base').href, '/null')");
 
 // When a document does not have a URL, base cannot be resolved
 
-// Make sure that we don't use the creator document as the base.
+// Make sure that we use the creator document as the base.
 var documentWithoutAView = document.implementation.createHTMLDocument('');
 base = documentWithoutAView.head.appendChild(documentWithoutAView.createElement('base'));
 base.setAttribute('href', 'foo/bar/');
-shouldBeEqualToString("documentWithoutAView.querySelector('base').href", '');
+shouldBeTrue("endsWith(documentWithoutAView.querySelector('base').href, 'foo/bar/')");
 base.setAttribute('href', 'http://webkit.org/');
 shouldBeEqualToString("documentWithoutAView.querySelector('base').href", 'http://webkit.org/');
 
@@ -39,7 +39,7 @@ shouldBeEqualToString("documentWithoutAView.querySelector('base').href", 'http:/
 var iframe = document.body.appendChild(document.createElement('iframe'));
 base = iframe.contentDocument.head.appendChild(iframe.contentDocument.createElement('base'));
 base.setAttribute('href', 'foo/bar/');
-shouldBeEqualToString("iframe.contentDocument.querySelector('base').href", '');
+shouldBeTrue("endsWith(iframe.contentDocument.querySelector('base').href, 'foo/bar/')");
 
 // Make sure that we don't use the opener document as the base.
 var newWindow = window.open('about:blank');
