@@ -160,7 +160,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   // True if scroll gestures should contribute to dragging.
   bool touch_dragging_ = false;
 
-  ImageShadowAnimator shadow_animator_;
+  std::unique_ptr<ImageShadowAnimator> shadow_animator_;
 
   bool is_installing_ = false;
   bool is_highlighted_ = false;
