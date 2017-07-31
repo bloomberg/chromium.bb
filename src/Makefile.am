@@ -120,7 +120,7 @@ stamp-fcobjshash.gperf: fcobjshash.gperf.h fcobjs.h
 	mv -f $@.tmp fcobjshash.gperf && touch $@ || ( $(RM) $@.tmp && false )
 
 fcobjshash.h: Makefile fcobjshash.gperf
-	$(AM_V_GEN) $(GPERF) -m 100 fcobjshash.gperf > $@.tmp && \
+	$(AM_V_GEN) $(GPERF) --pic -m 100 fcobjshash.gperf > $@.tmp && \
 	mv -f $@.tmp $@ || ( $(RM) $@.tmp && false )
 
 EXTRA_DIST += \
