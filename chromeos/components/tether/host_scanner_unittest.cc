@@ -362,7 +362,7 @@ class HostScannerTest : public NetworkStateTest {
     scanned_device_infos_from_current_scan_.clear();
   }
 
-  void AddWifiNetwork() {
+  void ConnectToWifiNetwork() {
     std::stringstream ss;
     ss << "{"
        << "  \"GUID\": \"wifiNetworkGuid\","
@@ -410,7 +410,7 @@ class HostScannerTest : public NetworkStateTest {
 };
 
 TEST_F(HostScannerTest, TestScan_ConnectedToExistingNetwork) {
-  AddWifiNetwork();
+  ConnectToWifiNetwork();
   EXPECT_TRUE(network_state_handler()->DefaultNetwork());
 
   EXPECT_FALSE(host_scanner_->IsScanActive());
