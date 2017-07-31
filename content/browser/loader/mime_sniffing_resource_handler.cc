@@ -14,7 +14,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/mime_util/mime_util.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/loader/intercepting_resource_handler.h"
@@ -39,6 +38,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "ppapi/features/features.h"
+#include "third_party/WebKit/common/mime_util/mime_util.h"
 #include "url/origin.h"
 
 namespace content {
@@ -459,7 +459,7 @@ bool MimeSniffingResourceHandler::MaybeStartInterception() {
 
   bool must_download = MustDownload();
   if (!must_download) {
-    if (mime_util::IsSupportedMimeType(mime_type))
+    if (blink::IsSupportedMimeType(mime_type))
       return true;
 
     bool handled_by_plugin;

@@ -33,7 +33,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "components/mime_util/mime_util.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
@@ -131,6 +130,7 @@
 #include "ppapi/features/features.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/WebKit/common/mime_util/mime_util.h"
 #include "third_party/WebKit/public/platform/WebSecurityStyle.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -3196,7 +3196,7 @@ bool WebContentsImpl::IsSavable() {
          contents_mime_type_ == "application/xhtml+xml" ||
          contents_mime_type_ == "text/plain" ||
          contents_mime_type_ == "text/css" ||
-         mime_util::IsSupportedJavascriptMimeType(contents_mime_type_);
+         blink::IsSupportedJavascriptMimeType(contents_mime_type_);
 }
 
 void WebContentsImpl::OnSavePage() {

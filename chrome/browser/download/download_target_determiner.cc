@@ -24,7 +24,6 @@
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/mime_util/mime_util.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -33,6 +32,7 @@
 #include "extensions/features/features.h"
 #include "net/base/filename_util.h"
 #include "ppapi/features/features.h"
+#include "third_party/WebKit/common/mime_util/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/origin.h"
 
@@ -515,7 +515,7 @@ DownloadTargetDeterminer::Result
   if (mime_type_.empty())
     return CONTINUE;
 
-  if (mime_util::IsSupportedMimeType(mime_type_)) {
+  if (blink::IsSupportedMimeType(mime_type_)) {
     is_filetype_handled_safely_ = true;
     return CONTINUE;
   }

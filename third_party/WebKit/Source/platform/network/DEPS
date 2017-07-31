@@ -1,5 +1,4 @@
 include_rules = [
-    "+components/mime_util",
     "+media",
     "-media/blink",
     # net/ includes should be allowed only in a limited set of directories,

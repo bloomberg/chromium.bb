@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mime_util/mime_util.h"
+#include "third_party/WebKit/common/mime_util/mime_util.h"
 
 #include "build/build_config.h"
 #include "net/base/mime_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace mime_util {
+namespace blink {
 
 TEST(MimeUtilTest, LookupTypes) {
   EXPECT_FALSE(IsUnsupportedTextMimeType("text/banana"));
@@ -52,4 +52,4 @@ TEST(MimeUtilTest, LookupTypes) {
   EXPECT_FALSE(IsSupportedNonImageMimeType("Application/VND.DOC;X=Y+JSON"));
 }
 
-}  // namespace mime_util
+}  // namespace blink

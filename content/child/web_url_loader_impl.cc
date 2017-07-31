@@ -25,7 +25,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/mime_util/mime_util.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/ftp_directory_listing_response_delegate.h"
 #include "content/child/request_extra_data.h"
@@ -55,6 +54,7 @@
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/url_request/url_request_data_job.h"
+#include "third_party/WebKit/common/mime_util/mime_util.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/WebHTTPLoadInfo.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
@@ -977,7 +977,7 @@ bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally(
 
   std::string mime_type, unused_charset;
   if (net::DataURL::Parse(request.Url(), &mime_type, &unused_charset, NULL) &&
-      mime_util::IsSupportedMimeType(mime_type))
+      blink::IsSupportedMimeType(mime_type))
     return true;
 
   return false;

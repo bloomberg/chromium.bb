@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mime_util/mime_util.h"
+#include "third_party/WebKit/common/mime_util/mime_util.h"
 
 #include <stddef.h>
 
@@ -18,7 +18,7 @@
 #include "media/base/mime_util.h"
 #endif
 
-namespace mime_util {
+namespace blink {
 
 namespace {
 
@@ -90,11 +90,8 @@ static const char* const kUnsupportedTextTypes[] = {
 static const char* const kSupportedNonImageTypes[] = {
     "image/svg+xml",  // SVG is text-based XML, even though it has an image/
                       // type
-    "application/xml",
-    "application/atom+xml",
-    "application/rss+xml",
-    "application/xhtml+xml",
-    "application/json",
+    "application/xml", "application/atom+xml", "application/rss+xml",
+    "application/xhtml+xml", "application/json",
     "multipart/related",  // For MHTML support.
     "multipart/x-mixed-replace"
     // Note: ADDING a new type here will probably render it AS HTML. This can
@@ -200,4 +197,4 @@ bool IsSupportedMimeType(const std::string& mime_type) {
   return g_mime_util.Get().IsSupportedMimeType(mime_type);
 }
 
-}  // namespace mime_util
+}  // namespace blink
