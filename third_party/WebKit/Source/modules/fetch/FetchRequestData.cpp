@@ -57,7 +57,6 @@ FetchRequestData* FetchRequestData::CloneExceptBody() {
   request->url_ = url_;
   request->method_ = method_;
   request->header_list_ = header_list_->Clone();
-  request->unsafe_request_flag_ = unsafe_request_flag_;
   request->origin_ = origin_;
   request->same_origin_data_url_flag_ = same_origin_data_url_flag_;
   request->context_ = context_;
@@ -100,7 +99,6 @@ FetchRequestData::~FetchRequestData() {}
 FetchRequestData::FetchRequestData()
     : method_(HTTPNames::GET),
       header_list_(FetchHeaderList::Create()),
-      unsafe_request_flag_(false),
       context_(WebURLRequest::kRequestContextUnspecified),
       same_origin_data_url_flag_(false),
       referrer_(Referrer(ClientReferrerString(), kReferrerPolicyDefault)),
