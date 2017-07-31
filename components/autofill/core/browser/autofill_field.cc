@@ -543,7 +543,9 @@ AutofillField::AutofillField()
       credit_card_number_offset_(0),
       previously_autofilled_(false),
       generation_type_(AutofillUploadContents::Field::NO_GENERATION),
-      form_classifier_outcome_(AutofillUploadContents::Field::NO_OUTCOME) {}
+      generated_password_changed_(false),
+      form_classifier_outcome_(AutofillUploadContents::Field::NO_OUTCOME),
+      username_vote_type_(AutofillUploadContents::Field::NO_INFORMATION) {}
 
 AutofillField::AutofillField(const FormFieldData& field,
                              const base::string16& unique_name)
@@ -558,7 +560,9 @@ AutofillField::AutofillField(const FormFieldData& field,
       previously_autofilled_(false),
       parseable_name_(field.name),
       generation_type_(AutofillUploadContents::Field::NO_GENERATION),
-      form_classifier_outcome_(AutofillUploadContents::Field::NO_OUTCOME) {}
+      generated_password_changed_(false),
+      form_classifier_outcome_(AutofillUploadContents::Field::NO_OUTCOME),
+      username_vote_type_(AutofillUploadContents::Field::NO_INFORMATION) {}
 
 AutofillField::~AutofillField() {}
 

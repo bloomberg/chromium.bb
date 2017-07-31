@@ -33,7 +33,7 @@ message AutofillQueryResponseContents {
 
 // This message contains information about the field types in a single form.
 // It is sent by the toolbar to contribute to the field type statistics.
-// Next available id: 23
+// Next available id: 24
 message AutofillUploadContents {
   required string client_version = 1;
   required fixed64 form_signature = 2;
@@ -102,6 +102,18 @@ message AutofillUploadContents {
     // True iff the user changed generated password. If there was no generation,
     // the field is absent.
     optional bool generated_password_changed = 22;
+
+    enum UsernameVoteType {
+      NO_INFORMATION = 0;
+      CREDENTIALS_REUSED = 1;
+      USERNAME_OVERWRITTEN = 2;
+      USERNAME_EDITED = 3;
+      BASE_HEURISTIC = 4;
+      HTML_CLASSIFIER = 5;
+    }
+    // The type of username vote. If |autofill_type| != USERNAME, then the field
+    // is missed.
+    optional UsernameVoteType username_vote_type = 23;
   }
   // Signature of the form action host (e.g. Hash64Bit("example.com")).
   optional fixed64 action_signature = 13;
