@@ -1228,7 +1228,7 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
           if (ref && is_masked_compound_type(mi->mbmi.interinter_compound_type))
             av1_make_masked_inter_predictor(
                 pre, pre_buf->stride, dst, dst_buf->stride, subpel_x, subpel_y,
-                sf, w, h, &conv_params, mi->mbmi.interp_filter, xs, ys,
+                sf, b4_w, b4_h, &conv_params, mi->mbmi.interp_filter, xs, ys,
 #if CONFIG_SUPERTX
                 wedge_offset_x, wedge_offset_y,
 #endif  // CONFIG_SUPERTX
