@@ -26,7 +26,7 @@ if test x$wayland_scanner = x; then
         fi
 fi
 
-AM_INIT_AUTOMAKE([1.11 foreign no-dist-gzip dist-xz])
+AM_INIT_AUTOMAKE([1.11 foreign no-dist-gzip dist-xz tar-ustar])
 
 AM_SILENT_RULES([yes])
 
