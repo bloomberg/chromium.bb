@@ -42,8 +42,6 @@ class FetchRequestData final
   const AtomicString& Method() const { return method_; }
   void SetURL(const KURL& url) { url_ = url; }
   const KURL& Url() const { return url_; }
-  bool UnsafeRequestFlag() const { return unsafe_request_flag_; }
-  void SetUnsafeRequestFlag(bool flag) { unsafe_request_flag_ = flag; }
   WebURLRequest::RequestContext Context() const { return context_; }
   void SetContext(WebURLRequest::RequestContext context) { context_ = context; }
   PassRefPtr<SecurityOrigin> Origin() { return origin_; }
@@ -110,7 +108,6 @@ class FetchRequestData final
   AtomicString method_;
   KURL url_;
   Member<FetchHeaderList> header_list_;
-  bool unsafe_request_flag_;
   // FIXME: Support m_skipServiceWorkerFlag;
   WebURLRequest::RequestContext context_;
   RefPtr<SecurityOrigin> origin_;

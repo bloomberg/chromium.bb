@@ -273,7 +273,7 @@ class FetchManager::Loader final
 
   void PerformSchemeFetch();
   void PerformNetworkError(const String& message);
-  void PerformHTTPFetch(bool cors_flag, bool cors_preflight_flag);
+  void PerformHTTPFetch();
   void PerformDataFetch();
   void Failed(const String& message);
   void NotifyFinished();
@@ -630,29 +630,12 @@ void FetchManager::Loader::Start() {
     return;
   }
 
-  // "- |request|'s mode is |CORS-with-forced-preflight|."
-  // "- |request|'s unsafe request flag is set and either |request|'s method
-  // is not a CORS-safelisted method or a header in |request|'s header list is
-  // not a CORS-safelisted header"
-  if (request_->Mode() ==
-          WebURLRequest::kFetchRequestModeCORSWithForcedPreflight ||
-      (request_->UnsafeRequestFlag() &&
-       (!FetchUtils::IsCORSSafelistedMethod(request_->Method()) ||
-        request_->HeaderList()->ContainsNonCORSSafelistedHeader()))) {
-    // "Set |request|'s response tainting to |CORS|."
-    request_->SetResponseTainting(FetchRequestData::kCORSTainting);
-    // "The result of performing an HTTP fetch using |request| with the
-    // |CORS flag| and |CORS preflight flag| set."
-    PerformHTTPFetch(true, true);
-    return;
-  }
-
-  // "- Otherwise
-  //     Set |request|'s response tainting to |CORS|."
+  // "Set |request|'s response tainting to |CORS|."
   request_->SetResponseTainting(FetchRequestData::kCORSTainting);
+
   // "The result of performing an HTTP fetch using |request| with the
   // |CORS flag| set."
-  PerformHTTPFetch(true, false);
+  PerformHTTPFetch();
 }
 
 void FetchManager::Loader::Dispose() {
@@ -670,13 +653,12 @@ void FetchManager::Loader::PerformSchemeFetch() {
   // "To perform a scheme fetch using |request|, switch on |request|'s url's
   // scheme, and run the associated steps:"
   if (SchemeRegistry::ShouldTreatURLSchemeAsSupportingFetchAPI(
-          request_->Url().Protocol())) {
+          request_->Url().Protocol()) ||
+      request_->Url().ProtocolIs("blob")) {
     // "Return the result of performing an HTTP fetch using |request|."
-    PerformHTTPFetch(false, false);
+    PerformHTTPFetch();
   } else if (request_->Url().ProtocolIsData()) {
     PerformDataFetch();
-  } else if (request_->Url().ProtocolIs("blob")) {
-    PerformHTTPFetch(false, false);
   } else {
     // FIXME: implement other protocols.
     PerformNetworkError("Fetch API cannot load " + request_->Url().GetString() +
@@ -689,12 +671,7 @@ void FetchManager::Loader::PerformNetworkError(const String& message) {
   Failed(message);
 }
 
-void FetchManager::Loader::PerformHTTPFetch(bool cors_flag,
-                                            bool cors_preflight_flag) {
-  DCHECK(SchemeRegistry::ShouldTreatURLSchemeAsSupportingFetchAPI(
-             request_->Url().Protocol()) ||
-         (request_->Url().ProtocolIs("blob") && !cors_flag &&
-          !cors_preflight_flag));
+void FetchManager::Loader::PerformHTTPFetch() {
   // CORS preflight fetch procedure is implemented inside
   // DocumentThreadableLoader.
 
@@ -709,19 +686,9 @@ void FetchManager::Loader::PerformHTTPFetch(bool cors_flag,
   switch (request_->Mode()) {
     case WebURLRequest::kFetchRequestModeSameOrigin:
     case WebURLRequest::kFetchRequestModeNoCORS:
-      request.SetFetchRequestMode(request_->Mode());
-      break;
     case WebURLRequest::kFetchRequestModeCORS:
     case WebURLRequest::kFetchRequestModeCORSWithForcedPreflight:
-      // TODO(tyoshino): Use only the flag or the mode enum inside the
-      // FetchManager. Currently both are used due to ongoing refactoring.
-      // See http://crbug.com/727596.
-      if (cors_preflight_flag) {
-        request.SetFetchRequestMode(
-            WebURLRequest::kFetchRequestModeCORSWithForcedPreflight);
-      } else {
-        request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeCORS);
-      }
+      request.SetFetchRequestMode(request_->Mode());
       break;
     case WebURLRequest::kFetchRequestModeNavigate:
       // Using kFetchRequestModeSameOrigin here to reduce the security risk.
@@ -732,6 +699,11 @@ void FetchManager::Loader::PerformHTTPFetch(bool cors_flag,
 
   request.SetFetchCredentialsMode(request_->Credentials());
   for (const auto& header : request_->HeaderList()->List()) {
+    // Since |request_|'s headers are populated with either of the "request"
+    // guard or "request-no-cors" guard, we can assume that none of the headers
+    // have a name listed in the forbidden header names.
+    DCHECK(!FetchUtils::IsForbiddenHeaderName(header.first));
+
     request.AddHTTPHeaderField(AtomicString(header.first),
                                AtomicString(header.second));
   }
