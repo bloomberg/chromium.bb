@@ -1068,6 +1068,10 @@ class ReportStage(generic_stages.BuilderStage,
       metrics.SecondsDistribution(constants.MON_BUILD_DURATION).add(
           duration, fields=mon_fields)
 
+      if self._run.options.sanity_check_build:
+        metrics.Counter(constants.MON_BUILD_SANITY_COMP_COUNT).increment(
+            fields=mon_fields)
+
       if config_lib.IsMasterCQ(self._run.config):
         self_destructed = self._run.attrs.metadata.GetValueWithDefault(
             constants.SELF_DESTRUCTED_BUILD, False)

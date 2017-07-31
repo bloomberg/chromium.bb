@@ -217,6 +217,8 @@ MON_PRECQ_LAUNCH_COUNT = 'chromeos/cbuildbot/pre-cq/launch_count'
 MON_PRECQ_CL_LAUNCH_COUNT = 'chromeos/cbuildbot/pre-cq/cl_launch_count'
 MON_PRECQ_TICK_COUNT = 'chromeos/cbuildbot/pre-cq/tick_count'
 MON_BUILD_COMP_COUNT = 'chromeos/cbuildbot/build/completed_count'
+MON_BUILD_SANITY_COMP_COUNT = (
+    'chromeos/cbuildbot/build/sanity_build_completed_count')
 MON_BUILD_DURATION = 'chromeos/cbuildbot/build/durations'
 MON_STAGE_COMP_COUNT = 'chromeos/cbuildbot/stage/completed_count'
 MON_STAGE_DURATION = 'chromeos/cbuildbot/stage/durations'
