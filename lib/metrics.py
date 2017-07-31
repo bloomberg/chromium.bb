@@ -313,6 +313,7 @@ def CumulativeSmallIntegerDistribution(name, reset_after=False,
       description=description,
       field_spec=field_spec)
 
+
 @_Metric
 def SecondsDistribution(name, scale=1, reset_after=False, description=None,
                         field_spec=_MISSING):
@@ -337,6 +338,7 @@ def SecondsDistribution(name, scale=1, reset_after=False, description=None,
   return ts_mon.CumulativeDistributionMetric(
       name, bucketer=b, units=ts_mon.MetricsDataUnits.SECONDS,
       description=description, field_spec=field_spec)
+
 
 @_Metric
 def PercentageDistribution(name, num_buckets=1000, reset_after=False,
@@ -364,9 +366,10 @@ def PercentageDistribution(name, num_buckets=1000, reset_after=False,
       name, bucketer=b,
       description=description, field_spec=field_spec)
 
+
 @contextlib.contextmanager
-def SecondsTimer(name, scale=1, fields=None, description=None,
-                 field_spec=_MISSING):
+def SecondsTimer(name, fields=None, description=None, field_spec=_MISSING,
+                 scale=1, record_on_exception=True, add_exception_field=False):
   """Record the time of an operation to a SecondsDistributionMetric.
 
   Records the time taken inside of the context block, to the
@@ -401,32 +404,46 @@ def SecondsTimer(name, scale=1, fields=None, description=None,
 
   Args:
     name: The name of the metric to create
-    scale: A float to scale the SecondsDistribution buckets by.
     fields: The fields of the metric to create.
     description: A string description of the metric.
     field_spec: A sequence of ts_mon.Field objects to specify the field schema.
+    scale: A float to scale the SecondsDistribution buckets by.
+    record_on_exception: Whether to record metrics if an exception is raised.
+    add_exception_field: Whether to add a BooleanField("encountered_exception")
+        to the FieldSpec provided, and set its value to True iff an exception
+        was raised in the context.
   """
+  if field_spec is not None and field_spec is not _MISSING:
+    field_spec.append(ts_mon.BooleanField('encountered_exception'))
+
   m = SecondsDistribution(
       name, scale=scale, description=description, field_spec=field_spec)
   f = fields or {}
   f = dict(f)
   keys = f.keys()
   t0 = datetime.datetime.now()
+
+  error = True
   try:
     yield f
+    error = False
   finally:
-    dt = (datetime.datetime.now() - t0).total_seconds()
+    if record_on_exception and add_exception_field:
+      keys.append('encountered_exception')
+      f.setdefault('encountered_exception', error)
     # Filter out keys that were not part of the initial key set. This is to
     # avoid inconsistent fields.
     # TODO(akeshet): Doing this filtering isn't super efficient. Would be better
     # to implement some key-restricted subclass or wrapper around dict, and just
     # yield that above rather than yielding a regular dict.
-    f = {k: f[k] for k in keys}
-    m.add(dt, fields=f)
+    if record_on_exception or not error:
+      dt = (datetime.datetime.now() - t0).total_seconds()
+      m.add(dt, fields={k: f[k] for k in keys})
 
 
 def SecondsTimerDecorator(name, fields=None, description=None,
-                          field_spec=_MISSING):
+                          field_spec=_MISSING, scale=1,
+                          record_on_exception=True, add_exception_field=False):
   """Decorator to time the duration of function calls.
 
   Usage:
@@ -449,12 +466,19 @@ def SecondsTimerDecorator(name, fields=None, description=None,
     fields: The fields of the metric to create
     description: A string description of the metric.
     field_spec: A sequence of ts_mon.Field objects to specify the field schema.
+    scale: A float to scale the distrubtion by
+    record_on_exception: Whether to record metrics if an exception is raised.
+    add_exception_field: Whether to add a BooleanField("encountered_exception")
+        to the FieldSpec provided, and set its value to True iff an exception
+        was raised in the context.
   """
   def decorator(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
       with SecondsTimer(name, fields=fields, description=description,
-                        field_spec=field_spec):
+                        field_spec=field_spec, scale=scale,
+                        record_on_exception=record_on_exception,
+                        add_exception_field=add_exception_field):
         return fn(*args, **kwargs)
 
     return wrapper
