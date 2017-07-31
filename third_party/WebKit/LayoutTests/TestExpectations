@@ -1198,9 +1198,6 @@ crbug.com/504706 [ Linux ] inspector/profiler/heap-snapshot-containment-sorting.
 # By about a quarter or less of a pixel.
 crbug.com/421412 [ Mac ] fast/text/international/bdo-bidi-width.html [ Failure ]
 
-crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-styled.html [ Failure ]
-crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-styled-after-onload.html [ Failure ]
-
 crbug.com/574283 [ Mac ] fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
 crbug.com/574283 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
 crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/first-scroll-runs-on-compositor.html [ Skip ]
