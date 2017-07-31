@@ -2387,6 +2387,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
                     u'-1': u"I would prefer that you didn't submit this",
                     u'-2': u'Do not submit'}
       }},
+      "reviewers": {"REVIEWER": [{u'email': u'ben@example.com'}]},
     }
     self.AssertOwnersWorks(approvers=set(['ben@example.com']),
         gerrit_response=response,
@@ -2414,6 +2415,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
                     u'+1': u'Looks good to me',
                     u'-1': u"I would prefer that you didn't submit this"}
       }},
+      "reviewers": {"REVIEWER": [{u'email': u'ben@example.com'}]},
     }
     self.AssertOwnersWorks(approvers=set(['ben@example.com']),
         gerrit_response=response,
@@ -2462,6 +2464,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
                     u'-1': u"I would prefer that you didn't submit this",
                     u'-2': u'Do not submit'}
       }},
+      "reviewers": {"REVIEWER": [{u'email': u'ben@example.com'}]},
     }
     self.AssertOwnersWorks(
         approvers=set(),
@@ -2494,6 +2497,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
                     u'+1': u'Looks good to me',
                     u'-1': u"I would prefer that you didn't submit this"}
       }},
+      "reviewers": {"REVIEWER": [{u'email': u'ben@example.com'}]},
     }
     self.AssertOwnersWorks(
         approvers=set(),

@@ -247,10 +247,19 @@ class GerritAccessor(object):
     return self.GetChangeInfo(issue)['owner']['email']
 
   def GetChangeReviewers(self, issue, approving_only=True):
-    cr = self.GetChangeInfo(issue)['labels']['Code-Review']
-    max_value = max(int(k) for k in cr['values'].keys())
-    return [r.get('email') for r in cr.get('all', [])
-            if not approving_only or r.get('value', 0) == max_value]
+    changeinfo = self.GetChangeInfo(issue)
+    if approving_only:
+      labelinfo = changeinfo.get('labels', {}).get('Code-Review', {})
+      values = labelinfo.get('values', {}).keys()
+      try:
+        max_value = max(int(v) for v in values)
+        reviewers = [r for r in labelinfo.get('all', [])
+                     if r.get('value', 0) == max_value]
+      except ValueError:  # values is the empty list
+        reviewers = []
+    else:
+      reviewers = changeinfo.get('reviewers', {}).get('REVIEWER', [])
+    return [r.get('email') for r in reviewers]
 
 
 class OutputApi(object):
