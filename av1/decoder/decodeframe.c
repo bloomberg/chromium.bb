@@ -2291,24 +2291,23 @@ static PARTITION_TYPE read_partition(AV1_COMMON *cm, MACROBLOCKD *xd,
 
   aom_cdf_prob *partition_cdf = (ctx >= 0) ? ec_ctx->partition_cdf[ctx] : NULL;
 
-  if (has_rows && has_cols)
+  if (has_rows && has_cols) {
 #if CONFIG_EXT_PARTITION_TYPES
-    if (bsize <= BLOCK_8X8)
-      p = (PARTITION_TYPE)aom_read_symbol(r, partition_cdf, PARTITION_TYPES,
-                                          ACCT_STR);
-    else
-      p = (PARTITION_TYPE)aom_read_symbol(r, partition_cdf, EXT_PARTITION_TYPES,
-                                          ACCT_STR);
+    const int bsl =
+        mi_width_log2_lookup[bsize] - mi_width_log2_lookup[BLOCK_8X8];
+    p = (PARTITION_TYPE)aom_read_symbol(r, partition_cdf,
+                                        av1_num_partition_types[bsl], ACCT_STR);
 #else
     p = (PARTITION_TYPE)aom_read_symbol(r, partition_cdf, PARTITION_TYPES,
                                         ACCT_STR);
 #endif  // CONFIG_EXT_PARTITION_TYPES
-  else if (!has_rows && has_cols)
+  } else if (!has_rows && has_cols) {
     p = aom_read(r, probs[1], ACCT_STR) ? PARTITION_SPLIT : PARTITION_HORZ;
-  else if (has_rows && !has_cols)
+  } else if (has_rows && !has_cols) {
     p = aom_read(r, probs[2], ACCT_STR) ? PARTITION_SPLIT : PARTITION_VERT;
-  else
+  } else {
     p = PARTITION_SPLIT;
+  }
 
   if (counts) ++counts->partition[ctx][p];
 

@@ -585,6 +585,10 @@ extern const aom_tree_index
 extern int av1_switchable_interp_ind[SWITCHABLE_FILTERS];
 extern int av1_switchable_interp_inv[SWITCHABLE_FILTERS];
 
+#if CONFIG_EXT_PARTITION_TYPES
+extern int av1_num_partition_types[PARTITION_BLOCK_SIZES];
+#endif
+
 void av1_setup_past_independence(struct AV1Common *cm);
 
 void av1_adapt_intra_frame_probs(struct AV1Common *cm);

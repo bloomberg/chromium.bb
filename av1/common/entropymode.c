@@ -5160,6 +5160,18 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 int av1_switchable_interp_ind[SWITCHABLE_FILTERS];
 int av1_switchable_interp_inv[SWITCHABLE_FILTERS];
 
+#if CONFIG_EXT_PARTITION_TYPES
+int av1_num_partition_types[PARTITION_BLOCK_SIZES] = {
+  PARTITION_TYPES,          // 8x8: The 4 traditional partitions
+  EXT_PARTITION_TYPES - 2,  // 16x16: All but 4:1 and 1:4 partitions
+  EXT_PARTITION_TYPES,      // 32x32: All partitions
+  EXT_PARTITION_TYPES - 2,  // 64x64: All but 4:1 and 1:4 partitions
+#if CONFIG_EXT_PARTITION
+  EXT_PARTITION_TYPES - 2  // 128x128: All but 4:1 and 1:4 partitions
+#endif
+};
+#endif  // CONFIG_EXT_PARTITION_TYPES
+
 #if CONFIG_DUAL_FILTER && USE_EXTRA_FILTER
 const aom_tree_index av1_switchable_interp_tree[TREE_SIZE(SWITCHABLE_FILTERS)] =
     {
