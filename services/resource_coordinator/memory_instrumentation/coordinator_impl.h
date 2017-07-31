@@ -12,6 +12,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -104,6 +105,9 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
     std::set<QueuedMemoryDumpRequest::PendingResponse> pending_responses;
     std::map<mojom::ClientProcess*, Response> responses;
     int failed_memory_dump_count = 0;
+    // The time we started handling the request (does not including queuing
+    // time).
+    base::Time start_time;
   };
 
   // Holds the identity and remote reference of registered clients.
