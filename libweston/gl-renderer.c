@@ -2090,8 +2090,7 @@ gl_renderer_query_dmabuf_formats(struct weston_compositor *wc,
 		*num_formats = 0;
 		return false;
 	}
-	if (!gr->query_dmabuf_formats(gr->egl_display, num, *formats,
-			(EGLint*) &num)) {
+	if (!gr->query_dmabuf_formats(gr->egl_display, num, *formats, &num)) {
 		*num_formats = 0;
 		free(*formats);
 		return false;
