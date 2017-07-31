@@ -84,22 +84,68 @@ WTF_EXPORT uint64_t CharactersToUInt64(const UChar*,
 // is trailing garbage.  Like the non-strict functions above, these return the
 // value when there is trailing garbage.  It would be better if these were more
 // consistent with the above functions instead.
-//
+
 // string -> double.
+//
+// These functions accepts:
+//  - leading '+'
+//  - numbers without leading zeros such as ".5"
+//  - numbers ending with "." such as "3."
+//  - scientific notation
+//  - leading whitespace (IsASCIISpace, not IsHTMLSpace)
+//  - no trailing whitespace
+//  - no trailing garbage
+//  - no numbers such as "NaN" "Infinity"
+//
+// A huge absolute number which a double can't represent is accepted, and
+// +Infinity or -Infinity is returned.
+//
+// A small absolute numbers which a double can't represent is accepted, and
+// 0 is returned
 WTF_EXPORT double CharactersToDouble(const LChar*, size_t, bool* ok);
 WTF_EXPORT double CharactersToDouble(const UChar*, size_t, bool* ok);
+
+// |parsed_length| will have the length of characters which was parsed as a
+// double number. It will be 0 if the input string isn't a number. It will be
+// smaller than |length| if the input string contains trailing
+// whiespace/garbage.
 WTF_EXPORT double CharactersToDouble(const LChar*,
-                                     size_t,
+                                     size_t length,
                                      size_t& parsed_length);
 WTF_EXPORT double CharactersToDouble(const UChar*,
-                                     size_t,
+                                     size_t length,
                                      size_t& parsed_length);
 
 // string -> float.
+//
+// These functions accepts:
+//  - leading '+'
+//  - numbers without leading zeros such as ".5"
+//  - numbers ending with "." such as "3."
+//  - scientific notation
+//  - leading whitespace (IsASCIISpace, not IsHTMLSpace)
+//  - no trailing whitespace
+//  - no trailing garbage
+//  - no numbers such as "NaN" "Infinity"
+//
+// A huge absolute number which a float can't represent is accepted, and
+// +Infinity or -Infinity is returned.
+//
+// A small absolute numbers which a float can't represent is accepted, and
+// 0 is returned
 WTF_EXPORT float CharactersToFloat(const LChar*, size_t, bool* ok);
 WTF_EXPORT float CharactersToFloat(const UChar*, size_t, bool* ok);
-WTF_EXPORT float CharactersToFloat(const LChar*, size_t, size_t& parsed_length);
-WTF_EXPORT float CharactersToFloat(const UChar*, size_t, size_t& parsed_length);
+
+// |parsed_length| will have the length of characters which was parsed as a
+// flaot number. It will be 0 if the input string isn't a number. It will be
+// smaller than |length| if the input string contains trailing
+// whiespace/garbage.
+WTF_EXPORT float CharactersToFloat(const LChar*,
+                                   size_t length,
+                                   size_t& parsed_length);
+WTF_EXPORT float CharactersToFloat(const UChar*,
+                                   size_t length,
+                                   size_t& parsed_length);
 
 }  // namespace WTF
 

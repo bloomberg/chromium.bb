@@ -241,4 +241,145 @@ TEST(StringToNumberTest, NumberParsingState) {
   EXPECT_EQ(NumberParsingResult::kSuccess, ParseUInt("10", &value));
 }
 
+void ParseDouble(const char* str, double expected_value) {
+  bool ok;
+  double value = CharactersToDouble(reinterpret_cast<const LChar*>(str),
+                                    std::strlen(str), &ok);
+  EXPECT_TRUE(ok) << "\"" << str << "\"";
+  EXPECT_EQ(expected_value, value);
+}
+
+void FailToParseDouble(const char* str) {
+  bool ok;
+  CharactersToDouble(reinterpret_cast<const LChar*>(str), std::strlen(str),
+                     &ok);
+  EXPECT_FALSE(ok) << "\"" << str << "\"";
+}
+
+TEST(StringToNumberTest, CharactersToDouble) {
+  FailToParseDouble("");
+  ParseDouble("0", 0.0);
+  ParseDouble("-0", 0.0);
+  ParseDouble("1.5", 1.5);
+  ParseDouble("+1.5", 1.5);
+  FailToParseDouble("+");
+  FailToParseDouble("-");
+  ParseDouble(".5", 0.5);
+  ParseDouble("1.", 1);
+  FailToParseDouble(".");
+  ParseDouble("1e-100", 1e-100);
+  ParseDouble("1e100", 1e+100);
+  ParseDouble("    1.5", 1.5);
+  FailToParseDouble("1.5   ");
+  FailToParseDouble("1.5px");
+  FailToParseDouble("NaN");
+  FailToParseDouble("nan");
+  FailToParseDouble("Infinity");
+  FailToParseDouble("infinity");
+  FailToParseDouble("Inf");
+  FailToParseDouble("inf");
+  ParseDouble("1e+4000", std::numeric_limits<double>::infinity());
+  ParseDouble("-1e+4000", -std::numeric_limits<double>::infinity());
+  ParseDouble("1e-4000", 0);
+  FailToParseDouble("1e");
+  FailToParseDouble("1e-");
+  FailToParseDouble("1e+");
+  FailToParseDouble("1e3.");
+  FailToParseDouble("1e3.5");
+  FailToParseDouble("1e.3");
+}
+
+size_t ParseDouble(const char* str) {
+  size_t parsed;
+  CharactersToDouble(reinterpret_cast<const LChar*>(str), std::strlen(str),
+                     parsed);
+  return parsed;
+}
+
+TEST(StringToNumberTest, CharactersToDoubleParsedLength) {
+  EXPECT_EQ(0u, ParseDouble(""));
+  EXPECT_EQ(0u, ParseDouble("  "));
+  EXPECT_EQ(0u, ParseDouble("+"));
+  EXPECT_EQ(0u, ParseDouble("-"));
+  EXPECT_EQ(0u, ParseDouble("."));
+  EXPECT_EQ(0u, ParseDouble("  "));
+  EXPECT_EQ(4u, ParseDouble(" 123"));
+  EXPECT_EQ(4u, ParseDouble(" 123 "));
+  EXPECT_EQ(4u, ParseDouble(" 123px"));
+  EXPECT_EQ(5u, ParseDouble("1.234"));
+  EXPECT_EQ(5u, ParseDouble("1.234e"));
+  EXPECT_EQ(7u, ParseDouble("1.234e1"));
+}
+
+void ParseFloat(const char* str, float expected_value) {
+  bool ok;
+  float value = CharactersToFloat(reinterpret_cast<const LChar*>(str),
+                                  std::strlen(str), &ok);
+  EXPECT_TRUE(ok) << "\"" << str << "\"";
+  EXPECT_EQ(expected_value, value);
+}
+
+void FailToParseFloat(const char* str) {
+  bool ok;
+  CharactersToFloat(reinterpret_cast<const LChar*>(str), std::strlen(str), &ok);
+  EXPECT_FALSE(ok) << "\"" << str << "\"";
+}
+
+TEST(StringToNumberTest, CharactersToFloat) {
+  FailToParseFloat("");
+  ParseFloat("0", 0.0f);
+  ParseFloat("-0", 0.0f);
+  ParseFloat("1.5", 1.5f);
+  ParseFloat("+1.5", 1.5f);
+  FailToParseFloat("+");
+  FailToParseFloat("-");
+  ParseFloat(".5", 0.5f);
+  ParseFloat("1.", 1.0f);
+  FailToParseFloat(".");
+  ParseFloat("1e-40", 1e-40f);
+  ParseFloat("1e30", 1e+30f);
+  ParseFloat("    1.5", 1.5f);
+  FailToParseFloat("1.5   ");
+  FailToParseFloat("1.5px");
+  FailToParseFloat("NaN");
+  FailToParseFloat("nan");
+  FailToParseFloat("Infinity");
+  FailToParseFloat("infinity");
+  FailToParseFloat("Inf");
+  FailToParseFloat("inf");
+  ParseFloat("1e+4000", std::numeric_limits<float>::infinity());
+  ParseFloat("-1e+4000", -std::numeric_limits<float>::infinity());
+  ParseFloat("1e+100", std::numeric_limits<float>::infinity());
+  ParseFloat("-1e+100", -std::numeric_limits<float>::infinity());
+  ParseFloat("1e-4000", 0);
+  FailToParseFloat("1e");
+  FailToParseFloat("1e-");
+  FailToParseFloat("1e+");
+  FailToParseFloat("1e3.");
+  FailToParseFloat("1e3.5");
+  FailToParseFloat("1e.3");
+}
+
+size_t ParseFloat(const char* str) {
+  size_t parsed;
+  CharactersToFloat(reinterpret_cast<const LChar*>(str), std::strlen(str),
+                    parsed);
+  return parsed;
+}
+
+TEST(StringToNumberTest, CharactersToFloatParsedLength) {
+  EXPECT_EQ(0u, ParseFloat(""));
+  EXPECT_EQ(0u, ParseFloat("  "));
+  EXPECT_EQ(0u, ParseFloat("+"));
+  EXPECT_EQ(0u, ParseFloat("-"));
+  EXPECT_EQ(0u, ParseFloat("."));
+  EXPECT_EQ(0u, ParseFloat("  "));
+  EXPECT_EQ(4u, ParseFloat(" 123"));
+  EXPECT_EQ(4u, ParseFloat(" 123 "));
+  EXPECT_EQ(4u, ParseFloat(" 123px"));
+  EXPECT_EQ(5u, ParseFloat("1.234"));
+  EXPECT_EQ(5u, ParseFloat("1.234e"));
+  EXPECT_EQ(7u, ParseFloat("1.234e1"));
+}
+
 }  // namespace WTF
