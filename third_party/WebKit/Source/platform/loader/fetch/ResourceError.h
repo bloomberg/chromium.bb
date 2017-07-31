@@ -100,11 +100,6 @@ class PLATFORM_EXPORT ResourceError final {
   }
   bool StaleCopyInCache() const { return stale_copy_in_cache_; }
 
-  void SetWasIgnoredByHandler(bool ignored_by_handler) {
-    was_ignored_by_handler_ = ignored_by_handler;
-  }
-  bool WasIgnoredByHandler() const { return was_ignored_by_handler_; }
-
   bool IsCacheMiss() const;
   bool WasBlockedByResponse() const {
     return error_code_ == net::ERR_BLOCKED_BY_RESPONSE;
@@ -129,7 +124,6 @@ class PLATFORM_EXPORT ResourceError final {
   String localized_description_;
   bool is_access_check_ = false;
   bool stale_copy_in_cache_ = false;
-  bool was_ignored_by_handler_ = false;
   bool should_collapse_initiator_ = false;
 };
 
