@@ -3019,8 +3019,11 @@ TEST_P(RenderTextHarfBuzzTest, Multiline_NormalWidth) {
       {L"abc defg hijkl", Range(0, 9), Range(9, 14), {3, 1, 4, 1, 5}, 4, true},
       {L"qwertyzxcvbn", Range(0, 10), Range(10, 12), {10, 2}, 1, true},
       // RTL: should render left-to-right as "<space>43210 \n cba9876".
+      // Note this used to say "Arabic language", in Arabic, but the last
+      // character in the string (\x0629) got fancy in an updated Mac font, so
+      // now the penultimate character repeats. (See "NOTE" below).
       {L"\x0627\x0644\x0644\x063A\x0629 "
-       L"\x0627\x0644\x0639\x0631\x0628\x064A\x0629",
+       L"\x0627\x0644\x0639\x0631\x0628\x064A\x064A",
        Range(0, 6),
        Range(6, 13),
        {1 /* space first */, 5, 7},
