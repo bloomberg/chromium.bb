@@ -65,20 +65,20 @@ bool HTMLBaseElement::IsURLAttribute(const Attribute& attribute) const {
 }
 
 KURL HTMLBaseElement::href() const {
-  // This does not use the getURLAttribute function because that will resolve
+  // This does not use the GetURLAttribute function because that will resolve
   // relative to the document's base URL; base elements like this one can be
   // used to set that base URL. Thus we need to resolve relative to the
-  // document's URL and ignore the base URL.
+  // document's fallback base URL and ignore the base URL.
+  // https://html.spec.whatwg.org/multipage/semantics.html#dom-base-href
 
   const AtomicString& attribute_value = FastGetAttribute(hrefAttr);
   if (attribute_value.IsNull())
     return GetDocument().Url();
 
-  // TODO(tkent): Use FallbackBaseURL(). crbug.com/739504.
   KURL url = GetDocument().Encoding().IsValid()
-                 ? KURL(GetDocument().Url(),
+                 ? KURL(GetDocument().FallbackBaseURL(),
                         StripLeadingAndTrailingHTMLSpaces(attribute_value))
-                 : KURL(GetDocument().Url(),
+                 : KURL(GetDocument().FallbackBaseURL(),
                         StripLeadingAndTrailingHTMLSpaces(attribute_value),
                         GetDocument().Encoding());
 

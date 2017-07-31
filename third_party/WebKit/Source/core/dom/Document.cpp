@@ -3645,10 +3645,8 @@ void Document::ProcessBaseElement() {
   KURL base_element_url;
   if (href) {
     String stripped_href = StripLeadingAndTrailingHTMLSpaces(*href);
-    if (!stripped_href.IsEmpty()) {
-      // TODO(tkent): Use FallbackBaseURL(). crbug.com/739504.
-      base_element_url = KURL(Url(), stripped_href);
-    }
+    if (!stripped_href.IsEmpty())
+      base_element_url = KURL(FallbackBaseURL(), stripped_href);
   }
 
   if (!base_element_url.IsEmpty()) {
