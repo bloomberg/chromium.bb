@@ -13,6 +13,7 @@
 #include "base/ios/block_types.h"
 #include "base/ios/ios_util.h"
 #include "base/json/json_reader.h"
+#include "base/logging.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
@@ -37,6 +38,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/payments/ios_can_make_payment_query_factory.h"
 #include "ios/chrome/browser/payments/ios_payment_request_cache_factory.h"
+#include "ios/chrome/browser/payments/origin_security_checker.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_cache.h"
 #import "ios/chrome/browser/payments/payment_response_helper.h"
@@ -686,27 +688,31 @@ struct PendingPaymentResponse {
     return NO;
   }
 
-  // Checks if the current page is a web view with HTML and that the
-  // origin is localhost, file://, or cryptographic.
-  if (!web::IsOriginSecure(_activeWebState->GetLastCommittedURL()) ||
-      !_activeWebState->ContentIsHTML()) {
+  if (!_activeWebState->ContentIsHTML()) {
+    DLOG(ERROR) << "Not a web view with HTML.";
     return NO;
   }
 
-  if (!_activeWebState->GetLastCommittedURL().SchemeIsCryptographic()) {
-    // The URL has a secure origin, but is not https, so it must be local.
-    // Return YES at this point, because localhost and filesystem URLS are
-    // considered secure regardless of scheme.
-    return YES;
+  const GURL lastCommittedURL = _activeWebState->GetLastCommittedURL();
+
+  if (!payments::OriginSecurityChecker::IsOriginSecure(lastCommittedURL)) {
+    DLOG(ERROR) << "Not in a secure origin.";
+    return NO;
   }
 
-  // The following security level checks ensure that if the scheme is
-  // cryptographic then the SSL certificate is valid.
-  security_state::SecurityLevel securityLevel =
-      _toolbarModel->GetToolbarModel()->GetSecurityLevel(true);
-  return securityLevel == security_state::EV_SECURE ||
-         securityLevel == security_state::SECURE ||
-         securityLevel == security_state::SECURE_WITH_POLICY_INSTALLED_CERT;
+  if (!payments::OriginSecurityChecker::IsSchemeCryptographic(
+          lastCommittedURL) &&
+      !payments::OriginSecurityChecker::IsOriginLocalhostOrFile(
+          lastCommittedURL)) {
+    DLOG(ERROR) << "Not localhost, or with file or cryptographic scheme.";
+    return NO;
+  }
+
+  // If the scheme is cryptographic, the SSL certificate must also be valid.
+  return !payments::OriginSecurityChecker::IsSchemeCryptographic(
+             lastCommittedURL) ||
+         payments::OriginSecurityChecker::IsSSLCertificateValid(
+             _toolbarModel->GetToolbarModel()->GetSecurityLevel(true));
 }
 
 #pragma mark - PaymentRequestUIDelegate
