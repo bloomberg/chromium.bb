@@ -249,6 +249,7 @@ static void UntrackAllBeforeUnloadEventListeners(LocalDOMWindow* dom_window) {
 
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
     : DOMWindow(frame),
+      document_(this, nullptr),
       visualViewport_(DOMVisualViewport::Create(this)),
       unused_preloads_timer_(
           TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &frame),
@@ -1646,6 +1647,7 @@ DEFINE_TRACE(LocalDOMWindow) {
 
 DEFINE_TRACE_WRAPPERS(LocalDOMWindow) {
   visitor->TraceWrappers(custom_elements_);
+  visitor->TraceWrappers(document_);
   visitor->TraceWrappers(modulator_);
   DOMWindow::TraceWrappers(visitor);
 }
