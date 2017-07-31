@@ -7,7 +7,7 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
-import css_properties
+from core.css import css_properties
 import json5_generator
 from name_utilities import enum_for_css_keyword
 import template_expander

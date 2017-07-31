@@ -3,7 +3,7 @@
 import subprocess
 import sys
 
-import css_properties
+from core.css import css_properties
 import json5_generator
 import template_expander
 import license

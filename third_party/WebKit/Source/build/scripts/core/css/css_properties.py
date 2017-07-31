@@ -28,7 +28,6 @@ def check_property_parameters(property_to_check):
                 'should not implement parseShorthand'
 
 
-
 class CSSProperties(json5_generator.Writer):
     def __init__(self, file_paths):
         json5_generator.Writer.__init__(self, file_paths)
@@ -43,15 +42,15 @@ class CSSProperties(json5_generator.Writer):
         properties = self.json5_file.name_dictionaries
 
         # Sort properties by priority, then alphabetically.
-        for property in properties:
-            check_property_parameters(property)
+        for property_ in properties:
+            check_property_parameters(property_)
             # This order must match the order in CSSPropertyPriority.h.
             priority_numbers = {'Animation': 0, 'High': 1, 'Low': 2}
-            priority = priority_numbers[property['priority']]
-            name_without_leading_dash = property['name']
-            if property['name'].startswith('-'):
-                name_without_leading_dash = property['name'][1:]
-            property['sorting_key'] = (priority, name_without_leading_dash)
+            priority = priority_numbers[property_['priority']]
+            name_without_leading_dash = property_['name']
+            if property_['name'].startswith('-'):
+                name_without_leading_dash = property_['name'][1:]
+            property_['sorting_key'] = (priority, name_without_leading_dash)
 
         # Assert there are no key collisions.
         sorting_keys = [p['sorting_key'] for p in properties]
@@ -60,29 +59,29 @@ class CSSProperties(json5_generator.Writer):
              'a potentially non-deterministic ordering can occur.')
         properties.sort(key=lambda p: p['sorting_key'])
 
-        self._aliases = [property for property in properties if property['alias_for']]
-        properties = [property for property in properties if not property['alias_for']]
+        self._aliases = [property_ for property_ in properties if property_['alias_for']]
+        properties = [property_ for property_ in properties if not property_['alias_for']]
 
         assert (self._first_enum_value + len(properties) < self._alias_offset), (
             'Property aliasing expects there are under %d properties.' % self._alias_offset)
 
-        for property in properties:
-            assert property['is_descriptor'] or property['is_property'], \
-                property['name'] + ' must be either a property, a descriptor' +\
+        for property_ in properties:
+            assert property_['is_descriptor'] or property_['is_property'], \
+                property_['name'] + ' must be either a property, a descriptor' +\
                 ' or both'
 
-        for offset, property in enumerate(properties):
-            property['property_id'] = enum_for_css_property(property['name'])
-            property['upper_camel_name'] = upper_camel_case(property['name'])
-            property['lower_camel_name'] = lower_camel_case(property['name'])
-            property['enum_value'] = self._first_enum_value + offset
-            property['is_internal'] = property['name'].startswith('-internal-')
+        for offset, property_ in enumerate(properties):
+            property_['property_id'] = enum_for_css_property(property_['name'])
+            property_['upper_camel_name'] = upper_camel_case(property_['name'])
+            property_['lower_camel_name'] = lower_camel_case(property_['name'])
+            property_['enum_value'] = self._first_enum_value + offset
+            property_['is_internal'] = property_['name'].startswith('-internal-')
 
         self._properties_including_aliases = properties
-        self._properties = {property['property_id']: property for property in properties}
+        self._properties = {property_['property_id']: property_ for property_ in properties}
 
         # The generated code will only work with at most one alias per property.
-        assert len({property['alias_for'] for property in self._aliases}) == len(self._aliases)
+        assert len({property_['alias_for'] for property_ in self._aliases}) == len(self._aliases)
 
         # Check that alias_for is not being used with a runtime flag.
         for property_ in self._aliases:
@@ -104,7 +103,7 @@ class CSSProperties(json5_generator.Writer):
             self._aliases[i] = updated_alias
         self._properties_including_aliases += self._aliases
 
-        self.last_unresolved_property_id = max(property["enum_value"] for property in self._properties_including_aliases)
+        self.last_unresolved_property_id = max(property_["enum_value"] for property_ in self._properties_including_aliases)
 
     def properties(self):
         return self._properties
