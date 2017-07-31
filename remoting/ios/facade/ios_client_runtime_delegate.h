@@ -21,6 +21,9 @@ class IosClientRuntimeDelegate : public ChromotingClientRuntime::Delegate {
   void RuntimeDidShutdown() override;
   void RequestAuthTokenForLogger() override;
 
+  // Sets the access token. Should be called when the user switches accounts.
+  void SetAuthToken(const std::string& access_token);
+
   base::WeakPtr<IosClientRuntimeDelegate> GetWeakPtr();
 
  private:
