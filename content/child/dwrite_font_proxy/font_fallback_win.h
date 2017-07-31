@@ -44,6 +44,8 @@ class CONTENT_EXPORT FontFallback
   RuntimeClassInitialize(DWriteFontCollectionProxy* collection,
                          IPC::Sender* sender_override);
 
+  void SetSenderOverride(IPC::Sender* sender) { sender_override_ = sender; }
+
  protected:
   ~FontFallback() override;
 

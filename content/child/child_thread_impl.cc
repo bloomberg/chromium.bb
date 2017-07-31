@@ -86,6 +86,10 @@
 #include "content/common/mac/app_nap_activity.h"
 #endif
 
+#if defined(OS_WIN)
+#include "content/child/dwrite_font_proxy/dwrite_font_proxy_init_win.h"
+#endif
+
 using tracked_objects::ThreadData;
 
 namespace content {
@@ -591,6 +595,10 @@ void ChildThreadImpl::Init(const Options& options) {
     field_trial_syncer_->InitFieldTrialObserving(
         *base::CommandLine::ForCurrentProcess());
   }
+
+#if defined(OS_WIN)
+  UpdateDWriteFontProxySender(thread_safe_sender());
+#endif
 }
 
 ChildThreadImpl::~ChildThreadImpl() {
