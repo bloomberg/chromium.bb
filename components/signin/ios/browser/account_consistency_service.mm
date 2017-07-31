@@ -6,7 +6,6 @@
 
 #import <WebKit/WebKit.h>
 
-#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #include "base/macros.h"
@@ -395,15 +394,6 @@ WKWebView* AccountConsistencyService::GetWKWebView() {
   }
   if (!web_view_) {
     web_view_ = BuildWKWebView();
-    if (base::ios::IsRunningOnIOS11OrLater()) {
-      // On iOS 11 WKWebView load is broken if view is not a part of the
-      // hierarchy. Add view to the hierarchy, but place it offscreen to
-      // workaround iOS bug (rdar://33184203 and crbug.com/738435)
-      // TODO(crbug.com/739390): Remove this workaround.
-      web_view_.hidden = YES;
-      web_view_.frame = CGRectMake(-100, -100, 100, 100);
-      [UIApplication.sharedApplication.keyWindow addSubview:web_view_];
-    }
     navigation_delegate_ = [[AccountConsistencyNavigationDelegate alloc]
         initWithCallback:base::Bind(&AccountConsistencyService::
                                         FinishedApplyingCookieRequest,
@@ -420,13 +410,6 @@ WKWebView* AccountConsistencyService::BuildWKWebView() {
 void AccountConsistencyService::ResetWKWebView() {
   [web_view_ setNavigationDelegate:nil];
   [web_view_ stopLoading];
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    // On iOS 11 WKWebView load is broken if view is not a part of the
-    // hierarchy. Add view to the hierarchy, but place it offscreen to
-    // workaround iOS bug (rdar://33184203 and crbug.com/738435)
-    // TODO(crbug.com/739390): Remove this workaround.
-    [web_view_ removeFromSuperview];
-  }
   web_view_ = nil;
   navigation_delegate_ = nil;
   applying_cookie_requests_ = false;
