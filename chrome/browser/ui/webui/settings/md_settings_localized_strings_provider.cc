@@ -59,7 +59,7 @@ namespace {
 
 // Note that settings.html contains a <script> tag which imports a script of
 // the following name. These names must be kept in sync.
-const char kLocalizedStringsFile[] = "strings.js";
+constexpr char kLocalizedStringsFile[] = "strings.js";
 
 struct LocalizedString {
   const char* name;
@@ -1982,7 +1982,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"incognitoSite", IDS_SETTINGS_SITE_SETTINGS_INCOGNITO},
     {"incognitoSiteOnly", IDS_SETTINGS_SITE_SETTINGS_INCOGNITO_ONLY},
     {"embeddedIncognitoSite", IDS_SETTINGS_SITE_SETTINGS_INCOGNITO_EMBEDDED},
-    {"siteSettingsSiteDetails", IDS_SETTINGS_SITE_DETAILS},
     {"noSitesAdded", IDS_SETTINGS_SITE_NO_SITES_ADDED},
     {"siteSettingsAds", IDS_SETTINGS_SITE_SETTINGS_ADS},
     {"siteSettingsAdsBlock", IDS_SETTINGS_SITE_SETTINGS_ADS_BLOCK},

@@ -102,13 +102,13 @@ struct ContentSettingWithExceptions {
 typedef bool (*AppFilter)(const extensions::Extension& app,
                           content::BrowserContext* profile);
 
-const char kAppName[] = "appName";
-const char kAppId[] = "appId";
-const char kZoom[] = "zoom";
+constexpr char kAppName[] = "appName";
+constexpr char kAppId[] = "appId";
+constexpr char kZoom[] = "zoom";
 
 // A pseudo content type. We use it to display data like a content setting even
 // though it is not a real content setting.
-const char kZoomContentType[] = "zoomlevels";
+constexpr char kZoomContentType[] = "zoomlevels";
 
 // Maps from a content settings type to a content setting with exceptions
 // struct.
@@ -729,7 +729,8 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
     UpdateMediaSettingsFromPrefs(type);
     if (media_settings_->forType(type).policy_disable) {
       default_setting = CONTENT_SETTING_BLOCK;
-      provider_id = site_settings::kPolicyProviderId;
+      provider_id = site_settings::SiteSettingSourceToString(
+          site_settings::SiteSettingSource::kPolicy);
     }
   }
 
@@ -833,8 +834,8 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
     // Don't add default settings.
     if (i->primary_pattern == ContentSettingsPattern::Wildcard() &&
         i->secondary_pattern == ContentSettingsPattern::Wildcard() &&
-        i
-          ->source != site_settings::kPreferencesSource) {
+        i->source != site_settings::SiteSettingSourceToString(
+                         site_settings::SiteSettingSource::kPreference)) {
       continue;
     }
     all_patterns_settings[std::make_pair(i->primary_pattern, i->source)]
@@ -904,8 +905,8 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
     // Don't add default settings.
     if (i->primary_pattern == ContentSettingsPattern::Wildcard() &&
         i->secondary_pattern == ContentSettingsPattern::Wildcard() &&
-        i
-          ->source != site_settings::kPreferencesSource) {
+        i->source != site_settings::SiteSettingSourceToString(
+                         site_settings::SiteSettingSource::kPreference)) {
       continue;
     }
 
@@ -1062,8 +1063,9 @@ void ContentSettingsHandler::UpdateZoomLevelsExceptionsView() {
     int zoom_percent = static_cast<int>(
         content::ZoomLevelToZoomFactor(i->zoom_level) * 100 + 0.5);
     exception->SetString(kZoom, base::FormatPercent(zoom_percent));
-    exception->SetString(
-        site_settings::kSource, site_settings::kPreferencesSource);
+    exception->SetString(site_settings::kSource,
+                         site_settings::SiteSettingSourceToString(
+                             site_settings::SiteSettingSource::kPreference));
     // Append the new entry to the list and map.
     zoom_levels_exceptions.Append(std::move(exception));
   }
