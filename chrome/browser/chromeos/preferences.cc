@@ -140,7 +140,7 @@ void Preferences::RegisterProfilePrefs(
 
   // Register ash prefs.
   if (!ash_util::IsRunningInMash())
-    ash::Shell::RegisterPrefs(registry);
+    ash::Shell::RegisterProfilePrefs(registry);
 
   registry->RegisterBooleanPref(prefs::kPerformanceTracingEnabled, false);
 

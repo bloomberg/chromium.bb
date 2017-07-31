@@ -12,6 +12,8 @@ namespace aura {
 class Window;
 }
 
+class PrefService;
+
 namespace ash {
 
 class ASH_EXPORT ShellObserver {
@@ -75,6 +77,15 @@ class ASH_EXPORT ShellObserver {
   // Called near the end of ~Shell. Shell::Get() still returns the Shell, but
   // most of Shell's state has been deleted.
   virtual void OnShellDestroyed() {}
+
+  // Called when the user profile pref service is available. Also called after
+  // multiprofile user switch. Never called with the login screen profile.
+  // On mash will be called with null at the start of user switch then again
+  // with a pref service once the connection to the mojo pref service is made.
+  // TODO(jamescook): Either maintain pref service connections for all multiuser
+  // profiles or make the pref service switch atomic with active user switch.
+  // http://crbug.com/705347
+  virtual void OnActiveUserPrefServiceChanged(PrefService* pref_service) {}
 
  protected:
   virtual ~ShellObserver() {}

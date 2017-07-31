@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "components/prefs/pref_value_store.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -47,7 +47,7 @@ class ActiveProfilePrefService : public prefs::mojom::PrefStoreConnector,
 
   prefs::mojom::PrefStoreConnectorPtr connector_ptr_;
   service_manager::BinderRegistry registry_;
-  mojo::BindingSet<prefs::mojom::PrefStoreConnector> connector_bindings_;
+  mojo::Binding<prefs::mojom::PrefStoreConnector> connector_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ActiveProfilePrefService);
 };

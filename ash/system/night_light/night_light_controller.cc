@@ -116,16 +116,14 @@ void ApplyColorTemperatureToLayers(float layer_temperature,
 
 }  // namespace
 
-NightLightController::NightLightController(
-    SessionController* session_controller)
-    : session_controller_(session_controller),
-      delegate_(base::MakeUnique<NightLightControllerDelegateImpl>()),
+NightLightController::NightLightController()
+    : delegate_(base::MakeUnique<NightLightControllerDelegateImpl>()),
       binding_(this) {
-  session_controller_->AddObserver(this);
+  Shell::Get()->AddShellObserver(this);
 }
 
 NightLightController::~NightLightController() {
-  session_controller_->RemoveObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
 }
 
 // static
@@ -135,7 +133,7 @@ bool NightLightController::IsFeatureEnabled() {
 }
 
 // static
-void NightLightController::RegisterPrefs(PrefRegistrySimple* registry) {
+void NightLightController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kNightLightEnabled, false);
   registry->RegisterDoublePref(prefs::kNightLightTemperature,
                                kDefaultColorTemperature);
@@ -244,11 +242,10 @@ void NightLightController::Toggle() {
   SetEnabled(!GetEnabled(), AnimationDuration::kShort);
 }
 
-void NightLightController::OnActiveUserSessionChanged(
-    const AccountId& account_id) {
+void NightLightController::OnActiveUserPrefServiceChanged(
+    PrefService* pref_service) {
   // Initial login and user switching in multi profiles.
-  pref_change_registrar_.reset();
-  active_user_pref_service_ = Shell::Get()->GetActiveUserPrefService();
+  active_user_pref_service_ = pref_service;
   InitFromUserPrefs();
 }
 
@@ -319,10 +316,11 @@ void NightLightController::StartWatchingPrefsChanges() {
 }
 
 void NightLightController::InitFromUserPrefs() {
-  if (!active_user_pref_service_) {
-    // The pref_service can be null in ash_unittests.
+  pref_change_registrar_.reset();
+
+  // Pref service can be null during multiprofile switch and in tests.
+  if (!active_user_pref_service_)
     return;
-  }
 
   StartWatchingPrefsChanges();
   Refresh(true /* did_schedule_change */);

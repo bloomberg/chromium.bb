@@ -253,8 +253,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   static Config GetAshConfig();
   static bool ShouldUseIMEService();
 
-  // Registers all ash related prefs to the given |registry|.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
+  // Registers all ash related user profile prefs to the given |registry|.
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Creates a default views::NonClientFrameView for use by windows in the
   // Ash environment.
@@ -422,17 +422,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Force the shelf to query for it's current visibility state.
   // TODO(jamescook): Move to Shelf.
   void UpdateShelfVisibility();
-
-  // Gets the current active user pref service.
-  // In classic ash, it will be null if there's no active user.
-  // In the case of mash, it can be null if it failed to or hasn't yet
-  // connected to the pref service.
-  //
-  // NOTE: Users of this pref service MUST listen to
-  // ash::SessionObserver::OnActiveUserSessionChanged() and recall this function
-  // to get the newly activated user's pref service, and use it to re-read the
-  // desired stored settings.
-  PrefService* GetActiveUserPrefService() const;
 
   // Gets the local state pref service. It can be null in mash if connecting to
   // local state pref service has not completed successfully.
@@ -652,6 +641,7 @@ class ASH_EXPORT Shell : public SessionObserver,
                          aura::Window* lost_active) override;
 
   // SessionObserver:
+  void OnActiveUserSessionChanged(const AccountId& account_id) override;
   void OnSessionStateChanged(session_manager::SessionState state) override;
   void OnLoginStatusChanged(LoginStatus login_status) override;
   void OnLockStateChanged(bool locked) override;
@@ -661,7 +651,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   void InitializeShelf();
 
   // Callbacks for prefs::ConnectToPrefService.
-  void OnPrefServiceInitialized(std::unique_ptr<::PrefService> pref_service);
+  void OnProfilePrefServiceInitialized(
+      std::unique_ptr<::PrefService> pref_service);
   void OnLocalStatePrefServiceInitialized(
       std::unique_ptr<::PrefService> pref_service);
 
@@ -724,8 +715,13 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<::wm::VisibilityController> visibility_controller_;
   std::unique_ptr<::wm::WindowModalityController> window_modality_controller_;
   std::unique_ptr<app_list::AppList> app_list_;
-  std::unique_ptr<::PrefService> pref_service_;
+
+  // Only initialized for mash. Can be null in ash_standalone (when chrome is
+  // not running) or when reconnecting to the mojo pref service after
+  // multiuser profile switch.
+  std::unique_ptr<::PrefService> profile_pref_service_;
   std::unique_ptr<::PrefService> local_state_;
+
   std::unique_ptr<views::corewm::TooltipController> tooltip_controller_;
   LinkHandlerModelFactory* link_handler_model_factory_;
   std::unique_ptr<PowerButtonController> power_button_controller_;
