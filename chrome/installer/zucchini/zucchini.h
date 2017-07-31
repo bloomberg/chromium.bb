@@ -16,6 +16,8 @@ namespace status {
 enum Code {
   kStatusSuccess = 0,
   kStatusInvalidParam = 1,
+  kStatusFileReadError = 2,
+  kStatusFileWriteError = 3,
 };
 
 }  // namespace status

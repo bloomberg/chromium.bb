@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <ostream>
 #include <vector>
 
 #include "base/command_line.h"
@@ -50,8 +51,9 @@ struct Command {
 /******** List of Zucchini commands ********/
 
 constexpr Command kCommands[] = {
-    {"gen", "-gen <old_file> <new_file> <patch_file>", 3, MainGen},
-    {"apply", "-apply <old_file> <patch_file> <new_file>", 3, MainApply},
+    {"gen", "-gen <old_file> <new_file> <patch_file>", 3, &MainGen},
+    {"apply", "-apply <old_file> <patch_file> <new_file>", 3, &MainApply},
+    {"crc32", "-crc32 <file>", 1, &MainCrc32},
 };
 
 /******** ScopedResourceUsageTracker ********/
@@ -128,10 +130,10 @@ bool CheckAndGetFilePathParams(const base::CommandLine& command_line,
 }
 
 // Prints main Zucchini usage text.
-void PrintUsage(std::ostream& out) {
-  out << "Usage:" << std::endl;
+void PrintUsage(std::ostream& err) {
+  err << "Usage:" << std::endl;
   for (const Command& command : kCommands)
-    out << "  zucchini " << command.usage << std::endl;
+    err << "  zucchini " << command.usage << std::endl;
 }
 
 }  // namespace
@@ -139,7 +141,8 @@ void PrintUsage(std::ostream& out) {
 /******** Exported Functions ********/
 
 zucchini::status::Code RunZucchiniCommand(const base::CommandLine& command_line,
-                                          std::ostream& out) {
+                                          std::ostream& out,
+                                          std::ostream& err) {
   // Look for a command with name that matches input.
   const Command* command_use = nullptr;
   for (const Command& command : kCommands) {
@@ -154,24 +157,24 @@ zucchini::status::Code RunZucchiniCommand(const base::CommandLine& command_line,
 
   // Expect exactly 1 matching command. If 0 or >= 2, print usage and quit.
   if (!command_use) {
-    out << "Must have exactly one of:" << std::endl;
-    out << "  [";
+    err << "Must have exactly one of:" << std::endl;
+    err << "  [";
     zucchini::PrefixSep sep(", ");
     for (const Command& command : kCommands)
-      out << sep << "-" << command.name;
-    out << "]" << std::endl;
-    PrintUsage(out);
+      err << sep << "-" << command.name;
+    err << "]" << std::endl;
+    PrintUsage(err);
     return zucchini::status::kStatusInvalidParam;
   }
 
   // Try to parse filename arguments. On failure, print usage and quit.
   std::vector<base::FilePath> paths;
   if (!CheckAndGetFilePathParams(command_line, command_use->num_args, &paths)) {
-    out << command_use->usage << std::endl;
-    PrintUsage(out);
+    err << command_use->usage << std::endl;
+    PrintUsage(err);
     return zucchini::status::kStatusInvalidParam;
   }
 
   ScopedResourceUsageTracker resource_usage_tracker;
-  return command_use->command_function(command_line, paths);
+  return command_use->command_function({command_line, paths, out, err});
 }
