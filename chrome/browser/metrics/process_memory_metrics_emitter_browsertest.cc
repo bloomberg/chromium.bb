@@ -13,6 +13,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/tracing.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/test_utils.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "url/gurl.h"
@@ -20,6 +21,9 @@
 namespace {
 
 using base::trace_event::MemoryDumpType;
+using memory_instrumentation::mojom::ProcessType;
+
+static const char UkmEventName[] = "Memory.Experimental";
 
 void RequestGlobalDumpCallback(base::Closure quit_closure,
                                bool success,
@@ -39,8 +43,9 @@ void OnStartTracingDoneCallback(
 
 class ProcessMemoryMetricsEmitterFake : public ProcessMemoryMetricsEmitter {
  public:
-  explicit ProcessMemoryMetricsEmitterFake(base::RunLoop* run_loop)
-      : run_loop_(run_loop) {}
+  explicit ProcessMemoryMetricsEmitterFake(base::RunLoop* run_loop,
+                                           ukm::TestUkmRecorder* recorder)
+      : run_loop_(run_loop), recorder_(recorder) {}
 
  private:
   ~ProcessMemoryMetricsEmitterFake() override {}
@@ -52,11 +57,31 @@ class ProcessMemoryMetricsEmitterFake : public ProcessMemoryMetricsEmitter {
     EXPECT_TRUE(success);
     ProcessMemoryMetricsEmitter::ReceivedMemoryDump(success, dump_guid,
                                                     std::move(ptr));
+    finished_memory_dump_ = true;
+    QuitIfFinished();
+  }
+
+  void ReceivedProcessInfos(
+      std::vector<resource_coordinator::mojom::ProcessInfoPtr> process_infos)
+      override {
+    ProcessMemoryMetricsEmitter::ReceivedProcessInfos(std::move(process_infos));
+    finished_process_info_ = true;
+    QuitIfFinished();
+  }
+
+  void QuitIfFinished() {
+    if (!finished_memory_dump_ || !finished_process_info_)
+      return;
     if (run_loop_)
       run_loop_->Quit();
   }
 
+  ukm::UkmRecorder* GetUkmRecorder() override { return recorder_; }
+
   base::RunLoop* run_loop_;
+  bool finished_memory_dump_ = false;
+  bool finished_process_info_ = false;
+  ukm::TestUkmRecorder* recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessMemoryMetricsEmitterFake);
 };
@@ -81,8 +106,8 @@ void CheckMemoryMetric(const std::string& name,
   if (check_minimum)
     EXPECT_GT(samples->sum(), 0u) << name;
 
-  // As a sanity check, no memory stat should exceed 1 GB.
-  int64_t maximum_expected_size = 1ll << 30;
+  // As a sanity check, no memory stat should exceed 4 GB.
+  int64_t maximum_expected_size = 1ll << 32;
   EXPECT_LT(samples->sum(), maximum_expected_size) << name;
 }
 
@@ -117,6 +142,95 @@ class ProcessMemoryMetricsEmitterTest : public InProcessBrowserTest {
   ProcessMemoryMetricsEmitterTest() {}
   ~ProcessMemoryMetricsEmitterTest() override {}
 
+ protected:
+  ukm::TestUkmRecorder test_ukm_recorder_;
+
+  void CheckUkmSourcesWithUrl(const GURL& url, size_t count) {
+    std::vector<const ukm::UkmSource*> sources =
+        test_ukm_recorder_.GetSourcesForUrl(url.spec().c_str());
+
+    // There should be at least |count|, and not more than 2 * |count| renderers
+    // with this URL.
+    EXPECT_GE(sources.size(), count) << "Expected at least " << count
+                                     << " renderers with url: " << url.spec();
+    EXPECT_LE(sources.size(), 2 * count);
+
+    // Each one should have renderer type.
+    for (const ukm::UkmSource* source : sources) {
+      ProcessType process_type = ProcessType::OTHER;
+      ASSERT_TRUE(GetProcessTypeForSource(source, &process_type));
+      EXPECT_EQ(ProcessType::RENDERER, process_type);
+    }
+  }
+
+  void CheckAllUkmSources() {
+    const std::map<ukm::SourceId, std::unique_ptr<ukm::UkmSource>>& sources =
+        test_ukm_recorder_.GetSources();
+    for (auto& pair : sources) {
+      const ukm::UkmSource* source = pair.second.get();
+      ProcessType process_type = ProcessType::OTHER;
+      bool has_process_type = GetProcessTypeForSource(source, &process_type);
+
+      // This must be Total2.
+      if (!has_process_type) {
+        CheckMemoryMetricWithName(source, "Total2.PrivateMemoryFootprint",
+                                  false);
+        continue;
+      }
+
+      switch (process_type) {
+        case ProcessType::BROWSER:
+          CheckUkmBrowserSource(source);
+          break;
+        case ProcessType::RENDERER:
+          CheckUkmRendererSource(source);
+          break;
+        default:
+          break;
+      }
+    }
+  }
+
+  void CheckMemoryMetricWithName(const ukm::UkmSource* source,
+                                 const char* name,
+                                 bool can_be_zero) {
+    std::vector<int64_t> metrics =
+        test_ukm_recorder_.GetMetrics(*source, UkmEventName, name);
+    ASSERT_EQ(1u, metrics.size());
+    EXPECT_GE(metrics[0], can_be_zero ? 0 : 1) << name;
+    EXPECT_LE(metrics[0], 4000) << name;
+  }
+
+  void CheckUkmRendererSource(const ukm::UkmSource* source) {
+    CheckMemoryMetricWithName(source, "Malloc", false);
+    CheckMemoryMetricWithName(source, "Resident", false);
+    CheckMemoryMetricWithName(source, "PrivateMemoryFootprint", false);
+    CheckMemoryMetricWithName(source, "BlinkGC", true);
+    CheckMemoryMetricWithName(source, "PartitionAlloc", true);
+    CheckMemoryMetricWithName(source, "V8", true);
+  }
+
+  void CheckUkmBrowserSource(const ukm::UkmSource* source) {
+    CheckMemoryMetricWithName(source, "Malloc", false);
+    CheckMemoryMetricWithName(source, "Resident", false);
+    CheckMemoryMetricWithName(source, "PrivateMemoryFootprint", false);
+  }
+
+  bool GetProcessTypeForSource(const ukm::UkmSource* source,
+                               ProcessType* process_type) {
+    std::vector<int64_t> metrics =
+        test_ukm_recorder_.GetMetrics(*source, UkmEventName, "ProcessType");
+
+    // Can't use GTEST assertion because function returns |bool|.
+    if (metrics.size() >= 2u)
+      ADD_FAILURE();
+
+    if (metrics.size() == 0u)
+      return false;
+    *process_type = static_cast<ProcessType>(metrics[0]);
+    return true;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ProcessMemoryMetricsEmitterTest);
 };
@@ -140,13 +254,15 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   // itself alive.
   {
     scoped_refptr<ProcessMemoryMetricsEmitterFake> emitter(
-        new ProcessMemoryMetricsEmitterFake(&run_loop));
+        new ProcessMemoryMetricsEmitterFake(&run_loop, &test_ukm_recorder_));
     emitter->FetchAndEmitProcessMemoryMetrics();
   }
 
   run_loop.Run();
 
   CheckAllMemoryMetrics(histogram_tester, 1);
+  CheckUkmSourcesWithUrl(url1, 1);
+  CheckAllUkmSources();
 }
 
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
@@ -179,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   {
     base::RunLoop run_loop;
     scoped_refptr<ProcessMemoryMetricsEmitterFake> emitter(
-        new ProcessMemoryMetricsEmitterFake(&run_loop));
+        new ProcessMemoryMetricsEmitterFake(&run_loop, &test_ukm_recorder_));
     emitter->FetchAndEmitProcessMemoryMetrics();
 
     run_loop.Run();
@@ -201,6 +317,8 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
                   MemoryDumpType::EXPLICITLY_TRIGGERED))));
 
   CheckAllMemoryMetrics(histogram_tester, 1);
+  CheckUkmSourcesWithUrl(url1, 1);
+  CheckAllUkmSources();
 }
 
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
@@ -221,11 +339,13 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest, MAYBE_FetchThreeTimes) {
   for (int i = 0; i < count; ++i) {
     // Only the last emitter should stop the run loop.
     auto emitter = base::MakeRefCounted<ProcessMemoryMetricsEmitterFake>(
-        (i == count - 1) ? &run_loop : nullptr);
+        (i == count - 1) ? &run_loop : nullptr, &test_ukm_recorder_);
     emitter->FetchAndEmitProcessMemoryMetrics();
   }
 
   run_loop.Run();
 
   CheckAllMemoryMetrics(histogram_tester, count);
+  CheckUkmSourcesWithUrl(url1, 3);
+  CheckAllUkmSources();
 }

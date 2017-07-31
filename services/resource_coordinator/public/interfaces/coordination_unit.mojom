@@ -37,6 +37,7 @@ enum PropertyType {
   kCPUUsage,
   kNetworkIdle,
   kVisible,
+  kURL,
 };
 
 interface CoordinationUnit {

@@ -101,7 +101,12 @@
           "face_detection",
           "text_detection"
         ],
-        "resource_coordinator": [ "coordination_unit", "service_callbacks", "tab_signal" ],
+        "resource_coordinator": [
+          "coordination_unit",
+          "coordination_unit_introspector",
+          "service_callbacks",
+          "tab_signal"
+        ],
         "video_capture": [ "capture", "tests" ]
       }
     },

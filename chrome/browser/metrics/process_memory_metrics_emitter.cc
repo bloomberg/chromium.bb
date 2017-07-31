@@ -10,7 +10,10 @@
 #include "content/public/common/service_names.mojom.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
+#include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "url/gurl.h"
 
 using ProcessMemoryDumpPtr =
     memory_instrumentation::mojom::ProcessMemoryDumpPtr;
@@ -120,6 +123,8 @@ void EmitGpuMemoryMetrics(const ProcessMemoryDumpPtr& pmd,
 ProcessMemoryMetricsEmitter::ProcessMemoryMetricsEmitter() {}
 
 void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
+  MarkServiceRequestsInProgress();
+
   service_manager::Connector* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
   connector->BindInterface(content::mojom::kBrowserServiceName,
@@ -133,50 +138,110 @@ void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
       0, base::trace_event::MemoryDumpType::SUMMARY_ONLY,
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND};
   coordinator_->RequestGlobalMemoryDump(args, callback);
+
+  // The callback keeps this object alive until the callback is invoked.
+  if (IsResourceCoordinatorEnabled()) {
+    connector->BindInterface(resource_coordinator::mojom::kServiceName,
+                             mojo::MakeRequest(&introspector_));
+    auto callback2 =
+        base::Bind(&ProcessMemoryMetricsEmitter::ReceivedProcessInfos, this);
+    introspector_->GetProcessToURLMap(callback2);
+  }
+}
+
+void ProcessMemoryMetricsEmitter::MarkServiceRequestsInProgress() {
+  memory_dump_in_progress_ = true;
+  if (IsResourceCoordinatorEnabled())
+    get_process_urls_in_progress_ = true;
 }
 
 ProcessMemoryMetricsEmitter::~ProcessMemoryMetricsEmitter() {}
 
 std::unique_ptr<ukm::UkmEntryBuilder>
-ProcessMemoryMetricsEmitter::CreateUkmBuilder(const char* event_name) {
-  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
+ProcessMemoryMetricsEmitter::CreateUkmBuilder(const GURL& url) {
+  static const char event_name[] = "Memory.Experimental";
+  ukm::UkmRecorder* ukm_recorder = GetUkmRecorder();
   if (!ukm_recorder)
     return nullptr;
 
-  const int32_t source_id = ukm_recorder->GetNewSourceID();
-  return ukm_recorder->GetEntryBuilder(source_id, event_name);
+  const int32_t source = ukm_recorder->GetNewSourceID();
+  ukm_recorder->UpdateSourceURL(source, url);
+  return ukm_recorder->GetEntryBuilder(source, event_name);
 }
 
 void ProcessMemoryMetricsEmitter::ReceivedMemoryDump(
     bool success,
     uint64_t dump_guid,
     memory_instrumentation::mojom::GlobalMemoryDumpPtr ptr) {
+  memory_dump_in_progress_ = false;
   if (!success)
     return;
-  if (!ptr)
+  global_dump_ = std::move(ptr);
+  CollateResults();
+}
+
+void ProcessMemoryMetricsEmitter::ReceivedProcessInfos(
+    std::vector<resource_coordinator::mojom::ProcessInfoPtr> process_infos) {
+  get_process_urls_in_progress_ = false;
+  process_infos_.clear();
+  process_infos_.reserve(process_infos.size());
+
+  // If there are duplicate pids, keep the latest ProcessInfoPtr.
+  for (resource_coordinator::mojom::ProcessInfoPtr& process_info :
+       process_infos) {
+    base::ProcessId pid = process_info->pid;
+    process_infos_[pid] = std::move(process_info);
+  }
+  CollateResults();
+}
+
+bool ProcessMemoryMetricsEmitter::IsResourceCoordinatorEnabled() {
+  return resource_coordinator::IsResourceCoordinatorEnabled();
+}
+
+ukm::UkmRecorder* ProcessMemoryMetricsEmitter::GetUkmRecorder() {
+  return ukm::UkmRecorder::Get();
+}
+
+void ProcessMemoryMetricsEmitter::CollateResults() {
+  if (memory_dump_in_progress_ || get_process_urls_in_progress_)
+    return;
+  if (!global_dump_)
     return;
 
   uint32_t private_footprint_total_kb = 0;
-  for (const ProcessMemoryDumpPtr& pmd : ptr->process_dumps) {
+  for (const ProcessMemoryDumpPtr& pmd : global_dump_->process_dumps) {
     private_footprint_total_kb += pmd->os_dump->private_footprint_kb;
 
-    // Populate a new entry for each ProcessMemoryDumpPtr in the global dump,
-    // annotating each entry with the dump GUID so that entries in the same
-    // global dump can be correlated with each other.
-    // TODO(jchinlee): Add URLs.
-    std::unique_ptr<ukm::UkmEntryBuilder> builder =
-        CreateUkmBuilder("Memory.Experimental");
-
     switch (pmd->process_type) {
-      case memory_instrumentation::mojom::ProcessType::BROWSER:
+      case memory_instrumentation::mojom::ProcessType::BROWSER: {
+        std::unique_ptr<ukm::UkmEntryBuilder> builder =
+            CreateUkmBuilder(GURL());
         EmitBrowserMemoryMetrics(pmd, builder.get());
         break;
-      case memory_instrumentation::mojom::ProcessType::RENDERER:
+      }
+      case memory_instrumentation::mojom::ProcessType::RENDERER: {
+        GURL gurl;
+        // If there is more than one frame being hosted in a renderer, don't
+        // emit any URLs. This is not ideal, but UKM does not support
+        // multiple-URLs per entry, and we must have one entry per process.
+        if (process_infos_.find(pmd->pid) != process_infos_.end()) {
+          const resource_coordinator::mojom::ProcessInfoPtr& process_info =
+              process_infos_[pmd->pid];
+          if (process_info->urls.size() == 1) {
+            gurl = GURL(process_info->urls[0]);
+          }
+        }
+        std::unique_ptr<ukm::UkmEntryBuilder> builder = CreateUkmBuilder(gurl);
         EmitRendererMemoryMetrics(pmd, builder.get());
         break;
-      case memory_instrumentation::mojom::ProcessType::GPU:
+      }
+      case memory_instrumentation::mojom::ProcessType::GPU: {
+        std::unique_ptr<ukm::UkmEntryBuilder> builder =
+            CreateUkmBuilder(GURL());
         EmitGpuMemoryMetrics(pmd, builder.get());
         break;
+      }
       case memory_instrumentation::mojom::ProcessType::UTILITY:
       case memory_instrumentation::mojom::ProcessType::PLUGIN:
       case memory_instrumentation::mojom::ProcessType::OTHER:
@@ -189,8 +254,7 @@ void ProcessMemoryMetricsEmitter::ReceivedMemoryDump(
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.PrivateMemoryFootprint",
                                 private_footprint_total_kb / 1024);
 
-  std::unique_ptr<ukm::UkmEntryBuilder> builder =
-      CreateUkmBuilder("Memory.Experimental");
+  std::unique_ptr<ukm::UkmEntryBuilder> builder = CreateUkmBuilder(GURL());
   TryAddMetric(builder.get(), "Total2.PrivateMemoryFootprint",
                private_footprint_total_kb / 1024);
 }

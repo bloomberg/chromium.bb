@@ -35,6 +35,15 @@ ResourceCoordinatorInterface::ResourceCoordinatorInterface(
     const CoordinationUnitType& type)
     : ResourceCoordinatorInterface(connector, type, std::string()) {}
 
+ResourceCoordinatorInterface::ResourceCoordinatorInterface(
+    service_manager::Connector* connector,
+    const CoordinationUnitType& type,
+    uint64_t id)
+    : weak_ptr_factory_(this) {
+  CoordinationUnitID new_cu_id(type, id);
+  ConnectToService(connector, new_cu_id);
+}
+
 ResourceCoordinatorInterface::~ResourceCoordinatorInterface() = default;
 
 void ResourceCoordinatorInterface::ConnectToService(
