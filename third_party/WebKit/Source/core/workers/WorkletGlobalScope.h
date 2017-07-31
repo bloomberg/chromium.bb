@@ -101,7 +101,7 @@ class CORE_EXPORT WorkletGlobalScope
   // parent ExecutionContext for Worklets.
   WorkletGlobalScope(const KURL&,
                      const String& user_agent,
-                     PassRefPtr<SecurityOrigin>,
+                     RefPtr<SecurityOrigin>,
                      v8::Isolate*,
                      WorkerClients*);
 

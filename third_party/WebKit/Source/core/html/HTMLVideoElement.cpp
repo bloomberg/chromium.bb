@@ -427,7 +427,7 @@ KURL HTMLVideoElement::PosterImageURL() const {
   return GetDocument().CompleteURL(url);
 }
 
-PassRefPtr<Image> HTMLVideoElement::GetSourceImageForCanvas(
+RefPtr<Image> HTMLVideoElement::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint,
     SnapshotReason,

@@ -36,7 +36,7 @@
 #include "platform/PasteMode.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/StringHash.h"
 #include "platform/wtf/text/WTFString.h"
@@ -110,7 +110,7 @@ class CORE_EXPORT DataObject : public GarbageCollectedFinalized<DataObject>,
   }
 
   // Used to handle files (images) being dragged out.
-  void AddSharedBuffer(PassRefPtr<SharedBuffer>,
+  void AddSharedBuffer(RefPtr<SharedBuffer>,
                        const KURL&,
                        const String& filename_extension,
                        const AtomicString& content_disposition);

@@ -34,13 +34,13 @@ namespace blink {
 
 SVGPaintServer::SVGPaintServer(Color color) : color_(color) {}
 
-SVGPaintServer::SVGPaintServer(PassRefPtr<Gradient> gradient,
+SVGPaintServer::SVGPaintServer(RefPtr<Gradient> gradient,
                                const AffineTransform& transform)
     : gradient_(std::move(gradient)),
       transform_(transform),
       color_(Color::kBlack) {}
 
-SVGPaintServer::SVGPaintServer(PassRefPtr<Pattern> pattern,
+SVGPaintServer::SVGPaintServer(RefPtr<Pattern> pattern,
                                const AffineTransform& transform)
     : pattern_(std::move(pattern)),
       transform_(transform),

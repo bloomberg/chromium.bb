@@ -15,7 +15,7 @@ class CSSOffsetRotationNonInterpolableValue : public NonInterpolableValue {
  public:
   ~CSSOffsetRotationNonInterpolableValue() {}
 
-  static PassRefPtr<CSSOffsetRotationNonInterpolableValue> Create(
+  static RefPtr<CSSOffsetRotationNonInterpolableValue> Create(
       OffsetRotationType rotation_type) {
     return AdoptRef(new CSSOffsetRotationNonInterpolableValue(rotation_type));
   }

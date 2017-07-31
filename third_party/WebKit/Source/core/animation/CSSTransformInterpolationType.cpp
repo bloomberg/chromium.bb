@@ -19,13 +19,13 @@ namespace blink {
 
 class CSSTransformNonInterpolableValue : public NonInterpolableValue {
  public:
-  static PassRefPtr<CSSTransformNonInterpolableValue> Create(
+  static RefPtr<CSSTransformNonInterpolableValue> Create(
       TransformOperations&& transform) {
     return AdoptRef(new CSSTransformNonInterpolableValue(
         true, std::move(transform), EmptyTransformOperations(), false, false));
   }
 
-  static PassRefPtr<CSSTransformNonInterpolableValue> Create(
+  static RefPtr<CSSTransformNonInterpolableValue> Create(
       CSSTransformNonInterpolableValue&& start,
       double start_fraction,
       CSSTransformNonInterpolableValue&& end,
@@ -36,7 +36,7 @@ class CSSTransformNonInterpolableValue : public NonInterpolableValue {
         end.IsAdditive()));
   }
 
-  PassRefPtr<CSSTransformNonInterpolableValue> Composite(
+  RefPtr<CSSTransformNonInterpolableValue> Composite(
       const CSSTransformNonInterpolableValue& other,
       double other_progress) {
     DCHECK(!IsAdditive());

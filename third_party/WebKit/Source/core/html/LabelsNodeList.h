@@ -26,7 +26,7 @@
 #define LabelsNodeList_h
 
 #include "core/dom/LiveNodeList.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

@@ -8,7 +8,6 @@
 #include <memory>
 #include "core/style/BasicShapes.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/RefPtr.h"
 
@@ -20,7 +19,7 @@ class SVGPathByteStream;
 
 class StylePath final : public BasicShape {
  public:
-  static PassRefPtr<StylePath> Create(std::unique_ptr<SVGPathByteStream>);
+  static RefPtr<StylePath> Create(std::unique_ptr<SVGPathByteStream>);
   ~StylePath();
 
   static StylePath* EmptyPath();
@@ -34,7 +33,7 @@ class StylePath final : public BasicShape {
   CSSValue* ComputedCSSValue() const;
 
   void GetPath(Path&, const FloatRect&) override;
-  PassRefPtr<BasicShape> Blend(const BasicShape*, double) const override;
+  RefPtr<BasicShape> Blend(const BasicShape*, double) const override;
   bool operator==(const BasicShape&) const override;
 
   ShapeType GetType() const override { return kStylePathType; }

@@ -38,7 +38,7 @@ class InterpolationType;
 // function.
 class TransitionInterpolation : public Interpolation {
  public:
-  static PassRefPtr<TransitionInterpolation> Create(
+  static RefPtr<TransitionInterpolation> Create(
       const PropertyHandle& property,
       const InterpolationType& type,
       InterpolationValue&& start,

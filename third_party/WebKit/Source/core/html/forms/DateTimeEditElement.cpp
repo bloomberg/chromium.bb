@@ -563,7 +563,7 @@ DateTimeEditElement* DateTimeEditElement::Create(
   return container;
 }
 
-PassRefPtr<ComputedStyle> DateTimeEditElement::CustomStyleForLayoutObject() {
+RefPtr<ComputedStyle> DateTimeEditElement::CustomStyleForLayoutObject() {
   // FIXME: This is a kind of layout. We might want to introduce new
   // layoutObject.
   RefPtr<ComputedStyle> original_style = OriginalStyleForLayoutObject();

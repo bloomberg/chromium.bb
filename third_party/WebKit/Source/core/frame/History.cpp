@@ -182,7 +182,7 @@ void History::go(ScriptState* script_state, int delta) {
   }
 }
 
-void History::pushState(PassRefPtr<SerializedScriptValue> data,
+void History::pushState(RefPtr<SerializedScriptValue> data,
                         const String& title,
                         const String& url,
                         ExceptionState& exception_state) {
@@ -228,7 +228,7 @@ bool History::CanChangeToUrl(const KURL& url,
   return true;
 }
 
-void History::StateObjectAdded(PassRefPtr<SerializedScriptValue> data,
+void History::StateObjectAdded(RefPtr<SerializedScriptValue> data,
                                const String& /* title */,
                                const String& url_string,
                                HistoryScrollRestorationType restoration_type,

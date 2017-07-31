@@ -46,7 +46,7 @@ class LayoutImageResourceStyleImage final : public LayoutImageResource {
   void Shutdown() override;
 
   bool HasImage() const override { return true; }
-  PassRefPtr<Image> GetImage(const IntSize&) const override;
+  RefPtr<Image> GetImage(const IntSize&) const override;
   bool ErrorOccurred() const override { return style_image_->ErrorOccurred(); }
 
   bool ImageHasRelativeSize() const override {

@@ -96,11 +96,11 @@ PropertyHandleSet StringKeyframe::Properties() const {
   return properties;
 }
 
-PassRefPtr<Keyframe> StringKeyframe::Clone() const {
+RefPtr<Keyframe> StringKeyframe::Clone() const {
   return AdoptRef(new StringKeyframe(*this));
 }
 
-PassRefPtr<Keyframe::PropertySpecificKeyframe>
+RefPtr<Keyframe::PropertySpecificKeyframe>
 StringKeyframe::CreatePropertySpecificKeyframe(
     const PropertyHandle& property) const {
   if (property.IsCSSProperty())
@@ -129,14 +129,14 @@ bool StringKeyframe::CSSPropertySpecificKeyframe::PopulateAnimatableValue(
   return true;
 }
 
-PassRefPtr<Keyframe::PropertySpecificKeyframe>
+RefPtr<Keyframe::PropertySpecificKeyframe>
 StringKeyframe::CSSPropertySpecificKeyframe::NeutralKeyframe(
     double offset,
-    PassRefPtr<TimingFunction> easing) const {
+    RefPtr<TimingFunction> easing) const {
   return Create(offset, std::move(easing), nullptr, EffectModel::kCompositeAdd);
 }
 
-PassRefPtr<Keyframe::PropertySpecificKeyframe>
+RefPtr<Keyframe::PropertySpecificKeyframe>
 StringKeyframe::CSSPropertySpecificKeyframe::CloneWithOffset(
     double offset) const {
   RefPtr<CSSPropertySpecificKeyframe> clone =
@@ -145,15 +145,15 @@ StringKeyframe::CSSPropertySpecificKeyframe::CloneWithOffset(
   return clone;
 }
 
-PassRefPtr<Keyframe::PropertySpecificKeyframe>
+RefPtr<Keyframe::PropertySpecificKeyframe>
 SVGPropertySpecificKeyframe::CloneWithOffset(double offset) const {
   return Create(offset, easing_, value_, composite_);
 }
 
-PassRefPtr<Keyframe::PropertySpecificKeyframe>
+RefPtr<Keyframe::PropertySpecificKeyframe>
 SVGPropertySpecificKeyframe::NeutralKeyframe(
     double offset,
-    PassRefPtr<TimingFunction> easing) const {
+    RefPtr<TimingFunction> easing) const {
   return Create(offset, std::move(easing), String(),
                 EffectModel::kCompositeAdd);
 }

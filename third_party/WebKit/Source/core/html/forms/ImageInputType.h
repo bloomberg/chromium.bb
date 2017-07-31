@@ -41,8 +41,8 @@ namespace blink {
 class ImageInputType final : public BaseButtonInputType {
  public:
   static InputType* Create(HTMLInputElement&);
-  virtual PassRefPtr<ComputedStyle> CustomStyleForLayoutObject(
-      PassRefPtr<ComputedStyle>);
+  virtual RefPtr<ComputedStyle> CustomStyleForLayoutObject(
+      RefPtr<ComputedStyle>);
 
  private:
   ImageInputType(HTMLInputElement&);

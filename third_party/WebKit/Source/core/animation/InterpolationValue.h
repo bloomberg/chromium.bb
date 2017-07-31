@@ -20,7 +20,7 @@ struct InterpolationValue {
 
   explicit InterpolationValue(
       std::unique_ptr<InterpolableValue> interpolable_value,
-      PassRefPtr<NonInterpolableValue> non_interpolable_value = nullptr)
+      RefPtr<NonInterpolableValue> non_interpolable_value = nullptr)
       : interpolable_value(std::move(interpolable_value)),
         non_interpolable_value(std::move(non_interpolable_value)) {}
 

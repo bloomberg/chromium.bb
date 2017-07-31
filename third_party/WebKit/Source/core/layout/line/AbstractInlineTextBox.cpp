@@ -39,7 +39,7 @@ namespace blink {
 AbstractInlineTextBox::InlineToAbstractInlineTextBoxHashMap*
     AbstractInlineTextBox::g_abstract_inline_text_box_map_ = nullptr;
 
-PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::GetOrCreate(
+RefPtr<AbstractInlineTextBox> AbstractInlineTextBox::GetOrCreate(
     LineLayoutText line_layout_text,
     InlineTextBox* inline_text_box) {
   if (!inline_text_box)
@@ -87,8 +87,7 @@ void AbstractInlineTextBox::Detach() {
   inline_text_box_ = nullptr;
 }
 
-PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::NextInlineTextBox()
-    const {
+RefPtr<AbstractInlineTextBox> AbstractInlineTextBox::NextInlineTextBox() const {
   DCHECK(!inline_text_box_ ||
          !inline_text_box_->GetLineLayoutItem().NeedsLayout());
   if (!inline_text_box_)
@@ -193,7 +192,7 @@ bool AbstractInlineTextBox::IsLast() const {
   return !inline_text_box_ || !inline_text_box_->NextTextBox();
 }
 
-PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::NextOnLine() const {
+RefPtr<AbstractInlineTextBox> AbstractInlineTextBox::NextOnLine() const {
   DCHECK(!inline_text_box_ ||
          !inline_text_box_->GetLineLayoutItem().NeedsLayout());
   if (!inline_text_box_)
@@ -207,8 +206,7 @@ PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::NextOnLine() const {
   return nullptr;
 }
 
-PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::PreviousOnLine()
-    const {
+RefPtr<AbstractInlineTextBox> AbstractInlineTextBox::PreviousOnLine() const {
   DCHECK(!inline_text_box_ ||
          !inline_text_box_->GetLineLayoutItem().NeedsLayout());
   if (!inline_text_box_)

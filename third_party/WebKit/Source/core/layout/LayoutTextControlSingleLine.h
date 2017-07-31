@@ -36,7 +36,7 @@ class LayoutTextControlSingleLine : public LayoutTextControl {
   LayoutTextControlSingleLine(HTMLInputElement*);
   ~LayoutTextControlSingleLine() override;
   // FIXME: Move createInnerEditorStyle() to TextControlInnerEditorElement.
-  PassRefPtr<ComputedStyle> CreateInnerEditorStyle(
+  RefPtr<ComputedStyle> CreateInnerEditorStyle(
       const ComputedStyle& start_style) const final;
 
   void CapsLockStateMayHaveChanged();

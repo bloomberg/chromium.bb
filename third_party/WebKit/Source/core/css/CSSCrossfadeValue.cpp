@@ -220,11 +220,10 @@ void CSSCrossfadeValue::LoadSubimages(const Document& document) {
   crossfade_subimage_observer_.SetReady(true);
 }
 
-PassRefPtr<Image> CSSCrossfadeValue::GetImage(
-    const ImageResourceObserver& client,
-    const Document& document,
-    const ComputedStyle&,
-    const IntSize& size) {
+RefPtr<Image> CSSCrossfadeValue::GetImage(const ImageResourceObserver& client,
+                                          const Document& document,
+                                          const ComputedStyle&,
+                                          const IntSize& size) {
   if (size.IsEmpty())
     return nullptr;
 

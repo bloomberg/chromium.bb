@@ -34,7 +34,7 @@ namespace blink {
 
 class StyleReflection : public RefCounted<StyleReflection> {
  public:
-  static PassRefPtr<StyleReflection> Create() {
+  static RefPtr<StyleReflection> Create() {
     return AdoptRef(new StyleReflection);
   }
 

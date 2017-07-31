@@ -22,7 +22,7 @@
 
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/CSSValueList.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

@@ -114,7 +114,7 @@ void InProcessWorkerMessagingProxy::StartWorkerGlobalScope(
 }
 
 void InProcessWorkerMessagingProxy::PostMessageToWorkerObject(
-    PassRefPtr<SerializedScriptValue> message,
+    RefPtr<SerializedScriptValue> message,
     MessagePortChannelArray channels) {
   DCHECK(IsParentContextThread());
   if (!worker_object_ || AskedToTerminate())
@@ -127,7 +127,7 @@ void InProcessWorkerMessagingProxy::PostMessageToWorkerObject(
 }
 
 void InProcessWorkerMessagingProxy::PostMessageToWorkerGlobalScope(
-    PassRefPtr<SerializedScriptValue> message,
+    RefPtr<SerializedScriptValue> message,
     MessagePortChannelArray channels) {
   DCHECK(IsParentContextThread());
   if (AskedToTerminate())

@@ -30,7 +30,7 @@ class AnimationInterpolableValueTest : public ::testing::Test {
     base.ScaleAndAdd(scale, add);
   }
 
-  PassRefPtr<LegacyStyleInterpolation> InterpolateLists(
+  RefPtr<LegacyStyleInterpolation> InterpolateLists(
       std::unique_ptr<InterpolableList> list_a,
       std::unique_ptr<InterpolableList> list_b,
       double progress) {

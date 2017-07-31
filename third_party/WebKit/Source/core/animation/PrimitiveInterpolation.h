@@ -47,7 +47,7 @@ class PairwisePrimitiveInterpolation : public PrimitiveInterpolation {
       const InterpolationType& type,
       std::unique_ptr<InterpolableValue> start,
       std::unique_ptr<InterpolableValue> end,
-      PassRefPtr<NonInterpolableValue> non_interpolable_value) {
+      RefPtr<NonInterpolableValue> non_interpolable_value) {
     return WTF::WrapUnique(new PairwisePrimitiveInterpolation(
         type, std::move(start), std::move(end),
         std::move(non_interpolable_value)));
@@ -65,7 +65,7 @@ class PairwisePrimitiveInterpolation : public PrimitiveInterpolation {
       const InterpolationType& type,
       std::unique_ptr<InterpolableValue> start,
       std::unique_ptr<InterpolableValue> end,
-      PassRefPtr<NonInterpolableValue> non_interpolable_value)
+      RefPtr<NonInterpolableValue> non_interpolable_value)
       : type_(type),
         start_(std::move(start)),
         end_(std::move(end)),

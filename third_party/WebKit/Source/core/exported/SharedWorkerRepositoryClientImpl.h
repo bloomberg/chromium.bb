@@ -35,8 +35,8 @@
 #include "core/CoreExport.h"
 #include "core/workers/SharedWorkerRepositoryClient.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

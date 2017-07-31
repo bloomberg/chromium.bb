@@ -44,7 +44,7 @@ class PopStateEvent final : public Event {
  public:
   ~PopStateEvent() override;
   static PopStateEvent* Create();
-  static PopStateEvent* Create(PassRefPtr<SerializedScriptValue>, History*);
+  static PopStateEvent* Create(RefPtr<SerializedScriptValue>, History*);
   static PopStateEvent* Create(ScriptState*,
                                const AtomicString&,
                                const PopStateEventInit&);
@@ -53,7 +53,7 @@ class PopStateEvent final : public Event {
   SerializedScriptValue* SerializedState() const {
     return serialized_state_.Get();
   }
-  void SetSerializedState(PassRefPtr<SerializedScriptValue> state) {
+  void SetSerializedState(RefPtr<SerializedScriptValue> state) {
     DCHECK(!serialized_state_);
     serialized_state_ = std::move(state);
   }
@@ -68,7 +68,7 @@ class PopStateEvent final : public Event {
  private:
   PopStateEvent();
   PopStateEvent(ScriptState*, const AtomicString&, const PopStateEventInit&);
-  PopStateEvent(PassRefPtr<SerializedScriptValue>, History*);
+  PopStateEvent(RefPtr<SerializedScriptValue>, History*);
 
   RefPtr<SerializedScriptValue> serialized_state_;
   RefPtr<DOMWrapperWorld> world_;

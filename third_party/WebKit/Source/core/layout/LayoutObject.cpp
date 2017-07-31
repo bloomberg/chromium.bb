@@ -1472,7 +1472,7 @@ StyleDifference LayoutObject::AdjustStyleDifference(
   return diff;
 }
 
-void LayoutObject::SetPseudoStyle(PassRefPtr<ComputedStyle> pseudo_style) {
+void LayoutObject::SetPseudoStyle(RefPtr<ComputedStyle> pseudo_style) {
   DCHECK(pseudo_style->StyleType() == kPseudoIdBefore ||
          pseudo_style->StyleType() == kPseudoIdAfter ||
          pseudo_style->StyleType() == kPseudoIdFirstLetter);
@@ -1552,7 +1552,7 @@ void LayoutObject::SetNeedsOverflowRecalcAfterStyleChange() {
 }
 
 DISABLE_CFI_PERF
-void LayoutObject::SetStyle(PassRefPtr<ComputedStyle> style) {
+void LayoutObject::SetStyle(RefPtr<ComputedStyle> style) {
   DCHECK(style);
 
   if (style_ == style) {
@@ -1920,7 +1920,7 @@ void LayoutObject::PropagateStyleToAnonymousChildren() {
   }
 }
 
-void LayoutObject::SetStyleWithWritingModeOf(PassRefPtr<ComputedStyle> style,
+void LayoutObject::SetStyleWithWritingModeOf(RefPtr<ComputedStyle> style,
                                              LayoutObject* parent) {
   if (parent)
     style->SetWritingMode(parent->StyleRef().GetWritingMode());
@@ -1928,7 +1928,7 @@ void LayoutObject::SetStyleWithWritingModeOf(PassRefPtr<ComputedStyle> style,
 }
 
 void LayoutObject::SetStyleWithWritingModeOfParent(
-    PassRefPtr<ComputedStyle> style) {
+    RefPtr<ComputedStyle> style) {
   SetStyleWithWritingModeOf(std::move(style), Parent());
 }
 
@@ -2948,7 +2948,7 @@ void LayoutObject::ForceChildLayout() {
 
 enum StyleCacheState { kCached, kUncached };
 
-static PassRefPtr<ComputedStyle> FirstLineStyleForCachedUncachedType(
+static RefPtr<ComputedStyle> FirstLineStyleForCachedUncachedType(
     StyleCacheState type,
     const LayoutObject* layout_object,
     ComputedStyle* style) {
@@ -2988,7 +2988,7 @@ static PassRefPtr<ComputedStyle> FirstLineStyleForCachedUncachedType(
   return nullptr;
 }
 
-PassRefPtr<ComputedStyle> LayoutObject::UncachedFirstLineStyle() const {
+RefPtr<ComputedStyle> LayoutObject::UncachedFirstLineStyle() const {
   if (!GetDocument().GetStyleEngine().UsesFirstLineRules())
     return nullptr;
 
@@ -3022,7 +3022,7 @@ ComputedStyle* LayoutObject::GetCachedPseudoStyle(
   return element->PseudoStyle(PseudoStyleRequest(pseudo), parent_style);
 }
 
-PassRefPtr<ComputedStyle> LayoutObject::GetUncachedPseudoStyle(
+RefPtr<ComputedStyle> LayoutObject::GetUncachedPseudoStyle(
     const PseudoStyleRequest& request,
     const ComputedStyle* parent_style) const {
   DCHECK_NE(request.pseudo_id, kPseudoIdBefore);
@@ -3037,7 +3037,7 @@ PassRefPtr<ComputedStyle> LayoutObject::GetUncachedPseudoStyle(
   return element->GetUncachedPseudoStyle(request, parent_style);
 }
 
-PassRefPtr<ComputedStyle> LayoutObject::GetUncachedSelectionStyle() const {
+RefPtr<ComputedStyle> LayoutObject::GetUncachedSelectionStyle() const {
   if (!GetNode())
     return nullptr;
 

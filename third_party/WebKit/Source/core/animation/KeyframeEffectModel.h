@@ -44,7 +44,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -60,7 +60,7 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
       Vector<RefPtr<Keyframe::PropertySpecificKeyframe>>;
   class PropertySpecificKeyframeGroup {
    public:
-    void AppendKeyframe(PassRefPtr<Keyframe::PropertySpecificKeyframe>);
+    void AppendKeyframe(RefPtr<Keyframe::PropertySpecificKeyframe>);
     const PropertySpecificKeyframeVector& Keyframes() const {
       return keyframes_;
     }
@@ -68,7 +68,7 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
    private:
     void RemoveRedundantKeyframes();
     bool AddSyntheticKeyframeIfRequired(
-        PassRefPtr<TimingFunction> zero_offset_easing);
+        RefPtr<TimingFunction> zero_offset_easing);
 
     PropertySpecificKeyframeVector keyframes_;
 
@@ -138,7 +138,7 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
   bool IsTransformRelatedEffect() const override;
 
  protected:
-  KeyframeEffectModelBase(PassRefPtr<TimingFunction> default_keyframe_easing)
+  KeyframeEffectModelBase(RefPtr<TimingFunction> default_keyframe_easing)
       : last_iteration_(0),
         last_fraction_(std::numeric_limits<double>::quiet_NaN()),
         last_iteration_duration_(0),
@@ -176,14 +176,14 @@ class KeyframeEffectModel final : public KeyframeEffectModelBase {
   using KeyframeVector = Vector<RefPtr<Keyframe>>;
   static KeyframeEffectModel<Keyframe>* Create(
       const KeyframeVector& keyframes,
-      PassRefPtr<TimingFunction> default_keyframe_easing = nullptr) {
+      RefPtr<TimingFunction> default_keyframe_easing = nullptr) {
     return new KeyframeEffectModel(keyframes,
                                    std::move(default_keyframe_easing));
   }
 
  private:
   KeyframeEffectModel(const KeyframeVector& keyframes,
-                      PassRefPtr<TimingFunction> default_keyframe_easing)
+                      RefPtr<TimingFunction> default_keyframe_easing)
       : KeyframeEffectModelBase(std::move(default_keyframe_easing)) {
     keyframes_.AppendVector(keyframes);
   }

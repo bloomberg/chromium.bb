@@ -66,7 +66,7 @@ class HTMLCanvasPainterTestForSPv2 : public ::testing::Test,
     return chrome_client_->HasLayer(layer);
   }
 
-  PassRefPtr<Canvas2DLayerBridge> MakeCanvas2DLayerBridge(const IntSize& size) {
+  RefPtr<Canvas2DLayerBridge> MakeCanvas2DLayerBridge(const IntSize& size) {
     return AdoptRef(new Canvas2DLayerBridge(
         size, 0, kNonOpaque, Canvas2DLayerBridge::kForceAccelerationForTesting,
         CanvasColorParams()));

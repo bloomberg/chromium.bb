@@ -67,7 +67,7 @@ class NullImageResourceInfo final
 
 }  // namespace
 
-ImageResourceContent::ImageResourceContent(PassRefPtr<blink::Image> image)
+ImageResourceContent::ImageResourceContent(RefPtr<blink::Image> image)
     : is_refetchable_data_from_disk_cache_(true), image_(std::move(image)) {
   DEFINE_STATIC_LOCAL(NullImageResourceInfo, null_info,
                       (new NullImageResourceInfo()));
@@ -75,7 +75,7 @@ ImageResourceContent::ImageResourceContent(PassRefPtr<blink::Image> image)
 }
 
 ImageResourceContent* ImageResourceContent::CreateLoaded(
-    PassRefPtr<blink::Image> image) {
+    RefPtr<blink::Image> image) {
   DCHECK(image);
   ImageResourceContent* content = new ImageResourceContent(std::move(image));
   content->content_status_ = ResourceStatus::kCached;
@@ -192,7 +192,7 @@ void ImageResourceContent::DoResetAnimation() {
     image_->ResetAnimation();
 }
 
-PassRefPtr<const SharedBuffer> ImageResourceContent::ResourceBuffer() const {
+RefPtr<const SharedBuffer> ImageResourceContent::ResourceBuffer() const {
   if (image_)
     return image_->Data();
   return nullptr;
@@ -319,7 +319,7 @@ void ImageResourceContent::NotifyObservers(
   }
 }
 
-PassRefPtr<Image> ImageResourceContent::CreateImage(bool is_multipart) {
+RefPtr<Image> ImageResourceContent::CreateImage(bool is_multipart) {
   if (info_->GetResponse().MimeType() == "image/svg+xml")
     return SVGImage::Create(this, is_multipart);
   return BitmapImage::Create(this, is_multipart);
@@ -427,7 +427,7 @@ void ImageResourceContent::AsyncLoadCompleted(const blink::Image* image) {
 }
 
 ImageResourceContent::UpdateImageResult ImageResourceContent::UpdateImage(
-    PassRefPtr<SharedBuffer> data,
+    RefPtr<SharedBuffer> data,
     ResourceStatus status,
     UpdateImageOption update_image_option,
     bool all_data_received,

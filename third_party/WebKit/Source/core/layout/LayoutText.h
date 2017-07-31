@@ -30,7 +30,7 @@
 #include "core/layout/TextRunConstructor.h"
 #include "platform/LengthFunctions.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 
@@ -72,7 +72,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // FIXME: If the node argument is not a Text node or the string argument is
   // not the content of the Text node, updating text-transform property
   // doesn't re-transform the string.
-  LayoutText(Node*, PassRefPtr<StringImpl>);
+  LayoutText(Node*, RefPtr<StringImpl>);
 #if DCHECK_IS_ON()
   ~LayoutText() override;
 #endif
@@ -174,8 +174,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   float FirstRunX() const;
   float FirstRunY() const;
 
-  virtual void SetText(PassRefPtr<StringImpl>, bool force = false);
-  void SetTextWithOffset(PassRefPtr<StringImpl>,
+  virtual void SetText(RefPtr<StringImpl>, bool force = false);
+  void SetTextWithOffset(RefPtr<StringImpl>,
                          unsigned offset,
                          unsigned len,
                          bool force = false);
@@ -218,7 +218,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   void RemoveAndDestroyTextBoxes();
 
-  PassRefPtr<AbstractInlineTextBox> FirstAbstractInlineTextBox();
+  RefPtr<AbstractInlineTextBox> FirstAbstractInlineTextBox();
 
   float HyphenWidth(const Font&, TextDirection);
 

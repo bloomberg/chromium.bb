@@ -50,10 +50,10 @@ class FakeImageSource : public CanvasImageSource {
  public:
   FakeImageSource(IntSize, BitmapOpacity);
 
-  PassRefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                            AccelerationHint,
-                                            SnapshotReason,
-                                            const FloatSize&) override;
+  RefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
+                                        AccelerationHint,
+                                        SnapshotReason,
+                                        const FloatSize&) override;
 
   bool WouldTaintOrigin(
       SecurityOrigin* destination_security_origin) const override {
@@ -84,7 +84,7 @@ FakeImageSource::FakeImageSource(IntSize size, BitmapOpacity opacity)
   image_ = StaticBitmapImage::Create(surface->makeImageSnapshot());
 }
 
-PassRefPtr<Image> FakeImageSource::GetSourceImageForCanvas(
+RefPtr<Image> FakeImageSource::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint,
     SnapshotReason,

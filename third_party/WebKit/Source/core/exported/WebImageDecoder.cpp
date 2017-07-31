@@ -33,7 +33,7 @@
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/bmp/BMPImageDecoder.h"
 #include "platform/image-decoders/ico/ICOImageDecoder.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebImage.h"

@@ -49,10 +49,10 @@ void ShadowList::AdjustRectForShadow(FloatRect& rect) const {
   rect.Expand(RectOutsetsIncludingOriginal());
 }
 
-PassRefPtr<ShadowList> ShadowList::Blend(const ShadowList* from,
-                                         const ShadowList* to,
-                                         double progress,
-                                         const Color& current_color) {
+RefPtr<ShadowList> ShadowList::Blend(const ShadowList* from,
+                                     const ShadowList* to,
+                                     double progress,
+                                     const Color& current_color) {
   size_t from_length = from ? from->Shadows().size() : 0;
   size_t to_length = to ? to->Shadows().size() : 0;
   if (!from_length && !to_length)
