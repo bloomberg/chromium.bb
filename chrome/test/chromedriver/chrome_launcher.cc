@@ -773,21 +773,8 @@ Status ProcessExtensions(const std::vector<std::string>& extensions,
     if (switches->HasSwitch("disable-extensions")) {
       UpdateExtensionSwitch(switches, "disable-extensions-except",
                             automation_extension.value());
-      // TODO(samuong): Stop using --load-component-extension when ChromeDriver
-      // stops supporting Chrome 56. For backwards compatibility, Chrome 57 and
-      // 58 interprets --load-component-extension as --load-extension.
-      UpdateExtensionSwitch(switches, "load-component-extension",
-                            automation_extension.value());
     } else {
-#if defined(OS_WIN) || defined(OS_MACOSX)
-      // On Chrome 56 for Windows and Mac, a "Disable developer
-      // mode extensions" dialog appears for the automation extension. Suppress
-      // this by loading it as a component extension.
-      UpdateExtensionSwitch(switches, "load-component-extension",
-                            automation_extension.value());
-#else
       extension_paths.push_back(automation_extension.value());
-#endif
     }
   }
 
