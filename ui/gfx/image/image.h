@@ -84,8 +84,16 @@ class GFX_EXPORT Image {
   // Initializes a new Image by AddRef()ing |other|'s internal storage.
   Image(const Image& other);
 
+  // Moves a reference from |other| to the new image without changing the
+  // reference count.
+  Image(Image&& other);
+
   // Copies a reference to |other|'s storage.
   Image& operator=(const Image& other);
+
+  // Moves a reference from |other|'s storage without changing the reference
+  // count.
+  Image& operator=(Image&& other);
 
   // Deletes the image and, if the only owner of the storage, all of its cached
   // representations.
@@ -165,9 +173,6 @@ class GFX_EXPORT Image {
   int Width() const;
   int Height() const;
   gfx::Size Size() const;
-
-  // Swaps this image's internal representations with |other|.
-  void SwapRepresentations(gfx::Image* other);
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // Set the default representation's color space. This is used for converting

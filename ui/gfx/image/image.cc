@@ -521,16 +521,15 @@ Image::Image(NSImage* image) {
 }
 #endif
 
-Image::Image(const Image& other) : storage_(other.storage_) {
-}
+Image::Image(const Image& other) = default;
 
-Image& Image::operator=(const Image& other) {
-  storage_ = other.storage_;
-  return *this;
-}
+Image::Image(Image&& other) = default;
 
-Image::~Image() {
-}
+Image& Image::operator=(const Image& other) = default;
+
+Image& Image::operator=(Image&& other) = default;
+
+Image::~Image() {}
 
 // static
 Image Image::CreateFrom1xBitmap(const SkBitmap& bitmap) {
@@ -801,10 +800,6 @@ gfx::Size Image::Size() const {
   if (IsEmpty())
     return gfx::Size();
   return GetRepresentation(DefaultRepresentationType(), true)->Size();
-}
-
-void Image::SwapRepresentations(Image* other) {
-  storage_.swap(other->storage_);
 }
 
 #if defined(OS_MACOSX)  && !defined(OS_IOS)

@@ -25,7 +25,16 @@ ImageFamily::const_iterator::const_iterator(
 ImageFamily::const_iterator::~const_iterator() {}
 
 ImageFamily::ImageFamily() {}
+ImageFamily::ImageFamily(ImageFamily&& other) = default;
 ImageFamily::~ImageFamily() {}
+
+ImageFamily& ImageFamily::operator=(ImageFamily&& other) = default;
+
+ImageFamily ImageFamily::Clone() const {
+  ImageFamily clone;
+  clone.map_ = map_;
+  return clone;
+}
 
 void ImageFamily::Add(const gfx::Image& image) {
   gfx::Size size = image.Size();

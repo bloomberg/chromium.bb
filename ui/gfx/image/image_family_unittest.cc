@@ -69,6 +69,26 @@ TEST_F(ImageFamilyTest, Clear) {
   EXPECT_TRUE(image_family_.empty());
 }
 
+TEST_F(ImageFamilyTest, MoveConstructor) {
+  gfx::ImageFamily family(std::move(image_family_));
+  EXPECT_TRUE(image_family_.empty());
+  EXPECT_FALSE(family.empty());
+}
+
+TEST_F(ImageFamilyTest, MoveAssignment) {
+  gfx::ImageFamily family;
+  EXPECT_TRUE(family.empty());
+  family = std::move(image_family_);
+  EXPECT_TRUE(image_family_.empty());
+  EXPECT_FALSE(family.empty());
+}
+
+TEST_F(ImageFamilyTest, Clone) {
+  gfx::ImageFamily family = image_family_.Clone();
+  EXPECT_FALSE(image_family_.empty());
+  EXPECT_FALSE(family.empty());
+}
+
 // Tests iteration over an ImageFamily.
 TEST_F(ImageFamilyTest, Iteration) {
   gfx::ImageFamily::const_iterator it = image_family_.begin();
