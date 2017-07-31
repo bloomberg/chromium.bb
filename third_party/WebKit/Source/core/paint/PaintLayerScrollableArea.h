@@ -294,6 +294,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   ScrollBehavior ScrollBehaviorStyle() const override;
   CompositorAnimationHost* GetCompositorAnimationHost() const override;
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() const override;
+  void GetTickmarks(Vector<IntRect>&) const override;
 
   // These are temporary convenience methods.  They delegate to Box() methods,
   // which will be up-to-date when UpdateAfterLayout runs.  By contrast,
