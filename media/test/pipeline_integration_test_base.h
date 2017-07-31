@@ -10,8 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/md5.h"
-#include "base/message_loop/message_loop.h"
-#include "base/test/scoped_task_scheduler.h"
+#include "base/test/scoped_task_environment.h"
 #include "media/audio/clockless_audio_sink.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/demuxer.h"
@@ -143,13 +142,10 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
 
  protected:
   MediaLog media_log_;
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::MD5Context md5_context_;
   bool hashing_enabled_;
   bool clockless_playback_;
-
-  // TaskScheduler is used only for FFmpegDemuxer.
-  std::unique_ptr<base::test::ScopedTaskScheduler> task_scheduler_;
   std::unique_ptr<Demuxer> demuxer_;
   std::unique_ptr<DataSource> data_source_;
   std::unique_ptr<PipelineImpl> pipeline_;
