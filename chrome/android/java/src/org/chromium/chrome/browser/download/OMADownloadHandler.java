@@ -37,7 +37,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.content.ContentUtils;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -934,7 +934,7 @@ public class OMADownloadHandler extends BroadcastReceiver
                 urlConnection.setRequestMethod("POST");
                 String userAgent = mDownloadInfo.getUserAgent();
                 if (TextUtils.isEmpty(userAgent)) {
-                    userAgent = ChromeApplication.getBrowserUserAgent();
+                    userAgent = ContentUtils.getBrowserUserAgent();
                 }
                 urlConnection.setRequestProperty("User-Agent", userAgent);
                 urlConnection.setRequestProperty("cookie", mDownloadInfo.getCookie());

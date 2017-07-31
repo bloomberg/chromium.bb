@@ -81,15 +81,6 @@ public class ChromeApplication extends ContentApplication {
     }
 
     /**
-     * @return The user agent string of Chrome.
-     */
-    public static String getBrowserUserAgent() {
-        return nativeGetBrowserUserAgent();
-    }
-
-    private static native String nativeGetBrowserUserAgent();
-
-    /**
      * Returns the singleton instance of the DocumentTabModelSelector.
      * TODO(dfalcantara): Find a better place for this once we differentiate between activity and
      *                    application-level TabModelSelectors.
