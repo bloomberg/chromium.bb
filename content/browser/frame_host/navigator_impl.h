@@ -52,8 +52,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   void DidFailLoadWithError(RenderFrameHostImpl* render_frame_host,
                             const GURL& url,
                             int error_code,
-                            const base::string16& error_description,
-                            bool was_ignored_by_handler) override;
+                            const base::string16& error_description) override;
   void DidNavigate(
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,

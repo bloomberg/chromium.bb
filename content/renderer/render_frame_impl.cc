@@ -3990,8 +3990,7 @@ void RenderFrameImpl::DidFailLoad(const blink::WebURLError& error,
       nullptr,
       &error_description);
   Send(new FrameHostMsg_DidFailLoadWithError(routing_id_, failed_request.Url(),
-                                             error.reason, error_description,
-                                             error.was_ignored_by_handler));
+                                             error.reason, error_description));
 }
 
 void RenderFrameImpl::DidFinishLoad() {
@@ -6556,7 +6555,6 @@ void RenderFrameImpl::SendFailedProvisionalLoad(
       this, request, error, nullptr, &params.error_description);
   params.url = error.unreachable_url;
   params.showing_repost_interstitial = show_repost_interstitial;
-  params.was_ignored_by_handler = error.was_ignored_by_handler;
   Send(new FrameHostMsg_DidFailProvisionalLoadWithError(routing_id_, params));
 }
 

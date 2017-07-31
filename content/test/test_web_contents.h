@@ -136,8 +136,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   void TestDidFinishLoad(const GURL& url);
   void TestDidFailLoadWithError(const GURL& url,
                                 int error_code,
-                                const base::string16& error_description,
-                                bool was_ignored_by_handler);
+                                const base::string16& error_description);
 
   void SetNavigationData(
       NavigationHandle* navigation_handle,

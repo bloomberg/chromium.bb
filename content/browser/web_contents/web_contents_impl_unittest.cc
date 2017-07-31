@@ -291,8 +291,7 @@ class TestWebContentsObserver : public WebContentsObserver {
   void DidFailLoad(RenderFrameHost* render_frame_host,
                    const GURL& validated_url,
                    int error_code,
-                   const base::string16& error_description,
-                   bool was_ignored_by_handler) override {
+                   const base::string16& error_description) override {
     last_url_ = validated_url;
   }
 
@@ -2719,8 +2718,7 @@ TEST_F(WebContentsImplTest, FilterURLs) {
   other_contents->NavigateAndCommit(url_normalized);
 
   // Check that an IPC with about:whatever is correctly normalized.
-  other_contents->TestDidFailLoadWithError(
-      url_from_ipc, 1, base::string16(), false);
+  other_contents->TestDidFailLoadWithError(url_from_ipc, 1, base::string16());
   EXPECT_EQ(url_normalized, other_observer.last_url());
 }
 
