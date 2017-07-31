@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_owner.h"
 #import "ios/public/provider/chrome/browser/voice/logo_animation_controller.h"
 
+@protocol ApplicationCommands;
 @protocol ContentSuggestionsCollectionSynchronizing;
 @protocol ContentSuggestionsHeaderViewControllerDelegate;
 @protocol ContentSuggestionsHeaderViewControllerCommandHandler;
@@ -30,7 +31,8 @@ class ReadingListModel;
                        ToolbarOwner,
                        LogoAnimationControllerOwnerOwner>
 
-@property(nonatomic, weak) id<UrlLoader, OmniboxFocuser> dispatcher;
+@property(nonatomic, weak) id<ApplicationCommands, OmniboxFocuser, UrlLoader>
+    dispatcher;
 @property(nonatomic, weak) id<ContentSuggestionsHeaderViewControllerDelegate>
     delegate;
 @property(nonatomic, weak)

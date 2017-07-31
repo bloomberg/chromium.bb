@@ -12,6 +12,7 @@ namespace ios {
 class ChromeBrowserState;
 }
 
+@protocol ApplicationCommands;
 @protocol BrowserCommands;
 @protocol ChromeExecuteCommand;
 @class ContentSuggestionsHeaderViewController;
@@ -29,9 +30,12 @@ class WebStateList;
 // URLLoader used to open pages.
 @property(nonatomic, weak) id<UrlLoader> URLLoader;
 @property(nonatomic, assign) WebStateList* webStateList;
-@property(nonatomic, weak)
-    id<BrowserCommands, ChromeExecuteCommand, OmniboxFocuser, UrlLoader>
-        dispatcher;
+@property(nonatomic, weak) id<ApplicationCommands,
+                              BrowserCommands,
+                              ChromeExecuteCommand,
+                              OmniboxFocuser,
+                              UrlLoader>
+    dispatcher;
 // Whether the Suggestions UI is displayed. If this is true, start is a no-op.
 @property(nonatomic, readonly) BOOL visible;
 

@@ -5,12 +5,15 @@
 #import "ios/chrome/browser/content_suggestions/content_suggestions_header_view_controller.h"
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_header_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#include "ios/chrome/browser/ui/commands/start_voice_search_command.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_synchronizing.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_view.h"
@@ -254,7 +257,10 @@ const CGFloat kHintLabelSidePadding = 12;
 - (void)loadVoiceSearch:(id)sender {
   DCHECK(self.voiceSearchIsEnabled);
   base::RecordAction(UserMetricsAction("MobileNTPMostVisitedVoiceSearch"));
-  [sender chromeExecuteCommand:sender];
+  UIView* view = base::mac::ObjCCastStrict<UIView>(sender);
+  StartVoiceSearchCommand* command =
+      [[StartVoiceSearchCommand alloc] initWithOriginView:view];
+  [self.dispatcher startVoiceSearch:command];
 }
 
 - (void)preloadVoiceSearch:(id)sender {

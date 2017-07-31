@@ -29,6 +29,7 @@ void swizzleUIImageImageNamed() {
   // TODO(crbug.com/720355): Add missing image.
   [whiteList addObject:@"find_close_pressed_incognito"];
   // TODO(crbug.com/720338): Add missing images.
+  [whiteList addObject:@"glif-mic-to-dots-small_37"];
   [whiteList addObject:@"glif-mic-to-dots-large_37"];
   [whiteList addObject:@"glif-google-to-dots_28"];
   // TODO(crbug.com/721338): Add missing image.
