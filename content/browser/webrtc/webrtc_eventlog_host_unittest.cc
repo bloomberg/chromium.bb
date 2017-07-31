@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -141,7 +142,15 @@ TEST_F(WebRtcEventlogHostTest, OnePeerConnectionTest) {
 // two PeerConnections. It is expected that two IPC messages will be sent for
 // each of the Start and Stop calls, and that a file is created for both
 // PeerConnections.
-TEST_F(WebRtcEventlogHostTest, TwoPeerConnectionsTest) {
+
+// Test is flaky on Windpws: https://crbug.com/750708
+#if defined(OS_WIN)
+#define MAYBE_TwoPeerConnectionsTest DISABLED_TwoPeerConnectionsTest
+#else
+#define MAYBE_TwoPeerConnectionsTest TwoPeerConnectionsTest
+#endif
+
+TEST_F(WebRtcEventlogHostTest, MAYBE_TwoPeerConnectionsTest) {
   const int kTestPeerConnectionId1 = 123;
   const int kTestPeerConnectionId2 = 321;
   mock_render_process_host_->sink().ClearMessages();
