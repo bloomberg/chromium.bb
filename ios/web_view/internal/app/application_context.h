@@ -9,14 +9,11 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 
 namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
-class FilePath;
-class SequencedTaskRunner;
 }
 
 namespace net {
@@ -71,9 +68,6 @@ class ApplicationContext {
   // Gets the WebViewIOThread.
   WebViewIOThread* GetWebViewIOThread();
 
-  // Returns the path to the application level preferences.
-  static base::FilePath GetLocalStatePath();
-
   // Sets the locale used by the application.
   void SetApplicationLocale(const std::string& locale);
 
@@ -82,9 +76,6 @@ class ApplicationContext {
   std::unique_ptr<net_log::ChromeNetLog> net_log_;
   std::unique_ptr<WebViewIOThread> web_view_io_thread_;
   std::string application_locale_;
-
-  // Sequenced task runner for local state related I/O tasks.
-  const scoped_refptr<base::SequencedTaskRunner> local_state_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationContext);
 };
