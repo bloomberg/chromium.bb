@@ -12,7 +12,8 @@ Tests DOMSnapshot.getSnapshot method.
       "layoutNodeIndex": 0,
       "documentURL": "<string>",
       "baseURL": "<string>",
-      "contentLanguage": "de"
+      "contentLanguage": "de",
+      "documentEncoding": "windows-1252"
     },
     {
       "nodeType": 1,
@@ -361,7 +362,8 @@ Tests DOMSnapshot.getSnapshot method.
       ],
       "layoutNodeIndex": 19,
       "documentURL": "<string>",
-      "baseURL": "<string>"
+      "baseURL": "<string>",
+      "documentEncoding": "windows-1252"
     },
     {
       "nodeType": 1,

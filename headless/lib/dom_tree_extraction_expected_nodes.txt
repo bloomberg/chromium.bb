@@ -8,6 +8,7 @@
       "y": 0.0
    },
    "childNodeIndexes": [ 1 ],
+   "documentEncoding": "windows-1252",
    "documentURL": "http://127.0.0.1/dom_tree_test.html",
    "layoutNodeIndex": 0,
    "nodeName": "#document",
@@ -222,6 +223,7 @@
       "y": 0.0
    },
    "childNodeIndexes": [ 19 ],
+   "documentEncoding": "windows-1252",
    "documentURL": "http://127.0.0.1/iframe.html",
    "layoutNodeIndex": 7,
    "nodeName": "#document",
