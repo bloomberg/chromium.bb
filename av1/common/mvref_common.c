@@ -196,6 +196,7 @@ static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
           xd->mi[mi_pos.row * xd->mi_stride + mi_pos.col];
       const MB_MODE_INFO *const candidate = &candidate_mi->mbmi;
       int len = AOMMIN(xd->n8_w, mi_size_wide[candidate->sb_type]);
+      if (abs(row_offset) > 1) len = AOMMAX(len, mi_size_wide[BLOCK_8X8]);
       if (use_step_16) len = AOMMAX(mi_size_wide[BLOCK_16X16], len);
       newmv_count += add_ref_mv_candidate(
           candidate_mi, candidate, rf, refmv_count, ref_mv_stack,
@@ -255,6 +256,7 @@ static uint8_t scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
           xd->mi[mi_pos.row * xd->mi_stride + mi_pos.col];
       const MB_MODE_INFO *const candidate = &candidate_mi->mbmi;
       int len = AOMMIN(xd->n8_h, mi_size_high[candidate->sb_type]);
+      if (abs(col_offset) > 1) len = AOMMAX(len, mi_size_high[BLOCK_8X8]);
       if (use_step_16) len = AOMMAX(mi_size_high[BLOCK_16X16], len);
       newmv_count += add_ref_mv_candidate(
           candidate_mi, candidate, rf, refmv_count, ref_mv_stack,
