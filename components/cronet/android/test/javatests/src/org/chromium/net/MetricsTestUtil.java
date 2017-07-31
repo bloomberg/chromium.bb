@@ -85,7 +85,7 @@ public class MetricsTestUtil {
         }
     }
 
-    // Helper method to assert date2 is equals to or after date1.
+    // Helper method to assert date1 is equals to or after date2.
     // Some implementation of java.util.Date broke the symmetric property, so
     // check both directions.
     public static void assertAfter(Date date1, Date date2) {
@@ -107,9 +107,9 @@ public class MetricsTestUtil {
         assertNotNull(metrics.getSendingStart());
         assertAfter(metrics.getSendingStart(), startTime);
         assertNotNull(metrics.getSendingEnd());
-        assertTrue(metrics.getSendingEnd().before(endTime));
+        assertAfter(endTime, metrics.getSendingEnd());
         assertNotNull(metrics.getResponseStart());
-        assertTrue(metrics.getResponseStart().after(startTime));
+        assertAfter(metrics.getResponseStart(), startTime);
         assertNotNull(metrics.getRequestEnd());
         assertAfter(endTime, metrics.getRequestEnd());
         // Entire request should take more than 0 ms
@@ -125,16 +125,16 @@ public class MetricsTestUtil {
         assertNotNull(metrics.getDnsStart());
         assertAfter(metrics.getDnsStart(), startTime);
         assertNotNull(metrics.getDnsEnd());
-        assertTrue(metrics.getDnsEnd().before(endTime));
+        assertAfter(endTime, metrics.getDnsEnd());
         assertNotNull(metrics.getConnectStart());
         assertAfter(metrics.getConnectStart(), startTime);
         assertNotNull(metrics.getConnectEnd());
-        assertTrue(metrics.getConnectEnd().before(endTime));
+        assertAfter(endTime, metrics.getConnectEnd());
         if (isSsl) {
             assertNotNull(metrics.getSslStart());
             assertAfter(metrics.getSslStart(), startTime);
             assertNotNull(metrics.getSslEnd());
-            assertTrue(metrics.getSslEnd().before(endTime));
+            assertAfter(endTime, metrics.getSslEnd());
         } else {
             assertNull(metrics.getSslStart());
             assertNull(metrics.getSslEnd());
