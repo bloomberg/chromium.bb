@@ -7,7 +7,7 @@ found in the LICENSE file.
 <html>
 <head>
 <meta charset="utf-8">
-<title>C++11 use in Chromium</title>
+<title>C++11 and C++14 use in Chromium</title>
 <link rel="stylesheet" href="c++11.css">
 <style>
 table tbody tr td:first-child {
@@ -18,18 +18,19 @@ table tbody tr td:first-child {
 </head>
 <body>
 <div id="content">
-<h1>C++11 use in Chromium</h1>
+<h1>C++11 and C++14 use in Chromium</h1>
 
 <p><i>This document lives at src/styleguide/c++/c++11.html in a Chromium
 checkout and is part of the more general
 <a href="https://chromium.googlesource.com/chromium/src/+/master/styleguide/c++/c++.md">
 Chromium C++ style guide</a>.</i></p>
 
-<p>This summarizes the new and updated features in C++11 (for both the language
-itself and the Standard Library) from the perspective of what's allowed in
-Chromium.  When applicable, it contains pointers to more detailed information.
-This Guide applies to Chromium and its subprojects, though subprojects can
-choose to be more restrictive if necessary for toolchain support.</p>
+<p>This summarizes the new and updated features in C++11 and C++14 (for both
+the language itself and the Standard Library) from the perspective of what's
+allowed in Chromium.  When applicable, it contains pointers to more detailed
+information.  This Guide applies to Chromium and its subprojects, though
+subprojects can choose to be more restrictive if necessary for toolchain
+support.</p>
 
 <p>You can propose changing the status of a feature by sending an email to
 <a href="https://groups.google.com/a/chromium.org/forum/#!forum/cxx">
@@ -41,16 +42,34 @@ change this file accordingly, linking to your discussion thread.</p>
 <h2>Table of Contents</h2>
 <ol class="toc">
 <li>Allowed Features<ol>
-    <li><a href="#core-whitelist">Language</a></li>
-    <li><a href="#library-whitelist">Library</a></li>
+    <li>Language
+      <a href="#core-whitelist">C++11</a>
+      <a href="#core-whitelist-14">C++14</a>
+    </li>
+    <li>Library
+      <a href="#library-whitelist">C++11</a>
+      <a href="#library-whitelist-14">C++14</a>
+    </li>
 </ol></li>
 <li>Banned Features<ol>
-    <li><a href="#core-blacklist">Language</a></li>
-    <li><a href="#library-blacklist">Library</a></li>
+    <li>Language
+      <a href="#core-blacklist">C++11</a>
+      <a href="#core-blacklist-14">C++14</a>
+    </li>
+    <li>Library
+      <a href="#library-blacklist">C++11</a>
+      <a href="#library-blacklist-14">C++14</a>
+    </li>
 </ol></li>
 <li>To Be Discussed<ol>
-    <li><a href="#core-review">Language</a></li>
-    <li><a href="#library-review">Library</a></li>
+    <li>Language
+      <a href="#core-review">C++11</a>
+      <a href="#core-review-14">C++14</a>
+    </li>
+    <li>Library
+      <a href="#library-review">C++11</a>
+      <a href="#library-review-14">C++14</a>
+    </li>
 </ol></li>
 </ol>
 
@@ -334,6 +353,27 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 </tbody>
 </table>
 
+<h2 id="whitelist"><a name="core-whitelist-14"></a>C++14 Allowed Features</h2>
+
+<p>Nothing yet. Suggest something!</p>
+<!--<p>The following features are currently allowed.</p>-->
+
+<!--
+<table id="whitelist_lang_list_14" class="unlined striped">
+<tbody>
+
+<tr>
+<th style='width:220px;'>Feature</th>
+<th style='width:260px;'>Snippet</th>
+<th style='width:240px;'>Description</th>
+<th style='width:240px;'>Documentation Link</th>
+<th style='width:240px;'>Notes and Discussion Thread</th>
+</tr>
+
+</tbody>
+</table>
+-->
+
 <h2 id="whitelist"><a name="library-whitelist"></a>C++11 Allowed Library Features</h2>
 
 <p>The following library features are currently allowed.</p>
@@ -548,7 +588,28 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 </tbody>
 </table>
 
-<h2 id="blacklist">C++11 Blacklist (Disallowed and Banned Features)</h2>
+<h2 id="whitelist"><a name="library-whitelist-14"></a>C++14 Allowed Library Features</h2>
+
+<p>Nothing yet. Suggest something!</p>
+<!--
+<p>The following library features are currently allowed.</p>
+
+<table id="whitelist_lib_list" class="unlined striped">
+<tbody>
+
+<tr>
+<th style='width:240px;'>Feature or Library</th>
+<th style='width:240px;'>Snippet</th>
+<th style='width:240px;'>Description</th>
+<th style='width:240px;'>Documentation Link</th>
+<th style='width:240px;'>Notes and Discussion Thread</th>
+</tr>
+
+</tbody>
+</table>
+-->
+
+<h2 id="blacklist">C++11 and C++14 Blacklist (Disallowed and Banned Features)</h2>
 
 <p>This section lists features that are not allowed to be used yet.
 
@@ -609,6 +670,30 @@ std::move(t).f();&nbsp;&nbsp;// second</code></td>
 
 </tbody>
 </table>
+
+<h3 id="blacklist_banned"><a name="core-blacklist-14"></a>C++14 Banned Features</h3>
+
+<p>Nothing yet. Suggest something!</p>
+
+<!--
+<p>This section lists C++14 features that are not allowed in the Chromium
+codebase.
+</p>
+
+<table id="banned_list" class="unlined striped">
+<tbody>
+
+<tr>
+<th style='width:240px;'>Feature or Library</th>
+<th style='width:240px;'>Snippet</th>
+<th style='width:240px;'>Description</th>
+<th style='width:240px;'>Documentation Link</th>
+<th style='width:240px;'>Notes and Discussion Thread</th>
+</tr>
+
+</tbody>
+</table>
+-->
 
 <h3 id="blacklist_stdlib"><a name="library-blacklist"></a>C++11 Banned Library Features</h3>
 
@@ -708,6 +793,27 @@ std::move(t).f();&nbsp;&nbsp;// second</code></td>
 </tbody>
 </table>
 
+<h3 id="blacklist_stdlib"><a name="library-blacklist-14"></a>C++14 Banned Library Features</h3>
+
+<p>Nothing yet. Suggest something!</p>
+
+<!--
+<p>This section lists C++11 library features that are not allowed in the Chromium codebase.</p>
+
+<table id="blacklist_lib_list" class="unlined striped">
+<tbody>
+
+<tr>
+<th style='width:240px;'>Feature</th>
+<th style='width:240px;'>Snippet</th>
+<th style='width:240px;'>Description</th>
+<th style='width:240px;'>Documentation Link</th>
+<th style='width:240px;'>Notes and Discussion Thread</th>
+</tr>
+
+</tbody>
+</table>
+-->
 
 <h3 id="blacklist_review"><a name="core-review"></a>C++11 Features To Be Discussed</h3>
 
@@ -747,6 +853,58 @@ std::move(t).f();&nbsp;&nbsp;// second</code></td>
 <td><a href="http://en.cppreference.com/w/cpp/language/types">Fundamental types</a></td>
 <td>Reevaluate now that MSVS2015 is available. Non-UTF-8 text is banned by the <a href="https://google.github.io/styleguide/cppguide.html#Non-ASCII_Characters">Google Style Guide</a>. However, may be useful for consuming non-ASCII data. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/ME2kL7_Kvyk">Discussion thread</a></td>
 </tr>
+
+</tbody>
+</table>
+
+<h3 id="blacklist_review"><a name="core-review-14"></a>C++14 Features To Be Discussed</h3>
+
+<p>The following C++14 language features are currently disallowed. See the top of this page on how to propose moving a feature from this list into the allowed or banned sections.</p>
+
+<table id="blacklist_review_list" class="unlined striped">
+<tbody>
+
+<tr>
+<th style='width:240px;'>Feature</th>
+<th style='width:240px;'>Snippet</th>
+<th style='width:240px;'>Description</th>
+<th style='width:240px;'>Documentation Link</th>
+<th style='width:240px;'>Notes and Discussion Thread</th>
+</tr>
+
+<tr>
+<td><code>[[deprecated]]</code> attribute</td>
+<td><code>[[deprecated]] void f();<br>
+[[deprecated("use h() instead")]] void g();</code></td>
+<td>Marks a function as deprecated.</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/attributes">Standard attributes</a></td>
+<td>We don't use deprecation warnings in Chromium; if you want to deprecate
+something, remove all callers and remove the function instead.</td>
+</tr>
+
+<tr>
+<td>Binary literals</td>
+<td><code>int i = 0b1001;</code></td>
+<td>Allows defining literals in base two.</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/integer_literal">Integer literals</a></td>
+<td>Might confuse syntax highlighting in editors. No standard library support
+for printing or reading in this format. Still seems useful in minor ways.</td>
+</tr>
+
+<tr>
+<td>Number literal separators</td>
+<td><code>float f = 1'000'000.000'1;</code></td>
+<td><code>'</code>s anywhere in int or float literals are ignored</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/integer_literal">Integer literals</a>, <a href="http://en.cppreference.com/w/cpp/language/floating_literal">Floating point literals</a></td>
+<td>Might confuse syntax highlighting in editors. No standard library support
+for printing or reading in this format. Seems less useful and harder on editors
+than binary literals.</td>
+</tr>
+
+<!--
+XXX: generic lambdas, lambda capture expressions, decltype(auto), auto f(),
+more constexpr, member initializers for aggregates, variable templates
+-->
 
 </tbody>
 </table>
@@ -926,6 +1084,40 @@ std::move(t).f();&nbsp;&nbsp;// second</code></td>
 <td><a href="http://en.cppreference.com/w/cpp/locale/wstring_convert">std::wstring_convert</a>, <a href="http://en.cppreference.com/w/cpp/locale/wbuffer_convert">std::wbuffer_convert</a>, <a href="http://en.cppreference.com/w/cpp/locale/codecvt_utf8">std::codecvt_utf8</a>, <a href="http://en.cppreference.com/w/cpp/locale/codecvt_utf16">std::codecvt_utf16</a>, <a href="http://en.cppreference.com/w/cpp/locale/codecvt_utf8_utf16">std::codecvt_utf8_utf16</a></td>
 <td>Non-UTF-8 text is banned by the <a href="https://google.github.io/styleguide/cppguide.html#Non-ASCII_Characters">Google Style Guide</a>. However, may be useful for consuming non-ASCII data.</td>
 </tr>
+
+</tbody>
+</table>
+
+<h3 id="blacklist_stdlib_review"><a name="library-review-14"></a>C++14 Standard Library Features To Be Discussed</h3>
+
+<p>The following C++14 library features are currently disallowed. See the top of this page on how to propose moving a feature from this list into the allowed or banned sections.</p>
+
+<table id="banned_stdlib" class="unlined striped">
+
+<tbody>
+<tr>
+<th style='width:240px;'>Feature</th>
+<th style='width:240px;'>Snippet</th>
+<th style='width:240px;'>Description</th>
+<th style='width:240px;'>Documentation Link</th>
+<th style='width:240px;'>Notes</th>
+</tr>
+
+<tr>
+<td><code>std::string</code> literals</td>
+<td><code>
+#include &lt;string&gt;<br>
+using std::literals::string_literals::operator"" s;<br>
+auto s = "asdf"s;  // deduces to std::string</code></td>
+<td>Allows literals of type <code>std::string</code></td>
+<td><a href="http://en.cppreference.com/w/cpp/string/basic_string/operator%22%22s">std::literals::string_literals::operator""s</a></td>
+<td></td>
+</tr>
+
+<!--
+XXX: std::chrono literals, std::complex literals, std::make_unique,
+std::integer_sequence
+-->
 
 </tbody>
 </table>
