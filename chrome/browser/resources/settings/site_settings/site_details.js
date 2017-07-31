@@ -23,6 +23,15 @@ Polymer({
     },
 
     /**
+     * Use the string representing the origin or extension name as the page
+     * title of the settings-subpage parent.
+     */
+    pageTitle: {
+      type: String,
+      notify: true,
+    },
+
+    /**
      * The amount of data stored for the origin.
      * @private
      */
@@ -67,7 +76,7 @@ Polymer({
     this.$.usageApi.fetchUsageTotal(this.toUrl(this.origin).hostname);
 
     var siteDetailsPermissions =
-        /** @type{!NodeList<!SiteDetailsPermissionElement>} */
+        /** @type {!NodeList<!SiteDetailsPermissionElement>} */
         (this.root.querySelectorAll('site-details-permission'));
 
     this.browserProxy.getOriginPermissions(this.origin, this.getCategoryList_())
@@ -75,9 +84,12 @@ Polymer({
           exceptionList.forEach((exception, i) => {
             // |exceptionList| should be in the same order as the category list,
             // which is in the same order as |siteDetailsPermissions|.
-            siteDetailsPermissions[i].site =
-                /** @type {!RawSiteException} */ (exception);
+            siteDetailsPermissions[i].site = exception;
           });
+
+          // The displayName won't change, so just use the first exception.
+          assert(exceptionList.length > 0);
+          this.pageTitle = exceptionList[0].displayName;
         });
   },
 

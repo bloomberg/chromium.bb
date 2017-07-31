@@ -18,15 +18,12 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/web_site_settings_uma_util.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
-#include "chrome/browser/permissions/permission_manager.h"
-#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
@@ -52,7 +49,7 @@ namespace settings {
 
 namespace {
 
-const char kZoom[] = "zoom";
+constexpr char kZoom[] = "zoom";
 
 // Return an appropriate API Permission ID for the given string name.
 extensions::APIPermission::APIPermission::ID APIPermissionFromGroupName(
@@ -101,89 +98,6 @@ void AddExceptionsGrantedByHostedApps(content::BrowserContext* context,
     site_settings::AddExceptionForHostedApp(
         launch_url.spec(), *extension->get(), exceptions);
   }
-}
-
-// Retrieves the corresponding string, according to the following precedence
-// order from highest to lowest priority:
-//    1. Kill-switch.
-//    2. Enterprise policy.
-//    3. Extensions.
-//    4. User-set per-origin setting.
-//    5. Embargo.
-//    6. User-set patterns.
-//    7. User-set global default for a ContentSettingsType.
-//    8. Chrome's built-in default.
-std::string ConvertContentSettingSourceToString(
-    const content_settings::SettingInfo& info,
-    PermissionStatusSource permission_status_source) {
-  // TODO(patricialor): Do some plumbing for sources #1, #2, #3, and #5 through
-  // to the Web UI. Currently there aren't strings to represent these sources.
-  if (permission_status_source == PermissionStatusSource::KILL_SWITCH)
-    return site_settings::kPreferencesSource;  // Source #1.
-
-  if (info.source == content_settings::SETTING_SOURCE_POLICY ||
-      info.source == content_settings::SETTING_SOURCE_SUPERVISED) {
-    return site_settings::kPolicyProviderId;  // Source #2.
-  }
-
-  if (info.source == content_settings::SETTING_SOURCE_EXTENSION)
-    return site_settings::kExtensionProviderId;  // Source #3.
-
-  DCHECK_NE(content_settings::SETTING_SOURCE_NONE, info.source);
-  if (info.source == content_settings::SETTING_SOURCE_USER) {
-    if (permission_status_source ==
-            PermissionStatusSource::SAFE_BROWSING_BLACKLIST ||
-        permission_status_source ==
-            PermissionStatusSource::MULTIPLE_DISMISSALS ||
-        permission_status_source == PermissionStatusSource::MULTIPLE_IGNORES) {
-      return site_settings::kPreferencesSource;  // Source #5.
-    }
-    if (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
-        info.secondary_pattern == ContentSettingsPattern::Wildcard()) {
-      return "default";  // Source #7, #8.
-    }
-    // Source #4, #6. When #4 is the source, |permission_status_source|
-    // won't be set to any of the source #5 enum values, as PermissionManager is
-    // aware of the difference between these two sources internally. The
-    // subtlety here should go away when PermissionManager can handle all
-    // content settings and all possible sources.
-    return site_settings::kPreferencesSource;
-  }
-
-  NOTREACHED();
-  return site_settings::kPreferencesSource;
-}
-
-ContentSetting GetContentSettingForOrigin(const GURL& origin,
-                                          ContentSettingsType content_type,
-                                          Profile* profile,
-                                          std::string* source_string) {
-  // TODO(patricialor): In future, PermissionManager should know about all
-  // content settings, not just the permissions, plus all the possible sources,
-  // and the calls to HostContentSettingsMap should be removed.
-  content_settings::SettingInfo info;
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile);
-  std::unique_ptr<base::Value> value = map->GetWebsiteSetting(
-      origin, origin, content_type, std::string(), &info);
-
-  // Retrieve the content setting.
-  PermissionResult result(CONTENT_SETTING_DEFAULT,
-                          PermissionStatusSource::UNSPECIFIED);
-  if (PermissionUtil::IsPermission(content_type)) {
-    result = PermissionManager::Get(profile)->GetPermissionStatus(
-        content_type, origin, origin);
-  } else {
-    DCHECK(value.get());
-    DCHECK_EQ(base::Value::Type::INTEGER, value->GetType());
-    result.content_setting =
-        content_settings::ValueToContentSetting(value.get());
-  }
-
-  // Retrieve the source of the content setting.
-  *source_string = ConvertContentSettingSourceToString(info, result.source);
-
-  return result.content_setting;
 }
 
 }  // namespace
@@ -564,10 +478,15 @@ void SiteSettingsHandler::HandleGetOriginPermissions(
     types->GetString(i, &type);
     ContentSettingsType content_type =
         site_settings::ContentSettingsTypeFromGroupName(type);
+    HostContentSettingsMap* map =
+        HostContentSettingsMapFactory::GetForProfile(profile_);
+    const auto* extension_registry =
+        extensions::ExtensionRegistry::Get(profile_);
 
-    std::string source_string;
-    ContentSetting content_setting = GetContentSettingForOrigin(
-        origin_url, content_type, profile_, &source_string);
+    std::string source_string, display_name;
+    ContentSetting content_setting = site_settings::GetContentSettingForOrigin(
+        profile_, map, origin_url, content_type, &source_string,
+        extension_registry, &display_name);
     std::string content_setting_string =
         content_settings::ContentSettingToString(content_setting);
 
@@ -576,7 +495,7 @@ void SiteSettingsHandler::HandleGetOriginPermissions(
     raw_site_exception->SetBoolean(site_settings::kIncognito,
                                    profile_->IsOffTheRecord());
     raw_site_exception->SetString(site_settings::kOrigin, origin);
-    raw_site_exception->SetString(site_settings::kDisplayName, origin);
+    raw_site_exception->SetString(site_settings::kDisplayName, display_name);
     raw_site_exception->SetString(site_settings::kSetting,
                                   content_setting_string);
     raw_site_exception->SetString(site_settings::kSource, source_string);
@@ -825,8 +744,9 @@ void SiteSettingsHandler::SendZoomLevels() {
     int zoom_percent = static_cast<int>(
         content::ZoomLevelToZoomFactor(zoom_level.zoom_level) * 100 + 0.5);
     exception->SetString(kZoom, base::FormatPercent(zoom_percent));
-    exception->SetString(
-        site_settings::kSource, site_settings::kPreferencesSource);
+    exception->SetString(site_settings::kSource,
+                         site_settings::SiteSettingSourceToString(
+                             site_settings::SiteSettingSource::kPreference));
     // Append the new entry to the list and map.
     zoom_levels_exceptions.Append(std::move(exception));
   }
