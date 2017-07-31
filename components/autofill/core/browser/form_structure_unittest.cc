@@ -2377,6 +2377,10 @@ TEST_F(FormStructureTest,
       form_structure->field(i)->properties_mask =
           FieldPropertiesFlags::HAD_FOCUS | FieldPropertiesFlags::USER_TYPED;
     }
+    if (form_structure->field(i)->name == ASCIIToUTF16("username")) {
+      form_structure->field(i)->set_username_vote_type(
+          AutofillUploadContents::Field::CREDENTIALS_REUSED);
+    }
   }
 
   ServerFieldTypeSet available_field_types;
@@ -2426,6 +2430,8 @@ TEST_F(FormStructureTest,
       AutofillUploadContents::Field::NON_GENERATION_ELEMENT);
   upload_username_field->set_properties_mask(FieldPropertiesFlags::HAD_FOCUS |
                                              FieldPropertiesFlags::USER_TYPED);
+  upload_username_field->set_username_vote_type(
+      AutofillUploadContents::Field::CREDENTIALS_REUSED);
 
   AutofillUploadContents::Field* upload_password_field = upload.add_field();
   test::FillUploadField(upload_password_field, 2051817934U, "password",
