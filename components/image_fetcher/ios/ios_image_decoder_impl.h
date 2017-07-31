@@ -5,18 +5,14 @@
 #ifndef COMPONENTS_IMAGE_FETCHER_IOS_IMAGE_DECODER_IMPL_H_
 #define COMPONENTS_IMAGE_FETCHER_IOS_IMAGE_DECODER_IMPL_H_
 
-#include "base/memory/ref_counted.h"
-#include "components/image_fetcher/core/image_decoder.h"
+#include <memory>
 
-namespace base {
-class TaskRunner;
-}
+#include "components/image_fetcher/core/image_decoder.h"
 
 namespace image_fetcher {
 
 // Factory for iOS specific implementation of ImageDecoder.
-std::unique_ptr<ImageDecoder> CreateIOSImageDecoder(
-    scoped_refptr<base::TaskRunner> task_runner);
+std::unique_ptr<ImageDecoder> CreateIOSImageDecoder();
 
 }  // namespace image_fetcher
 

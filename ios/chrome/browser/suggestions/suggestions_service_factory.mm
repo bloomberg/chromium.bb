@@ -90,13 +90,9 @@ SuggestionsServiceFactory::BuildServiceInstanceFor(
   std::unique_ptr<leveldb_proto::ProtoDatabaseImpl<ImageData>> db(
       new leveldb_proto::ProtoDatabaseImpl<ImageData>(db_task_runner));
 
-  scoped_refptr<base::SequencedTaskRunner> decoder_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
   std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher =
       base::MakeUnique<image_fetcher::ImageFetcherImpl>(
-          image_fetcher::CreateIOSImageDecoder(decoder_task_runner),
+          image_fetcher::CreateIOSImageDecoder(),
           browser_state->GetRequestContext());
 
   std::unique_ptr<ImageManager> thumbnail_manager(

@@ -53,7 +53,7 @@ IOSChromeLargeIconServiceFactory::BuildServiceInstanceFor(
           browser_state, ServiceAccessType::EXPLICIT_ACCESS),
       sequenced_worker_pool,
       base::MakeUnique<image_fetcher::ImageFetcherImpl>(
-          image_fetcher::CreateIOSImageDecoder(sequenced_worker_pool),
+          image_fetcher::CreateIOSImageDecoder(),
           browser_state->GetRequestContext()));
 }
 
