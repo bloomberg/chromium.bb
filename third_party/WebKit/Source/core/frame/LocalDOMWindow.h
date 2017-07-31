@@ -340,7 +340,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void DispatchLoadEvent();
   void ClearDocument();
 
-  Member<Document> document_;
+  TraceWrapperMember<Document> document_;
   Member<DOMVisualViewport> visualViewport_;
   TaskRunnerTimer<LocalDOMWindow> unused_preloads_timer_;
 
