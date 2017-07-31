@@ -285,7 +285,18 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 #pragma mark - Private
 
 - (void)resizeHostToFitIfNeeded {
-  if (_settings.shouldResizeHostToFit) {
+  // Don't adjust the host resolution if the keyboard is active. That would end
+  // up with a very narrow desktop.
+  // Also don't adjust if it's the phone and in portrait orientation. This is
+  // the most used orientation on phones but the aspect ratio is uncommon on
+  // desktop devices.
+  BOOL isPhonePortrait =
+      self.traitCollection.horizontalSizeClass ==
+          UIUserInterfaceSizeClassCompact &&
+      self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular;
+
+  if (_settings.shouldResizeHostToFit && !isPhonePortrait &&
+      ![self isKeyboardActive]) {
     [_client setHostResolution:self.view.frame.size
                          scale:self.view.contentScaleFactor];
   }
