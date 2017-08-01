@@ -19985,7 +19985,6 @@
         ],
         "important": true,
         "models": [
-            "pyro",
             "reef",
             "sand",
             "snappy"
