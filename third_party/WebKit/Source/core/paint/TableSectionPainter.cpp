@@ -27,6 +27,9 @@ void TableSectionPainter::PaintRepeatingHeaderGroup(
     return;
 
   LayoutTable* table = layout_table_section_.Table();
+  if (!table->IsPageLogicalHeightKnown())
+    return;
+
   LayoutPoint pagination_offset = paint_offset;
   LayoutUnit page_height = table->PageLogicalHeightForOffset(LayoutUnit());
 
