@@ -4,15 +4,25 @@
 
 #include "chrome/browser/page_load_metrics/observers/ads_page_load_metrics_observer.h"
 
+#include <map>
+#include <memory>
 #include <string>
+#include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
-#include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
+#include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_tester.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
+#include "chrome/browser/subresource_filter/subresource_filter_test_harness.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/core/common/load_policy.h"
 #include "content/public/browser/global_request_id.h"
@@ -22,10 +32,13 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/resource_type.h"
+#include "content/public/test/cancelling_navigation_throttle.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
+#include "net/base/host_port_pair.h"
 #include "url/gurl.h"
 
+using content::CancellingNavigationThrottle;
 using content::RenderFrameHost;
 using content::RenderFrameHostTester;
 using content::NavigationSimulator;
@@ -44,82 +57,61 @@ enum class ResourceCached { NOT_CACHED, CACHED };
 enum class FrameType { AD = 0, NON_AD };
 
 const char kAdUrl[] = "https://tpc.googlesyndication.com/safeframe/1";
-const char kSubresourceFilterWouldDisallowAdUrl[] = "https://ad.example.com/";
-const char kSubresourceFilterDisallowAdUrl[] =
-    "https://ad.example.com/disallow";
 const char kNonAdUrl[] = "https://foo.com/";
 const char kNonAdUrl2[] = "https://bar.com/";
 
 const char kAdName[] = "google_ads_iframe_1";
 const char kNonAdName[] = "foo";
 
-class DelayWillProcessResponseObserver;
-
-// TODO(csharrison): Add this to the content public test API if we find that
-// this is useful in other places.
-// Delays WillProcessResponse until the caller tells it to cancel.
-class DelayWillProcessResponseThrottle : public content::NavigationThrottle {
+// Asynchronously cancels the navigation at WillProcessResponse. Before
+// cancelling, simulates loading a main frame resource.
+class ResourceLoadingCancellingThrottle
+    : public content::CancellingNavigationThrottle {
  public:
-  explicit DelayWillProcessResponseThrottle(
+  explicit ResourceLoadingCancellingThrottle(
       content::NavigationHandle* navigation_handle)
-      : NavigationThrottle(navigation_handle) {}
-
-  // content::NavigationThrottle:
-  ThrottleCheckResult WillProcessResponse() override {
-    return NavigationThrottle::DEFER;
-  }
-  const char* GetNameForLogging() override {
-    return "DelayWillProcessResponseThrottle";
-  }
-
-  void Cancel() { CancelDeferredNavigation(NavigationThrottle::CANCEL); }
+      : content::CancellingNavigationThrottle(
+            navigation_handle,
+            CancellingNavigationThrottle::WILL_PROCESS_RESPONSE,
+            CancellingNavigationThrottle::ASYNCHRONOUS) {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DelayWillProcessResponseThrottle);
+  // content::CancellingNavigationThrottle:
+  void OnWillCancel() override {
+    auto* observer =
+        page_load_metrics::MetricsWebContentsObserver::FromWebContents(
+            navigation_handle()->GetWebContents());
+    DCHECK(observer);
+
+    // Load a resource for the main frame before it commits.
+    observer->OnRequestComplete(
+        GURL(kNonAdUrl), net::HostPortPair(),
+        navigation_handle()->GetRenderFrameHost()->GetFrameTreeNodeId(),
+        navigation_handle()->GetGlobalRequestID(),
+        navigation_handle()->GetRenderFrameHost(),
+        content::RESOURCE_TYPE_MAIN_FRAME, false /* was_cached */,
+        nullptr /* data_reduction_proxy */, 10 * 1024 /* raw_body_bytes */,
+        0 /* original_network_content_length */, base::TimeTicks::Now(), 0);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ResourceLoadingCancellingThrottle);
 };
 
-// Adds a navigation throttle to the navigation which delays
-// WillProcessResponse.
-class DelayWillProcessResponseObserver : public content::WebContentsObserver {
+// Registers a ResourceLoadingCancellingThrottle for every navigation.
+class CancellingThrottleInjector : public content::WebContentsObserver {
  public:
-  explicit DelayWillProcessResponseObserver(content::WebContents* contents)
+  explicit CancellingThrottleInjector(content::WebContents* contents)
       : content::WebContentsObserver(contents) {}
 
   // content::WebContentsObserver:
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override {
-    std::unique_ptr<content::NavigationThrottle> delay_throttle =
-        base::MakeUnique<DelayWillProcessResponseThrottle>(navigation_handle);
-    throttle_ =
-        static_cast<DelayWillProcessResponseThrottle*>(delay_throttle.get());
-    navigation_handle->RegisterThrottleForTesting(std::move(delay_throttle));
-  }
-
-  void LoadResourceForMainFrameAndResume(
-      page_load_metrics::MetricsWebContentsObserver* observer) {
-    DCHECK(throttle_);
-
-    // Load a resource for the main frame before it commits.
-    content::NavigationHandle* navigation_handle =
-        throttle_->navigation_handle();
-
-    observer->OnRequestComplete(
-        GURL(kNonAdUrl), net::HostPortPair(),
-        navigation_handle->GetRenderFrameHost()->GetFrameTreeNodeId(),
-        navigation_handle->GetGlobalRequestID(),
-        navigation_handle->GetRenderFrameHost(),
-        content::RESOURCE_TYPE_MAIN_FRAME, false /* was_cached */,
-        nullptr /* data_reduction_proxy */, 10 * 1024 /* raw_body_bytes */,
-        0 /* original_network_content_length */, base::TimeTicks::Now(), 0);
-
-    throttle_->Cancel();
+    navigation_handle->RegisterThrottleForTesting(
+        base::MakeUnique<ResourceLoadingCancellingThrottle>(navigation_handle));
   }
 
  private:
-  DelayWillProcessResponseThrottle* throttle_ = nullptr;
-  content::GlobalRequestID global_request_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(DelayWillProcessResponseObserver);
+  DISALLOW_COPY_AND_ASSIGN(CancellingThrottleInjector);
 };
 
 std::string AdTypeToString(AdType ad_type) {
@@ -234,18 +226,18 @@ void TestHistograms(const base::HistogramTester& histograms,
 
 }  // namespace
 
-class AdsPageLoadMetricsObserverTest
-    : public page_load_metrics::PageLoadMetricsObserverTestHarness {
+class AdsPageLoadMetricsObserverTest : public SubresourceFilterTestHarness {
  public:
   AdsPageLoadMetricsObserverTest() {}
 
   void SetUp() override {
-    page_load_metrics::PageLoadMetricsObserverTestHarness::SetUp();
-    subresource_filter::SubresourceFilterObserverManager::CreateForWebContents(
-        web_contents());
-    subresource_observer_manager_ =
-        subresource_filter::SubresourceFilterObserverManager::FromWebContents(
-            web_contents());
+    SubresourceFilterTestHarness::SetUp();
+    tester_ =
+        base::MakeUnique<page_load_metrics::PageLoadMetricsObserverTester>(
+            web_contents(),
+            base::BindRepeating(
+                &AdsPageLoadMetricsObserverTest::RegisterObservers,
+                base::Unretained(this)));
   }
 
   // Returns the final RenderFrameHost after navigation commits.
@@ -270,22 +262,6 @@ class AdsPageLoadMetricsObserverTest
         RenderFrameHostTester::For(parent)->AppendChild(frame_name);
     auto navigation_simulator =
         NavigationSimulator::CreateRendererInitiated(GURL(url), subframe);
-    navigation_simulator->Start();
-
-    // Simulate subresource filter evaluation.
-    content::NavigationHandle* handle =
-        navigation_simulator->GetNavigationHandle();
-    if (url == kSubresourceFilterWouldDisallowAdUrl) {
-      subresource_observer_manager_->NotifySubframeNavigationEvaluated(
-          handle, subresource_filter::LoadPolicy::WOULD_DISALLOW);
-    } else if (url == kSubresourceFilterDisallowAdUrl) {
-      subresource_observer_manager_->NotifySubframeNavigationEvaluated(
-          handle, subresource_filter::LoadPolicy::DISALLOW);
-    } else {
-      subresource_observer_manager_->NotifySubframeNavigationEvaluated(
-          handle, subresource_filter::LoadPolicy::ALLOW);
-    }
-
     navigation_simulator->Commit();
     return navigation_simulator->GetFinalRenderFrameHost();
   }
@@ -294,17 +270,17 @@ class AdsPageLoadMetricsObserverTest
       RenderFrameHost* frame,
       FrameType frame_type,
       const std::string& url) {
-    base::HistogramTester tester;
+    base::HistogramTester histogram_tester;
     RenderFrameHost* out_frame = NavigateFrame(url, frame);
 
     int bucket = url == kAdUrl ? 1 : 0;
 
     if (frame_type == FrameType::AD) {
-      tester.ExpectUniqueSample(
+      histogram_tester.ExpectUniqueSample(
           "PageLoad.Clients.Ads.All.Navigations.AdFrameRenavigatedToAd", bucket,
           1);
     } else {
-      tester.ExpectUniqueSample(
+      histogram_tester.ExpectUniqueSample(
           "PageLoad.Clients.Ads.All.Navigations.NonAdFrameRenavigatedToAd",
           bucket, 1);
     }
@@ -321,17 +297,23 @@ class AdsPageLoadMetricsObserverTest
         0,       /* original_network_content_length */
         nullptr, /* data_reduction_proxy_data */
         content::RESOURCE_TYPE_SUB_FRAME, 0);
-    SimulateLoadedResource(request);
+    tester_->SimulateLoadedResource(request);
   }
 
- protected:
-  void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
+  page_load_metrics::PageLoadMetricsObserverTester* tester() {
+    return tester_.get();
+  }
+
+  base::HistogramTester& histogram_tester() { return histogram_tester_; }
+
+ private:
+  void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) {
     tracker->AddObserver(base::MakeUnique<AdsPageLoadMetricsObserver>());
   }
 
- private:
-  subresource_filter::SubresourceFilterObserverManager*
-      subresource_observer_manager_ = nullptr;
+  base::HistogramTester histogram_tester_;
+  std::unique_ptr<page_load_metrics::PageLoadMetricsObserverTester> tester_;
+
   DISALLOW_COPY_AND_ASSIGN(AdsPageLoadMetricsObserverTest);
 };
 
@@ -371,7 +353,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, ResourceBeforeAdFrameCommits) {
       nullptr
       /* data_reduction_proxy_data */,
       content::RESOURCE_TYPE_SUB_FRAME, 0);
-  SimulateLoadedResource(request);
+  tester()->SimulateLoadedResource(request);
 
   CreateAndNavigateSubFrame(kNonAdUrl, kAdName, main_frame);
 
@@ -383,8 +365,15 @@ TEST_F(AdsPageLoadMetricsObserverTest, ResourceBeforeAdFrameCommits) {
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, AllAdTypesInPage) {
+  // Make this page DRYRUN.
+  scoped_configuration().ResetConfiguration(subresource_filter::Configuration(
+      subresource_filter::ActivationLevel::DRYRUN,
+      subresource_filter::ActivationScope::ALL_SITES));
+
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
   RenderFrameHost* non_ad_frame =
+      CreateAndNavigateSubFrame(kNonAdUrl, kNonAdName, main_frame);
+  RenderFrameHost* non_ad_frame2 =
       CreateAndNavigateSubFrame(kNonAdUrl, kNonAdName, main_frame);
 
   // Create 5 ad frames with the 5th nested inside the 4th. Verify that the
@@ -395,33 +384,28 @@ TEST_F(AdsPageLoadMetricsObserverTest, AllAdTypesInPage) {
       CreateAndNavigateSubFrame(kNonAdUrl, "google_ads_iframe_1", main_frame);
   RenderFrameHost* google_frame2 =
       CreateAndNavigateSubFrame(kAdUrl, kNonAdName, main_frame);
-  RenderFrameHost* srf_frame1 = CreateAndNavigateSubFrame(
-      kSubresourceFilterWouldDisallowAdUrl, kNonAdName, main_frame);
-  RenderFrameHost* srf_frame2 = CreateAndNavigateSubFrame(
-      kSubresourceFilterWouldDisallowAdUrl, kNonAdName, main_frame);
-  RenderFrameHost* nested_srf_frame3 = CreateAndNavigateSubFrame(
-      kSubresourceFilterWouldDisallowAdUrl, kNonAdName, srf_frame2);
 
-  // This frame should return DISALLOW by the SubresourceFilter so it won't
-  // count as an ad.
-  RenderFrameHost* disallowed_srf_frame = CreateAndNavigateSubFrame(
-      kSubresourceFilterDisallowAdUrl, kNonAdName, main_frame);
+  RenderFrameHost* srf_frame1 =
+      CreateAndNavigateSubFrame(kDefaultDisallowedUrl, kNonAdName, main_frame);
+  RenderFrameHost* srf_frame2 =
+      CreateAndNavigateSubFrame(kDefaultDisallowedUrl, kNonAdName, main_frame);
+  RenderFrameHost* nested_srf_frame3 =
+      CreateAndNavigateSubFrame(kDefaultDisallowedUrl, kNonAdName, srf_frame2);
 
   // Create an addditional ad frame without content. It shouldn't be counted
   // as an ad frame.
-  CreateAndNavigateSubFrame(kSubresourceFilterWouldDisallowAdUrl, kNonAdName,
-                            main_frame);
+  CreateAndNavigateSubFrame(kDefaultDisallowedUrl, kNonAdName, main_frame);
 
   // 70KB total in page, 50 from ads, 40 from network, and 30 of those
   // are from ads.
   LoadResource(main_frame, ResourceCached::NOT_CACHED, 10);
   LoadResource(non_ad_frame, ResourceCached::CACHED, 10);
+  LoadResource(non_ad_frame2, ResourceCached::CACHED, 10);
   LoadResource(google_frame1, ResourceCached::CACHED, 10);
   LoadResource(google_frame2, ResourceCached::NOT_CACHED, 10);
   LoadResource(srf_frame1, ResourceCached::NOT_CACHED, 10);
   LoadResource(srf_frame2, ResourceCached::NOT_CACHED, 10);
   LoadResource(nested_srf_frame3, ResourceCached::CACHED, 10);
-  LoadResource(disallowed_srf_frame, ResourceCached::CACHED, 10);
 
   // Navigate again to trigger histograms.
   NavigateFrame(kNonAdUrl, main_frame);
@@ -609,7 +593,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, TwoResourceLoadsBeforeCommit) {
       10 * 1024 /* size */, false /* data_reduction_proxy_used */,
       0 /* original_network_content_length */, content::RESOURCE_TYPE_SUB_FRAME,
       0);
-  SimulateLoadedResource(request);
+  tester()->SimulateLoadedResource(request);
   RenderFrameHost* subframe_ad =
       RenderFrameHostTester::For(main_frame)->AppendChild(kAdName);
   auto navigation_simulator = NavigationSimulator::CreateRendererInitiated(
@@ -621,7 +605,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, TwoResourceLoadsBeforeCommit) {
 
   // Renavigate the subframe to a successful commit. But again, the resource
   // loads before the observer sees the finished navigation.
-  SimulateLoadedResource(request);
+  tester()->SimulateLoadedResource(request);
   NavigateFrame(kNonAdUrl, subframe_ad);
 
   // Navigate again to trigger histograms.
@@ -690,9 +674,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, MainFrameResource) {
       nullptr /* data_reduction_proxy_data */,
       content::RESOURCE_TYPE_MAIN_FRAME, 0);
 
-  SimulateLoadedResource(request, navigation_simulator->GetGlobalRequestID());
+  tester()->SimulateLoadedResource(request,
+                                   navigation_simulator->GetGlobalRequestID());
 
-  NavigateToUntrackedUrl();
+  NavigateMainFrame(kNonAdUrl);
 
   // We only log histograms if we observed bytes for the page. Verify that the
   // main frame resource was properly tracked and attributed.
@@ -708,32 +693,47 @@ TEST_F(AdsPageLoadMetricsObserverTest, MainFrameResource) {
 // Make sure that ads histograms aren't recorded if the tracker never commits
 // (see https://crbug.com/723219).
 TEST_F(AdsPageLoadMetricsObserverTest, NoHistogramWithoutCommit) {
-  // Once the metrics observer has the GlobalRequestID, throttle.
-  DelayWillProcessResponseObserver delay_observer(web_contents());
+  {
+    // Once the metrics observer has the GlobalRequestID, throttle.
+    CancellingThrottleInjector cancelling_throttle_injector(web_contents());
 
-  // Start main-frame navigation
-  auto navigation_simulator = NavigationSimulator::CreateRendererInitiated(
-      GURL(kNonAdUrl), web_contents()->GetMainFrame());
-  navigation_simulator->Start();
-
-  // This will be run once WillProcessResponse defers and the navigation
-  // simulator runs the message loop waiting for the throttles to finish.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &DelayWillProcessResponseObserver::LoadResourceForMainFrameAndResume,
-          base::Unretained(&delay_observer), observer()));
-
-  // The commit will defer after calling WillProcessNavigationResponse, it
-  // will load a resource, and then the throttle will cancel the commit.
-  navigation_simulator->Commit();
+    // Start main-frame navigation. The commit will defer after calling
+    // WillProcessNavigationResponse, it will load a resource, and then the
+    // throttle will cancel the commit.
+    SimulateNavigateAndCommit(GURL(kNonAdUrl), main_rfh());
+  }
 
   // Force navigation to a new page to make sure OnComplete() runs for the
   // previous failed navigation.
-  NavigateToUntrackedUrl();
+  NavigateMainFrame(kNonAdUrl);
 
   // There shouldn't be any histograms for an aborted main frame.
   EXPECT_EQ(0u, histogram_tester()
                     .GetTotalCountsForPrefix("PageLoad.Clients.Ads.Google.")
                     .size());
+}
+
+// Frames that are disallowed (and filtered) by the subresource filter should
+// not be counted.
+TEST_F(AdsPageLoadMetricsObserverTest, FilterAds_DoNotLogMetrics) {
+  ConfigureAsSubresourceFilterOnlyURL(GURL(kNonAdUrl));
+  NavigateMainFrame(kNonAdUrl);
+
+  LoadResource(main_rfh(), ResourceCached::NOT_CACHED, 10);
+
+  RenderFrameHost* subframe =
+      RenderFrameHostTester::For(main_rfh())->AppendChild(kNonAdName);
+  std::unique_ptr<NavigationSimulator> simulator =
+      NavigationSimulator::CreateRendererInitiated(GURL(kDefaultDisallowedUrl),
+                                                   subframe);
+  LoadResource(subframe, ResourceCached::CACHED, 10);
+  simulator->Commit();
+
+  EXPECT_NE(content::NavigationThrottle::PROCEED,
+            simulator->GetLastThrottleCheckResult());
+
+  NavigateMainFrame(kNonAdUrl);
+  TestHistograms(histogram_tester(), std::vector<ExpectedFrameBytes>(),
+                 0u /* non_ad_cached_kb */, 0u /* non_ad_uncached_kb */,
+                 AdType::SUBRESOURCE_FILTER);
 }

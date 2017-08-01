@@ -44,6 +44,10 @@ class CancellingNavigationThrottle : public NavigationThrottle {
   NavigationThrottle::ThrottleCheckResult WillProcessResponse() override;
   const char* GetNameForLogging() override;
 
+ protected:
+  // Will be called before the navigation is cancelled.
+  virtual void OnWillCancel();
+
  private:
   NavigationThrottle::ThrottleCheckResult ProcessState(bool should_cancel);
   void MaybeCancel(bool cancel);

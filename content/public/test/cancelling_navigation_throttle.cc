@@ -36,6 +36,8 @@ CancellingNavigationThrottle::WillProcessResponse() {
   return ProcessState(cancel_time_ == WILL_PROCESS_RESPONSE);
 }
 
+void CancellingNavigationThrottle::OnWillCancel() {}
+
 NavigationThrottle::ThrottleCheckResult
 CancellingNavigationThrottle::ProcessState(bool should_cancel) {
   if (sync_ == ASYNCHRONOUS) {
@@ -45,8 +47,11 @@ CancellingNavigationThrottle::ProcessState(bool should_cancel) {
                    weak_ptr_factory_.GetWeakPtr(), should_cancel));
     return NavigationThrottle::DEFER;
   }
-  return should_cancel ? NavigationThrottle::CANCEL
-                       : NavigationThrottle::PROCEED;
+  if (should_cancel) {
+    OnWillCancel();
+    return NavigationThrottle::CANCEL;
+  }
+  return NavigationThrottle::PROCEED;
 }
 
 const char* CancellingNavigationThrottle::GetNameForLogging() {
@@ -54,10 +59,12 @@ const char* CancellingNavigationThrottle::GetNameForLogging() {
 }
 
 void CancellingNavigationThrottle::MaybeCancel(bool cancel) {
-  if (cancel)
+  if (cancel) {
+    OnWillCancel();
     CancelDeferredNavigation(NavigationThrottle::CANCEL);
-  else
+  } else {
     Resume();
+  }
 }
 
 }  // namespace content
