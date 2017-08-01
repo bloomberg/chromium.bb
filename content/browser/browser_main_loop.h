@@ -98,6 +98,7 @@ class SaveFileManager;
 class ServiceManagerContext;
 class SpeechRecognitionManagerImpl;
 class StartupTaskRunner;
+class SwapMetricsDriver;
 struct MainFunctionParams;
 
 #if defined(OS_ANDROID)
@@ -301,6 +302,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   // Members initialized in |PreCreateThreads()| -------------------------------
   // Torn down in ShutdownThreadsAndCleanUp.
   std::unique_ptr<base::MemoryPressureMonitor> memory_pressure_monitor_;
+  std::unique_ptr<SwapMetricsDriver> swap_metrics_driver_;
 #if defined(USE_X11) && !(OS_CHROMEOS)
   std::unique_ptr<internal::GpuDataManagerVisualProxy>
       gpu_data_manager_visual_proxy_;
