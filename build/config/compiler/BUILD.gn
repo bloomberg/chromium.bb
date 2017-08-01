@@ -182,8 +182,6 @@ config("compiler") {
   }
 
   configs += [
-    "//build/config/c++:c++flags",
-
     # See the definitions below.
     ":compiler_cpu_abi",
     ":compiler_codegen",
