@@ -897,11 +897,19 @@ bool Resource::CanReuse(const FetchParameters& params) const {
     case WebURLRequest::kFetchRequestModeSameOrigin:
     case WebURLRequest::kFetchRequestModeCORSWithForcedPreflight:
       // We have two separate CORS handling logics in DocumentThreadableLoader
-      // and ResourceFetcher and we cannot share resources if they are handled
-      // in different places.
-      if (new_options.cors_handling_by_resource_fetcher !=
-          options_.cors_handling_by_resource_fetcher) {
-        return false;
+      // and ResourceLoader and sharing resources is difficult when they are
+      // handled differently.
+      if (options_.cors_handling_by_resource_fetcher !=
+          new_options.cors_handling_by_resource_fetcher) {
+        // If the existing one is handled in DocumentThreadableLoader and the
+        // new one is handled in ResourceLoader, reusing the existing one will
+        // lead to CORS violations.
+        if (!options_.cors_handling_by_resource_fetcher)
+          return false;
+
+        // Otherwise (i.e., if the existing one is handled in ResourceLoader
+        // and the new one is handled in DocumentThreadableLoader), reusing
+        // the existing one will lead to double check which is harmless.
       }
       break;
   }
