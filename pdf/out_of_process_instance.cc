@@ -251,20 +251,20 @@ void SetSelectionBounds(PP_Instance instance,
   }
 }
 
-PP_Bool CanCut(PP_Instance instance) {
+PP_Bool CanEditText(PP_Instance instance) {
   void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
   if (!object)
     return PP_FALSE;
 
   OutOfProcessInstance* obj_instance =
       static_cast<OutOfProcessInstance*>(object);
-  return PP_FromBool(obj_instance->CanCut());
+  return PP_FromBool(obj_instance->CanEditText());
 }
 
 const PPP_Pdf ppp_private = {
     &GetLinkAtPosition,   &Transform,        &GetPrintPresetOptionsFromDocument,
     &EnableAccessibility, &SetCaretPosition, &MoveRangeSelectionExtent,
-    &SetSelectionBounds,  &CanCut,
+    &SetSelectionBounds,  &CanEditText,
 };
 
 int ExtractPrintPreviewPageIndex(base::StringPiece src_url) {
@@ -936,8 +936,8 @@ pp::Var OutOfProcessInstance::GetLinkAtPosition(const pp::Point& point) {
   return engine_->GetLinkAtPosition(offset_point);
 }
 
-bool OutOfProcessInstance::CanCut() {
-  return engine_->CanCut();
+bool OutOfProcessInstance::CanEditText() {
+  return engine_->CanEditText();
 }
 
 uint32_t OutOfProcessInstance::QuerySupportedPrintOutputFormats() {

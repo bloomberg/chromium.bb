@@ -73,8 +73,10 @@ struct PPP_Pdf_1_1 {
   void (*SetSelectionBounds)(PP_Instance instance,
                              const struct PP_FloatPoint* base,
                              const struct PP_FloatPoint* extent);
-  // Return true if plugin text can be cut.
-  PP_Bool (*CanCut)(PP_Instance instance);
+  // Return true if plugin text can be edited. For the PDF plugin, this
+  // is when focus is within an editable form text area (a form text field
+  // or user-editable form combobox text field).
+  PP_Bool (*CanEditText)(PP_Instance instance);
 };
 
 typedef PPP_Pdf_1_1 PPP_Pdf;
