@@ -17,6 +17,7 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context.h"
 
 namespace content {
@@ -734,9 +735,35 @@ DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
           devtools_url_request_interceptor_state),
       fetch_in_progress_(true) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("devtools_interceptor", R"(
+        semantics {
+          sender: "Developer Tools"
+          description:
+            "When user is debugging a page, all actions resulting in a network "
+            "request are intercepted to enrich the debugging experience."
+          trigger:
+            "User triggers an action that requires network request (like "
+            "navigation, download, etc.) while debugging the page."
+          data:
+            "Any data that user action sends."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: YES
+          cookies_store: "user"
+          setting:
+            "This feature cannot be disabled in settings, however it happens "
+            "only when user is debugging a page."
+          chrome_policy {
+            DeveloperToolsDisabled {
+              DeveloperToolsDisabled: true
+            }
+          }
+        })");
   request_ = request_details.url_request_context->CreateRequest(
       request_details.url, request_details.priority,
-      devtools_interceptor_request_job_),
+      devtools_interceptor_request_job_, traffic_annotation),
   request_->set_method(request_details.method);
   request_->SetExtraRequestHeaders(request_details.extra_request_headers);
 
