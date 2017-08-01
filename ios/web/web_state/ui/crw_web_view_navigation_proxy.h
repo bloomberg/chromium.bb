@@ -12,6 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 // A protocol to expose a subset of the WKWebView API to NavigationManager.
 @protocol CRWWebViewNavigationProxy
 
+@property(nullable, nonatomic, readonly, copy) NSURL* URL;
 @property(nonatomic, readonly, strong) WKBackForwardList* backForwardList;
 @property(nonatomic, readonly) BOOL canGoBack;
 @property(nonatomic, readonly) BOOL canGoForward;

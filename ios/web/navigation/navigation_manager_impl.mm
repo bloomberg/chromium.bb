@@ -47,13 +47,56 @@ NavigationManager::WebLoadParams& NavigationManager::WebLoadParams::operator=(
 }
 
 /* static */
-bool NavigationManagerImpl::AreUrlsFragmentChangeNavigation(
+bool NavigationManagerImpl::IsFragmentChangeNavigationBetweenUrls(
     const GURL& existing_url,
     const GURL& new_url) {
+  // TODO(crbug.com/749542): Current implementation incorrectly returns false
+  // if URL changes from http://google.com#foo to http://google.com.
   if (existing_url == new_url || !new_url.has_ref())
     return false;
 
   return existing_url.EqualsIgnoringRef(new_url);
+}
+
+/* static */
+void NavigationManagerImpl::UpdatePendingItemUserAgentType(
+    UserAgentOverrideOption user_agent_override_option,
+    const NavigationItem* inherit_from_item,
+    NavigationItem* pending_item) {
+  DCHECK(pending_item);
+
+  // |user_agent_override_option| must be INHERIT if |pending_item|'s
+  // UserAgentType is NONE, as requesting a desktop or mobile user agent should
+  // be disabled for app-specific URLs.
+  DCHECK(pending_item->GetUserAgentType() != UserAgentType::NONE ||
+         user_agent_override_option == UserAgentOverrideOption::INHERIT);
+
+  // Newly created pending items are created with UserAgentType::NONE for native
+  // pages or UserAgentType::MOBILE for non-native pages.  If the pending item's
+  // URL is non-native, check which user agent type it should be created with
+  // based on |user_agent_override_option|.
+  DCHECK_NE(UserAgentType::DESKTOP, pending_item->GetUserAgentType());
+  if (pending_item->GetUserAgentType() == UserAgentType::NONE)
+    return;
+
+  switch (user_agent_override_option) {
+    case UserAgentOverrideOption::DESKTOP:
+      pending_item->SetUserAgentType(UserAgentType::DESKTOP);
+      break;
+    case UserAgentOverrideOption::MOBILE:
+      pending_item->SetUserAgentType(UserAgentType::MOBILE);
+      break;
+    case UserAgentOverrideOption::INHERIT: {
+      // Propagate the last committed non-native item's UserAgentType if there
+      // is one, otherwise keep the default value, which is mobile.
+      DCHECK(!inherit_from_item ||
+             inherit_from_item->GetUserAgentType() != UserAgentType::NONE);
+      if (inherit_from_item) {
+        pending_item->SetUserAgentType(inherit_from_item->GetUserAgentType());
+      }
+      break;
+    }
+  }
 }
 
 NavigationManagerImpl::NavigationManagerImpl()
