@@ -92,7 +92,7 @@ IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderMsg_Reset)
 
 // Send overlay info to the decoder.
 IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderMsg_SetOverlayInfo,
-                    media::OverlayInfo);
+                    media::OverlayInfo)
 
 // Send destroy request to the decoder.
 IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderMsg_Destroy)
