@@ -6,14 +6,10 @@
 
 #include "cc/test/skia_common.h"
 #include "cc/test/stub_decode_cache.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
 namespace {
-
-using testing::_;
-using testing::Return;
 
 sk_sp<SkImage> CreateRasterImage() {
   SkBitmap bitmap;
@@ -29,32 +25,51 @@ DecodedDrawImage CreateDecode() {
 class MockDecodeCache : public StubDecodeCache {
  public:
   MockDecodeCache() = default;
-  ~MockDecodeCache() override = default;
+  ~MockDecodeCache() override { EXPECT_EQ(refed_image_count_, 0); }
 
-  MOCK_METHOD1(GetDecodedImageForDraw, DecodedDrawImage(const DrawImage&));
-  MOCK_METHOD2(DrawWithImageFinished,
-               void(const DrawImage&, const DecodedDrawImage&));
+  DecodedDrawImage GetDecodedImageForDraw(
+      const DrawImage& draw_image) override {
+    images_decoded_++;
+    refed_image_count_++;
+    return CreateDecode();
+  }
+
+  void DrawWithImageFinished(
+      const DrawImage& draw_image,
+      const DecodedDrawImage& decoded_draw_image) override {
+    refed_image_count_--;
+    EXPECT_GE(refed_image_count_, 0);
+  }
+
+  int refed_image_count() const { return refed_image_count_; }
+  int images_decoded() const { return images_decoded_; }
+
+ private:
+  int refed_image_count_ = 0;
+  int images_decoded_ = 0;
 };
 
 TEST(PlaybackImageProviderTest, SkipsAllImages) {
-  testing::StrictMock<MockDecodeCache> cache;
+  MockDecodeCache cache;
   PlaybackImageProvider provider(true, {}, &cache, gfx::ColorSpace());
 
   SkRect rect = SkRect::MakeWH(10, 10);
   SkMatrix matrix = SkMatrix::I();
-  EXPECT_EQ(provider.GetDecodedImage(
-                PaintImage(PaintImage::kNonLazyStableId, CreateRasterImage()),
-                rect, kMedium_SkFilterQuality, matrix),
-            nullptr);
-  EXPECT_EQ(provider.GetDecodedImage(
-                PaintImage(PaintImage::GetNextId(),
-                           CreateDiscardableImage(gfx::Size(10, 10))),
-                rect, kMedium_SkFilterQuality, matrix),
-            nullptr);
+
+  EXPECT_FALSE(provider.GetDecodedDrawImage(
+      PaintImage(PaintImage::kNonLazyStableId, CreateRasterImage()), rect,
+      kMedium_SkFilterQuality, matrix));
+  EXPECT_EQ(cache.images_decoded(), 0);
+
+  EXPECT_FALSE(provider.GetDecodedDrawImage(
+      PaintImage(PaintImage::GetNextId(),
+                 CreateDiscardableImage(gfx::Size(10, 10))),
+      rect, kMedium_SkFilterQuality, matrix));
+  EXPECT_EQ(cache.images_decoded(), 0);
 }
 
 TEST(PlaybackImageProviderTest, SkipsSomeImages) {
-  testing::StrictMock<MockDecodeCache> cache;
+  MockDecodeCache cache;
   PaintImage skip_image = PaintImage(PaintImage::GetNextId(),
                                      CreateDiscardableImage(gfx::Size(10, 10)));
   PlaybackImageProvider provider(false, {skip_image.stable_id()}, &cache,
@@ -62,27 +77,28 @@ TEST(PlaybackImageProviderTest, SkipsSomeImages) {
 
   SkRect rect = SkRect::MakeWH(10, 10);
   SkMatrix matrix = SkMatrix::I();
-  EXPECT_EQ(provider.GetDecodedImage(skip_image, rect, kMedium_SkFilterQuality,
-                                     matrix),
-            nullptr);
+  EXPECT_FALSE(provider.GetDecodedDrawImage(skip_image, rect,
+                                            kMedium_SkFilterQuality, matrix));
+  EXPECT_EQ(cache.images_decoded(), 0);
 }
 
 TEST(PlaybackImageProviderTest, RefAndUnrefDecode) {
-  testing::StrictMock<MockDecodeCache> cache;
+  MockDecodeCache cache;
   PlaybackImageProvider provider(false, {}, &cache, gfx::ColorSpace());
 
-  EXPECT_CALL(cache, GetDecodedImageForDraw(_))
-      .WillOnce(Return(CreateDecode()));
-  SkRect rect = SkRect::MakeWH(10, 10);
-  SkMatrix matrix = SkMatrix::I();
-  auto decode = provider.GetDecodedImage(
-      PaintImage(PaintImage::GetNextId(),
-                 CreateDiscardableImage(gfx::Size(10, 10))),
-      rect, kMedium_SkFilterQuality, matrix);
-  EXPECT_NE(decode, nullptr);
+  {
+    SkRect rect = SkRect::MakeWH(10, 10);
+    SkMatrix matrix = SkMatrix::I();
+    auto decode = provider.GetDecodedDrawImage(
+        PaintImage(PaintImage::GetNextId(),
+                   CreateDiscardableImage(gfx::Size(10, 10))),
+        rect, kMedium_SkFilterQuality, matrix);
+    EXPECT_TRUE(decode);
+    EXPECT_EQ(cache.refed_image_count(), 1);
+  }
 
-  EXPECT_CALL(cache, DrawWithImageFinished(_, _));
-  decode.reset();
+  // Destroying the decode unrefs the image from the cache.
+  EXPECT_EQ(cache.refed_image_count(), 0);
 }
 
 }  // namespace

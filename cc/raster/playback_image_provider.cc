@@ -15,52 +15,12 @@ SkIRect RoundOutRect(const SkRect& rect) {
   return result;
 }
 
-class DecodedImageHolderImpl : public ImageProvider::DecodedImageHolder {
- public:
-  DecodedImageHolderImpl(ImageDecodeCache* cache,
-                         PaintImage paint_image,
-                         const SkRect& src_rect,
-                         const SkMatrix& matrix,
-                         SkFilterQuality quality,
-                         const gfx::ColorSpace& target_color_space)
-      : cache_(cache),
-        draw_image_(std::move(paint_image),
-                    RoundOutRect(src_rect),
-                    quality,
-                    matrix,
-                    target_color_space),
-        decoded_draw_image_(cache_->GetDecodedImageForDraw(draw_image_)) {}
-
-  const DecodedDrawImage& DecodedImage() override {
-    return decoded_draw_image_;
-  }
-
-  ~DecodedImageHolderImpl() override {
-    cache_->DrawWithImageFinished(draw_image_, decoded_draw_image_);
-  }
-
- private:
-  ImageDecodeCache* cache_;
-  DrawImage draw_image_;
-  DecodedDrawImage decoded_draw_image_;
-};
-
-class NonLazyDecodedImageHolderImpl : public ImageProvider::DecodedImageHolder {
- public:
-  NonLazyDecodedImageHolderImpl(sk_sp<SkImage> image, SkFilterQuality quality)
-      : decoded_draw_image_(std::move(image),
-                            SkSize::Make(0, 0),
-                            SkSize::Make(1.f, 1.f),
-                            quality) {}
-  ~NonLazyDecodedImageHolderImpl() override = default;
-
-  const DecodedDrawImage& DecodedImage() override {
-    return decoded_draw_image_;
-  }
-
- private:
-  DecodedDrawImage decoded_draw_image_;
-};
+void UnrefImageFromCache(DrawImage draw_image,
+                         ImageDecodeCache* cache,
+                         DecodedDrawImage decoded_draw_image) {
+  if (decoded_draw_image.image())
+    cache->DrawWithImageFinished(draw_image, decoded_draw_image);
+}
 
 }  // namespace
 
@@ -78,31 +38,38 @@ PlaybackImageProvider::PlaybackImageProvider(
 
 PlaybackImageProvider::~PlaybackImageProvider() = default;
 
-std::unique_ptr<ImageProvider::DecodedImageHolder>
-PlaybackImageProvider::GetDecodedImage(const PaintImage& paint_image,
-                                       const SkRect& src_rect,
-                                       SkFilterQuality filter_quality,
-                                       const SkMatrix& matrix) {
+PlaybackImageProvider::PlaybackImageProvider(PlaybackImageProvider&& other) =
+    default;
+
+PlaybackImageProvider& PlaybackImageProvider::operator=(
+    PlaybackImageProvider&& other) = default;
+
+ImageProvider::ScopedDecodedDrawImage
+PlaybackImageProvider::GetDecodedDrawImage(const PaintImage& paint_image,
+                                           const SkRect& src_rect,
+                                           SkFilterQuality filter_quality,
+                                           const SkMatrix& matrix) {
+  // Return an empty decoded images if we are skipping all images during this
+  // raster.
   if (skip_all_images_)
-    return nullptr;
+    return ScopedDecodedDrawImage();
 
   if (images_to_skip_.count(paint_image.stable_id()) != 0) {
     DCHECK(paint_image.GetSkImage()->isLazyGenerated());
-    return nullptr;
+    return ScopedDecodedDrawImage();
   }
 
   if (!paint_image.GetSkImage()->isLazyGenerated()) {
-    return base::MakeUnique<NonLazyDecodedImageHolderImpl>(
-        paint_image.GetSkImage(), filter_quality);
+    return ScopedDecodedDrawImage(
+        DecodedDrawImage(paint_image.GetSkImage(), SkSize::Make(0, 0),
+                         SkSize::Make(1.f, 1.f), filter_quality));
   }
 
-  auto decoded_image_holder = base::MakeUnique<DecodedImageHolderImpl>(
-      cache_, paint_image, src_rect, matrix, filter_quality,
-      target_color_space_);
-  if (decoded_image_holder->DecodedImage().image())
-    return std::move(decoded_image_holder);
-
-  return nullptr;
+  DrawImage draw_image = DrawImage(paint_image, RoundOutRect(src_rect),
+                                   filter_quality, matrix, target_color_space_);
+  return ScopedDecodedDrawImage(
+      cache_->GetDecodedImageForDraw(draw_image),
+      base::BindOnce(&UnrefImageFromCache, std::move(draw_image), cache_));
 }
 
 }  // namespace cc

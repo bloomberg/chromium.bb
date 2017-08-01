@@ -27,18 +27,22 @@ class CC_EXPORT PlaybackImageProvider : public ImageProvider {
                         const gfx::ColorSpace& taget_color_space);
   ~PlaybackImageProvider() override;
 
+  PlaybackImageProvider(PlaybackImageProvider&& other);
+  PlaybackImageProvider& operator=(PlaybackImageProvider&& other);
+
   // ImageProvider implementation.
-  std::unique_ptr<DecodedImageHolder> GetDecodedImage(
-      const PaintImage& paint_image,
-      const SkRect& src_rect,
-      SkFilterQuality filter_quality,
-      const SkMatrix& matrix) override;
+  ScopedDecodedDrawImage GetDecodedDrawImage(const PaintImage& paint_image,
+                                             const SkRect& src_rect,
+                                             SkFilterQuality filter_quality,
+                                             const SkMatrix& matrix) override;
 
  private:
-  const bool skip_all_images_;
-  const PaintImageIdFlatSet images_to_skip_;
+  bool skip_all_images_;
+  PaintImageIdFlatSet images_to_skip_;
   ImageDecodeCache* cache_;
-  const gfx::ColorSpace target_color_space_;
+  gfx::ColorSpace target_color_space_;
+
+  DISALLOW_COPY_AND_ASSIGN(PlaybackImageProvider);
 };
 
 }  // namespace cc

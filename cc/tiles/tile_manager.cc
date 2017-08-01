@@ -93,7 +93,7 @@ class RasterTaskImpl : public TileTask {
                  std::unique_ptr<RasterBuffer> raster_buffer,
                  TileTask::Vector* dependencies,
                  bool is_gpu_rasterization,
-                 std::unique_ptr<ImageProvider> image_provider)
+                 base::Optional<PlaybackImageProvider> image_provider)
       : TileTask(!is_gpu_rasterization, dependencies),
         tile_manager_(tile_manager),
         tile_id_(tile->id()),
@@ -113,7 +113,9 @@ class RasterTaskImpl : public TileTask {
         raster_buffer_(std::move(raster_buffer)),
         image_provider_(std::move(image_provider)) {
     DCHECK(origin_thread_checker_.CalledOnValidThread());
-    playback_settings_.image_provider = image_provider_.get();
+
+    if (image_provider_.has_value())
+      playback_settings_.image_provider = &image_provider_.value();
   }
 
   // Overridden from Task:
@@ -177,7 +179,7 @@ class RasterTaskImpl : public TileTask {
   int source_frame_number_;
   bool is_gpu_rasterization_;
   std::unique_ptr<RasterBuffer> raster_buffer_;
-  std::unique_ptr<ImageProvider> image_provider_;
+  base::Optional<PlaybackImageProvider> image_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterTaskImpl);
 };
@@ -1154,12 +1156,11 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
       raster_buffer_provider_->AcquireBufferForRaster(
           resource, resource_content_id, tile->invalidated_id());
 
-  std::unique_ptr<ImageProvider> image_provider;
+  base::Optional<PlaybackImageProvider> image_provider;
   const bool has_predecoded_images = !sync_decoded_images.empty();
   if (skip_images || has_checker_images || has_predecoded_images) {
-    image_provider = base::MakeUnique<PlaybackImageProvider>(
-        skip_images, std::move(images_to_skip), image_controller_.cache(),
-        color_space);
+    image_provider.emplace(skip_images, std::move(images_to_skip),
+                           image_controller_.cache(), color_space);
   }
 
   return make_scoped_refptr(new RasterTaskImpl(

@@ -26,13 +26,11 @@ bool IsImageShader(const PaintFlags& flags) {
 bool IsImageOp(const PaintOp* op) {
   PaintOpType type = static_cast<PaintOpType>(op->type);
 
-  if (!op->IsDrawOp())
-    return false;
-  else if (type == PaintOpType::DrawImage)
+  if (type == PaintOpType::DrawImage)
     return true;
   else if (type == PaintOpType::DrawImageRect)
     return true;
-  else if (op->IsPaintOpWithFlags())
+  else if (op->IsDrawOp() && op->IsPaintOpWithFlags())
     return IsImageShader(static_cast<const PaintOpWithFlags*>(op)->flags);
 
   return false;
@@ -77,12 +75,12 @@ class ScopedImageFlags {
     total_image_matrix.preConcat(ctm);
     SkRect src_rect =
         SkRect::MakeIWH(paint_image.width(), paint_image.height());
-    holder_ = image_provider->GetDecodedImage(
+    scoped_decoded_draw_image_ = image_provider->GetDecodedDrawImage(
         paint_image, src_rect, flags.getFilterQuality(), total_image_matrix);
 
-    if (!holder_)
+    if (!scoped_decoded_draw_image_)
       return;
-    const auto& decoded_image = holder_->DecodedImage();
+    const auto& decoded_image = scoped_decoded_draw_image_.decoded_image();
     DCHECK(decoded_image.image());
 
     bool need_scale = !decoded_image.is_scale_adjustment_identity();
@@ -107,7 +105,7 @@ class ScopedImageFlags {
 
  private:
   PaintFlags decoded_flags_;
-  std::unique_ptr<ImageProvider::DecodedImageHolder> holder_;
+  ImageProvider::ScopedDecodedDrawImage scoped_decoded_draw_image_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedImageFlags);
 };
@@ -124,6 +122,8 @@ void RasterWithAlpha(const PaintOp* op,
   if (op->IsPaintOpWithFlags()) {
     auto* flags_op = static_cast<const PaintOpWithFlags*>(op);
 
+    // Replace the PaintFlags with a copy that holds the decoded image from the
+    // ImageProvider if it consists of an image shader.
     base::Optional<ScopedImageFlags> scoped_flags;
     const PaintFlags* decoded_flags = &flags_op->flags;
     if (params.image_provider && IsImageShader(flags_op->flags)) {
@@ -1256,34 +1256,35 @@ void DrawImageOp::RasterWithFlags(const DrawImageOp* op,
                                   const PlaybackParams& params) {
   SkPaint paint = flags->ToSkPaint();
 
-  if (params.image_provider) {
-    SkRect image_rect = SkRect::MakeIWH(op->image.width(), op->image.height());
-    auto decoded_image_holder = params.image_provider->GetDecodedImage(
-        op->image, image_rect,
-        flags ? flags->getFilterQuality() : kNone_SkFilterQuality,
-        canvas->getTotalMatrix());
-    if (!decoded_image_holder)
-      return;
+  if (!params.image_provider) {
+    canvas->drawImage(op->image.GetSkImage().get(), op->left, op->top, &paint);
+    return;
+  }
 
-    const auto& decoded_image = decoded_image_holder->DecodedImage();
-    DCHECK(decoded_image.image());
+  SkRect image_rect = SkRect::MakeIWH(op->image.width(), op->image.height());
+  auto scoped_decoded_draw_image = params.image_provider->GetDecodedDrawImage(
+      op->image, image_rect,
+      flags ? flags->getFilterQuality() : kNone_SkFilterQuality,
+      canvas->getTotalMatrix());
+  if (!scoped_decoded_draw_image)
+    return;
 
-    DCHECK_EQ(0, static_cast<int>(decoded_image.src_rect_offset().width()));
-    DCHECK_EQ(0, static_cast<int>(decoded_image.src_rect_offset().height()));
-    bool need_scale = !decoded_image.is_scale_adjustment_identity();
-    if (need_scale) {
-      canvas->save();
-      canvas->scale(1.f / (decoded_image.scale_adjustment().width()),
-                    1.f / (decoded_image.scale_adjustment().height()));
+  const auto& decoded_image = scoped_decoded_draw_image.decoded_image();
+  DCHECK(decoded_image.image());
+
+  DCHECK_EQ(0, static_cast<int>(decoded_image.src_rect_offset().width()));
+  DCHECK_EQ(0, static_cast<int>(decoded_image.src_rect_offset().height()));
+  bool need_scale = !decoded_image.is_scale_adjustment_identity();
+  if (need_scale) {
+    canvas->save();
+    canvas->scale(1.f / (decoded_image.scale_adjustment().width()),
+                  1.f / (decoded_image.scale_adjustment().height()));
     }
 
     paint.setFilterQuality(decoded_image.filter_quality());
     canvas->drawImage(decoded_image.image().get(), op->left, op->top, &paint);
     if (need_scale)
       canvas->restore();
-  } else {
-    canvas->drawImage(op->image.GetSkImage().get(), op->left, op->top, &paint);
-  }
 }
 
 void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
@@ -1295,39 +1296,39 @@ void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
       static_cast<SkCanvas::SrcRectConstraint>(op->constraint);
   SkPaint paint = flags->ToSkPaint();
 
-  if (params.image_provider) {
-    SkMatrix matrix;
-    matrix.setRectToRect(op->src, op->dst, SkMatrix::kFill_ScaleToFit);
-    matrix.postConcat(canvas->getTotalMatrix());
+  if (!params.image_provider) {
+    canvas->drawImageRect(op->image.GetSkImage().get(), op->src, op->dst,
+                          &paint, skconstraint);
+    return;
+  }
 
-    auto decoded_image_holder = params.image_provider->GetDecodedImage(
-        op->image, op->src,
-        flags ? flags->getFilterQuality() : kNone_SkFilterQuality, matrix);
-    if (!decoded_image_holder)
-      return;
+  SkMatrix matrix;
+  matrix.setRectToRect(op->src, op->dst, SkMatrix::kFill_ScaleToFit);
+  matrix.postConcat(canvas->getTotalMatrix());
 
-    const auto& decoded_image = decoded_image_holder->DecodedImage();
-    DCHECK(decoded_image.image());
+  auto scoped_decoded_draw_image = params.image_provider->GetDecodedDrawImage(
+      op->image, op->src,
+      flags ? flags->getFilterQuality() : kNone_SkFilterQuality, matrix);
+  if (!scoped_decoded_draw_image)
+    return;
 
-    SkRect adjusted_src =
-        op->src.makeOffset(decoded_image.src_rect_offset().width(),
-                           decoded_image.src_rect_offset().height());
-    if (!decoded_image.is_scale_adjustment_identity()) {
-      float x_scale = decoded_image.scale_adjustment().width();
-      float y_scale = decoded_image.scale_adjustment().height();
-      adjusted_src = SkRect::MakeXYWH(
-          adjusted_src.x() * x_scale, adjusted_src.y() * y_scale,
-          adjusted_src.width() * x_scale, adjusted_src.height() * y_scale);
+  const auto& decoded_image = scoped_decoded_draw_image.decoded_image();
+  DCHECK(decoded_image.image());
+
+  SkRect adjusted_src =
+      op->src.makeOffset(decoded_image.src_rect_offset().width(),
+                         decoded_image.src_rect_offset().height());
+  if (!decoded_image.is_scale_adjustment_identity()) {
+    float x_scale = decoded_image.scale_adjustment().width();
+    float y_scale = decoded_image.scale_adjustment().height();
+    adjusted_src = SkRect::MakeXYWH(
+        adjusted_src.x() * x_scale, adjusted_src.y() * y_scale,
+        adjusted_src.width() * x_scale, adjusted_src.height() * y_scale);
     }
 
-    SkPaint paint = flags->ToSkPaint();
     paint.setFilterQuality(decoded_image.filter_quality());
     canvas->drawImageRect(decoded_image.image().get(), adjusted_src, op->dst,
                           &paint, skconstraint);
-  } else {
-    canvas->drawImageRect(op->image.GetSkImage().get(), op->src, op->dst,
-                          &paint, skconstraint);
-  }
 }
 
 void DrawIRectOp::RasterWithFlags(const DrawIRectOp* op,
@@ -1548,6 +1549,14 @@ bool PaintOp::GetBounds(const PaintOp* op, SkRect* rect) {
       rect->sort();
       return true;
     }
+    case PaintOpType::DrawColor:
+      return false;
+    case PaintOpType::DrawDRRect: {
+      auto* rect_op = static_cast<const DrawDRRectOp*>(op);
+      *rect = rect_op->outer.getBounds();
+      rect->sort();
+      return true;
+    }
     case PaintOpType::DrawImage: {
       auto* image_op = static_cast<const DrawImageOp*>(op);
       *rect =
@@ -1568,6 +1577,12 @@ bool PaintOp::GetBounds(const PaintOp* op, SkRect* rect) {
       rect->sort();
       return true;
     }
+    case PaintOpType::DrawLine: {
+      auto* line_op = static_cast<const DrawLineOp*>(op);
+      rect->set(line_op->x0, line_op->y0, line_op->x1, line_op->y1);
+      rect->sort();
+      return true;
+    }
     case PaintOpType::DrawOval: {
       auto* oval_op = static_cast<const DrawOvalOp*>(op);
       *rect = oval_op->oval;
@@ -1580,6 +1595,8 @@ bool PaintOp::GetBounds(const PaintOp* op, SkRect* rect) {
       rect->sort();
       return true;
     }
+    case PaintOpType::DrawPosText:
+      return false;
     case PaintOpType::DrawRect: {
       auto* rect_op = static_cast<const DrawRectOp*>(op);
       *rect = rect_op->rect;
@@ -1594,20 +1611,6 @@ bool PaintOp::GetBounds(const PaintOp* op, SkRect* rect) {
     }
     case PaintOpType::DrawRecord:
       return false;
-    case PaintOpType::DrawPosText:
-      return false;
-    case PaintOpType::DrawLine: {
-      auto* line_op = static_cast<const DrawLineOp*>(op);
-      rect->set(line_op->x0, line_op->y0, line_op->x1, line_op->y1);
-      rect->sort();
-      return true;
-    }
-    case PaintOpType::DrawDRRect: {
-      auto* rect_op = static_cast<const DrawDRRectOp*>(op);
-      *rect = rect_op->outer.getBounds();
-      rect->sort();
-      return true;
-    }
     case PaintOpType::DrawText:
       return false;
     case PaintOpType::DrawTextBlob: {
@@ -1616,9 +1619,6 @@ bool PaintOp::GetBounds(const PaintOp* op, SkRect* rect) {
       rect->sort();
       return true;
     }
-    case PaintOpType::DrawColor:
-      return false;
-      break;
     default:
       NOTREACHED();
   }
@@ -1934,7 +1934,6 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
           third = next_op();
           if (third && third->GetType() == PaintOpType::Restore) {
             auto* save_op = static_cast<const SaveLayerAlphaOp*>(op);
-            SkPaint paint;
             RasterWithAlpha(draw_op, canvas, params, save_op->bounds,
                             save_op->alpha);
             continue;
