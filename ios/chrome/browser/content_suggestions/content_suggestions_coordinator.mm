@@ -68,6 +68,7 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=new_tab";
     ContentSuggestionsCommands,
     ContentSuggestionsGestureCommands,
     ContentSuggestionsHeaderViewControllerCommandHandler,
+    ContentSuggestionsHeaderViewControllerDelegate,
     ContentSuggestionsViewControllerAudience,
     ContentSuggestionsViewControllerDelegate,
     OverscrollActionsControllerDelegate>
@@ -120,6 +121,7 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=new_tab";
 
   self.headerController = [[ContentSuggestionsHeaderViewController alloc] init];
   self.headerController.dispatcher = self.dispatcher;
+  self.headerController.delegate = self;
   self.headerController.readingListModel =
       ReadingListModelFactory::GetForBrowserState(self.browserState);
   self.googleLandingMediator =
@@ -322,6 +324,16 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=new_tab";
   base::RecordAction(base::UserMetricsAction("MostVisited_UrlBlacklisted"));
   [self.contentSuggestionsMediator blacklistMostVisitedURL:item.URL];
   [self showMostVisitedUndoForURL:item.URL];
+}
+
+#pragma mark - ContentSuggestionsHeaderViewControllerDelegate
+
+- (BOOL)isContextMenuVisible {
+  return self.alertCoordinator.isVisible;
+}
+
+- (BOOL)isScrolledToTop {
+  return self.suggestionsViewController.scrolledToTop;
 }
 
 #pragma mark - ContentSuggestionsViewControllerDelegate

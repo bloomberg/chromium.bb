@@ -183,10 +183,8 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   }
   self.automaticallyAdjustsScrollViewInsets = NO;
   self.collectionView.translatesAutoresizingMaskIntoConstraints = NO;
-  ApplyVisualConstraints(
-      @[ @"V:[top][collection]|", @"H:|[collection]|" ],
-      @{ @"collection" : self.collectionView,
-         @"top" : self.topLayoutGuide });
+  ApplyVisualConstraints(@[ @"V:|[collection]|", @"H:|[collection]|" ],
+                         @{@"collection" : self.collectionView});
 
   UILongPressGestureRecognizer* longPressRecognizer =
       [[UILongPressGestureRecognizer alloc]
