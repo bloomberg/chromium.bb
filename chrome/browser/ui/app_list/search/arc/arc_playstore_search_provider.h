@@ -23,8 +23,7 @@ class ArcPlayStoreSearchProvider : public SearchProvider {
                              AppListControllerDelegate* list_controller);
   ~ArcPlayStoreSearchProvider() override;
 
- protected:
-  // app_list::SearchProvider overrides:
+  // SearchProvider:
   void Start(bool is_voice_query, const base::string16& query) override;
   void Stop() override;
 

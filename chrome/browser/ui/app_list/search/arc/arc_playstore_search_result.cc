@@ -31,6 +31,7 @@
 using content::BrowserThread;
 
 namespace {
+bool disable_safe_decoding_for_testing = false;
 // The id prefix to identify a Play Store search result.
 constexpr char kPlayAppPrefix[] = "play://";
 // Badge icon color, #000 at 54% opacity.
@@ -136,6 +137,11 @@ class ArcPlayStoreSearchResult::IconDecodeRequest
 ////////////////////////////////////////////////////////////////////////////////
 // ArcPlayStoreSearchResult
 
+// static
+void ArcPlayStoreSearchResult::DisableSafeDecodingForTesting() {
+  disable_safe_decoding_for_testing = true;
+}
+
 ArcPlayStoreSearchResult::ArcPlayStoreSearchResult(
     arc::mojom::AppDiscoveryResultPtr data,
     Profile* profile,
@@ -155,9 +161,21 @@ ArcPlayStoreSearchResult::ArcPlayStoreSearchResult(
   set_result_type(is_instant_app() ? RESULT_INSTANT_APP : RESULT_PLAYSTORE_APP);
 
   icon_decode_request_ = base::MakeUnique<IconDecodeRequest>(this);
-  ImageDecoder::StartWithOptions(icon_decode_request_.get(), icon_png_data(),
-                                 ImageDecoder::DEFAULT_CODEC, true,
-                                 gfx::Size());
+  if (disable_safe_decoding_for_testing) {
+    SkBitmap bitmap;
+    if (!icon_png_data().empty() &&
+        gfx::PNGCodec::Decode(
+            reinterpret_cast<const unsigned char*>(icon_png_data().data()),
+            icon_png_data().size(), &bitmap)) {
+      icon_decode_request_->OnImageDecoded(bitmap);
+    } else {
+      icon_decode_request_->OnDecodeImageFailed();
+    }
+  } else {
+    ImageDecoder::StartWithOptions(icon_decode_request_.get(), icon_png_data(),
+                                   ImageDecoder::DEFAULT_CODEC, true,
+                                   gfx::Size());
+  }
 }
 
 ArcPlayStoreSearchResult::~ArcPlayStoreSearchResult() = default;
