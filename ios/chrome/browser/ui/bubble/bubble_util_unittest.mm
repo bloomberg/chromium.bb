@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/bubble/bubble_util.h"
 
-#include "base/i18n/rtl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -77,179 +76,161 @@ TEST_F(BubbleUtilTest, LeadingDistanceTrailingAlignment) {
 // Test the |MaxWidth| method when the bubble is leading aligned, the target is
 // on the left side of the container, and the language is LTR.
 TEST_F(BubbleUtilTest, MaxWidthLeadingWithTargetOnLeft) {
-  // Ensure that the language is LTR by setting the locale to English.
-  base::i18n::SetICUDefaultLocale("en");
-  CGFloat leftAlignedWidth = bubble_util::MaxWidth(
-      leftAlignedTarget_, BubbleAlignmentLeading, containerWidth_);
+  CGFloat leftAlignedWidth =
+      bubble_util::MaxWidth(leftAlignedTarget_, BubbleAlignmentLeading,
+                            containerWidth_, false /* isRTL */);
   EXPECT_EQ(430.0f + kTestBubbleAlignmentOffset, leftAlignedWidth);
 }
 
 // Test the |MaxWidth| method when the bubble is leading aligned, the target is
 // on the center of the container, and the language is LTR.
 TEST_F(BubbleUtilTest, MaxWidthLeadingWithTargetOnCenter) {
-  // Ensure that the language is LTR by setting the locale to English.
-  base::i18n::SetICUDefaultLocale("en");
-  CGFloat centerAlignedWidth = bubble_util::MaxWidth(
-      centerAlignedTarget_, BubbleAlignmentLeading, containerWidth_);
+  CGFloat centerAlignedWidth =
+      bubble_util::MaxWidth(centerAlignedTarget_, BubbleAlignmentLeading,
+                            containerWidth_, false /* isRTL */);
   EXPECT_EQ(200.0f + kTestBubbleAlignmentOffset, centerAlignedWidth);
 }
 
 // Test the |MaxWidth| method when the bubble is leading aligned, the target is
 // on the right side of the container, and the language is LTR.
 TEST_F(BubbleUtilTest, MaxWidthLeadingWithTargetOnRight) {
-  // Ensure that the language is LTR by setting the locale to English.
-  base::i18n::SetICUDefaultLocale("en");
-  CGFloat rightAlignedWidth = bubble_util::MaxWidth(
-      rightAlignedTarget_, BubbleAlignmentLeading, containerWidth_);
+  CGFloat rightAlignedWidth =
+      bubble_util::MaxWidth(rightAlignedTarget_, BubbleAlignmentLeading,
+                            containerWidth_, false /* isRTL */);
   EXPECT_EQ(50.0f + kTestBubbleAlignmentOffset, rightAlignedWidth);
 }
 
 // Test the |MaxWidth| method when the bubble is center aligned, the target is
 // on the left side of the container, and the language is LTR.
 TEST_F(BubbleUtilTest, MaxWidthCenterWithTargetOnLeft) {
-  // Ensure that the language is LTR by setting the locale to English.
-  base::i18n::SetICUDefaultLocale("en");
-  CGFloat leftAlignedWidth = bubble_util::MaxWidth(
-      leftAlignedTarget_, BubbleAlignmentCenter, containerWidth_);
+  CGFloat leftAlignedWidth =
+      bubble_util::MaxWidth(leftAlignedTarget_, BubbleAlignmentCenter,
+                            containerWidth_, false /* isRTL */);
   EXPECT_EQ(140.0f, leftAlignedWidth);
 }
 
 // Test the |MaxWidth| method when the bubble is center aligned, the target is
 // on the center of the container, and the language is LTR.
 TEST_F(BubbleUtilTest, MaxWidthCenterWithTargetOnCenter) {
-  // Ensure that the language is LTR by setting the locale to English.
-  base::i18n::SetICUDefaultLocale("en");
-  CGFloat centerAlignedWidth = bubble_util::MaxWidth(
-      centerAlignedTarget_, BubbleAlignmentCenter, containerWidth_);
+  CGFloat centerAlignedWidth =
+      bubble_util::MaxWidth(centerAlignedTarget_, BubbleAlignmentCenter,
+                            containerWidth_, false /* isRTL */);
   EXPECT_EQ(400.0f, centerAlignedWidth);
 }
 
 // Test the |MaxWidth| method when the bubble is center aligned, the target is
 // on the right side of the container, and the language is LTR.
 TEST_F(BubbleUtilTest, MaxWidthCenterWithTargetOnRight) {
-  // Ensure that the language is LTR by setting the locale to English.
-  base::i18n::SetICUDefaultLocale("en");
-  CGFloat rightAlignedWidth = bubble_util::MaxWidth(
-      rightAlignedTarget_, BubbleAlignmentCenter, containerWidth_);
+  CGFloat rightAlignedWidth =
+      bubble_util::MaxWidth(rightAlignedTarget_, BubbleAlignmentCenter,
+                            containerWidth_, false /* isRTL */);
   EXPECT_EQ(100.0f, rightAlignedWidth);
 }
 
 // Test the |MaxWidth| method when the bubble is trailing aligned, the target is
 // on the left side of the container, and the language is LTR.
 TEST_F(BubbleUtilTest, MaxWidthTrailingWithTargetOnLeft) {
-  // Ensure that the language is LTR by setting the locale to English.
-  base::i18n::SetICUDefaultLocale("en");
-  CGFloat leftAlignedWidth = bubble_util::MaxWidth(
-      leftAlignedTarget_, BubbleAlignmentTrailing, containerWidth_);
+  CGFloat leftAlignedWidth =
+      bubble_util::MaxWidth(leftAlignedTarget_, BubbleAlignmentTrailing,
+                            containerWidth_, false /* isRTL */);
   EXPECT_EQ(70.0f + kTestBubbleAlignmentOffset, leftAlignedWidth);
 }
 
 // Test the |MaxWidth| method when the bubble is trailing aligned, the target is
 // on the center of the container, and the language is LTR.
 TEST_F(BubbleUtilTest, MaxWidthTrailingWithTargetOnCenter) {
-  // Ensure that the language is LTR by setting the locale to English.
-  base::i18n::SetICUDefaultLocale("en");
-  CGFloat centerAlignedWidth = bubble_util::MaxWidth(
-      centerAlignedTarget_, BubbleAlignmentTrailing, containerWidth_);
+  CGFloat centerAlignedWidth =
+      bubble_util::MaxWidth(centerAlignedTarget_, BubbleAlignmentTrailing,
+                            containerWidth_, false /* isRTL */);
   EXPECT_EQ(300.0f + kTestBubbleAlignmentOffset, centerAlignedWidth);
 }
 
 // Test the |MaxWidth| method when the bubble is trailing aligned, the target is
 // on the right side of the container, and the language is LTR.
 TEST_F(BubbleUtilTest, MaxWidthTrailingWithTargetOnRight) {
-  // Ensure that the language is LTR by setting the locale to English.
-  base::i18n::SetICUDefaultLocale("en");
-  CGFloat rightAlignedWidth = bubble_util::MaxWidth(
-      rightAlignedTarget_, BubbleAlignmentTrailing, containerWidth_);
+  CGFloat rightAlignedWidth =
+      bubble_util::MaxWidth(rightAlignedTarget_, BubbleAlignmentTrailing,
+                            containerWidth_, false /* isRTL */);
   EXPECT_EQ(450.0f + kTestBubbleAlignmentOffset, rightAlignedWidth);
 }
 
 // Test the |MaxWidth| method when the bubble is leading aligned, the target is
 // on the left side of the container, and the language is RTL.
 TEST_F(BubbleUtilTest, MaxWidthLeadingWithTargetOnLeftRTL) {
-  // Ensure that the language is RTL by setting the locale to Hebrew.
-  base::i18n::SetICUDefaultLocale("he");
-  CGFloat leftAlignedWidthRTL = bubble_util::MaxWidth(
-      leftAlignedTarget_, BubbleAlignmentLeading, containerWidth_);
+  CGFloat leftAlignedWidthRTL =
+      bubble_util::MaxWidth(leftAlignedTarget_, BubbleAlignmentLeading,
+                            containerWidth_, true /* isRTL */);
   EXPECT_EQ(70.0f + kTestBubbleAlignmentOffset, leftAlignedWidthRTL);
 }
 
 // Test the |MaxWidth| method when the bubble is leading aligned, the target is
 // on the center of the container, and the language is RTL.
 TEST_F(BubbleUtilTest, MaxWidthLeadingWithTargetOnCenterRTL) {
-  // Ensure that the language is RTL by setting the locale to Hebrew.
-  base::i18n::SetICUDefaultLocale("he");
-  CGFloat centerAlignedWidthRTL = bubble_util::MaxWidth(
-      centerAlignedTarget_, BubbleAlignmentLeading, containerWidth_);
+  CGFloat centerAlignedWidthRTL =
+      bubble_util::MaxWidth(centerAlignedTarget_, BubbleAlignmentLeading,
+                            containerWidth_, true /* isRTL */);
   EXPECT_EQ(300.0f + kTestBubbleAlignmentOffset, centerAlignedWidthRTL);
 }
 
 // Test the |MaxWidth| method when the bubble is leading aligned, the target is
 // on the right side of the container, and the language is RTL.
 TEST_F(BubbleUtilTest, MaxWidthLeadingWithTargetOnRightRTL) {
-  // Ensure that the language is RTL by setting the locale to Hebrew.
-  base::i18n::SetICUDefaultLocale("he");
-  CGFloat rightAlignedWidthRTL = bubble_util::MaxWidth(
-      rightAlignedTarget_, BubbleAlignmentLeading, containerWidth_);
+  CGFloat rightAlignedWidthRTL =
+      bubble_util::MaxWidth(rightAlignedTarget_, BubbleAlignmentLeading,
+                            containerWidth_, true /* isRTL */);
   EXPECT_EQ(450.0f + kTestBubbleAlignmentOffset, rightAlignedWidthRTL);
 }
 
 // Test the |MaxWidth| method when the bubble is center aligned, the target is
 // on the left side of the container, and the language is RTL.
 TEST_F(BubbleUtilTest, MaxWidthCenterWithTargetOnLeftRTL) {
-  // Ensure that the language is RTL by setting the locale to Hebrew.
-  base::i18n::SetICUDefaultLocale("he");
-  CGFloat leftAlignedWidthRTL = bubble_util::MaxWidth(
-      leftAlignedTarget_, BubbleAlignmentCenter, containerWidth_);
+  CGFloat leftAlignedWidthRTL =
+      bubble_util::MaxWidth(leftAlignedTarget_, BubbleAlignmentCenter,
+                            containerWidth_, true /* isRTL */);
   EXPECT_EQ(140.0f, leftAlignedWidthRTL);
 }
 
 // Test the |MaxWidth| method when the bubble is center aligned, the target is
 // on the center of the container, and the language is RTL.
 TEST_F(BubbleUtilTest, MaxWidthCenterWithTargetOnCenterRTL) {
-  // Ensure that the language is RTL by setting the locale to Hebrew.
-  base::i18n::SetICUDefaultLocale("he");
-  CGFloat centerAlignedWidthRTL = bubble_util::MaxWidth(
-      centerAlignedTarget_, BubbleAlignmentCenter, containerWidth_);
+  CGFloat centerAlignedWidthRTL =
+      bubble_util::MaxWidth(centerAlignedTarget_, BubbleAlignmentCenter,
+                            containerWidth_, true /* isRTL */);
   EXPECT_EQ(400.0f, centerAlignedWidthRTL);
 }
 
 // Test the |MaxWidth| method when the bubble is center aligned, the target is
 // on the right side of the container, and the language is RTL.
 TEST_F(BubbleUtilTest, MaxWidthCenterWithTargetOnRightRTL) {
-  // Ensure that the language is RTL by setting the locale to Hebrew.
-  base::i18n::SetICUDefaultLocale("he");
-  CGFloat rightAlignedWidthRTL = bubble_util::MaxWidth(
-      rightAlignedTarget_, BubbleAlignmentCenter, containerWidth_);
+  CGFloat rightAlignedWidthRTL =
+      bubble_util::MaxWidth(rightAlignedTarget_, BubbleAlignmentCenter,
+                            containerWidth_, true /* isRTL */);
   EXPECT_EQ(100.0f, rightAlignedWidthRTL);
 }
 
 // Test the |MaxWidth| method when the bubble is trailing aligned, the target is
 // on the left side of the container, and the language is RTL.
 TEST_F(BubbleUtilTest, MaxWidthTrailingWithTargetOnLeftRTL) {
-  // Ensure that the language is RTL by setting the locale to Hebrew.
-  base::i18n::SetICUDefaultLocale("he");
-  CGFloat leftAlignedWidthRTL = bubble_util::MaxWidth(
-      leftAlignedTarget_, BubbleAlignmentTrailing, containerWidth_);
+  CGFloat leftAlignedWidthRTL =
+      bubble_util::MaxWidth(leftAlignedTarget_, BubbleAlignmentTrailing,
+                            containerWidth_, true /* isRTL */);
   EXPECT_EQ(430.0f + kTestBubbleAlignmentOffset, leftAlignedWidthRTL);
 }
 
 // Test the |MaxWidth| method when the bubble is trailing aligned, the target is
 // on the center of the container, and the language is RTL.
 TEST_F(BubbleUtilTest, MaxWidthTrailingWithTargetOnCenterRTL) {
-  // Ensure that the language is RTL by setting the locale to Hebrew.
-  base::i18n::SetICUDefaultLocale("he");
-  CGFloat centerAlignedWidthRTL = bubble_util::MaxWidth(
-      centerAlignedTarget_, BubbleAlignmentTrailing, containerWidth_);
+  CGFloat centerAlignedWidthRTL =
+      bubble_util::MaxWidth(centerAlignedTarget_, BubbleAlignmentTrailing,
+                            containerWidth_, true /* isRTL */);
   EXPECT_EQ(200.0f + kTestBubbleAlignmentOffset, centerAlignedWidthRTL);
 }
 
 // Test the |MaxWidth| method when the bubble is trailing aligned, the target is
 // on the right side of the container, and the language is RTL.
 TEST_F(BubbleUtilTest, MaxWidthTrailingWithTargetOnRightRTL) {
-  // Ensure that the language is RTL by setting the locale to Hebrew.
-  base::i18n::SetICUDefaultLocale("he");
-  CGFloat rightAlignedWidthRTL = bubble_util::MaxWidth(
-      rightAlignedTarget_, BubbleAlignmentTrailing, containerWidth_);
+  CGFloat rightAlignedWidthRTL =
+      bubble_util::MaxWidth(rightAlignedTarget_, BubbleAlignmentTrailing,
+                            containerWidth_, true /* isRTL */);
   EXPECT_EQ(50.0f + kTestBubbleAlignmentOffset, rightAlignedWidthRTL);
 }
