@@ -95,6 +95,14 @@ cr.define('cr.FirstRun', function() {
     focusDefaultControl: function() {
       this.defaultControl_.focus();
     },
+
+    /**
+     * Updates UI when voice interaction is enabled by the device.
+     */
+    setVoiceInteractionEnabled: function() {
+      if (this.name_ == 'app-list')
+        $('voice-interaction-text').hidden = false;
+    },
   };
 
   var Bubble = cr.ui.define('div');

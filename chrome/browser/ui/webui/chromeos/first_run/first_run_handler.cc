@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
+#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/web_ui.h"
 
 namespace chromeos {
@@ -43,21 +44,34 @@ void FirstRunHandler::RemoveBackgroundHoles() {
 
 void FirstRunHandler::ShowStepPositioned(const std::string& name,
                                          const StepPosition& position) {
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "cr.FirstRun.showStep", base::Value(name), *position.AsValue());
+  base::DictionaryValue step_params;
+  step_params.SetString("name", name);
+  step_params.Set("position",
+                  base::MakeUnique<base::Value>(*position.AsValue()));
+  step_params.SetList("pointWithOffset", base::MakeUnique<base::ListValue>());
+  step_params.SetBoolean("voiceInteractionEnabled",
+                         chromeos::switches::IsVoiceInteractionEnabled());
+
+  web_ui()->CallJavascriptFunctionUnsafe("cr.FirstRun.showStep", step_params);
 }
 
 void FirstRunHandler::ShowStepPointingTo(const std::string& name,
                                          int x,
                                          int y,
                                          int offset) {
-  auto null = base::MakeUnique<base::Value>();
+  base::DictionaryValue step_params;
+  step_params.SetString("name", name);
+  step_params.Set("position", base::MakeUnique<base::Value>());
   base::ListValue point_with_offset;
   point_with_offset.AppendInteger(x);
   point_with_offset.AppendInteger(y);
   point_with_offset.AppendInteger(offset);
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "cr.FirstRun.showStep", base::Value(name), *null, point_with_offset);
+  step_params.SetList("pointWithOffset",
+                      base::MakeUnique<base::ListValue>(point_with_offset));
+  step_params.SetBoolean("voiceInteractionEnabled",
+                         chromeos::switches::IsVoiceInteractionEnabled());
+
+  web_ui()->CallJavascriptFunctionUnsafe("cr.FirstRun.showStep", step_params);
 }
 
 void FirstRunHandler::HideCurrentStep() {

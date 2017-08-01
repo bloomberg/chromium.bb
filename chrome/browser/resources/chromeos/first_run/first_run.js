@@ -222,26 +222,34 @@ cr.define('cr.FirstRun', function() {
 
     /**
      * Shows step with given name in given position.
-     * @param {string} name Name of step.
-     * @param {object} position Optional parameter with optional fields |top|,
-     *     |right|, |bottom|, |left| used for step positioning.
-     * @param {Array} pointWithOffset Optional parameter for positioning
-     *     bubble. Contains [x, y, offset], where (x, y) - point to which bubble
-     *     points, offset - distance between arrow and point.
+     * @param {Object} stepParams Step params dictionary containing:
+     * |name|: Name of the step.
+     * |position|: Optional parameter with optional fields |top|, |right|,
+     *     |bottom|, |left| used for step positioning.
+     * |pointWithOffset|: Optional parameter for positioning bubble. Contains
+     *     [x, y, offset], where (x, y) - point to which bubble points,
+     *     offset - distance between arrow and point.
+     * |voiceInteractionEnabled|: Optional boolean value to indicate if voice
+     *     interaction is enabled by the device.
      */
-    showStep: function(name, position, pointWithOffset) {
+    showStep: function(stepParams) {
       assert(!this.currentStep_);
-      if (!this.steps_.hasOwnProperty(name))
-        throw Error('Step "' + name + '" not found.');
-      var step = this.steps_[name];
-      if (position)
-        step.setPosition(position);
-      if (pointWithOffset)
-        step.setPointsTo(pointWithOffset.slice(0, 2), pointWithOffset[2]);
+      if (!this.steps_.hasOwnProperty(stepParams.name))
+        throw Error('Step "' + stepParams.name + '" not found.');
+      var step = this.steps_[stepParams.name];
+      if (stepParams.position)
+        step.setPosition(stepParams.position);
+      if (stepParams.pointWithOffset) {
+        step.setPointsTo(
+            stepParams.pointWithOffset.slice(0, 2),
+            stepParams.pointWithOffset[2]);
+      }
+      if (stepParams.voiceInteractionEnabled)
+        step.setVoiceInteractionEnabled();
       step.show(true, function(step) {
         step.focusDefaultControl();
         this.currentStep_ = step;
-        chrome.send('stepShown', [name]);
+        chrome.send('stepShown', [stepParams.name]);
       }.bind(this));
     },
 
