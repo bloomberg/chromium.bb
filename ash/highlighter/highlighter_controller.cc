@@ -24,17 +24,35 @@ namespace {
 // Adjust the height of the bounding box to match the pen tip height,
 // while keeping the same vertical center line. Adjust the width to
 // account for the pen tip width.
-gfx::RectF AdjustHorizontalStroke(const gfx::RectF& box,
-                                  const gfx::SizeF& pen_tip_size) {
-  return gfx::RectF(box.x() - pen_tip_size.width() / 2,
-                    box.CenterPoint().y() - pen_tip_size.height() / 2,
-                    box.width() + pen_tip_size.width(), pen_tip_size.height());
+gfx::Rect AdjustHorizontalStroke(const gfx::Rect& box,
+                                 const gfx::SizeF& pen_tip_size) {
+  return gfx::ToEnclosingRect(
+      gfx::RectF(box.x() - pen_tip_size.width() / 2,
+                 box.CenterPoint().y() - pen_tip_size.height() / 2,
+                 box.width() + pen_tip_size.width(), pen_tip_size.height()));
 }
+
+// The default amount of time used to estimate time from VSYNC event to when
+// visible light can be noticed by the user. This is used when a device
+// specific estimate was not provided using --estimated-presentation-delay.
+const int kDefaultPresentationDelayMs = 18;
 
 }  // namespace
 
 HighlighterController::HighlighterController() : observer_(nullptr) {
   Shell::Get()->AddPreTargetHandler(this);
+
+  // The code below is copied from laser_pointer_controller.cc
+  // TODO(kaznacheev) extract common base class (crbug.com/750235)
+  int64_t presentation_delay_ms;
+  // Use device specific presentation delay if specified.
+  std::string presentation_delay_string =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kAshEstimatedPresentationDelay);
+  if (!base::StringToInt64(presentation_delay_string, &presentation_delay_ms))
+    presentation_delay_ms = kDefaultPresentationDelayMs;
+  presentation_delay_ =
+      base::TimeDelta::FromMilliseconds(presentation_delay_ms);
 }
 
 HighlighterController::~HighlighterController() {
@@ -48,6 +66,7 @@ void HighlighterController::EnableHighlighter(
 
 void HighlighterController::DisableHighlighter() {
   observer_ = nullptr;
+  DestroyHighlighterView();
 }
 
 void HighlighterController::OnTouchEvent(ui::TouchEvent* event) {
@@ -82,14 +101,15 @@ void HighlighterController::OnTouchEvent(ui::TouchEvent* event) {
     UpdateHighlighterView(current_window, event->root_location_f(), event);
 
   if (event->type() == ui::ET_TOUCH_RELEASED && highlighter_view_) {
-    const gfx::RectF box = GetBoundingBox(highlighter_view_->points());
-    const gfx::PointF pivot(box.CenterPoint());
+    const FastInkPoints& points = highlighter_view_->points();
+    const gfx::Rect box = points.GetBoundingBox();
+    const gfx::Point pivot(box.CenterPoint());
 
     const float scale_factor = current_window->layer()->device_scale_factor();
 
     if (DetectHorizontalStroke(box, HighlighterView::kPenTipSize)) {
-      const gfx::Rect box_adjusted = gfx::ToEnclosingRect(
-          AdjustHorizontalStroke(box, HighlighterView::kPenTipSize));
+      const gfx::Rect box_adjusted =
+          AdjustHorizontalStroke(box, HighlighterView::kPenTipSize);
       observer_->HandleSelection(
           gfx::ScaleToEnclosingRect(box_adjusted, scale_factor));
       highlighter_view_->Animate(pivot,
@@ -97,16 +117,13 @@ void HighlighterController::OnTouchEvent(ui::TouchEvent* event) {
 
       result_view_ = base::MakeUnique<HighlighterResultView>(current_window);
       result_view_->AnimateInPlace(box_adjusted, HighlighterView::kPenColor);
-    } else if (DetectClosedShape(box, highlighter_view_->points())) {
-      const gfx::Rect box_enclosing = gfx::ToEnclosingRect(box);
-
-      observer_->HandleSelection(
-          gfx::ScaleToEnclosingRect(box_enclosing, scale_factor));
+    } else if (DetectClosedShape(box, points)) {
+      observer_->HandleSelection(gfx::ScaleToEnclosingRect(box, scale_factor));
       highlighter_view_->Animate(pivot,
                                  HighlighterView::AnimationMode::kInflate);
 
       result_view_ = base::MakeUnique<HighlighterResultView>(current_window);
-      result_view_->AnimateDeflate(box_enclosing);
+      result_view_->AnimateDeflate(box);
     } else {
       highlighter_view_->Animate(pivot,
                                  HighlighterView::AnimationMode::kDeflate);
@@ -125,7 +142,8 @@ void HighlighterController::SwitchTargetRootWindowIfNeeded(
   }
 
   if (root_window && observer_ && !highlighter_view_) {
-    highlighter_view_ = base::MakeUnique<HighlighterView>(root_window);
+    highlighter_view_ =
+        base::MakeUnique<HighlighterView>(presentation_delay_, root_window);
   }
 }
 
@@ -134,7 +152,8 @@ void HighlighterController::UpdateHighlighterView(
     const gfx::PointF& event_location,
     ui::Event* event) {
   SwitchTargetRootWindowIfNeeded(current_window);
-  highlighter_view_->AddNewPoint(event_location);
+  DCHECK(highlighter_view_);
+  highlighter_view_->AddNewPoint(event_location, event->time_stamp());
   event->StopPropagation();
 }
 

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/highlighter/highlighter_gesture_util.h"
+#include "ash/fast_ink/fast_ink_points.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -24,17 +25,17 @@ float LinearInterpolate(float from, float to, int position, int range) {
 
 class HighlighterGestureUtilTest : public AshTestBase {
  public:
-  HighlighterGestureUtilTest() {}
+  HighlighterGestureUtilTest() : points_(base::TimeDelta()) {}
 
   ~HighlighterGestureUtilTest() override {}
 
  protected:
-  std::vector<gfx::PointF> points_;
+  FastInkPoints points_;
 
   void MoveTo(float x, float y) { AddPoint(x, y); }
 
   void LineTo(float x, float y) {
-    const gfx::PointF origin = points_.back();
+    const gfx::PointF origin = points_.GetNewest().location;
     for (int i = 1; i <= kPointsPerLine; i++) {
       AddPoint(LinearInterpolate(origin.x(), x, i, kPointsPerLine),
                LinearInterpolate(origin.y(), y, i, kPointsPerLine));
@@ -63,17 +64,17 @@ class HighlighterGestureUtilTest : public AshTestBase {
   }
 
   bool DetectHorizontalStroke() {
-    gfx::RectF box = GetBoundingBox(points_);
-    return ash::DetectHorizontalStroke(box, kPenTipSize);
+    return ash::DetectHorizontalStroke(points_.GetBoundingBox(), kPenTipSize);
   }
 
   bool DetectClosedShape() {
-    gfx::RectF box = GetBoundingBox(points_);
-    return ash::DetectClosedShape(box, points_);
+    return ash::DetectClosedShape(points_.GetBoundingBox(), points_);
   }
 
  private:
-  void AddPoint(float x, float y) { points_.push_back(gfx::PointF(x, y)); }
+  void AddPoint(float x, float y) {
+    points_.AddPoint(gfx::PointF(x, y), base::TimeTicks());
+  }
 
   DISALLOW_COPY_AND_ASSIGN(HighlighterGestureUtilTest);
 };
