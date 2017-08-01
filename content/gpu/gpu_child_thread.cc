@@ -29,7 +29,7 @@
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ui/gpu/interfaces/gpu_service.mojom.h"
+#include "services/viz/gl/privileged/interfaces/gpu_service.mojom.h"
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
@@ -169,10 +169,11 @@ GpuChildThread::GpuChildThread(
     : ChildThreadImpl(options),
       dead_on_arrival_(dead_on_arrival),
       in_browser_process_(in_browser_process),
-      gpu_service_(new ui::GpuService(gpu_info,
-                                      std::move(gpu_watchdog_thread),
-                                      ChildProcess::current()->io_task_runner(),
-                                      gpu_feature_info)),
+      gpu_service_(
+          new viz::GpuServiceImpl(gpu_info,
+                                  std::move(gpu_watchdog_thread),
+                                  ChildProcess::current()->io_task_runner(),
+                                  gpu_feature_info)),
       gpu_main_binding_(this),
       weak_factory_(this) {
   if (in_browser_process_) {
@@ -240,7 +241,7 @@ void GpuChildThread::OnAssociatedInterfaceRequest(
 }
 
 void GpuChildThread::CreateGpuService(
-    ui::mojom::GpuServiceRequest request,
+    viz::mojom::GpuServiceRequest request,
     ui::mojom::GpuHostPtr gpu_host,
     const gpu::GpuPreferences& gpu_preferences,
     mojo::ScopedSharedBufferHandle activity_flags) {

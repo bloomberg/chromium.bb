@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/viz/service/gl/gpu_service_impl.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/associated_interface_registry_impl.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
@@ -32,7 +33,6 @@
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
-#include "services/ui/gpu/gpu_service.h"
 #include "services/ui/gpu/interfaces/gpu_main.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -89,7 +89,7 @@ class GpuChildThread : public ChildThreadImpl, public ui::mojom::GpuMain {
       mojo::ScopedInterfaceEndpointHandle handle) override;
 
   // ui::mojom::GpuMain:
-  void CreateGpuService(ui::mojom::GpuServiceRequest request,
+  void CreateGpuService(viz::mojom::GpuServiceRequest request,
                         ui::mojom::GpuHostPtr gpu_host,
                         const gpu::GpuPreferences& preferences,
                         mojo::ScopedSharedBufferHandle activity_flags) override;
@@ -128,7 +128,7 @@ class GpuChildThread : public ChildThreadImpl, public ui::mojom::GpuMain {
       service_factory_bindings_;
 
   AssociatedInterfaceRegistryImpl associated_interfaces_;
-  std::unique_ptr<ui::GpuService> gpu_service_;
+  std::unique_ptr<viz::GpuServiceImpl> gpu_service_;
   mojo::AssociatedBinding<ui::mojom::GpuMain> gpu_main_binding_;
 
   // Holds a closure that releases pending interface requests on the IO thread.

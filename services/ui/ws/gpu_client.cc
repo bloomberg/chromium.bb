@@ -5,7 +5,7 @@
 #include "services/ui/ws/gpu_client.h"
 
 #include "components/viz/host/server_gpu_memory_buffer_manager.h"
-#include "services/ui/gpu/interfaces/gpu_service.mojom.h"
+#include "services/viz/gl/privileged/interfaces/gpu_service.mojom.h"
 
 namespace {
 
@@ -23,7 +23,7 @@ GpuClient::GpuClient(
     int client_id,
     gpu::GPUInfo* gpu_info,
     viz::ServerGpuMemoryBufferManager* gpu_memory_buffer_manager,
-    mojom::GpuService* gpu_service)
+    viz::mojom::GpuService* gpu_service)
     : client_id_(client_id),
       gpu_info_(gpu_info),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),

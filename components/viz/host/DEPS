@@ -8,8 +8,8 @@ include_rules = [
   "+gpu/ipc/common",
   "+gpu/ipc/host",
   "+mojo/public/cpp/bindings",
-  "+services/ui/gpu/interfaces",
   "+services/viz/compositing/privileged/interfaces",
+  "+services/viz/gl/privileged",
   "+services/viz/public/interfaces/compositing",
   "+ui/gfx",
 ]

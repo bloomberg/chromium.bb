@@ -9,10 +9,10 @@ if (is_component_build) {
 }
 target(link_target_type, "service") {
   visibility = [
-    "//media/*",
+    "//components/viz/service/*",
     "//content/gpu/*",
     "//content/public/gpu/*",
-    "//services/ui/gpu/*",
+    "//media/*",
   ]
 
   sources = [

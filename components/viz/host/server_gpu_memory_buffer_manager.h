@@ -16,13 +16,11 @@
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 
-namespace ui {
+namespace viz {
+
 namespace mojom {
 class GpuService;
 }
-}  // namespace ui
-
-namespace viz {
 
 // This GpuMemoryBufferManager implementation is for [de]allocating gpu memory
 // from the gpu process over the mojom.GpuService api.
@@ -32,8 +30,7 @@ class VIZ_HOST_EXPORT ServerGpuMemoryBufferManager
     : public gpu::GpuMemoryBufferManager,
       public base::trace_event::MemoryDumpProvider {
  public:
-  ServerGpuMemoryBufferManager(ui::mojom::GpuService* gpu_service,
-                               int client_id);
+  ServerGpuMemoryBufferManager(mojom::GpuService* gpu_service, int client_id);
   ~ServerGpuMemoryBufferManager() override;
 
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
@@ -72,7 +69,7 @@ class VIZ_HOST_EXPORT ServerGpuMemoryBufferManager
       base::OnceCallback<void(const gfx::GpuMemoryBufferHandle&)> callback,
       const gfx::GpuMemoryBufferHandle& handle);
 
-  ui::mojom::GpuService* gpu_service_;
+  mojom::GpuService* gpu_service_;
   const int client_id_;
   int next_gpu_memory_id_ = 1;
 
