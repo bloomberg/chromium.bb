@@ -13,6 +13,7 @@ vmpstr@chromium.org
 weiliangc@chromium.org
 
 # display_embedder / ozone
+reveman@chromium.org
 rjkroege@chromium.org
 sadrul@chromium.org
 
@@ -34,6 +35,10 @@ vollick@chromium.org
 # math / geometry
 flackr@chromium.org
 vollick@chromium.org
+
+# overlays
+dcastagna@chromium.org
+reveman@chromium.org
 
 # scheduling / begin frames
 brianderson@chromium.org
