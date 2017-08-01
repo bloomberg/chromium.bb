@@ -29,7 +29,6 @@
 #include "content/shell/browser/shell.h"
 #include "net/base/filename_util.h"
 #include "net/url_request/url_request_context.h"
-#include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -44,7 +43,6 @@
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-using blink::WebCString;
 using blink::WebData;
 using blink::WebDocument;
 using blink::WebElement;
@@ -85,13 +83,13 @@ class DomSerializerTests : public ContentBrowserTest,
   }
 
   // DomSerializerDelegate.
-  void DidSerializeDataForFrame(const WebCString& data,
+  void DidSerializeDataForFrame(const WebVector<char>& data,
                                 FrameSerializationStatus status) override {
     // Check finish status of current frame.
     ASSERT_FALSE(serialization_reported_end_of_data_);
 
     // Add data to corresponding frame's content.
-    serialized_contents_ += data;
+    serialized_contents_.append(data.Data(), data.size());
 
     // Current frame is completed saving, change the finish status.
     if (status == WebFrameSerializerClient::kCurrentFrameIsFinished)

@@ -38,10 +38,10 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCString.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
+#include "public/platform/WebVector.h"
 #include "public/web/WebFrameSerializerClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,9 +54,9 @@ class SimpleWebFrameSerializerClient final : public WebFrameSerializerClient {
   String ToString() { return builder_.ToString(); }
 
  private:
-  void DidSerializeDataForFrame(const WebCString& data,
+  void DidSerializeDataForFrame(const WebVector<char>& data,
                                 FrameSerializationStatus) final {
-    builder_.Append(data.Data(), data.length());
+    builder_.Append(data.Data(), data.size());
   }
 
   StringBuilder builder_;
