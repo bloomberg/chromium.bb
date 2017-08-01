@@ -1,3 +1,8 @@
+importScripts('/gen/layout_test_data/mojo/public/js/mojo_bindings.js');
+importScripts('/gen/url/mojo/origin.mojom.js');
+importScripts('/gen/third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.js');
+importScripts('../budget-service-mock.js');
+
 // Allows a document to exercise the Budget API within a service worker by sending commands.
 
 self.addEventListener('message', function(workerEvent) {
@@ -9,6 +14,30 @@ self.addEventListener('message', function(workerEvent) {
       return;
     var options = event.data.options || {};
     switch (event.data.command) {
+
+      case 'mockAddBudget':
+        budgetServiceMock.addBudget(event.data.time, event.data.budgetAt);
+        port.postMessage({
+          command: event.data.command,
+          success: true
+        });
+        break;
+
+      case 'mockSetCost':
+        budgetServiceMock.setCost(event.data.operation, event.data.cost);
+        port.postMessage({
+          command: event.data.command,
+          success: true
+        });
+        break;
+
+      case 'mockSetReserveSuccess':
+        budgetServiceMock.setReserveSuccess(event.data.success);
+        port.postMessage({
+          command: event.data.command,
+          success: true
+        });
+        break;
 
       case 'getCost':
         navigator.budget.getCost('silent-push').then(function(cost) {

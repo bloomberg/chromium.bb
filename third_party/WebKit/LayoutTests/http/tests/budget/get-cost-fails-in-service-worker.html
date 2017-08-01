@@ -6,33 +6,22 @@
     <script src="../resources/testharnessreport.js"></script>
     <script src="../serviceworker/resources/test-helpers.js"></script>
     <script src="../notifications/resources/test-helpers.js"></script>
-    <script src="/js-test-resources/mojo-helpers.js"></script>
-    <script src="budget-service-mock.js"></script>
   </head>
   <body>
     <script>
-      promise_test(function(test) {
+      promise_test(async function(test) {
         const script = 'resources/instrumentation-service-worker.js';
         const scope = 'resources/scope/' + location.pathname;
-        let port;
 
-        return budgetServiceMock.then(mock => {
-          return getActiveServiceWorkerWithMessagePort(test, script, scope);
-        }).then(function(workerInfo) {
-          port = workerInfo.port;
+        let workerInfo =
+            await getActiveServiceWorkerWithMessagePort(test, script, scope);
+        let port = workerInfo.port;
 
-          port.addEventListener('message', function(event) {
-            if (typeof event.data != 'object' || !event.data.command)
-              assert_unreached('Invalid message from the service worker');
-
-            assert_equals(event.data.command, 'getCostInvalidType');
-            assert_false(event.data.success,
-                'getCost should fail with invalid arguments.');
-            assert_equals(event.data.errorMessage, "Failed to execute 'getCost' on 'BudgetService': The provided value 'frobinator' is not a valid enum value of type OperationType.");
-          });
-
-          return sendCommand(port, { command: 'getCostInvalidType' });
-        });
+        let data = await sendCommand(port, { command: 'getCostInvalidType' });
+        assert_equals(event.data.command, 'getCostInvalidType');
+        assert_false(event.data.success,
+            'getCost should fail with invalid arguments.');
+        assert_equals(event.data.errorMessage, "Failed to execute 'getCost' on 'BudgetService': The provided value 'frobinator' is not a valid enum value of type OperationType.");
       }, 'getCost with invalid arugment should fail from Service Worker');
     </script>
   </body>

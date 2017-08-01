@@ -6,35 +6,34 @@
     <script src="../resources/testharnessreport.js"></script>
     <script src="../serviceworker/resources/test-helpers.js"></script>
     <script src="../notifications/resources/test-helpers.js"></script>
-    <script src="/js-test-resources/mojo-helpers.js"></script>
-    <script src="budget-service-mock.js"></script>
   </head>
   <body>
     <script>
-      promise_test(function(test) {
+      const TEST_BUDGET_AT = 2;
+      const TEST_BUDGET_TIME = new Date().getTime();
+
+      promise_test(async function(test) {
         const script = 'resources/instrumentation-service-worker.js';
         const scope = 'resources/scope/' + location.pathname;
-        let port;
 
-        return budgetServiceMock.then(mock => {
-          mock.addBudget(TEST_BUDGET_TIME, TEST_BUDGET_AT);
-          return getActiveServiceWorkerWithMessagePort(test, script, scope);
-        }).then(function(workerInfo) {
-          port = workerInfo.port;
+        let workerInfo =
+            await getActiveServiceWorkerWithMessagePort(test, script, scope);
+        let port = workerInfo.port;
 
-          port.addEventListener('message', function(event) {
-            if (typeof event.data != 'object' || !event.data.command)
-              assert_unreached('Invalid message from the service worker');
+        let data = await sendCommand(port, {
+            command: 'mockAddBudget',
+            budgetAt: TEST_BUDGET_AT,
+            time: TEST_BUDGET_TIME
+        });
+        assert_equals(data.command, 'mockAddBudget');
+        assert_true(data.success);
 
-            assert_equals(event.data.command, 'getBudget');
-            assert_true(event.data.success,
-                'getBudget should succeed. Error message: ' + event.data.errorMessage);
-            assert_equals(event.data.budgetAt, TEST_BUDGET_AT);
-            assert_equals(event.data.time, TEST_BUDGET_TIME);
-          });
-
-          return sendCommand(port, { command: 'getBudget' });
-      });
+        data = await sendCommand(port, { command: 'getBudget' });
+        assert_equals(data.command, 'getBudget');
+        assert_true(data.success,
+            'getBudget should succeed. Error message: ' + data.errorMessage);
+        assert_equals(data.budgetAt, TEST_BUDGET_AT);
+        assert_equals(data.time, TEST_BUDGET_TIME);
       }, 'getBudget should succeed from Service Worker');
     </script>
   </body>
