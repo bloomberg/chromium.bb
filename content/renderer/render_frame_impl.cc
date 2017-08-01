@@ -250,7 +250,7 @@ using blink::WebContentDecryptionModule;
 using blink::WebContextMenuData;
 using blink::WebCString;
 using blink::WebData;
-using blink::WebDataSource;
+using blink::WebDocumentLoader;
 using blink::WebDocument;
 using blink::WebDOMEvent;
 using blink::WebDOMMessageEvent;
@@ -331,9 +331,10 @@ WebURLResponseExtraDataImpl* GetExtraDataFromResponse(
   return static_cast<WebURLResponseExtraDataImpl*>(response.GetExtraData());
 }
 
-void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
+void GetRedirectChain(WebDocumentLoader* document_loader,
+                      std::vector<GURL>* result) {
   WebVector<WebURL> urls;
-  ds->RedirectChain(urls);
+  document_loader->RedirectChain(urls);
   result->reserve(urls.size());
   for (size_t i = 0; i < urls.size(); ++i) {
     result->push_back(urls[i]);
@@ -342,8 +343,9 @@ void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
 
 // Gets URL that should override the default getter for this data source
 // (if any), storing it in |output|. Returns true if there is an override URL.
-bool MaybeGetOverriddenURL(WebDataSource* ds, GURL* output) {
-  DocumentState* document_state = DocumentState::FromDataSource(ds);
+bool MaybeGetOverriddenURL(WebDocumentLoader* document_loader, GURL* output) {
+  DocumentState* document_state =
+      DocumentState::FromDocumentLoader(document_loader);
 
   // If load was from a data URL, then the saved data URL, not the history
   // URL, should be the URL of the data source.
@@ -352,12 +354,12 @@ bool MaybeGetOverriddenURL(WebDataSource* ds, GURL* output) {
     return true;
   }
 
-  // WebDataSource has unreachable URL means that the frame is loaded through
-  // blink::WebFrame::loadData(), and the base URL will be in the redirect
-  // chain. However, we never visited the baseURL. So in this case, we should
-  // use the unreachable URL as the original URL.
-  if (ds->HasUnreachableURL()) {
-    *output = ds->UnreachableURL();
+  // WebDocumentLoader has unreachable URL means that the frame is loaded
+  // through blink::WebFrame::loadData(), and the base URL will be in the
+  // redirect chain. However, we never visited the baseURL. So in this case, we
+  // should use the unreachable URL as the original URL.
+  if (document_loader->HasUnreachableURL()) {
+    *output = document_loader->UnreachableURL();
     return true;
   }
 
@@ -365,19 +367,20 @@ bool MaybeGetOverriddenURL(WebDataSource* ds, GURL* output) {
 }
 
 // Returns the original request url. If there is no redirect, the original
-// url is the same as ds->getRequest()->url(). If the WebDataSource belongs to a
-// frame was loaded by loadData, the original url will be ds->unreachableURL()
-GURL GetOriginalRequestURL(WebDataSource* ds) {
+// url is the same as ds->getRequest()->url(). If the WebDocumentLoader belongs
+// to a frame was loaded by loadData, the original url will be
+// ds->unreachableURL()
+GURL GetOriginalRequestURL(WebDocumentLoader* document_loader) {
   GURL overriden_url;
-  if (MaybeGetOverriddenURL(ds, &overriden_url))
+  if (MaybeGetOverriddenURL(document_loader, &overriden_url))
     return overriden_url;
 
   std::vector<GURL> redirects;
-  GetRedirectChain(ds, &redirects);
+  GetRedirectChain(document_loader, &redirects);
   if (!redirects.empty())
     return redirects.at(0);
 
-  return ds->OriginalRequest().Url();
+  return document_loader->OriginalRequest().Url();
 }
 
 bool IsBrowserInitiated(NavigationParams* pending) {
@@ -2650,7 +2653,8 @@ void RenderFrameImpl::LoadErrorPage(int reason) {
 
   std::string error_html;
   GetContentClient()->renderer()->GetNavigationErrorStrings(
-      this, frame_->DataSource()->GetRequest(), error, &error_html, nullptr);
+      this, frame_->GetDocumentLoader()->GetRequest(), error, &error_html,
+      nullptr);
 
   frame_->LoadData(error_html, WebString::FromUTF8("text/html"),
                    WebString::FromUTF8("UTF-8"), GURL(kUnreachableWebDataURL),
@@ -2732,7 +2736,7 @@ void RenderFrameImpl::PluginDidStopLoading() {
 
 bool RenderFrameImpl::IsFTPDirectoryListing() {
   WebURLResponseExtraDataImpl* extra_data =
-      GetExtraDataFromResponse(frame_->DataSource()->GetResponse());
+      GetExtraDataFromResponse(frame_->GetDocumentLoader()->GetResponse());
   return extra_data ? extra_data->is_ftp_directory_listing() : false;
 }
 
@@ -2948,9 +2952,10 @@ RenderFrameImpl::CreateApplicationCacheHost(
     return nullptr;
 
   DocumentState* document_state =
-      frame_->ProvisionalDataSource()
-          ? DocumentState::FromDataSource(frame_->ProvisionalDataSource())
-          : DocumentState::FromDataSource(frame_->DataSource());
+      frame_->GetProvisionalDocumentLoader()
+          ? DocumentState::FromDocumentLoader(
+                frame_->GetProvisionalDocumentLoader())
+          : DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
 
   NavigationStateImpl* navigation_state =
       static_cast<NavigationStateImpl*>(document_state->navigation_state());
@@ -2986,7 +2991,7 @@ RenderFrameImpl::CreateWorkerFetchContext() {
   worker_fetch_context->set_is_secure_context(
       frame_->GetDocument().IsSecureContext());
   blink::WebServiceWorkerNetworkProvider* web_provider =
-      frame_->DataSource()->GetServiceWorkerNetworkProvider();
+      frame_->GetDocumentLoader()->GetServiceWorkerNetworkProvider();
   if (web_provider) {
     ServiceWorkerNetworkProvider* provider =
         ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
@@ -3038,12 +3043,12 @@ blink::BlameContext* RenderFrameImpl::GetFrameBlameContext() {
 std::unique_ptr<blink::WebServiceWorkerProvider>
 RenderFrameImpl::CreateServiceWorkerProvider() {
   // At this point we should have non-null data source.
-  DCHECK(frame_->DataSource());
+  DCHECK(frame_->GetDocumentLoader());
   if (!ChildThreadImpl::current())
     return nullptr;  // May be null in some tests.
   ServiceWorkerNetworkProvider* provider =
       ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
-          frame_->DataSource()->GetServiceWorkerNetworkProvider());
+          frame_->GetDocumentLoader()->GetServiceWorkerNetworkProvider());
   if (!provider->context()) {
     // The context can be null when the frame is sandboxed.
     return nullptr;
@@ -3067,7 +3072,7 @@ void RenderFrameImpl::DidAccessInitialDocument() {
   // is now possible. (If the request has committed, the browser already knows.)
   if (!has_accessed_initial_document_) {
     DocumentState* document_state =
-        DocumentState::FromDataSource(frame_->DataSource());
+        DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
     NavigationStateImpl* navigation_state =
         static_cast<NavigationStateImpl*>(document_state->navigation_state());
 
@@ -3383,7 +3388,7 @@ void RenderFrameImpl::WillSendSubmitEvent(const blink::WebFormElement& form) {
 
 void RenderFrameImpl::WillSubmitForm(const blink::WebFormElement& form) {
   DocumentState* document_state =
-      DocumentState::FromDataSource(frame_->ProvisionalDataSource());
+      DocumentState::FromDocumentLoader(frame_->GetProvisionalDocumentLoader());
   NavigationStateImpl* navigation_state =
       static_cast<NavigationStateImpl*>(document_state->navigation_state());
   InternalDocumentStateData* internal_data =
@@ -3404,8 +3409,9 @@ void RenderFrameImpl::WillSubmitForm(const blink::WebFormElement& form) {
     observer.WillSubmitForm(form);
 }
 
-void RenderFrameImpl::DidCreateDataSource(blink::WebLocalFrame* frame,
-                                          blink::WebDataSource* datasource) {
+void RenderFrameImpl::DidCreateDocumentLoader(
+    blink::WebLocalFrame* frame,
+    blink::WebDocumentLoader* document_loader) {
   DCHECK(!frame_ || frame_ == frame);
 
   bool content_initiated = !pending_navigation_params_.get();
@@ -3414,14 +3420,15 @@ void RenderFrameImpl::DidCreateDataSource(blink::WebLocalFrame* frame,
   if (pending_navigation_params_.get() && !IsBrowserSideNavigationEnabled()) {
     for (const auto& i :
          pending_navigation_params_->request_params.redirects) {
-      datasource->AppendRedirect(i);
+      document_loader->AppendRedirect(i);
     }
   }
 
-  DocumentState* document_state = DocumentState::FromDataSource(datasource);
+  DocumentState* document_state =
+      DocumentState::FromDocumentLoader(document_loader);
   if (!document_state) {
     document_state = new DocumentState;
-    datasource->SetExtraData(document_state);
+    document_loader->SetExtraData(document_state);
     if (!content_initiated)
       PopulateDocumentStateFromPending(document_state);
   }
@@ -3432,9 +3439,9 @@ void RenderFrameImpl::DidCreateDataSource(blink::WebLocalFrame* frame,
   blink::WebView* webview = render_view_->webview();
   if (content_initiated && webview && webview->MainFrame() &&
       webview->MainFrame()->IsWebLocalFrame() &&
-      webview->MainFrame()->ToWebLocalFrame()->DataSource()) {
-    DocumentState* old_document_state = DocumentState::FromDataSource(
-        webview->MainFrame()->ToWebLocalFrame()->DataSource());
+      webview->MainFrame()->ToWebLocalFrame()->GetDocumentLoader()) {
+    DocumentState* old_document_state = DocumentState::FromDocumentLoader(
+        webview->MainFrame()->ToWebLocalFrame()->GetDocumentLoader());
     if (old_document_state) {
       InternalDocumentStateData* internal_data =
           InternalDocumentStateData::FromDocumentState(document_state);
@@ -3445,7 +3452,7 @@ void RenderFrameImpl::DidCreateDataSource(blink::WebLocalFrame* frame,
     }
   }
 
-  // The rest of RenderView assumes that a WebDataSource will always have a
+  // The rest of RenderView assumes that a WebDocumentLoader will always have a
   // non-null NavigationState.
   UpdateNavigationState(document_state, false /* was_within_same_page */,
                         content_initiated);
@@ -3454,11 +3461,11 @@ void RenderFrameImpl::DidCreateDataSource(blink::WebLocalFrame* frame,
       document_state->navigation_state());
 
   // Set the navigation start time in blink.
-  datasource->SetNavigationStartTime(
+  document_loader->SetNavigationStartTime(
       ConvertToBlinkTime(navigation_state->common_params().navigation_start));
 
-  // PlzNavigate: if an actual navigation took place, inform the datasource of
-  // what happened in the browser.
+  // PlzNavigate: if an actual navigation took place, inform the document
+  // loader of what happened in the browser.
   if (IsBrowserSideNavigationEnabled() &&
       !navigation_state->request_params()
            .navigation_timing.fetch_start.is_null()) {
@@ -3471,7 +3478,7 @@ void RenderFrameImpl::DidCreateDataSource(blink::WebLocalFrame* frame,
     double fetch_start = ConvertToBlinkTime(
         navigation_state->request_params().navigation_timing.fetch_start);
 
-    datasource->UpdateNavigation(
+    document_loader->UpdateNavigation(
         redirect_start, redirect_end, fetch_start,
         !navigation_state->request_params().redirects.empty());
   }
@@ -3487,31 +3494,32 @@ void RenderFrameImpl::DidCreateDataSource(blink::WebLocalFrame* frame,
         navigation_state->common_params().source_location->line_number;
     source_location.column_number =
         navigation_state->common_params().source_location->column_number;
-    datasource->SetSourceLocation(source_location);
+    document_loader->SetSourceLocation(source_location);
   }
 
   // Create the serviceworker's per-document network observing object if it
   // does not exist (When navigation happens within a page, the provider already
   // exists).
-  if (datasource->GetServiceWorkerNetworkProvider())
+  if (document_loader->GetServiceWorkerNetworkProvider())
     return;
 
-  datasource->SetServiceWorkerNetworkProvider(
+  document_loader->SetServiceWorkerNetworkProvider(
       ServiceWorkerNetworkProvider::CreateForNavigation(
           routing_id_, navigation_state->request_params(), frame,
           content_initiated));
 }
 
-void RenderFrameImpl::DidStartProvisionalLoad(blink::WebDataSource* data_source,
-                                              blink::WebURLRequest& request) {
+void RenderFrameImpl::DidStartProvisionalLoad(
+    blink::WebDocumentLoader* document_loader,
+    blink::WebURLRequest& request) {
   // In fast/loader/stop-provisional-loads.html, we abort the load before this
   // callback is invoked.
-  if (!data_source)
+  if (!document_loader)
     return;
 
   TRACE_EVENT2("navigation,benchmark,rail",
                "RenderFrameImpl::didStartProvisionalLoad", "id", routing_id_,
-               "url", data_source->GetRequest().Url().GetString().Utf8());
+               "url", document_loader->GetRequest().Url().GetString().Utf8());
 
   // PlzNavigate:
   // If we have a pending navigation to be sent to the browser send it here.
@@ -3536,7 +3544,8 @@ void RenderFrameImpl::DidStartProvisionalLoad(blink::WebDataSource* data_source,
     BeginNavigation(info);
   }
 
-  DocumentState* document_state = DocumentState::FromDataSource(data_source);
+  DocumentState* document_state =
+      DocumentState::FromDocumentLoader(document_loader);
   NavigationStateImpl* navigation_state = static_cast<NavigationStateImpl*>(
       document_state->navigation_state());
   bool is_top_most = !frame_->Parent();
@@ -3545,7 +3554,7 @@ void RenderFrameImpl::DidStartProvisionalLoad(blink::WebDataSource* data_source,
         WebUserGestureIndicator::IsProcessingUserGesture()
             ? NavigationGestureUser
             : NavigationGestureAuto);
-  } else if (data_source->ReplacesCurrentHistoryItem()) {
+  } else if (document_loader->ReplacesCurrentHistoryItem()) {
     // Subframe navigations that don't add session history items must be
     // marked with AUTO_SUBFRAME. See also didFailProvisionalLoad for how we
     // handle loading of error pages.
@@ -3557,13 +3566,13 @@ void RenderFrameImpl::DidStartProvisionalLoad(blink::WebDataSource* data_source,
   DCHECK(!navigation_start.is_null());
 
   for (auto& observer : observers_)
-    observer.DidStartProvisionalLoad(data_source);
+    observer.DidStartProvisionalLoad(document_loader);
 
   std::vector<GURL> redirect_chain;
-  GetRedirectChain(data_source, &redirect_chain);
+  GetRedirectChain(document_loader, &redirect_chain);
 
   Send(new FrameHostMsg_DidStartProvisionalLoad(
-      routing_id_, data_source->GetRequest().Url(), redirect_chain,
+      routing_id_, document_loader->GetRequest().Url(), redirect_chain,
       navigation_start));
 }
 
@@ -3586,11 +3595,11 @@ void RenderFrameImpl::DidFailProvisionalLoad(
   for (auto& observer : observers_)
     observer.DidFailProvisionalLoad(error);
 
-  WebDataSource* ds = frame_->ProvisionalDataSource();
-  if (!ds)
+  WebDocumentLoader* document_loader = frame_->GetProvisionalDocumentLoader();
+  if (!document_loader)
     return;
 
-  const WebURLRequest& failed_request = ds->GetRequest();
+  const WebURLRequest& failed_request = document_loader->GetRequest();
 
   // Notify the browser that we failed a provisional load with an error.
   SendFailedProvisionalLoad(failed_request, error, frame_);
@@ -3601,7 +3610,8 @@ void RenderFrameImpl::DidFailProvisionalLoad(
   // Make sure we never show errors in view source mode.
   frame_->EnableViewSourceMode(false);
 
-  DocumentState* document_state = DocumentState::FromDataSource(ds);
+  DocumentState* document_state =
+      DocumentState::FromDocumentLoader(document_loader);
   NavigationStateImpl* navigation_state =
       static_cast<NavigationStateImpl*>(document_state->navigation_state());
 
@@ -3669,10 +3679,11 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   }
 
   DocumentState* document_state =
-      DocumentState::FromDataSource(frame_->DataSource());
+      DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
   NavigationStateImpl* navigation_state =
       static_cast<NavigationStateImpl*>(document_state->navigation_state());
-  const WebURLResponse& web_url_response = frame_->DataSource()->GetResponse();
+  const WebURLResponse& web_url_response =
+      frame_->GetDocumentLoader()->GetResponse();
   WebURLResponseExtraDataImpl* extra_data =
       GetExtraDataFromResponse(web_url_response);
   // Only update the PreviewsState and effective connection type states for new
@@ -3939,7 +3950,8 @@ void RenderFrameImpl::RunScriptsAtDocumentReady(bool document_is_empty) {
 
   // Display error page instead of a blank page, if appropriate.
   InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDataSource(frame_->DataSource());
+      InternalDocumentStateData::FromDocumentLoader(
+          frame_->GetDocumentLoader());
   int http_status_code = internal_data->http_status_code();
   if (GetContentClient()->renderer()->HasErrorPage(http_status_code)) {
     WebURLError error;
@@ -3947,8 +3959,8 @@ void RenderFrameImpl::RunScriptsAtDocumentReady(bool document_is_empty) {
     error.domain = WebURLError::Domain::kHttp;
     error.reason = http_status_code;
     // This call may run scripts, e.g. via the beforeunload event.
-    LoadNavigationErrorPage(frame_->DataSource()->GetRequest(), error, true,
-                            nullptr);
+    LoadNavigationErrorPage(frame_->GetDocumentLoader()->GetRequest(), error,
+                            true, nullptr);
   }
   // Do not use |this| or |frame_| here without checking |weak_self|.
 }
@@ -3962,11 +3974,13 @@ void RenderFrameImpl::DidHandleOnloadEvents() {
   if (!frame_->Parent()) {
     FrameMsg_UILoadMetricsReportType::Value report_type =
         static_cast<FrameMsg_UILoadMetricsReportType::Value>(
-            frame_->DataSource()->GetRequest().InputPerfMetricReportPolicy());
+            frame_->GetDocumentLoader()
+                ->GetRequest()
+                .InputPerfMetricReportPolicy());
     base::TimeTicks ui_timestamp =
         base::TimeTicks() +
         base::TimeDelta::FromSecondsD(
-            frame_->DataSource()->GetRequest().UiStartTime());
+            frame_->GetDocumentLoader()->GetRequest().UiStartTime());
 
     Send(new FrameHostMsg_DocumentOnLoadCompleted(
         routing_id_, report_type, ui_timestamp));
@@ -3978,10 +3992,10 @@ void RenderFrameImpl::DidFailLoad(const blink::WebURLError& error,
   TRACE_EVENT1("navigation,rail", "RenderFrameImpl::didFailLoad",
                "id", routing_id_);
   // TODO(nasko): Move implementation here. No state needed.
-  WebDataSource* ds = frame_->DataSource();
-  DCHECK(ds);
+  WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
+  DCHECK(document_loader);
 
-  const WebURLRequest& failed_request = ds->GetRequest();
+  const WebURLRequest& failed_request = document_loader->GetRequest();
   base::string16 error_description;
   GetContentClient()->renderer()->GetNavigationErrorStrings(
       this,
@@ -4004,8 +4018,9 @@ void RenderFrameImpl::DidFinishLoad() {
   for (auto& observer : observers_)
     observer.DidFinishLoad();
 
-  WebDataSource* ds = frame_->DataSource();
-  Send(new FrameHostMsg_DidFinishLoad(routing_id_, ds->GetRequest().Url()));
+  WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
+  Send(new FrameHostMsg_DidFinishLoad(routing_id_,
+                                      document_loader->GetRequest().Url()));
 
   ReportPeakMemoryStats();
   if (RenderThreadImpl::current()) {
@@ -4079,7 +4094,7 @@ void RenderFrameImpl::DidNavigateWithinPage(
   TRACE_EVENT1("navigation,rail", "RenderFrameImpl::didNavigateWithinPage",
                "id", routing_id_);
   DocumentState* document_state =
-      DocumentState::FromDataSource(frame_->DataSource());
+      DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
   UpdateNavigationState(document_state, true /* was_within_same_page */,
                         content_initiated);
   static_cast<NavigationStateImpl*>(document_state->navigation_state())
@@ -4290,18 +4305,22 @@ void RenderFrameImpl::SaveImageFromDataURL(const blink::WebString& data_url) {
 }
 
 void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
-  WebDataSource* provisional_data_source = frame_->ProvisionalDataSource();
-  WebDataSource* data_source =
-      provisional_data_source ? provisional_data_source : frame_->DataSource();
+  WebDocumentLoader* provisional_document_loader =
+      frame_->GetProvisionalDocumentLoader();
+  WebDocumentLoader* document_loader = provisional_document_loader
+                                           ? provisional_document_loader
+                                           : frame_->GetDocumentLoader();
 
-  DocumentState* document_state = DocumentState::FromDataSource(data_source);
+  DocumentState* document_state =
+      DocumentState::FromDocumentLoader(document_loader);
   DCHECK(document_state);
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state);
   NavigationStateImpl* navigation_state =
       static_cast<NavigationStateImpl*>(document_state->navigation_state());
   ui::PageTransition transition_type = navigation_state->GetTransitionType();
-  if (provisional_data_source && provisional_data_source->IsClientRedirect()) {
+  if (provisional_document_loader &&
+      provisional_document_loader->IsClientRedirect()) {
     transition_type = ui::PageTransitionFromInt(
         transition_type | ui::PAGE_TRANSITION_CLIENT_REDIRECT);
   }
@@ -4354,7 +4373,8 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   // Attach |should_replace_current_entry| state to requests so that, should
   // this navigation later require a request transfer, all state is preserved
   // when it is re-created in the new process.
-  bool should_replace_current_entry = data_source->ReplacesCurrentHistoryItem();
+  bool should_replace_current_entry =
+      document_loader->ReplacesCurrentHistoryItem();
 
   WebFrame* parent = frame_->Parent();
   int parent_routing_id =
@@ -4470,7 +4490,7 @@ void RenderFrameImpl::DidReceiveResponse(
   // of the top-most frame.  If we have a provisional data source, then we
   // can't have any sub-resources yet, so we know that this response must
   // correspond to a frame load.
-  if (!frame_->ProvisionalDataSource() || frame_->Parent())
+  if (!frame_->GetProvisionalDocumentLoader() || frame_->Parent())
     return;
 
   // If we are in view source mode, then just let the user see the source of
@@ -4479,7 +4499,7 @@ void RenderFrameImpl::DidReceiveResponse(
     return;
 
   DocumentState* document_state =
-      DocumentState::FromDataSource(frame_->ProvisionalDataSource());
+      DocumentState::FromDocumentLoader(frame_->GetProvisionalDocumentLoader());
   int http_status_code = response.HttpStatusCode();
 
   // Record page load flags.
@@ -4663,9 +4683,10 @@ blink::WebString RenderFrameImpl::UserAgentOverride() {
     return blink::WebString();
   }
 
-  // TODO(nasko): When the top-level frame is remote, there is no WebDataSource
-  // associated with it, so the checks below are not valid. Temporarily
-  // return early and fix properly as part of https://crbug.com/426555.
+  // TODO(nasko): When the top-level frame is remote, there is no
+  // WebDocumentLoader associated with it, so the checks below are not valid.
+  // Temporarily return early and fix properly as part of
+  // https://crbug.com/426555.
   if (render_view_->webview()->MainFrame()->IsWebRemoteFrame())
     return blink::WebString();
   WebLocalFrame* main_frame =
@@ -4673,14 +4694,16 @@ blink::WebString RenderFrameImpl::UserAgentOverride() {
 
   // If we're in the middle of committing a load, the data source we need
   // will still be provisional.
-  WebDataSource* data_source = NULL;
-  if (main_frame->ProvisionalDataSource())
-    data_source = main_frame->ProvisionalDataSource();
+  WebDocumentLoader* document_loader = nullptr;
+  if (main_frame->GetProvisionalDocumentLoader())
+    document_loader = main_frame->GetProvisionalDocumentLoader();
   else
-    data_source = main_frame->DataSource();
+    document_loader = main_frame->GetDocumentLoader();
 
-  InternalDocumentStateData* internal_data = data_source ?
-      InternalDocumentStateData::FromDataSource(data_source) : NULL;
+  InternalDocumentStateData* internal_data =
+      document_loader
+          ? InternalDocumentStateData::FromDocumentLoader(document_loader)
+          : NULL;
   if (internal_data && internal_data->is_overriding_user_agent())
     return WebString::FromUTF8(
         render_view_->renderer_preferences_.user_agent_override);
@@ -4865,13 +4888,14 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     blink::WebLocalFrame* frame,
     blink::WebHistoryCommitType commit_type) {
   DCHECK_EQ(frame_, frame);
-  WebDataSource* ds = frame->DataSource();
-  DCHECK(ds);
+  WebDocumentLoader* document_loader = frame->GetDocumentLoader();
+  DCHECK(document_loader);
 
-  const WebURLRequest& request = ds->GetRequest();
-  const WebURLResponse& response = ds->GetResponse();
+  const WebURLRequest& request = document_loader->GetRequest();
+  const WebURLResponse& response = document_loader->GetResponse();
 
-  DocumentState* document_state = DocumentState::FromDataSource(ds);
+  DocumentState* document_state =
+      DocumentState::FromDocumentLoader(document_loader);
   NavigationStateImpl* navigation_state =
       static_cast<NavigationStateImpl*>(document_state->navigation_state());
   InternalDocumentStateData* internal_data =
@@ -4894,12 +4918,13 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
 
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.http_status_code = response.HttpStatusCode();
-  params.url_is_unreachable = ds->HasUnreachableURL();
+  params.url_is_unreachable = document_loader->HasUnreachableURL();
   params.method = "GET";
   params.intended_as_new_entry =
       navigation_state->request_params().intended_as_new_entry;
   params.did_create_new_entry = commit_type == blink::kWebStandardCommit;
-  params.should_replace_current_entry = ds->ReplacesCurrentHistoryItem();
+  params.should_replace_current_entry =
+      document_loader->ReplacesCurrentHistoryItem();
   params.post_id = -1;
   params.nav_entry_id = navigation_state->request_params().nav_entry_id;
   // We need to track the RenderViewHost routing_id because of downstream
@@ -4930,9 +4955,9 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   if (GURL(frame_document.BaseURL()) != params.url)
     params.base_url = frame_document.BaseURL();
 
-  GetRedirectChain(ds, &params.redirects);
+  GetRedirectChain(document_loader, &params.redirects);
   params.should_update_history =
-      !ds->HasUnreachableURL() && response.HttpStatusCode() != 404;
+      !document_loader->HasUnreachableURL() && response.HttpStatusCode() != 404;
 
   params.searchable_form_url = internal_data->searchable_form_url();
   params.searchable_form_encoding = internal_data->searchable_form_encoding();
@@ -4959,12 +4984,12 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
 
   // If the page contained a client redirect (meta refresh, document.loc...),
   // set the referrer appropriately.
-  if (ds->IsClientRedirect()) {
-    params.referrer =
-        Referrer(params.redirects[0], ds->GetRequest().GetReferrerPolicy());
+  if (document_loader->IsClientRedirect()) {
+    params.referrer = Referrer(
+        params.redirects[0], document_loader->GetRequest().GetReferrerPolicy());
   } else {
-    params.referrer =
-        RenderViewImpl::GetReferrerFromRequest(frame, ds->GetRequest());
+    params.referrer = RenderViewImpl::GetReferrerFromRequest(
+        frame, document_loader->GetRequest());
   }
 
   if (!frame->Parent()) {
@@ -5004,14 +5029,15 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     }
 
     // Update contents MIME type for main frame.
-    params.contents_mime_type = ds->GetResponse().MimeType().Utf8();
+    params.contents_mime_type =
+        document_loader->GetResponse().MimeType().Utf8();
 
     params.transition = navigation_state->GetTransitionType();
     DCHECK(ui::PageTransitionIsMainFrame(params.transition));
 
     // If the page contained a client redirect (meta refresh, document.loc...),
     // set the transition appropriately.
-    if (ds->IsClientRedirect()) {
+    if (document_loader->IsClientRedirect()) {
       params.transition = ui::PageTransitionFromInt(
           params.transition | ui::PAGE_TRANSITION_CLIENT_REDIRECT);
     }
@@ -5022,16 +5048,17 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     // Track the URL of the original request.  We use the first entry of the
     // redirect chain if it exists because the chain may have started in another
     // process.
-    params.original_request_url = GetOriginalRequestURL(ds);
+    params.original_request_url = GetOriginalRequestURL(document_loader);
 
     params.history_list_was_cleared =
         navigation_state->request_params().should_clear_history_list;
 
     params.report_type = static_cast<FrameMsg_UILoadMetricsReportType::Value>(
-        frame->DataSource()->GetRequest().InputPerfMetricReportPolicy());
-    params.ui_timestamp = base::TimeTicks() +
-                          base::TimeDelta::FromSecondsD(
-                              frame->DataSource()->GetRequest().UiStartTime());
+        frame->GetDocumentLoader()->GetRequest().InputPerfMetricReportPolicy());
+    params.ui_timestamp =
+        base::TimeTicks() +
+        base::TimeDelta::FromSecondsD(
+            frame->GetDocumentLoader()->GetRequest().UiStartTime());
   } else {
     // Subframe navigation: the type depends on whether this navigation
     // generated a new session history entry. When they do generate a session
@@ -5301,16 +5328,16 @@ void RenderFrameImpl::OnFailedNavigation(
 
   // For renderer initiated navigations, we send out a didFailProvisionalLoad()
   // notification.
-  bool had_provisional_data_source = frame_->ProvisionalDataSource();
+  bool had_provisional_document_loader = frame_->GetProvisionalDocumentLoader();
   if (request_params.nav_entry_id == 0) {
     DidFailProvisionalLoad(error, replace ? blink::kWebHistoryInertCommit
                                           : blink::kWebStandardCommit);
   }
 
   // If we didn't call didFailProvisionalLoad or there wasn't a
-  // provisionalDataSource(), LoadNavigationErrorPage wasn't called, so do it
-  // now.
-  if (request_params.nav_entry_id != 0 || !had_provisional_data_source) {
+  // GetProvisionalDocumentLoader(), LoadNavigationErrorPage wasn't called, so
+  // do it now.
+  if (request_params.nav_entry_id != 0 || !had_provisional_document_loader) {
     LoadNavigationErrorPage(failed_request, error, replace,
                             history_entry.get());
   }
@@ -5432,7 +5459,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   // subsequent checks.  For a popup, the document's URL may become the opener
   // window's URL if the opener has called document.write().
   // See http://crbug.com/93517.
-  GURL old_url(frame_->DataSource()->GetRequest().Url());
+  GURL old_url(frame_->GetDocumentLoader()->GetRequest().Url());
 
   // Detect when we're crossing a permission-based boundary (e.g. into or out of
   // an extension or app origin, leaving a WebUI page, etc). We only care about
@@ -5960,9 +5987,10 @@ void RenderFrameImpl::OpenURL(
   if (IsBrowserInitiated(pending_navigation_params_.get())) {
     // This is necessary to preserve the should_replace_current_entry value on
     // cross-process redirects, in the event it was set by a previous process.
-    WebDataSource* ds = frame_->ProvisionalDataSource();
-    DCHECK(ds);
-    params.should_replace_current_entry = ds->ReplacesCurrentHistoryItem();
+    WebDocumentLoader* document_loader = frame_->GetProvisionalDocumentLoader();
+    DCHECK(document_loader);
+    params.should_replace_current_entry =
+        document_loader->ReplacesCurrentHistoryItem();
   } else {
     params.should_replace_current_entry =
         should_replace_current_entry && render_view_->history_list_length_;
@@ -6158,7 +6186,8 @@ void RenderFrameImpl::NavigateInternal(
       // started loading, or has committed, we should ignore the history item.
       bool interrupted_by_client_redirect =
           frame_->IsNavigationScheduledWithin(0) ||
-          frame_->ProvisionalDataSource() || !current_history_item_.IsNull();
+          frame_->GetProvisionalDocumentLoader() ||
+          !current_history_item_.IsNull();
       if (request_params.is_history_navigation_in_new_child &&
           interrupted_by_client_redirect) {
         should_load_request = false;
@@ -6239,15 +6268,15 @@ void RenderFrameImpl::NavigateInternal(
       Send(new FrameHostMsg_DidStopLoading(routing_id_));
   }
 
-  // In case LoadRequest failed before didCreateDataSource was called.
+  // In case LoadRequest failed before DidCreateDocumentLoader was called.
   pending_navigation_params_.reset();
 
   // PlzNavigate: reset the source location now that the commit checks have been
   // processed.
   if (IsBrowserSideNavigationEnabled()) {
-    frame_->DataSource()->ResetSourceLocation();
-    if (frame_->ProvisionalDataSource())
-      frame_->ProvisionalDataSource()->ResetSourceLocation();
+    frame_->GetDocumentLoader()->ResetSourceLocation();
+    if (frame_->GetProvisionalDocumentLoader())
+      frame_->GetProvisionalDocumentLoader()->ResetSourceLocation();
   }
 }
 
@@ -6582,13 +6611,13 @@ bool RenderFrameImpl::ShouldDisplayErrorPageForFailedLoad(
 }
 
 GURL RenderFrameImpl::GetLoadingUrl() const {
-  WebDataSource* ds = frame_->DataSource();
+  WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
 
   GURL overriden_url;
-  if (MaybeGetOverriddenURL(ds, &overriden_url))
+  if (MaybeGetOverriddenURL(document_loader, &overriden_url))
     return overriden_url;
 
-  const WebURLRequest& request = ds->GetRequest();
+  const WebURLRequest& request = document_loader->GetRequest();
   return request.Url();
 }
 

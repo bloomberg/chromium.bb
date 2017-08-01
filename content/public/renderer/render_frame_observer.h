@@ -21,7 +21,7 @@
 #include "v8/include/v8.h"
 
 namespace blink {
-class WebDataSource;
+class WebDocumentLoader;
 class WebFormElement;
 class WebNode;
 class WebString;
@@ -66,7 +66,8 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void WillCommitProvisionalLoad() {}
   virtual void DidCommitProvisionalLoad(bool is_new_navigation,
                                         bool is_same_document_navigation) {}
-  virtual void DidStartProvisionalLoad(blink::WebDataSource* data_source) {}
+  virtual void DidStartProvisionalLoad(
+      blink::WebDocumentLoader* document_loader) {}
   virtual void DidFailProvisionalLoad(const blink::WebURLError& error) {}
   virtual void DidFinishLoad() {}
   virtual void DidFinishDocumentLoad() {}

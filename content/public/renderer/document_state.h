@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "net/http/http_response_info.h"
-#include "third_party/WebKit/public/web/WebDataSource.h"
+#include "third_party/WebKit/public/web/WebDocumentLoader.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -21,16 +21,17 @@ namespace content {
 class NavigationState;
 
 // The RenderView stores an instance of this class in the "extra data" of each
-// WebDataSource (see RenderView::DidCreateDataSource).
+// WebDocumentLoader (see RenderView::DidCreateDataSource).
 class CONTENT_EXPORT DocumentState
-    : NON_EXPORTED_BASE(public blink::WebDataSource::ExtraData),
+    : NON_EXPORTED_BASE(public blink::WebDocumentLoader::ExtraData),
       public base::SupportsUserData {
  public:
   DocumentState();
   ~DocumentState() override;
 
-  static DocumentState* FromDataSource(blink::WebDataSource* ds) {
-    return static_cast<DocumentState*>(ds->GetExtraData());
+  static DocumentState* FromDocumentLoader(
+      blink::WebDocumentLoader* document_loader) {
+    return static_cast<DocumentState*>(document_loader->GetExtraData());
   }
 
   // Indicator if SPDY was used as part of this page load.

@@ -27,8 +27,8 @@
 #include "gin/per_context_data.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebDocumentLoader.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
@@ -265,13 +265,13 @@ bool ScriptContext::IsAnyFeatureAvailableToContext(
   DCHECK(thread_checker_.CalledOnValidThread());
   // TODO(lazyboy): Decide what we should do for SERVICE_WORKER_CONTEXT, where
   // web_frame() is null.
-  GURL url = web_frame() ? GetDataSourceURLForFrame(web_frame()) : url_;
+  GURL url = web_frame() ? GetDocumentLoaderURLForFrame(web_frame()) : url_;
   return ExtensionAPI::GetSharedInstance()->IsAnyFeatureAvailableToContext(
       api, extension(), context_type(), url, check_alias);
 }
 
 // static
-GURL ScriptContext::GetDataSourceURLForFrame(
+GURL ScriptContext::GetDocumentLoaderURLForFrame(
     const blink::WebLocalFrame* frame) {
   // Normally we would use frame->document().url() to determine the document's
   // URL, but to decide whether to inject a content script, we use the URL from
@@ -281,10 +281,11 @@ GURL ScriptContext::GetDataSourceURLForFrame(
   // changes to match the parent document after Gmail document.writes into
   // it to create the editor.
   // http://code.google.com/p/chromium/issues/detail?id=86742
-  blink::WebDataSource* data_source = frame->ProvisionalDataSource()
-                                          ? frame->ProvisionalDataSource()
-                                          : frame->DataSource();
-  return data_source ? GURL(data_source->GetRequest().Url()) : GURL();
+  blink::WebDocumentLoader* document_loader =
+      frame->GetProvisionalDocumentLoader()
+          ? frame->GetProvisionalDocumentLoader()
+          : frame->GetDocumentLoader();
+  return document_loader ? GURL(document_loader->GetRequest().Url()) : GURL();
 }
 
 // static
@@ -292,13 +293,14 @@ GURL ScriptContext::GetAccessCheckedFrameURL(
     const blink::WebLocalFrame* frame) {
   const blink::WebURL& weburl = frame->GetDocument().Url();
   if (weburl.IsEmpty()) {
-    blink::WebDataSource* data_source = frame->ProvisionalDataSource()
-                                            ? frame->ProvisionalDataSource()
-                                            : frame->DataSource();
-    if (data_source &&
+    blink::WebDocumentLoader* document_loader =
+        frame->GetProvisionalDocumentLoader()
+            ? frame->GetProvisionalDocumentLoader()
+            : frame->GetDocumentLoader();
+    if (document_loader &&
         frame->GetSecurityOrigin().CanAccess(blink::WebSecurityOrigin::Create(
-            data_source->GetRequest().Url()))) {
-      return GURL(data_source->GetRequest().Url());
+            document_loader->GetRequest().Url()))) {
+      return GURL(document_loader->GetRequest().Url());
     }
   }
   return GURL(weburl);

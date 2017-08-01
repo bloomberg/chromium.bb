@@ -71,8 +71,8 @@
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebVector.h"
-#include "public/web/WebDataSource.h"
 #include "public/web/WebDocument.h"
+#include "public/web/WebDocumentLoader.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebFrameSerializerCacheControlPolicy.h"
 #include "public/web/WebFrameSerializerClient.h"
@@ -400,12 +400,12 @@ std::pair<Node*, Element*> MHTMLFrameSerializerDelegate::GetAuxiliaryDOMTree(
 bool CacheControlNoStoreHeaderPresent(
     const WebLocalFrameBase& web_local_frame) {
   const ResourceResponse& response =
-      web_local_frame.DataSource()->GetResponse().ToResourceResponse();
+      web_local_frame.GetDocumentLoader()->GetResponse().ToResourceResponse();
   if (response.CacheControlContainsNoStore())
     return true;
 
   const ResourceRequest& request =
-      web_local_frame.DataSource()->GetRequest().ToResourceRequest();
+      web_local_frame.GetDocumentLoader()->GetRequest().ToResourceRequest();
   return request.CacheControlContainsNoStore();
 }
 

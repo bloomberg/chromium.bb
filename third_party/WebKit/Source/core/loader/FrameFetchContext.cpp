@@ -470,8 +470,9 @@ void FrameFetchContext::DispatchDidReceiveResponse(
           ? LinkLoader::kDoNotLoadResources
           : LinkLoader::kLoadResourcesAndPreconnect;
   if (document_loader_ &&
-      document_loader_ ==
-          document_loader_->GetFrame()->Loader().ProvisionalDocumentLoader()) {
+      document_loader_ == document_loader_->GetFrame()
+                              ->Loader()
+                              .GetProvisionalDocumentLoader()) {
     FrameClientHintsPreferencesContext hints_context(GetFrame());
     document_loader_->GetClientHintsPreferences()
         .UpdateFromAcceptClientHintsHeader(
@@ -584,7 +585,7 @@ bool FrameFetchContext::ShouldLoadNewResource(Resource::Type type) const {
 
   FrameLoader& loader = document_loader_->GetFrame()->Loader();
   if (type == Resource::kMainResource)
-    return document_loader_ == loader.ProvisionalDocumentLoader();
+    return document_loader_ == loader.GetProvisionalDocumentLoader();
   return document_loader_ == loader.GetDocumentLoader();
 }
 

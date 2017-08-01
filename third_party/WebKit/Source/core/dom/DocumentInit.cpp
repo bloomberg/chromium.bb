@@ -119,8 +119,8 @@ DocumentInit::InsecureNavigationsToUpgrade() const {
 bool DocumentInit::IsHostedInReservedIPRange() const {
   if (LocalFrame* frame = FrameForSecurityContext()) {
     if (DocumentLoader* loader =
-            frame->Loader().ProvisionalDocumentLoader()
-                ? frame->Loader().ProvisionalDocumentLoader()
+            frame->Loader().GetProvisionalDocumentLoader()
+                ? frame->Loader().GetProvisionalDocumentLoader()
                 : frame->Loader().GetDocumentLoader()) {
       if (!loader->GetResponse().RemoteIPAddress().IsEmpty())
         return NetworkUtils::IsReservedIPAddress(

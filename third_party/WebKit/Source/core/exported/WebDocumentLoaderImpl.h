@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebDataSourceImpl_h
-#define WebDataSourceImpl_h
+#ifndef WebDocumentLoaderImpl_h
+#define WebDocumentLoaderImpl_h
 
 #include <memory>
 #include "core/CoreExport.h"
@@ -40,25 +40,25 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Vector.h"
-#include "public/web/WebDataSource.h"
+#include "public/web/WebDocumentLoader.h"
 
 namespace blink {
 
 // Extends blink::DocumentLoader to attach |extra_data_| to store data that can
-// be set/get via the WebDataSource interface.
-class CORE_EXPORT WebDataSourceImpl final : public DocumentLoader,
-                                            public WebDataSource {
+// be set/get via the WebDocumentLoader interface.
+class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
+                                                public WebDocumentLoader {
  public:
-  static WebDataSourceImpl* Create(LocalFrame*,
-                                   const ResourceRequest&,
-                                   const SubstituteData&,
-                                   ClientRedirectPolicy);
+  static WebDocumentLoaderImpl* Create(LocalFrame*,
+                                       const ResourceRequest&,
+                                       const SubstituteData&,
+                                       ClientRedirectPolicy);
 
-  static WebDataSourceImpl* FromDocumentLoader(DocumentLoader* loader) {
-    return static_cast<WebDataSourceImpl*>(loader);
+  static WebDocumentLoaderImpl* FromDocumentLoader(DocumentLoader* loader) {
+    return static_cast<WebDocumentLoaderImpl*>(loader);
   }
 
-  // WebDataSource methods:
+  // WebDocumentLoader methods:
   const WebURLRequest& OriginalRequest() const override;
   const WebURLRequest& GetRequest() const override;
   const WebURLResponse& GetResponse() const override;
@@ -88,13 +88,13 @@ class CORE_EXPORT WebDataSourceImpl final : public DocumentLoader,
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  WebDataSourceImpl(LocalFrame*,
-                    const ResourceRequest&,
-                    const SubstituteData&,
-                    ClientRedirectPolicy);
-  ~WebDataSourceImpl() override;
+  WebDocumentLoaderImpl(LocalFrame*,
+                        const ResourceRequest&,
+                        const SubstituteData&,
+                        ClientRedirectPolicy);
+  ~WebDocumentLoaderImpl() override;
   void DetachFromFrame() override;
-  String DebugName() const override { return "WebDataSourceImpl"; }
+  String DebugName() const override { return "WebDocumentLoaderImpl"; }
 
   // Mutable because the const getters will magically sync these to the
   // latest version from WebKit.
@@ -107,4 +107,4 @@ class CORE_EXPORT WebDataSourceImpl final : public DocumentLoader,
 
 }  // namespace blink
 
-#endif  // WebDataSourceImpl_h
+#endif  // WebDocumentLoaderImpl_h

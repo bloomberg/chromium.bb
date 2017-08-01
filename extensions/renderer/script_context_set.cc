@@ -43,7 +43,7 @@ ScriptContext* ScriptContextSet::Register(
   const Extension* effective_extension =
       GetExtensionFromFrameAndWorld(frame, world_id, true);
 
-  GURL frame_url = ScriptContext::GetDataSourceURLForFrame(frame);
+  GURL frame_url = ScriptContext::GetDocumentLoaderURLForFrame(frame);
   Feature::Context context_type = ClassifyJavaScriptContext(
       extension, world_id, frame_url, frame->GetDocument().GetSecurityOrigin());
   Feature::Context effective_context_type = ClassifyJavaScriptContext(

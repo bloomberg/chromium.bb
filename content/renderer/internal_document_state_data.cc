@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "content/public/renderer/document_state.h"
-#include "third_party/WebKit/public/web/WebDataSource.h"
+#include "third_party/WebKit/public/web/WebDocumentLoader.h"
 
 namespace content {
 
@@ -25,9 +25,10 @@ InternalDocumentStateData::InternalDocumentStateData()
       cache_policy_override_(blink::WebCachePolicy::kUseProtocolCachePolicy) {}
 
 // static
-InternalDocumentStateData* InternalDocumentStateData::FromDataSource(
-    blink::WebDataSource* ds) {
-  return FromDocumentState(static_cast<DocumentState*>(ds->GetExtraData()));
+InternalDocumentStateData* InternalDocumentStateData::FromDocumentLoader(
+    blink::WebDocumentLoader* document_loader) {
+  return FromDocumentState(
+      static_cast<DocumentState*>(document_loader->GetExtraData()));
 }
 
 // static

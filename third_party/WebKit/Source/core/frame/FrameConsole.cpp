@@ -50,7 +50,7 @@ void FrameConsole::AddMessage(ConsoleMessage* console_message) {
   // information for how the request was triggered has been stored in the
   // provisional DocumentLoader. Use it instead.
   DocumentLoader* provisional_loader =
-      frame_->Loader().ProvisionalDocumentLoader();
+      frame_->Loader().GetProvisionalDocumentLoader();
   if (provisional_loader) {
     std::unique_ptr<SourceLocation> source_location =
         provisional_loader->CopySourceLocation();

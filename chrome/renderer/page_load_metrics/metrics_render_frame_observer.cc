@@ -16,8 +16,8 @@
 #include "chrome/renderer/searchbox/search_bouncer.h"
 #include "content/public/common/associated_interface_provider.h"
 #include "content/public/renderer/render_frame.h"
-#include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebDocumentLoader.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPerformance.h"
 #include "url/gurl.h"
@@ -119,7 +119,8 @@ bool MetricsRenderFrameObserver::ShouldSendMetrics() const {
     return false;
   const blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   const blink::WebDocument& document = frame->GetDocument();
-  return RendererPageTrackDecider(&document, frame->DataSource()).ShouldTrack();
+  return RendererPageTrackDecider(&document, frame->GetDocumentLoader())
+      .ShouldTrack();
 }
 
 mojom::PageLoadTimingPtr MetricsRenderFrameObserver::GetTiming() const {

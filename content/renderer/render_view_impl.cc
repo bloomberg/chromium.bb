@@ -206,7 +206,6 @@ using blink::WebApplicationCacheHostClient;
 using blink::WebColor;
 using blink::WebConsoleMessage;
 using blink::WebData;
-using blink::WebDataSource;
 using blink::WebDocument;
 using blink::WebDragOperation;
 using blink::WebElement;

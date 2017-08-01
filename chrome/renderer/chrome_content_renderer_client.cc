@@ -120,7 +120,6 @@
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -191,7 +190,6 @@ using base::UserMetricsAction;
 using blink::WebCache;
 using blink::WebCachePolicy;
 using blink::WebConsoleMessage;
-using blink::WebDataSource;
 using blink::WebDocument;
 using blink::WebFrame;
 using blink::WebLocalFrame;

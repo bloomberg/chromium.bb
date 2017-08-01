@@ -51,7 +51,7 @@ class ChromeRenderFrameObserver
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle* interface_pipe) override;
   bool OnMessageReceived(const IPC::Message& message) override;
-  void DidStartProvisionalLoad(blink::WebDataSource* data_source) override;
+  void DidStartProvisionalLoad(blink::WebDocumentLoader* loader) override;
   void DidFinishLoad() override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_document_navigation) override;

@@ -34,7 +34,7 @@ void DistillerJsRenderFrameObserver::OnInterfaceRequestForFrame(
 }
 
 void DistillerJsRenderFrameObserver::DidStartProvisionalLoad(
-    blink::WebDataSource* data_source) {
+    blink::WebDocumentLoader* document_loader) {
   RegisterMojoInterface();
 }
 

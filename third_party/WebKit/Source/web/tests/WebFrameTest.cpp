@@ -141,9 +141,9 @@
 #include "public/platform/WebURLResponse.h"
 #include "public/web/WebConsoleMessage.h"
 #include "public/web/WebContextMenuData.h"
-#include "public/web/WebDataSource.h"
 #include "public/web/WebDeviceEmulationParams.h"
 #include "public/web/WebDocument.h"
+#include "public/web/WebDocumentLoader.h"
 #include "public/web/WebFindOptions.h"
 #include "public/web/WebFormElement.h"
 #include "public/web/WebFrameClient.h"
@@ -4286,10 +4286,11 @@ TEST_P(ParameterizedWebFrameTest, ReloadWhileProvisional) {
   FrameTestHelpers::ReloadFrameBypassingCache(
       web_view_helper.WebView()->MainFrameImpl());
 
-  WebDataSource* data_source = web_view_helper.LocalMainFrame()->DataSource();
-  ASSERT_TRUE(data_source);
+  WebDocumentLoader* document_loader =
+      web_view_helper.LocalMainFrame()->GetDocumentLoader();
+  ASSERT_TRUE(document_loader);
   EXPECT_EQ(ToKURL(base_url_ + "fixed_layout.html"),
-            KURL(data_source->GetRequest().Url()));
+            KURL(document_loader->GetRequest().Url()));
 }
 
 TEST_P(ParameterizedWebFrameTest, AppendRedirects) {
@@ -4299,12 +4300,13 @@ TEST_P(ParameterizedWebFrameTest, AppendRedirects) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(first_url);
 
-  WebDataSource* data_source = web_view_helper.LocalMainFrame()->DataSource();
-  ASSERT_TRUE(data_source);
-  data_source->AppendRedirect(ToKURL(second_url));
+  WebDocumentLoader* document_loader =
+      web_view_helper.LocalMainFrame()->GetDocumentLoader();
+  ASSERT_TRUE(document_loader);
+  document_loader->AppendRedirect(ToKURL(second_url));
 
   WebVector<WebURL> redirects;
-  data_source->RedirectChain(redirects);
+  document_loader->RedirectChain(redirects);
   ASSERT_EQ(2U, redirects.size());
   EXPECT_EQ(ToKURL(first_url), KURL(redirects[0]));
   EXPECT_EQ(ToKURL(second_url), KURL(redirects[1]));
@@ -4324,10 +4326,11 @@ TEST_P(ParameterizedWebFrameTest, IframeRedirect) {
   WebFrame* iframe = web_view_helper.LocalMainFrame()->FindFrameByName(
       WebString::FromUTF8("ifr"));
   ASSERT_TRUE(iframe && iframe->IsWebLocalFrame());
-  WebDataSource* iframe_data_source = iframe->ToWebLocalFrame()->DataSource();
-  ASSERT_TRUE(iframe_data_source);
+  WebDocumentLoader* iframe_document_loader =
+      iframe->ToWebLocalFrame()->GetDocumentLoader();
+  ASSERT_TRUE(iframe_document_loader);
   WebVector<WebURL> redirects;
-  iframe_data_source->RedirectChain(redirects);
+  iframe_document_loader->RedirectChain(redirects);
   ASSERT_EQ(2U, redirects.size());
   EXPECT_EQ(ToKURL("about:blank"), KURL(redirects[0]));
   EXPECT_EQ(ToKURL("http://internal.test/visible_iframe.html"),
@@ -6462,7 +6465,7 @@ class TestSubstituteDataWebFrameClient
   }
   void DidCommitProvisionalLoad(const WebHistoryItem&,
                                 WebHistoryCommitType) override {
-    if (Frame()->DataSource()->GetResponse().Url() !=
+    if (Frame()->GetDocumentLoader()->GetResponse().Url() !=
         WebURL(URLTestHelpers::ToKURL("about:blank")))
       commit_called_ = true;
   }
@@ -7348,7 +7351,7 @@ TEST_P(ParameterizedWebFrameTest, BackToReload) {
 
   FrameTestHelpers::ReloadFrame(frame);
   EXPECT_EQ(WebCachePolicy::kValidatingCacheData,
-            frame->DataSource()->GetRequest().GetCachePolicy());
+            frame->GetDocumentLoader()->GetRequest().GetCachePolicy());
 }
 
 TEST_P(ParameterizedWebFrameTest, BackDuringChildFrameReload) {
@@ -7394,13 +7397,13 @@ TEST_P(ParameterizedWebFrameTest, ReloadPost) {
   FrameTestHelpers::PumpPendingRequestsForFrameToLoad(
       web_view_helper.WebView()->MainFrame());
   EXPECT_EQ(WebString::FromUTF8("POST"),
-            frame->DataSource()->GetRequest().HttpMethod());
+            frame->GetDocumentLoader()->GetRequest().HttpMethod());
 
   FrameTestHelpers::ReloadFrame(frame);
   EXPECT_EQ(WebCachePolicy::kValidatingCacheData,
-            frame->DataSource()->GetRequest().GetCachePolicy());
+            frame->GetDocumentLoader()->GetRequest().GetCachePolicy());
   EXPECT_EQ(kWebNavigationTypeFormResubmitted,
-            frame->DataSource()->GetNavigationType());
+            frame->GetDocumentLoader()->GetNavigationType());
 }
 
 TEST_P(ParameterizedWebFrameTest, LoadHistoryItemReload) {
@@ -7426,7 +7429,7 @@ TEST_P(ParameterizedWebFrameTest, LoadHistoryItemReload) {
   EXPECT_EQ(first_item.Get(),
             main_frame_loader.GetDocumentLoader()->GetHistoryItem());
   EXPECT_EQ(WebCachePolicy::kValidatingCacheData,
-            frame->DataSource()->GetRequest().GetCachePolicy());
+            frame->GetDocumentLoader()->GetRequest().GetCachePolicy());
 }
 
 class TestCachePolicyWebFrameClient
@@ -7522,7 +7525,7 @@ class TestSameDocumentWebFrameClient
   void WillSendRequest(WebURLRequest&) override {
     FrameLoader& frame_loader =
         ToWebLocalFrameImpl(Frame())->GetFrame()->Loader();
-    if (frame_loader.ProvisionalDocumentLoader()->LoadType() ==
+    if (frame_loader.GetProvisionalDocumentLoader()->LoadType() ==
         kFrameLoadTypeReload)
       frame_load_type_reload_seen_ = true;
   }
@@ -7714,9 +7717,10 @@ class TestHistoryChildWebFrameClient
   ~TestHistoryChildWebFrameClient() override {}
 
   // FrameTestHelpers::TestWebFrameClient:
-  void DidStartProvisionalLoad(WebDataSource* data_source,
+  void DidStartProvisionalLoad(WebDocumentLoader* document_loader,
                                WebURLRequest& request) override {
-    replaces_current_history_item_ = data_source->ReplacesCurrentHistoryItem();
+    replaces_current_history_item_ =
+        document_loader->ReplacesCurrentHistoryItem();
   }
 
   bool ReplacesCurrentHistoryItem() { return replaces_current_history_item_; }
@@ -8730,7 +8734,7 @@ TEST_P(ParameterizedWebFrameTest, ReloadBypassingCache) {
   WebLocalFrame* frame = web_view_helper.LocalMainFrame();
   FrameTestHelpers::ReloadFrameBypassingCache(frame);
   EXPECT_EQ(WebCachePolicy::kBypassingCache,
-            frame->DataSource()->GetRequest().GetCachePolicy());
+            frame->GetDocumentLoader()->GetRequest().GetCachePolicy());
 }
 
 static void NodeImageTestValidation(const IntSize& reference_bitmap_size,
@@ -10363,7 +10367,7 @@ class CallbackOrderingWebFrameClient
     FrameTestHelpers::TestWebFrameClient::DidStartLoading(
         to_different_document);
   }
-  void DidStartProvisionalLoad(WebDataSource*, WebURLRequest&) override {
+  void DidStartProvisionalLoad(WebDocumentLoader*, WebURLRequest&) override {
     EXPECT_EQ(1, callback_count_++);
   }
   void DidCommitProvisionalLoad(const WebHistoryItem&,

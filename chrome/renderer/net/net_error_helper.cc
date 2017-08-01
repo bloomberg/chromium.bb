@@ -39,8 +39,8 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebDocumentLoader.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -65,8 +65,8 @@ namespace {
 const int kNavigationCorrectionFetchTimeoutSec = 3;
 
 NetErrorHelperCore::PageType GetLoadingPageType(
-    blink::WebDataSource* data_source) {
-  GURL url = data_source->GetRequest().Url();
+    blink::WebDocumentLoader* document_loader) {
+  GURL url = document_loader->GetRequest().Url();
   if (!url.is_valid() || url.spec() != kUnreachableWebDataURL)
     return NetErrorHelperCore::NON_ERROR_PAGE;
   return NetErrorHelperCore::ERROR_PAGE;
@@ -117,9 +117,9 @@ void NetErrorHelper::TrackClick(int tracking_id) {
 }
 
 void NetErrorHelper::DidStartProvisionalLoad(
-    blink::WebDataSource* data_source) {
+    blink::WebDocumentLoader* document_loader) {
   core_->OnStartLoad(GetFrameType(render_frame()),
-                     GetLoadingPageType(data_source));
+                     GetLoadingPageType(document_loader));
 }
 
 void NetErrorHelper::DidCommitProvisionalLoad(
@@ -307,7 +307,8 @@ void NetErrorHelper::ReloadPage(bool bypass_cache) {
 
 void NetErrorHelper::LoadPageFromCache(const GURL& page_url) {
   blink::WebLocalFrame* web_frame = render_frame()->GetWebFrame();
-  DCHECK_NE("POST", web_frame->DataSource()->GetRequest().HttpMethod().Ascii());
+  DCHECK_NE("POST",
+            web_frame->GetDocumentLoader()->GetRequest().HttpMethod().Ascii());
 
   blink::WebURLRequest request(page_url);
   request.SetCachePolicy(blink::WebCachePolicy::kReturnCacheDataDontLoad);

@@ -25,8 +25,8 @@
 #include "content/public/renderer/render_frame.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/platform/WebWorkerFetchContext.h"
-#include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebDocumentLoader.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "url/url_constants.h"
 
@@ -50,7 +50,7 @@ GURL SubresourceFilterAgent::GetDocumentURL() {
 void SubresourceFilterAgent::SetSubresourceFilterForCommittedLoad(
     std::unique_ptr<blink::WebDocumentSubresourceFilter> filter) {
   blink::WebLocalFrame* web_frame = render_frame()->GetWebFrame();
-  web_frame->DataSource()->SetSubresourceFilter(filter.release());
+  web_frame->GetDocumentLoader()->SetSubresourceFilter(filter.release());
 }
 
 void SubresourceFilterAgent::

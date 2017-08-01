@@ -80,7 +80,7 @@ enum ScheduledNavigationType {
 // crbug.com/557430 is resolved.
 void MaybeLogScheduledNavigationClobber(ScheduledNavigationType type,
                                         LocalFrame* frame) {
-  if (!frame->Loader().ProvisionalDocumentLoader())
+  if (!frame->Loader().GetProvisionalDocumentLoader())
     return;
   // Include enumeration values userGesture variants.
   DEFINE_STATIC_LOCAL(EnumerationHistogram,
@@ -98,7 +98,7 @@ void MaybeLogScheduledNavigationClobber(ScheduledNavigationType type,
       CustomCountHistogram, scheduled_clobber_abort_time_histogram,
       ("Navigation.Scheduled.MaybeCausedAbort.Time", 1, 10000, 50));
   double navigation_start = frame->Loader()
-                                .ProvisionalDocumentLoader()
+                                .GetProvisionalDocumentLoader()
                                 ->GetTiming()
                                 .NavigationStart();
   if (navigation_start) {
@@ -505,8 +505,8 @@ void NavigationScheduler::Schedule(ScheduledNavigation* redirect) {
   // location change. Let the JS have its way.
   // FIXME: This check seems out of place.
   if (!frame_->Loader().StateMachine()->CommittedFirstRealDocumentLoad() &&
-      frame_->Loader().ProvisionalDocumentLoader() &&
-      frame_->Loader().ProvisionalDocumentLoader()->DidStart()) {
+      frame_->Loader().GetProvisionalDocumentLoader() &&
+      frame_->Loader().GetProvisionalDocumentLoader()->DidStart()) {
     frame_->Loader().StopAllLoaders();
     if (!frame_->GetPage())
       return;
