@@ -539,7 +539,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 6
+          "shards": 8
         },
         "test": "content_browsertests"
       },
@@ -1594,7 +1594,7 @@
               "device_type": "hammerhead"
             }
           ],
-          "hard_timeout": 960,
+          "hard_timeout": 1500,
           "output_links": [
             {
               "link": [
@@ -2181,7 +2181,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 6
+          "shards": 8
         },
         "test": "content_browsertests"
       },
@@ -3236,7 +3236,7 @@
               "device_type": "hammerhead"
             }
           ],
-          "hard_timeout": 960,
+          "hard_timeout": 1500,
           "output_links": [
             {
               "link": [
