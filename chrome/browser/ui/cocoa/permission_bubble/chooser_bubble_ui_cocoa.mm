@@ -220,8 +220,7 @@
 }
 
 - (info_bubble::BubbleArrowLocation)getExpectedArrowLocation {
-  return HasVisibleLocationBarForBrowser(browser_) ? info_bubble::kTopLeading
-                                                   : info_bubble::kNoArrow;
+  return info_bubble::kTopLeading;
 }
 
 - (NSWindow*)getExpectedParentWindow {
