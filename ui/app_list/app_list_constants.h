@@ -79,7 +79,9 @@ APP_LIST_EXPORT extern const int kAppBadgeIconSize;
 APP_LIST_EXPORT extern const int kBadgeBackgroundRadius;
 
 APP_LIST_EXPORT extern const int kListIconSize;
+APP_LIST_EXPORT extern const int kListIconSizeFullscreen;
 APP_LIST_EXPORT extern const int kListBadgeIconSize;
+APP_LIST_EXPORT extern const int kListBadgeIconSizeFullscreen;
 APP_LIST_EXPORT extern const int kListBadgeIconOffsetX;
 APP_LIST_EXPORT extern const int kListBadgeIconOffsetY;
 APP_LIST_EXPORT extern const int kTileIconSize;
