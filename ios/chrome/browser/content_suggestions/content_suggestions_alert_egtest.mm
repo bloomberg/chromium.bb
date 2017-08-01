@@ -7,9 +7,9 @@
 #import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
-#import "ios/chrome/browser/content_suggestions/content_suggestions_alert_commands.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_gesture_commands.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -35,6 +35,7 @@
                        onViewController:viewController
                                 atPoint:CGPointMake(50, 50)
                             atIndexPath:nil
+                        readLaterAction:YES
                          commandHandler:nil];
   [coordinator start];
 
@@ -67,11 +68,11 @@
   UIViewController* viewController =
       top_view_controller::TopPresentedViewController();
   AlertCoordinator* coordinator = [ContentSuggestionsAlertFactory
-      alertCoordinatorForSuggestionItem:nil
-                       onViewController:viewController
-                                atPoint:CGPointMake(50, 50)
-                            atIndexPath:nil
-                         commandHandler:nil];
+      alertCoordinatorForMostVisitedItem:nil
+                        onViewController:viewController
+                                 atPoint:CGPointMake(50, 50)
+                             atIndexPath:nil
+                          commandHandler:nil];
   [coordinator start];
 
   [[EarlGrey
