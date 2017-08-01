@@ -9,6 +9,7 @@
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/root_view.h"
@@ -48,6 +49,12 @@ bool WidgetTest::IsNativeWindowVisible(gfx::NativeWindow window) {
 
 // static
 bool WidgetTest::IsWindowStackedAbove(Widget* above, Widget* below) {
+  // Since 10.13, a trip to the runloop has been necessary to ensure [NSApp
+  // orderedWindows] has been updated. Since tests using this are only
+  // concerned with relative ordering of windows in the same process, this
+  // shouldn't cause flakiness.
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_TRUE(above->IsVisible());
   EXPECT_TRUE(below->IsVisible());
 
