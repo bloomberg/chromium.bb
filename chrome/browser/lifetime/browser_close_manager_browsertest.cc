@@ -618,9 +618,16 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 }
 
+// Flaky on Windows 7 (dbg) trybot, see https://crbug.com/751081.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_TestAddWindowDuringShutdown DISABLED_TestAddWindowDuringShutdown
+#else
+#define MAYBE_TestAddWindowDuringShutdown TestAddWindowDuringShutdown
+#endif
+
 // Test that a window created during shutdown is closed.
 IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
-                       TestAddWindowDuringShutdown) {
+                       MAYBE_TestAddWindowDuringShutdown) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
       browsers_[0], embedded_test_server()->GetURL("/beforeunload.html")));
