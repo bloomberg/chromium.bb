@@ -28431,6 +28431,7 @@ from previous Chrome versions.
   <int value="5" label="Add new note"/>
   <int value="6" label="Magnifying glass mode"/>
   <int value="7" label="Laser pointer mode"/>
+  <int value="8" label="Assistant mode"/>
 </enum>
 
 <enum name="PanningModelType">
