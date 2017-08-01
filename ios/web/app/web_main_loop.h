@@ -86,9 +86,7 @@ class WebMainLoop {
 
   // Members initialized in |RunMainMessageLoopParts()| ------------------------
   std::unique_ptr<WebThreadImpl> db_thread_;
-  std::unique_ptr<WebThreadImpl> file_user_blocking_thread_;
   std::unique_ptr<WebThreadImpl> file_thread_;
-  std::unique_ptr<WebThreadImpl> cache_thread_;
   std::unique_ptr<WebThreadImpl> io_thread_;
 
   // Members initialized in |WebThreadsStarted()| --------------------------
