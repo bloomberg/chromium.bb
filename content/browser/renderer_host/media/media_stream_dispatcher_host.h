@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_STREAM_DISPATCHER_HOST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_MEDIA_STREAM_DISPATCHER_HOST_H_
 
+#include <map>
 #include <string>
 
 #include "base/macros.h"
@@ -57,6 +58,12 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelClosing() override;
 
+  void SetMediaStreamDispatcherForTesting(
+      int render_frame_id,
+      mojom::MediaStreamDispatcherPtr dispatcher) {
+    dispatchers_[render_frame_id] = std::move(dispatcher);
+  }
+
  protected:
   ~MediaStreamDispatcherHost() override;
 
@@ -83,6 +90,14 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
                                MediaStreamType type,
                                bool is_secure) override;
   void StreamStarted(const std::string& label) override;
+
+  void OnStreamGenerationFailed(
+      int render_frame_id,
+      int page_request_id,
+      MediaStreamRequestResult result,
+      mojom::MediaStreamDispatcherPtrInfo dispatcher_info);
+
+  std::map<int, mojom::MediaStreamDispatcherPtr> dispatchers_;
 
   int render_process_id_;
   std::string salt_;

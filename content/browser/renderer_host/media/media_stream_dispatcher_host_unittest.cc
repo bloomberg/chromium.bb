@@ -87,13 +87,15 @@ void AudioInputDevicesEnumerated(base::Closure quit_closure,
 }  // anonymous namespace
 
 class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
-                                      public TestContentBrowserClient {
+                                      public TestContentBrowserClient,
+                                      public mojom::MediaStreamDispatcher {
  public:
   MockMediaStreamDispatcherHost(
       const std::string& salt,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       MediaStreamManager* manager)
       : MediaStreamDispatcherHost(kProcessId, salt, manager),
+        binding_(this),
         task_runner_(task_runner),
         current_ipc_(NULL) {}
 
@@ -101,9 +103,8 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
   MOCK_METHOD4(OnStreamGenerated,
                void(int routing_id, int request_id, int audio_array_size,
                     int video_array_size));
-  MOCK_METHOD3(OnStreamGenerationFailed, void(int routing_id,
-                                              int request_id,
-                                              MediaStreamRequestResult result));
+  MOCK_METHOD2(OnStreamGenerationFailure,
+               void(int request_id, MediaStreamRequestResult result));
   MOCK_METHOD1(OnDeviceStopped, void(int routing_id));
   MOCK_METHOD2(OnDeviceOpened, void(int routing_id, int request_id));
 
@@ -138,6 +139,18 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     MediaStreamDispatcherHost::StreamStarted(label);
   }
 
+  // mojom::MediaStreamDispatcher implementation.
+  void OnStreamGenerationFailed(int32_t request_id,
+                                MediaStreamRequestResult result) override {
+    OnStreamGenerationFailedInternal(request_id, result);
+  }
+
+  mojom::MediaStreamDispatcherPtr CreateInterfacePtrAndBind() {
+    mojom::MediaStreamDispatcherPtr dispatcher;
+    binding_.Bind(mojo::MakeRequest(&dispatcher));
+    return dispatcher;
+  }
+
   std::string label_;
   StreamDeviceInfoArray audio_devices_;
   StreamDeviceInfoArray video_devices_;
@@ -159,8 +172,6 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     IPC_BEGIN_MESSAGE_MAP(MockMediaStreamDispatcherHost, *message)
       IPC_MESSAGE_HANDLER(MediaStreamMsg_StreamGenerated,
                           OnStreamGeneratedInternal)
-      IPC_MESSAGE_HANDLER(MediaStreamMsg_StreamGenerationFailed,
-                          OnStreamGenerationFailedInternal)
       IPC_MESSAGE_HANDLER(MediaStreamMsg_DeviceStopped, OnDeviceStoppedInternal)
       IPC_MESSAGE_HANDLER(MediaStreamMsg_DeviceOpened, OnDeviceOpenedInternal)
       IPC_MESSAGE_UNHANDLED(handled = false)
@@ -193,10 +204,9 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     video_devices_ = video_device_list;
   }
 
-  void OnStreamGenerationFailedInternal(
-      int request_id,
-      content::MediaStreamRequestResult result) {
-    OnStreamGenerationFailed(current_ipc_->routing_id(), request_id, result);
+  void OnStreamGenerationFailedInternal(int request_id,
+                                        MediaStreamRequestResult result) {
+    OnStreamGenerationFailure(request_id, result);
     if (!quit_closures_.empty()) {
       base::Closure quit_closure = quit_closures_.front();
       quit_closures_.pop();
@@ -207,7 +217,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
   }
 
   void OnDeviceStoppedInternal(const std::string& label,
-                               const content::StreamDeviceInfo& device) {
+                               const StreamDeviceInfo& device) {
     if (IsVideoMediaType(device.device.type))
       EXPECT_TRUE(StreamDeviceInfo::IsEqual(device, video_devices_[0]));
     if (IsAudioInputMediaType(device.device.type))
@@ -226,6 +236,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     opened_device_ = device;
   }
 
+  mojo::Binding<mojom::MediaStreamDispatcher> binding_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   IPC::Message* current_ipc_;
   std::queue<base::Closure> quit_closures_;
@@ -246,7 +257,7 @@ class MockMediaStreamUIProxy : public FakeMediaStreamUIProxy {
 class MediaStreamDispatcherHostTest : public testing::Test {
  public:
   MediaStreamDispatcherHostTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         old_browser_client_(NULL),
         origin_(GURL("https://test.com")) {
     audio_manager_.reset(new media::MockAudioManager(
@@ -265,6 +276,9 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     host_ = new MockMediaStreamDispatcherHost(
         browser_context_.GetMediaDeviceIDSalt(),
         base::ThreadTaskRunnerHandle::Get(), media_stream_manager_.get());
+    mojom::MediaStreamDispatcherPtr dispatcher =
+        host_->CreateInterfacePtrAndBind();
+    host_->SetMediaStreamDispatcherForTesting(kRenderId, std::move(dispatcher));
 
     // Use the fake content client and browser.
     content_client_.reset(new TestContentClient());
@@ -363,9 +377,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
       MediaStreamRequestResult expected_result) {
       base::RunLoop run_loop;
       EXPECT_CALL(*host_.get(),
-                  OnStreamGenerationFailed(render_frame_id,
-                                           page_request_id,
-                                           expected_result));
+                  OnStreamGenerationFailure(page_request_id, expected_result));
       host_->OnGenerateStream(render_frame_id, page_request_id, controls,
                               origin_, run_loop.QuitClosure());
       run_loop.Run();
@@ -409,17 +421,17 @@ class MediaStreamDispatcherHostTest : public testing::Test {
       media::AudioDeviceDescriptions::const_iterator audio_it =
           audio_device_descriptions_.begin();
       for (; audio_it != audio_device_descriptions_.end(); ++audio_it) {
-        if (content::DoesMediaDeviceIDMatchHMAC(
-                browser_context_.GetMediaDeviceIDSalt(), origin,
-                devices[i].device.id, audio_it->unique_id)) {
+        if (DoesMediaDeviceIDMatchHMAC(browser_context_.GetMediaDeviceIDSalt(),
+                                       origin, devices[i].device.id,
+                                       audio_it->unique_id)) {
           EXPECT_FALSE(found_match);
           found_match = true;
         }
       }
       for (const std::string& device_id : stub_video_device_ids_) {
-        if (content::DoesMediaDeviceIDMatchHMAC(
-                browser_context_.GetMediaDeviceIDSalt(), origin,
-                devices[i].device.id, device_id)) {
+        if (DoesMediaDeviceIDMatchHMAC(browser_context_.GetMediaDeviceIDSalt(),
+                                       origin, devices[i].device.id,
+                                       device_id)) {
           EXPECT_FALSE(found_match);
           found_match = true;
         }
@@ -450,13 +462,13 @@ class MediaStreamDispatcherHostTest : public testing::Test {
 
   scoped_refptr<MockMediaStreamDispatcherHost> host_;
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<media::AudioManager> audio_manager_;
   std::unique_ptr<media::AudioSystem> audio_system_;
   MockMediaStreamUIProxy* stream_ui_;
   ContentBrowserClient* old_browser_client_;
   std::unique_ptr<ContentClient> content_client_;
-  content::TestBrowserContext browser_context_;
+  TestBrowserContext browser_context_;
   media::AudioDeviceDescriptions audio_device_descriptions_;
   std::vector<std::string> stub_video_device_ids_;
   url::Origin origin_;
@@ -506,7 +518,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithAudioAndVideo) {
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamWithDepthVideo) {
   // We specify to generate both audio and video stream.
   StreamControls controls(true, true);
-  std::string source_id = content::GetHMACForMediaDeviceID(
+  std::string source_id = GetHMACForMediaDeviceID(
       browser_context_.GetMediaDeviceIDSalt(), origin_, kDepthVideoDeviceId);
   // |source_id| corresponds to the depth device. As we can generate only one
   // video stream using GenerateStreamAndWaitForResult, we use
@@ -659,7 +671,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithSourceId) {
   media::AudioDeviceDescriptions::const_iterator audio_it =
       audio_device_descriptions_.begin();
   for (; audio_it != audio_device_descriptions_.end(); ++audio_it) {
-    std::string source_id = content::GetHMACForMediaDeviceID(
+    std::string source_id = GetHMACForMediaDeviceID(
         browser_context_.GetMediaDeviceIDSalt(), origin_, audio_it->unique_id);
     ASSERT_FALSE(source_id.empty());
     StreamControls controls(true, true);
@@ -671,7 +683,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithSourceId) {
   }
 
   for (const std::string& device_id : stub_video_device_ids_) {
-    std::string source_id = content::GetHMACForMediaDeviceID(
+    std::string source_id = GetHMACForMediaDeviceID(
         browser_context_.GetMediaDeviceIDSalt(), origin_, device_id);
     ASSERT_FALSE(source_id.empty());
     StreamControls controls(true, true);

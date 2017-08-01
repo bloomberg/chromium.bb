@@ -69,6 +69,111 @@ bool EnumTraits<content::mojom::MediaStreamType, content::MediaStreamType>::
 }
 
 // static
+content::mojom::MediaStreamRequestResult
+EnumTraits<content::mojom::MediaStreamRequestResult,
+           content::MediaStreamRequestResult>::
+    ToMojom(content::MediaStreamRequestResult result) {
+  switch (result) {
+    case content::MediaStreamRequestResult::MEDIA_DEVICE_OK:
+      return content::mojom::MediaStreamRequestResult::OK;
+    case content::MediaStreamRequestResult::MEDIA_DEVICE_PERMISSION_DENIED:
+      return content::mojom::MediaStreamRequestResult::PERMISSION_DENIED;
+    case content::MediaStreamRequestResult::MEDIA_DEVICE_PERMISSION_DISMISSED:
+      return content::mojom::MediaStreamRequestResult::PERMISSION_DISMISSED;
+    case content::MediaStreamRequestResult::MEDIA_DEVICE_INVALID_STATE:
+      return content::mojom::MediaStreamRequestResult::INVALID_STATE;
+    case content::MediaStreamRequestResult::MEDIA_DEVICE_NO_HARDWARE:
+      return content::mojom::MediaStreamRequestResult::NO_HARDWARE;
+    case content::MediaStreamRequestResult::
+        MEDIA_DEVICE_INVALID_SECURITY_ORIGIN_DEPRECATED:
+      return content::mojom::MediaStreamRequestResult::
+          INVALID_SECURITY_ORIGIN_DEPRECATED;
+    case content::MediaStreamRequestResult::MEDIA_DEVICE_TAB_CAPTURE_FAILURE:
+      return content::mojom::MediaStreamRequestResult::TAB_CAPTURE_FAILURE;
+    case content::MediaStreamRequestResult::MEDIA_DEVICE_SCREEN_CAPTURE_FAILURE:
+      return content::mojom::MediaStreamRequestResult::SCREEN_CAPTURE_FAILURE;
+    case content::MediaStreamRequestResult::MEDIA_DEVICE_CAPTURE_FAILURE:
+      return content::mojom::MediaStreamRequestResult::CAPTURE_FAILURE;
+    case content::MediaStreamRequestResult::
+        MEDIA_DEVICE_CONSTRAINT_NOT_SATISFIED:
+      return content::mojom::MediaStreamRequestResult::CONSTRAINT_NOT_SATISFIED;
+    case content::MediaStreamRequestResult::MEDIA_DEVICE_TRACK_START_FAILURE:
+      return content::mojom::MediaStreamRequestResult::TRACK_START_FAILURE;
+    case content::MediaStreamRequestResult::MEDIA_DEVICE_NOT_SUPPORTED:
+      return content::mojom::MediaStreamRequestResult::NOT_SUPPORTED;
+    case content::MediaStreamRequestResult::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN:
+      return content::mojom::MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN;
+    case content::MediaStreamRequestResult::MEDIA_DEVICE_KILL_SWITCH_ON:
+      return content::mojom::MediaStreamRequestResult::KILL_SWITCH_ON;
+    default:
+      break;
+  }
+  NOTREACHED();
+  return content::mojom::MediaStreamRequestResult::OK;
+}
+
+// static
+bool EnumTraits<content::mojom::MediaStreamRequestResult,
+                content::MediaStreamRequestResult>::
+    FromMojom(content::mojom::MediaStreamRequestResult input,
+              content::MediaStreamRequestResult* out) {
+  switch (input) {
+    case content::mojom::MediaStreamRequestResult::OK:
+      *out = content::MediaStreamRequestResult::MEDIA_DEVICE_OK;
+      return true;
+    case content::mojom::MediaStreamRequestResult::PERMISSION_DENIED:
+      *out = content::MediaStreamRequestResult::MEDIA_DEVICE_PERMISSION_DENIED;
+      return true;
+    case content::mojom::MediaStreamRequestResult::PERMISSION_DISMISSED:
+      *out =
+          content::MediaStreamRequestResult::MEDIA_DEVICE_PERMISSION_DISMISSED;
+      return true;
+    case content::mojom::MediaStreamRequestResult::INVALID_STATE:
+      *out = content::MediaStreamRequestResult::MEDIA_DEVICE_INVALID_STATE;
+      return true;
+    case content::mojom::MediaStreamRequestResult::NO_HARDWARE:
+      *out = content::MediaStreamRequestResult::MEDIA_DEVICE_NO_HARDWARE;
+      return true;
+    case content::mojom::MediaStreamRequestResult::
+        INVALID_SECURITY_ORIGIN_DEPRECATED:
+      *out = content::MediaStreamRequestResult::
+          MEDIA_DEVICE_INVALID_SECURITY_ORIGIN_DEPRECATED;
+      return true;
+    case content::mojom::MediaStreamRequestResult::TAB_CAPTURE_FAILURE:
+      *out =
+          content::MediaStreamRequestResult::MEDIA_DEVICE_TAB_CAPTURE_FAILURE;
+      return true;
+    case content::mojom::MediaStreamRequestResult::SCREEN_CAPTURE_FAILURE:
+      *out = content::MediaStreamRequestResult::
+          MEDIA_DEVICE_SCREEN_CAPTURE_FAILURE;
+      return true;
+    case content::mojom::MediaStreamRequestResult::CAPTURE_FAILURE:
+      *out = content::MediaStreamRequestResult::MEDIA_DEVICE_CAPTURE_FAILURE;
+      return true;
+    case content::mojom::MediaStreamRequestResult::CONSTRAINT_NOT_SATISFIED:
+      *out = content::MediaStreamRequestResult::
+          MEDIA_DEVICE_CONSTRAINT_NOT_SATISFIED;
+      return true;
+    case content::mojom::MediaStreamRequestResult::TRACK_START_FAILURE:
+      *out =
+          content::MediaStreamRequestResult::MEDIA_DEVICE_TRACK_START_FAILURE;
+      return true;
+    case content::mojom::MediaStreamRequestResult::NOT_SUPPORTED:
+      *out = content::MediaStreamRequestResult::MEDIA_DEVICE_NOT_SUPPORTED;
+      return true;
+    case content::mojom::MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN:
+      *out = content::MediaStreamRequestResult::
+          MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN;
+      return true;
+    case content::mojom::MediaStreamRequestResult::KILL_SWITCH_ON:
+      *out = content::MediaStreamRequestResult::MEDIA_DEVICE_KILL_SWITCH_ON;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// static
 bool StructTraits<
     content::mojom::TrackControlsDataView,
     content::TrackControls>::Read(content::mojom::TrackControlsDataView input,

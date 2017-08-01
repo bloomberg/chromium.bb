@@ -16,4 +16,7 @@ per-file *_struct_traits*.*=file://ipc/SECURITY_OWNERS
 per-file *.typemap=set noparent
 per-file *.typemap=file://ipc/SECURITY_OWNERS
 
+per-file *_typemap_traits*.*=set noparent
+per-file *_typemap_traits*.*=file://ipc/SECURITY_OWNERS
+
 # COMPONENT: Internals>Media

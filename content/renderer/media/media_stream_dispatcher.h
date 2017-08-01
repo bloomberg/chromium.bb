@@ -19,13 +19,16 @@
 #include "content/common/media/media_stream.mojom.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace url {
 class Origin;
 }
 
 namespace content {
+
+class MediaStreamDispatcherEventHandler;
 
 // MediaStreamDispatcher is a delegate for the Media Stream API messages.
 // MediaStreams are used by WebKit to open media devices such as Video Capture
@@ -34,7 +37,7 @@ namespace content {
 // RenderProcessHostImpl).
 class CONTENT_EXPORT MediaStreamDispatcher
     : public RenderFrameObserver,
-      public base::SupportsWeakPtr<MediaStreamDispatcher> {
+      public mojom::MediaStreamDispatcher {
  public:
   explicit MediaStreamDispatcher(RenderFrame* render_frame);
   ~MediaStreamDispatcher() override;
@@ -108,6 +111,9 @@ class CONTENT_EXPORT MediaStreamDispatcher
   struct Stream;
 
   // RenderFrameObserver override.
+  void OnInterfaceRequestForFrame(
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* interface_pipe) override;
   void OnDestruct() override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
@@ -117,9 +123,6 @@ class CONTENT_EXPORT MediaStreamDispatcher
       const std::string& label,
       const StreamDeviceInfoArray& audio_array,
       const StreamDeviceInfoArray& video_array);
-  void OnStreamGenerationFailed(
-      int request_id,
-      content::MediaStreamRequestResult result);
   void OnDeviceStopped(const std::string& label,
                        const StreamDeviceInfo& device_info);
   void OnDeviceOpened(
@@ -128,10 +131,18 @@ class CONTENT_EXPORT MediaStreamDispatcher
       const StreamDeviceInfo& device_info);
   void OnDeviceOpenFailed(int request_id);
 
+  // mojom::MediaStreamDispatcher implementation.
+  void OnStreamGenerationFailed(int32_t request_id,
+                                MediaStreamRequestResult result) override;
+
+  void BindMediaStreamDispatcherRequest(
+      mojom::MediaStreamDispatcherRequest request);
+
   mojom::MediaStreamDispatcherHost* GetMediaStreamDispatcherHost();
 
   mojom::MediaStreamDispatcherHostAssociatedPtr dispatcher_host_ptr_;
   mojom::MediaStreamDispatcherHost* dispatcher_host_;
+  mojo::Binding<mojom::MediaStreamDispatcher> binding_;
 
   // Used for DCHECKs so methods calls won't execute in the wrong thread.
   base::ThreadChecker thread_checker_;
@@ -144,6 +155,8 @@ class CONTENT_EXPORT MediaStreamDispatcher
   // been canceled.
   typedef std::list<Request> RequestList;
   RequestList requests_;
+
+  service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDispatcher);
 };

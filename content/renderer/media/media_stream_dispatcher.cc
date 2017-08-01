@@ -6,12 +6,14 @@
 
 #include <stddef.h>
 
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/media/media_stream_messages.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
-#include "content/renderer/render_thread_impl.h"
-#include "media/base/audio_parameters.h"
+#include "ipc/ipc_sync_channel.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "url/origin.h"
 
 namespace content {
@@ -66,7 +68,12 @@ struct MediaStreamDispatcher::Stream {
 MediaStreamDispatcher::MediaStreamDispatcher(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
       dispatcher_host_(nullptr),
-      next_ipc_id_(0) {}
+      binding_(this),
+      next_ipc_id_(0) {
+  registry_.AddInterface(
+      base::Bind(&MediaStreamDispatcher::BindMediaStreamDispatcherRequest,
+                 base::Unretained(this)));
+}
 
 MediaStreamDispatcher::~MediaStreamDispatcher() {}
 
@@ -76,8 +83,8 @@ void MediaStreamDispatcher::GenerateStream(
     const StreamControls& controls,
     const url::Origin& security_origin,
     bool is_processing_user_gesture) {
+  DVLOG(1) << __func__ << " request_id= " << request_id;
   DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "MediaStreamDispatcher::GenerateStream(" << request_id << ")";
 
   requests_.push_back(Request(event_handler, request_id, next_ipc_id_));
   GetMediaStreamDispatcherHost()->GenerateStream(routing_id(), next_ipc_id_++,
@@ -88,12 +95,10 @@ void MediaStreamDispatcher::GenerateStream(
 void MediaStreamDispatcher::CancelGenerateStream(
     int request_id,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler) {
+  DVLOG(1) << __func__ << " request_id= " << request_id;
   DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "MediaStreamDispatcher::CancelGenerateStream"
-           << ", {request_id = " << request_id << "}";
 
-  RequestList::iterator it = requests_.begin();
-  for (; it != requests_.end(); ++it) {
+  for (auto it = requests_.begin(); it != requests_.end(); ++it) {
     if (it->IsThisRequest(request_id, event_handler)) {
       int ipc_request = it->ipc_request;
       requests_.erase(it);
@@ -106,9 +111,9 @@ void MediaStreamDispatcher::CancelGenerateStream(
 
 void MediaStreamDispatcher::StopStreamDevice(
     const StreamDeviceInfo& device_info) {
+  DVLOG(1) << __func__ << " device_id= " << device_info.device.id;
   DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "MediaStreamDispatcher::StopStreamDevice"
-           << ", {device_id = " << device_info.device.id << "}";
+
   // Remove |device_info| from all streams in |label_stream_map_|.
   bool device_found = false;
   LabelStreamMap::iterator stream_it = label_stream_map_.begin();
@@ -138,8 +143,8 @@ void MediaStreamDispatcher::OpenDevice(
     const std::string& device_id,
     MediaStreamType type,
     const url::Origin& security_origin) {
+  DVLOG(1) << __func__ << " request_id= " << request_id;
   DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "MediaStreamDispatcher::OpenDevice(" << request_id << ")";
 
   requests_.push_back(Request(event_handler, request_id, next_ipc_id_));
   GetMediaStreamDispatcherHost()->OpenDevice(routing_id(), next_ipc_id_++,
@@ -149,14 +154,16 @@ void MediaStreamDispatcher::OpenDevice(
 void MediaStreamDispatcher::CancelOpenDevice(
     int request_id,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler) {
+  DVLOG(1) << __func__ << " request_id= " << request_id;
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   CancelGenerateStream(request_id, event_handler);
 }
 
 void MediaStreamDispatcher::CloseDevice(const std::string& label) {
+  DVLOG(1) << __func__ << " label= " << label;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!label.empty());
-  DVLOG(1) << "MediaStreamDispatcher::CloseDevice"
-           << ", {label = " << label << "}";
 
   LabelStreamMap::iterator it = label_stream_map_.find(label);
   if (it == label_stream_map_.end())
@@ -167,8 +174,8 @@ void MediaStreamDispatcher::CloseDevice(const std::string& label) {
 }
 
 void MediaStreamDispatcher::OnStreamStarted(const std::string& label) {
+  DVLOG(1) << __func__ << " label= " << label;
   DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "MediaStreamDispatcher::OnStreamStarted(" << label << ")";
 
   GetMediaStreamDispatcherHost()->StreamStarted(label);
 }
@@ -184,6 +191,12 @@ StreamDeviceInfoArray MediaStreamDispatcher::GetNonScreenCaptureDevices() {
   return video_array;
 }
 
+void MediaStreamDispatcher::OnInterfaceRequestForFrame(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* interface_pipe) {
+  registry_.TryBindInterface(interface_name, interface_pipe);
+}
+
 void MediaStreamDispatcher::OnDestruct() {
   // Do not self-destruct. UserMediaClientImpl owns |this|.
 }
@@ -193,8 +206,6 @@ bool MediaStreamDispatcher::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(MediaStreamDispatcher, message)
     IPC_MESSAGE_HANDLER(MediaStreamMsg_StreamGenerated,
                         OnStreamGenerated)
-    IPC_MESSAGE_HANDLER(MediaStreamMsg_StreamGenerationFailed,
-                        OnStreamGenerationFailed)
     IPC_MESSAGE_HANDLER(MediaStreamMsg_DeviceStopped,
                         OnDeviceStopped)
     IPC_MESSAGE_HANDLER(MediaStreamMsg_DeviceOpened,
@@ -213,53 +224,32 @@ void MediaStreamDispatcher::OnStreamGenerated(
     const StreamDeviceInfoArray& video_array) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  for (RequestList::iterator it = requests_.begin();
-       it != requests_.end(); ++it) {
+  for (auto it = requests_.begin(); it != requests_.end(); ++it) {
     Request& request = *it;
-    if (request.ipc_request == request_id) {
-      Stream new_stream;
-      new_stream.handler = request.handler;
-      new_stream.audio_array = audio_array;
-      new_stream.video_array = video_array;
-      label_stream_map_[label] = new_stream;
-      if (request.handler.get()) {
-        request.handler->OnStreamGenerated(
-            request.request_id, label, audio_array, video_array);
-        DVLOG(1) << "MediaStreamDispatcher::OnStreamGenerated("
-                 << request.request_id << ", " << label << ")";
-      }
-      requests_.erase(it);
-      break;
+    if (request.ipc_request != request_id)
+      continue;
+    Stream new_stream;
+    new_stream.handler = request.handler;
+    new_stream.audio_array = audio_array;
+    new_stream.video_array = video_array;
+    label_stream_map_[label] = new_stream;
+    if (request.handler.get()) {
+      request.handler->OnStreamGenerated(request.request_id, label, audio_array,
+                                         video_array);
+      DVLOG(1) << __func__ << " request_id=" << request.request_id
+               << " label=" << label;
     }
-  }
-}
-
-void MediaStreamDispatcher::OnStreamGenerationFailed(
-    int request_id,
-    content::MediaStreamRequestResult result) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  for (RequestList::iterator it = requests_.begin();
-       it != requests_.end(); ++it) {
-    Request& request = *it;
-    if (request.ipc_request == request_id) {
-      if (request.handler.get()) {
-        request.handler->OnStreamGenerationFailed(request.request_id, result);
-        DVLOG(1) << "MediaStreamDispatcher::OnStreamGenerationFailed("
-                 << request.request_id << ")\n";
-      }
-      requests_.erase(it);
-      break;
-    }
+    requests_.erase(it);
+    break;
   }
 }
 
 void MediaStreamDispatcher::OnDeviceStopped(
     const std::string& label,
     const StreamDeviceInfo& device_info) {
+  DVLOG(1) << __func__ << " label=" << label
+           << " device_id=" << device_info.device.id;
   DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "MediaStreamDispatcher::OnDeviceStopped("
-           << "{label = " << label << "})"
-           << ", {device_id = " << device_info.device.id << "})";
 
   LabelStreamMap::iterator it = label_stream_map_.find(label);
   if (it == label_stream_map_.end()) {
@@ -294,51 +284,74 @@ void MediaStreamDispatcher::OnDeviceOpened(
     const std::string& label,
     const StreamDeviceInfo& device_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  for (RequestList::iterator it = requests_.begin();
-       it != requests_.end(); ++it) {
+
+  for (auto it = requests_.begin(); it != requests_.end(); ++it) {
     Request& request = *it;
-    if (request.ipc_request == request_id) {
-      Stream new_stream;
-      new_stream.handler = request.handler;
-      if (IsAudioInputMediaType(device_info.device.type)) {
-        new_stream.audio_array.push_back(device_info);
-      } else if (IsVideoMediaType(device_info.device.type)) {
-        new_stream.video_array.push_back(device_info);
-      } else {
-        NOTREACHED();
-      }
-      label_stream_map_[label] = new_stream;
-      if (request.handler.get()) {
-        request.handler->OnDeviceOpened(request.request_id, label, device_info);
-        DVLOG(1) << "MediaStreamDispatcher::OnDeviceOpened("
-                 << request.request_id << ", " << label << ")";
-      }
-      requests_.erase(it);
-      break;
+    if (request.ipc_request != request_id)
+      continue;
+    Stream new_stream;
+    new_stream.handler = request.handler;
+    if (IsAudioInputMediaType(device_info.device.type))
+      new_stream.audio_array.push_back(device_info);
+    else if (IsVideoMediaType(device_info.device.type))
+      new_stream.video_array.push_back(device_info);
+    else
+      NOTREACHED();
+
+    label_stream_map_[label] = new_stream;
+    if (request.handler.get()) {
+      request.handler->OnDeviceOpened(request.request_id, label, device_info);
+      DVLOG(1) << __func__ << " request_id=" << request.request_id
+               << " label=" << label;
     }
+    requests_.erase(it);
+    break;
   }
 }
 
 void MediaStreamDispatcher::OnDeviceOpenFailed(int request_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  for (RequestList::iterator it = requests_.begin();
-       it != requests_.end(); ++it) {
+
+  for (auto it = requests_.begin(); it != requests_.end(); ++it) {
     Request& request = *it;
-    if (request.ipc_request == request_id) {
-      if (request.handler.get()) {
-        request.handler->OnDeviceOpenFailed(request.request_id);
-        DVLOG(1) << "MediaStreamDispatcher::OnDeviceOpenFailed("
-                 << request.request_id << ")\n";
-      }
-      requests_.erase(it);
-      break;
+    if (request.ipc_request != request_id)
+      continue;
+    if (request.handler.get()) {
+      request.handler->OnDeviceOpenFailed(request.request_id);
+      DVLOG(1) << __func__ << " request_id=" << request.request_id;
     }
+    requests_.erase(it);
+    break;
   }
+}
+
+void MediaStreamDispatcher::OnStreamGenerationFailed(
+    int32_t request_id,
+    MediaStreamRequestResult result) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  for (auto it = requests_.begin(); it != requests_.end(); ++it) {
+    Request& request = *it;
+    if (request.ipc_request != request_id)
+      continue;
+    if (request.handler.get()) {
+      request.handler->OnStreamGenerationFailed(request.request_id, result);
+      DVLOG(1) << __func__ << " request_id=" << request.request_id;
+    }
+    requests_.erase(it);
+    break;
+  }
+}
+
+void MediaStreamDispatcher::BindMediaStreamDispatcherRequest(
+    mojom::MediaStreamDispatcherRequest request) {
+  binding_.Bind(std::move(request));
 }
 
 mojom::MediaStreamDispatcherHost*
 MediaStreamDispatcher::GetMediaStreamDispatcherHost() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
   if (!dispatcher_host_) {
     ChildThreadImpl::current()->channel()->GetRemoteAssociatedInterface(
         &dispatcher_host_ptr_);
@@ -350,6 +363,7 @@ MediaStreamDispatcher::GetMediaStreamDispatcherHost() {
 int MediaStreamDispatcher::audio_session_id(const std::string& label,
                                             int index) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
   LabelStreamMap::iterator it = label_stream_map_.find(label);
   if (it == label_stream_map_.end() ||
       it->second.audio_array.size() <= static_cast<size_t>(index)) {
@@ -360,12 +374,14 @@ int MediaStreamDispatcher::audio_session_id(const std::string& label,
 
 bool MediaStreamDispatcher::IsStream(const std::string& label) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
   return label_stream_map_.find(label) != label_stream_map_.end();
 }
 
 int MediaStreamDispatcher::video_session_id(const std::string& label,
                                             int index) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
   LabelStreamMap::iterator it = label_stream_map_.find(label);
   if (it == label_stream_map_.end() ||
       it->second.video_array.size() <= static_cast<size_t>(index)) {
