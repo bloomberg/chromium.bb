@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/remote/contextual_suggestions_fetcher.h"
+#include "components/ntp_snippets/remote/contextual_suggestions_fetcher_impl.h"
 
 #include <utility>
 #include <vector>
@@ -116,7 +116,7 @@ class ContextualSuggestionsFetcherTest : public testing::Test {
     fake_token_service_ = base::MakeUnique<FakeProfileOAuth2TokenService>(
         base::MakeUnique<FakeOAuth2TokenServiceDelegate>(
             request_context_getter.get()));
-    fetcher_ = base::MakeUnique<ContextualSuggestionsFetcher>(
+    fetcher_ = base::MakeUnique<ContextualSuggestionsFetcherImpl>(
         test_utils_.fake_signin_manager(), fake_token_service_.get(),
         std::move(request_context_getter), test_utils_.pref_service(),
         base::Bind(&ParseJson));
@@ -162,7 +162,7 @@ class ContextualSuggestionsFetcherTest : public testing::Test {
  private:
   std::unique_ptr<FakeProfileOAuth2TokenService> fake_token_service_;
   std::unique_ptr<net::FakeURLFetcherFactory> fake_url_fetcher_factory_;
-  std::unique_ptr<ContextualSuggestionsFetcher> fetcher_;
+  std::unique_ptr<ContextualSuggestionsFetcherImpl> fetcher_;
   MockSuggestionsAvailableCallback mock_suggestions_available_callback_;
   scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
   base::ThreadTaskRunnerHandle mock_task_runner_handle_;

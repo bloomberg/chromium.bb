@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/remote/contextual_suggestions_fetcher.h"
+#include "components/ntp_snippets/remote/contextual_suggestions_fetcher_impl.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
@@ -108,7 +108,7 @@ bool AddSuggestionsFromListValue(bool content_suggestions_api,
 
 }  // namespace
 
-ContextualSuggestionsFetcher::ContextualSuggestionsFetcher(
+ContextualSuggestionsFetcherImpl::ContextualSuggestionsFetcherImpl(
     SigninManagerBase* signin_manager,
     OAuth2TokenService* token_service,
     scoped_refptr<URLRequestContextGetter> url_request_context_getter,
@@ -120,20 +120,21 @@ ContextualSuggestionsFetcher::ContextualSuggestionsFetcher(
       parse_json_callback_(parse_json_callback),
       fetch_url_(GetFetchEndpoint()) {}
 
-ContextualSuggestionsFetcher::~ContextualSuggestionsFetcher() = default;
+ContextualSuggestionsFetcherImpl::~ContextualSuggestionsFetcherImpl() = default;
 
-const std::string& ContextualSuggestionsFetcher::GetLastStatusForTesting()
+const std::string& ContextualSuggestionsFetcherImpl::GetLastStatusForTesting()
     const {
   return last_status_;
 }
-const std::string& ContextualSuggestionsFetcher::GetLastJsonForTesting() const {
+const std::string& ContextualSuggestionsFetcherImpl::GetLastJsonForTesting()
+    const {
   return last_fetch_json_;
 }
-const GURL& ContextualSuggestionsFetcher::GetFetchUrlForTesting() const {
+const GURL& ContextualSuggestionsFetcherImpl::GetFetchUrlForTesting() const {
   return fetch_url_;
 }
 
-void ContextualSuggestionsFetcher::FetchContextualSuggestions(
+void ContextualSuggestionsFetcherImpl::FetchContextualSuggestions(
     const GURL& url,
     SuggestionsAvailableCallback callback) {
   ContextualJsonRequest::Builder builder;
@@ -145,7 +146,7 @@ void ContextualSuggestionsFetcher::FetchContextualSuggestions(
   StartTokenRequest();
 }
 
-void ContextualSuggestionsFetcher::StartRequest(
+void ContextualSuggestionsFetcherImpl::StartRequest(
     ContextualJsonRequest::Builder builder,
     SuggestionsAvailableCallback callback,
     const std::string& oauth_access_token) {
@@ -153,15 +154,15 @@ void ContextualSuggestionsFetcher::StartRequest(
       .SetAuthentication(signin_manager_->GetAuthenticatedAccountId(),
                          base::StringPrintf(kAuthorizationRequestHeaderFormat,
                                             oauth_access_token.c_str()));
-  DVLOG(0) << "ContextualSuggestionsFetcher::StartRequest";
+  DVLOG(1) << "ContextualSuggestionsFetcherImpl::StartRequest";
   std::unique_ptr<ContextualJsonRequest> request = builder.Build();
   ContextualJsonRequest* raw_request = request.get();
   raw_request->Start(base::BindOnce(
-      &ContextualSuggestionsFetcher::JsonRequestDone, base::Unretained(this),
-      std::move(request), std::move(callback)));
+      &ContextualSuggestionsFetcherImpl::JsonRequestDone,
+      base::Unretained(this), std::move(request), std::move(callback)));
 }
 
-void ContextualSuggestionsFetcher::StartTokenRequest() {
+void ContextualSuggestionsFetcherImpl::StartTokenRequest() {
   // If there is already an ongoing token request, just wait for that.
   if (token_fetcher_) {
     return;
@@ -170,11 +171,12 @@ void ContextualSuggestionsFetcher::StartTokenRequest() {
   OAuth2TokenService::ScopeSet scopes{kContentSuggestionsApiScope};
   token_fetcher_ = base::MakeUnique<AccessTokenFetcher>(
       "ntp_snippets", signin_manager_, token_service_, scopes,
-      base::BindOnce(&ContextualSuggestionsFetcher::AccessTokenFetchFinished,
-                     base::Unretained(this)));
+      base::BindOnce(
+          &ContextualSuggestionsFetcherImpl::AccessTokenFetchFinished,
+          base::Unretained(this)));
 }
 
-void ContextualSuggestionsFetcher::AccessTokenFetchFinished(
+void ContextualSuggestionsFetcherImpl::AccessTokenFetchFinished(
     const GoogleServiceAuthError& error,
     const std::string& access_token) {
   // Delete the fetcher only after we leave this method (which is called from
@@ -199,11 +201,11 @@ void ContextualSuggestionsFetcher::AccessTokenFetchFinished(
   }
 }
 
-void ContextualSuggestionsFetcher::AccessTokenError(
+void ContextualSuggestionsFetcherImpl::AccessTokenError(
     const GoogleServiceAuthError& error) {
   DCHECK_NE(error.state(), GoogleServiceAuthError::NONE);
 
-  LOG(WARNING) << "ContextualSuggestionsFetcher::AccessTokenError "
+  LOG(WARNING) << "ContextualSuggestionsFetcherImpl::AccessTokenError "
                   "Unable to get token: "
                << error.ToString();
 
@@ -219,7 +221,7 @@ void ContextualSuggestionsFetcher::AccessTokenError(
   }
 }
 
-void ContextualSuggestionsFetcher::JsonRequestDone(
+void ContextualSuggestionsFetcherImpl::JsonRequestDone(
     std::unique_ptr<ContextualJsonRequest> request,
     SuggestionsAvailableCallback callback,
     std::unique_ptr<base::Value> result,
@@ -227,7 +229,7 @@ void ContextualSuggestionsFetcher::JsonRequestDone(
     const std::string& error_details) {
   DCHECK(request);
 
-  DVLOG(0) << "ContextualSuggestionsFetcher::JsonRequestDone status_code="
+  DVLOG(1) << "ContextualSuggestionsFetcherImpl::JsonRequestDone status_code="
            << static_cast<int>(status_code)
            << " error_details=" << error_details;
   last_fetch_json_ = request->GetResponseString();
@@ -252,7 +254,7 @@ void ContextualSuggestionsFetcher::JsonRequestDone(
                 FetchResult::SUCCESS, std::string());
 }
 
-void ContextualSuggestionsFetcher::FetchFinished(
+void ContextualSuggestionsFetcherImpl::FetchFinished(
     OptionalSuggestions optional_suggestions,
     SuggestionsAvailableCallback callback,
     FetchResult fetch_result,
@@ -268,7 +270,7 @@ void ContextualSuggestionsFetcher::FetchFinished(
                           std::move(optional_suggestions));
 }
 
-bool ContextualSuggestionsFetcher::JsonToSuggestions(
+bool ContextualSuggestionsFetcherImpl::JsonToSuggestions(
     const base::Value& parsed,
     RemoteSuggestion::PtrVector* suggestions) {
   const base::DictionaryValue* top_dict = nullptr;
