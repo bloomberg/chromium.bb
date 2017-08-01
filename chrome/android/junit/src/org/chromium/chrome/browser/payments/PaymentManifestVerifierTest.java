@@ -17,6 +17,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import org.chromium.chrome.browser.payments.PaymentManifestVerifier.ManifestVerifyCallback;
+import org.chromium.chrome.browser.payments.PaymentManifestWebDataService.PaymentManifestWebDataServiceCallback;
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
 import org.chromium.content_public.browser.WebContents;
@@ -24,8 +25,8 @@ import org.chromium.payments.mojom.WebAppManifestSection;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /** A test for the verifier of a payment app manifest. */
 @RunWith(RobolectricTestRunner.class)
@@ -34,7 +35,7 @@ public class PaymentManifestVerifierTest {
     private final URI mMethodName;
     private final ResolveInfo mAlicePay;
     private final ResolveInfo mBobPay;
-    private final List<ResolveInfo> mMatchingApps;
+    private final Set<ResolveInfo> mMatchingApps;
     private final PaymentManifestDownloader mDownloader;
     private final PaymentManifestWebDataService mWebDataService;
     private final PaymentManifestParser mParser;
@@ -52,7 +53,7 @@ public class PaymentManifestVerifierTest {
         mBobPay.activityInfo = new ActivityInfo();
         mBobPay.activityInfo.packageName = "com.bobpay.app";
 
-        mMatchingApps = new ArrayList<>();
+        mMatchingApps = new HashSet<>();
         mMatchingApps.add(mAlicePay);
         mMatchingApps.add(mBobPay);
 
@@ -75,7 +76,8 @@ public class PaymentManifestVerifierTest {
         };
 
         mWebDataService = Mockito.mock(PaymentManifestWebDataService.class);
-        Mockito.when(mWebDataService.getPaymentMethodManifest(Mockito.any(), Mockito.any()))
+        Mockito.when(mWebDataService.getPaymentMethodManifest(Mockito.any(String.class),
+                             Mockito.any(PaymentManifestWebDataServiceCallback.class)))
                 .thenReturn(false);
 
         mParser = new PaymentManifestParser() {
@@ -128,8 +130,8 @@ public class PaymentManifestVerifierTest {
 
     @Test
     public void testUnableToDownloadPaymentMethodManifest() {
-        PaymentManifestVerifier verifier = new PaymentManifestVerifier(
-                mMethodName, mMatchingApps, mWebDataService, new PaymentManifestDownloader() {
+        PaymentManifestVerifier verifier = new PaymentManifestVerifier(mMethodName, mMatchingApps,
+                null /* supportedOrigins */, mWebDataService, new PaymentManifestDownloader() {
                     @Override
                     public void initialize(WebContents webContents) {}
 
@@ -145,13 +147,14 @@ public class PaymentManifestVerifierTest {
 
         verifier.verify();
 
-        Mockito.verify(mCallback).onInvalidManifest(mMethodName);
+        Mockito.verify(mCallback, Mockito.never())
+                .onValidDefaultPaymentApp(Mockito.any(URI.class), Mockito.any(ResolveInfo.class));
     }
 
     @Test
     public void testUnableToDownloadWebAppManifest() {
-        PaymentManifestVerifier verifier = new PaymentManifestVerifier(
-                mMethodName, mMatchingApps, mWebDataService, new PaymentManifestDownloader() {
+        PaymentManifestVerifier verifier = new PaymentManifestVerifier(mMethodName, mMatchingApps,
+                null /* supportedOrigins */, mWebDataService, new PaymentManifestDownloader() {
                     @Override
                     public void initialize(WebContents webContents) {}
 
@@ -172,14 +175,17 @@ public class PaymentManifestVerifierTest {
 
         verifier.verify();
 
-        Mockito.verify(mCallback).onInvalidManifest(mMethodName);
-        Mockito.verify(mCallback).onVerifyFinished(verifier);
+        Mockito.verify(mCallback, Mockito.never())
+                .onValidDefaultPaymentApp(Mockito.any(URI.class), Mockito.any(ResolveInfo.class));
+        Mockito.verify(mCallback).onFinishedVerification();
+        Mockito.verify(mCallback).onFinishedUsingResources();
     }
 
     @Test
     public void testUnableToParsePaymentMethodManifest() {
         PaymentManifestVerifier verifier = new PaymentManifestVerifier(mMethodName, mMatchingApps,
-                mWebDataService, mDownloader, new PaymentManifestParser() {
+                null /* supportedOrigins */, mWebDataService,
+                mDownloader, new PaymentManifestParser() {
                     @Override
                     public void parsePaymentMethodManifest(
                             String content, ManifestParseCallback callback) {
@@ -189,14 +195,17 @@ public class PaymentManifestVerifierTest {
 
         verifier.verify();
 
-        Mockito.verify(mCallback).onInvalidManifest(mMethodName);
-        Mockito.verify(mCallback).onVerifyFinished(verifier);
+        Mockito.verify(mCallback, Mockito.never())
+                .onValidDefaultPaymentApp(Mockito.any(URI.class), Mockito.any(ResolveInfo.class));
+        Mockito.verify(mCallback).onFinishedVerification();
+        Mockito.verify(mCallback).onFinishedUsingResources();
     }
 
     @Test
     public void testUnableToParseWebAppManifest() {
         PaymentManifestVerifier verifier = new PaymentManifestVerifier(mMethodName, mMatchingApps,
-                mWebDataService, mDownloader, new PaymentManifestParser() {
+                null /* supportedOrigins */, mWebDataService,
+                mDownloader, new PaymentManifestParser() {
                     @Override
                     public void parsePaymentMethodManifest(
                             String content, ManifestParseCallback callback) {
@@ -218,20 +227,24 @@ public class PaymentManifestVerifierTest {
 
         verifier.verify();
 
-        Mockito.verify(mCallback).onInvalidManifest(mMethodName);
-        Mockito.verify(mCallback).onVerifyFinished(verifier);
+        Mockito.verify(mCallback, Mockito.never())
+                .onValidDefaultPaymentApp(Mockito.any(URI.class), Mockito.any(ResolveInfo.class));
+        Mockito.verify(mCallback).onFinishedVerification();
+        Mockito.verify(mCallback).onFinishedUsingResources();
     }
 
     @Test
     public void testBobPayAllowed() {
-        PaymentManifestVerifier verifier = new PaymentManifestVerifier(mMethodName, mMatchingApps,
-                mWebDataService, mDownloader, mParser, mPackageManagerDelegate, mCallback);
+        PaymentManifestVerifier verifier =
+                new PaymentManifestVerifier(mMethodName, mMatchingApps, null /* supportedOrigins */,
+                        mWebDataService, mDownloader, mParser, mPackageManagerDelegate, mCallback);
 
         verifier.verify();
 
-        Mockito.verify(mCallback).onInvalidPaymentApp(mMethodName, mAlicePay);
-        Mockito.verify(mCallback).onValidPaymentApp(mMethodName, mBobPay);
-        Mockito.verify(mCallback).onVerifyFinished(verifier);
+        Mockito.verify(mCallback, Mockito.never()).onValidDefaultPaymentApp(mMethodName, mAlicePay);
+        Mockito.verify(mCallback).onValidDefaultPaymentApp(mMethodName, mBobPay);
+        Mockito.verify(mCallback).onFinishedVerification();
+        Mockito.verify(mCallback).onFinishedUsingResources();
     }
 
     private class CountingParser extends PaymentManifestParser {
@@ -281,13 +294,16 @@ public class PaymentManifestVerifierTest {
             }
         };
 
-        PaymentManifestVerifier verifier = new PaymentManifestVerifier(mMethodName, mMatchingApps,
-                mWebDataService, downloader, parser, mPackageManagerDelegate, mCallback);
+        PaymentManifestVerifier verifier =
+                new PaymentManifestVerifier(mMethodName, mMatchingApps, null /* supportedOrigins */,
+                        mWebDataService, downloader, parser, mPackageManagerDelegate, mCallback);
 
         verifier.verify();
 
-        Mockito.verify(mCallback).onInvalidManifest(mMethodName);
-        Mockito.verify(mCallback).onVerifyFinished(verifier);
+        Mockito.verify(mCallback, Mockito.never())
+                .onValidDefaultPaymentApp(Mockito.any(URI.class), Mockito.any(ResolveInfo.class));
+        Mockito.verify(mCallback).onFinishedVerification();
+        Mockito.verify(mCallback).onFinishedUsingResources();
         Assert.assertEquals(1, downloader.mDownloadWebAppManifestCounter);
         Assert.assertEquals(0, parser.mParseWebAppManifestCounter);
     }
@@ -331,13 +347,16 @@ public class PaymentManifestVerifierTest {
             }
         };
 
-        PaymentManifestVerifier verifier = new PaymentManifestVerifier(mMethodName, mMatchingApps,
-                mWebDataService, downloader, parser, mPackageManagerDelegate, mCallback);
+        PaymentManifestVerifier verifier =
+                new PaymentManifestVerifier(mMethodName, mMatchingApps, null /* supportedOrigins */,
+                        mWebDataService, downloader, parser, mPackageManagerDelegate, mCallback);
 
         verifier.verify();
 
-        Mockito.verify(mCallback).onInvalidManifest(mMethodName);
-        Mockito.verify(mCallback).onVerifyFinished(verifier);
+        Mockito.verify(mCallback, Mockito.never())
+                .onValidDefaultPaymentApp(Mockito.any(URI.class), Mockito.any(ResolveInfo.class));
+        Mockito.verify(mCallback).onFinishedVerification();
+        Mockito.verify(mCallback).onFinishedUsingResources();
         Assert.assertEquals(1, downloader.mDownloadWebAppManifestCounter);
         Assert.assertEquals(1, parser.mParseWebAppManifestCounter);
     }
