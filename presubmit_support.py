@@ -12,6 +12,7 @@ __version__ = '1.8.0'
 # caching (between all different invocations of presubmit scripts for a given
 # change). We should add it as our presubmit scripts start feeling slow.
 
+import ast  # Exposed through the API.
 import cpplint
 import cPickle  # Exposed through the API.
 import cStringIO  # Exposed through the API.
@@ -402,6 +403,7 @@ class InputApi(object):
 
     # We expose various modules and functions as attributes of the input_api
     # so that presubmit scripts don't have to import them.
+    self.ast = ast
     self.basename = os.path.basename
     self.cPickle = cPickle
     self.cpplint = cpplint
