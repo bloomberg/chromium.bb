@@ -836,6 +836,16 @@ bool DesktopDragDropClientAuraX11::IsDragDropInProgress() {
   return !!g_current_drag_drop_client;
 }
 
+void DesktopDragDropClientAuraX11::AddObserver(
+    aura::client::DragDropClientObserver* observer) {
+  NOTIMPLEMENTED();
+}
+
+void DesktopDragDropClientAuraX11::RemoveObserver(
+    aura::client::DragDropClientObserver* observer) {
+  NOTIMPLEMENTED();
+}
+
 void DesktopDragDropClientAuraX11::OnWindowDestroyed(aura::Window* window) {
   DCHECK_EQ(target_window_, window);
   target_window_ = NULL;

@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/aura/client/capture_client.h"
+#include "ui/aura/client/drag_drop_client_observer.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -226,6 +227,9 @@ int DragDropController::StartDragAndDrop(
   if (cancel_animation_)
     cancel_animation_->End();
 
+  for (aura::client::DragDropClientObserver& observer : observers_)
+    observer.OnDragStarted();
+
   if (should_block_during_drag_drop_) {
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
@@ -260,6 +264,16 @@ void DragDropController::DragCancel() {
 
 bool DragDropController::IsDragDropInProgress() {
   return !!drag_drop_tracker_.get();
+}
+
+void DragDropController::AddObserver(
+    aura::client::DragDropClientObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void DragDropController::RemoveObserver(
+    aura::client::DragDropClientObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void DragDropController::OnKeyEvent(ui::KeyEvent* event) {
@@ -574,6 +588,8 @@ void DragDropController::ForwardPendingLongTap() {
 }
 
 void DragDropController::Cleanup() {
+  for (aura::client::DragDropClientObserver& observer : observers_)
+    observer.OnDragEnded();
   if (drag_window_)
     drag_window_->RemoveObserver(this);
   drag_window_ = NULL;

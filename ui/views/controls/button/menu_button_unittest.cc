@@ -21,6 +21,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/client/drag_drop_client.h"
+#include "ui/aura/client/drag_drop_client_observer.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 #endif
@@ -253,6 +254,9 @@ class TestDragDropClient : public aura::client::DragDropClient,
                        ui::DragDropTypes::DragEventSource source) override;
   void DragCancel() override;
   bool IsDragDropInProgress() override;
+  void AddObserver(aura::client::DragDropClientObserver* observer) override {}
+  void RemoveObserver(aura::client::DragDropClientObserver* observer) override {
+  }
 
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
