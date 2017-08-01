@@ -226,12 +226,18 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/canvas/' +
         'framebuffer-bindings-affected-by-to-data-url.html',
         ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=680754)
+    self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
+        ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=750896)
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
         ['win10', ('nvidia', 0x1cb3)], bug=715001)
     self.Fail('conformance/ogles/GL/atan/atan_001_to_008.html',
         ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=737018)
     self.Fail('conformance/ogles/GL/cos/cos_001_to_006.html',
         ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=680754)
+    self.Flaky('conformance/textures/image_bitmap_from_video/*',
+        ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=750896)
+    self.Flaky('conformance/textures/video/*',
+        ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=750896)
 
     # Win10 / NVIDIA Quadro P400 failures
     self.Flaky('conformance/textures/image_bitmap_from_video/' +
