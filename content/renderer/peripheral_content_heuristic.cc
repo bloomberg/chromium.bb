@@ -7,7 +7,6 @@
 #include <cmath>
 
 #include "base/feature_list.h"
-#include "content/public/common/content_features.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
@@ -45,19 +44,14 @@ PeripheralContentHeuristic::GetPeripheralStatus(
     const url::Origin& main_frame_origin,
     const url::Origin& content_origin,
     const gfx::Size& unobscured_size) {
-  if (base::FeatureList::IsEnabled(features::kFilterSameOriginTinyPlugin) &&
-      IsTiny(unobscured_size)) {
+  if (IsTiny(unobscured_size))
     return RenderFrame::CONTENT_STATUS_TINY;
-  }
 
   if (main_frame_origin.IsSameOriginWith(content_origin))
     return RenderFrame::CONTENT_STATUS_ESSENTIAL_SAME_ORIGIN;
 
   if (origin_whitelist.count(content_origin))
     return RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_WHITELISTED;
-
-  if (IsTiny(unobscured_size))
-    return RenderFrame::CONTENT_STATUS_TINY;
 
   if (IsLargeContent(unobscured_size))
     return RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_BIG;

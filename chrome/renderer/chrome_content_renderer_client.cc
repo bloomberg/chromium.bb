@@ -894,7 +894,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           break;
         }
 
-        // Same-origin and whitelisted-origin plugins skip the placeholder.
+        // Skip the placeholder for non-Flash plugins or if Plugin Power Saver
+        // is disabled for testing.
         return render_frame->CreatePlugin(info, params, nullptr);
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kDisabled: {

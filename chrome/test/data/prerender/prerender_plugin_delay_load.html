@@ -18,10 +18,31 @@ function DidPrerenderPass() {
   return plugin.postMessage == undefined;
 }
 
-// Make sure plugin loads once the page is displayed.
+// DidDisplayPass requires a synchronously returned result, but we can't
+// determine if the delayed plugin loaded correctly synchronously.
 function DidDisplayPass() {
+  return true;
+}
+
+// Make sure plugin loads once the page is displayed.
+function DidPluginLoad() {
   var plugin = window.document['plugin'];
-  return plugin.postMessage != undefined;
+
+  // Listen for either the initial status ping, or the requested status ping.
+  plugin.addEventListener('message', function handleEvent(event) {
+   if (event.data.source === 'getPowerSaverStatusResponse' ||
+       event.data.source === 'initial') {
+      plugin.removeEventListener('message', handleEvent);
+      window.domAutomationController.send(true);
+    }
+  });
+
+  // If the plugin has already loaded, we have missed the initial status ping,
+  // so we specifically request one.
+  if (plugin.postMessage)
+    plugin.postMessage('getPowerSaverStatus');
+
+  // Plugins don't have a time limit for loading, so failure is via timeout.
 }
 </script>
 

@@ -81,10 +81,6 @@ const base::Feature kExpensiveBackgroundTimerThrottling{
 const base::Feature kFeaturePolicy{"FeaturePolicy",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable filtering of same-origin tiny plugins
-const base::Feature kFilterSameOriginTinyPlugin{
-    "FilterSameOriginTinyPlugins", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables Fetch API keepalive timeout setting.
 const base::Feature kFetchKeepaliveTimeoutSetting{
     "FetchKeepaliveTimeoutSetting", base::FEATURE_ENABLED_BY_DEFAULT};
