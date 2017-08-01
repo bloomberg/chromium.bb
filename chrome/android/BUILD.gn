@@ -181,6 +181,14 @@ android_library("chrome_java") {
     ":chrome_public_apk_template_resources",
     ":document_tab_model_info_proto_java",
     ":partner_location_descriptor_proto_java",
+    "$google_play_services_package:google_play_services_auth_base_java",
+    "$google_play_services_package:google_play_services_base_java",
+    "$google_play_services_package:google_play_services_basement_java",
+    "$google_play_services_package:google_play_services_cast_java",
+    "$google_play_services_package:google_play_services_gcm_java",
+    "$google_play_services_package:google_play_services_iid_java",
+    "$google_play_services_package:google_play_services_nearby_java",
+    "$google_play_services_package:google_play_services_tasks_java",
     "//base:base_java",
     "//chrome/android/webapk/libs/client:client_java",
     "//chrome/android/webapk/libs/common:common_java",
@@ -253,7 +261,6 @@ android_library("chrome_java") {
     "//ui/base/mojo:mojo_bindings_java",
     "//ui/gfx/geometry/mojo:mojo_java",
     "//url/mojo:url_mojom_gurl_java",
-    google_play_services_library,
   ]
 
   srcjar_deps = [
@@ -373,6 +380,9 @@ junit_binary("chrome_junit_tests") {
     ":chrome_java",
     ":chrome_java_resources",
     ":partner_location_descriptor_proto_java",
+    "$google_play_services_package:google_play_services_base_java",
+    "$google_play_services_package:google_play_services_basement_java",
+    "$google_play_services_package:google_play_services_cast_java",
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android/webapk/libs/client:client_java",
@@ -410,7 +420,6 @@ junit_binary("chrome_junit_tests") {
     "//third_party/hamcrest:hamcrest_java",
     "//ui/android:ui_java",
     "//url/mojo:url_mojom_gurl_java",
-    google_play_services_library,
   ]
   srcjar_deps = [ "//base:base_build_config_gen" ]
 
@@ -451,6 +460,12 @@ android_library("chrome_test_java") {
 
   deps = [
     ":partner_location_descriptor_proto_java",
+    "$google_play_services_package:google_play_services_base_java",
+    "$google_play_services_package:google_play_services_basement_java",
+    "$google_play_services_package:google_play_services_cast_java",
+    "$google_play_services_package:google_play_services_gcm_java",
+    "$google_play_services_package:google_play_services_iid_java",
+    "$google_play_services_package:google_play_services_tasks_java",
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android:app_hooks_java",
@@ -519,7 +534,6 @@ android_library("chrome_test_java") {
     "//ui/android:ui_java",
     "//ui/base/mojo:mojo_bindings_java",
     "//url/mojo:url_mojom_gurl_java",
-    google_play_services_library,
   ]
 
   data = [

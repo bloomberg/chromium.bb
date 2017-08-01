@@ -13,10 +13,12 @@ generate_jni("jni_headers") {
 
 android_library("java") {
   deps = [
+    "$google_play_services_package:google_play_services_auth_base_java",
+    "$google_play_services_package:google_play_services_base_java",
+    "$google_play_services_package:google_play_services_basement_java",
     "//base:base_java",
     "//net/android:net_java",
     "//third_party/android_tools:android_support_annotations_java",
-    google_play_services_library,
   ]
 
   java_files = [

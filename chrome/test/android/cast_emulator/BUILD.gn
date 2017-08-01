@@ -20,9 +20,9 @@ android_library("cast_emulator") {
     "src/org/chromium/chrome/browser/media/router/DummyRoutePublisher.java",
   ]
   deps = [
+    "$google_play_services_package:google_play_services_cast_java",
     "//base:base_java",
     "//third_party/android_tools:android_support_v7_appcompat_java",
     "//third_party/android_tools:android_support_v7_mediarouter_java",
-    google_play_services_library,
   ]
 }
