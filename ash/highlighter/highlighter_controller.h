@@ -36,6 +36,8 @@ class ASH_EXPORT HighlighterController : public ui::EventHandler,
   void DisableHighlighter();
 
  private:
+  friend class HighlighterControllerTestApi;
+
   // ui::EventHandler:
   void OnTouchEvent(ui::TouchEvent* event) override;
 
@@ -54,6 +56,9 @@ class ASH_EXPORT HighlighterController : public ui::EventHandler,
 
   // Destroys |highlighter_view_|, if it exists.
   void DestroyHighlighterView();
+
+  // The presentation delay used for prediction by the highlighter view.
+  base::TimeDelta presentation_delay_;
 
   // |highlighter_view_| will only hold an instance when the highlighter is
   // enabled and activated (pressed or dragged).
