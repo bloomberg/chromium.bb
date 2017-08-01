@@ -1240,8 +1240,7 @@ public class BidirectionalStreamTest extends CronetTestBase {
             MetricsTestUtil.assertAfter(metrics.getRequestStart(), startTime);
             assertNotNull(metrics.getRequestEnd());
             MetricsTestUtil.assertAfter(endTime, metrics.getRequestEnd());
-            // Entire request should take more than 0 ms
-            assertTrue(metrics.getRequestEnd().getTime() - metrics.getRequestStart().getTime() > 0);
+            MetricsTestUtil.assertAfter(metrics.getRequestEnd(), metrics.getRequestStart());
         }
         assertEquals(expectError, callback.mError != null);
         assertEquals(expectError, callback.mOnErrorCalled);

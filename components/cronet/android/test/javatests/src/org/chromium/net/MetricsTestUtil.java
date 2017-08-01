@@ -112,8 +112,7 @@ public class MetricsTestUtil {
         assertAfter(metrics.getResponseStart(), startTime);
         assertNotNull(metrics.getRequestEnd());
         assertAfter(endTime, metrics.getRequestEnd());
-        // Entire request should take more than 0 ms
-        assertTrue(metrics.getRequestEnd().getTime() - metrics.getRequestStart().getTime() > 0);
+        assertAfter(metrics.getRequestEnd(), metrics.getRequestStart());
     }
 
     /**
