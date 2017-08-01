@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.infobar.translate;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -20,9 +19,6 @@ import android.view.animation.DecelerateInterpolator;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * TabLayout shown in the TranslateCompactInfoBar.
  */
@@ -30,16 +26,14 @@ public class TranslateTabLayout extends TabLayout {
     /** The tab in which a spinning progress bar is showing. */
     private Tab mTabShowingProgressBar;
 
-    /** The amount of waiting time before starting the peeking animation. */
+    /** The amount of waiting time before starting the scrolling animation. */
     private static final long START_POSITION_WAIT_DURATION_MS = 1000;
 
-    /** The amount of waiting time before starting the second part of the peeking animation. */
-    private static final long END_POSITION_WAIT_DURATION_MS = 1000;
-
-    /** The amount of time it takes to scroll to the end during the peeking animation. */
+    /** The amount of time it takes to scroll to the end during the scrolling animation. */
     private static final long SCROLL_DURATION_MS = 300;
 
-    private AnimatorSet mPeekingAnimatorSet;
+    /** We define the keyframes of the scrolling animation in this object. */
+    ObjectAnimator mScrollToEndAnimator;
 
     /** Start padding of a Tab.  Used for width calculation only.  Will not be applied to views. */
     private int mTabPaddingStart;
@@ -143,7 +137,7 @@ public class TranslateTabLayout extends TabLayout {
         if (mTabShowingProgressBar != null) {
             return true;
         }
-        endPeekingAnimationIfPlaying();
+        endScrollingAnimationIfPlaying();
         return super.onInterceptTouchEvent(ev);
     }
 
@@ -204,59 +198,34 @@ public class TranslateTabLayout extends TabLayout {
     }
 
     /**
-     * Perform the peeking animation if: >50% of second tab is invisible, or this is a "scroll to
-     * end only" animation.
+     * Perform the scrolling animation if this tablayout has any scrollable distance.
      */
-    public void startPeekingAnimationIfNeeded(boolean scrollToEndOnly) {
+    public void startScrollingAnimationIfNeeded() {
         int maxScrollDistance = maxScrollDistance();
-        int widthOfSecondTab = getTabWidth(1);
-
-        if (maxScrollDistance == 0
-                || (maxScrollDistance <= widthOfSecondTab / 2 && !scrollToEndOnly)) {
+        if (maxScrollDistance == 0) {
             return;
         }
-
-        DecelerateInterpolator easeOutInterpolator = new DecelerateInterpolator();
-        boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(this);
-
-        // The steps of the peeking animation:
+        // The steps of the scrolling animation:
         //   1. wait for START_POSITION_WAIT_DURATION_MS.
         //   2. scroll to the end in SCROLL_DURATION_MS.
-        //   3. wait for END_POSITION_WAIT_DURATION_MS. (skipped if scrollToEndOnly.)
-        //   4. scroll back to the start in SCROLL_DURATION_MS. (skipped if scrollToEndOnly.)
-        mPeekingAnimatorSet = new AnimatorSet();
-        List<Animator> animators = new ArrayList<>();
-
-        ObjectAnimator scrollToEndAnimator =
-                ObjectAnimator.ofInt(this, "scrollX", isRtl ? 0 : maxScrollDistance);
-        scrollToEndAnimator.setStartDelay(START_POSITION_WAIT_DURATION_MS);
-        scrollToEndAnimator.setDuration(SCROLL_DURATION_MS);
-        scrollToEndAnimator.setInterpolator(easeOutInterpolator);
-        animators.add(scrollToEndAnimator);
-
-        if (!scrollToEndOnly) {
-            ObjectAnimator scrollToStartAnimator =
-                    ObjectAnimator.ofInt(this, "scrollX", isRtl ? maxScrollDistance : 0);
-            scrollToStartAnimator.setStartDelay(END_POSITION_WAIT_DURATION_MS);
-            scrollToStartAnimator.setDuration(SCROLL_DURATION_MS);
-            scrollToStartAnimator.setInterpolator(easeOutInterpolator);
-            animators.add(scrollToStartAnimator);
-        }
-
-        mPeekingAnimatorSet.playSequentially(animators);
-        mPeekingAnimatorSet.addListener(new AnimatorListenerAdapter() {
+        mScrollToEndAnimator = ObjectAnimator.ofInt(
+                this, "scrollX", ApiCompatibilityUtils.isLayoutRtl(this) ? 0 : maxScrollDistance);
+        mScrollToEndAnimator.setStartDelay(START_POSITION_WAIT_DURATION_MS);
+        mScrollToEndAnimator.setDuration(SCROLL_DURATION_MS);
+        mScrollToEndAnimator.setInterpolator(new DecelerateInterpolator());
+        mScrollToEndAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                mPeekingAnimatorSet = null;
+                mScrollToEndAnimator = null;
             }
         });
-        mPeekingAnimatorSet.start();
+        mScrollToEndAnimator.start();
     }
 
     /**
-     * End the peeking animation if it is playing.
+     * End the scrolling animation if it is playing.
      */
-    public void endPeekingAnimationIfPlaying() {
-        if (mPeekingAnimatorSet != null) mPeekingAnimatorSet.end();
+    public void endScrollingAnimationIfPlaying() {
+        if (mScrollToEndAnimator != null) mScrollToEndAnimator.end();
     }
 }
