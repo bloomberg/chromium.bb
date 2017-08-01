@@ -248,7 +248,6 @@ using base::TimeDelta;
 using blink::WebCachePolicy;
 using blink::WebContentDecryptionModule;
 using blink::WebContextMenuData;
-using blink::WebCString;
 using blink::WebData;
 using blink::WebDocumentLoader;
 using blink::WebDocument;
@@ -4795,12 +4794,12 @@ void RenderFrameImpl::UnregisterProtocolHandler(const WebString& scheme,
 }
 
 void RenderFrameImpl::DidSerializeDataForFrame(
-    const WebCString& data,
+    const WebVector<char>& data,
     WebFrameSerializerClient::FrameSerializationStatus status) {
   bool end_of_data =
       status == WebFrameSerializerClient::kCurrentFrameIsFinished;
   Send(new FrameHostMsg_SerializedHtmlWithLocalLinksResponse(
-      routing_id_, data, end_of_data));
+      routing_id_, std::string(data.Data(), data.size()), end_of_data));
 }
 
 void RenderFrameImpl::AddObserver(RenderFrameObserver* observer) {

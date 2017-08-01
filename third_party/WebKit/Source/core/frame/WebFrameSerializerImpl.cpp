@@ -94,7 +94,6 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "platform/wtf/text/TextEncoding.h"
-#include "public/platform/WebCString.h"
 #include "public/platform/WebVector.h"
 
 namespace blink {
@@ -270,7 +269,9 @@ void WebFrameSerializerImpl::EncodeAndFlushBuffer(
       param->text_encoding.Encode(content, WTF::kEntitiesForUnencodables);
 
   // Send result to the client.
-  client_->DidSerializeDataForFrame(WebCString(encoded_content), status);
+  client_->DidSerializeDataForFrame(
+      WebVector<char>(encoded_content.data(), encoded_content.length()),
+      status);
 }
 
 // TODO(yosin): We should utilize |MarkupFormatter| here to share code,
@@ -481,7 +482,7 @@ bool WebFrameSerializerImpl::Serialize() {
   } else {
     // Report empty contents for invalid URLs.
     client_->DidSerializeDataForFrame(
-        WebCString(), WebFrameSerializerClient::kCurrentFrameIsFinished);
+        WebVector<char>(), WebFrameSerializerClient::kCurrentFrameIsFinished);
   }
 
   DCHECK(data_buffer_.IsEmpty());
