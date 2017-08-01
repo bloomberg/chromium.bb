@@ -6,7 +6,7 @@
   TestRunner.addResult('Tests that console prompt keyboard events work.\n');
 
   await TestRunner.loadModule('console_test_runner');
-  await TestRunner.loadPanel('console');
+  await TestRunner.showPanel('console');
   await ConsoleTestRunner.waitUntilConsoleEditorLoaded();
 
   var firstCommand = 'First\nmultiline command';

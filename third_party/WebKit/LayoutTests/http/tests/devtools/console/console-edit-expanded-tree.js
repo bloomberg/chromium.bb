@@ -6,7 +6,7 @@
   TestRunner.addResult('Tests that expanded tree element is editable in console.\n');
 
   await TestRunner.loadModule('console_test_runner');
-  await TestRunner.loadPanel('console');
+  await TestRunner.showPanel('console');
 
   await TestRunner.evaluateInPagePromise(`
     (function onload()

@@ -1,4 +1,3 @@
-CONSOLE ERROR: line 3: Error: http://127.0.0.1:8000/inspector/resources/source3.js
 Test that relative links in traces open in the sources panel.
 
 Clicking link source3.js:3

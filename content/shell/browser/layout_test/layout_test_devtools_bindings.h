@@ -20,6 +20,8 @@ class LayoutTestDevToolsBindings : public ShellDevToolsBindings {
   static GURL MapTestURLIfNeeded(const GURL& test_url,
                                  bool* is_devtools_js_test);
 
+  static GURL GetInspectedPageURL(const GURL& test_url);
+
   static LayoutTestDevToolsBindings* LoadDevTools(
       WebContents* devtools_contents_,
       WebContents* inspected_contents_,
