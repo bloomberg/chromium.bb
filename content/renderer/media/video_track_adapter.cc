@@ -220,7 +220,6 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
   scoped_refptr<media::VideoFrame> video_frame(frame);
 
   bool is_rotated = false;
-#if defined(OS_ANDROID)
   // TODO(guidou): Use actual device information instead of this heuristic to
   // detect frames from rotated devices. http://crbug.com/722748
   if (expected_native_size_ &&
@@ -228,7 +227,7 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
       frame->natural_size().height() == expected_native_size_->width()) {
     is_rotated = true;
   }
-#endif
+
   gfx::Size desired_size;
   CalculateTargetSize(is_rotated, frame->natural_size(), max_frame_size_,
                       min_aspect_ratio_, max_aspect_ratio_, &desired_size);
