@@ -31,21 +31,22 @@
 #ifndef WebFallbackFont_h
 #define WebFallbackFont_h
 
-#include "public/platform/WebCString.h"
 #include "public/platform/WebCommon.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 
 namespace blink {
 
 struct WebFallbackFont {
   WebFallbackFont()
-      : name(WebCString()),
-        filename(WebCString()),
+      : name(WebString()),
+        filename(WebVector<char>()),
         fontconfig_interface_id(0),
         ttc_index(0),
         is_bold(false),
         is_italic(false) {}
-  WebCString name;
-  WebCString filename;
+  WebString name;
+  WebVector<char> filename;
   int fontconfig_interface_id;
   int ttc_index;
   bool is_bold;
