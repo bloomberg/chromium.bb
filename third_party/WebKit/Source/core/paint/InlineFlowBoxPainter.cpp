@@ -8,7 +8,7 @@
 #include "core/layout/line/RootInlineBox.h"
 #include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BoxModelObjectPainter.h"
-#include "core/paint/BoxPainter.h"
+#include "core/paint/BoxPainterBase.h"
 #include "core/paint/NinePieceImagePainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
@@ -82,22 +82,21 @@ void InlineFlowBoxPainter::PaintFillLayer(const PaintInfo& paint_info,
   BackgroundImageGeometry geometry(*box_model);
   StyleImage* img = fill_layer.GetImage();
   bool has_fill_image = img && img->CanRender();
-  BoxModelObjectPainter box_model_painter(*box_model);
+  BoxModelObjectPainter box_model_painter(*box_model, &inline_flow_box_,
+                                          rect.Size());
   if ((!has_fill_image &&
        !inline_flow_box_.GetLineLayoutItem().Style()->HasBorderRadius()) ||
       (!inline_flow_box_.PrevLineBox() && !inline_flow_box_.NextLineBox()) ||
       !inline_flow_box_.Parent()) {
     box_model_painter.PaintFillLayer(paint_info, c, fill_layer, rect,
-                                     kBackgroundBleedNone, geometry, op,
-                                     &inline_flow_box_, rect.Size());
+                                     kBackgroundBleedNone, geometry, op);
   } else if (inline_flow_box_.GetLineLayoutItem()
                  .Style()
                  ->BoxDecorationBreak() == EBoxDecorationBreak::kClone) {
     GraphicsContextStateSaver state_saver(paint_info.context);
     paint_info.context.Clip(PixelSnappedIntRect(rect));
     box_model_painter.PaintFillLayer(paint_info, c, fill_layer, rect,
-                                     kBackgroundBleedNone, geometry, op,
-                                     &inline_flow_box_, rect.Size());
+                                     kBackgroundBleedNone, geometry, op);
   } else {
     // We have a fill image that spans multiple lines.
     // FIXME: frameSize ought to be the same as rect.size().
@@ -108,9 +107,9 @@ void InlineFlowBoxPainter::PaintFillLayer(const PaintInfo& paint_info,
     GraphicsContextStateSaver state_saver(paint_info.context);
     // TODO(chrishtr): this should likely be pixel-snapped.
     paint_info.context.Clip(PixelSnappedIntRect(rect));
-    box_model_painter.PaintFillLayer(
-        paint_info, c, fill_layer, image_strip_paint_rect, kBackgroundBleedNone,
-        geometry, op, &inline_flow_box_, rect.Size());
+    box_model_painter.PaintFillLayer(paint_info, c, fill_layer,
+                                     image_strip_paint_rect,
+                                     kBackgroundBleedNone, geometry, op);
   }
 }
 
@@ -132,17 +131,17 @@ inline bool InlineFlowBoxPainter::IncludeLogicalRightEdgeForBoxShadow() const {
 void InlineFlowBoxPainter::PaintNormalBoxShadow(const PaintInfo& info,
                                                 const ComputedStyle& s,
                                                 const LayoutRect& paint_rect) {
-  BoxPainter::PaintNormalBoxShadow(info, paint_rect, s,
-                                   IncludeLogicalLeftEdgeForBoxShadow(),
-                                   IncludeLogicalRightEdgeForBoxShadow());
+  BoxPainterBase::PaintNormalBoxShadow(info, paint_rect, s,
+                                       IncludeLogicalLeftEdgeForBoxShadow(),
+                                       IncludeLogicalRightEdgeForBoxShadow());
 }
 
 void InlineFlowBoxPainter::PaintInsetBoxShadow(const PaintInfo& info,
                                                const ComputedStyle& s,
                                                const LayoutRect& paint_rect) {
-  BoxPainter::PaintInsetBoxShadow(info, paint_rect, s,
-                                  IncludeLogicalLeftEdgeForBoxShadow(),
-                                  IncludeLogicalRightEdgeForBoxShadow());
+  BoxPainterBase::PaintInsetBoxShadow(info, paint_rect, s,
+                                      IncludeLogicalLeftEdgeForBoxShadow(),
+                                      IncludeLogicalRightEdgeForBoxShadow());
 }
 
 static LayoutRect ClipRectForNinePieceImageStrip(const InlineFlowBox& box,
@@ -320,7 +319,7 @@ void InlineFlowBoxPainter::PaintBoxDecorationBackground(
     case kDontPaintBorders:
       break;
     case kPaintBordersWithoutClip:
-      BoxPainter::PaintBorder(
+      BoxPainterBase::PaintBorder(
           *box_model, box_model->GetDocument(), GetNode(box_model), paint_info,
           adjusted_frame_rect,
           inline_flow_box_.GetLineLayoutItem().StyleRef(
@@ -336,11 +335,11 @@ void InlineFlowBoxPainter::PaintBoxDecorationBackground(
           adjusted_paint_offset, frame_rect.Size(), TextDirection::kLtr);
       GraphicsContextStateSaver state_saver(paint_info.context);
       paint_info.context.Clip(adjusted_clip_rect);
-      BoxPainter::PaintBorder(*box_model, box_model->GetDocument(),
-                              GetNode(box_model), paint_info,
-                              image_strip_paint_rect,
-                              inline_flow_box_.GetLineLayoutItem().StyleRef(
-                                  inline_flow_box_.IsFirstLineStyle()));
+      BoxPainterBase::PaintBorder(*box_model, box_model->GetDocument(),
+                                  GetNode(box_model), paint_info,
+                                  image_strip_paint_rect,
+                                  inline_flow_box_.GetLineLayoutItem().StyleRef(
+                                      inline_flow_box_.IsFirstLineStyle()));
       break;
   }
 }

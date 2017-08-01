@@ -7,9 +7,7 @@
 
 #include "core/layout/BackgroundBleedAvoidance.h"
 #include "core/paint/BoxPainterBase.h"
-#include "core/paint/RoundedInnerRectClipper.h"
 #include "platform/geometry/LayoutSize.h"
-#include "platform/graphics/GraphicsTypes.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
@@ -19,7 +17,7 @@ class InlineFlowBox;
 class LayoutRect;
 struct PaintInfo;
 class LayoutBoxModelObject;
-class BackgroundImageGeometry;
+class Image;
 
 // BoxModelObjectPainter is a class that can paint either a LayoutBox or a
 // LayoutInline and allows code sharing between block and inline block painting.
@@ -27,37 +25,39 @@ class BoxModelObjectPainter : public BoxPainterBase {
   STACK_ALLOCATED();
 
  public:
-  BoxModelObjectPainter(const LayoutBoxModelObject& box_model)
-      : box_model_(box_model) {}
-
-  void PaintFillLayers(const PaintInfo&,
-                       const Color&,
-                       const FillLayer&,
-                       const LayoutRect&,
-                       BackgroundImageGeometry&,
-                       BackgroundBleedAvoidance = kBackgroundBleedNone,
-                       SkBlendMode = SkBlendMode::kSrcOver);
-
-  void PaintFillLayer(const PaintInfo&,
-                      const Color&,
-                      const FillLayer&,
-                      const LayoutRect&,
-                      BackgroundBleedAvoidance,
-                      BackgroundImageGeometry&,
-                      SkBlendMode = SkBlendMode::kSrcOver,
-                      const InlineFlowBox* = nullptr,
-                      const LayoutSize& = LayoutSize());
+  BoxModelObjectPainter(const LayoutBoxModelObject&,
+                        const InlineFlowBox* = nullptr,
+                        const LayoutSize& flow_box_size = LayoutSize());
 
   static bool IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
       const LayoutBoxModelObject*,
       const PaintInfo&);
 
- private:
-  Node* GetNode() const;
-  LayoutRectOutsets BorderOutsets(const BoxPainterBase::FillLayerInfo&) const;
-  LayoutRectOutsets PaddingOutsets(const BoxPainterBase::FillLayerInfo&) const;
+ protected:
+  BoxPainterBase::FillLayerInfo GetFillLayerInfo(
+      const Color&,
+      const FillLayer&,
+      BackgroundBleedAvoidance) const override;
 
+  void PaintFillLayerTextFillBox(GraphicsContext&,
+                                 const BoxPainterBase::FillLayerInfo&,
+                                 Image*,
+                                 SkBlendMode composite_op,
+                                 const BackgroundImageGeometry&,
+                                 const LayoutRect&,
+                                 LayoutRect scrolled_paint_rect) override;
+  LayoutRect AdjustForScrolledContent(const PaintInfo&,
+                                      const BoxPainterBase::FillLayerInfo&,
+                                      const LayoutRect&) override;
+  FloatRoundedRect GetBackgroundRoundedRect(
+      const LayoutRect&,
+      bool include_logical_left_edge,
+      bool include_logical_right_edge) const override;
+
+ private:
   const LayoutBoxModelObject& box_model_;
+  const InlineFlowBox* flow_box_;
+  const LayoutSize flow_box_size_;
 };
 
 }  // namespace blink

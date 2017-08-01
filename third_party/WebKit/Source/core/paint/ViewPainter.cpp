@@ -110,7 +110,7 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
 
   // Special handling for print economy mode.
   bool force_background_to_white =
-      BoxPainter::ShouldForceWhiteBackgroundForPrintEconomy(
+      BoxModelObjectPainter::ShouldForceWhiteBackgroundForPrintEconomy(
           document, layout_view_.StyleRef());
   if (force_background_to_white) {
     // If for any reason the view background is not transparent, paint white
@@ -173,12 +173,11 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
     return;
   }
 
-  BoxPainter::FillLayerOcclusionOutputList reversed_paint_list;
+  BoxPainterBase::FillLayerOcclusionOutputList reversed_paint_list;
   bool should_draw_background_in_separate_buffer =
-      BoxPainter(layout_view_)
+      BoxModelObjectPainter(layout_view_)
           .CalculateFillLayerOcclusionCulling(
-              reversed_paint_list, layout_view_.Style()->BackgroundLayers(),
-              layout_view_.GetDocument(), layout_view_.StyleRef());
+              reversed_paint_list, layout_view_.Style()->BackgroundLayers());
   DCHECK(reversed_paint_list.size());
 
   // If the root background color is opaque, isolation group can be skipped

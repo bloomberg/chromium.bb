@@ -4,7 +4,6 @@
 
 #include "core/paint/BoxPainter.h"
 
-#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/BackgroundBleedAvoidance.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
@@ -14,13 +13,13 @@
 #include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BoxDecorationData.h"
 #include "core/paint/BoxModelObjectPainter.h"
+#include "core/paint/BoxPainterBase.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/NinePieceImagePainter.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/ScrollRecorder.h"
 #include "core/paint/ThemePainter.h"
-#include "core/style/ShadowList.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -128,7 +127,7 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
     // FIXME: Should eventually give the theme control over whether the box
     // shadow should paint, since controls could have custom shadows of their
     // own.
-    PaintNormalBoxShadow(paint_info, paint_rect, style);
+    BoxPainterBase::PaintNormalBoxShadow(paint_info, paint_rect, style);
 
     if (BleedAvoidanceIsClipping(box_decoration_data.bleed_avoidance)) {
       state_saver.Save();
@@ -162,7 +161,7 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
   }
 
   if (!painting_overflow_contents) {
-    PaintInsetBoxShadow(paint_info, paint_rect, style);
+    BoxPainterBase::PaintInsetBoxShadow(paint_info, paint_rect, style);
 
     // The theme will tell us whether or not we should also paint the CSS
     // border.
@@ -173,8 +172,9 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
               layout_box_, paint_info, snapped_paint_rect))) &&
         !(layout_box_.IsTable() &&
           ToLayoutTable(&layout_box_)->ShouldCollapseBorders())) {
-      PaintBorder(layout_box_, layout_box_.GetDocument(), GetNode(), paint_info,
-                  paint_rect, style, box_decoration_data.bleed_avoidance);
+      BoxPainterBase::PaintBorder(
+          layout_box_, layout_box_.GetDocument(), layout_box_.GeneratingNode(),
+          paint_info, paint_rect, style, box_decoration_data.bleed_avoidance);
     }
   }
 
@@ -251,10 +251,10 @@ void BoxPainter::PaintMaskImages(const PaintInfo& paint_info,
     box_model_painter.PaintFillLayers(paint_info, Color::kTransparent,
                                       layout_box_.Style()->MaskLayers(),
                                       paint_rect, geometry);
-    NinePieceImagePainter::Paint(paint_info.context, layout_box_,
-                                 layout_box_.GetDocument(), GetNode(),
-                                 paint_rect, layout_box_.StyleRef(),
-                                 layout_box_.StyleRef().MaskBoxImage());
+    NinePieceImagePainter::Paint(
+        paint_info.context, layout_box_, layout_box_.GetDocument(),
+        layout_box_.GeneratingNode(), paint_rect, layout_box_.StyleRef(),
+        layout_box_.StyleRef().MaskBoxImage());
   }
 
   if (push_transparency_layer)
@@ -281,15 +281,6 @@ void BoxPainter::PaintClippingMask(const PaintInfo& paint_info,
   LayoutObjectDrawingRecorder drawing_recorder(paint_info.context, layout_box_,
                                                paint_info.phase, paint_rect);
   paint_info.context.FillRect(paint_rect, Color::kBlack);
-}
-
-Node* BoxPainter::GetNode() {
-  Node* node = nullptr;
-  const LayoutObject* layout_object = &layout_box_;
-  for (; layout_object && !node; layout_object = layout_object->Parent()) {
-    node = layout_object->GeneratingNode();
-  }
-  return node;
 }
 
 }  // namespace blink

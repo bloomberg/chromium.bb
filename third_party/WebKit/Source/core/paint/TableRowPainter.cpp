@@ -7,6 +7,7 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableRow.h"
 #include "core/paint/BoxPainter.h"
+#include "core/paint/BoxPainterBase.h"
 #include "core/paint/CollapsedBorderPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
@@ -86,8 +87,8 @@ void TableRowPainter::PaintBoxDecorationBackground(
   LayoutRect paint_rect(adjusted_paint_offset, layout_table_row_.Size());
 
   if (has_box_shadow) {
-    BoxPainter::PaintNormalBoxShadow(paint_info, paint_rect,
-                                     layout_table_row_.StyleRef());
+    BoxPainterBase::PaintNormalBoxShadow(paint_info, paint_rect,
+                                         layout_table_row_.StyleRef());
   }
 
   if (has_background) {
@@ -102,8 +103,8 @@ void TableRowPainter::PaintBoxDecorationBackground(
   if (has_box_shadow) {
     // TODO(wangxianzhu): Calculate the inset shadow bounds by insetting
     // paintRect by half widths of collapsed borders.
-    BoxPainter::PaintInsetBoxShadow(paint_info, paint_rect,
-                                    layout_table_row_.StyleRef());
+    BoxPainterBase::PaintInsetBoxShadow(paint_info, paint_rect,
+                                        layout_table_row_.StyleRef());
   }
 }
 

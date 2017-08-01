@@ -129,6 +129,16 @@ inline LayoutRectOutsets& operator+=(LayoutRectOutsets& a,
   return a;
 }
 
+inline LayoutRectOutsets operator+(const LayoutRectOutsets& a,
+                                   const LayoutRectOutsets& b) {
+  return LayoutRectOutsets(a.Top() + b.Top(), a.Right() + b.Right(),
+                           a.Bottom() + b.Bottom(), a.Left() + b.Left());
+}
+
+inline LayoutRectOutsets operator-(const LayoutRectOutsets& a) {
+  return LayoutRectOutsets(-a.Top(), -a.Right(), -a.Bottom(), -a.Left());
+}
+
 }  // namespace blink
 
 #endif  // LayoutRectOutsets_h

@@ -51,15 +51,15 @@ void FieldsetPainter::PaintBoxDecorationBackground(
                                        paint_info.phase, paint_rect);
   BoxDecorationData box_decoration_data(layout_fieldset_);
 
-  BoxPainter::PaintNormalBoxShadow(paint_info, paint_rect,
-                                   layout_fieldset_.StyleRef());
+  BoxPainterBase::PaintNormalBoxShadow(paint_info, paint_rect,
+                                       layout_fieldset_.StyleRef());
   BackgroundImageGeometry geometry(layout_fieldset_);
   BoxModelObjectPainter(layout_fieldset_)
       .PaintFillLayers(paint_info, box_decoration_data.background_color,
                        layout_fieldset_.Style()->BackgroundLayers(), paint_rect,
                        geometry);
-  BoxPainter::PaintInsetBoxShadow(paint_info, paint_rect,
-                                  layout_fieldset_.StyleRef());
+  BoxPainterBase::PaintInsetBoxShadow(paint_info, paint_rect,
+                                      layout_fieldset_.StyleRef());
 
   if (!box_decoration_data.has_border_decoration)
     return;
@@ -94,9 +94,9 @@ void FieldsetPainter::PaintBoxDecorationBackground(
   const LayoutObject* layout_object = &layout_fieldset_;
   for (; layout_object && !node; layout_object = layout_object->Parent())
     node = layout_object->GeneratingNode();
-  BoxPainter::PaintBorder(layout_fieldset_, layout_fieldset_.GetDocument(),
-                          node, paint_info, paint_rect,
-                          layout_fieldset_.StyleRef());
+  BoxPainterBase::PaintBorder(layout_fieldset_, layout_fieldset_.GetDocument(),
+                              node, paint_info, paint_rect,
+                              layout_fieldset_.StyleRef());
 }
 
 void FieldsetPainter::PaintMask(const PaintInfo& paint_info,
