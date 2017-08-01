@@ -16,6 +16,7 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/aura/env.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/test/in_process_context_factory.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace exo {
@@ -116,6 +117,30 @@ TEST_F(BufferTest, IsLost) {
   std::vector<viz::ReturnedResource> resources2 = {returned_resource2};
   frame_sink_holder->ReclaimResources(resources2);
   RunAllPendingInMessageLoop();
+}
+
+// Buffer::Texture::OnLostResources is called when the gpu crashes. This test
+// verifies that the Texture is collected properly in such event.
+TEST_F(BufferTest, OnLostResources) {
+  // Create a Buffer and use it to produce a Texture.
+  constexpr gfx::Size buffer_size(256, 256);
+  auto buffer = base::MakeUnique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto surface_tree_host =
+      base::MakeUnique<SurfaceTreeHost>("BufferTest", nullptr);
+  LayerTreeFrameSinkHolder* frame_sink_holder =
+      surface_tree_host->layer_tree_frame_sink_holder();
+
+  buffer->OnAttach();
+  // Acquire a texture transferable resource for the contents of the buffer.
+  viz::TransferableResource resource;
+  bool rv = buffer->ProduceTransferableResource(frame_sink_holder, false, true,
+                                                &resource);
+  ASSERT_TRUE(rv);
+
+  static_cast<ui::InProcessContextFactory*>(
+      aura::Env::GetInstance()->context_factory())
+      ->SendOnLostResources();
 }
 
 }  // namespace

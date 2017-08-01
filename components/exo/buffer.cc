@@ -208,12 +208,15 @@ Buffer::Texture::Texture(ui::ContextFactory* context_factory,
 
 Buffer::Texture::~Texture() {
   DestroyResources();
-  context_factory_->RemoveObserver(this);
+  if (context_provider_)
+    context_factory_->RemoveObserver(this);
 }
 
 void Buffer::Texture::OnLostResources() {
   DestroyResources();
+  context_factory_->RemoveObserver(this);
   context_provider_ = nullptr;
+  context_factory_ = nullptr;
 }
 
 bool Buffer::Texture::IsLost() {
