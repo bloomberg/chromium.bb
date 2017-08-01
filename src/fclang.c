@@ -28,7 +28,7 @@
 /* Objects MT-safe for readonly access. */
 
 typedef struct {
-    const FcChar8    	lang[8];
+    const FcChar8    	lang[16];
     const FcCharSet	charset;
 } FcLangCharSet;
 
