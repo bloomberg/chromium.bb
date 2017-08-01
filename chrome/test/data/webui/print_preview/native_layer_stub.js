@@ -5,83 +5,80 @@
 cr.define('print_preview', function() {
   /**
   * Test version of the native layer.
-  * @constructor
-  * @extends {TestBrowserProxy}
   */
-  function NativeLayerStub() {
-    TestBrowserProxy.call(this, [
-      'getInitialSettings',
-      'getPrinters',
-      'getExtensionPrinters',
-      'getPreview',
-      'getPrivetPrinters',
-      'getPrinterCapabilities',
-      'hidePreview',
-      'print',
-      'setupPrinter',
-    ]);
+  class NativeLayerStub extends TestBrowserProxy {
+    constructor() {
+      super([
+        'getInitialSettings',
+        'getPrinters',
+        'getExtensionPrinters',
+        'getPreview',
+        'getPrivetPrinters',
+        'getPrinterCapabilities',
+        'hidePreview',
+        'print',
+        'setupPrinter',
+      ]);
 
-    /**
-     * @private {!print_preview.NativeInitialSettings} The initial settings
-     *     to be used for the response to a |getInitialSettings| call.
-     */
-    this.initialSettings_ = null;
+      /**
+       * @private {!print_preview.NativeInitialSettings} The initial settings
+       *     to be used for the response to a |getInitialSettings| call.
+       */
+      this.initialSettings_ = null;
 
-    /**
-     *
-     * @private {!Array<!print_preview.LocalDestinationInfo>} Local destination
-     *     list to be used for the response to |getPrinters|.
-     */
-    this.localDestinationInfos_ = [];
+      /**
+       *
+       * @private {!Array<!print_preview.LocalDestinationInfo>} Local
+       *     destination list to be used for the response to |getPrinters|.
+       */
+      this.localDestinationInfos_ = [];
 
-    /**
-     * @private {!Map<string,
-     *                !Promise<!print_preview.PrinterCapabilitiesResponse>}
-     *     A map from destination IDs to the responses to be sent when
-     *     |getPrinterCapabilities| is called for the ID.
-     */
-    this.localDestinationCapabilities_ = new Map();
+      /**
+       * @private {!Map<string,
+       *                !Promise<!print_preview.PrinterCapabilitiesResponse>}
+       *     A map from destination IDs to the responses to be sent when
+       *     |getPrinterCapabilities| is called for the ID.
+       */
+      this.localDestinationCapabilities_ = new Map();
 
-    /**
-     * @private {!print_preview.PrinterSetupResponse} The response to be sent
-     *     on a |setupPrinter| call.
-     */
-    this.setupPrinterResponse_ = null;
+      /**
+       * @private {!print_preview.PrinterSetupResponse} The response to be sent
+       *     on a |setupPrinter| call.
+       */
+      this.setupPrinterResponse_ = null;
 
-    /**
-     * @private {boolean} Whether the printer setup request should be rejected.
-     */
-    this.shouldRejectPrinterSetup_ = false;
+      /**
+       * @private {boolean} Whether the printer setup request should be
+       *     rejected.
+       */
+      this.shouldRejectPrinterSetup_ = false;
 
-    /**
-     * @private {string} The ID of a printer with a bad driver.
-     */
-    this.badPrinterId_ = '';
-  }
-
-  NativeLayerStub.prototype = {
-    __proto__: TestBrowserProxy.prototype,
+      /**
+       * @private {string} The ID of a printer with a bad driver.
+       */
+      this.badPrinterId_ = '';
+    }
 
     /** @override */
-    getInitialSettings: function() {
+    getInitialSettings() {
       this.methodCalled('getInitialSettings');
       return Promise.resolve(this.initialSettings_);
-    },
+    }
 
     /** @override */
-    getPrinters: function() {
+    getPrinters() {
       this.methodCalled('getPrinters');
       return Promise.resolve(this.localDestinationInfos_);
-    },
+    }
 
     /** @override */
-    getExtensionPrinters: function() {
+    getExtensionPrinters() {
       this.methodCalled('getExtensionPrinters');
       return Promise.resolve(true);
-    },
+    }
 
     /** @override */
-    getPreview: function(
+    getPreview(
         destination, printTicketStore, documentInfo, generateDraft, requestId) {
       this.methodCalled('getPreview', {
         destination: destination,
@@ -115,24 +112,29 @@ cr.define('print_preview', function() {
         });
       }
       return Promise.resolve(requestId);
-    },
+    }
 
     /** @override */
-    getPrivetPrinters: function() {
+    getPrivetPrinters() {
       this.methodCalled('getPrivetPrinters');
       return Promise.resolve(true);
-    },
+    }
 
     /** @override */
-    getPrinterCapabilities: function(printerId) {
+    getPrinterCapabilities(printerId) {
       this.methodCalled('getPrinterCapabilities', printerId);
       return this.localDestinationCapabilities_.get(printerId);
-    },
+    }
 
     /** @override */
-    print: function(
-        destination, printTicketStore, cloudPrintInterface, documentInfo,
-        opt_isOpenPdfInPreview, opt_showSystemDialog) {
+    print(
+      destination,
+      printTicketStore,
+      cloudPrintInterface,
+      documentInfo,
+      opt_isOpenPdfInPreview,
+      opt_showSystemDialog
+    ) {
       this.methodCalled('print', {
         destination: destination,
         printTicketStore: printTicketStore,
@@ -142,45 +144,45 @@ cr.define('print_preview', function() {
         showSystemDialog: opt_showSystemDialog || false,
       });
       return Promise.resolve();
-    },
+    }
 
     /** @override */
-    setupPrinter: function(printerId) {
+    setupPrinter(printerId) {
       this.methodCalled('setupPrinter', printerId);
       return this.shouldRejectPrinterSetup_ ?
           Promise.reject(this.setupPrinterResponse_) :
           Promise.resolve(this.setupPrinterResponse_);
-    },
+    }
 
     /** @override */
-    hidePreview: function() {
+    hidePreview() {
       this.methodCalled('hidePreview');
-    },
+    }
 
     /** @override */
-    recordAction: function() {},
+    recordAction() {}
 
     /** @override */
-    recordInHistogram: function() {},
+    recordInHistogram() {}
 
     /** @override */
-    saveAppState: function() {},
+    saveAppState() {}
 
     /**
      * @param {!print_preview.NativeInitialSettings} settings The settings
      *     to return as a response to |getInitialSettings|.
      */
-    setInitialSettings: function(settings) {
+    setInitialSettings(settings) {
       this.initialSettings_ = settings;
-    },
+    }
 
     /**
      * @param {!Array<!print_preview.LocalDestinationInfo>} localDestinations
      *     The local destinations to return as a response to |getPrinters|.
      */
-    setLocalDestinations: function(localDestinations) {
+    setLocalDestinations(localDestinations) {
       this.localDestinationInfos_ = localDestinations;
-    },
+    }
 
     /**
      * @param {!print_preview.PrinterCapabilitiesResponse} response The
@@ -189,30 +191,30 @@ cr.define('print_preview', function() {
      *     destination. Defaults to false (will resolve callback) if not
      *     provided.
      */
-    setLocalDestinationCapabilities: function(response, opt_reject) {
+    setLocalDestinationCapabilities(response, opt_reject) {
       this.localDestinationCapabilities_.set(response.printerId,
           opt_reject ? Promise.reject() : Promise.resolve(response));
-    },
+    }
 
     /**
      * @param {boolean} reject Whether printSetup requests should be rejected.
      * @param {!print_preview.PrinterSetupResponse} The response to send when
      *     |setupPrinter| is called.
      */
-    setSetupPrinterResponse: function(reject, response) {
+    setSetupPrinterResponse(reject, response) {
       this.shouldRejectPrinterSetup_ = reject;
       this.setupPrinterResponse_ = response;
-    },
+    }
 
     /**
      * @param {string} bad_id The printer ID that should cause an
      *     SETTINGS_INVALID error in response to a preview request. Models a
      *     bad printer driver.
      */
-    setInvalidPrinterId: function(id) {
+    setInvalidPrinterId(id) {
       this.badPrinterId_ = id;
-    },
-  };
+    }
+  }
 
   return {
     NativeLayerStub: NativeLayerStub,
