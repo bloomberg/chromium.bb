@@ -1794,8 +1794,12 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
           ADAPT_OVERLAP_BLOCK ao_block =
               adapt_overlap_block_lookup[mbmi->sb_type];
           ++counts->ncobmc_mode[ao_block][mbmi->ncobmc_mode[0]];
+          update_cdf(xd->tile_ctx->ncobmc_mode_cdf[ao_block],
+                     mbmi->ncobmc_mode[0], MAX_NCOBMC_MODES);
           if (mi_size_wide[mbmi->sb_type] != mi_size_high[mbmi->sb_type]) {
             ++counts->ncobmc_mode[ao_block][mbmi->ncobmc_mode[1]];
+            update_cdf(xd->tile_ctx->ncobmc_mode_cdf[ao_block],
+                       mbmi->ncobmc_mode[1], MAX_NCOBMC_MODES);
           }
         }
 #endif
@@ -4654,13 +4658,6 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
 #endif  // CONFIG_SPEED_REFS
     }
   }
-#if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
-  // TODO(yuec) Suboptimal fix. Need to implement per-block update
-  for (int i = BLOCK_8X8; i < BLOCK_SIZES_ALL; i++) {
-    av1_cost_tokens_from_cdf(x->motion_mode_cost[i],
-                             xd->tile_ctx->motion_mode_cdf[i], NULL);
-  }
-#endif
 }
 
 static void init_encode_frame_mb_context(AV1_COMP *cpi) {
@@ -4909,12 +4906,6 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
 
   av1_setup_across_tile_boundary_info(cm, tile_info);
 
-#if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
-  for (int i = BLOCK_8X8; i < BLOCK_SIZES_ALL; i++) {
-    av1_cost_tokens_from_cdf(td->mb.motion_mode_cost[i],
-                             cm->fc->motion_mode_cdf[i], NULL);
-  }
-#endif
   for (mi_row = tile_info->mi_row_start; mi_row < tile_info->mi_row_end;
        mi_row += cm->mib_size) {
     encode_rd_sb_row(cpi, td, this_tile, mi_row, &tok);

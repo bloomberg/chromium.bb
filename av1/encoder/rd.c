@@ -228,8 +228,8 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
     for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; i++) {
-      av1_cost_tokens(x->motion_mode_cost[i], fc->motion_mode_prob[i],
-                      av1_motion_mode_tree);
+      av1_cost_tokens_from_cdf(x->motion_mode_cost[i], fc->motion_mode_cdf[i],
+                               NULL);
     }
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
     for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; i++) {
@@ -239,8 +239,8 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 #if CONFIG_MOTION_VAR && CONFIG_NCOBMC_ADAPT_WEIGHT
     for (i = ADAPT_OVERLAP_BLOCK_8X8; i < ADAPT_OVERLAP_BLOCKS; ++i) {
-      av1_cost_tokens(x->ncobmc_mode_cost[i], fc->ncobmc_mode_prob[i],
-                      av1_ncobmc_mode_tree);
+      av1_cost_tokens_from_cdf(x->ncobmc_mode_cost[i], fc->ncobmc_mode_cdf[i],
+                               NULL);
     }
 #endif  // CONFIG_MOTION_VAR && CONFIG_NCOBMC_ADAPT_WEIGHT
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
