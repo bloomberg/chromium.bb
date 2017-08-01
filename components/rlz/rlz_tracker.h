@@ -10,12 +10,17 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string16.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "rlz/lib/rlz_lib.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace rlz {
 
@@ -205,10 +210,6 @@ class RLZTracker {
   bool is_google_homepage_;
   bool is_google_in_startpages_;
 
-  // Unique sequence token so that tasks posted by RLZTracker are executed
-  // sequentially in the blocking pool.
-  base::SequencedWorkerPool::SequenceToken worker_pool_token_;
-
   // Keeps track if the RLZ tracker has already performed its delayed
   // initialization.
   bool already_ran_;
@@ -230,6 +231,11 @@ class RLZTracker {
 
   // Minimum delay before sending financial ping after initialization.
   base::TimeDelta min_init_delay_;
+
+  // Runner for RLZ background tasks.  The checked is used to verify operations
+  // occur in the correct sequence, especially in tests.
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(RLZTracker);
 };

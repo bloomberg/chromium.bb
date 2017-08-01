@@ -13,11 +13,13 @@
 #include "base/atomicops.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "rlz/lib/assert.h"
@@ -203,39 +205,147 @@ bool FinancialPing::SetURLRequestContext(
 
 namespace {
 
-class FinancialPingUrlFetcherDelegate : public net::URLFetcherDelegate {
+// A waitable event used to detect when either:
+//
+//   1/ the RLZ ping request completes
+//   2/ the RLZ ping request times out
+//   3/ browser shutdown begins
+class RefCountedWaitableEvent
+    : public base::RefCountedThreadSafe<RefCountedWaitableEvent> {
  public:
-  FinancialPingUrlFetcherDelegate(const base::Closure& callback)
-      : callback_(callback) {
+  RefCountedWaitableEvent()
+      : event_(base::WaitableEvent::ResetPolicy::MANUAL,
+               base::WaitableEvent::InitialState::NOT_SIGNALED) {}
+
+  void SignalShutdown() { event_.Signal(); }
+
+  void SignalFetchComplete(int response_code, std::string response) {
+    base::AutoLock autolock(lock_);
+    response_code_ = response_code;
+    response_ = std::move(response);
+    event_.Signal();
   }
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+
+  bool TimedWait(base::TimeDelta timeout) { return event_.TimedWait(timeout); }
+
+  int GetResponseCode() {
+    base::AutoLock autolock(lock_);
+    return response_code_;
+  }
+
+  std::string TakeResponse() {
+    base::AutoLock autolock(lock_);
+    std::string temp = std::move(response_);
+    response_.clear();
+    return temp;
+  }
 
  private:
-  base::Closure callback_;
+  ~RefCountedWaitableEvent() {}
+  friend class base::RefCountedThreadSafe<RefCountedWaitableEvent>;
+
+  base::WaitableEvent event_;
+  base::Lock lock_;
+  std::string response_;
+  int response_code_ = net::URLFetcher::RESPONSE_CODE_INVALID;
 };
 
-void FinancialPingUrlFetcherDelegate::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  callback_.Run();
-}
+// A fetcher delegate that signals an instance of RefCountedWaitableEvent when
+// the fetch completes.
+class FinancialPingUrlFetcherDelegate : public net::URLFetcherDelegate {
+ public:
+  FinancialPingUrlFetcherDelegate(scoped_refptr<RefCountedWaitableEvent> event)
+      : event_(std::move(event)) {}
+
+  void SetFetcher(std::unique_ptr<net::URLFetcher> fetcher) {
+    fetcher_ = std::move(fetcher);
+  }
+
+ private:
+  void OnURLFetchComplete(const net::URLFetcher* source) override {
+    std::string response;
+    source->GetResponseAsString(&response);
+    event_->SignalFetchComplete(source->GetResponseCode(), std::move(response));
+    base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+  }
+
+  scoped_refptr<RefCountedWaitableEvent> event_;
+  std::unique_ptr<net::URLFetcher> fetcher_;
+};
 
 bool send_financial_ping_interrupted_for_test = false;
 
 }  // namespace
 
-void ShutdownCheck(base::WeakPtr<base::RunLoop> weak) {
-  if (!weak.get())
-    return;
+void ShutdownCheck(scoped_refptr<RefCountedWaitableEvent> event) {
   if (!base::subtle::Acquire_Load(&g_context)) {
     send_financial_ping_interrupted_for_test = true;
-    weak->QuitClosure().Run();
+    event->SignalShutdown();
     return;
   }
   // How frequently the financial ping thread should check
   // the shutdown condition?
   const base::TimeDelta kInterval = base::TimeDelta::FromMilliseconds(500);
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&ShutdownCheck, weak), kInterval);
+  base::PostDelayedTaskWithTraits(FROM_HERE, {base::TaskPriority::BACKGROUND},
+                                  base::Bind(&ShutdownCheck, event), kInterval);
+}
+
+void PingRlzServer(std::string url,
+                   scoped_refptr<RefCountedWaitableEvent> event) {
+  // Copy the pointer to stack because g_context may be set to NULL
+  // in different thread. The instance is guaranteed to exist while
+  // the method is running.
+  net::URLRequestContextGetter* context =
+      reinterpret_cast<net::URLRequestContextGetter*>(
+          base::subtle::Acquire_Load(&g_context));
+
+  // Browser shutdown will cause the context to be reset to NULL.
+  // ShutdownCheck will catch this.
+  if (!context)
+    return;
+
+  // Delegate will delete itself when the fetch completes.
+  FinancialPingUrlFetcherDelegate* delegate =
+      new FinancialPingUrlFetcherDelegate(event);
+
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("rlz_ping", R"(
+        semantics {
+          sender: "RLZ Ping"
+          description:
+            "Used for measuring the effectiveness of a promotion. See the "
+            "Chrome Privacy Whitepaper for complete details."
+          trigger:
+            "1- At Chromium first run.\n"
+            "2- When Chromium is re-activated by a new promotion.\n"
+            "3- Once a week thereafter as long as Chromium is used.\n"
+          data:
+            "1- Non-unique cohort tag of when Chromium was installed.\n"
+            "2- Unique machine id on desktop platforms.\n"
+            "3- Whether Google is the default omnibox search.\n"
+            "4- Whether google.com is the default home page."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: NO
+          setting: "This feature cannot be disabled in settings."
+          policy_exception_justification: "Not implemented."
+        })");
+  std::unique_ptr<net::URLFetcher> fetcher = net::URLFetcher::Create(
+      GURL(url), net::URLFetcher::GET, delegate, traffic_annotation);
+
+  fetcher->SetLoadFlags(
+      net::LOAD_DISABLE_CACHE | net::LOAD_DO_NOT_SEND_AUTH_DATA |
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
+
+  // Ensure rlz_lib::SetURLRequestContext() has been called before sending
+  // pings.
+  fetcher->SetRequestContext(context);
+  fetcher->Start();
+
+  // Pass ownership of the fetcher to the delegate.  Otherwise the fetch will
+  // be canceled when the URLFetcher object is destroyed.
+  delegate->SetFetcher(std::move(fetcher));
 }
 #endif
 
@@ -296,83 +406,33 @@ bool FinancialPing::PingServer(const char* request, std::string* response) {
 
   return true;
 #else
-  // Copy the pointer to stack because g_context may be set to NULL
-  // in different thread. The instance is guaranteed to exist while
-  // the method is running.
-  net::URLRequestContextGetter* context =
-      reinterpret_cast<net::URLRequestContextGetter*>(
-          base::subtle::Acquire_Load(&g_context));
-
-  // Browser shutdown will cause the context to be reset to NULL.
-  if (!context)
-    return false;
-
-  // Run a blocking event loop to match the win inet implementation.
-  std::unique_ptr<base::MessageLoop> message_loop;
-  // Ensure that we have a MessageLoop.
-  if (!base::MessageLoop::current())
-    message_loop.reset(new base::MessageLoop);
-  base::RunLoop loop;
-  FinancialPingUrlFetcherDelegate delegate(loop.QuitClosure());
-
   std::string url = base::StringPrintf("http://%s:%d%s",
                                        kFinancialServer, kFinancialPort,
                                        request);
 
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("rlz_ping", R"(
-        semantics {
-          sender: "RLZ Ping"
-          description:
-            "Used for measuring the effectiveness of a promotion. See the "
-            "Chrome Privacy Whitepaper for complete details."
-          trigger:
-            "1- At Chromium first run.\n"
-            "2- When Chromium is re-activated by a new promotion.\n"
-            "3- Once a week thereafter as long as Chromium is used.\n"
-          data:
-            "1- Non-unique cohort tag of when Chromium was installed.\n"
-            "2- Unique machine id on desktop platforms.\n"
-            "3- Whether Google is the default omnibox search.\n"
-            "4- Whether google.com is the default home page."
-          destination: GOOGLE_OWNED_SERVICE
-        }
-        policy {
-          cookies_allowed: NO
-          setting: "This feature cannot be disabled in settings."
-          policy_exception_justification: "Not implemented."
-        })");
-  std::unique_ptr<net::URLFetcher> fetcher = net::URLFetcher::Create(
-      GURL(url), net::URLFetcher::GET, &delegate, traffic_annotation);
+  // Use a waitable event to cause this function to block, to match the
+  // wininet implementation.
+  auto event = base::MakeRefCounted<RefCountedWaitableEvent>();
 
-  fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE |
-                        net::LOAD_DO_NOT_SEND_AUTH_DATA |
-                        net::LOAD_DO_NOT_SEND_COOKIES |
-                        net::LOAD_DO_NOT_SAVE_COOKIES);
+  base::PostTaskWithTraits(FROM_HERE, {base::TaskPriority::BACKGROUND},
+                           base::Bind(&ShutdownCheck, event));
 
-  // Ensure rlz_lib::SetURLRequestContext() has been called before sending
-  // pings.
-  fetcher->SetRequestContext(context);
+  // PingRlzServer must be run in a separate sequence so that the TimedWait()
+  // call below does not block the URL fetch response from being handled by
+  // the URL delegate.
+  scoped_refptr<base::SequencedTaskRunner> background_runner(
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+           base::TaskPriority::BACKGROUND}));
+  background_runner->PostTask(FROM_HERE,
+                              base::Bind(&PingRlzServer, url, event));
 
-  base::WeakPtrFactory<base::RunLoop> weak(&loop);
-
-  const base::TimeDelta kTimeout = base::TimeDelta::FromMinutes(5);
-  base::MessageLoop::ScopedNestableTaskAllower allow_nested(
-      base::MessageLoop::current());
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ShutdownCheck, weak.GetWeakPtr()));
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&net::URLFetcher::Start, base::Unretained(fetcher.get())));
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, loop.QuitClosure(), kTimeout);
-
-  loop.Run();
-
-  if (fetcher->GetResponseCode() != 200)
+  bool is_signaled = event->TimedWait(base::TimeDelta::FromMinutes(5));
+  if (!is_signaled || event->GetResponseCode() != 200)
     return false;
 
-  return fetcher->GetResponseAsString(response);
+  *response = event->TakeResponse();
+  return true;
 #endif
 }
 

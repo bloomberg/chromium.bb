@@ -58,10 +58,6 @@ bool RLZTrackerDelegateImpl::IsOnUIThread() {
   return web::WebThread::CurrentlyOn(web::WebThread::UI);
 }
 
-base::SequencedWorkerPool* RLZTrackerDelegateImpl::GetBlockingPool() {
-  return web::WebThread::GetBlockingPool();
-}
-
 net::URLRequestContextGetter* RLZTrackerDelegateImpl::GetRequestContext() {
   return GetApplicationContext()->GetSystemURLRequestContext();
 }

@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/sequenced_worker_pool_owner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -34,8 +34,7 @@ namespace {
 class TestRLZTrackerDelegate : public RLZTrackerDelegate {
  public:
   TestRLZTrackerDelegate()
-      : worker_pool_owner_(2, "TestRLZTracker"),
-        request_context_getter_(new net::TestURLRequestContextGetter(
+      : request_context_getter_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())) {}
 
   void set_brand(const char* brand) { brand_override_ = brand; }
@@ -68,10 +67,6 @@ class TestRLZTrackerDelegate : public RLZTrackerDelegate {
   }
 
   bool IsOnUIThread() override { return true; }
-
-  base::SequencedWorkerPool* GetBlockingPool() override {
-    return worker_pool_owner_.pool().get();
-  }
 
   net::URLRequestContextGetter* GetRequestContext() override {
     return request_context_getter_.get();
@@ -110,7 +105,6 @@ class TestRLZTrackerDelegate : public RLZTrackerDelegate {
   }
 
  private:
-  base::SequencedWorkerPoolOwner worker_pool_owner_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   std::string brand_override_;
@@ -257,7 +251,7 @@ class RlzLibTest : public testing::Test {
   void ExpectRlzPingSent(bool expected);
   void ExpectReactivationRlzPingSent(bool expected);
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   TestRLZTrackerDelegate* delegate_;
   std::unique_ptr<TestRLZTracker> tracker_;
   RlzLibTestNoMachineStateHelper m_rlz_test_helper_;

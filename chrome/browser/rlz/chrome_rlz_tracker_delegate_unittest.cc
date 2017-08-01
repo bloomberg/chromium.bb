@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -29,6 +30,7 @@ class ChromeRLZTrackerDelegateTest : public testing::Test {
   }
 
  private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<ChromeRLZTrackerDelegate> delegate_;
 };
 
