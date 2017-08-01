@@ -31,7 +31,6 @@ ServiceWorkerURLLoaderJob::ServiceWorkerURLLoaderJob(
       blob_client_binding_(this),
       binding_(this),
       weak_factory_(this) {
-  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
 }
 
 ServiceWorkerURLLoaderJob::~ServiceWorkerURLLoaderJob() {}
@@ -277,9 +276,7 @@ void ServiceWorkerURLLoaderJob::StartResponse(
   SaveResponseHeaders(response.status_code, response.status_text,
                       response.headers);
 
-  // Ideally, we would always get a data pipe fom SWFetchDispatcher and use
-  // this case. See:
-  // https://docs.google.com/a/google.com/document/d/1_ROmusFvd8ATwIZa29-P6Ls5yyLjfld0KvKchVfA84Y/edit?usp=drive_web
+  // Handle a stream response body.
   if (!body_as_stream.is_null() && body_as_stream->stream.is_valid()) {
     CommitResponseHeaders();
     url_loader_client_->OnStartLoadingResponseBody(
@@ -288,6 +285,10 @@ void ServiceWorkerURLLoaderJob::StartResponse(
     return;
   }
 
+  // Handle a blob response body. Ideally we'd just get a data pipe from
+  // SWFetchDispatcher, and this could be treated the same as a stream response.
+  // See:
+  // https://docs.google.com/a/google.com/document/d/1_ROmusFvd8ATwIZa29-P6Ls5yyLjfld0KvKchVfA84Y/edit?usp=drive_web
   if (!response.blob_uuid.empty() && blob_storage_context_) {
     std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
         blob_storage_context_->GetBlobDataFromUUID(response.blob_uuid);
@@ -297,7 +298,12 @@ void ServiceWorkerURLLoaderJob::StartResponse(
     BlobURLLoaderFactory::CreateLoaderAndStart(
         std::move(request), resource_request_, std::move(client),
         std::move(blob_data_handle), nullptr /* file_system_context */);
+    return;
   }
+
+  // The response has no body.
+  CommitResponseHeaders();
+  CommitCompleted(net::OK);
 }
 
 // URLLoader implementation----------------------------------------

@@ -38,8 +38,8 @@ class ServiceWorkerVersion;
 // --enable-network-service and PlzNavigate is enabled.
 // This also works as a URLLoaderClient for BlobURLLoader while reading
 // the blob content returned by SW.
-class ServiceWorkerURLLoaderJob : public mojom::URLLoader,
-                                  public mojom::URLLoaderClient {
+class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader,
+                                                 public mojom::URLLoaderClient {
  public:
   using Delegate = ServiceWorkerURLJobWrapper::Delegate;
 
