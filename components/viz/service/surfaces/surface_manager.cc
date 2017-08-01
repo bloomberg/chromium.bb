@@ -82,6 +82,15 @@ Surface* SurfaceManager::CreateSurface(
     surface_map_[surface_info.id()] =
         base::MakeUnique<Surface>(surface_info, this, surface_client,
                                   begin_frame_source, needs_sync_tokens);
+    if (lifetime_type_ == LifetimeType::REFERENCES) {
+      // We can get into a situation where multiple CompositorFrames arrive for
+      // a FrameSink before the client can add any references for the frame.
+      // When the second frame with a new size arrives, the first will be
+      // destroyed in SurfaceFactory and then if there are no references it will
+      // be deleted during surface GC. A temporary reference, removed when a
+      // real reference is received, is added to prevent this from happening.
+      AddTemporaryReference(surface_info.id());
+    }
     return surface_map_[surface_info.id()].get();
   }
 
@@ -423,16 +432,6 @@ bool SurfaceManager::SurfaceModified(const SurfaceId& surface_id,
 
 void SurfaceManager::SurfaceCreated(const SurfaceInfo& surface_info) {
   CHECK(thread_checker_.CalledOnValidThread());
-
-  if (lifetime_type_ == LifetimeType::REFERENCES) {
-    // We can get into a situation where multiple CompositorFrames arrive for
-    // a FrameSink before the client can add any references for the frame. When
-    // the second frame with a new size arrives, the first will be destroyed in
-    // SurfaceFactory and then if there are no references it will be deleted
-    // during surface GC. A temporary reference, removed when a real reference
-    // is received, is added to prevent this from happening.
-    AddTemporaryReference(surface_info.id());
-  }
 
   for (auto& observer : observer_list_)
     observer.OnSurfaceCreated(surface_info);
