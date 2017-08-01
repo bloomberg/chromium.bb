@@ -25,10 +25,6 @@ namespace net {
 
 namespace {
 
-// -----------------------------------------------
-// Errors/Warnings set by VerifyCertificateChain
-// -----------------------------------------------
-
 bool IsHandledCriticalExtension(const ParsedExtension& extension) {
   if (extension.oid == BasicConstraintsOid())
     return true;
