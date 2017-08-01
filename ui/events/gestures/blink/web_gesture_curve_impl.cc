@@ -83,37 +83,11 @@ WebGestureCurveImpl::WebGestureCurveImpl(std::unique_ptr<GestureCurve> curve,
                                          ThreadType animating_thread_type)
     : curve_(std::move(curve)),
       last_offset_(initial_offset),
-      animating_thread_type_(animating_thread_type),
       ticks_since_first_animate_(0),
       first_animate_time_(0),
       last_animate_time_(0) {}
 
-WebGestureCurveImpl::~WebGestureCurveImpl() {
-  if (ticks_since_first_animate_ <= 1)
-    return;
-
-  if (last_animate_time_ <= first_animate_time_)
-    return;
-
-  switch (animating_thread_type_) {
-    case ThreadType::MAIN:
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Event.Frequency.Renderer.FlingAnimate",
-          gfx::ToRoundedInt(ticks_since_first_animate_ /
-                            (last_animate_time_ - first_animate_time_)),
-          1, 240, 120);
-      break;
-    case ThreadType::IMPL:
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Event.Frequency.RendererImpl.FlingAnimate",
-          gfx::ToRoundedInt(ticks_since_first_animate_ /
-                            (last_animate_time_ - first_animate_time_)),
-          1, 240, 120);
-      break;
-    case ThreadType::TEST:
-      break;
-  }
-}
+WebGestureCurveImpl::~WebGestureCurveImpl() {}
 
 bool WebGestureCurveImpl::Apply(double time,
                                 blink::WebGestureCurveTarget* target) {

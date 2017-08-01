@@ -409,24 +409,9 @@ Event::Event(const base::NativeEvent& native_event,
       phase_(EP_PREDISPATCH),
       result_(ER_UNHANDLED),
       source_device_id_(ED_UNKNOWN_DEVICE) {
-  base::TimeDelta delta = EventTimeForNow() - time_stamp_;
   if (type_ < ET_LAST)
     latency()->set_source_event_type(EventTypeToLatencySourceEventType(type));
-  base::HistogramBase::Sample delta_sample =
-      static_cast<base::HistogramBase::Sample>(delta.InMicroseconds());
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.Browser", delta_sample, 1, 1000000,
-                              100);
   ComputeEventLatencyOS(native_event);
-
-  // Though it seems inefficient to generate the string twice, the first
-  // instance will be used only for DCHECK builds and the second won't be
-  // executed at all if the histogram was previously accessed here.
-  STATIC_HISTOGRAM_POINTER_GROUP(
-      base::StringPrintf("Event.Latency.Browser.%s", GetName()), type_, ET_LAST,
-      Add(delta_sample),
-      base::Histogram::FactoryGet(
-          base::StringPrintf("Event.Latency.Browser.%s", GetName()), 1, 1000000,
-          100, base::HistogramBase::kUmaTargetedHistogramFlag));
 
 #if defined(USE_X11)
   if (native_event->type == GenericEvent) {
