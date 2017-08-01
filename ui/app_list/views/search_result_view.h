@@ -112,7 +112,7 @@ class APP_LIST_EXPORT SearchResultView
   // Parent list view. Owned by views hierarchy.
   SearchResultListView* list_view_;
 
-  views::ImageView* icon_;  // Owned by views hierarchy.
+  views::ImageView* icon_;        // Owned by views hierarchy.
   views::ImageView* badge_icon_;  // Owned by views hierarchy.
   std::unique_ptr<gfx::RenderText> title_text_;
   std::unique_ptr<gfx::RenderText> details_text_;

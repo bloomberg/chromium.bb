@@ -102,7 +102,9 @@ const int kBadgeBackgroundRadius = 10;
 
 // Preferred search result icon sizes.
 const int kListIconSize = 24;
+const int kListIconSizeFullscreen = 18;
 const int kListBadgeIconSize = 16;
+const int kListBadgeIconSizeFullscreen = 14;
 const int kListBadgeIconOffsetX = 6;
 const int kListBadgeIconOffsetY = 6;
 const int kTileIconSize = 48;

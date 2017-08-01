@@ -26,22 +26,25 @@ namespace app_list {
 
 namespace {
 
-const int kPreferredWidth = 300;
-const int kPreferredHeight = 56;
-const int kIconLeftPadding = 16;
-const int kIconRightPadding = 24;
-const int kTextTrailPadding = 16;
-const int kSeparatorPadding = 62;
-const int kBorderSize = 1;
-const SkColor kSeparatorColor = SkColorSetRGB(0xE1, 0xE1, 0xE1);
-
-constexpr int kPreferredHeightFullScreen = 48;
+constexpr int kPreferredWidth = 300;
+constexpr int kPreferredWidthFullscreen = 640;
+constexpr int kPreferredHeight = 56;
+constexpr int kPreferredHeightFullscreen = 48;
+constexpr int kIconLeftPadding = 16;
+constexpr int kIconRightPadding = 24;
+constexpr int kIconLeftRightPadding = 19;
+constexpr int kTextTrailPadding = 16;
+constexpr int kSeparatorPadding = 62;
+constexpr int kBorderSize = 1;
+constexpr SkColor kSeparatorColor = SkColorSetARGBMacro(0xFF, 0xE1, 0xE1, 0xE1);
 
 // Extra margin at the right of the rightmost action icon.
-const int kActionButtonRightMargin = 8;
+constexpr int kActionButtonRightMargin = 8;
 
 int GetIconViewWidth() {
-  return kListIconSize + kIconLeftPadding + kIconRightPadding;
+  if (!features::IsFullscreenAppListEnabled())
+    return kListIconSize + kIconLeftPadding + kIconRightPadding;
+  return kListIconSizeFullscreen + 2 * kIconLeftRightPadding;
 }
 
 // Creates a RenderText of given |text| and |styles|. Caller takes ownership
@@ -168,9 +171,10 @@ const char* SearchResultView::GetClassName() const {
 }
 
 gfx::Size SearchResultView::CalculatePreferredSize() const {
-  return gfx::Size(kPreferredWidth, is_fullscreen_app_list_enabled_
-                                        ? kPreferredHeightFullScreen
-                                        : kPreferredHeight);
+  if (!is_fullscreen_app_list_enabled_)
+    return gfx::Size(kPreferredWidth, kPreferredHeight);
+
+  return gfx::Size(kPreferredWidthFullscreen, kPreferredHeightFullscreen);
 }
 
 void SearchResultView::Layout() {
@@ -180,16 +184,31 @@ void SearchResultView::Layout() {
 
   gfx::Rect icon_bounds(rect);
   icon_bounds.set_width(GetIconViewWidth());
-  const int top_bottom_padding = (rect.height() - kListIconSize) / 2;
-  icon_bounds.Inset(kIconLeftPadding, top_bottom_padding, kIconRightPadding,
-                    top_bottom_padding);
+  if (is_fullscreen_app_list_enabled_) {
+    const int top_bottom_padding =
+        (rect.height() - kListIconSizeFullscreen) / 2;
+    icon_bounds.Inset(kIconLeftRightPadding, top_bottom_padding,
+                      kIconLeftRightPadding, top_bottom_padding);
+  } else {
+    const int top_bottom_padding = (rect.height() - kListIconSize) / 2;
+    icon_bounds.Inset(kIconLeftPadding, top_bottom_padding, kIconRightPadding,
+                      top_bottom_padding);
+  }
   icon_bounds.Intersect(rect);
   icon_->SetBoundsRect(icon_bounds);
 
-  gfx::Rect badge_icon_bounds(
-      icon_bounds.right() - kListBadgeIconSize + kListBadgeIconOffsetX,
-      icon_bounds.bottom() - kListBadgeIconSize + kListBadgeIconOffsetY,
-      kListBadgeIconSize, kListBadgeIconSize);
+  gfx::Rect badge_icon_bounds;
+  if (is_fullscreen_app_list_enabled_) {
+    badge_icon_bounds =
+        gfx::Rect(icon_bounds.right() - kListBadgeIconSizeFullscreen / 2,
+                  icon_bounds.bottom() - kListBadgeIconSizeFullscreen / 2,
+                  kListBadgeIconSizeFullscreen, kListBadgeIconSizeFullscreen);
+  } else {
+    badge_icon_bounds = gfx::Rect(
+        icon_bounds.right() - kListBadgeIconSize + kListBadgeIconOffsetX,
+        icon_bounds.bottom() - kListBadgeIconSize + kListBadgeIconOffsetY,
+        kListBadgeIconSize, kListBadgeIconSize);
+  }
   badge_icon_bounds.Intersect(rect);
   badge_icon_->SetBoundsRect(badge_icon_bounds);
 
@@ -331,7 +350,9 @@ void SearchResultView::OnIconChanged() {
   if (image.isNull())
     return;
 
-  SetIconImage(image, icon_, kListIconSize);
+  SetIconImage(image, icon_,
+               is_fullscreen_app_list_enabled_ ? kListIconSizeFullscreen
+                                               : kListIconSize);
 }
 
 void SearchResultView::OnBadgeIconChanged() {
@@ -342,7 +363,9 @@ void SearchResultView::OnBadgeIconChanged() {
     return;
   }
 
-  SetIconImage(image, badge_icon_, kListBadgeIconSize);
+  SetIconImage(image, badge_icon_,
+               is_fullscreen_app_list_enabled_ ? kListBadgeIconSizeFullscreen
+                                               : kListBadgeIconSize);
   badge_icon_->SetVisible(true);
 }
 

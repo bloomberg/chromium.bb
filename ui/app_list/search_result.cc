@@ -7,6 +7,7 @@
 #include <map>
 
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/search/tokenized_string.h"
 #include "ui/app_list/search/tokenized_string_match.h"
 #include "ui/app_list/search_result_observer.h"
@@ -97,7 +98,8 @@ int SearchResult::GetPreferredIconDimension() const {
     case DISPLAY_TILE:
       return kTileIconSize;
     case DISPLAY_LIST:
-      return kListIconSize;
+      return features::IsFullscreenAppListEnabled() ? kListIconSizeFullscreen
+                                                    : kListIconSize;
     case DISPLAY_NONE:
     case DISPLAY_CARD:
       return 0;
