@@ -408,10 +408,13 @@ CORSStatus ResourceLoader::DetermineCORSStatus(const ResourceResponse& response,
   if (source_origin->CanRequestNoSuborigin(response.Url()))
     return CORSStatus::kSameOrigin;
 
-  // FetchRequestMode never changes during the lifetime of a request.
+  // RequestContext, FetchRequestMode and FetchCredentialsMode never change
+  // during the lifetime of a request.
+  const ResourceRequest& initial_request = resource_->GetResourceRequest();
+
   if (resource_->Options().cors_handling_by_resource_fetcher !=
           kEnableCORSHandlingByResourceFetcher ||
-      resource_->GetResourceRequest().GetFetchRequestMode() !=
+      initial_request.GetFetchRequestMode() !=
           WebURLRequest::kFetchRequestModeCORS)
     return CORSStatus::kNotApplicable;
 
@@ -422,12 +425,10 @@ CORSStatus ResourceLoader::DetermineCORSStatus(const ResourceResponse& response,
           ? resource_->GetResponse()
           : response;
 
-  // FetchCredentialsMode never changes during the lifetime of a request.
   CrossOriginAccessControl::AccessStatus cors_status =
       CrossOriginAccessControl::CheckAccess(
           response_for_access_control,
-          resource_->GetResourceRequest().GetFetchCredentialsMode(),
-          source_origin);
+          initial_request.GetFetchCredentialsMode(), source_origin);
 
   if (cors_status == CrossOriginAccessControl::AccessStatus::kAccessAllowed)
     return CORSStatus::kSuccessful;
@@ -442,10 +443,9 @@ CORSStatus ResourceLoader::DetermineCORSStatus(const ResourceResponse& response,
   error_msg.Append(source_origin->ToString());
   error_msg.Append("' has been blocked by CORS policy: ");
 
-  // RequestContext never changes during the lifetime of a request.
   CrossOriginAccessControl::AccessControlErrorString(
       error_msg, cors_status, response_for_access_control, source_origin,
-      resource_->GetResourceRequest().GetRequestContext());
+      initial_request.GetRequestContext());
 
   return CORSStatus::kFailed;
 }
