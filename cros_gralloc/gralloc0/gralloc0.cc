@@ -13,6 +13,8 @@ struct gralloc0_module {
 	gralloc_module_t base;
 	std::unique_ptr<alloc_device_t> alloc;
 	std::unique_ptr<cros_gralloc_driver> driver;
+	bool initialized;
+	std::mutex initialization_mutex;
 };
 
 /* This enumeration must match the one in <gralloc_drm.h>.
@@ -128,11 +130,38 @@ static int gralloc0_close(struct hw_device_t *dev)
 	return 0;
 }
 
+static int gralloc0_init(struct gralloc0_module *mod, bool initialize_alloc)
+{
+	std::lock_guard<std::mutex> lock(mod->initialization_mutex);
+
+	if (mod->initialized)
+		return 0;
+
+	mod->driver = std::make_unique<cros_gralloc_driver>();
+	if (mod->driver->init()) {
+		cros_gralloc_error("Failed to initialize driver.");
+		return -ENODEV;
+	}
+
+	if (initialize_alloc) {
+		mod->alloc = std::make_unique<alloc_device_t>();
+		mod->alloc->alloc = gralloc0_alloc;
+		mod->alloc->free = gralloc0_free;
+		mod->alloc->common.tag = HARDWARE_DEVICE_TAG;
+		mod->alloc->common.version = 0;
+		mod->alloc->common.module = (hw_module_t *)mod;
+		mod->alloc->common.close = gralloc0_close;
+	}
+
+	mod->initialized = true;
+	return 0;
+}
+
 static int gralloc0_open(const struct hw_module_t *mod, const char *name, struct hw_device_t **dev)
 {
 	auto module = (struct gralloc0_module *)mod;
 
-	if (module->alloc) {
+	if (module->initialized) {
 		*dev = &module->alloc->common;
 		return 0;
 	}
@@ -142,20 +171,8 @@ static int gralloc0_open(const struct hw_module_t *mod, const char *name, struct
 		return -EINVAL;
 	}
 
-	module->driver = std::make_unique<cros_gralloc_driver>();
-	if (module->driver->init()) {
-		cros_gralloc_error("Failed to initialize driver.");
-		return -ENOMEM;
-	}
-
-	module->alloc = std::make_unique<alloc_device_t>();
-
-	module->alloc->alloc = gralloc0_alloc;
-	module->alloc->free = gralloc0_free;
-	module->alloc->common.tag = HARDWARE_DEVICE_TAG;
-	module->alloc->common.version = 0;
-	module->alloc->common.module = (hw_module_t *)mod;
-	module->alloc->common.close = gralloc0_close;
+	if (gralloc0_init(module, true))
+		return -ENODEV;
 
 	*dev = &module->alloc->common;
 	return 0;
@@ -165,13 +182,9 @@ static int gralloc0_register_buffer(struct gralloc_module_t const *module, buffe
 {
 	auto mod = (struct gralloc0_module *)module;
 
-	if (!mod->driver) {
-		mod->driver = std::make_unique<cros_gralloc_driver>();
-		if (mod->driver->init()) {
-			cros_gralloc_error("Failed to initialize driver.");
-			return -ENOMEM;
-		}
-	}
+	if (!mod->initialized)
+		if (gralloc0_init(mod, false))
+			return -ENODEV;
 
 	return mod->driver->retain(handle);
 }
@@ -380,4 +393,5 @@ struct gralloc0_module HAL_MODULE_INFO_SYM = {
 
 	.alloc = nullptr,
 	.driver = nullptr,
+	.initialized = false,
 };
