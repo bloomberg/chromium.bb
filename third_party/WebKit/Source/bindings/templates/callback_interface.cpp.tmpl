@@ -24,12 +24,12 @@ DEFINE_TRACE({{v8_class}}) {
 {{method.cpp_type}} {{v8_class}}::{{method.name}}({{method.argument_declarations | join(', ')}}) {
   {% set return_default = 'return true'
          if method.idl_type == 'boolean' else 'return' %}{# void #}
+  if (!script_state_->ContextIsValid())
+    {{return_default}};
   ExecutionContext* executionContext =
       ExecutionContext::From(script_state_.Get());
   DCHECK(!executionContext->IsContextSuspended());
   if (!executionContext || executionContext->IsContextDestroyed())
-    {{return_default}};
-  if (!script_state_->ContextIsValid())
     {{return_default}};
 
   ScriptState::Scope scope(script_state_.Get());
