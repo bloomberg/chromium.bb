@@ -111,7 +111,7 @@ class CORE_EXPORT FrameLoader final {
   void DidAccessInitialDocument();
 
   DocumentLoader* GetDocumentLoader() const { return document_loader_.Get(); }
-  DocumentLoader* ProvisionalDocumentLoader() const {
+  DocumentLoader* GetProvisionalDocumentLoader() const {
     return provisional_document_loader_.Get();
   }
 
@@ -210,7 +210,9 @@ class CORE_EXPORT FrameLoader final {
   // Note: When a PlzNavigtate navigation is handled by the client, we will
   // have created a dummy provisional DocumentLoader, so this will return true
   // while the client handles the navigation.
-  bool HasProvisionalNavigation() const { return ProvisionalDocumentLoader(); }
+  bool HasProvisionalNavigation() const {
+    return GetProvisionalDocumentLoader();
+  }
 
   void DetachProvisionalDocumentLoader(DocumentLoader*);
 

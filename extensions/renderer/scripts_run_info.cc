@@ -20,9 +20,8 @@ ScriptsRunInfo::ScriptsRunInfo(content::RenderFrame* render_frame,
       num_blocking_js(0u),
       routing_id_(render_frame->GetRoutingID()),
       run_location_(location),
-      frame_url_(ScriptContext::GetDataSourceURLForFrame(
-          render_frame->GetWebFrame())) {
-}
+      frame_url_(ScriptContext::GetDocumentLoaderURLForFrame(
+          render_frame->GetWebFrame())) {}
 
 ScriptsRunInfo::~ScriptsRunInfo() {
 }

@@ -102,10 +102,10 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
                             replaces_current_history_item);
   }
 
-  void DidStartProvisionalLoad(blink::WebDataSource* data_source,
+  void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
                                blink::WebURLRequest& request) override {
-    test_client()->DidStartProvisionalLoad(data_source, request);
-    Base::DidStartProvisionalLoad(data_source, request);
+    test_client()->DidStartProvisionalLoad(document_loader, request);
+    Base::DidStartProvisionalLoad(document_loader, request);
   }
 
   void DidReceiveServerRedirectForProvisionalLoad() override {
@@ -119,7 +119,7 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
     test_client()->DidFailProvisionalLoad(error, commit_type);
     // If the test finished, don't notify the embedder of the failed load,
     // as we already destroyed the document loader.
-    if (!web_frame()->ProvisionalDataSource())
+    if (!web_frame()->GetProvisionalDocumentLoader())
       return;
     Base::DidFailProvisionalLoad(error, commit_type);
   }

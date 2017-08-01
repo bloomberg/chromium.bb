@@ -155,7 +155,7 @@ void PhishingClassifierDelegate::DidCommitProvisionalLoad(
   // to swap out the page text while the term feature extractor is still
   // running.
   DocumentState* document_state =
-      DocumentState::FromDataSource(frame->DataSource());
+      DocumentState::FromDocumentLoader(frame->GetDocumentLoader());
   NavigationState* navigation_state = document_state->navigation_state();
   CancelPendingClassification(navigation_state->WasWithinSameDocument()
                                   ? NAVIGATE_WITHIN_PAGE

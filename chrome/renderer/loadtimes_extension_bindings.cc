@@ -14,7 +14,7 @@
 #include "third_party/WebKit/public/web/WebPerformance.h"
 #include "v8/include/v8.h"
 
-using blink::WebDataSource;
+using blink::WebDocumentLoader;
 using blink::WebLocalFrame;
 using blink::WebNavigationType;
 using blink::WebPerformance;
@@ -122,11 +122,12 @@ class LoadTimesExtensionWrapper : public v8::Extension {
     if (!frame) {
       return;
     }
-    WebDataSource* data_source = frame->DataSource();
-    if (!data_source) {
+    WebDocumentLoader* document_loader = frame->GetDocumentLoader();
+    if (!document_loader) {
       return;
     }
-    DocumentState* document_state = DocumentState::FromDataSource(data_source);
+    DocumentState* document_state =
+        DocumentState::FromDocumentLoader(document_loader);
     if (!document_state) {
       return;
     }
@@ -166,7 +167,7 @@ class LoadTimesExtensionWrapper : public v8::Extension {
     // time being.
     double first_paint_after_load_time = 0.0;
     std::string navigation_type =
-        GetNavigationType(data_source->GetNavigationType());
+        GetNavigationType(document_loader->GetNavigationType());
     bool was_fetched_via_spdy = document_state->was_fetched_via_spdy();
     bool was_alpn_negotiated = document_state->was_alpn_negotiated();
     std::string alpn_negotiated_protocol =
@@ -176,7 +177,7 @@ class LoadTimesExtensionWrapper : public v8::Extension {
     std::string connection_info = net::HttpResponseInfo::ConnectionInfoToString(
         document_state->connection_info());
 
-    // Important: |frame|, |data_source| and |document_state| should not be
+    // Important: |frame|, |document_loader| and |document_state| should not be
     // referred to below this line, as JS setters below can invalidate these
     // pointers.
     v8::Isolate* isolate = args.GetIsolate();
@@ -342,8 +343,8 @@ class LoadTimesExtensionWrapper : public v8::Extension {
     if (!frame) {
       return;
     }
-    WebDataSource* data_source = frame->DataSource();
-    if (!data_source) {
+    WebDocumentLoader* document_loader = frame->GetDocumentLoader();
+    if (!document_loader) {
       return;
     }
     WebPerformance web_performance = frame->Performance();
@@ -355,9 +356,9 @@ class LoadTimesExtensionWrapper : public v8::Extension {
         base::Time::FromDoubleT(web_performance.DomContentLoadedEventEnd());
     base::TimeDelta page = now - start;
     int navigation_type =
-        GetCSITransitionType(data_source->GetNavigationType());
-    // Important: |frame| and |data_source| should not be referred to below this
-    // line, as JS setters below can invalidate these pointers.
+        GetCSITransitionType(document_loader->GetNavigationType());
+    // Important: |frame| and |document_loader| should not be referred to below
+    // this line, as JS setters below can invalidate these pointers.
     v8::Isolate* isolate = args.GetIsolate();
     v8::Local<v8::Context> ctx = isolate->GetCurrentContext();
     v8::Local<v8::Object> csi = v8::Object::New(isolate);

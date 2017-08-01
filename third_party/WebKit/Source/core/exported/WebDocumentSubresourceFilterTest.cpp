@@ -61,7 +61,7 @@ class TestDocumentSubresourceFilter : public WebDocumentSubresourceFilter {
 class SubresourceFilteringWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
-  void DidStartProvisionalLoad(WebDataSource* data_source,
+  void DidStartProvisionalLoad(WebDocumentLoader* data_source,
                                WebURLRequest& request) override {
     // Normally, the filter should be set when the load is committed. For
     // the sake of this test, however, inject it earlier to verify that it
@@ -79,7 +79,7 @@ class SubresourceFilteringWebFrameClient
   }
 
  private:
-  // Weak, owned by WebDataSource.
+  // Weak, owned by WebDocumentLoader.
   TestDocumentSubresourceFilter* subresource_filter_ = nullptr;
   bool allow_subresources_from_next_load_ = false;
 };

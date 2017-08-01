@@ -8,16 +8,16 @@
 
 #include "chrome/renderer/searchbox/search_bouncer.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebDocumentLoader.h"
 #include "url/gurl.h"
 
 namespace page_load_metrics {
 
 RendererPageTrackDecider::RendererPageTrackDecider(
     const blink::WebDocument* document,
-    const blink::WebDataSource* data_source)
-    : document_(document), data_source_(data_source) {}
+    const blink::WebDocumentLoader* document_loader)
+    : document_(document), document_loader_(document_loader) {}
 
 RendererPageTrackDecider::~RendererPageTrackDecider() {}
 
@@ -35,11 +35,11 @@ bool RendererPageTrackDecider::IsNewTabPageUrl() {
 }
 
 bool RendererPageTrackDecider::IsChromeErrorPage() {
-  return data_source_->HasUnreachableURL();
+  return document_loader_->HasUnreachableURL();
 }
 
 int RendererPageTrackDecider::GetHttpStatusCode() {
-  return data_source_->GetResponse().HttpStatusCode();
+  return document_loader_->GetResponse().HttpStatusCode();
 }
 
 bool RendererPageTrackDecider::IsHtmlOrXhtmlPage() {
@@ -50,7 +50,7 @@ bool RendererPageTrackDecider::IsHtmlOrXhtmlPage() {
     return false;
 
   // Ignore non-HTML mime types (e.g. images).
-  blink::WebString mime_type = data_source_->GetResponse().MimeType();
+  blink::WebString mime_type = document_loader_->GetResponse().MimeType();
   return mime_type == "text/html" || mime_type == "application/xhtml+xml" ||
          mime_type == "multipart/related";
 }

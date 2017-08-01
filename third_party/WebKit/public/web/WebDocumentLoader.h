@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebDataSource_h
-#define WebDataSource_h
+#ifndef WebDocumentLoader_h
+#define WebDocumentLoader_h
 
 #include <memory>
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebSourceLocation.h"
 #include "WebNavigationType.h"
 #include "WebTextDirection.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebSourceLocation.h"
 
 namespace blink {
 
@@ -51,7 +51,7 @@ class WebVector;
 // An interface to expose the blink::DocumentLoader to the content layer,
 // including SetExtraData() and GetExtraData() to allow the content layer to
 // store data that isn't relevant to Blink.
-class BLINK_EXPORT WebDataSource {
+class BLINK_EXPORT WebDocumentLoader {
  public:
   class ExtraData {
    public:
@@ -141,7 +141,7 @@ class BLINK_EXPORT WebDataSource {
   virtual void ResetSourceLocation() = 0;
 
  protected:
-  ~WebDataSource() {}
+  ~WebDocumentLoader() {}
 };
 
 }  // namespace blink

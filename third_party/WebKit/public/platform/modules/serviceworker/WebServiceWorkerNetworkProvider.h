@@ -55,7 +55,7 @@ class WebServiceWorkerNetworkProvider {
   // made.
   virtual void WillSendRequest(WebURLRequest&) {}
 
-  // Whether the document associated with WebDataSource is controlled by the
+  // Whether the document associated with WebDocumentLoader is controlled by the
   // ServiceWorker.
   virtual bool IsControlledByServiceWorker() { return false; }
 
@@ -63,7 +63,7 @@ class WebServiceWorkerNetworkProvider {
   virtual int GetProviderID() const { return -1; }
 
   // Returns an identifier of the service worker controlling the document
-  // associated with the WebDataSource.
+  // associated with the WebDocumentLoader.
   virtual int64_t ServiceWorkerID() { return -1; }
 
   // Returns a URLLoader for the associated context. May return nullptr

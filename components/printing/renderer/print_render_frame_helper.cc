@@ -990,7 +990,7 @@ bool PrintRenderFrameHelper::IsScriptInitiatedPrintAllowed(
 }
 
 void PrintRenderFrameHelper::DidStartProvisionalLoad(
-    blink::WebDataSource* data_source) {
+    blink::WebDocumentLoader* document_loader) {
   is_loading_ = true;
 }
 

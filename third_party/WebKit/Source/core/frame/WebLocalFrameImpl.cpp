@@ -127,8 +127,8 @@
 #include "core/exported/LocalFrameClientImpl.h"
 #include "core/exported/SharedWorkerRepositoryClientImpl.h"
 #include "core/exported/WebAssociatedURLLoaderImpl.h"
-#include "core/exported/WebDataSourceImpl.h"
 #include "core/exported/WebDevToolsAgentImpl.h"
+#include "core/exported/WebDocumentLoaderImpl.h"
 #include "core/exported/WebPluginContainerImpl.h"
 #include "core/exported/WebRemoteFrameImpl.h"
 #include "core/exported/WebViewBase.h"
@@ -481,8 +481,8 @@ class ChromePluginPrintContext final : public ChromePrintContext {
   WebPrintParams print_params_;
 };
 
-static WebDataSource* DataSourceForDocLoader(DocumentLoader* loader) {
-  return loader ? WebDataSourceImpl::FromDocumentLoader(loader) : nullptr;
+static WebDocumentLoader* DocumentLoaderForDocLoader(DocumentLoader* loader) {
+  return loader ? WebDocumentLoaderImpl::FromDocumentLoader(loader) : nullptr;
 }
 
 // WebFrame -------------------------------------------------------------------
@@ -905,15 +905,15 @@ void WebLocalFrameImpl::StopLoading() {
   GetFrame()->Loader().StopAllLoaders();
 }
 
-WebDataSource* WebLocalFrameImpl::ProvisionalDataSource() const {
+WebDocumentLoader* WebLocalFrameImpl::GetProvisionalDocumentLoader() const {
   DCHECK(GetFrame());
-  return DataSourceForDocLoader(
-      GetFrame()->Loader().ProvisionalDocumentLoader());
+  return DocumentLoaderForDocLoader(
+      GetFrame()->Loader().GetProvisionalDocumentLoader());
 }
 
-WebDataSource* WebLocalFrameImpl::DataSource() const {
+WebDocumentLoader* WebLocalFrameImpl::GetDocumentLoader() const {
   DCHECK(GetFrame());
-  return DataSourceForDocLoader(GetFrame()->Loader().GetDocumentLoader());
+  return DocumentLoaderForDocLoader(GetFrame()->Loader().GetDocumentLoader());
 }
 
 void WebLocalFrameImpl::EnableViewSourceMode(bool enable) {
@@ -1990,7 +1990,7 @@ void WebLocalFrameImpl::LoadData(const WebData& data,
   ResourceRequest request;
   HistoryItem* history_item = item;
   DocumentLoader* provisional_document_loader =
-      GetFrame()->Loader().ProvisionalDocumentLoader();
+      GetFrame()->Loader().GetProvisionalDocumentLoader();
   if (replace && !unreachable_url.IsEmpty() && provisional_document_loader) {
     request = provisional_document_loader->OriginalRequest();
     // When replacing a failed back/forward provisional navigation with an error
@@ -2024,13 +2024,13 @@ WebLocalFrameImpl::MaybeRenderFallbackContent(const WebURLError& error) const {
   if (!GetFrame()->Owner() || !GetFrame()->Owner()->CanRenderFallbackContent())
     return NoFallbackContent;
 
-  // provisionalDocumentLoader() can be null if a navigation started and
+  // GetProvisionalDocumentLoader() can be null if a navigation started and
   // completed (e.g. about:blank) while waiting for the navigation that wants
   // to show fallback content.
-  if (!GetFrame()->Loader().ProvisionalDocumentLoader())
+  if (!GetFrame()->Loader().GetProvisionalDocumentLoader())
     return NoLoadInProgress;
 
-  GetFrame()->Loader().ProvisionalDocumentLoader()->LoadFailed(error);
+  GetFrame()->Loader().GetProvisionalDocumentLoader()->LoadFailed(error);
   return FallbackRendered;
 }
 

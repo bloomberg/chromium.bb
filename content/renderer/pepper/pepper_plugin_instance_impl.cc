@@ -111,8 +111,8 @@
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
-#include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebDocumentLoader.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebPluginScriptForbiddenScope.h"
@@ -3051,7 +3051,7 @@ PP_Var PepperPluginInstanceImpl::GetPluginReferrerURL(
   WebLocalFrame* frame = document.GetFrame();
   if (!frame)
     return PP_MakeUndefined();
-  const WebURLRequest& request = frame->DataSource()->OriginalRequest();
+  const WebURLRequest& request = frame->GetDocumentLoader()->OriginalRequest();
   WebString referer = request.HttpHeaderField("Referer");
   if (referer.IsEmpty())
     return PP_MakeUndefined();

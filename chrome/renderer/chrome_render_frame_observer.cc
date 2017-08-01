@@ -36,8 +36,8 @@
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebDocumentLoader.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrameContentDumper.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -54,7 +54,7 @@
 #include "components/printing/renderer/print_render_frame_helper.h"
 #endif
 
-using blink::WebDataSource;
+using blink::WebDocumentLoader;
 using blink::WebElement;
 using blink::WebFrameContentDumper;
 using blink::WebLocalFrame;
@@ -331,7 +331,7 @@ void ChromeRenderFrameObserver::DidFinishLoad() {
 }
 
 void ChromeRenderFrameObserver::DidStartProvisionalLoad(
-    blink::WebDataSource* data_source) {
+    WebDocumentLoader* document_loader) {
   // Let translate_helper do any preparatory work for loading a URL.
   if (!translate_helper_)
     return;
@@ -368,8 +368,8 @@ void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
     return;
 
   // Don't capture text of the error pages.
-  WebDataSource* ds = frame->DataSource();
-  if (ds && ds->HasUnreachableURL())
+  WebDocumentLoader* document_loader = frame->GetDocumentLoader();
+  if (document_loader && document_loader->HasUnreachableURL())
     return;
 
   // Don't index/capture pages that are being prerendered.

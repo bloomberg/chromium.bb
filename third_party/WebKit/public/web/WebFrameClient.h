@@ -35,7 +35,7 @@
 
 #include "WebAXObject.h"
 #include "WebDOMMessageEvent.h"
-#include "WebDataSource.h"
+#include "WebDocumentLoader.h"
 #include "WebFileChooserParams.h"
 #include "WebFormElement.h"
 #include "WebFrame.h"
@@ -96,7 +96,7 @@ class WebColorChooser;
 class WebColorChooserClient;
 class WebContentDecryptionModule;
 class WebCookieJar;
-class WebDataSource;
+class WebDocumentLoader;
 class WebEncryptedMediaClient;
 class WebExternalPopupMenu;
 class WebExternalPopupMenuClient;
@@ -335,7 +335,7 @@ class BLINK_EXPORT WebFrameClient {
   // defaultPolicy should just be returned.
 
   struct NavigationPolicyInfo {
-    WebDataSource::ExtraData* extra_data;
+    WebDocumentLoader::ExtraData* extra_data;
 
     // Note: if browser side navigations are enabled, the client may modify
     // the urlRequest. However, should this happen, the client should change
@@ -408,10 +408,10 @@ class BLINK_EXPORT WebFrameClient {
 
   // A datasource has been created for a new navigation.  The given
   // datasource will become the provisional datasource for the frame.
-  virtual void DidCreateDataSource(WebLocalFrame*, WebDataSource*) {}
+  virtual void DidCreateDocumentLoader(WebLocalFrame*, WebDocumentLoader*) {}
 
   // A new provisional load has been started.
-  virtual void DidStartProvisionalLoad(WebDataSource* data_source,
+  virtual void DidStartProvisionalLoad(WebDocumentLoader* document_loader,
                                        WebURLRequest& request) {}
 
   // The provisional load was redirected via a HTTP 3xx response.

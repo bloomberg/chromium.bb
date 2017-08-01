@@ -202,7 +202,7 @@ void ExtensionFrameHelper::DidMatchCSS(
 }
 
 void ExtensionFrameHelper::DidStartProvisionalLoad(
-    blink::WebDataSource* data_source) {
+    blink::WebDocumentLoader* document_loader) {
   if (!delayed_main_world_script_initialization_)
     return;
 

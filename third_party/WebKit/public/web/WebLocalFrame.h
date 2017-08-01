@@ -32,7 +32,7 @@ class WebAssociatedURLLoader;
 class WebAutofillClient;
 class WebContentSettingsClient;
 class WebData;
-class WebDataSource;
+class WebDocumentLoader;
 class WebDevToolsAgent;
 class WebDevToolsAgentClient;
 class WebDocument;
@@ -199,7 +199,7 @@ class WebLocalFrame : public WebFrame {
   // Loads the given data with specific mime type and optional text
   // encoding.  For HTML data, baseURL indicates the security origin of
   // the document and is used to resolve links.  If specified,
-  // unreachableURL is reported via WebDataSource::unreachableURL.  If
+  // unreachableURL is reported via WebDocumentLoader::unreachableURL.  If
   // replace is false, then this data will be loaded as a normal
   // navigation.  Otherwise, the current history item will be replaced.
   virtual void LoadData(const WebData&,
@@ -213,11 +213,11 @@ class WebLocalFrame : public WebFrame {
                         WebHistoryLoadType = kWebHistoryDifferentDocumentLoad,
                         bool is_client_redirect = false) = 0;
 
-  // Returns the data source that is currently loading.  May be null.
-  virtual WebDataSource* ProvisionalDataSource() const = 0;
+  // Returns the document loader that is currently loading.  May be null.
+  virtual WebDocumentLoader* GetProvisionalDocumentLoader() const = 0;
 
-  // Returns the data source that is currently loaded.
-  virtual WebDataSource* DataSource() const = 0;
+  // Returns the document loader that is currently loaded.
+  virtual WebDocumentLoader* GetDocumentLoader() const = 0;
 
   enum FallbackContentResult {
     // An error page should be shown instead of fallback.

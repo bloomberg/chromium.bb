@@ -43,7 +43,7 @@ const char kUserScriptTail[] = "\n})(window);";
 const uint32_t kNumScriptsArbitraryMax = 100000u;
 
 GURL GetDocumentUrlForFrame(blink::WebLocalFrame* frame) {
-  GURL data_source_url = ScriptContext::GetDataSourceURLForFrame(frame);
+  GURL data_source_url = ScriptContext::GetDocumentLoaderURLForFrame(frame);
   if (!data_source_url.is_empty() && frame->IsViewSourceModeEnabled()) {
     data_source_url = GURL(content::kViewSourceScheme + std::string(":") +
                            data_source_url.spec());

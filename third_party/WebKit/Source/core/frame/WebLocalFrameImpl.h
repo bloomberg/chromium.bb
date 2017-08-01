@@ -155,8 +155,8 @@ class CORE_EXPORT WebLocalFrameImpl final
                       const WebURL& unreachable_url,
                       bool replace) override;
   void StopLoading() override;
-  WebDataSource* ProvisionalDataSource() const override;
-  WebDataSource* DataSource() const override;
+  WebDocumentLoader* GetProvisionalDocumentLoader() const override;
+  WebDocumentLoader* GetDocumentLoader() const override;
   void EnableViewSourceMode(bool enable) override;
   bool IsViewSourceModeEnabled() const override;
   void SetReferrerForRequest(WebURLRequest&, const WebURL& referrer) override;

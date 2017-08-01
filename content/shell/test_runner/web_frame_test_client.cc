@@ -30,7 +30,6 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
-#include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
@@ -427,7 +426,7 @@ void WebFrameTestClient::LoadErrorPage(int reason) {
 }
 
 void WebFrameTestClient::DidStartProvisionalLoad(
-    blink::WebDataSource* data_source,
+    blink::WebDocumentLoader* document_loader,
     blink::WebURLRequest& request) {
   // PlzNavigate
   // A provisional load notification is received when a frame navigation is

@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/exported/WebDataSourceImpl.h"
+#include "core/exported/WebDocumentLoaderImpl.h"
 
 #include <memory>
 #include "core/dom/Document.h"
@@ -43,44 +43,45 @@
 
 namespace blink {
 
-WebDataSourceImpl* WebDataSourceImpl::Create(
+WebDocumentLoaderImpl* WebDocumentLoaderImpl::Create(
     LocalFrame* frame,
     const ResourceRequest& request,
     const SubstituteData& data,
     ClientRedirectPolicy client_redirect_policy) {
   DCHECK(frame);
 
-  return new WebDataSourceImpl(frame, request, data, client_redirect_policy);
+  return new WebDocumentLoaderImpl(frame, request, data,
+                                   client_redirect_policy);
 }
 
-const WebURLRequest& WebDataSourceImpl::OriginalRequest() const {
+const WebURLRequest& WebDocumentLoaderImpl::OriginalRequest() const {
   return original_request_wrapper_;
 }
 
-const WebURLRequest& WebDataSourceImpl::GetRequest() const {
+const WebURLRequest& WebDocumentLoaderImpl::GetRequest() const {
   return request_wrapper_;
 }
 
-const WebURLResponse& WebDataSourceImpl::GetResponse() const {
+const WebURLResponse& WebDocumentLoaderImpl::GetResponse() const {
   return response_wrapper_;
 }
 
-bool WebDataSourceImpl::HasUnreachableURL() const {
+bool WebDocumentLoaderImpl::HasUnreachableURL() const {
   return !DocumentLoader::UnreachableURL().IsEmpty();
 }
 
-WebURL WebDataSourceImpl::UnreachableURL() const {
+WebURL WebDocumentLoaderImpl::UnreachableURL() const {
   return DocumentLoader::UnreachableURL();
 }
 
-void WebDataSourceImpl::AppendRedirect(const WebURL& url) {
+void WebDocumentLoaderImpl::AppendRedirect(const WebURL& url) {
   DocumentLoader::AppendRedirect(url);
 }
 
-void WebDataSourceImpl::UpdateNavigation(double redirect_start_time,
-                                         double redirect_end_time,
-                                         double fetch_start_time,
-                                         bool has_redirect) {
+void WebDocumentLoaderImpl::UpdateNavigation(double redirect_start_time,
+                                             double redirect_end_time,
+                                             double fetch_start_time,
+                                             bool has_redirect) {
   // Updates the redirection timing if there is at least one redirection
   // (between two URLs).
   if (has_redirect) {
@@ -90,37 +91,38 @@ void WebDataSourceImpl::UpdateNavigation(double redirect_start_time,
   GetTiming().SetFetchStart(fetch_start_time);
 }
 
-void WebDataSourceImpl::RedirectChain(WebVector<WebURL>& result) const {
+void WebDocumentLoaderImpl::RedirectChain(WebVector<WebURL>& result) const {
   result.Assign(redirect_chain_);
 }
 
-bool WebDataSourceImpl::IsClientRedirect() const {
+bool WebDocumentLoaderImpl::IsClientRedirect() const {
   return DocumentLoader::IsClientRedirect();
 }
 
-bool WebDataSourceImpl::ReplacesCurrentHistoryItem() const {
+bool WebDocumentLoaderImpl::ReplacesCurrentHistoryItem() const {
   return DocumentLoader::ReplacesCurrentHistoryItem();
 }
 
-WebNavigationType WebDataSourceImpl::GetNavigationType() const {
+WebNavigationType WebDocumentLoaderImpl::GetNavigationType() const {
   return ToWebNavigationType(DocumentLoader::GetNavigationType());
 }
 
-WebDataSource::ExtraData* WebDataSourceImpl::GetExtraData() const {
+WebDocumentLoader::ExtraData* WebDocumentLoaderImpl::GetExtraData() const {
   return extra_data_.get();
 }
 
-void WebDataSourceImpl::SetExtraData(ExtraData* extra_data) {
+void WebDocumentLoaderImpl::SetExtraData(ExtraData* extra_data) {
   // extraData can't be a std::unique_ptr because setExtraData is a WebKit API
   // function.
   extra_data_ = WTF::WrapUnique(extra_data);
 }
 
-void WebDataSourceImpl::SetNavigationStartTime(double navigation_start) {
+void WebDocumentLoaderImpl::SetNavigationStartTime(double navigation_start) {
   GetTiming().SetNavigationStart(navigation_start);
 }
 
-WebNavigationType WebDataSourceImpl::ToWebNavigationType(NavigationType type) {
+WebNavigationType WebDocumentLoaderImpl::ToWebNavigationType(
+    NavigationType type) {
   switch (type) {
     case kNavigationTypeLinkClicked:
       return kWebNavigationTypeLinkClicked;
@@ -138,7 +140,7 @@ WebNavigationType WebDataSourceImpl::ToWebNavigationType(NavigationType type) {
   }
 }
 
-WebDataSourceImpl::WebDataSourceImpl(
+WebDocumentLoaderImpl::WebDocumentLoaderImpl(
     LocalFrame* frame,
     const ResourceRequest& request,
     const SubstituteData& data,
@@ -148,33 +150,33 @@ WebDataSourceImpl::WebDataSourceImpl(
       request_wrapper_(DocumentLoader::GetRequest()),
       response_wrapper_(DocumentLoader::GetResponse()) {}
 
-WebDataSourceImpl::~WebDataSourceImpl() {
+WebDocumentLoaderImpl::~WebDocumentLoaderImpl() {
   // Verify that detachFromFrame() has been called.
   DCHECK(!extra_data_);
 }
 
-void WebDataSourceImpl::DetachFromFrame() {
+void WebDocumentLoaderImpl::DetachFromFrame() {
   DocumentLoader::DetachFromFrame();
   extra_data_.reset();
 }
 
-void WebDataSourceImpl::SetSubresourceFilter(
+void WebDocumentLoaderImpl::SetSubresourceFilter(
     WebDocumentSubresourceFilter* subresource_filter) {
   DocumentLoader::SetSubresourceFilter(SubresourceFilter::Create(
       *GetFrame()->GetDocument(), WTF::WrapUnique(subresource_filter)));
 }
 
-void WebDataSourceImpl::SetServiceWorkerNetworkProvider(
+void WebDocumentLoaderImpl::SetServiceWorkerNetworkProvider(
     std::unique_ptr<WebServiceWorkerNetworkProvider> provider) {
   DocumentLoader::SetServiceWorkerNetworkProvider(std::move(provider));
 }
 
 WebServiceWorkerNetworkProvider*
-WebDataSourceImpl::GetServiceWorkerNetworkProvider() {
+WebDocumentLoaderImpl::GetServiceWorkerNetworkProvider() {
   return DocumentLoader::GetServiceWorkerNetworkProvider();
 }
 
-void WebDataSourceImpl::SetSourceLocation(
+void WebDocumentLoaderImpl::SetSourceLocation(
     const WebSourceLocation& source_location) {
   std::unique_ptr<SourceLocation> location =
       SourceLocation::Create(source_location.url, source_location.line_number,
@@ -182,11 +184,11 @@ void WebDataSourceImpl::SetSourceLocation(
   DocumentLoader::SetSourceLocation(std::move(location));
 }
 
-void WebDataSourceImpl::ResetSourceLocation() {
+void WebDocumentLoaderImpl::ResetSourceLocation() {
   DocumentLoader::SetSourceLocation(nullptr);
 }
 
-DEFINE_TRACE(WebDataSourceImpl) {
+DEFINE_TRACE(WebDocumentLoaderImpl) {
   DocumentLoader::Trace(visitor);
 }
 

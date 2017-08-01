@@ -63,7 +63,7 @@ class WebFrameTestClient : public blink::WebFrameClient {
                          blink::WebTriggeringEventInfo triggering_event_info,
                          bool replaces_current_history_item) override;
   void LoadErrorPage(int reason) override;
-  void DidStartProvisionalLoad(blink::WebDataSource* data_source,
+  void DidStartProvisionalLoad(blink::WebDocumentLoader* loader,
                                blink::WebURLRequest& request) override;
   void DidReceiveServerRedirectForProvisionalLoad() override;
   void DidFailProvisionalLoad(const blink::WebURLError& error,

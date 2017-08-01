@@ -10,17 +10,17 @@
 
 namespace blink {
 class WebDocument;
-class WebDataSource;
+class WebDocumentLoader;
 }  // namespace blink
 
 namespace page_load_metrics {
 
 class RendererPageTrackDecider : public PageTrackDecider {
  public:
-  // document and data_source are not owned by RendererPageTrackDecider,
+  // document and document_loader are not owned by RendererPageTrackDecider,
   // and must outlive the RendererPageTrackDecider.
   RendererPageTrackDecider(const blink::WebDocument* document,
-                           const blink::WebDataSource* data_source);
+                           const blink::WebDocumentLoader* document_loader);
   ~RendererPageTrackDecider() override;
 
   bool HasCommitted() override;
@@ -32,7 +32,7 @@ class RendererPageTrackDecider : public PageTrackDecider {
 
  private:
   const blink::WebDocument* const document_;
-  const blink::WebDataSource* const data_source_;
+  const blink::WebDocumentLoader* const document_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererPageTrackDecider);
 };

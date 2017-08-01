@@ -216,8 +216,8 @@ TEST_F(RenderFrameImplTest, LoFiNotUpdatedOnSubframeCommits) {
   EXPECT_EQ(SERVER_LOFI_ON, GetMainRenderFrame()->GetPreviewsState());
 
   // The subframe's LoFi state should not be reset on commit.
-  DocumentState* document_state =
-      DocumentState::FromDataSource(frame()->GetWebFrame()->DataSource());
+  DocumentState* document_state = DocumentState::FromDocumentLoader(
+      frame()->GetWebFrame()->GetDocumentLoader());
   static_cast<NavigationStateImpl*>(document_state->navigation_state())
       ->set_was_within_same_document(false);
 
@@ -225,8 +225,8 @@ TEST_F(RenderFrameImplTest, LoFiNotUpdatedOnSubframeCommits) {
   EXPECT_EQ(SERVER_LOFI_ON, frame()->GetPreviewsState());
 
   // The main frame's LoFi state should be reset to off on commit.
-  document_state = DocumentState::FromDataSource(
-      GetMainRenderFrame()->GetWebFrame()->DataSource());
+  document_state = DocumentState::FromDocumentLoader(
+      GetMainRenderFrame()->GetWebFrame()->GetDocumentLoader());
   static_cast<NavigationStateImpl*>(document_state->navigation_state())
       ->set_was_within_same_document(false);
 
@@ -274,8 +274,8 @@ TEST_F(RenderFrameImplTest, EffectiveConnectionType) {
     EXPECT_EQ(tests[i].type, frame()->GetEffectiveConnectionType());
 
     // The subframe's effective connection type should not be reset on commit.
-    DocumentState* document_state =
-        DocumentState::FromDataSource(frame()->GetWebFrame()->DataSource());
+    DocumentState* document_state = DocumentState::FromDocumentLoader(
+        frame()->GetWebFrame()->GetDocumentLoader());
     static_cast<NavigationStateImpl*>(document_state->navigation_state())
         ->set_was_within_same_document(false);
 
@@ -283,8 +283,8 @@ TEST_F(RenderFrameImplTest, EffectiveConnectionType) {
     EXPECT_EQ(tests[i].type, frame()->GetEffectiveConnectionType());
 
     // The main frame's effective connection type should be reset on commit.
-    document_state = DocumentState::FromDataSource(
-        GetMainRenderFrame()->GetWebFrame()->DataSource());
+    document_state = DocumentState::FromDocumentLoader(
+        GetMainRenderFrame()->GetWebFrame()->GetDocumentLoader());
     static_cast<NavigationStateImpl*>(document_state->navigation_state())
         ->set_was_within_same_document(false);
 

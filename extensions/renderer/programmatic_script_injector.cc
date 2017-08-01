@@ -71,7 +71,7 @@ PermissionsData::AccessType ProgrammaticScriptInjector::CanExecuteOnFrame(
   // PlzNavigate we won't have the URL at that point when loads start. The
   // browser issues the request and only when it has a response does the
   // renderer see the provisional data source which the method below uses.
-  url_ = ScriptContext::GetDataSourceURLForFrame(frame);
+  url_ = ScriptContext::GetDocumentLoaderURLForFrame(frame);
   if (url_.SchemeIs(url::kAboutScheme)) {
     origin_for_about_error_ = frame->GetSecurityOrigin().ToString().Utf8();
   }

@@ -147,7 +147,7 @@ void AwRenderFrameExt::DidCommitProvisionalLoad(
     bool is_same_document_navigation) {
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   content::DocumentState* document_state =
-      content::DocumentState::FromDataSource(frame->DataSource());
+      content::DocumentState::FromDocumentLoader(frame->GetDocumentLoader());
   if (document_state->can_load_local_resources()) {
     blink::WebSecurityOrigin origin = frame->GetDocument().GetSecurityOrigin();
     origin.GrantLoadLocalResources();

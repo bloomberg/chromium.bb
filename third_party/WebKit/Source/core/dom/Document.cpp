@@ -3314,7 +3314,7 @@ void Document::DispatchUnloadEvents() {
         return;
 
       DocumentLoader* document_loader =
-          frame_->Loader().ProvisionalDocumentLoader();
+          frame_->Loader().GetProvisionalDocumentLoader();
       load_event_progress_ = kUnloadEventInProgress;
       Event* unload_event(Event::Create(EventTypeNames::unload));
       if (document_loader && !document_loader->GetTiming().UnloadEventStart() &&
@@ -3337,9 +3337,9 @@ void Document::DispatchUnloadEvents() {
   // Don't remove event listeners from a transitional empty document (see
   // https://bugs.webkit.org/show_bug.cgi?id=28716 for more information).
   bool keep_event_listeners =
-      frame_->Loader().ProvisionalDocumentLoader() &&
+      frame_->Loader().GetProvisionalDocumentLoader() &&
       frame_->ShouldReuseDefaultView(
-          frame_->Loader().ProvisionalDocumentLoader()->Url());
+          frame_->Loader().GetProvisionalDocumentLoader()->Url());
   if (!keep_event_listeners)
     RemoveAllEventListenersRecursively();
 }

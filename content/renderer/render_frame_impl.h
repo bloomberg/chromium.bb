@@ -71,7 +71,7 @@
 #include "third_party/WebKit/public/platform/media_engagement.mojom.h"
 #include "third_party/WebKit/public/platform/site_engagement.mojom.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
-#include "third_party/WebKit/public/web/WebDataSource.h"
+#include "third_party/WebKit/public/web/WebDocumentLoader.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebFrameLoadType.h"
 #include "third_party/WebKit/public/web/WebFrameSerializerClient.h"
@@ -562,9 +562,10 @@ class CONTENT_EXPORT RenderFrameImpl
       const NavigationPolicyInfo& info) override;
   void WillSendSubmitEvent(const blink::WebFormElement& form) override;
   void WillSubmitForm(const blink::WebFormElement& form) override;
-  void DidCreateDataSource(blink::WebLocalFrame* frame,
-                           blink::WebDataSource* datasource) override;
-  void DidStartProvisionalLoad(blink::WebDataSource* data_source,
+  void DidCreateDocumentLoader(
+      blink::WebLocalFrame* frame,
+      blink::WebDocumentLoader* document_loader) override;
+  void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
                                blink::WebURLRequest& request) override;
   void DidReceiveServerRedirectForProvisionalLoad() override;
   void DidFailProvisionalLoad(const blink::WebURLError& error,
@@ -1233,7 +1234,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Temporarily holds state pertaining to a navigation that has been initiated
   // until the NavigationState corresponding to the new navigation is created in
-  // didCreateDataSource().
+  // DidCreateDocumentLoader().
   std::unique_ptr<NavigationParams> pending_navigation_params_;
 
   // Keeps track of which future subframes the browser process has history items

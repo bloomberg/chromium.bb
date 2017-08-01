@@ -32,7 +32,7 @@ void OverlayJsRenderFrameObserver::OnInterfaceRequestForFrame(
 }
 
 void OverlayJsRenderFrameObserver::DidStartProvisionalLoad(
-    blink::WebDataSource* data_source) {
+    blink::WebDocumentLoader* document_loader) {
   RegisterMojoInterface();
 }
 

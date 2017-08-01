@@ -42,9 +42,9 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/UIEventWithKeyState.h"
 #include "core/exported/SharedWorkerRepositoryClientImpl.h"
-#include "core/exported/WebDataSourceImpl.h"
 #include "core/exported/WebDevToolsAgentImpl.h"
 #include "core/exported/WebDevToolsFrontendImpl.h"
+#include "core/exported/WebDocumentLoaderImpl.h"
 #include "core/exported/WebPluginContainerImpl.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrameView.h"
@@ -414,7 +414,7 @@ void LocalFrameClientImpl::DispatchDidStartProvisionalLoad(
   if (web_frame_->Client()) {
     WrappedResourceRequest wrapped_request(request);
     web_frame_->Client()->DidStartProvisionalLoad(
-        WebDataSourceImpl::FromDocumentLoader(loader), wrapped_request);
+        WebDocumentLoaderImpl::FromDocumentLoader(loader), wrapped_request);
   }
   if (WebDevToolsAgentImpl* dev_tools = DevToolsAgent())
     dev_tools->DidStartProvisionalLoad(web_frame_->GetFrame());
@@ -513,7 +513,7 @@ static bool AllowCreatingBackgroundTabs() {
 NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
     const ResourceRequest& request,
     Document* origin_document,
-    DocumentLoader* loader,
+    DocumentLoader* document_loader,
     NavigationType type,
     NavigationPolicy policy,
     bool replaces_current_history_item,
@@ -530,14 +530,16 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
       !UIEventWithKeyState::NewTabModifierSetFromIsolatedWorld())
     policy = kNavigationPolicyNewForegroundTab;
 
-  WebDataSourceImpl* ds = WebDataSourceImpl::FromDocumentLoader(loader);
+  WebDocumentLoaderImpl* web_document_loader =
+      WebDocumentLoaderImpl::FromDocumentLoader(document_loader);
 
   WrappedResourceRequest wrapped_resource_request(request);
   WebFrameClient::NavigationPolicyInfo navigation_info(
       wrapped_resource_request);
   navigation_info.navigation_type = static_cast<WebNavigationType>(type);
   navigation_info.default_policy = static_cast<WebNavigationPolicy>(policy);
-  navigation_info.extra_data = ds ? ds->GetExtraData() : nullptr;
+  navigation_info.extra_data =
+      web_document_loader ? web_document_loader->GetExtraData() : nullptr;
   navigation_info.replaces_current_history_item = replaces_current_history_item;
   navigation_info.is_client_redirect = is_client_redirect;
   navigation_info.triggering_event_info = triggering_event_info;
@@ -745,11 +747,11 @@ DocumentLoader* LocalFrameClientImpl::CreateDocumentLoader(
     ClientRedirectPolicy client_redirect_policy) {
   DCHECK(frame);
 
-  WebDataSourceImpl* ds =
-      WebDataSourceImpl::Create(frame, request, data, client_redirect_policy);
+  WebDocumentLoaderImpl* document_loader = WebDocumentLoaderImpl::Create(
+      frame, request, data, client_redirect_policy);
   if (web_frame_->Client())
-    web_frame_->Client()->DidCreateDataSource(web_frame_, ds);
-  return ds;
+    web_frame_->Client()->DidCreateDocumentLoader(web_frame_, document_loader);
+  return document_loader;
 }
 
 String LocalFrameClientImpl::UserAgent() {
