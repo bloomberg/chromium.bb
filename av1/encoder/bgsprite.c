@@ -502,6 +502,203 @@ static void blend_mean(const int width, const int height, const int num_frames,
 }
 #endif  // BGSPRITE_BLENDING_MODE == 1
 
+// Builds dual-mode single gaussian model from image stack.
+static void build_gaussian(const YuvPixel ***image_stack, const int num_frames,
+                           const int width, const int height,
+                           const int x_block_width, const int y_block_height,
+                           const int block_size, YuvPixelGaussian **gauss) {
+  const double initial_variance = 10.0;
+  const double s_theta = 2.0;
+
+  // Add images to dual-mode single gaussian model
+  for (int y_block = 0; y_block < y_block_height; ++y_block) {
+    for (int x_block = 0; x_block < x_block_width; ++x_block) {
+      // Process all blocks.
+      YuvPixelGaussian *model = &gauss[y_block][x_block];
+
+      // Process all frames.
+      for (int i = 0; i < num_frames; ++i) {
+        // Add block to the Gaussian model.
+        double max_variance[2] = { 0.0, 0.0 };
+        double temp_y_mean = 0.0;
+        double temp_u_mean = 0.0;
+        double temp_v_mean = 0.0;
+
+        // Find mean/variance of a block of pixels.
+        int temp_count = 0;
+        for (int sub_y = 0; sub_y < block_size; ++sub_y) {
+          for (int sub_x = 0; sub_x < block_size; ++sub_x) {
+            const int y = y_block * block_size + sub_y;
+            const int x = x_block * block_size + sub_x;
+            if (y < height && x < width && image_stack[y][x][i].exists) {
+              ++temp_count;
+              temp_y_mean += (double)image_stack[y][x][i].y;
+              temp_u_mean += (double)image_stack[y][x][i].u;
+              temp_v_mean += (double)image_stack[y][x][i].v;
+
+              const double variance_0 =
+                  pow((double)image_stack[y][x][i].y - model->mean[0], 2);
+              const double variance_1 =
+                  pow((double)image_stack[y][x][i].y - model->mean[1], 2);
+
+              if (variance_0 > max_variance[0]) {
+                max_variance[0] = variance_0;
+              }
+              if (variance_1 > max_variance[1]) {
+                max_variance[1] = variance_1;
+              }
+            }
+          }
+        }
+
+        // If pixels exist in the block, add to the model.
+        if (temp_count > 0) {
+          assert(temp_count <= block_size * block_size);
+          temp_y_mean /= temp_count;
+          temp_u_mean /= temp_count;
+          temp_v_mean /= temp_count;
+
+          // Switch the background model to the oldest model.
+          if (model->age[0] > model->age[1]) {
+            model->curr_model = 0;
+          } else if (model->age[1] > model->age[0]) {
+            model->curr_model = 1;
+          }
+
+          // If model is empty, initialize model.
+          if (model->age[model->curr_model] == 0) {
+            model->mean[model->curr_model] = temp_y_mean;
+            model->u_mean[model->curr_model] = temp_u_mean;
+            model->v_mean[model->curr_model] = temp_v_mean;
+            model->var[model->curr_model] = initial_variance;
+            model->age[model->curr_model] = 1;
+          } else {
+            // Constants for current model and foreground model (0 or 1).
+            const int opposite = 1 - model->curr_model;
+            const int current = model->curr_model;
+
+            // Put block into the appropriate model.
+            if (pow(temp_y_mean - model->mean[current], 2) <
+                s_theta * model->var[current]) {
+              // Add block to the current background model.
+              model->age[current] += 1;
+              const double prev_weight = 1 / model->age[current];
+              const double curr_weight =
+                  (model->age[current] - 1) / model->age[current];
+              model->mean[current] = prev_weight * model->mean[current] +
+                                     curr_weight * temp_y_mean;
+              model->u_mean[current] = prev_weight * model->u_mean[current] +
+                                       curr_weight * temp_u_mean;
+              model->v_mean[current] = prev_weight * model->v_mean[current] +
+                                       curr_weight * temp_v_mean;
+              model->var[current] = prev_weight * model->var[current] +
+                                    curr_weight * max_variance[current];
+            } else {
+              // Block does not fit into current background candidate. Add to
+              // foreground candidate and reinitialize if necessary.
+              const double var_fg = pow(temp_y_mean - model->mean[opposite], 2);
+
+              if (model->age[opposite] == 0 ||
+                  var_fg > s_theta * model->var[opposite]) {
+                model->mean[opposite] = temp_y_mean;
+                model->u_mean[opposite] = temp_u_mean;
+                model->v_mean[opposite] = temp_v_mean;
+                model->var[opposite] = initial_variance;
+                model->age[opposite] = 1;
+              } else if (var_fg <= s_theta * model->var[opposite]) {
+                model->age[opposite] += 1;
+                const double prev_weight = 1 / model->age[opposite];
+                const double curr_weight =
+                    (model->age[opposite] - 1) / model->age[opposite];
+                model->mean[opposite] = prev_weight * model->mean[opposite] +
+                                        curr_weight * temp_y_mean;
+                model->u_mean[opposite] =
+                    prev_weight * model->u_mean[opposite] +
+                    curr_weight * temp_u_mean;
+                model->v_mean[opposite] =
+                    prev_weight * model->v_mean[opposite] +
+                    curr_weight * temp_v_mean;
+                model->var[opposite] = prev_weight * model->var[opposite] +
+                                       curr_weight * max_variance[opposite];
+              } else {
+                // This case should never happen.
+                assert(0);
+              }
+            }
+          }
+        }
+      }
+
+      // Select the oldest candidate as the background model.
+      if (model->age[0] == 0 && model->age[1] == 0) {
+        model->y = 0;
+        model->u = 0;
+        model->v = 0;
+        model->final_var = 0;
+      } else if (model->age[0] > model->age[1]) {
+        model->y = (uint8_t)model->mean[0];
+        model->u = (uint8_t)model->u_mean[0];
+        model->v = (uint8_t)model->v_mean[0];
+        model->final_var = model->var[0];
+      } else {
+        model->y = (uint8_t)model->mean[1];
+        model->u = (uint8_t)model->u_mean[1];
+        model->v = (uint8_t)model->v_mean[1];
+        model->final_var = model->var[1];
+      }
+    }
+  }
+}
+
+// Builds foreground mask based on reference image and gaussian model.
+// In mask[][], 1 is foreground and 0 is background.
+static void build_mask(const int x_min, const int y_min, const int x_offset,
+                       const int y_offset, const int x_block_width,
+                       const int y_block_height, const int block_size,
+                       const YuvPixelGaussian **gauss,
+                       YV12_BUFFER_CONFIG *const reference,
+                       YV12_BUFFER_CONFIG *const panorama, uint8_t **mask) {
+  const int crop_x_offset = x_min + x_offset;
+  const int crop_y_offset = y_min + y_offset;
+  const double d_theta = 4.0;
+
+  for (int y_block = 0; y_block < y_block_height; ++y_block) {
+    for (int x_block = 0; x_block < x_block_width; ++x_block) {
+      // Create mask to determine if ARF is background for foreground.
+      const YuvPixelGaussian *model = &gauss[y_block][x_block];
+      double temp_y_mean = 0.0;
+      int temp_count = 0;
+
+      for (int sub_y = 0; sub_y < block_size; ++sub_y) {
+        for (int sub_x = 0; sub_x < block_size; ++sub_x) {
+          // x and y are panorama coordinates.
+          const int y = y_block * block_size + sub_y;
+          const int x = x_block * block_size + sub_x;
+
+          const int arf_y = y - crop_y_offset;
+          const int arf_x = x - crop_x_offset;
+
+          if (arf_y >= 0 && arf_y < panorama->y_height && arf_x >= 0 &&
+              arf_x < panorama->y_width) {
+            ++temp_count;
+            const int ychannel_idx = arf_y * panorama->y_stride + arf_x;
+            temp_y_mean += (double)reference->y_buffer[ychannel_idx];
+          }
+        }
+      }
+      if (temp_count > 0) {
+        assert(temp_count <= block_size * block_size);
+        temp_y_mean /= temp_count;
+
+        if (pow(temp_y_mean - model->y, 2) > model->final_var * d_theta) {
+          // Mark block as foreground.
+          mask[y_block][x_block] = 1;
+        }
+      }
+    }
+  }
+}
+
 // Resamples blended_img into panorama, including UV subsampling.
 static void resample_panorama(YuvPixel **blended_img, const int center_idx,
                               const int *const x_min, const int *const y_min,
@@ -662,6 +859,45 @@ static void stitch_images(YV12_BUFFER_CONFIG **const frames,
   // Resamples the blended_img into the panorama buffer.
   resample_panorama(blended_img, center_idx, x_min, y_min, pano_x_min,
                     pano_x_max, pano_y_min, pano_y_max, panorama);
+
+  (void)build_mask;
+  (void)build_gaussian;
+
+#if 0
+  // Block size constants for gaussian model.
+  const int N_1 = 2;
+  // const int N_2 = 8;
+  const int y_block_height = (height / N_1) + 1;
+  const int x_block_width = (width / N_1) + 1;
+  YuvPixelGaussian **gauss = aom_malloc(y_block_height * sizeof(*gauss));
+  for (int i = 0; i < y_block_height; ++i) {
+    gauss[i] = aom_calloc(x_block_width, sizeof(**gauss));
+  }
+
+  // Build Gaussian model.
+  build_gaussian((const YuvPixel ***)pano_stack, num_frames, width, height,
+                 x_block_width, y_block_height, N_1, gauss);
+
+  // Select background model and build foreground mask.
+  uint8_t **mask = aom_malloc(y_block_height * sizeof(*mask));
+  for (int i = 0; i < y_block_height; ++i) {
+    mask[i] = aom_calloc(x_block_width, sizeof(**mask));
+  }
+
+  const int x_offset = -pano_x_min;
+  const int y_offset = -pano_y_min;
+  build_mask(x_min[center_idx], y_min[center_idx], x_offset, y_offset,
+             x_block_width, y_block_height, N_1,
+             (const YuvPixelGaussian **)gauss,
+             (YV12_BUFFER_CONFIG *const)frames[center_idx], panorama, mask);
+
+  for (int i = 0; i < y_block_height; ++i) {
+    aom_free(gauss[i]);
+    aom_free(mask[i]);
+  }
+  aom_free(gauss);
+  aom_free(mask);
+#endif  // 0
 
   for (int i = 0; i < height; ++i) {
     for (int j = 0; j < width; ++j) {
