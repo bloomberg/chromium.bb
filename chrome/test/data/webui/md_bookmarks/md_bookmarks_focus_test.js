@@ -257,6 +257,16 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       assertEquals('0', focusedItem.getAttribute('tabindex'));
       assertDeepEquals(['2'], normalizeSet(store.data.selection.items));
 
+      keydown(focusedItem, 'ArrowRight');
+      focusedItem = items[0];
+      assertEquals(items[0], document.activeElement.root.activeElement);
+      assertEquals(items[0].$.menuButton, items[0].root.activeElement);
+
+      keydown(focusedItem, 'ArrowLeft');
+      focusedItem = items[0];
+      assertEquals(items[0], document.activeElement.root.activeElement);
+      assertEquals(null, items[0].root.activeElement);
+
       keydown(focusedItem, 'End');
       focusedItem = items[5];
       assertEquals('0', focusedItem.getAttribute('tabindex'));
