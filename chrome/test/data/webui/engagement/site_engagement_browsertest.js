@@ -97,7 +97,7 @@ TEST_F('SiteEngagementBrowserTest', 'MAYBE_All', function() {
 
     return uiHandler.getSiteEngagementDetails().then((response) => {
       assertEquals(firstRow.origin.textContent, response.info[0].origin.url);
-      assertEquals(50, response.info[0].base_score);
+      assertEquals(50, response.info[0].baseScore);
     });
   });
   mocha.run();

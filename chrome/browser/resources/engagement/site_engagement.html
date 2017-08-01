@@ -3,7 +3,10 @@
   <title>Site Engagement</title>
   <meta charset="utf-8">
   <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
+  <script src="chrome://resources/js/mojo_bindings.js"></script>
   <script src="chrome://resources/js/util.js"></script>
+  <script src="chrome/browser/engagement/site_engagement_details.mojom.js">
+  </script>
   <script src="chrome://site-engagement/site_engagement.js"></script>
   <style>
     body {
@@ -88,13 +91,13 @@
         <th sort-key="origin">
           Origin
         </th>
-        <th sort-key="base_score" sort-reverse>
+        <th sort-key="baseScore" sort-reverse>
           Base
         </th>
-        <th sort-key="bonus_score" sort-reverse>
+        <th sort-key="bonusScore" sort-reverse>
           Bonus
         </th>
-        <th sort-key="total_score" class="sort-column" sort-reverse>
+        <th sort-key="totalScore" class="sort-column" sort-reverse>
           Total
         </th>
       </tr>
