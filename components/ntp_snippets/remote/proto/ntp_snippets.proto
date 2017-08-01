@@ -33,6 +33,11 @@ message SnippetProto {
     VIDEO = 1;
   }
   optional ContentType content_type = 12 [default = UNKNOWN];
+
+  // A rank to preserve the order of suggestions. Lower ranks are shown earlier.
+  // The values may be not consecutive. Must be set on the client. May be absent
+  // in suggestions created before it was introduced.
+  optional int32 rank = 13;
 }
 
 message SnippetImageProto {

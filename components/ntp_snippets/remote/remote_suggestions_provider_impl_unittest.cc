@@ -4,6 +4,7 @@
 
 #include "components/ntp_snippets/remote/remote_suggestions_provider_impl.h"
 
+#include <limits>
 #include <map>
 #include <memory>
 #include <string>
@@ -2743,6 +2744,84 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   std::move(initialization_completed_callback).Run();
   EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
               SizeIs(1));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldRestoreSuggestionsFromDatabaseInSameOrderAsFetched) {
+  auto provider = MakeSuggestionsProvider();
+
+  std::vector<FetchedCategory> fetched_categories;
+  fetched_categories.push_back(
+      FetchedCategoryBuilder()
+          .SetCategory(articles_category())
+          .AddSuggestionViaBuilder(RemoteSuggestionBuilder()
+                                       .AddId("http://1.com")
+                                       .SetUrl("http://1.com")
+                                       .SetScore(1))
+          .AddSuggestionViaBuilder(RemoteSuggestionBuilder()
+                                       .AddId("http://3.com")
+                                       .SetUrl("http://3.com")
+                                       .SetScore(3))
+          .AddSuggestionViaBuilder(RemoteSuggestionBuilder()
+                                       .AddId("http://2.com")
+                                       .SetUrl("http://2.com")
+                                       .SetScore(2))
+          .Build());
+  FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
+                        Status(StatusCode::SUCCESS, "message"),
+                        std::move(fetched_categories));
+  ASSERT_THAT(
+      observer().SuggestionsForCategory(articles_category()),
+      ElementsAre(
+          Property(&ContentSuggestion::id, MakeArticleID("http://1.com")),
+          Property(&ContentSuggestion::id, MakeArticleID("http://3.com")),
+          Property(&ContentSuggestion::id, MakeArticleID("http://2.com"))));
+
+  ResetSuggestionsProvider(&provider);
+  EXPECT_THAT(
+      observer().SuggestionsForCategory(articles_category()),
+      ElementsAre(
+          Property(&ContentSuggestion::id, MakeArticleID("http://1.com")),
+          Property(&ContentSuggestion::id, MakeArticleID("http://3.com")),
+          Property(&ContentSuggestion::id, MakeArticleID("http://2.com"))));
+}
+
+// TODO(vitaliii): Remove this test (as well as the score fallback) in M64.
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldSortSuggestionsWithoutRanksByScore) {
+  auto provider = MakeSuggestionsProvider();
+
+  // Write suggestions without ranks (i.e. with default values) directly to
+  // database to simulate behaviour of M61.
+  std::vector<std::unique_ptr<RemoteSuggestion>> suggestions;
+  suggestions.push_back(RemoteSuggestionBuilder()
+                            .AddId("http://1.com")
+                            .SetUrl("http://1.com")
+                            .SetScore(1)
+                            .SetRank(std::numeric_limits<int>::max())
+                            .Build());
+  suggestions.push_back(RemoteSuggestionBuilder()
+                            .AddId("http://3.com")
+                            .SetUrl("http://3.com")
+                            .SetScore(3)
+                            .SetRank(std::numeric_limits<int>::max())
+                            .Build());
+  suggestions.push_back(RemoteSuggestionBuilder()
+                            .AddId("http://2.com")
+                            .SetUrl("http://2.com")
+                            .SetScore(2)
+                            .SetRank(std::numeric_limits<int>::max())
+                            .Build());
+
+  database()->SaveSnippets(suggestions);
+
+  ResetSuggestionsProvider(&provider);
+  EXPECT_THAT(
+      observer().SuggestionsForCategory(articles_category()),
+      ElementsAre(
+          Property(&ContentSuggestion::id, MakeArticleID("http://3.com")),
+          Property(&ContentSuggestion::id, MakeArticleID("http://2.com")),
+          Property(&ContentSuggestion::id, MakeArticleID("http://1.com"))));
 }
 
 }  // namespace ntp_snippets

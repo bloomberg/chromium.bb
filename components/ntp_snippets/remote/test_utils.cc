@@ -4,6 +4,7 @@
 
 #include "components/ntp_snippets/remote/test_utils.h"
 
+#include <limits>
 #include <memory>
 
 #include "base/memory/ptr_util.h"
@@ -183,6 +184,11 @@ RemoteSuggestionBuilder& RemoteSuggestionBuilder::SetFetchDate(
   return *this;
 }
 
+RemoteSuggestionBuilder& RemoteSuggestionBuilder::SetRank(int rank) {
+  rank_ = rank;
+  return *this;
+}
+
 std::unique_ptr<RemoteSuggestion> RemoteSuggestionBuilder::Build() const {
   SnippetProto proto;
   proto.set_title(title_.value_or("Title"));
@@ -205,6 +211,7 @@ std::unique_ptr<RemoteSuggestion> RemoteSuggestionBuilder::Build() const {
        ids_.value_or(std::vector<std::string>{source->url()})) {
     proto.add_ids(id);
   }
+  proto.set_rank(rank_.value_or(std::numeric_limits<int>::max()));
   return RemoteSuggestion::CreateFromProto(proto);
 }
 

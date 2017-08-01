@@ -118,8 +118,11 @@ class RemoteSuggestion {
   void set_dismissed(bool dismissed) { is_dismissed_ = dismissed; }
 
   // The ID of the remote category this suggestion belongs to, for use with
-  // CategoryFactory::FromRemoteCategory.
+  // Category::FromRemoteCategory.
   int remote_category_id() const { return remote_category_id_; }
+
+  int rank() const { return rank_; }
+  void set_rank(int rank) { rank_ = rank; }
 
   base::Time fetch_date() const { return fetch_date_; }
 
@@ -151,6 +154,7 @@ class RemoteSuggestion {
   float score_;
   bool is_dismissed_;
   int remote_category_id_;
+  int rank_;
 
   bool should_notify_;
   base::Time notification_deadline_;

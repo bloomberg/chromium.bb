@@ -4,6 +4,8 @@
 
 #include "components/ntp_snippets/remote/remote_suggestion.h"
 
+#include <limits>
+
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -87,6 +89,7 @@ RemoteSuggestion::RemoteSuggestion(const std::vector<std::string>& ids,
       score_(0),
       is_dismissed_(false),
       remote_category_id_(remote_category_id),
+      rank_(std::numeric_limits<int>::max()),
       should_notify_(false),
       content_type_(ContentType::UNKNOWN) {}
 
@@ -371,6 +374,9 @@ std::unique_ptr<RemoteSuggestion> RemoteSuggestion::CreateFromProto(
     snippet->content_type_ = ContentType::VIDEO;
   }
 
+  snippet->rank_ =
+      proto.has_rank() ? proto.rank() : std::numeric_limits<int>::max();
+
   return snippet;
 }
 
@@ -414,6 +420,9 @@ SnippetProto RemoteSuggestion::ToProto() const {
   if (content_type_ == ContentType::VIDEO) {
     result.set_content_type(SnippetProto_ContentType_VIDEO);
   }
+
+  result.set_rank(rank_);
+
   return result;
 }
 
