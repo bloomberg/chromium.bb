@@ -66,14 +66,13 @@ def main():
     failures = []
     chartjson_results_present = '--output-format=chartjson' in rest_args
     chartresults = None
-    json_test_results_present = '--output-format=json-test-results' in rest_args
     json_test_results = None
 
     results = None
     try:
       rc = common.run_command([sys.executable] + rest_args + [
         '--output-dir', tempfile_dir,
-        '--output-format=json'
+        '--output-format=json-test-results',
       ], env=env)
             # If we have also output chartjson read it in and return it.
       # results-chart.json is the file name output by telemetry when the
@@ -84,6 +83,8 @@ def main():
           chartresults = json.load(f)
       # We need to get chartjson results first as this may be a disabled
       # benchmark that was run
+      # TODO(ashleymarie): potentially remove the following if it's dead code
+      # http://crbug.com/748638
       if (not chartjson_results_present or
          (chartjson_results_present and chartresults.get('enabled', True))):
         tempfile_name = os.path.join(tempfile_dir, 'results.json')
@@ -99,10 +100,9 @@ def main():
             failures.append(name)
         valid = bool(rc == 0 or failures)
 
-      if json_test_results_present:
-        tempfile_name = os.path.join(tempfile_dir, 'test-results.json')
-        with open(tempfile_name) as f:
-          json_test_results = json.load(f)
+      tempfile_name = os.path.join(tempfile_dir, 'test-results.json')
+      with open(tempfile_name) as f:
+        json_test_results = json.load(f)
 
     except Exception:
       traceback.print_exc()
@@ -122,12 +122,6 @@ def main():
       chartjson_output_file = \
         open(args.isolated_script_test_chartjson_output, 'w')
       json.dump(chartresults, chartjson_output_file)
-
-    if not json_test_results_present:
-      json_test_results = {
-          'valid': valid,
-          'failures': failures
-      }
 
     json.dump(json_test_results, args.isolated_script_test_output)
     return rc
