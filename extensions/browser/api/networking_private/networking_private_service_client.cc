@@ -10,9 +10,10 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task_scheduler/lazy_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/onc/onc_constants.h"
-#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/networking_private/networking_private_api.h"
 #include "extensions/browser/api/networking_private/networking_private_delegate_observer.h"
 
@@ -23,13 +24,18 @@ namespace extensions {
 
 namespace {
 
-const char kNetworkingPrivateSequenceTokenName[] = "NetworkingPrivate";
-
 // Deletes WiFiService object on the worker thread.
 void ShutdownWifiServiceOnWorkerThread(
     std::unique_ptr<WiFiService> wifi_service) {
   DCHECK(wifi_service.get());
 }
+
+// Ensure that all calls to WiFiService are called from the same task runner
+// since the implementations do not provide any thread safety gaurantees.
+base::LazySequencedTaskRunner g_sequenced_task_runner =
+    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits({base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+                          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
 
 }  // namespace
 
@@ -41,13 +47,9 @@ NetworkingPrivateServiceClient::ServiceCallbacks::~ServiceCallbacks() {
 
 NetworkingPrivateServiceClient::NetworkingPrivateServiceClient(
     std::unique_ptr<WiFiService> wifi_service)
-    : wifi_service_(std::move(wifi_service)), weak_factory_(this) {
-  sequence_token_ = BrowserThread::GetBlockingPool()->GetNamedSequenceToken(
-      kNetworkingPrivateSequenceTokenName);
-  task_runner_ =
-      BrowserThread::GetBlockingPool()
-          ->GetSequencedTaskRunnerWithShutdownBehavior(
-              sequence_token_, base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+    : wifi_service_(std::move(wifi_service)),
+      task_runner_(g_sequenced_task_runner.Get()),
+      weak_factory_(this) {
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&WiFiService::Initialize,

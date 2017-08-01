@@ -176,8 +176,6 @@ class NetworkingPrivateServiceClient
       network_events_observers_;
   // Interface to WiFiService. Used and deleted on the worker thread.
   std::unique_ptr<wifi::WiFiService> wifi_service_;
-  // Sequence token associated with wifi tasks.
-  base::SequencedWorkerPool::SequenceToken sequence_token_;
   // Task runner for worker tasks.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   // Use WeakPtrs for callbacks from |wifi_service_|.
