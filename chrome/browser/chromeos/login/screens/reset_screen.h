@@ -41,6 +41,7 @@ class ResetScreen : public BaseScreen, public UpdateEngineClient::Observer {
   void UpdateStatusChanged(const UpdateEngineClient::Status& status) override;
 
   void OnRollbackCheck(bool can_rollback);
+  void OnTPMFirmwareUpdateAvailableCheck(bool update_available);
 
   enum State {
     STATE_RESTART_REQUIRED = 0,

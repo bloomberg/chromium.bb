@@ -5,7 +5,11 @@
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
@@ -14,6 +18,7 @@
 #include "chrome/browser/chromeos/login/screens/reset_view.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/reset/metrics.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -38,9 +43,16 @@ constexpr const char kUserActionResetResetConfirmationDismissed[] =
 
 constexpr const char kContextKeyIsRollbackAvailable[] = "rollback-available";
 constexpr const char kContextKeyIsRollbackChecked[] = "rollback-checked";
+constexpr const char kContextKeyIsTPMFirmwareUpdateAvailable[] =
+    "tpm-firmware-update-available";
+constexpr const char kContextKeyIsTPMFirmwareUpdateChecked[] =
+    "tpm-firmware-update-checked";
 constexpr const char kContextKeyIsConfirmational[] = "is-confirmational-view";
 constexpr const char kContextKeyIsOfficialBuild[] = "is-official-build";
 constexpr const char kContextKeyScreenState[] = "screen-state";
+
+constexpr const base::FilePath::CharType kTPMFirmwareUpdateAvailableFlagFile[] =
+    FILE_PATH_LITERAL("/run/tpm_firmware_update_available");
 
 }  // namespace
 
@@ -55,6 +67,8 @@ ResetScreen::ResetScreen(BaseScreenDelegate* base_screen_delegate,
   context_.SetInteger(kContextKeyScreenState, STATE_RESTART_REQUIRED);
   context_.SetBoolean(kContextKeyIsRollbackAvailable, false);
   context_.SetBoolean(kContextKeyIsRollbackChecked, false);
+  context_.SetBoolean(kContextKeyIsTPMFirmwareUpdateAvailable, false);
+  context_.SetBoolean(kContextKeyIsTPMFirmwareUpdateChecked, false);
   context_.SetBoolean(kContextKeyIsConfirmational, false);
   context_.SetBoolean(kContextKeyIsOfficialBuild, false);
 #if defined(OFFICIAL_BUILD)
@@ -95,6 +109,16 @@ void ResetScreen::Show() {
     chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->
         CanRollbackCheck(base::Bind(&ResetScreen::OnRollbackCheck,
         weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  // Set availability of TPM firmware update.
+  if (base::FeatureList::IsEnabled(features::kTPMFirmwareUpdate)) {
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+        base::Bind(&base::PathExists,
+                   base::FilePath(kTPMFirmwareUpdateAvailableFlagFile)),
+        base::Bind(&ResetScreen::OnTPMFirmwareUpdateAvailableCheck,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   if (dialog_type < reset::DIALOG_VIEW_TYPE_SIZE) {
@@ -157,18 +181,23 @@ void ResetScreen::OnPowerwash() {
   GetContextEditor().SetBoolean(kContextKeyIsConfirmational, false);
   CommitContextChanges();
 
+  if (context_.GetBoolean(kContextKeyIsRollbackChecked) &&
+      !context_.GetBoolean(kContextKeyIsRollbackAvailable)) {
+    NOTREACHED()
+        << "Rollback was checked but not available. Starting powerwash.";
+  }
+
   if (context_.GetBoolean(kContextKeyIsRollbackAvailable) &&
       context_.GetBoolean(kContextKeyIsRollbackChecked)) {
     GetContextEditor().SetInteger(kContextKeyScreenState, STATE_REVERT_PROMISE);
     DBusThreadManager::Get()->GetUpdateEngineClient()->AddObserver(this);
     VLOG(1) << "Starting Rollback";
     DBusThreadManager::Get()->GetUpdateEngineClient()->Rollback();
+  } else if (context_.GetBoolean(kContextKeyIsTPMFirmwareUpdateChecked)) {
+    VLOG(1) << "Starting TPM firmware update";
+    DBusThreadManager::Get()->GetSessionManagerClient()->StartTPMFirmwareUpdate(
+        "first_boot");
   } else {
-    if (context_.GetBoolean(kContextKeyIsRollbackChecked) &&
-        !context_.GetBoolean(kContextKeyIsRollbackAvailable)) {
-      NOTREACHED() <<
-          "Rollback was checked but not available. Starting powerwash.";
-    }
     VLOG(1) << "Starting Powerwash";
     DBusThreadManager::Get()->GetSessionManagerClient()->StartDeviceWipe();
   }
@@ -259,6 +288,11 @@ void ResetScreen::OnRollbackCheck(bool can_rollback) {
                             reset::DIALOG_VIEW_TYPE_SIZE);
 
   GetContextEditor().SetBoolean(kContextKeyIsRollbackAvailable, can_rollback);
+}
+
+void ResetScreen::OnTPMFirmwareUpdateAvailableCheck(bool update_available) {
+  GetContextEditor().SetBoolean(kContextKeyIsTPMFirmwareUpdateAvailable,
+                                update_available);
 }
 
 ErrorScreen* ResetScreen::GetErrorScreen() {

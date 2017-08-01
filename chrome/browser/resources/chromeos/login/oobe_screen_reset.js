@@ -15,6 +15,9 @@ login.createScreen('ResetScreen', 'reset', function() {
   var USER_ACTION_RESET_CONFIRM_DISMISSED = 'reset-confirm-dismissed';
   var CONTEXT_KEY_ROLLBACK_AVAILABLE = 'rollback-available';
   var CONTEXT_KEY_ROLLBACK_CHECKED = 'rollback-checked';
+  var CONTEXT_KEY_TPM_FIRMWARE_UPDATE_AVAILABLE =
+      'tpm-firmware-update-available';
+  var CONTEXT_KEY_TPM_FIRMWARE_UPDATE_CHECKED = 'tpm-firmware-update-checked';
   var CONTEXT_KEY_IS_OFFICIAL_BUILD = 'is-official-build';
   var CONTEXT_KEY_IS_CONFIRMATIONAL_VIEW = 'is-confirmational-view';
   var CONTEXT_KEY_SCREEN_STATE = 'screen-state';
@@ -70,6 +73,7 @@ login.createScreen('ResetScreen', 'reset', function() {
           announceAccessibleMessage(
               loadTimeData.getString('resetRevertSpinnerMessage'));
         }
+        self.setTPMFirmwareUpdateView_();
       });
 
       this.context.addObserver(
@@ -86,6 +90,14 @@ login.createScreen('ResetScreen', 'reset', function() {
             self.setRollbackOptionView();
           });
       this.context.addObserver(
+          CONTEXT_KEY_TPM_FIRMWARE_UPDATE_CHECKED, function() {
+            self.setTPMFirmwareUpdateView_();
+          });
+      this.context.addObserver(
+          CONTEXT_KEY_TPM_FIRMWARE_UPDATE_AVAILABLE, function() {
+            self.setTPMFirmwareUpdateView_();
+          });
+      this.context.addObserver(
           CONTEXT_KEY_IS_CONFIRMATIONAL_VIEW, function(is_confirmational) {
             if (is_confirmational) {
               console.log(self.context.get(CONTEXT_KEY_SCREEN_STATE, 0));
@@ -98,6 +110,8 @@ login.createScreen('ResetScreen', 'reset', function() {
               $('overlay-reset').setAttribute('hidden', true);
             }
           });
+
+      $('oobe-reset-md').screen = this;
     },
 
     /**
@@ -270,6 +284,20 @@ login.createScreen('ResetScreen', 'reset', function() {
         this.ui_state = this.RESET_SCREEN_UI_STATE.POWERWASH_PROPOSAL;
       }
       this.setDialogView_();
+      this.setTPMFirmwareUpdateView_();
+    },
+
+    setTPMFirmwareUpdateView_: function() {
+      $('oobe-reset-md').tpmFirmwareUpdateAvailable_ =
+          this.ui_state == this.RESET_SCREEN_UI_STATE.POWERWASH_PROPOSAL &&
+          this.context.get(CONTEXT_KEY_TPM_FIRMWARE_UPDATE_AVAILABLE);
+      $('oobe-reset-md').tpmFirmwareUpdateChecked_ =
+          this.context.get(CONTEXT_KEY_TPM_FIRMWARE_UPDATE_CHECKED);
+    },
+
+    onTPMFirmwareUpdateChanged_: function(value) {
+      this.context.set(CONTEXT_KEY_TPM_FIRMWARE_UPDATE_CHECKED, value);
+      this.commitContextChanges();
     }
   };
 });

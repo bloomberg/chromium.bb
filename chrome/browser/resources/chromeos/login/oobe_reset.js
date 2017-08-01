@@ -20,6 +20,24 @@ Polymer({
      * Flag that determines whether help link is shown.
      */
     isOfficial_: Boolean,
+
+    /**
+     * Whether to show the TPM firmware update checkbox.
+     */
+    tpmFirmwareUpdateAvailable_: Boolean,
+
+    /**
+     * If the checkbox to request a TPM firmware update is checked.
+     */
+    tpmFirmwareUpdateChecked_: Boolean,
+
+    /**
+     * Reference to OOBE screen object.
+     * @type {!OobeTypes.Screen}
+     */
+    screen: {
+      type: Object,
+    },
   },
 
   /** @private */
@@ -35,6 +53,14 @@ Polymer({
   /** @private */
   isHelpLinkHidden_: function(uiState_, isOfficial_) {
     return !isOfficial_ || (uiState_ == 'revert-promise-view');
+  },
+
+  /** @private */
+  isTPMFirmwareUpdateHidden_: function(uiState_, tpmFirmwareUpdateAvailable_) {
+    var inProposalView = [
+      'powerwash-proposal-view', 'rollback-proposal-view'
+    ].includes(uiState_);
+    return !(tpmFirmwareUpdateAvailable_ && inProposalView);
   },
 
   /**
@@ -71,5 +97,15 @@ Polymer({
    */
   onLearnMoreTap_: function() {
     chrome.send('login.ResetScreen.userActed', ['learn-more-link']);
+  },
+
+  /**
+   * Change handler for TPM firmware update checkbox.
+   *
+   * @private
+   */
+  onTPMFirmwareUpdateChanged_: function() {
+    this.screen.onTPMFirmwareUpdateChanged_(
+        this.$.tpmFirmwareUpdateCheckbox.checked);
   },
 });

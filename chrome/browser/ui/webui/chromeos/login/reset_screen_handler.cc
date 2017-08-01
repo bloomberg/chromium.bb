@@ -71,6 +71,9 @@ void ResetScreenHandler::DeclareLocalizedValues(
                 IDS_RESET_SCREEN_PREPARING_REVERT_SPINNER_MESSAGE,
                 IDS_SHORT_PRODUCT_NAME);
 
+  builder->Add("resetTPMFirmwareUpdate",
+               IDS_RESET_SCREEN_TPM_FIRMWARE_UPDATE_OPTION);
+
   // Variants for screen title.
   builder->AddF("resetWarningTitle",
                 IDS_RESET_SCREEN_WARNING_MSG,
