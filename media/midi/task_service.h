@@ -39,6 +39,9 @@ class MIDI_EXPORT TaskService final {
   bool BindInstance();
   bool UnbindInstance();
 
+  // Checks if the current thread belongs to the specified runner.
+  bool IsOnTaskRunner(RunnerId runner_id);
+
   // Posts a task to run on a specified TaskRunner. |runner_id| should be
   // kDefaultRunnerId or a positive number. If kDefaultRunnerId is specified
   // the task runs on the thread on which BindInstance() is called. Other number
