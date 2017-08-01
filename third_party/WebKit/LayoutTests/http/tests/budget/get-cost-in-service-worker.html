@@ -6,34 +6,32 @@
     <script src="../resources/testharnessreport.js"></script>
     <script src="../serviceworker/resources/test-helpers.js"></script>
     <script src="../notifications/resources/test-helpers.js"></script>
-    <script src="/js-test-resources/mojo-helpers.js"></script>
-    <script src="budget-service-mock.js"></script>
   </head>
   <body>
     <script>
-      promise_test(function(test) {
+      const TEST_BUDGET_COST = 1.2;
+
+      promise_test(async function(test) {
         const script = 'resources/instrumentation-service-worker.js';
         const scope = 'resources/scope/' + location.pathname;
-        let port;
 
-        return budgetServiceMock.then(mock => {
-          mock.setCost("silent-push", TEST_BUDGET_COST);
-          return getActiveServiceWorkerWithMessagePort(test, script, scope);
-        }).then(function(workerInfo) {
-          port = workerInfo.port;
+        let workerInfo =
+            await getActiveServiceWorkerWithMessagePort(test, script, scope);
+        let port = workerInfo.port;
 
-          port.addEventListener('message', function(event) {
-            if (typeof event.data != 'object' || !event.data.command)
-              assert_unreached('Invalid message from the service worker');
-
-            assert_equals(event.data.command, 'getCost');
-            assert_true(event.data.success,
-                'getCost should succeed. Error message: ' + event.data.errorMessage);
-            assert_equals(event.data.cost, TEST_BUDGET_COST);
-          });
-
-          return sendCommand(port, { command: 'getCost' });
+        let data = await sendCommand(port, {
+            command: 'mockSetCost',
+            operation: 'silent-push',
+            cost: TEST_BUDGET_COST
         });
+        assert_equals(data.command, 'mockSetCost');
+        assert_true(data.success);
+
+        data = await sendCommand(port, { command: 'getCost' });
+        assert_equals(data.command, 'getCost');
+        assert_true(data.success,
+            'getCost should succeed. Error message: ' + data.errorMessage);
+        assert_equals(data.cost, TEST_BUDGET_COST);
       }, 'getCost should succeed from Service Worker');
     </script>
   </body>

@@ -6,33 +6,28 @@
     <script src="../resources/testharnessreport.js"></script>
     <script src="../serviceworker/resources/test-helpers.js"></script>
     <script src="../notifications/resources/test-helpers.js"></script>
-    <script src="/js-test-resources/mojo-helpers.js"></script>
-    <script src="budget-service-mock.js"></script>
   </head>
   <body>
     <script>
-      promise_test(function(test) {
+      promise_test(async function(test) {
         const script = 'resources/instrumentation-service-worker.js';
         const scope = 'resources/scope/' + location.pathname;
-        let port;
 
-        return budgetServiceMock.then(mock => {
-          mock.setReserveSuccess(true);
-          return getActiveServiceWorkerWithMessagePort(test, script, scope);
-        }).then(function(workerInfo) {
-          port = workerInfo.port;
+        let workerInfo =
+            await getActiveServiceWorkerWithMessagePort(test, script, scope);
+        let port = workerInfo.port;
 
-          port.addEventListener('message', function(event) {
-            if (typeof event.data != 'object' || !event.data.command)
-              assert_unreached('Invalid message from the service worker');
-
-            assert_equals(event.data.command, 'reserve');
-            assert_true(event.data.success,
-                'reserve should succeed. Error message: ' + event.data.errorMessage);
-          });
-
-          return sendCommand(port, { command: 'reserve' });
+        let data = await sendCommand(port, {
+            command: 'mockSetReserveSuccess',
+            success: true
         });
+        assert_equals(data.command, 'mockSetReserveSuccess');
+        assert_true(data.success);
+
+        data = await sendCommand(port, { command: 'reserve' });
+        assert_equals(data.command, 'reserve');
+        assert_true(data.success,
+            'reserve should succeed. Error message: ' + data.errorMessage);
       }, 'reserve should succeed from Service Worker');
     </script>
   </body>
