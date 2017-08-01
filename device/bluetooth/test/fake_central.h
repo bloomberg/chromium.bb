@@ -41,6 +41,9 @@ class FakeCentral : NON_EXPORTED_BASE(public mojom::FakeCentral),
       const std::string& address,
       uint16_t code,
       SetNextGATTDiscoveryResponseCallback callback) override;
+  void SimulateGATTServicesChanged(
+      const std::string& address,
+      SimulateGATTServicesChangedCallback callback) override;
   void AddFakeService(const std::string& peripheral_address,
                       const device::BluetoothUUID& service_uuid,
                       AddFakeServiceCallback callback) override;
@@ -49,6 +52,11 @@ class FakeCentral : NON_EXPORTED_BASE(public mojom::FakeCentral),
                              const std::string& service_id,
                              const std::string& peripheral_address,
                              AddFakeCharacteristicCallback callback) override;
+  void RemoveFakeCharacteristic(
+      const std::string& identifier,
+      const std::string& service_id,
+      const std::string& peripheral_address,
+      RemoveFakeCharacteristicCallback callback) override;
   void AddFakeDescriptor(const device::BluetoothUUID& characteristic_uuid,
                          const std::string& characteristic_id,
                          const std::string& service_id,

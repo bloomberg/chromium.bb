@@ -235,6 +235,23 @@
 
       if (success !== true) throw 'setNextGATTDiscoveryResponse failed.';
     }
+
+    // Simulates an Indication from the peripheral's GATT `Service Changed`
+    // Characteristic from BT 4.2 Vol 3 Part G 7.1. This Indication is signaled
+    // when services, characteristics, or descriptors are changed, added, or
+    // removed.
+    //
+    // The value for `Service Changed` is a range of attribute handles that have
+    // changed. However, this testing specification works at an abstracted
+    // level and does not expose setting attribute handles when adding
+    // attributes. Consequently, this simulate method should include the full
+    // range of all the peripheral's attribute handle values.
+    async simulateGATTServicesChanged() {
+      let {success} =
+        await this.fake_central_ptr_.simulateGATTServicesChanged(this.address);
+
+      if (success !== true) throw 'simulateGATTServicesChanged failed.';
+    }
   }
 
   class FakeRemoteGATTService {
@@ -336,6 +353,13 @@
       return value;
     }
 
+    // Removes the fake GATT Characteristic from its fake service.
+    async remove() {
+      let {success} =
+          await this.fake_central_ptr_.removeFakeCharacteristic(...this.ids_);
+
+      if (!success) throw 'remove failed';
+    }
   }
 
   class FakeRemoteGATTDescriptor {
