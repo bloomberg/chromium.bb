@@ -8,16 +8,12 @@
 // Observer for OneGoogleBarService.
 class OneGoogleBarServiceObserver {
  public:
-  // Called when the OneGoogleBarData changes, including changes between null
-  // and non-null. You can get the new data via
+  // Called when the OneGoogleBarData is updated, usually as the result of a
+  // Refresh() call on the service. Note that this is called after each
+  // Refresh(), even if the network request failed, or if it didn't result in an
+  // actual change to the cached data. You can get the new data via
   // OneGoogleBarService::one_google_bar_data().
-  virtual void OnOneGoogleBarDataChanged() = 0;
-
-  // Called when an attempt to fetch the OneGoogleBarData failed. Note that
-  // there may still be cached data from a previous fetch. If there was cached
-  // data before the failed fetch attempt and it got cleared, then
-  // OnOneGoogleBarDataChanged gets called first.
-  virtual void OnOneGoogleBarFetchFailed() {}
+  virtual void OnOneGoogleBarDataUpdated() = 0;
 
   // Called when the OneGoogleBarService is shutting down. Observers that might
   // outlive the service should use this to unregister themselves, and clear out

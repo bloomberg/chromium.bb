@@ -34,7 +34,7 @@ class OneGoogleBarService : public KeyedService {
   }
 
   // Requests an asynchronous refresh from the network. After the update
-  // completes, the observers will be notified only if something changed.
+  // completes, OnOneGoogleBarDataUpdated will be called on the observers.
   void Refresh();
 
   // Add/remove observers. All observers must unregister themselves before the
@@ -52,7 +52,7 @@ class OneGoogleBarService : public KeyedService {
   void OneGoogleBarDataFetched(OneGoogleBarFetcher::Status status,
                                const base::Optional<OneGoogleBarData>& data);
 
-  void SetOneGoogleBarData(const base::Optional<OneGoogleBarData>& data);
+  void NotifyObservers();
 
   std::unique_ptr<OneGoogleBarFetcher> fetcher_;
 

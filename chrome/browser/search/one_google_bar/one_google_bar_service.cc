@@ -74,31 +74,23 @@ void OneGoogleBarService::RemoveObserver(
 }
 
 void OneGoogleBarService::SigninStatusChanged() {
-  SetOneGoogleBarData(base::nullopt);
+  one_google_bar_data_ = base::nullopt;
+  NotifyObservers();
 }
 
 void OneGoogleBarService::OneGoogleBarDataFetched(
     OneGoogleBarFetcher::Status status,
     const base::Optional<OneGoogleBarData>& data) {
-  // In case of transient erros, keep our cached data (if any).
+  // In case of transient errors, keep our cached data (if any), but still
+  // notify observers of the finished fetch (attempt).
   if (status != OneGoogleBarFetcher::Status::TRANSIENT_ERROR) {
-    SetOneGoogleBarData(data);
+    one_google_bar_data_ = data;
   }
-  if (!data) {
-    for (auto& observer : observers_) {
-      observer.OnOneGoogleBarFetchFailed();
-    }
-  }
+  NotifyObservers();
 }
 
-void OneGoogleBarService::SetOneGoogleBarData(
-    const base::Optional<OneGoogleBarData>& data) {
-  if (one_google_bar_data_ == data) {
-    return;
-  }
-
-  one_google_bar_data_ = data;
+void OneGoogleBarService::NotifyObservers() {
   for (auto& observer : observers_) {
-    observer.OnOneGoogleBarDataChanged();
+    observer.OnOneGoogleBarDataUpdated();
   }
 }

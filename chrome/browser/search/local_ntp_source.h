@@ -59,8 +59,7 @@ class LocalNtpSource : public content::URLDataSource,
   std::string GetContentSecurityPolicyChildSrc() const override;
 
   // Overridden from OneGoogleBarServiceObserver:
-  void OnOneGoogleBarDataChanged() override;
-  void OnOneGoogleBarFetchFailed() override;
+  void OnOneGoogleBarDataUpdated() override;
   void OnOneGoogleBarServiceShuttingDown() override;
 
   void ServeOneGoogleBar(const base::Optional<OneGoogleBarData>& data);
