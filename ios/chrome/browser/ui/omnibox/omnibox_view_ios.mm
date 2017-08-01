@@ -174,7 +174,8 @@ OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
       ignore_popup_updates_(false),
       attributing_display_string_(nil) {
   DCHECK(field_);
-  popup_view_.reset(new OmniboxPopupViewIOS(this, model(), positioner));
+  popup_view_ = base::MakeUnique<OmniboxPopupViewIOS>(
+      this->browser_state(), model(), this, positioner);
   field_delegate_.reset(
       [[AutocompleteTextFieldDelegate alloc] initWithEditView:this]);
   [field_ setDelegate:field_delegate_];
@@ -790,43 +791,6 @@ void OmniboxViewIOS::FocusOmnibox() {
   [field_ becomeFirstResponder];
 }
 
-// Called whenever the popup results change.  May trigger the URLs of
-// autocomplete results to be prerendered or prefetched.
-void OmniboxViewIOS::OnPopupResultsChanged(const AutocompleteResult& result) {
-  if (!ignore_popup_updates_ && !result.empty()) {
-    const AutocompleteMatch& match = result.match_at(0);
-    bool is_inline_autocomplete = !match.inline_autocompletion.empty();
-
-    // TODO(rohitrao): When prerendering the result of a paste operation, we
-    // should change the transition to LINK instead of TYPED.  b/6143631.
-
-    // Only prerender HISTORY_URL matches, which come from the history DB.  Do
-    // not prerender other types of matches, including matches from the search
-    // provider.
-    if (is_inline_autocomplete &&
-        match.type == AutocompleteMatchType::HISTORY_URL) {
-      ui::PageTransition transition = ui::PageTransitionFromInt(
-          match.transition | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-      [preloader_ prerenderURL:match.destination_url
-                      referrer:web::Referrer()
-                    transition:transition
-                   immediately:is_inline_autocomplete];
-    } else {
-      [preloader_ cancelPrerender];
-    }
-
-    // If the first autocomplete result is a search suggestion, prefetch the
-    // corresponding search result page.
-    if (match.type == AutocompleteMatchType::SEARCH_SUGGEST) {
-      ui::PageTransition transition = ui::PageTransitionFromInt(
-          match.transition | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-      [preloader_ prefetchURL:match.destination_url transition:transition];
-    } else {
-      [preloader_ cancelPrefetch];
-    }
-  }
-}
-
 BOOL OmniboxViewIOS::IsPopupOpen() {
   return popup_view_->IsOpen();
 }
@@ -861,4 +825,65 @@ void OmniboxViewIOS::EmphasizeURLComponents() {
   if (!IsEditingOrEmpty())
     SetText(GetText());
 #endif
+}
+
+#pragma mark - OmniboxPopupViewSuggestionsDelegate
+
+void OmniboxViewIOS::OnTopmostSuggestionImageChanged(int imageId) {
+  this->SetLeftImage(imageId);
+}
+
+void OmniboxViewIOS::OnResultsChanged(const AutocompleteResult& result) {
+  if (!ignore_popup_updates_ && !result.empty()) {
+    const AutocompleteMatch& match = result.match_at(0);
+    bool is_inline_autocomplete = !match.inline_autocompletion.empty();
+
+    // TODO(rohitrao): When prerendering the result of a paste operation, we
+    // should change the transition to LINK instead of TYPED.  b/6143631.
+
+    // Only prerender HISTORY_URL matches, which come from the history DB.  Do
+    // not prerender other types of matches, including matches from the search
+    // provider.
+    if (is_inline_autocomplete &&
+        match.type == AutocompleteMatchType::HISTORY_URL) {
+      ui::PageTransition transition = ui::PageTransitionFromInt(
+          match.transition | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+      [preloader_ prerenderURL:match.destination_url
+                      referrer:web::Referrer()
+                    transition:transition
+                   immediately:is_inline_autocomplete];
+    } else {
+      [preloader_ cancelPrerender];
+    }
+
+    // If the first autocomplete result is a search suggestion, prefetch the
+    // corresponding search result page.
+    if (match.type == AutocompleteMatchType::SEARCH_SUGGEST) {
+      ui::PageTransition transition = ui::PageTransitionFromInt(
+          match.transition | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+      [preloader_ prefetchURL:match.destination_url transition:transition];
+    } else {
+      [preloader_ cancelPrefetch];
+    }
+  }
+}
+
+void OmniboxViewIOS::OnPopupDidScroll() {
+  if (!IsIPadIdiom()) {
+    this->HideKeyboard();
+  }
+}
+
+void OmniboxViewIOS::OnSelectedMatchForAppending(const base::string16& str) {
+  this->SetUserText(str);
+  this->FocusOmnibox();
+}
+
+void OmniboxViewIOS::OnSelectedMatchForOpening(
+    AutocompleteMatch match,
+    WindowOpenDisposition disposition,
+    const GURL& alternate_nav_url,
+    const base::string16& pasted_text,
+    size_t index) {
+  this->OpenMatch(match, disposition, alternate_nav_url, pasted_text, index);
 }

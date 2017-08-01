@@ -21,8 +21,8 @@
 #import "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_material_view_controller.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_positioner.h"
+#include "ios/chrome/browser/ui/omnibox/omnibox_popup_view_suggestions_delegate.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
-#include "ios/chrome/browser/ui/omnibox/omnibox_view_ios.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -45,25 +45,28 @@ NS_INLINE CGFloat ShadowHeight() {
 
 using base::UserMetricsAction;
 
-OmniboxPopupViewIOS::OmniboxPopupViewIOS(OmniboxViewIOS* edit_view,
-                                         OmniboxEditModel* edit_model,
-                                         id<OmniboxPopupPositioner> positioner)
+OmniboxPopupViewIOS::OmniboxPopupViewIOS(
+    ios::ChromeBrowserState* browser_state,
+    OmniboxEditModel* edit_model,
+    OmniboxPopupViewSuggestionsDelegate* delegate,
+    id<OmniboxPopupPositioner> positioner)
     : model_(new OmniboxPopupModel(this, edit_model)),
-      edit_view_(edit_view),
+      delegate_(delegate),
       positioner_(positioner),
       is_open_(false) {
-  DCHECK(edit_view);
+  DCHECK(delegate);
+  DCHECK(browser_state);
   DCHECK(edit_model);
 
   std::unique_ptr<image_fetcher::IOSImageDataFetcherWrapper> imageFetcher =
       base::MakeUnique<image_fetcher::IOSImageDataFetcherWrapper>(
-          edit_view->browser_state()->GetRequestContext(),
+          browser_state->GetRequestContext(),
           web::WebThread::GetBlockingPool());
 
   popup_controller_.reset([[OmniboxPopupMaterialViewController alloc]
       initWithPopupView:this
             withFetcher:std::move(imageFetcher)]);
-  [popup_controller_ setIncognito:edit_view->browser_state()->IsOffTheRecord()];
+  [popup_controller_ setIncognito:browser_state->IsOffTheRecord()];
   popupView_.reset([[UIView alloc] initWithFrame:CGRectZero]);
   [popupView_ setClipsToBounds:YES];
   CALayer* popupLayer = [popupView_ layer];
@@ -148,7 +151,7 @@ void OmniboxPopupViewIOS::UpdateEditViewIcon() {
   const AutocompleteMatch& match = result.match_at(0);  // 0 for first result.
   int image_id = GetIconForAutocompleteMatchType(
       match.type, /* is_starred */ false, /* is_incognito */ false);
-  edit_view_->SetLeftImage(image_id);
+  delegate_->OnTopmostSuggestionImageChanged(image_id);
 }
 
 void OmniboxPopupViewIOS::UpdatePopupAppearance() {
@@ -198,7 +201,7 @@ void OmniboxPopupViewIOS::UpdatePopupAppearance() {
     AnimateDropdownCollapse();
   }
 
-  edit_view_->OnPopupResultsChanged(result);
+  delegate_->OnResultsChanged(result);
 }
 
 void OmniboxPopupViewIOS::AnimateDropdownExpansion(CGFloat parentHeight) {
@@ -252,15 +255,12 @@ gfx::Rect OmniboxPopupViewIOS::GetTargetBounds() {
 
 // For phone, allow popup to take focus (and dismiss the keyboard) on scroll.
 void OmniboxPopupViewIOS::DidScroll() {
-  if (!IsIPadIdiom()) {
-    edit_view_->HideKeyboard();
-  }
+  delegate_->OnPopupDidScroll();
 }
 
 // Puts omnibox back into focus with suggested search terms.
 void OmniboxPopupViewIOS::CopyToOmnibox(const base::string16& str) {
-  edit_view_->SetUserText(str);
-  edit_view_->FocusOmnibox();
+  delegate_->OnSelectedMatchForAppending(str);
 }
 
 void OmniboxPopupViewIOS::SetTextAlignment(NSTextAlignment alignment) {
@@ -295,7 +295,8 @@ void OmniboxPopupViewIOS::OpenURLForRow(size_t row) {
         "MobileOmnibox.PressedClipboardSuggestionAge",
         ClipboardRecentContent::GetInstance()->GetClipboardContentAge());
   }
-  edit_view_->OpenMatch(match, disposition, GURL(), base::string16(), row);
+  delegate_->OnSelectedMatchForOpening(match, disposition, GURL(),
+                                       base::string16(), row);
 }
 
 bool OmniboxPopupViewIOS::IsOpen() const {
