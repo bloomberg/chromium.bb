@@ -4292,7 +4292,6 @@ var keyboardOverlayData = {
     'x<>CTRL': 'keyboardOverlayCut',
     'z<>ALT<>CTRL': 'keyboardOverlayToggleChromevoxSpokenFeedback',
     'z<>CTRL': 'keyboardOverlayUndo',
-    'a<>SEARCH': 'keyboardOverlayVoiceInteraction',
-    'space<>SEARCH': 'keyboardOverlayVoiceInteraction'
+    'a<>SEARCH': 'keyboardOverlayVoiceInteraction'
   }
 };
