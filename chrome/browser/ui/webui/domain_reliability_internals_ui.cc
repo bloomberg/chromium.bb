@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/webui/domain_reliability_internals_ui.h"
 
+#include <string>
+#include <unordered_set>
+
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
@@ -20,7 +23,6 @@ DomainReliabilityInternalsUI::DomainReliabilityInternalsUI(
     : content::WebUIController(web_ui) {
   content::WebUIDataSource* html_source = content::WebUIDataSource::Create(
       chrome::kChromeUIDomainReliabilityInternalsHost);
-  html_source->SetJsonPath("strings.js");
   html_source->AddResourcePath("domain_reliability_internals.css",
       IDR_DOMAIN_RELIABILITY_INTERNALS_CSS);
   html_source->AddResourcePath("domain_reliability_internals.js",
