@@ -87685,6 +87685,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Call.TimeSendingAudioRtpPacketsInSeconds" units="s">
+  <owner>saza@chromium.org</owner>
+  <summary>
+    The amount of time between sending the first and the last audio RTP packets
+    through the audiostreams of a Call object. This is logged when the Call
+    object is destroyed. This is only logged if audio RTP packets are at some
+    point in time received, and is a way to omit temporary objects that do not
+    send any actual media.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Call.VideoBitrateReceivedInKbps" units="kbps">
   <owner>holmer@chromium.org</owner>
   <summary>
