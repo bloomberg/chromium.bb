@@ -20,9 +20,8 @@
   IBOutlet NSTextField* urlField_;
   IBOutlet NSTextField* nameTextField_;
 
-  // Field editors for |urlField_| and |nameTextField_|.
-  base::scoped_nsobject<DialogTextFieldEditor> urlFieldEditor_;
-  base::scoped_nsobject<DialogTextFieldEditor> nameFieldEditor_;
+  // Field editor for |urlField_| and |nameTextField_|.
+  base::scoped_nsobject<DialogTextFieldEditor> touchBarFieldEditor_;
 }
 
 @property(nonatomic, copy) NSString* displayURL;
