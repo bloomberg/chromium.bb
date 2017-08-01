@@ -262,6 +262,12 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   void RestoreMatrixClipStack(PaintCanvas*) const;
 
+  String textAlign() const;
+  void setTextAlign(const String&);
+
+  String textBaseline() const;
+  void setTextBaseline(const String&);
+
   DECLARE_VIRTUAL_TRACE();
 
   enum DrawCallType {
@@ -353,6 +359,15 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   mutable UsageCounters usage_counters_;
 
   virtual void NeedsFinalizeFrame(){};
+
+  float GetFontBaseline(const FontMetrics&) const;
+
+  static const char kDefaultFont[];
+  static const char kInheritDirectionString[];
+  static const char kRtlDirectionString[];
+  static const char kLtrDirectionString[];
+  // Canvas is device independent
+  static const double kCDeviceScaleFactor;
 
  private:
   void RealizeSaves();

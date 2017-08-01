@@ -4623,8 +4623,10 @@ interface OffscreenCanvas : EventTarget
 interface OffscreenCanvasRenderingContext2D
     attribute @@toStringTag
     getter canvas
+    getter direction
     getter fillStyle
     getter filter
+    getter font
     getter globalAlpha
     getter globalCompositeOperation
     getter imageSmoothingEnabled
@@ -4639,6 +4641,8 @@ interface OffscreenCanvasRenderingContext2D
     getter shadowOffsetX
     getter shadowOffsetY
     getter strokeStyle
+    getter textAlign
+    getter textBaseline
     method arc
     method arcTo
     method beginPath
@@ -4656,11 +4660,13 @@ interface OffscreenCanvasRenderingContext2D
     method ellipse
     method fill
     method fillRect
+    method fillText
     method getImageData
     method getLineDash
     method isPointInPath
     method isPointInStroke
     method lineTo
+    method measureText
     method moveTo
     method putImageData
     method quadraticCurveTo
@@ -4674,10 +4680,13 @@ interface OffscreenCanvasRenderingContext2D
     method setTransform
     method stroke
     method strokeRect
+    method strokeText
     method transform
     method translate
+    setter direction
     setter fillStyle
     setter filter
+    setter font
     setter globalAlpha
     setter globalCompositeOperation
     setter imageSmoothingEnabled
@@ -4692,6 +4701,8 @@ interface OffscreenCanvasRenderingContext2D
     setter shadowOffsetX
     setter shadowOffsetY
     setter strokeStyle
+    setter textAlign
+    setter textBaseline
 interface Option
     attribute @@toStringTag
     getter defaultSelected
