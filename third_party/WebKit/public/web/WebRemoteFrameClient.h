@@ -56,6 +56,9 @@ class WebRemoteFrameClient {
 
   // This frame was focused by another frame.
   virtual void FrameFocused() {}
+
+ protected:
+  virtual ~WebRemoteFrameClient() {}
 };
 
 }  // namespace blink

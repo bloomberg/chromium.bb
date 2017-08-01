@@ -220,7 +220,9 @@ class UseMockScrollbarSettings {
 
 class TestWebWidgetClient : public WebWidgetClient {
  public:
-  virtual ~TestWebWidgetClient() {}
+  ~TestWebWidgetClient() override {}
+
+  // WebWidgetClient:
   bool AllowsBrokenNullLayerTreeView() const override { return true; }
   WebLayerTreeView* InitializeLayerTreeView() override;
 
@@ -232,8 +234,9 @@ class TestWebViewWidgetClient : public TestWebWidgetClient {
  public:
   explicit TestWebViewWidgetClient(TestWebViewClient& test_web_view_client)
       : test_web_view_client_(test_web_view_client) {}
-  virtual ~TestWebViewWidgetClient() {}
+  ~TestWebViewWidgetClient() override {}
 
+  // TestWebViewWidgetClient:
   WebLayerTreeView* InitializeLayerTreeView() override;
   void ScheduleAnimation() override;
   void DidMeaningfulLayout(WebMeaningfulLayout) override;
@@ -246,6 +249,7 @@ class TestWebViewClient : public WebViewClient {
  public:
   ~TestWebViewClient() override {}
 
+  // WebViewClient:
   WebLayerTreeView* InitializeLayerTreeView() override;
   void ScheduleAnimation() override { animation_scheduled_ = true; }
   bool AnimationScheduled() { return animation_scheduled_; }
@@ -330,6 +334,9 @@ class WebViewHelper {
 class TestWebFrameClient : public WebFrameClient {
  public:
   TestWebFrameClient();
+  ~TestWebFrameClient() override {}
+
+  static bool IsLoading() { return loads_in_progress_ > 0; }
 
   WebLocalFrame* Frame() const { return frame_; }
   // Pass ownership of the TestWebFrameClient to |self_owned| here if the
@@ -339,6 +346,7 @@ class TestWebFrameClient : public WebFrameClient {
   // Note: only needed for local roots.
   void BindWidgetClient(std::unique_ptr<TestWebWidgetClient>);
 
+  // WebFrameClient:
   void FrameDetached(WebLocalFrame*, DetachType) override;
   WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
                                   WebTreeScopeType,
@@ -349,13 +357,9 @@ class TestWebFrameClient : public WebFrameClient {
                                   const WebFrameOwnerProperties&) override;
   void DidStartLoading(bool) override;
   void DidStopLoading() override;
-
-  static bool IsLoading() { return loads_in_progress_ > 0; }
-
   service_manager::InterfaceProvider* GetInterfaceProvider() override {
     return interface_provider_.get();
   }
-
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
       SingleThreadTaskRunner* task_runner) override {
@@ -386,6 +390,7 @@ class TestWebFrameClient : public WebFrameClient {
 class TestWebRemoteFrameClient : public WebRemoteFrameClient {
  public:
   TestWebRemoteFrameClient();
+  ~TestWebRemoteFrameClient() override {}
 
   WebRemoteFrame* Frame() const { return frame_; }
   // Pass ownership of the TestWebFrameClient to |self_owned| here if the
@@ -393,7 +398,7 @@ class TestWebRemoteFrameClient : public WebRemoteFrameClient {
   void Bind(WebRemoteFrame*,
             std::unique_ptr<TestWebRemoteFrameClient> self_owned = nullptr);
 
-  // WebRemoteFrameClient overrides:
+  // WebRemoteFrameClient:
   void FrameDetached(DetachType) override;
   void ForwardPostMessage(WebLocalFrame* source_frame,
                           WebRemoteFrame* target_frame,
