@@ -26,6 +26,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
+#include "chrome/browser/extensions/activity_log/activity_log_task_runner.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/chrome_constants.h"
@@ -42,8 +43,6 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif
-
-using content::BrowserThread;
 
 namespace extensions {
 
@@ -72,12 +71,13 @@ class CountingPolicyTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  // Wait for the task queue for the specified thread to empty.
-  void WaitOnThread(const BrowserThread::ID& thread) {
-    BrowserThread::PostTaskAndReply(
-        thread, FROM_HERE, base::BindOnce(&base::DoNothing),
-        base::MessageLoop::current()->QuitWhenIdleClosure());
-    base::RunLoop().Run();
+  // Waits for the task queue for the activity log sequence to empty.
+  void WaitOnActivityLogSequence() {
+    base::RunLoop run_loop;
+    GetActivityLogTaskRunner()->PostTaskAndReply(
+        FROM_HERE, base::BindOnce(&base::DoNothing),
+        run_loop.QuitWhenIdleClosure());
+    run_loop.Run();
   }
 
   // A wrapper function for CheckReadFilteredData, so that we don't need to
@@ -773,7 +773,7 @@ TEST_F(CountingPolicyTest, StringTableCleaning) {
                             &CountingPolicyTest::CheckStringTableSizes,
                             3,
                             1);
-  WaitOnThread(BrowserThread::DB);
+  WaitOnActivityLogSequence();
 
   // Trigger a cleaning.  The oldest action is expired when we submit a
   // duplicate of the newer action.  After this, there should be two strings
@@ -786,7 +786,7 @@ TEST_F(CountingPolicyTest, StringTableCleaning) {
                             &CountingPolicyTest::CheckStringTableSizes,
                             2,
                             0);
-  WaitOnThread(BrowserThread::DB);
+  WaitOnActivityLogSequence();
 
   policy->Close();
 }
@@ -884,7 +884,7 @@ TEST_F(CountingPolicyTest, EarlyFlush) {
   }
 
   policy->ScheduleAndForget(policy, &CountingPolicyTest::CheckQueueSize);
-  WaitOnThread(BrowserThread::DB);
+  WaitOnActivityLogSequence();
 
   policy->Close();
 }
@@ -903,7 +903,7 @@ TEST_F(CountingPolicyTest, CapReturns) {
   }
 
   policy->Flush();
-  WaitOnThread(BrowserThread::DB);
+  WaitOnActivityLogSequence();
 
   CheckReadFilteredData(
       policy,

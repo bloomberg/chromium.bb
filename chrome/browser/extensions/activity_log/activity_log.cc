@@ -580,6 +580,7 @@ ActivityLog::ActivityLog(content::BrowserContext* context)
 
   // Check that the right threads exist for logging to the database.
   // If not, we shouldn't try to do things that require them.
+  // TODO(devlin): We can clean this up now that we use sequenced task runners.
   if (!BrowserThread::IsMessageLoopValid(BrowserThread::DB) ||
       !BrowserThread::IsMessageLoopValid(BrowserThread::FILE) ||
       !BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
@@ -622,7 +623,9 @@ void ActivityLog::SetDatabasePolicy(
     default:
       NOTREACHED();
   }
+  LOG(WARNING) << "Initing";
   database_policy_->Init();
+  LOG(WARNING) << "inited";
   database_policy_type_ = policy_type;
 }
 

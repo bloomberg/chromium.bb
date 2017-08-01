@@ -13,10 +13,12 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_clock.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/activity_database.h"
+#include "chrome/browser/extensions/activity_log/activity_log_task_runner.h"
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -29,8 +31,6 @@
 #include "extensions/common/dom_action_types.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::BrowserThread;
 
 namespace constants = activity_log_constants;
 
@@ -105,12 +105,15 @@ class ActivityDatabaseTest : public ChromeRenderViewHostTestHarness {
  protected:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+    SetActivityLogTaskRunnerForTesting(
+        base::ThreadTaskRunnerHandle::Get().get());
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExtensionActivityLogTesting);
   }
 
   void TearDown() override {
+    SetActivityLogTaskRunnerForTesting(nullptr);
     ChromeRenderViewHostTestHarness::TearDown();
   }
 

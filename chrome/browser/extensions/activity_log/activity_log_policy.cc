@@ -21,8 +21,6 @@
 #include "extensions/common/extension.h"
 #include "url/gurl.h"
 
-using content::BrowserThread;
-
 namespace constants = activity_log_constants;
 
 namespace extensions {
@@ -52,6 +50,7 @@ ActivityLogDatabasePolicy::ActivityLogDatabasePolicy(
 }
 
 void ActivityLogDatabasePolicy::Init() {
+  LOG(WARNING) << "Scheduling init";
   ScheduleAndForget(db_, &ActivityDatabase::Init, database_path_);
 }
 

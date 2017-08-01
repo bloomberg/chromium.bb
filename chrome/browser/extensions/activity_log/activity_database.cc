@@ -10,11 +10,10 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/thread.h"
-#include "base/threading/thread_checker.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/activity_log/activity_log_task_runner.h"
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "chrome/common/chrome_switches.h"
 #include "sql/error_delegate_util.h"
@@ -25,8 +24,6 @@
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #endif
-
-using content::BrowserThread;
 
 namespace extensions {
 
@@ -56,11 +53,13 @@ ActivityDatabase::ActivityDatabase(ActivityDatabase::Delegate* delegate)
 ActivityDatabase::~ActivityDatabase() {}
 
 void ActivityDatabase::Init(const base::FilePath& db_name) {
-  if (did_init_) return;
+  LOG(WARNING) << "INITING";
+  if (did_init_)
+    return;
   did_init_ = true;
-  if (BrowserThread::IsMessageLoopValid(BrowserThread::DB))
-    DCHECK_CURRENTLY_ON(BrowserThread::DB);
+  DCHECK(GetActivityLogTaskRunner()->RunsTasksInCurrentSequence());
   db_.set_histogram_tag("Activity");
+  LOG(WARNING) << "Set callback";
   db_.set_error_callback(
       base::Bind(&ActivityDatabase::DatabaseErrorCallback,
                  base::Unretained(this)));
@@ -140,12 +139,10 @@ void ActivityDatabase::SetBatchModeForTesting(bool batch_mode) {
 }
 
 sql::Connection* ActivityDatabase::GetSqlConnection() {
-  if (BrowserThread::IsMessageLoopValid(BrowserThread::DB))
-    DCHECK_CURRENTLY_ON(BrowserThread::DB);
+  DCHECK(GetActivityLogTaskRunner()->RunsTasksInCurrentSequence());
   if (valid_db_) {
     return &db_;
   } else {
-    LOG(WARNING) << "Activity log database is not valid";
     return NULL;
   }
 }

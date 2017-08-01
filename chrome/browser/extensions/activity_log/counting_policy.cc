@@ -44,11 +44,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_runner_util.h"
+#include "chrome/browser/extensions/activity_log/activity_log_task_runner.h"
 #include "chrome/common/chrome_constants.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -426,6 +426,7 @@ std::unique_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
     const std::string& page_url,
     const std::string& arg_url,
     const int days_ago) {
+  DCHECK(GetActivityLogTaskRunner()->RunsTasksInCurrentSequence());
   // Ensure data is flushed to the database first so that we query over all
   // data.
   activity_database()->AdviseFlush(ActivityDatabase::kFlushImmediately);
@@ -724,17 +725,10 @@ void CountingPolicy::ReadFilteredData(
     const int days_ago,
     const base::Callback<void(std::unique_ptr<Action::ActionVector>)>&
         callback) {
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB,
-      FROM_HERE,
-      base::Bind(&CountingPolicy::DoReadFilteredData,
-                 base::Unretained(this),
-                 extension_id,
-                 type,
-                 api_name,
-                 page_url,
-                 arg_url,
-                 days_ago),
+  base::PostTaskAndReplyWithResult(
+      GetActivityLogTaskRunner().get(), FROM_HERE,
+      base::Bind(&CountingPolicy::DoReadFilteredData, base::Unretained(this),
+                 extension_id, type, api_name, page_url, arg_url, days_ago),
       callback);
 }
 
@@ -796,8 +790,6 @@ bool CountingPolicy::CleanStringTables(sql::Connection* db) {
 }
 
 void CountingPolicy::Close() {
-  // The policy object should have never been created if there's no DB thread.
-  DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::DB));
   ScheduleAndForget(activity_database(), &ActivityDatabase::Close);
 }
 
