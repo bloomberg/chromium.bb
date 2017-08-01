@@ -213,6 +213,21 @@ bool HTMLElementEquivalent::ValueIsPresentInStyle(
     HTMLElement* element,
     StylePropertySet* style) const {
   const CSSValue* value = style->GetPropertyCSSValue(property_id_);
+
+  // TODO: Does this work on style or computed style? The code here, but we
+  // might need to do something here to match CSSPrimitiveValues. if
+  // (property_id_ == CSSPropertyFontWeight &&
+  //     identifier_value_->GetValueID() == CSSValueBold) {
+  //   if (value->IsPrimitiveValue() &&
+  //       ToCSSPrimitiveValue(value)->GetFloatValue() >= BoldThreshold()) {
+  //     LOG(INFO) << "weight match in HTMLElementEquivalent for primitive
+  //     value"; return true;
+  //   } else {
+  //     LOG(INFO) << "weight match in HTMLElementEquivalent for identifier
+  //     value";
+  //   }
+  // }
+
   return Matches(element) && value && value->IsIdentifierValue() &&
          ToCSSIdentifierValue(value)->GetValueID() ==
              identifier_value_->GetValueID();

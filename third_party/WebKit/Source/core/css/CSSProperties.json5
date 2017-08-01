@@ -478,12 +478,14 @@
     },
     {
       name: "font-style",
+      api_class: true,
+      api_methods: ["parseSingleValue"],
+      converter: "ConvertFontStyle",
       is_descriptor: true,
       font: true,
       inherited: true,
       name_for_methods: "Style",
       priority: "High",
-      type_name: "FontSelectionValueStyle",
     },
     {
       name: "font-variant-ligatures",

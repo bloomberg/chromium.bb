@@ -416,6 +416,7 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPIFontSize.cpp",
     "properties/CSSPropertyAPIFontSizeAdjust.cpp",
     "properties/CSSPropertyAPIFontStretch.cpp",
+    "properties/CSSPropertyAPIFontStyle.cpp",
     "properties/CSSPropertyAPIFontVariantCaps.cpp",
     "properties/CSSPropertyAPIFontVariantLigatures.cpp",
     "properties/CSSPropertyAPIFontVariantNumeric.cpp",

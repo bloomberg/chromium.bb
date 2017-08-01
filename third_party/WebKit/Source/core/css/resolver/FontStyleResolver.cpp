@@ -36,9 +36,8 @@ FontDescription FontStyleResolver::ComputeFont(
       *property_set.GetPropertyCSSValue(CSSPropertyFontStretch)));
 
   // CSSPropertyFontStyle
-  builder.SetStyle(ToCSSIdentifierValue(
-                       *property_set.GetPropertyCSSValue(CSSPropertyFontStyle))
-                       .ConvertTo<FontSelectionValueStyle>());
+  builder.SetStyle(StyleBuilderConverterBase::ConvertFontStyle(
+      *property_set.GetPropertyCSSValue(CSSPropertyFontStyle)));
 
   // CSSPropertyFontVariantCaps
   builder.SetVariantCaps(StyleBuilderConverterBase::ConvertFontVariantCaps(

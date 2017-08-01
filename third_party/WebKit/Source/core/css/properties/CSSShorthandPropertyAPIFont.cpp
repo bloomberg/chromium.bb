@@ -27,7 +27,7 @@ bool ConsumeSystemFont(bool important,
   if (!range.AtEnd())
     return false;
 
-  FontSelectionValueStyle font_style = NormalSlopeValue();
+  FontSelectionValue font_style = NormalSlopeValue();
   FontSelectionValue font_weight = NormalWeightValue();
   float font_size = 0;
   AtomicString font_family;
@@ -94,15 +94,15 @@ bool ConsumeFont(bool important,
       return false;
   }
   // Optional font-style, font-variant, font-stretch and font-weight.
-  CSSIdentifierValue* font_style = nullptr;
+  CSSValue* font_style = nullptr;
   CSSIdentifierValue* font_variant_caps = nullptr;
   CSSValue* font_weight = nullptr;
   CSSValue* font_stretch = nullptr;
   while (!range.AtEnd()) {
     CSSValueID id = range.Peek().Id();
-    if (!font_style && CSSParserFastPaths::IsValidKeywordPropertyAndValue(
-                           CSSPropertyFontStyle, id, context.Mode())) {
-      font_style = CSSPropertyParserHelpers::ConsumeIdent(range);
+    if (!font_style && (id == CSSValueNormal || id == CSSValueItalic ||
+                        id == CSSValueOblique)) {
+      font_style = CSSPropertyFontUtils::ConsumeFontStyle(range);
       continue;
     }
     if (!font_variant_caps &&

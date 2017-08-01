@@ -36,6 +36,7 @@
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSFontFamilyValue.h"
 #include "core/css/CSSFontFeatureValue.h"
+#include "core/css/CSSFontStyleRangeValue.h"
 #include "core/css/CSSFontVariationValue.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGridAutoRepeatValue.h"
@@ -427,6 +428,51 @@ FontSelectionValue StyleBuilderConverter::ConvertFontStretch(
     blink::StyleResolverState& state,
     const blink::CSSValue& value) {
   return StyleBuilderConverterBase::ConvertFontStretch(value);
+}
+
+FontSelectionValue StyleBuilderConverterBase::ConvertFontStyle(
+    const CSSValue& value) {
+  DCHECK(!value.IsPrimitiveValue());
+
+  if (value.IsIdentifierValue()) {
+    const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
+    switch (identifier_value.GetValueID()) {
+      case CSSValueItalic:
+      case CSSValueOblique:
+        return ItalicSlopeValue();
+      case CSSValueNormal:
+        return NormalSlopeValue();
+      default:
+        NOTREACHED();
+        return NormalSlopeValue();
+    }
+  } else if (value.IsFontStyleRangeValue()) {
+    const CSSFontStyleRangeValue& style_range_value =
+        ToCSSFontStyleRangeValue(value);
+    const CSSValueList* values = style_range_value.GetObliqueValues();
+    CHECK_LT(values->length(), 2u);
+    if (values->length()) {
+      return FontSelectionValue(
+          ToCSSPrimitiveValue(values->Item(0)).GetFloatValue());
+    } else {
+      const CSSIdentifierValue* identifier_value =
+          style_range_value.GetFontStyleValue();
+      if (identifier_value->GetValueID() == CSSValueNormal)
+        return NormalSlopeValue();
+      if (identifier_value->GetValueID() == CSSValueItalic ||
+          identifier_value->GetValueID() == CSSValueOblique)
+        return ItalicSlopeValue();
+    }
+  }
+
+  NOTREACHED();
+  return NormalSlopeValue();
+}
+
+FontSelectionValue StyleBuilderConverter::ConvertFontStyle(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  return StyleBuilderConverterBase::ConvertFontStyle(value);
 }
 
 FontSelectionValue StyleBuilderConverterBase::ConvertFontWeight(

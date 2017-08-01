@@ -36,6 +36,7 @@ class CSSPropertyFontUtils {
   static CSSIdentifierValue* ConsumeFontStretchKeywordOnly(
       CSSParserTokenRange&);
   static CSSValue* ConsumeFontStretch(CSSParserTokenRange&);
+  static CSSValue* ConsumeFontStyle(CSSParserTokenRange&);
   static CSSValue* ConsumeFontWeight(CSSParserTokenRange&);
 
   static CSSValue* ConsumeFontFeatureSettings(CSSParserTokenRange&);

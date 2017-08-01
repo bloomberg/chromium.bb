@@ -97,11 +97,6 @@ class FontSelectionValue {
   int16_t backing_{0};
 };
 
-// Temporary types until we move from CSSPrimitiveValueMappings to
-// StyleBuilderConverter for those types.
-class FontSelectionValueStyle : public FontSelectionValue {
-  using FontSelectionValue::FontSelectionValue;
-};
 inline FontSelectionValue FontSelectionValue::operator+(
     const FontSelectionValue other) const {
   return FontSelectionValue(backing_ + other.backing_, RawTag::RawTag);
@@ -176,15 +171,14 @@ static inline const FontSelectionValue& FontSelectionZeroValue() {
   return fontSelectionZeroValue;
 }
 
-static inline const FontSelectionValueStyle& NormalSlopeValue() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValueStyle,
-                                  normalSlopeValue, ());
+static inline const FontSelectionValue& NormalSlopeValue() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue, normalSlopeValue,
+                                  ());
   return normalSlopeValue;
 }
 
-static inline const FontSelectionValueStyle& ItalicSlopeValue() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValueStyle, italicValue,
-                                  (20));
+static inline const FontSelectionValue& ItalicSlopeValue() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue, italicValue, (20));
   return italicValue;
 }
 

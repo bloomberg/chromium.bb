@@ -874,14 +874,9 @@ bool CSSPropertyParser::ParseFontFaceDescriptor(CSSPropertyID prop_id) {
     case CSSPropertyFontStretch:
       parsed_value = CSSPropertyFontUtils::ConsumeFontStretch(range_);
       break;
-    case CSSPropertyFontStyle: {
-      CSSValueID id = range_.ConsumeIncludingWhitespace().Id();
-      if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(prop_id, id,
-                                                              context_->Mode()))
-        return false;
-      parsed_value = CSSIdentifierValue::Create(id);
+    case CSSPropertyFontStyle:
+      parsed_value = CSSPropertyFontUtils::ConsumeFontStyle(range_);
       break;
-    }
     case CSSPropertyFontVariant:
       parsed_value = ConsumeFontVariantList(range_);
       break;
