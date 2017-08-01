@@ -5,6 +5,8 @@
 component("common") {
   output_name = "storage_common"
   sources = [
+    "blob_storage/blob_handle.cc",
+    "blob_storage/blob_handle.h",
     "blob_storage/blob_item_bytes_request.cc",
     "blob_storage/blob_item_bytes_request.h",
     "blob_storage/blob_item_bytes_response.cc",
@@ -41,6 +43,9 @@ component("common") {
 
   defines = [ "STORAGE_COMMON_IMPLEMENTATION" ]
 
+  public_deps = [
+    "//storage/public/interfaces",
+  ]
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",

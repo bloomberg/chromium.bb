@@ -412,6 +412,19 @@ BlobDataHandle::BlobDataHandle(const String& uuid,
   }
 }
 
+BlobDataHandle::BlobDataHandle(const String& uuid,
+                               const String& type,
+                               long long size,
+                               storage::mojom::blink::BlobPtrInfo blob_info)
+    : uuid_(uuid.IsolatedCopy()),
+      type_(IsValidBlobType(type) ? type.IsolatedCopy() : ""),
+      size_(size),
+      is_single_unknown_size_file_(false),
+      blob_info_(std::move(blob_info)) {
+  DCHECK(RuntimeEnabledFeatures::MojoBlobsEnabled());
+  DCHECK(blob_info_.is_valid());
+}
+
 BlobDataHandle::~BlobDataHandle() {
   if (!RuntimeEnabledFeatures::MojoBlobsEnabled())
     BlobRegistry::RemoveBlobDataRef(uuid_);
@@ -419,6 +432,8 @@ BlobDataHandle::~BlobDataHandle() {
 
 BlobPtr BlobDataHandle::CloneBlobPtr() {
   MutexLocker locker(blob_info_mutex_);
+  if (!blob_info_.is_valid())
+    return nullptr;
   BlobPtr blob, blob_clone;
   blob.Bind(std::move(blob_info_));
   blob->Clone(MakeRequest(&blob_clone));

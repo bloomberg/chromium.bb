@@ -17,6 +17,7 @@
 #include "content/common/content_param_traits_macros.h"
 #include "content/common/cursors/webcursor.h"
 #include "ipc/ipc_mojo_param_traits.h"
+#include "storage/common/blob_storage/blob_handle.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/accessibility/ax_modes.h"
 
@@ -67,6 +68,17 @@ template <>
 struct CONTENT_EXPORT ParamTraits<ui::AXMode> {
   typedef ui::AXMode param_type;
   static void GetSize(base::PickleSizer* sizer, const param_type& p);
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct CONTENT_EXPORT ParamTraits<scoped_refptr<storage::BlobHandle>> {
+  typedef scoped_refptr<storage::BlobHandle> param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

@@ -641,6 +641,7 @@ mojom("mojo_bindings") {
     "//services/video_capture/public/interfaces",
     "//services/viz/public/interfaces/compositing",
     "//skia/public/interfaces",
+    "//storage/public/interfaces",
     "//third_party/WebKit/public:mojo_bindings",
     "//ui/base/mojo:mojo_bindings",
     "//ui/gfx/geometry/mojo",

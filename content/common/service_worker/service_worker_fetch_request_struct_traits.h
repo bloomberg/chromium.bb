@@ -7,6 +7,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "content/public/common/referrer.h"
+#include "storage/common/blob_storage/blob_handle.h"
 #include "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom.h"
 
 namespace mojo {
@@ -116,6 +117,13 @@ struct StructTraits<blink::mojom::FetchAPIRequestDataView,
 
   static uint64_t blob_size(const content::ServiceWorkerFetchRequest& request) {
     return request.blob_size;
+  }
+
+  static storage::mojom::BlobPtr blob(
+      const content::ServiceWorkerFetchRequest& request) {
+    if (!request.blob)
+      return nullptr;
+    return request.blob->Clone();
   }
 
   static const content::Referrer& referrer(

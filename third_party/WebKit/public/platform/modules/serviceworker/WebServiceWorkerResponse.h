@@ -6,6 +6,7 @@
 #define WebServiceWorkerResponse_h
 
 #include "base/time/time.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebPrivatePtr.h"
 #include "public/platform/WebString.h"
@@ -67,9 +68,13 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerResponse {
   WebString GetHeader(const WebString& key) const;
   void VisitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
 
-  void SetBlob(const WebString& uuid, uint64_t size);
+  void SetBlob(const WebString& uuid,
+               uint64_t size,
+               mojo::ScopedMessagePipeHandle);
   WebString BlobUUID() const;
   uint64_t BlobSize() const;
+
+  mojo::ScopedMessagePipeHandle CloneBlobPtr() const;
 
   // Provides a more detailed error when status() is zero.
   void SetError(WebServiceWorkerResponseError);

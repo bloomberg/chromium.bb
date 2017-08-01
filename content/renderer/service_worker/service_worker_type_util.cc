@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "storage/common/blob_storage/blob_handle.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
@@ -82,11 +83,20 @@ void GetServiceWorkerHeaderMapFromWebRequest(
 
 ServiceWorkerResponse GetServiceWorkerResponseFromWebResponse(
     const blink::WebServiceWorkerResponse& web_response) {
+  scoped_refptr<storage::BlobHandle> blob;
+  auto blob_pipe = web_response.CloneBlobPtr();
+  if (blob_pipe.is_valid()) {
+    storage::mojom::BlobPtr blob_ptr;
+    blob_ptr.Bind(storage::mojom::BlobPtrInfo(std::move(blob_pipe),
+                                              storage::mojom::Blob::Version_));
+    blob = base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
+  }
+
   return ServiceWorkerResponse(
       GetURLList(web_response.UrlList()), web_response.Status(),
       web_response.StatusText().Utf8(), web_response.ResponseType(),
       GetHeaderMap(web_response), web_response.BlobUUID().Utf8(),
-      web_response.BlobSize(), web_response.GetError(),
+      web_response.BlobSize(), std::move(blob), web_response.GetError(),
       web_response.ResponseTime(),
       !web_response.CacheStorageCacheName().IsNull(),
       web_response.CacheStorageCacheName().Utf8(),

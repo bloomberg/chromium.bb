@@ -35,6 +35,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "storage/common/blob_storage/blob_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -496,8 +497,8 @@ void EmbeddedWorkerTestHelper::OnFetchEvent(
           base::MakeUnique<std::vector<GURL>>(), 200, "OK",
           blink::mojom::FetchResponseType::kDefault,
           base::MakeUnique<ServiceWorkerHeaderMap>(), std::string(), 0,
-          blink::kWebServiceWorkerResponseErrorUnknown, base::Time(),
-          false /* is_in_cache_storage */,
+          nullptr /* blob */, blink::kWebServiceWorkerResponseErrorUnknown,
+          base::Time(), false /* is_in_cache_storage */,
           std::string() /* cache_storage_cache_name */,
           base::MakeUnique<
               ServiceWorkerHeaderList>() /* cors_exposed_header_names */),

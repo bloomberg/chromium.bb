@@ -5,6 +5,7 @@
 #ifndef WebServiceWorkerRequest_h
 #define WebServiceWorkerRequest_h
 
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebPrivatePtr.h"
 #include "public/platform/WebReferrerPolicy.h"
@@ -18,6 +19,7 @@
 #include "platform/weborigin/Referrer.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/text/StringHash.h"
+#include "storage/public/interfaces/blobs.mojom-blink.h"  // nogncheck
 #endif
 
 namespace blink {
@@ -56,7 +58,9 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
 
   void VisitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
 
-  void SetBlob(const WebString& uuid, long long size);
+  void SetBlob(const WebString& uuid,
+               long long size,
+               mojo::ScopedMessagePipeHandle);
 
   void SetReferrer(const WebString&, WebReferrerPolicy);
   WebURL ReferrerUrl() const;
@@ -96,6 +100,9 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
   const HTTPHeaderMap& Headers() const;
   PassRefPtr<BlobDataHandle> GetBlobDataHandle() const;
   const Referrer& GetReferrer() const;
+  void SetBlob(const WebString& uuid,
+               long long size,
+               storage::mojom::blink::BlobPtrInfo);
 #endif
 
  private:

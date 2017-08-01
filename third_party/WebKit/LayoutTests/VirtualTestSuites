@@ -565,6 +565,16 @@
   },
   {
     "prefix": "mojo-blobs",
+    "base": "external/wpt/fetch",
+    "args": ["--enable-features=MojoBlobs"]
+  },
+  {
+    "prefix": "mojo-blobs",
+    "base": "external/wpt/service-workers",
+    "args": ["--enable-features=MojoBlobs"]
+  },
+  {
+    "prefix": "mojo-blobs",
     "base": "fast/files",
     "args": ["--enable-features=MojoBlobs"]
   }

@@ -111,8 +111,14 @@ void WebServiceWorkerResponse::VisitHTTPHeaderFields(
     header_visitor->VisitHeader(i->key, i->value);
 }
 
-void WebServiceWorkerResponse::SetBlob(const WebString& uuid, uint64_t size) {
-  private_->blob_data_handle = BlobDataHandle::Create(uuid, String(), size);
+void WebServiceWorkerResponse::SetBlob(
+    const WebString& uuid,
+    uint64_t size,
+    mojo::ScopedMessagePipeHandle blob_pipe) {
+  private_->blob_data_handle = BlobDataHandle::Create(
+      uuid, String(), size,
+      storage::mojom::blink::BlobPtrInfo(
+          std::move(blob_pipe), storage::mojom::blink::Blob::Version_));
 }
 
 WebString WebServiceWorkerResponse::BlobUUID() const {
@@ -125,6 +131,14 @@ uint64_t WebServiceWorkerResponse::BlobSize() const {
   if (!private_->blob_data_handle)
     return 0;
   return private_->blob_data_handle->size();
+}
+
+mojo::ScopedMessagePipeHandle WebServiceWorkerResponse::CloneBlobPtr() const {
+  if (!private_->blob_data_handle)
+    return mojo::ScopedMessagePipeHandle();
+  return private_->blob_data_handle->CloneBlobPtr()
+      .PassInterface()
+      .PassHandle();
 }
 
 void WebServiceWorkerResponse::SetError(WebServiceWorkerResponseError error) {
