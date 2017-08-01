@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-FAIL Parsing XHTML: Node's node document must be set to that of the element to which it will be appended. Test empty template assert_not_equals: Content attribute of template element should not be undefined got disallowed value undefined
-FAIL Parsing XHTML: Node's node document must be set to that of the element to which it will be appended. Test not empty template assert_not_equals: Content attribute of template element should not be undefined got disallowed value undefined
-FAIL Parsing XHTML: Node's node document must be set to that of the element to which it will be appended. Test nested templates assert_not_equals: Content attribute of template element should not be undefined got disallowed value undefined
-PASS Parsing XHTML: Node's node document must be set to that of the element to which it will be appended. Test loading XHTML document from a file 
-PASS Parsing XHTML: Node's node document must be set to that of the element to which it will be appended. Test loading of XHTML document with nested templates from a file 
-Harness: the test ran to completion.
-

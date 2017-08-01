@@ -3,21 +3,21 @@ Test innerHTML in XHTML/XML documents
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-FAIL element.firstChild.namespaceURI should be http://www.w3.org/2000/svg. Was http://www.w3.org/1999/xhtml.
 PASS element.firstChild.namespaceURI is "http://www.w3.org/2000/svg"
-FAIL element.firstChild.namespaceURI should be http://www.w3.org/2000/svg. Was http://www.w3.org/1999/xhtml.
 PASS element.firstChild.namespaceURI is "http://www.w3.org/2000/svg"
-FAIL element.firstChild.namespaceURI should be http://www.w3.org/2000/svg. Was http://www.w3.org/1999/xhtml.
+PASS element.firstChild.namespaceURI is "http://www.w3.org/2000/svg"
+PASS element.firstChild.namespaceURI is "http://www.w3.org/2000/svg"
+PASS element.firstChild.namespaceURI is "http://www.w3.org/2000/svg"
 PASS element.firstChild.namespaceURI is "http://test/foo"
-FAIL element.firstChild.namespaceURI should be http://www.w3.org/2000/svg. Was http://www.w3.org/1999/xhtml.
-PASS element.firstChild.namespaceURI is "http://test/foo"
-FAIL element.firstChild.namespaceURI should be http://test/foo. Was http://www.w3.org/1999/xhtml.
 PASS element.firstChild.namespaceURI is "http://www.w3.org/2000/svg"
-FAIL element.firstChild.namespaceURI should be http://test/foo. Was http://www.w3.org/1999/xhtml.
-PASS element.firstChild.namespaceURI is "http://www.w3.org/2000/svg"
-FAIL element.firstChild.namespaceURI should be http://test/foo. Was http://www.w3.org/1999/xhtml.
 PASS element.firstChild.namespaceURI is "http://test/foo"
-FAIL element.firstChild.namespaceURI should be http://test/foo. Was http://www.w3.org/1999/xhtml.
+PASS element.firstChild.namespaceURI is "http://test/foo"
+PASS element.firstChild.namespaceURI is "http://www.w3.org/2000/svg"
+PASS element.firstChild.namespaceURI is "http://test/foo"
+PASS element.firstChild.namespaceURI is "http://www.w3.org/2000/svg"
+PASS element.firstChild.namespaceURI is "http://test/foo"
+PASS element.firstChild.namespaceURI is "http://test/foo"
+PASS element.firstChild.namespaceURI is "http://test/foo"
 PASS element.firstChild.namespaceURI is "http://test/foo"
 PASS successfullyParsed is true
 
