@@ -2,14 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("test_support") {
+source_set("test") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
+
   sources = [
-    "toolbar_test_util.h",
-    "toolbar_test_util.mm",
+    "toolbar_test_navigation_manager.h",
+    "toolbar_test_navigation_manager.mm",
+    "toolbar_test_web_state.h",
+    "toolbar_test_web_state.mm",
   ]
+
   deps = [
     "//ios/web/public/test/fakes",
   ]
-  configs += [ "//build/config/compiler:enable_arc" ]
 }

@@ -2,24 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_SHARED_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_TEST_UTIL_H_
-#define IOS_SHARED_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_TEST_UTIL_H_
+#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_TEST_TOOLBAR_TEST_NAVIGATION_MANAGER_H_
+#define IOS_CHROME_BROWSER_UI_TOOLBAR_TEST_TOOLBAR_TEST_NAVIGATION_MANAGER_H_
 
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
-
-class ToolbarTestWebState : public web::TestWebState {
- public:
-  ToolbarTestWebState();
-
-  double GetLoadingProgress() const override;
-  void set_loading_progress(double loading_progress);
-
- private:
-  double loading_progress_;
-
-  DISALLOW_COPY_AND_ASSIGN(ToolbarTestWebState);
-};
 
 class ToolbarTestNavigationManager : public web::TestNavigationManager {
  public:
@@ -36,4 +22,4 @@ class ToolbarTestNavigationManager : public web::TestNavigationManager {
   bool can_go_forward_;
 };
 
-#endif  // IOS_SHARED_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_TEST_UTIL_H_
+#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_TEST_TOOLBAR_TEST_NAVIGATION_MANAGER_H_
