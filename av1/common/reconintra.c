@@ -3108,18 +3108,18 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
           block_height == tx_size_high[tx_size]) {  // Most common case.
         return;                                     // We are done.
       } else {
-        // Can only happen for large rectangular block sizes as such large
-        // transform sizes aren't available.
-        assert(bsize == BLOCK_32X64
+// Can only happen for large rectangular block sizes as such large
+// transform sizes aren't available.
 #if CONFIG_EXT_PARTITION
-               || bsize == BLOCK_64X128
+        assert(bsize == BLOCK_32X64 || bsize == BLOCK_64X128);
+#else
+        assert(bsize == BLOCK_32X64);
 #endif  // CONFIG_EXT_PARTITION
-               );
-        assert(tx_size == TX_32X32
 #if CONFIG_TX64X64
-               || tx_size == TX_64X64
+        assert(tx_size == TX_32X32 || tx_size == TX_64X64);
+#else
+        assert(tx_size == TX_32X32);
 #endif  // CONFIG_TX64X64
-               );
         // In this case, we continue to the bottom square sub-block.
       }
 #endif  // CONFIG_RECT_INTRA_PRED && CONFIG_RECT_TX && (CONFIG_VAR_TX ||
@@ -3181,18 +3181,18 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
           block_height == tx_size_high[tx_size]) {  // Most common case.
         return;                                     // We are done.
       } else {
-        // Can only happen for large rectangular block sizes as such large
-        // transform sizes aren't available.
-        assert(bsize == BLOCK_64X32
+// Can only happen for large rectangular block sizes as such large
+// transform sizes aren't available.
 #if CONFIG_EXT_PARTITION
-               || bsize == BLOCK_128X64
+        assert(bsize == BLOCK_64X32 || bsize == BLOCK_128X64);
+#else
+        assert(bsize == BLOCK_64X32);
 #endif  // CONFIG_EXT_PARTITION
-               );
-        assert(tx_size == TX_32X32
 #if CONFIG_TX64X64
-               || tx_size == TX_64X64
+        assert(tx_size == TX_32X32 || tx_size == TX_64X64);
+#else
+        assert(tx_size == TX_32X32);
 #endif  // CONFIG_TX64X64
-               );
         // In this case, we continue to the right square sub-block.
       }
 #endif  // CONFIG_RECT_INTRA_PRED && CONFIG_RECT_TX && (CONFIG_VAR_TX ||
