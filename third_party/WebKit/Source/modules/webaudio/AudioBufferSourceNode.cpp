@@ -72,7 +72,8 @@ AudioBufferSourceHandler::AudioBufferSourceHandler(
       is_grain_(false),
       grain_offset_(0.0),
       grain_duration_(kDefaultGrainDuration),
-      min_playback_rate_(1.0) {
+      min_playback_rate_(1.0),
+      buffer_has_been_set_(false) {
   // Default to mono. A call to setBuffer() will set the number of output
   // channels to that of the buffer.
   AddOutput(1);
@@ -388,10 +389,11 @@ void AudioBufferSourceHandler::SetBuffer(AudioBuffer* buffer,
                                          ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (buffer_) {
-    exception_state.ThrowDOMException(
-        kInvalidStateError,
-        "Cannot set buffer after it has been already been set");
+  if (buffer && buffer_has_been_set_) {
+    exception_state.ThrowDOMException(kInvalidStateError,
+                                      "Cannot set buffer to non-null after it "
+                                      "has been already been set to a non-null "
+                                      "buffer");
     return;
   }
 
@@ -403,6 +405,8 @@ void AudioBufferSourceHandler::SetBuffer(AudioBuffer* buffer,
   MutexLocker process_locker(process_lock_);
 
   if (buffer) {
+    buffer_has_been_set_ = true;
+
     // Do any necesssary re-configuration to the buffer's number of channels.
     unsigned number_of_channels = buffer->numberOfChannels();
 

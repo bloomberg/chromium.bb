@@ -140,7 +140,7 @@ PASS < [waveshaper] All assertions passed. (total 7 assertions)
 PASS > [audio-buffer-source] AudioBufferSource start/stop 
 PASS   source = context.createBufferSource() did not throw an exception. 
 PASS   source.buffer = buffer did not throw an exception. 
-PASS   source.buffer = context.createBuffer(1, 10, context.sampleRate) threw InvalidStateError: "Failed to set the 'buffer' property on 'AudioBufferSourceNode': Cannot set buffer after it has been already been set". 
+PASS   source.buffer = context.createBuffer(1, 10, context.sampleRate) threw InvalidStateError: "Failed to set the 'buffer' property on 'AudioBufferSourceNode': Cannot set buffer to non-null after it has been already been set to a non-null buffer". 
 PASS   source.start(-1) threw RangeError: "Failed to execute 'start' on 'AudioBufferSourceNode': The start time provided (-1) is less than the minimum bound (0).". 
 PASS   source.start(Infinity) threw TypeError: "Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite.". 
 PASS   source.start(-Infinity) threw TypeError: "Failed to execute 'start' on 'AudioBufferSourceNode': The provided double value is non-finite.". 

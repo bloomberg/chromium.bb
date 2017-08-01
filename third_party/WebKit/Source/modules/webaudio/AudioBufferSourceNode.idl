@@ -33,7 +33,7 @@
     Measure
 ]
 interface AudioBufferSourceNode : AudioScheduledSourceNode {
-    [RaisesException=Setter] attribute AudioBuffer buffer;
+    [RaisesException=Setter] attribute AudioBuffer? buffer;
 
     readonly attribute AudioParam playbackRate;
     readonly attribute AudioParam detune;

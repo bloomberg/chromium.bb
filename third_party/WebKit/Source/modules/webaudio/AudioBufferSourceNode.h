@@ -180,6 +180,10 @@ class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
   // TODO: when the codebase adopts std::atomic<>, use it for
   // |min_playback_rate_|.
   Mutex min_playback_rate_mutex_;
+
+  // True if the |buffer| attribute has ever been set to a non-null
+  // value.  Defaults to false.
+  bool buffer_has_been_set_;
 };
 
 class AudioBufferSourceNode final : public AudioScheduledSourceNode {
