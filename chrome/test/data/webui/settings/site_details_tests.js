@@ -160,39 +160,45 @@ suite('SiteDetails', function() {
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
     settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
-    testElement = document.createElement('site-details');
-    document.body.appendChild(testElement);
   });
 
-  test('usage heading shows on storage available', function() {
-    // Remove the current website-usage-private-api element.
-    var parent = testElement.$.usageApi.parentNode;
-    testElement.$.usageApi.remove();
+  function createSiteDetails(origin) {
+    var siteDetailsElement = document.createElement('site-details');
+    document.body.appendChild(siteDetailsElement);
+    siteDetailsElement.origin = origin;
+    return siteDetailsElement;
+  };
 
-    // Replace it with a mock version.
-    Polymer({
-      is: 'mock-website-usage-private-api',
-
-      fetchUsageTotal: function(origin) {
-        testElement.storedData_ = '1 KB';
-      },
-    });
-    var api = document.createElement('mock-website-usage-private-api');
-    testElement.$.usageApi = api;
-    Polymer.dom(parent).appendChild(api);
-
+  test('usage heading shows when site settings enabled', function() {
     browserProxy.setPrefs(prefs);
-    testElement.origin = 'https://foo.com:443';
-
+    // Expect usage to be hidden when Site Settings is disabled.
+    loadTimeData.overrideValues({enableSiteSettings: false});
+    testElement = createSiteDetails('https://foo.com:443');
     Polymer.dom.flush();
+    assert(!testElement.$$('#usage'));
 
-    // Expect usage to be rendered.
-    assertTrue(!!testElement.$$('#usage'));
+    loadTimeData.overrideValues({enableSiteSettings: true});
+    testElement = createSiteDetails('https://foo.com:443');
+    Polymer.dom.flush();
+    assert(!!testElement.$$('#usage'));
+
+    // When there's no usage, there should be a string that says so.
+    assertEquals('', testElement.storedData_);
+    assertFalse(testElement.$$('#noStorage').hidden);
+    assertTrue(testElement.$$('#storage').hidden);
+    assertTrue(
+        testElement.$$('#usage').innerText.indexOf('No usage data') != -1);
+
+    // If there is, check the correct amount of usage is specified.
+    testElement.storedData_ = '1 KB';
+    assertTrue(testElement.$$('#noStorage').hidden);
+    assertFalse(testElement.$$('#storage').hidden);
+    assertTrue(testElement.$$('#usage').innerText.indexOf('1 KB') != -1);
   });
 
   test('correct pref settings are shown', function() {
     browserProxy.setPrefs(prefs);
-    testElement.origin = 'https://foo.com:443';
+    testElement = createSiteDetails('https://foo.com:443');
 
     return browserProxy.whenCalled('getOriginPermissions').then(function() {
       testElement.root.querySelectorAll('site-details-permission')
@@ -233,7 +239,7 @@ suite('SiteDetails', function() {
 
   test('show confirmation dialog on reset settings', function() {
     browserProxy.setPrefs(prefs);
-    testElement.origin = 'https://foo.com:443';
+    testElement = createSiteDetails('https://foo.com:443');
 
     // Check both cancelling and accepting the dialog closes it.
     ['cancel-button', 'action-button'].forEach(buttonType => {
