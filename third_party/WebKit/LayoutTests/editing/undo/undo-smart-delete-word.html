@@ -25,8 +25,8 @@ test(function() {
 
     // Select "bar "
     var word = document.getElementById('word');
-    var x = word.offsetLeft;
-    var y = word.offsetTop;
+    var x = word.offsetLeft + word.offsetWidth / 2;
+    var y = word.offsetTop + word.offsetHeight / 2;
     eventSender.mouseMoveTo(x, y);
     eventSender.mouseDown();
     eventSender.mouseUp();
