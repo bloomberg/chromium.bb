@@ -40,6 +40,7 @@
     [self startDispatchingToTarget:target
                        forSelector:requiredInstanceMethods[i].name];
   }
+  free(requiredInstanceMethods);
 }
 
 - (void)stopDispatchingForSelector:(SEL)selector {
@@ -55,6 +56,7 @@
   for (unsigned int i = 0; i < methodCount; i++) {
     [self stopDispatchingForSelector:requiredInstanceMethods[i].name];
   }
+  free(requiredInstanceMethods);
 }
 
 // |-stopDispatchingToTarget| should be called much less often than
