@@ -7,10 +7,13 @@
 
 #import <UIKit/UIKit.h>
 
-// TODO(crbug.com/700375): Implement this protocol somewhere.
+// Delegate for the ContentSuggestionsHeaderViewController.
 @protocol ContentSuggestionsHeaderViewControllerDelegate
 
+// Returns whether a context menu is visible.
 - (BOOL)isContextMenuVisible;
+
+// Returns whether the collection is scrolled to its top.
 - (BOOL)isScrolledToTop;
 
 @end
