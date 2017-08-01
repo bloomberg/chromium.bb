@@ -42,6 +42,8 @@ void GetAndSetNetworkQualityEstimator(
       network_quality_estimator_provider->GetNetworkQualityEstimator());
 }
 
+}  // namespace
+
 SystemProfileProto::Network::EffectiveConnectionType
 ConvertEffectiveConnectionType(
     net::EffectiveConnectionType effective_connection_type) {
@@ -57,6 +59,7 @@ ConvertEffectiveConnectionType(
     case net::EFFECTIVE_CONNECTION_TYPE_4G:
       return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_4G;
     case net::EFFECTIVE_CONNECTION_TYPE_OFFLINE:
+      return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_OFFLINE;
     case net::EFFECTIVE_CONNECTION_TYPE_LAST:
       NOTREACHED();
       return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
@@ -64,8 +67,6 @@ ConvertEffectiveConnectionType(
   NOTREACHED();
   return SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 }
-
-}  // namespace
 
 // Listens to the changes in the effective conection type.
 class NetworkMetricsProvider::EffectiveConnectionTypeObserver
