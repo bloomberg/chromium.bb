@@ -67,6 +67,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/accessibility_types.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions_policy_handler.h"
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 #include "chrome/browser/policy/default_geolocation_policy_handler.h"
@@ -487,7 +488,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     chromeos::prefs::kAudioOutputAllowed,
     base::Value::Type::BOOLEAN },
   { key::kShowLogoutButtonInTray,
-    prefs::kShowLogoutButtonInTray,
+    ash::prefs::kShowLogoutButtonInTray,
     base::Value::Type::BOOLEAN },
   { key::kShelfAutoHideBehavior,
     prefs::kShelfAutoHideBehaviorLocal,

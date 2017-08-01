@@ -14,7 +14,6 @@
 #include "ash/system/screen_security/screen_capture_observer.h"
 #include "ash/system/screen_security/screen_share_observer.h"
 #include "ash/system/session/last_window_closed_observer.h"
-#include "ash/system/session/logout_button_observer.h"
 #include "ash/system/status_area_focus_observer.h"
 #include "ash/system/tray_tracing.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_observer.h"
@@ -133,27 +132,6 @@ void SystemTrayNotifier::RemoveLastWindowClosedObserver(
 void SystemTrayNotifier::NotifyLastWindowClosed() {
   for (auto& observer : last_window_closed_observers_)
     observer.OnLastWindowClosed();
-}
-
-void SystemTrayNotifier::AddLogoutButtonObserver(
-    LogoutButtonObserver* observer) {
-  logout_button_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveLogoutButtonObserver(
-    LogoutButtonObserver* observer) {
-  logout_button_observers_.RemoveObserver(observer);
-}
-
-void SystemTrayNotifier::NotifyShowLoginButtonChanged(bool show_login_button) {
-  for (auto& observer : logout_button_observers_)
-    observer.OnShowLogoutButtonInTrayChanged(show_login_button);
-}
-
-void SystemTrayNotifier::NotifyLogoutDialogDurationChanged(
-    base::TimeDelta duration) {
-  for (auto& observer : logout_button_observers_)
-    observer.OnLogoutDialogDurationChanged(duration);
 }
 
 void SystemTrayNotifier::AddNetworkObserver(NetworkObserver* observer) {

@@ -10,6 +10,7 @@
 #include <set>
 #include <utility>
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -336,8 +337,6 @@ void RegisterChromeLauncherUserPrefs(
                                user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterStringPref(prefs::kShelfAlignmentLocal, std::string());
   registry->RegisterDictionaryPref(prefs::kShelfPreferences);
-  registry->RegisterIntegerPref(prefs::kLogoutDialogDurationMs, 20000);
-  registry->RegisterBooleanPref(prefs::kShowLogoutButtonInTray, false);
 }
 
 ash::ShelfAutoHideBehavior GetShelfAutoHideBehaviorPref(PrefService* prefs,

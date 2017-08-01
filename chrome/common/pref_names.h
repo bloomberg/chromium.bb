@@ -772,7 +772,7 @@ extern const char kMediaGalleriesUniqueId[];
 extern const char kMediaGalleriesRememberedGalleries[];
 #endif  // !defined(OS_ANDROID)
 
-#if defined(USE_AURA)
+#if defined(OS_CHROMEOS)
 extern const char kShelfAlignment[];
 extern const char kShelfAlignmentLocal[];
 extern const char kShelfAutoHideBehavior[];
@@ -780,24 +780,9 @@ extern const char kShelfAutoHideBehaviorLocal[];
 extern const char kShelfChromeIconIndex[];
 extern const char kShelfPreferences[];
 
-extern const char kLogoutDialogDurationMs[];
 extern const char kPinnedLauncherApps[];
 extern const char kPolicyPinnedLauncherApps[];
-extern const char kShowLogoutButtonInTray[];
-
-extern const char kMaxSeparationForGestureTouchesInPixels[];
-extern const char kSemiLongPressTimeInMs[];
-extern const char kTabScrubActivationDelayInMs[];
-extern const char kFlingMaxCancelToDownTimeInMs[];
-extern const char kFlingMaxTapGapTimeInMs[];
-extern const char kOverscrollHorizontalThresholdComplete[];
-extern const char kOverscrollVerticalThresholdComplete[];
-extern const char kOverscrollMinimumThresholdStart[];
-extern const char kOverscrollMinimumThresholdStartTouchpad[];
-extern const char kOverscrollVerticalThresholdStart[];
-extern const char kOverscrollHorizontalResistThreshold[];
-extern const char kOverscrollVerticalResistThreshold[];
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
 extern const char kNetworkProfileWarningsLeft[];

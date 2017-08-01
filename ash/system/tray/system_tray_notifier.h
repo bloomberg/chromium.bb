@@ -23,7 +23,6 @@ class ClockObserver;
 class EnterpriseDomainObserver;
 class IMEObserver;
 class LastWindowClosedObserver;
-class LogoutButtonObserver;
 class NetworkObserver;
 class NetworkPortalDetectorObserver;
 class ScreenCaptureObserver;
@@ -78,12 +77,6 @@ class ASH_EXPORT SystemTrayNotifier {
   void RemoveLastWindowClosedObserver(LastWindowClosedObserver* observer);
   void NotifyLastWindowClosed();
 
-  // Logout button.
-  void AddLogoutButtonObserver(LogoutButtonObserver* observer);
-  void RemoveLogoutButtonObserver(LogoutButtonObserver* observer);
-  void NotifyShowLoginButtonChanged(bool show_login_button);
-  void NotifyLogoutDialogDurationChanged(base::TimeDelta duration);
-
   // Network.
   void AddNetworkObserver(NetworkObserver* observer);
   void RemoveNetworkObserver(NetworkObserver* observer);
@@ -132,7 +125,6 @@ class ASH_EXPORT SystemTrayNotifier {
   base::ObserverList<EnterpriseDomainObserver> enterprise_domain_observers_;
   base::ObserverList<IMEObserver> ime_observers_;
   base::ObserverList<LastWindowClosedObserver> last_window_closed_observers_;
-  base::ObserverList<LogoutButtonObserver> logout_button_observers_;
   base::ObserverList<NetworkObserver> network_observers_;
   base::ObserverList<NetworkPortalDetectorObserver>
       network_portal_detector_observers_;
