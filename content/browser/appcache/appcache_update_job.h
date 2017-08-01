@@ -61,7 +61,11 @@ class CONTENT_EXPORT AppCacheUpdateJob
  private:
   friend class content::AppCacheGroupTest;
   friend class content::AppCacheUpdateJobTest;
-  friend class URLFetcher;
+
+  class URLFetcher;
+  class UpdateRequestBase;
+  class UpdateURLLoaderRequest;
+  class UpdateURLRequest;
 
   // Master entries have multiple hosts, for example, the same page is opened
   // in different tabs.
