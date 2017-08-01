@@ -28,7 +28,8 @@ namespace headless {
 class HeadlessShell : public HeadlessWebContents::Observer,
                       public emulation::ExperimentalObserver,
                       public inspector::ExperimentalObserver,
-                      public page::ExperimentalObserver {
+                      public page::ExperimentalObserver,
+                      public network::ExperimentalObserver {
  public:
   HeadlessShell();
   ~HeadlessShell() override;
@@ -50,8 +51,10 @@ class HeadlessShell : public HeadlessWebContents::Observer,
 
   // page::Observer implementation:
   void OnLoadEventFired(const page::LoadEventFiredParams& params) override;
-  void OnNavigationRequested(
-      const headless::page::NavigationRequestedParams& params) override;
+
+  // network::Observer implementation:
+  void OnRequestIntercepted(
+      const headless::network::RequestInterceptedParams& params) override;
 
   virtual void Shutdown();
 

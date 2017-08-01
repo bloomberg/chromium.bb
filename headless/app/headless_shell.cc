@@ -169,10 +169,12 @@ void HeadlessShell::DevToolsTargetReady() {
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDeterministicFetch)) {
-    devtools_client_->GetPage()->GetExperimental()->SetControlNavigations(
-        headless::page::SetControlNavigationsParams::Builder()
-            .SetEnabled(true)
-            .Build());
+    devtools_client_->GetNetwork()
+        ->GetExperimental()
+        ->SetRequestInterceptionEnabled(
+            headless::network::SetRequestInterceptionEnabledParams::Builder()
+                .SetEnabled(true)
+                .Build());
   }
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDefaultBackgroundColor)) {
@@ -288,11 +290,19 @@ void HeadlessShell::OnLoadEventFired(const page::LoadEventFiredParams& params) {
   OnPageReady();
 }
 
-void HeadlessShell::OnNavigationRequested(
-    const headless::page::NavigationRequestedParams& params) {
-  deterministic_dispatcher_->NavigationRequested(
-      base::MakeUnique<ShellNavigationRequest>(weak_factory_.GetWeakPtr(),
-                                               params));
+// network::Observer implementation:
+void HeadlessShell::OnRequestIntercepted(
+    const headless::network::RequestInterceptedParams& params) {
+  if (params.GetIsNavigationRequest()) {
+    deterministic_dispatcher_->NavigationRequested(
+        base::MakeUnique<ShellNavigationRequest>(weak_factory_.GetWeakPtr(),
+                                                 params));
+    return;
+  }
+  devtools_client_->GetNetwork()->GetExperimental()->ContinueInterceptedRequest(
+      headless::network::ContinueInterceptedRequestParams::Builder()
+          .SetInterceptionId(params.GetInterceptionId())
+          .Build());
 }
 
 void HeadlessShell::OnPageReady() {

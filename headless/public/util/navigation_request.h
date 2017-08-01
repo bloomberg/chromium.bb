@@ -10,8 +10,7 @@
 namespace headless {
 
 // While the actual details of the navigation processing are left undefined,
-// it's anticipated implementations will use devtools Page.setControlNavigations
-// and Page.processNavigation commands.
+// it's anticipated implementations will use Network.requestIntercepted event.
 class NavigationRequest {
  public:
   NavigationRequest() {}

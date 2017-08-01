@@ -274,9 +274,8 @@ class DevToolsProtocolTest : public ContentBrowserTest,
 
   struct ExpectedNavigation {
     std::string url;
-    bool is_in_main_frame;
     bool is_redirect;
-    std::string navigation_response;
+    bool abort;
   };
 
   std::string RemovePort(const GURL& url) {
@@ -286,48 +285,57 @@ class DevToolsProtocolTest : public ContentBrowserTest,
   }
 
   // Waits for the expected navigations to occur in any order. If an expected
-  // navigation occurs, Page.processNavigation is called with the specified
-  // navigation_response to either allow it to proceed or to cancel it.
+  // navigation occurs, Network.continueInterceptedRequest is called with the
+  // specified navigation_response to either allow it to proceed or to cancel
+  // it.
   void ProcessNavigationsAnyOrder(
       std::vector<ExpectedNavigation> expected_navigations) {
+    std::unique_ptr<base::DictionaryValue> params;
     while (!expected_navigations.empty()) {
       std::unique_ptr<base::DictionaryValue> params =
-          WaitForNotification("Page.navigationRequested");
+          WaitForNotification("Network.requestIntercepted");
 
+      std::string interception_id;
+      ASSERT_TRUE(params->GetString("interceptionId", &interception_id));
+      bool is_redirect = params->HasKey("redirectUrl");
+      bool is_navigation;
+      ASSERT_TRUE(params->GetBoolean("isNavigationRequest", &is_navigation));
+      std::string resource_type;
+      ASSERT_TRUE(params->GetString("resourceType", &resource_type));
       std::string url;
-      ASSERT_TRUE(params->GetString("url", &url));
-
+      ASSERT_TRUE(params->GetString("request.url", &url));
+      if (is_redirect)
+        ASSERT_TRUE(params->GetString("redirectUrl", &url));
       // The url will typically have a random port which we want to remove.
       url = RemovePort(GURL(url));
 
-      int navigation_id;
-      ASSERT_TRUE(params->GetInteger("navigationId", &navigation_id));
-      bool is_in_main_frame;
-      ASSERT_TRUE(params->GetBoolean( "isInMainFrame", &is_in_main_frame));
-      bool is_redirect;
-      ASSERT_TRUE(params->GetBoolean("isRedirect", &is_redirect));
+      if (!is_navigation) {
+        params.reset(new base::DictionaryValue());
+        params->SetString("interceptionId", interception_id);
+        SendCommand("Network.continueInterceptedRequest", std::move(params),
+                    false);
+        continue;
+      }
 
-      bool navigation_was_expected;
+      bool navigation_was_expected = false;
       for (auto it = expected_navigations.begin();
            it != expected_navigations.end(); it++) {
-        if (url != it->url || is_in_main_frame != it->is_in_main_frame ||
-            is_redirect != it->is_redirect) {
+        if (url != it->url || is_redirect != it->is_redirect)
           continue;
-        }
 
-        std::unique_ptr<base::DictionaryValue> process_params(
-            new base::DictionaryValue());
-        process_params->SetString("response", it->navigation_response);
-        process_params->SetInteger("navigationId", navigation_id);
-        SendCommand("Page.processNavigation", std::move(process_params), false);
+        params.reset(new base::DictionaryValue());
+        params->SetString("interceptionId", interception_id);
+        if (it->abort)
+          params->SetString("errorReason", "Aborted");
+        SendCommand("Network.continueInterceptedRequest", std::move(params),
+                    false);
 
         navigation_was_expected = true;
         expected_navigations.erase(it);
         break;
       }
       EXPECT_TRUE(navigation_was_expected)
-          << "url = " << url << "is_in_main_frame = " << is_in_main_frame
-          << "is_redirect = " << is_redirect;
+          << "url = " << url << "is_redirect = " << is_redirect;
     }
   }
 
@@ -1274,20 +1282,20 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, PageStopLoading) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Navigate to about:blank first so we can make sure there is a target page we
-  // can attach to, and have Page.setControlNavigations complete before we start
-  // the navigations we're interested in.
+  // can attach to, and have Network.setRequestInterceptionEnabled complete
+  // before we start the navigations we're interested in.
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
 
   std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
   params->SetBoolean("enabled", true);
-  SendCommand("Page.setControlNavigations", std::move(params), true);
+  SendCommand("Network.setRequestInterceptionEnabled", std::move(params), true);
 
   LoadFinishedObserver load_finished_observer(shell()->web_contents());
 
   // The page will try to navigate twice, however since
-  // Page.setControlNavigations is true, it'll wait for confirmation before
-  // committing to the navigation.
+  // Network.setRequestInterceptionEnabled is true,
+  // it'll wait for confirmation before committing to the navigation.
   GURL test_url = embedded_test_server()->GetURL(
       "/devtools/control_navigations/meta_tag.html");
   shell()->LoadURL(test_url);
@@ -1303,14 +1311,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, ControlNavigationsMainFrame) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Navigate to about:blank first so we can make sure there is a target page we
-  // can attach to, and have Page.setControlNavigations complete before we start
-  // the navigations we're interested in.
+  // can attach to, and have Network.setRequestInterceptionEnabled complete
+  // before we start the navigations we're interested in.
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
 
   std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
   params->SetBoolean("enabled", true);
-  SendCommand("Page.setControlNavigations", std::move(params), true);
+  SendCommand("Network.setRequestInterceptionEnabled", std::move(params), true);
 
   NavigationFinishedObserver navigation_finished_observer(
       shell()->web_contents());
@@ -1321,11 +1329,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, ControlNavigationsMainFrame) {
 
   std::vector<ExpectedNavigation> expected_navigations = {
       {"http://127.0.0.1/devtools/control_navigations/meta_tag.html",
-       true /* expected_is_in_main_frame */, false /* expected_is_redirect */,
-       "Proceed"},
+       false /* expected_is_redirect */, false /* abort */},
       {"http://127.0.0.1/devtools/navigation.html",
-       true /* expected_is_in_main_frame */, false /* expected_is_redirect */,
-       "Cancel"}};
+       false /* expected_is_redirect */, true /* abort */}};
 
   ProcessNavigationsAnyOrder(std::move(expected_navigations));
 
@@ -1355,14 +1361,14 @@ IN_PROC_BROWSER_TEST_F(IsolatedDevToolsProtocolTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Navigate to about:blank first so we can make sure there is a target page we
-  // can attach to, and have Page.setControlNavigations complete before we start
-  // the navigations we're interested in.
+  // can attach to, and have Network.setRequestInterceptionEnabled complete
+  // before we start the navigations we're interested in.
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
 
   std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
   params->SetBoolean("enabled", true);
-  SendCommand("Page.setControlNavigations", std::move(params), true);
+  SendCommand("Network.setRequestInterceptionEnabled", std::move(params), true);
 
   NavigationFinishedObserver navigation_finished_observer(
       shell()->web_contents());
@@ -1377,28 +1383,21 @@ IN_PROC_BROWSER_TEST_F(IsolatedDevToolsProtocolTest,
   std::vector<ExpectedNavigation> expected_navigations = {
       {"http://127.0.0.1/devtools/control_navigations/"
        "iframe_navigation.html",
-       /* expected_is_in_main_frame */ true,
-       /* expected_is_redirect */ false, "Proceed"},
+       false /* expected_is_redirect */, false /* abort */},
       {"http://127.0.0.1/cross-site/a.com/devtools/control_navigations/"
        "meta_tag.html",
-       /* expected_is_in_main_frame */ false,
-       /* expected_is_redirect */ false, "Proceed"},
+       false /* expected_is_redirect */, false /* abort */},
       {"http://127.0.0.1/cross-site/b.com/devtools/control_navigations/"
        "meta_tag.html",
-       /* expected_is_in_main_frame */ false,
-       /* expected_is_redirect */ false, "Proceed"},
+       false /* expected_is_redirect */, false /* abort */},
       {"http://a.com/devtools/control_navigations/meta_tag.html",
-       /* expected_is_in_main_frame */ false,
-       /* expected_is_redirect */ true, "Proceed"},
+       true /* expected_is_redirect */, false /* abort */},
       {"http://b.com/devtools/control_navigations/meta_tag.html",
-       /* expected_is_in_main_frame */ false,
-       /* expected_is_redirect */ true, "Proceed"},
+       true /* expected_is_redirect */, false /* abort */},
       {"http://a.com/devtools/navigation.html",
-       /* expected_is_in_main_frame */ false,
-       /* expected_is_redirect */ false, "Proceed"},
+       false /* expected_is_redirect */, false /* abort */},
       {"http://b.com/devtools/navigation.html",
-       /* expected_is_in_main_frame */ false,
-       /* expected_is_redirect */ false, "Cancel"}};
+       false /* expected_is_redirect */, true /* abort */}};
 
   ProcessNavigationsAnyOrder(std::move(expected_navigations));
 
