@@ -61,9 +61,8 @@ String ContentAfterPastingHTML(DummyPageHolder* page_holder,
   frame.GetDocument()->UpdateStyleAndLayout();
   frame.Selection().SetSelection(
       SelectionInDOMTree::Builder().SelectAllChildren(*body).Build());
-  EXPECT_EQ(kCaretSelection, frame.Selection()
-                                 .ComputeVisibleSelectionInDOMTreeDeprecated()
-                                 .GetSelectionType());
+  EXPECT_TRUE(
+      frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
   EXPECT_TRUE(frame.Selection()
                   .ComputeVisibleSelectionInDOMTreeDeprecated()
                   .IsContentEditable())
