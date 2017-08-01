@@ -57,7 +57,7 @@ const base::Feature kSyncUSSAutocomplete{"SyncUSSAutocomplete",
 // SyncableService based or ModelTypeSyncBridge based implementation is used for
 // DeviceInfo type.
 const base::Feature kSyncUSSDeviceInfo{"EnableSyncUSSDeviceInfo",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables USS implementation of typed URL datatype.
 const base::Feature kSyncUSSTypedURL{"SyncUSSTypedURL",

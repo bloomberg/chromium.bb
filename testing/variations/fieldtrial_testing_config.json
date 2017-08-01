@@ -864,26 +864,6 @@
             ]
         }
     ],
-    "EnableSyncUSSDeviceInfo": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "EnableSyncUSSDeviceInfo"
-                    ]
-                }
-            ]
-        }
-    ],
     "ExpectCTDynamic": [
         {
             "platforms": [

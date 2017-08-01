@@ -257,7 +257,8 @@ ProfileSyncService::InitParams ProfileSyncServiceBundle::CreateBasicInitParams(
   init_params.oauth2_token_service = auth_service();
   init_params.network_time_update_callback =
       base::Bind(&EmptyNetworkTimeUpdate);
-  init_params.base_directory = base::FilePath(FILE_PATH_LITERAL("dummyPath"));
+  CHECK(base_directory_.CreateUniqueTempDir());
+  init_params.base_directory = base_directory_.GetPath();
   init_params.url_request_context = url_request_context();
   init_params.debug_identifier = "dummyDebugName";
   init_params.channel = version_info::Channel::UNKNOWN;

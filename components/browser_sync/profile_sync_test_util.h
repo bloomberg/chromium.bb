@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -178,6 +179,7 @@ class ProfileSyncServiceBundle {
   sync_sessions::FakeSyncSessionsClient sync_sessions_client_;
   invalidation::FakeInvalidationService fake_invalidation_service_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
+  base::ScopedTempDir base_directory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceBundle);
 };
