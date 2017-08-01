@@ -3,7 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
 import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
 from core.css import css_properties
 import json5_generator
@@ -26,7 +28,7 @@ class CSSPropertyMetadataWriter(css_properties.CSSProperties):
             property_value['supports_percentage'] = (
                 'Percent' in property_value['typedom_types'])
 
-    @template_expander.use_jinja('templates/CSSPropertyMetadata.cpp.tmpl', filters=filters)
+    @template_expander.use_jinja('core/css/templates/CSSPropertyMetadata.cpp.tmpl', filters=filters)
     def generate_css_property_metadata_cpp(self):
         return {
             'input_files': self._input_files,
@@ -35,8 +37,7 @@ class CSSPropertyMetadataWriter(css_properties.CSSProperties):
                          ('is_property', 'IsProperty'),
                          ('interpolable', 'IsInterpolableProperty'),
                          ('inherited', 'IsInheritedProperty'),
-                         ('supports_percentage', 'PropertySupportsPercentage'),
-                        ],
+                         ('supports_percentage', 'PropertySupportsPercentage')],
             'first_enum_value': self._first_enum_value,
         }
 

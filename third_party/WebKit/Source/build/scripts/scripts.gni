@@ -136,9 +136,7 @@ template("process_in_files") {
 #   json_inputs: ".json5" files to pass to the generator.
 #   templates: ".tmpl" files that this generator depends on.
 #   other_inputs: (optional) other input files the generator depends on
-#                 defaults to "scripts_for_json5_files" (if specified, we assume
-#                 that the contents of "scripts_for_json5_files" are included in
-#                 this list).
+#                 in addition to "scripts_for_json5_files"
 #   outputs: expected results. Note that the directory of the 0th item in this
 #            list will be taken to be the output path.
 #   other_args: (optional) other arguments to pass to the script.
@@ -147,11 +145,9 @@ template("process_in_files") {
 template("code_generator") {
   action(target_name) {
     script = invoker.script
-    inputs = invoker.json_inputs + invoker.templates
+    inputs = invoker.json_inputs + invoker.templates + scripts_for_json5_files
     if (defined(invoker.other_inputs)) {
       inputs += invoker.other_inputs
-    } else {
-      inputs += scripts_for_json5_files
     }
     outputs = invoker.outputs
 
