@@ -71,6 +71,7 @@ void SpellCheckClient::RequestCheckingOfText(
 
   if (last_requested_text_checking_completion_) {
     last_requested_text_checking_completion_->DidCancelCheckingText();
+    last_requested_text_checking_completion_ = nullptr;
     RequestResolved();
   }
 
