@@ -69,6 +69,8 @@ android_library("chrome_java_test_support") {
     "javatests/src/org/chromium/chrome/test/util/TranslateUtil.java",
   ]
   deps = [
+    "$google_play_services_package:google_play_services_base_java",
+    "$google_play_services_package:google_play_services_basement_java",
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",
@@ -96,6 +98,5 @@ android_library("chrome_java_test_support") {
     "//third_party/jsr-305:jsr_305_javalib",
     "//third_party/junit",
     "//ui/android:ui_java",
-    google_play_services_library,
   ]
 }

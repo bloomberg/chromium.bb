@@ -136,9 +136,11 @@ if (is_android) {
     emma_never_instrument = true
     deps = [
       ":cacheinvalidation_proto_java",
+      "$google_play_services_package:google_play_services_gcm_java",
+      "$google_play_services_package:google_play_services_iid_java",
+      "$google_play_services_package:google_play_services_tasks_java",
       "//third_party/android_protobuf:protobuf_nano_javalib",
       "//third_party/android_tools:android_gcm_java",
-      google_play_services_library,
     ]
 
     java_files = [

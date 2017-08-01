@@ -88,9 +88,20 @@ template("remoting_android_client_java_tmpl") {
       "//ui/android:ui_utils_java",
     ]
 
+    if (defined(invoker.play_services_package)) {
+      deps += [
+        "${invoker.play_services_package}:google_play_services_auth_base_java",
+        "${invoker.play_services_package}:google_play_services_base_java",
+        "${invoker.play_services_package}:google_play_services_basement_java",
+      ]
+    }
+
+    # TODO(agrieve): Convert downstream to use play_services_package.
+    if (defined(invoker.remoting_google_play_services_library)) {
+      deps += [ invoker.remoting_google_play_services_library ]
+    }
+
     # Manifest used for linting (determining unused resources).
     android_manifest = "$root_gen_dir/remoting/android/AndroidManifest.xml"
-
-    deps += [ invoker.remoting_google_play_services_library ]
   }
 }
