@@ -15,16 +15,6 @@ crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-custom
 crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Leak ]
 
 # -----------------------------------------------------------------
-# Untriaged but known real leaks.
-# -----------------------------------------------------------------
-
-# -----------------------------------------------------------------
-# Untriaged but known leaks which may be false positives.
-# -----------------------------------------------------------------
-
-crbug.com/662477 external/wpt/html/webappapis/idle-callbacks/cancel-invoked.html [ Leak ]
-
-# -----------------------------------------------------------------
 # Untriaged but known leaks of SuspendableObject (fast).
 # -----------------------------------------------------------------
 crbug.com/661182 fast/loader/open-in-srcdoc-unload.html [ Leak ]
@@ -49,7 +39,9 @@ crbug.com/672740 virtual/mojo-loading/http/tests/security/mixedContent/websocket
 crbug.com/672740 http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker.html [ Leak Pass ]
 crbug.com/672740 virtual/mojo-loading/http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker.html [ Leak Pass ]
 
-# New tests revealed existing leak
+# -----------------------------------------------------------------
+# Known as false positives
+# -----------------------------------------------------------------
 crbug.com/726218 [ Linux ] fast/dom/inert/inert-node-is-uneditable.html [ Leak ]
 crbug.com/726218 [ Linux ] fast/dom/inert/inert-inlines.html [ Leak ]
 crbug.com/726218 [ Linux ] fast/dom/inert/inert-label-focus.html [ Leak ]
