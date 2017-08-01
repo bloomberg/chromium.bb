@@ -8,6 +8,10 @@
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace bubble_util {
 
 // Calculate the coordinates of the point of the speech bubble's triangle based
