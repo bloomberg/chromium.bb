@@ -2868,9 +2868,16 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
             security_info.content_with_cert_errors_status);
 }
 
+// Flaky on Windows 7 (dbg) trybot, see https://crbug.com/443374.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_MixedContentSettings DISABLED_MixedContentSettings
+#else
+#define MAYBE_MixedContentSettings MixedContentSettings
+#endif
+
 // This test checks the behavior of mixed content blocking for the requests
 // from a dedicated worker by changing the settings in WebPreferences.
-IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest, MixedContentSettings) {
+IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest, MAYBE_MixedContentSettings) {
   ChromeContentBrowserClientForMixedContentTest browser_client;
   content::ContentBrowserClient* old_browser_client =
       content::SetBrowserClientForTesting(&browser_client);
@@ -2933,11 +2940,20 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest, MixedContentSettings) {
   content::SetBrowserClientForTesting(old_browser_client);
 }
 
+// Flaky on Windows 7 (dbg) trybot, see https://crbug.com/443374.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_MixedContentSettingsWithBlockingCSP \
+  DISABLED_MixedContentSettingsWithBlockingCSP
+#else
+#define MAYBE_MixedContentSettingsWithBlockingCSP \
+  MixedContentSettingsWithBlockingCSP
+#endif
+
 // This test checks that all mixed content requests from a dedicated worker are
 // blocked regardless of the settings in WebPreferences when
 // block-all-mixed-content CSP is set.
 IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
-                       MixedContentSettingsWithBlockingCSP) {
+                       MAYBE_MixedContentSettingsWithBlockingCSP) {
   ChromeContentBrowserClientForMixedContentTest browser_client;
   content::ContentBrowserClient* old_browser_client =
       content::SetBrowserClientForTesting(&browser_client);
@@ -2971,11 +2987,18 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
   content::SetBrowserClientForTesting(old_browser_client);
 }
 
+// Flaky on Windows 7 (dbg) trybot, see https://crbug.com/443374.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_MixedContentSubFrame DISABLED_MixedContentSubFrame
+#else
+#define MAYBE_MixedContentSubFrame MixedContentSubFrame
+#endif
+
 // This test checks that all mixed content requests from a dedicated worker
 // which is started from a subframe are blocked if
 // allow_running_insecure_content setting is false or
 // strict_mixed_content_checking setting is true.
-IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest, MixedContentSubFrame) {
+IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest, MAYBE_MixedContentSubFrame) {
   ChromeContentBrowserClientForMixedContentTest browser_client;
   content::ContentBrowserClient* old_browser_client =
       content::SetBrowserClientForTesting(&browser_client);
