@@ -312,8 +312,7 @@ void CompositingRequirementsUpdater::UpdateRecursive(
       // needsCompositedScrolling ignoring LCD to correctly add the
       // CompositingReasonOverflowScrollingTouch reason to layers that can
       // support it with grayscale AA text.
-      layer->GetScrollableArea()->UpdateNeedsCompositedScrolling(
-          PaintLayerScrollableArea::kIgnoreLCDText);
+      layer->GetScrollableArea()->UpdateNeedsCompositedScrolling(true);
       if (layer->NeedsCompositedScrolling())
         reasons_to_composite |= kCompositingReasonOverflowScrollingTouch;
     }
