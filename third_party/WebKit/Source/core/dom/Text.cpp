@@ -243,7 +243,14 @@ Node* Text::cloneNode(bool /*deep*/, ExceptionState&) {
   return CloneWithData(data());
 }
 
-static inline bool CanHaveWhitespaceChildren(const LayoutObject& parent) {
+static inline bool EndsWithWhitespace(const String& text) {
+  return text.length() && IsASCIISpace(text[text.length() - 1]);
+}
+
+static inline bool CanHaveWhitespaceChildren(
+    const LayoutObject& parent,
+    const ComputedStyle& style,
+    const Text::AttachContext& context) {
   // <button> and <fieldset> should allow whitespace even though
   // LayoutFlexibleBox doesn't.
   if (parent.IsLayoutButton() || parent.IsFieldset())
@@ -253,13 +260,15 @@ static inline bool CanHaveWhitespaceChildren(const LayoutObject& parent) {
       parent.IsLayoutTableCol() || parent.IsFrameSet() ||
       parent.IsFlexibleBox() || parent.IsLayoutGrid() || parent.IsSVGRoot() ||
       parent.IsSVGContainer() || parent.IsSVGImage() || parent.IsSVGShape()) {
-    return false;
+    if (!context.use_previous_in_flow || !context.previous_in_flow ||
+        !context.previous_in_flow->IsText())
+      return false;
+
+    return style.PreserveNewline() ||
+           !EndsWithWhitespace(
+               ToLayoutText(context.previous_in_flow)->GetText());
   }
   return true;
-}
-
-static inline bool EndsWithWhitespace(const String& text) {
-  return text.length() && IsASCIISpace(text[text.length() - 1]);
 }
 
 bool Text::TextLayoutObjectIsNeeded(const AttachContext& context,
@@ -282,8 +291,7 @@ bool Text::TextLayoutObjectIsNeeded(const AttachContext& context,
   if (!ContainsOnlyWhitespace())
     return true;
 
-  if (style.Display() != EDisplay::kContents &&
-      !CanHaveWhitespaceChildren(parent))
+  if (!CanHaveWhitespaceChildren(parent, style, context))
     return false;
 
   // pre-wrap in SVG never makes layoutObject.
