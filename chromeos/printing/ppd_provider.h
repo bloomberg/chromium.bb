@@ -111,6 +111,14 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
   using ResolvePpdReferenceCallback =
       base::Callback<void(CallbackResultCode, const Printer::PpdReference&)>;
 
+  // Result of a ReverseLookup call.  If the result code is SUCCESS, then
+  // |manufactuer| and |model| contain the strings that could have generated
+  // the reference being looked up.
+  using ReverseLookupCallback =
+      base::Callback<void(CallbackResultCode,
+                          const std::string& manufacturer,
+                          const std::string& model)>;
+
   // Create and return a new PpdProvider with the given cache and options.
   // A references to |url_context_getter| is taken.
   static scoped_refptr<PpdProvider> Create(
@@ -145,6 +153,11 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
   // |cb| will be called on the invoking thread, and will be sequenced.
   virtual void ResolvePpd(const Printer::PpdReference& reference,
                           const ResolvePpdCallback& cb) = 0;
+
+  // For a given PpdReference, retrieve the make and model strings used to
+  // construct that reference.
+  virtual void ReverseLookup(const std::string& effective_make_and_model,
+                             const ReverseLookupCallback& cb) = 0;
 
  protected:
   friend class base::RefCounted<PpdProvider>;
