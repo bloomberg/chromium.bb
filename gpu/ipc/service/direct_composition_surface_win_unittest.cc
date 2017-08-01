@@ -498,7 +498,9 @@ bool AreColorsSimilar(int a, int b) {
 
 class DirectCompositionVideoPixelTest : public DirectCompositionPixelTest {
  protected:
-  void TestVideo(const gfx::ColorSpace& color_space, SkColor expected_color) {
+  void TestVideo(const gfx::ColorSpace& color_space,
+                 SkColor expected_color,
+                 bool check_color) {
     if (!CheckIfDCSupported())
       return;
     InitializeSurface();
@@ -543,11 +545,13 @@ class DirectCompositionVideoPixelTest : public DirectCompositionPixelTest {
     EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface_->SwapBuffers());
     Sleep(1000);
 
-    SkColor actual_color =
-        ReadBackWindowPixel(window_.hwnd(), gfx::Point(75, 75));
-    EXPECT_TRUE(AreColorsSimilar(expected_color, actual_color))
-        << std::hex << "Expected " << expected_color << " Actual "
-        << actual_color;
+    if (check_color) {
+      SkColor actual_color =
+          ReadBackWindowPixel(window_.hwnd(), gfx::Point(75, 75));
+      EXPECT_TRUE(AreColorsSimilar(expected_color, actual_color))
+          << std::hex << "Expected " << expected_color << " Actual "
+          << actual_color;
+    }
 
     context = nullptr;
     DestroySurface(std::move(surface_));
@@ -555,27 +559,30 @@ class DirectCompositionVideoPixelTest : public DirectCompositionPixelTest {
 };
 
 TEST_F(DirectCompositionVideoPixelTest, BT601) {
-  TestVideo(gfx::ColorSpace::CreateREC601(), SkColorSetRGB(0xdb, 0x81, 0xe8));
+  TestVideo(gfx::ColorSpace::CreateREC601(), SkColorSetRGB(0xdb, 0x81, 0xe8),
+            true);
 }
 
 TEST_F(DirectCompositionVideoPixelTest, BT709) {
-  TestVideo(gfx::ColorSpace::CreateREC709(), SkColorSetRGB(0xe1, 0x90, 0xeb));
+  TestVideo(gfx::ColorSpace::CreateREC709(), SkColorSetRGB(0xe1, 0x90, 0xeb),
+            true);
 }
 
 TEST_F(DirectCompositionVideoPixelTest, SRGB) {
   // SRGB doesn't make sense on an NV12 input, but don't crash.
-  TestVideo(gfx::ColorSpace::CreateSRGB(), SkColorSetRGB(0xd7, 0x89, 0xe0));
+  TestVideo(gfx::ColorSpace::CreateSRGB(), SkColorSetRGB(0xd7, 0x89, 0xe0),
+            false);
 }
 
 TEST_F(DirectCompositionVideoPixelTest, SCRGBLinear) {
   // SCRGB doesn't make sense on an NV12 input, but don't crash.
   TestVideo(gfx::ColorSpace::CreateSCRGBLinear(),
-            SkColorSetRGB(0xd7, 0x89, 0xe0));
+            SkColorSetRGB(0xd7, 0x89, 0xe0), false);
 }
 
 TEST_F(DirectCompositionVideoPixelTest, InvalidColorSpace) {
   // Invalid color space should be treated as BT.709
-  TestVideo(gfx::ColorSpace(), SkColorSetRGB(0xe1, 0x90, 0xeb));
+  TestVideo(gfx::ColorSpace(), SkColorSetRGB(0xe1, 0x90, 0xeb), true);
 }
 
 TEST_F(DirectCompositionPixelTest, SoftwareVideoSwapchain) {
