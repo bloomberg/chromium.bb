@@ -415,7 +415,9 @@ class SmoothnessSimpleMobilePages(_Smoothness):
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # Nothing.
+        self.DisableStory('https://www.flickr.com/',
+                          [story_module.expectations.ANDROID_WEBVIEW],
+                          'crbug.com/750833')
     return StoryExpectations()
 
 
