@@ -7,6 +7,12 @@
 
 #include "ios/chrome/browser/infobars/infobar_controller.h"
 
+// The accessibility identifier of the cancel button on language picker view.
+extern NSString* const kLanguagePickerCancelButtonId;
+
+// The accessibility identifier of the done button on language picker view.
+extern NSString* const kLanguagePickerDoneButtonId;
+
 @interface BeforeTranslateInfoBarController : InfoBarController
 
 @end
