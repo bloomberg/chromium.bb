@@ -729,7 +729,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
 
         if (queryApps.isEmpty()) {
-            CanMakePaymentQuery query = sCanMakePaymentQueries.get(mPaymentRequestOrigin);
+            CanMakePaymentQuery query = sCanMakePaymentQueries.get(getCanMakePaymentId());
             if (query != null && query.matchesPaymentMethods(mMethodData)) {
                 query.notifyObserversOfResponse(mCanMakePayment);
             }
@@ -1424,18 +1424,19 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     public void canMakePayment() {
         if (mClient == null) return;
 
-        CanMakePaymentQuery query = sCanMakePaymentQueries.get(mPaymentRequestOrigin);
+        final String canMakePaymentId = getCanMakePaymentId();
+        CanMakePaymentQuery query = sCanMakePaymentQueries.get(canMakePaymentId);
         if (query == null) {
             // If there has not been a canMakePayment() query in the last 30 minutes, take a note
             // that one has happened just now. Remember the payment method names and the
             // corresponding data for the next 30 minutes. Forget about it after the 30 minute
             // period expires.
             query = new CanMakePaymentQuery(Collections.unmodifiableMap(mMethodData));
-            sCanMakePaymentQueries.put(mPaymentRequestOrigin, query);
+            sCanMakePaymentQueries.put(canMakePaymentId, query);
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    sCanMakePaymentQueries.remove(mPaymentRequestOrigin);
+                    sCanMakePaymentQueries.remove(canMakePaymentId);
                 }
             }, CAN_MAKE_PAYMENT_QUERY_PERIOD_MS);
         } else if (shouldEnforceCanMakePaymentQueryQuota()
@@ -1459,7 +1460,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         boolean isIgnoringQueryQuota = false;
         if (!shouldEnforceCanMakePaymentQueryQuota()) {
-            CanMakePaymentQuery query = sCanMakePaymentQueries.get(mPaymentRequestOrigin);
+            CanMakePaymentQuery query = sCanMakePaymentQueries.get(getCanMakePaymentId());
             // The cached query may have expired between instantiation of PaymentRequest and
             // finishing the query of the payment apps.
             if (query != null) {
@@ -1584,7 +1585,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 ? 0
                 : SectionInformation.NO_SELECTION;
 
-        CanMakePaymentQuery query = sCanMakePaymentQueries.get(mPaymentRequestOrigin);
+        CanMakePaymentQuery query = sCanMakePaymentQueries.get(getCanMakePaymentId());
         if (query != null && query.matchesPaymentMethods(mMethodData)) {
             query.notifyObserversOfResponse(mCanMakePayment);
         }
@@ -1614,6 +1615,11 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (mPaymentInformationCallback != null) providePaymentInformation();
 
         triggerPaymentAppUiSkipIfApplicable();
+    }
+
+    /** @return The identifier for the CanMakePayment query to use. */
+    private String getCanMakePaymentId() {
+        return mPaymentRequestOrigin + ":" + mTopLevelOrigin;
     }
 
     /**
