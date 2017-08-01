@@ -59,7 +59,7 @@ android_resources("remoting_android_client_java_resources") {
 }
 
 remoting_android_client_java_tmpl("remoting_android_client_java") {
-  play_services_package = "//third_party/android_tools"
+  remoting_google_play_services_library = google_play_services_library
 }
 
 remoting_apk_tmpl("remoting_apk") {
