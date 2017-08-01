@@ -612,7 +612,8 @@ class TargetDomainDisposeContextFailsIfInUse
   std::string page_id_;
 };
 
-#if defined(OS_WIN)
+// Test is flaky on Linux debug (https://crbug.com/751180)
+#if defined(OS_WIN) || defined(OS_LINUX)
 DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(
     TargetDomainDisposeContextFailsIfInUse);
 #else
