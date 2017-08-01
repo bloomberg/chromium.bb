@@ -1196,7 +1196,8 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
 
   size_t match_start = history_match.input_location;
   const auto format_types = AutocompleteMatch::GetFormatTypes(
-      params.trim_http && !history_match.match_in_scheme);
+      !params.trim_http || history_match.match_in_scheme,
+      history_match.match_in_subdomain, history_match.match_after_host);
   match.contents = url_formatter::FormatUrl(info.url(), format_types,
                                             net::UnescapeRule::SPACES, nullptr,
                                             nullptr, &match_start);

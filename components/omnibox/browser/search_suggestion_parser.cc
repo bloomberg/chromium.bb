@@ -280,7 +280,7 @@ SearchSuggestionParser::NavigationResult::CalculateAndClassifyMatchContents(
   bool trim_http = !AutocompleteInput::HasHTTPScheme(input_text) &&
                    (!prefix || (match_start != 0));
   base::string16 match_contents = url_formatter::FormatUrl(
-      url_, AutocompleteMatch::GetFormatTypes(trim_http),
+      url_, AutocompleteMatch::GetFormatTypes(!trim_http, false, false),
       net::UnescapeRule::SPACES, nullptr, nullptr, &match_start);
   // If the first match in the untrimmed string was inside a scheme that we
   // trimmed, look for a subsequent match.
