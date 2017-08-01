@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('Tests that form controls are rendered with correct theme. See crbug.com/591315.');
+  var {page, session, dp} = await testRunner.startBlank('Tests that form controls are rendered with correct theme. See crbug.com/591315.');
 
   var DeviceEmulator = await testRunner.loadScript('../resources/device-emulator.js');
   var deviceEmulator = new DeviceEmulator(testRunner, session);

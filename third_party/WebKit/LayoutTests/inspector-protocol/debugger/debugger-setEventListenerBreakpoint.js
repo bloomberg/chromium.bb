@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('Tests event listener breakpoints.');
+  var {page, session, dp} = await testRunner.startBlank('Tests event listener breakpoints.');
 
   function finishIfError(message) {
     if (message.result)

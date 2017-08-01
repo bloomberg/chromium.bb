@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(`Test sampling heap profiler.`);
+  var {page, session, dp} = await testRunner.startBlank(`Test sampling heap profiler.`);
 
   function findNode(root, name, depth) {
     if (depth < 1 && root.callFrame.functionName === name)

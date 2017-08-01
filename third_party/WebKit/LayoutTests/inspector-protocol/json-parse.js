@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('Tests that backend correctly handles unicode in messages');
+  var {page, session, dp} = await testRunner.startBlank('Tests that backend correctly handles unicode in messages');
 
   var requestId = 100500;
   var command = {

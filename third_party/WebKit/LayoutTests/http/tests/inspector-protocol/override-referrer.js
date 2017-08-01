@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(
+  var {page, session, dp} = await testRunner.startBlank(
       `Tests that the navigation referrer can be overridden.`);
 
   function parseURL(url) {
@@ -15,11 +15,11 @@
     return result;
   }
 
-  let referrers = [];
+  var referrers = [];
   await dp.Network.enable();
   dp.Network.onRequestWillBeSent(event => {
-    let params = event.params;
-    let referrer = params.request.headers.Referer;
+    var params = event.params;
+    var referrer = params.request.headers.Referer;
     if (!referrer)
       return;
 

@@ -12,7 +12,7 @@
   await dp.CSS.enable();
 
   await dp.CSS.startRuleUsageTracking();
-  let rules = (await dp.CSS.stopRuleUsageTracking()).result.ruleUsage;
+  var rules = (await dp.CSS.stopRuleUsageTracking()).result.ruleUsage;
   rules.sort((a, b) => a.startOffset - b.startOffset);
   var usedLines = rules.filter(rule => rule.used);
   var unusedLines = rules.filter(rule => !rule.used);

@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(`This tests how navigation is handled from inside debugger code (console.log).`);
+  var {page, session, dp} = await testRunner.startBlank(`This tests how navigation is handled from inside debugger code (console.log).`);
 
   await session.evaluateAsync(`
     function appendIframe(url) {

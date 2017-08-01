@@ -1,6 +1,6 @@
 (async function(testRunner) {
   // <a href='https://bugs.webkit.org/show_bug.cgi?id=105759'>Bug 105759.</a>
-  let {page, session, dp} = await testRunner.startBlank('Tests that "console.profileEnd()" does not cause crash.\nBug 105759.');
+  var {page, session, dp} = await testRunner.startBlank('Tests that "console.profileEnd()" does not cause crash.\nBug 105759.');
 
   function fail(message) {
     testRunner.log('FAIL: ' + message);

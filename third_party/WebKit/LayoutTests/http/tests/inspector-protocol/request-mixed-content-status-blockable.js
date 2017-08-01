@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(
+  var {page, session, dp} = await testRunner.startBlank(
       `Tests that willSendRequest contains the correct mixed content status for active mixed content.`);
 
   function addIframeWithMixedContent() {

@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startURL('../resources/dom-snapshot-input-value.html', 'Tests DOMSnapshot.getSnapshot method returning input values.');
+  var {page, session, dp} = await testRunner.startURL('../resources/dom-snapshot-input-value.html', 'Tests DOMSnapshot.getSnapshot method returning input values.');
 
   function stabilize(key, value) {
     var unstableKeys = ['documentURL', 'baseURL', 'frameId', 'backendNodeId', 'layoutTreeNodes', 'computedStyles'];

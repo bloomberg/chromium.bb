@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('Tests that setTimeout callback will not fire while script execution is paused.Bug 377926.');
+  var {page, session, dp} = await testRunner.startBlank('Tests that setTimeout callback will not fire while script execution is paused.Bug 377926.');
 
   var workerId;
   var workerRequestId = 1;

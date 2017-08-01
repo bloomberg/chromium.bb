@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('Tests that Runtime.awaitPromise works.');
+  var {page, session, dp} = await testRunner.startBlank('Tests that Runtime.awaitPromise works.');
 
   function dumpResult(result) {
     if (result.exceptionDetails) {

@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startHTML(`
+  var {page, session, dp} = await testRunner.startHTML(`
     <h3 id='rg1_label'>Lunch Options</h3>
     <ul id='rg1' class='radiogroup' role='radiogroup' aria-labelledby='rg1_label' aria-activedescendant='rg1-r4' tabindex='0' data-dump>
       <li id='rg1-r1' tabindex='-1' role='radio' aria-checked='false'>

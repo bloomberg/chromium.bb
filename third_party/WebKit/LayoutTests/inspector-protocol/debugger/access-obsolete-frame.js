@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('Tests that accessing old call frame does not work.');
+  var {page, session, dp} = await testRunner.startBlank('Tests that accessing old call frame does not work.');
 
   function logErrorResponse(response) {
     if (response.error) {

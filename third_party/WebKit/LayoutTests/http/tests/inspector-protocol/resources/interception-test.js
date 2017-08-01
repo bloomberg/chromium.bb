@@ -128,6 +128,9 @@
     });
 
     this._testRunner.log('Test started');
+    await this._session.protocol.Network.clearBrowserCookies();
+    await this._session.protocol.Network.clearBrowserCache();
+    await this._session.protocol.Network.setCacheDisabled({cacheDisabled: true});
     this._session.protocol.Network.enable();
     this._testRunner.log('Network agent enabled');
     await this._session.protocol.Network.setRequestInterceptionEnabled({enabled: true});

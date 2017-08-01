@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('Tests that console.profile/profileEnd will record CPU profile when inspector front-end is connected.');
+  var {page, session, dp} = await testRunner.startBlank('Tests that console.profile/profileEnd will record CPU profile when inspector front-end is connected.');
 
   function fail(message) {
     testRunner.log('FAIL: ' + message);

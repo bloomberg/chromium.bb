@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startHTML(`
+  var {page, session, dp} = await testRunner.startHTML(`
     <div id='listeners1' onload='return 42;'></div>
     <div id='listeners2'></div>
   `, `Tests how DOMDebugger reports event listeners for nodes.`);

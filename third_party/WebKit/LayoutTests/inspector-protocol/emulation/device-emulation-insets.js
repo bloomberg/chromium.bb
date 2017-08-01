@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('Tests that device emulation with insets affects window.screenWidth, window.screenHeight, screen.width and screen.height.');
+  var {page, session, dp} = await testRunner.startBlank('Tests that device emulation with insets affects window.screenWidth, window.screenHeight, screen.width and screen.height.');
 
   var DeviceEmulator = await testRunner.loadScript('../resources/device-emulator.js');
   var deviceEmulator = new DeviceEmulator(testRunner, session);

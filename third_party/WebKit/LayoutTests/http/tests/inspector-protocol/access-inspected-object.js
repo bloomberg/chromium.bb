@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(
+  var {page, session, dp} = await testRunner.startBlank(
       `Test that code evaluated in the main frame cannot access $0 that resolves into a node in a frame from a different domain. Bug 105423.`);
 
   await session.evaluateAsync(`

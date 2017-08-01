@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('Tests frameScheduledNavigation events when navigation is initiated in JS followed by other navigations.');
+  var {page, session, dp} = await testRunner.startBlank('Tests frameScheduledNavigation events when navigation is initiated in JS followed by other navigations.');
 
   dp.Page.enable();
   session.evaluate(`

@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(`
+  var {page, session, dp} = await testRunner.startBlank(`
     Tests that turning on device emulation with a non-1 device pixel ratio sets the
     appropriate initial scale. Page scale is reflected by the innerWidth and
     innerHeight properties. Since the layout width is set to 980 (in the viewport

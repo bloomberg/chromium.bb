@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(`Tests preview provided by Runtime.getProperties.`);
+  var {page, session, dp} = await testRunner.startBlank(`Tests preview provided by Runtime.getProperties.`);
 
   function printResult(response) {
     for (var property of response.result.result) {

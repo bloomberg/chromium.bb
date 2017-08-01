@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('Tests that device emulation affects media rules, viewport meta tag, body dimensions and window.screen.');
+  var {page, session, dp} = await testRunner.startBlank('Tests that device emulation affects media rules, viewport meta tag, body dimensions and window.screen.');
 
   var DeviceEmulator = await testRunner.loadScript('../resources/device-emulator.js');
   var deviceEmulator = new DeviceEmulator(testRunner, session);

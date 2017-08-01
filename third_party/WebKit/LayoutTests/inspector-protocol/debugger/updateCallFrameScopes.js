@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('Tests that evaluation on call frame affects scope variables.');
+  var {page, session, dp} = await testRunner.startBlank('Tests that evaluation on call frame affects scope variables.');
 
   var newVariableValue = 55;
 

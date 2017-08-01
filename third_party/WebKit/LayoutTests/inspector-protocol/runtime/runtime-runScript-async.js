@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(`Tests that Runtime.compileScript and Runtime.runScript work with awaitPromise flag.`);
+  var {page, session, dp} = await testRunner.startBlank(`Tests that Runtime.compileScript and Runtime.runScript work with awaitPromise flag.`);
 
   function dumpResult(result) {
     if (result.error) {

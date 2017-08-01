@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startURL('../resources/websocket-initiator.html', `Initiator for Websockets check fixes http://crbug.com/457811`);
+  var {page, session, dp} = await testRunner.startURL('../resources/websocket-initiator.html', `Initiator for Websockets check fixes http://crbug.com/457811`);
 
   function cleanUrl(url) {
     url = url.match(/\/[^\/]+$/);

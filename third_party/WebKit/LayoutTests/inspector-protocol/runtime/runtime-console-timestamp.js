@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(`Tests timestamp field in reported console messages.`);
+  var {page, session, dp} = await testRunner.startBlank(`Tests timestamp field in reported console messages.`);
 
   var messages = [];
   dp.Runtime.onConsoleAPICalled(data => {

@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(`Tests Input.dispatchMouseEvent method.`);
+  var {page, session, dp} = await testRunner.startBlank(`Tests Input.dispatchMouseEvent method.`);
 
   await session.evaluate(`
     var logs = [];

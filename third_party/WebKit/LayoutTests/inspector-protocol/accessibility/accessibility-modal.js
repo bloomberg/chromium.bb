@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startHTML(`
+  var {page, session, dp} = await testRunner.startHTML(`
     <dialog data-dump id='modal'>
       <div data-dump role='button' aria-modal='true'>
       </div>

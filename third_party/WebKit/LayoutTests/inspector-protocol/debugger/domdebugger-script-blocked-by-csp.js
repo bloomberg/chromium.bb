@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startHTML(`
+  var {page, session, dp} = await testRunner.startHTML(`
     <html>
     <head>
     <meta http-equiv='Content-Security-Policy' content="script-src 'self';">

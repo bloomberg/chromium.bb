@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('Tests that CommandLineAPI is presented only while evaluation.');
+  var {page, session, dp} = await testRunner.startBlank('Tests that CommandLineAPI is presented only while evaluation.');
 
   await session.evaluate(`
     var methods = ['dir','dirxml','profile','profileEnd','clear','table','keys','values','debug','undebug','monitor','unmonitor','inspect','copy'];

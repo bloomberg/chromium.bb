@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(
+  var {page, session, dp} = await testRunner.startBlank(
       `Tests providing HTTP auth credentials over DevTools protocol.`);
 
   var InterceptionHelper = await testRunner.loadScript('../resources/interception-test.js');

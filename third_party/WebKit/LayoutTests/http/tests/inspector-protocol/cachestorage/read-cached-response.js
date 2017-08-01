@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startURL(
+  var {page, session, dp} = await testRunner.startURL(
       'resources/service-worker.html',
       `Tests reading cached response from the protocol.`);
 

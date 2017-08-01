@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('Tests that console message from worker contains stack trace.');
+  var {page, session, dp} = await testRunner.startBlank('Tests that console message from worker contains stack trace.');
 
   var workerRequestId = 1;
   function sendCommandToWorker(method, params, workerId) {

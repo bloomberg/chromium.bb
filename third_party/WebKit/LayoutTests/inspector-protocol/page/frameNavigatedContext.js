@@ -1,10 +1,10 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(`Tests context lifetime events relative to frame's ones.`);
+  var {page, session, dp} = await testRunner.startBlank(`Tests context lifetime events relative to frame's ones.`);
 
   await dp.Runtime.enable();
   await dp.Page.enable();
-  let frameId;
-  let contextId;
+  var frameId;
+  var contextId;
   dp.Page.onFrameNavigated(result => {
     frameId = result.params.frame.id;
     testRunner.log('Frame navigated')

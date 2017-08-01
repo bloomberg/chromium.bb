@@ -328,6 +328,13 @@ void DevToolsURLInterceptorRequestJob::OnAuthRequired(
   DCHECK_EQ(request, sub_request_->request());
   auth_info_ = auth_info;
 
+  if (!intercepting_requests_) {
+    // This should trigger default auth behavior.
+    // See comment in ProcessAuthRespose.
+    NotifyHeadersComplete();
+    return;
+  }
+
   // This notification came from the sub requests URLRequest::Delegate and
   // depending on what the protocol user wants us to do we must either cancel
   // the auth, provide the credentials or proxy it the original
@@ -455,12 +462,38 @@ void DevToolsURLInterceptorRequestJob::StopIntercepting() {
   intercepting_requests_ = false;
 
   // Allow the request to continue if we're waiting for user input.
-  ProcessInterceptionRespose(
-      base::MakeUnique<DevToolsURLRequestInterceptor::Modifications>(
-          base::nullopt, base::nullopt, protocol::Maybe<std::string>(),
-          protocol::Maybe<std::string>(), protocol::Maybe<std::string>(),
-          protocol::Maybe<protocol::Network::Headers>(),
-          protocol::Maybe<protocol::Network::AuthChallengeResponse>()));
+  switch (waiting_for_user_response_) {
+    case WaitingForUserResponse::NOT_WAITING:
+      return;
+
+    case WaitingForUserResponse::WAITING_FOR_INTERCEPTION_RESPONSE:
+      ProcessInterceptionRespose(
+          base::MakeUnique<DevToolsURLRequestInterceptor::Modifications>(
+              base::nullopt, base::nullopt, protocol::Maybe<std::string>(),
+              protocol::Maybe<std::string>(), protocol::Maybe<std::string>(),
+              protocol::Maybe<protocol::Network::Headers>(),
+              protocol::Maybe<protocol::Network::AuthChallengeResponse>()));
+      return;
+
+    case WaitingForUserResponse::WAITING_FOR_AUTH_RESPONSE: {
+      std::unique_ptr<protocol::Network::AuthChallengeResponse> auth_response =
+          protocol::Network::AuthChallengeResponse::Create()
+              .SetResponse(protocol::Network::AuthChallengeResponse::
+                               ResponseEnum::Default)
+              .Build();
+      ProcessAuthRespose(
+          base::MakeUnique<DevToolsURLRequestInterceptor::Modifications>(
+              base::nullopt, base::nullopt, protocol::Maybe<std::string>(),
+              protocol::Maybe<std::string>(), protocol::Maybe<std::string>(),
+              protocol::Maybe<protocol::Network::Headers>(),
+              std::move(auth_response)));
+      return;
+    }
+
+    default:
+      NOTREACHED();
+      return;
+  }
 }
 
 void DevToolsURLInterceptorRequestJob::ContinueInterceptedRequest(

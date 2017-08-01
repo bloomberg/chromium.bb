@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startHTML(`
+  var {page, session, dp} = await testRunner.startHTML(`
     <input data-dump aria-errormessage='err'>
     <h3 id='err'>This text field has an error!</h3>
 

@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('Tests Blob retrieval via IO.read');
+  var {page, session, dp} = await testRunner.startBlank('Tests Blob retrieval via IO.read');
 
   function createTextBlob() {
     const digits = '0123456789';
@@ -43,7 +43,7 @@
   dumpResponse('Seeking to 0', response);
 
   // Try multiple queued request
-  let promises = [];
+  var promises = [];
   for (var i = 0; i < 10; ++i)
     promises.push(session.protocol.IO.read({handle: handle, size: 10}));
   const responses = await Promise.all(promises);

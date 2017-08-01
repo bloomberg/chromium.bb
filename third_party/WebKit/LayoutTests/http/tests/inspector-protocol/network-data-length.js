@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(
+  var {page, session, dp} = await testRunner.startBlank(
       `Ensures that data and header length sent from protocol is proper sizes`);
 
   // When chunk encoded the last chunk will always be 5 bytes '0\r\n\r\n' and

@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(`Tests that responseReceived contains the documented resource types.`);
+  var {page, session, dp} = await testRunner.startBlank(`Tests that responseReceived contains the documented resource types.`);
 
   var resources = [
     { url: '/resources-page.html', responseAvailable: false },
