@@ -54,7 +54,6 @@
         <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">דומיין הרשמה:</translation>
 <translation id="1340482604681802745">כתובת איסוף</translation>
-<translation id="1344211575059133124">נראה שאתה זקוק להרשאה כדי לבקר באתר הזה</translation>
 <translation id="1344588688991793829">‏הגדרות מילוי אוטומטי של Chromium...</translation>
 <translation id="1348198688976932919">האתר שאתה עומד לעבור אליו מכיל יישומים מסוכנים</translation>
 <translation id="1374468813861204354">הצעות</translation>
@@ -68,6 +67,7 @@
 <translation id="1430915738399379752">הדפס</translation>
 <translation id="1506687042165942984">הצג עותק שמור (כלומר, ידוע שהוא עדכני) של הדף הזה.</translation>
 <translation id="1517433312004943670">יש צורך במספר טלפון</translation>
+<translation id="1517500485252541695">כרטיסי אשראי וחיוב שהסוחר מקבל</translation>
 <translation id="1519264250979466059">‏תאריך ה-Build</translation>
 <translation id="1527263332363067270">ממתין לחיבור...</translation>
 <translation id="153384715582417236">זה הכול בינתיים</translation>
@@ -120,9 +120,11 @@
 <translation id="187918866476621466">פתח דפי פתיחה</translation>
 <translation id="1883255238294161206">כווץ רשימה</translation>
 <translation id="1898423065542865115">סינון</translation>
+<translation id="1916770123977586577">כדי להחיל על האתר את ההגדרות המעודכנות, טען מחדש את הדף</translation>
 <translation id="1919345977826869612">מודעות</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{ללא}=1{אתר אחד}two{שני אתרים}many{# אתרים}other{# אתרים}}</translation>
 <translation id="194030505837763158">עבור ל-<ph name="LINK" /></translation>
+<translation id="1948773908305951926">כרטיסים משולמים מראש שהסוחר מקבל</translation>
 <translation id="1962204205936693436">סימניות של <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">שגיאה בעריכה בסידרה</translation>
 <translation id="1974060860693918893">מתקדם</translation>
@@ -166,6 +168,7 @@
 <translation id="2292556288342944218">הגישה לאינטרנט חסומה</translation>
 <translation id="230155334948463882">כרטיס חדש?</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> דורש שם משתמש וסיסמה.</translation>
+<translation id="2317583587496011522">אפשר לשלם בכרטיסי חיוב.</translation>
 <translation id="2337852623177822836">ההגדרה נשלטת על-ידי מנהל המערכת</translation>
 <translation id="2354001756790975382">סימניות אחרות</translation>
 <translation id="2354430244986887761">‏התכונה 'גלישה בטוחה' של Google <ph name="BEGIN_LINK" />מצאה לאחרונה יישומים מזיקים<ph name="END_LINK" /> באתר <ph name="SITE" />.</translation>
@@ -175,7 +178,6 @@
 <translation id="2359808026110333948">המשך</translation>
 <translation id="2365563543831475020">דוח הקריסה שתועד ב-<ph name="CRASH_TIME" /> לא הועלה</translation>
 <translation id="2367567093518048410">רמה</translation>
-<translation id="237718015863234333">אין חלופות זמינות עבור ממשק המשתמש</translation>
 <translation id="2384307209577226199">ברירת מחדל של ארגון</translation>
 <translation id="2386255080630008482">אישור השרת נשלל.</translation>
 <translation id="2392959068659972793">הצגת מדיניות ללא ערך מוגדר</translation>
@@ -191,8 +193,8 @@
 <translation id="2495093607237746763">‏אם האפשרות תסומן, Chromium ישמור עותק של הכרטיס במכשיר הזה כדי למלא טפסים במהירות רבה יותר.</translation>
 <translation id="2498091847651709837">סרוק כרטיס חדש</translation>
 <translation id="2501278716633472235">חזור</translation>
+<translation id="2503184589641749290">כרטיסי חיוב וכרטיסים משולמים מראש שהסוחר מקבל</translation>
 <translation id="2515629240566999685">לבדוק את האות באזור שלך</translation>
-<translation id="2516305470678292029">חלופות לממשק משתמש</translation>
 <translation id="2539524384386349900">זהה</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> שלח תגובה לא חוקית.</translation>
 <translation id="2556876185419854533">&amp;ביטול עריכה</translation>
@@ -226,12 +228,14 @@
 <translation id="277133753123645258">שיטת משלוח</translation>
 <translation id="277499241957683684">חסרה רשומת מכשיר</translation>
 <translation id="2784949926578158345">החיבור עבר איפוס.</translation>
+<translation id="2788784517760473862">כרטיסי אשראי שהסוחר מקבל</translation>
 <translation id="2794233252405721443">אתר חסום</translation>
 <translation id="2799020568854403057">האתר שאתה עומד לעבור אליו מכיל יישומים מזיקים</translation>
 <translation id="2803306138276472711">‏לאחרונה, 'גלישה בטוחה של Google‏' <ph name="BEGIN_LINK" />זיהתה תוכנה זדונית<ph name="END_LINK" /> באתר <ph name="SITE" />. אתרים שבדרך כלל נחשבים לבטוחים נדבקים לעתים בתוכנה זדונית.</translation>
 <translation id="2824775600643448204">סרגל חיפוש וכתובות</translation>
 <translation id="2826760142808435982">החיבור מוצפן ומאומת באמצעות <ph name="CIPHER" /> ומשתמש ב-<ph name="KX" /> כמנגנון להחלפת מפתחות.</translation>
 <translation id="2835170189407361413">נקה טופס</translation>
+<translation id="2851634818064021665">יש צורך בהרשאה כדי להיכנס אל האתר הזה</translation>
 <translation id="2856444702002559011">ייתכן שתוקפים מנסים לגנוב את הפרטים שלך מהאתר <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (לדוגמה, סיסמאות, הודעות או כרטיסי אשראי). <ph name="BEGIN_LEARN_MORE_LINK" />מידע נוסף<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2889159643044928134">אל תטען מחדש</translation>
 <translation id="2909946352844186028">אותר שינוי ברשת.</translation>
@@ -245,6 +249,7 @@
 <translation id="2966678944701946121">תאריך תפוגה: <ph name="EXPIRATION_DATE_ABBR" />, תאריך הוספה: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="2969319727213777354">‏כדי ליצור חיבור מאובטח, השעון צריך להיות מוגדר כהלכה. הסיבה לכך היא שהאישורים שבאמצעותם אתרים מזהים את עצמם תקפים רק למשך פרקי זמן מסוימים. מאחר שהשעון במכשיר שלך שגוי, Google Chrome לא יכול לאמת את האישורים האלה.</translation>
 <translation id="2972581237482394796">&amp;בצע שנית</translation>
+<translation id="2977665033722899841"><ph name="ROW_NAME" />, בחירה נוכחית. <ph name="ROW_CONTENT" /></translation>
 <translation id="2985306909656435243">‏אם האפשרות תופעל, Chromium יאחסן עותק של הכרטיס שלך במכשיר הזה למילוי מהיר יותר של טפסים.</translation>
 <translation id="2985398929374701810">עליך להזין כתובת חוקית</translation>
 <translation id="2986368408720340940">שיטת האיסוף הזו אינה זמינה. עליך לבחור שיטה אחרת.</translation>
@@ -337,6 +342,7 @@
 
       &lt;p&gt;התאם את התאריך והשעה מהקטע &lt;strong&gt;כללי&lt;/strong&gt; של אפליקציית ה&lt;strong&gt;הגדרות&lt;/strong&gt;.&lt;/p&gt; <ph name="BEGIN_LEARN_MORE_LINK" />מידע נוסף<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
+<translation id="358285529439630156">אפשר לשלם באמצעות כרטיסי אשראי וכרטיסים משולמים מראש.</translation>
 <translation id="3582930987043644930">הוסף שם</translation>
 <translation id="3583757800736429874">&amp;ביצוע מחדש של העברה</translation>
 <translation id="3586931643579894722">הסתר פרטים</translation>
@@ -352,10 +358,10 @@
 <translation id="3655670868607891010">אם אתה רואה זאת לעתים קרובות, נסה את ה<ph name="HELP_LINK" /> האלה.</translation>
 <translation id="3658742229777143148">גרסה קודמת</translation>
 <translation id="3678029195006412963">לא ניתן היה לחתום על הבקשה</translation>
+<translation id="3678529606614285348">‏פתח את הדף בחלון חדש של גלישה בסתר (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">דוח קריסה תועד ב-<ph name="CRASH_TIME" />, הועלה ב-<ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">פרטי אישור</translation>
 <translation id="3690164694835360974">ההתחברות אינה מאובטחת</translation>
-<translation id="3693415264595406141">סיסמה:</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">טוען...</translation>
 <translation id="3712624925041724820">אין מספיק רישיונות</translation>
@@ -379,6 +385,7 @@
 <translation id="3886446263141354045">הבקשה שלך לגשת לאתר הזה נשלחה אל <ph name="NAME" /></translation>
 <translation id="3890664840433101773">הוספת כתובת אימייל</translation>
 <translation id="3901925938762663762">תוקף הכרטיס פג</translation>
+<translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3945915738023014686">מזהה דוח הקריסה שהועלה <ph name="CRASH_ID" /> (מזהה קריסה מקומי: <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="3949571496842715403">‏השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו לא מציין ערכי Subject Alternative Name. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="3949601375789751990">היסטוריית הגלישה שלך מופיעה כאן</translation>
@@ -434,12 +441,12 @@
 <translation id="4356973930735388585">תוקפים באתר הזה עשויים לנסות להתקין במחשב שלך תוכניות מסוכנות שגונבות או מוחקות מידע שלך (לדוגמה: תמונות, סיסמאות, הודעות ופרטי כרטיסי אשראי).</translation>
 <translation id="4372948949327679948">צפוי ערך מסוג <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">ניסית להשיג את <ph name="DOMAIN" />, אך האישור שהשרת הציג בוטל על ידי המנפיק שלו. פירוש הדבר שאין כל אפשרות לתת אמון באישורי האבטחה שהשרת הציג. ייתכן שאתה מתקשר עם תוקף.</translation>
-<translation id="4381091992796011497">שם משתמש:</translation>
 <translation id="4394049700291259645">השבת</translation>
 <translation id="4406896451731180161">תוצאות חיפוש</translation>
 <translation id="4424024547088906515">‏השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. אישור האבטחה שלו לא נחשב כמהימן על ידי Chrome. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> לא אישר את אישור ההתחברות שלך, או שלא סופק אישור התחברות.</translation>
 <translation id="443673843213245140">‏השימוש בשרת Proxy הושבת, אך צויינה תצורת שרת Proxy מפורשת.</translation>
+<translation id="445100540951337728">כרטיסי חיוב שהסוחר מקבל</translation>
 <translation id="4506176782989081258">שגיאת אימות: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">לפנות אל מנהל המערכת</translation>
 <translation id="450710068430902550">שיתוף עם מנהל מערכת</translation>
@@ -451,12 +458,14 @@
 <translation id="4587425331216688090">‏האם להסיר את הכתובת מ-Chrome?</translation>
 <translation id="4592951414987517459">החיבור שלך אל <ph name="DOMAIN" /> מוצפן באמצעות חבילת צופן מתקדמת.</translation>
 <translation id="4594403342090139922">&amp;ביטול מחיקה</translation>
+<translation id="4611292653554630842">התחבר</translation>
 <translation id="4619615317237390068">כרטיסיות ממכשירים אחרים</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו מכיל שגיאות. ייתכן שהסיבה לכך היא הגדרה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="4690462567478992370">הפסק להשתמש באישור לא חוקי</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">החיבור נקטע</translation>
+<translation id="471880041731876836">אין לך הרשאה להיכנס אל האתר הזה</translation>
 <translation id="4722547256916164131">‏<ph name="BEGIN_LINK" />מפעיל את אבחון הרשת של Windows<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">טען מדיניות מחדש</translation>
 <translation id="4728558894243024398">פלטפורמה</translation>
@@ -484,11 +493,13 @@ Del</translation>
 <translation id="4858792381671956233">שאלת את ההורים שלך אם אתה יכול לגשת לאתר הזה</translation>
 <translation id="4880827082731008257">חפש בהיסטוריה</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
+<translation id="4913131542719409934">נדרש אימות</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{ועוד דף אינטרנט אחד}two{ועוד # דפי אינטרנט}many{ועוד # דפי אינטרנט}other{ועוד # דפי אינטרנט}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
 <translation id="4923417429809017348">דף זה תורגם משפה לא ידועה ל<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">תשלום</translation>
 <translation id="4926049483395192435">יש לציין ערך זה.</translation>
+<translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="495170559598752135">פעולות</translation>
 <translation id="4958444002117714549">הרחב רשימה</translation>
 <translation id="4974590756084640048">הפעל מחדש אזהרות</translation>
@@ -512,6 +523,7 @@ Del</translation>
 <translation id="5115563688576182185">(64 סיביות)</translation>
 <translation id="5141240743006678641">‏הצפן סיסמאות מסונכרנות באמצעות פרטי הכניסה שלך ל-Google</translation>
 <translation id="5145883236150621069">קיים קוד שגיאה בתגובת המדיניות</translation>
+<translation id="5159010409087891077">‏פתח את הדף בחלון חדש של גלישה בסתר (‎⇧⌘N)</translation>
 <translation id="5171045022955879922">חפש או הקלד כתובת אתר</translation>
 <translation id="5172758083709347301">מכונה</translation>
 <translation id="5179510805599951267">לא ב<ph name="ORIGINAL_LANGUAGE" />? דווח על שגיאה זו</translation>
@@ -521,6 +533,16 @@ Del</translation>
 <translation id="5222812217790122047">אימייל (חובה)</translation>
 <translation id="5251803541071282808">ענן</translation>
 <translation id="5277279256032773186">‏משתמש ב-Chrome בעבודה? עסקים יכולים לנהל את ההגדרות של Chrome עבור העובדים. למידע נוסף</translation>
+<translation id="5281113152797308730">‏<ph name="BEGIN_PARAGRAPH" />בצע את השלבים הבאים על מנת להשבית את התוכנה באופן זמני, כדי שתוכל להתחבר לאינטרנט. יש צורך בהרשאות מנהל מערכת.<ph name="END_PARAGRAPH" />
+
+    <ph name="BEGIN_LIST" />
+    <ph name="LIST_ITEM" />לחץ על <ph name="BEGIN_BOLD" />התחל<ph name="END_BOLD" />, ולאחר מכן חפש ובחר את האפשרות <ph name="BEGIN_BOLD" />הצג שירותים מקומיים<ph name="END_BOLD" />
+    <ph name="LIST_ITEM" />בחר באפשרות <ph name="BEGIN_BOLD" />גילוי חזותי<ph name="END_BOLD" />
+    <ph name="LIST_ITEM" />בקטע <ph name="BEGIN_BOLD" />סוג אתחול<ph name="END_BOLD" />, בחר באפשרות <ph name="BEGIN_BOLD" />מושבת<ph name="END_BOLD" />
+    <ph name="LIST_ITEM" />בקטע <ph name="BEGIN_BOLD" />סטטוס שירות<ph name="END_BOLD" />, לחץ על <ph name="BEGIN_BOLD" />הפסק<ph name="END_BOLD" />
+    <ph name="LIST_ITEM" />לחץ על <ph name="BEGIN_BOLD" />החל<ph name="END_BOLD" />, ולאחר מכן על <ph name="BEGIN_BOLD" />אישור<ph name="END_BOLD" />
+    <ph name="LIST_ITEM" />היכנס אל <ph name="BEGIN_LEARN_MORE_LINK" />מרכז העזרה של Chrome<ph name="END_LEARN_MORE_LINK" /> כדי ללמוד איך להסיר לצמיתות את התוכנה מהמחשב
+    <ph name="END_LIST" /></translation>
 <translation id="5297526204711817721">‏החיבור שלך לאתר זה אינו פרטי. כדי לצאת ממצב VR בכל שלב, הסר את האוזניות ולחץ על 'הקודם'.</translation>
 <translation id="5299298092464848405">שגיאה בניתוח המדיניות</translation>
 <translation id="5308689395849655368">דיווח קריסות מושבת.</translation>
@@ -537,7 +559,6 @@ Del</translation>
 <translation id="5439770059721715174">שגיאת אימות סכימה ב-"<ph name="ERROR_PATH" />"‏: <ph name="ERROR" /></translation>
 <translation id="5452270690849572955">לא ניתן למצוא את הדף של <ph name="HOST_NAME" /></translation>
 <translation id="5455374756549232013">חותמת הזמן של המדיניות שגויה</translation>
-<translation id="5455790498993699893"><ph name="ACTIVE_MATCH" /> מתוך <ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="5457113250005438886">לא חוקי</translation>
 <translation id="5470861586879999274">&amp;ביצוע מחדש של עריכה</translation>
 <translation id="5481076368049295676">ייתכן שהתוכן הזה מכיל אמצעים שינסו להתקין תוכנה מסוכנת, שגונבת או מוחקת את המידע שלך. <ph name="BEGIN_LINK" />הצג בכל זאת<ph name="END_LINK" /></translation>
@@ -553,6 +574,7 @@ Del</translation>
 <translation id="5540224163453853">לא ניתן היה למצוא את הפריט המבוקש.</translation>
 <translation id="5544037170328430102">דף המוטמע ב-<ph name="SITE" /> אומר:</translation>
 <translation id="5556459405103347317">טען שוב</translation>
+<translation id="5560088892362098740">תאריך תפוגה</translation>
 <translation id="5565735124758917034">פעיל</translation>
 <translation id="5571083550517324815">לא ניתן לבצע איסוף מהכתובת הזו. עליך לבחור כתובת אחרת.</translation>
 <translation id="5572851009514199876">‏תחילה היכנס לחשבונך ב-Chrome כדי לאפשר ל-Chrome לבדוק אם יש לך הרשאה לגשת לאתר הזה.</translation>
@@ -573,6 +595,7 @@ Del</translation>
 <translation id="5669703222995421982">התאמה אישית של תוכן</translation>
 <translation id="5675650730144413517">הדף הזה לא עובד</translation>
 <translation id="5710435578057952990">הזהות של אתר זה לא אומתה.</translation>
+<translation id="5719499550583120431">אפשר לשלם באמצעות כרטיסים משולמים מראש.</translation>
 <translation id="5720705177508910913">משתמש נוכחי:</translation>
 <translation id="5732392974455271431">ההורים שלך יכולים לבטל בשבילך את החסימה</translation>
 <translation id="5763042198335101085">עליך להזין כתובת אימייל חוקית</translation>
@@ -588,6 +611,7 @@ Del</translation>
 <translation id="5869405914158311789">לא ניתן לגשת לאתר הזה</translation>
 <translation id="5869522115854928033">סיסמאות שמורות</translation>
 <translation id="5872918882028971132">הצעות להורים</translation>
+<translation id="5893752035575986141">אפשר לשלם באמצעות כרטיסי אשראי.</translation>
 <translation id="5901630391730855834">צהוב</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (מסונכרנים)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{אחד נמצא בשימוש}two{שניים נמצאים בשימוש}many{# נמצאים בשימוש}other{# נמצאים בשימוש}}</translation>
@@ -644,6 +668,7 @@ Del</translation>
 <translation id="6358450015545214790">מה זה אומר?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{הצעה אחת נוספת}two{שתי הצעות נוספות}many{# הצעות נוספות}other{# הצעות נוספות}}</translation>
 <translation id="6387478394221739770">‏מעוניין בתכונות חדשות ומגניבות של Chrome? נסה את ערוץ הביטא שלנו בכתובת chrome.com/beta.</translation>
+<translation id="6397451950548600259">‏יש תוכנה במחשב שלך שמונעת מ-Chrome להתחבר באופן מאובטח אל האינטרנט</translation>
 <translation id="6404511346730675251">ערוך סימניה</translation>
 <translation id="6410264514553301377">הזן את תאריך התפוגה ואת קוד האימות של <ph name="CREDIT_CARD" /></translation>
 <translation id="6414888972213066896">שאלת אחד מהוריך אם אתה יכול לבקר באתר הזה</translation>
@@ -658,6 +683,7 @@ Del</translation>
 <translation id="647261751007945333">מדיניות המכשיר</translation>
 <translation id="6477321094435799029">‏Chrome זיהה קוד חריג בדף הזה וחסם אותו כדי להגן על המידע הפרטי שלך (כגון סיסמאות, מספרי טלפון ומספרי כרטיסי אשראי).</translation>
 <translation id="6489534406876378309">התחל להעלות קריסות</translation>
+<translation id="6507833130742554667">אפשר לשלם באמצעות כרטיסי אשראי וחיוב.</translation>
 <translation id="6508722015517270189">‏הפעלה מחדש של Chrome</translation>
 <translation id="6529602333819889595">&amp;ביצוע מחדש של מחיקה</translation>
 <translation id="6534179046333460208">הצעות לאינטרנט הווירטופיזי</translation>
@@ -672,6 +698,7 @@ Del</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> חיפוש</translation>
 <translation id="6630809736994426279">‏תוקפים שנמצאים כרגע באתר <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> עלולים להתקין במחשב ה-MAC שלך תוכנות מסוכנות שגונבות מידע או מוחקות אותו (לדוגמה, תמונות, סיסמאות, הודעות וכרטיסי אשראי). <ph name="BEGIN_LEARN_MORE_LINK" />מידע נוסף<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6644283850729428850">מדיניות זו אינה בתוקף.</translation>
+<translation id="6657585470893396449">סיסמה</translation>
 <translation id="6671697161687535275">‏האם להסיר מ-Chromium הצעות לטפסים?</translation>
 <translation id="6685834062052613830">צא והשלם את ההגדרה</translation>
 <translation id="6710213216561001401">הקודם</translation>
@@ -757,6 +784,7 @@ Del</translation>
 <translation id="7514365320538308">הורד</translation>
 <translation id="7518003948725431193">לא נמצא דף אינטרנט עבור כתובת האינטרנט: <ph name="URL" /></translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7526934274050461096">החיבור שלך לאתר זה אינו פרטי</translation>
 <translation id="7535087603100972091">ערך</translation>
 <translation id="7537536606612762813">הכרחי</translation>
 <translation id="7542403920425041731">ברגע שתאשר, פרטי הכרטיס שלך ישותפו עם האתר הזה.</translation>
@@ -810,6 +838,7 @@ Del</translation>
 <translation id="7815407501681723534">נמצאו <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> בנושא '<ph name="SEARCH_STRING" />'</translation>
 <translation id="785549533363645510">עם זאת, אינך בלתי נראה. המעבר למצב גלישה בסתר לא מסתיר את הגלישה שלך מהמעסיק, מספק האינטרנט או מהאתרים שאליהם אתה נכנס.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7878176543348854470">אפשר לשלם באמצעות כרטיסי חיוב וכרטיסים משולמים מראש.</translation>
 <translation id="7887683347370398519">‏בדוק את ה-CVC ונסה שוב</translation>
 <translation id="79338296614623784">עליך להזין מספר טלפון חוקי</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -844,6 +873,7 @@ Del</translation>
 <translation id="8218327578424803826">מיקום מוקצה:</translation>
 <translation id="8225771182978767009">האדם שהגדיר את המחשב הזה בחר לחסום את האתר הזה.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
+<translation id="8238581221633243064">פתח את הדף בכרטיסייה חדשה של גלישה בסתר</translation>
 <translation id="8241707690549784388">הדף שאתה מחפש השתמש במידע שהזנת. החזרה לדף זה עלולה לגרום לכפילות בפעולות שביצעת. האם ברצונך להמשיך?</translation>
 <translation id="8241712895048303527">חסום באתר הזה</translation>
 <translation id="8249320324621329438">אוחזר לאחרונה:</translation>
@@ -873,6 +903,7 @@ Del</translation>
 <translation id="8483780878231876732">‏כדי להשתמש בכרטיסים מחשבון Google, היכנס אל Chrome</translation>
 <translation id="8488350697529856933">חל על</translation>
 <translation id="8498891568109133222">ל-<ph name="HOST_NAME" /> נדרש זמן רב מדי להגיב.</translation>
+<translation id="8503813439785031346">שם משתמש</translation>
 <translation id="8543181531796978784">באפשרותך <ph name="BEGIN_ERROR_LINK" />לדווח על בעיית זיהוי<ph name="END_ERROR_LINK" /> או, אם אתה מבין את סיכוני האבטחה, <ph name="BEGIN_LINK" />להיכנס לאתר הזה, שאינו מאובטח<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">התרגום נכשל כיוון שלא הייתה אפשרות לקבוע את שפת הדף.</translation>
 <translation id="8571890674111243710">מתרגם דף ל<ph name="LANGUAGE" />...</translation>
@@ -881,6 +912,7 @@ Del</translation>
 <translation id="859285277496340001">האישור אינו מציין מנגנון הבודק אם הוא נשלל.</translation>
 <translation id="8620436878122366504">ההורים שלך עדיין לא אישרו זאת</translation>
 <translation id="8647750283161643317">אפס הכל לברירת המחדל</translation>
+<translation id="8660471606262461360">‏מ-Google Payments</translation>
 <translation id="8703575177326907206">ההתחברות שלך אל <ph name="DOMAIN" /> אינה מוצפנת.</translation>
 <translation id="8718314106902482036">התשלום לא הושלם</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
@@ -908,6 +940,7 @@ Del</translation>
 <translation id="8903921497873541725">התקרב</translation>
 <translation id="8931333241327730545">‏האם ברצונך לשמור את הכרטיס הזה בחשבון Google שלך?</translation>
 <translation id="8932102934695377596">השעון שלך מאחר</translation>
+<translation id="8938939909778640821">כרטיסי אשראי וכרטיסים משולמים מראש שהסוחר מקבל</translation>
 <translation id="8971063699422889582">פג תוקפו של אישור השרת.</translation>
 <translation id="8986494364107987395">‏שלח ל-Google דוחות קריסה וסטטיסטיקת שימוש באופן אוטומטי</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -945,9 +978,9 @@ Del</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">נקה את הטופס</translation>
 <translation id="939736085109172342">תיקייה חדשה</translation>
-<translation id="941721044073577244">נראה שאין לך הרשאה לבקר באתר הזה</translation>
 <translation id="969892804517981540">גירסה רשמית</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{ללא}=1{פריט אחד}two{שני פריטים}many{# פריטים}other{# פריטים}}</translation>
+<translation id="981121421437150478">לא מקוון</translation>
 <translation id="988159990683914416">גירסת מפתחים</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>

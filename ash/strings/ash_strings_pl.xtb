@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Przycisk akcji</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">To urządzenie jest zarządzane przez: <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Pionowo</translation>
 <translation id="207439088875642105">To jest konto dla dzieci, którym zarządzają <ph name="FIRST_PARENT_EMAIL" /> i <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Klawisze trwałe</translation>
 <translation id="2509468283778169019">CAPS LOCK jest włączony.</translation>
 <translation id="2532589005999780174">Tryb wysokiego kontrastu</translation>
+<translation id="2597972630681408282">Podświetlenie nocne: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">Sesja kończy się za <ph name="SESSION_TIME_REMAINING" />. Zostaniesz wylogowany.</translation>
 <translation id="2727977024730340865">Podłączono ładowarkę o małej mocy. Ładowanie baterii może być nieprawidłowe.</translation>
 <translation id="2761704814324807722">Pasek stanu, godzina <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">Urządzenie wyjściowe</translation>
 <translation id="3019353588588144572">Czas pozostały do pełnego naładowania baterii: <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">To jest konto dla dzieci, którym zarządza <ph name="MANAGER_EMAIL" /></translation>
-<translation id="3050422059534974565">CAPS LOCK jest włączony.
-Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Na dół</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -136,6 +136,7 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="4849058404725798627">Podświetlaj obiekt wybrany za pomocą klawiatury</translation>
 <translation id="4872237917498892622">Alt+Szukaj lub Shift</translation>
 <translation id="4895488851634969361">Bateria jest pełna.</translation>
+<translation id="4905614135390995787">Zmieniliśmy skrót, który włącza i wyłącza tryb wysokiego kontrastu. Użyj <ph name="NEW_SHORTCUT" /> zamiast <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Akceptuj</translation>
 <translation id="4961318399572185831">Przesyłanie ekranu</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="5744083938413354016">Przeciąganie dotykiem</translation>
 <translation id="5777841717266010279">Zakończyć udostępnianie ekranu?</translation>
 <translation id="57838592816432529">Wycisz</translation>
+<translation id="5860033963881614850">Wyłączone</translation>
 <translation id="5895138241574237353">Uruchom ponownie</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">Włączone</translation>
 <translation id="5927132638760172455">Przesyłam do nieznanego odbiornika</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Przywróć</translation>
@@ -169,8 +172,8 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="5977415296283489383">Słuchawki</translation>
 <translation id="5978382165065462689">Udostępnianie sterowania ekranem przy użyciu pomocy zdalnej.</translation>
 <translation id="5980301590375426705">Zakończ sesję gościa</translation>
+<translation id="5992218262414051481">Tryb wysokiego kontrastu został włączony. Aby go wyłączyć, naciśnij ponownie Ctrl+Search+H.</translation>
 <translation id="6018164090099858612">Wyłączam tryb odbicia lustrzanego</translation>
-<translation id="6041154455840261787">Włączono tryb wysokiego kontrastu. Aby go wyłączyć, naciśnij ponownie klawisz wyszukiwania + Shift + H.</translation>
 <translation id="6043212731627905357">Ten monitor nie działa z Twoim urządzeniem <ph name="DEVICE_TYPE" /> (nie jest obsługiwany).</translation>
 <translation id="6043994281159824495">Wyloguj się teraz</translation>
 <translation id="6047696787498798094">Gdy zmienisz użytkownika, udostępnianie ekranu zostanie zakończone. Chcesz kontynuować?</translation>
@@ -195,6 +198,7 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="6585808820553845416">Sesja kończy się za <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Szukaj + Shift + K</translation>
 <translation id="6650933572246256093">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować. Wpisz na nim ten klucz: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6700713906295497288">Przycisk menu IME</translation>
 <translation id="6713285437468012787">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” zostało sparowane i jest teraz dostępne dla wszystkich użytkowników. Możesz usunąć to sparowanie w Ustawieniach.</translation>
 <translation id="6785414152754474415">Naładowanie baterii: <ph name="PERCENTAGE" />%. Trwa ładowanie.</translation>
@@ -214,8 +218,7 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Powrót do wcześniejszej rozdzielczości za <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">CAPS LOCK jest włączony.
-Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
+<translation id="7199454189089571166">Tryb Asystenta</translation>
 <translation id="7246339268451149667">Włączyć odblokowanie odciskiem palca?</translation>
 <translation id="7256634071279256947">Tylny mikrofon</translation>
 <translation id="7348093485538360975">Klawiatura ekranowa</translation>
@@ -233,10 +236,10 @@ Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
 <translation id="7649070708921625228">Pomoc</translation>
 <translation id="7692480393933218409">Ładowanie urządzeń podłączonych do portu USB-C</translation>
 <translation id="776344839111254542">Kliknij, by wyświetlić szczegóły aktualizacji</translation>
+<translation id="7798302898096527229">Aby anulować, naciśnij Wyszukaj lub Shift.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> i <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Po zsynchronizowaniu ustawień zmieniono język z „<ph name="FROM_LOCALE" />” na „<ph name="TO_LOCALE" />”.</translation>
 <translation id="7904094684485781019">Administrator tego konta zablokował możliwość wielokrotnego logowania.</translation>
-<translation id="7951523953736115461">Podświetlenie nocne</translation>
 <translation id="7977927628060636163">Szukam sieci komórkowych…</translation>
 <translation id="7982789257301363584">Sieć</translation>
 <translation id="8000066093800657092">Brak sieci</translation>
@@ -255,6 +258,7 @@ Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
 <translation id="8433977262951327081">Zmieniliśmy skrót, który pokazuje dymek menu opcji wejścia na półce. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Wi-Fi włączone.</translation>
 <translation id="847056008324733326">Ustawienia skali wyświetlania</translation>
+<translation id="8477270416194247200">Aby anulować, naciśnij Alt + Wyszukaj lub Shift.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: ponownie łączę...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> nie może się ładować, gdy jest włączony.</translation>
 <translation id="8639760480004882931">Pozostało <ph name="PERCENTAGE" /></translation>

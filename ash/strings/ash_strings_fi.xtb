@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Overflow-painike</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl + haku + H</translation>
 <translation id="2049639323467105390">Tätä laitetta hallinnoi <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Pystysuunta</translation>
 <translation id="207439088875642105">Tämä on lapsen tili, jota hallinnoivat <ph name="FIRST_PARENT_EMAIL" /> ja <ph name="SECOND_PARENT_EMAIL" />.</translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Päälle jäävät näppäimet</translation>
 <translation id="2509468283778169019">CAPS LOCK on päällä</translation>
 <translation id="2532589005999780174">Suuri kontrasti -tila</translation>
+<translation id="2597972630681408282">Yövalo: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">Istunnon loppumiseen on <ph name="SESSION_TIME_REMAINING" />. Sinut kirjataan ulos.</translation>
 <translation id="2727977024730340865">Pienitehoinen laturi kytketty. Akku ei ehkä lataudu luotettavasti.</translation>
 <translation id="2761704814324807722">Tila-alue, aika <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,7 +78,6 @@
 <translation id="3009178788565917040">Äänentoisto</translation>
 <translation id="3019353588588144572">Akku on ladattu <ph name="TIME_REMAINING" /> kuluttua</translation>
 <translation id="3047477924825107454">Tämä on lapsen tili, jota hallinnoi <ph name="MANAGER_EMAIL" />.</translation>
-<translation id="3050422059534974565">CAPS LOCK on päällä. Peruuta painamalla haku- tai Shift-näppäintä.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Alaosa</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -135,6 +136,7 @@
 <translation id="4849058404725798627">Korosta tekstin syöttökohde</translation>
 <translation id="4872237917498892622">Alt + haku tai Shift</translation>
 <translation id="4895488851634969361">Akku on täynnä.</translation>
+<translation id="4905614135390995787">Suuren kontrastin tilan pikanäppäin on muuttunut. Käytä uutta pikanäppäintä <ph name="NEW_SHORTCUT" /> vanhan (<ph name="OLD_SHORTCUT" />) sijaan.</translation>
 <translation id="4918086044614829423">Hyväksy</translation>
 <translation id="4961318399572185831">Suoratoista näyttö</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -158,8 +160,10 @@
 <translation id="5744083938413354016">Napauttamalla vetäminen</translation>
 <translation id="5777841717266010279">Lopetetaanko näytön jakaminen?</translation>
 <translation id="57838592816432529">Mykistä</translation>
+<translation id="5860033963881614850">Pois käytöstä</translation>
 <translation id="5895138241574237353">Käynnistä uudelleen</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">Käytössä</translation>
 <translation id="5927132638760172455">Suoratoistetaan tuntemattomaan vastaanottimeen</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Palauta</translation>
@@ -168,8 +172,8 @@
 <translation id="5977415296283489383">Kuulokkeet</translation>
 <translation id="5978382165065462689">Näyttösi hallinta jaetaan Etätuen kautta.</translation>
 <translation id="5980301590375426705">Sulje vierastila</translation>
+<translation id="5992218262414051481">Suuri kontrasti ‑tila on käytössä. Poista se käytöstä painamalla uudelleen Ctrl + haku + H.</translation>
 <translation id="6018164090099858612">Poistutaan peilitilasta</translation>
-<translation id="6041154455840261787">Suuri kontrasti ‑tila on käytössä. Poista se käytöstä painamalla uudelleen Haku + Vaihto + H.</translation>
 <translation id="6043212731627905357">Näyttö ja <ph name="DEVICE_TYPE" /> eivät sovi yhteen (näyttöä ei tueta).</translation>
 <translation id="6043994281159824495">Kirjaudu ulos nyt</translation>
 <translation id="6047696787498798094">Näytön jakaminen loppuu, kun vaihdat toiseen käyttäjään. Haluatko jatkaa?</translation>
@@ -194,6 +198,7 @@
 <translation id="6585808820553845416">Istunnon loppumiseen on <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Haku+Vaihto+K</translation>
 <translation id="6650933572246256093">Bluetooth-laite <ph name="DEVICE_NAME" /> pyytää lupaa laiteparin muodostamiseen. Anna tämä avain kyseisellä laitteella: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Haku + vaihto + H</translation>
 <translation id="6700713906295497288">IME-valikkopainike</translation>
 <translation id="6713285437468012787">Bluetooth-laitteeseen <ph name="DEVICE_NAME" /> on nyt muodostettu laitepariyhteys, ja se on kaikkien käyttäjien saatavilla. Voit poistaa laiteparin Asetuksien kautta.</translation>
 <translation id="6785414152754474415">Akussa on virtaa <ph name="PERCENTAGE" /> %, ja laite on kytketty laturiin.</translation>
@@ -213,7 +218,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Vaihto+K</translation>
 <translation id="7168224885072002358">Palautetaan vanha tarkkuus, aikaa palautukseen <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">CAPS LOCK on päällä. Peruuta painamalla Alt + hakupainike tai Shift.</translation>
+<translation id="7199454189089571166">Assistant-tila</translation>
 <translation id="7246339268451149667">Sallitaanko lukituksen avaaminen sormenjäljellä?</translation>
 <translation id="7256634071279256947">Takamikrofoni</translation>
 <translation id="7348093485538360975">Virtuaalinäppäimistö</translation>
@@ -231,10 +236,10 @@
 <translation id="7649070708921625228">Ohje</translation>
 <translation id="7692480393933218409">Ladataan yhdistettyjä C-tyypin USB-laitteita</translation>
 <translation id="776344839111254542">Klikkaa nähdäksesi päivityksen tiedot</translation>
+<translation id="7798302898096527229">Peruuta painamalla haku- tai vaihtonäppäintä.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Käyttökieli on muutettu kielestä <ph name="FROM_LOCALE" /> kieleksi <ph name="TO_LOCALE" /> asetustesi synkronoinnin yhteydessä.</translation>
 <translation id="7904094684485781019">Tämän tilin järjestelmänvalvoja on estänyt useisiin tileihin kirjautumisen.</translation>
-<translation id="7951523953736115461">Yövalo</translation>
 <translation id="7977927628060636163">Haetaan mobiiliverkkoja…</translation>
 <translation id="7982789257301363584">Verkko</translation>
 <translation id="8000066093800657092">Ei verkkoa</translation>
@@ -253,6 +258,7 @@
 <translation id="8433977262951327081">Hyllyn syöttöasetukset näyttävä valikkokupla on muuttunut. Käytä uutta pikanäppäintä <ph name="NEW_SHORTCUT" /> vanhan (<ph name="OLD_SHORTCUT" />) sijaan.</translation>
 <translation id="8454013096329229812">Wi-Fi on käytössä.</translation>
 <translation id="847056008324733326">Näytön skaalauksen asetukset</translation>
+<translation id="8477270416194247200">Peruuta painamalla Alt+haku tai vaihto.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Yhdistetään uudelleen…</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> ei välttämättä lataudu, kun se on käynnissä.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> jäljellä</translation>

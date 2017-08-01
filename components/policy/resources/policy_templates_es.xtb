@@ -53,13 +53,6 @@ Si esta política se establece en False, no se informará sobre el estado del co
 Si no se establece ningún valor para esta política, la frecuencia predeterminada serán 3 horas. La frecuencia mínima permitida son 60 segundos.</translation>
 <translation id="1221359380862872747">Cargar URL especificadas en el inicio de sesión de demostración</translation>
 <translation id="1265053460044691532">Limitar el tiempo durante el que un usuario autenticado a través de SAML puede iniciar sesión sin conexión</translation>
-<translation id="127699919157094139">Permite inhabilitar la sincronización de datos en <ph name="PRODUCT_NAME" /> a través de los servicios de sincronización alojados por Google e impide que los usuarios cambien esta configuración.
-
-      Si habilitas esta opción, los usuarios no podrán modificarla ni anularla en <ph name="PRODUCT_NAME" />.
-
-      Si no se establece esta política, el usuario podrá elegir si quiere usar Google Sync o no hacerlo.
-
-      Para desactivar Google Sync por completo, te recomendamos que inhabilites este servicio en la consola de administración de Google.</translation>
 <translation id="1291880496936992484">Advertencia: RC4 se eliminará completamente de <ph name="PRODUCT_NAME" /> después de la versión 52 (en torno a septiembre de 2016) y dejará de funcionar.
 
       Si la política no se establece o se le asigna el valor false, no se habilitarán los conjuntos de cifrado de RC4 en TLS. Si por el contrario se le asigna el valor true, mantendrá la compatibilidad con un servidor obsoleto. Se trata de una medida provisional y el servidor se debería volver a configurar.</translation>
@@ -525,6 +518,11 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
       Si no se establece ningún valor para esta política, se considerará que está habilitada (consulta la descripción anterior).</translation>
 <translation id="285480231336205327">Habilitar modo de contraste alto</translation>
+<translation id="2854919890879212089">Hace que <ph name="PRODUCT_NAME" /> utilice la impresora predeterminada del sistema como opción predeterminada en la vista previa de impresión en lugar de la última impresora utilizada.
+
+      Si inhabilitas esta opción o no se establece ningún valor, la vista previa de impresión mostrará la última impresora utilizada como impresora de destino predeterminada.
+
+      Si habilitas esta opción, la vista previa de impresión mostrará la impresora predeterminada del sistema operativo como impresora de destino predeterminada.</translation>
 <translation id="2872961005593481000">Apagar</translation>
 <translation id="2874209944580848064">Nota para los dispositivos <ph name="PRODUCT_OS_NAME" /> compatibles con las aplicaciones de Android:</translation>
 <translation id="2877225735001246144">Inhabilitar la consulta de nombre canónico en negociación de autenticación Kerberos</translation>
@@ -1010,6 +1008,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
           De forma predeterminada, si el PIN no se considera seguro, los usuarios recibirán una advertencia en lugar de un mensaje de error.</translation>
 <translation id="4723829699367336876">Habilita que se pueda pasar a través de un cortafuegos desde un host de acceso remoto.</translation>
+<translation id="4725123658714754485">Permite controlar el envío a Google de datos de diagnóstico y métricas de uso, como los informes sobre fallos. Si se asigna el valor "True", <ph name="PRODUCT_OS_NAME" /> enviará informes sobre métricas de uso y datos de diagnóstico. Si no se configura o se asigna el valor "False", se inhabilitará el envío de informes sobre métricas y datos de diagnóstico.</translation>
 <translation id="4725528134735324213">Habilitar Android Backup Service</translation>
 <translation id="4733471537137819387">Políticas relacionadas con la autenticación HTTP integrada</translation>
 <translation id="4744190513568488164">Permite indicar los servidores en los que <ph name="PRODUCT_NAME" /> puede delegar las credenciales de usuarios.
@@ -1532,6 +1531,12 @@ Si no se establece esta política, el teclado en pantalla se inhabilitará la pr
 
       Si inhabilitas esta opción o si no estableces esta política, el buscador de complementos estará activo.</translation>
 <translation id="6699880231565102694">Habilitar la autenticación de dos factores para hosts de acceso remoto</translation>
+<translation id="6724842112053619797">Si habilitas esta opción, la configuración almacenada en los perfiles de <ph name="PRODUCT_NAME" /> (como los marcadores, los datos de Autocompletar y las contraseñas) también se escribirá en un archivo almacenado en la carpeta Itinerancia del perfil de usuario o en una ubicación especificada por el administrador en la política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. 
+Al habilitar esta política, se inhabilita la sincronización en la nube.
+
+      Si esta política se inhabilita o no se establece, solo se utilizarán los perfiles locales habituales.
+
+      La política <ph name="SYNC_DISABLED_POLICY_NAME" /> inhabilita todas las sincronizaciones de datos y anula RoamingProfileSupportEnabled.</translation>
 <translation id="6757438632136860443">Permite configurar una lista de patrones de URL que especifican los sitios web que pueden ejecutar el complemento <ph name="FLASH_PLUGIN_NAME" />.
 
           Si esta política no se configura, se usará para todos los sitios web el valor general predeterminado que se indique en la política "DefaultPluginsSetting" (si se ha configurado) o las preferencias personales del usuario (en caso contrario).</translation>
@@ -1577,6 +1582,13 @@ Si no se establece esta política, el teclado en pantalla se inhabilitará la pr
 <translation id="6943577887654905793">Nombre de preferencia en Mac/Linux:</translation>
 <translation id="69525503251220566">Parámetro que proporciona una función de búsqueda por imagen para el proveedor de búsquedas predeterminado</translation>
 <translation id="6956272732789158625">No permitir que los sitios web utilicen la generación de claves</translation>
+<translation id="6994082778848658360">Especifica cómo se puede utilizar el hardware del elemento seguro integrado para proporcionar una autenticación de dos factores si es compatible con esta función. El botón de encendido del ordenador se utiliza para detectar la presencia física del usuario.
+
+      Si se inhabilita esta opción, no se proporciona ninguna autenticación de dos factores.
+
+      Si se selecciona la opción U2F, la autenticación de dos factores integrada sigue la especificación FIDO U2F.
+
+      Si se selecciona la opción U2F_EXTENDED, la autenticación de dos factores integrada proporciona las funciones de U2F y algunas extensiones de confirmación individual.</translation>
 <translation id="6997592395211691850">Permite establecer si es necesario realizar comprobaciones de OCSP/CRL online para los anclajes de veracidad locales</translation>
 <translation id="7003334574344702284">Si se habilita, esta política fuerza la importación de las contraseñas guardadas desde el navegador predeterminado actual. Si está habilitada, esta política también afecta al cuadro de diálogo de importación.
 
@@ -1784,7 +1796,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="7713608076604149344">Restricciones de descarga</translation>
 <translation id="7715711044277116530">Porcentaje que permite ajustar el retraso de inactividad de la pantalla en el modo de presentación</translation>
 <translation id="7717938661004793600">Permite configurar funciones de accesibilidad de <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7719251660743813569">Permite controlar el envío de informes sobre estadísticas de uso a Google. Si el valor se establece en "true", <ph name="PRODUCT_OS_NAME" /> enviará informes sobre estadísticas de uso. Si no se configura o el valor se establece en "false", se inhabilitarán los informes estadísticos.</translation>
 <translation id="7724994675283793633">Esta política habilita HTTP/0.9 en puertos diferentes a 80 en el caso de HTTP y 443 para HTTPS.
 
       Esta política está inhabilitada de forma predeterminada. Si se habilita, expone a los usuarios al problema de seguridad que se indica en la página https://crbug.com/600352.
@@ -2116,6 +2127,15 @@ Si la política está establecida en False, no se informará sobre la lista de i
 <translation id="891435090623616439">codificado como cadena JSON, consulta <ph name="COMPLEX_POLICIES_URL" /> para obtener más información</translation>
 <translation id="8947415621777543415">Informar de ubicación del dispositivo</translation>
 <translation id="8951350807133946005">Establecer directorio de caché de disco</translation>
+<translation id="8952317565138994125">Permite inhabilitar la sincronización de datos en <ph name="PRODUCT_NAME" /> a través de los servicios de sincronización alojados por Google e impide que los usuarios cambien esta opción.
+
+      Si habilitas esta opción, los usuarios no podrán modificarla ni anularla en <ph name="PRODUCT_NAME" />.
+
+      Si no se establece esta política, el usuario podrá elegir si quiere usar Google Sync o no hacerlo.
+
+      Para desactivar Google Sync por completo, te recomendamos que inhabilites este servicio en la consola de administración de Google.
+
+      Esta política no se debe habilitar si la política <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> está habilitada, ya que esta función comparte la misma funcionalidad del cliente. En este caso, la sincronización alojada por Google está completamente inhabilitada.</translation>
 <translation id="8955719471735800169">Volver al principio</translation>
 <translation id="8960850473856121830">Los patrones de esta lista se compararán con el origen de seguridad de la URL solicitante. Si se encuentra alguna coincidencia, se concederá acceso a dispositivos de captura de audio sin solicitarlo.
 
@@ -2123,6 +2143,7 @@ Si la política está establecida en False, no se informará sobre la lista de i
 <translation id="8970205333161758602">Eliminar el mensaje de desactivación de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Temporizador de inicio automático de sesión publica</translation>
 <translation id="8976248126101463034">Permitir la autenticación gnubby para los hosts de acceso remoto</translation>
+<translation id="8976531594979650914">Usar impresora predeterminada del sistema como opción predeterminada</translation>
 <translation id="8992176907758534924">No permitir que todos los sitios muestren imágenes</translation>
 <translation id="9035964157729712237">ID de extensiones que no deben estar incluidas en la lista negra</translation>
 <translation id="9042911395677044526">Permite aplicar la configuración de red al dispositivo <ph name="PRODUCT_OS_NAME" /> de cada usuario. La configuración de red es una cadena escrita en formato JSON, tal como se define en la siguiente página sobre el formato Open Network Configuration: <ph name="ONC_SPEC_URL" /></translation>

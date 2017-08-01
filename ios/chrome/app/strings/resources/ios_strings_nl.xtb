@@ -4,7 +4,6 @@
 <translation id="1016495303386450659">Item geüpdated</translation>
 <translation id="1047726139967079566">Bladwijzer instellen voor deze pagina...</translation>
 <translation id="1049743911850919806">Incognito</translation>
-<translation id="1073594902069885687">Verificatie mislukt. Je wachtwoord is niet gekopieerd.</translation>
 <translation id="1076421457278169141">Code gescand</translation>
 <translation id="1084365883616172403">Facebook-bericht voltooid.</translation>
 <translation id="1104948393051856124">Accepteren en doorgaan</translation>
@@ -34,9 +33,11 @@
 <translation id="1430915738399379752">Afdrukken</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> items</translation>
 <translation id="1491277525950327607">Dubbeltik om de instelling in of uit te schakelen</translation>
+<translation id="152234381334907219">Nooit opgeslagen</translation>
 <translation id="1540800554400757039">Adres 1</translation>
 <translation id="1545749641540134597">QR-code scannen</translation>
 <translation id="1580783302095112590">E-mail verzonden.</translation>
+<translation id="1612730193129642006">Tabbladraster weergeven</translation>
 <translation id="1646446875146297738">Als je 'Niet bijhouden' inschakelt, wordt hiervoor een verzoek opgenomen in je browseverkeer. Het resultaat daarvan hangt af van of een website reageert op het verzoek en hoe het verzoek wordt geïnterpreteerd.
 
 Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te geven die niet zijn gebaseerd op andere websites die je hebt bezocht. Toch blijven veel websites je browsegegevens nog verzamelen en gebruiken, bijvoorbeeld voor het verbeteren van de beveiliging, het leveren van content, services, advertenties en aanbevelingen op hun websites en voor het genereren van rapportagestatistieken. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
@@ -66,7 +67,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> items verplaatst</translation>
 <translation id="2149973817440762519">Bladwijzer bewerken</translation>
 <translation id="2230173723195178503">Webpagina geladen</translation>
-<translation id="2241634353105152135">Slechts één keer</translation>
 <translation id="2267753748892043616">Account toevoegen</translation>
 <translation id="2273327106802955778">Menu Meer</translation>
 <translation id="2320166752086256636">Toetsenbord verbergen</translation>
@@ -79,6 +79,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="2572712655377361602">Een apparaatbeleid blokkeert toegang tot je foto's</translation>
 <translation id="2584132361465095047">Account toevoegen…</translation>
 <translation id="2593774076813182497">Kan pagina niet afdrukken.</translation>
+<translation id="2625189173221582860">Wachtwoord gekopieerd</translation>
 <translation id="2648803196158606475">Gelezen items verwijderen</translation>
 <translation id="2653659639078652383">Verzenden</translation>
 <translation id="2684815431982545828">Nieuw tabblad</translation>
@@ -120,6 +121,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> van <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Geopende tabbladen</translation>
+<translation id="3277021493514034324">Siteadres gekopieerd</translation>
 <translation id="3324193307694657476">Adres 2</translation>
 <translation id="3329904751041170572">Kan geen verbinding maken met de server.</translation>
 <translation id="3335947283844343239">Open gesloten tabblad opnieuw</translation>
@@ -132,7 +134,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="3474649192738347024">Formulieren ingevuld.</translation>
 <translation id="3478058380795961209">Vervalmaand</translation>
 <translation id="3482959374254649722">Je tabbladen synchroniseren…</translation>
-<translation id="3489372701259491571">Verwijder opgeslagen wachtwoord</translation>
 <translation id="3494788280727468875">Wissen van browsegegevens bevestigen</translation>
 <translation id="3519193562722059437">Open een tabblad om op internet te surfen.</translation>
 <translation id="3527085408025491307">Map</translation>
@@ -149,10 +150,8 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="3638472932233958418">Webpagina's vooraf laden</translation>
 <translation id="3691593122358196899">Bladwijzer gemaakt in <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Tikken om te zoeken</translation>
-<translation id="3742082982782149146">De URL van de site is gekopieerd.</translation>
 <translation id="3771033907050503522">Incognitotabbladen</translation>
 <translation id="3783017676699494206">Afbeelding opslaan</translation>
-<translation id="3789841737615482174">Installeren</translation>
 <translation id="385051799172605136">Vorige</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3928666092801078803">Mijn gegevens combineren</translation>
@@ -164,7 +163,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4038354071007134711">Geen app op dit apparaat kan het bestand openen.</translation>
 <translation id="4049507953662678203">Zorg ervoor dat je beschikt over een netwerkverbinding en probeer het opnieuw.</translation>
 <translation id="411254640334432676">Downloaden mislukt.</translation>
-<translation id="4117350985506774529">Je gebruikersnaam is gekopieerd.</translation>
 <translation id="4121993058175073134">Als je netto-exportgegevens wilt verzenden, configureer je je e-mailaccount in de app Instellingen.</translation>
 <translation id="4124987746317609294">Tijdsbereik</translation>
 <translation id="4172051516777682613">Altijd weergeven</translation>
@@ -187,7 +185,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 
 Je gegevens zijn versleuteld met je wachtwoordzin voor synchronisatie. Geef deze op om de synchronisatie te starten.</translation>
 <translation id="473775607612524610">Updaten</translation>
-<translation id="4773461607542755386">Deze pagina openen in de app <ph name="APP_NAME" />?</translation>
 <translation id="481968316161811770">Cookies en sitegegevens</translation>
 <translation id="4860895144060829044">Bellen</translation>
 <translation id="4875622588773761625">Wil je dat <ph name="PASSWORD_MANAGER_BRAND" /> je wachtwoord voor deze site updatet?</translation>
@@ -215,6 +212,7 @@ Je gegevens zijn versleuteld met je wachtwoordzin voor synchronisatie. Geef deze
 <translation id="5327248766486351172">Naam</translation>
 <translation id="5388358297987318779">Afbeelding openen</translation>
 <translation id="5409365236829784218">Er zijn geen applicaties geïnstalleerd waarmee dit bestand kan worden geopend.</translation>
+<translation id="5433691172869980887">Gebruikersnaam gekopieerd</translation>
 <translation id="54401264925851789">Paginabeveiligingsinfo</translation>
 <translation id="5525269841082836315">Wachtwoordzin maken</translation>
 <translation id="5531274207066050939">Google Payments</translation>
@@ -264,6 +262,7 @@ Handoff moet ook zijn ingeschakeld in het gedeelte 'Algemeen' van 'Instellingen'
 <translation id="6196207969502475924">Gesproken zoekopdrachten</translation>
 <translation id="6254066287920239840">Open links in de app in plaats van in de browser.</translation>
 <translation id="6255097610484507482">Creditcard bewerken</translation>
+<translation id="6273258929211277933"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" />, <ph name="STATE" /></translation>
 <translation id="6308436439357671616">Hiermee kun je foto's maken en uploaden.</translation>
 <translation id="6314335155547195432">Wachtwoord genereren</translation>
 <translation id="6324528485781869530">Synchronisatieaccount wisselen</translation>
@@ -290,7 +289,6 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="6570040839871198836">Formulieren automatisch invullen</translation>
 <translation id="6656103420185847513">Map bewerken</translation>
 <translation id="6657585470893396449">Wachtwoord</translation>
-<translation id="666731172850799929">Openen in <ph name="APP_NAME" /></translation>
 <translation id="667999046851023355">Document</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6762156594045689028">Als je deze instelling wilt wijzigen, <ph name="BEGIN_LINK" />stel je de synchronisatie opnieuw in<ph name="END_LINK" /></translation>
@@ -317,6 +315,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="7189598951263744875">Delen...</translation>
 <translation id="7203585745079012652">Antwoorden uitspreken</translation>
 <translation id="722055596168483966">Google-services personaliseren</translation>
+<translation id="7272437679830969316">Kan je identiteit niet verifiëren. Wachtwoord niet gekopieerd.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> procent gedownload</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -356,7 +355,6 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="806745655614357130">Mijn gegevens gescheiden houden</translation>
 <translation id="8076014560081431679">Opgeslagen site-instellingen worden niet verwijderd en kunnen je browsegedrag weerspiegelen. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Alle tabbladen sluiten</translation>
-<translation id="8108697784695284144">Je wachtwoord is gekopieerd.</translation>
 <translation id="8137558756159375272">Met 'Tikken om te zoeken' worden het geselecteerde woord en de huidige pagina als context naar Google Zoeken verzonden. Je kunt deze functie uitschakelen via <ph name="BEGIN_LINK" />Instellingen<ph name="END_LINK" />.</translation>
 <translation id="8205564605687841303">Annuleren</translation>
 <translation id="8225985093977202398">Afbeeldingen en bestanden in chachegeheugen</translation>
@@ -364,6 +362,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="8272426682713568063">Creditcards</translation>
 <translation id="8281781826761538115">Standaard - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">Beheer hoe Google je browsegeschiedenis gebruikt om Google Zoeken, advertenties en andere Google-services te personaliseren</translation>
+<translation id="842017693807136194">Ingelogd met</translation>
 <translation id="8428045167754449968">Stad/plaats</translation>
 <translation id="8428213095426709021">Instellingen</translation>
 <translation id="8433678324664858900">Suggesties weergeven</translation>
@@ -388,6 +387,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="8775144690796719618">Ongeldige URL</translation>
 <translation id="8820817407110198400">Bladwijzers</translation>
 <translation id="8840513115188359703">Je wordt niet uitgelogd van je Google-account.</translation>
+<translation id="8881801611828450202">Zoeken op <ph name="SEARCH_ENGINE" /> naar deze afbeelding</translation>
 <translation id="8904976895050290827">Chrome-synchronisatie</translation>
 <translation id="895541991026785598">Een probleem melden</translation>
 <translation id="8971089644512329999">OK</translation>
@@ -406,6 +406,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="9188680907066685419">Uitloggen van beheerd account</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Crashrapport verzonden.</translation>
+<translation id="932327136139879170">Homepage</translation>
 <translation id="935490618240037774">Je bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden gesynchroniseerd met je Google-account, zodat je ze op al je apparaten kunt gebruiken.</translation>
 <translation id="939598580284253335">Wachtwoordzin opgeven</translation>
 <translation id="976982866697960176">Gesynchroniseerde gegevens beheren…</translation>

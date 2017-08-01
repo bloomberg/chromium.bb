@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">Μεγιστοποίηση</translation>
 <translation id="1413622004203049571">Απενεργοποίηση ειδοποιήσεων από <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 λεπτό και }other{# λεπτά και }}</translation>
+<translation id="1643823602425662293">Ειδοποίηση</translation>
 <translation id="1685967565548146460">Έρευνα ικανοποίησης (HaTS)</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 λεπτό}other{# λεπτά}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> Β</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">μεταπήδηση</translation>
 <translation id="4250229828105606438">Στιγμιότυπο οθόνης</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{Πριν από 1 μήνα}other{Πριν από # μήνες}}</translation>
+<translation id="4316910396681052118">ΟΛΕΣ ΟΙ ΕΦΑΡΜΟΓΕΣ</translation>
 <translation id="4320177379694898372">Χωρίς σύνδεση στο διαδίκτυο</translation>
 <translation id="4588090240171750605">Κύλιση δεξιά</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Απομένει 1 μήνας}other{Απομένουν # μήνες}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">Φάκελος χωρίς όνομα</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 δευτ.}other{# δευτ.}}</translation>
 <translation id="9150735707954472829">Καρτέλα</translation>
+<translation id="9161053988251441839">ΠΡΟΤΕΙΝΟΜΕΝΕΣ ΕΦΑΡΜΟΓΕΣ</translation>
 <translation id="9170848237812810038">Αναί&amp;ρεση</translation>
 <translation id="932327136139879170">Αρχική σελίδα</translation>
 </translationbundle>

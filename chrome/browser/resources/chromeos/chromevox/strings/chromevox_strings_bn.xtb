@@ -12,6 +12,7 @@
 <translation id="1044777062731150180">কোনো শিরোলেখ নেই</translation>
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">অবৈধ ইনপুট</translation>
+<translation id="1080471004309605942">তেরছা অক্ষর শেষ</translation>
 <translation id="1082209053475788238">কোনো পূর্ববর্তী স্তর ৬ শিরোনাম নেই৷</translation>
 <translation id="1088219014394087294">কোনো শিরোলেখ নেই৷</translation>
 <translation id="1106741348836243114">শব্দ প্রতিক্রিয়া  (earcons) চালু বা বন্ধ করুন৷</translation>
@@ -121,6 +122,7 @@
 <translation id="225732394367814946">কথনের হার বাড়ান</translation>
 <translation id="2267945578749931355">পরবর্তী অক্ষর</translation>
 <translation id="2281234842553884450">পূর্ববর্তী স্লাইডার</translation>
+<translation id="2294136146931447363">তেরছা অক্ষর শুরু</translation>
 <translation id="2318372665160196757">প্রধান</translation>
 <translation id="2329324941084714723">ট্যাব প্যানেল</translation>
 <translation id="2344193891939537199">তারিখ সময় নিয়ন্ত্রণ</translation>
@@ -166,6 +168,7 @@
 <translation id="27527859628328957">পরবর্তী ফোকাসযোগ্য আইটেমে জাম্প করুন</translation>
 <translation id="2770781857296573485">গোষ্ঠী অন্বেষণ প্রবেশ করে</translation>
 <translation id="2777845298774924149">বের করা হয়েছে</translation>
+<translation id="2781264313200109999">লিঙ্ক শুরু করুন</translation>
 <translation id="2800204403141299078">কোনো পৃথক উপাদান নেই৷</translation>
 <translation id="2800780099804980316">কোনো পূর্ববর্তী স্তর ১ শিরোনাম নেই৷</translation>
 <translation id="280499067616661124">ChromeVox পৃষ্ঠাতে খুঁজুন</translation>
@@ -318,6 +321,7 @@
 <translation id="3716845769494773620">একাধিক লাইন</translation>
 <translation id="3731746171184829332">কোনো পূর্ববর্তী শিরোলেখ নেই৷</translation>
 <translation id="3735039640698208086">অডিও বাজানোর সময়...</translation>
+<translation id="3755561384917041694">প্রসারিত ব্রেল কমান্ড ব্যবহার করতে অনুগ্রহ করে স্টেটাস ট্রে, অ্যাক্সেসযোগ্যতার নিচে থাকা অন-স্ক্রিন কীবোর্ড সক্ষম করুন।</translation>
 <translation id="3762198587642264450">বর্তমান সারির শেষে যান</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">কথোপকথন থেকে প্রস্থান করা হয়ছে৷</translation>
@@ -341,6 +345,7 @@
 <translation id="4039983576244166038">ফাঁকা সারি শিরোলেখ</translation>
 <translation id="4042843249978639960">কোনো পূর্ববর্তী স্তর ২ শিরোলেখ নেই৷</translation>
 <translation id="4043348641337972076">কোনো পূর্ববর্তী ARIA ল্যান্ডমার্ক নেই৷</translation>
+<translation id="4045764028670444336">ভুল বানান শুরু</translation>
 <translation id="4047216625641135770">চিহ্নিত</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4054936709456751127">sts</translation>
@@ -395,6 +400,7 @@
 <translation id="4532633738839459153">{COUNT,plural, =1{স্ল্যাশ}one{#টি স্ল্যাশ}other{#টি স্ল্যাশ}}</translation>
 <translation id="4547556996012970016">পরবর্তী স্তর ৫ শিরোনাম</translation>
 <translation id="4562381607973973258">শিরোনাম</translation>
+<translation id="4570424871453628777">ভুল বানান শেষ</translation>
 <translation id="4591507479202817876">, নির্বাচিত</translation>
 <translation id="4597532268155981612">ফর্ম</translation>
 <translation id="4597896406374528575">এপ্রিল</translation>
@@ -421,6 +427,7 @@
 <translation id="4827410568042294688">অনির্বাচিত</translation>
 <translation id="4842108708071771135">কোনো পরবর্তী অবরুদ্ধ উর্দ্ধৃতি নেই৷</translation>
 <translation id="4844625982113518938">যেকোনো কী’র নাম জানতে সেটি টিপুন। Ctrl+W টিপলে শিখন মোড বন্ধ হবে।</translation>
+<translation id="4846487886195635104">কাটা অক্ষর শেষ</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">পূর্ববর্তী অনুরূপ উপাদান৷</translation>
 <translation id="485011152882364255">ChromeVox Next এ ‘অনুসন্ধান’ কী’টি সংশোধক কী। বেশিরভাগ ChromeVox শর্টকাটগুলি অনুসন্ধান কী দিয়ে শুরু হয়। এছাড়াও আপনি নেভিগেশানের জন্য তীরচিহ্নগুলি ব্যবহার করবেন।</translation>
@@ -575,7 +582,10 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="6006064078185310784">{COUNT,plural, =1{ব্যাকস্ল্যাশ}one{#টি ব্যাকস্ল্যাশ}other{#টি ব্যাকস্ল্যাশ}}</translation>
 <translation id="6037602951055904232">প্যান ফরোয়ার্ড</translation>
 <translation id="6044160928851315051">স্ক্রীনে আলো কমান</translation>
+<translation id="605761629541007221">গাঢ় অক্ষর শেষ</translation>
+<translation id="6065293622157674001">ব্যাকরণের ত্রুটি শুরু</translation>
 <translation id="6082768461603900813">প্রাথমিক নেভিগেশান</translation>
+<translation id="6092707270915298410">লিঙ্কটি শেষ করুন</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">কক্ষের সমাপ্তি৷</translation>
 <translation id="6122013438240733403">btn</translation>
@@ -665,6 +675,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="712735679809149106">শব্দ ইকো</translation>
 <translation id="713824876195128146">পরবর্তী অবরুদ্ধ উদ্ধৃতি</translation>
 <translation id="7143034430156387447">৬ এবং ৮ ডট ব্রেলির মধ্যে টগল করুন</translation>
+<translation id="7161425887892204659">টেক্সট ম্যাচিং শেষ</translation>
 <translation id="7161771961008409533">পপ-আপ বোতাম</translation>
 <translation id="7165714724802225287">বর্তমান প্রদর্শন শৈলী একটি অন্যটির মাঝে সমাবেশিত।</translation>
 <translation id="7167657087543110">অক্ষর ইকো</translation>
@@ -696,6 +707,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="7370432716629432284">{COUNT,plural, =1{অ্যামপারসেন্ট}one{#টি অ্যামপারসেন্ট}other{#টি অ্যামপারসেন্ট}}</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">সারণী ত্যাগ করছে৷</translation>
+<translation id="7392145451309930991">টেক্সট ম্যাচিং শুরু</translation>
 <translation id="739763518212184081">পূর্ববর্তী লাইন</translation>
 <translation id="7400575256015741911">বানান পরীক্ষাগত ত্রুটি সনাক্ত হয়েছে</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -727,7 +739,9 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">পূর্ববর্তী রেডিও বোতাম</translation>
 <translation id="7701196182766842984">autolst</translation>
+<translation id="7712273827621319827">আন্ডারলাইন শুরু</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, পাসওয়ার্ড পাঠ্য বাক্স</translation>
+<translation id="7773125101284285285">আন্ডারলাইন শেষ</translation>
 <translation id="7776293189010177726">ChromeVox মেনুগুলি খুলুন</translation>
 <translation id="7805247615045262757">ডিফল্ট নেভিগেশন</translation>
 <translation id="7805768142964895445">স্থিতি</translation>
@@ -778,6 +792,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="8374154622594089836">মাস</translation>
 <translation id="8378855320830505539">অঞ্চল</translation>
 <translation id="8382679411218029383">স্বতসম্পূর্ণ ইনলাইন এবং তালিকা</translation>
+<translation id="8384907037845425279">গাঢ় অক্ষর শুরু</translation>
 <translation id="8428603554127842284">স্তর <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">কোনো পূর্ববর্তী স্তর ২ শিরোনাম নেই৷</translation>
 <translation id="8430049249787218991">mnubr</translation>
@@ -789,6 +804,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="8476408756881832830">ChromeVox কথা বলতে থাকলে প্লেব্যাক সাময়িকভাবে থামান</translation>
 <translation id="8476508772960940536">এক নজরে উইন্ডো</translation>
 <translation id="8503360654911991865">নেভিগেশন কণিকাভাবটি কমান</translation>
+<translation id="8504695234784218301">ব্যাকরণের ত্রুটি শেষ</translation>
 <translation id="8520472399088452386">ঘূর্ণন বোতাম</translation>
 <translation id="8538744478902126321">বর্তমান কক্ষের সারি শিরোলেখে একটি অনুমান করে</translation>
 <translation id="8540054775867439484">শীর্ষে সম্পৃক্ত রয়েছে</translation>
@@ -866,4 +882,5 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="962913030769097253">পরবর্তী স্তর ১ শিরোনাম</translation>
 <translation id="973955474346881951">স্টিকি মোড সক্ষম/অক্ষম করুন</translation>
 <translation id="976849232629612000">কোনো আইটেম নেই।</translation>
+<translation id="995852680044449248">কাটা অক্ষর শুরু</translation>
 </translationbundle>

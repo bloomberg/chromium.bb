@@ -53,13 +53,6 @@
      Sera hii isipowekwa, idadi chaguo-msingi ni saa 3. Idadi ya chini inayoruhusiwa ni sekunde 60.</translation>
 <translation id="1221359380862872747">Pakia url maalum kwenye onyesho la kuingia.</translation>
 <translation id="1265053460044691532">Weka kikomo cha muda ambao mtumiaji aliyethibitishwa kupitia SAML anaweza kuingia katika akunti nje ya mtandaoni</translation>
-<translation id="127699919157094139">Huzima usawazishaji wa data katika <ph name="PRODUCT_NAME" /> kwa kutumia huduma za usawazishaji zilizopangishwa za Google na huzuia watumiaji kubadilisha mipangilio hii.
-
-      Ukiwasha mipangilio hii, watumiaji hawataweza kuibadilisha au kuifuta katika <ph name="PRODUCT_NAME" />.
-
-     Ikiwa sera hii itaachwa bila kuwekwa, Usawazishaji wa Google utapatikana kwa watumiaji kuchagua kuutumia au kutoutumia.
-
-      Ili uzime kabisa Usawazishaji wa Google, unashauriwa uzime huduma ya Usawazishaji wa Google katika dashibodi ya Google Admin.</translation>
 <translation id="1291880496936992484">Onyo: RC4 itaondolewa kabisa kwenye <ph name="PRODUCT_NAME" /> baada ya toleo la 52 (kufikia Septemba 2016) na sera hii kufanya kazi wakati huo.
 
      Sera hii isipowekwa, au ikiwekwa kuwa sivyo basi mipangilio ya kriptografia ya RC4 katika TLS haitawashwa. Vinginevyo inaweza kuwekwa kuwa ndivyo ili kudumisha muoano na seva iliyokwisha muda. Huu ni mkakati tu wa muda na seva inapaswa kuwekwa mipangilio.</translation>
@@ -517,6 +510,11 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 
       Sera hii ikiachwa bila kuwekwa, ni sawa na kuwashwa, angalia maelezo yaliyo hapo juu.</translation>
 <translation id="285480231336205327">Wezesha modi ya juu ya kulinganua</translation>
+<translation id="2854919890879212089">Mipangilio hii husababisha <ph name="PRODUCT_NAME" /> kutumia printa chaguo-msingi ya mfumo kama uteuzi chaguo-msingi katika Onyesho la Kuchungulia la Printa badala ya printa iliyotumika hivi majuzi.
+
+      Ukiizima mipangilio hii au usipoweka thamani, Onyesho la Kuchungulia la Printa litatumia printa iliyotumika hivi majuzi zaidi kama uteuzi chaguo-msingi.
+
+      Ukiiwasha mipangilio hii, Onyesho la Kuchungulia la Printa litatumia printa chaguo-msingi ya mfumo wa uendeshaji kama uteuzi chaguo-msingi.</translation>
 <translation id="2872961005593481000">Zima</translation>
 <translation id="2874209944580848064">Kidokezo kwa vifaa vya <ph name="PRODUCT_OS_NAME" /> vinavyotumia programu za Android:</translation>
 <translation id="2877225735001246144">Lemaza kidokezo cha CNAME unapohawilisha uthibitishaji wa Kerberos</translation>
@@ -1005,6 +1003,7 @@ Sera hii ikiwekwa kuwa sivyo au isiwekwe, kibodi itatoa amri za vitufe vya media
 
           Kwa chaguo-msingi, watumiaji watapokea onyo, si arifa ya hitilafu, ikiwa PIN itatambulika kuwa dhaifu.</translation>
 <translation id="4723829699367336876">Wezesha kutamba kwa ngome kutoka kwa mteja wa mbali kufikiwa</translation>
+<translation id="4725123658714754485">Hubainisha ikiwa vipimo vya matumizi na data ya uchunguzi, pamoja na ripoti za kuacha kufanya kazi, zitaripotiwa kwa Google. Ukiiweka kuwa ndivyo, <ph name="PRODUCT_OS_NAME" /> itaripoti vipimo vya matumizi na data ya uchunguzi. Usipoiweka kuwa sivyo, kuripoti data ya vipimo na uchunguzi kutazimwa.</translation>
 <translation id="4725528134735324213">Washa kipengele cha Android Backup Service</translation>
 <translation id="4733471537137819387">Sera zinazohusiana na uthibitishaji wa HTTP jumuishi.</translation>
 <translation id="4744190513568488164">Seva ambazo <ph name="PRODUCT_NAME" /> inaweza kuwekea majukumu.
@@ -1514,6 +1513,11 @@ Iwapo sera hii haitawekwa au orodha ni tupu miradi yote itapatikana katika <ph n
 
       Kuweka chaguo hili kulezama au kuiacha bila kuwekwa kipataji cha programu jalizi kitakuwa amilifu.</translation>
 <translation id="6699880231565102694">Wezesha uthibitishaji wa vipengee viwili kwa wapangishaji wa ufikivu wa mbali</translation>
+<translation id="6724842112053619797">Ukiiwasha mipangilio hii, mipangilio iliyohifadhiwa kwenye wasifu wa <ph name="PRODUCT_NAME" /> kama vile alamisho, data ya kujaza kiotomatiki, manenosiri, n.k. pia vitaandikwa kwenye faili iliyohifadhiwa kwenye folda ya wasifu wa mtumiaji mwingine au kwenye eneo lililobainishwa na Msimamizi kupitia sera ya <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Ukiiwasha sera hii, usawazishaji kwenye wingu utazimwa.
+
+      Ukiizima sera hii au usipoweka mipangilio, wasifu wa kawaida kwenye kifaa chako ndio utakaotumika pekee.
+
+      Sera ya <ph name="SYNC_DISABLED_POLICY_NAME" /> huzima usawazishaji wote wa data, hivyo kubatilisha RoamingProfileSupportEnabled.</translation>
 <translation id="6757438632136860443">Hukuruhusu kuweka orodha ya ruwaza za url inayobainisha tovuti zinazoruhusiwa kutumia programu-jalizi ya <ph name="FLASH_PLUGIN_NAME" />.
 
           Ikiwa sera hii haitawekwa, thamani chaguo-msingi itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultPluginsSetting' endapo itawekwa, au mtumiaji akiweka mipangilio mwenyewe.</translation>
@@ -1563,6 +1567,13 @@ Iwapo sera hii haijawekwa, maoni yanayotamkwaa yatazimwa mwanzoni lakini yanawez
 <translation id="6943577887654905793">Jina la Mac/Linux inayopendelewa:</translation>
 <translation id="69525503251220566">Kigezo kinachotoa kipengele cha kutafuta kwa picha kwa mtoa huduma wa utafutaji chaguo-msingi</translation>
 <translation id="6956272732789158625">Usiruhusu tovuti yoyote itumie uundaji ufunguo</translation>
+<translation id="6994082778848658360">Hubainisha jinsi maunzi salama unayotumia yanaweza kutoa uthibitishaji wa hatua mbili ikiwa yanaweza kukitumia kipengele hiki. Kitufe cha kuwasha/kuzima mashine kinatumika kutambua kuwepo kwa mtumiaji mwenyewe.
+
+      Ukichagua 'Imezimwa', hamna uthibitishaji wa hatua mbili utakaotolewa.
+
+      Ukichagua 'U2F', uthibitishaji wa hatua mbili uliowekwa utafanya kazi kulingana na kibainishi cha FIDO U2F.
+
+      Ukichagua 'U2F_EXTENDED', uthibitishaji wa hatua mbili uliowekwa utatoa utendakazi wa U2F pamoja na baadhi ya viendelezi vya uthibitishaji wa mtu binafsi.</translation>
 <translation id="6997592395211691850">Iwapo ukaguzi wa OCSP/CRL mtandaoni unahitajika kwa nanga za uaminifu za karibu</translation>
 <translation id="7003334574344702284">Sera hii inalazimisha manaenosiri yaliyohifadhiwa kuletwa kutoka kwenye kivinjari chaguo-msingi cha awali ikiwezeshwa. Ikiwezeshwa, sera hii pia inaathiri kidadisi cha kuleta.
 
@@ -1769,7 +1780,6 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 <translation id="7713608076604149344">Vikwazo vya upakuaji</translation>
 <translation id="7715711044277116530">Asilimia ya kupima kuchelewesha kwa mwanga wa skrini katika modi ya wasilisho</translation>
 <translation id="7717938661004793600">Sanidi vipengele vya ufikiaji vya <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7719251660743813569">Inadhibiti iwapo metriki za matumizi zinaripotiwa tena katika Google. Ikiwa imewekwa kwenye ndivyo, <ph name="PRODUCT_OS_NAME" /> itaripoti metriki za matumizi. Ikiwa haijasanidiwa au imewekwa kuwa siyo Ndivyo, kuripoti metriki kutalemazwa.</translation>
 <translation id="7724994675283793633">Sera hii huwasha HTTP/0.9 kwenye milango mbali na 80 ya HTTP na 443 ya HTTPS.
 
       Sera huzimwa kwa chaguo-msingi, na ikiwashwa, huwaacha watumiaji katika hali ambayo wanaweza kupata matatizo ya usalama https://crbug.com/600352.
@@ -2092,6 +2102,15 @@ Mfumo wa kipimo  lazima uwe 100% au zaidi. Thamani zitakazofupisha kuchelewa kwa
 <translation id="891435090623616439">imesimbwa kama mfuatano wa JSON, kwa maelezo angalia <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Ripoti eneo la kifaa</translation>
 <translation id="8951350807133946005">Weka saraka ya akiba ya diski</translation>
+<translation id="8952317565138994125">Huzima usawazishaji data kwenye <ph name="PRODUCT_NAME" /> kwa kutumia huduma za usawazishaji zilizopangishwa kwenye Google na kuzuia watumiaji kuibadilisha mipangilio hii.
+
+      Ukiiwasha mipangilio hii, watumiaji hawataweza kubadilisha wala kubatilisha mipangilio hii kwenye <ph name="PRODUCT_NAME" />.
+
+      Usipoiweka sera hii, mtumiaji atachagua kutumia au kutotumia kipengele cha Usawazishaji wa Google.
+
+      Ili kuzima kabisa kipengele cha Usawazishaji wa Google, inapendekezwa uzime huduma ya Usawazishaji wa Google kwenye Google Admin console.
+
+      Hupaswi kuiwasha sera hii wakati ambapo sera ya <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> imewashwa kwa sababu kipengele hicho kinashiriki utendaji wa huduma sawa. Katika hali kama hii, usawazishaji wa Google utazimwa kabisa.</translation>
 <translation id="8955719471735800169">Rudi juu</translation>
 <translation id="8960850473856121830">Ruwaza katika orodha hii zitalinganishwa dhidi ya asili ya usalama wa
       ombi la URL.  Zikilingana, idhini ya kufikia vifaa vya
@@ -2101,6 +2120,7 @@ Mfumo wa kipimo  lazima uwe 100% au zaidi. Thamani zitakazofupisha kuchelewa kwa
 <translation id="8970205333161758602">Didimiza kukataa kuuliza kwa <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Saa ya kipindi cha umma cha uingiaji otomatiki</translation>
 <translation id="8976248126101463034">Ruhusu kipengele cha uthibitishaji wa gnubby kwa seva pangishi za uwezo wa kufikia kwa mbali</translation>
+<translation id="8976531594979650914">Tumia Printa Chaguo-msingi ya Mfumo kama Chaguo-msingi</translation>
 <translation id="8992176907758534924">Usiruhusu tovuti yoyote kuonyesha picha</translation>
 <translation id="9035964157729712237">Vitambulisho vya viendelezi vya kuondolewa kenye orodha isiyokubalika</translation>
 <translation id="9042911395677044526">Inaruhusu kusukuma kwa usanidi wa mtandao kutekelezwa kwa kila mtumiaji katika kifaa cha <ph name="PRODUCT_OS_NAME" />. Usanidi wa mtandao ni mtungo ulioumbizwa wa JSON kama ilivyofasiliwa kwa umbizo la Fungua Usanidi wa Mtandao ilivyofafanuliwa katika <ph name="ONC_SPEC_URL" /></translation>

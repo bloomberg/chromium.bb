@@ -54,13 +54,6 @@
       permitida é de 60 segundos.</translation>
 <translation id="1221359380862872747">Carregar URLs especificados no início de sessão de demonstração</translation>
 <translation id="1265053460044691532">Limitar o tempo durante o qual um utilizador autenticado via SAML pode iniciar sessão offline</translation>
-<translation id="127699919157094139">Desativa a sincronização de dados no <ph name="PRODUCT_NAME" /> com a utilização de serviços de sincronização alojados no Google e impede que os utilizadores alterem esta definição.
-
-      Se ativar esta definição, os utilizadores não a podem alterar ou substituir no <ph name="PRODUCT_NAME" />.
-
-      Se deixar esta política por definir, o Google Sync está disponível para o utilizador, que pode optar por utilizá-lo ou não.
-
-      Para desativar totalmente o Google Sync, recomenda-se que desative o serviço Google Sync na Consola do administrador do Google.</translation>
 <translation id="1291880496936992484">Aviso: o RC4 será completamente removido do <ph name="PRODUCT_NAME" /> após a versão 52 (por volta de setembro de 2016) e esta política deixa de funcionar nessa altura.
 
       Se a política não for definida ou for definida como falsa, os conjuntos de cifras RC4 no TLS não estão ativados. Caso contrário, pode ser definida como verdadeira para manter a compatibilidade com um servidor desatualizado. Esta é uma medida temporária e é necessário voltar a configurar o servidor.</translation>
@@ -504,6 +497,11 @@
 
       Se esta política for deixada por definir, é o equivalente a estar ativa. Consulte a descrição acima.</translation>
 <translation id="285480231336205327">Ativar modo de alto contraste</translation>
+<translation id="2854919890879212089">Faz com que o <ph name="PRODUCT_NAME" /> utilize a impressora predefinida do sistema como a escolha predefinida na Pré-visualização de impressão em vez da impressora utilizada mais recentemente.
+
+      Se desativar esta definição ou não definir um valor, a Pré-visualização de impressão utiliza a impressora utilizada mais recentemente como a escolha de destino predefinida.
+
+      Se ativar esta definição, a Pré-visualização de impressão utiliza a impressora predefinida do SO como a escolha de destino predefinida.</translation>
 <translation id="2872961005593481000">Encerrar</translation>
 <translation id="2874209944580848064">Nota para os dispositivos <ph name="PRODUCT_OS_NAME" /> compatíveis com aplicações Android:</translation>
 <translation id="2877225735001246144">Desativar a procura de CNAME ao negociar a autenticação Kerberos</translation>
@@ -962,6 +960,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
           Por predefinição, os utilizadores recebem um aviso, e não um erro, se o PIN for considerado fraco.</translation>
 <translation id="4723829699367336876">Ativar firewall transversal do cliente de acesso remoto</translation>
+<translation id="4725123658714754485">Controla se as métricas de utilização e os dados de diagnóstico, incluindo os relatórios de falhas, são comunicados à Google. Se a política estiver definida como verdadeira, o <ph name="PRODUCT_OS_NAME" /> comunica as métricas de utilização e os dados de diagnóstico. Se não for configurada ou for definida como falsa, o relatório de métricas e de dados de diagnóstico é desativado.</translation>
 <translation id="4725528134735324213">Ativar o Android Backup Service</translation>
 <translation id="4733471537137819387">Políticas relacionadas com a autenticação HTTP integrada</translation>
 <translation id="4744190513568488164">Os servidores para os quais o <ph name="PRODUCT_NAME" /> poderá delegar.
@@ -1438,6 +1437,11 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="6689792153960219308">Comunicar o estado do hardware</translation>
 <translation id="6693751878507293182">Se configurar esta definição como ativada, a pesquisa automática e a instalação de plug-ins em falta serão desativadas no <ph name="PRODUCT_NAME" />. Se definir desta opção como desativada ou não a definir, o localizador de plug-ins estará ativo.</translation>
 <translation id="6699880231565102694">Ativar a autenticação de dois fatores para anfitriões de acesso remoto</translation>
+<translation id="6724842112053619797">Se ativar esta definição, as definições armazenadas nos perfis do <ph name="PRODUCT_NAME" />, tais como marcadores, dados de preenchimento automático, palavras-passe, etc., também são escritas num ficheiro armazenado na pasta do perfil de utilizador Roaming ou numa localização especificada pelo administrador através da política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Se ativar esta política, desativa a sincronização na nuvem.
+
+      Se esta política estiver desativada ou não estiver definida, apenas são utilizados os perfis locais normais.
+
+      A política <ph name="SYNC_DISABLED_POLICY_NAME" /> desativa a sincronização de todos os dados e substitui a política RoamingProfileSupportEnabled.</translation>
 <translation id="6757438632136860443">Permite-lhe definir uma lista de padrões de URL que especificam sites que estão autorizados a executar o plug-in <ph name="FLASH_PLUGIN_NAME" />.
 
           Se esta política não for definida, é utilizado o valor predefinido global para todos os sites da política "DefaultPluginsSetting", se esta estiver definida ou, caso contrário, a configuração pessoal do utilizador.</translation>
@@ -1483,6 +1487,13 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="6943577887654905793">Nome de preferência do Mac/Linux</translation>
 <translation id="69525503251220566">Parâmetro que fornece a funcionalidade de pesquisa por imagem ao fornecedor de pesquisas predefinido</translation>
 <translation id="6956272732789158625">Não permitir que os sites utilizem a geração de chaves</translation>
+<translation id="6994082778848658360">Especifica de que forma o hardware de elemento seguro integrado pode ser utilizado para fornecer uma autenticação de fator duplo, se for compatível com esta funcionalidade. O botão ligar/desligar do computador é utilizado para detetar a presença física do utilizador.
+
+      Se estiver selecionado "Desativado", o fator duplo não é fornecido.
+
+      Se estiver selecionado "U2F", o fator duplo integrado comporta-se de acordo com a especificação FIDO U2F.
+
+      Se estiver selecionado "U2F_EXTENDED", o fator duplo integrado fornece as funções U2F mais algumas extensões para comprovação individual.</translation>
 <translation id="6997592395211691850">Se são necessárias verificações de OCSP/CRL online para âncoras fidedignas locais</translation>
 <translation id="7003334574344702284">Se esta política estiver ativada, força a importação de palavras-passe guardadas a partir do anterior navegador predefinido e também afeta a caixa de diálogo de importação. Se estiver desativada, as palavras-passe não são importadas. Se não estiver definida, o utilizador poderá ser questionado se pretende importá-las ou a importação poderá ocorrer automaticamente.</translation>
 <translation id="7003746348783715221">Preferências do <ph name="PRODUCT_NAME" /></translation>
@@ -1670,7 +1681,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="7713608076604149344">Restrições de transferências</translation>
 <translation id="7715711044277116530">Percentagem que determina a escala do atraso de esbatimento do ecrã no modo de apresentação</translation>
 <translation id="7717938661004793600">Configura as funcionalidades de acessibilidade de <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7719251660743813569">Controla se as métricas de utilização são comunicadas à Google. Se a política estiver definida como verdadeira, o <ph name="PRODUCT_OS_NAME" /> irá comunicar as métricas de utilização. Se não for configurada ou for definida como falsa, o relatório de métricas será desativado.</translation>
 <translation id="7724994675283793633">Esta política ativa o protocolo HTTP/0.9 em portas que não sejam a porta 80 para HTTP e a porta 443 para HTTPS.
 
       Esta política está desativada por predefinição e, se for ativada, deixa os utilizadores suscetíveis ao problema de segurança https://crbug.com/600352.
@@ -1978,6 +1988,15 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="891435090623616439">codificado como uma string JSON; para mais detalhes, consulte <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Comunicar localização do dispositivo</translation>
 <translation id="8951350807133946005">Definir o diretório de cache do disco</translation>
+<translation id="8952317565138994125">Desativa a sincronização de dados no <ph name="PRODUCT_NAME" /> através de serviços de sincronização alojados no Google e impede que os utilizadores alterem esta definição.
+
+      Se ativar esta definição, os utilizadores não podem alterar nem substituir esta definição no <ph name="PRODUCT_NAME" />.
+
+      Se deixar esta política por definir, o Google Sync está disponível para o utilizador decidir se pretende ou não utilizá-lo.
+
+      Para desativar totalmente o Google Sync, recomenda-se que desative o serviço Google Sync na Consola do administrador do Google.
+
+      Não deve ativar esta política quando a política <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> estiver ativada, uma vez que essa funcionalidade partilha a mesma funcionalidade do lado do cliente. Neste caso, a sincronização alojada no Google é totalmente desativada.</translation>
 <translation id="8955719471735800169">Voltar ao início</translation>
 <translation id="8960850473856121830">Os padrões nesta lista vão ser comparados com a origem
       de segurança do URL que faz o pedido. Caso seja encontrada uma correspondência,
@@ -1987,6 +2006,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="8970205333161758602">Suprimir o pedido de recusa do <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Temporizador do início automático da sessão pública</translation>
 <translation id="8976248126101463034">Permitir autenticação gnubby para anfitriões de acesso remoto</translation>
+<translation id="8976531594979650914">Utilizar a impressora predefinida do sistema como a predefinição</translation>
 <translation id="8992176907758534924">Não permitir que os sites mostrem imagens</translation>
 <translation id="9035964157729712237">IDs de extensões a excluir da lista negra</translation>
 <translation id="9042911395677044526">Permite que a configuração de rede seja aplicada por utilizador para um aparelho <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma cadeia de formato JSON, conforme definido pelo formato de Configuração de Rede Aberta descrito em <ph name="ONC_SPEC_URL" /></translation>

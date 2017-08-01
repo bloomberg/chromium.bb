@@ -33,6 +33,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="129553762522093515">Senest lukkede</translation>
 <translation id="1303671224831497365">Der blev ikke fundet nogen Bluetooth-enheder</translation>
 <translation id="1326317727527857210">Log ind på Chrome for at få adgang til dine faner på dine andre enheder.</translation>
+<translation id="132830257261478853">Adresselinjen. Træk nedad for at lukke navigationspanelet.</translation>
 <translation id="1332501820983677155">Funktionsgenveje i Google Chrome</translation>
 <translation id="1339917386316755344">Logger dig ud af de fleste websites. Du bliver ikke logget ud af din Google-konto.</translation>
 <translation id="1369915414381695676">Websitet <ph name="SITE_NAME" /> blev tilføjet</translation>
@@ -127,12 +128,14 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="2156074688469523661">Tilbageværende websites (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Beskyt dig selv og din enhed mod farlige websites</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webapp. <ph name="APP_URL" /></translation>
+<translation id="2227444325776770048">Fortsæt som <ph name="USER_FULL_NAME" /></translation>
 <translation id="2246961355222023276">Brugt data:</translation>
 <translation id="2268044343513325586">Juster</translation>
 <translation id="2286841657746966508">Faktureringsadresse</translation>
 <translation id="2315043854645842844">Klientens certifikatvalg understøttes ikke af operativsystemet.</translation>
 <translation id="2321958826496381788">Træk i skyderen, indtil du kan læse dette uden problemer. Når du trykker to gange på et afsnit, skal teksten som minimum være på denne størrelse.</translation>
 <translation id="2323763861024343754">Websitelagerplads</translation>
+<translation id="2342981853652716282">Log ind på Chrome for at få dine bogmærker, adgangskoder og meget mere på alle dine enheder.</translation>
 <translation id="2343328333327081434">Installerer…</translation>
 <translation id="2346253980530904022">Google-serverne optimerer de sider, du besøger, bortset fra HTTPS- og inkognitosider.</translation>
 <translation id="2349710944427398404">Samlet mængde data, som Chrome anvender, herunder konti, bogmærker og gemte indstillinger</translation>
@@ -176,6 +179,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="2762000892062317888">lige nu</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder tilbage</translation>
 <translation id="2781151931089541271">1 sekund tilbage</translation>
+<translation id="2810645512293415242">Forenklet side, der sparer data og indlæses hurtigere.</translation>
 <translation id="2836148919159985482">Tryk på tilbageknappen for at afslutte fuld skærm.</translation>
 <translation id="2842985007712546952">Overordnet mappe</translation>
 <translation id="2870560284913253234">Website</translation>
@@ -224,6 +228,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="3282568296779691940">Log ind i Chrome</translation>
 <translation id="3295602654194328831">Skjul oplysninger</translation>
 <translation id="3303414029551471755">Vil du fortsætte og downloade indholdet?</translation>
+<translation id="3319792846664697699">Navigationspanel</translation>
 <translation id="3321222012623826478">Denne tjeneste skal sende denne websiteadresse anonymt til bekræftelse på Googles servere.</translation>
 <translation id="3328801116991980348">Webstedoplysninger</translation>
 <translation id="3350687908700087792">Luk alle inkognitofaner</translation>
@@ -273,7 +278,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="3744111561329211289">Synkronisering i baggrunden</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Slå Bluetooth til<ph name="END_LINK" /> for at tillade parring</translation>
 <translation id="3789841737615482174">Installer</translation>
-<translation id="380076759404194828">{NUM_SELECTED,plural, =1{1 element er valgt}one{# element er valgt}other{# elementer er valgt}}</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Valgmuligheder</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> downloads blev slettet</translation>
@@ -370,7 +374,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4807098396393229769">Navn på kort</translation>
 <translation id="4807963036345170158">Datasparefunktionen er slået fra</translation>
 <translation id="4816465935029283692">Datatyper</translation>
-<translation id="4835385943915508971">Chrome har ikke adgang til den ressource, du anmoder om.</translation>
 <translation id="4837753911714442426">Åbn valgmuligheder for udskrivning af siden</translation>
 <translation id="4850886885716139402">Vis</translation>
 <translation id="4860895144060829044">Ring op</translation>
@@ -425,7 +428,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="5345040418939504969">Slettede <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Placeringsadgang er også <ph name="BEGIN_LINK" />slået fra for denne enhed<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">Webadressen blev kopieret.</translation>
-<translation id="5384883051496921101">Dette website skal til at dele oplysninger med en app uden for inkognitotilstand.</translation>
 <translation id="5400569084694353794">Ved at bruge denne applikation accepterer du Chromes <ph name="BEGIN_LINK1" />servicevilkår<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />erklæring om privatliv<ph name="END_LINK2" />.</translation>
 <translation id="5403644198645076998">Tillad kun bestemte websites</translation>
 <translation id="5414836363063783498">Bekræfter...</translation>
@@ -452,6 +454,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="5568069709869097550">Kan ikke logge ind</translation>
 <translation id="557283862590186398">Chrome skal have tilladelse til at bruge din mikrofon på dette website.</translation>
 <translation id="5578795271662203820">Søg efter billedet på <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5585019845078534178">Kort</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
 <translation id="5596627076506792578">Flere valgmuligheder</translation>
 <translation id="5620928963363755975">Find dine filer og sider i Downloads via knappen Flere valgmuligheder</translation>
@@ -520,6 +523,7 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="6177390657002841081">Slå Datasparefunktion til</translation>
 <translation id="6181444274883918285">Tilføj en undtagelse for et website</translation>
 <translation id="6192792657125177640">Undtagelser</translation>
+<translation id="6210748933810148297">Er det ikke <ph name="EMAIL" />?</translation>
 <translation id="6232535412751077445">Aktivering af "Do Not Track" betyder, at en anmodning medtages i din browsertrafik. Effekten afhænger af, om et website reagerer på anmodningen, og hvordan anmodningen fortolkes.
 
 Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, som ikke er baseret på andre websites, du har besøgt. Mange websites vil fortsat indsamle og bruge browserdata til f.eks. at forbedre sikkerheden, til at levere indhold, annoncer og anbefalinger og til at generere rapporteringsstatistik.</translation>
@@ -558,6 +562,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="654446541061731451">Vælg en fane, der skal overføres</translation>
 <translation id="6545017243486555795">Ryd alle data</translation>
 <translation id="6550675742724504774">Valgmuligheder</translation>
+<translation id="6556716549745717622">Blokér, hvis websitet har tendens til at vise påtrængende annoncer (anbefales)</translation>
 <translation id="6560414384669816528">Søg via Sogou</translation>
 <translation id="6566259936974865419">Chrome har sparet dig <ph name="GIGABYTES" /> GB</translation>
 <translation id="656628257199996201">Oversæt altid <ph name="SOURCE_LANGUAGE" /></translation>
@@ -566,7 +571,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6583199322650523874">Føj et bogmærke til den aktuelle side</translation>
 <translation id="6600954340915313787">Kopieret til Chrome</translation>
 <translation id="6612358246767739896">Beskyttet indhold</translation>
-<translation id="662080504995468778">Bliv her</translation>
 <translation id="6627583120233659107">Rediger mappen</translation>
 <translation id="6643016212128521049">Ryd</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> mere}one{<ph name="CONTACT_PREVIEW" />\u2026 og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> mere}other{<ph name="CONTACT_PREVIEW" />\u2026 og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> mere}}</translation>
@@ -592,6 +596,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6831043979455480757">Oversæt</translation>
 <translation id="6846298663435243399">Indlæser…</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> faner blev lukket</translation>
+<translation id="6856477143496886355">Kort og adresser via Google Payments</translation>
 <translation id="6864459304226931083">Download billede</translation>
 <translation id="6865313869410766144">Formulardata for AutoFyld</translation>
 <translation id="6868088497967843822">Log ind for at hente bogmærker, historik og andre indstillinger til alle dine enheder.</translation>
@@ -620,6 +625,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7053983685419859001">Bloker</translation>
 <translation id="7062545763355031412">Acceptér, og skift konto</translation>
 <translation id="7063006564040364415">Der kunne ikke oprettes forbindelse til synkroniseringsserveren.</translation>
+<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 er valgt}one{# er valgt}other{# er valgt}}</translation>
 <translation id="7121362699166175603">Rydder historikken og autofuldførelser i adresselinjen. Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Tillad for den aktuelle søgemaskine</translation>
 <translation id="7138678301420049075">Andet</translation>
@@ -770,7 +776,6 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 Du kan få nye licenser ved at oprette forbindelse til internettet og afspille det indhold, du har downloadet.</translation>
 <translation id="8636825310635137004">Aktivér synkronisering for at få adgang til dine faner på dine andre enheder.</translation>
 <translation id="8641930654639604085">Prøv at blokere websites med indhold for voksne</translation>
-<translation id="8660471606262461360">Fra Google Payments</translation>
 <translation id="8662811608048051533">Logger dig ud af de fleste websites.</translation>
 <translation id="8676374126336081632">Ryd indtastning</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalstyrkeniveau: # søjle}one{Signalstyrkeniveau: # søjle}other{Signalstyrkeniveau: # søjler}}</translation>
@@ -794,7 +799,6 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="8922289737868596582">Download sider via knappen Flere valgmuligheder for at bruge dem, når du er offline</translation>
 <translation id="8941729603749328384">www.eksempel.com</translation>
 <translation id="8942627711005830162">Åbn i et andet vindue</translation>
-<translation id="894871326938397531">Afslut inkognitotilstand?</translation>
 <translation id="8951232171465285730">Chrome har sparet dig <ph name="MEGABYTES" /> MB</translation>
 <translation id="8959122750345127698">Navigationen er ikke mulig: <ph name="URL" /></translation>
 <translation id="896250263197055929">Fanen Downloads er valgt</translation>

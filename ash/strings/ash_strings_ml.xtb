@@ -26,6 +26,7 @@
 <translation id="1677472565718498478"><ph name="TIME" /> ശേഷിക്കുന്നു</translation>
 <translation id="1698760176351776263">IPv6 വിലാസം: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">ഈ ഉപകരണം മാനേജുചെയ്യുന്നത് എന്റർപ്രൈസാണ്</translation>
+<translation id="1746730358044914197">ഇൻപുട്ട് രീതികൾ കോൺഫിഗർ ചെയ്യുന്നത് നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്ററാണ്.</translation>
 <translation id="1747827819627189109">ഓൺ‌ സ്‌ക്രീൻ കീ‌ബോർഡ് പ്രവർത്തനക്ഷമമാക്കി</translation>
 <translation id="1823873187264960516">ഇതർനെറ്റ്: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi ഓഫുചെയ്‌തു.</translation>
@@ -37,6 +38,7 @@
 <translation id="1942830294380034169">ഓവർഫ്ലോ ബട്ടൺ</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+തിരയൽ+H</translation>
 <translation id="2049639323467105390">ഈ ഉപകരണം നിയന്ത്രിക്കുന്നത് <ph name="DOMAIN" /> ആണ്.</translation>
 <translation id="2050339315714019657">ഛായാചിത്രം</translation>
 <translation id="207439088875642105"><ph name="FIRST_PARENT_EMAIL" />, <ph name="SECOND_PARENT_EMAIL" /> എന്നിവർ നിയന്ത്രിക്കുന്ന കുട്ടികൾക്കുള്ള അക്കൗണ്ടാണിത്</translation>
@@ -57,6 +59,7 @@
 <translation id="2501920221385095727">സ്‌റ്റിക്കി കീകൾ</translation>
 <translation id="2509468283778169019">CAPS LOCK ഓൺ ആണ്</translation>
 <translation id="2532589005999780174">ഉയർന്ന ദൃശ്യതീവ്രത മോഡ്</translation>
+<translation id="2597972630681408282">നൈറ്റ് ‌ലൈറ്റ്: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING" />-നുള്ളിൽ സെഷൻ അവസാനിക്കുന്നു. നിങ്ങൾ സൈൻ ഔട്ടാകും.</translation>
 <translation id="2727977024730340865">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജ്ജറിലേക്ക് പ്ലഗ് ചെയ്‌തിരിക്കുന്നു. ബാറ്ററി ചാർജുചെയ്യൽ വിശ്വസനീയമാകണമെന്നില്ല.</translation>
 <translation id="2761704814324807722">സ്‌റ്റാറ്റസ് ട്രേ, സമയം, <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +79,6 @@
 <translation id="3009178788565917040">ഔട്ട്പുട്ട്</translation>
 <translation id="3019353588588144572">ബാറ്ററി പൂർണ്ണമായി ചാർജ്ജാകുന്നതിന് ശേഷിക്കുന്ന സമയം, <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">ഇത് <ph name="MANAGER_EMAIL" /> എന്നയാളുടെ നിയന്ത്രണത്തിലുള്ള കുട്ടികൾക്കുള്ള അക്കൗണ്ടാണ്</translation>
-<translation id="3050422059534974565">CAPS LOCK ഓൺ ആണ്.
-റദ്ദാക്കുന്നതിന് തിരയൽ അല്ലെങ്കിൽ Shift അമർത്തുക.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">താഴെ</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -136,6 +137,7 @@
 <translation id="4849058404725798627">കീബോർഡ് ഫോക്കസ് ഉപയോഗിച്ച് ഒബ്‌ജക്‌റ്റിനെ ഹൈലൈറ്റുചെയ്യുക</translation>
 <translation id="4872237917498892622">Alt+തിരയൽ അല്ലെങ്കിൽ Shift</translation>
 <translation id="4895488851634969361">ബാറ്ററി ചാർജുചെയ്യൽ പൂർണ്ണമായി.</translation>
+<translation id="4905614135390995787">ഉയർന്ന ദൃശ്യതീവ്രത മോഡ് ടോഗിൾ ചെയ്യാനുള്ള ‌കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിനുപകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>
 <translation id="4918086044614829423">സ്വീകരിക്കുക</translation>
 <translation id="4961318399572185831">സ്‌ക്രീൻ കാസ്റ്റുചെയ്യുക</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +161,10 @@
 <translation id="5744083938413354016">ടാപ്പുചെയ്‌ത് വലിച്ചിടൽ</translation>
 <translation id="5777841717266010279">സ്‌ക്രീൻ പങ്കിടൽ നിർത്തണോ?</translation>
 <translation id="57838592816432529">മ്യൂട്ടുചെയ്യുക</translation>
+<translation id="5860033963881614850">ഓഫാക്കുക</translation>
 <translation id="5895138241574237353">പുനരാരംഭിക്കുക</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">ഓൺ ചെയ്യുക</translation>
 <translation id="5927132638760172455">ഒരു അജ്ഞാത റിസീവറിലേക്ക് കാസ്റ്റുചെയ്യുന്നു</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">പഴയപടിയാക്കുക</translation>
@@ -169,8 +173,8 @@
 <translation id="5977415296283489383">ഹെഡ്‌ഫോൺ</translation>
 <translation id="5978382165065462689">നിങ്ങളുടെ വിദൂര സഹായി മുഖേന സ്‌ക്രീനിന്റെ നിയന്ത്രണം പങ്കിടുക.</translation>
 <translation id="5980301590375426705">അതിഥി സെഷനിൽ നിന്നും പുറത്തുകടക്കുക</translation>
+<translation id="5992218262414051481">ഉയർന്ന ദൃശ്യതീവ്രത മോഡ് പ്രവർത്തനക്ഷമമാക്കി. ഇത് ഓഫാക്കാൻ, Ctrl+തിരയൽ+H വീണ്ടും അമർത്തുക.</translation>
 <translation id="6018164090099858612">മിറർ മോഡിൽ നിന്ന് പുറത്തുകടക്കുന്നു</translation>
-<translation id="6041154455840261787">ഉയർന്ന ദൃശ്യതീവ്രത മോഡ് പ്രവർത്തനക്ഷമമാക്കി. ഇത് ഓഫാക്കാൻ, തിരയൽ+Shift+H വീണ്ടും അമർത്തുക.</translation>
 <translation id="6043212731627905357">ഈ മോണിറ്റർ നിങ്ങളുടെ <ph name="DEVICE_TYPE" /> ഉപകരണത്തിൽ പ്രവർത്തിക്കുന്നില്ല (മോണിറ്റർ ഇതിൽ പ്രവർത്തിക്കില്ല).</translation>
 <translation id="6043994281159824495">ഇപ്പോൾ സൈൻ ഔട്ട് ചെയ്യുക</translation>
 <translation id="6047696787498798094">മറ്റൊരു ഉപയോക്താവിലേക്ക് മാറുമ്പോൾ സ്ക്രീൻ പങ്കിടൽ നിർത്തും. നിങ്ങൾക്ക് തുടരണോ?</translation>
@@ -195,6 +199,7 @@
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" />-നുള്ളിൽ സെഷൻ അവസാനിക്കുന്നു.</translation>
 <translation id="6627638273713273709">തിരയല്‍+Shift+K</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. ആ ഉപകരണത്തിൽ ഈ പാസ്‌കീ നൽകുക: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">തിരയൽ+Shift+H</translation>
 <translation id="6700713906295497288">IME മെനു ബട്ടൺ</translation>
 <translation id="6713285437468012787">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കി, അത് ഇപ്പോൾ എല്ലാ ഉപയോക്താക്കൾക്കും ലഭ്യമാണ്. ക്രമീകരണങ്ങൾ ഉപയോഗിച്ച് നിങ്ങൾക്ക് ഈ ജോടിയാക്കൽ നീക്കംചെയ്യാം.</translation>
 <translation id="6785414152754474415">ബാറ്ററി <ph name="PERCENTAGE" />% നിറഞ്ഞിരിക്കുന്നു, ചാർജുചെയ്യൽ തുടരുന്നു.</translation>
@@ -214,8 +219,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />-ൽ പഴയ മിഴിവിലേക്ക് പഴയപടിയാക്കുന്നു</translation>
-<translation id="7209101170223508707">CAPS LOCK ഓണാണ്.
-റദ്ദാക്കുന്നതിന് Alt+തിരയൽ അല്ലെങ്കിൽ Shift അമർത്തുക.</translation>
+<translation id="7199454189089571166">അസിസ്റ്റന്റ് മോഡ്</translation>
 <translation id="7246339268451149667">വിരലടയാളം ഉപയോഗിച്ചുള്ള അൺലോക്കുചെയ്യൽ പ്രവർത്തനക്ഷമമാക്കണോ?</translation>
 <translation id="7256634071279256947">പിൻഭാഗത്തെ മൈക്രോഫോൺ</translation>
 <translation id="7348093485538360975">ഓൺ-സ്‌ക്രീൻ കീബോർഡ്</translation>
@@ -233,10 +237,10 @@
 <translation id="7649070708921625228">സഹായം</translation>
 <translation id="7692480393933218409">കണക്‌റ്റുചെയ്‌ത USB-C ഉപകരണങ്ങൾ ചാർജ്ജുചെയ്യുന്നു</translation>
 <translation id="776344839111254542">അപ്‌ഡേറ്റുചെയ്‌ത വിശദാംശങ്ങൾ കാണാൻ ‌ക്ലിക്കുചെയ്യുക</translation>
+<translation id="7798302898096527229">റദ്ദാക്കാൻ 'തിരയൽ' അല്ലെങ്കിൽ Shift അമർത്തുക.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" />, <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">നിങ്ങളുടെ ക്രമീകരണങ്ങള്‍ സമന്വയിപ്പിച്ചതിന് ശേഷം ഭാഷ "<ph name="FROM_LOCALE" />" എന്നതില്‍ നിന്ന് "<ph name="TO_LOCALE" />" എന്നതിലേക്ക് മാറി.</translation>
 <translation id="7904094684485781019">ഈ അക്കൗണ്ടിന്റെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഒന്നിലധികം സൈൻ-ഇൻ അനുവദിക്കുന്നില്ല.</translation>
-<translation id="7951523953736115461">നൈറ്റ് ലൈറ്റ്</translation>
 <translation id="7977927628060636163">മൊബൈൽ നെറ്റ്‌വർക്കുകൾ തിരയുന്നു...</translation>
 <translation id="7982789257301363584">നെറ്റ്വര്‍ക്ക്</translation>
 <translation id="8000066093800657092">നെറ്റ്‍വര്‍ക്ക് ഇല്ല</translation>
@@ -255,6 +259,7 @@
 <translation id="8433977262951327081">ഷെൽഫിലെ ഇൻപുട്ട് ഓപ്ഷൻ മെനു ബബിൾ കാണുന്നതിനുള്ള കുറുക്കുവഴി മാറ്റി. <ph name="OLD_SHORTCUT" /> എന്നതിന് പകരം <ph name="NEW_SHORTCUT" /> ഉപയോഗിക്കുക.</translation>
 <translation id="8454013096329229812">Wi-Fi ഓൺ ചെയ്‌തു.</translation>
 <translation id="847056008324733326">സ്‌കെയിൽ ക്രമീകരണം പ്രദർശിപ്പിക്കുക</translation>
+<translation id="8477270416194247200">റദ്ദാക്കാൻ Alt+തിരയൽ അല്ലെങ്കിൽ Shift അമർത്തുക.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: വീണ്ടും കണക്‌റ്റുചെയ്യുന്നു...</translation>
 <translation id="8517041960877371778">നിങ്ങളുടെ <ph name="DEVICE_TYPE" /> ഓണായിരിക്കുമ്പോൾ അത് ചാർജ്ജാകാതിരിക്കാം.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> ശേഷിക്കുന്നു</translation>

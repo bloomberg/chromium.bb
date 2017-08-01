@@ -33,6 +33,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="129553762522093515">Ostatnio zamknięte</translation>
 <translation id="1303671224831497365">Nie znaleziono urządzeń Bluetooth</translation>
 <translation id="1326317727527857210">Aby korzystać z kart ze swoich innych urządzeń, zaloguj się w Chrome.</translation>
+<translation id="132830257261478853">Pasek adresu. Pociągnij w dół, by zamknąć panel nawigacji.</translation>
 <translation id="1332501820983677155">Skróty do funkcji Google Chrome</translation>
 <translation id="1339917386316755344">Wylogowuje z większości stron internetowych. Nie wyloguje Cię z konta Google.</translation>
 <translation id="1369915414381695676">Strona <ph name="SITE_NAME" /> została dodana</translation>
@@ -127,12 +128,14 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="2156074688469523661">Pozostałe strony (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Chroń siebie i swoje urządzenie przed niebezpiecznymi witrynami</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" /> – aplikacja internetowa. <ph name="APP_URL" /></translation>
+<translation id="2227444325776770048">Kontynuuj jako <ph name="USER_FULL_NAME" /></translation>
 <translation id="2246961355222023276">Użyte dane:</translation>
 <translation id="2268044343513325586">Zawęź</translation>
 <translation id="2286841657746966508">Adres rozliczeniowy</translation>
 <translation id="2315043854645842844">Wybieranie certyfikatu klienta nie jest obsługiwane przez ten system operacyjny.</translation>
 <translation id="2321958826496381788">Przeciągaj suwak, by umożliwić wygodne czytanie. Gdy dwukrotnie klikniesz akapit, tekst powiększy się co najmniej do tej wielkości.</translation>
 <translation id="2323763861024343754">Dane witryn:</translation>
+<translation id="2342981853652716282">Zaloguj się w Chrome, by mieć dostęp do swoich zakładek, haseł i innych ustawień na wszystkich swoich urządzeniach.</translation>
 <translation id="2343328333327081434">Instaluję…</translation>
 <translation id="2346253980530904022">Serwery Google będą optymalizować odwiedzane witryny, z wyjątkiem połączeń przez HTTPS i stron otwieranych w trybie incognito.</translation>
 <translation id="2349710944427398404">Łączna ilość danych używanych przez Chrome, w tym konta, zakładki i zapisane ustawienia</translation>
@@ -176,6 +179,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="2762000892062317888">przed chwilą</translation>
 <translation id="2777555524387840389">Pozostało: <ph name="SECONDS" /> s</translation>
 <translation id="2781151931089541271">Pozostała sekunda</translation>
+<translation id="2810645512293415242">Uproszczona wersja strony pozwala szybciej zapisywać i wczytywać dane.</translation>
 <translation id="2836148919159985482">Kliknij przycisk Wstecz, by wyjść z trybu pełnoekranowego.</translation>
 <translation id="2842985007712546952">Folder nadrzędny</translation>
 <translation id="2870560284913253234">Witryna</translation>
@@ -224,6 +228,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="3282568296779691940">Zaloguj się w Chrome</translation>
 <translation id="3295602654194328831">Ukryj informacje</translation>
 <translation id="3303414029551471755">Przejść do pobrania treści?</translation>
+<translation id="3319792846664697699">Panel nawigacji</translation>
 <translation id="3321222012623826478">Usługa musi wysłać anonimowo adres tej strony na serwery Google w celu weryfikacji.</translation>
 <translation id="3328801116991980348">Informacje o witrynie</translation>
 <translation id="3350687908700087792">Zamknij wszystkie karty incognito</translation>
@@ -273,7 +278,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="3744111561329211289">Synchronizacja w tle</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Włącz Bluetooth<ph name="END_LINK" />, by umożliwić parowanie</translation>
 <translation id="3789841737615482174">Zainstaluj</translation>
-<translation id="380076759404194828">{NUM_SELECTED,plural, =1{Wybrano 1 element}few{Wybrano # elementy}many{Wybrano # elementów}other{Wybrano # elementu}}</translation>
 <translation id="3810838688059735925">Wideo</translation>
 <translation id="3810973564298564668">Zarządzaj</translation>
 <translation id="3819178904835489326">Usunięte pobrane pliki: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
@@ -370,7 +374,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4807098396393229769">Imię i nazwisko na karcie</translation>
 <translation id="4807963036345170158">Oszczędzanie danych jest wyłączone</translation>
 <translation id="4816465935029283692">Typy danych</translation>
-<translation id="4835385943915508971">Chrome nie ma dostępu do żądanego zasobu.</translation>
 <translation id="4837753911714442426">Otwórz opcje drukowania strony</translation>
 <translation id="4850886885716139402">Widok</translation>
 <translation id="4860895144060829044">Zadzwoń</translation>
@@ -425,7 +428,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="5345040418939504969">Usunięto: <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Dostęp do lokalizacji jest też <ph name="BEGIN_LINK" />wyłączony na tym urządzeniu<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">URL został skopiowany.</translation>
-<translation id="5384883051496921101">Ta strona zamierza udostępnić informacje aplikacji poza trybem incognito.</translation>
 <translation id="5400569084694353794">Korzystając z tej aplikacji, akceptujesz <ph name="BEGIN_LINK1" />Warunki korzystania z Chrome<ph name="END_LINK1" /> oraz <ph name="BEGIN_LINK2" />Informacje na temat ochrony prywatności w Chrome<ph name="END_LINK2" />.</translation>
 <translation id="5403644198645076998">Pozwól na otwieranie tylko wybranych stron</translation>
 <translation id="5414836363063783498">Weryfikuję…</translation>
@@ -452,6 +454,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="5568069709869097550">Nie można się zalogować</translation>
 <translation id="557283862590186398">Chrome potrzebuje uprawnień dostępu do mikrofonu na tej stronie.</translation>
 <translation id="5578795271662203820">Szukaj tej grafiki w <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5585019845078534178">Karty</translation>
 <translation id="5595485650161345191">Edytuj adres</translation>
 <translation id="5596627076506792578">Więcej opcji</translation>
 <translation id="5620928963363755975">Znajdź pliki i strony w Pobranych plikach, używając przycisku Więcej opcji</translation>
@@ -520,6 +523,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="6177390657002841081">Włącz Oszczędzanie danych</translation>
 <translation id="6181444274883918285">Dodaj witrynę do wyjątków</translation>
 <translation id="6192792657125177640">Wyjątki</translation>
+<translation id="6210748933810148297"><ph name="EMAIL" /> to nie Ty?</translation>
 <translation id="6232535412751077445">Włączenie opcji „Bez śledzenia” oznacza, że podczas przeglądania będzie wysyłane żądanie. Jego wynik zależy od tego, czy strona na nie odpowie oraz jak zostanie ono zinterpretowane.
 
 Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy bez związku ze stronami odwiedzonymi przez Ciebie wcześniej. Wiele stron będzie nadal gromadzić dane przeglądania i używać ich na przykład do poprawy bezpieczeństwa, pokazywania treści, reklam i rekomendacji oraz do generowania statystyk.</translation>
@@ -558,6 +562,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="654446541061731451">Wybierz kartę do przesłania</translation>
 <translation id="6545017243486555795">Wyczyść wszystkie dane</translation>
 <translation id="6550675742724504774">Opcje</translation>
+<translation id="6556716549745717622">Blokuj, jeśli na stronie wyświetlają się uciążliwe reklamy (zalecane)</translation>
 <translation id="6560414384669816528">Szukaj w Sogou</translation>
 <translation id="6566259936974865419">Chrome pozwolił Ci zaoszczędzić <ph name="GIGABYTES" /> GB</translation>
 <translation id="656628257199996201">Zawsze tłumacz z języka: <ph name="SOURCE_LANGUAGE" /></translation>
@@ -566,7 +571,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6583199322650523874">Dodaj bieżącą stronę do zakładek</translation>
 <translation id="6600954340915313787">Skopiowana do Chrome</translation>
 <translation id="6612358246767739896">Treść chroniona</translation>
-<translation id="662080504995468778">Zostań</translation>
 <translation id="6627583120233659107">Edytuj folder</translation>
 <translation id="6643016212128521049">Wyczyść</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}few{<ph name="CONTACT_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}many{<ph name="CONTACT_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
@@ -592,6 +596,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6831043979455480757">Tłumacz</translation>
 <translation id="6846298663435243399">Wczytuję…</translation>
 <translation id="6850830437481525139">Zamknięte karty: <ph name="TAB_COUNT" /></translation>
+<translation id="6856477143496886355">Karty i adresy z płatności Google</translation>
 <translation id="6864459304226931083">Pobierz obraz</translation>
 <translation id="6865313869410766144">Autouzupełnianie danych formularzy</translation>
 <translation id="6868088497967843822">Zaloguj się, by korzystać z zakładek, historii, haseł i innych ustawień na wszystkich swoich urządzeniach</translation>
@@ -620,6 +625,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7053983685419859001">Blokuj</translation>
 <translation id="7062545763355031412">Zaakceptuj i przełącz konta</translation>
 <translation id="7063006564040364415">Nie udało się nawiązać połączenia z serwerem synchronizacji.</translation>
+<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Wybrano 1}few{Wybrano #}many{Wybrano #}other{Wybrano #}}</translation>
 <translation id="7121362699166175603">Usuwa historię i pamięć autouzupełniania na pasku adresu. Inne rodzaje historii przeglądania mogą być nadal dostępne na Twoim koncie Google na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Zezwalaj na dostęp obecnej wyszukiwarce</translation>
 <translation id="7138678301420049075">Inne</translation>
@@ -770,7 +776,6 @@ Inne rodzaje historii przeglądania, takie jak wyszukiwania i aktywność w inny
 Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treści.</translation>
 <translation id="8636825310635137004">Aby korzystać z kart ze swoich innych urządzeń, włącz synchronizację</translation>
 <translation id="8641930654639604085">Próbuj blokować strony dla dorosłych</translation>
-<translation id="8660471606262461360">Z Google Payments</translation>
 <translation id="8662811608048051533">Wylogowuje z większości stron internetowych.</translation>
 <translation id="8676374126336081632">Wyczyść wpisany tekst</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Poziom siły sygnału: # słupek}few{Poziom siły sygnału: # słupki}many{Poziom siły sygnału: # słupków}other{Poziom siły sygnału: # słupka}}</translation>
@@ -794,7 +799,6 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="8922289737868596582">Pobierz strony, używając przycisku Więcej opcji, by korzystać z nich w trybie offline</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Otwórz w innym oknie</translation>
-<translation id="894871326938397531">Zamknąć tryb incognito?</translation>
 <translation id="8951232171465285730">Chrome pozwolił Ci zaoszczędzić <ph name="MEGABYTES" /> MB</translation>
 <translation id="8959122750345127698">Adres nieosiągalny: <ph name="URL" /></translation>
 <translation id="896250263197055929">Wybrano kartę Pobrane pliki</translation>

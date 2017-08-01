@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Bouton de dépassement de capacité</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+Recherche+H</translation>
 <translation id="2049639323467105390">Cet appareil est géré par <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Portrait</translation>
 <translation id="207439088875642105">Il s'agit d'un compte pour enfants géré par <ph name="FIRST_PARENT_EMAIL" /> et <ph name="SECOND_PARENT_EMAIL" />.</translation>
@@ -44,7 +45,7 @@
 <translation id="2127372758936585790">Chargeur de faible puissance</translation>
 <translation id="2144487987174258011">Redémarrez pour mettre Adobe Flash Player à jour</translation>
 <translation id="2208323208084708176">Mode bureau unifié</translation>
-<translation id="225680501294068881">Recherche d'appareils en cours…</translation>
+<translation id="225680501294068881">Recherche d'appareils…</translation>
 <translation id="2268130516524549846">Bluetooth désactivé</translation>
 <translation id="2268813581635650749">Déconnecter tous les utilisateurs</translation>
 <translation id="2292698582925480719">Échelle d'affichage</translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Touches persistantes</translation>
 <translation id="2509468283778169019">Touche VERR MAJ activée</translation>
 <translation id="2532589005999780174">Mode Contraste élevé</translation>
+<translation id="2597972630681408282">Éclairage nocturne : <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">Fin de la session dans <ph name="SESSION_TIME_REMAINING" />. Vous allez être déconnecté.</translation>
 <translation id="2727977024730340865">L'appareil est branché à un chargeur de faible puissance. Il se peut que la charge ne soit pas fiable.</translation>
 <translation id="2761704814324807722">Barre d'état – Heure : <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">Sortie</translation>
 <translation id="3019353588588144572">Temps restant avant chargement complet de la batterie : <ph name="TIME_REMAINING" />.</translation>
 <translation id="3047477924825107454">Il s'agit d'un compte pour enfants géré par <ph name="MANAGER_EMAIL" />.</translation>
-<translation id="3050422059534974565">Le VERROUILLAGE DES MAJUSCULES est activé.
-Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="3077734595579995578">maj</translation>
 <translation id="3087734570205094154">Bas</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -136,6 +136,7 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="4849058404725798627">Mettre l'objet sélectionné au clavier en surbrillance</translation>
 <translation id="4872237917498892622">Alt + Recherche ou Maj</translation>
 <translation id="4895488851634969361">La batterie est pleine.</translation>
+<translation id="4905614135390995787">Le raccourci permettant d'activer ou de désactiver le mode Contraste élevé a été modifié. Veuillez utiliser "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="4961318399572185831">Diffuser l'écran</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="5744083938413354016">Déplacement tactile</translation>
 <translation id="5777841717266010279">Arrêter le partage d'écran ?</translation>
 <translation id="57838592816432529">Couper le son</translation>
+<translation id="5860033963881614850">Désactivé</translation>
 <translation id="5895138241574237353">Redémarrer</translation>
 <translation id="5901316534475909376">Maj+Échap</translation>
+<translation id="5916664084637901428">Activé</translation>
 <translation id="5927132638760172455">Destinataire de la diffusion inconnu</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Rétablir</translation>
@@ -169,8 +172,8 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="5977415296283489383">Casque</translation>
 <translation id="5978382165065462689">Partager le contrôle de votre écran via l'assistance à distance</translation>
 <translation id="5980301590375426705">Fermer la session Invité</translation>
+<translation id="5992218262414051481">Le mode Contraste élevé est activé. Appuyez de nouveau sur Ctrl+Recherche+H pour le désactiver.</translation>
 <translation id="6018164090099858612">Sortie du mode Miroir…</translation>
-<translation id="6041154455840261787">Le mode Contraste élevé est activé. Appuyez de nouveau sur la touche de recherche+Maj+H pour le désactiver.</translation>
 <translation id="6043212731627905357">Ce moniteur ne fonctionne pas avec votre <ph name="DEVICE_TYPE" /> (il n'est pas compatible).</translation>
 <translation id="6043994281159824495">Se déconnecter maintenant</translation>
 <translation id="6047696787498798094">Le partage d'écran s'arrête lorsque vous passez à un autre utilisateur. Voulez-vous continuer ?</translation>
@@ -195,6 +198,7 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="6585808820553845416">Fin de la session dans <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="6627638273713273709">Rechercher+Maj+K</translation>
 <translation id="6650933572246256093">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer. Veuillez saisir le code d'authentification suivant sur l'appareil : <ph name="PASSKEY" />.</translation>
+<translation id="6691659475504239918">Recherche+Maj+H</translation>
 <translation id="6700713906295497288">Bouton de menu IME</translation>
 <translation id="6713285437468012787">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" a été associé et tous les utilisateurs peuvent désormais y accéder. Vous pouvez supprimer cette association dans les paramètres.</translation>
 <translation id="6785414152754474415">La batterie est chargée à <ph name="PERCENTAGE" /> % et en charge.</translation>
@@ -214,8 +218,7 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Maj+K</translation>
 <translation id="7168224885072002358">Rétablissement de la résolution précédente dans <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">Le VERROUILLAGE DES MAJUSCULES est activé.
-Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
+<translation id="7199454189089571166">Mode assistant</translation>
 <translation id="7246339268451149667">Activer le déverrouillage par empreinte digitale ?</translation>
 <translation id="7256634071279256947">Micro arrière</translation>
 <translation id="7348093485538360975">Clavier virtuel</translation>
@@ -233,10 +236,10 @@ Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="7649070708921625228">Aide</translation>
 <translation id="7692480393933218409">Charge des appareils USB de type C connectés</translation>
 <translation id="776344839111254542">Cliquer pour afficher les informations relatives à la mise à jour</translation>
+<translation id="7798302898096527229">Appuyez sur Rechercher ou Maj pour annuler.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> et <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">La langue utilisée est passée de "<ph name="FROM_LOCALE" />" à "<ph name="TO_LOCALE" />" après la synchronisation de vos paramètres.</translation>
 <translation id="7904094684485781019">L'administrateur de ce compte a désactivé la connexion multicompte.</translation>
-<translation id="7951523953736115461">Éclairage nocturne</translation>
 <translation id="7977927628060636163">Recherche de réseaux mobiles…</translation>
 <translation id="7982789257301363584">Réseau</translation>
 <translation id="8000066093800657092">Aucun réseau détecté</translation>
@@ -255,6 +258,7 @@ Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="8433977262951327081">Le raccourci pour afficher l'info-bulle du menu des options de saisie dans l'étagère a changé. Veuillez utiliser <ph name="NEW_SHORTCUT" /> au lieu de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Le Wi-Fi est activé.</translation>
 <translation id="847056008324733326">Paramètres de l'échelle d'affichage</translation>
+<translation id="8477270416194247200">Appuyez sur Alt+Rechercher ou Maj pour annuler.</translation>
 <translation id="8484916590211895857"><ph name="NAME" /> : reconnexion…</translation>
 <translation id="8517041960877371778">Il est possible que votre appareil <ph name="DEVICE_TYPE" /> ne se recharge pas lorsqu'il est allumé.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restant(s)</translation>

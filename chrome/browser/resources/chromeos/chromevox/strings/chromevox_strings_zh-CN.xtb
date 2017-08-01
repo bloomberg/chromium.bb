@@ -165,6 +165,7 @@
 <translation id="27527859628328957">跳转到下一个可设置为焦点的项</translation>
 <translation id="2770781857296573485">进入群组浏览</translation>
 <translation id="2777845298774924149">已退出</translation>
+<translation id="2781264313200109999">链接开头</translation>
 <translation id="2800204403141299078">没有其他任何元素。</translation>
 <translation id="2800780099804980316">不存在上一个1级标题。</translation>
 <translation id="280499067616661124">ChromeVox 在网页中查找</translation>
@@ -317,6 +318,7 @@
 <translation id="3716845769494773620">多行</translation>
 <translation id="3731746171184829332">不存在上一个标题。</translation>
 <translation id="3735039640698208086">播放音频时…</translation>
+<translation id="3755561384917041694">请在状态栏下启用屏幕键盘这项辅助功能，以便使用经过扩展的盲文命令。</translation>
 <translation id="3762198587642264450">转到当前行的末尾</translation>
 <translation id="3777255250339039212">1级标题标记</translation>
 <translation id="3793710123303304873">已退出对话框。</translation>
@@ -575,6 +577,7 @@
 <translation id="6037602951055904232">向前平移</translation>
 <translation id="6044160928851315051">调暗屏幕</translation>
 <translation id="6082768461603900813">基本导航操作</translation>
+<translation id="6092707270915298410">链接末尾</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">单元格结束。</translation>
 <translation id="6122013438240733403">按钮</translation>

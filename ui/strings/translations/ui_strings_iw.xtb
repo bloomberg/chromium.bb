@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">הגדל</translation>
 <translation id="1413622004203049571">השבת הודעות מאת <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{דקה אחת ו }two{# דקות ו }many{# דקות ו }other{# דקות ו }}</translation>
+<translation id="1643823602425662293">הודעה</translation>
 <translation id="1685967565548146460">Hats</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{דקה אחת}two{# דקות}many{# דקות}other{# דקות}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">קפוץ</translation>
 <translation id="4250229828105606438">צילום מסך</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{לפני חודש אחד}two{לפני חודשיים}many{לפני # חודשים}other{לפני # חודשים}}</translation>
+<translation id="4316910396681052118">כל האפליקציות</translation>
 <translation id="4320177379694898372">אין חיבור לאינטרנט</translation>
 <translation id="4588090240171750605">גלול ימינה</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{נותר חודש אחד}two{נותרו חודשיים}many{נותרו # חודשים}other{נותרו # חודשים}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">תיקייה ללא שם</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{שנ‘ אחת}two{# שנ‘}many{# שנ‘}other{# שנ‘}}</translation>
 <translation id="9150735707954472829">כרטיסייה</translation>
+<translation id="9161053988251441839">אפליקציות מוצעות</translation>
 <translation id="9170848237812810038">&amp;ביטול</translation>
 <translation id="932327136139879170">בית</translation>
 </translationbundle>

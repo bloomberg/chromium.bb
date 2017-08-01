@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">Увећај</translation>
 <translation id="1413622004203049571">Онемогући обавештења од <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минут и }one{# минут и }few{# минута и }other{# минута и }}</translation>
+<translation id="1643823602425662293">Обавештење</translation>
 <translation id="1685967565548146460">Анкета за праћење задовољства</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 минут}one{# минут}few{# минута}other{# минута}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">прескочи</translation>
 <translation id="4250229828105606438">Снимак екрана</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{Пре месец дана}one{Пре # месец}few{Пре # месеца}other{Пре # месеци}}</translation>
+<translation id="4316910396681052118">СВЕ АПЛИКАЦИЈЕ</translation>
 <translation id="4320177379694898372">Нема интернет везе</translation>
 <translation id="4588090240171750605">Помери надесно</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Још 1 месец}one{Још # месец}few{Још # месеца}other{Још # месеци}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">Неименовани директоријум</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 сек}one{# сек}few{# сек}other{# сек}}</translation>
 <translation id="9150735707954472829">Картица</translation>
+<translation id="9161053988251441839">ПРЕДЛОЖЕНЕ АПЛИКАЦИЈЕ</translation>
 <translation id="9170848237812810038">&amp;Опозови</translation>
 <translation id="932327136139879170">Почетна</translation>
 </translationbundle>

@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Κουμπί υπερχείλισης</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+Πλήκτρο αναζήτησης+H</translation>
 <translation id="2049639323467105390">Η διαχείριση της συσκευής γίνεται από τον τομέα <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Κάθετα</translation>
 <translation id="207439088875642105">Αυτός είναι ένας λογαριασμός για παιδιά τον οποίο διαχειρίζονται οι λογαριασμοί <ph name="FIRST_PARENT_EMAIL" /> και <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Σταθερά πλήκτρα</translation>
 <translation id="2509468283778169019">Το CAPS LOCK είναι ενεργοποιημένο</translation>
 <translation id="2532589005999780174">Λειτουργία υψηλής αντίθεσης</translation>
+<translation id="2597972630681408282">Νυχτερινός φωτισμός: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">Η περίοδος σύνδεσης λήγει σε <ph name="SESSION_TIME_REMAINING" />. Θα αποσυνδεθείτε.</translation>
 <translation id="2727977024730340865">Σύνδεση με φορτιστή χαμηλής ισχύος. Η φόρτιση της μπαταρίας ενδέχεται να μη γίνεται με αξιόπιστο τρόπο.</translation>
 <translation id="2761704814324807722">Δίσκος κατάστασης, ώρα <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">Έξοδος</translation>
 <translation id="3019353588588144572">Χρόνος που απομένει μέχρι να φορτιστεί πλήρως η μπαταρία, <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">Αυτός είναι ένας λογαριασμός για παιδιά τον οποίο διαχειρίζεται ο λογαριασμός <ph name="MANAGER_EMAIL" /></translation>
-<translation id="3050422059534974565">Το πλήκτρο CAPS LOCK έχει ενεργοποιηθεί.
-Πατήστε Search ή Shift για ακύρωση.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Κάτω</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -136,6 +136,7 @@
 <translation id="4849058404725798627">Επισήμανση αντικειμένου με εστίαση στο πληκτρολόγιο</translation>
 <translation id="4872237917498892622">Alt+Search ή Shift</translation>
 <translation id="4895488851634969361">Η μπαταρία είναι πλήρης.</translation>
+<translation id="4905614135390995787">Η συντόμευση για την εναλλαγή της Λειτουργίας υψηλής αντίθεσης άλλαξε. Χρησιμοποιήστε τη συντόμευση <ph name="NEW_SHORTCUT" /> αντί για τη συντόμευση <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Αποδοχή</translation>
 <translation id="4961318399572185831">Μετάδοση οθόνης</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@
 <translation id="5744083938413354016">Μεταφορά με πάτημα</translation>
 <translation id="5777841717266010279">Να διακοπεί η κοινή χρήση οθόνης;</translation>
 <translation id="57838592816432529">Σίγαση</translation>
+<translation id="5860033963881614850">Απενεργοποιημένη</translation>
 <translation id="5895138241574237353">Επανεκκίνηση</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">Ενεργό</translation>
 <translation id="5927132638760172455">Μετάδοση σε έναν άγνωστο δέκτη</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Επαναφορά</translation>
@@ -169,8 +172,8 @@
 <translation id="5977415296283489383">Ακουστικά</translation>
 <translation id="5978382165065462689">Κοινόχρηστος έλεγχος της οθόνης σας μέσω της απομακρυσμένης βοήθειας.</translation>
 <translation id="5980301590375426705">Έξοδος επισκέπτη</translation>
+<translation id="5992218262414051481">Η Λειτουργία υψηλής αντίθεσης ενεργοποιήθηκε. Πατήστε Ctrl+Search+H ξανά για να την απενεργοποιήσετε.</translation>
 <translation id="6018164090099858612">Έξοδος από λειτουργία κατοπτρισμού</translation>
-<translation id="6041154455840261787">Η Λειτουργία υψηλής αντίθεσης ενεργοποιήθηκε. Πατήστε Search+Shift+H ξανά για να την απενεργοποιήσετε.</translation>
 <translation id="6043212731627905357">Αυτή η οθόνη δεν είναι συμβατή με τη συσκευή σας <ph name="DEVICE_TYPE" /> (η οθόνη δεν υποστηρίζεται).</translation>
 <translation id="6043994281159824495">Έξοδος τώρα</translation>
 <translation id="6047696787498798094">Η κοινή χρήση οθόνης θα διακοπεί κατά την εναλλαγή σε άλλον χρήστη. Θέλετε να συνεχίσετε;</translation>
@@ -195,6 +198,7 @@
 <translation id="6585808820553845416">Η περίοδος σύνδεσης λήγει σε <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Αναζήτηση+Shift+K</translation>
 <translation id="6650933572246256093">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" ζητά δικαιώματα σύζευξης. Καταχωρίστε αυτό το κλειδί πρόσβασης στη συγκεκριμένη συσκευή: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Πλήκτρο αναζήτησης+Shift+H</translation>
 <translation id="6700713906295497288">Κουμπί μενού IME</translation>
 <translation id="6713285437468012787">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" έχει συζευχθεί και είναι πλέον διαθέσιμη σε όλους τους χρήστες. Μπορείτε να καταργήσετε αυτήν τη σύζευξη μέσω των Ρυθμίσεων.</translation>
 <translation id="6785414152754474415">Η μπαταρία είναι πλήρης <ph name="PERCENTAGE" />% και φορτίζει.</translation>
@@ -214,8 +218,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Επαναφορά στην προηγούμενη ανάλυση σε <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">Το πλήκτρο CAPS LOCK έχει ενεργοποιηθεί.
-Πατήστε Alt+Search ή Shift για ακύρωση.</translation>
+<translation id="7199454189089571166">Λειτουργία υποβοήθησης</translation>
 <translation id="7246339268451149667">Θέλετε να ενεργοποιήσετε το ξεκλείδωμα με δακτυλικό αποτύπωμα;</translation>
 <translation id="7256634071279256947">Πίσω μικρόφωνο</translation>
 <translation id="7348093485538360975">Πληκτρολόγιο οθόνης</translation>
@@ -233,10 +236,10 @@
 <translation id="7649070708921625228">Βοήθεια</translation>
 <translation id="7692480393933218409">Φόρτιση συνδεδεμένων συσκευών USB-C</translation>
 <translation id="776344839111254542">Κάντε κλικ, για να δείτε τις λεπτομέρειες της ενημέρωσης</translation>
+<translation id="7798302898096527229">Πατήστε Search ή Shift για ακύρωση.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> και <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Η γλώσσα του άλλαξε από "<ph name="FROM_LOCALE" />" σε "<ph name="TO_LOCALE" />" μετά τον συγχρονισμό των ρυθμίσεών σας.</translation>
 <translation id="7904094684485781019">Ο διαχειριστής αυτού του λογαριασμού δεν έχει επιτρέψει τις πολλαπλές συνδέσεις.</translation>
-<translation id="7951523953736115461">Νυχτερινός φωτισμός</translation>
 <translation id="7977927628060636163">Αναζήτηση για δίκτυα κινητής τηλεφωνίας…</translation>
 <translation id="7982789257301363584">Δίκτυο</translation>
 <translation id="8000066093800657092">Κανένα δίκτυο</translation>
@@ -255,6 +258,7 @@
 <translation id="8433977262951327081">Η συντόμευση για να εμφανίσετε το συννεφάκι μενού επιλογών εισαγωγής άλλαξε. Χρησιμοποιήστε το <ph name="NEW_SHORTCUT" /> αντί για το <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Το Wi-Fi έχει ενεργοποιηθεί.</translation>
 <translation id="847056008324733326">Εμφάνιση ρυθμίσεων κλίμακας</translation>
+<translation id="8477270416194247200">Πατήστε Alt+Search ή Shift για ακύρωση.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Επανασύνδεση…</translation>
 <translation id="8517041960877371778">Δεν είναι δυνατή η φόρτιση της συσκευής <ph name="DEVICE_TYPE" /> ενώ είναι ενεργοποιημένη.</translation>
 <translation id="8639760480004882931">Απομένει <ph name="PERCENTAGE" /></translation>

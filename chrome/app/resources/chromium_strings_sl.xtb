@@ -32,7 +32,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1966382378801805537">Chromium ne more določiti ali nastaviti privzetega brskalnika</translation>
 <translation id="1967743265616885482">Modul z istim imenom je že bil v sporu s Chromiumom.</translation>
 <translation id="2008474315282236005">S tem bo iz te naprave izbrisan 1 element. Če želite pozneje prenesti podatke, se v Chromium prijavite kot <ph name="USER_EMAIL" />.</translation>
-<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{S tem bo iz te naprave trajno izbrisan vsaj $1 element. Če želite pozneje prenesti podatke, se v Chromium prijavite kot $2.}one{S tem bo iz te naprave trajno izbrisan vsaj $1 element. Če želite pozneje prenesti podatke, se v Chromium prijavite kot $2.}two{S tem bosta iz te naprave trajno izbrisana vsaj $1 elementa. Če želite pozneje prenesti podatke, se v Chromium prijavite kot $2.}few{S tem bodo iz te naprave trajno izbrisani vsaj $1 elementi. Če želite pozneje prenesti podatke, se v Chromium prijavite kot $2.}other{S tem bo iz te naprave trajno izbrisanih vsaj $1 elementov. Če želite pozneje prenesti podatke, se v Chromium prijavite kot $2.}}</translation>
 <translation id="2077129598763517140">Uporabi strojno pospeševanje, če je na voljo</translation>
 <translation id="2119636228670142020">O sistemu &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Odprtokodne licence za Chromium OS</translation>
@@ -84,7 +83,6 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="3549345495227188780">Začnite uporabljati Chromium OS</translation>
 <translation id="3582788516608077514">Posodabljanje Chromiuma ...</translation>
 <translation id="358997566136285270">Logotip Chromiuma</translation>
-<translation id="3645040538872234961">S tem bodo iz te naprave trajno izbrisani podatki brskanja. Če želite pozneje prenesti podatke, se v Chromium prijavite kot $2.</translation>
 <translation id="3738139272394829648">Dotaknite se za iskanje</translation>
 <translation id="3762167353400286894">OS Chromium je v tem jeziku</translation>
 <translation id="378917192836375108">Chromium omogoča, da v spletu kliknete telefonsko številko in jo pokličete prek Skypa.</translation>
@@ -156,7 +154,6 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="59625444380784159">S podatki iz stikov lahko hitreje izpolnjujete obrazce v Chromiumu.</translation>
 <translation id="5987687638152509985">Posodobite Chromium, če želite začeti sinhronizacijo</translation>
 <translation id="6055895534982063517">Na voljo je nova različica Chromiuma, ki je najhitrejša doslej.</translation>
-<translation id="6077017812234345835">S tem bo iz te naprave izbrisanih vsaj toliko elementov: <ph name="TOTAL_COUNT" />. Če želite pozneje prenesti podatke, se v Chromium prijavite kot $2.</translation>
 <translation id="608189560609172163">Chromium ni mogel sinhronizirati podatkov zaradi napake pri prijavi.</translation>
 <translation id="6129621093834146363">Datoteka <ph name="FILE_NAME" /> je nevarna, zato jo je Chromium blokiral.</translation>
 <translation id="6212496753309875659">Ta računalnik že ima novejšo različico Chromiuma. Če programska oprema ne deluje, odstranite Chromium in poskusite znova.</translation>
@@ -193,7 +190,6 @@ Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali upor
 <translation id="705851970750939768">Posodobi Chromium</translation>
 <translation id="7066436765290594559">Chromium OS ni mogel sinhronizirati podatkov. Posodobite sinhronizacijsko geslo.</translation>
 <translation id="707471633328071618">Google Payments (kopirano v Chromium)</translation>
-<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{S tem bo iz te naprave trajno izbrisan $1 element. Če želite pozneje prenesti podatke, se v Chromium prijavite kot $2.}one{S tem bo iz te naprave trajno izbrisan $1 element. Če želite pozneje prenesti podatke, se v Chromium prijavite kot $2.}two{S tem bosta iz te naprave trajno izbrisana $1 elementa. Če želite pozneje prenesti podatke, se v Chromium prijavite kot $2.}few{S tem bodo iz te naprave trajno izbrisani $1 elementi. Če želite pozneje prenesti podatke, se v Chromium prijavite kot $2.}other{S tem bo iz te naprave trajno izbrisanih $1 elementov. Če želite pozneje prenesti podatke, se v Chromium prijavite kot $2.}}</translation>
 <translation id="7138853919861947730">Chromium lahko za boljšo izkušnjo brskanja uporablja spletne storitve.</translation>
 <translation id="7162152143154757523">Chromium omogoča pametnejše črkovanje, tako da vaše vnose v brskalnik pošilja v Googlove strežnike in s tem omogoči, da uporabljate isto tehnologijo preverjanja črkovanja, kot jo uporablja Googlovo iskanje.</translation>
 <translation id="7196020411877309443">Zakaj je to prikazano?</translation>
@@ -215,7 +211,6 @@ Chromium ne more obnoviti vaših nastavitev.</translation>
 <ph name="BEGIN_LINK_2" />Več o tem<ph name="END_LINK_2" />
 
 Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph name="ACCOUNT_EMAIL" />.</translation>
-<translation id="7421823331379285070">Chromium zahteva Windows XP ali novejši. Nekatere funkcije morda ne bodo delovale.</translation>
 <translation id="7473891865547856676">Ne, hvala</translation>
 <translation id="7483335560992089831">Ni mogoče namestiti iste različice Chromiuma, ki se trenutno izvaja. Zaprite Chromium in poskusite znova.</translation>
 <translation id="7549178288319965365">O sistemu Chromium OS</translation>
@@ -226,6 +221,7 @@ Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph n
 <translation id="7729447699958282447">Chromium ni mogel sinhronizirati podatkov, ker sinhronizacija ni na voljo za vašo domeno.</translation>
 <translation id="7745317241717453663">S tem bodo iz te naprave izbrisani podatki brskanja. Če želite pozneje prenesti podatke, se v Chromium prijavite kot <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Namestitvenemu programu ni uspelo ustvariti začasnega imenika. Preverite, ali je na disku dovolj prostora in ali imate dovoljenje za namestitev programske opreme.</translation>
+<translation id="7756122083761163394">Podatki brskanja te osebe bodo izbrisani iz naprave. Če želite podatke obnoviti, se prijavite v Chrome kot $2.</translation>
 <translation id="7937630085815544518">V Chromium ste bili prijavljeni kot <ph name="USER_EMAIL_ADDRESS" />. Pri vnovični prijavi uporabite isti račun.</translation>
 <translation id="795025003224538582">Ne zaženi znova</translation>
 <translation id="7962572577636132072">Chromium se samodejno posodablja, zato boste vedno imeli najnovejšo različico.</translation>

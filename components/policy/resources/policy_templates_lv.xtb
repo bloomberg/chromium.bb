@@ -54,15 +54,6 @@
       3 stundas. Minimālais atļautais biežums ir 60 sekundes.</translation>
 <translation id="1221359380862872747">Ielādēt norādītos vietrāžus URL demonstrācijas pieteikšanās brīdī</translation>
 <translation id="1265053460044691532">Ierobežojiet laiku, kad autentificēts lietotājs, izmantojot SAML, var pieteikties bezsaistē.</translation>
-<translation id="127699919157094139">Atspējo <ph name="PRODUCT_NAME" /> datu sinhronizāciju, izmantojot Google mitinātos sinhronizācijas pakalpojumus, un neļauj lietotājiem mainīt šo iestatījumu.
-
-
-      Ja šis iestatījums ir iespējots, lietotāji nevar mainīt vai ignorēt šo <ph name="PRODUCT_NAME" /> iestatījumu.
-
-
-      Ja šī politika nav iestatīta, lietotājs varēs izvēlēties, vai izmantot Google Sync.
-
-      Lai pilnībā atspējotu Google Sync, ieteicams atspējot Google Sync pakalpojumu Google Admin konsolē.</translation>
 <translation id="1291880496936992484">Brīdinājums: RC4 tiks pilnībā noņemts no <ph name="PRODUCT_NAME" /> pēc 52. versijas (aptuveni 2016. gada septembrī), un šī politika vairs nebūs spēkā.
 
       Ja politika nav iestatīta vai ir iestatīta vērtība Nepatiesa, RC4 šifra komplekti standartā TLS netiks iespējoti. Politikai var iestatīt vērtību Patiesa, lai saglabātu saderību ar novecojušu serveri. Tas ir pagaidu risinājums, un serveris ir jākonfigurē atkārtoti.</translation>
@@ -533,6 +524,11 @@
 
       Ja šai politikai nav iestatīta vērtība, ir spēkā tādi paši iestatījumi kā gadījumos, kad politika būtu iespējota (skatiet iepriekš sniegto aprakstu).</translation>
 <translation id="285480231336205327">Iespējot augsta kontrasta režīmu</translation>
+<translation id="2854919890879212089">Šī politika nosaka, ka pēc noklusējuma pārlūkprogrammas <ph name="PRODUCT_NAME" /> drukas priekšskatījumā jāizmanto sistēmas noklusējuma printeris, nevis pēdējais lietotais printeris.
+
+      Ja atspējosiet šo iestatījumu vai neiestatīsiet nekādu vērtību, drukas priekšskatījumā kā noklusējuma galamērķis tiks izmantots pēdējais lietotais printeris.
+
+      Ja iespējosiet šo iestatījumu, drukas priekšskatījumā kā noklusējuma galamērķis tiks izmantots operētājsistēmas noklusējuma printeris.</translation>
 <translation id="2872961005593481000">Beidzēt</translation>
 <translation id="2874209944580848064">Piezīme par <ph name="PRODUCT_OS_NAME" /> ierīcēm, kurās tiek atbalstītas Android lietotnes:</translation>
 <translation id="2877225735001246144">Atspējo CNAME atrašanu, kamēr notiek vienošanās par Kerberos autentifikāciju</translation>
@@ -1015,6 +1011,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
           Pēc noklusējuma, ievadot nedrošu PIN, lietotājiem tiek parādīts tikai brīdinājums, nevis kļūdas ziņojums.</translation>
 <translation id="4723829699367336876">Ugunsmūra apvada iespējošana no attālās piekļuves klienta</translation>
+<translation id="4725123658714754485">Kontrolē to, vai lietojuma un diagnostikas dati, tostarp avāriju pārskati, tiek nosūtīti uzņēmumam Google. Ja politikai ir iestatīta vērtība “True”, <ph name="PRODUCT_OS_NAME" /> nosūtīs lietojuma un diagnostikas datus. Ja politika nav konfigurēta vai tai ir iestatīta vērtība “False”, lietojuma un diagnostikas datu nosūtīšana tiks atspējota.</translation>
 <translation id="4725528134735324213">Iespējot pakalpojumu Android Backup Service</translation>
 <translation id="4733471537137819387">Ar integrēto HTTP autentifikāciju saistītās politikas</translation>
 <translation id="4744190513568488164">Serveri, kuriem pārlūks <ph name="PRODUCT_NAME" /> var uzticēt informāciju
@@ -1535,6 +1532,11 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ja šis iestatījums ir atspējots vai nav iestatīts, spraudņu meklētājs būs aktivizēts.</translation>
 <translation id="6699880231565102694">Divu faktoru autentifikācijas iespējošana attālās piekļuves saimniekdatoriem</translation>
+<translation id="6724842112053619797">Ja iespējosiet šo iestatījumu, <ph name="PRODUCT_NAME" /> profilos saglabātie iestatījumi, piemēram, grāmatzīmes, automātiskās aizpildes dati, paroles, tiks saglabāti arī failā, kas tiks glabāts viesabonēšanas lietotāju profilu mapē vai vietā, ko norādījis administrators, izmantojot politiku “<ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />”. Iespējojot šo politiku, tiek atspējota sinhronizācija mākonī.
+
+      Ja šī politika ir atspējota vai nav iestatīta, tiks izmantoti tikai parastie lokālie profili.
+
+      Politika “<ph name="SYNC_DISABLED_POLICY_NAME" />” atspējo visu datu sinhronizāciju, ignorējot politiku “RoamingProfileSupportEnabled”.</translation>
 <translation id="6757438632136860443">Ļauj iestatīt to vietrāžu URL rakstu sarakstu, kas norāda vietnes, kurām atļauts izpildīt spraudni <ph name="FLASH_PLUGIN_NAME" />.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota vispārējā noklusējuma vērtība no politikas “DefaultPluginsSetting” (ja tā ir iestatīta) vai lietotāja personiskās konfigurācijas.</translation>
@@ -1582,6 +1584,14 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6943577887654905793">Mac/Linux preferences nosaukums:</translation>
 <translation id="69525503251220566">Parametrs, kas noklusējuma meklēšanas pakalpojumu sniedzējam nodrošina funkciju Meklēšana pēc attēla</translation>
 <translation id="6956272732789158625">Neatļaut izmantot atslēgu ģenerēšanu nevienā vietnē</translation>
+<translation id="6994082778848658360">Norāda, kā var izmantot pievienoto drošības elementa aparatūru divfaktoru autentificēšanai, ja tā ir saderīga ar šo funkciju.
+Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošanas poga.
+
+      Ja ir atlasīts iestatījums “Atspējota”, otrais faktors netiek rādīts.
+
+      Ja ir atlasīts iestatījums “U2F”, integrētais otrais faktors darbojas atbilstoši FIDO U2F specifikācijai.
+
+      Ja ir atlasīts iestatījums “U2F_EXTENDED”, integrētais otrais faktors nodrošina U2F funkciju darbību, kā arī vairākus paplašinājumus atsevišķai apstiprināšanai.</translation>
 <translation id="6997592395211691850">Vai lokāliem uzticamības enkuriem ir nepieciešama OCSP/CRL pārbaude</translation>
 <translation id="7003334574344702284">Šī politika (ja tā ir iespējota) liek importēt saglabātās paroles no iepriekšējā noklusējuma pārlūka. Ja šī politika ir iespējota, tā arī maina importēšanas dialoglodziņu.
 
@@ -1789,7 +1799,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="7713608076604149344">Lejupielādes ierobežojumi</translation>
 <translation id="7715711044277116530">Aizkaves līdz ekrāna aptumšošanai norādīšana procentos (prezentācijas režīmā)</translation>
 <translation id="7717938661004793600">Konfigurējiet <ph name="PRODUCT_OS_NAME" /> pieejamības funkcijas.</translation>
-<translation id="7719251660743813569">Kontrolē to, vai lietošanas metrika tiek ziņota uzņēmumam Google. Ja politika iestatīta uz Patiesa, produkts <ph name="PRODUCT_OS_NAME" /> ziņo lietošanas metriku. Ja politika nav konfigurēta vai iestatīta uz Aplama, metrikas ziņošana ir atspējota.</translation>
 <translation id="7724994675283793633">Šī politika iespējo protokolu HTTP/0.9 portos, kas nav 80 (HTTP) un 443 (HTTPS).
 
       Šī politika pēc noklusējuma ir atspējota. Ja tā tiek iespējota, lietotājiem var rasties drošības problēma: https://crbug.com/600352.
@@ -2121,6 +2130,15 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="891435090623616439">kodēts kā JSON virkne, detalizētu informāciju skatiet vietnē <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Ziņot par ierīces atrašanās vietu</translation>
 <translation id="8951350807133946005">Iestatīt diska kešatmiņas direktoriju</translation>
+<translation id="8952317565138994125">Atspējo datu sinhronizāciju pārlūkā <ph name="PRODUCT_NAME" />, izmantojot Google mitinātos sinhronizācijas pakalpojumus, un neļauj lietotājiem mainīt šo iestatījumu.
+
+      Ja iespējosiet šo iestatījumu, lietotāji to nevarēs mainīt vai ignorēt pārlūkā <ph name="PRODUCT_NAME" />.
+
+      Ja šī politika netiks iestatīta, lietotājs varēs izvēlēties, vai izmantot pakalpojumu Google Sync.
+
+      Lai pilnībā atspējotu Google Sync, ieteicams atspējot Google Sync pakalpojumu Google Admin konsolē.
+
+      Šo politiku nav ieteicams iespējot, kad politika “<ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />” ir iespējota, jo šī funkcija izmanto to pašu klienta puses funkcionalitāti. Šādā gadījumā Google mitinātā sinhronizācija ir atspējota pilnībā.</translation>
 <translation id="8955719471735800169">Augšup</translation>
 <translation id="8960850473856121830">Šajā sarakstā pieejamajiem šabloniem tiek meklēta atbilstība pieprasītā URL
       drošības avotam. Ja tiek atrasta atbilstība, piekļuve audio
@@ -2130,6 +2148,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="8970205333161758602"><ph name="PRODUCT_FRAME_NAME" /> noraidīšanas uzvednes aizliegšana</translation>
 <translation id="8971221018777092728">Automātiskās pieteikšanās taimeris izmantošanai publiskā sesijā</translation>
 <translation id="8976248126101463034">Gnubby autentifikācijas atļaušana attālās piekļuves saimniekdatoriem</translation>
+<translation id="8976531594979650914">Sistēmas noklusējuma printera izmantošana pēc noklusējuma</translation>
 <translation id="8992176907758534924">Neatļaut nevienai vietnei rādīt attēlus</translation>
 <translation id="9035964157729712237">Paplašinājumu ID numuri, kas noņemami no melnā saraksta</translation>
 <translation id="9042911395677044526">Ļauj pārsūtīšanas tīkla konfigurāciju izmantot konkrētam lietotājam <ph name="PRODUCT_OS_NAME" /> ierīcē. Tīkla konfigurācija ir JSON formatēta virkne, kā 

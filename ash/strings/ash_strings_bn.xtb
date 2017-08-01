@@ -26,6 +26,7 @@
 <translation id="1677472565718498478"><ph name="TIME" /> বাকি আছে</translation>
 <translation id="1698760176351776263">IPv6 ঠিকানা: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">এই ডিভাইসটি এন্টারপ্রাইজ পরিচালিত</translation>
+<translation id="1746730358044914197">আপনার প্রশাসক ইনপুটের পদ্ধতিগুলি কনফিগার করে।</translation>
 <translation id="1747827819627189109">অন-স্ক্রীন কীবোর্ড সক্ষম করা রয়েছে</translation>
 <translation id="1823873187264960516">ইথারনেট: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">ওয়াই-ফাই বন্ধ আছে৷</translation>
@@ -37,6 +38,7 @@
 <translation id="1942830294380034169">ওভারফ্লো বোতাম</translation>
 <translation id="1957803754585243749">০°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">এই ডিভাইস <ph name="DOMAIN" /> দ্বারা পরিচালিত হয়৷</translation>
 <translation id="2050339315714019657">প্রতিকৃতি</translation>
 <translation id="207439088875642105"><ph name="FIRST_PARENT_EMAIL" /> এবং <ph name="SECOND_PARENT_EMAIL" /> দ্বারা পরিচালিত এটি একটি বাচ্চাদের অ্যাকাউন্ট</translation>
@@ -47,7 +49,7 @@
 <translation id="225680501294068881">ডিভাইসগুলির জন্য স্ক্যান করা হচ্ছে...</translation>
 <translation id="2268130516524549846">ব্লুটুথ অক্ষমিত</translation>
 <translation id="2268813581635650749">সবগুলি প্রস্থান করুন</translation>
-<translation id="2292698582925480719">স্কেল দেখান</translation>
+<translation id="2292698582925480719">স্কেল প্রদর্শন করুন</translation>
 <translation id="2303600792989757991">উইন্ডোর ওভারভিউ টগল করুন</translation>
 <translation id="2352467521400612932">স্টাইলাস সেটিংস</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> সক্রিয় করা হচ্ছে</translation>
@@ -57,6 +59,7 @@
 <translation id="2501920221385095727">স্টিকি কীজ</translation>
 <translation id="2509468283778169019">CAPS LOCK চালু</translation>
 <translation id="2532589005999780174">উচ্চ কনট্রাস্ট মোড</translation>
+<translation id="2597972630681408282">নাইট লাইট: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING" /> এর মধ্যে সেশন শেষ হয়ে যাবে৷ আপনাকে প্রস্থান করুন করা হবে৷</translation>
 <translation id="2727977024730340865">একটি নিম্ন শক্তির চার্জার প্লাগইন করা হয়েছে৷ বিশ্বস্ত ব্যাটারি চার্জ নাও হতে পারে৷</translation>
 <translation id="2761704814324807722">স্থিতি ট্রে, সময় <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +79,6 @@
 <translation id="3009178788565917040">আউটপুট</translation>
 <translation id="3019353588588144572">ব্যাটারি পরিপূর্ণ চার্জ হতে, <ph name="TIME_REMAINING" /> সময় বাকি আছে</translation>
 <translation id="3047477924825107454">এইটি বাচ্চাদের জন্য <ph name="MANAGER_EMAIL" /> দ্বারা পরিচালিত একটি অ্যাকাউন্ট</translation>
-<translation id="3050422059534974565">CAPS LOCK চালু আছে৷
-Search অথবা বাতিল করতে Shift টিপুন৷</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">নিচে</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (ব্লুটুথ)</translation>
@@ -136,6 +137,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="4849058404725798627">কিবোর্ড ফোকাসের মাধ্যমে হাইলাইট করুন</translation>
 <translation id="4872237917498892622">Alt+Search অথবা Shift</translation>
 <translation id="4895488851634969361">ব্যাটারি পূর্ণ৷</translation>
+<translation id="4905614135390995787">উচ্চ কনট্রাস্ট মোড টগল করার শর্টকাটটি পরিবর্তিত হয়েছে। <ph name="OLD_SHORTCUT" /> এর পরিবর্তে অনুগ্রহ করে <ph name="NEW_SHORTCUT" /> ব্যবহার করুন।</translation>
 <translation id="4918086044614829423">স্বীকার</translation>
 <translation id="4961318399572185831">স্ক্রীন কাস্ট করুন</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +161,10 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="5744083938413354016">ট্যাপ করে টেনে আনা</translation>
 <translation id="5777841717266010279">স্ক্রীন শেয়ার করা থামাবেন?</translation>
 <translation id="57838592816432529">নিঃশব্দ করুন</translation>
+<translation id="5860033963881614850">বন্ধ করুন</translation>
 <translation id="5895138241574237353">পুনর্সূচনা</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">চালু</translation>
 <translation id="5927132638760172455">একটি অজানা রিসিভারে কাস্টিং করা হচ্ছে</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">ফেরান</translation>
@@ -169,8 +173,8 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="5977415296283489383">হেডফোন</translation>
 <translation id="5978382165065462689">রিমোট সহায়কের মাধ্যমে আপনার স্ক্রীন নিয়ন্ত্রণ ভাগ করুন৷</translation>
 <translation id="5980301590375426705">অতিথি থেকে প্রস্থান</translation>
+<translation id="5992218262414051481">উচ্চ কনট্রাস্ট মোড সক্ষম করা হয়েছে। টগল করে বন্ধ করার জন্য Ctrl+Search+H টিপুন।</translation>
 <translation id="6018164090099858612">মিরর মোড থেকে প্রস্থান করছে</translation>
-<translation id="6041154455840261787">উচ্চ কনট্রাস্ট মোড সক্ষম করা হয়েছে। এটি টগল করে বন্ধ করতে চাইলে আবার Search+Shift+H টিপু্ন।</translation>
 <translation id="6043212731627905357">এই মনিটরটি আপনার <ph name="DEVICE_TYPE" /> এর সাথে তাল মেলাতে পারছে না (মনিটরটি সমর্থিত নয়)।</translation>
 <translation id="6043994281159824495">এখনই প্রস্থান করুন</translation>
 <translation id="6047696787498798094">যখন আপনি অন্য ব্যবহারকারীতে পাল্টাবেন তখন স্ক্রীন শেয়ার করা বন্ধ হবে৷ আপনি কি চালিয়ে যেতে চান?</translation>
@@ -195,6 +199,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> এর মধ্যে সেশন শেষ হয়ে যাবে৷</translation>
 <translation id="6627638273713273709">অনুসন্ধান+Shift+K</translation>
 <translation id="6650933572246256093">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। দয়া করে ডিভাইসটিতে এই পাস কীটি প্রবেশ করুন: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6700713906295497288">IME মেনু বোতাম</translation>
 <translation id="6713285437468012787">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করা হয়েছে এবং এখন সমস্ত ব্যবহারকারীর কাছে উপলব্ধ। আপনি সেটিংস ব্যবহার করে এই সংযুক্তি সরিয়ে দিতে পারেন।</translation>
 <translation id="6785414152754474415">ব্যাটারি <ph name="PERCENTAGE" />% পূর্ণ এবং চার্জ হচ্ছে৷</translation>
@@ -214,8 +219,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> এ পুরানো রেসুলিউশানে ফেরানো হচ্ছে</translation>
-<translation id="7209101170223508707">CAPS LOCK চালু আছে৷
-Alt+Search অথবা বাতিল করতে Shift টিপুন৷</translation>
+<translation id="7199454189089571166">সহায়ক মোড</translation>
 <translation id="7246339268451149667">আঙ্গুলের ছাপ দিয়ে আনলক সক্ষম করবেন?</translation>
 <translation id="7256634071279256947">পেছনের মাইক্রোফোন</translation>
 <translation id="7348093485538360975">অন-স্ক্রীণ কীবোর্ড</translation>
@@ -233,10 +237,10 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="7649070708921625228">সহায়তা</translation>
 <translation id="7692480393933218409">সংযুক্ত USB-C ডিভাইসগুলি চার্জ হচ্ছে</translation>
 <translation id="776344839111254542">আপডেটের বিশদ বিবরণ জানার জন্য ক্লিক করুন</translation>
+<translation id="7798302898096527229">Search টিপুন বা বাতিল করতে Shift টিপুন</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> এবং <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">আপনার সেটিংস সিঙ্ক করার পরে ভাষা "<ph name="FROM_LOCALE" />" থেকে "<ph name="TO_LOCALE" />" এ পরিবর্তন করা হয়েছে৷</translation>
 <translation id="7904094684485781019">এই অ্যাকাউন্টের প্রশাসক একাধিক প্রবেশ করুন অননুমোদিত করেছেন৷</translation>
-<translation id="7951523953736115461">নাইট লাইট</translation>
 <translation id="7977927628060636163">মোবাইল নেটওয়ার্কগুলির জন্য অনুসন্ধান করছে...</translation>
 <translation id="7982789257301363584">নেটওয়ার্ক</translation>
 <translation id="8000066093800657092">কোনও নেটওয়ার্ক নেই</translation>
@@ -255,6 +259,7 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="8433977262951327081">শেল্ফে ইনপুট বিকল্পের মেনুর বুদবুদ দেখানোর শর্টকাটটি পরিবর্তন করা হয়েছে। অনুগ্রহ করে <ph name="OLD_SHORTCUT" /> এর পরিবর্তে <ph name="NEW_SHORTCUT" /> ব্যবহার করুন।</translation>
 <translation id="8454013096329229812">ওয়াই-ফাই চালু আছে৷</translation>
 <translation id="847056008324733326">স্কেলের সেটিংস দেখান</translation>
+<translation id="8477270416194247200">Alt+Search টিপুন বা বাতিল করতে Shift টিপুন</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: আবার সংযোগ করছে...</translation>
 <translation id="8517041960877371778">আপনার <ph name="DEVICE_TYPE" /> চালু থাকা অবস্থায় চার্জ নাও হতে পারে।</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> বাকি আছে</translation>

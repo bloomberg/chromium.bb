@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">دکمه سرریز</translation>
 <translation id="1957803754585243749">۰ درجه</translation>
 <translation id="1969011864782743497">‏<ph name="DEVICE_NAME" /> (‏USB)</translation>
+<translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">این دستگاه توسط <ph name="DOMAIN" /> مدیریت می‌شود.</translation>
 <translation id="2050339315714019657">عمودی</translation>
 <translation id="207439088875642105">این یک حساب مخصوص بچه‌ها است که توسط <ph name="FIRST_PARENT_EMAIL" /> و <ph name="SECOND_PARENT_EMAIL" /> مدیریت می‌شود</translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">کلیدهای چسبان</translation>
 <translation id="2509468283778169019">‏CAPS LOCK روشن است</translation>
 <translation id="2532589005999780174">حالت کنتراست بالا</translation>
+<translation id="2597972630681408282">«نور شب»: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">جلسه در <ph name="SESSION_TIME_REMAINING" /> به پایان می‌رسد. از سیستم خارج خواهید شد.</translation>
 <translation id="2727977024730340865">باتری به شارژر برق ضعیف متصل است. شارژ باتری ممکن است قابل اطمینان نباشد.</translation>
 <translation id="2761704814324807722">سینی وضعیت، زمان <ph name="TIME" />، ‏<ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">خروجی</translation>
 <translation id="3019353588588144572">زمان باقی مانده تا شارژ کامل باتری، <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">این یک حساب مخصوص بچه‌ها است که توسط <ph name="MANAGER_EMAIL" /> مدیریت می‌شود</translation>
-<translation id="3050422059534974565">‏CAPS LOCK روشن است.
-جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="3077734595579995578">تبدیل</translation>
 <translation id="3087734570205094154">پایین</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (بلوتوث)</translation>
@@ -136,6 +136,7 @@
 <translation id="4849058404725798627">برجسته کردن شیء با فوکوس صفحه‌کلید</translation>
 <translation id="4872237917498892622">‏Alt+جستجو یا Shift</translation>
 <translation id="4895488851634969361">باتری پر است.</translation>
+<translation id="4905614135390995787">میان‌بر روشن/خاموش کردن «حالت تضاد بالا» تغییر کرده است. لطفاً به‌جای <ph name="OLD_SHORTCUT" /> از <ph name="NEW_SHORTCUT" /> استفاده کنید.</translation>
 <translation id="4918086044614829423">می‌پذیرم</translation>
 <translation id="4961318399572185831">فرستادن صفحه</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@
 <translation id="5744083938413354016">کشیدن با ضربه زدن</translation>
 <translation id="5777841717266010279">اشتراک‌گذاری صفحه نمایش متوقف شود؟</translation>
 <translation id="57838592816432529">بی‌صدا کردن</translation>
+<translation id="5860033963881614850">خاموش</translation>
 <translation id="5895138241574237353">راه‌اندازی مجدد</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">روشن</translation>
 <translation id="5927132638760172455">در حال فرستادن به گیرنده ناشناس</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">برگرداندن</translation>
@@ -169,8 +172,8 @@
 <translation id="5977415296283489383">هدفون</translation>
 <translation id="5978382165065462689">به اشتراک گذاشتن کنترل صفحه‌تان از طریق راهنمایی از راه دور.</translation>
 <translation id="5980301590375426705">خروج از مهمان</translation>
+<translation id="5992218262414051481">‏«حالت تضاد بالا» فعال شد. برای خاموش کردن آن، Ctrl+Search+H را دوباره فشار دهید.</translation>
 <translation id="6018164090099858612">خروج از حالت آینه</translation>
-<translation id="6041154455840261787">‏حالت تضاد بالا فعال شد. برای خاموش کردن مجدد آن، جستجو+Shift+H را فشار دهید.</translation>
 <translation id="6043212731627905357">این نمایشگر با <ph name="DEVICE_TYPE" /> سازگار نیست (نمایشگر پشتیبانی نمی‌شود).</translation>
 <translation id="6043994281159824495">خروج از سیستم هم‌اکنون</translation>
 <translation id="6047696787498798094">زمانی که به یک کاربر دیگر جابه‌جا می‌شوید، اشتراک‌گذاری صفحه نمایش متوقف می‌شود. می‌خواهید ادامه دهید؟</translation>
@@ -195,6 +198,7 @@
 <translation id="6585808820553845416">جلسه در <ph name="SESSION_TIME_REMAINING" /> به پایان می‌رسد.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد. لطفاً این کلیدواژه را در آن دستگاه وارد کنید: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6700713906295497288">‏دکمه منو IME</translation>
 <translation id="6713285437468012787">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» مرتبط شده است و اکنون برای همه کاربران در دسترس است. می‌توانید این مرتبط‌سازی را با استفاده از تنظیمات حذف کنید.</translation>
 <translation id="6785414152754474415">باتری <ph name="PERCENTAGE" /> درصد پر و درحال شارژ است.</translation>
@@ -214,8 +218,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">برگرداندن به وضوح قدیمی در <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">‏CAPS LOCK روشن است.
-Alt+جستجو یا Shift را برای لغو فشار دهید.</translation>
+<translation id="7199454189089571166">حالت دستیار</translation>
 <translation id="7246339268451149667">باز کردن قفل با اثرانگشت فعال شود؟</translation>
 <translation id="7256634071279256947">میکروفون پشت</translation>
 <translation id="7348093485538360975">صفحه‌کلید روی صفحه</translation>
@@ -233,10 +236,10 @@ Alt+جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="7649070708921625228">راهنما</translation>
 <translation id="7692480393933218409">‏در حال شارژ کردن دستگاه‌های USB-C متصل</translation>
 <translation id="776344839111254542">برای مشاهده جزئیات به‌روزرسانی کلیک کنید</translation>
+<translation id="7798302898096527229">‏برای لغو کردن، Search یا Shift را فشار دهید.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> و <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">بعد از همگام‌سازی تنظیمات شما، زبان از «<ph name="FROM_LOCALE" />» به «<ph name="TO_LOCALE" />» تغییر کرد.</translation>
 <translation id="7904094684485781019">سرپرست این حساب اجازه ورود چندگانه به سیستم را نمی‌دهد.</translation>
-<translation id="7951523953736115461">نور شب</translation>
 <translation id="7977927628060636163">درحال جستجوی شبکه‌های تلفن همراه…</translation>
 <translation id="7982789257301363584">شبکه</translation>
 <translation id="8000066093800657092">بدون شبکه</translation>
@@ -255,6 +258,7 @@ Alt+جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="8433977262951327081">میان‌بر نمایش ابزارک اعلان گزینه‌های ورودی در قفسه تغییر کرده است. لطفاً به‌جای <ph name="OLD_SHORTCUT" /> از <ph name="NEW_SHORTCUT" /> استفاده کنید.</translation>
 <translation id="8454013096329229812">‏Wi-Fi روشن است.</translation>
 <translation id="847056008324733326">تنظیمات مقیاس نمایش</translation>
+<translation id="8477270416194247200">‏برای لغو کردن Alt+Search یا Shift را فشار دهید.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: درحال اتصال مجدد...</translation>
 <translation id="8517041960877371778">ممکن است وقتی <ph name="DEVICE_TYPE" /> شما خاموش است، شارژ نشود.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> باقی‌مانده</translation>

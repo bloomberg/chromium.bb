@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Überlaufschaltfläche</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Strg + Suche + H</translation>
 <translation id="2049639323467105390">Dieses Gerät wird durch <ph name="DOMAIN" /> verwaltet.</translation>
 <translation id="2050339315714019657">Hochformat</translation>
 <translation id="207439088875642105">Dies ist ein Konto für Kinder, das von <ph name="FIRST_PARENT_EMAIL" /> und <ph name="SECOND_PARENT_EMAIL" /> verwaltet wird.</translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Sticky Keys</translation>
 <translation id="2509468283778169019">Feststelltaste An</translation>
 <translation id="2532589005999780174">Modus mit hohem Kontrast</translation>
+<translation id="2597972630681408282">Nachtlicht: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">Sitzung endet in <ph name="SESSION_TIME_REMAINING" />. Sie werden dann abgemeldet.</translation>
 <translation id="2727977024730340865">Das Gerät ist an ein Schwachstrom-Ladegerät angeschlossen. Möglicherweise kann der Akku nicht zuverlässig aufgeladen werden.</translation>
 <translation id="2761704814324807722">Statusleiste, Uhrzeit <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">Ausgang</translation>
 <translation id="3019353588588144572">Verbleibende Zeit, bis der Akku vollständig geladen ist: <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">Dies ist ein Konto für Kinder, das von <ph name="MANAGER_EMAIL" /> verwaltet wird.</translation>
-<translation id="3050422059534974565">Die Feststelltaste ist aktiviert.
-Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="3077734595579995578">Shift</translation>
 <translation id="3087734570205094154">Unten</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -136,6 +136,7 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="4849058404725798627">Objekt mit Tastaturfokus hervorheben</translation>
 <translation id="4872237917498892622">Alt+Suchen oder Shift</translation>
 <translation id="4895488851634969361">Akku ist vollständig geladen.</translation>
+<translation id="4905614135390995787">Die Tastenkombination zum Deaktivieren des Modus mit hohem Kontrast hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Annehmen</translation>
 <translation id="4961318399572185831">Bildschirmübertragung</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="5744083938413354016">Antippen und Ziehen</translation>
 <translation id="5777841717266010279">Bildschirmfreigabe beenden?</translation>
 <translation id="57838592816432529">Stummschalten</translation>
+<translation id="5860033963881614850">Aus</translation>
 <translation id="5895138241574237353">Neu starten</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>
+<translation id="5916664084637901428">An</translation>
 <translation id="5927132638760172455">Übertragung an unbekannten Empfänger</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Rückgängig machen</translation>
@@ -169,8 +172,8 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="5977415296283489383">Kopfhörer</translation>
 <translation id="5978382165065462689">Sie teilen sich die Bildschirmsteuerung per Remote-Unterstützung.</translation>
 <translation id="5980301590375426705">Gastsitzung beenden</translation>
+<translation id="5992218262414051481">Modus mit hohem Kontrast aktiviert. Drücken Sie Strg + Suche + H, um ihn zu deaktivieren.</translation>
 <translation id="6018164090099858612">Spiegelungsmodus wird beendet</translation>
-<translation id="6041154455840261787">Modus mit hohem Kontrast aktiviert. Drücken Sie Suche + Shift + H, um ihn zu deaktivieren.</translation>
 <translation id="6043212731627905357">Dieser Monitor ist mit Ihrem <ph name="DEVICE_TYPE" /> nicht kompatibel (wird nicht unterstützt).</translation>
 <translation id="6043994281159824495">Jetzt abmelden</translation>
 <translation id="6047696787498798094">Wenn Sie zu einem anderen Nutzer wechseln, wird die Bildschirmfreigabe beendet. Möchten Sie fortfahren?</translation>
@@ -195,6 +198,7 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="6585808820553845416">Sitzung endet in <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Suchtaste + Shift + K</translation>
 <translation id="6650933572246256093">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung. Geben Sie auf dem Gerät folgenden Zugangscode ein: <ph name="PASSKEY" />.</translation>
+<translation id="6691659475504239918">Suche + Shift + H</translation>
 <translation id="6700713906295497288">IME-Menüschaltfläche</translation>
 <translation id="6713285437468012787">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" wurde gekoppelt und ist nun für alle Nutzer verfügbar. Sie können es unter "Einstellungen" wieder entkoppeln.</translation>
 <translation id="6785414152754474415">Akku ist zu <ph name="PERCENTAGE" /> % geladen und wird geladen.</translation>
@@ -214,8 +218,7 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Alte Auflösung wird in <ph name="TIMEOUT_SECONDS" /> wiederhergestellt.</translation>
-<translation id="7209101170223508707">Die Feststelltaste ist aktiviert.
-Drücken Sie Alt+Suchen oder Shift, um die Aktivierung aufzuheben.</translation>
+<translation id="7199454189089571166">Assistant-Modus</translation>
 <translation id="7246339268451149667">Entsperren per Fingerabdruck aktivieren?</translation>
 <translation id="7256634071279256947">Mikrofon auf der Rückseite</translation>
 <translation id="7348093485538360975">Bildschirmtastatur</translation>
@@ -233,10 +236,10 @@ Drücken Sie Alt+Suchen oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="7649070708921625228">Hilfe</translation>
 <translation id="7692480393933218409">Verbundene USB-C-Geräte werden geladen</translation>
 <translation id="776344839111254542">Zum Aufrufen von Aktualisierungsdetails klicken</translation>
+<translation id="7798302898096527229">Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> und <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Nach der Synchronisierung Ihrer Einstellungen wurde die Sprache von "<ph name="FROM_LOCALE" />" in "<ph name="TO_LOCALE" />" geändert.</translation>
 <translation id="7904094684485781019">Der Administrator dieses Kontos hat keine Mehrfachanmeldung zugelassen.</translation>
-<translation id="7951523953736115461">Nachtlicht</translation>
 <translation id="7977927628060636163">Nach Mobilfunknetzen wird gesucht…</translation>
 <translation id="7982789257301363584">Netzwerk</translation>
 <translation id="8000066093800657092">Nicht verbunden</translation>
@@ -255,6 +258,7 @@ Drücken Sie Alt+Suchen oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="8433977262951327081">Die Tastenkombination zum Aufrufen des Infofelds für die Eingabeoptionen in der Ablage hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">WLAN ist aktiviert.</translation>
 <translation id="847056008324733326">Einstellungen für Displaymaßstab</translation>
+<translation id="8477270416194247200">Drücken Sie Alt + Such-Taste oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Verbindung wird wiederhergestellt...</translation>
 <translation id="8517041960877371778">Ihr <ph name="DEVICE_TYPE" /> wird möglicherweise nicht aufgeladen, wenn es eingeschaltet ist.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> % verbleibend</translation>

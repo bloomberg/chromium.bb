@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">تكبير</translation>
 <translation id="1413622004203049571">تعطيل الإشعارات من <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{دقيقة واحدة و }zero{# من الدقائق و }two{دقيقتان (#) و }few{# دقائق و }many{# دقيقة و }other{# من الدقائق و }}</translation>
+<translation id="1643823602425662293">الإشعار</translation>
 <translation id="1685967565548146460">قبعات</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{دقيقة واحدة}zero{# من الدقائق}two{دقيقتان (#)}few{# دقائق}many{# دقيقة}other{# من الدقائق}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> بايت</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">الدخول</translation>
 <translation id="4250229828105606438">لقطة شاشة</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{قبل شهر واحد}zero{قبل # شهر}two{قبل شهرين (#)}few{قبل # أشهر}many{قبل # شهرًا}other{قبل # شهر}}</translation>
+<translation id="4316910396681052118">جميع التطبيقات</translation>
 <translation id="4320177379694898372">لا يتوفر اتصال بالإنترنت</translation>
 <translation id="4588090240171750605">التمرير إلى اليسار</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{يتبقى شهر واحد}zero{يتبقى # شهر}two{يتبقى شهرين (#)}few{يتبقى # أشهر}many{يتبقى # شهرًا}other{يتبقى # شهر}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">مجلد بدون اسم</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{ثانية واحدة}zero{# ثانية}two{ثانيتان (#)}few{# ثوانٍ}many{# ثانية}other{# من الثواني}}</translation>
 <translation id="9150735707954472829">علامة تبويب</translation>
+<translation id="9161053988251441839">التطبيقات المُقترحَة</translation>
 <translation id="9170848237812810038">&amp;إلغاء</translation>
 <translation id="932327136139879170">الصفحة الرئيسية</translation>
 </translationbundle>

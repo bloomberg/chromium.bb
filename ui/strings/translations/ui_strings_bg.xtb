@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">Увеличаване</translation>
 <translation id="1413622004203049571">Деактивиране на известията от <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минута и }other{# минути и }}</translation>
+<translation id="1643823602425662293">Известие</translation>
 <translation id="1685967565548146460">Hats</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 минута}other{# минути}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> Б</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">преминаване</translation>
 <translation id="4250229828105606438">Eкранна снимка</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{Преди 1 месец}other{Преди # месеца}}</translation>
+<translation id="4316910396681052118">ВСИЧКИ ПРИЛОЖЕНИЯ</translation>
 <translation id="4320177379694898372">Няма връзка с интернет</translation>
 <translation id="4588090240171750605">Превъртане надясно</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Остава 1 месец}other{Остават # месеца}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">Папка без име</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 сек}other{# сек}}</translation>
 <translation id="9150735707954472829">Раздел</translation>
+<translation id="9161053988251441839">ПРЕДЛОЖЕНИ ПРИЛОЖЕНИЯ</translation>
 <translation id="9170848237812810038">&amp;Отмяна</translation>
 <translation id="932327136139879170">Начална страница</translation>
 </translationbundle>

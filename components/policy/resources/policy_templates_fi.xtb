@@ -54,13 +54,6 @@
       Pienin sallittu arvo on 60 sekuntia.</translation>
 <translation id="1221359380862872747">Lataa määritetyt osoitteet esittelykirjautumisen yhteydessä</translation>
 <translation id="1265053460044691532">Rajoita sitä, kuinka kauan SAML-todennuksen käyttäjä voi kirjautua sisään offline-tilassa</translation>
-<translation id="127699919157094139">Tämä poistaa käytöstä tuotteen <ph name="PRODUCT_NAME" /> tietojen synkronoinnin Googlen isännöimillä synkronointipalveluilla ja estää käyttäjiä muokkaamasta tätä asetusta.
-
-      Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> ei anna käyttäjien ohittaa tai muokata asetusta.
-
-      Jos tätä asetusta ei ole määritetty, käyttäjä voi päättää, käytetäänkö Google Synciä.
-
-      Jos haluat poistaa Google Syncin kokonaan käytöstä, poista Google Sync ‑palvelu käytöstä Google-hallintakonsolissa.</translation>
 <translation id="1291880496936992484">Varoitus: RC4 poistetaan tuotteesta <ph name="PRODUCT_NAME" /> version 52 jälkeen (arviolta syyskuussa 2016), eikä tämä käytäntö enää toimi sen jälkeen.
 
       Jos tätä käytäntöä ei aseteta tai jos sen arvo on epätosi, TLS:n RC4-salaustekniikoita ei oteta käyttöön. Jos yhteensopivuus vanhentuneen palvelimen kanssa täytyy varmistaa, arvoksi voidaan asettaa tosi. Tämä on kuitenkin tilapäinen toimenpide, ja palvelimen määritykset tulee tehdä uudelleen.</translation>
@@ -504,6 +497,11 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 
       Tämän käytännön jättäminen asettamatta vastaa sen käyttöönottoa yllä kuvatulla tavalla.</translation>
 <translation id="285480231336205327">Ota suuri kontrasti -tila käyttöön</translation>
+<translation id="2854919890879212089">Kun tämä asetus on käytössä, <ph name="PRODUCT_NAME" /> valitsee Tulostuksen esikatselu ‑ikkunassa lähtökohtaisesti järjestelmän oletustulostimen viimeksi käytetyn tulostimen sijaan.
+
+      Jos poistat tämän asetuksen käytöstä tai et määritä sille arvoa, Tulostuksen esikatselussa valitaan oletuskohteeksi viimeksi käytetty tulostin.
+
+      Jos otat tämän asetuksen käyttöön, Tulostuksen esikatselussa valitaan oletuskohteeksi käyttöjärjestelmän oletustulostin.</translation>
 <translation id="2872961005593481000">Sammuta</translation>
 <translation id="2874209944580848064">Huomioitavaa, jos laitteesi käyttöjärjestelmä on <ph name="PRODUCT_OS_NAME" /> ja tukee Android-sovelluksia:</translation>
 <translation id="2877225735001246144">Poista CNAME-haku käytöstä Kerberos-todennusta suoritettaessa</translation>
@@ -962,6 +960,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
           Oletuksena käyttäjät saavat varoituksen, eivät virheilmoitusta, jos PIN-koodia pidetään heikkona.</translation>
 <translation id="4723829699367336876">Ota käyttöön palomuurin siirto etäasiakkaasta</translation>
+<translation id="4725123658714754485">Määrittää, lähetetäänkö Googlelle kaatumisraportteja ja muita käyttö- ja diagnostiikkatietoja. Jos arvo on tosi, <ph name="PRODUCT_OS_NAME" /> lähettää käyttötilastoja. Jos arvo on epätosi tai sitä ei määritetä, tietoja ei lähetetä.</translation>
 <translation id="4725528134735324213">Ota käyttöön Android Backup Service</translation>
 <translation id="4733471537137819387">Integroituun HTTP-todennukseen liittyvät käytännöt.</translation>
 <translation id="4744190513568488164">Palvelimet, joille <ph name="PRODUCT_NAME" /> voi siirtää käyttöoikeustietoja.
@@ -1438,6 +1437,11 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6689792153960219308">Laitteiston tilan raportointi</translation>
 <translation id="6693751878507293182">Jos otat tämän asetuksen käyttöön, automaattinen haku ja puuttuvien laajennuksien asentaminen poistetaan käytöstä tuotteessa <ph name="PRODUCT_NAME" />. Jos poistat asetuksen käytöstä tai et määritä sitä, laajennuksien etsintä on käytössä.</translation>
 <translation id="6699880231565102694">Ota kahden tekijän todennus käyttöön etäisännille</translation>
+<translation id="6724842112053619797">Jos tämä asetus on käytössä, <ph name="PRODUCT_NAME" /> ‑profiileihin tallennetut tiedot, esim. kirjanmerkit, automaattisen täytön tiedot ja salasanat, tallennetaan myös roaming-käyttäjän profiilitiedostoon tai järjestelmänvalvojan <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />-käytännössä määrittämään sijaintiin. Pilvisynkronointi poistetaan käytöstä, kun tämä käytäntö on käytössä.
+
+      Jos tämä käytäntö ei ole käytössä tai sitä ei ole määritetty, vain paikallisia profiileja käytetään.
+
+      <ph name="SYNC_DISABLED_POLICY_NAME" /> poistaa kaiken tietojen synkronoinnin käytöstä ja ohittaa RoamingProfileSupportEnabled-käytännön .</translation>
 <translation id="6757438632136860443">Voit määrittää URL-osoitemalleja, joiden määrittämät sivustot saavat suorittaa <ph name="FLASH_PLUGIN_NAME" />-laajennuksen.
 
           Jos tätä käytäntöä ei ole määritetty, kaikkiin sivustoihin sovelletaan DefaultPluginsSetting-käytäntöä (jos se on määritetty) tai käyttäjän omien asetusten mukaista yleistä oletusarvoa.</translation>
@@ -1481,6 +1485,13 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="6943577887654905793">Mac/Linux-asetuksen nimi:</translation>
 <translation id="69525503251220566">Parametri, joka tarjoaa kuvan perusteella haku -ominaisuuden oletushakupalvelulle</translation>
 <translation id="6956272732789158625">Älä salli sivustojen käyttää avainten luomistoimintoa.</translation>
+<translation id="6994082778848658360">Määrittää laitteen Secure Element ‑komponentin tarjoaman monitasoisen todennuksen käytön, jos se on yhteensopiva tämän ominaisuuden kanssa. Käyttäjän läsnäolo havaitaan laitteen virtapainikkeen avulla.
+
+      Jos valittuna on Ei käytössä, toista todennustasoa ei käytetä.
+
+      Jos valittuna on U2F, sisäänrakennettu toinen taso toimii FIDO U2F ‑sääntöjen mukaan.
+
+      Jos valittuna on U2F_EXTENDED, sisäänrakennettu toinen taso tarjoaa U2F-ominaisuuksien lisäksi yksilöllisen todennuksen mahdollistavia laajennuksia.</translation>
 <translation id="6997592395211691850">Vaaditaanko paikallisilta luottamusankkureilta verkossa suoritettavat OCSP/CRL-tarkistukset vai ei</translation>
 <translation id="7003334574344702284">Tämä käytäntö pakottaa tallennettujen salasanojen tuonnin nykyisestä oletusselaimesta. Jos käytäntö on käytössä, käytäntö vaikuttaa myös tuonti-ikkunaan. Jos käytäntö ei ole käytössä, tallennettuja salasanoja ei tuoda. Jos käytäntöä ei ole määritetty, käyttäjiltä voidaan kysyä, haluavatko he tuoda salasanat, tai ne voidaan tuoda automaattisesti.</translation>
 <translation id="7003746348783715221">Tuotteen <ph name="PRODUCT_NAME" /> asetukset</translation>
@@ -1668,7 +1679,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7713608076604149344">Latausrajoitukset</translation>
 <translation id="7715711044277116530">Prosenttiosuus, jolla näytön himmennyksen viive skaalataan esitystilassa</translation>
 <translation id="7717938661004793600">Määritä tuotteen <ph name="PRODUCT_OS_NAME" /> käytettävyysominaisuudet.</translation>
-<translation id="7719251660743813569">Määrittää, lähetetäänkö Googlelle käyttötilastoja. Jos asetus on tosi, <ph name="PRODUCT_OS_NAME" /> lähettää käyttötilastoja. Jos asetus on epätosi tai sitä ei määritetä, tilastotietojen lähetys on pois käytöstä.</translation>
 <translation id="7724994675283793633">Tämä käytäntö sallii HTTP/0.9:n myös muille porteille kuin 80 (HTTP) ja 443 (HTTPS).
 
       Käytäntö on oletuksena poissa käytöstä. Jos se otetaan käyttöön, käyttäjät altistuvat tälle tietoturvaongelmalle: https://crbug.com/600352.
@@ -1975,6 +1985,15 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="891435090623616439">koodattu JSON-merkkijonoksi; lisätietoja on osoitteessa <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Ilmoita laitteen sijainti</translation>
 <translation id="8951350807133946005">Aseta levyn välimuistihakemisto</translation>
+<translation id="8952317565138994125">Tämän seurauksena <ph name="PRODUCT_NAME" /> ei voi synkronoida tietoja Googlen isännöimien synkronointipalvelujen kanssa, eivätkä käyttäjät voi muuttaa tätä asetusta.
+
+      Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> ei anna käyttäjien ohittaa tai muokata asetusta.
+
+      Jos tätä asetusta ei ole määritetty, käyttäjä voi päättää, käytetäänkö Google Synciä.
+
+      Jos haluat poistaa Google Syncin kokonaan käytöstä, poista Google Sync ‑palvelu käytöstä Google-hallintakonsolissa.
+
+      Jos <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> on käytössä, tämä käytäntö ei voi olla käytössä, sillä niiden ominaisuudet käyttäytyvät asiakaspuolella identtisesti. Tässä tapauksessa synkronointi Google isännöimille palvelimille poistuu täysin käytöstä.</translation>
 <translation id="8955719471735800169">Sivun alkuun</translation>
 <translation id="8960850473856121830">Tähän luetteloon merkittyjä osoitemalleja verrataan pyytävän URL-osoitteen suojaustiedon
       alkuperään. Jos vastaavuus havaitaan, äänentallennuslaitteiden
@@ -1984,6 +2003,7 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8970205333161758602">Torju tuotteen <ph name="PRODUCT_FRAME_NAME" /> hylkäyspyyntö</translation>
 <translation id="8971221018777092728">Julkisten istuntojen automaattisen kirjautumisen ajastin</translation>
 <translation id="8976248126101463034">Salli etäkäytön isäntien gnubby-todennus</translation>
+<translation id="8976531594979650914">Käytä oletuksena järjestelmän oletustulostinta</translation>
 <translation id="8992176907758534924">Älä anna sivustojen näyttää kuvia</translation>
 <translation id="9035964157729712237">Kieltoluettelosta poistettavat laajennuksien tunnukset</translation>
 <translation id="9042911395677044526">Antaa määrittää tuotetta <ph name="PRODUCT_OS_NAME" /> käyttävien laitteiden verkkoasetukset käyttäjäkohtaisesti. Verkkoasetukset määritetään JSON-muotoiltuna merkkijonona Open Network Configuration -muodossa, josta on lisätietoja osoitteessa <ph name="ONC_SPEC_URL" /></translation>

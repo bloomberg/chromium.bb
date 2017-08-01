@@ -4,7 +4,6 @@
 <translation id="1016495303386450659">Kohde päivitettiin</translation>
 <translation id="1047726139967079566">Aseta tämä sivu kirjanmerkiksi...</translation>
 <translation id="1049743911850919806">Incognito</translation>
-<translation id="1073594902069885687">Todennus epäonnistui. Salasanaa ei kopioitu.</translation>
 <translation id="1076421457278169141">Koodi skannattiin.</translation>
 <translation id="1084365883616172403">Facebook-viesti julkaistu.</translation>
 <translation id="1104948393051856124">Hyväksy ja jatka</translation>
@@ -34,9 +33,11 @@
 <translation id="1430915738399379752">Tulosta</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> kohdetta</translation>
 <translation id="1491277525950327607">Muuta asetusta kaksoisnapauttamalla.</translation>
+<translation id="152234381334907219">Tallentamaton</translation>
 <translation id="1540800554400757039">Osoite 1</translation>
 <translation id="1545749641540134597">Skannaa QR-koodi</translation>
 <translation id="1580783302095112590">Viesti lähetetty.</translation>
+<translation id="1612730193129642006">Näytä välilehtiruudukko</translation>
 <translation id="1646446875146297738">Do Not Track -valinta lisää pyynnön selaustietoliikenteeseesi. Sen vaikutus riippuu siitä, miten verkkosivustot vastaavat pyyntöön ja tulkitsevat sitä.
 
 Jotkin verkkosivustot esimerkiksi vastaavat pyyntöön näyttämällä sinulle mainoksia, jotka eivät perustu käyttämiisi verkkosivustoihin. Monet verkkosivustot keräävät silti selaustietojasi esimerkiksi parantaakseen tietoturvaa, tarjotakseen sisältöä, mainoksia ja suosituksia verkkosivustoilleen sekä luodakseen raportointitietoja. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
@@ -66,7 +67,6 @@ Jotkin verkkosivustot esimerkiksi vastaavat pyyntöön näyttämällä sinulle m
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> kohdetta siirretty</translation>
 <translation id="2149973817440762519">Muokkaa kirjanmerkkiä</translation>
 <translation id="2230173723195178503">Verkkosivu ladattiin.</translation>
-<translation id="2241634353105152135">Vain kerran</translation>
 <translation id="2267753748892043616">Lisää tili</translation>
 <translation id="2273327106802955778">Lisäasetusvalikko</translation>
 <translation id="2320166752086256636">Piilota näppäimistö</translation>
@@ -79,6 +79,7 @@ Jotkin verkkosivustot esimerkiksi vastaavat pyyntöön näyttämällä sinulle m
 <translation id="2572712655377361602">Laitekäytäntö esti pääsyn kuviisi.</translation>
 <translation id="2584132361465095047">Lisää tili…</translation>
 <translation id="2593774076813182497">Tätä sivua ei voi tulostaa.</translation>
+<translation id="2625189173221582860">Salasana kopioitu</translation>
 <translation id="2648803196158606475">Poista luetut</translation>
 <translation id="2653659639078652383">Lähetä</translation>
 <translation id="2684815431982545828">Uusi välilehti</translation>
@@ -120,6 +121,7 @@ Jotkin verkkosivustot esimerkiksi vastaavat pyyntöön näyttämällä sinulle m
 <translation id="3244271242291266297">KK</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" />/<ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Avoimet välilehdet</translation>
+<translation id="3277021493514034324">Sivuston osoite kopioitu</translation>
 <translation id="3324193307694657476">Osoite 2</translation>
 <translation id="3329904751041170572">Palvelimeen ei saada yhteyttä.</translation>
 <translation id="3335947283844343239">Avaa suljettu välilehti uudelleen</translation>
@@ -132,7 +134,6 @@ Jotkin verkkosivustot esimerkiksi vastaavat pyyntöön näyttämällä sinulle m
 <translation id="3474649192738347024">Lomakkeet on täytetty.</translation>
 <translation id="3478058380795961209">Voimassa (kk)</translation>
 <translation id="3482959374254649722">Synkronoidaan välilehtiä…</translation>
-<translation id="3489372701259491571">Poista salasana</translation>
 <translation id="3494788280727468875">Vahvista selaustietojen poistaminen</translation>
 <translation id="3519193562722059437">Avaa välilehti selailua varten.</translation>
 <translation id="3527085408025491307">Kansio</translation>
@@ -149,10 +150,8 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="3638472932233958418">Esilataa verkkosivut</translation>
 <translation id="3691593122358196899">Lisätty kirjanmerkiksi kansioon <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Koskettamalla hakeminen</translation>
-<translation id="3742082982782149146">Sivuston URL-osoite kopioitu</translation>
 <translation id="3771033907050503522">Incognito</translation>
 <translation id="3783017676699494206">Tallenna kuva</translation>
-<translation id="3789841737615482174">Asenna</translation>
 <translation id="385051799172605136">Edellinen</translation>
 <translation id="3897092660631435901">Valikko</translation>
 <translation id="3928666092801078803">Yhdistä tiedot</translation>
@@ -164,7 +163,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4038354071007134711">Mikään laitteen sovellus ei voi avata tiedostoa.</translation>
 <translation id="4049507953662678203">Varmista, että käytössäsi on verkkoyhteys, ja yritä uudelleen.</translation>
 <translation id="411254640334432676">Lataus epäonnistui.</translation>
-<translation id="4117350985506774529">Käyttäjätunnus kopioitu</translation>
 <translation id="4121993058175073134">Tee sähköp.tilin määritykset asetuksissa lähettääksesi nettovientitiet.</translation>
 <translation id="4124987746317609294">Aikaväli</translation>
 <translation id="4172051516777682613">Näytä aina</translation>
@@ -187,7 +185,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 
 Tietosi salataan synkronoinnin tunnuslauseesi avulla. Aloita synkronointi antamalla tunnuslause.</translation>
 <translation id="473775607612524610">Päivitä</translation>
-<translation id="4773461607542755386">Avataanko tämä sivu sovelluksessa <ph name="APP_NAME" />?</translation>
 <translation id="481968316161811770">Evästeet, sivuston tiedot</translation>
 <translation id="4860895144060829044">Soita</translation>
 <translation id="4875622588773761625">Haluatko, että <ph name="PASSWORD_MANAGER_BRAND" /> päivittää tämän sivuston salasanasi?</translation>
@@ -215,6 +212,7 @@ Tietosi salataan synkronoinnin tunnuslauseesi avulla. Aloita synkronointi antama
 <translation id="5327248766486351172">Nimi</translation>
 <translation id="5388358297987318779">Avaa kuva</translation>
 <translation id="5409365236829784218">Et ole asentanut sovellusta, jolla tämän tiedoston voi avata.</translation>
+<translation id="5433691172869980887">Käyttäjänimi kopioitu</translation>
 <translation id="54401264925851789">Sivun suojaustiedot</translation>
 <translation id="5525269841082836315">Luo tunnuslause</translation>
 <translation id="5531274207066050939">Google Payments</translation>
@@ -264,6 +262,7 @@ Handoff täytyy ottaa käyttöön myös Asetusten Yleiset-osiossa. Lisäksi mole
 <translation id="6196207969502475924">Puhehaku</translation>
 <translation id="6254066287920239840">Avaa linkit sovelluksessa selaimen sijaan.</translation>
 <translation id="6255097610484507482">Luottokortin muokkaus</translation>
+<translation id="6273258929211277933"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" />, <ph name="STATE" /></translation>
 <translation id="6308436439357671616">Tämän avulla voit ottaa kuvia ja ladata niitä palvelimelle.</translation>
 <translation id="6314335155547195432">Luo salasana</translation>
 <translation id="6324528485781869530">Vaihda synkronointitiliä</translation>
@@ -290,7 +289,6 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="6570040839871198836">Autom. täyttö</translation>
 <translation id="6656103420185847513">Muokkaa kansiota</translation>
 <translation id="6657585470893396449">Salasana</translation>
-<translation id="666731172850799929">Avaa sovelluksessa <ph name="APP_NAME" /></translation>
 <translation id="667999046851023355">Dokumentti</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6762156594045689028">Jos haluat muokata tätä asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name="END_LINK" />.</translation>
@@ -317,6 +315,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="7189598951263744875">Jaa...</translation>
 <translation id="7203585745079012652">Puhu vastaukset</translation>
 <translation id="722055596168483966">Muokkaa Google-palveluita</translation>
+<translation id="7272437679830969316">Henkilöllisyytesi vahvistaminen ei onnistunut. Salasanaa ei kopioitu.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> prosenttia ladattu</translation>
 <translation id="7346909386216857016">OK!</translation>
 <translation id="7400418766976504921">URL-osoite</translation>
@@ -356,7 +355,6 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="806745655614357130">Pidä tiedot erillään</translation>
 <translation id="8076014560081431679">Tallennettuja sivustoasetuksia ei poisteta, ja ne saattavat sisältää tietoa selaustavoistasi. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Sulje kaikki välilehdet</translation>
-<translation id="8108697784695284144">Salasana kopioitu.</translation>
 <translation id="8137558756159375272">Koskettamalla hakeminen lähettää valitun sanan ja nykyisen sivun Google-haulle haun kontekstina. Voit poistaa ominaisuuden käytöstä <ph name="BEGIN_LINK" />asetuksissa<ph name="END_LINK" />.</translation>
 <translation id="8205564605687841303">Peruuta</translation>
 <translation id="8225985093977202398">Välimuistissa olevat kuvat ja tiedostot</translation>
@@ -364,6 +362,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="8272426682713568063">Luottokortit</translation>
 <translation id="8281781826761538115">Oletus – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">Hallinnoi tapaa, jolla Google käyttää selaushistoriaasi haun, mainosten ja muiden Googlen palveluiden muokkaamiseen.</translation>
+<translation id="842017693807136194">Kirjauduttu palvelulla</translation>
 <translation id="8428045167754449968">Kaupunki</translation>
 <translation id="8428213095426709021">Asetukset</translation>
 <translation id="8433678324664858900">Näytä ehdotukset</translation>
@@ -388,6 +387,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="8775144690796719618">Virheellinen URL-osoite</translation>
 <translation id="8820817407110198400">Kirjanmerkit</translation>
 <translation id="8840513115188359703">Sinua ei kirjata ulos Google-tililtäsi.</translation>
+<translation id="8881801611828450202">Hae kuvaa seuraavasta palvelusta: <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8904976895050290827">Chromen synkronointi</translation>
 <translation id="895541991026785598">Ilmoita ongelmasta</translation>
 <translation id="8971089644512329999">Selvä</translation>
@@ -406,6 +406,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="9188680907066685419">Kirjaudu ulos hallinnoidulta tililtä</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Virheraportti lähetettiin.</translation>
+<translation id="932327136139879170">Etusivu</translation>
 <translation id="935490618240037774">Kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi synkronoidaan Google-tilillesi, jotta voit käyttää niitä kaikilla laitteillasi.</translation>
 <translation id="939598580284253335">Anna tunnuslause</translation>
 <translation id="976982866697960176">Hallinnoi synkronoituja tietoja</translation>

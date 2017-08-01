@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">Maximaliseren</translation>
 <translation id="1413622004203049571">Meldingen van <ph name="NOTIFIER_NAME" /> uitschakelen</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuut en }other{# minuten en }}</translation>
+<translation id="1643823602425662293">Melding</translation>
 <translation id="1685967565548146460">HaTS</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minuut}other{# minuten}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">Gaan naar</translation>
 <translation id="4250229828105606438">Screenshot</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 maand geleden}other{# maanden geleden}}</translation>
+<translation id="4316910396681052118">ALLE APPS</translation>
 <translation id="4320177379694898372">Geen internetverbinding</translation>
 <translation id="4588090240171750605">Naar rechts bladeren</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Nog 1 maand}other{Nog # maanden}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">Naamloze map</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 sec.}other{# sec.}}</translation>
 <translation id="9150735707954472829">Tabblad</translation>
+<translation id="9161053988251441839">VOORGESTELDE APPS</translation>
 <translation id="9170848237812810038">&amp;Ongedaan maken</translation>
 <translation id="932327136139879170">Homepage</translation>
 </translationbundle>

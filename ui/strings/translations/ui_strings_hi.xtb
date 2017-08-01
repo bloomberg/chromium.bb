@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
-<translation id="111910763555783249">नोटिफिकेशन सेटिंग</translation>
+<translation id="111910763555783249">नोटिफ़िकेशन सेटिंग</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{1 दिन पहले}one{# दिन पहले}other{# दिन पहले}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 मिनट पहले}one{# मिनट पहले}other{# मिनट पहले}}</translation>
 <translation id="1190609913194133056">सूचना केंद्र</translation>
@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">बड़ा करें</translation>
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> से सूचनाएं अक्षम करें</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 मिनट और }one{# मिनट और }other{# मिनट और }}</translation>
+<translation id="1643823602425662293">नोटिफ़िकेशन</translation>
 <translation id="1685967565548146460">हैट</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 मिनट}one{# मिनट}other{# मिनट}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> बाइट</translation>
@@ -32,7 +33,7 @@
 <translation id="252373100621549798">अज्ञात डिस्प्ले</translation>
 <translation id="2583543531130364912">अपनी टचस्क्रीन कैलिब्रेट करें</translation>
 <translation id="2666092431469916601">शीर्ष</translation>
-<translation id="2743387203779672305">क्लिपबोर्ड पर प्रतिलिपि बनाएं</translation>
+<translation id="2743387203779672305">क्लिपबोर्ड में कॉपी करें</translation>
 <translation id="2803313416453193357">फ़ोल्डर खोलें</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 वर्ष पहले}one{# वर्ष पहले}other{# वर्ष पहले}}</translation>
 <translation id="2931838996092594335">क्लिक करें</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">जाएं</translation>
 <translation id="4250229828105606438">स्क्रीनशॉट</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 माह पहले}one{# माह पहले}other{# माह पहले}}</translation>
+<translation id="4316910396681052118">सभी ऐप्लिकेशन</translation>
 <translation id="4320177379694898372">कोई इंटरनेट कनेक्‍शन नहीं</translation>
 <translation id="4588090240171750605">दाएं स्क्रॉल करें</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 माह शेष}one{# माह शेष}other{# माह शेष}}</translation>
@@ -103,11 +105,11 @@
 <translation id="688711909580084195">शीर्षक-रहित वेबपेज</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{1 वर्ष शेष}one{# वर्ष शेष}other{# वर्ष शेष}}</translation>
-<translation id="6918245111648057970">प्रत्येक उपयोगकर्ता के लिए निम्न में से नोटिफिकेशन की अनुमति दें:</translation>
+<translation id="6918245111648057970">प्रत्येक उपयोगकर्ता के लिए निम्न में से नोटिफ़िकेशन की अनुमति दें:</translation>
 <translation id="6945221475159498467">चुनें</translation>
 <translation id="6965382102122355670">ठीक</translation>
 <translation id="7052633198403197513">F1</translation>
-<translation id="7135556860107312402">निम्न से आने वाली नोटिफिकेशन की अनुमति दें:</translation>
+<translation id="7135556860107312402">निम्न से आने वाली नोटिफ़िकेशन की अनुमति दें:</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 मिनट शेष}one{# मिनट शेष}other{# मिनट शेष}}</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 मिनट पहले}one{# मिनट पहले}other{# मिनट पहले}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">अनाम फ़ोल्डर</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 सेकंड}one{# सेकंड}other{# सेकंड}}</translation>
 <translation id="9150735707954472829">टैब</translation>
+<translation id="9161053988251441839">सुझाए गए ऐप्लिकेशन</translation>
 <translation id="9170848237812810038">&amp;पूर्ववत् करें</translation>
 <translation id="932327136139879170">मुख्यपृष्ठ</translation>
 </translationbundle>

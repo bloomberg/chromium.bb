@@ -30,7 +30,6 @@
 <translation id="1966382378801805537">‏ב-Chromium לא ניתן לקבוע או להגדיר את דפדפן ברירת המחדל</translation>
 <translation id="1967743265616885482">‏מודול בעל אותו שם מתנגש עם Chromium.</translation>
 <translation id="2008474315282236005">‏הפעולה הזו תמחק פריט אחד מהמכשיר. כדי לשחזר את הנתונים מאוחר יותר, היכנס אל Chromium עם <ph name="USER_EMAIL" />.</translation>
-<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{‏הפעולה תמחק לצמיתות פריט אחד לפחות מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}two{‏הפעולה תמחק לצמיתות שני פריטים לפחות מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}many{‏הפעולה תמחק לצמיתות $1 פריטים לפחות מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}other{‏הפעולה תמחק לצמיתות $1 פריטים לפחות מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}}</translation>
 <translation id="2077129598763517140">השתמש בהאצת חומרה כשניתן</translation>
 <translation id="2119636228670142020">‏מידע על &amp;מערכת ההפעלה של Chromium‏</translation>
 <translation id="2158734852934720349">‏רישיונות קוד פתוח של מערכת ההפעלה של Chromium</translation>
@@ -79,7 +78,6 @@
 <translation id="3549345495227188780">‏תחילת העבודה עם Chromium OS</translation>
 <translation id="3582788516608077514">‏מעדכן את Chromium‏...</translation>
 <translation id="358997566136285270">‏לוגו של Chromium</translation>
-<translation id="3645040538872234961">‏הפעולה תמחק לצמיתות את נתוני הגלישה מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.</translation>
 <translation id="3738139272394829648">גע כדי לחפש</translation>
 <translation id="3762167353400286894">‏Chromium OS מוצג בשפה זו</translation>
 <translation id="378917192836375108">‏Chromium מאפשר לך ללחוץ על מספר טלפון באינטרנט ולהתקשר אליו באמצעות Skype!</translation>
@@ -151,7 +149,6 @@
 <translation id="59625444380784159">‏פרטים מאנשי הקשר שלך יכולים לעזור לך למלא טפסים במהירות רבה יותר ב-Chromium.</translation>
 <translation id="5987687638152509985">‏עדכן את Chromium כדי להתחיל את הסנכרון</translation>
 <translation id="6055895534982063517">‏גרסה חדשה של Chromium זמינה, והיא מהירה יותר מאי פעם.</translation>
-<translation id="6077017812234345835">‏הפעולה תמחק לצמיתות מהמכשיר הזה <ph name="TOTAL_COUNT" /> פריטים לפחות. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.</translation>
 <translation id="608189560609172163">‏Chromium לא הצליח לסנכרן את הנתונים שלך בשל שגיאת כניסה.</translation>
 <translation id="6129621093834146363">‏<ph name="FILE_NAME" /> מסוכן, ולכן Chromium חסם אותו.</translation>
 <translation id="6212496753309875659">‏במחשב זה קיימת כבר גרסה מתקדמת יותר של Chromium. אם התוכנה אינה פועלת, הסר את ההתקנה של Chromium ונסה שוב.</translation>
@@ -188,7 +185,6 @@
 <translation id="705851970750939768">‏עדכן את Chromium‏</translation>
 <translation id="7066436765290594559">‏מערכת ההפעלה של Chromium לא הצליחה לסנכרן את הנתונים שלך. עדכן את משפט הסיסמה לסנכרון.</translation>
 <translation id="707471633328071618">‏Google Payments (‏הועתק ל-Chromium)</translation>
-<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{‏הפעולה תמחק לצמיתות פריט אחד מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}two{‏הפעולה תמחק לצמיתות שני פריטים מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}many{‏הפעולה תמחק לצמיתות $1 פריטים מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}other{‏הפעולה תמחק לצמיתות $1 פריטים מהמכשיר הזה. כדי לאחזר את הנתונים מאוחר יותר, היכנס ל-Chromium בתור $2.}}</translation>
 <translation id="7138853919861947730">‏Chromium עשוי להשתמש בשירותי אינטרנט כדי לשפר את חווית הגלישה שלך.</translation>
 <translation id="7162152143154757523">‏Chromium יכול לספק בדיקת איות חכמה יותר על ידי שליחת הטקסט שאתה מקליד בדפדפן אל שרתי Google. כך אתה יכול להשתמש באותה טכנולוגיה של בדיקת איות שבה נעשה שימוש בחיפוש Google.</translation>
 <translation id="7196020411877309443">למה אני רואה את הדף הזה?</translation>
@@ -210,7 +206,6 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <ph name="BEGIN_LINK_2" />למידע נוסף<ph name="END_LINK_2" />
 
 בדוק את האימייל בחשבון <ph name="ACCOUNT_EMAIL" /> לקבלת הנחיות נוספות.</translation>
-<translation id="7421823331379285070">‏Chromium דורש גרסת Windows XP או מאוחרת יותר. תכונות מסוימות עלולות שלא לפעול.</translation>
 <translation id="7473891865547856676">לא, תודה</translation>
 <translation id="7483335560992089831">‏לא ניתן להתקין את אותה גרסת Chromium שפועלת כרגע. סגור את Chromium ונסה שוב.</translation>
 <translation id="7549178288319965365">‏על מערכת ההפעלה של Chromium</translation>
@@ -221,6 +216,7 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="7729447699958282447">‏Chromium לא הצליח לסנכרן את הנתונים שלך מפני שסנכרון אינו זמין עבור הדומיין שלך.</translation>
 <translation id="7745317241717453663">‏פעולה זו תמחק את נתוני הגלישה מהמכשיר. כדי לשחזר את הנתונים מאוחר יותר, היכנס אל Chromium עם <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">המתקין לא הצליח ליצור ספריה זמנית. בדוק את המקום הפנוי בדיסק ואת האישור להתקנת תוכנה.</translation>
+<translation id="7756122083761163394">‏נתוני הגלישה של הפרופיל הזה יימחקו מהמכשיר הזה. כדי לשחזר את הנתונים, היכנס אל Chrome בתור משתמש $2.</translation>
 <translation id="7937630085815544518">‏נכנסת ל-Chromium כ-<ph name="USER_EMAIL_ADDRESS" />. השתמש באותו חשבון כדי להיכנס שוב.</translation>
 <translation id="795025003224538582">אל תבצע הפעלה מחדש</translation>
 <translation id="7962572577636132072">‏Chromium מתעדכן באופן אוטומטי כך שתמיד ברשותך הגרסה העדכנית ביותר.</translation>

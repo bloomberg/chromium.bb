@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Botão de estouro</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+Pesquisa+H</translation>
 <translation id="2049639323467105390">Este dispositivo é gerenciado por <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Retrato</translation>
 <translation id="207439088875642105">Esta é uma conta para as crianças gerenciada por <ph name="FIRST_PARENT_EMAIL" /> e <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Teclas aderentes</translation>
 <translation id="2509468283778169019">CAPS LOCK está ativado</translation>
 <translation id="2532589005999780174">Modo de alto contraste</translation>
+<translation id="2597972630681408282">Modo noturno: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">A sessão termina em <ph name="SESSION_TIME_REMAINING" />. Você será desconectado.</translation>
 <translation id="2727977024730340865">Conectado a um carregador de baixa potência. O carregamento da bateria pode não ser confiável.</translation>
 <translation id="2761704814324807722">Bandeja de status, tempo <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,7 +78,6 @@
 <translation id="3009178788565917040">Saída</translation>
 <translation id="3019353588588144572">O tempo restante até que a bateria esteja totalmente carregada é de <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">Esta é uma conta para crianças gerenciada por <ph name="MANAGER_EMAIL" /></translation>
-<translation id="3050422059534974565">A tecla CAPS LOCK está ativada. Pressione Pesquisar ou Shift para cancelar.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Parte inferior</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -135,6 +136,7 @@
 <translation id="4849058404725798627">Destacar objeto com o foco de teclado</translation>
 <translation id="4872237917498892622">Alt + Pesquisar ou Shift</translation>
 <translation id="4895488851634969361">A bateria está carregada.</translation>
+<translation id="4905614135390995787">O atalho para alternar o modo de alto contraste foi alterado. Use <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Aceitar</translation>
 <translation id="4961318399572185831">Transmitir tela</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -158,8 +160,10 @@
 <translation id="5744083938413354016">Arrastar com toque</translation>
 <translation id="5777841717266010279">Interromper compartilhamento de tela?</translation>
 <translation id="57838592816432529">Desativar som</translation>
+<translation id="5860033963881614850">Desativado</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">Ativado</translation>
 <translation id="5927132638760172455">Transmitindo para um destinatário desconhecido</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Reverter</translation>
@@ -168,8 +172,8 @@
 <translation id="5977415296283489383">Fone de ouvido</translation>
 <translation id="5978382165065462689">Compartilhando o controle de sua tela por meio da Assistência remota.</translation>
 <translation id="5980301590375426705">Sair da sessão de visitante</translation>
+<translation id="5992218262414051481">Modo de alto contraste ativado. Pressione Ctrl+Pesquisa+H novamente para desativá-lo.</translation>
 <translation id="6018164090099858612">Saindo do modo espelhado</translation>
-<translation id="6041154455840261787">Modo de alto contraste ativado. Pressione a tecla de pesquisa+Shift+H novamente para desativá-lo.</translation>
 <translation id="6043212731627905357">Este monitor não está funcionando bem com seu <ph name="DEVICE_TYPE" /> (o monitor não é compatível).</translation>
 <translation id="6043994281159824495">Sair agora</translation>
 <translation id="6047696787498798094">O compartilhamento de tela será interrompido quando você alternar para outro usuário. Deseja continuar?</translation>
@@ -194,6 +198,7 @@
 <translation id="6585808820553845416">A sessão termina em <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Pesquisar+Shift+K</translation>
 <translation id="6650933572246256093">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" deseja permissão para realizar o pareamento. Digite esta senha no dispositivo: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Pesquisa+Shift+H</translation>
 <translation id="6700713906295497288">Botão do menu do IME</translation>
 <translation id="6713285437468012787">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" está pareado e disponível para todos os usuários. Para cancelar o pareamento, vá para "Configurações".</translation>
 <translation id="6785414152754474415">A bateria está <ph name="PERCENTAGE" />% cheia e carregando.</translation>
@@ -213,7 +218,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Revertendo para resolução anterior em <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">A tecla CAPS LOCK está ativada. Pressione Alt + Pesquisar ou Shift para cancelar.</translation>
+<translation id="7199454189089571166">Modo Assistente</translation>
 <translation id="7246339268451149667">Ativar desbloqueio com impressão digital?</translation>
 <translation id="7256634071279256947">Microfone traseiro</translation>
 <translation id="7348093485538360975">Teclado virtual</translation>
@@ -231,10 +236,10 @@
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7692480393933218409">Carregando dispositivos USB-C conectados</translation>
 <translation id="776344839111254542">Clique para ver detalhes da atualização</translation>
+<translation id="7798302898096527229">Pressione Pesquisar ou Shift para cancelar.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> e <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">O idioma foi alterado de "<ph name="FROM_LOCALE" />" para "<ph name="TO_LOCALE" />" após a sincronização de suas configurações.</translation>
 <translation id="7904094684485781019">O administrador desta conta bloqueou o login múltiplo.</translation>
-<translation id="7951523953736115461">Modo noturno</translation>
 <translation id="7977927628060636163">Pesquisando redes móveis…</translation>
 <translation id="7982789257301363584">Rede</translation>
 <translation id="8000066093800657092">Sem rede</translation>
@@ -253,6 +258,7 @@
 <translation id="8433977262951327081">O atalho para mostrar o balão de menu de opções de entrada na estante foi alterado. Use <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">O Wi-Fi está ligado.</translation>
 <translation id="847056008324733326">Exibir configurações de escala</translation>
+<translation id="8477270416194247200">Pressione Alt+Pesquisar ou Shift para cancelar.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: reconectando…</translation>
 <translation id="8517041960877371778">Seu <ph name="DEVICE_TYPE" /> pode não ser carregado enquanto estiver ligado.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante(s)</translation>

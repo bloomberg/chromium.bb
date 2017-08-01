@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">Maksimiziraj</translation>
 <translation id="1413622004203049571">Onemogući obavijesti pošiljatelja <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuta i }one{# minuta i }few{# minute i }other{# minuta i }}</translation>
+<translation id="1643823602425662293">Obavijest</translation>
 <translation id="1685967565548146460">Anketa za praćenje zadovoljstva</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minuta}one{# minuta}few{# minute}other{# minuta}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">skoči</translation>
 <translation id="4250229828105606438">Snimka zaslona</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{Prije mjesec dana}one{Prije # mjeseca}few{Prije # mjeseca}other{Prije # mjeseci}}</translation>
+<translation id="4316910396681052118">SVE APLIKACIJE</translation>
 <translation id="4320177379694898372">Nema internetske veze</translation>
 <translation id="4588090240171750605">Pomakni se desno</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Još mjesec dana}one{Još # mjesec}few{Još # mjeseca}other{Još # mjeseci}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">Neimenovana mapa</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}one{# s}few{# s}other{# s}}</translation>
 <translation id="9150735707954472829">Kartica</translation>
+<translation id="9161053988251441839">PREDLOŽENE APLIKACIJE</translation>
 <translation id="9170848237812810038">&amp;Poništi</translation>
 <translation id="932327136139879170">Početna stranica</translation>
 </translationbundle>

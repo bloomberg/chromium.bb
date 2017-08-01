@@ -54,13 +54,6 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
       tilladte frekvens er 60 sekunder.</translation>
 <translation id="1221359380862872747">Indlæs de angivne webadresser ved demologin</translation>
 <translation id="1265053460044691532">Begræns den tid, hvor en bruger, der er godkendt via SAML, kan logge på offline</translation>
-<translation id="127699919157094139">Deaktiverer datasynkronisering i <ph name="PRODUCT_NAME" /> ved hjælp af Google-hostede synkroniseringstjenester og forhindrer brugerne i at ændre denne indstilling.
-
-      Hvis du aktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte indstillingen i <ph name="PRODUCT_NAME" />.
-
-      Hvis denne politik ikke er angivet, kan brugeren vælge, om Google Sync skal anvendes eller ej.
-
-      Hvis du vil deaktivere Google Sync helt, anbefaler vi, at du deaktiverer tjenesten Google Sync i Google Administrationskonsol.</translation>
 <translation id="1291880496936992484">Advarsel! RC4 bliver fjernet helt fra <ph name="PRODUCT_NAME" /> efter version 52 (omkring september 2016), og på det tidspunkt vil denne politik holde op med at virke.
 
       Hvis politikken ikke er angivet eller er angivet til Falsk, aktiveres RC4-krypteringsprogrammer i TLS ikke. Alternativt kan den angives til Sandt for at bevare kompatibiliteten med en forældet server. Dette er en midlertidig løsning, og serveren bør rekonfigureres.</translation>
@@ -504,6 +497,11 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
       Hvis denne politik ikke angives, svarer det til, at den er aktiveret som i beskrivelsen herover.</translation>
 <translation id="285480231336205327">Aktivér høj kontrast</translation>
+<translation id="2854919890879212089">Får <ph name="PRODUCT_NAME" /> til at bruge systemets standardprinter som standardvalg i Vis udskrift i stedet for den senest brugte printer.
+
+      Hvis du deaktiverer denne indstilling eller ikke angiver en værdi, benytter Vis udskrift den senest brugte printer som standarddestination.
+
+      Hvis du aktiverer denne indstilling, benytter Vis udskrift operativsystemets standardprinter som standarddestination.</translation>
 <translation id="2872961005593481000">Sluk</translation>
 <translation id="2874209944580848064">Bemærkning om <ph name="PRODUCT_OS_NAME" />-enheder, der understøtter Android-apps:</translation>
 <translation id="2877225735001246144">Deaktiver CNAME-opslag, når godkendelsen af Kerberos forhandles</translation>
@@ -965,6 +963,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 
           Som standard får brugerne en advarsel, ikke en fejl, hvis pinkoden anses for at være svag.</translation>
 <translation id="4723829699367336876">Aktiver gennemgang af firewall fra fjernklient</translation>
+<translation id="4725123658714754485">Bestemmer, om metrics om brug og diagnosticeringsdata, herunder nedbrudsrapporter, rapporteres tilbage til Google. Hvis den er indstillet til sand, vil <ph name="PRODUCT_OS_NAME" /> rapportere metrics om brug og diagnosticeringsdata. Hvis den ikke er konfigureret eller er angivet til falsk, deaktiveres rapportering af metrics og diagnosticeringsdata.</translation>
 <translation id="4725528134735324213">Aktivér Android-tjenesten til sikkerhedskopiering</translation>
 <translation id="4733471537137819387">Politikker i forbindelse med integreret HTTP-godkendelse.</translation>
 <translation id="4744190513568488164">Servere, som <ph name="PRODUCT_NAME" /> kan overdrage til.
@@ -1426,6 +1425,11 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="6689792153960219308">Rapportér hardwarestatus</translation>
 <translation id="6693751878507293182">Hvis du aktiverer denne indstilling, deaktiveres den automatiske søgning og installation af de manglende plugins i <ph name="PRODUCT_NAME" />. Hvis denne valgmulighed deaktiveres eller ikke angives, vil pluginfinderen være aktiv.</translation>
 <translation id="6699880231565102694">Aktivér godkendelse med to faktorer for værter med fjernadgang</translation>
+<translation id="6724842112053619797">Hvis du aktiverer denne indstilling, skrives indstillingerne, der er gemt i <ph name="PRODUCT_NAME" />-profiler, f.eks. bogmærker, autofylddata og adgangskoder, også i en fil, der er gemt i roamingmappen for brugerprofilen eller et andet sted som angivet af administratoren via <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />-politikken. Når du aktiverer denne politik, deaktiveres synkronisering i skyen.
+
+      Hvis denne politik deaktiveres eller ikke angives, er det kun de almindelige lokale profiler, der bruges.
+
+      Politikken <ph name="SYNC_DISABLED_POLICY_NAME" /> deaktiverer al datasynkronisering og tilsidesætter RoamingProfileSupportEnabled.</translation>
 <translation id="6757438632136860443">Giver dig mulighed for at angive en liste med webadressemønstre, der angiver websites, som har tilladelse til at køre <ph name="FLASH_PLUGIN_NAME" />-pluginnet.
 
          Hvis denne politik ikke angives, anvendes den globale standardværdi for alle websites enten fra politikken "DefaultPluginsSetting", hvis denne er angivet, og ellers fra brugerens personlige konfiguration.</translation>
@@ -1471,6 +1475,13 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="6943577887654905793">Præferencenavn for Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter, der leverer funktion til billedsøgning i standardsøgemaskinen</translation>
 <translation id="6956272732789158625">Tillad ikke, at websites anvender nøglegenerering</translation>
+<translation id="6994082778848658360">Angiver, hvordan det sikre element, der er indbygget i hardwaren, kan bruges til at levere godkendelse med sekundær faktor, hvis det er kompatibelt med denne funktion. Maskinens afbryderknap bruges til at fastslå brugerens fysiske tilstedeværelse.
+
+      Hvis "Deaktiveret" er valgt, leveres der ingen sekundær faktor.
+
+      Hvis "U2F" er valgt, vil den integrerede sekundære faktor fungere i henhold til FIDO U2F-specifikationen.
+
+      Hvis "U2F_EXTENDED" er valgt, vil den integrerede sekundære faktor levere U2F-funktionerne samt nogle udvidelser til individuel attestering.</translation>
 <translation id="6997592395211691850">Om der kræves online OCSP/CRL-kontroller for lokale tillidsankere</translation>
 <translation id="7003334574344702284">Denne politik tvinger import af gemte adgangskoder fra den tidligere standardbrowser, hvis den er aktiveret. Hvis denne politik er aktiveret, påvirker den også dialogboksen for import. Hvis den er deaktiveret, importeres de gemte adgangskoder ikke. Hvis den ikke er angivet, kan brugeren blive spurgt, om der skal importeres, ellers sker importen automatisk.</translation>
 <translation id="7003746348783715221">Præferencer for <ph name="PRODUCT_NAME" /></translation>
@@ -1660,7 +1671,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7713608076604149344">Begrænsninger af download</translation>
 <translation id="7715711044277116530">Procentdel, som nedtoningsforsinkelsen på skærmen skaleres i præsentationstilstand</translation>
 <translation id="7717938661004793600">Konfigurer hjælpefunktioner for <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7719251660743813569">Kontrollerer, om metrics over brug rapporteres tilbage til Google. Hvis den er indstillet til sand, vil <ph name="PRODUCT_OS_NAME" /> rapportere metrics over brug. Hvis den ikke er konfigureret eller er angivet til falsk, deaktiveres metrics-rapportering.</translation>
 <translation id="7724994675283793633">Denne politik aktiverer HTTP/0.9 på andre porte end 80 for HTTP og 443 for HTTPS.
 
       Denne politik er som standard deaktiveret. Hvis den aktiveres, kan brugerne blive udsat for sikkerhedsproblemet https://crbug.com/600352.
@@ -1964,6 +1974,15 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="891435090623616439">kodet som en JSON-streng. Få flere oplysninger på <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Rapportér enhedens placering</translation>
 <translation id="8951350807133946005">Angiv mappen for diskens cache</translation>
+<translation id="8952317565138994125">Deaktiverer datasynkronisering i <ph name="PRODUCT_NAME" /> ved hjælp af Google-hostede synkroniseringstjenester og forhindrer brugerne i at ændre denne indstilling.
+
+      Hvis du aktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte den i <ph name="PRODUCT_NAME" />.
+
+      Hvis denne politik ikke er angivet, kan brugeren vælge, om Google Sync skal anvendes eller ej.
+
+      Hvis du vil deaktivere Google Sync helt, anbefaler vi, at du deaktiverer tjenesten Google Sync i Google Administrationskonsol.
+
+      Denne politik bør ikke være aktiveret, når politikken <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> er aktiveret, da de benytter den samme funktion hos klienten. I så fald deaktiveres Google-hostet synkronisering helt.</translation>
 <translation id="8955719471735800169">Tilbage til toppen</translation>
 <translation id="8960850473856121830">Mønstre på denne liste sammenlignes med sikkerhedskilden
       for den anmodende webadresse. Hvis der findes et match, gives der adgang
@@ -1973,6 +1992,7 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="8970205333161758602">Undertryk opfordringen til afvisning for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Timer for login på offentlig session</translation>
 <translation id="8976248126101463034">Tillad gnubby-godkendelse for hosts for fjernadgang</translation>
+<translation id="8976531594979650914">Brug systemets standardprinter som standard</translation>
 <translation id="8992176907758534924">Tillad ikke, at websites viser billeder</translation>
 <translation id="9035964157729712237">Udvidelses-id'er, der skal udelades fra sortlisten</translation>
 <translation id="9042911395677044526">Tillader, at netværkskonfigurationen gøres gældende pr. bruger til en <ph name="PRODUCT_OS_NAME" />-enhed. Netværkskonfigurationen er en JSON-formateret streng, sådan som den er defineret af formatet Open Network Configuration som beskrevet på <ph name="ONC_SPEC_URL" /></translation>

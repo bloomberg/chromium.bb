@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">최대화</translation>
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" />의 알림 사용 중지</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1분 }other{#분 }}</translation>
+<translation id="1643823602425662293">알림</translation>
 <translation id="1685967565548146460">HaTS</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1분}other{#분}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" />B</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">건너뛰기</translation>
 <translation id="4250229828105606438">캡처화면</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1개월 전}other{#개월 전}}</translation>
+<translation id="4316910396681052118">모든 앱</translation>
 <translation id="4320177379694898372">인터넷에 연결되지 않음</translation>
 <translation id="4588090240171750605">오른쪽 스크롤</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1개월 남음}other{#개월 남음}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">이름이 없는 폴더</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1초}other{#초}}</translation>
 <translation id="9150735707954472829">탭</translation>
+<translation id="9161053988251441839">추천 앱</translation>
 <translation id="9170848237812810038">실행 취소(&amp;U)</translation>
 <translation id="932327136139879170">홈</translation>
 </translationbundle>

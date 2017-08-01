@@ -30,7 +30,6 @@
 <translation id="1966382378801805537">Chromium kan ikke fastlægge eller angive standardbrowseren</translation>
 <translation id="1967743265616885482">Et modul med samme navn er i strid med Chromium.</translation>
 <translation id="2008474315282236005">Denne handling sletter ét element på denne enhed. Hvis du senere vil hente dine data igen, skal du logge ind på Chromium som <ph name="USER_EMAIL" />.</translation>
-<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Denne handling sletter mindst $1 element permanent fra denne enhed. Hvis du senere vil hente dine data igen, skal du logge ind i Chromium som $2.}one{Denne handling sletter mindst $1 element permanent fra denne enhed. Hvis du senere vil hente dine data igen, skal du logge ind i Chromium som $2.}other{Denne handling sletter mindst $1 elementer permanent fra denne enhed. Hvis du senere vil hente dine data igen, skal du logge ind i Chromium som $2.}}</translation>
 <translation id="2077129598763517140">Brug hardwareacceleration, når det er muligt</translation>
 <translation id="2119636228670142020">Om &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Chromium OS open source-licenser</translation>
@@ -81,7 +80,6 @@
 <translation id="3549345495227188780">Kom godt i gang med Chromium OS</translation>
 <translation id="3582788516608077514">Opdaterer Chromium...</translation>
 <translation id="358997566136285270">Chromium-logo</translation>
-<translation id="3645040538872234961">Denne handling sletter dine browserdata permanent fra denne enhed. Hvis du senere vil hente dine data igen, skal du logge ind i Chromium som $2.</translation>
 <translation id="3738139272394829648">Tryk for at søge</translation>
 <translation id="3762167353400286894">Chromium OS vises på dette sprog</translation>
 <translation id="378917192836375108">Med Chromium kan du klikke på et telefonnummer på nettet og ringe op til det via Skype!</translation>
@@ -153,7 +151,6 @@
 <translation id="59625444380784159">Oplysninger om dine kontaktpersoner kan hjælpe dig med at udfylde formularer hurtigere i Chromium.</translation>
 <translation id="5987687638152509985">Opdater Chromium for at starte synkronisering</translation>
 <translation id="6055895534982063517">Der findes en ny version af Chromium, som er hurtigere end nogensinde før.</translation>
-<translation id="6077017812234345835">Denne handling sletter mindst <ph name="TOTAL_COUNT" /> elementer permanent fra denne enhed. Hvis du senere vil hente dine data igen, skal du logge ind i Chromium som $2.</translation>
 <translation id="608189560609172163">Chromium kunne ikke synkronisere dine data på grund af en loginfejl.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> er skadelig, så Chromium har blokeret den.</translation>
 <translation id="6212496753309875659">Computeren har allerede en nyere version af Chromium. Hvis softwaren ikke virker, skal du afinstallere Chromium og prøve igen.</translation>
@@ -190,7 +187,6 @@ Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller bru
 <translation id="705851970750939768">Opdater Chromium</translation>
 <translation id="7066436765290594559">Chromium OS kunne ikke synkronisere dine data. Opdater din adgangssætning til synkronisering.</translation>
 <translation id="707471633328071618">Google Payments (kopieret til Chromium)</translation>
-<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Denne handling sletter $1 element permanent fra denne enhed. Hvis du senere vil hente dine data igen, skal du logge ind i Chromium som $2.}one{Denne handling sletter $1 element permanent fra denne enhed. Hvis du senere vil hente dine data igen, skal du logge ind i Chromium som $2.}other{Denne handling sletter $1 elementer permanent fra denne enhed. Hvis du senere vil hente dine data igen, skal du logge ind i Chromium som $2.}}</translation>
 <translation id="7138853919861947730">Chromium kan bruge webtjenester til at forbedre din søgeoplevelse.</translation>
 <translation id="7162152143154757523">Chromium kan anvende smartere stavekontrol ved at sende dine indtastninger i browseren til Googles servere, så du kan bruge den samme teknologi til stavekontrol, som der anvendes i Google-søgninger.</translation>
 <translation id="7196020411877309443">Hvorfor får jeg vist dette?</translation>
@@ -212,7 +208,6 @@ Du kan forhindre <ph name="NEW_PROFILE_NAME" /> i at få adgang til din konto ve
 <ph name="BEGIN_LINK_2" />Få flere oplysninger<ph name="END_LINK_2" />
 
 Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledning.</translation>
-<translation id="7421823331379285070">Chromium kræver Windows XP eller nyere. Nogle funktioner virker muligvis ikke.</translation>
 <translation id="7473891865547856676">Nej tak</translation>
 <translation id="7483335560992089831">Kan ikke installere den samme version af Chromium som den, der kører i øjeblikket. Luk Chromium, og prøv igen.</translation>
 <translation id="7549178288319965365">Om Chromium OS</translation>
@@ -223,6 +218,7 @@ Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledn
 <translation id="7729447699958282447">Chromium kunne ikke synkronisere dine data, fordi synkronisering ikke er tilgængelig for dit domæne.</translation>
 <translation id="7745317241717453663">Denne handling sletter dine browserdata på denne enhed. Hvis du senere vil hente dine data igen, skal du logge ind på Chromium som <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Installationsprogrammet kunne ikke oprette en midlertidig mappe. Tjek, om der er tilstrækkelig diskplads, og om der er tilladelse til at installere software.</translation>
+<translation id="7756122083761163394">Denne brugers browserdata slettes fra denne enhed. Log ind på Chrome som $2 for at gendanne dataene.</translation>
 <translation id="7937630085815544518">Du loggede ind på Chromium som <ph name="USER_EMAIL_ADDRESS" />. Brug den samme konto til at logge ind igen.</translation>
 <translation id="795025003224538582">Genstart ikke</translation>
 <translation id="7962572577636132072">Chromium opdateres automatisk, så du altid har den nyeste version.</translation>

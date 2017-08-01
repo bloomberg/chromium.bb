@@ -54,13 +54,6 @@
       tillåtna frekvensen är 60 sekunder.</translation>
 <translation id="1221359380862872747">Läs in angivna webbadresser vid demoinloggning</translation>
 <translation id="1265053460044691532">Begränsa tiden som en användare som verifierats via SAML kan logga in offline</translation>
-<translation id="127699919157094139">Inaktiverar datasynkronisering i <ph name="PRODUCT_NAME" /> med synkroniseringstjänster från Google och förhindrar att användarna ändrar inställningen.
-
-      Om du aktiverar inställningen kan användarna inte ändra eller åsidosätta inställningen i <ph name="PRODUCT_NAME" />.
-
-      Om den här principen inte ställs in kan användaren själv välja om Google Synk ska användas eller inte.
-
-      Om du vill inaktivera Google Sync helt och hållet rekommenderar vi att du inaktiverar tjänsten Google Sync i Google Administratörskonsol.</translation>
 <translation id="1291880496936992484">Varning: RC4 kommer att helt tas bort från <ph name="PRODUCT_NAME" /> efter version 52 (kring september 2016) och den här principen upphör då att fungera.
 
       Om principen inte har ställts in eller är inställd på falskt kommer RC4-krypteringssviter inte att aktiveras. Principen kan ställas in som sant om kompatibilitet med en föråldrad server önskas bibehållas. Detta är en nödlösning, och servern bör omkonfigureras.</translation>
@@ -531,6 +524,11 @@
 
       Om principen inte ges något värde innebär det att den är aktiverad (se beskrivningen ovan).</translation>
 <translation id="285480231336205327">Aktivera läge för hög kontrast</translation>
+<translation id="2854919890879212089">Gör att datorns standardskrivare används som standardval för Förhandsgranskning i <ph name="PRODUCT_NAME" /> i stället för den senast använda skrivaren.
+
+      Om du inaktiverar den här inställningen eller inte anger något värde används den senast använda skrivaren som standardval för Förhandsgranskning.
+
+      Om du aktiverar den här inställningen används operativsystemets standardskrivare som standardval för Förhandsgranskning.</translation>
 <translation id="2872961005593481000">Stäng av</translation>
 <translation id="2874209944580848064">Tänk på detta för <ph name="PRODUCT_OS_NAME" />-enheter som stöder Android-appar:</translation>
 <translation id="2877225735001246144">Inaktivera CNAME-sökning när Kerberos-autentisering kontrolleras</translation>
@@ -1018,6 +1016,7 @@
 
           Som standard får användare ett varningsmeddelande i stället för ett felmeddelande om pinkoden anses vara osäker.</translation>
 <translation id="4723829699367336876">Aktivera brandväggspassage från fjärråtkomstklient</translation>
+<translation id="4725123658714754485">Styr om användarstatistik och diagnostisk data, till exempel felrapporter, rapporteras till Google. Om värdet är sant rapporterar <ph name="PRODUCT_OS_NAME" /> användarstatistik och diagnostisk data. Om principen inte har konfigurerats eller om värdet är falskt inaktiveras rapportering av statistik och diagnostisk data.</translation>
 <translation id="4725528134735324213">Aktivera säkerhetskopieringstjänsten för Android</translation>
 <translation id="4733471537137819387">Policyer som gäller integrerad HTTP-autentisering</translation>
 <translation id="4744190513568488164">Servrar som <ph name="PRODUCT_NAME" /> kan delegera till.
@@ -1541,6 +1540,11 @@
 
       Om inställningen är inaktiverad eller inte anges används pluginsökaren.</translation>
 <translation id="6699880231565102694">Aktivera tvåfaktorsautentisering för fjärråtkomstvärdar</translation>
+<translation id="6724842112053619797">Om du aktiverar den här inställningen skrivs även inställningar för <ph name="PRODUCT_NAME" />-profiler (exempelvis bokmärken, autofylluppgifter och lösenord) till en fil som lagras i användarprofilmappen för roaming eller en plats som anges av administratören i principen <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Molnsynkronisering inaktiveras när principen aktiveras.
+
+      Om den här principen är inaktiverad eller utan värde används endast vanliga lokala profiler.
+
+      Principen <ph name="SYNC_DISABLED_POLICY_NAME" /> inaktiverar all synkronisering av data och åsidosätter RoamingProfileSupportEnabled.</translation>
 <translation id="6757438632136860443">Låter dig ange en lista med webbadressmönster som definierar på vilka webbplatser pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> får köras.
 
           Om den här principen inte anges används det globala standardvärdet för alla webbplatser. Värdet hämtas antingen från principen DefaultPluginsSetting, om den har ställts in, eller från användarens egna inställningar.</translation>
@@ -1588,6 +1592,13 @@
 <translation id="6943577887654905793">Namn för Mac/Linux-inställning:</translation>
 <translation id="69525503251220566">Parameter som anger bildsökningsfunktionen för sökleverantören som är standard</translation>
 <translation id="6956272732789158625">Tillåt inte att någon webbplats använder nyckelgenerering</translation>
+<translation id="6994082778848658360">Anger hur den integrerade maskinvaran för säkra element kan användas för tvåfaktorsautentisering om den är kompatibel med den här funktionen. Strömbrytaren på datorn används för att identifiera användarens fysiska närvaro.
+
+      Om Inaktiverad har valts tillhandahålls ingen tvåfaktorsautentisering.
+
+      Om U2F har valts fungerar tvåfaktorsautentiseringen i enlighet med specifikationen för FIDO U2F.
+
+      Om U2F_EXTENDED har valts får du U2F-funktioner och några tillägg för enskild attestering via den integrerade tvåfaktorsautentiseringen.</translation>
 <translation id="6997592395211691850">Om OCSP/CRL-kontroller online krävs för lokala tillitsankare</translation>
 <translation id="7003334574344702284">När den här policyn är aktiverad tvingas import av sparade lösenord från standardwebbläsaren. Policyn påverkar också dialogrutan för import.
 
@@ -1794,7 +1805,6 @@
 <translation id="7713608076604149344">Nedladdningsbegränsningar</translation>
 <translation id="7715711044277116530">Procentsats med vilken fördröjningen av skärmdämpningen ska skalanpassas i presentationsläge</translation>
 <translation id="7717938661004793600">Konfigurera tillgänglighetsfunktioner i <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7719251660743813569">Styr om användarstatistik rapporteras till Google. Om värdet är sant rapporterar <ph name="PRODUCT_OS_NAME" /> användarstatistik. Om policyn inte är konfigurerad eller inställd på falskt inaktiveras statistikrapportering.</translation>
 <translation id="7724994675283793633">Den här principen aktiverar HTTP/0.9 på andra portar än 80 för HTTP och 443 för HTTPS.
 
       Principen är inaktiverad som standard och om den aktiveras löper användare risk att utsättas för säkerhetsbristen https://crbug.com/600352.
@@ -2126,6 +2136,15 @@
 <translation id="891435090623616439">kodad som en JSON-sträng. Mer information finns i <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Rapportera enhetsplats</translation>
 <translation id="8951350807133946005">Ange katalog för diskcache</translation>
+<translation id="8952317565138994125">Inaktiverar datasynkronisering i <ph name="PRODUCT_NAME" /> med synkroniseringstjänster från Google och förhindrar att användarna ändrar inställningen.
+
+      Om du aktiverar inställningen kan användarna inte ändra eller åsidosätta inställningen i <ph name="PRODUCT_NAME" />.
+
+      Om inget värde anges för principen kan användaren själv välja om Google Sync ska användas eller inte.
+
+      Om du vill inaktivera Google Sync helt och hållet rekommenderar vi att du inaktiverar tjänsten Google Sync på Googles administratörskonsol.
+
+      Denna princip ska inte aktiveras när principen <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> är aktiverad eftersom den använder samma funktioner på klientsidan. Synkroniseringstjänster från Google inaktiveras i sådana fall helt och hållet.</translation>
 <translation id="8955719471735800169">Tillbaka till början</translation>
 <translation id="8960850473856121830">Mönster på den här listan kommer att matchas mot
       den begärande webbadressens säkerhetsursprung. Om det blir en träff får 
@@ -2135,6 +2154,7 @@
 <translation id="8970205333161758602">Visa inte avvisningsmeddelandet i <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Timer för automatisk inloggning till offentlig session</translation>
 <translation id="8976248126101463034">Tillåt gnubby-autentisering för fjärråtkomstvärdar</translation>
+<translation id="8976531594979650914">Använd systemets standardskrivare som standard</translation>
 <translation id="8992176907758534924">Tillåt inte att bilder visas på någon webbplats</translation>
 <translation id="9035964157729712237">Tilläggs-ID:n att undanta från svartlistan</translation>
 <translation id="9042911395677044526">Tillåter att en pushad nätverkskonfiguration används per användare på en <ph name="PRODUCT_OS_NAME" />-enhet. Nätverkskonfigurationen är en JSON-formaterad sträng som definieras av formatet för öppen nätverkskonfiguration som beskrivs på <ph name="ONC_SPEC_URL" /></translation>

@@ -30,7 +30,6 @@
 <translation id="1966382378801805537">Chromium 無法偵測或設定預設瀏覽器</translation>
 <translation id="1967743265616885482">已知相同名稱的模組會與 Chromium 衝突。</translation>
 <translation id="2008474315282236005">登出後，系統會將 1 個項目從這個裝置上刪除。日後如要重新取得你的資料，請以 <ph name="USER_EMAIL" /> 身分登入 Chromium。</translation>
-<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{這會將至少 $1 個項目從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chromium。}other{這會將至少 $1 個項目從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chromium。}}</translation>
 <translation id="2077129598763517140">在可用時使用硬體加速</translation>
 <translation id="2119636228670142020">關於 Chromium 作業系統(&amp;C)</translation>
 <translation id="2158734852934720349">Chromium 作業系統開放原始碼授權</translation>
@@ -81,7 +80,6 @@
 <translation id="3549345495227188780">開始使用 Chromium 作業系統</translation>
 <translation id="3582788516608077514">正在更新 Chromium...</translation>
 <translation id="358997566136285270">Chromium 標誌</translation>
-<translation id="3645040538872234961">這會將您的瀏覽資料從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chromium。</translation>
 <translation id="3738139272394829648">輕觸搜尋</translation>
 <translation id="3762167353400286894">Chromium 作業系統的介面文字已設為這種語言</translation>
 <translation id="378917192836375108">透過 Chromium，你只要按一下網路上的電話號碼，即可用 Skype 打電話！</translation>
@@ -153,7 +151,6 @@
 <translation id="59625444380784159">利用你的通訊錄詳細資料，快速在 Chromium 中填寫表單。</translation>
 <translation id="5987687638152509985">如要開始同步處理，請更新 Chromium</translation>
 <translation id="6055895534982063517">新版 Chromium 現已推出，速度更勝以往。</translation>
-<translation id="6077017812234345835">這會將至少 <ph name="TOTAL_COUNT" /> 個項目從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chromium。</translation>
 <translation id="608189560609172163">登入時發生錯誤，因此 Chromium 無法同步處理你的資料。</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> 並不安全，因此遭到 Chromium 封鎖。</translation>
 <translation id="6212496753309875659">這台電腦已安裝較新的 Chromium 版本。如果軟體無法順利運作，請解除安裝 Chromium，然後再試一次。</translation>
@@ -190,7 +187,6 @@
 <translation id="705851970750939768">更新 Chromium</translation>
 <translation id="7066436765290594559">Chromium 作業系統無法同步處理你的資料，請更新你的同步通關密語。</translation>
 <translation id="707471633328071618">Google Payments (已複製到 Chromium)</translation>
-<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{這會將 $1 個項目從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chromium。}other{這會將 $1 個項目從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chromium。}}</translation>
 <translation id="7138853919861947730">Chromium 透過網路服務改善瀏覽品質。</translation>
 <translation id="7162152143154757523">Chromium 可將您在瀏覽器中輸入的字詞傳送給 Google 伺服器，並透過 Google 搜尋所使用的拼字檢查技術，為您提供更精確的拼字檢查功能。</translation>
 <translation id="7196020411877309443">為何出現這個對話框？</translation>
@@ -212,7 +208,6 @@ Chromium 無法復原你的設定。</translation>
 <ph name="BEGIN_LINK_2" />瞭解詳情<ph name="END_LINK_2" />
 
 如需進一步的操作說明，請登入您的 <ph name="ACCOUNT_EMAIL" /> 帳戶，查看系統寄給您的電子郵件。</translation>
-<translation id="7421823331379285070">Chromium 需要 Windows XP 或更新版本的作業系統，否則部分功能無法正確運作。</translation>
 <translation id="7473891865547856676">不用了，謝謝</translation>
 <translation id="7483335560992089831">無法安裝這個版本的 Chromium，因為目前正在執行相同版本。請關閉 Chromium，然後再試一次。</translation>
 <translation id="7549178288319965365">關於 Chromium 作業系統</translation>
@@ -223,6 +218,7 @@ Chromium 無法復原你的設定。</translation>
 <translation id="7729447699958282447">你的網域無法使用「同步功能」，因此 Chromium 無法同步處理你的資料。</translation>
 <translation id="7745317241717453663">登出後，系統會將你的瀏覽資料從這個裝置上刪除。日後如要重新取得你的資料，請以 <ph name="USER_EMAIL" /> 身分登入 Chromium。</translation>
 <translation id="7747138024166251722">安裝程式無法建立暫時目錄，請檢查可用磁碟空間與權限，以順利安裝軟體。</translation>
+<translation id="7756122083761163394">這位使用者的瀏覽資料將從這個裝置上刪除。如要還原資料，請以「$2」的身分登入 Chrome。</translation>
 <translation id="7937630085815544518">你使用了 <ph name="USER_EMAIL_ADDRESS" /> 的身分登入 Chromium，請使用相同帳戶重新登入。</translation>
 <translation id="795025003224538582">不要重新啟動</translation>
 <translation id="7962572577636132072">Chromium 會自動更新，隨時讓你使用最新版本。</translation>

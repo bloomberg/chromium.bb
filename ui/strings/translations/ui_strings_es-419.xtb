@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="1413622004203049571">Inhabilitar notificaciones de <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuto y }other{# minutos y }}</translation>
+<translation id="1643823602425662293">Notificación</translation>
 <translation id="1685967565548146460">Hats</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minuto}other{# minutos}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">saltar</translation>
 <translation id="4250229828105606438">Captura de pantalla</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{Hace 1 mes}other{Hace # meses}}</translation>
+<translation id="4316910396681052118">TODAS LAS APPS</translation>
 <translation id="4320177379694898372">Sin conexión a Internet</translation>
 <translation id="4588090240171750605">Desplazar a la derecha</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Queda 1 mes}other{Quedan # meses}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">Carpeta sin nombre</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}other{# s}}</translation>
 <translation id="9150735707954472829">Pestaña</translation>
+<translation id="9161053988251441839">APPS SUGERIDAS</translation>
 <translation id="9170848237812810038">&amp;Deshacer</translation>
 <translation id="932327136139879170">Página principal</translation>
 </translationbundle>

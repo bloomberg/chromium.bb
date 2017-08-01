@@ -166,6 +166,7 @@
 <translation id="27527859628328957">अगले फ़ोकस करने योग्‍य आइटम पर जंप करें</translation>
 <translation id="2770781857296573485">समूह अन्‍वेषण डालें</translation>
 <translation id="2777845298774924149">बाहर हो गया</translation>
+<translation id="2781264313200109999">लिंक शुरू</translation>
 <translation id="2800204403141299078">कोई और भिन्‍न तत्‍व नहीं.</translation>
 <translation id="2800780099804980316">कोई पिछला स्‍तर 1 शीर्षक नहीं.</translation>
 <translation id="280499067616661124">पेज में ChromeVox ढूंढें</translation>
@@ -233,7 +234,7 @@
 <translation id="3286390186030710347">स्लाइडर</translation>
 <translation id="3299925995433437805">बाद में देखा गया कोई लिंक नहीं.</translation>
 <translation id="3307886118343381874">तालिका के अंत में जाएं</translation>
-<translation id="3311969765485641742">नोटिफिकेशन की समीक्षा करने के लिए Alt+Shift+A दबाएं</translation>
+<translation id="3311969765485641742">नोटिफ़िकेशन की समीक्षा करने के लिए Alt+Shift+A दबाएं</translation>
 <translation id="3312997241656799641">बाद में देखा गया लिंक</translation>
 <translation id="3313245066383501820">ChromeVox बदलने वाली की</translation>
 <translation id="3317212938060708859">स्लाइडर</translation>
@@ -318,6 +319,7 @@
 <translation id="3716845769494773620">एकाधिक पंक्ति</translation>
 <translation id="3731746171184829332">कोई पिछला शीर्षक नहीं.</translation>
 <translation id="3735039640698208086">ऑडियो चलाते समय...</translation>
+<translation id="3755561384917041694">कृपया बढ़े हुए ब्रेल आदेशों का उपयोग करने के लिए, स्थिति ट्रे में ऑन-स्क्रीन कीबोर्ड, एक्सेस-योग्यता सक्षम करें.</translation>
 <translation id="3762198587642264450">वर्तमान पंक्ति के अंत में जाएं</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">डॉयलॉग से बाहर हो गए हैं.</translation>
@@ -576,6 +578,7 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="6037602951055904232">आगे की ओर पैन करें</translation>
 <translation id="6044160928851315051">स्क्रीन गहरी करें</translation>
 <translation id="6082768461603900813">मूलभूत नेविगेशन</translation>
+<translation id="6092707270915298410">लिंक समाप्त</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">सेल के अंत में.</translation>
 <translation id="6122013438240733403">btn</translation>

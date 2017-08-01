@@ -30,7 +30,6 @@
 <translation id="1966382378801805537">Chromium では既定のブラウザを判定または設定できません</translation>
 <translation id="1967743265616885482">同じ名前のモジュールは Chromium と競合することがわかっています。</translation>
 <translation id="2008474315282236005">この端末から 1 件の項目を削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chromium にログインしてください。</translation>
-<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{少なくとも $1 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chromium にログインしてください。}other{少なくとも $1 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chromium にログインしてください。}}</translation>
 <translation id="2077129598763517140">ハードウェア アクセラレーションが使用可能な場合は使用する</translation>
 <translation id="2119636228670142020">Chromium OS について(&amp;C)</translation>
 <translation id="2158734852934720349">Chromium OS オープンソース ライセンス</translation>
@@ -81,7 +80,6 @@
 <translation id="3549345495227188780">Chromium OS のスタート ガイド</translation>
 <translation id="3582788516608077514">Chromium を更新しています...</translation>
 <translation id="358997566136285270">Chromium ロゴ</translation>
-<translation id="3645040538872234961">閲覧データがこの端末から完全に削除されます。後でデータを取得するには、$2 として Chromium にログインしてください。</translation>
 <translation id="3738139272394829648">タップして検索</translation>
 <translation id="3762167353400286894">Chromium OS はこの言語で表示されています</translation>
 <translation id="378917192836375108">Chromium では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
@@ -153,7 +151,6 @@
 <translation id="59625444380784159">連絡先から詳細を取得すると、Chromium でのフォームの記入が楽になります。</translation>
 <translation id="5987687638152509985">同期を開始するには、Chromium を更新します</translation>
 <translation id="6055895534982063517">Chromium がさらに速くなりました！最新バージョンをぜひお試しください。</translation>
-<translation id="6077017812234345835">少なくとも <ph name="TOTAL_COUNT" /> 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chromium にログインしてください。</translation>
 <translation id="608189560609172163">ログイン時にエラーが発生したため、Chromium はデータを同期できませんでした。</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> は危険なファイルであるため、Chromium でブロックしました。</translation>
 <translation id="6212496753309875659">新しいバージョンの Chromium が既にインストールされています。ソフトウェアが動作しない場合は、Chromium をアンインストールしてからもう一度お試しください。</translation>
@@ -190,7 +187,6 @@
 <translation id="705851970750939768">Chromium を更新</translation>
 <translation id="7066436765290594559">Chromium OS はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>
 <translation id="707471633328071618">Google ペイメント（Chromium にコピー）</translation>
-<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{$1 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chromium にログインしてください。}other{$1 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chromium にログインしてください。}}</translation>
 <translation id="7138853919861947730">Chromium は、より快適なブラウジングを提供する目的でウェブ サービスを使用することがあります。</translation>
 <translation id="7162152143154757523">Chromium ではブラウザに入力された内容を Google のサーバーに送信することで高度なスペルチェックを実現し、Google 検索で使用されるスペルチェック テクノロジーを活用できます。</translation>
 <translation id="7196020411877309443">このウィンドウが表示される理由</translation>
@@ -212,7 +208,6 @@
 <ph name="BEGIN_LINK_2" />詳細<ph name="END_LINK_2" />
 
 詳しくは、<ph name="ACCOUNT_EMAIL" /> 宛にメールをお送りしましたのでご確認ください。</translation>
-<translation id="7421823331379285070">Chromium は、Windows XP 以降が必要です。一部の機能が動作しない場合があります。</translation>
 <translation id="7473891865547856676">スキップ</translation>
 <translation id="7483335560992089831">実行中の Chromium と同じバージョンをインストールすることはできません。Chromium を閉じてからもう一度お試しください。</translation>
 <translation id="7549178288319965365">Chromium OS について</translation>
@@ -223,6 +218,7 @@
 <translation id="7729447699958282447">お使いのドメインでは同期を利用できないため、Chromium はデータを同期できませんでした。</translation>
 <translation id="7745317241717453663">この端末から閲覧データを削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chromium にログインしてください。</translation>
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
+<translation id="7756122083761163394">この操作を行うと、このユーザーの閲覧データがこの端末から削除されます。データを復元するには、$2 として Chrome にログインしてください。</translation>
 <translation id="7937630085815544518">Chromium に <ph name="USER_EMAIL_ADDRESS" /> としてログインしていました。再度ログインするには同じアカウントを使用してください。</translation>
 <translation id="795025003224538582">再起動しない</translation>
 <translation id="7962572577636132072">Chromium は自動的に更新されるため、常に最新版をご利用になれます。</translation>

@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">לחצן גלישה</translation>
 <translation id="1957803754585243749">‎0°‎</translation>
 <translation id="1969011864782743497">‏<ph name="DEVICE_NAME" />‏ (USB)</translation>
+<translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">מכשיר זה מנוהל על ידי <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">לאורך</translation>
 <translation id="207439088875642105">זהו חשבון עבור ילדים, המנוהל על-ידי <ph name="FIRST_PARENT_EMAIL" /> ועל-ידי <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">מקשים דביקים</translation>
 <translation id="2509468283778169019">‏CAPS LOCK מופעל</translation>
 <translation id="2532589005999780174">מצב ניגודיות גבוהה</translation>
+<translation id="2597972630681408282">תאורת לילה: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">הפעילות באתר תסתיים בעוד <ph name="SESSION_TIME_REMAINING" />. תנותק מהחשבון.</translation>
 <translation id="2727977024730340865">מחובר למטען בעל מתח נמוך. ייתכן שטעינת הסוללה לא תהיה אמינה.</translation>
 <translation id="2761704814324807722">מגש מערכת, שעה <ph name="TIME" />‏, <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">פלט</translation>
 <translation id="3019353588588144572">הזמן שנותר עד לטעינה מלאה של הסוללה, <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">זהו חשבון לילדים, המנוהל על-ידי <ph name="MANAGER_EMAIL" /></translation>
-<translation id="3050422059534974565">‏CAPS LOCK פועל.
-הקש על 'חיפוש' או על Shift כדי לבטל.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">תחתית</translation>
 <translation id="3105990244222795498">‏<ph name="DEVICE_NAME" />‏ (Bluetooth)</translation>
@@ -136,6 +136,7 @@
 <translation id="4849058404725798627">הדגשה של האובייקט במיקוד המקלדת</translation>
 <translation id="4872237917498892622">‏Alt + חיפוש או Shift</translation>
 <translation id="4895488851634969361">הסוללה טעונה במלואה.</translation>
+<translation id="4905614135390995787">מקש הקיצור להפעלה או כיבוי של מצב ניגודיות גבוהה השתנה. השתמש ב-<ph name="NEW_SHORTCUT" /> במקום ב-<ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">אשר</translation>
 <translation id="4961318399572185831">העברת מסך</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@
 <translation id="5744083938413354016">הקשה וגרירה</translation>
 <translation id="5777841717266010279">להפסיק את שיתוף המסך?</translation>
 <translation id="57838592816432529">השתק</translation>
+<translation id="5860033963881614850">כבוי</translation>
 <translation id="5895138241574237353">הפעל מחדש</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">פועל</translation>
 <translation id="5927132638760172455">מעביר למקבל לא ידוע</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">חזרה לגרסה הקודמת</translation>
@@ -169,8 +172,8 @@
 <translation id="5977415296283489383">אוזניות</translation>
 <translation id="5978382165065462689">שיתוף שליטה במסך דרך סיוע מרחוק.</translation>
 <translation id="5980301590375426705">צא מהפעלת אורח</translation>
+<translation id="5992218262414051481">‏מצב ניגודיות גבוהה פועל. הקש שוב על Ctrl+Search+H כדי לכבות אותו.</translation>
 <translation id="6018164090099858612">יציאה ממצב שיקוף</translation>
-<translation id="6041154455840261787">‏הופעל מצב ניגודיות גבוהה. כדי להשבית, הקש שוב על Search+Shift+H.</translation>
 <translation id="6043212731627905357">אין כימיה בין הצג הזה למכשיר ה-<ph name="DEVICE_TYPE" /> שלך (המכשיר לא תומך בצג).</translation>
 <translation id="6043994281159824495">צא עכשיו</translation>
 <translation id="6047696787498798094">שיתוף המסך יפסיק ברגע שתעבור למשתמש אחר. האם ברצונך להמשיך?</translation>
@@ -195,6 +198,7 @@
 <translation id="6585808820553845416">הפעילות באתר תסתיים בעוד <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">‏חיפוש+Shift‏+K</translation>
 <translation id="6650933572246256093">‏מכשיר ה-Bluetooth ‏"<ph name="DEVICE_NAME" />" מבקש הרשאה לביצוע התאמה. הזן את מפתח הסיסמה הבא במכשיר הזה: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6700713906295497288">‏לחצן תפריט IME</translation>
 <translation id="6713285437468012787">‏מכשיר ה-Bluetooth‏ "<ph name="DEVICE_NAME" />" הותאם והוא זמין כעת לכל המשתמשים. אתה יכול להסיר את ההתאמה הזו ב'הגדרות'.</translation>
 <translation id="6785414152754474415">‏הסוללה טעונה ברמה של ‎<ph name="PERCENTAGE" />%‎ ומתבצעת טעינה.</translation>
@@ -214,8 +218,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">חוזר לרזולוציה הקודמת בעוד <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">‏CAPS LOCK פועל.
-הקש על Alt + 'חיפוש' או Shift כדי לבטל.</translation>
+<translation id="7199454189089571166">‏מצב Assistant</translation>
 <translation id="7246339268451149667">להפעיל ביטול נעילה באמצעות טביעת אצבע?</translation>
 <translation id="7256634071279256947">מיקרופון אחורי</translation>
 <translation id="7348093485538360975">מקלדת על המסך</translation>
@@ -233,10 +236,10 @@
 <translation id="7649070708921625228">עזרה</translation>
 <translation id="7692480393933218409">‏טעינת מכשירים מחוברים עם יציאת USB-C</translation>
 <translation id="776344839111254542">לחץ כדי להציג את פרטי העדכון</translation>
+<translation id="7798302898096527229">‏הקש על Search או על Shift כדי לבטל.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> ו-<ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">‏שפת Chrome השתנתה מ"<ph name="FROM_LOCALE" />" ל"<ph name="TO_LOCALE" />" לאחר סנכרון ההגדרות.</translation>
 <translation id="7904094684485781019">מנהל החשבון הזה אסר על כניסה עם מספר חשבונות.</translation>
-<translation id="7951523953736115461">תאורת לילה</translation>
 <translation id="7977927628060636163">מחפש רשתות סלולריות...</translation>
 <translation id="7982789257301363584">רשת</translation>
 <translation id="8000066093800657092">אין רשת</translation>
@@ -255,6 +258,7 @@
 <translation id="8433977262951327081">שינינו את קיצור הדרך להצגה של בועת התפריט של אפשרויות הקלט במדף. השתמש ב-<ph name="NEW_SHORTCUT" /> במקום ב-<ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">‏Wi-Fi מופעל.</translation>
 <translation id="847056008324733326">הגדרות קנה המידה של התצוגה</translation>
+<translation id="8477270416194247200">‏הקש על Alt+Search או על Shift כדי לבטל.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: מתחבר מחדש...</translation>
 <translation id="8517041960877371778">ייתכן שה-<ph name="DEVICE_TYPE" /> לא ייטען כשהוא פועל.</translation>
 <translation id="8639760480004882931">שיעור טעינה נותר - <ph name="PERCENTAGE" /></translation>

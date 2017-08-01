@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Pārpildes poga</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">Šo ierīci pārvalda vietne <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Portrets</translation>
 <translation id="207439088875642105">Šis ir bērniem paredzēts konts, ko pārvalda <ph name="FIRST_PARENT_EMAIL" /> un <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Taustiņu ķēde</translation>
 <translation id="2509468283778169019">Funkcija Caps Lock ir ieslēgta</translation>
 <translation id="2532589005999780174">Augsta kontrasta režīms</translation>
+<translation id="2597972630681408282">Nakts režīms: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">Atlikušais laiks līdz šīs sesijas beigām: <ph name="SESSION_TIME_REMAINING" />. Jūs tiksiet izrakstīts.</translation>
 <translation id="2727977024730340865">Pievienots lādētājs ar mazu strāvas padevi. Akumulatora uzlāde var nebūt uzticama.</translation>
 <translation id="2761704814324807722">Statusa josla, laiks: <ph name="TIME" />. <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">Izvade</translation>
 <translation id="3019353588588144572">Pilnīgais uzlādei nepieciešamais laiks: <ph name="TIME_REMAINING" />.</translation>
 <translation id="3047477924825107454">Šis ir bērniem paredzēts konts, ko pārvalda <ph name="MANAGER_EMAIL" />.</translation>
-<translation id="3050422059534974565">Ir ieslēgts BURTSLĒGS.
-Lai atceltu tā funkcionalitāti, nospiediet Meklēt vai Shift.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Apakšā</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -136,6 +136,7 @@ Lai atceltu tā funkcionalitāti, nospiediet Meklēt vai Shift.</translation>
 <translation id="4849058404725798627">Izcelt objektu ar tastatūras fokusu</translation>
 <translation id="4872237917498892622">Alt+Meklēt vai Shift</translation>
 <translation id="4895488851634969361">Akumulators ir pilnībā uzlādēts.</translation>
+<translation id="4905614135390995787">Īsinājumtaustiņi, ar kuriem pārslēgt augsta kontrasta režīmu, ir mainījušies. Lūdzu, izmantojiet <ph name="NEW_SHORTCUT" />, nevis <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Pieņemt</translation>
 <translation id="4961318399572185831">Ekrāna apraide</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@ Lai atceltu tā funkcionalitāti, nospiediet Meklēt vai Shift.</translation>
 <translation id="5744083938413354016">Vilkšana pieskaroties</translation>
 <translation id="5777841717266010279">Vai apturēt ekrāna koplietošanu?</translation>
 <translation id="57838592816432529">Izslēgt skaņu</translation>
+<translation id="5860033963881614850">Izsl.</translation>
 <translation id="5895138241574237353">Restartēt</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">Iesl.</translation>
 <translation id="5927132638760172455">Apraide uz nezināmu saņēmēju</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Atjaunot</translation>
@@ -169,8 +172,8 @@ Lai atceltu tā funkcionalitāti, nospiediet Meklēt vai Shift.</translation>
 <translation id="5977415296283489383">Austiņas</translation>
 <translation id="5978382165065462689">Ekrāna pārvaldības koplietošana, izmantojot attālo palīdzību.</translation>
 <translation id="5980301590375426705">Aizvērt viesa sesiju</translation>
+<translation id="5992218262414051481">Augsta kontrasta režīms ir iespējots. Lai to izslēgtu, vēlreiz nospiediet Ctrl+Search+H.</translation>
 <translation id="6018164090099858612">Notiek iziešana no spoguļošanas režīma</translation>
-<translation id="6041154455840261787">Augsta kontrasta režīms iespējots. Vēlreiz nospiediet Meklēt+Shift+H, lai izslēgtu to.</translation>
 <translation id="6043212731627905357">Šis monitors nav saderīgs ar jūsu ierīci <ph name="DEVICE_TYPE" /> (monitors netiek atbalstīts).</translation>
 <translation id="6043994281159824495">Izrakstīties tagad</translation>
 <translation id="6047696787498798094">Pārslēdzoties uz citu lietotāju, ekrāna koplietošana tiks apturēta. Vai vēlaties turpināt?</translation>
@@ -195,6 +198,7 @@ Lai atceltu tā funkcionalitāti, nospiediet Meklēt vai Shift.</translation>
 <translation id="6585808820553845416">Atlikušais laiks līdz šīs sesijas beigām: <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Meklēšana+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth ierīce “<ph name="DEVICE_NAME" />” vēlas saņemt atļauju, lai izveidotu savienojumu pārī. Lūdzu, ievadiet ierīcē šo ieejas atslēgu: <ph name="PASSKEY" />.</translation>
+<translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6700713906295497288">IME izvēlnes poga</translation>
 <translation id="6713285437468012787">Bluetooth ierīce “<ph name="DEVICE_NAME" />” ir savienota pārī un ir pieejama visiem lietotājiem. Lai pārtrauktu šo savienojumus, atveriet iestatījumus.</translation>
 <translation id="6785414152754474415">Akumulatora uzlādes līmenis: <ph name="PERCENTAGE" />%; uzlāde tiek turpināta.</translation>
@@ -214,8 +218,7 @@ Lai atceltu tā funkcionalitāti, nospiediet Meklēt vai Shift.</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Iepriekšējā izšķirtspēja tiks atgriezta pēc <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">Ir ieslēgts BURTSLĒGS.
-Lai atceltu tā funkcionalitāti, nospiediet Alt+Meklēt vai Shift.</translation>
+<translation id="7199454189089571166">Asistenta režīms</translation>
 <translation id="7246339268451149667">Vai iespējot atbloķēšanu, izmantojot pirksta nospiedumu?</translation>
 <translation id="7256634071279256947">Aizmugurējais mikrofons</translation>
 <translation id="7348093485538360975">Ekrāntastatūra</translation>
@@ -233,10 +236,10 @@ Lai atceltu tā funkcionalitāti, nospiediet Alt+Meklēt vai Shift.</translation
 <translation id="7649070708921625228">Palīdzība</translation>
 <translation id="7692480393933218409">Notiek pievienoto USB-C ierīču uzlāde</translation>
 <translation id="776344839111254542">Noklikšķiniet, lai skatītu atjauninājuma datus.</translation>
+<translation id="7798302898096527229">Lai atceltu, nospiediet meklēšanas vai pārslēgšanas taustiņu.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> un <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Pēc jūsu iestatījumu sinhronizēšanas valoda ir mainīta no <ph name="FROM_LOCALE" /> uz <ph name="TO_LOCALE" />.</translation>
 <translation id="7904094684485781019">Šī konta administrators nav atļāvis vairākkārtēju pierakstīšanos.</translation>
-<translation id="7951523953736115461">Nakts režīms</translation>
 <translation id="7977927628060636163">Notiek mobilo tīklu meklēšana...</translation>
 <translation id="7982789257301363584">Tīkls</translation>
 <translation id="8000066093800657092">Nav tīkla</translation>
@@ -255,6 +258,7 @@ Lai atceltu tā funkcionalitāti, nospiediet Alt+Meklēt vai Shift.</translation
 <translation id="8433977262951327081">Tika mainīti īsinājumtaustiņi, ar kuriem plauktā var parādīt ievades opciju izvēlnes burbuli. Lūdzu, turpmāk izmantojiet <ph name="NEW_SHORTCUT" />, nevis <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Wi-Fi tīkls ir ieslēgts.</translation>
 <translation id="847056008324733326">Displeja mēroga iestatījumi</translation>
+<translation id="8477270416194247200">Lai atceltu, nospiediet alternēšanas taustiņu + meklēšanas vai pārslēgšanas taustiņu.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: notiek atkārtota savienojuma izveide…</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> ierīce, iespējams, netiks uzlādēta, kamēr tā būs ieslēgta.</translation>
 <translation id="8639760480004882931">Atlicis: <ph name="PERCENTAGE" />%</translation>

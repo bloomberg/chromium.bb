@@ -4,7 +4,6 @@
 <translation id="1016495303386450659">Elementet blev opdateret</translation>
 <translation id="1047726139967079566">Tilføj denne side som bogmærke...</translation>
 <translation id="1049743911850919806">Inkognito</translation>
-<translation id="1073594902069885687">Godkendelse mislykkedes. Adgangskoden blev ikke kopieret.</translation>
 <translation id="1076421457278169141">Koden er scannet</translation>
 <translation id="1084365883616172403">Indlæg delt på Facebook.</translation>
 <translation id="1104948393051856124">Acceptér og fortsæt</translation>
@@ -34,9 +33,11 @@
 <translation id="1430915738399379752">Udskriv</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> elementer</translation>
 <translation id="1491277525950327607">Tryk to gange for at skifte indstilling</translation>
+<translation id="152234381334907219">Aldrig gemt</translation>
 <translation id="1540800554400757039">Adresse 1</translation>
 <translation id="1545749641540134597">Scan QR-kode</translation>
 <translation id="1580783302095112590">Email sendt.</translation>
+<translation id="1612730193129642006">Vis fanegitter</translation>
 <translation id="1646446875146297738">Hvis du aktiverer "Spor ikke", medtages der en anmodning i din browsertrafik. Anmodningens virkning afhænger af, om et website reagerer på den, og hvordan anmodningen fortolkes.
 
 Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, der ikke er baseret på andre websites, du har besøgt. Mange websites vil stadig indsamle og bruge dine browserdata – f.eks. for at forbedre sikkerheden, for at levere indhold, tjenester, annoncer og anbefalinger på deres websites og for at generere rapporteringsstatistik. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
@@ -66,7 +67,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> bogmærker blev flyttet</translation>
 <translation id="2149973817440762519">Rediger bogmærke</translation>
 <translation id="2230173723195178503">Websiden er indlæst</translation>
-<translation id="2241634353105152135">Kun én gang</translation>
 <translation id="2267753748892043616">Tilføj konto</translation>
 <translation id="2273327106802955778">Menuen Mere</translation>
 <translation id="2320166752086256636">Skjul tastaturet</translation>
@@ -79,6 +79,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="2572712655377361602">En enhedspolitik har blokeret adgangen til dine billeder</translation>
 <translation id="2584132361465095047">Tilføj konto...</translation>
 <translation id="2593774076813182497">Denne side kan ikke udskrives.</translation>
+<translation id="2625189173221582860">Adgangskoden er kopieret</translation>
 <translation id="2648803196158606475">Slet læste</translation>
 <translation id="2653659639078652383">Indsend</translation>
 <translation id="2684815431982545828">Ny fane</translation>
@@ -120,6 +121,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> af <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Åbne faner</translation>
+<translation id="3277021493514034324">Webadressen er kopieret</translation>
 <translation id="3324193307694657476">Adresse 2</translation>
 <translation id="3329904751041170572">Der kunne ikke oprettes forbindelse til serveren.</translation>
 <translation id="3335947283844343239">Åbn lukket fane igen</translation>
@@ -132,7 +134,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="3474649192738347024">Formularerne er udfyldt.</translation>
 <translation id="3478058380795961209">Udløbsmåned:</translation>
 <translation id="3482959374254649722">Synkroniserer dine faner...</translation>
-<translation id="3489372701259491571">Slet gemt adgangskode</translation>
 <translation id="3494788280727468875">Bekræft rydning af browserdata</translation>
 <translation id="3519193562722059437">Åbn en fane for at søge på nettet.</translation>
 <translation id="3527085408025491307">Mappe</translation>
@@ -149,10 +150,8 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="3638472932233958418">Forudindlæs websider</translation>
 <translation id="3691593122358196899">Bogmærket er gemt i <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Tryk for at søge</translation>
-<translation id="3742082982782149146">Webadressen blev kopieret.</translation>
 <translation id="3771033907050503522">Inkognitofaner</translation>
 <translation id="3783017676699494206">Gem billede</translation>
-<translation id="3789841737615482174">Installer</translation>
 <translation id="385051799172605136">Tilbage</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3928666092801078803">Kombiner mine data</translation>
@@ -164,7 +163,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4038354071007134711">Ingen apps på denne enhed, der kan åbne filen.</translation>
 <translation id="4049507953662678203">Sørg for, at du har forbindelse til et netværk, og prøv igen.</translation>
 <translation id="411254640334432676">Download mislykkedes.</translation>
-<translation id="4117350985506774529">Dit brugernavn blev kopieret.</translation>
 <translation id="4121993058175073134">For at sende oplysninger om nettoeksporten skal du konfigurere din e-mailkonto i appen Indstillinger.</translation>
 <translation id="4124987746317609294">Tidsinterval</translation>
 <translation id="4172051516777682613">Vis altid</translation>
@@ -187,7 +185,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 
 Dine data er krypteret med din adgangssætning til synkronisering. Indtast den for at starte synkroniseringen.</translation>
 <translation id="473775607612524610">Opdater</translation>
-<translation id="4773461607542755386">Skal denne side åbnes i appen <ph name="APP_NAME" />?</translation>
 <translation id="481968316161811770">Cookies, websitedata</translation>
 <translation id="4860895144060829044">Ring op</translation>
 <translation id="4875622588773761625">Skal <ph name="PASSWORD_MANAGER_BRAND" /> opdatere din adgangskode til dette website?</translation>
@@ -215,6 +212,7 @@ Dine data er krypteret med din adgangssætning til synkronisering. Indtast den f
 <translation id="5327248766486351172">Navn</translation>
 <translation id="5388358297987318779">Åbn billede</translation>
 <translation id="5409365236829784218">Der er ingen installerede apps, der kan åbne denne fil.</translation>
+<translation id="5433691172869980887">Brugernavnet er kopieret</translation>
 <translation id="54401264925851789">Oplysninger om sidesikkerhed</translation>
 <translation id="5525269841082836315">Opret adgangssætning</translation>
 <translation id="5531274207066050939">Google Payments</translation>
@@ -264,6 +262,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="6196207969502475924">Talesøgning</translation>
 <translation id="6254066287920239840">Åbn links i appen i stedet for i browseren.</translation>
 <translation id="6255097610484507482">Rediger kreditkort</translation>
+<translation id="6273258929211277933"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" />, <ph name="STATE" /></translation>
 <translation id="6308436439357671616">Dette giver dig mulighed for at tage og uploade billeder.</translation>
 <translation id="6314335155547195432">Generér adgangskode</translation>
 <translation id="6324528485781869530">Skift synkroniseringskonto</translation>
@@ -290,7 +289,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="6570040839871198836">Autofyld formular</translation>
 <translation id="6656103420185847513">Rediger mappe</translation>
 <translation id="6657585470893396449">Adgangskode</translation>
-<translation id="666731172850799929">Åbn i <ph name="APP_NAME" /></translation>
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6762156594045689028">Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille synkroniseringen<ph name="END_LINK" /></translation>
@@ -317,6 +315,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7189598951263744875">Del...</translation>
 <translation id="7203585745079012652">Giv talte svar</translation>
 <translation id="722055596168483966">Tilpas Google-tjenester</translation>
+<translation id="7272437679830969316">Din identitet kunne ikke bekræftes. Adgangskoden blev ikke kopieret.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> procent er downloadet</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="7400418766976504921">Webadresse</translation>
@@ -356,7 +355,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="806745655614357130">Hold mine data adskilt</translation>
 <translation id="8076014560081431679">Gemte websiteindstillinger slettes ikke og kan afspejle dine søgevaner. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Luk alle faner</translation>
-<translation id="8108697784695284144">Din adgangskode blev kopieret.</translation>
 <translation id="8137558756159375272">Funktionen "Tryk for at søge" sender det markerede ord og den aktuelle side som kontekst til Google Søgning. Du kan slå den fra under <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" />.</translation>
 <translation id="8205564605687841303">Annuller</translation>
 <translation id="8225985093977202398">Billeder og filer, der er gemt i cache</translation>
@@ -364,6 +362,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="8272426682713568063">Kreditkort</translation>
 <translation id="8281781826761538115">Standardsprog – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">Kontrollér, hvordan Google bruger din browserhistorik til at personliggøre Søgning, annoncer og andre Google-tjenester</translation>
+<translation id="842017693807136194">Logget ind med</translation>
 <translation id="8428045167754449968">By</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="8433678324664858900">Vis forslag</translation>
@@ -388,6 +387,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="8775144690796719618">Ugyldig webadresse</translation>
 <translation id="8820817407110198400">Bogmærker</translation>
 <translation id="8840513115188359703">Du bliver ikke logget ud af din Google-konto.</translation>
+<translation id="8881801611828450202">Søg på <ph name="SEARCH_ENGINE" /> efter dette billede</translation>
 <translation id="8904976895050290827">Chrome-synkronisering</translation>
 <translation id="895541991026785598">Rapportér et problem</translation>
 <translation id="8971089644512329999">OK, det er forstået</translation>
@@ -406,6 +406,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="9188680907066685419">Log ud af den administrerede konto</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Der er sendt en nedbrudsrapport.</translation>
+<translation id="932327136139879170">Start</translation>
 <translation id="935490618240037774">Dine bogmærker, din historik, dine adgangskoder og andre indstillinger synkroniseres med din Google-konto, så du kan bruge dem på alle dine enheder.</translation>
 <translation id="939598580284253335">Angiv adgangssætning</translation>
 <translation id="976982866697960176">Administrer synkroniserede data...</translation>

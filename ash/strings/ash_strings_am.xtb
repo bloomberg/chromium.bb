@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">የትርፍ ፍሰት አዝራር</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">ይህ መሣሪያ በ<ph name="DOMAIN" /> ነው የሚቀናበረው።</translation>
 <translation id="2050339315714019657">በቁመት</translation>
 <translation id="207439088875642105">ይሄ በ<ph name="FIRST_PARENT_EMAIL" /> እና <ph name="SECOND_PARENT_EMAIL" /> የሚቀናበር የህጻናት መለያ ነው</translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">ተጣባቂ ቁልፎች</translation>
 <translation id="2509468283778169019">CAPS LOCK በርቷል</translation>
 <translation id="2532589005999780174">ባለከፍተኛ ንፅፅር ሁነታ</translation>
+<translation id="2597972630681408282">የሌሊት ብርሃን፦ <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">ክፍለ-ጊዜ በ<ph name="SESSION_TIME_REMAINING" /> ውስጥ ያበቃል። ዘግተው እንዲወጡ ይደረጋሉ።</translation>
 <translation id="2727977024730340865">አነስተኛ ኃይል ወዳለው ባትሪ መሙያ ተሰክቷል። የባትሪ መሙላት አስተማማኝ ላይሆን ይችላል።</translation>
 <translation id="2761704814324807722">የሁኔታ መሣቢያ፣ ሰዓት <ph name="TIME" />፣ <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">ውጽዓት</translation>
 <translation id="3019353588588144572">ባትሪ ሙሉ ኃይል እስኪኖረው ድረስ የሚቀረው ጊዜ፣ <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">ይሄ በ<ph name="MANAGER_EMAIL" /> የሚቀናበር የህጻናት መለያ ነው</translation>
-<translation id="3050422059534974565">CAPS LOCK በርቷል።
-ይቅር ለማለት Search ወይም Shift ይጫኑ።</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">ግርጌ</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (ብሉቱዝ)</translation>
@@ -136,6 +136,7 @@
 <translation id="4849058404725798627">ነገርየውን ከቁልፍ ሰሌዳ ትኩረት ጋር አድምቅ</translation>
 <translation id="4872237917498892622">Alt+Search ወይም Shift</translation>
 <translation id="4895488851634969361">ባትሪው ሙሉ ነው።</translation>
+<translation id="4905614135390995787">ባለከፍተኛ ንፅፅር ሁነታ የሚቀይረው አቋራጭ ተለውጧል። እባክዎ በ<ph name="OLD_SHORTCUT" /> ምትክ <ph name="NEW_SHORTCUT" />ን ይጠቀሙ።</translation>
 <translation id="4918086044614829423">ይቀበሉ</translation>
 <translation id="4961318399572185831">የCast ማያ ገጽ</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@
 <translation id="5744083938413354016">መታ አድርጎ መጎተት</translation>
 <translation id="5777841717266010279">ማያ ገጽ ማጋራት ይቁም?</translation>
 <translation id="57838592816432529">ድምጽ ይዝጉ</translation>
+<translation id="5860033963881614850">አጥፋ</translation>
 <translation id="5895138241574237353">እንደገና ጀምር</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">በርቷል</translation>
 <translation id="5927132638760172455">ወዳልታወቀ ተቀባይ በመውሰድ ላይ</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">አድህር</translation>
@@ -169,8 +172,8 @@
 <translation id="5977415296283489383">ጆሮ ማዳጀጫ</translation>
 <translation id="5978382165065462689">የማያ ገጽዎን ቁጥጥር በርቀት እርዳታ በኩል በማጋራት ላይ።</translation>
 <translation id="5980301590375426705">ከእንግዳ ውጣ</translation>
+<translation id="5992218262414051481">ባለከፍተኛ ንፅፅር ሁነታ ነቅቷል። እሱን ለማጥፋት እንደገና Ctrl+Search+H ይጫኑ።</translation>
 <translation id="6018164090099858612">ከመስታወት ሁነታ በመውጣት ላይ</translation>
-<translation id="6041154455840261787">ባለከፍተኛ ንፅፅር ሁነታ ነቅቷል። እሱን ለማጥፋት እንደገና Search+Shift+H ይጫኑ።</translation>
 <translation id="6043212731627905357">ይህ ማሳያ ከእርስዎ <ph name="DEVICE_TYPE" /> ጋር መስማማት አልቻለም (ማሳያው የሚደገፍ አይደለም)።</translation>
 <translation id="6043994281159824495">አሁን ዘግተህ ውጣ</translation>
 <translation id="6047696787498798094">ወደ ሌላ ተጠቃሚ ሲቀይሩ ማያ ገጽ ማጋራት ይቆማል። መቀጠል ይፈልጋሉ?</translation>
@@ -195,6 +198,7 @@
 <translation id="6585808820553845416">ክፍለ-ጊዜ በ<ph name="SESSION_TIME_REMAINING" /> ውስጥ ያበቃል።</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME" />» ለመጣመር ፍቃድ ይፈልጋል። እባክዎ ይህን የይለፍ ቁልፍ በዚህ መሣሪያ ላይ ያስገቡ፦ <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6700713906295497288">የIME ምናሌ አዝራር</translation>
 <translation id="6713285437468012787">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME" />» ተጣምሯል፣ እና አሁን ለሁሉም ተጠቃሚዎች ይገኛል። ቅንብሮችን በመጠቀም ይህን ጥምረት ማስወገድ ይችላሉ።</translation>
 <translation id="6785414152754474415">ባትሪው <ph name="PERCENTAGE" />% ሙሉ ሆኖ በተጨማሪም ኃይል እየሞላ ነው።</translation>
@@ -214,8 +218,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">በ<ph name="TIMEOUT_SECONDS" /> ውስጥ ወደ ቀድሞው ጥራት በመመለስ ላይ</translation>
-<translation id="7209101170223508707">CAPS LOCK በርቷል።
-ይቅር ለማለት Alt+Search ወይም Shift ይጫኑ።</translation>
+<translation id="7199454189089571166">የረዳት ሁነታ</translation>
 <translation id="7246339268451149667">የጣት አሻራ መክፈቻ ይንቃ?</translation>
 <translation id="7256634071279256947">የኋላ ማይክሮፎን</translation>
 <translation id="7348093485538360975">የታይታ የቁልፍ ሰሌዳ</translation>
@@ -233,10 +236,10 @@
 <translation id="7649070708921625228">እገዛ</translation>
 <translation id="7692480393933218409">የተገናኙ የUSB-C መሣሪያዎችን ኃይል በመሙላት ላይ</translation>
 <translation id="776344839111254542">የዝማኔ ዝርዝሮችን ለማየት ጠቅ ያድርጉ</translation>
+<translation id="7798302898096527229">ለመሰረዝ Search ወይም Shift ይጫኑ።</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> እና <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">ቅንብሮችዎ ከተመሳሰሉ በኋላ ቋንቋው ከ«<ph name="FROM_LOCALE" /> ወደ «<ph name="TO_LOCALE" />» ተቀይሯል።</translation>
 <translation id="7904094684485781019">የዚህ መለያ አስተዳዳሪ ባለብዙ መለያ መግባትን ከልክሏል።</translation>
-<translation id="7951523953736115461">የምሽት ብርሃን</translation>
 <translation id="7977927628060636163">የተንቀሳቃሽ ስልክ አውታረ መረቦችን በመፈለግ ላይ...</translation>
 <translation id="7982789257301363584">አውታረ መረብ</translation>
 <translation id="8000066093800657092">ምንም አውታረ መረብ የለም</translation>
@@ -255,6 +258,7 @@
 <translation id="8433977262951327081">በመደርደሪያው ውስጥ የግቤት አማራጮች ምናሌ አረፋን ለማሳየት የሚሆነው አቋራጭ ተለውጧል። እባክዎ በ<ph name="OLD_SHORTCUT" /> ምትክ <ph name="NEW_SHORTCUT" />ን ይጠቀሙ።</translation>
 <translation id="8454013096329229812">Wi-Fi በርቷል።</translation>
 <translation id="847056008324733326">የልኬት ቅንብሮችን አሳይ</translation>
+<translation id="8477270416194247200">ለመሰረዝ Alt+Search ወይም Shift ይጫኑ።</translation>
 <translation id="8484916590211895857"><ph name="NAME" />፦ ዳግም በማገናኘት ላይ...</translation>
 <translation id="8517041960877371778">የእርሰዎ <ph name="DEVICE_TYPE" /> እንደበራ ኃይል መሙላት አይችሉ ይሆናል።</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> ይቀራል</translation>

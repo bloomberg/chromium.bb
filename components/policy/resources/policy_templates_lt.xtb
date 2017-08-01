@@ -54,13 +54,6 @@
       leistinas dažnis yra 60 sekundžių.</translation>
 <translation id="1221359380862872747">Įkelti nurodytus URL prisijungiant prie demonstracinės versijos</translation>
 <translation id="1265053460044691532">Apribokite laiką, per kurį per SAML autentifikuotas naudotojas gali prisijungti neprisijungęs</translation>
-<translation id="127699919157094139">Neleidžiamas „<ph name="PRODUCT_NAME" />“ duomenų sinchronizavimas naudojant „Google“ priglobtas sinchronizavimo paslaugas ir neleidžiama naudotojams keisti šio nustatymo.
-
-      Jei įgalinsite šį nustatymą, naudotojai negalės pakeisti ar nepaisyti šio nustatymo programoje „<ph name="PRODUCT_NAME" />“.
-
-      Jei šią politiką paliksite nenustatytą, naudotojai galės pasirinkti, ar naudoti „Google“ sinchronizavimą.
-
-      Kad visiškai išjungtumėte „Google“ sinchronizavimą, rekomenduojame išjungti „Google“ sinchronizavimą apsilankius „Google Admin Console“.</translation>
 <translation id="1291880496936992484">Įspėjimas: RC4 bus visiškai pašalinta iš „<ph name="PRODUCT_NAME" />“ įdiegus 52 versiją (maždaug 2016 m. rugsėjo mėn.) ir ši politika nebegalios.
 
       Jei politika nenustatyta arba nustatyta į „false“, TLS RC4 šifruotieji programų komplektai nebus įgalinti. Priešingu atveju ją galima nustatyti į „true“, kad būtų išsaugotas suderinamumas su pasenusiu serveriu. Tai laikina priemonė; serverį reikia iš naujo sukonfigūruoti.</translation>
@@ -530,6 +523,11 @@
 
       Jei ši politika nenustatyta, ji bus tarsi įgalinta. Žr. anksčiau pateiktą aprašą.</translation>
 <translation id="285480231336205327">Įgalinti didelio kontrasto būseną</translation>
+<translation id="2854919890879212089">Kaip numatytoji funkcijos „Spaudinio peržiūra“ parinktis „<ph name="PRODUCT_NAME" />“ naudojamas sistemos numatytasis spausdintuvas, o ne pastarasis naudotas spausdintuvas.
+
+      Išjungus šį nustatymą arba nenustačius vertės, funkcija „Spaudinio peržiūra“ naudos pastarąjį naudotą spausdintuvą kaip numatytąją paskirties vietos parinktį.
+
+      Įjungus šį nustatymą funkcija „Spaudinio peržiūra“ naudos OS sistemos numatytąjį spausdintuvą kaip numatytąją paskirties vietos parinktį.</translation>
 <translation id="2872961005593481000">Stabdyti</translation>
 <translation id="2874209944580848064">„<ph name="PRODUCT_OS_NAME" />“ įrenginiams, kuriuose palaikomos „Android“ programos, skirta pastaba:</translation>
 <translation id="2877225735001246144">Neleisti CNAME paieškos vykdant „Kerberos“ tapatumo nustatymą</translation>
@@ -1017,6 +1015,7 @@
 
           Pagal numatytuosius nustatymus naudotojai matys įspėjimą, o ne klaidą, jei PIN kodas bus laikomas nesaugiu.</translation>
 <translation id="4723829699367336876">Įgalinti užkardos apėjimą iš nuotolinės prieigos kliento programos</translation>
+<translation id="4725123658714754485">Valdoma, ar naudojimo metrikos ir diagnostikos duomenų ataskaitos, įskaitant strigčių ataskaitas, teikiamos atgal į sistemą „Google“. Jei nustatyta į „true“, „<ph name="PRODUCT_OS_NAME" />“ teiks naudojimo metrikos ir diagnostikos duomenų ataskaitas. Jei nesukonfigūruota ar nustatyta į „false“, metrikos ir diagnostikos duomenų ataskaitų teikimas bus neleidžiamas.</translation>
 <translation id="4725528134735324213">„Android“ atsarginio kopijavimo paslaugos įgalinimas</translation>
 <translation id="4733471537137819387">Politika, susijusi su integruotuoju HTTP tapatumo nustatymu.</translation>
 <translation id="4744190513568488164">Serveriai, į kuriuos „<ph name="PRODUCT_NAME" />“ gali pervesti.
@@ -1538,6 +1537,11 @@
 
       Neleidus šios parinkties ar jos nenustačius papildinių paieškos priemonė bus aktyvi.</translation>
 <translation id="6699880231565102694">Įgalinti nuotolinės prieigos prieglobų autentifikavimą dviem veiksniais</translation>
+<translation id="6724842112053619797">Jei įgalinsite šį nustatymą, saugomą „<ph name="PRODUCT_NAME" />“ profiliuose, pvz., žymėse, automatinio pildymo duomenyse, slaptažodžiuose ir kt., išsaugoti nustatymai taip pat bus įrašyti į failą, saugomą tarptinklinio ryšio naudotojo profilio aplanke arba administratoriaus nurodytoje vietoje pagal „<ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />“ politiką. Sinchronizavimas debesyje automatiškai išjungiamas, kai įgalinama ši politika.
+
+      Jei ši politika išjungta ar nenustatyta, bus naudojami tik įprasti vietiniai profiliai.
+
+      „<ph name="SYNC_DISABLED_POLICY_NAME" />“ politika išjungia visų duomenų sinchronizavimą ir nepaiso „RoamingProfileSupportEnabled“.</translation>
 <translation id="6757438632136860443">Galima nustatyti URL šablonų, kuriuose nurodomos svetainės, kurioms leidžiama paleisti papildinį „<ph name="FLASH_PLUGIN_NAME" />“, sąrašą.
 
           Jei ši politika nenustatyta, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „DefaultPluginsSetting“ (jei ji nustatyta) arba naudotojo asmeninės konfigūracijos (kitu atveju).</translation>
@@ -1585,6 +1589,13 @@
 <translation id="6943577887654905793">„Mac“ / „Linux“ nuostatos pavadinimas:</translation>
 <translation id="69525503251220566">Parametras, nurodantis paieškos pagal vaizdą funkciją numatytajam paieškos teikėjui</translation>
 <translation id="6956272732789158625">Neleisti jokiai svetainei naudoti rakto generavimo</translation>
+<translation id="6994082778848658360">Nurodoma, kaip vidinė saugi elemento aparatinė įranga gali būti naudojama teikiant tapatybės nustatymą dviem veiksniais, jei ji suderinama su šia funkcija. Įrenginio maitinimo mygtukas naudojamas naudotojo buvimo vietai aptikti.
+
+      Jei pasirinkta „Išjungta“, neteikiamas joks antras veiksnys.
+
+      Jei pasirinkta U2F, integruotas antras veiksnys veiks pagal FIDO U2F specifikacijas.
+
+      Jei pasirinkta U2F_EXTENDED, integruotas antras veiksnys teiks U2F funkcijas ir kelis asmeninės atestacijos plėtinius.</translation>
 <translation id="6997592395211691850">Ar internetinės OCSP / CRL patikros reikalingos vietiniams patikimiems prieraišams</translation>
 <translation id="7003334574344702284">Pagal šią politiką priverstinai importuojami išsaugoti slaptažodžiai iš ankstesnės numatytosios naršyklės (jei įgalinta). Be to, jei įgalinta, ši politika turi įtakos importavimo dialogo langui.
 
@@ -1792,7 +1803,6 @@
 <translation id="7713608076604149344">Atsisiuntimų apribojimai</translation>
 <translation id="7715711044277116530">Procentas, pagal kurį bus keičiamas ekrano užtemdymo delsos mastelis dirbant pristatymo režimu</translation>
 <translation id="7717938661004793600">Konfigūruokite „<ph name="PRODUCT_OS_NAME" />“ pasiekiamumo funkcijas.</translation>
-<translation id="7719251660743813569">Valdoma, ar naudojimo metrikos ataskaitos teikiamos atgal „Google“. Jei nustatyta į „true“ (tiesa), „<ph name="PRODUCT_OS_NAME" />“ teikiamos naudojimo metrikos ataskaitos. Jei nesukonfigūruota ar nustatyta į „false“ (netiesa), metrikos ataskaitų teikimas neleidžiamas.</translation>
 <translation id="7724994675283793633">Ši politika įgalina HTTP/0.9 protokolą ne HTTP 80 ir HTTPS 443 prievaduose.
 
       Politika pagal numatytuosius nustatymus neleidžiama, o ją įgalinus naudotojai gali susidurti su saugos problema, aprašyta adresu https://crbug.com/600352.
@@ -2124,6 +2134,15 @@
 <translation id="891435090623616439">koduojama JSON eilute, daugiau informacijos pateikiama apsilankius adresu <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Pranešti įrenginio vietą</translation>
 <translation id="8951350807133946005">Nustatyti disko talpyklos katalogą</translation>
+<translation id="8952317565138994125">Išjungiamas „<ph name="PRODUCT_NAME" />“ duomenų sinchronizavimas naudojant „Google“ priglobtas sinchronizavimo paslaugas ir naudotojams neleidžiama keisti šio nustatymo.
+
+      Jei įgalinsite šį nustatymą, naudotojai negalės pakeisti ar nepaisyti šio nustatymo programoje „<ph name="PRODUCT_NAME" />“.
+
+      Jei šią politiką paliksite nenustatytą, naudotojai galės pasirinkti, ar naudoti „Google“ sinchronizavimą.
+
+      Kad visiškai išjungtumėte „Google“ sinchronizavimą, rekomenduojame išjungti „Google“ sinchronizavimą apsilankius „Google Admin Console“.
+
+      Ši politika neturėtų būti įgalinta, kai „<ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />“ politika nustatyta kaip įgalinta, nes ta funkcija bendrai naudoja tas pačias kliento programos funkcijas. Šiuo atveju „Google“ priglobtos sinchronizavimo paslaugos yra visiškai išjungtos.</translation>
 <translation id="8955719471735800169">Į pradžią</translation>
 <translation id="8960850473856121830">Šiame sąraše pateikti šablonai bus palyginti su užklausą pateikusio
       URL saugos šaltiniu. Jei bus rasta atitiktis, galimybė pasiekti garsą 
@@ -2133,6 +2152,7 @@
 <translation id="8970205333161758602">Nerodyti „<ph name="PRODUCT_FRAME_NAME" />“ išjungimo paraginimo</translation>
 <translation id="8971221018777092728">Viešos sesijos automatinio prisijungimo laikmatis</translation>
 <translation id="8976248126101463034">Leidžiamas nuotolinės prieigos prieglobos serverių „Gnubby“ autentifikavimas</translation>
+<translation id="8976531594979650914">Naudoti sistemos numatytąjį spausdintuvą kaip numatytąjį nustatymą</translation>
 <translation id="8992176907758534924">Neleisti jokioje svetainėje rodyti vaizdų</translation>
 <translation id="9035964157729712237">Į juodąjį sąrašą neįtrauktinų plėtinių ID</translation>
 <translation id="9042911395677044526">Leidžiama pateikti tinklo konfigūraciją, kad būtų taikoma „<ph name="PRODUCT_OS_NAME" />“ įrenginiui pagal naudotoją. Tinklo konfigūracija yra JSON formatuota eilutė, apibrėžta pagal „Atvirosios tinklo konfigūracijos“ formatą, nurodytą šiuo adresu: <ph name="ONC_SPEC_URL" /></translation>

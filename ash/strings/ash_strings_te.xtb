@@ -26,6 +26,7 @@
 <translation id="1677472565718498478"><ph name="TIME" /> మిగిలి ఉంది</translation>
 <translation id="1698760176351776263">IPv6 చిరునామా: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">ఈ పరికరం సంస్థ ద్వారా నిర్వహించబడుతోంది</translation>
+<translation id="1746730358044914197">ఇన్‌పుట్ పద్ధతులు మీ నిర్వాహకుల ద్వారా కాన్ఫిగర్ చేయబడ్డాయి.</translation>
 <translation id="1747827819627189109">స్క్రీన్‌పై కనిపించే కీబోర్డ్ ప్రారంభించబడింది</translation>
 <translation id="1823873187264960516">ఈథర్‌నెట్: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi నిలిపివేయబడింది.</translation>
@@ -37,6 +38,7 @@
 <translation id="1942830294380034169">నిండిపోయిన బటన్</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">ఈ పరికరం <ph name="DOMAIN" /> ద్వారా నిర్వహించబడుతుంది.</translation>
 <translation id="2050339315714019657">నిలువు</translation>
 <translation id="207439088875642105">ఇది <ph name="FIRST_PARENT_EMAIL" /> మరియు <ph name="SECOND_PARENT_EMAIL" /> నిర్వహించే చిన్నపిల్లల ఖాతా</translation>
@@ -47,7 +49,7 @@
 <translation id="225680501294068881">పరికరాల కోసం స్కాన్ చేస్తోంది...</translation>
 <translation id="2268130516524549846">Bluetooth నిలిపివేయబడింది</translation>
 <translation id="2268813581635650749">అందరినీ సైన్ అవుట్ చేయి</translation>
-<translation id="2292698582925480719">స్కేల్‌ని ప్రదర్శించు</translation>
+<translation id="2292698582925480719">ప్రదర్శన ప్రమాణం</translation>
 <translation id="2303600792989757991">విండో స్థూలదృష్టిని టోగుల్ చేయి</translation>
 <translation id="2352467521400612932">స్టైలస్ సెట్టింగ్‌లు</translation>
 <translation id="2354174487190027830"><ph name="NAME" />ని సక్రియం చేస్తోంది</translation>
@@ -57,6 +59,7 @@
 <translation id="2501920221385095727">స్టిక్కీ కీలు</translation>
 <translation id="2509468283778169019">CAPS LOCK ఆన్‌లో ఉంది</translation>
 <translation id="2532589005999780174">అధిక కాంట్రాస్ట్ మోడ్</translation>
+<translation id="2597972630681408282">రాత్రి కాంతి: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">సెషన్ <ph name="SESSION_TIME_REMAINING" />లో ముగుస్తుంది. మీరు సైన్ అవుట్ చేయబడతారు.</translation>
 <translation id="2727977024730340865">తక్కువ-పవర్ గల ఛార్జర్‌కు ప్లగిన్ చేయబడింది. బ్యాటరీ ఛార్జింగ్ విశ్వసనీయంగా ఉండకపోవచ్చు.</translation>
 <translation id="2761704814324807722">స్థితి ట్రే, సమయం <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +79,6 @@
 <translation id="3009178788565917040">అవుట్‌పుట్</translation>
 <translation id="3019353588588144572">బ్యాటరీ నిండటానికి పట్టే సమయం, <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">ఇది <ph name="MANAGER_EMAIL" /> నిర్వహించే చిన్నపిల్లల ఖాతా</translation>
-<translation id="3050422059534974565">CAPS LOCK ఆన్‌లో ఉంది.
-రద్దు చేయడానికి Search లేదా Shiftని నొక్కండి.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">దిగువ</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (బ్లూటూత్)</translation>
@@ -136,6 +137,7 @@
 <translation id="4849058404725798627">కీబోర్డ్ దృష్టి కేంద్రీకరణతో అంశాన్ని హైలైట్ చేయి</translation>
 <translation id="4872237917498892622">Alt+Search లేదా Shift</translation>
 <translation id="4895488851634969361">బ్యాటరీ నిండింది.</translation>
+<translation id="4905614135390995787">అధిక కాంట్రాస్ట్ మోడ్‌ను టోగుల్ చేయడానికి ఉన్న సత్వరమార్గం మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కు బదులుగా <ph name="NEW_SHORTCUT" /> ఉపయోగించండి.</translation>
 <translation id="4918086044614829423">ఆమోదించు</translation>
 <translation id="4961318399572185831">స్క్రీన్ ప్రసారం చేయండి</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +161,10 @@
 <translation id="5744083938413354016">నొక్కి లాగండి</translation>
 <translation id="5777841717266010279">స్క్రీన్ భాగస్వామ్యాన్ని ఆపివేయాలా?</translation>
 <translation id="57838592816432529">మ్యూట్ చేయి</translation>
+<translation id="5860033963881614850">ఆఫ్ అయ్యింది</translation>
 <translation id="5895138241574237353">మళ్ళీ ప్రారంభించు</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">ఆన్ చేయి</translation>
 <translation id="5927132638760172455">తెలియని స్వీకర్తకు ప్రసారం చేస్తోంది</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">తిరిగి పూర్వ స్థితికి మార్చు</translation>
@@ -169,8 +173,8 @@
 <translation id="5977415296283489383">హెడ్‌ఫోన్</translation>
 <translation id="5978382165065462689">రిమోట్ సహాయం విధానంలో మీ స్క్రీన్ నియంత్రణను భాగస్వామ్యం చేస్తోంది.</translation>
 <translation id="5980301590375426705">అతిథిగా నిష్క్రమించు</translation>
+<translation id="5992218262414051481">అధిక క్రాంటాస్ట్ మోడ్ ఆరంభించబడింది. దాన్ని ఆఫ్‌కి టోగుల్ చేయడం కోసం మళ్లీ Ctrl+Search+Hని నొక్కండి.</translation>
 <translation id="6018164090099858612">ప్రతిబింబ మోడ్ నుండి నిష్క్రమిస్తోంది</translation>
-<translation id="6041154455840261787">అధిక క్రాంటాస్ట్ మోడ్ ప్రారంభించబడింది. దాన్ని ఆఫ్‌కి టోగుల్ చేయడం కోసం మళ్లీ Search+Shift+Hని నొక్కండి.</translation>
 <translation id="6043212731627905357">మీ <ph name="DEVICE_TYPE" />తో ఈ మానిటర్ పని చేయడం లేదు (మానిటర్‌కు మద్దతు లేదు).</translation>
 <translation id="6043994281159824495">ఇప్పుడే సైన్ అవుట్ చేయి</translation>
 <translation id="6047696787498798094">మీరు మరొక వినియోగదారుకు మారినప్పుడు స్క్రీన్ భాగస్వామ్యం ఆపివేయబడుతుంది. మీరు కొనసాగించాలనుకుంటున్నారా?</translation>
@@ -195,6 +199,7 @@
 <translation id="6585808820553845416">సెషన్ <ph name="SESSION_TIME_REMAINING" />లో ముగుస్తుంది.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">బ్లూటూత్ పరికరం "<ph name="DEVICE_NAME" />" జత కావడానికి అనుమతి కోరుతోంది. దయచేసి ఆ పరికరంలో ఈ పాస్‌కీని నమోదు చేయండి: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6700713906295497288">IME మెను బటన్</translation>
 <translation id="6713285437468012787">బ్లూటూత్ పరికరం "<ph name="DEVICE_NAME" />" జత చేయబడింది మరియు ఇప్పుడు అందరు వినియోగదారులకు అందుబాటులో ఉంది. మీరు సెట్టింగ్‌లను ఉపయోగించి ఈ జతను తీసివేయవచ్చు.</translation>
 <translation id="6785414152754474415">బ్యాటరీ <ph name="PERCENTAGE" />% నిండింది మరియు ఛార్జ్ అవుతోంది.</translation>
@@ -214,8 +219,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />లో తిరిగి పాత రిజల్యూషన్‌కి మార్చబడుతోంది</translation>
-<translation id="7209101170223508707">CAPS LOCK ఆన్‌లో ఉంది.
-రద్దు చేయడానికి Alt+Search లేదా Shiftని నొక్కండి.</translation>
+<translation id="7199454189089571166">సహాయక మోడ్</translation>
 <translation id="7246339268451149667">వేలిముద్ర అన్‌లాక్‌ని ప్రారంభించాలా?</translation>
 <translation id="7256634071279256947">వెనుకవైపు మైక్రోఫోన్</translation>
 <translation id="7348093485538360975">ఆన్-స్క్రీన్ కీబోర్డ్</translation>
@@ -233,10 +237,10 @@
 <translation id="7649070708921625228">సహాయం</translation>
 <translation id="7692480393933218409">కనెక్ట్ చేసిన USB-C పరికరాలను ఛార్జ్ చేస్తోంది</translation>
 <translation id="776344839111254542">అప్‌డేట్ వివరాలను వీక్షించడం కోసం క్లిక్ చేయండి</translation>
+<translation id="7798302898096527229">రద్దు చేయడానికి Search లేదా Shiftని నొక్కండి.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> మరియు <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">మీ సెట్టింగ్‌లను సమకాలీకరించిన తర్వాత Chrome యొక్క భాష "<ph name="FROM_LOCALE" />" నుండి "<ph name="TO_LOCALE" />"కి మార్చబడింది.</translation>
 <translation id="7904094684485781019">ఈ ఖాతా నిర్వాహకులు బహుళ సైన్-ఇన్‌కు అనుమతించలేదు.</translation>
-<translation id="7951523953736115461">రాత్రి కాంతి</translation>
 <translation id="7977927628060636163">మొబైల్ నెట్‌వర్క్‌ల కోసం శోధిస్తోంది...</translation>
 <translation id="7982789257301363584">నెట్‌వర్క్</translation>
 <translation id="8000066093800657092">ఏ నెట్‌వర్క్ లేదు</translation>
@@ -254,7 +258,8 @@
 <translation id="8433186206711564395">నెట్‌వర్క్ సెట్టింగ్‌లు</translation>
 <translation id="8433977262951327081">అరలో ఇన్‌పుట్ ఎంపికల మెను బబుల్‌ని చూపడానికి ఉపయోగించే సత్వరమార్గం మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కి బదులుగా <ph name="NEW_SHORTCUT" />ని ఉపయోగించండి.</translation>
 <translation id="8454013096329229812">Wi-Fi ప్రారంభించబడింది.</translation>
-<translation id="847056008324733326">స్కేల్ సెట్టింగ్‌లను ప్రదర్శించు</translation>
+<translation id="847056008324733326">స్కేల్ సెట్టింగ్‌లను ప్రదర్శించండి</translation>
+<translation id="8477270416194247200">రద్దు చేయడానికి Alt+Search లేదా Shiftని నొక్కండి.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: మళ్లీ కనెక్ట్ చేస్తోంది...</translation>
 <translation id="8517041960877371778">మీ <ph name="DEVICE_TYPE" /> ఆన్‌లో ఉన్నప్పుడు ఛార్జ్ కాకపోవచ్చు.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> మిగిలి ఉంది</translation>

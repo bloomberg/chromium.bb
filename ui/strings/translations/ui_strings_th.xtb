@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">ย่อ</translation>
 <translation id="1413622004203049571">ปิดการแจ้งเตือนจาก <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 นาทีกับอีก }other{# นาทีกับอีก }}</translation>
+<translation id="1643823602425662293">การแจ้งเตือน</translation>
 <translation id="1685967565548146460">HaTS</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 นาที}other{# นาที}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">ข้าม</translation>
 <translation id="4250229828105606438">ภาพหน้าจอ</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 เดือนที่ผ่านมา}other{# เดือนที่ผ่านมา}}</translation>
+<translation id="4316910396681052118">แอปทั้งหมด</translation>
 <translation id="4320177379694898372">ไม่มีการเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="4588090240171750605">เลื่อนทางขวา</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{เหลือ 1 เดือน}other{เหลือ # เดือน}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">โฟลเดอร์ที่ไม่มีชื่อ</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 วินาที}other{# วินาที}}</translation>
 <translation id="9150735707954472829">แท็บ</translation>
+<translation id="9161053988251441839">แอปที่แนะนำ</translation>
 <translation id="9170848237812810038">เ&amp;ลิกทำ</translation>
 <translation id="932327136139879170">หน้าแรก</translation>
 </translationbundle>

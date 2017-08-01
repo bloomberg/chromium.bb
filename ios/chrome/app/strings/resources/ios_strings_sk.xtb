@@ -4,7 +4,6 @@
 <translation id="1016495303386450659">Položka bola aktualizovaná</translation>
 <translation id="1047726139967079566">Pridať túto stránku medzi záložky...</translation>
 <translation id="1049743911850919806">Inkognito</translation>
-<translation id="1073594902069885687">Overenie zlyhalo. Heslo sa neskopírovalo.</translation>
 <translation id="1076421457278169141">Kód bol naskenovaný</translation>
 <translation id="1084365883616172403">Príspevok bol uverejnený na Facebook.</translation>
 <translation id="1104948393051856124">Prijať a pokračovať</translation>
@@ -34,9 +33,11 @@
 <translation id="1430915738399379752">Tlačiť</translation>
 <translation id="145015347812617860">Počet položiek: <ph name="COUNT" /></translation>
 <translation id="1491277525950327607">Nastavenie môžete prepnúť dvojitým klepnutím</translation>
+<translation id="152234381334907219">Neuložené</translation>
 <translation id="1540800554400757039">Adresa 1</translation>
 <translation id="1545749641540134597">Naskenovať kód QR</translation>
 <translation id="1580783302095112590">E-mail bol odoslaný.</translation>
+<translation id="1612730193129642006">Zobraziť karty v mriežke</translation>
 <translation id="1646446875146297738">Ak povolíte možnosť Nesledovať, žiadosť sa zahrnie do vašej aktivity prehliadania. Záleží na tom, či webové stránky na túto žiadosť zareagujú a akým spôsobom ju interpretujú.
 
 Niektoré webové stránky môžu napríklad na túto žiadosť odpovedať zobrazením reklám, ktoré nie sú založené na navštívených webových stránkach. Veľa webových stránok bude aj naďalej zhromažďovať a používať vaše údaje prehliadania – napríklad na zlepšenie zabezpečenia, na poskytovanie obsahu, služieb, reklám a odporúčaní na webových stránkach a na generovanie štatistík prehľadov. <ph name="BEGIN_LINK" />Viac informácií<ph name="END_LINK" /></translation>
@@ -66,7 +67,6 @@ Niektoré webové stránky môžu napríklad na túto žiadosť odpovedať zobra
 <translation id="2116625576999540962">Počet presunutých položiek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Upraviť záložku</translation>
 <translation id="2230173723195178503">Načítala sa webová stránka</translation>
-<translation id="2241634353105152135">Iba raz</translation>
 <translation id="2267753748892043616">Pridať účet</translation>
 <translation id="2273327106802955778">Ponuka Viac</translation>
 <translation id="2320166752086256636">Skryť klávesnicu</translation>
@@ -79,6 +79,7 @@ Niektoré webové stránky môžu napríklad na túto žiadosť odpovedať zobra
 <translation id="2572712655377361602">Pravidlá pre zariadenie zablokovali prístup k vašim fotkám</translation>
 <translation id="2584132361465095047">Pridať účet…</translation>
 <translation id="2593774076813182497">Túto stránku nie je možné vytlačiť.</translation>
+<translation id="2625189173221582860">Heslo bolo skopírované.</translation>
 <translation id="2648803196158606475">Odstrániť prečítané</translation>
 <translation id="2653659639078652383">Odoslať</translation>
 <translation id="2684815431982545828">Nová karta</translation>
@@ -120,6 +121,7 @@ Niektoré webové stránky môžu napríklad na túto žiadosť odpovedať zobra
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> z <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Otvorené karty</translation>
+<translation id="3277021493514034324">Adresa webu bola skopírovaná</translation>
 <translation id="3324193307694657476">Adresa 2</translation>
 <translation id="3329904751041170572">Nepodarilo sa pripojiť k serveru.</translation>
 <translation id="3335947283844343239">Znova otvoriť zatvorenú kartu</translation>
@@ -132,7 +134,6 @@ Niektoré webové stránky môžu napríklad na túto žiadosť odpovedať zobra
 <translation id="3474649192738347024">Formuláre boli vyplnené</translation>
 <translation id="3478058380795961209">Mesiac vypršania platnosti</translation>
 <translation id="3482959374254649722">Synchronizujú sa záložky...</translation>
-<translation id="3489372701259491571">Odstrániť uložené heslo</translation>
 <translation id="3494788280727468875">Potvrdiť vymazanie dát prehliadania</translation>
 <translation id="3519193562722059437">Otvorte kartu a prehliadajte web.</translation>
 <translation id="3527085408025491307">Priečinok</translation>
@@ -149,10 +150,8 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="3638472932233958418">Predbežne načítavať webové stránky</translation>
 <translation id="3691593122358196899">Uložené ako záložka v priečinku <ph name="FOLDER_TITLE" /></translation>
 <translation id="3738139272394829648">Vyhľadávanie klepnutím</translation>
-<translation id="3742082982782149146">Webová adresa stránok bola skopírovaná.</translation>
 <translation id="3771033907050503522">Karty inkognito</translation>
 <translation id="3783017676699494206">Uložiť obrázok</translation>
-<translation id="3789841737615482174">Inštalovať</translation>
 <translation id="385051799172605136">Naspäť</translation>
 <translation id="3897092660631435901">Ponuka</translation>
 <translation id="3928666092801078803">Spojiť moje dáta</translation>
@@ -164,7 +163,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4038354071007134711">Tento súbor nedokáže otvoriť žiadna aplikácia na tomto zariadení.</translation>
 <translation id="4049507953662678203">Uistite sa, že máte pripojenie k sieti, a skúste to znova.</translation>
 <translation id="411254640334432676">Sťahovanie zlyhalo.</translation>
-<translation id="4117350985506774529">Vaše používateľské meno bolo skopírované.</translation>
 <translation id="4121993058175073134">Ak chcete odoslať údaje čistého exportu, v aplikácii Nastavenia nakonfigurujte svoj e-mailový účet.</translation>
 <translation id="4124987746317609294">Časové obdobie</translation>
 <translation id="4172051516777682613">Vždy zobraziť</translation>
@@ -187,7 +185,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 
 Údaje sú šifrované pomocou vlastnej prístupovej frázy synchronizácie. Keď ju zadáte, synchronizácia sa spustí.</translation>
 <translation id="473775607612524610">Aktualizovať</translation>
-<translation id="4773461607542755386">Otvoriť túto stránku v aplikácii <ph name="APP_NAME" />?</translation>
 <translation id="481968316161811770">Súbory cookie, údaje webu</translation>
 <translation id="4860895144060829044">Volajte</translation>
 <translation id="4875622588773761625">Chcete, aby <ph name="PASSWORD_MANAGER_BRAND" /> ukladal heslá pre tieto stránky?</translation>
@@ -215,6 +212,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="5327248766486351172">Názov</translation>
 <translation id="5388358297987318779">Otvoriť obrázok</translation>
 <translation id="5409365236829784218">Nie sú nainštalované žiadne aplikácie, ktoré dokážu otvoriť tento súbor.</translation>
+<translation id="5433691172869980887">Používateľské meno bolo skopírované</translation>
 <translation id="54401264925851789">Informácie o zabezpečení stránky</translation>
 <translation id="5525269841082836315">Vytv. prístup. frázu</translation>
 <translation id="5531274207066050939">Google Payments</translation>
@@ -264,6 +262,7 @@ Funkciu Handoff musíte povoliť v nastaveniach v časti Všeobecné a vaše zar
 <translation id="6196207969502475924">Hlasové vyhľadávanie</translation>
 <translation id="6254066287920239840">Otvárať odkazy v aplikácii namiesto prehliadača.</translation>
 <translation id="6255097610484507482">Upraviť platobnú kartu</translation>
+<translation id="6273258929211277933"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" />, <ph name="STATE" /></translation>
 <translation id="6308436439357671616">Umožňuje fotiť a nahrať fotky.</translation>
 <translation id="6314335155547195432">Generovanie hesla</translation>
 <translation id="6324528485781869530">Prepnutie účtu na synchronizáciu</translation>
@@ -290,7 +289,6 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="6570040839871198836">Autom. dopĺň. formulárov</translation>
 <translation id="6656103420185847513">Upraviť priečinok</translation>
 <translation id="6657585470893396449">Heslo</translation>
-<translation id="666731172850799929">Otvoriť v aplikácii <ph name="APP_NAME" /></translation>
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6762156594045689028">Ak chcete zmeniť toto nastavenie, <ph name="BEGIN_LINK" />resetujte synchronizáciu<ph name="END_LINK" /></translation>
@@ -317,6 +315,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="7189598951263744875">Zdieľať...</translation>
 <translation id="7203585745079012652">Vysloviť odpovede</translation>
 <translation id="722055596168483966">Prispôsobenie služieb Google</translation>
+<translation id="7272437679830969316">Vašu totožnosť nie je možné overiť. Heslo sa neskopírovalo.</translation>
 <translation id="7336264872878993241">Stiahnuté: <ph name="PERCENT" /> percent</translation>
 <translation id="7346909386216857016">Ok, dobre</translation>
 <translation id="7400418766976504921">Webová adresa</translation>
@@ -356,7 +355,6 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="806745655614357130">Ponechať moje dáta oddelené</translation>
 <translation id="8076014560081431679">Uložené nastavenia webov sa neodstránia a môžu odrážať vaše návyky prehliadania. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">Zavrieť všetky karty</translation>
-<translation id="8108697784695284144">Heslo bolo skopírované.</translation>
 <translation id="8137558756159375272">Funkcia vyhľadávania klepnutím odošle vybrané slovo a súčasnú stránku ako kontext do Vyhľadávania Google. Môžete ju vypnúť v <ph name="BEGIN_LINK" />Nastaveniach<ph name="END_LINK" />.</translation>
 <translation id="8205564605687841303">Zrušiť</translation>
 <translation id="8225985093977202398">Obrázky a súbory vo vyrovnávacej pamäti</translation>
@@ -364,6 +362,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="8272426682713568063">Kreditné karty</translation>
 <translation id="8281781826761538115">Predvolené – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">Ovládajte, ako Google môže používať vašu históriu prehliadania na prispôsobenie Vyhľadávania, reklám a ďalších služieb Google</translation>
+<translation id="842017693807136194">Prihlásenie pomocou</translation>
 <translation id="8428045167754449968">Mesto</translation>
 <translation id="8428213095426709021">Nastavenia</translation>
 <translation id="8433678324664858900">Zobraziť návrhy</translation>
@@ -388,6 +387,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="8775144690796719618">Neplatná webová adresa</translation>
 <translation id="8820817407110198400">Záložky</translation>
 <translation id="8840513115188359703">Neodhlásime vás z účtu Google.</translation>
+<translation id="8881801611828450202">Hľadať tento obrázok v službe <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">Nahlásiť problém</translation>
 <translation id="8971089644512329999">Ok, rozumiem</translation>
@@ -406,6 +406,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="9188680907066685419">Odhlásenie zo spravovaného účtu</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Správa o zlyhaní bola odoslaná.</translation>
+<translation id="932327136139879170">Domov</translation>
 <translation id="935490618240037774">Záložky, história, heslá a ďalšie nastavenia budú synchronizované s vaším účtom Google a budete ich môcť použiť na všetkých zariadeniach.</translation>
 <translation id="939598580284253335">Zadať prístupovú frázu</translation>
 <translation id="976982866697960176">Spravujte synchronizované údaje…</translation>

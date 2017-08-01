@@ -30,7 +30,6 @@
 <translation id="1966382378801805537">Chromium 无法确定或设置默认浏览器</translation>
 <translation id="1967743265616885482">已发现一个同名的模块与 Chromium 存在冲突。</translation>
 <translation id="2008474315282236005">这会从这台设备上删除 1 项内容。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chromium。</translation>
-<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{这会将至少 $1 项内容从这台设备上永久删除。如果日后想要检索您的数据，届时请以“$2”的身份登录 Chromium。}other{这会将至少 $1 项内容从这台设备上永久删除。如果日后想要检索您的数据，届时请以“$2”的身份登录 Chromium。}}</translation>
 <translation id="2077129598763517140">使用硬件加速模式（如果可用）</translation>
 <translation id="2119636228670142020">关于 Chromium 操作系统(&amp;C)</translation>
 <translation id="2158734852934720349">Chromium操作系统开放源代码许可</translation>
@@ -81,7 +80,6 @@
 <translation id="3549345495227188780">Chromium 操作系统使用入门</translation>
 <translation id="3582788516608077514">正在更新 Chromium...</translation>
 <translation id="358997566136285270">Chromium 徽标</translation>
-<translation id="3645040538872234961">这会将您的浏览数据从这台设备上永久删除。如果日后想要检索您的数据，届时请以“$2”的身份登录 Chromium。</translation>
 <translation id="3738139272394829648">触摸搜索</translation>
 <translation id="3762167353400286894">Chromium 操作系统界面目前使用的是这种语言</translation>
 <translation id="378917192836375108">您可以在 Chromium 中点击网上的电话号码，然后通过 Skype 拨打！</translation>
@@ -153,7 +151,6 @@
 <translation id="59625444380784159">通讯录中的详细信息有助于您在Chromium中更快速地填写表单。</translation>
 <translation id="5987687638152509985">更新 Chromium 以开始同步</translation>
 <translation id="6055895534982063517">Chromium 现已推出速度更快的新版本。</translation>
-<translation id="6077017812234345835">这会将至少 <ph name="TOTAL_COUNT" /> 项内容从这台设备上永久删除。如果日后想要检索您的数据，届时请以“$2”的身份登录 Chromium。</translation>
 <translation id="608189560609172163">由于在登录时出现错误，Chromium无法同步您的数据。</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> 存在危险，因此 Chromium 已将其拦截。</translation>
 <translation id="6212496753309875659">此计算机已安装了更高版本的 Chromium。如果软件无法正常运行，请卸载 Chromium 并重试。</translation>
@@ -190,7 +187,6 @@
 <translation id="705851970750939768">更新 Chromium</translation>
 <translation id="7066436765290594559">Chromium操作系统无法同步您的数据。请更新您的同步密码。</translation>
 <translation id="707471633328071618">Google Payments（已同步到 Chromium）</translation>
-<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{这会将 $1 项内容从这台设备上永久删除。如果日后想要检索您的数据，届时请以“$2”的身份登录 Chromium。}other{这会将 $1 项内容从这台设备上永久删除。如果日后想要检索您的数据，届时请以“$2”的身份登录 Chromium。}}</translation>
 <translation id="7138853919861947730">Chromium 可能会使用网络服务改善您的浏览体验。</translation>
 <translation id="7162152143154757523">Chromium 会将您在浏览器中输入的内容发送到 Google 服务器，并让您使用 Google 搜索所用的拼写检查技术，从而为您提供更智能的拼写检查功能。</translation>
 <translation id="7196020411877309443">为何会出现这个窗口？</translation>
@@ -212,7 +208,6 @@ Chromium 无法恢复您的设置。</translation>
 <ph name="BEGIN_LINK_2" />了解详情<ph name="END_LINK_2" />
 
 有关详细说明，请查看 <ph name="ACCOUNT_EMAIL" /> 中的电子邮件。</translation>
-<translation id="7421823331379285070">您需要在 Windows XP 或更高版本的操作系统中运行 Chromium，否则可能无法正常使用某些功能。</translation>
 <translation id="7473891865547856676">不，谢谢</translation>
 <translation id="7483335560992089831">无法安装与当前运行的版本相同的 Chromium。请关闭 Chromium 并重试。</translation>
 <translation id="7549178288319965365">关于 Chromium 操作系统</translation>
@@ -223,6 +218,7 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="7729447699958282447">由于您的网域停用了同步功能，Chromium无法同步您的数据。</translation>
 <translation id="7745317241717453663">这会从这台设备上删除您的浏览数据。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chromium。</translation>
 <translation id="7747138024166251722">安装程序无法创建临时目录。请检查您是否有足够的磁盘空间和权限来安装该软件。</translation>
+<translation id="7756122083761163394">系统将会从此设备上删除该用户的浏览数据。要想恢复这些数据，请以“$2”的身份登录 Chrome。</translation>
 <translation id="7937630085815544518">您之前登录 Chromium 时使用的帐号为 <ph name="USER_EMAIL_ADDRESS" />，请使用同一帐号再次登录。</translation>
 <translation id="795025003224538582">不重新启动</translation>
 <translation id="7962572577636132072">Chromium会自动更新，因此您使用的始终都是最新版本。</translation>

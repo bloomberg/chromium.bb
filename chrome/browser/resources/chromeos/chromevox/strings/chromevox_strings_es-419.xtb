@@ -166,6 +166,7 @@
 <translation id="27527859628328957">Saltar al siguiente elemento enfocable</translation>
 <translation id="2770781857296573485">Ingresar exploración de grupos</translation>
 <translation id="2777845298774924149">Salió.</translation>
+<translation id="2781264313200109999">Comienzo de un vínculo</translation>
 <translation id="2800204403141299078">No hay más elementos diferentes.</translation>
 <translation id="2800780099804980316">No hay ningún encabezado de nivel 1 anterior.</translation>
 <translation id="280499067616661124">ChromeVox se encuentra en la página</translation>
@@ -318,6 +319,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="3716845769494773620">Multilínea</translation>
 <translation id="3731746171184829332">No hay ningún encabezado anterior.</translation>
 <translation id="3735039640698208086">Cuando se reproduce audio…</translation>
+<translation id="3755561384917041694">Habilita el teclado en pantalla (en Bandeja de estado, Accesibilidad) para usar los comandos de braille extendidos.</translation>
 <translation id="3762198587642264450">Ir al final de la fila actual</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">Saliste del cuadro de diálogo.</translation>
@@ -576,6 +578,7 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
 <translation id="6037602951055904232">Desplazar hacia delante</translation>
 <translation id="6044160928851315051">Oscurece la pantalla</translation>
 <translation id="6082768461603900813">Navegación básica</translation>
+<translation id="6092707270915298410">Final de un vínculo</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">Fin de celda</translation>
 <translation id="6122013438240733403">btn</translation>

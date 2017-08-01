@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">Maximize</translation>
 <translation id="1413622004203049571">I-disable ang mga notification mula sa <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuto at }one{# minuto at }other{# na minuto at }}</translation>
+<translation id="1643823602425662293">Notification</translation>
 <translation id="1685967565548146460">Hats</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minuto}one{# minuto}other{# na minuto}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> (na) B</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">tumalon</translation>
 <translation id="4250229828105606438">Screenshot</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 buwan ang nakalipas}one{# buwan ang nakalipas}other{# na buwan ang nakalipas}}</translation>
+<translation id="4316910396681052118">LAHAT NG APP</translation>
 <translation id="4320177379694898372">Walang koneksyon sa internet</translation>
 <translation id="4588090240171750605">Mag-scroll Pakanan</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 buwan ang natitira}one{# buwan ang natitira}other{# na buwan ang natitira}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">Walang Pangalan na Folder</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 segundo}one{# segundo}other{# na segundo}}</translation>
 <translation id="9150735707954472829">Tab</translation>
+<translation id="9161053988251441839">MGA IMINUMUNGKAHING APP</translation>
 <translation id="9170848237812810038">&amp;I-undo</translation>
 <translation id="932327136139879170">Home</translation>
 </translationbundle>

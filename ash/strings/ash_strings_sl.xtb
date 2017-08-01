@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Gumb za meni z dodatnimi elementi</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+ tipka za iskanje + H</translation>
 <translation id="2049639323467105390">To napravo upravlja <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Pokončno</translation>
 <translation id="207439088875642105">Top je račun za otroke, ki ga upravljata <ph name="FIRST_PARENT_EMAIL" /> in <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Zaklepanje tipk</translation>
 <translation id="2509468283778169019">Tipka CAPS LOCK je vklopljena</translation>
 <translation id="2532589005999780174">Visokokontrastni način</translation>
+<translation id="2597972630681408282">Nočna svetloba: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">Seja se konča čez <ph name="SESSION_TIME_REMAINING" />. Odjavljeni boste.</translation>
 <translation id="2727977024730340865">Priključen je nizkoenergijski polnilnik. Polnjenje akumulatorja morda ne bo zanesljivo.</translation>
 <translation id="2761704814324807722">Vrstica stanja, čas: <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">Izhod</translation>
 <translation id="3019353588588144572">Preostali čas do napolnitve akumulatorja, <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">To je račun za otroke, ki ga upravlja <ph name="MANAGER_EMAIL" /></translation>
-<translation id="3050422059534974565">Tipka CAPS LOCK je vklopljena.
-Pritisnite tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Na dno</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -136,6 +136,7 @@ Pritisnite tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="4849058404725798627">Označitev predmeta s fokusom na tipkovnici</translation>
 <translation id="4872237917498892622">Alt + iskanje ali Shift</translation>
 <translation id="4895488851634969361">Akumulator je poln.</translation>
+<translation id="4905614135390995787">Bližnjica za preklop na visokokontrastni način se je spremenila. Uporabite <ph name="NEW_SHORTCUT" /> namesto <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Sprejmi</translation>
 <translation id="4961318399572185831">Predvajanje zaslona</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@ Pritisnite tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="5744083938413354016">Vlečenje z dotikom</translation>
 <translation id="5777841717266010279">Želite ustaviti skupno rabo zaslona?</translation>
 <translation id="57838592816432529">Izklopi zvok</translation>
+<translation id="5860033963881614850">Izklopljeno</translation>
 <translation id="5895138241574237353">Znova zaženi</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>
+<translation id="5916664084637901428">Vklopljeno</translation>
 <translation id="5927132638760172455">Predvajanje na neznanem sprejemniku</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Razveljavi</translation>
@@ -169,8 +172,8 @@ Pritisnite tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="5977415296283489383">Slušalke</translation>
 <translation id="5978382165065462689">Deljenje nadzora nad zaslonom prek pomoči na daljavo.</translation>
 <translation id="5980301590375426705">Zapusti sejo gosta</translation>
+<translation id="5992218262414051481">Visokokontrastni način je omogočen. Če ga želite izklopiti, znova pritisnite Ctrl + tipko za iskanje + H.</translation>
 <translation id="6018164090099858612">Izhod iz zrcalnega načina</translation>
-<translation id="6041154455840261787">Visokokontrastni način je omogočen. Če ga želite izklopiti, znova pritisnite tipko za iskanje + Shift + H.</translation>
 <translation id="6043212731627905357">Ta monitor se ne ujema z napravo <ph name="DEVICE_TYPE" /> (monitor ni podprt).</translation>
 <translation id="6043994281159824495">Odjava</translation>
 <translation id="6047696787498798094">Ko preklopite na drugega uporabnika, bo skupna raba zaslona ustavljena. Ali želite nadaljevati?</translation>
@@ -195,6 +198,7 @@ Pritisnite tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="6585808820553845416">Seja se konča čez <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tipka za iskanje + Shift + K</translation>
 <translation id="6650933572246256093">Naprava Bluetooth »<ph name="DEVICE_NAME" />« želi vaše dovoljenje za seznanjanje. V napravi vnesite to geslo: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Tipka za iskanje + Shift + H</translation>
 <translation id="6700713906295497288">Menijski gumb UNV-ja</translation>
 <translation id="6713285437468012787">Naprava Bluetooth »<ph name="DEVICE_NAME" />« je seznanjena in je zdaj na voljo vsem uporabnikom. To seznanitev lahko odstranite v nastavitvah.</translation>
 <translation id="6785414152754474415">Napolnjenost akumulatorja: <ph name="PERCENTAGE" /> % – polnjenje še poteka.</translation>
@@ -214,8 +218,7 @@ Pritisnite tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Ponastavitev na prejšnjo ločljivost čez <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">Tipka CAPS LOCK je vklopljena.
-Pritisnite Alt in tipko za iskanje ali Shift, da jo prekličete.</translation>
+<translation id="7199454189089571166">Način pomočnika</translation>
 <translation id="7246339268451149667">Želite omogočiti odklepanje s prstnim odtisom?</translation>
 <translation id="7256634071279256947">Zadnji mikrofon</translation>
 <translation id="7348093485538360975">Zaslonska tipkovnica</translation>
@@ -233,10 +236,10 @@ Pritisnite Alt in tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="7649070708921625228">Pomoč</translation>
 <translation id="7692480393933218409">Polnjenje povezanih naprav USB-C</translation>
 <translation id="776344839111254542">Kliknite, če si želite ogledati podrobnosti o posodobitvi</translation>
+<translation id="7798302898096527229">Za preklic pritisnite tipko za iskanje ali Shift.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> in <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Po sinhronizaciji nastavitev se je jezik spremenil iz jezika »<ph name="FROM_LOCALE" />« v jezik »<ph name="TO_LOCALE" />«.</translation>
 <translation id="7904094684485781019">Skrbnik tega računa je onemogočil prijavo z več računi.</translation>
-<translation id="7951523953736115461">Nočna svetloba</translation>
 <translation id="7977927628060636163">Iskanje mobilnih omrežij ...</translation>
 <translation id="7982789257301363584">Omrežje</translation>
 <translation id="8000066093800657092">Ni omrežja</translation>
@@ -255,6 +258,7 @@ Pritisnite Alt in tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="8433977262951327081">Bližnjica za prikaz oblačka menija z možnostmi vnosa na polici se je spremenila. Namesto <ph name="OLD_SHORTCUT" /> uporabite <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Wi-Fi je vklopljen.</translation>
 <translation id="847056008324733326">Nastavitve zaslonskega razmerja</translation>
+<translation id="8477270416194247200">Za preklic pritisnite Alt in tipko za iskanje ali Shift.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Vnovično vzpostavljanje povezave ...</translation>
 <translation id="8517041960877371778">Akumulator naprave <ph name="DEVICE_TYPE" /> se morda ne bo polnil, medtem ko je naprava vklopljena.</translation>
 <translation id="8639760480004882931">Še <ph name="PERCENTAGE" /> %</translation>

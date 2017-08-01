@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">Agrandir</translation>
 <translation id="1413622004203049571">Désactiver les notifications <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minute et  }one{# minute et  }other{# minutes et  }}</translation>
+<translation id="1643823602425662293">Notification</translation>
 <translation id="1685967565548146460">Enquête sur la satisfaction</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minute}one{# minute}other{# minutes}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> o</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">accéder</translation>
 <translation id="4250229828105606438">Capture d'écran</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{Il y a 1 mois}one{Il y a # mois}other{Il y a # mois}}</translation>
+<translation id="4316910396681052118">TOUTES LES APPLICATIONS</translation>
 <translation id="4320177379694898372">Aucune connexion Internet.</translation>
 <translation id="4588090240171750605">Défilement vers la droite</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 mois restant}one{# mois restant}other{# mois restants}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">Dossier sans nom</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}one{# s}other{# s}}</translation>
 <translation id="9150735707954472829">Onglet</translation>
+<translation id="9161053988251441839">APPLICATIONS SUGGÉRÉES</translation>
 <translation id="9170848237812810038">Ann&amp;uler</translation>
 <translation id="932327136139879170">Accueil</translation>
 </translationbundle>

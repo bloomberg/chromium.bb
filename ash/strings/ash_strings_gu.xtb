@@ -26,6 +26,7 @@
 <translation id="1677472565718498478"><ph name="TIME" /> બાકી</translation>
 <translation id="1698760176351776263">IPv6 સરનામું: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">આ ઉપકરણ એન્ટરપ્રાઇઝ દ્વારા સંચાલિત થાય છે</translation>
+<translation id="1746730358044914197">ઇનપુટ પદ્ધતિઓને તમારા વ્યવસ્થાપક દ્વારા ગોઠવવામાં આવી છે.</translation>
 <translation id="1747827819627189109">ઓન-સ્ક્રીન કીબોર્ડ સક્ષમ કર્યું</translation>
 <translation id="1823873187264960516">ઇથરનેટ: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi બંધ છે.</translation>
@@ -37,6 +38,7 @@
 <translation id="1942830294380034169">ઓવરફ્લો બટન</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">આ ઉપકરણને <ph name="DOMAIN" /> દ્વારા મેનેજ કરવામાં આવેલું છે.</translation>
 <translation id="2050339315714019657">પોર્ટ્રેટ</translation>
 <translation id="207439088875642105"><ph name="FIRST_PARENT_EMAIL" /> અને <ph name="SECOND_PARENT_EMAIL" /> દ્વારા સંચાલિત આ બાળકો માટેનું એક એકાઉન્ટ છે</translation>
@@ -57,6 +59,7 @@
 <translation id="2501920221385095727">સ્ટિકી કી</translation>
 <translation id="2509468283778169019">CAPS LOCK ચાલુ છે</translation>
 <translation id="2532589005999780174">ઉચ્ચ કોન્ટ્રાસ્ટ મોડ</translation>
+<translation id="2597972630681408282">રાત્રિ પ્રકાશ: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING" /> માં સત્ર સમાપ્ત થાય છે. તમને સાઇન આઉટ કરવામાં આવશે.</translation>
 <translation id="2727977024730340865">નિમ્ન-પાવર ચાર્જરમાં પ્લગ કરેલું છે. બૅટરી ચાર્જિંગ વિશ્વસનીય હશે નહીં.</translation>
 <translation id="2761704814324807722">સ્થિતિ ટ્રે, સમય <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +79,6 @@
 <translation id="3009178788565917040">આઉટપુટ</translation>
 <translation id="3019353588588144572">બેટરી સંપૂર્ણપણે ચાર્જ થવામાં બાકી સમય, <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">આ <ph name="MANAGER_EMAIL" /> દ્વારા સંચાલિત બાળકોનું એકાઉન્ટ છે</translation>
-<translation id="3050422059534974565">CAPS LOCK ચાલુ છે. 
-રદ કરવા માટે Search અથવા Shift દબાવો.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">તળિયું</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -136,6 +137,7 @@
 <translation id="4849058404725798627">કીબોર્ડ ફોકસ વડે ઑબ્જેક્ટને હાઇલાઇટ કરો</translation>
 <translation id="4872237917498892622">Alt+Search અથવા Shift</translation>
 <translation id="4895488851634969361">બેટરી સંપૂર્ણ છે.</translation>
+<translation id="4905614135390995787">હાઇ કોન્ટ્રાસ્ટ મોડને ટૉગલ કરવાનો શૉર્ટકટ બદલાઇ ગયો છો. <ph name="OLD_SHORTCUT" />ને બદલે કૃપા કરીને <ph name="NEW_SHORTCUT" />નો ઉપયોગ કરો.</translation>
 <translation id="4918086044614829423">સ્વીકારો</translation>
 <translation id="4961318399572185831">સ્ક્રીનને કાસ્ટ કરો</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +161,10 @@
 <translation id="5744083938413354016">ખેંચવાને ટૅપ કરો</translation>
 <translation id="5777841717266010279">સ્ક્રીન શેરિંગ રોકીએ?</translation>
 <translation id="57838592816432529">અવાજ બંધ કરો</translation>
+<translation id="5860033963881614850">બંધ</translation>
 <translation id="5895138241574237353">પુનઃપ્રારંભ કરો</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>
+<translation id="5916664084637901428">ચાલુ</translation>
 <translation id="5927132638760172455">અજાણ્યાં પ્રાપ્તકર્તા પર કાસ્ટ કરી રહ્યાં છે</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">પાછા ફરો</translation>
@@ -169,8 +173,8 @@
 <translation id="5977415296283489383">હેડફોન</translation>
 <translation id="5978382165065462689">દૂરસ્થ સહાય વડે તમારી સ્ક્રીનનું નિયંત્રણ શેર કરવું.</translation>
 <translation id="5980301590375426705">અતિથિથી બહાર નીકળો</translation>
+<translation id="5992218262414051481">હાઇ કોન્ટ્રાસ્ટ મોડ સક્ષમ કર્યો. ટૉગલ બંધ કરવા માટે ફરીથી Ctrl+Search+H ફરીથી દબાવો.</translation>
 <translation id="6018164090099858612">મીરર મોડથી બહાર નીકળે છે</translation>
-<translation id="6041154455840261787">ઉચ્ચ કોન્ટ્રાસ્ટ મોડ સક્ષમ કર્યો. તેને બંધ કરવા માટે Search+Shift+H ફરી દબાવો.</translation>
 <translation id="6043212731627905357">આ મૉનિટર તમારા <ph name="DEVICE_TYPE" /> સાથે કામ કરી રહ્યું નથી (મૉનિટર સમર્થિત નથી).</translation>
 <translation id="6043994281159824495">હવે સાઇન આઉટ કરો</translation>
 <translation id="6047696787498798094">જ્યારે તમે બીજા વપરાશકર્તા પર સ્વિચ કરો ત્યારે સ્ક્રીન શેરિંગ રોકવામાં આવશે. શું તમે ચાલુ રાખવા માંગો છો?</translation>
@@ -195,6 +199,7 @@
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> માં સત્ર સમાપ્ત થાય છે.</translation>
 <translation id="6627638273713273709">શોધ+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth ઉપકરણ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. કૃપા કરીને તે ઉપકરણ પર આ પાસકીને દાખલ કરો: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6700713906295497288">IME મેનૂ બટન</translation>
 <translation id="6713285437468012787">Bluetooth ઉપકરણ "<ph name="DEVICE_NAME" />" ની જોડી બનાવવામાં આવી અને હવે તે બધા વપરાશકર્તાઓને ઉપલબ્ધ છે. તમે સેટિંગ્સનો ઉપયોગ કરીને આ જોડીને દૂર કરી શકો છો.</translation>
 <translation id="6785414152754474415">બેટરી <ph name="PERCENTAGE" /> % પૂર્ણ અને ચાર્જ થઈ રહી છે.</translation>
@@ -214,8 +219,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">જૂના રિઝોલ્યુશન પર પાછા ફરી રહ્યાં છે <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">CAPS LOCK ચાલુ છે.
-રદ કરવા માટે Alt+Search અથવા Shift દબાવો.</translation>
+<translation id="7199454189089571166">સહાયક મોડ</translation>
 <translation id="7246339268451149667">ફિંગરપ્રિન્ટ અનલૉક સક્ષમ કરીએ?</translation>
 <translation id="7256634071279256947">પાછળનો માઇક્રોફોન</translation>
 <translation id="7348093485538360975">ઑન-સ્ક્રીન કીબોર્ડ</translation>
@@ -223,7 +227,7 @@
 <translation id="742594950370306541">કૅમેરો ઉપયોગમાં છે.</translation>
 <translation id="743058460480092004">કૅમેરો અને માઇક્રોફોન ઉપયોગમાં છે.</translation>
 <translation id="7510334386202674593">ctrl + shift + L</translation>
-<translation id="7526573455193969409">નેટવર્ક મોનિટર કરવામાં આવી શકે છે</translation>
+<translation id="7526573455193969409">નેટવર્કને મોનિટર કરવામાં આવી શકે છે</translation>
 <translation id="7536035074519304529">IP સરનામું: <ph name="ADDRESS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />, <ph name="SPECIFIED_RESOLUTION" /> ને સમર્થન આપતું નથી. રિઝોલ્યુશન <ph name="FALLBACK_RESOLUTION" /> પર બદલાયું હતું</translation>
 <translation id="7562368315689366235">ઇમોજી પૅલેટ</translation>
@@ -233,10 +237,10 @@
 <translation id="7649070708921625228">સહાય</translation>
 <translation id="7692480393933218409">કનેક્ટ કરેલા USB-C ઉપકરણોને ચાર્જ કરી રહ્યાં છે</translation>
 <translation id="776344839111254542">અપડેટની વિગતો જોવા માટે ક્લિક કરો</translation>
+<translation id="7798302898096527229">રદ કરવા માટે શોધો અથવા Shift દબાવો.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> અને <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">તમારી સેટિંગ્સ સમન્વયિત કર્યા પછી ભાષા "<ph name="FROM_LOCALE" />" થી "<ph name="TO_LOCALE" />" માં બદલાઈ ગઈ છે.</translation>
 <translation id="7904094684485781019">આ એકાઉન્ટ માટે વ્યસ્થાપકે બહુવિધ સાઇન-ઇનને નામંજૂર કર્યું છે.</translation>
-<translation id="7951523953736115461">રાત્રિ પ્રકાશ</translation>
 <translation id="7977927628060636163">મોબાઇલ નેટવર્કની શોધ કરી રહ્યું છે...</translation>
 <translation id="7982789257301363584">નેટવર્ક</translation>
 <translation id="8000066093800657092">નેટવર્ક નથી</translation>
@@ -255,6 +259,7 @@
 <translation id="8433977262951327081">શેલ્ફમાં મેનૂ પરપોટો ઇનપુટ વિકલ્પો બતાવવાનો શૉર્ટકટ બદલાયો છે. કૃપા કરીને <ph name="OLD_SHORTCUT" />ને બદલે <ph name="NEW_SHORTCUT" />નો ઉપયોગ કરો.</translation>
 <translation id="8454013096329229812">Wi-Fi ચાલુ છે.</translation>
 <translation id="847056008324733326">પ્રદર્શન સ્કેલની સેટિંગ્સ</translation>
+<translation id="8477270416194247200">રદ કરવા માટે Alt+શોધો અથવા Shift દબાવો.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: ફરીથી કનેક્ટ કરી રહ્યાં છે...</translation>
 <translation id="8517041960877371778">તમારું <ph name="DEVICE_TYPE" /> ચાલુ હોય ત્યારે તે ચાર્જ ન થાય તેવું બની શકે.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> બાકી</translation>

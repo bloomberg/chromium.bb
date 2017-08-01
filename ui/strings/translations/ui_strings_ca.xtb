@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">Maximitza</translation>
 <translation id="1413622004203049571">Desactiva les notificacions de <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut i }other{# minuts i }}</translation>
+<translation id="1643823602425662293">Notificació</translation>
 <translation id="1685967565548146460">HaTS</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minut}other{# minuts}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">salta</translation>
 <translation id="4250229828105606438">Captura de pantalla</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{Fa 1 mes}other{Fa # mesos}}</translation>
+<translation id="4316910396681052118">TOTES LES APLICACIONS</translation>
 <translation id="4320177379694898372">No hi ha connexió a Internet</translation>
 <translation id="4588090240171750605">Desplaçament a la dreta</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{D'aquí a 1 mes}other{D'aquí a # mesos}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">Carpeta sense nom</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}other{# s}}</translation>
 <translation id="9150735707954472829">Pestanya</translation>
+<translation id="9161053988251441839">APLICACIONS SUGGERIDES</translation>
 <translation id="9170848237812810038">&amp;Desfés</translation>
 <translation id="932327136139879170">Pàgina d'inici</translation>
 </translationbundle>

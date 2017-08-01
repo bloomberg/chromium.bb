@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Nút tràn</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">Thiết bị này được <ph name="DOMAIN" /> quản lý.</translation>
 <translation id="2050339315714019657">Khổ dọc</translation>
 <translation id="207439088875642105">Đây là tài khoản cho trẻ em được <ph name="FIRST_PARENT_EMAIL" /> và <ph name="SECOND_PARENT_EMAIL" /> quản lý</translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Phím cố định</translation>
 <translation id="2509468283778169019">Đang bật CAPS LOCK</translation>
 <translation id="2532589005999780174">Chế độ tương phản cao</translation>
+<translation id="2597972630681408282">Đèn đọc sách: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">Phiên sẽ kết thúc sau <ph name="SESSION_TIME_REMAINING" />. Bạn sẽ bị đăng xuất.</translation>
 <translation id="2727977024730340865">Được cắm vào bộ sạc công suất thấp. Việc sạc pin có thể không được đảm bảo.</translation>
 <translation id="2761704814324807722">Khay trạng thái, thời gian <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">Thiết bị ra</translation>
 <translation id="3019353588588144572">Thời gian còn lại cho đến khi pin được sạc đầy, <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">Đây là tài khoản cho trẻ em do <ph name="MANAGER_EMAIL" /> quản lý</translation>
-<translation id="3050422059534974565">CAPS LOCK đang bật.
-Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Bên dưới</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -136,6 +136,7 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="4849058404725798627">Đánh dấu đối tượng bằng tiêu điểm bàn phím</translation>
 <translation id="4872237917498892622">Alt+Search hoặc Shift</translation>
 <translation id="4895488851634969361">Pin đầy.</translation>
+<translation id="4905614135390995787">Phím tắt để chuyển đổi Chế độ tương phản cao đã thay đổi. Vui lòng sử dụng <ph name="NEW_SHORTCUT" /> thay vì <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Chấp nhận</translation>
 <translation id="4961318399572185831">Truyền màn hình</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="5744083938413354016">Kéo nhấn</translation>
 <translation id="5777841717266010279">Bạn muốn dừng chia sẻ màn hình?</translation>
 <translation id="57838592816432529">Tắt tiếng</translation>
+<translation id="5860033963881614850">Tắt</translation>
 <translation id="5895138241574237353">Khởi động lại</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">Bật</translation>
 <translation id="5927132638760172455">Đang truyền tới bộ thu không xác định</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Hoàn nguyên</translation>
@@ -169,8 +172,8 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="5977415296283489383">Tai nghe</translation>
 <translation id="5978382165065462689">Chia sẻ quyền kiểm soát màn hình của bạn qua Trợ giúp từ xa.</translation>
 <translation id="5980301590375426705">Thoát khỏi phiên khách</translation>
+<translation id="5992218262414051481">Đã bật Chế độ tương phản cao. Nhấn lại Ctrl+Search+H để tắt.</translation>
 <translation id="6018164090099858612">Đang thoát chế độ phản chiếu</translation>
-<translation id="6041154455840261787">Đã bật Chế độ tương phản cao. Nhấn lại Search+Shift+H để tắt.</translation>
 <translation id="6043212731627905357">Màn hình này không tương thích với <ph name="DEVICE_TYPE" /> của bạn (màn hình không được hỗ trợ).</translation>
 <translation id="6043994281159824495">Đăng xuất bây giờ</translation>
 <translation id="6047696787498798094">Chia sẻ màn hình sẽ dừng khi bạn chuyển sang người dùng khác. Bạn có muốn tiếp tục không?</translation>
@@ -195,6 +198,7 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="6585808820553845416">Phiên sẽ kết thúc sau <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tìm kiếm+Shift+K</translation>
 <translation id="6650933572246256093">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />" muốn được phép ghép nối. Vui lòng nhập mã xác nhận này trên thiết bị đó: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6700713906295497288">Nút menu IME</translation>
 <translation id="6713285437468012787">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />"đã được ghép nối và hiện khả dụng với tất cả người dùng. Bạn có thể xóa ghép nối này bằng Cài đặt.</translation>
 <translation id="6785414152754474415">Pin đầy <ph name="PERCENTAGE" />% và đang sạc.</translation>
@@ -214,8 +218,7 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Sẽ hoàn nguyên về độ phân giải cũ sau <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">CAPS LOCK đang bật.
-Nhấn Alt+Search hoặc Shift để hủy.</translation>
+<translation id="7199454189089571166">Chế độ Trợ lý</translation>
 <translation id="7246339268451149667">Bật mở khóa bằng vân tay?</translation>
 <translation id="7256634071279256947">Micrô mặt sau</translation>
 <translation id="7348093485538360975">Bàn phím ảo</translation>
@@ -233,10 +236,10 @@ Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="7649070708921625228">Trợ giúp</translation>
 <translation id="7692480393933218409">Đang sạc thiết bị USB-C được kết nối</translation>
 <translation id="776344839111254542">Nhấp để xem chi tiết cập nhật</translation>
+<translation id="7798302898096527229">Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> và <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Ngôn ngữ đã chuyển từ "<ph name="FROM_LOCALE" />" thành "<ph name="TO_LOCALE" />" sau khi đồng bộ hóa cài đặt của bạn.</translation>
 <translation id="7904094684485781019">Quản trị viên của tài khoản này đã không cho phép đăng nhập nhiều tài khoản.</translation>
-<translation id="7951523953736115461">Đèn đọc sách</translation>
 <translation id="7977927628060636163">Đang tìm kiếm mạng di động...</translation>
 <translation id="7982789257301363584">Mạng</translation>
 <translation id="8000066093800657092">Không có mạng nào</translation>
@@ -255,6 +258,7 @@ Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="8433977262951327081">Phím tắt để hiển thị bong bóng menu tùy chọn nhập trong giá đã thay đổi. Vui lòng sử dụng <ph name="NEW_SHORTCUT" /> thay cho <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Wi-Fi đang bật.</translation>
 <translation id="847056008324733326">Cài đặt tỷ lệ hiển thị</translation>
+<translation id="8477270416194247200">Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Đang kết nối lại...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> của bạn có thể không sạc khi được bật.</translation>
 <translation id="8639760480004882931">Còn <ph name="PERCENTAGE" /></translation>

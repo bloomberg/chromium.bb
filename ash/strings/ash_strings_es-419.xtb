@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Botón de superposición</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+Buscar+H</translation>
 <translation id="2049639323467105390"><ph name="DOMAIN" /> administra esta cuenta.</translation>
 <translation id="2050339315714019657">Vertical</translation>
 <translation id="207439088875642105">Esta es una cuenta para niños administrada por <ph name="FIRST_PARENT_EMAIL" /> y <ph name="SECOND_PARENT_EMAIL" />.</translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Teclas especiales</translation>
 <translation id="2509468283778169019">BLOQ MAYÚS está activado.</translation>
 <translation id="2532589005999780174">Modo de contraste alto</translation>
+<translation id="2597972630681408282">Luz nocturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">La sesión terminará en <ph name="SESSION_TIME_REMAINING" /> y se cerrará.</translation>
 <translation id="2727977024730340865">Conexión a un cargador de baja potencia. Es posible que la carga de la batería no sea confiable.</translation>
 <translation id="2761704814324807722">Bandeja de estado, hora <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">Salida</translation>
 <translation id="3019353588588144572">Tiempo restante hasta que la batería esté completamente cargada: <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">Esta es una cuenta para niños administrada por <ph name="MANAGER_EMAIL" />.</translation>
-<translation id="3050422059534974565">El BLOQUEO DE MAYÚSCULAS está activado.
-Presiona Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Inferior</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -136,6 +136,7 @@ Presiona Mayús o la tecla de búsqueda para cancelar la operación.</translatio
 <translation id="4849058404725798627">Resaltar el objeto con el enfoque del teclado</translation>
 <translation id="4872237917498892622">Alt+tecla de búsqueda o Mayús</translation>
 <translation id="4895488851634969361">La batería está completa.</translation>
+<translation id="4905614135390995787">Se cambió el acceso directo para activar o desactivar el Modo de contraste alto. Usa <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Aceptar</translation>
 <translation id="4961318399572185831">Transmitir pantalla</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@ Presiona Mayús o la tecla de búsqueda para cancelar la operación.</translatio
 <translation id="5744083938413354016">Función tocar y arrastrar</translation>
 <translation id="5777841717266010279">¿Dejar de compartir la pantalla?</translation>
 <translation id="57838592816432529">Silenciar</translation>
+<translation id="5860033963881614850">Desactivado</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901316534475909376">Mayúscula + Esc</translation>
+<translation id="5916664084637901428">Activada</translation>
 <translation id="5927132638760172455">Transmitiendo a un receptor desconocido</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Revertir</translation>
@@ -169,8 +172,8 @@ Presiona Mayús o la tecla de búsqueda para cancelar la operación.</translatio
 <translation id="5977415296283489383">Auriculares</translation>
 <translation id="5978382165065462689">Se está compartiendo el control de la pantalla mediante la Asistencia remota.</translation>
 <translation id="5980301590375426705">Salir de la sesión de invitado</translation>
+<translation id="5992218262414051481">Se habilitó el modo de contraste alto. Presiona Ctrl+Buscar+H de nuevo para desactivarlo.</translation>
 <translation id="6018164090099858612">Saliendo del modo de espejo</translation>
-<translation id="6041154455840261787">Se habilitó el modo de contraste alto. Presiona Buscar + mayúscula + H de nuevo para desactivarlo.</translation>
 <translation id="6043212731627905357">Este monitor no es compatible con tu dispositivo <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6043994281159824495">Salir ahora</translation>
 <translation id="6047696787498798094">Cuando cambies de usuario, se dejará de compartir la pantalla. ¿Quieres continuar?</translation>
@@ -195,6 +198,7 @@ Presiona Mayús o la tecla de búsqueda para cancelar la operación.</translatio
 <translation id="6585808820553845416">La sesión terminará en <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Búsqueda+mayúscula+K</translation>
 <translation id="6650933572246256093">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para sincronizarse. Ingresa la siguiente clave de contraseña en el dispositivo: <ph name="PASSKEY" />.</translation>
+<translation id="6691659475504239918">Buscar+mayúscula+H</translation>
 <translation id="6700713906295497288">Botón de menú IME</translation>
 <translation id="6713285437468012787">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" se sincronizó y ahora está disponible para todos los usuarios. Puedes ir a Configuración para eliminar esta sincronización.</translation>
 <translation id="6785414152754474415">La batería tiene un <ph name="PERCENTAGE" /> % de carga y se está cargando.</translation>
@@ -214,8 +218,7 @@ Presiona Mayús o la tecla de búsqueda para cancelar la operación.</translatio
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+mayúscula+K</translation>
 <translation id="7168224885072002358">Se revertirá a la resolución anterior en <ph name="TIMEOUT_SECONDS" />.</translation>
-<translation id="7209101170223508707">El BLOQUEO DE MAYÚSCULAS está activado.
-Presiona Alt y la tecla de búsqueda o Mayús para cancelar la operación.</translation>
+<translation id="7199454189089571166">Modo de Asistente</translation>
 <translation id="7246339268451149667">¿Deseas habilitar el desbloqueo mediante huella digital?</translation>
 <translation id="7256634071279256947">Micrófono posterior</translation>
 <translation id="7348093485538360975">Teclado en pantalla</translation>
@@ -233,10 +236,10 @@ Presiona Alt y la tecla de búsqueda o Mayús para cancelar la operación.</tran
 <translation id="7649070708921625228">Ayuda</translation>
 <translation id="7692480393933218409">Cargando dispositivos USB-C conectados</translation>
 <translation id="776344839111254542">Haz clic para ver los detalles de la actualización</translation>
+<translation id="7798302898096527229">Presiona mayúscula o la tecla de búsqueda para cancelarlo.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> y <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Después de sincronizar tu configuración, el idioma se cambió de "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />".</translation>
 <translation id="7904094684485781019">El administrador de esta cuenta inhabilitó el acceso múltiple.</translation>
-<translation id="7951523953736115461">Luz nocturna</translation>
 <translation id="7977927628060636163">Buscando redes móviles…</translation>
 <translation id="7982789257301363584">Red</translation>
 <translation id="8000066093800657092">Sin red</translation>
@@ -255,6 +258,7 @@ Presiona Alt y la tecla de búsqueda o Mayús para cancelar la operación.</tran
 <translation id="8433977262951327081">El acceso directo para mostrar el cuadro con el menú de opciones de entrada en la biblioteca cambió. Usa <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Wi-Fi activada</translation>
 <translation id="847056008324733326">Configuración de escala de visualización</translation>
+<translation id="8477270416194247200">Presiona Alt y la tecla de búsqueda o mayúscula para cancelar la operación.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Restableciendo conexión…</translation>
 <translation id="8517041960877371778">Tu <ph name="DEVICE_TYPE" /> podría no cargarse si el dispositivo está encendido.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante</translation>

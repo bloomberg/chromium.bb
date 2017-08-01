@@ -54,13 +54,6 @@
       allowed frequency is 60 seconds.</translation>
 <translation id="1221359380862872747">Load specified URLs on demo login</translation>
 <translation id="1265053460044691532">Limit the time for which a user authenticated via SAML can log in offline</translation>
-<translation id="127699919157094139">Disables data synchronisation in <ph name="PRODUCT_NAME" /> using Google-hosted synchronisation services and prevents users from changing this setting.
-
-      If you enable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME" />.
-
-      If this policy is left unset, Google Sync will be available for the user to choose whether to use it or not.
-
-      To fully disable Google Sync, it is recommended that you disable the Google Sync service in the Google Admin console.</translation>
 <translation id="1291880496936992484">Warning: RC4 will be completely removed from <ph name="PRODUCT_NAME" /> after version 52 (around September 2016) and this policy will stop working then.
 
       If the policy is not set, or is set to false, then RC4 cipher suites in TLS will not be enabled. Otherwise it may be set to true to retain compatibility with an outdated server. This is a stopgap measure and the server should be reconfigured.</translation>
@@ -530,6 +523,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If this policy is left not set, it is equivalent to being enabled, see description above.</translation>
 <translation id="285480231336205327">Enable high contrast mode</translation>
+<translation id="2854919890879212089">Causes <ph name="PRODUCT_NAME" /> to use the system default printer as the default choice in Print Preview instead of the most recently used printer.
+
+      If you disable this setting or do not set a value, Print Preview will use the most recently used printer as the default destination choice.
+
+      If you enable this setting, Print Preview will use the OS system default printer as the default destination choice.</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="2874209944580848064">Note for <ph name="PRODUCT_OS_NAME" /> devices supporting Android apps:</translation>
 <translation id="2877225735001246144">Disable CNAME lookup when negotiating Kerberos authentication</translation>
@@ -1017,6 +1015,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           By default, users will get a warning, not error, if the PIN is considered weak.</translation>
 <translation id="4723829699367336876">Enable firewall traversal from remote access client</translation>
+<translation id="4725123658714754485">Controls whether usage metrics and diagnostic data, including crash reports, are reported back to Google. If set to true, <ph name="PRODUCT_OS_NAME" /> will report usage metrics and diagnostic data. If not configured or set to false, metrics and diagnostic data reporting will be disabled.</translation>
 <translation id="4725528134735324213">Enable Android Backup Service</translation>
 <translation id="4733471537137819387">Policies related to integrated HTTP authentication.</translation>
 <translation id="4744190513568488164">Servers that <ph name="PRODUCT_NAME" /> may delegate to.
@@ -1536,6 +1535,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       Setting this option to disabled or leave it unset the plug-in finder will be active.</translation>
 <translation id="6699880231565102694">Enable two-factor authentication for remote access hosts</translation>
+<translation id="6724842112053619797">If you enable this setting, the settings stored in <ph name="PRODUCT_NAME" /> profiles like bookmarks, auto-fill data, passwords, etc. will also be written to a file stored in the roaming user profile folder or a location specified by the Administrator through the <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> policy. Enabling this policy disables cloud sync.
+
+      If this policy is disabled or left not set, only the regular local profiles will be used.
+
+      The <ph name="SYNC_DISABLED_POLICY_NAME" /> policy disables all data synchronisation, overriding RoamingProfileSupportEnabled.</translation>
 <translation id="6757438632136860443">Allows you to set a list of URL patterns that specify sites which are allowed to run the <ph name="FLASH_PLUGIN_NAME" /> plug-in.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.</translation>
@@ -1583,6 +1587,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6943577887654905793">Mac/Linux preference name:</translation>
 <translation id="69525503251220566">Parameter providing search-by-image feature for the default search provider</translation>
 <translation id="6956272732789158625">Do not allow any site to use key generation</translation>
+<translation id="6994082778848658360">Specifies how the on-board secure element hardware can be used to provide a second-factor authentication if it is compatible with this feature. The machine power button is used to detect the user physical presence.
+
+      If 'Disabled' is selected, no second factor is provided.
+
+      If 'U2F' is selected, the integrated second factor will behave according the FIDO U2F specification.
+
+      If 'U2F_EXTENDED' is selected, the integrated second factor will provide the U2F functions plus some extensions for individual attestation.</translation>
 <translation id="6997592395211691850">Whether online OCSP/CRL checks are required for local trust anchors</translation>
 <translation id="7003334574344702284">This policy forces the saved passwords to be imported from the previous default browser, if enabled. If enabled, this policy also affects the import dialogue.
 
@@ -1790,7 +1801,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7713608076604149344">Download restrictions</translation>
 <translation id="7715711044277116530">Percentage by which to scale the screen dim delay in presentation mode</translation>
 <translation id="7717938661004793600">Configure <ph name="PRODUCT_OS_NAME" /> accessibility features.</translation>
-<translation id="7719251660743813569">Controls whether usage metrics are reported back to Google. If set to true, <ph name="PRODUCT_OS_NAME" /> will report usage metrics. If not configured or set to false, metrics reporting will be disabled.</translation>
 <translation id="7724994675283793633">This policy enables HTTP/0.9 on ports other than 80 for HTTP and 443 for HTTPS.
 
       This policy is disabled by default and, if enabled, leaves users open to the security issue https://crbug.com/600352.
@@ -2122,6 +2132,15 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="891435090623616439">encoded as a JSON string, for details see <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Report device location</translation>
 <translation id="8951350807133946005">Set disk cache directory</translation>
+<translation id="8952317565138994125">Disables data synchronisation in <ph name="PRODUCT_NAME" /> using Google-hosted synchronisation services and prevents users from changing this setting.
+
+      If you enable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME" />.
+
+      If this policy is left not set, Google Sync will be available for the user to choose whether to use it or not.
+
+      To fully disable Google Sync, it is recommended that you disable the Google Sync service in the Google Admin console.
+
+      This policy should not be enabled when <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> policy is set to enabled as that feature shares the same client-side functionality. The Google-hosted synchronisation is disabled in this case completely.</translation>
 <translation id="8955719471735800169">Back to top</translation>
 <translation id="8960850473856121830">Patterns in this list will be matched against the security
       origin of the requesting URL. If a match is found, access to audio
@@ -2131,6 +2150,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8970205333161758602">Suppress the <ph name="PRODUCT_FRAME_NAME" /> turn-down prompt</translation>
 <translation id="8971221018777092728">Public session auto-login timer</translation>
 <translation id="8976248126101463034">Allow gnubby authentication for remote access hosts</translation>
+<translation id="8976531594979650914">Use System Default Printer as Default</translation>
 <translation id="8992176907758534924">Do not allow any site to show images</translation>
 <translation id="9035964157729712237">Extension IDs to exempt from the blacklist</translation>
 <translation id="9042911395677044526">Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME" /> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL" /></translation>

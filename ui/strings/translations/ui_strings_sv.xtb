@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">Maximera</translation>
 <translation id="1413622004203049571">Inaktivera aviseringar från <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut och }other{# minuter och }}</translation>
+<translation id="1643823602425662293">Avisering</translation>
 <translation id="1685967565548146460">HaTS</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minut}other{# minuter}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">fortsätta</translation>
 <translation id="4250229828105606438">Skärmdump</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 månad sedan}other{# månader sedan}}</translation>
+<translation id="4316910396681052118">ALLA APPAR</translation>
 <translation id="4320177379694898372">Ingen internetanslutning</translation>
 <translation id="4588090240171750605">Rulla åt höger</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 månad kvar}other{# månader kvar}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">Namnlös mapp</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 sek}other{# sek}}</translation>
 <translation id="9150735707954472829">Flik</translation>
+<translation id="9161053988251441839">FÖRESLAGNA APPAR</translation>
 <translation id="9170848237812810038">&amp;Ångra</translation>
 <translation id="932327136139879170">Startsida</translation>
 </translationbundle>

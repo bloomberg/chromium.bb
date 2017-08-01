@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">最大化</translation>
 <translation id="1413622004203049571">停用来自“<ph name="NOTIFIER_NAME" />”的通知</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分钟 }other{# 分钟 }}</translation>
+<translation id="1643823602425662293">通知</translation>
 <translation id="1685967565548146460">Hats</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 分钟}other{# 分钟}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">略过</translation>
 <translation id="4250229828105606438">屏幕截图</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 个月前}other{# 个月前}}</translation>
+<translation id="4316910396681052118">所有应用</translation>
 <translation id="4320177379694898372">未连接到互联网</translation>
 <translation id="4588090240171750605">向右滚动</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{还有 1 个月的时间}other{还有 # 个月的时间}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">未命名的文件夹</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 秒}other{# 秒}}</translation>
 <translation id="9150735707954472829">标签</translation>
+<translation id="9161053988251441839">推荐的应用</translation>
 <translation id="9170848237812810038">撤消(&amp;U)</translation>
 <translation id="932327136139879170">首页</translation>
 </translationbundle>

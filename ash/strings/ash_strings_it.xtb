@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Pulsante Overflow</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">CTRL + tasto per la ricerca + H</translation>
 <translation id="2049639323467105390">Questo dispositivo è gestito da <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Verticale</translation>
 <translation id="207439088875642105">Si tratta di un account di minori gestito da <ph name="FIRST_PARENT_EMAIL" /> e <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Tasti permanenti</translation>
 <translation id="2509468283778169019">BLOC MAIUSC è attivo</translation>
 <translation id="2532589005999780174">Modalità ad alto contrasto</translation>
+<translation id="2597972630681408282">Luminosità notturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">La sessione terminerà tra <ph name="SESSION_TIME_REMAINING" />. Verrà eseguita la disconnessione.</translation>
 <translation id="2727977024730340865">Collegato a un caricabatterie a basso consumo. La carica della batteria potrebbe non essere affidabile.</translation>
 <translation id="2761704814324807722">Barra di stato, ora: <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">Uscita</translation>
 <translation id="3019353588588144572">Tempo rimanente al caricamento completo della batteria: <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">Si tratta di un account di minori gestito da <ph name="MANAGER_EMAIL" /></translation>
-<translation id="3050422059534974565">La funzione BLOC MAIUSC è attiva.
-Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="3077734595579995578">maiusc</translation>
 <translation id="3087734570205094154">In basso</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -136,6 +136,7 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="4849058404725798627">Evidenzia oggetto con stato attivo della tastiera</translation>
 <translation id="4872237917498892622">Alt+tasto per la ricerca o Maiusc</translation>
 <translation id="4895488851634969361">La batteria è carica.</translation>
+<translation id="4905614135390995787">La scorciatoia per attivare/disattivare la modalità ad alto contrasto è cambiata. Usa <ph name="NEW_SHORTCUT" /> anziché <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Accetto</translation>
 <translation id="4961318399572185831">Trasmetti schermo</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="5744083938413354016">Trascinamento al tocco</translation>
 <translation id="5777841717266010279">Interrompere la condivisione dello schermo?</translation>
 <translation id="57838592816432529">Disattiva audio</translation>
+<translation id="5860033963881614850">Off</translation>
 <translation id="5895138241574237353">Riavvia</translation>
 <translation id="5901316534475909376">MAIUSC+ESC</translation>
+<translation id="5916664084637901428">On</translation>
 <translation id="5927132638760172455">Trasmissione a un ricevitore sconosciuto</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Ripristina</translation>
@@ -169,8 +172,8 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="5977415296283489383">Cuffia</translation>
 <translation id="5978382165065462689">Condividi il controllo dello schermo tramite Assistenza remota.</translation>
 <translation id="5980301590375426705">Esci da sessione Ospite</translation>
+<translation id="5992218262414051481">Modalità ad alto contrasto attivata. Premi di nuovo CTRL + tasto per la ricerca + H per disattivarla.</translation>
 <translation id="6018164090099858612">Uscita dalla modalità di mirroring</translation>
-<translation id="6041154455840261787">Modalità ad alto contrasto attivata. Premi il tasto per la ricerca+MAIUSC+H per disattivarla.</translation>
 <translation id="6043212731627905357">Questo monitor non è compatibile con il tuo dispositivo <ph name="DEVICE_TYPE" /> (il monitor non è supportato).</translation>
 <translation id="6043994281159824495">Esci ora</translation>
 <translation id="6047696787498798094">La condivisione dello schermo verrà interrotta se cambi utente. Vuoi continuare?</translation>
@@ -195,6 +198,7 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="6585808820553845416">La sessione terminerà tra <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tasto per la ricerca + MAIUSC + K</translation>
 <translation id="6650933572246256093">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato. Inserisci questa passkey sul dispositivo: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Tasto per la ricerca + MAIUSC + H</translation>
 <translation id="6700713906295497288">Pulsante di menu IME</translation>
 <translation id="6713285437468012787">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" è stato accoppiato ed è ora disponibile per tutti gli utenti. Puoi rimuovere tale accoppiamento utilizzando il menu Impostazioni.</translation>
 <translation id="6785414152754474415">Percentuale di caricamento batteria: <ph name="PERCENTAGE" />%. La batteria è in carica.</translation>
@@ -214,8 +218,7 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">ALT + MAIUSC + K</translation>
 <translation id="7168224885072002358">Ripristino della risoluzione precedente tra <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">La funzione BLOC MAIUSC è attiva.
-Premi Alt+tasto per la ricerca o Maiusc per annullare.</translation>
+<translation id="7199454189089571166">Modalità Assistente</translation>
 <translation id="7246339268451149667">Attivare lo sblocco basato su impronta digitale?</translation>
 <translation id="7256634071279256947">Microfono posteriore</translation>
 <translation id="7348093485538360975">Tastiera sullo schermo</translation>
@@ -233,10 +236,10 @@ Premi Alt+tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="7649070708921625228">Guida</translation>
 <translation id="7692480393933218409">Dispositivi USB-C collegati in carica</translation>
 <translation id="776344839111254542">Fai clic per visualizzare i dettagli dell'aggiornamento</translation>
+<translation id="7798302898096527229">Premi il tasto per la ricerca o MAIUSC per annullare.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> e <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">La lingua è stata modificata da "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" dopo la sincronizzazione delle impostazioni.</translation>
 <translation id="7904094684485781019">L'amministratore di questo account ha bloccato l'accesso simultaneo.</translation>
-<translation id="7951523953736115461">Luminosità notturna</translation>
 <translation id="7977927628060636163">Ricerca di reti mobili...</translation>
 <translation id="7982789257301363584">Rete</translation>
 <translation id="8000066093800657092">Nessuna rete</translation>
@@ -255,6 +258,7 @@ Premi Alt+tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="8433977262951327081">La scorciatoia per mostrare il fumetto del menu di opzioni di immissione nella shelf è cambiata. Utilizza <ph name="NEW_SHORTCUT" /> invece di <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Wi-Fi attivo.</translation>
 <translation id="847056008324733326">Impostazioni scala di visualizzazione</translation>
+<translation id="8477270416194247200">Premi ALT + tasto per la ricerca o MAIUSC per annullare.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: riconnessione in corso...</translation>
 <translation id="8517041960877371778">Il tuo dispositivo <ph name="DEVICE_TYPE" /> potrebbe non caricarsi mentre è acceso.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> rimanente</translation>

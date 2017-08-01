@@ -54,13 +54,6 @@
       predeterminada. La freqüència mínima permesa és de 60 segons.</translation>
 <translation id="1221359380862872747">Carrega URL especificats a l'inici de sessió de demostració</translation>
 <translation id="1265053460044691532">Limiteu el temps durant el qual un usuari autenticat mitjançant SAML pot iniciar la sessió fora de línia.</translation>
-<translation id="127699919157094139">Desactiva la sincronització de dades a <ph name="PRODUCT_NAME" /> mitjançant els serveis de sincronització allotjats a Google i impedeix que els usuaris canviïn aquesta opció de configuració.
-
-      Si actives aquesta opció, els usuaris no la podran canviar ni substituir a <ph name="PRODUCT_NAME" />.
-
-      Si deixes la política sense establir, els usuaris podran triar si volen utilitzar Google Sync o no.
-
-      Per desactivar el servei Google Sync per complet, et recomanem que el desactivis a la Consola d'administració de Google.</translation>
 <translation id="1291880496936992484">Advertiment: RC4 se suprimirà completament del producte <ph name="PRODUCT_NAME" /> a partir de la versió 52 (cap al setembre de 2016) i aquesta política deixarà de funcionar en aquell moment.
 
       Si la política no s'estableix o s'estableix en "false", els sistemes de xifratge RC4 de TLS no s'activaran. En cas contrari, es pot establir en "true" per conservar la compatibilitat amb un servidor obsolet. Es tracta d'una mesura temporal i el servidor s'ha de tornar a configurar.</translation>
@@ -501,6 +494,11 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 
       No establir aquesta política és igual que activar l'opció de configuració, amb el funcionament descrit abans.</translation>
 <translation id="285480231336205327">Activa el mode d'alt contrast</translation>
+<translation id="2854919890879212089">Fa que <ph name="PRODUCT_NAME" /> utilitzi la impressora predeterminada del sistema com a opció predeterminada a Previsualització de la impressió en lloc d'utilitzar la impressora que s'ha fet servir més recentment.
+
+      Si desactives aquesta opció de configuració o no hi estableixes cap valor, a Previsualització de la impressió s'utilitzarà la impressora que s'ha fet servir més recentment com a opció de destinació predeterminada.
+
+      Si actives aquesta opció de configuració, a Previsualització de la impressió s'utilitzarà la impressora predeterminada del sistema operatiu com a opció de destinació predeterminada.</translation>
 <translation id="2872961005593481000">Apaga</translation>
 <translation id="2874209944580848064">Nota per als dispositius <ph name="PRODUCT_OS_NAME" /> que admeten aplicacions per a Android:</translation>
 <translation id="2877225735001246144">Desactiva la cerca de CNAME en negociar l'autenticació de Kerberos</translation>
@@ -955,6 +953,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
           De manera predeterminada, els usuaris rebran un advertiment, no un error, si es considera que el PIN és poc segur.</translation>
 <translation id="4723829699367336876">Activa que es pugui travessar el tallafoc des d'un client d'accés remot</translation>
+<translation id="4725123658714754485">Controla si es notifiquen a Google les mètriques d'ús i les dades de diagnòstic, inclosos els informes d'error. Si es defineix en "true", <ph name="PRODUCT_OS_NAME" /> informarà de les mètriques d'ús i de les dades de diagnòstic. Si no es configura o es defineix en "false", es desactivaran els informes de mètriques i de dades de diagnòstic.</translation>
 <translation id="4725528134735324213">Activa Android Backup Service</translation>
 <translation id="4733471537137819387">Les polítiques relacionades amb l'autenticació HTTP integrada.</translation>
 <translation id="4744190513568488164">Servidors en què <ph name="PRODUCT_NAME" /> pot delegar les credencials de l'usuari.
@@ -1427,6 +1426,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6689792153960219308">Informa de l'estat del maquinari</translation>
 <translation id="6693751878507293182">Si es defineix aquest paràmetre com a activat, es desactivaran la cerca automàtica i la instal·lació dels connectors que falten a <ph name="PRODUCT_NAME" />. Si es defineix aquest paràmetre com a desactivat o si es deixa sense definir, el cercador de connectors quedarà actiu.</translation>
 <translation id="6699880231565102694">Activació de l'autenticació de dos factors per als amfitrions d'accés remot</translation>
+<translation id="6724842112053619797">Si actives aquesta opció de configuració, les opcions de configuració emmagatzemades als perfils que hi ha a <ph name="PRODUCT_NAME" />, com ara les adreces d'interès, les dades d'emplenament automàtic o les contrasenyes, entre d'altres, també s'introduiran en un fitxer emmagatzemat a la carpeta Itinerància del perfil de l'usuari o a la ubicació especificada per l'administrador a la política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. En activar aquesta política, es desactiva la sincronització en núvol.
+
+      Si aquesta política es desactiva o no es defineix, només s'utilitzaran els perfils locals habituals.
+
+      La política <ph name="SYNC_DISABLED_POLICY_NAME" /> desactiva la sincronització de totes les dades i substitueix RoamingProfileSupportEnabled.</translation>
 <translation id="6757438632136860443">Permet definir una llista de patrons d'URL que especifiquin llocs que poden executar el connector <ph name="FLASH_PLUGIN_NAME" />.
 
           Si aquesta política no es defineix, s'utilitzarà per a tots els llocs el valor global predeterminat indicat en la política "DefaultPluginsSetting" (si s'ha definit) o el valor personalitzat que hagi definit l'usuari.</translation>
@@ -1472,6 +1476,13 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6943577887654905793">Nom de la preferència de Mac/Linux:</translation>
 <translation id="69525503251220566">Paràmetre que proporciona la funció de cerca per imatge per al proveïdor de cerca predeterminat</translation>
 <translation id="6956272732789158625">No permetis que cap lloc utilitzi la generació de claus</translation>
+<translation id="6994082778848658360">Especifica de quina manera es pot utilitzar el maquinari de l'element de seguretat integrat per proporcionar una autenticació de dos factors si és compatible amb aquesta funció. El botó d'engegada de l'ordinador s'utilitza per detectar la presència física de l'usuari.
+
+      Si se selecciona Desactivat, no es proporciona un segon factor.
+
+      Si se selecciona U2F, el segon factor integrat es comportarà d'acord amb l'especificació FIDO U2F.
+
+      Si se selecciona U2F_EXTENDED, el segon factor integrat proporcionarà les funcions d'U2F més algunes extensions per al testimoni individual.</translation>
 <translation id="6997592395211691850">Si es requereixen comprovacions d'OCSP/CRL en línia per a ancoratges de confiança locals</translation>
 <translation id="7003334574344702284">Si està activada, aquesta política fa que les contrasenyes desades s'importin des del navegador predeterminat anterior. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, les contrasenyes desades no s'importaran. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
 <translation id="7003746348783715221">Preferències de <ph name="PRODUCT_NAME" /></translation>
@@ -1659,7 +1670,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7713608076604149344">Restriccions de baixada</translation>
 <translation id="7715711044277116530">Percentatge que permet ajustar el retard d'inactivitat de la pantalla en mode de presentació</translation>
 <translation id="7717938661004793600">Permet configurar les funcions d'accessibilitat de <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7719251660743813569">Controla si es notifiquen a Google les mètriques d'ús. Si es defineix a «true» (cert), <ph name="PRODUCT_OS_NAME" /> informarà de les mètriques d'ús. Si no es configura o es defineix a «false» (fals), es desactivarà la creació d'informes de mètriques.</translation>
 <translation id="7724994675283793633">Aquesta política activa la compatibilitat amb HTTP/0.9 als ports que no són 80 per a HTTP ni 443 per a HTTPS.
 
       Està desactivada de manera predeterminada i, si s'activa, els usuaris es poden trobar amb el problema de seguretat https://crbug.com/600352.
@@ -1967,6 +1977,15 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="891435090623616439">codificat com a cadena JSON; per obtenir informació detallada, consulteu <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Informa de la ubicació d'un dispositiu</translation>
 <translation id="8951350807133946005">Defineix el directori de la memòria cau del disc</translation>
+<translation id="8952317565138994125">Desactiva la sincronització de dades a <ph name="PRODUCT_NAME" /> utilitzant els serveis de sincronització allotjats a Google i evita que els usuaris en modifiquin la configuració.
+
+      Si actives aquesta opció de configuració, els usuaris no podran modificar-la ni substituir-la a <ph name="PRODUCT_NAME" />.
+
+      Si aquesta política no es defineix, Google Sync estarà disponible perquè l'usuari pugui escollir si la vol utilitzar o no.
+
+      Per desactivar el servei Google Sync per complet, et recomanem que el desactivis a la Consola d'administració de Google.
+
+      Aquesta política no s'ha d'activar si la política <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> està activada, ja que aquesta funció comparteix la mateixa funcionalitat al costat del client. En aquest cas, la sincronització allotjada a Google es desactiva completament.</translation>
 <translation id="8955719471735800169">Torna a dalt</translation>
 <translation id="8960850473856121830">Els patrons d'aquesta llista es compararan amb l'origen de seguretat
       de l'URL que heu sol·licitat. Si es troba alguna coincidència, es permetrà l'accés
@@ -1976,6 +1995,7 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8970205333161758602">Suprimeix l'avís de desactivació de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Cronometrador d'inici de sessió automàtic de sessió pública</translation>
 <translation id="8976248126101463034">Permet l'autenticació Gnubby als amfitrions d'accés remot</translation>
+<translation id="8976531594979650914">Utilitza la impressora predeterminada del sistema com a predeterminada</translation>
 <translation id="8992176907758534924">No permetis que cap lloc mostri imatges</translation>
 <translation id="9035964157729712237">ID de les extensions que s'han d'excloure de la llista negra</translation>
 <translation id="9042911395677044526">Permet aplicar la configuració de la xarxa per usuari a un dispositiu <ph name="PRODUCT_OS_NAME" />. La configuració de la xarxa és una cadena en format JSON, segons la definició del format de la configuració de xarxa oberta que apareix a <ph name="ONC_SPEC_URL" /></translation>
