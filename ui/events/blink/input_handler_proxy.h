@@ -247,7 +247,6 @@ class InputHandlerProxy
       scroll_elasticity_controller_;
 
   bool smooth_scroll_enabled_;
-  bool uma_latency_reporting_enabled_;
   const bool touchpad_and_wheel_scroll_latching_enabled_;
 
   // The merged result of the last touch event with previous touch events.

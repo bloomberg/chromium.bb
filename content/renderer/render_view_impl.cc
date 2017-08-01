@@ -1135,9 +1135,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
   // swapped out state.
   if (is_swapped_out_ &&
       IPC_MESSAGE_ID_CLASS(message.type()) == InputMsgStart) {
-    // TODO(dtapuska): Remove this histogram once we have seen that it actually
-    // produces results true. See crbug.com/615090
-    UMA_HISTOGRAM_BOOLEAN("Event.RenderView.DiscardInput", true);
     IPC_BEGIN_MESSAGE_MAP(RenderViewImpl, message)
       IPC_MESSAGE_HANDLER(InputMsg_HandleInputEvent, OnDiscardInputEvent)
     IPC_END_MESSAGE_MAP()

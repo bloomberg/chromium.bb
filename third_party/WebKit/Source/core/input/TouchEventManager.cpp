@@ -130,68 +130,6 @@ class ChangedTouches final {
   EventTargetSet targets_;
 };
 
-void ReportMetricsForTouch(const WebPointerEvent& event,
-                           DispatchEventResult dom_dispatch_result,
-                           bool prevent_default_called_on_uncancelable_event,
-                           bool is_frame_loaded) {
-  int64_t latency_in_micros =
-      (TimeTicks::Now() - TimeTicks::FromSeconds(event.TimeStampSeconds()))
-          .InMicroseconds();
-  if (event.IsCancelable()) {
-    if (is_frame_loaded) {
-      DEFINE_STATIC_LOCAL(EnumerationHistogram,
-                          touch_dispositions_after_page_load_histogram,
-                          ("Event.Touch.TouchDispositionsAfterPageLoad",
-                           kTouchEventDispatchResultTypeMax));
-      touch_dispositions_after_page_load_histogram.Count(
-          (dom_dispatch_result != DispatchEventResult::kNotCanceled)
-              ? kHandledTouches
-              : kUnhandledTouches);
-
-      DEFINE_STATIC_LOCAL(
-          CustomCountHistogram, event_latency_after_page_load_histogram,
-          ("Event.Touch.TouchLatencyAfterPageLoad", 1, 100000000, 50));
-      event_latency_after_page_load_histogram.Count(latency_in_micros);
-    } else {
-      DEFINE_STATIC_LOCAL(EnumerationHistogram,
-                          touch_dispositions_before_page_load_histogram,
-                          ("Event.Touch.TouchDispositionsBeforePageLoad",
-                           kTouchEventDispatchResultTypeMax));
-      touch_dispositions_before_page_load_histogram.Count(
-          (dom_dispatch_result != DispatchEventResult::kNotCanceled)
-              ? kHandledTouches
-              : kUnhandledTouches);
-
-      DEFINE_STATIC_LOCAL(
-          CustomCountHistogram, event_latency_before_page_load_histogram,
-          ("Event.Touch.TouchLatencyBeforePageLoad", 1, 100000000, 50));
-      event_latency_before_page_load_histogram.Count(latency_in_micros);
-    }
-    // Report the touch disposition there is no active fling animation.
-    DEFINE_STATIC_LOCAL(EnumerationHistogram,
-                        touch_dispositions_outside_fling_histogram,
-                        ("Event.Touch.TouchDispositionsOutsideFling2",
-                         kTouchEventDispatchResultTypeMax));
-    touch_dispositions_outside_fling_histogram.Count(
-        (dom_dispatch_result != DispatchEventResult::kNotCanceled)
-            ? kHandledTouches
-            : kUnhandledTouches);
-  }
-
-  // Report the touch disposition when there is an active fling
-  // animation.
-  if (event.dispatch_type ==
-      WebInputEvent::kListenersForcedNonBlockingDueToFling) {
-    DEFINE_STATIC_LOCAL(EnumerationHistogram,
-                        touch_dispositions_during_fling_histogram,
-                        ("Event.Touch.TouchDispositionsDuringFling2",
-                         kTouchEventDispatchResultTypeMax));
-    touch_dispositions_during_fling_histogram.Count(
-        prevent_default_called_on_uncancelable_event ? kHandledTouches
-                                                     : kUnhandledTouches);
-  }
-}
-
 }  // namespace
 
 TouchEventManager::TouchEventManager(LocalFrame& frame) : frame_(frame) {
@@ -518,19 +456,6 @@ TouchEventManager::DispatchTouchEventFromAccumulatdTouchPoints() {
       DispatchEventResult dom_dispatch_result =
           touch_event_target->DispatchEvent(touch_event);
 
-      // Only report for top level documents with a single touch on
-      // touch-start or the first touch-move.
-      if (touch_attribute_map_.size() == 1 && frame_->IsMainFrame()) {
-        const auto& event = touch_attribute_map_.begin()->value->event_;
-        if (event.touch_start_or_first_touch_move) {
-          // Record the disposition and latency of touch starts and first touch
-          // moves before and after the page is fully loaded respectively.
-          ReportMetricsForTouch(
-              event, dom_dispatch_result,
-              touch_event->PreventDefaultCalledOnUncancelableEvent(),
-              frame_->GetDocument()->IsLoadCompleted());
-        }
-      }
       event_result = EventHandlingUtil::MergeEventResult(
           event_result,
           EventHandlingUtil::ToWebInputEventResult(dom_dispatch_result));

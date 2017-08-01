@@ -391,12 +391,8 @@ int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
     break;
   }
 
-  if (event_type == XI_Motion && num_coalesced > 0) {
-    base::TimeDelta delta = ui::EventTimeFromNative(last_event) -
-        ui::EventTimeFromNative(const_cast<XEvent*>(xev));
+  if (event_type == XI_Motion && num_coalesced > 0)
     UMA_HISTOGRAM_COUNTS_10000("Event.CoalescedCount.Mouse", num_coalesced);
-    UMA_HISTOGRAM_TIMES("Event.CoalescedLatency.Mouse", delta);
-  }
   return num_coalesced;
 }
 

@@ -58,62 +58,9 @@ int64_t GetEventLatencyMicros(double event_timestamp, base::TimeTicks now) {
 }
 
 void LogInputEventLatencyUma(const WebInputEvent& event, base::TimeTicks now) {
-  WebInputEvent::Type event_type = event.GetType();
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Event.AggregatedLatency.Renderer2",
       GetEventLatencyMicros(event.TimeStampSeconds(), now), 1, 10000000, 100);
-
-#define CASE_TYPE(t)                                                       \
-  case WebInputEvent::t:                                                   \
-    UMA_HISTOGRAM_CUSTOM_COUNTS(                                           \
-        "Event.Latency.Renderer2." #t,                                     \
-        GetEventLatencyMicros(event.TimeStampSeconds(), now), 1, 10000000, \
-        100);                                                              \
-    break;
-
-  switch (event_type) {
-    CASE_TYPE(kUndefined);
-    CASE_TYPE(kMouseDown);
-    CASE_TYPE(kMouseUp);
-    CASE_TYPE(kMouseMove);
-    CASE_TYPE(kMouseEnter);
-    CASE_TYPE(kMouseLeave);
-    CASE_TYPE(kContextMenu);
-    CASE_TYPE(kMouseWheel);
-    CASE_TYPE(kRawKeyDown);
-    CASE_TYPE(kKeyDown);
-    CASE_TYPE(kKeyUp);
-    CASE_TYPE(kChar);
-    CASE_TYPE(kGestureScrollBegin);
-    CASE_TYPE(kGestureScrollEnd);
-    CASE_TYPE(kGestureScrollUpdate);
-    CASE_TYPE(kGestureFlingStart);
-    CASE_TYPE(kGestureFlingCancel);
-    CASE_TYPE(kGestureShowPress);
-    CASE_TYPE(kGestureTap);
-    CASE_TYPE(kGestureTapUnconfirmed);
-    CASE_TYPE(kGestureTapDown);
-    CASE_TYPE(kGestureTapCancel);
-    CASE_TYPE(kGestureDoubleTap);
-    CASE_TYPE(kGestureTwoFingerTap);
-    CASE_TYPE(kGestureLongPress);
-    CASE_TYPE(kGestureLongTap);
-    CASE_TYPE(kGesturePinchBegin);
-    CASE_TYPE(kGesturePinchEnd);
-    CASE_TYPE(kGesturePinchUpdate);
-    CASE_TYPE(kTouchStart);
-    CASE_TYPE(kTouchMove);
-    CASE_TYPE(kTouchEnd);
-    CASE_TYPE(kTouchCancel);
-    CASE_TYPE(kTouchScrollStarted);
-    default:
-      // Must include default to let blink::WebInputEvent add new event types
-      // before they're added here.
-      DLOG(WARNING) << "Unhandled WebInputEvent type: " << event_type;
-      break;
-  }
-
-#undef CASE_TYPE
 }
 
 void LogPassiveEventListenersUma(WebInputEventResult result,
