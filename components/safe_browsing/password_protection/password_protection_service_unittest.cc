@@ -11,6 +11,7 @@
 #include "base/test/null_task_runner.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
+#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/safe_browsing_db/test_database_manager.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -107,6 +108,7 @@ class TestPasswordProtectionService : public PasswordProtectionService {
 
   bool IsPingingEnabled(const base::Feature& feature,
                         RequestOutcome* reason) override {
+    checked_feature_name_ = feature.name;
     return true;
   }
 
@@ -133,11 +135,14 @@ class TestPasswordProtectionService : public PasswordProtectionService {
     return latest_request_ ? latest_request_->request_proto() : nullptr;
   }
 
+  std::string checked_feature_name() { return checked_feature_name_; }
+
  private:
   bool is_extended_reporting_;
   bool is_incognito_;
   PasswordProtectionRequest* latest_request_;
   std::unique_ptr<LoginReputationClientResponse> latest_response_;
+  std::string checked_feature_name_;
   DISALLOW_COPY_AND_ASSIGN(TestPasswordProtectionService);
 };
 
@@ -923,6 +928,21 @@ TEST_F(PasswordProtectionServiceTest, VerifyPasswordProtectionRequestProto) {
   ASSERT_TRUE(actual_request->has_password_reuse_event());
   ASSERT_FALSE(
       actual_request->password_reuse_event().is_chrome_signin_password());
+}
+
+TEST_F(PasswordProtectionServiceTest, VerifyCanSendPing) {
+  GURL suspicious_url("http://phishing.com");
+  EXPECT_TRUE(password_protection_service_->CanSendPing(
+      kProtectedPasswordEntryPinging, suspicious_url,
+      true /* is_sync_password */));
+  EXPECT_EQ(kProtectedPasswordEntryPinging.name,
+            password_protection_service_->checked_feature_name());
+
+  EXPECT_TRUE(password_protection_service_->CanSendPing(
+      kPasswordFieldOnFocusPinging, suspicious_url,
+      false /* is_sync_password */));
+  EXPECT_EQ(kPasswordFieldOnFocusPinging.name,
+            password_protection_service_->checked_feature_name());
 }
 
 }  // namespace safe_browsing

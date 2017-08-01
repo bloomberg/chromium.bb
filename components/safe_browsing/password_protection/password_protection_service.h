@@ -196,7 +196,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
  protected:
   friend class PasswordProtectionRequest;
-
+  FRIEND_TEST_ALL_PREFIXES(PasswordProtectionServiceTest, VerifyCanSendPing);
   // Chrome can send password protection ping if it is allowed by Finch config
   // and if Safe Browsing can compute reputation of |main_frame_url| (e.g.
   // Safe Browsing is not able to compute reputation of a private IP or
