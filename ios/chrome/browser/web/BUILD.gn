@@ -94,13 +94,20 @@ js_compile_bundle("chrome_bundle") {
   ]
 
   deps = [
+    ":credential_manager",
     ":payment_request",
   ]
 }
 
-js_compile_unchecked("payment_request") {
+js_compile_checked("payment_request") {
   sources = [
     "resources/payment_request.js",
+  ]
+}
+
+js_compile_checked("credential_manager") {
+  sources = [
+    "resources/credential_manager.js",
   ]
 }
 
@@ -144,6 +151,7 @@ source_set("web_internal") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/infobars",
+    "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/commands",
@@ -205,6 +213,7 @@ source_set("unit_tests_internal") {
     "//ios/chrome/browser/content_settings:content_settings",
     "//ios/chrome/browser/find_in_page",
     "//ios/chrome/browser/infobars",
+    "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/ui",
     "//ios/web",
     "//ios/web/public/test",
