@@ -17,12 +17,12 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 class RenderFrameHost;
 class WebContents;
-}
+}  // namespace content
 
 namespace payments {
 
@@ -115,9 +115,13 @@ class PaymentRequest : public mojom::PaymentRequest,
   std::unique_ptr<PaymentRequestSpec> spec_;
   std::unique_ptr<PaymentRequestState> state_;
 
+  // The RFC 6454 origin of the top level frame that has invoked PaymentRequest
+  // API. This is what the user sees in the address bar.
+  const url::Origin top_level_origin_;
+
   // The RFC 6454 origin of the frame that has invoked PaymentRequest API. This
   // can be either the main frame or an iframe.
-  const GURL frame_origin_;
+  const url::Origin frame_origin_;
 
   // May be null, must outlive this object.
   ObserverForTest* observer_for_testing_;

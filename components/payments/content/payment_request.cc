@@ -32,7 +32,8 @@ PaymentRequest::PaymentRequest(
       delegate_(std::move(delegate)),
       manager_(manager),
       binding_(this, std::move(request)),
-      frame_origin_(GURL(render_frame_host->GetLastCommittedURL()).GetOrigin()),
+      top_level_origin_(web_contents_->GetLastCommittedURL().GetOrigin()),
+      frame_origin_(render_frame_host->GetLastCommittedURL().GetOrigin()),
       observer_for_testing_(observer_for_testing),
       journey_logger_(delegate_->IsIncognito(),
                       web_contents_->GetLastCommittedURL(),
@@ -207,13 +208,15 @@ void PaymentRequest::CanMakePayment() {
     journey_logger_.SetCanMakePaymentValue(true);
   } else if (CanMakePaymentQueryFactory::GetInstance()
                  ->GetForContext(web_contents_->GetBrowserContext())
-                 ->CanQuery(frame_origin_, spec()->stringified_method_data())) {
+                 ->CanQuery(top_level_origin_, frame_origin_,
+                            spec()->stringified_method_data())) {
     client_->OnCanMakePayment(
         can_make_payment
             ? mojom::CanMakePaymentQueryResult::CAN_MAKE_PAYMENT
             : mojom::CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT);
     journey_logger_.SetCanMakePaymentValue(can_make_payment);
-  } else if (OriginSecurityChecker::IsOriginLocalhostOrFile(frame_origin_)) {
+  } else if (OriginSecurityChecker::IsOriginLocalhostOrFile(
+                 frame_origin_.GetURL())) {
     client_->OnCanMakePayment(
         can_make_payment
             ? mojom::CanMakePaymentQueryResult::WARNING_CAN_MAKE_PAYMENT

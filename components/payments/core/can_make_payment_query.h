@@ -13,7 +13,10 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "url/gurl.h"
+
+namespace url {
+class Origin;
+}
 
 namespace payments {
 
@@ -27,20 +30,22 @@ class CanMakePaymentQuery : public KeyedService {
   // which is a mapping of payment method names to the corresponding
   // JSON-stringified payment method data. Remembers the frame-to-query mapping
   // for 30 minutes to enforce the quota.
-  bool CanQuery(const GURL& frame_origin,
+  bool CanQuery(const url::Origin& top_level_origin,
+                const url::Origin& frame_origin,
                 const std::map<std::string, std::set<std::string>>& query);
 
  private:
-  void ExpireQuotaForFrameOrigin(const GURL& frame_origin);
+  void ExpireQuotaForFrameOrigin(const std::string& id);
 
-  // A mapping of frame origin to the timer that, when fired, allows the frame
-  // to invoke canMakePayment() with a different query.
-  std::map<GURL, std::unique_ptr<base::OneShotTimer>> timers_;
+  // A mapping of frame origin and top level origin to the timer that, when
+  // fired, allows the frame to invoke canMakePayment() with a different set of
+  // supported payment methods.
+  std::map<std::string, std::unique_ptr<base::OneShotTimer>> timers_;
 
-  // A mapping of frame origin to its last query. Each query is a mapping of
-  // payment method names to the corresponding JSON-stringified payment method
-  // data.
-  std::map<GURL, std::map<std::string, std::set<std::string>>> queries_;
+  // A mapping of frame origin and top level origin to its last query. Each
+  // query is a mapping of payment method names to the corresponding
+  // JSON-stringified payment method data.
+  std::map<std::string, std::map<std::string, std::set<std::string>>> queries_;
 
   DISALLOW_COPY_AND_ASSIGN(CanMakePaymentQuery);
 };

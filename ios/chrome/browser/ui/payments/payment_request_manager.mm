@@ -64,6 +64,7 @@
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 #include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -544,8 +545,10 @@ struct PendingPaymentResponse {
       IOSCanMakePaymentQueryFactory::GetInstance()->GetForBrowserState(
           _browserState);
   DCHECK(canMakePaymentQuery);
+  // iOS PaymentRequest does not support iframes.
   if (canMakePaymentQuery->CanQuery(
-          _activeWebState->GetLastCommittedURL().GetOrigin(),
+          url::Origin(_activeWebState->GetLastCommittedURL().GetOrigin()),
+          url::Origin(_activeWebState->GetLastCommittedURL().GetOrigin()),
           paymentRequest->stringified_method_data())) {
     [_paymentRequestJsManager
         resolveCanMakePaymentPromiseWithValue:canMakePayment
