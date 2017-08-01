@@ -296,7 +296,7 @@ void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects() {
           : ToLayoutText(next_layout_object)->OriginalText();
   DCHECK(old_text.Impl());
 
-  // :first-letter inehrits from the parent of the text. It may not be
+  // :first-letter inherits from the parent of the text. It may not be
   // this->Parent() when e.g., <div><span>text</span></div>.
   ComputedStyle* pseudo_style =
       StyleForFirstLetter(next_layout_object->Parent());
@@ -347,7 +347,7 @@ void FirstLetterPseudoElement::DidRecalcStyle() {
   if (!layout_object)
     return;
 
-  // :first-letter inehrits from the parent of the text. It may not be
+  // :first-letter inherits from the parent of the text. It may not be
   // this->Parent() when e.g., <div><span>text</span></div>.
   DCHECK(remaining_text_layout_object_);
   ComputedStyle* pseudo_style =
