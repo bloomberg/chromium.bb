@@ -1530,19 +1530,12 @@ HpackEncoder* SpdyFramer::GetHpackEncoder() {
   return hpack_encoder_.get();
 }
 
-HpackDecoderAdapter* SpdyFramer::GetHpackDecoder() {
-  if (hpack_decoder_.get() == nullptr) {
-    hpack_decoder_ = SpdyMakeUnique<HpackDecoderAdapter>();
-  }
-  return hpack_decoder_.get();
-}
-
 void SpdyFramer::UpdateHeaderEncoderTableSize(uint32_t value) {
   GetHpackEncoder()->ApplyHeaderTableSizeSetting(value);
 }
 
 void SpdyFramer::UpdateHeaderDecoderTableSize(uint32_t value) {
-  GetHpackDecoder()->ApplyHeaderTableSizeSetting(value);
+  decoder_adapter_->GetHpackDecoder()->ApplyHeaderTableSizeSetting(value);
 }
 
 size_t SpdyFramer::header_encoder_table_size() const {
@@ -1571,7 +1564,19 @@ void SpdyFramer::SetDecoderHeaderTableDebugVisitor(
   if (decoder_adapter_ != nullptr) {
     decoder_adapter_->SetDecoderHeaderTableDebugVisitor(std::move(visitor));
   } else {
-    GetHpackDecoder()->SetHeaderTableDebugVisitor(std::move(visitor));
+    SPDY_BUG << "SpdyFramer::SetDecoderHeaderTableDebugVisitor called without "
+                "decoder_adapter_!";
+  }
+}
+
+void SpdyFramer::set_max_decode_buffer_size_bytes(
+    size_t max_decode_buffer_size_bytes) {
+  if (decoder_adapter_ != nullptr) {
+    decoder_adapter_->GetHpackDecoder()->set_max_decode_buffer_size_bytes(
+        max_decode_buffer_size_bytes);
+  } else {
+    SPDY_BUG << "SpdyFramer::set_max_decode_buffer_size_bytes called without "
+                "decoder_adapter_!";
   }
 }
 
@@ -1582,7 +1587,6 @@ void SpdyFramer::SetEncoderHeaderTableDebugVisitor(
 
 size_t SpdyFramer::EstimateMemoryUsage() const {
   return SpdyEstimateMemoryUsage(hpack_encoder_) +
-         SpdyEstimateMemoryUsage(hpack_decoder_) +
          SpdyEstimateMemoryUsage(decoder_adapter_);
 }
 
