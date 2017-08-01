@@ -182,6 +182,12 @@ class TabManager : public TabStripModelObserver,
   // TODO(tasak): rename this to CanPurgeBackgroundedRenderer.
   bool CanSuspendBackgroundedRenderer(int render_process_id) const;
 
+  // Indicates how TabManager should load pending background tabs.
+  enum BackgroundTabLoadingMode {
+    kStaggered,  // Load a background tab after another tab has done loading.
+    kPaused      // Pause loading background tabs unless the user selects it.
+  };
+
   // Maybe throttle a tab's navigation based on current system status.
   content::NavigationThrottle::ThrottleCheckResult MaybeThrottleNavigation(
       BackgroundTabNavigationThrottle* throttle);
@@ -240,6 +246,7 @@ class TabManager : public TabStripModelObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnWebContentsDestroyed);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnDelayedTabSelected);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TimeoutWhenLoadingBackgroundTabs);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, BackgroundTabLoadingMode);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, BackgroundTabLoadingSlots);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, BackgroundTabsLoadingOrdering);
   FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorTest,
@@ -413,10 +420,15 @@ class TabManager : public TabStripModelObserver,
   // expires before the current tab loading is finished.
   void StartForceLoadTimer();
 
-  // Start loading the next background tab if needed.
+  // Start loading the next background tab if needed. This is called when:
+  // 1. a tab has finished loading;
+  // 2. or a tab has been destroyed;
+  // 3. or memory pressure is relieved;
+  // 4. or |force_load_timer_| fires.
   void LoadNextBackgroundTabIfNeeded();
 
-  // Resume the tab's navigation if it is pending right now.
+  // Resume the tab's navigation if it is pending right now. This is called when
+  // a tab is selected.
   void ResumeTabNavigationIfNeeded(content::WebContents* contents);
 
   // Resume navigation.
@@ -445,6 +457,12 @@ class TabManager : public TabStripModelObserver,
   // Set |loading_slots_|. Use only in tests.
   void SetLoadingSlotsForTest(size_t loading_slots) {
     loading_slots_ = loading_slots;
+  }
+
+  // Reset |memory_pressure_listener_| in test so that the test is not affected
+  // by memory pressure.
+  void ResetMemoryPressureListenerForTest() {
+    memory_pressure_listener_.reset();
   }
 
   // Timer to periodically update the stats of the renderers.
@@ -515,6 +533,9 @@ class TabManager : public TabStripModelObserver,
 
   class TabManagerSessionRestoreObserver;
   std::unique_ptr<TabManagerSessionRestoreObserver> session_restore_observer_;
+
+  // The mode that TabManager is using to load pending background tabs.
+  BackgroundTabLoadingMode background_tab_loading_mode_;
 
   // When the timer fires, it forces loading the next background tab if needed.
   std::unique_ptr<base::OneShotTimer> force_load_timer_;
