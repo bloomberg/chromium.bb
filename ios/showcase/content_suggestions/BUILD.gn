@@ -38,6 +38,7 @@ source_set("eg_tests") {
     ":content_suggestions",
     "//components/strings",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui/content_suggestions",
     "//ios/chrome/browser/ui/content_suggestions/cells:cells_ui",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/showcase/test",
