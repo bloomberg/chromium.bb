@@ -87,6 +87,7 @@
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/ScrollbarTheme.h"
+#include "platform/wtf/CheckedNumeric.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -97,6 +98,11 @@ namespace {
 // minimum size used by firefox is 15x15.
 static const int kDefaultMinimumWidthForResizing = 15;
 static const int kDefaultMinimumHeightForResizing = 15;
+// By not compositing scrollers smaller than 160000px (400 * 400), on android
+// devices we might affect roughly 90% scrollers for memory saving while at
+// most 30% scrolls may be slowed down. On non-android devices, it  affects
+// roughly 50% scrollers and 13% scrolls.
+static constexpr int kSmallScrollerThreshold = 160000;
 
 }  // namespace
 
@@ -1920,7 +1926,7 @@ static bool LayerNodeMayNeedCompositedScrolling(const PaintLayer* layer) {
 }
 
 bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
-    const LCDTextMode mode,
+    const bool layer_has_been_composited,
     const PaintLayer* layer) {
   non_composited_main_thread_scrolling_reasons_ = 0;
 
@@ -1938,8 +1944,19 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
   if (layer->size().IsEmpty())
     return false;
 
-  if (!LayerNodeMayNeedCompositedScrolling(layer))
+  // This is for an experiment aiming at memory save by not compositing certain
+  // scrollers. See http://crbug.com/746018, http://crbug.com/684631.
+  // TODO(yigu): Report this main thread scrolling reason once the patch is
+  // landed.
+  CheckedNumeric<int> size = VisibleContentRect().Width();
+  size *= VisibleContentRect().Height();
+  if (!layer_has_been_composited &&
+      ((RuntimeEnabledFeatures::SkipCompositingSmallScrollersEnabled() &&
+        size.ValueOrDefault(std::numeric_limits<int>::max()) <
+            kSmallScrollerThreshold) ||
+       !LayerNodeMayNeedCompositedScrolling(layer))) {
     return false;
+  }
 
   bool needs_composited_scrolling = true;
 
@@ -1955,7 +1972,7 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
           ToLayoutBox(layer->GetLayoutObject()).PaddingBoxRect()) &&
       !layer->CompositesWithTransform() && !layer->CompositesWithOpacity();
 
-  if (mode == PaintLayerScrollableArea::kConsiderLCDText &&
+  if (!layer_has_been_composited &&
       !layer->Compositor()->PreferCompositingToLCDTextEnabled() &&
       !background_supports_lcd_text) {
     if (layer->CompositesWithOpacity()) {
@@ -2001,9 +2018,9 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
 }
 
 void PaintLayerScrollableArea::UpdateNeedsCompositedScrolling(
-    LCDTextMode mode) {
+    bool layer_has_been_composited) {
   const bool needs_composited_scrolling =
-      ComputeNeedsCompositedScrolling(mode, Layer());
+      ComputeNeedsCompositedScrolling(layer_has_been_composited, Layer());
 
   if (static_cast<bool>(needs_composited_scrolling_) !=
       needs_composited_scrolling) {
