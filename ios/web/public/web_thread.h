@@ -72,13 +72,6 @@ class WebThread {
     // This is the thread that interacts with the file system.
     FILE,
 
-    // Used for file system operations that block user interactions.
-    // Responsiveness of this thread affect users.
-    FILE_USER_BLOCKING,
-
-    // This is the thread to handle slow HTTP cache operations.
-    CACHE,
-
     // This is the thread that processes non-blocking IO, i.e. IPC and network.
     // Blocking IO should happen on other threads like DB, FILE,
     // FILE_USER_BLOCKING and CACHE depending on the usage.

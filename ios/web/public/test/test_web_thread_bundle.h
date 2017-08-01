@@ -69,8 +69,6 @@ class TestWebThreadBundle {
   std::unique_ptr<TestWebThread> ui_thread_;
   std::unique_ptr<TestWebThread> db_thread_;
   std::unique_ptr<TestWebThread> file_thread_;
-  std::unique_ptr<TestWebThread> file_user_blocking_thread_;
-  std::unique_ptr<TestWebThread> cache_thread_;
   std::unique_ptr<TestWebThread> io_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebThreadBundle);

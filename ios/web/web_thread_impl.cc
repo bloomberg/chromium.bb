@@ -30,8 +30,6 @@ const char* const g_web_thread_names[WebThread::ID_COUNT] = {
     "Web_UIThread",                // UI
     "Web_DBThread",                // DB
     "Web_FileThread",              // FILE
-    "Web_FileUserBlockingThread",  // FILE_USER_BLOCKING
-    "Web_CacheThread",             // CACHE
     "Web_IOThread",                // IO
 };
 
@@ -192,19 +190,6 @@ NOINLINE void WebThreadImpl::FileThreadRun(base::RunLoop* run_loop) {
   CHECK_GT(line_number, 0);
 }
 
-NOINLINE void WebThreadImpl::FileUserBlockingThreadRun(
-    base::RunLoop* run_loop) {
-  volatile int line_number = __LINE__;
-  Thread::Run(run_loop);
-  CHECK_GT(line_number, 0);
-}
-
-NOINLINE void WebThreadImpl::CacheThreadRun(base::RunLoop* run_loop) {
-  volatile int line_number = __LINE__;
-  Thread::Run(run_loop);
-  CHECK_GT(line_number, 0);
-}
-
 NOINLINE void WebThreadImpl::IOThreadRun(base::RunLoop* run_loop) {
   volatile int line_number = __LINE__;
   Thread::Run(run_loop);
@@ -223,10 +208,6 @@ void WebThreadImpl::Run(base::RunLoop* run_loop) {
       return DBThreadRun(run_loop);
     case WebThread::FILE:
       return FileThreadRun(run_loop);
-    case WebThread::FILE_USER_BLOCKING:
-      return FileUserBlockingThreadRun(run_loop);
-    case WebThread::CACHE:
-      return CacheThreadRun(run_loop);
     case WebThread::IO:
       return IOThreadRun(run_loop);
     case WebThread::ID_COUNT:

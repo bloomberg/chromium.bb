@@ -35,10 +35,6 @@ TestWebThreadBundle::~TestWebThreadBundle() {
   base::RunLoop().RunUntilIdle();
   io_thread_.reset();
   base::RunLoop().RunUntilIdle();
-  cache_thread_.reset();
-  base::RunLoop().RunUntilIdle();
-  file_user_blocking_thread_.reset();
-  base::RunLoop().RunUntilIdle();
   file_thread_.reset();
   base::RunLoop().RunUntilIdle();
   db_thread_.reset();
@@ -79,11 +75,6 @@ void TestWebThreadBundle::Init(int options) {
   } else {
     file_thread_.reset(new TestWebThread(WebThread::FILE, message_loop_.get()));
   }
-
-  file_user_blocking_thread_.reset(
-      new TestWebThread(WebThread::FILE_USER_BLOCKING, message_loop_.get()));
-
-  cache_thread_.reset(new TestWebThread(WebThread::CACHE, message_loop_.get()));
 
   if (options & TestWebThreadBundle::REAL_IO_THREAD) {
     io_thread_.reset(new TestWebThread(WebThread::IO));
