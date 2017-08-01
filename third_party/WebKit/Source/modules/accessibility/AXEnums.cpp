@@ -141,7 +141,6 @@ STATIC_ASSERT_ENUM(kWebAXRoleVideo, kVideoRole);
 STATIC_ASSERT_ENUM(kWebAXRoleWebArea, kWebAreaRole);
 STATIC_ASSERT_ENUM(kWebAXRoleWindow, kWindowRole);
 
-STATIC_ASSERT_ENUM(WebAXDefaultActionVerb::kNone, AXDefaultActionVerb::kNone);
 STATIC_ASSERT_ENUM(WebAXDefaultActionVerb::kActivate,
                    AXDefaultActionVerb::kActivate);
 STATIC_ASSERT_ENUM(WebAXDefaultActionVerb::kCheck, AXDefaultActionVerb::kCheck);

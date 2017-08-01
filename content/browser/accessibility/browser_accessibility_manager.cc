@@ -225,10 +225,9 @@ void BrowserAccessibilityManager::FireFocusEventsIfNeeded(
   // Don't allow the document to be focused if it has no children and
   // hasn't finished loading yet. Wait for at least a tiny bit of content,
   // or for the document to actually finish loading.
-  if (focus &&
-      focus == focus->manager()->GetRoot() &&
+  if (focus && focus == focus->manager()->GetRoot() &&
       focus->PlatformChildCount() == 0 &&
-      !focus->HasState(ui::AX_STATE_BUSY) &&
+      !focus->GetBoolAttribute(ui::AX_ATTR_BUSY) &&
       !focus->manager()->GetTreeData().loaded) {
     focus = nullptr;
   }

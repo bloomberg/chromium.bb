@@ -200,7 +200,7 @@
 
   // Describes characteristics of an $(ref:automation.AutomationNode).
   enum StateType {
-    busy,
+    dummyState,  // TODO(aleventhal) See crbug.com/750305
     collapsed,
     default,
     editable,
@@ -622,8 +622,8 @@
     // The value of aria-atomic for a live region.
     boolean? liveAtomic;
 
-    // The value of aria-busy for a live region.
-    boolean? liveBusy;
+    // The value of aria-busy for a live region or any other element.
+    boolean? busy;
 
     // The type of live region if this node is inside a live region.
     DOMString? containerLiveStatus;

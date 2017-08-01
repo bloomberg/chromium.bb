@@ -192,7 +192,6 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   // States
   AddFilter(filters, "check*");
   AddFilter(filters, "descript*");
-  AddFilter(filters, "busy");
   AddFilter(filters, "collapsed");
   AddFilter(filters, "default");
   AddFilter(filters, "haspopup");
@@ -205,6 +204,7 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   AddFilter(filters, "select*");
   AddFilter(filters, "visited");
   // Other attributes
+  AddFilter(filters, "busy=true");
   AddFilter(filters, "valueForRange*");
   AddFilter(filters, "minValueForRange*");
   AddFilter(filters, "maxValueForRange*");
@@ -301,10 +301,16 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAOnclick) {
 
 #if defined(THREAD_SANITIZER)
 // See (crbug.com/708759).
+#define MAYBE_AccessibilityAomBusy DISABLED_AccessibilityAomBusy
 #define MAYBE_AccessibilityAomChecked DISABLED_AccessibilityAomChecked
 #else
+#define MAYBE_AccessibilityAomBusy AccessibilityAomBusy
 #define MAYBE_AccessibilityAomChecked AccessibilityAomChecked
 #endif
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, MAYBE_AccessibilityAomBusy) {
+  RunAomTest(FILE_PATH_LITERAL("aom-busy.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        MAYBE_AccessibilityAomChecked) {
   RunAomTest(FILE_PATH_LITERAL("aom-checked.html"));

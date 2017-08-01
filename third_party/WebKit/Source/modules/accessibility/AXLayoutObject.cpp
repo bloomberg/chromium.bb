@@ -1373,10 +1373,6 @@ bool AXLayoutObject::LiveRegionAtomic() const {
   return RoleValue() == kAlertRole || RoleValue() == kStatusRole;
 }
 
-bool AXLayoutObject::LiveRegionBusy() const {
-  return AOMPropertyOrARIAAttributeIsTrue(AOMBooleanProperty::kBusy);
-}
-
 //
 // Hit testing.
 //

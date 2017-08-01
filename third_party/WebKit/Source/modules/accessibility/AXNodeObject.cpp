@@ -95,8 +95,11 @@ class BoolAttributeSetter : public SparseAttributeSetter {
   void Run(const AXObject& obj,
            AXSparseAttributeClient& attribute_map,
            const AtomicString& value) override {
-    attribute_map.AddBoolAttribute(attribute_,
-                                   EqualIgnoringASCIICase(value, "true"));
+    // ARIA booleans are true if not "false" and not specifically undefined.
+    bool is_true = !AccessibleNode::IsUndefinedAttrValue(value) &&
+                   !EqualIgnoringASCIICase(value, "false");
+    if (is_true)  // Not necessary to add if false
+      attribute_map.AddBoolAttribute(attribute_, true);
   }
 };
 
@@ -210,6 +213,8 @@ static AXSparseAttributeSetterMap& GetSparseAttributeSetterMap() {
     ax_sparse_attribute_setter_map.Set(
         aria_roledescriptionAttr,
         new StringAttributeSetter(AXStringAttribute::kAriaRoleDescription));
+    ax_sparse_attribute_setter_map.Set(
+        aria_busyAttr, new BoolAttributeSetter(AXBoolAttribute::kAriaBusy));
   }
   return ax_sparse_attribute_setter_map;
 }
@@ -238,7 +243,17 @@ class AXSparseAttributeAOMPropertyClient : public AOMPropertyClient {
     sparse_attribute_client_.AddStringAttribute(attribute, value);
   }
 
-  void AddBooleanProperty(AOMBooleanProperty property, bool value) override {}
+  void AddBooleanProperty(AOMBooleanProperty property, bool value) override {
+    AXBoolAttribute attribute;
+    switch (property) {
+      case AOMBooleanProperty::kBusy:
+        attribute = AXBoolAttribute::kAriaBusy;
+        break;
+      default:
+        return;
+    }
+    sparse_attribute_client_.AddBoolAttribute(attribute, value);
+  }
 
   void AddIntProperty(AOMIntProperty property, int32_t value) override {}
 

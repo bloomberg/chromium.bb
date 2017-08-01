@@ -631,7 +631,6 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
 TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   // Try creating an empty document with busy state. Readonly is
   // set automatically.
-  const int32_t busy_state = 1 << ui::AX_STATE_BUSY;
   std::unique_ptr<BrowserAccessibilityManager> manager(
       new BrowserAccessibilityManagerWin(
           BrowserAccessibilityManagerWin::GetEmptyDocument(), nullptr,
@@ -641,7 +640,8 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   BrowserAccessibility* root = manager->GetRoot();
   EXPECT_EQ(0, root->GetId());
   EXPECT_EQ(ui::AX_ROLE_ROOT_WEB_AREA, root->GetRole());
-  EXPECT_EQ(busy_state, root->GetState());
+  EXPECT_EQ(0, root->GetState());
+  EXPECT_EQ(true, root->GetBoolAttribute(ui::AX_ATTR_BUSY));
 
   // Tree with a child textfield.
   ui::AXNodeData tree1_1;
@@ -725,7 +725,8 @@ TEST_F(BrowserAccessibilityTest, EmptyDocHasUniqueIdWin) {
   BrowserAccessibility* root = manager->GetRoot();
   EXPECT_EQ(0, root->GetId());
   EXPECT_EQ(ui::AX_ROLE_ROOT_WEB_AREA, root->GetRole());
-  EXPECT_EQ(1 << ui::AX_STATE_BUSY, root->GetState());
+  EXPECT_EQ(0, root->GetState());
+  EXPECT_EQ(true, root->GetBoolAttribute(ui::AX_ATTR_BUSY));
 
   BrowserAccessibilityWin* win_root = ToBrowserAccessibilityWin(root);
 

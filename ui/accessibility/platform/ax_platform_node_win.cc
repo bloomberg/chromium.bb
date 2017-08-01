@@ -2998,7 +2998,8 @@ std::vector<base::string16> AXPlatformNodeWin::ComputeIA2Attributes() {
   StringAttributeToIA2(result, ui::AX_ATTR_LIVE_STATUS, "live");
   StringAttributeToIA2(result, ui::AX_ATTR_LIVE_RELEVANT, "relevant");
   BoolAttributeToIA2(result, ui::AX_ATTR_LIVE_ATOMIC, "atomic");
-  BoolAttributeToIA2(result, ui::AX_ATTR_LIVE_BUSY, "busy");
+  // Busy is usually associated with live regions but can occur anywhere:
+  BoolAttributeToIA2(result, ui::AX_ATTR_BUSY, "busy");
 
   // Expose container live region attributes.
   StringAttributeToIA2(result, ui::AX_ATTR_CONTAINER_LIVE_STATUS,
@@ -3249,7 +3250,7 @@ int AXPlatformNodeWin::MSAAState() {
   // Map the AXState to MSAA state. Note that some of the states are not
   // currently handled.
 
-  if (data.HasState(ui::AX_STATE_BUSY))
+  if (data.GetBoolAttribute(ui::AX_ATTR_BUSY))
     msaa_state |= STATE_SYSTEM_BUSY;
 
   if (data.HasState(ui::AX_STATE_COLLAPSED))
