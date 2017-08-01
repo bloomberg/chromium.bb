@@ -8,7 +8,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#include "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/history/tab_history_cell.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/third_party/material_components_ios/src/components/Ink/src/MaterialInk.h"
@@ -264,16 +264,25 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
 // references should be reset to avoid use-after-free errors.
 - (void)clearNavigationItems;
 
+// The dispatcher used by this ViewController.
+@property(nonatomic, readonly, weak) id<BrowserCommands> dispatcher;
+
 @end
 
 @implementation TabHistoryViewController
 
-- (instancetype)initWithItems:(const web::NavigationItemList&)items {
+@synthesize dispatcher = _dispatcher;
+
+- (instancetype)initWithItems:(const web::NavigationItemList&)items
+                   dispatcher:(id<BrowserCommands>)dispatcher {
   TabHistoryViewControllerLayout* layout =
       [[TabHistoryViewControllerLayout alloc] init];
   if ((self = [super initWithCollectionViewLayout:layout])) {
     // Populate |_partitionedItems|.
     _partitionedItems = PartitionItemsByHost(items);
+
+    // Set up the dispatcher.
+    _dispatcher = dispatcher;
 
     // Set up the UICollectionView.
     UICollectionView* collectionView = [self collectionView];
@@ -335,7 +344,7 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
     didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
   TabHistoryCell* cell = base::mac::ObjCCastStrict<TabHistoryCell>(
       [collectionView cellForItemAtIndexPath:indexPath]);
-  [collectionView chromeExecuteCommand:cell];
+  [self.dispatcher navigateToHistoryItem:cell.item];
   [self clearNavigationItems];
 }
 
@@ -354,7 +363,6 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
       [collectionView dequeueReusableCellWithReuseIdentifier:kCellIdentifier
                                                 forIndexPath:indexPath];
   cell.item = [self itemAtIndexPath:indexPath];
-  cell.tag = IDC_BACK_FORWARD_IN_TAB_HISTORY;
   return cell;
 }
 

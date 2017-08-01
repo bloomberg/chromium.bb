@@ -120,7 +120,6 @@
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #import "ios/chrome/browser/ui/fullscreen_controller.h"
-#import "ios/chrome/browser/ui/history/tab_history_cell.h"
 #import "ios/chrome/browser/ui/key_commands_provider.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_panel_view_controller.h"
@@ -695,12 +694,6 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 - (void)showPageInfoPopupForView:(UIView*)sourceView;
 // Hide the Page Security Info.
 - (void)hidePageInfoPopupForView:(UIView*)sourceView;
-// Shows the tab history popup containing the tab's backward history.
-- (void)showTabHistoryPopupForBackwardHistory;
-// Shows the tab history popup containing the tab's forward history.
-- (void)showTabHistoryPopupForForwardHistory;
-// Navigate back/forward to the selected entry in the tab's history.
-- (void)navigateToSelectedEntry:(id)sender;
 // The infobar state (typically height) has changed.
 - (void)infoBarContainerStateChanged:(bool)is_animating;
 // Adds a CardView on top of the contentArea either taking the size of the full
@@ -3487,44 +3480,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self hidePageInfoPopupForView:nil];
 }
 
-- (void)showTabHistoryPopupForBackwardHistory {
-  DCHECK(self.visible || self.dismissingModal);
-
-  // Dismiss the omnibox (if open).
-  [_toolbarController cancelOmniboxEdit];
-  // Dismiss the soft keyboard (if open).
-  Tab* tab = [_model currentTab];
-  [tab.webController dismissKeyboard];
-  web::NavigationItemList backwardItems =
-      [tab navigationManager]->GetBackwardItems();
-  [_toolbarController showTabHistoryPopupInView:[self view]
-                                      withItems:backwardItems
-                                 forBackHistory:YES];
-}
-
-- (void)showTabHistoryPopupForForwardHistory {
-  DCHECK(self.visible || self.dismissingModal);
-
-  // Dismiss the omnibox (if open).
-  [_toolbarController cancelOmniboxEdit];
-  // Dismiss the soft keyboard (if open).
-  Tab* tab = [_model currentTab];
-  [tab.webController dismissKeyboard];
-
-  web::NavigationItemList forwardItems =
-      [tab navigationManager]->GetForwardItems();
-  [_toolbarController showTabHistoryPopupInView:[self view]
-                                      withItems:forwardItems
-                                 forBackHistory:NO];
-}
-
-- (void)navigateToSelectedEntry:(id)sender {
-  DCHECK([sender isKindOfClass:[TabHistoryCell class]]);
-  TabHistoryCell* selectedCell = (TabHistoryCell*)sender;
-  [[_model currentTab] goToItem:selectedCell.item];
-  [_toolbarController dismissTabHistoryPopup];
-}
-
 - (void)addToReadingListURL:(const GURL&)URL title:(NSString*)title {
   base::RecordAction(UserMetricsAction("MobileReadingListAdd"));
 
@@ -4110,6 +4065,42 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                    completion:nil];
 }
 
+- (void)showTabHistoryPopupForBackwardHistory {
+  DCHECK(self.visible || self.dismissingModal);
+
+  // Dismiss the omnibox (if open).
+  [_toolbarController cancelOmniboxEdit];
+  // Dismiss the soft keyboard (if open).
+  Tab* tab = [_model currentTab];
+  [tab.webController dismissKeyboard];
+  web::NavigationItemList backwardItems =
+      [tab navigationManager]->GetBackwardItems();
+  [_toolbarController showTabHistoryPopupInView:[self view]
+                                      withItems:backwardItems
+                                 forBackHistory:YES];
+}
+
+- (void)showTabHistoryPopupForForwardHistory {
+  DCHECK(self.visible || self.dismissingModal);
+
+  // Dismiss the omnibox (if open).
+  [_toolbarController cancelOmniboxEdit];
+  // Dismiss the soft keyboard (if open).
+  Tab* tab = [_model currentTab];
+  [tab.webController dismissKeyboard];
+
+  web::NavigationItemList forwardItems =
+      [tab navigationManager]->GetForwardItems();
+  [_toolbarController showTabHistoryPopupInView:[self view]
+                                      withItems:forwardItems
+                                 forBackHistory:NO];
+}
+
+- (void)navigateToHistoryItem:(const web::NavigationItem*)item {
+  [[_model currentTab] goToItem:item];
+  [_toolbarController dismissTabHistoryPopup];
+}
+
 #pragma mark - Command Handling
 
 - (IBAction)chromeExecuteCommand:(id)sender {
@@ -4207,16 +4198,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       break;
     case IDC_SHOW_SECURITY_HELP:
       [self showSecurityHelpPage];
-      break;
-    case IDC_SHOW_BACK_HISTORY:
-      [self showTabHistoryPopupForBackwardHistory];
-      break;
-    case IDC_SHOW_FORWARD_HISTORY:
-      [self showTabHistoryPopupForForwardHistory];
-      break;
-    case IDC_BACK_FORWARD_IN_TAB_HISTORY:
-      DCHECK([sender isKindOfClass:[TabHistoryCell class]]);
-      [self navigateToSelectedEntry:sender];
       break;
     case IDC_RATE_THIS_APP:
       [self showRateThisAppDialog];

@@ -849,7 +849,8 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   _tabHistoryPopupController =
       [[TabHistoryPopupController alloc] initWithOrigin:convertedOrigin
                                              parentView:view
-                                                  items:items];
+                                                  items:items
+                                             dispatcher:self.dispatcher];
   [_tabHistoryPopupController setDelegate:self];
 
   // Fade in the popup and notify observers.
@@ -1746,13 +1747,9 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
     return;
 
   if (gesture.view == _backButton) {
-    GenericChromeCommand* command =
-        [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_BACK_HISTORY];
-    [_backButton chromeExecuteCommand:command];
+    [self.dispatcher showTabHistoryPopupForBackwardHistory];
   } else if (gesture.view == _forwardButton) {
-    GenericChromeCommand* command =
-        [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_FORWARD_HISTORY];
-    [_forwardButton chromeExecuteCommand:command];
+    [self.dispatcher showTabHistoryPopupForForwardHistory];
   }
 }
 
