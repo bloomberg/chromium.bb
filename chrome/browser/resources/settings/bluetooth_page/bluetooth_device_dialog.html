@@ -70,8 +70,8 @@
     </style>
     <dialog is="cr-dialog" id="dialog" on-cancel="onDialogCanceled_"
         close-text="$i18n{close}" on-closed="onDialogCanceled_">
-      <div class="title" slot="title">$i18n{bluetoothPairDevicePageTitle}</div>
-      <div class="body" slot="body">
+      <div slot="title">$i18n{bluetoothPairDevicePageTitle}</div>
+      <div slot="body">
         <div class="contents layout vertical center center-justified">
           <template is="dom-if" if="[[isDialogType_(dialogId, 'pairDevice')]]">
             <div id="pairing" class="settings-box first layout vertical center
@@ -112,7 +112,7 @@
           </template>
         </div>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <template is="dom-if" if="[[isDialogType_('pairDevice', dialogId)]]">
           <paper-button hidden$="[[!showAcceptReject_(pairingEvent_)]]"
               on-tap="onAcceptTap_">$i18n{bluetoothAccept}</paper-button>

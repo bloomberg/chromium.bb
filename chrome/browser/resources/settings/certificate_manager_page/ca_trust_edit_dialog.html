@@ -22,10 +22,10 @@
     </style>
 
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
-      <div class="title" slot="title">
+      <div slot="title">
         $i18n{certificateManagerCaTrustEditDialogTitle}
       </div>
-      <div class="body" slot="body">
+      <div slot="body">
         <div>[[explanationText_]]</div>
         <div id="description">
           $i18n{certificateManagerCaTrustEditDialogDescription}
@@ -40,7 +40,7 @@
           $i18n{certificateManagerCaTrustEditDialogObjSign}
         </paper-checkbox>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <paper-spinner id="spinner"></paper-spinner>
         <paper-button class="cancel-button" on-tap="onCancelTap_">
           $i18n{cancel}

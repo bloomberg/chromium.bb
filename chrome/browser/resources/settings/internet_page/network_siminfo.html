@@ -96,8 +96,8 @@
     <dialog is="cr-dialog" id="enterPinDialog" close-text="$i18n{close}"
         on-cancel="onEnterPinDialogCancel_"
         on-close="onEnterPinDialogClose_">
-      <div class="title" slot="title">$i18n{networkSimEnterPinTitle}</div>
-      <div class="body" slot="body">
+      <div slot="title">$i18n{networkSimEnterPinTitle}</div>
+      <div slot="body">
         <paper-input id="enterPin" class="pin" no-label-float autofocus
             label="$i18n{networkSimEnterPin}">
           <iron-a11y-keys keys="enter" on-keys-pressed="sendEnterPin_">
@@ -107,7 +107,7 @@
           [[getErrorMsg_(error_, networkProperties)]]
         </div>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <paper-button on-tap="sendEnterPin_">
           $i18n{networkSimEnter}
         </paper-button>
@@ -117,8 +117,8 @@
     <!-- Change PIN dialog -->
     <dialog is="cr-dialog" id="changePinDialog" close-text="$i18n{close}"
         on-close="onChangePinDialogClose_">
-      <div class="title" slot="title">$i18n{networkSimChangePinTitle}</div>
-      <div class="body" slot="body">
+      <div slot="title">$i18n{networkSimChangePinTitle}</div>
+      <div slot="body">
         <paper-input id="changePinOld" class="pin" no-label-float autofocus
             label="$i18n{networkSimEnterOldPin}">
         </paper-input>
@@ -134,7 +134,7 @@
           [[getErrorMsg_(error_, networkProperties)]]
         </div>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <paper-button on-tap="sendChangePin_">
           $i18n{networkSimChange}
         </paper-button>
@@ -144,8 +144,8 @@
     <!-- Unlock PIN dialog -->
     <dialog is="cr-dialog" id="unlockPinDialog" close-text="$i18n{close}"
         on-close="onUnlockPinDialogClose_">
-      <div class="title" slot="title">$i18n{networkSimLockedTitle}</div>
-      <div class="body" slot="body">
+      <div slot="title">$i18n{networkSimLockedTitle}</div>
+      <div slot="body">
         <paper-input id="unlockPin" class="pin" no-label-float autofocus
             label="$i18n{networkSimEnterPin}">
           <iron-a11y-keys keys="enter" on-keys-pressed="sendUnlockPin_">
@@ -155,7 +155,7 @@
           [[getErrorMsg_(error_, networkProperties)]]
         </div>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <paper-button on-tap="sendUnlockPin_">
           $i18n{networkSimUnlock}
         </paper-button>
@@ -165,8 +165,8 @@
     <!-- Unlock PUK dialog -->
     <dialog is="cr-dialog" id="unlockPukDialog" close-text="$i18n{close}"
         on-close="onUnlockPinDialogClose_">
-      <div class="title" slot="title">$i18n{networkSimLockedTitle}</div>
-      <div class="body" slot="body">
+      <div slot="title">$i18n{networkSimLockedTitle}</div>
+      <div slot="body">
         <div>
           Enter the 8-digit PIN Unblocking Key provided by your carrier
         </div>
@@ -188,7 +188,7 @@
           [[getErrorMsg_(error_, networkProperties)]]
         </div>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <paper-button on-tap="sendUnlockPuk_">
           $i18n{networkSimUnlock}
         </paper-button>

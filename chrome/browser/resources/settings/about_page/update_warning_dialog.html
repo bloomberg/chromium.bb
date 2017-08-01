@@ -10,11 +10,11 @@
   <template>
     <style include="settings-shared"></style>
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
-      <div class="title" slot="title">$i18n{aboutUpdateWarningTitle}</div>
-      <div class="body" slot="body">
+      <div slot="title">$i18n{aboutUpdateWarningTitle}</div>
+      <div slot="body">
         <div id="update-warning-message"></div>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <paper-button id="cancel" class="cancel-button"
             on-tap="onCancelTap_">$i18n{cancel}</paper-button>
         <paper-button id="continue" class="action-button"

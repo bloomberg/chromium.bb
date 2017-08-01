@@ -45,8 +45,8 @@
     </style>
     <dialog is="cr-dialog" id="dialog" on-close="close"
         close-text="$i18n{close}">
-      <div class="title" slot="title">$i18n{displayOverscanPageTitle}</div>
-      <div class="body" slot="body">
+      <div slot="title">$i18n{displayOverscanPageTitle}</div>
+      <div slot="body">
         <div class="subtitle" >$i18n{displayOverscanSubtitle}</div>
         <div class="instructions" >$i18n{displayOverscanInstructions}</div>
         <div class="details layout horizontal around-justified self-stretch">
@@ -73,7 +73,7 @@
           </div>
         </div>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <paper-button id="reset" class="cancel-button" on-tap="onResetTap_">
           $i18n{displayOverscanReset}
         </paper-button>

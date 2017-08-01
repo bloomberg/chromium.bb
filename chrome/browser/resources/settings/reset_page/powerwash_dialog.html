@@ -12,8 +12,8 @@
     </style>
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}"
         ignore-enter-key>
-      <div class="title" slot="title">$i18n{powerwashDialogTitle}</div>
-      <div class="body" slot="body">
+      <div slot="title">$i18n{powerwashDialogTitle}</div>
+      <div slot="body">
         <span>
           $i18n{powerwashDialogExplanation}
           <a href="$i18nRaw{powerwashLearnMoreUrl}" target="_blank">
@@ -21,7 +21,7 @@
           </a>
         </span>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <paper-button class="cancel-button" on-tap="onCancelTap_"
             id="cancel">$i18n{cancel}</paper-button>
         <paper-button class="action-button" id="powerwash"

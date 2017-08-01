@@ -339,7 +339,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         document.body.appendChild(element);
         Polymer.dom.flush();
 
-        titleDiv = getFromElement('div[class="title"]');
+        titleDiv = getFromElement('div[slot=title]');
         problemDiv = getFromElement('#problemDiv');
         pinKeyboard = getFromElement('pin-keyboard');
         backButton = getFromElement('paper-button[class="cancel-button"]');

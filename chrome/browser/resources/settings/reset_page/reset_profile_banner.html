@@ -9,8 +9,8 @@
   <template>
     <style include="settings-shared"></style>
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}" ignore-popstate>
-      <div class="title" slot="title">$i18n{resetAutomatedDialogTitle}</div>
-      <div class="body" slot="body">
+      <div slot="title">$i18n{resetAutomatedDialogTitle}</div>
+      <div slot="body">
         <span id="description">
           $i18n{resetProfileBannerDescription}
           <a id="learnMore"
@@ -18,7 +18,7 @@
              target="_blank">$i18n{learnMore}</a>
         </span>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <paper-button class="cancel-button" on-tap="onOkTap_" id="ok">
           $i18n{ok}
         </paper-button>

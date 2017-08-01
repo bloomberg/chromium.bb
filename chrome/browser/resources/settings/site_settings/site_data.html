@@ -68,11 +68,11 @@
     <!-- Confirm Delete dialog -->
     <dialog is="cr-dialog" id="confirmDeleteDialog" close-text="$i18n{close}"
         on-close="onConfirmDeleteDialogClosed_">
-      <div class="title" slot="title">
+      <div slot="title">
         $i18n{siteSettingsCookieRemoveDialogTitle}
       </div>
-      <div class="body" slot="body">[[confirmationDeleteMsg_]]</div>
-      <div class="button-container" slot="button-container">
+      <div slot="body">[[confirmationDeleteMsg_]]</div>
+      <div slot="button-container">
         <paper-button class="cancel-button" on-tap="onCloseDialog_">
           $i18n{cancel}
         </paper-button>

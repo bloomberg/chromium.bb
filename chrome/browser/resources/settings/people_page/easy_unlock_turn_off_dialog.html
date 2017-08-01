@@ -13,11 +13,11 @@
   <template>
     <style include="settings-shared"></style>
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
-      <div class="title" slot="title">[[getTitleText_(status_)]]</div>
-      <div class="body" slot="body">
+      <div slot="title">[[getTitleText_(status_)]]</div>
+      <div slot="body">
         [[getDescriptionText_(status_)]]
       </div>
-      <div class="button-container" slot="button-container"
+      <div slot="button-container">
           hidden="[[isButtonBarHidden_(status_)]]">
         <paper-spinner active="[[isSpinnerActive_(status_)]]">
         </paper-spinner>

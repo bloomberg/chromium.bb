@@ -30,8 +30,8 @@
     </style>
 
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
-      <div class="title" slot="title">$i18n{packDialogTitle}</div>
-      <div class="body" slot="body">
+      <div slot="title">$i18n{packDialogTitle}</div>
+      <div slot="body">
         <div>$i18n{packDialogContent}</div>
         <div class="file-input">
           <paper-input id="root-dir" label="$i18n{packDialogExtensionRoot}"
@@ -50,7 +50,7 @@
           </paper-button>
         </div>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <paper-button class="cancel-button" on-tap="close">
           $i18n{packDialogCancel}
         </paper-button>

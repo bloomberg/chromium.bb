@@ -20,7 +20,7 @@
         visibility: hidden;
       }
 
-      #clearBrowsingDataDialog .footer {
+      #clearBrowsingDataDialog [slot=footer] {
         color: var(--paper-grey-600);
       }
 
@@ -93,7 +93,7 @@
         margin-top: 3px;
       }
 
-      .title .secondary {
+      [slot=title] .secondary {
         font-size: calc(13 / 15 * 100%);
         padding-top: 8px;
       }
@@ -114,8 +114,8 @@
     <dialog is="cr-dialog" id="clearBrowsingDataDialog"
         on-close="onClearBrowsingDataDialogClose_"
         close-text="$i18n{close}" ignore-popstate>
-      <div class="title" slot="title">$i18n{clearBrowsingData}</div>
-      <div class="body" slot="body">
+      <div slot="title">$i18n{clearBrowsingData}</div>
+      <div slot="body">
         <div class="row">
           $i18n{clearFollowingItemsFrom}
           <settings-dropdown-menu id="clearFrom"
@@ -179,7 +179,7 @@
             disabled="[[clearingInProgress_]]">
         </settings-checkbox>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <paper-spinner active="[[clearingInProgress_]]"></paper-spinner>
         <paper-button class="cancel-button" disabled="[[clearingInProgress_]]"
             on-tap="onCancelTap_">$i18n{cancel}</paper-button>
@@ -189,7 +189,7 @@
             $i18n{clearBrowsingData}
         </paper-button>
       </div>
-      <div class="footer" slot="footer">
+      <div slot="footer">
         <div id="googleFooter" class="clear-browsing-data-footer">
           <iron-icon icon="settings:googleg"></iron-icon>
           <div class="footer-text">$i18nRaw{otherFormsOfBrowsingHistory}</div>
@@ -210,7 +210,7 @@
     <template is="dom-if" if="[[showImportantSitesDialog_]]">
       <dialog is="cr-dialog" id="importantSitesDialog" close-text="$i18n{close}"
           show-scroll-borders ignore-popstate>
-        <div class="title" slot="title">
+        <div slot="title">
           $i18n{clearBrowsingData}
           <div class="secondary">
             <template is="dom-if"
@@ -222,7 +222,7 @@
             </template>
           </div>
         </div>
-        <div class="body" slot="body">
+        <div slot="body">
           <template is="dom-repeat" items="[[importantSites_]]">
             <div class="row">
               <important-site-checkbox
@@ -232,7 +232,7 @@
             </div>
           </template>
         </div>
-        <div class="button-container" slot="button-container">
+        <div slot="button-container">
           <paper-spinner active="[[clearingInProgress_]]"></paper-spinner>
           <paper-button class="cancel-button" disabled="[[clearingInProgress_]]"
               on-tap="onImportantSitesCancelTap_">$i18n{cancel}</paper-button>

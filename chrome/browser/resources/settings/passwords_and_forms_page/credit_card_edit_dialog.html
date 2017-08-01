@@ -50,8 +50,8 @@
       }
     </style>
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
-      <div class="title" slot="title">[[title_]]</div>
-      <div class="body" slot="body">
+      <div slot="title">[[title_]]</div>
+      <div slot="body">
         <paper-input id="nameInput" label="$i18n{creditCardName}"
             value="{{creditCard.name}}" always-float-label autofocus
             on-input="onCreditCardNameOrNumberChanged_">
@@ -87,7 +87,7 @@
           $i18n{creditCardExpired}
         </span>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <paper-button id="cancelButton" class="cancel-button"
             on-tap="onCancelButtonTap_">$i18n{cancel}</paper-button>
         <paper-button id="saveButton" class="action-button"

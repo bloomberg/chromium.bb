@@ -81,7 +81,7 @@
         width: 40px;
       }
 
-      #disconnectDialog .footer .settings-box {
+      #disconnectDialog [slot=footer] .settings-box {
         --settings-box-row-padding: 0;
       }
 
@@ -289,13 +289,13 @@
       <dialog is="cr-dialog" id="disconnectDialog"
           ignore-popstate ignore-enter-key
           on-close="onDisconnectClosed_" close-text="$i18n{close}">
-        <div class="title" slot="title">$i18n{syncDisconnectTitle}</div>
-        <div class="body" slot="body">
+        <div slot="title">$i18n{syncDisconnectTitle}</div>
+        <div slot="body">
           <div inner-h-t-m-l="[[
               getDisconnectExplanationHtml_(syncStatus.domain)]]">
           </div>
         </div>
-        <div class="button-container" slot="button-container">
+        <div slot="button-container">
           <paper-button on-tap="onDisconnectCancel_" class="cancel-button">
             $i18n{cancel}
           </paper-button>
@@ -311,7 +311,7 @@
         </div>
 <if expr="(not chromeos and is_posix) or is_win or is_macosx">
         <template is="dom-if" if="[[!syncStatus.domain]]">
-          <div class="footer" slot="footer">
+          <div slot="footer">
             <div class="settings-box first">
               <paper-checkbox id="deleteProfile" class="start"
                   checked="{{deleteProfile_}}">

@@ -63,8 +63,8 @@
       }
     </style>
     <dialog is="cr-dialog" id="dialog">
-      <div class="title" slot="title">$i18n{supervisedUserImportTitle}</div>
-      <div class="body" slot="body">
+      <div slot="title">$i18n{supervisedUserImportTitle}</div>
+      <div slot="body">
         <div id="message">$i18n{supervisedUserImportText}</div>
         <paper-listbox class="no-padding" selected="{{supervisedUserIndex_}}">
           <template is="dom-repeat" items="[[supervisedUsers_]]">
@@ -78,7 +78,7 @@
           </template>
         </paper-listbox>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <paper-button id="cancel" class="cancel-button" on-tap="onCancelTap_">
           $i18n{cancel}
         </paper-button>
