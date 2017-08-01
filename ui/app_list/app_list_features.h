@@ -36,6 +36,7 @@ APP_LIST_EXPORT extern const base::Feature kEnablePlayStoreAppSearch;
 
 bool APP_LIST_EXPORT IsAnswerCardEnabled();
 bool APP_LIST_EXPORT IsAnswerCardDarkRunEnabled();
+bool APP_LIST_EXPORT IsBackgroundBlurEnabled();
 bool APP_LIST_EXPORT IsFullscreenAppListEnabled();
 bool APP_LIST_EXPORT IsTouchFriendlySearchResultsPageEnabled();
 bool APP_LIST_EXPORT IsPlayStoreAppSearchEnabled();

@@ -76,6 +76,9 @@ constexpr int kAppListMinScrollToSwitchStates = 20;
 // the |app_list_state_|.
 constexpr int kAppListBezelMargin = 50;
 
+// The blur radius of the app list background.
+constexpr int kAppListBlurRadius = 20;
+
 // The vertical position for the appearing animation of the speech UI.
 constexpr float kSpeechUIAppearingPosition = 12;
 
@@ -337,12 +340,16 @@ void AppListView::InitContents(gfx::NativeView parent, int initial_apps_page) {
           "440224, 441028 AppListView::InitContents"));
 
   if (is_fullscreen_app_list_enabled_) {
-    // The shield view that colors the background of the app list and makes it
-    // transparent.
+    // The shield view that colors/blurs the background of the app list and
+    // makes it transparent.
     app_list_background_shield_ = new views::View;
     app_list_background_shield_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
     app_list_background_shield_->layer()->SetColor(SK_ColorBLACK);
     app_list_background_shield_->layer()->SetOpacity(kAppListOpacity);
+    if (features::IsBackgroundBlurEnabled()) {
+      app_list_background_shield_->layer()->SetBackgroundBlur(
+          kAppListBlurRadius);
+    }
     AddChildView(app_list_background_shield_);
   }
   app_list_main_view_ = new AppListMainView(delegate_, this);
