@@ -452,6 +452,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
     ContentSuggestionsItem* suggestion =
         ConvertSuggestion(contentSuggestion, sectionInfo, category);
     suggestion.delegate = self;
+    suggestion.commandHandler = self.commandHandler;
     [self.faviconMediator fetchFaviconForSuggestions:suggestion
                                           inCategory:category];
 

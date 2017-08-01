@@ -8,8 +8,9 @@
 #import <UIKit/UIKit.h>
 
 @class AlertCoordinator;
-@class CollectionViewItem;
-@protocol ContentSuggestionsAlertCommands;
+@class ContentSuggestionsItem;
+@class ContentSuggestionsMostVisitedItem;
+@protocol ContentSuggestionsGestureCommands;
 
 // Factory for AlertCoordinators for ContentSuggestions.
 @interface ContentSuggestionsAlertFactory : NSObject
@@ -20,21 +21,22 @@
 // |commandHandler| will receive callbacks when the user chooses one of the
 // options displayed by the alert.
 + (AlertCoordinator*)
-alertCoordinatorForSuggestionItem:(CollectionViewItem*)item
+alertCoordinatorForSuggestionItem:(ContentSuggestionsItem*)item
                  onViewController:(UIViewController*)viewController
                           atPoint:(CGPoint)touchLocation
                       atIndexPath:(NSIndexPath*)indexPath
+                  readLaterAction:(BOOL)readLaterAction
                    commandHandler:
-                       (id<ContentSuggestionsAlertCommands>)commandHandler;
+                       (id<ContentSuggestionsGestureCommands>)commandHandler;
 
 // Same as above but for a MostVisited item.
 + (AlertCoordinator*)
-alertCoordinatorForMostVisitedItem:(CollectionViewItem*)item
+alertCoordinatorForMostVisitedItem:(ContentSuggestionsMostVisitedItem*)item
                   onViewController:(UIViewController*)viewController
                            atPoint:(CGPoint)touchLocation
                        atIndexPath:(NSIndexPath*)indexPath
                     commandHandler:
-                        (id<ContentSuggestionsAlertCommands>)commandHandler;
+                        (id<ContentSuggestionsGestureCommands>)commandHandler;
 
 @end
 

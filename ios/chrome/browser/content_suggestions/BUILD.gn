@@ -5,7 +5,6 @@
 source_set("content_suggestions") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "content_suggestions_alert_commands.h",
     "content_suggestions_alert_factory.h",
     "content_suggestions_alert_factory.mm",
     "content_suggestions_category_wrapper.h",
@@ -94,6 +93,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/collection_view/cells",
+    "//ios/chrome/browser/ui/content_suggestions/cells",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/test/earl_grey:test_support",
     "//ui/strings",
