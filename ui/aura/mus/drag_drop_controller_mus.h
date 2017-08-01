@@ -11,6 +11,8 @@
 #include <memory>
 #include <vector>
 
+#include "base/observer_list.h"
+#include "ui/aura/aura_export.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -32,7 +34,7 @@ class WindowMus;
 // DragDropControllerMus acts as the DragDropClient for aura as well as
 // handling all drag operations from the server. Drag operations are forwarded
 // to the client::DragDropDelegate set on the target Window.
-class DragDropControllerMus : public client::DragDropClient {
+class AURA_EXPORT DragDropControllerMus : public client::DragDropClient {
  public:
   DragDropControllerMus(DragDropControllerHost* drag_drop_controller_host,
                         ui::mojom::WindowTree* window_tree);
@@ -70,6 +72,8 @@ class DragDropControllerMus : public client::DragDropClient {
                        ui::DragDropTypes::DragEventSource source) override;
   void DragCancel() override;
   bool IsDragDropInProgress() override;
+  void AddObserver(client::DragDropClientObserver* observer) override;
+  void RemoveObserver(client::DragDropClientObserver* observer) override;
 
  private:
   struct CurrentDragState;
@@ -104,6 +108,8 @@ class DragDropControllerMus : public client::DragDropClient {
 
   // Used to track the current drop target.
   WindowTracker drop_target_window_tracker_;
+
+  base::ObserverList<client::DragDropClientObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DragDropControllerMus);
 };

@@ -15,6 +15,7 @@ component("aura") {
     "client/cursor_client_observer.h",
     "client/default_capture_client.h",
     "client/drag_drop_client.h",
+    "client/drag_drop_client_observer.h",
     "client/drag_drop_delegate.h",
     "client/event_client.h",
     "client/focus_change_observer.h",
@@ -334,6 +335,7 @@ executable("demo") {
 test("aura_unittests") {
   sources = [
     "gestures/gesture_recognizer_unittest.cc",
+    "mus/drag_drop_controller_mus_unittest.cc",
     "mus/input_method_mus_unittest.cc",
     "mus/os_exchange_data_provider_mus_unittest.cc",
     "mus/property_converter_unittest.cc",

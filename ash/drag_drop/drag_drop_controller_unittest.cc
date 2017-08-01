@@ -12,6 +12,8 @@
 #include "base/location.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/capture_client.h"
+#include "ui/aura/client/drag_drop_client_observer.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -1095,6 +1097,63 @@ TEST_F(DragDropControllerTest, TouchDragDropCompletesOnFling) {
   EXPECT_EQ(1, drag_view->num_drops_);
   EXPECT_EQ(0, drag_view->num_drag_exits_);
   EXPECT_TRUE(drag_view->drag_done_received_);
+}
+
+namespace {
+
+class TestObserver : public aura::client::DragDropClientObserver {
+ public:
+  enum class State { kNotInvoked, kDragStartedInvoked, kDragEndedInvoked };
+
+  TestObserver() : state_(State::kNotInvoked) {}
+
+  State state() const { return state_; }
+
+  // aura::client::DragDropClientObserver
+
+  void OnDragStarted() override {
+    EXPECT_EQ(State::kNotInvoked, state_);
+    state_ = State::kDragStartedInvoked;
+  }
+
+  void OnDragEnded() override {
+    EXPECT_EQ(State::kDragStartedInvoked, state_);
+    state_ = State::kDragEndedInvoked;
+  }
+
+ private:
+  State state_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestObserver);
+};
+
+}  // namespace
+
+TEST_F(DragDropControllerTest, DragStartedAndEndedEvents) {
+  TestObserver observer;
+  drag_drop_controller_->AddObserver(&observer);
+
+  ui::OSExchangeData data;
+  data.SetString(base::UTF8ToUTF16("I am being dragged"));
+  {
+    std::unique_ptr<views::Widget> widget(CreateNewWidget());
+    aura::Window* window = widget->GetNativeWindow();
+    drag_drop_controller_->StartDragAndDrop(
+        data, window->GetRootWindow(), window, gfx::Point(5, 5),
+        ui::DragDropTypes::DRAG_MOVE,
+        ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+
+    EXPECT_EQ(TestObserver::State::kDragStartedInvoked, observer.state());
+
+    ui::MouseEvent e(ui::ET_MOUSE_DRAGGED, gfx::Point(200, 0),
+                     gfx::Point(200, 0), ui::EventTimeForNow(), ui::EF_NONE,
+                     ui::EF_NONE);
+    drag_drop_controller_->Drop(window, e);
+
+    EXPECT_EQ(TestObserver::State::kDragEndedInvoked, observer.state());
+  }
+
+  drag_drop_controller_->RemoveObserver(&observer);
 }
 
 }  // namespace ash

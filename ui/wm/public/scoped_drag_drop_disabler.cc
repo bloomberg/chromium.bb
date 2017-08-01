@@ -24,6 +24,9 @@ class NopDragDropClient : public aura::client::DragDropClient {
   bool IsDragDropInProgress() override {
     return false;
   }
+  void AddObserver(aura::client::DragDropClientObserver* observer) override {}
+  void RemoveObserver(aura::client::DragDropClientObserver* observer) override {
+  }
 };
 
 ScopedDragDropDisabler::ScopedDragDropDisabler(aura::Window* window)

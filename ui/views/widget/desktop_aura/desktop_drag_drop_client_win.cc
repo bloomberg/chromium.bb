@@ -84,6 +84,16 @@ bool DesktopDragDropClientWin::IsDragDropInProgress() {
   return drag_drop_in_progress_;
 }
 
+void DesktopDragDropClientWin::AddObserver(
+    aura::client::DragDropClientObserver* observer) {
+  NOTIMPLEMENTED();
+}
+
+void DesktopDragDropClientWin::RemoveObserver(
+    aura::client::DragDropClientObserver* observer) {
+  NOTIMPLEMENTED();
+}
+
 void DesktopDragDropClientWin::OnNativeWidgetDestroying(HWND window) {
   if (drop_target_.get()) {
     RevokeDragDrop(window);

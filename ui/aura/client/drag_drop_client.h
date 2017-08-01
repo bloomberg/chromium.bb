@@ -21,6 +21,8 @@ namespace aura {
 class Window;
 namespace client {
 
+class DragDropClientObserver;
+
 // An interface implemented by an object that controls a drag and drop session.
 class AURA_EXPORT DragDropClient {
  public:
@@ -28,7 +30,8 @@ class AURA_EXPORT DragDropClient {
 
   // Initiates a drag and drop session. Returns the drag operation that was
   // applied at the end of the drag drop session. |screen_location| is in
-  // screen coordinates.
+  // screen coordinates. At most one drag and drop operation is allowed.
+  // It must not start drag operation while |IsDragDropInProgress| returns true.
   virtual int StartDragAndDrop(const ui::OSExchangeData& data,
                                aura::Window* root_window,
                                aura::Window* source_window,
@@ -41,6 +44,9 @@ class AURA_EXPORT DragDropClient {
 
   // Returns true if a drag and drop session is in progress.
   virtual bool IsDragDropInProgress() = 0;
+
+  virtual void AddObserver(DragDropClientObserver* observer) = 0;
+  virtual void RemoveObserver(DragDropClientObserver* observer) = 0;
 };
 
 AURA_EXPORT void SetDragDropClient(Window* root_window,

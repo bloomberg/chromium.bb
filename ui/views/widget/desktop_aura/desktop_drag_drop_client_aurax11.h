@@ -26,6 +26,7 @@
 
 namespace aura {
 namespace client {
+class DragDropClientObserver;
 class DragDropDelegate;
 }
 }
@@ -89,6 +90,8 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
                        ui::DragDropTypes::DragEventSource source) override;
   void DragCancel() override;
   bool IsDragDropInProgress() override;
+  void AddObserver(aura::client::DragDropClientObserver* observer) override;
+  void RemoveObserver(aura::client::DragDropClientObserver* observer) override;
 
   // Overridden from aura::WindowObserver:
   void OnWindowDestroyed(aura::Window* window) override;
