@@ -542,6 +542,14 @@ if (is_android) {
       ":pak",
     ]
 
+    public_deps = [
+      "//tools/v8_context_snapshot:v8_context_snapshot",
+    ]
+
+    data = [
+      "$root_out_dir/v8_context_snapshot.bin",
+    ]
+
     if (is_win) {
       deps += [ "//sandbox" ]
 
@@ -606,11 +614,13 @@ if (is_mac) {
   bundle_data("content_shell_framework_resources") {
     sources = [
       "$root_out_dir/content_shell.pak",
+      "$root_out_dir/v8_context_snapshot.bin",
       "resources/missingImage.png",
     ]
 
     public_deps = [
       ":pak",
+      "//tools/v8_context_snapshot:v8_context_snapshot",
     ]
 
     if (icu_use_data_file) {

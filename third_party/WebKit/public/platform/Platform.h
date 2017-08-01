@@ -706,6 +706,13 @@ class BLINK_PLATFORM_EXPORT Platform {
   // depending on memory pressure.
   virtual void RequestPurgeMemory() {}
 
+  // V8 Context Snapshot --------------------------------------------------
+
+  // This method returns true only when
+  // tools/v8_context_snapshot/v8_context_snapshot_generator is running (which
+  // runs during Chromium's build step).
+  virtual bool IsTakingV8ContextSnapshot() { return false; }
+
   // Feature Policy -----------------------------------------------------
 
   // Create a new feature policy object for a document, given its parent
