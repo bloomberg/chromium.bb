@@ -48,7 +48,6 @@ class MappedFileWriter {
  public:
   MappedFileWriter(const base::FilePath& file_name, size_t length) {
     using base::File;
-    CHECK_LE(length, static_cast<uint64_t>(INT64_MAX));
     is_ok_ = buffer_.Initialize(
         File(file_name,
              File::FLAG_CREATE_ALWAYS | File::FLAG_READ | File::FLAG_WRITE),
