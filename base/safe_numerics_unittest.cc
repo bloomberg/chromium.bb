@@ -9,6 +9,15 @@
 #include <type_traits>
 
 #include "base/compiler_specific.h"
+
+// WARNING: This block must come before the base/numerics headers are included.
+// These tests deliberately cause arithmetic boundary errors. If the compiler is
+// aggressive enough, it can const detect these errors, so we disable warnings.
+#if defined(OS_WIN)
+#pragma warning(disable : 4756)  // Arithmetic overflow.
+#pragma warning(disable : 4293)  // Invalid shift.
+#endif
+
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
@@ -24,13 +33,6 @@ namespace base {
 namespace internal {
 
 using std::numeric_limits;
-
-// These tests deliberately cause arithmetic boundary errors. If the compiler is
-// aggressive enough, it can const detect these errors, so we disable warnings.
-#if defined(OS_WIN)
-#pragma warning(disable : 4756)  // Arithmetic overflow.
-#pragma warning(disable : 4293)  // Invalid shift.
-#endif
 
 // This is a helper function for finding the maximum value in Src that can be
 // wholy represented as the destination floating-point type.
