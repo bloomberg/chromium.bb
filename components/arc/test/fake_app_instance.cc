@@ -283,8 +283,28 @@ void FakeAppInstance::GetRecentAndSuggestedAppsFromPlayStore(
     const std::string& query,
     int32_t max_results,
     const GetRecentAndSuggestedAppsFromPlayStoreCallback& callback) {
+  // Fake Play Store app info
+  std::vector<arc::mojom::AppDiscoveryResultPtr> fake_apps;
+  for (int i = 0; i < max_results; ++i) {
+    // Fake icon data
+    std::string png_data_as_string;
+    GetFakeIcon(mojom::ScaleFactor::SCALE_FACTOR_100P, &png_data_as_string);
+    std::vector<uint8_t> fake_icon_png_data(png_data_as_string.begin(),
+                                            png_data_as_string.end());
+
+    fake_apps.push_back(mojom::AppDiscoveryResult::New(
+        base::StringPrintf("LauncherIntentUri %d", i),  // launch_intent_uri
+        base::StringPrintf("InstallIntentUri %d", i),   // install_intent_uri
+        base::StringPrintf("%s %d", query.c_str(), i),  // label
+        i % 2 == 0,                                     // is_instant_app
+        i % 4 == 0,                                     // is_recent
+        base::StringPrintf("Publisher %d", i),          // publisher_name
+        base::StringPrintf("$%d.22", i),                // formatted_price
+        i,                                              // review_score
+        fake_icon_png_data));                           // icon_png_data
+  }
   callback.Run(arc::mojom::AppDiscoveryRequestState::SUCCESS,
-               std::vector<arc::mojom::AppDiscoveryResultPtr>());
+               std::move(fake_apps));
 }
 
 void FakeAppInstance::StartPaiFlow() {

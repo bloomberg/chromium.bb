@@ -36,6 +36,13 @@ class ArcPlayStoreSearchResult : public SearchResult,
   void Open(int event_flags) override;
   void ExecuteLaunchCommand(int event_flags) override;
 
+  // Disables async safe decoding requests when unit tests are executed.
+  // Icons are decoded at a separate process created by ImageDecoder. In unit
+  // tests these tasks may not finish before the test exits, which causes a
+  // failure in the base::MessageLoop::current()->IsIdleForTesting() check
+  // in test_browser_thread_bundle.cc.
+  static void DisableSafeDecodingForTesting();
+
  private:
   class IconDecodeRequest;
 
