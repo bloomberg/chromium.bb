@@ -285,21 +285,16 @@ void LocalNtpSource::StartDataRequest(
       return;
     }
 
-    const base::Optional<OneGoogleBarData>& data =
-        one_google_bar_service_->one_google_bar_data();
-
     // The OneGoogleBar injector helper.
     if (stripped_path == kOneGoogleBarScriptFilename) {
       one_google_bar_requests_.emplace_back(base::TimeTicks::Now(), callback);
-
-      // If there already is (cached) OGB data, serve it immediately.
-      if (data.has_value())
-        ServeOneGoogleBar(data);
-
-      // In any case, request a refresh.
+      // TODO(treib): Figure out if there are cases where we can safely serve
+      // cached data. crbug.com/742937
       one_google_bar_service_->Refresh();
     } else {
       // The actual OneGoogleBar sources.
+      const base::Optional<OneGoogleBarData>& data =
+          one_google_bar_service_->one_google_bar_data();
       std::string result;
       if (data.has_value()) {
         if (stripped_path == kOneGoogleBarInHeadStyleFilename) {
@@ -440,14 +435,8 @@ std::string LocalNtpSource::GetContentSecurityPolicyChildSrc() const {
                             chrome::kChromeSearchMostVisitedUrl);
 }
 
-void LocalNtpSource::OnOneGoogleBarDataChanged() {
-  const base::Optional<OneGoogleBarData>& data =
-      one_google_bar_service_->one_google_bar_data();
-  ServeOneGoogleBar(data);
-}
-
-void LocalNtpSource::OnOneGoogleBarFetchFailed() {
-  ServeOneGoogleBar(base::nullopt);
+void LocalNtpSource::OnOneGoogleBarDataUpdated() {
+  ServeOneGoogleBar(one_google_bar_service_->one_google_bar_data());
 }
 
 void LocalNtpSource::OnOneGoogleBarServiceShuttingDown() {
