@@ -54,15 +54,16 @@ UsbDeviceImpl::~UsbDeviceImpl() {
   libusb_unref_device(platform_device_);
 }
 
-void UsbDeviceImpl::Open(const OpenCallback& callback) {
+void UsbDeviceImpl::Open(OpenCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner =
       UsbService::CreateBlockingTaskRunner();
   blocking_task_runner->PostTask(
       FROM_HERE,
-      base::Bind(&UsbDeviceImpl::OpenOnBlockingThread, this, callback,
-                 base::ThreadTaskRunnerHandle::Get(), blocking_task_runner));
+      base::BindOnce(&UsbDeviceImpl::OpenOnBlockingThread, this,
+                     std::move(callback), base::ThreadTaskRunnerHandle::Get(),
+                     blocking_task_runner));
 }
 
 void UsbDeviceImpl::ReadAllConfigurations() {
@@ -101,7 +102,7 @@ void UsbDeviceImpl::RefreshActiveConfiguration() {
 }
 
 void UsbDeviceImpl::OpenOnBlockingThread(
-    const OpenCallback& callback,
+    OpenCallback callback,
     scoped_refptr<base::TaskRunner> task_runner,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner) {
   base::ThreadRestrictions::AssertIOAllowed();
@@ -109,24 +110,25 @@ void UsbDeviceImpl::OpenOnBlockingThread(
   const int rv = libusb_open(platform_device_, &handle);
   if (LIBUSB_SUCCESS == rv) {
     task_runner->PostTask(
-        FROM_HERE, base::Bind(&UsbDeviceImpl::Opened, this, handle, callback,
-                              blocking_task_runner));
+        FROM_HERE, base::BindOnce(&UsbDeviceImpl::Opened, this, handle,
+                                  std::move(callback), blocking_task_runner));
   } else {
     USB_LOG(EVENT) << "Failed to open device: "
                    << ConvertPlatformUsbErrorToString(rv);
-    task_runner->PostTask(FROM_HERE, base::Bind(callback, nullptr));
+    task_runner->PostTask(FROM_HERE,
+                          base::BindOnce(std::move(callback), nullptr));
   }
 }
 
 void UsbDeviceImpl::Opened(
     PlatformUsbDeviceHandle platform_handle,
-    const OpenCallback& callback,
+    OpenCallback callback,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner) {
   DCHECK(thread_checker_.CalledOnValidThread());
   scoped_refptr<UsbDeviceHandle> device_handle = new UsbDeviceHandleImpl(
       context_, this, platform_handle, blocking_task_runner);
   handles().push_back(device_handle.get());
-  callback.Run(device_handle);
+  std::move(callback).Run(device_handle);
 }
 
 }  // namespace device

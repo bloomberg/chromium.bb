@@ -425,7 +425,7 @@ class MockUsbDevice : public UsbDevice {
       ActiveConfigurationChanged(1);
   }
 
-  void Open(const OpenCallback& callback) override {
+  void Open(OpenCallback callback) override {
     // While most operating systems allow multiple applications to open a
     // device simultaneously so that they may claim separate interfaces DevTools
     // will always be trying to claim the same interface and so multiple
@@ -434,7 +434,7 @@ class MockUsbDevice : public UsbDevice {
     open_ = true;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(callback,
+        base::BindOnce(std::move(callback),
                        make_scoped_refptr(new MockUsbDeviceHandle<T>(this))));
   }
 

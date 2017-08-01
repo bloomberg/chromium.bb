@@ -41,7 +41,7 @@ typedef struct libusb_device_handle* PlatformUsbDeviceHandle;
 class UsbDeviceImpl : public UsbDevice {
  public:
   // UsbDevice implementation:
-  void Open(const OpenCallback& callback) override;
+  void Open(OpenCallback callback) override;
 
   // These functions are used during enumeration only. The values must not
   // change during the object's lifetime.
@@ -79,11 +79,11 @@ class UsbDeviceImpl : public UsbDevice {
  private:
   void GetAllConfigurations();
   void OpenOnBlockingThread(
-      const OpenCallback& callback,
+      OpenCallback callback,
       scoped_refptr<base::TaskRunner> task_runner,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
   void Opened(PlatformUsbDeviceHandle platform_handle,
-              const OpenCallback& callback,
+              OpenCallback callback,
               scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
   base::ThreadChecker thread_checker_;

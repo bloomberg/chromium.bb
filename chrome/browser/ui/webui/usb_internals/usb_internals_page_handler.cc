@@ -23,7 +23,7 @@ class TestUsbDevice : public device::UsbDevice {
                 const GURL& landing_page);
 
   // device::UsbDevice overrides:
-  void Open(const OpenCallback& callback) override;
+  void Open(OpenCallback callback) override;
 
  private:
   ~TestUsbDevice() override;
@@ -47,8 +47,8 @@ TestUsbDevice::TestUsbDevice(const std::string& name,
   webusb_landing_page_ = landing_page;
 }
 
-void TestUsbDevice::Open(const OpenCallback& callback) {
-  callback.Run(nullptr);
+void TestUsbDevice::Open(OpenCallback callback) {
+  std::move(callback).Run(nullptr);
 }
 
 TestUsbDevice::~TestUsbDevice() {}

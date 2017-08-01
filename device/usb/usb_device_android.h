@@ -21,9 +21,9 @@ class UsbDeviceAndroid : public UsbDevice {
       const base::android::JavaRef<jobject>& usb_device);
 
   // UsbDevice:
-  void RequestPermission(const ResultCallback& callback) override;
+  void RequestPermission(ResultCallback callback) override;
   bool permission_granted() const override;
-  void Open(const OpenCallback& callback) override;
+  void Open(OpenCallback callback) override;
 
   jint device_id() const { return device_id_; }
   void PermissionGranted(bool granted);

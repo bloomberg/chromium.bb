@@ -28,9 +28,9 @@ class UsbDeviceLinux : public UsbDevice {
  public:
 // UsbDevice implementation:
 #if defined(OS_CHROMEOS)
-  void CheckUsbAccess(const ResultCallback& callback) override;
+  void CheckUsbAccess(ResultCallback callback) override;
 #endif  // OS_CHROMEOS
-  void Open(const OpenCallback& callback) override;
+  void Open(OpenCallback callback) override;
 
   const std::string& device_path() const { return device_path_; }
 
@@ -53,18 +53,18 @@ class UsbDeviceLinux : public UsbDevice {
 
  private:
 #if defined(OS_CHROMEOS)
-  void OnOpenRequestComplete(const OpenCallback& callback, base::ScopedFD fd);
-  void OnOpenRequestError(const OpenCallback& callback,
+  void OnOpenRequestComplete(OpenCallback callback, base::ScopedFD fd);
+  void OnOpenRequestError(OpenCallback callback,
                           const std::string& error_name,
                           const std::string& error_message);
 #else
   void OpenOnBlockingThread(
-      const OpenCallback& callback,
+      OpenCallback callback,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 #endif  // defined(OS_CHROMEOS)
   void Opened(base::ScopedFD fd,
-              const OpenCallback& callback,
+              OpenCallback callback,
               scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
   base::SequenceChecker sequence_checker_;

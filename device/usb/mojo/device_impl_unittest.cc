@@ -173,7 +173,7 @@ class USBDeviceImplTest : public testing::Test {
 
     // Set up mock handle calls to respond based on mock device configs
     // established by the test.
-    ON_CALL(mock_device(), Open(_))
+    ON_CALL(mock_device(), OpenInternal(_))
         .WillByDefault(Invoke(this, &USBDeviceImplTest::OpenMockHandle));
     ON_CALL(mock_handle(), Close())
         .WillByDefault(Invoke(this, &USBDeviceImplTest::CloseMockHandle));
@@ -235,10 +235,10 @@ class USBDeviceImplTest : public testing::Test {
   }
 
  private:
-  void OpenMockHandle(const UsbDevice::OpenCallback& callback) {
+  void OpenMockHandle(UsbDevice::OpenCallback& callback) {
     EXPECT_FALSE(is_device_open_);
     is_device_open_ = true;
-    callback.Run(mock_handle_);
+    std::move(callback).Run(mock_handle_);
   }
 
   void CloseMockHandle() {
@@ -445,7 +445,7 @@ TEST_F(USBDeviceImplTest, Open) {
 
   EXPECT_FALSE(is_device_open());
 
-  EXPECT_CALL(mock_device(), Open(_));
+  EXPECT_CALL(mock_device(), OpenInternal(_));
   EXPECT_CALL(permission_provider(), IncrementConnectionCount());
 
   {
@@ -472,7 +472,7 @@ TEST_F(USBDeviceImplTest, Close) {
 
   EXPECT_FALSE(is_device_open());
 
-  EXPECT_CALL(mock_device(), Open(_));
+  EXPECT_CALL(mock_device(), OpenInternal(_));
 
   {
     base::RunLoop loop;
@@ -495,7 +495,7 @@ TEST_F(USBDeviceImplTest, Close) {
 TEST_F(USBDeviceImplTest, SetInvalidConfiguration) {
   UsbDevicePtr device = GetMockDeviceProxy();
 
-  EXPECT_CALL(mock_device(), Open(_));
+  EXPECT_CALL(mock_device(), OpenInternal(_));
 
   {
     base::RunLoop loop;
@@ -521,7 +521,7 @@ TEST_F(USBDeviceImplTest, SetInvalidConfiguration) {
 TEST_F(USBDeviceImplTest, SetValidConfiguration) {
   UsbDevicePtr device = GetMockDeviceProxy();
 
-  EXPECT_CALL(mock_device(), Open(_));
+  EXPECT_CALL(mock_device(), OpenInternal(_));
 
   {
     base::RunLoop loop;
@@ -550,7 +550,7 @@ TEST_F(USBDeviceImplTest, SetValidConfiguration) {
 TEST_F(USBDeviceImplTest, Reset) {
   UsbDevicePtr device = GetMockDeviceProxy();
 
-  EXPECT_CALL(mock_device(), Open(_));
+  EXPECT_CALL(mock_device(), OpenInternal(_));
 
   {
     base::RunLoop loop;
@@ -585,7 +585,7 @@ TEST_F(USBDeviceImplTest, Reset) {
 TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
   UsbDevicePtr device = GetMockDeviceProxy();
 
-  EXPECT_CALL(mock_device(), Open(_));
+  EXPECT_CALL(mock_device(), OpenInternal(_));
 
   {
     base::RunLoop loop;
@@ -649,7 +649,7 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
 TEST_F(USBDeviceImplTest, SetInterfaceAlternateSetting) {
   UsbDevicePtr device = GetMockDeviceProxy();
 
-  EXPECT_CALL(mock_device(), Open(_));
+  EXPECT_CALL(mock_device(), OpenInternal(_));
 
   {
     base::RunLoop loop;
@@ -687,7 +687,7 @@ TEST_F(USBDeviceImplTest, SetInterfaceAlternateSetting) {
 TEST_F(USBDeviceImplTest, ControlTransfer) {
   UsbDevicePtr device = GetMockDeviceProxy();
 
-  EXPECT_CALL(mock_device(), Open(_));
+  EXPECT_CALL(mock_device(), OpenInternal(_));
 
   {
     base::RunLoop loop;
@@ -765,7 +765,7 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
 TEST_F(USBDeviceImplTest, GenericTransfer) {
   UsbDevicePtr device = GetMockDeviceProxy();
 
-  EXPECT_CALL(mock_device(), Open(_));
+  EXPECT_CALL(mock_device(), OpenInternal(_));
 
   {
     base::RunLoop loop;
@@ -819,7 +819,7 @@ TEST_F(USBDeviceImplTest, GenericTransfer) {
 TEST_F(USBDeviceImplTest, IsochronousTransfer) {
   UsbDevicePtr device = GetMockDeviceProxy();
 
-  EXPECT_CALL(mock_device(), Open(_));
+  EXPECT_CALL(mock_device(), OpenInternal(_));
 
   {
     base::RunLoop loop;
