@@ -6,6 +6,9 @@ package org.chromium.shape_detection;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -45,6 +48,25 @@ public class TestUtils {
     public static org.chromium.skia.mojom.Bitmap mojoBitmapFromFile(String relPath) {
         String path = UrlUtils.getIsolatedTestFilePath("services/test/data/" + relPath);
         Bitmap bitmap = BitmapFactory.decodeFile(path);
+        return mojoBitmapFromBitmap(bitmap);
+    }
+
+    public static org.chromium.skia.mojom.Bitmap mojoBitmapFromText(String[] texts) {
+        final int x = 10;
+        final int baseline = 100;
+
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paint.setTextSize(36.0f);
+        paint.setTextAlign(Paint.Align.LEFT);
+
+        Bitmap bitmap = Bitmap.createBitmap(1080, 480, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        canvas.drawColor(Color.WHITE);
+
+        for (int i = 0; i < texts.length; i++) {
+            canvas.drawText(texts[i], x, baseline * (i + 1), paint);
+        }
+
         return mojoBitmapFromBitmap(bitmap);
     }
 }
