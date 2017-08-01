@@ -1380,6 +1380,12 @@ TEST_F(UnderlayTest, OverlayLayerUnderMainLayer) {
   EXPECT_EQ(2U, main_pass->quad_list.size());
   // The overlay quad should have changed to a SOLID_COLOR quad.
   EXPECT_EQ(main_pass->quad_list.back()->material, DrawQuad::SOLID_COLOR);
+  SolidColorDrawQuad* quad =
+      static_cast<SolidColorDrawQuad*>(main_pass->quad_list.back());
+  EXPECT_EQ(quad->rect, quad->opaque_rect);
+  EXPECT_EQ(quad->rect, quad->visible_rect);
+  EXPECT_EQ(false, quad->needs_blending);
+  EXPECT_EQ(SK_ColorTRANSPARENT, quad->color);
 }
 
 TEST_F(UnderlayTest, AllowOnTop) {
@@ -1405,6 +1411,12 @@ TEST_F(UnderlayTest, AllowOnTop) {
   EXPECT_EQ(-1, candidate_list[0].plane_z_order);
   // The overlay quad should have changed to a SOLID_COLOR quad.
   EXPECT_EQ(main_pass->quad_list.front()->material, DrawQuad::SOLID_COLOR);
+  SolidColorDrawQuad* quad =
+      static_cast<SolidColorDrawQuad*>(main_pass->quad_list.front());
+  EXPECT_EQ(quad->rect, quad->opaque_rect);
+  EXPECT_EQ(quad->rect, quad->visible_rect);
+  EXPECT_EQ(false, quad->needs_blending);
+  EXPECT_EQ(SK_ColorTRANSPARENT, quad->color);
 }
 
 // The first time an underlay is scheduled its damage must not be subtracted.

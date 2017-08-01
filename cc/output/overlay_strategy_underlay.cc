@@ -41,12 +41,7 @@ bool OverlayStrategyUnderlay::Attempt(ResourceProvider* resource_provider,
     if (new_candidate_list.back().overlay_handled) {
       new_candidate_list.back().is_unoccluded =
           !OverlayCandidate::IsOccluded(candidate, quad_list.cbegin(), it);
-      const SharedQuadState* shared_quad_state = it->shared_quad_state;
-      gfx::Rect rect = it->visible_rect;
-      SolidColorDrawQuad* replacement =
-          quad_list.ReplaceExistingElement<SolidColorDrawQuad>(it);
-      replacement->SetAll(shared_quad_state, rect, rect, rect, false,
-                          SK_ColorTRANSPARENT, true);
+      quad_list.ReplaceExistingQuadWithOpaqueTransparentSolidColor(it);
       candidate_list->swap(new_candidate_list);
 
       // This quad will be promoted.  We clear the promotable hints here, since

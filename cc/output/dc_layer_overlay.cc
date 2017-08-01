@@ -239,12 +239,7 @@ bool DCLayerOverlayProcessor::ProcessForUnderlay(
     *this_frame_underlay_rect = quad_rectangle;
   }
   dc_layer->shared_state->z_order = -1;
-  const SharedQuadState* shared_quad_state = it->shared_quad_state;
-  gfx::Rect rect = it->visible_rect;
-  SolidColorDrawQuad* replacement =
-      render_pass->quad_list.ReplaceExistingElement<SolidColorDrawQuad>(it);
-  replacement->SetAll(shared_quad_state, rect, rect, rect, false,
-                      SK_ColorTRANSPARENT, true);
+  render_pass->quad_list.ReplaceExistingQuadWithOpaqueTransparentSolidColor(it);
 
   if (*this_frame_underlay_rect == previous_frame_underlay_rect_ && is_root) {
     // If this underlay rect is the same as for last frame, subtract its

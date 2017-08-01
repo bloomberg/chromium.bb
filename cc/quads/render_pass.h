@@ -52,6 +52,10 @@ class CC_EXPORT QuadList : public ListContainer<DrawQuad> {
   inline BackToFrontIterator BackToFrontEnd() { return rend(); }
   inline ConstBackToFrontIterator BackToFrontBegin() const { return rbegin(); }
   inline ConstBackToFrontIterator BackToFrontEnd() const { return rend(); }
+
+  // This function is used by overlay algorithm to fill the backbuffer with
+  // transparent black.
+  void ReplaceExistingQuadWithOpaqueTransparentSolidColor(Iterator at);
 };
 
 typedef ListContainer<SharedQuadState> SharedQuadStateList;
