@@ -37,7 +37,7 @@ class PPP_Pdf_Proxy : public InterfaceProxy {
   void OnPluginMsgSetSelectionBounds(PP_Instance instance,
                                      const PP_FloatPoint& base,
                                      const PP_FloatPoint& extent);
-  void OnPluginMsgCanCut(PP_Instance instance, PP_Bool* result);
+  void OnPluginMsgCanEditText(PP_Instance instance, PP_Bool* result);
 
   // When this proxy is in the plugin side, this value caches the interface
   // pointer so we don't have to retrieve it from the dispatcher each time.

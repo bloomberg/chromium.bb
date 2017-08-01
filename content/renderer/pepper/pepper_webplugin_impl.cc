@@ -285,8 +285,8 @@ WebString PepperWebPluginImpl::SelectionAsMarkup() const {
   return WebString::FromUTF16(instance_->GetSelectedText(true));
 }
 
-bool PepperWebPluginImpl::CanCut() const {
-  return instance_ && instance_->CanCut();
+bool PepperWebPluginImpl::CanEditText() const {
+  return instance_ && instance_->CanEditText();
 }
 
 WebURL PepperWebPluginImpl::LinkAtPosition(const WebPoint& position) const {

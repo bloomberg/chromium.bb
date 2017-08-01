@@ -81,7 +81,7 @@ class OutOfProcessInstance : public pp::Instance,
   void MoveRangeSelectionExtent(const pp::FloatPoint& extent);
   void SetSelectionBounds(const pp::FloatPoint& base,
                           const pp::FloatPoint& extent);
-  bool CanCut();
+  bool CanEditText();
 
   void FlushCallback(int32_t result);
   void DidOpen(int32_t result);

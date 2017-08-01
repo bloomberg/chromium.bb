@@ -234,7 +234,9 @@ class PDFEngine {
   virtual void RotateClockwise() = 0;
   virtual void RotateCounterclockwise() = 0;
   virtual std::string GetSelectedText() = 0;
-  virtual bool CanCut() = 0;
+  // Returns true if focus is within an editable form text area, and false
+  // otherwise.
+  virtual bool CanEditText() = 0;
   virtual std::string GetLinkAtPosition(const pp::Point& point) = 0;
   // Checks the permissions associated with this document.
   virtual bool HasPermission(DocumentPermission permission) const = 0;
