@@ -4,10 +4,12 @@
 
 import("//media/media_options.gni")
 
-source_set("cdm_api") {
-  sources = [
-    "api/content_decryption_module.h",
-  ]
+if (enable_library_cdms) {
+  source_set("cdm_api") {
+    sources = [
+      "api/content_decryption_module.h",
+    ]
+  }
 }
 
 source_set("cdm") {
@@ -16,25 +18,12 @@ source_set("cdm") {
   sources = [
     "aes_decryptor.cc",
     "aes_decryptor.h",
-    "cdm_adapter.cc",
-    "cdm_adapter.h",
-    "cdm_allocator.cc",
-    "cdm_allocator.h",
-    "cdm_file_adapter.cc",
-    "cdm_file_adapter.h",
-    "cdm_file_io.cc",
-    "cdm_file_io.h",
-    "cdm_helpers.cc",
-    "cdm_helpers.h",
-    "cdm_wrapper.h",
     "default_cdm_factory.cc",
     "default_cdm_factory.h",
     "json_web_key.cc",
     "json_web_key.h",
     "player_tracker_impl.cc",
     "player_tracker_impl.h",
-    "supported_cdm_versions.cc",
-    "supported_cdm_versions.h",
   ]
 
   # TODO(wolenetz): Fix size_t to int truncation in win64.
@@ -42,7 +31,6 @@ source_set("cdm") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
-    ":cdm_api",
     "//crypto",
     "//media:media_features",
     "//media:shared_memory_support",
@@ -64,9 +52,9 @@ source_set("cdm") {
     ]
   }
 
-  # TODO(xhwang): Move other library CDM related files to this block as well.
   if (enable_library_cdms) {
     deps += [
+      ":cdm_api",
       ":cdm_paths",
 
       # TODO(xhwang): Remove this after Widevine specific logic is removed in
@@ -74,8 +62,21 @@ source_set("cdm") {
       "//third_party/widevine/cdm:headers",
     ]
     sources += [
+      "cdm_adapter.cc",
+      "cdm_adapter.h",
       "cdm_adapter_factory.cc",
       "cdm_adapter_factory.h",
+      "cdm_allocator.cc",
+      "cdm_allocator.h",
+      "cdm_file_adapter.cc",
+      "cdm_file_adapter.h",
+      "cdm_file_io.cc",
+      "cdm_file_io.h",
+      "cdm_helpers.cc",
+      "cdm_helpers.h",
+      "cdm_wrapper.h",
+      "supported_cdm_versions.cc",
+      "supported_cdm_versions.h",
     ]
   }
 }

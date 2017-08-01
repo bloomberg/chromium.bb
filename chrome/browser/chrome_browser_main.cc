@@ -484,10 +484,11 @@ void RegisterComponentsForUpdate() {
 
 #if !defined(OS_ANDROID)
   RegisterPepperFlashComponent(cus);
-#if !defined(OS_CHROMEOS)
-  RegisterWidevineCdmComponent(cus);
-#endif  // !defined(OS_CHROMEOS)
 #endif  // !defined(OS_ANDROID)
+
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  RegisterWidevineCdmComponent(cus);
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if !defined(DISABLE_NACL) && !defined(OS_ANDROID)
 #if defined(OS_CHROMEOS)
