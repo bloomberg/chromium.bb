@@ -5,6 +5,10 @@
 #ifndef UI_ARC_NOTIFICATION_ARC_NOTIFICATION_CONTENT_VIEW_DELEGATE_H_
 #define UI_ARC_NOTIFICATION_ARC_NOTIFICATION_CONTENT_VIEW_DELEGATE_H_
 
+namespace message_center {
+class NotificationControlButtonsView;
+}
+
 namespace arc {
 
 // Delegate for a view that is hosted by CustomNotificationView.
@@ -16,6 +20,8 @@ class ArcNotificationContentViewDelegate {
   virtual void RequestFocusOnCloseButton() = 0;
   virtual void UpdateControlButtonsVisibility() = 0;
   virtual void OnSlideChanged() = 0;
+  virtual message_center::NotificationControlButtonsView*
+  GetControlButtonsView() const = 0;
 };
 
 }  // namespace arc

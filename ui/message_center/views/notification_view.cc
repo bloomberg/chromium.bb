@@ -676,6 +676,11 @@ void NotificationView::UpdateControlButtonsVisibility() {
   control_buttons_view_->SetVisible(target_visibility);
 }
 
+NotificationControlButtonsView* NotificationView::GetControlButtonsView()
+    const {
+  return control_buttons_view_;
+}
+
 int NotificationView::GetMessageLineLimit(int title_lines, int width) const {
   // Image notifications require that the image must be kept flush against
   // their icons, but we can allow more text if no image.

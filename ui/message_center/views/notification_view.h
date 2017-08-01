@@ -57,6 +57,7 @@ class MESSAGE_CENTER_EXPORT NotificationView
   bool IsCloseButtonFocused() const override;
   void RequestFocusOnCloseButton() override;
   void UpdateControlButtonsVisibility() override;
+  NotificationControlButtonsView* GetControlButtonsView() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, CreateOrUpdateTest);

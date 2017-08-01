@@ -91,6 +91,11 @@ void ArcNotificationView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // view is focusable.
 }
 
+message_center::NotificationControlButtonsView*
+ArcNotificationView::GetControlButtonsView() const {
+  return contents_view_delegate_->GetControlButtonsView();
+}
+
 void ArcNotificationView::OnSlideChanged() {
   if (contents_view_delegate_)
     contents_view_delegate_->OnSlideChanged();
