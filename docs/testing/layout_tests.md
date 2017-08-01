@@ -357,7 +357,7 @@ To run the server manually to reproduce/debug a failure:
 
 ```bash
 cd src/third_party/WebKit/Tools/Scripts
-run-blink-httpd start
+./run-blink-httpd
 ```
 
 The layout tests will be served from `http://127.0.0.1:8000`. For example, to
@@ -368,8 +368,9 @@ navigate to
 tests will behave differently if you go to 127.0.0.1 vs localhost, so use
 127.0.0.1.
 
-To kill the server, run `run-blink-httpd --server stop`, or just use `taskkill`
-or the Task Manager on Windows, and `killall` or Activity Monitor on MacOS.
+To kill the server, hit any key on the terminal where `run-blink-httpd` is
+running, or just use `taskkill` or the Task Manager on Windows, and `killall` or
+Activity Monitor on MacOS.
 
 The test server sets up an alias to `LayoutTests/resources` directory. In HTTP
 tests, you can access testing framework at e.g.
