@@ -56,6 +56,9 @@
             (NSArray<CollectionViewItem<SuggestedContent>*>*)suggestions
          toSectionInfo:(ContentSuggestionsSectionInformation*)sectionInfo;
 
+// Returns the accessibility identifier of the collection.
++ (NSString*)collectionAccessibilityIdentifier;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_VIEW_CONTROLLER_H_

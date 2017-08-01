@@ -84,3 +84,31 @@ source_set("unit_tests") {
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
+
+source_set("eg_tests") {
+  testonly = true
+  sources = [
+    "content_suggestions_egtest.mm",
+  ]
+  deps = [
+    ":content_suggestions",
+    "//base",
+    "//base/test:test_support",
+    "//components/keyed_service/ios",
+    "//components/ntp_snippets",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/ntp_snippets",
+    "//ios/chrome/browser/ui/content_suggestions/cells:cells_ui",
+    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/testing:ios_test_support",
+    "//ios/testing/earl_grey:earl_grey_support",
+    "//ios/third_party/earl_grey",
+  ]
+  libs = [
+    "UIKit.framework",
+    "XCTest.framework",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}

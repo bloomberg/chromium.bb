@@ -157,6 +157,10 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
       }];
 }
 
++ (NSString*)collectionAccessibilityIdentifier {
+  return @"ContentSuggestionsCollectionIdentifier";
+}
+
 #pragma mark - UIViewController
 
 - (void)viewDidLoad {
@@ -165,6 +169,8 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   if (base::ios::IsRunningOnIOS10OrLater()) {
     self.collectionView.prefetchingEnabled = NO;
   }
+  self.collectionView.accessibilityIdentifier =
+      [[self class] collectionAccessibilityIdentifier];
   _collectionUpdater.collectionViewController = self;
 
   self.collectionView.delegate = self;
