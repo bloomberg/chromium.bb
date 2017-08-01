@@ -1346,9 +1346,6 @@ const char kGCMProductCategoryForSubtypes[] =
 // Whether a user is allowed to use Easy Unlock.
 const char kEasyUnlockAllowed[] = "easy_unlock.allowed";
 
-// Whether Easy Unlock is enabled.
-const char kEasyUnlockEnabled[] = "easy_unlock.enabled";
-
 // Preference storing Easy Unlock pairing data.
 const char kEasyUnlockPairing[] = "easy_unlock.pairing";
 

@@ -73,7 +73,7 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
                       ProximityAuthClient* proximity_auth_client,
                       std::unique_ptr<UnlockManager> unlock_manager,
                       std::unique_ptr<base::Clock> clock,
-                      std::unique_ptr<ProximityAuthPrefManager> pref_manager);
+                      ProximityAuthPrefManager* pref_manager);
 
   // Creates the RemoteDeviceLifeCycle for |remote_device|.
   // Exposed for testing.
@@ -116,8 +116,8 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
   // Used to get the current timestamp.
   std::unique_ptr<base::Clock> clock_;
 
-  // Fetches EasyUnlock preferences.
-  std::unique_ptr<ProximityAuthPrefManager> pref_manager_;
+  // Fetches EasyUnlock preferences. Must outlive this instance.
+  ProximityAuthPrefManager* pref_manager_;
 
   // Handles the interaction with the lock screen UI.
   std::unique_ptr<UnlockManager> unlock_manager_;

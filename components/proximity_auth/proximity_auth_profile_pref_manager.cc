@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -19,13 +20,16 @@ namespace proximity_auth {
 
 ProximityAuthProfilePrefManager::ProximityAuthProfilePrefManager(
     PrefService* pref_service)
-    : pref_service_(pref_service) {}
+    : pref_service_(pref_service), weak_ptr_factory_(this) {}
 
-ProximityAuthProfilePrefManager::~ProximityAuthProfilePrefManager() {}
+ProximityAuthProfilePrefManager::~ProximityAuthProfilePrefManager() {
+  registrar_.RemoveAll();
+}
 
 // static
 void ProximityAuthProfilePrefManager::RegisterPrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kEasyUnlockAllowed, true);
   registry->RegisterInt64Pref(prefs::kProximityAuthLastPasswordEntryTimestampMs,
                               0L);
   registry->RegisterInt64Pref(
@@ -46,83 +50,52 @@ void ProximityAuthProfilePrefManager::RegisterPrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
-bool ProximityAuthProfilePrefManager::HasDeviceWithAddress(
-    const std::string& bluetooth_address) const {
-  return pref_service_->GetDictionary(prefs::kProximityAuthRemoteBleDevices)
-      ->HasKey(bluetooth_address);
-}
+void ProximityAuthProfilePrefManager::StartSyncingToLocalState(
+    PrefService* local_state,
+    const AccountId& account_id) {
+  local_state_ = local_state;
+  account_id_ = account_id;
 
-bool ProximityAuthProfilePrefManager::HasDeviceWithPublicKey(
-    const std::string& public_key) const {
-  return !GetDeviceAddress(public_key).empty();
-}
-
-std::string ProximityAuthProfilePrefManager::GetDevicePublicKey(
-    const std::string& bluetooth_address) const {
-  std::string public_key;
-  GetRemoteBleDevices()->GetStringWithoutPathExpansion(bluetooth_address,
-                                                       &public_key);
-  return public_key;
-}
-
-std::string ProximityAuthProfilePrefManager::GetDeviceAddress(
-    const std::string& public_key) const {
-  const base::DictionaryValue* remote_ble_devices = GetRemoteBleDevices();
-  for (base::DictionaryValue::Iterator it(*remote_ble_devices); !it.IsAtEnd();
-       it.Advance()) {
-    std::string value_string;
-    DCHECK(it.value().IsType(base::Value::Type::STRING));
-    if (it.value().GetAsString(&value_string) && value_string == public_key)
-      return it.key();
-  }
-  return std::string();
-}
-
-std::vector<std::string> ProximityAuthProfilePrefManager::GetPublicKeys()
-    const {
-  std::vector<std::string> public_keys;
-  const base::DictionaryValue* remote_ble_devices = GetRemoteBleDevices();
-  for (base::DictionaryValue::Iterator it(*remote_ble_devices); !it.IsAtEnd();
-       it.Advance()) {
-    std::string value_string;
-    DCHECK(it.value().IsType(base::Value::Type::STRING));
-    it.value().GetAsString(&value_string);
-    public_keys.push_back(value_string);
-  }
-  return public_keys;
-}
-
-void ProximityAuthProfilePrefManager::AddOrUpdateDevice(
-    const std::string& bluetooth_address,
-    const std::string& public_key) {
-  PA_LOG(INFO) << "Adding " << public_key << " , " << bluetooth_address
-               << " pair.";
-  if (HasDeviceWithPublicKey(public_key) &&
-      GetDeviceAddress(public_key) != bluetooth_address) {
-    PA_LOG(WARNING) << "Two devices with different bluetooth address, but the "
-                       "same public key were added: "
-                    << public_key;
-    RemoveDeviceWithPublicKey(public_key);
+  if (!account_id_.is_valid()) {
+    PA_LOG(ERROR) << "Invalid account_id.";
+    return;
   }
 
-  DictionaryPrefUpdate remote_ble_devices_update(
-      pref_service_, prefs::kProximityAuthRemoteBleDevices);
-  remote_ble_devices_update->SetStringWithoutPathExpansion(bluetooth_address,
-                                                           public_key);
+  base::Closure on_pref_changed_callback =
+      base::Bind(&ProximityAuthProfilePrefManager::SyncPrefsToLocalState,
+                 weak_ptr_factory_.GetWeakPtr());
+
+  registrar_.Init(pref_service_);
+  registrar_.Add(prefs::kEasyUnlockAllowed, on_pref_changed_callback);
+  registrar_.Add(proximity_auth::prefs::kEasyUnlockProximityThreshold,
+                 on_pref_changed_callback);
+  registrar_.Add(proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
+                 on_pref_changed_callback);
+
+  SyncPrefsToLocalState();
 }
 
-bool ProximityAuthProfilePrefManager::RemoveDeviceWithAddress(
-    const std::string& bluetooth_address) {
-  DictionaryPrefUpdate remote_ble_devices_update(
-      pref_service_, prefs::kProximityAuthRemoteBleDevices);
-  return remote_ble_devices_update->RemoveWithoutPathExpansion(
-      bluetooth_address, nullptr);
+void ProximityAuthProfilePrefManager::SyncPrefsToLocalState() {
+  std::unique_ptr<base::DictionaryValue> user_prefs_dict(
+      new base::DictionaryValue());
+
+  user_prefs_dict->SetBooleanWithoutPathExpansion(prefs::kEasyUnlockAllowed,
+                                                  IsEasyUnlockAllowed());
+  user_prefs_dict->SetIntegerWithoutPathExpansion(
+      prefs::kEasyUnlockProximityThreshold, GetProximityThreshold());
+  user_prefs_dict->SetBooleanWithoutPathExpansion(
+      prefs::kProximityAuthIsChromeOSLoginEnabled, IsChromeOSLoginEnabled());
+
+  DictionaryPrefUpdate update(local_state_,
+                              prefs::kEasyUnlockLocalStateUserPrefs);
+  update->SetWithoutPathExpansion(account_id_.GetUserEmail(),
+                                  std::move(user_prefs_dict));
 }
 
-bool ProximityAuthProfilePrefManager::RemoveDeviceWithPublicKey(
-    const std::string& public_key) {
-  return RemoveDeviceWithAddress(GetDeviceAddress(public_key));
+bool ProximityAuthProfilePrefManager::IsEasyUnlockAllowed() const {
+  return pref_service_->GetBoolean(prefs::kEasyUnlockAllowed);
 }
+
 void ProximityAuthProfilePrefManager::SetLastPasswordEntryTimestampMs(
     int64_t timestamp_ms) {
   pref_service_->SetInt64(prefs::kProximityAuthLastPasswordEntryTimestampMs,
@@ -133,11 +106,6 @@ int64_t ProximityAuthProfilePrefManager::GetLastPasswordEntryTimestampMs()
     const {
   return pref_service_->GetInt64(
       prefs::kProximityAuthLastPasswordEntryTimestampMs);
-}
-
-const base::DictionaryValue*
-ProximityAuthProfilePrefManager::GetRemoteBleDevices() const {
-  return pref_service_->GetDictionary(prefs::kProximityAuthRemoteBleDevices);
 }
 
 void ProximityAuthProfilePrefManager::SetLastPromotionCheckTimestampMs(

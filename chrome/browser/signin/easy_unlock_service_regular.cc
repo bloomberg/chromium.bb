@@ -103,11 +103,6 @@ EasyUnlockServiceRegular::EasyUnlockServiceRegular(
 EasyUnlockServiceRegular::~EasyUnlockServiceRegular() {
 }
 
-proximity_auth::ProximityAuthPrefManager*
-EasyUnlockServiceRegular::GetProximityAuthPrefManager() {
-  return pref_manager_.get();
-}
-
 void EasyUnlockServiceRegular::LoadRemoteDevices() {
   if (GetCryptAuthDeviceManager()->GetUnlockKeys().empty()) {
     SetProximityAuthDevices(GetAccountId(), cryptauth::RemoteDeviceList());
@@ -222,6 +217,11 @@ void EasyUnlockServiceRegular::StartPromotionManager() {
       base::MakeUnique<base::DefaultClock>(),
       base::ThreadTaskRunnerHandle::Get()));
   promotion_manager_->Start();
+}
+
+proximity_auth::ProximityAuthPrefManager*
+EasyUnlockServiceRegular::GetProximityAuthPrefManager() {
+  return pref_manager_.get();
 }
 
 EasyUnlockService::Type EasyUnlockServiceRegular::GetType() const {
@@ -393,8 +393,6 @@ void EasyUnlockServiceRegular::SetRemoteBleDevices(
     std::string address, b64_public_key;
     if (dict->GetString("bluetoothAddress", &address) &&
         dict->GetString("psk", &b64_public_key)) {
-      GetProximityAuthPrefManager()->AddOrUpdateDevice(address, b64_public_key);
-
       // The setup is done. Load the remote devices if the device with
       // |public_key| was already sync from CryptAuth, otherwise re-sync the
       // devices.
@@ -510,19 +508,6 @@ void EasyUnlockServiceRegular::SetAutoPairingResult(
 
 void EasyUnlockServiceRegular::InitializeInternal() {
   proximity_auth::ScreenlockBridge::Get()->AddObserver(this);
-  registrar_.Init(profile()->GetPrefs());
-  registrar_.Add(
-      prefs::kEasyUnlockAllowed,
-      base::Bind(&EasyUnlockServiceRegular::OnPrefsChanged,
-                 base::Unretained(this)));
-  registrar_.Add(proximity_auth::prefs::kEasyUnlockProximityThreshold,
-                 base::Bind(&EasyUnlockServiceRegular::OnPrefsChanged,
-                            base::Unretained(this)));
-  registrar_.Add(proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
-                 base::Bind(&EasyUnlockServiceRegular::OnPrefsChanged,
-                            base::Unretained(this)));
-
-  OnPrefsChanged();
 
 #if defined(OS_CHROMEOS)
   // TODO(tengs): Due to badly configured browser_tests, Chrome crashes during
@@ -532,6 +517,13 @@ void EasyUnlockServiceRegular::InitializeInternal() {
       !base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
     pref_manager_.reset(new proximity_auth::ProximityAuthProfilePrefManager(
         profile()->GetPrefs()));
+
+    // Note: There is no local state in tests.
+    if (g_browser_process->local_state()) {
+      pref_manager_->StartSyncingToLocalState(g_browser_process->local_state(),
+                                              GetAccountId());
+    }
+
     GetCryptAuthDeviceManager()->AddObserver(this);
     LoadRemoteDevices();
     StartPromotionManager();
@@ -545,7 +537,6 @@ void EasyUnlockServiceRegular::ShutdownInternal() {
 #endif
 
   turn_off_flow_status_ = EasyUnlockService::IDLE;
-  registrar_.RemoveAll();
   proximity_auth::ScreenlockBridge::Get()->RemoveObserver(this);
 }
 
@@ -638,12 +629,12 @@ void EasyUnlockServiceRegular::OnScreenDidUnlock(
   bool is_lock_screen =
       screen_type == proximity_auth::ScreenlockBridge::LockHandler::LOCK_SCREEN;
 
-  if (!will_unlock_using_easy_unlock_ && GetProximityAuthPrefManager() &&
+  if (!will_unlock_using_easy_unlock_ && pref_manager_ &&
       (is_lock_screen || !base::CommandLine::ForCurrentProcess()->HasSwitch(
                              proximity_auth::switches::kEnableChromeOSLogin))) {
     // If a password was used, then record the current timestamp. This timestamp
     // is used to enforce password reauths after a certain time has elapsed.
-    GetProximityAuthPrefManager()->SetLastPasswordEntryTimestampMs(
+    pref_manager_->SetLastPasswordEntryTimestampMs(
         base::Time::Now().ToJavaTime());
   }
 
@@ -693,11 +684,6 @@ void EasyUnlockServiceRegular::OnFocusedUserChanged(
   // Nothing to do.
 }
 
-void EasyUnlockServiceRegular::OnPrefsChanged() {
-  SyncProfilePrefsToLocalState();
-  UpdateAppState();
-}
-
 void EasyUnlockServiceRegular::SetTurnOffFlowStatus(TurnOffFlowStatus status) {
   turn_off_flow_status_ = status;
   NotifyTurnOffOperationStatusChanged();
@@ -719,35 +705,6 @@ void EasyUnlockServiceRegular::OnToggleEasyUnlockApiFailed(
     const std::string& error_message) {
   LOG(WARNING) << "Failed to turn off Smart Lock: " << error_message;
   SetTurnOffFlowStatus(FAIL);
-}
-
-void EasyUnlockServiceRegular::SyncProfilePrefsToLocalState() {
-  PrefService* local_state =
-      g_browser_process ? g_browser_process->local_state() : NULL;
-  PrefService* profile_prefs = profile()->GetPrefs();
-  if (!local_state || !profile_prefs)
-    return;
-
-  // Create the dictionary of Easy Unlock preferences for the current user. The
-  // items in the dictionary are the same profile prefs used for Easy Unlock.
-  // TODO(tengs): Instead of an ad-hoc method here, we should refactor
-  // ProximityAuthPrefManager to sync these prefs to local state instead. See
-  // crbug.com/747635.
-  std::unique_ptr<base::DictionaryValue> user_prefs_dict(
-      new base::DictionaryValue());
-  user_prefs_dict->SetIntegerWithoutPathExpansion(
-      proximity_auth::prefs::kEasyUnlockProximityThreshold,
-      profile_prefs->GetInteger(
-          proximity_auth::prefs::kEasyUnlockProximityThreshold));
-  user_prefs_dict->SetBooleanWithoutPathExpansion(
-      proximity_auth::prefs::kEasyUnlockProximityThreshold,
-      profile_prefs->GetBoolean(
-          proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled));
-
-  DictionaryPrefUpdate update(local_state,
-                              prefs::kEasyUnlockLocalStateUserPrefs);
-  update->SetWithoutPathExpansion(GetAccountId().GetUserEmail(),
-                                  std::move(user_prefs_dict));
 }
 
 cryptauth::CryptAuthEnrollmentManager*

@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
-#include "components/prefs/pref_change_registrar.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 
 #if defined(OS_CHROMEOS)
@@ -37,7 +36,7 @@ class ToggleEasyUnlockResponse;
 
 namespace proximity_auth {
 class PromotionManager;
-class ProximityAuthPrefManager;
+class ProximityAuthProfilePrefManager;
 }
 
 class EasyUnlockNotificationController;
@@ -59,10 +58,6 @@ class EasyUnlockServiceRegular
 
   ~EasyUnlockServiceRegular() override;
 
-  // Returns the ProximityAuthPrefManager, which manages the profile's
-  // prefs for proximity_auth classes.
-  proximity_auth::ProximityAuthPrefManager* GetProximityAuthPrefManager();
-
  private:
   // Loads the RemoteDevice instances that will be supplied to
   // ProximityAuthSystem.
@@ -80,6 +75,8 @@ class EasyUnlockServiceRegular
   void StartPromotionManager();
 
   // EasyUnlockService implementation:
+  proximity_auth::ProximityAuthPrefManager* GetProximityAuthPrefManager()
+      override;
   EasyUnlockService::Type GetType() const override;
   AccountId GetAccountId() const override;
   void LaunchSetup() override;
@@ -123,9 +120,6 @@ class EasyUnlockServiceRegular
       override;
   void OnFocusedUserChanged(const AccountId& account_id) override;
 
-  // Callback when the controlling pref changes.
-  void OnPrefsChanged();
-
   // Sets the new turn-off flow status.
   void SetTurnOffFlowStatus(TurnOffFlowStatus status);
 
@@ -160,8 +154,6 @@ class EasyUnlockServiceRegular
   // synced devices from CryptAuth.
   cryptauth::CryptAuthDeviceManager* GetCryptAuthDeviceManager();
 
-  PrefChangeRegistrar registrar_;
-
   TurnOffFlowStatus turn_off_flow_status_;
   std::unique_ptr<cryptauth::CryptAuthClient> cryptauth_client_;
 
@@ -179,7 +171,8 @@ class EasyUnlockServiceRegular
   base::TimeTicks lock_screen_last_shown_timestamp_;
 
   // Manager responsible for handling the prefs used by proximity_auth classes.
-  std::unique_ptr<proximity_auth::ProximityAuthPrefManager> pref_manager_;
+  std::unique_ptr<proximity_auth::ProximityAuthProfilePrefManager>
+      pref_manager_;
 
   // Loads the RemoteDevice instances from CryptAuth and local data.
   std::unique_ptr<cryptauth::RemoteDeviceLoader> remote_device_loader_;

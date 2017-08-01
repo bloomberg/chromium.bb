@@ -22,6 +22,10 @@ namespace chromeos {
 class EasyUnlockChallengeWrapper;
 }
 
+namespace proximity_auth {
+class ProximityAuthLocalStatePrefManager;
+}
+
 // EasyUnlockService instance that should be used for signin profile.
 class EasyUnlockServiceSignin
     : public EasyUnlockService,
@@ -78,6 +82,8 @@ class EasyUnlockServiceSignin
   };
 
   // EasyUnlockService implementation:
+  proximity_auth::ProximityAuthPrefManager* GetProximityAuthPrefManager()
+      override;
   EasyUnlockService::Type GetType() const override;
   AccountId GetAccountId() const override;
   void LaunchSetup() override;
@@ -148,6 +154,10 @@ class EasyUnlockServiceSignin
 
   // Handles wrapping the user's challenge with the TPM.
   std::unique_ptr<chromeos::EasyUnlockChallengeWrapper> challenge_wrapper_;
+
+  // Manages the EasyUnlock prefs for the local state.
+  std::unique_ptr<proximity_auth::ProximityAuthLocalStatePrefManager>
+      pref_manager_;
 
   base::WeakPtrFactory<EasyUnlockServiceSignin> weak_ptr_factory_;
 

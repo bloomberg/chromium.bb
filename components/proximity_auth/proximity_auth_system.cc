@@ -30,11 +30,10 @@ ProximityAuthSystem::ProximityAuthSystem(
     : screenlock_type_(screenlock_type),
       proximity_auth_client_(proximity_auth_client),
       clock_(new base::DefaultClock()),
-      pref_manager_(new ProximityAuthProfilePrefManager(
-          proximity_auth_client->GetPrefService())),
+      pref_manager_(proximity_auth_client->GetPrefManager()),
       unlock_manager_(new UnlockManagerImpl(screenlock_type,
                                             proximity_auth_client_,
-                                            pref_manager_.get())),
+                                            pref_manager_)),
       suspended_(false),
       started_(false),
       weak_ptr_factory_(this) {}
@@ -44,11 +43,11 @@ ProximityAuthSystem::ProximityAuthSystem(
     ProximityAuthClient* proximity_auth_client,
     std::unique_ptr<UnlockManager> unlock_manager,
     std::unique_ptr<base::Clock> clock,
-    std::unique_ptr<ProximityAuthPrefManager> pref_manager)
+    ProximityAuthPrefManager* pref_manager)
     : screenlock_type_(screenlock_type),
       proximity_auth_client_(proximity_auth_client),
       clock_(std::move(clock)),
-      pref_manager_(std::move(pref_manager)),
+      pref_manager_(pref_manager),
       unlock_manager_(std::move(unlock_manager)),
       suspended_(false),
       started_(false),

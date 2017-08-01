@@ -41,6 +41,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/proximity_auth/logging/logging.h"
+#include "components/proximity_auth/proximity_auth_local_state_pref_manager.h"
 #include "components/proximity_auth/proximity_auth_profile_pref_manager.h"
 #include "components/proximity_auth/proximity_auth_system.h"
 #include "components/proximity_auth/screenlock_bridge.h"
@@ -249,8 +250,6 @@ EasyUnlockService::~EasyUnlockService() {
 // static
 void EasyUnlockService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kEasyUnlockAllowed, true);
-  registry->RegisterBooleanPref(prefs::kEasyUnlockEnabled, false);
   registry->RegisterDictionaryPref(prefs::kEasyUnlockPairing,
                                    base::MakeUnique<base::DictionaryValue>());
 
@@ -261,9 +260,9 @@ void EasyUnlockService::RegisterProfilePrefs(
 void EasyUnlockService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kEasyUnlockDeviceId, std::string());
   registry->RegisterDictionaryPref(prefs::kEasyUnlockHardlockState);
-  registry->RegisterDictionaryPref(prefs::kEasyUnlockLocalStateUserPrefs);
 #if defined(OS_CHROMEOS)
   EasyUnlockTpmKeyManager::RegisterLocalStatePrefs(registry);
+  proximity_auth::ProximityAuthLocalStatePrefManager::RegisterPrefs(registry);
 #endif
 }
 
@@ -303,6 +302,12 @@ void EasyUnlockService::Initialize(
   app_manager_->EnsureReady(
       base::Bind(&EasyUnlockService::InitializeOnAppManagerReady,
                  weak_ptr_factory_.GetWeakPtr()));
+}
+
+proximity_auth::ProximityAuthPrefManager*
+EasyUnlockService::GetProximityAuthPrefManager() {
+  NOTREACHED();
+  return nullptr;
 }
 
 bool EasyUnlockService::IsAllowed() const {
