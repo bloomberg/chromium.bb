@@ -819,4 +819,27 @@ TEST_F(FullscreenAppListPresenterDelegateTest, WhitespaceQuery) {
   EXPECT_EQ(view->app_list_state(), app_list::AppListView::PEEKING);
 }
 
+// Tests that an unhandled tap/click in Peeking mode closes the app
+// list.
+TEST_P(FullscreenAppListPresenterDelegateTest, UnhandledEventOnPeeking) {
+  app_list_presenter_impl()->Show(GetPrimaryDisplayId());
+  app_list::AppListView* view = app_list_presenter_impl()->GetView();
+  ASSERT_EQ(view->app_list_state(), app_list::AppListView::PEEKING);
+
+  // Tap or click in the empty space below the searchbox. The app list should
+  // close.
+  gfx::Point empty_space =
+      view->search_box_view()->GetBoundsInScreen().bottom_left();
+  empty_space.Offset(0, 10);
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  if (TestMouseEventParam()) {
+    generator.MoveMouseTo(empty_space);
+    generator.ClickLeftButton();
+    generator.ReleaseLeftButton();
+  } else {
+    generator.GestureTapAt(empty_space);
+  }
+  EXPECT_EQ(view->app_list_state(), app_list::AppListView::CLOSED);
+}
+
 }  // namespace ash

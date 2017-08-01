@@ -436,7 +436,7 @@ bool StartPageView::OnMousePressed(const ui::MouseEvent& event) {
   }
 
   MaybeOpenCustomLauncherPage();
-  return true;
+  return IsCustomLauncherPageActive();
 }
 
 bool StartPageView::OnMouseWheel(const ui::MouseWheelEvent& event) {
