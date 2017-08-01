@@ -1,6 +1,0 @@
-<script>
-window.close();
-// Post a task to open because window.close internally posts a task to send
-// its IPC. This ensures the open IPC arrives after the close IPC.
-setTimeout(window.open);
-</script>

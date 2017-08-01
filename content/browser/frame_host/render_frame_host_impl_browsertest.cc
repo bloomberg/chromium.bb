@@ -10,11 +10,13 @@
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/test_content_browser_client.h"
@@ -332,35 +334,94 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   wc->SetJavaScriptDialogManagerForTesting(nullptr);
 }
 
+namespace {
+
+// A helper to execute some script in a frame just before it is deleted, such
+// that no message loops are pumped and no sync IPC messages are processed
+// between script execution and the destruction of the RenderFrameHost  .
+class ExecuteScriptBeforeRenderFrameDeletedHelper
+    : public RenderFrameDeletedObserver {
+ public:
+  ExecuteScriptBeforeRenderFrameDeletedHelper(RenderFrameHost* observed_frame,
+                                              const std::string& script)
+      : RenderFrameDeletedObserver(observed_frame), script_(script) {}
+
+ protected:
+  // WebContentsObserver:
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override {
+    const bool was_deleted = deleted();
+    RenderFrameDeletedObserver::RenderFrameDeleted(render_frame_host);
+    if (deleted() && !was_deleted)
+      ExecuteScriptAsync(render_frame_host, script_);
+  }
+
+ private:
+  std::string script_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExecuteScriptBeforeRenderFrameDeletedHelper);
+};
+
+}  // namespace
+
 // Regression test for https://crbug.com/728171 where the sync IPC channel has a
 // connection error but we don't properly check for it. This occurs because we
 // send a sync window.open IPC after the RenderFrameHost is destroyed.
 //
-// This test reproduces the issue by calling window.close, and then
-// window.open in a task that runs immediately after window.close (which
-// internally posts a task to send the IPC). This ensures that the
-// RenderFrameHost is destroyed by the time the window.open IPC reaches the
-// browser process.
+// The test creates two WebContents rendered in the same process. The first is
+// is the window-opener of the second, so the first window can be used to relay
+// information collected during the destruction of the RenderFrame in the second
+// WebContents back to the browser process.
+//
+// The issue is then reproduced by asynchronously triggering a call to
+// window.open() in the main frame of the second WebContents in response to
+// WebContentsObserver::RenderFrameDeleted -- that is, just before the RFHI is
+// destroyed on the browser side. The test assumes that between these two
+// events, the UI message loop is not pumped, and no sync IPC messages are
+// processed on the UI thread.
+//
+// Note that if the second WebContents scheduled a call to window.close() to
+// close itself after it calls window.open(), the CreateNewWindow sync IPC could
+// be dispatched *before* ViewHostMsg_Close in the browser process, provided
+// that the browser happened to be in IPC::SyncChannel::WaitForReply on the UI
+// thread (most likely after sending GpuCommandBufferMsg_* messages), in which
+// case incoming sync IPCs to this thread are dispatched, but the message loop
+// is not pumped, so proxied non-sync IPCs are not delivered.
+//
+// Furthermore, on Android, exercising window.open() must be delayed until after
+// content::RemoveShellView returns, as that method calls into JNI to close the
+// view corresponding to the WebContents, which will then call back into native
+// code and may run nested message loops and send sync IPC messages.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        FrameDetached_WindowOpenIPCFails) {
   NavigateToURL(shell(), GetTestUrl("", "title1.html"));
   EXPECT_EQ(1u, Shell::windows().size());
-  GURL test_url = GetTestUrl("render_frame_host", "window_open_and_close.html");
+  GURL test_url = GetTestUrl("render_frame_host", "window_open.html");
   std::string open_script =
       base::StringPrintf("popup = window.open('%s');", test_url.spec().c_str());
 
+  TestNavigationObserver second_contents_navigation_observer(nullptr, 1);
+  second_contents_navigation_observer.StartWatchingNewWebContents();
   EXPECT_TRUE(content::ExecuteScript(shell(), open_script));
-  ASSERT_EQ(2u, Shell::windows().size());
+  second_contents_navigation_observer.Wait();
 
+  ASSERT_EQ(2u, Shell::windows().size());
   Shell* new_shell = Shell::windows()[1];
-  RenderFrameDeletedObserver deleted_observer(
-      new_shell->web_contents()->GetMainFrame());
+  ExecuteScriptBeforeRenderFrameDeletedHelper deleted_observer(
+      new_shell->web_contents()->GetMainFrame(), "callWindowOpen();");
+  new_shell->Close();
   deleted_observer.WaitUntilDeleted();
 
-  bool is_closed = false;
+  bool did_call_window_open = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(), "domAutomationController.send(popup.closed)", &is_closed));
-  EXPECT_TRUE(is_closed);
+      shell(), "domAutomationController.send(!!popup.didCallWindowOpen)",
+      &did_call_window_open));
+  EXPECT_TRUE(did_call_window_open);
+
+  std::string result_of_window_open;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      shell(), "domAutomationController.send(String(popup.resultOfWindowOpen))",
+      &result_of_window_open));
+  EXPECT_EQ("null", result_of_window_open);
 }
 
 // After a navigation, the StreamHandle must be released.
