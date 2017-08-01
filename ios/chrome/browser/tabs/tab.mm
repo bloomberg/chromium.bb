@@ -878,22 +878,19 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   }
 
   DCHECK(item->GetTimestamp().ToInternalValue() > 0);
-  if ([self isPrerenderTab]) {
-    // Clicks on content suggestions on the NTP should not contribute to the
-    // Most Visited tiles in the NTP.
-    const bool consider_for_ntp_most_visited =
-        referrer.url != GURL(kChromeContentSuggestionsReferrer);
 
-    history::HistoryAddPageArgs args(
-        url, item->GetTimestamp(), &_tabHistoryContext, item->GetUniqueID(),
-        referrer.url, redirects, item->GetTransitionType(),
-        history::SOURCE_BROWSED, false, consider_for_ntp_most_visited);
+  // Clicks on content suggestions on the NTP should not contribute to the
+  // Most Visited tiles in the NTP.
+  const bool considerForNTPMostVisited =
+      referrer.url != GURL(kChromeContentSuggestionsReferrer);
+  history::HistoryAddPageArgs args(
+      url, item->GetTimestamp(), &_tabHistoryContext, item->GetUniqueID(),
+      referrer.url, redirects, item->GetTransitionType(),
+      history::SOURCE_BROWSED, false, considerForNTPMostVisited);
+  if ([self isPrerenderTab]) {
     _addPageVector.push_back(args);
   } else {
-    historyService->AddPage(url, item->GetTimestamp(), &_tabHistoryContext,
-                            item->GetUniqueID(), referrer.url, redirects,
-                            item->GetTransitionType(), history::SOURCE_BROWSED,
-                            false);
+    historyService->AddPage(args);
     [self saveTitleToHistoryDB];
   }
 }
