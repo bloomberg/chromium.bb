@@ -408,13 +408,14 @@ class ScriptExecutionCallbackHelper : public WebScriptExecutionCallback {
  public:
   explicit ScriptExecutionCallbackHelper(v8::Local<v8::Context> context)
       : did_complete_(false), bool_value_(false), context_(context) {}
-  ~ScriptExecutionCallbackHelper() {}
+  ~ScriptExecutionCallbackHelper() override {}
 
   bool DidComplete() const { return did_complete_; }
   const String& StringValue() const { return string_value_; }
   bool BoolValue() { return bool_value_; }
 
  private:
+  // WebScriptExecutionCallback:
   void Completed(const WebVector<v8::Local<v8::Value>>& values) override {
     did_complete_ = true;
     if (!values.IsEmpty()) {
@@ -711,7 +712,9 @@ class EvaluateOnLoadWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
   EvaluateOnLoadWebFrameClient() : executing_(false), was_executed_(false) {}
+  ~EvaluateOnLoadWebFrameClient() override {}
 
+  // FrameTestHelpers::TestWebFrameClient:
   void DidClearWindowObject() override {
     EXPECT_FALSE(executing_);
     was_executed_ = true;
@@ -736,6 +739,9 @@ TEST_P(ParameterizedWebFrameTest, DidClearWindowObjectIsNotRecursive) {
 class CSSCallbackWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
  public:
   CSSCallbackWebFrameClient() : update_count_(0) {}
+  ~CSSCallbackWebFrameClient() override {}
+
+  // FrameTestHelpers::TestWebFrameClient:
   void DidMatchCSS(
       const WebVector<WebString>& newly_matching_selectors,
       const WebVector<WebString>& stopped_matching_selectors) override;
@@ -1064,6 +1070,10 @@ namespace {
 class FixedLayoutTestWebViewClient
     : public FrameTestHelpers::TestWebViewClient {
  public:
+  FixedLayoutTestWebViewClient() {}
+  ~FixedLayoutTestWebViewClient() override {}
+
+  // FrameTestHelpers::TestWebViewClient:
   WebScreenInfo GetScreenInfo() override { return screen_info_; }
 
   WebScreenInfo screen_info_;
@@ -1099,7 +1109,7 @@ bool CheckTextAutosizingMultiplier(Document* document, float multiplier) {
   return multiplier_checked;
 }
 
-}  // anonymous namespace
+}  // namespace
 
 TEST_P(ParameterizedWebFrameTest,
        ChangeInFixedLayoutResetsTextAutosizingMultipliers) {
@@ -4175,6 +4185,10 @@ TEST_P(ParameterizedWebFrameTest, FirstRectForCharacterRangeWithPinchZoom) {
 class TestReloadDoesntRedirectWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
+  TestReloadDoesntRedirectWebFrameClient() {}
+  ~TestReloadDoesntRedirectWebFrameClient() override {}
+
+  // FrameTestHelpers::TestWebFrameClient:
   WebNavigationPolicy DecidePolicyForNavigation(
       const NavigationPolicyInfo& info) override {
     EXPECT_FALSE(info.extra_data);
@@ -4201,6 +4215,10 @@ TEST_P(ParameterizedWebFrameTest, ReloadDoesntSetRedirect) {
 class ClearScrollStateOnCommitWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
+  ClearScrollStateOnCommitWebFrameClient() {}
+  ~ClearScrollStateOnCommitWebFrameClient() override {}
+
+  // FrameTestHelpers::TestWebFrameClient:
   void DidCommitProvisionalLoad(const WebHistoryItem&,
                                 WebHistoryCommitType) override {
     Frame()->View()->ResetScrollAndScaleState();
@@ -4417,13 +4435,14 @@ class ContextLifetimeTestWebFrameClient
       Vector<std::unique_ptr<Notification>>& release_notifications)
       : create_notifications_(create_notifications),
         release_notifications_(release_notifications) {}
+  ~ContextLifetimeTestWebFrameClient() override {}
 
   void Reset() {
     create_notifications_.clear();
     release_notifications_.clear();
   }
 
-  // WebFrameClient overrides:
+  // WebFrameClient:
   WebLocalFrame* CreateChildFrame(
       WebLocalFrame* parent,
       WebTreeScopeType scope,
@@ -4755,6 +4774,10 @@ TEST_P(ParameterizedWebFrameTest, GetFullHtmlOfPage) {
 class TestExecuteScriptDuringDidCreateScriptContext
     : public FrameTestHelpers::TestWebFrameClient {
  public:
+  TestExecuteScriptDuringDidCreateScriptContext() {}
+  ~TestExecuteScriptDuringDidCreateScriptContext() override {}
+
+  // FrameTestHelpers::TestWebFrameClient:
   void DidCreateScriptContext(v8::Local<v8::Context> context,
                               int world_id) override {
     Frame()->ExecuteScript(WebScriptSource("window.history = 'replaced';"));
@@ -4776,7 +4799,9 @@ class FindUpdateWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
  public:
   FindUpdateWebFrameClient()
       : find_results_are_ready_(false), count_(-1), active_index_(-1) {}
+  ~FindUpdateWebFrameClient() override {}
 
+  // FrameTestHelpers::TestWebFrameClient:
   void ReportFindInPageMatchCount(int, int count, bool final_update) override {
     count_ = count;
     if (final_update)
@@ -5845,10 +5870,10 @@ class CompositedSelectionBoundsTestLayerTreeView : public WebLayerTreeView {
   CompositedSelectionBoundsTestLayerTreeView() : selection_cleared_(false) {}
   ~CompositedSelectionBoundsTestLayerTreeView() override {}
 
+  // WebLayerTreeView:
   void RegisterSelection(const WebSelection& selection) override {
     selection_ = WTF::MakeUnique<WebSelection>(selection);
   }
-
   void ClearSelection() override {
     selection_cleared_ = true;
     selection_.reset();
@@ -6118,6 +6143,10 @@ TEST_P(CompositedSelectionBoundsTest, EditableDiv) {
 class DisambiguationPopupTestWebViewClient
     : public FrameTestHelpers::TestWebViewClient {
  public:
+  DisambiguationPopupTestWebViewClient() {}
+  ~DisambiguationPopupTestWebViewClient() override {}
+
+  // FrameTestHelpers::TestWebViewClient:
   bool DidTapMultipleTargets(const WebSize&,
                              const WebRect&,
                              const WebVector<WebRect>& target_rects) override {
@@ -6422,16 +6451,17 @@ class TestSubstituteDataWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
   TestSubstituteDataWebFrameClient() : commit_called_(false) {}
+  ~TestSubstituteDataWebFrameClient() override {}
 
-  virtual void DidFailProvisionalLoad(const WebURLError& error,
-                                      WebHistoryCommitType) {
+  // FrameTestHelpers::TestWebFrameClient:
+  void DidFailProvisionalLoad(const WebURLError& error,
+                              WebHistoryCommitType) override {
     Frame()->LoadHTMLString("This should appear",
                             ToKURL("data:text/html,chromewebdata"),
                             error.unreachable_url, true);
   }
-
-  virtual void DidCommitProvisionalLoad(const WebHistoryItem&,
-                                        WebHistoryCommitType) {
+  void DidCommitProvisionalLoad(const WebHistoryItem&,
+                                WebHistoryCommitType) override {
     if (Frame()->DataSource()->GetResponse().Url() !=
         WebURL(URLTestHelpers::ToKURL("about:blank")))
       commit_called_ = true;
@@ -6483,17 +6513,17 @@ class TestWillInsertBodyWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
   TestWillInsertBodyWebFrameClient() : num_bodies_(0), did_load_(false) {}
+  ~TestWillInsertBodyWebFrameClient() override {}
 
+  // FrameTestHelpers::TestWebFrameClient:
   void DidCommitProvisionalLoad(const WebHistoryItem&,
                                 WebHistoryCommitType) override {
     num_bodies_ = 0;
     did_load_ = true;
   }
-
   void DidCreateDocumentElement(WebLocalFrame*) override {
     EXPECT_EQ(0, num_bodies_);
   }
-
   void WillInsertBody(WebLocalFrame*) override { num_bodies_++; }
 
   int num_bodies_;
@@ -6537,7 +6567,9 @@ TEST_P(ParameterizedWebFrameTest,
 class TextCheckClient : public WebTextCheckClient {
  public:
   TextCheckClient() : number_of_times_checked_(0) {}
-  virtual ~TextCheckClient() {}
+  ~TextCheckClient() override {}
+
+  // WebTextCheckClient:
   void RequestCheckingOfText(const WebString&,
                              WebTextCheckingCompletion* completion) override {
     ++number_of_times_checked_;
@@ -6549,6 +6581,7 @@ class TextCheckClient : public WebTextCheckClient {
         kMisspellingLength, WebVector<WebString>()));
     completion->DidFinishCheckingText(results);
   }
+
   int NumberOfTimesChecked() const { return number_of_times_checked_; }
 
  private:
@@ -6695,13 +6728,13 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkersUnderWords) {
 class StubbornTextCheckClient : public WebTextCheckClient {
  public:
   StubbornTextCheckClient() : completion_(0) {}
-  virtual ~StubbornTextCheckClient() {}
+  ~StubbornTextCheckClient() override {}
 
+  // WebTextCheckClient:
   void RequestCheckingOfText(const WebString&,
                              WebTextCheckingCompletion* completion) override {
     completion_ = completion;
   }
-
   void CancelAllPendingRequests() override {
     if (!completion_)
       return;
@@ -6885,7 +6918,11 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultsSavedInDocument) {
 class TestAccessInitialDocumentWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
-  virtual void DidAccessInitialDocument() { ++did_access_initial_document_; }
+  TestAccessInitialDocumentWebFrameClient() {}
+  ~TestAccessInitialDocumentWebFrameClient() override {}
+
+  // FrameTestHelpers::TestWebFrameClient:
+  void DidAccessInitialDocument() override { ++did_access_initial_document_; }
 
   // !!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!
   // If the actual counts in the tests below increase, this could be an
@@ -7053,6 +7090,8 @@ TEST_P(ParameterizedWebFrameTest, DidWriteToInitialDocumentBeforeModalDialog)
 class TestScrolledFrameClient : public FrameTestHelpers::TestWebFrameClient {
  public:
   TestScrolledFrameClient() { Reset(); }
+  ~TestScrolledFrameClient() override {}
+
   void Reset() { did_scroll_frame_ = false; }
   bool WasFrameScrolled() const { return did_scroll_frame_; }
 
@@ -7175,6 +7214,10 @@ TEST_P(ParameterizedWebFrameTest, FirstPartyForCookiesForRedirect) {
 class TestNavigationPolicyWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
+  TestNavigationPolicyWebFrameClient() {}
+  ~TestNavigationPolicyWebFrameClient() override {}
+
+  // FrameTestHelpers::TestWebFrameClient:
   void DidNavigateWithinPage(const WebHistoryItem&,
                              WebHistoryCommitType,
                              bool) override {
@@ -7210,6 +7253,10 @@ TEST_P(ParameterizedWebFrameTest, SimulateFragmentAnchorMiddleClick) {
 
 class TestNewWindowWebViewClient : public FrameTestHelpers::TestWebViewClient {
  public:
+  TestNewWindowWebViewClient() {}
+  ~TestNewWindowWebViewClient() override {}
+
+  // FrameTestHelpers::TestWebFrameClient:
   WebView* CreateView(WebLocalFrame*,
                       const WebURLRequest&,
                       const WebWindowFeatures&,
@@ -7226,7 +7273,9 @@ class TestNewWindowWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
   TestNewWindowWebFrameClient() : decide_policy_call_count_(0) {}
+  ~TestNewWindowWebFrameClient() override {}
 
+  // FrameTestHelpers::TestWebFrameClient:
   WebNavigationPolicy DecidePolicyForNavigation(
       const NavigationPolicyInfo& info) override {
     decide_policy_call_count_++;
@@ -7386,14 +7435,16 @@ class TestCachePolicyWebFrameClient
   TestCachePolicyWebFrameClient()
       : policy_(WebCachePolicy::kUseProtocolCachePolicy),
         will_send_request_call_count_(0) {}
+  ~TestCachePolicyWebFrameClient() override {}
 
   WebCachePolicy GetCachePolicy() const { return policy_; }
   int WillSendRequestCallCount() const { return will_send_request_call_count_; }
   TestCachePolicyWebFrameClient& ChildClient(size_t i) {
-    return child_clients_[i];
+    return *child_clients_[i].get();
   }
-  int ChildFrameCreationCount() const { return child_clients_.size(); }
+  size_t ChildFrameCreationCount() const { return child_clients_.size(); }
 
+  // FrameTestHelpers::TestWebFrameClient:
   WebLocalFrame* CreateChildFrame(
       WebLocalFrame* parent,
       WebTreeScopeType scope,
@@ -7402,10 +7453,11 @@ class TestCachePolicyWebFrameClient
       WebSandboxFlags,
       const WebParsedFeaturePolicy&,
       const WebFrameOwnerProperties& frame_owner_properties) override {
-    child_clients_.emplace_back();
-    return CreateLocalChild(*parent, scope, &child_clients_.back());
+    auto child = WTF::MakeUnique<TestCachePolicyWebFrameClient>();
+    auto* child_ptr = child.get();
+    child_clients_.push_back(std::move(child));
+    return CreateLocalChild(*parent, scope, child_ptr);
   }
-
   void WillSendRequest(WebURLRequest& request) override {
     policy_ = request.GetCachePolicy();
     will_send_request_call_count_++;
@@ -7413,7 +7465,7 @@ class TestCachePolicyWebFrameClient
 
  private:
   WebCachePolicy policy_;
-  Vector<TestCachePolicyWebFrameClient> child_clients_;
+  Vector<std::unique_ptr<TestCachePolicyWebFrameClient>> child_clients_;
   int will_send_request_call_count_;
 };
 
@@ -7427,7 +7479,7 @@ TEST_P(ParameterizedWebFrameTest, ReloadIframe) {
                                     &main_frame_client);
   WebLocalFrameBase* main_frame = web_view_helper.LocalMainFrame();
 
-  ASSERT_EQ(1, main_frame_client.ChildFrameCreationCount());
+  ASSERT_EQ(1U, main_frame_client.ChildFrameCreationCount());
   TestCachePolicyWebFrameClient* child_client =
       &main_frame_client.ChildClient(0);
   WebLocalFrameBase* child_frame =
@@ -7441,7 +7493,7 @@ TEST_P(ParameterizedWebFrameTest, ReloadIframe) {
   FrameTestHelpers::ReloadFrame(main_frame);
 
   // A new child WebLocalFrame should have been created with a new client.
-  ASSERT_EQ(2, main_frame_client.ChildFrameCreationCount());
+  ASSERT_EQ(2U, main_frame_client.ChildFrameCreationCount());
   TestCachePolicyWebFrameClient* new_child_client =
       &main_frame_client.ChildClient(1);
   WebLocalFrameBase* new_child_frame =
@@ -7464,8 +7516,10 @@ class TestSameDocumentWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
   TestSameDocumentWebFrameClient() : frame_load_type_reload_seen_(false) {}
+  ~TestSameDocumentWebFrameClient() override {}
 
-  virtual void WillSendRequest(WebURLRequest&) {
+  // FrameTestHelpers::TestWebFrameClient:
+  void WillSendRequest(WebURLRequest&) override {
     FrameLoader& frame_loader =
         ToWebLocalFrameBase(Frame())->GetFrame()->Loader();
     if (frame_loader.ProvisionalDocumentLoader()->LoadType() ==
@@ -7505,8 +7559,10 @@ class TestSameDocumentWithImageWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
   TestSameDocumentWithImageWebFrameClient() : num_of_image_requests_(0) {}
+  ~TestSameDocumentWithImageWebFrameClient() override {}
 
-  virtual void WillSendRequest(WebURLRequest& request) {
+  // FrameTestHelpers::TestWebFrameClient:
+  void WillSendRequest(WebURLRequest& request) override {
     if (request.GetRequestContext() == WebURLRequest::kRequestContextImage) {
       num_of_image_requests_++;
       EXPECT_EQ(WebCachePolicy::kUseProtocolCachePolicy,
@@ -7572,14 +7628,15 @@ class TestStartStopCallbackWebFrameClient
       : start_loading_count_(0),
         stop_loading_count_(0),
         different_document_start_count_(0) {}
+  ~TestStartStopCallbackWebFrameClient() override {}
 
+  // FrameTestHelpers::TestWebFrameClient:
   void DidStartLoading(bool to_different_document) override {
     TestWebFrameClient::DidStartLoading(to_different_document);
     start_loading_count_++;
     if (to_different_document)
       different_document_start_count_++;
   }
-
   void DidStopLoading() override {
     TestWebFrameClient::DidStopLoading();
     stop_loading_count_++;
@@ -7613,7 +7670,9 @@ class TestDidNavigateCommitTypeWebFrameClient
  public:
   TestDidNavigateCommitTypeWebFrameClient()
       : last_commit_type_(kWebHistoryInertCommit) {}
+  ~TestDidNavigateCommitTypeWebFrameClient() override {}
 
+  // FrameTestHelpers::TestWebFrameClient:
   void DidNavigateWithinPage(const WebHistoryItem&,
                              WebHistoryCommitType type,
                              bool) override {
@@ -7651,8 +7710,12 @@ TEST_P(ParameterizedWebFrameTest, SameDocumentHistoryNavigationCommitType) {
 class TestHistoryChildWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
+  TestHistoryChildWebFrameClient() {}
+  ~TestHistoryChildWebFrameClient() override {}
+
+  // FrameTestHelpers::TestWebFrameClient:
   void DidStartProvisionalLoad(WebDataSource* data_source,
-                               WebURLRequest& request) {
+                               WebURLRequest& request) override {
     replaces_current_history_item_ = data_source->ReplacesCurrentHistoryItem();
   }
 
@@ -7664,13 +7727,17 @@ class TestHistoryChildWebFrameClient
 
 class TestHistoryWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
  public:
+  TestHistoryWebFrameClient() {}
+  ~TestHistoryWebFrameClient() override {}
+
+  // FrameTestHelpers::TestWebFrameClient:
   WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
                                   WebTreeScopeType scope,
                                   const WebString& name,
                                   const WebString& fallback_name,
                                   WebSandboxFlags,
                                   const WebParsedFeaturePolicy&,
-                                  const WebFrameOwnerProperties&) {
+                                  const WebFrameOwnerProperties&) override {
     return CreateLocalChild(*parent, scope, &child_client_);
   }
 
@@ -7802,7 +7869,9 @@ TEST_P(ParameterizedWebFrameTest, CurrentHistoryItem) {
 class FailCreateChildFrame : public FrameTestHelpers::TestWebFrameClient {
  public:
   FailCreateChildFrame() : call_count_(0) {}
+  ~FailCreateChildFrame() override {}
 
+  // FrameTestHelpers::TestWebFrameClient:
   WebLocalFrame* CreateChildFrame(
       WebLocalFrame* parent,
       WebTreeScopeType scope,
@@ -8439,6 +8508,10 @@ namespace {
 
 class TestFullscreenWebLayerTreeView : public WebLayerTreeView {
  public:
+  TestFullscreenWebLayerTreeView() {}
+  ~TestFullscreenWebLayerTreeView() override {}
+
+  // WebLayerTreeView:
   void SetBackgroundColor(blink::WebColor color) override {
     has_transparent_background = SkColorGetA(color) < SK_AlphaOPAQUE;
   }
@@ -8447,13 +8520,17 @@ class TestFullscreenWebLayerTreeView : public WebLayerTreeView {
 
 class TestFullscreenWebViewClient : public FrameTestHelpers::TestWebViewClient {
  public:
+  TestFullscreenWebViewClient() {}
+  ~TestFullscreenWebViewClient() override {}
+
+  // FrameTestHelpers::TestWebViewClient:
   WebLayerTreeView* InitializeLayerTreeView() override {
     return &test_fullscreen_layer_tree_view;
   }
   TestFullscreenWebLayerTreeView test_fullscreen_layer_tree_view;
 };
 
-}  // anonymous namespace
+}  // namespace
 
 TEST_P(ParameterizedWebFrameTest, OverlayFullscreenVideo) {
   RuntimeEnabledFeatures::SetForceOverlayFullscreenVideoEnabled(true);
@@ -8551,6 +8628,9 @@ class ManifestChangeWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
   ManifestChangeWebFrameClient() : manifest_change_count_(0) {}
+  ~ManifestChangeWebFrameClient() override {}
+
+  // FrameTestHelpers::TestWebFrameClient:
   void DidChangeManifest() override { ++manifest_change_count_; }
 
   int ManifestChangeCount() { return manifest_change_count_; }
@@ -8739,13 +8819,15 @@ class ThemeColorTestWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
   ThemeColorTestWebFrameClient() : did_notify_(false) {}
+  ~ThemeColorTestWebFrameClient() override {}
 
   void Reset() { did_notify_ = false; }
 
   bool DidNotify() const { return did_notify_; }
 
  private:
-  virtual void DidChangeThemeColor() { did_notify_ = true; }
+  // FrameTestHelpers::TestWebFrameClient:
+  void DidChangeThemeColor() override { did_notify_ = true; }
 
   bool did_notify_;
 };
@@ -8863,14 +8945,16 @@ class SwapMainFrameWhenTitleChangesWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
   SwapMainFrameWhenTitleChangesWebFrameClient() {}
+  ~SwapMainFrameWhenTitleChangesWebFrameClient() override {}
 
+  // FrameTestHelpers::TestWebFrameClient:
   void DidReceiveTitle(const WebString&, WebTextDirection) override {
     if (!Frame()->Parent())
       Frame()->Swap(FrameTestHelpers::CreateRemote());
   }
 };
 
-}  // anonymous namespace
+}  // namespace
 
 TEST_P(ParameterizedWebFrameTest, SwapMainFrameWhileLoading) {
   SwapMainFrameWhenTitleChangesWebFrameClient frame_client;
@@ -9248,7 +9332,9 @@ class RemoteToLocalSwapWebFrameClient
   explicit RemoteToLocalSwapWebFrameClient(WebRemoteFrame* remote_frame)
       : history_commit_type_(kWebHistoryInertCommit),
         remote_frame_(remote_frame) {}
+  ~RemoteToLocalSwapWebFrameClient() override {}
 
+  // FrameTestHelpers::TestWebFrameClient:
   void DidCommitProvisionalLoad(
       const WebHistoryItem&,
       WebHistoryCommitType history_commit_type) override {
@@ -9313,6 +9399,10 @@ TEST_P(WebFrameSwapTest, HistoryCommitTypeAfterExistingRemoteToLocalSwap) {
 class RemoteNavigationClient
     : public FrameTestHelpers::TestWebRemoteFrameClient {
  public:
+  RemoteNavigationClient() {}
+  ~RemoteNavigationClient() override {}
+
+  // FrameTestHelpers::TestWebRemoteFrameClient:
   void Navigate(const WebURLRequest& request,
                 bool should_replace_current_entry) override {
     last_request_ = request;
@@ -9376,7 +9466,9 @@ TEST_P(WebFrameSwapTest, WindowOpenOnRemoteFrame) {
 class RemoteWindowCloseClient : public FrameTestHelpers::TestWebViewClient {
  public:
   RemoteWindowCloseClient() : closed_(false) {}
+  ~RemoteWindowCloseClient() override {}
 
+  // FrameTestHelpers::TestWebViewClient:
   void CloseWidgetSoon() override { closed_ = true; }
 
   bool Closed() const { return closed_; }
@@ -9453,7 +9545,9 @@ TEST_P(ParameterizedWebFrameTest, SwapWithOpenerCycle) {
 class CommitTypeWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
  public:
   CommitTypeWebFrameClient() : history_commit_type_(kWebHistoryInertCommit) {}
+  ~CommitTypeWebFrameClient() override {}
 
+  // FrameTestHelpers::TestWebFrameClient:
   void DidCommitProvisionalLoad(
       const WebHistoryItem&,
       WebHistoryCommitType history_commit_type) override {
@@ -9491,6 +9585,9 @@ class GestureEventTestWebWidgetClient
     : public FrameTestHelpers::TestWebWidgetClient {
  public:
   GestureEventTestWebWidgetClient() : did_handle_gesture_event_(false) {}
+  ~GestureEventTestWebWidgetClient() override {}
+
+  // FrameTestHelpers::TestWebWidgetClient:
   void DidHandleGestureEvent(const WebGestureEvent& event,
                              bool event_cancelled) override {
     did_handle_gesture_event_ = true;
@@ -9527,6 +9624,9 @@ class MockDocumentThreadableLoaderClient
     : public DocumentThreadableLoaderClient {
  public:
   MockDocumentThreadableLoaderClient() : failed_(false) {}
+  ~MockDocumentThreadableLoaderClient() override {}
+
+  // DocumentThreadableLoaderClient:
   void DidFail(const ResourceError&) override { failed_ = true; }
 
   void Reset() { failed_ = false; }
@@ -9583,10 +9683,14 @@ TEST_P(ParameterizedWebFrameTest, DetachRemoteFrame) {
 class TestConsoleMessageWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
-  virtual void DidAddMessageToConsole(const WebConsoleMessage& message,
-                                      const WebString& source_name,
-                                      unsigned source_line,
-                                      const WebString& stack_trace) {
+  TestConsoleMessageWebFrameClient() {}
+  ~TestConsoleMessageWebFrameClient() override {}
+
+  // FrameTestHelpers::TestWebFrameClient:
+  void DidAddMessageToConsole(const WebConsoleMessage& message,
+                              const WebString& source_name,
+                              unsigned source_line,
+                              const WebString& stack_trace) override {
     messages.push_back(message);
   }
 
@@ -10251,7 +10355,9 @@ class CallbackOrderingWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
   CallbackOrderingWebFrameClient() : callback_count_(0) {}
+  ~CallbackOrderingWebFrameClient() override {}
 
+  // FrameTestHelpers::TestWebFrameClient:
   void DidStartLoading(bool to_different_document) override {
     EXPECT_EQ(0, callback_count_++);
     FrameTestHelpers::TestWebFrameClient::DidStartLoading(
@@ -10287,6 +10393,9 @@ class TestWebRemoteFrameClientForVisibility
     : public FrameTestHelpers::TestWebRemoteFrameClient {
  public:
   TestWebRemoteFrameClientForVisibility() : visible_(true) {}
+  ~TestWebRemoteFrameClientForVisibility() override {}
+
+  // FrameTestHelpers::TestWebRemoteFrameClient:
   void VisibilityChanged(bool visible) override { visible_ = visible; }
 
   bool IsVisible() const { return visible_; }
@@ -10436,7 +10545,10 @@ TEST(WebFrameGlobalReuseTest, ReuseForMainFrameIfEnabled) {
 class SaveImageFromDataURLWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
-  // WebFrameClient methods
+  SaveImageFromDataURLWebFrameClient() {}
+  ~SaveImageFromDataURLWebFrameClient() override {}
+
+  // WebFrameClient:
   void SaveImageFromDataURL(const WebString& data_url) override {
     data_url_ = data_url;
   }
@@ -10637,7 +10749,9 @@ class TestResourcePriorityWebFrameClient
   };
 
   TestResourcePriorityWebFrameClient() {}
+  ~TestResourcePriorityWebFrameClient() override {}
 
+  // FrameTestHelpers::TestWebFrameClient:
   void WillSendRequest(WebURLRequest& request) override {
     ExpectedRequest* expected_request = expected_requests_.at(request.Url());
     DCHECK(expected_request);
@@ -10730,6 +10844,10 @@ TEST_P(ParameterizedWebFrameTest, ScriptPriority) {
 
 class MultipleDataChunkDelegate : public WebURLLoaderTestDelegate {
  public:
+  MultipleDataChunkDelegate() {}
+  ~MultipleDataChunkDelegate() override {}
+
+  // WebURLLoaderTestDelegate:
   void DidReceiveData(WebURLLoaderClient* original_client,
                       const char* data,
                       int data_length) override {
@@ -11760,6 +11878,10 @@ TEST_P(ParameterizedWebFrameTest, NoLoadingCompletionCallbacksInDetach) {
   class LoadingObserverFrameClient
       : public FrameTestHelpers::TestWebFrameClient {
    public:
+    LoadingObserverFrameClient() {}
+    ~LoadingObserverFrameClient() override {}
+
+    // FrameTestHelpers::TestWebFrameClient:
     void FrameDetached(WebLocalFrame* frame, DetachType type) override {
       did_call_frame_detached_ = true;
       TestWebFrameClient::FrameDetached(frame, type);
@@ -11812,6 +11934,10 @@ TEST_P(ParameterizedWebFrameTest, NoLoadingCompletionCallbacksInDetach) {
 
   class MainFrameClient : public FrameTestHelpers::TestWebFrameClient {
    public:
+    MainFrameClient() {}
+    ~MainFrameClient() override {}
+
+    // FrameTestHelpers::TestWebFrameClient:
     WebLocalFrame* CreateChildFrame(
         WebLocalFrame* parent,
         WebTreeScopeType scope,
@@ -11863,7 +11989,9 @@ class ShowVirtualKeyboardObserverWidgetClient
  public:
   ShowVirtualKeyboardObserverWidgetClient()
       : did_show_virtual_keyboard_(false) {}
+  ~ShowVirtualKeyboardObserverWidgetClient() override {}
 
+  // FrameTestHelpers::TestWebWidgetClient:
   void ShowVirtualKeyboardOnElementFocus() override {
     did_show_virtual_keyboard_ = true;
   }
@@ -11903,7 +12031,9 @@ TEST_P(ParameterizedWebFrameTest, ShowVirtualKeyboardOnElementFocus) {
 class ContextMenuWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
  public:
   ContextMenuWebFrameClient() {}
-  // WebFrameClient methods
+  ~ContextMenuWebFrameClient() override {}
+
+  // WebFrameClient:
   void ShowContextMenu(const WebContextMenuData& data) override {
     menu_data_ = data;
   }
@@ -11994,11 +12124,13 @@ TEST_P(ParameterizedWebFrameTest, LocalFrameWithRemoteParentIsTransparent) {
 class TestFallbackWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
  public:
   TestFallbackWebFrameClient() : child_client_(nullptr) {}
+  ~TestFallbackWebFrameClient() override {}
 
   void SetChildWebFrameClient(TestFallbackWebFrameClient* client) {
     child_client_ = client;
   }
 
+  // FrameTestHelpers::TestWebFrameClient:
   WebLocalFrame* CreateChildFrame(
       WebLocalFrame* parent,
       WebTreeScopeType scope,
@@ -12010,7 +12142,6 @@ class TestFallbackWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
     DCHECK(child_client_);
     return CreateLocalChild(*parent, scope, child_client_);
   }
-
   WebNavigationPolicy DecidePolicyForNavigation(
       const NavigationPolicyInfo& info) override {
     if (child_client_ || KURL(info.url_request.Url()) == BlankURL())
