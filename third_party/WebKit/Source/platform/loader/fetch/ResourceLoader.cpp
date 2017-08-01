@@ -284,8 +284,10 @@ bool ResourceLoader::WillFollowRedirect(
               cors_error_msg)) {
         resource_->SetCORSStatus(CORSStatus::kFailed);
 
-        if (!unused_preload)
-          Context().AddConsoleMessage(cors_error_msg);
+        if (!unused_preload) {
+          Context().AddErrorConsoleMessage(cors_error_msg,
+                                           FetchContext::kJSSource);
+        }
 
         CancelForRedirectAccessCheckError(new_url,
                                           ResourceRequestBlockedReason::kOther);
@@ -545,8 +547,10 @@ void ResourceLoader::DidReceiveResponse(
     }
 
     if (!resource_->IsSameOriginOrCORSSuccessful()) {
-      if (!unused_preload)
-        Context().AddConsoleMessage(cors_error_msg.ToString());
+      if (!unused_preload) {
+        Context().AddErrorConsoleMessage(cors_error_msg.ToString(),
+                                         FetchContext::kJSSource);
+      }
 
       HandleError(ResourceError::CancelledDueToAccessCheckError(
           response_url, ResourceRequestBlockedReason::kOther));

@@ -72,7 +72,16 @@ class PLATFORM_EXPORT FetchContext
   WTF_MAKE_NONCOPYABLE(FetchContext);
 
  public:
-  enum LogMessageType { kLogErrorMessage, kLogWarningMessage };
+  // This enum corresponds to blink::MessageSource. We have this not to
+  // introduce any dependency to core/.
+  //
+  // Currently only kJSMessageSource is used, but not to impress readers that
+  // AddConsoleMessage() call from FetchContext() should always use it, which is
+  // not true, we ask users of the Add.*ConsoleMessage() methods to explicitly
+  // specify the MessageSource to use.
+  //
+  // Extend this when needed.
+  enum LogSource { kJSSource };
 
   static FetchContext& NullInstance();
 
@@ -182,8 +191,10 @@ class PLATFORM_EXPORT FetchContext
     return false;
   }
   virtual void SendImagePing(const KURL&);
-  virtual void AddConsoleMessage(const String&,
-                                 LogMessageType = kLogErrorMessage) const;
+
+  virtual void AddWarningConsoleMessage(const String&, LogSource) const;
+  virtual void AddErrorConsoleMessage(const String&, LogSource) const;
+
   virtual SecurityOrigin* GetSecurityOrigin() const { return nullptr; }
 
   // Populates the ResourceRequest using the given values and information

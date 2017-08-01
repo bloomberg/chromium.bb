@@ -1225,7 +1225,7 @@ TEST_F(FrameFetchContextTest, SendImagePingWhenDetached) {
 TEST_F(FrameFetchContextTest, AddConsoleMessageWhenDetached) {
   dummy_page_holder = nullptr;
 
-  fetch_context->AddConsoleMessage("foobar");
+  fetch_context->AddWarningConsoleMessage("foobar", FetchContext::kJSSource);
   // Should not crash.
 }
 
