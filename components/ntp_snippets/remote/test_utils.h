@@ -99,6 +99,7 @@ class RemoteSuggestionBuilder {
   RemoteSuggestionBuilder& SetPublisher(const std::string& publisher);
   RemoteSuggestionBuilder& SetAmpUrl(const std::string& amp_url);
   RemoteSuggestionBuilder& SetFetchDate(const base::Time& fetch_date);
+  RemoteSuggestionBuilder& SetRank(int rank);
 
   std::unique_ptr<RemoteSuggestion> Build() const;
 
@@ -116,6 +117,7 @@ class RemoteSuggestionBuilder {
   base::Optional<std::string> publisher_name_;
   base::Optional<std::string> amp_url_;
   base::Optional<base::Time> fetch_date_;
+  base::Optional<int> rank_;
 };
 
 class FetchedCategoryBuilder {

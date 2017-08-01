@@ -405,6 +405,7 @@ TEST(RemoteSuggestionTest, CreateFromProtoToProtoRoundtrip) {
   source->set_url("http://cool-suggestions.com/");
   source->set_publisher_name("Great Suggestions Inc.");
   source->set_amp_url("http://cdn.ampproject.org/c/foo/");
+  proto.set_rank(7);
 
   std::unique_ptr<RemoteSuggestion> snippet =
       RemoteSuggestion::CreateFromProto(proto);
