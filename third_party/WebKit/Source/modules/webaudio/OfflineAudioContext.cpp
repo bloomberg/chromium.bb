@@ -94,15 +94,6 @@ OfflineAudioContext* OfflineAudioContext::Create(
                               sample_rate, exception_state);
   audio_context->SuspendIfNeeded();
 
-  if (!audio_context->destination()) {
-    exception_state.ThrowDOMException(
-        kNotSupportedError, "OfflineAudioContext(" +
-                                String::Number(number_of_channels) + ", " +
-                                String::Number(number_of_frames) + ", " +
-                                String::Number(sample_rate) + ")");
-    return nullptr;
-  }
-
 #if DEBUG_AUDIONODE_REFERENCES
   fprintf(stderr, "[%16p]: OfflineAudioContext::OfflineAudioContext()\n",
           audio_context);
@@ -151,22 +142,9 @@ OfflineAudioContext::OfflineAudioContext(Document* document,
                        sample_rate),
       is_rendering_started_(false),
       total_render_frames_(number_of_frames) {
-  // Create a new destination for offline rendering.
-  render_target_ =
-      AudioBuffer::Create(number_of_channels, number_of_frames, sample_rate);
-
-  // Throw an exception if the render target is not ready.
-  if (render_target_) {
-    destination_node_ =
-        OfflineAudioDestinationNode::Create(this, render_target_.Get());
-    Initialize();
-  } else {
-    exception_state.ThrowRangeError(ExceptionMessages::FailedToConstruct(
-        "OfflineAudioContext", "failed to create OfflineAudioContext(" +
-                                   String::Number(number_of_channels) + ", " +
-                                   String::Number(number_of_frames) + ", " +
-                                   String::Number(sample_rate) + ")"));
-  }
+  destination_node_ = OfflineAudioDestinationNode::Create(
+      this, number_of_channels, number_of_frames, sample_rate);
+  Initialize();
 }
 
 OfflineAudioContext::~OfflineAudioContext() {
@@ -177,7 +155,6 @@ OfflineAudioContext::~OfflineAudioContext() {
 }
 
 DEFINE_TRACE(OfflineAudioContext) {
-  visitor->Trace(render_target_);
   visitor->Trace(complete_resolver_);
   visitor->Trace(scheduled_suspends_);
   BaseAudioContext::Trace(visitor);
@@ -221,10 +198,27 @@ ScriptPromise OfflineAudioContext::startOfflineRendering(
 
   complete_resolver_ = ScriptPromiseResolver::Create(script_state);
 
+  // Allocate the AudioBuffer to hold the rendered result.
+  float sample_rate = DestinationHandler().SampleRate();
+  unsigned number_of_channels = DestinationHandler().NumberOfChannels();
+
+  AudioBuffer* render_target = AudioBuffer::Create(
+      number_of_channels, total_render_frames_, sample_rate);
+
+  if (!render_target) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(kNotSupportedError,
+                             "startRendering failed to create AudioBuffer(" +
+                                 String::Number(number_of_channels) + ", " +
+                                 String::Number(total_render_frames_) + ", " +
+                                 String::Number(sample_rate) + ")"));
+  }
+
   // Start rendering and return the promise.
   is_rendering_started_ = true;
   SetContextState(kRunning);
-  DestinationHandler().InitializeOfflineRenderThread();
+  DestinationHandler().InitializeOfflineRenderThread(render_target);
   DestinationHandler().StartRendering();
 
   return complete_resolver_->Promise();
@@ -359,7 +353,7 @@ void OfflineAudioContext::FireCompletionEvent() {
   // that the context has been closed.
   SetContextState(kClosed);
 
-  AudioBuffer* rendered_buffer = RenderTarget();
+  AudioBuffer* rendered_buffer = DestinationHandler().RenderTarget();
 
   DCHECK(rendered_buffer);
   if (!rendered_buffer)
