@@ -16,6 +16,7 @@ proto_library("proto") {
     "audio.proto",
     "control.proto",
     "event.proto",
+    "file_transfer.proto",
     "internal.proto",
     "mux.proto",
     "process_stats.proto",
