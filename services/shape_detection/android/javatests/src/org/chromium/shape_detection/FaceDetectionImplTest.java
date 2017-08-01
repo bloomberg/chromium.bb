@@ -21,13 +21,13 @@ import java.util.concurrent.TimeUnit;
  * Test suite for FaceDetectionImpl.
  */
 public class FaceDetectionImplTest extends InstrumentationTestCase {
-    public static final org.chromium.skia.mojom.Bitmap MONA_LISA_BITMAP =
+    private static final org.chromium.skia.mojom.Bitmap MONA_LISA_BITMAP =
             TestUtils.mojoBitmapFromFile("mona_lisa.jpg");
     // Different versions of Android have different implementations of FaceDetector.findFaces(), so
     // we have to use a large error threshold.
-    public static final double BOUNDING_BOX_POSITION_ERROR = 10.0;
-    public static final double BOUNDING_BOX_SIZE_ERROR = 5.0;
-    public static enum DetectionProviderType { ANDROID, GMS_CORE }
+    private static final double BOUNDING_BOX_POSITION_ERROR = 10.0;
+    private static final double BOUNDING_BOX_SIZE_ERROR = 5.0;
+    private static enum DetectionProviderType { ANDROID, GMS_CORE }
 
     public FaceDetectionImplTest() {}
 

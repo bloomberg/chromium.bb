@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
  * Test suite for BarcodeDetectionImpl.
  */
 public class BarcodeDetectionImplTest extends InstrumentationTestCase {
-    public static final org.chromium.skia.mojom.Bitmap QR_CODE_BITMAP =
+    private static final org.chromium.skia.mojom.Bitmap QR_CODE_BITMAP =
             TestUtils.mojoBitmapFromFile("qr_code.png");
 
     public BarcodeDetectionImplTest() {}
