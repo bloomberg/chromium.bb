@@ -29,6 +29,7 @@ source_set("omnibox_internal") {
     "omnibox_popup_positioner.h",
     "omnibox_popup_view_ios.h",
     "omnibox_popup_view_ios.mm",
+    "omnibox_popup_view_suggestions_delegate.h",
     "omnibox_text_field_delegate.h",
     "omnibox_text_field_ios.h",
     "omnibox_text_field_ios.mm",
