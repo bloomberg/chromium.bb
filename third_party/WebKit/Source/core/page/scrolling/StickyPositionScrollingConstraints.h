@@ -11,15 +11,66 @@
 
 namespace blink {
 
-class LayoutBoxModelObject;
 class PaintLayer;
 class StickyPositionScrollingConstraints;
 
 typedef WTF::HashMap<PaintLayer*, StickyPositionScrollingConstraints>
     StickyConstraintsMap;
 
-// TODO(smcgruer): Add detailed comment explaining how
-// StickyPositionScrollingConstraints works.
+// Encapsulates the constraint information for a position: sticky element and
+// does calculation of the sticky offset for a given overflow clip rectangle.
+//
+// To avoid slowing down scrolling we cannot make the offset calculation a
+// layout-inducing event. Instead constraint information is cached during layout
+// and used as the scroll position changes to determine the current offset. In
+// most cases the only information that is needed is the sticky element's layout
+// rectangle and its containing block rectangle (both respective to the nearest
+// ancestor scroller which the element is sticking to), and the set of sticky
+// edge constraints (i.e. the distance from each edge the element should stick).
+//
+// For a given (non-cached) overflow clip rectangle, calculating the current
+// offset in most cases just requires sliding the (cached) sticky element
+// rectangle until it satisfies the (cached) sticky edge constraints for the
+// overflow clip rectangle, whilst not letting the sticky element rectangle
+// escape its (cached) containing block rect. For example, consider the
+// following situation (where positions are relative to the scroll container):
+//
+//    +---------------------+ <-- Containing Block (150x70 at 10,0)
+//    | +-----------------+ |
+//    | |    top: 50px;   |<-- Sticky Box (130x10 at 20,0)
+//    | +-----------------+ |
+//    |                     |
+//  +-------------------------+ <-- Overflow Clip Rectangle (170x60 at 0,50)
+//  | |                     | |
+//  | |                     | |
+//  | +---------------------+ |
+//  |                         |
+//  |                         |
+//  |                         |
+//  +-------------------------+
+//
+// Here the cached sticky box would be moved downwards to try and be at position
+// (20,100) - 50 pixels down from the top of the clip rectangle. However doing
+// so would take it outside the cached containing block rectangle, so the final
+// sticky position would be capped to (20,20).
+//
+// Unfortunately this approach breaks down in the presence of nested sticky
+// elements, as the cached locations would be moved by ancestor sticky elements.
+// Consider:
+//
+//  +------------------------+ <-- Outer sticky (top: 10px, 150x50 at 0,0)
+//  |  +------------------+  |
+//  |  |                  | <-- Inner sticky (top: 25px, 100x20 at 20,0)
+//  |  +------------------+  |
+//  |                        |
+//  +------------------------+
+//
+// Assume the overflow clip rectangle is centered perfectly over the outer
+// sticky. We would then want to move the outer sticky element down by 10
+// pixels, and the inner sticky element down by only 15 pixels - because it is
+// already being shifted by its ancestor. To correctly handle such situations we
+// apply more complicated logic which is explained in the implementation of
+// |ComputeStickyOffset|.
 class StickyPositionScrollingConstraints final {
  public:
   enum AnchorEdgeFlags {
@@ -36,8 +87,8 @@ class StickyPositionScrollingConstraints final {
         right_offset_(0),
         top_offset_(0),
         bottom_offset_(0),
-        nearest_sticky_box_shifting_sticky_box_(nullptr),
-        nearest_sticky_box_shifting_containing_block_(nullptr) {}
+        nearest_sticky_layer_shifting_sticky_box_(nullptr),
+        nearest_sticky_layer_shifting_containing_block_(nullptr) {}
 
   StickyPositionScrollingConstraints(
       const StickyPositionScrollingConstraints& other)
@@ -50,23 +101,32 @@ class StickyPositionScrollingConstraints final {
             other.scroll_container_relative_containing_block_rect_),
         scroll_container_relative_sticky_box_rect_(
             other.scroll_container_relative_sticky_box_rect_),
-        nearest_sticky_box_shifting_sticky_box_(
-            other.nearest_sticky_box_shifting_sticky_box_),
-        nearest_sticky_box_shifting_containing_block_(
-            other.nearest_sticky_box_shifting_containing_block_),
+        nearest_sticky_layer_shifting_sticky_box_(
+            other.nearest_sticky_layer_shifting_sticky_box_),
+        nearest_sticky_layer_shifting_containing_block_(
+            other.nearest_sticky_layer_shifting_containing_block_),
         total_sticky_box_sticky_offset_(other.total_sticky_box_sticky_offset_),
         total_containing_block_sticky_offset_(
             other.total_containing_block_sticky_offset_) {}
 
-  FloatSize ComputeStickyOffset(
-      const FloatRect& viewport_rect,
-      const StickyPositionScrollingConstraints* ancestor_sticky_box_constraints,
-      const StickyPositionScrollingConstraints*
-          ancestor_containing_block_constraints);
+  // Computes the sticky offset for a given overflow clip rect.
+  //
+  // This method is non-const as we cache internal state for performance; see
+  // documentation in the implementation for details.
+  FloatSize ComputeStickyOffset(const FloatRect& overflow_clip_rect,
+                                const StickyConstraintsMap&);
+
+  // Returns the last-computed offset of the sticky box from its original
+  // position before scroll.
+  //
+  // This method exists for performance (to avoid recomputing the sticky offset)
+  // and must only be called when compositing inputs are clean for the sticky
+  // element. (Or after prepaint for SlimmingPaintV2).
+  FloatSize GetOffsetForStickyPosition(const StickyConstraintsMap&) const;
 
   bool HasAncestorStickyElement() const {
-    return nearest_sticky_box_shifting_sticky_box_ ||
-           nearest_sticky_box_shifting_containing_block_;
+    return nearest_sticky_layer_shifting_sticky_box_ ||
+           nearest_sticky_layer_shifting_containing_block_;
   }
 
   AnchorEdges GetAnchorEdges() const { return anchor_edges_; }
@@ -74,7 +134,6 @@ class StickyPositionScrollingConstraints final {
     return anchor_edges_ & flag;
   }
   void AddAnchorEdge(AnchorEdgeFlags edge_flag) { anchor_edges_ |= edge_flag; }
-  void SetAnchorEdges(AnchorEdges edges) { anchor_edges_ = edges; }
 
   float LeftOffset() const { return left_offset_; }
   float RightOffset() const { return right_offset_; }
@@ -100,45 +159,18 @@ class StickyPositionScrollingConstraints final {
     return scroll_container_relative_sticky_box_rect_;
   }
 
-  void SetNearestStickyBoxShiftingStickyBox(LayoutBoxModelObject* layer) {
-    nearest_sticky_box_shifting_sticky_box_ = layer;
+  void SetNearestStickyLayerShiftingStickyBox(PaintLayer* layer) {
+    nearest_sticky_layer_shifting_sticky_box_ = layer;
   }
-  LayoutBoxModelObject* NearestStickyBoxShiftingStickyBox() const {
-    return nearest_sticky_box_shifting_sticky_box_;
-  }
-
-  void SetNearestStickyBoxShiftingContainingBlock(LayoutBoxModelObject* layer) {
-    nearest_sticky_box_shifting_containing_block_ = layer;
-  }
-  LayoutBoxModelObject* NearestStickyBoxShiftingContainingBlock() const {
-    return nearest_sticky_box_shifting_containing_block_;
+  PaintLayer* NearestStickyLayerShiftingStickyBox() const {
+    return nearest_sticky_layer_shifting_sticky_box_;
   }
 
-  const FloatSize& GetTotalStickyBoxStickyOffset() const {
-    return total_sticky_box_sticky_offset_;
+  void SetNearestStickyLayerShiftingContainingBlock(PaintLayer* layer) {
+    nearest_sticky_layer_shifting_containing_block_ = layer;
   }
-  const FloatSize& GetTotalContainingBlockStickyOffset() const {
-    return total_containing_block_sticky_offset_;
-  }
-
-  // Returns the relative position of the sticky box and its original position
-  // before scroll. This method is only safe to call if ComputeStickyOffset has
-  // been invoked.
-  FloatSize GetOffsetForStickyPosition(const StickyConstraintsMap&) const;
-
-  const LayoutBoxModelObject* NearestStickyAncestor() const {
-    // If we have one or more sticky ancestor elements between ourselves and our
-    // containing block, |m_nearestStickyBoxShiftingStickyBox| points to the
-    // closest. Otherwise, |m_nearestStickyBoxShiftingContainingBlock| points
-    // to the the first sticky ancestor between our containing block (inclusive)
-    // and our scroll ancestor (exclusive). Therefore our nearest sticky
-    // ancestor is the former if it exists, or the latter otherwise.
-    //
-    // If both are null, then we have no sticky ancestors before our scroll
-    // ancestor, so the correct action is to return null.
-    return nearest_sticky_box_shifting_sticky_box_
-               ? nearest_sticky_box_shifting_sticky_box_
-               : nearest_sticky_box_shifting_containing_block_;
+  PaintLayer* NearestStickyLayerShiftingContainingBlock() const {
+    return nearest_sticky_layer_shifting_containing_block_;
   }
 
   bool operator==(const StickyPositionScrollingConstraints& other) const {
@@ -150,10 +182,10 @@ class StickyPositionScrollingConstraints final {
                other.scroll_container_relative_containing_block_rect_ &&
            scroll_container_relative_sticky_box_rect_ ==
                other.scroll_container_relative_sticky_box_rect_ &&
-           nearest_sticky_box_shifting_sticky_box_ ==
-               other.nearest_sticky_box_shifting_sticky_box_ &&
-           nearest_sticky_box_shifting_containing_block_ ==
-               other.nearest_sticky_box_shifting_containing_block_ &&
+           nearest_sticky_layer_shifting_sticky_box_ ==
+               other.nearest_sticky_layer_shifting_sticky_box_ &&
+           nearest_sticky_layer_shifting_containing_block_ ==
+               other.nearest_sticky_layer_shifting_containing_block_ &&
            total_sticky_box_sticky_offset_ ==
                other.total_sticky_box_sticky_offset_ &&
            total_containing_block_sticky_offset_ ==
@@ -165,32 +197,72 @@ class StickyPositionScrollingConstraints final {
   }
 
  private:
+  FloatSize AncestorStickyBoxOffset(const StickyConstraintsMap&);
+  FloatSize AncestorContainingBlockOffset(const StickyConstraintsMap&);
+
   AnchorEdges anchor_edges_;
   float left_offset_;
   float right_offset_;
   float top_offset_;
   float bottom_offset_;
+
+  // The containing block rect and sticky box rect are the basic components
+  // for calculating the sticky offset to apply after a scroll. Consider the
+  // following setup:
+  //
+  // <scroll-container>
+  //   <containing-block> (*)
+  //     <sticky-element>
+  //
+  // (*) <containing-block> may be the same as <scroll-container>.
+
+  // The layout position of the containing block relative to the scroll
+  // container. When calculating the sticky offset it is used to ensure the
+  // sticky element stays bounded by its containing block.
   FloatRect scroll_container_relative_containing_block_rect_;
+
+  // The layout position of the sticky element relative to the scroll container.
+  // When calculating the sticky offset it is used to determine how large the
+  // offset needs to be to satisfy the sticky constraints.
   FloatRect scroll_container_relative_sticky_box_rect_;
 
-  // In order to properly compute the stickyOffset, we need to know if we have
-  // any sticky ancestors both between ourselves and our containing block and
-  // between our containing block and the viewport. These ancestors are needed
-  // to properly shift our constraining rects with regards to the containing
-  // block and viewport.
-  LayoutBoxModelObject* nearest_sticky_box_shifting_sticky_box_;
-  LayoutBoxModelObject* nearest_sticky_box_shifting_containing_block_;
+  // In the case of nested sticky elements the layout position of the sticky
+  // element and its containing block are not accurate (as they are affected by
+  // ancestor sticky offsets). To ensure a correct sticky offset calculation in
+  // that case we must track any sticky ancestors between the sticky element and
+  // its containing block, and between its containing block and the overflow
+  // clip ancestor.
+  //
+  // See the implementation of |ComputeStickyOffset| for documentation on how
+  // these ancestors are used to correct the offset calculation.
+  PaintLayer* nearest_sticky_layer_shifting_sticky_box_;
+  PaintLayer* nearest_sticky_layer_shifting_containing_block_;
 
   // For performance we cache our accumulated sticky offset to allow descendant
   // sticky elements to offset their constraint rects. Because we can either
-  // affect the sticky box constraint rect or the containing block constraint
-  // rect, we need to accumulate both.
+  // affect a descendant element's sticky box constraint rect or containing
+  // block constraint rect, we need to accumulate two offsets.
+
+  // The sticky box offset accumulates the chain of sticky elements that are
+  // between this sticky element and its containing block. Any descendant using
+  // |total_sticky_box_sticky_offset_| has the same containing block as this
+  // element, so |total_sticky_box_sticky_offset_| does not accumulate
+  // containing block sticky offsets. For example, consider the following chain:
   //
-  // The case where we can affect both the sticky box constraint rect and the
-  // constraining block constriant rect for different sticky descendants is
-  // quite complex. See the StickyPositionComplexTableNesting test in
-  // LayoutBoxModelObjectTest.cpp.
+  // <div style="position: sticky;">
+  //   <div id="outerInline" style="position: sticky; display: inline;">
+  //     <div id="innerInline" style="position: sticky; display: inline;"><div>
+  //   </div>
+  // </div>
+  //
+  // In the above example, both outerInline and innerInline have the same
+  // containing block - the outermost <div>.
   FloatSize total_sticky_box_sticky_offset_;
+
+  // The containing block offset accumulates all sticky-related offsets between
+  // this element and the ancestor scroller. If this element is a containing
+  // block shifting ancestor for some descendant, it shifts the descendant's
+  // constraint rects by its entire offset.
   FloatSize total_containing_block_sticky_offset_;
 };
 

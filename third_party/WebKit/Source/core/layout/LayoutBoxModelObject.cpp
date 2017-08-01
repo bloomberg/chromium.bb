@@ -53,30 +53,12 @@ inline bool IsOutOfFlowPositionedWithImplicitHeight(
          !child->Style()->LogicalBottom().IsAuto();
 }
 
-StickyPositionScrollingConstraints* StickyConstraintsForLayoutObject(
-    const LayoutBoxModelObject* obj,
-    const PaintLayer* ancestor_overflow_layer) {
-  if (!obj)
-    return nullptr;
-
-  PaintLayerScrollableArea* scrollable_area =
-      ancestor_overflow_layer->GetScrollableArea();
-  if (!scrollable_area)
-    return nullptr;
-  auto it = scrollable_area->GetStickyConstraintsMap().find(obj->Layer());
-  if (it == scrollable_area->GetStickyConstraintsMap().end())
-    return nullptr;
-
-  return &it->value;
-}
-
 // Inclusive of |from|, exclusive of |to|.
-LayoutBoxModelObject* FindFirstStickyBetween(LayoutObject* from,
-                                             LayoutObject* to) {
+PaintLayer* FindFirstStickyBetween(LayoutObject* from, LayoutObject* to) {
   LayoutObject* maybe_sticky_ancestor = from;
   while (maybe_sticky_ancestor && maybe_sticky_ancestor != to) {
     if (maybe_sticky_ancestor->Style()->HasStickyConstrainedPosition()) {
-      return ToLayoutBoxModelObject(maybe_sticky_ancestor);
+      return ToLayoutBoxModelObject(maybe_sticky_ancestor)->Layer();
     }
 
     maybe_sticky_ancestor =
@@ -924,12 +906,14 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
   //
   // The respective search ranges are [container, containingBlock) and
   // [containingBlock, scrollAncestor).
-  constraints.SetNearestStickyBoxShiftingStickyBox(
+  constraints.SetNearestStickyLayerShiftingStickyBox(
       FindFirstStickyBetween(location_container, containing_block));
   // We cannot use |scrollAncestor| here as it disregards the root
   // ancestorOverflowLayer(), which we should include.
-  constraints.SetNearestStickyBoxShiftingContainingBlock(FindFirstStickyBetween(
-      containing_block, &Layer()->AncestorOverflowLayer()->GetLayoutObject()));
+  constraints.SetNearestStickyLayerShiftingContainingBlock(
+      FindFirstStickyBetween(
+          containing_block,
+          &Layer()->AncestorOverflowLayer()->GetLayoutObject()));
 
   // We skip the right or top sticky offset if there is not enough space to
   // honor both the left/right or top/bottom offsets.
@@ -1029,30 +1013,21 @@ LayoutSize LayoutBoxModelObject::StickyPositionOffset() const {
   const PaintLayer* ancestor_overflow_layer = Layer()->AncestorOverflowLayer();
   // TODO: Force compositing input update if we ask for offset before
   // compositing inputs have been computed?
-  if (!ancestor_overflow_layer)
+  if (!ancestor_overflow_layer || !ancestor_overflow_layer->GetScrollableArea())
     return LayoutSize();
 
-  StickyPositionScrollingConstraints* constraints =
-      StickyConstraintsForLayoutObject(this, ancestor_overflow_layer);
-  if (!constraints)
+  StickyConstraintsMap& constraints_map =
+      ancestor_overflow_layer->GetScrollableArea()->GetStickyConstraintsMap();
+  auto it = constraints_map.find(Layer());
+  if (it == constraints_map.end())
     return LayoutSize();
-
-  StickyPositionScrollingConstraints* shifting_sticky_box_constraints =
-      StickyConstraintsForLayoutObject(
-          constraints->NearestStickyBoxShiftingStickyBox(),
-          ancestor_overflow_layer);
-
-  StickyPositionScrollingConstraints* shifting_containing_block_constraints =
-      StickyConstraintsForLayoutObject(
-          constraints->NearestStickyBoxShiftingContainingBlock(),
-          ancestor_overflow_layer);
+  StickyPositionScrollingConstraints* constraints = &it->value;
 
   // The sticky offset is physical, so we can just return the delta computed in
   // absolute coords (though it may be wrong with transforms).
   FloatRect constraining_rect = ComputeStickyConstrainingRect();
-  return LayoutSize(constraints->ComputeStickyOffset(
-      constraining_rect, shifting_sticky_box_constraints,
-      shifting_containing_block_constraints));
+  return LayoutSize(
+      constraints->ComputeStickyOffset(constraining_rect, constraints_map));
 }
 
 LayoutPoint LayoutBoxModelObject::AdjustedPositionRelativeTo(

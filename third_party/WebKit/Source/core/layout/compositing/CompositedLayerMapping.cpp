@@ -328,25 +328,22 @@ void CompositedLayerMapping::UpdateStickyConstraints(
   web_constraint.scroll_container_relative_containing_block_rect =
       EnclosingIntRect(
           constraints.ScrollContainerRelativeContainingBlockRect());
-  LayoutBoxModelObject* sticky_box_shifting_ancestor =
-      constraints.NearestStickyBoxShiftingStickyBox();
+  PaintLayer* sticky_box_shifting_ancestor =
+      constraints.NearestStickyLayerShiftingStickyBox();
   if (sticky_box_shifting_ancestor &&
-      sticky_box_shifting_ancestor->Layer()->GetCompositedLayerMapping()) {
+      sticky_box_shifting_ancestor->GetCompositedLayerMapping()) {
     web_constraint.nearest_layer_shifting_sticky_box =
-        sticky_box_shifting_ancestor->Layer()
-            ->GetCompositedLayerMapping()
+        sticky_box_shifting_ancestor->GetCompositedLayerMapping()
             ->MainGraphicsLayer()
             ->PlatformLayer()
             ->Id();
   }
-  LayoutBoxModelObject* containing_block_shifting_ancestor =
-      constraints.NearestStickyBoxShiftingContainingBlock();
+  PaintLayer* containing_block_shifting_ancestor =
+      constraints.NearestStickyLayerShiftingContainingBlock();
   if (containing_block_shifting_ancestor &&
-      containing_block_shifting_ancestor->Layer()
-          ->GetCompositedLayerMapping()) {
+      containing_block_shifting_ancestor->GetCompositedLayerMapping()) {
     web_constraint.nearest_layer_shifting_containing_block =
-        containing_block_shifting_ancestor->Layer()
-            ->GetCompositedLayerMapping()
+        containing_block_shifting_ancestor->GetCompositedLayerMapping()
             ->MainGraphicsLayer()
             ->PlatformLayer()
             ->Id();
