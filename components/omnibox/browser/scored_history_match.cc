@@ -515,6 +515,8 @@ float ScoredHistoryMatch::GetTopicalityScore(
     } else if (term_word_offset >= host_pos) {
       if (term_word_offset < domain_and_registry_pos)
         match_in_subdomain = true;
+      if (url_match.offset + url_match.length > path_pos)
+        match_after_host = true;
 
       if (term_word_offset < last_part_of_host_pos) {
         // Either there are no dots in the hostname or this match isn't
@@ -531,6 +533,11 @@ float ScoredHistoryMatch::GetTopicalityScore(
       // Matches not at a word boundary should have been filtered already.
       DCHECK(at_word_boundary);
       match_in_scheme = true;
+      if (url_match.offset + url_match.length > host_pos)
+        match_in_subdomain = true;
+      if (url_match.offset + url_match.length > path_pos)
+        match_after_host = true;
+
       if (allow_scheme_matches_)
         term_scores[url_match.term_num] += 10;
     }
