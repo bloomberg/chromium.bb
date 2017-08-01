@@ -234,17 +234,14 @@ public class RequestFinishedInfoTest extends CronetTestBase {
 
         // Check the timing metrics
         assertNotNull(metrics.getRequestStart());
-        assertTrue(metrics.getRequestStart().after(startTime)
-                || metrics.getRequestStart().equals(startTime));
+        MetricsTestUtil.assertAfter(metrics.getRequestStart(), startTime);
         MetricsTestUtil.checkNoConnectTiming(metrics);
         assertNull(metrics.getSendingStart());
         assertNull(metrics.getSendingEnd());
         assertNull(metrics.getResponseStart());
         assertNotNull(metrics.getRequestEnd());
-        assertTrue(
-                metrics.getRequestEnd().before(endTime) || metrics.getRequestEnd().equals(endTime));
-        // Entire request should take more than 0 ms
-        assertTrue(metrics.getRequestEnd().getTime() - metrics.getRequestStart().getTime() > 0);
+        MetricsTestUtil.assertAfter(endTime, metrics.getRequestEnd());
+        MetricsTestUtil.assertAfter(metrics.getRequestEnd(), metrics.getRequestStart());
         assertTrue(metrics.getSentByteCount() == 0);
         assertTrue(metrics.getReceivedByteCount() == 0);
         mTestFramework.mCronetEngine.shutdown();
