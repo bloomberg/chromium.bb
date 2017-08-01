@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_METRICS_TAB_STATS_TRACKER_H_
 #define CHROME_BROWSER_METRICS_TAB_STATS_TRACKER_H_
 
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -32,8 +31,6 @@ class TabStatsTracker : public TabStripModelObserver,
   size_t browser_count() const { return browser_count_; }
 
  protected:
-  friend struct base::LazyInstanceTraitsBase<TabStatsTracker>;
-
   TabStatsTracker();
   ~TabStatsTracker() override;
 

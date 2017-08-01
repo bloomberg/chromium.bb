@@ -11,22 +11,16 @@
 
 namespace metrics {
 
-namespace {
-
-base::LazyInstance<TabStatsTracker>::Leaky g_instance =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
 // static
 void TabStatsTracker::Initialize() {
-  DCHECK(g_instance == static_cast<TabStatsTracker*>(nullptr));
-  g_instance.Get();
+  // Calls GetInstance() to initialize the static instance.
+  GetInstance();
 }
 
 // static
 TabStatsTracker* TabStatsTracker::GetInstance() {
-  return g_instance.Pointer();
+  static TabStatsTracker* instance = new TabStatsTracker();
+  return instance;
 }
 
 TabStatsTracker::TabStatsTracker() : total_tabs_count_(0U), browser_count_(0U) {
