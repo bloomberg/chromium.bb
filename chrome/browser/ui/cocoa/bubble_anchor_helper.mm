@@ -11,12 +11,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/bubble_anchor_util.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
-#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
-#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
-#include "chrome/common/pref_names.h"
-#include "components/prefs/pref_service.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 
 bool HasVisibleLocationBarForBrowser(Browser* browser) {
@@ -26,19 +22,10 @@ bool HasVisibleLocationBarForBrowser(Browser* browser) {
   if (!browser->exclusive_access_manager()->context()->IsFullscreen())
     return true;
 
-  // If the browser is in browser-initiated full screen, a preference can cause
-  // the toolbar to be hidden.
-  if (browser->exclusive_access_manager()
-          ->fullscreen_controller()
-          ->IsFullscreenForBrowser()) {
-    PrefService* prefs = browser->profile()->GetPrefs();
-    bool show_toolbar = prefs->GetBoolean(prefs::kShowFullscreenToolbar);
-    return show_toolbar;
-  }
-
-  // Otherwise this is fullscreen without a toolbar, so there is no visible
-  // location bar.
-  return false;
+  // Return false only if the toolbar is fully hidden.
+  BrowserWindowController* bwc = [BrowserWindowController
+      browserWindowControllerForWindow:browser->window()->GetNativeWindow()];
+  return [[bwc fullscreenToolbarController] toolbarFraction] != 0;
 }
 
 NSPoint GetPageInfoAnchorPointForBrowser(Browser* browser) {
