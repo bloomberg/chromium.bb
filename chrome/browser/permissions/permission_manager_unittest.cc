@@ -39,7 +39,7 @@ class PermissionManagerTestingProfile final : public TestingProfile {
   DISALLOW_COPY_AND_ASSIGN(PermissionManagerTestingProfile);
 };
 
-}  // anonymous namespace
+}  // namespace
 
 class PermissionManagerTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -156,7 +156,7 @@ TEST_F(PermissionManagerTest, GetPermissionStatusAfterSet) {
 #endif
 }
 
-TEST_F(PermissionManagerTest, CheckPersmissionResultDefault) {
+TEST_F(PermissionManagerTest, CheckPermissionResultDefault) {
   CheckPermissionResult(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, CONTENT_SETTING_ASK,
                         PermissionStatusSource::UNSPECIFIED);
   CheckPermissionResult(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
@@ -455,4 +455,27 @@ TEST_F(PermissionManagerTest, PermissionIgnoredCleanup) {
 
   EXPECT_FALSE(callback_called());
   EXPECT_TRUE(PendingRequestsEmpty());
+}
+
+// Check PermissionResult shows requests denied due to insecure origins.
+TEST_F(PermissionManagerTest, InsecureOrigin) {
+  GURL insecure_frame("http://www.example.com/geolocation");
+  NavigateAndCommit(insecure_frame);
+
+  PermissionResult result = GetPermissionManager()->GetPermissionStatusForFrame(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION, web_contents()->GetMainFrame(),
+      insecure_frame);
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::INSECURE_ORIGIN, result.source);
+
+  GURL secure_frame("https://www.example.com/geolocation");
+  NavigateAndCommit(secure_frame);
+
+  result = GetPermissionManager()->GetPermissionStatusForFrame(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION, web_contents()->GetMainFrame(),
+      secure_frame);
+
+  EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 }

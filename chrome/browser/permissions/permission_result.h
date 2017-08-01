@@ -26,6 +26,10 @@ enum class PermissionStatusSource {
   // The status is the result of being blocked due to the user ignoring a
   // permission prompt multiple times.
   MULTIPLE_IGNORES,
+
+  // This origin is insecure, thus its access to some permissions has been
+  // restricted, such as camera, microphone, etc.
+  INSECURE_ORIGIN,
 };
 
 struct PermissionResult {
