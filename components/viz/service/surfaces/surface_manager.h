@@ -66,6 +66,8 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // Creates a Surface for the given SurfaceClient. The surface will be
   // destroyed when DestroySurface is called, all of its destruction
   // dependencies are satisfied, and it is not reachable from the root surface.
+  // If LifetimeType=REFERENCES, then a temporary reference will be added to
+  // the new Surface.
   Surface* CreateSurface(base::WeakPtr<SurfaceClient> surface_client,
                          const SurfaceInfo& surface_info,
                          BeginFrameSource* begin_frame_source,
@@ -93,8 +95,8 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // |ack.sequence_number| is only valid if called in response to a BeginFrame.
   bool SurfaceModified(const SurfaceId& surface_id, const BeginFrameAck& ack);
 
-  // Called when a CompositorFrame is submitted to a SurfaceClient
-  // for a given |surface_id| for the first time.
+  // Called when a surface has an active frame for the first time.
+  // TODO(fsamuel,samans): Rename to OnFirstSurfaceActivation.
   void SurfaceCreated(const SurfaceInfo& surface_info);
 
   // Called when a CompositorFrame within |surface| has activated.
