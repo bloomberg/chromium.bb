@@ -454,6 +454,9 @@ bool StructTraits<blink::mojom::FetchAPIRequestDataView,
     out->blob_uuid = blob_uuid.value();
     out->blob_size = data.blob_size();
   }
+  storage::mojom::BlobPtr blob = data.TakeBlob<storage::mojom::BlobPtr>();
+  if (blob)
+    out->blob = base::MakeRefCounted<storage::BlobHandle>(std::move(blob));
   out->is_reload = data.is_reload();
   return true;
 }

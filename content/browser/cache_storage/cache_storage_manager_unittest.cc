@@ -44,6 +44,7 @@
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
+#include "storage/common/blob_storage/blob_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -379,7 +380,7 @@ class CacheStorageManagerTest : public testing::Test {
         std::move(url_list), status_code, "OK",
         blink::mojom::FetchResponseType::kDefault,
         base::MakeUnique<ServiceWorkerHeaderMap>(response_headers),
-        blob_handle->uuid(), request.url.spec().size(),
+        blob_handle->uuid(), request.url.spec().size(), nullptr /* blob */,
         blink::kWebServiceWorkerResponseErrorUnknown, base::Time(),
         false /* is_in_cache_storage */,
         std::string() /* cache_storage_cache_name */,

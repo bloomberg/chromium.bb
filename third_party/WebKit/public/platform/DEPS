@@ -25,6 +25,7 @@ include_rules = [
     "+public/platform",
     "-public/web",
     "+services/service_manager/public/interfaces",
+    "+storage/public/interfaces",
     "+third_party/skia",
     "+ui/gfx",
     "+url",

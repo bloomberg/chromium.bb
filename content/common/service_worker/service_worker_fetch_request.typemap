@@ -10,6 +10,8 @@ public_headers = [
   "//content/public/common/request_context_frame_type.h",
   "//content/public/common/request_context_type.h",
   "//content/public/common/service_worker_modes.h",
+  "//storage/common/blob_storage/blob_handle.h",
+  "//storage/common/storage_common_export.h",
 ]
 traits_headers = [ "//content/common/service_worker/service_worker_fetch_request_struct_traits.h" ]
 sources = [

@@ -450,6 +450,20 @@ uint64_t StructTraits<blink::mojom::FetchAPIRequestDataView,
 }
 
 // static
+storage::mojom::blink::BlobPtr StructTraits<
+    blink::mojom::FetchAPIRequestDataView,
+    blink::WebServiceWorkerRequest>::blob(const blink::WebServiceWorkerRequest&
+                                              request) {
+  if (request.GetBlobDataHandle()) {
+    storage::mojom::blink::BlobPtr result =
+        request.GetBlobDataHandle()->CloneBlobPtr();
+    return result;
+  }
+
+  return nullptr;
+}
+
+// static
 WTF::String StructTraits<blink::mojom::FetchAPIRequestDataView,
                          blink::WebServiceWorkerRequest>::
     integrity(const blink::WebServiceWorkerRequest& request) {
@@ -475,6 +489,7 @@ bool StructTraits<blink::mojom::FetchAPIRequestDataView,
   WTF::String method;
   WTF::HashMap<WTF::String, WTF::String> headers;
   WTF::String blobUuid;
+  storage::mojom::blink::BlobPtr blob;
   blink::Referrer referrer;
   blink::WebURLRequest::FetchCredentialsMode credentialsMode;
   blink::WebURLRequest::FetchRedirectMode redirectMode;
@@ -499,7 +514,8 @@ bool StructTraits<blink::mojom::FetchAPIRequestDataView,
   out->SetMethod(method);
   for (const auto& pair : headers)
     out->SetHeader(pair.key, pair.value);
-  out->SetBlob(blobUuid, static_cast<long long>(data.blob_size()));
+  out->SetBlob(blobUuid, static_cast<long long>(data.blob_size()),
+               data.TakeBlob<storage::mojom::blink::BlobPtr>().PassInterface());
   out->SetReferrer(referrer.referrer, static_cast<blink::WebReferrerPolicy>(
                                           referrer.referrer_policy));
   out->SetCredentialsMode(credentialsMode);

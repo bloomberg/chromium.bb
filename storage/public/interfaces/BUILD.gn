@@ -14,9 +14,9 @@ mojom("interfaces") {
     "//url/mojo:url_mojom_gurl",
   ]
 
-  export_class_attribute = "STORAGE_EXPORT"
-  export_define = "STORAGE_BROWSER_IMPLEMENTATION=1"
-  export_header = "storage/browser/storage_browser_export.h"
+  export_class_attribute = "STORAGE_COMMON_EXPORT"
+  export_define = "STORAGE_COMMON_IMPLEMENTATION=1"
+  export_header = "storage/common/storage_common_export.h"
 
   export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"

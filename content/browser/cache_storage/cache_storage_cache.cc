@@ -27,6 +27,7 @@
 #include "content/browser/cache_storage/cache_storage_cache_observer.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
@@ -35,9 +36,11 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
+#include "storage/common/blob_storage/blob_handle.h"
 #include "storage/common/storage_histograms.h"
 #include "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom.h"
 
@@ -247,7 +250,8 @@ std::unique_ptr<ServiceWorkerResponse> CreateResponse(
       std::move(url_list), metadata.response().status_code(),
       metadata.response().status_text(),
       ProtoResponseTypeToFetchResponseType(metadata.response().response_type()),
-      std::move(headers), "", 0, blink::kWebServiceWorkerResponseErrorUnknown,
+      std::move(headers), "", 0, nullptr /* blob */,
+      blink::kWebServiceWorkerResponseErrorUnknown,
       base::Time::FromInternalValue(metadata.response().response_time()),
       true /* is_in_cache_storage */, cache_name,
       base::MakeUnique<ServiceWorkerHeaderList>(
@@ -1059,6 +1063,8 @@ void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
 
   if (!response->blob_uuid.empty()) {
+    DCHECK_EQ(response->blob != nullptr,
+              base::FeatureList::IsEnabled(features::kMojoBlobs));
     if (!blob_storage_context_) {
       std::move(callback).Run(CACHE_STORAGE_ERROR_STORAGE);
       return;
@@ -1534,7 +1540,18 @@ CacheStorageCache::PopulateResponseBody(disk_cache::ScopedEntryPtr entry,
   blob_data.AppendDiskCacheEntryWithSideData(
       new CacheStorageCacheDataHandle(CreateCacheHandle(), std::move(entry)),
       temp_entry, INDEX_RESPONSE_BODY, INDEX_SIDE_DATA);
-  return blob_storage_context_->AddFinishedBlob(&blob_data);
+  auto result = blob_storage_context_->AddFinishedBlob(&blob_data);
+
+  if (base::FeatureList::IsEnabled(features::kMojoBlobs)) {
+    storage::mojom::BlobPtr blob_ptr;
+    storage::BlobImpl::Create(
+        base::MakeUnique<storage::BlobDataHandle>(*result),
+        MakeRequest(&blob_ptr));
+    response->blob =
+        base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
+  }
+
+  return result;
 }
 
 std::unique_ptr<CacheStorageCacheHandle>

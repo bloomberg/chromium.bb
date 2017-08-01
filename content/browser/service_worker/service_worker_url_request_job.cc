@@ -36,6 +36,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/service_worker_context.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/resource_request_body.h"
 #include "net/base/net_errors.h"
@@ -48,6 +49,7 @@
 #include "net/log/net_log_with_source.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "ui/base/page_transition_types.h"
 
@@ -575,6 +577,7 @@ ServiceWorkerURLRequestJob::CreateFetchRequest() {
   }
   request->blob_uuid = blob_uuid;
   request->blob_size = blob_size;
+  request->blob = request_body_blob_handle_;
   request->credentials_mode = credentials_mode_;
   request->redirect_mode = redirect_mode_;
   request->integrity = integrity_;
@@ -608,6 +611,15 @@ void ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
       blob_storage_context_->AddFinishedBlob(&blob_builder);
   *blob_uuid = blob_builder.uuid();
   *blob_size = request_body_blob_data_handle_->size();
+
+  if (base::FeatureList::IsEnabled(features::kMojoBlobs)) {
+    storage::mojom::BlobPtr blob_ptr;
+    storage::BlobImpl::Create(base::MakeUnique<storage::BlobDataHandle>(
+                                  *request_body_blob_data_handle_),
+                              MakeRequest(&blob_ptr));
+    request_body_blob_handle_ =
+        base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
+  }
 }
 
 bool ServiceWorkerURLRequestJob::ShouldRecordNavigationMetrics(

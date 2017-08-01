@@ -309,6 +309,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   // using the userdata mechanism. So we have to keep it not to free the blobs.
   scoped_refptr<ResourceRequestBody> body_;
   std::unique_ptr<storage::BlobDataHandle> request_body_blob_data_handle_;
+  scoped_refptr<storage::BlobHandle> request_body_blob_handle_;
   ServiceWorkerFetchType fetch_type_;
   base::Optional<base::TimeDelta> timeout_;
 

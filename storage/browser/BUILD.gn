@@ -201,7 +201,6 @@ component("browser") {
 
   public_deps = [
     "//storage/common",
-    "//storage/public/interfaces",
   ]
   deps = [
     "//base",

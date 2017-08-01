@@ -5,6 +5,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 
 #include "content/public/common/service_worker_modes.h"
+#include "storage/common/blob_storage/blob_handle.h"
 
 namespace content {
 
@@ -55,6 +56,9 @@ ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
 ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
     const ServiceWorkerFetchRequest& other) = default;
 
+ServiceWorkerFetchRequest& ServiceWorkerFetchRequest::operator=(
+    const ServiceWorkerFetchRequest& other) = default;
+
 ServiceWorkerFetchRequest::~ServiceWorkerFetchRequest() {}
 
 size_t ServiceWorkerFetchRequest::EstimatedStructSize() {
@@ -85,6 +89,7 @@ ServiceWorkerResponse::ServiceWorkerResponse(
     std::unique_ptr<ServiceWorkerHeaderMap> headers,
     const std::string& blob_uuid,
     uint64_t blob_size,
+    scoped_refptr<storage::BlobHandle> blob,
     blink::WebServiceWorkerResponseError error,
     base::Time response_time,
     bool is_in_cache_storage,
@@ -95,6 +100,7 @@ ServiceWorkerResponse::ServiceWorkerResponse(
       response_type(response_type),
       blob_uuid(blob_uuid),
       blob_size(blob_size),
+      blob(std::move(blob)),
       error(error),
       response_time(response_time),
       is_in_cache_storage(is_in_cache_storage),
@@ -105,6 +111,9 @@ ServiceWorkerResponse::ServiceWorkerResponse(
 }
 
 ServiceWorkerResponse::ServiceWorkerResponse(
+    const ServiceWorkerResponse& other) = default;
+
+ServiceWorkerResponse& ServiceWorkerResponse::operator=(
     const ServiceWorkerResponse& other) = default;
 
 ServiceWorkerResponse::~ServiceWorkerResponse() {}

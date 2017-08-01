@@ -241,6 +241,18 @@ class PLATFORM_EXPORT BlobDataHandle
     return AdoptRef(new BlobDataHandle(uuid, type, size));
   }
 
+  static PassRefPtr<BlobDataHandle> Create(
+      const String& uuid,
+      const String& type,
+      long long size,
+      storage::mojom::blink::BlobPtrInfo blob_info) {
+    if (blob_info.is_valid()) {
+      return AdoptRef(
+          new BlobDataHandle(uuid, type, size, std::move(blob_info)));
+    }
+    return AdoptRef(new BlobDataHandle(uuid, type, size));
+  }
+
   String Uuid() const { return uuid_.IsolatedCopy(); }
   String GetType() const { return type_.IsolatedCopy(); }
   unsigned long long size() const { return size_; }
@@ -249,12 +261,16 @@ class PLATFORM_EXPORT BlobDataHandle
 
   ~BlobDataHandle();
 
+  storage::mojom::blink::BlobPtr CloneBlobPtr();
+
  private:
   BlobDataHandle();
   BlobDataHandle(std::unique_ptr<BlobData>, long long size);
   BlobDataHandle(const String& uuid, const String& type, long long size);
-
-  storage::mojom::blink::BlobPtr CloneBlobPtr();
+  BlobDataHandle(const String& uuid,
+                 const String& type,
+                 long long size,
+                 storage::mojom::blink::BlobPtrInfo);
 
   const String uuid_;
   const String type_;
