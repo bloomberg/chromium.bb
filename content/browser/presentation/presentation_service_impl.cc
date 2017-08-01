@@ -499,8 +499,12 @@ PresentationServiceImpl::NewPresentationCallbackWrapper::
 
 PresentationServiceImpl::NewPresentationCallbackWrapper::
     ~NewPresentationCallbackWrapper() {
-  if (!callback_.is_null())
-    InvokeNewPresentationCallbackWithError(std::move(callback_));
+  if (!callback_.is_null()) {
+    std::move(callback_).Run(
+        base::nullopt,
+        PresentationError(PRESENTATION_ERROR_PRESENTATION_REQUEST_CANCELLED,
+                          "The frame is navigating or being destroyed."));
+  }
 }
 
 void PresentationServiceImpl::NewPresentationCallbackWrapper::Run(
