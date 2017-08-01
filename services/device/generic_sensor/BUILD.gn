@@ -14,6 +14,8 @@ source_set("generic_sensor") {
   output_name = "generic_sensor"
   sources = [
     "generic_sensor_consts.h",
+    "linear_acceleration_fusion_algorithm_using_accelerometer.cc",
+    "linear_acceleration_fusion_algorithm_using_accelerometer.h",
     "linux/sensor_data_linux.cc",
     "linux/sensor_data_linux.h",
     "orientation_quaternion_fusion_algorithm_using_euler_angles.cc",

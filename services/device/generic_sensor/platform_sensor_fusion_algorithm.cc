@@ -21,4 +21,8 @@ bool PlatformSensorFusionAlgorithm::IsReadingSignificantlyDifferent(
          (std::fabs(reading1.values[3] - reading2.values[3]) >= threshold_);
 }
 
+void PlatformSensorFusionAlgorithm::Reset() {}
+
+void PlatformSensorFusionAlgorithm::SetFrequency(double) {}
+
 }  // namespace device

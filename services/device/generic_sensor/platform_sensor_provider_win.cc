@@ -10,6 +10,8 @@
 #include "base/memory/singleton.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
+#include "services/device/generic_sensor/linear_acceleration_fusion_algorithm_using_accelerometer.h"
+#include "services/device/generic_sensor/platform_sensor_fusion.h"
 #include "services/device/generic_sensor/platform_sensor_win.h"
 
 namespace device {
@@ -44,13 +46,31 @@ void PlatformSensorProviderWin::CreateSensorInternal(
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      sensor_thread_->task_runner().get(), FROM_HERE,
-      base::Bind(&PlatformSensorProviderWin::CreateSensorReader,
-                 base::Unretained(this), type),
-      base::Bind(&PlatformSensorProviderWin::SensorReaderCreated,
-                 base::Unretained(this), type, base::Passed(&mapping),
-                 callback));
+  switch (type) {
+    // Fusion sensor.
+    case mojom::SensorType::LINEAR_ACCELERATION: {
+      std::vector<mojom::SensorType> source_sensor_types = {
+          mojom::SensorType::ACCELEROMETER};
+      auto linear_acceleration_fusion_algorithm = base::MakeUnique<
+          LinearAccelerationFusionAlgorithmUsingAccelerometer>();
+      base::MakeRefCounted<PlatformSensorFusion>(
+          std::move(mapping), this, callback, source_sensor_types, type,
+          std::move(linear_acceleration_fusion_algorithm));
+      break;
+    }
+
+    // Try to create low-level sensors by default.
+    default: {
+      base::PostTaskAndReplyWithResult(
+          sensor_thread_->task_runner().get(), FROM_HERE,
+          base::Bind(&PlatformSensorProviderWin::CreateSensorReader,
+                     base::Unretained(this), type),
+          base::Bind(&PlatformSensorProviderWin::SensorReaderCreated,
+                     base::Unretained(this), type, base::Passed(&mapping),
+                     callback));
+      break;
+    }
+  }
 }
 
 bool PlatformSensorProviderWin::InitializeSensorManager() {
