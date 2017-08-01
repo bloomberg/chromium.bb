@@ -252,6 +252,13 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1478
     'WindowSwitchingTest.*',
+
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1878
+    'CombinedInputActionsTest.testSelectingMultipleItems',
+    'CombinedInputActionsTest.testHoldingDownShiftKeyWhileClicking',
+    'BasicMouseInterfaceTest.testDoubleClick',
+    'BasicMouseInterfaceTest.testContextClick',
+    'CorrectEventFiringTest.testShouldFireMouseUpEventWhenClicking',
 ]
 _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
@@ -278,12 +285,6 @@ _OS_NEGATIVE_FILTER['android:chromium'] = (
         'ClickScrollingTest.testShouldBeAbleToClickElementInAFrameThatIsOutOfView',
         'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInAFrame',
         'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrameThatIsOutOfView',
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1878
-        'CombinedInputActionsTest.testSelectingMultipleItems',
-        'CombinedInputActionsTest.testHoldingDownShiftKeyWhileClicking',
-        'BasicMouseInterfaceTest.testDoubleClick',
-        'BasicMouseInterfaceTest.testContextClick',
-        'CorrectEventFiringTest.testShouldFireMouseUpEventWhenClicking',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
@@ -306,12 +307,6 @@ _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
         'JavascriptEnabledDriverTest.testIssue80ClickShouldGenerateClickEvent',
         'TypingTest.testShiftSelectionDeletes',
         'VisibilityTest.testShouldModifyTheVisibilityOfAnElementDynamically',
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1878
-        'CombinedInputActionsTest.testSelectingMultipleItems',
-        'CombinedInputActionsTest.testHoldingDownShiftKeyWhileClicking',
-        'BasicMouseInterfaceTest.testDoubleClick',
-        'BasicMouseInterfaceTest.testContextClick',
-        'CorrectEventFiringTest.testShouldFireMouseUpEventWhenClicking',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
