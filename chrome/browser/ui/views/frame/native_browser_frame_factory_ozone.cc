@@ -5,12 +5,12 @@
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
 
 #include "chrome/browser/ui/views/frame/browser_frame_mus.h"
-#include "services/service_manager/runner/common/client_util.h"
+#include "ui/aura/env.h"
 
 NativeBrowserFrame* NativeBrowserFrameFactory::Create(
     BrowserFrame* browser_frame,
     BrowserView* browser_view) {
-  if (service_manager::ServiceManagerIsRemote())
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
     return new BrowserFrameMus(browser_frame, browser_view);
 
   NOTREACHED() << "For Ozone builds, only --mash launch is supported for now.";

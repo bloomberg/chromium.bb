@@ -4,10 +4,10 @@
 
 #include "chrome/browser/fullscreen.h"
 
-#include "services/service_manager/runner/common/client_util.h"
+#include "ui/aura/env.h"
 
 bool IsFullScreenMode(int64_t display_id) {
-  if (service_manager::ServiceManagerIsRemote()) {
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS) {
     // TODO: http://crbug.com/640390.
     NOTIMPLEMENTED();
     return false;
