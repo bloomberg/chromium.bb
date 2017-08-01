@@ -154,8 +154,8 @@ class LayoutUnit {
     return ToInt();
   }
   ALWAYS_INLINE int Round() const {
-    return ClampAdd(RawValue(), kFixedPointDenominator / 2) >>
-           kLayoutUnitFractionalBits;
+    return ToInt() + ((Fraction().RawValue() + (kFixedPointDenominator / 2)) >>
+                      kLayoutUnitFractionalBits);
   }
 
   int Floor() const {
