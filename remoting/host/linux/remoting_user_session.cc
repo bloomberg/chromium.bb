@@ -20,10 +20,7 @@
 #include <grp.h>
 #include <limits.h>
 #include <pwd.h>
-#include <signal.h>
 #include <unistd.h>
-
-#include <security/pam_appl.h>
 
 #include <cerrno>
 #include <cstdio>
@@ -38,6 +35,8 @@
 #include <utility>
 #include <vector>
 
+#include <security/pam_appl.h>
+
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -46,15 +45,8 @@
 #include "base/optional.h"
 #include "base/process/launch.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/string_util.h"
 
 namespace {
-
-// This is the file descriptor used for the Python session script to pass us
-// messages during startup. It must be kept in sync with USER_SESSION_MESSAGE_FD
-// in linux_me2me_host.py. It should be high enough that login scripts are
-// unlikely to interfere with it, but is otherwise arbitrary.
-const int kMessageFd = 202;
 
 const char kPamName[] = "chrome-remote-desktop";
 const char kScriptName[] = "chrome-remote-desktop";
@@ -367,8 +359,6 @@ void ExecuteSession(std::string user,
     CHECK(pam_environment) << "Failed to get environment from PAM";
     ExecMe2MeScript(std::move(*pam_environment), pwinfo);  // Never returns
   } else {
-    // Close pipe write fd if it is open
-    close(kMessageFd);
     // waitpid will return if the child is ptraced, so loop until the process
     // actually exits.
     int status;
@@ -398,29 +388,22 @@ void ExecuteSession(std::string user,
   }
 }
 
-struct LogFile {
-  int fd;
-  std::string path;
-};
-
 // Opens a temp file for logging. Exits the program on failure.
-// Returns open file descriptor and path to log file.
-LogFile OpenLogFile() {
+int OpenLogFile() {
   char logfile[265];
   std::time_t time = std::time(nullptr);
   CHECK_NE(time, (std::time_t)(-1));
   // Safe because we're single threaded
   std::tm* localtime = std::localtime(&time);
   CHECK_NE(std::strftime(logfile, sizeof(logfile), kLogFileTemplate, localtime),
-           static_cast<std::size_t>(0))
-      << "Failed to format log file name";
+           (std::size_t) 0);
 
   mode_t mode = umask(0177);
   int fd = mkstemp(logfile);
-  PCHECK(fd != -1) << "Failed to open log file";
+  PCHECK(fd != -1);
   umask(mode);
 
-  return {fd, logfile};
+  return fd;
 }
 
 // Find the username for the current user. If either USER or LOGNAME is set to
@@ -450,167 +433,56 @@ std::string FindCurrentUsername() {
   return pwinfo->pw_name;
 }
 
-// Handle SIGINT and SIGTERM by printing a message and reraising the signal.
-// This handler expects to be registered with the SA_RESETHAND and SA_NODEFER
-// options to sigaction. (Don't register using signal.)
-void HandleInterrupt(int signal) {
-  static const char kInterruptedMessage[] =
-      "Interrupted. The daemon is still running in the background.\n";
-  write(STDERR_FILENO, kInterruptedMessage, arraysize(kInterruptedMessage) - 1);
-  raise(signal);
-}
-
-// Handle SIGALRM timeout
-void HandleAlarm(int) {
-  static const char kTimeoutMessage[] =
-      "Timeout waiting for session to start. It may have crashed, or may still "
-      "be running in the background.\n";
-  write(STDERR_FILENO, kTimeoutMessage, arraysize(kTimeoutMessage) - 1);
-  std::_Exit(EXIT_FAILURE);
-}
-
-// Relay messages from the host session and then exit.
-void WaitForMessagesAndExit(int read_fd, const std::string& log_name) {
-  // Use initializer-list syntax to avoid trailing null
-  static const base::StringPiece kMessagePrefix = "MSG:";
-  static const base::StringPiece kReady = "READY\n";
-
-  struct sigaction action = {};
-  sigemptyset(&action.sa_mask);
-  action.sa_flags = SA_RESETHAND | SA_NODEFER;
-
-  // If Ctrl-C is pressed or TERM is received, inform the user that the daemon
-  // is still running before exiting.
-  action.sa_handler = HandleInterrupt;
-  sigaction(SIGINT, &action, nullptr);
-  sigaction(SIGTERM, &action, nullptr);
-
-  // Install a fallback timeout to end the parent process, in case the daemon
-  // never responds (e.g. host crash-looping, daemon killed).
-  //
-  // The value of 120s is chosen to match the heartbeat retry timeout in
-  // hearbeat_sender.cc.
-  action.sa_handler = HandleAlarm;
-  sigaction(SIGALRM, &action, nullptr);
-  alarm(120);
-
-  std::FILE* stream = fdopen(read_fd, "r");
-  char* buffer = nullptr;
-  std::size_t buffer_size = 0;
-  ssize_t line_size;
-  bool message_received = false;
-  bool host_ready = false;
-  while ((line_size = getline(&buffer, &buffer_size, stream)) >= 0) {
-    message_received = true;
-    base::StringPiece line(buffer, line_size);
-    if (base::StartsWith(line, kMessagePrefix, base::CompareCase::SENSITIVE)) {
-      line.remove_prefix(kMessagePrefix.size());
-      fwrite(line.data(), sizeof(char), line.size(), stderr);
-    } else if (line == kReady) {
-      host_ready = true;
-    } else {
-      fputs("Unrecognized command: ", stderr);
-      fwrite(line.data(), sizeof(char), line.size(), stderr);
-    }
-  }
-
-  // If we're not at EOF, it means a read error occured and we don't know if the
-  // host is still running or not. Similarly, if we received an EOF before any
-  // messages were received, it probably means the user's log-in shell closed
-  // the pipe before execing the python script, so again we don't know the state
-  // of the host. This latter behavior has only been observed in csh and tcsh.
-  // All other shells tested allowed the python script to inherit the pipe file
-  // descriptor without trouble.
-  if (!std::feof(stream) || !message_received) {
-    LOG(WARNING) << "Failed to read from message pipe. Please check log to "
-                    "determine host status.\n";
-    // Assume host started so native messaging host allows flow to complete.
-    host_ready = true;
-  }
-
-  fprintf(stderr, "Log file: %s\n", log_name.c_str());
-
-  std::exit(host_ready ? EXIT_SUCCESS : EXIT_FAILURE);
-}
-
-// Daemonizes the process. Output is redirected to a log file. Exits the program
-// on failure. Only returns in the child process.
+// Daemonizes the process. Output is redirected to a file. Exits the program on
+// failure.
 //
-// When executed by root (almost certainly via the init script), or if a pipe
-// cannot be created, the parent will immediately exit. When executed by a
-// user, the parent process will drop privileges and wait for the host to
-// start, relaying any start-up messages to stdout.
+// This logic is mostly the same as daemonize() in linux_me2me_host.py. Log-
+// file redirection especially should be kept in sync. Note that this does
+// not currently wait for the host to start successfully before exiting the
+// parent process like the Python script does, as that functionality is
+// probably not useful at boot, where the wrapper is expected to be used. If
+// it turns out to be desired, it can be implemented by setting up a pipe and
+// passing a file descriptor to the Python script.
 void Daemonize() {
-  LogFile log_file = OpenLogFile();
+  int log_fd = OpenLogFile();
   int devnull_fd = open("/dev/null", O_RDONLY);
-  PCHECK(devnull_fd != -1) << "Failed to open /dev/null";
+  PCHECK(devnull_fd != -1);
 
-  uid_t real_uid = getuid();
+  PCHECK(dup2(devnull_fd, STDIN_FILENO) != -1);
+  PCHECK(dup2(log_fd, STDOUT_FILENO) != -1);
+  PCHECK(dup2(log_fd, STDERR_FILENO) != -1);
 
-  // Set up message pipe
-  bool pipe_created = false;
-  int read_fd;
-  if (real_uid != 0) {
-    int pipe_fd[2];
-    int pipe_result = ::pipe(pipe_fd);
-    if (pipe_result != 0 || dup2(pipe_fd[1], kMessageFd) != kMessageFd) {
-      PLOG(WARNING) << "Failed to create message pipe. Please check log to "
-                       "determine host status.\n";
-    } else {
-      pipe_created = true;
-      read_fd = pipe_fd[0];
-      close(pipe_fd[1]);
-    }
-  }
+  // Close all file descriptors except stdio, including any we may have
+  // inherited.
+  base::CloseSuperfluousFds(base::InjectiveMultimap());
 
   // Allow parent to exit, and ensure we're not a session leader so setsid can
   // succeed
   pid_t pid = fork();
-  PCHECK(pid != -1) << "fork failed";
-
-  if (pid != 0) {
-    if (!pipe_created) {
-      std::exit(EXIT_SUCCESS);
-    } else {
-      PCHECK(setuid(real_uid) == 0) << "setuid failed";
-      close(kMessageFd);
-      WaitForMessagesAndExit(read_fd, log_file.path);
-      CHECK(false);
-    }
-  }
-
-  // Start a new process group and session with no controlling terminal.
-  PCHECK(setsid() != -1) << "setsid failed";
-
-  // Fork again so we're no longer a session leader and can't get a controlling
-  // terminal.
-  pid = fork();
-  PCHECK(pid != -1) << "fork failed";
+  PCHECK(pid != -1);
 
   if (pid != 0) {
     std::exit(EXIT_SUCCESS);
   }
 
-  LOG(INFO) << "Daemon process started in the background, logging to '"
-            << log_file.path << "'";
+  // Start a new process group and session with no controlling terminal.
+  PCHECK(setsid() != -1);
+
+  // Fork again so we're no longer a session leader and can't get a controlling
+  // terminal.
+  pid = fork();
+  PCHECK(pid != -1);
+
+  if (pid != 0) {
+    std::exit(EXIT_SUCCESS);
+  }
 
   // We don't want to change to the target user's home directory until we've
   // dropped privileges, so change to / to make sure we're not keeping any other
   // directory in use.
-  PCHECK(chdir("/") == 0) << "chdir / failed";
+  PCHECK(chdir("/") == 0);
 
-  PCHECK(dup2(devnull_fd, STDIN_FILENO) != -1) << "dup2 failed";
-  PCHECK(dup2(log_file.fd, STDOUT_FILENO) != -1) << "dup2 failed";
-  PCHECK(dup2(log_file.fd, STDERR_FILENO) != -1) << "dup2 failed";
-
-  // Close all file descriptors except stdio and kMessageFd, including any we
-  // may have inherited.
-  if (pipe_created) {
-    base::CloseSuperfluousFds(
-        {base::InjectionArc(kMessageFd, kMessageFd, false)});
-  } else {
-    base::CloseSuperfluousFds(base::InjectiveMultimap());
-  }
+  // Done!
 }
 
 }  // namespace
