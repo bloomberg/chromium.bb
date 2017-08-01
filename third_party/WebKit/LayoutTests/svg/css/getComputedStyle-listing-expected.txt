@@ -155,7 +155,7 @@ flood-opacity: 1
 font-kerning: auto
 font-size: 16px
 font-size-adjust: none
-font-stretch: normal
+font-stretch: 100%
 font-style: normal
 font-variant: normal
 font-variant-caps: normal

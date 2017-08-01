@@ -32,9 +32,8 @@ FontDescription FontStyleResolver::ComputeFont(
       nullptr));
 
   // CSSPropertyFontStretch
-  builder.SetStretch(ToCSSIdentifierValue(*property_set.GetPropertyCSSValue(
-                                              CSSPropertyFontStretch))
-                         .ConvertTo<FontSelectionValueStretch>());
+  builder.SetStretch(StyleBuilderConverterBase::ConvertFontStretch(
+      *property_set.GetPropertyCSSValue(CSSPropertyFontStretch)));
 
   // CSSPropertyFontStyle
   builder.SetStyle(ToCSSIdentifierValue(

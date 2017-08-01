@@ -95,6 +95,26 @@ String CSSPropertyFontUtils::ConcatenateFamilyName(CSSParserTokenRange& range) {
   return builder.ToString();
 }
 
+CSSIdentifierValue* CSSPropertyFontUtils::ConsumeFontStretchKeywordOnly(
+    CSSParserTokenRange& range) {
+  const CSSParserToken& token = range.Peek();
+  if (token.Id() == CSSValueNormal || (token.Id() >= CSSValueUltraCondensed &&
+                                       token.Id() <= CSSValueUltraExpanded))
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
+  return nullptr;
+}
+
+CSSValue* CSSPropertyFontUtils::ConsumeFontStretch(CSSParserTokenRange& range) {
+  CSSIdentifierValue* parsed_keyword = ConsumeFontStretchKeywordOnly(range);
+  if (parsed_keyword)
+    return parsed_keyword;
+  CSSPrimitiveValue* percent =
+      CSSPropertyParserHelpers::ConsumePercent(range, kValueRangeNonNegative);
+  if (!percent || percent->GetFloatValue() <= 0)
+    return nullptr;
+  return percent;
+}
+
 CSSValue* CSSPropertyFontUtils::ConsumeFontWeight(CSSParserTokenRange& range) {
   const CSSParserToken& token = range.Peek();
   if (token.Id() >= CSSValueNormal && token.Id() <= CSSValueLighter)

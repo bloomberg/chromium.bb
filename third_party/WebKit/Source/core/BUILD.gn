@@ -518,6 +518,7 @@ code_generator("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSPropertyAPIFontFeatureSettings.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIFontSize.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIFontSizeAdjust.h",
+    "$blink_core_output_dir/css/properties/CSSPropertyAPIFontStretch.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIFontVariantCaps.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIFontVariantLigatures.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIFontVariantNumeric.h",
