@@ -203,6 +203,10 @@ bool RenderWidgetHostViewChildFrame::IsSurfaceAvailableForCopy() const {
 void RenderWidgetHostViewChildFrame::Show() {
   if (!host_->is_hidden())
     return;
+
+  if (!CanBecomeVisible())
+    return;
+
   host_->WasShown(ui::LatencyInfo());
 }
 
@@ -902,6 +906,23 @@ gfx::Point RenderWidgetHostViewChildFrame::GetViewOriginInRoot() const {
     return gfx::Point(origin.x(), origin.y());
   }
   return gfx::Point();
+}
+
+bool RenderWidgetHostViewChildFrame::CanBecomeVisible() {
+  if (!frame_connector_)
+    return true;
+
+  if (frame_connector_->is_hidden())
+    return false;
+
+  RenderWidgetHostViewBase* parent_view = GetParentView();
+  if (!parent_view || !parent_view->IsRenderWidgetHostViewChildFrame()) {
+    // Root frame does not have a CSS visibility property.
+    return true;
+  }
+
+  return static_cast<RenderWidgetHostViewChildFrame*>(parent_view)
+      ->CanBecomeVisible();
 }
 
 }  // namespace content

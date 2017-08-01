@@ -258,6 +258,12 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+                           HiddenOOPIFWillNotGenerateCompositorFrames);
+  FRIEND_TEST_ALL_PREFIXES(
+      SitePerProcessBrowserTest,
+      HiddenOOPIFWillNotGenerateCompositorFramesAfterNavigation);
+
   virtual void SendSurfaceInfoToEmbedderImpl(
       const viz::SurfaceInfo& surface_info,
       const viz::SurfaceSequence& sequence);
@@ -272,6 +278,11 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void DetachFromTouchSelectionClientManagerIfNecessary();
 
   virtual bool HasEmbedderChanged();
+
+  // Returns false if the view cannot be shown. This is the case where the frame
+  // associated with this view or a cross process ancestor frame has been hidden
+  // using CSS.
+  bool CanBecomeVisible();
 
   using FrameSwappedCallbackList = std::deque<std::unique_ptr<base::Closure>>;
   // Since frame-drawn callbacks are "fire once", we use std::deque to make

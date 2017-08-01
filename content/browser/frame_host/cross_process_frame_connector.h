@@ -138,6 +138,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
   }
 
   bool is_inert() const { return is_inert_; }
+  bool is_hidden() const { return is_hidden_; }
 
   // Exposed for tests.
   RenderWidgetHostViewBase* GetRootRenderWidgetHostViewForTesting() {
@@ -168,6 +169,10 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
   gfx::Rect child_frame_rect_;
   gfx::Rect viewport_intersection_rect_;
   bool is_inert_ = false;
+
+  // Visibility state of the corresponding frame owner element in parent process
+  // which is set through CSS.
+  bool is_hidden_ = false;
 
   bool is_scroll_bubbling_;
 };
