@@ -248,7 +248,16 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
   // devices may return an empty string from GetDefaultOutputDeviceID().
   std::string output_device_id =
       AudioDeviceDescription::IsDefaultDevice(device_id)
-          ? GetDefaultOutputDeviceID()
+          ?
+#if defined(OS_CHROMEOS)
+          // On ChromeOS, it is expected that, if the default device is given,
+          // no specific device ID should be used since the actual output device
+          // should change dynamically if the system default device changes.
+          // See http://crbug.com/750614.
+          std::string()
+#else
+          GetDefaultOutputDeviceID()
+#endif
           : device_id;
 
   // If we're not using AudioOutputResampler our output parameters are the same
