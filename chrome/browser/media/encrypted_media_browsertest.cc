@@ -51,6 +51,7 @@ namespace chrome {
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
 const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
 
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 // Variants of External Clear Key key system to test different scenarios.
 // To add a new variant, make sure you also update:
 // - media/test/data/eme_player_js/globals.js
@@ -74,13 +75,16 @@ const char kExternalClearKeyVerifyCdmHostTestKeySystem[] =
 #endif
 const char kExternalClearKeyStorageIdTestKeySystem[] =
     "org.chromium.externalclearkey.storageidtest";
+#endif
 
 // Supported media types.
 const char kWebMVorbisAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
-const char kWebMVP8VideoOnly[] = "video/webm; codecs=\"vp8\"";
 const char kWebMVorbisAudioVP8Video[] = "video/webm; codecs=\"vorbis, vp8\"";
 const char kWebMOpusAudioVP9Video[] = "video/webm; codecs=\"opus, vp9\"";
 const char kWebMVP9VideoOnly[] = "video/webm; codecs=\"vp9\"";
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+const char kWebMVP8VideoOnly[] = "video/webm; codecs=\"vp8\"";
+#endif
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 const char kMP4VideoOnly[] = "video/mp4; codecs=\"avc1.4D000C\"";
 const char kMP4VideoVp9Only[] =
@@ -89,8 +93,10 @@ const char kMP4VideoVp9Only[] =
 
 // Sessions to load.
 const char kNoSessionToLoad[] = "";
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 const char kLoadableSession[] = "LoadableSession";
 const char kUnknownSession[] = "UnknownSession";
+#endif
 
 // EME-specific test results and errors.
 const char kUnitTestSuccess[] = "UNIT_TEST_SUCCESS";
@@ -103,7 +109,9 @@ const char kEmeUpdateFailed[] = "EME_UPDATE_FAILED";
 const char kEmeErrorEvent[] = "EME_ERROR_EVENT";
 const char kEmeMessageUnexpectedType[] = "EME_MESSAGE_UNEXPECTED_TYPE";
 const char kEmeRenewalMissingHeader[] = "EME_RENEWAL_MISSING_HEADER";
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 const char kEmeSessionClosedAndError[] = "EME_SESSION_CLOSED_AND_ERROR";
+#endif
 
 const char kDefaultEmePlayer[] = "eme_player.html";
 
@@ -714,6 +722,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
 }
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #if defined(WIDEVINE_CDM_AVAILABLE)
 // The parent key system cannot be used when creating MediaKeys.
 IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException) {
@@ -736,7 +745,6 @@ INSTANTIATE_TEST_CASE_P(Mojo,
                         Values(CdmHostType::kMojo));
 #endif  // !defined(OS_MACOSX)
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, InitializeCDMFail) {
   TestNonPlaybackCases(kExternalClearKeyInitializeFailKeySystem,
                        kEmeNotSupportedError);
@@ -851,7 +859,6 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, DecryptOnly_VideoOnly_MP4_VP9) {
       kExternalClearKeyDecryptOnlyKeySystem, SrcType::MSE);
 }
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, VerifyCdmHostTest) {
@@ -878,5 +885,6 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, StorageIdTest) {
   TestNonPlaybackCases(kExternalClearKeyStorageIdTestKeySystem,
                        kUnitTestSuccess);
 }
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 }  // namespace chrome

@@ -140,14 +140,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "cdm/aes_decryptor_unittest.cc",
-    "cdm/external_clear_key_test_helper.cc",
-    "cdm/external_clear_key_test_helper.h",
     "cdm/json_web_key_unittest.cc",
-    "cdm/simple_cdm_allocator.cc",
-    "cdm/simple_cdm_allocator.h",
-    "cdm/simple_cdm_allocator_unittest.cc",
-    "cdm/simple_cdm_buffer.cc",
-    "cdm/simple_cdm_buffer.h",
     "device_monitors/system_message_window_win_unittest.cc",
     "filters/audio_clock_unittest.cc",
     "filters/audio_decoder_selector_unittest.cc",
@@ -220,7 +213,6 @@ source_set("unit_tests") {
     "//gpu/command_buffer/common",
     "//media/audio:test_support",
     "//media/base:test_support",
-    "//media/cdm:cdm_api",
     "//media/cdm:cdm_paths",
     "//skia",  # Direct dependency required to inherit config.
     "//testing/gmock",
@@ -246,7 +238,16 @@ source_set("unit_tests") {
 
   # If ExternalClearKey is built, we can test CdmAdapter.
   if (enable_library_cdms) {
-    sources += [ "cdm/cdm_adapter_unittest.cc" ]
+    sources += [
+      "cdm/cdm_adapter_unittest.cc",
+      "cdm/external_clear_key_test_helper.cc",
+      "cdm/external_clear_key_test_helper.h",
+      "cdm/simple_cdm_allocator.cc",
+      "cdm/simple_cdm_allocator.h",
+      "cdm/simple_cdm_allocator_unittest.cc",
+      "cdm/simple_cdm_buffer.cc",
+      "cdm/simple_cdm_buffer.h",
+    ]
     data_deps += [ "//media/cdm/ppapi:clearkeycdm" ]
   }
 

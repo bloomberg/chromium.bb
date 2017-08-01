@@ -31,8 +31,6 @@ component("services") {
     "mojo_audio_output_stream.h",
     "mojo_audio_output_stream_provider.cc",
     "mojo_audio_output_stream_provider.h",
-    "mojo_cdm_allocator.cc",
-    "mojo_cdm_allocator.h",
     "mojo_cdm_promise.cc",
     "mojo_cdm_promise.h",
     "mojo_cdm_service.cc",
@@ -80,7 +78,6 @@ component("services") {
 
   deps = [
     "//media:shared_memory_support",
-    "//media/cdm:cdm_api",
     "//media/cdm:cdm_manager",
     "//media/mojo/common",
     "//media/mojo/common:mojo_shared_buffer_video_frame",
@@ -95,6 +92,14 @@ component("services") {
       "mojo_media_drm_storage.cc",
       "mojo_media_drm_storage.h",
     ]
+  }
+
+  if (enable_library_cdms) {
+    sources += [
+      "mojo_cdm_allocator.cc",
+      "mojo_cdm_allocator.h",
+    ]
+    deps += [ "//media/cdm:cdm_api" ]
   }
 }
 
