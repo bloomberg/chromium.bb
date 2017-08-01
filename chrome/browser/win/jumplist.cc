@@ -338,7 +338,6 @@ void JumpList::InitializeTimerForUpdate() {
 
 void JumpList::ProcessNotifications() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!update_in_progress_);
 
   if (updates_to_skip_ > 0) {
     --updates_to_skip_;
@@ -373,7 +372,6 @@ void JumpList::ProcessNotifications() {
 
 void JumpList::ProcessTopSitesNotification() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!update_in_progress_);
 
   // Opening the first tab in one session triggers a TopSite history sync.
   // Delay this sync till the first tab is closed to allow the "recently closed"
@@ -398,7 +396,6 @@ void JumpList::ProcessTopSitesNotification() {
 
 void JumpList::ProcessTabRestoreServiceNotification() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!update_in_progress_);
 
   // Create a list of ShellLinkItems from the "Recently Closed" pages.
   // As noted above, we create a ShellLinkItem objects with the following
