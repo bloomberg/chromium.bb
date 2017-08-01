@@ -6,9 +6,11 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/quads/shared_quad_state.h"
+#include "cc/quads/tile_draw_quad.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
+#include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/mock_occlusion_tracker.h"
@@ -31,6 +33,52 @@ namespace {
   render_surface->ResetPropertyChangedFlags();                  \
   code_to_test;                                                 \
   EXPECT_FALSE(render_surface->SurfacePropertyChanged())
+
+// The AppendQuads method of this class generates multiple quads and one of them
+// does not intersect with visible_layer_rect.
+class FakePictureLayerImplForRenderSurfaceTest : public FakePictureLayerImpl {
+ public:
+  static std::unique_ptr<FakePictureLayerImplForRenderSurfaceTest> CreateMask(
+      LayerTreeImpl* tree_impl,
+      int id) {
+    return base::WrapUnique(
+        new FakePictureLayerImplForRenderSurfaceTest(tree_impl, id));
+  }
+
+  std::unique_ptr<LayerImpl> CreateLayerImpl(
+      LayerTreeImpl* tree_impl) override {
+    return base::WrapUnique(
+        new FakePictureLayerImplForRenderSurfaceTest(tree_impl, id()));
+  }
+
+  void SetQuadRectsForTesting(std::vector<gfx::Rect> quad_rects) {
+    quad_rects_ = quad_rects;
+  }
+
+  bool HasValidTilePriorities() const override { return false; }
+
+  void AppendQuads(RenderPass* render_pass,
+                   AppendQuadsData* append_quads_data) override {
+    SharedQuadState* shared_quad_state =
+        render_pass->CreateAndAppendSharedQuadState();
+    float max_contents_scale = 1.f;
+    PopulateScaledSharedQuadState(shared_quad_state, max_contents_scale,
+                                  max_contents_scale);
+    for (const auto& rect : quad_rects_) {
+      TileDrawQuad* quad = render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
+      quad->SetNew(shared_quad_state, rect, rect, rect, 0, gfx::RectF(rect),
+                   bounds(), false, false);
+    }
+  }
+
+ protected:
+  FakePictureLayerImplForRenderSurfaceTest(LayerTreeImpl* tree_impl, int id)
+      : FakePictureLayerImpl(tree_impl,
+                             id,
+                             Layer::LayerMaskType::MULTI_TEXTURE_MASK) {}
+
+  std::vector<gfx::Rect> quad_rects_;
+};
 
 TEST(RenderSurfaceTest, VerifySurfaceChangesAreTrackedProperly) {
   //
@@ -150,7 +198,6 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
   EXPECT_EQ(blend_mode, shared_quad_state->blend_mode);
 }
 
-
 TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectRenderPass) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestTaskGraphRunner task_graph_runner;
@@ -189,6 +236,73 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectRenderPass) {
   EXPECT_EQ(2u, pass->id);
   EXPECT_EQ(content_rect, pass->output_rect);
   EXPECT_EQ(origin, pass->transform_to_root_target);
+}
+
+TEST(RenderSurfaceTest, SanityCheckSurfaceDropsOccludedRenderPassDrawQuads) {
+  FakeImplTaskRunnerProvider task_runner_provider;
+  TestTaskGraphRunner task_graph_runner;
+  std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink =
+      FakeLayerTreeFrameSink::Create3d();
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
+
+  std::unique_ptr<LayerImpl> root_layer =
+      LayerImpl::Create(host_impl.active_tree(), 1);
+
+  int owning_layer_id = 2;
+  std::unique_ptr<LayerImpl> owning_layer =
+      LayerImpl::Create(host_impl.active_tree(), owning_layer_id);
+
+  int mask_layer_id = 3;
+  std::unique_ptr<FakePictureLayerImplForRenderSurfaceTest> mask_layer =
+      FakePictureLayerImplForRenderSurfaceTest::CreateMask(
+          host_impl.active_tree(), mask_layer_id);
+  mask_layer->SetBounds(gfx::Size(200, 100));
+  mask_layer->SetDrawsContent(true);
+  std::vector<gfx::Rect> quad_rects;
+  quad_rects.push_back(gfx::Rect(0, 0, 100, 100));
+  quad_rects.push_back(gfx::Rect(100, 0, 100, 100));
+  mask_layer->SetQuadRectsForTesting(quad_rects);
+
+  owning_layer->SetBounds(gfx::Size(200, 100));
+  owning_layer->SetDrawsContent(true);
+  owning_layer->test_properties()->SetMaskLayer(std::move(mask_layer));
+  root_layer->test_properties()->AddChild(std::move(owning_layer));
+  host_impl.active_tree()->SetRootLayerForTesting(std::move(root_layer));
+  host_impl.SetVisible(true);
+  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
+  host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
+  host_impl.active_tree()->UpdateDrawProperties();
+
+  ASSERT_TRUE(
+      GetRenderSurface(host_impl.active_tree()->LayerById(owning_layer_id)));
+  RenderSurfaceImpl* render_surface =
+      GetRenderSurface(host_impl.active_tree()->LayerById(owning_layer_id));
+
+  gfx::Rect content_rect(0, 0, 200, 100);
+  gfx::Rect occluded(0, 0, 100, 100);
+
+  render_surface->SetContentRectForTesting(content_rect);
+  render_surface->set_occlusion_in_content_space(
+      Occlusion(gfx::Transform(), SimpleEnclosedRegion(occluded),
+                SimpleEnclosedRegion(occluded)));
+
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+  AppendQuadsData append_quads_data;
+
+  render_surface->AppendQuads(DRAW_MODE_HARDWARE, render_pass.get(),
+                              &append_quads_data);
+
+  ASSERT_EQ(1u, render_pass->shared_quad_state_list.size());
+  SharedQuadState* shared_quad_state =
+      render_pass->shared_quad_state_list.front();
+
+  EXPECT_EQ(content_rect,
+            gfx::Rect(shared_quad_state->visible_quad_layer_rect));
+
+  // The quad (0, 0, 100, 100) is occluded and should be dropped.
+  ASSERT_EQ(1u, render_pass->quad_list.size());
+  EXPECT_EQ(gfx::Rect(100, 0, 100, 100).ToString(),
+            render_pass->quad_list.front()->rect.ToString());
 }
 
 }  // namespace

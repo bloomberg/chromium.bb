@@ -474,8 +474,8 @@ void RenderSurfaceImpl::TileMaskLayer(RenderPass* render_pass,
                                 1.f / mask_quad_to_surface_contents_scale.y());
   shared_quad_state->visible_quad_layer_rect =
       gfx::ScaleToEnclosingRect(shared_quad_state->visible_quad_layer_rect,
-                                mask_quad_to_surface_contents_scale.x(),
-                                mask_quad_to_surface_contents_scale.y());
+                                1.f / mask_quad_to_surface_contents_scale.x(),
+                                1.f / mask_quad_to_surface_contents_scale.y());
   gfx::Rect content_rect_in_coverage_space = gfx::ScaleToEnclosingRect(
       content_rect(), 1.f / mask_quad_to_surface_contents_scale.x(),
       1.f / mask_quad_to_surface_contents_scale.y());
@@ -485,11 +485,16 @@ void RenderSurfaceImpl::TileMaskLayer(RenderPass* render_pass,
 
   for (auto* temp_quad : temp_render_pass->quad_list) {
     gfx::Rect quad_rect = temp_quad->rect;
-    gfx::Rect render_quad_rect = quad_rect;
     if (!quad_rect.Intersects(content_rect_in_coverage_space))
       continue;
-    render_quad_rect =
+
+    gfx::Rect render_quad_rect =
         gfx::IntersectRects(quad_rect, content_rect_in_coverage_space);
+    gfx::Rect quad_visible_rect_in_coverage_space = gfx::IntersectRects(
+        render_quad_rect, visible_layer_rect_in_coverage_space);
+    if (quad_visible_rect_in_coverage_space.IsEmpty())
+      continue;
+
     gfx::RectF quad_rect_in_surface_contents_space = gfx::ScaleRect(
         gfx::RectF(render_quad_rect), mask_quad_to_surface_contents_scale.x(),
         mask_quad_to_surface_contents_scale.y());
@@ -501,9 +506,6 @@ void RenderSurfaceImpl::TileMaskLayer(RenderPass* render_pass,
     switch (temp_quad->material) {
       case DrawQuad::TILED_CONTENT: {
         DCHECK_EQ(1U, temp_quad->resources.count);
-        RenderPassDrawQuad* quad =
-            render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-
         gfx::Size mask_texture_size =
             static_cast<ContentDrawQuadBase*>(temp_quad)->texture_size;
         gfx::RectF temp_tex_coord_rect =
@@ -520,10 +522,11 @@ void RenderSurfaceImpl::TileMaskLayer(RenderPass* render_pass,
         gfx::RectF mask_uv_rect = gfx::RectF(render_quad_rect);
         coverage_to_normalized_mask.TransformRect(&mask_uv_rect);
 
+        RenderPassDrawQuad* quad =
+            render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
         quad->SetNew(shared_quad_state, render_quad_rect,
-                     gfx::IntersectRects(temp_quad->visible_rect,
-                                         visible_layer_rect_in_coverage_space),
-                     id(), temp_quad->resources.ids[0], mask_uv_rect,
+                     quad_visible_rect_in_coverage_space, id(),
+                     temp_quad->resources.ids[0], mask_uv_rect,
                      mask_texture_size, owning_layer_to_surface_contents_scale,
                      FiltersOrigin(),
                      quad_rect_in_non_normalized_texture_space);
@@ -535,13 +538,13 @@ void RenderSurfaceImpl::TileMaskLayer(RenderPass* render_pass,
         DCHECK_EQ(
             SkColorGetA(static_cast<SolidColorDrawQuad*>(temp_quad)->color),
             solid);
+
         RenderPassDrawQuad* quad =
             render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
         quad->SetNew(shared_quad_state, render_quad_rect,
-                     gfx::IntersectRects(temp_quad->visible_rect,
-                                         visible_layer_rect_in_coverage_space),
-                     id(), 0, gfx::RectF(), gfx::Size(),
-                     owning_layer_to_surface_contents_scale, FiltersOrigin(),
+                     quad_visible_rect_in_coverage_space, id(), 0, gfx::RectF(),
+                     gfx::Size(), owning_layer_to_surface_contents_scale,
+                     FiltersOrigin(),
                      quad_rect_in_non_normalized_texture_space);
       } break;
       case DrawQuad::DEBUG_BORDER:
