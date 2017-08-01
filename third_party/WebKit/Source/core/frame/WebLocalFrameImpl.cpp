@@ -2059,6 +2059,7 @@ void WebLocalFrameImpl::ReportContentSecurityPolicyViolation(
       violation.console_message,          /* consoleMessage */
       violation.blocked_url,              /* blockedUrl */
       report_endpoints,                   /* reportEndpoints */
+      false,                              /* don't use the reporting api yet*/
       violation.header,                   /* header */
       static_cast<ContentSecurityPolicyHeaderType>(violation.disposition),
       ContentSecurityPolicy::ViolationType::kURLViolation, /* ViolationType */

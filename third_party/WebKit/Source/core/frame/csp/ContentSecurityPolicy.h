@@ -110,6 +110,7 @@ class CORE_EXPORT ContentSecurityPolicy
     kTreatAsPublicAddress,
     kUpgradeInsecureRequests,
     kWorkerSrc,
+    kReportTo,
   };
 
   // CheckHeaderType can be passed to Allow*FromSource methods to control which
@@ -358,6 +359,7 @@ class CORE_EXPORT ContentSecurityPolicy
                        const String& console_message,
                        const KURL& blocked_url,
                        const Vector<String>& report_endpoints,
+                       bool use_reporting_api,
                        const String& header,
                        ContentSecurityPolicyHeaderType,
                        ViolationType,
@@ -455,7 +457,8 @@ class CORE_EXPORT ContentSecurityPolicy
                                Element*);
   void PostViolationReport(const SecurityPolicyViolationEventInit&,
                            LocalFrame*,
-                           const Vector<String>& report_endpoints);
+                           const Vector<String>& report_endpoints,
+                           bool use_reporting_api);
 
   static void FillInCSPHashValues(const String& source,
                                   uint8_t hash_algorithms_used,

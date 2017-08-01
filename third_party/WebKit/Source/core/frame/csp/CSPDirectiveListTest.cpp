@@ -9,6 +9,7 @@
 #include "platform/loader/SubresourceIntegrity.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
+#include "platform/wtf/Vector.h"
 #include "platform/wtf/text/StringOperators.h"
 #include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,14 +26,15 @@ class CSPDirectiveListTest : public ::testing::Test {
   }
 
   CSPDirectiveList* CreateList(const String& list,
-                               ContentSecurityPolicyHeaderType type) {
+                               ContentSecurityPolicyHeaderType type,
+                               ContentSecurityPolicyHeaderSource source =
+                                   kContentSecurityPolicyHeaderSourceHTTP) {
     Vector<UChar> characters;
     list.AppendTo(characters);
     const UChar* begin = characters.data();
     const UChar* end = begin + characters.size();
 
-    return CSPDirectiveList::Create(csp, begin, end, type,
-                                    kContentSecurityPolicyHeaderSourceHTTP);
+    return CSPDirectiveList::Create(csp, begin, end, type, source);
   }
 
  protected:
@@ -1137,6 +1139,88 @@ TEST_F(CSPDirectiveListTest, GetSourceVector) {
             ContentSecurityPolicy::DirectiveType::kChildSrc, policy_vector)
             .size(),
         expected_child_src);
+  }
+}
+
+TEST_F(CSPDirectiveListTest, ReportEndpointsProperlyParsed) {
+  struct TestCase {
+    const char* policy;
+    ContentSecurityPolicyHeaderSource header_source;
+    Vector<String> expected_endpoints;
+    bool expected_use_reporting_api;
+  } cases[] = {
+      {"script-src 'self';", kContentSecurityPolicyHeaderSourceHTTP, {}, false},
+      {"script-src 'self'; report-uri https://example.com",
+       kContentSecurityPolicyHeaderSourceHTTP,
+       {"https://example.com"},
+       false},
+      {"script-src 'self'; report-uri https://example.com "
+       "https://example2.com",
+       kContentSecurityPolicyHeaderSourceHTTP,
+       {"https://example.com", "https://example2.com"},
+       false},
+      {"script-src 'self'; report-uri https://example.com",
+       kContentSecurityPolicyHeaderSourceMeta,
+       {},
+       false},
+      {"script-src 'self'; report-to group",
+       kContentSecurityPolicyHeaderSourceHTTP,
+       {"group"},
+       true},
+      // report-to supersedes report-uri
+      {"script-src 'self'; report-to group; report-uri https://example.com",
+       kContentSecurityPolicyHeaderSourceHTTP,
+       {"group"},
+       true},
+      {"script-src 'self'; report-to group",
+       kContentSecurityPolicyHeaderSourceMeta,
+       {"group"},
+       true},
+      {"script-src 'self'; report-to group; report-to group2;",
+       kContentSecurityPolicyHeaderSourceHTTP,
+       {"group"},
+       true},
+      {"script-src 'self'; report-to group; report-uri https://example.com; "
+       "report-to group2",
+       kContentSecurityPolicyHeaderSourceHTTP,
+       {"group"},
+       true},
+      {"script-src 'self'; report-uri https://example.com; report-to group; "
+       "report-to group2",
+       kContentSecurityPolicyHeaderSourceHTTP,
+       {"group"},
+       true},
+      {"script-src 'self'; report-uri https://example.com "
+       "https://example2.com; report-to group",
+       kContentSecurityPolicyHeaderSourceHTTP,
+       {"group"},
+       true},
+      {"script-src 'self'; report-uri https://example.com; report-to group; "
+       "report-uri https://example.com",
+       kContentSecurityPolicyHeaderSourceHTTP,
+       {"group"},
+       true},
+  };
+
+  for (const auto& test : cases) {
+    // Test both enforce and report, there should not be a difference
+    for (const auto& header_type : {kContentSecurityPolicyHeaderTypeEnforce,
+                                    kContentSecurityPolicyHeaderTypeReport}) {
+      Member<CSPDirectiveList> directive_list =
+          CreateList(test.policy, header_type, test.header_source);
+
+      EXPECT_EQ(directive_list->UseReportingApi(),
+                test.expected_use_reporting_api);
+      EXPECT_EQ(directive_list->ReportEndpoints().size(),
+                test.expected_endpoints.size());
+
+      for (const String& endpoint : test.expected_endpoints) {
+        EXPECT_TRUE(directive_list->ReportEndpoints().Contains(endpoint));
+      }
+      for (const String& endpoint : directive_list->ReportEndpoints()) {
+        EXPECT_TRUE(test.expected_endpoints.Contains(endpoint));
+      }
+    }
   }
 }
 

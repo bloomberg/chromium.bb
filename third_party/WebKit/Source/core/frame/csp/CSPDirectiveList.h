@@ -151,6 +151,7 @@ class CORE_EXPORT CSPDirectiveList
     return header_type_ == kContentSecurityPolicyHeaderTypeReport;
   }
   const Vector<String>& ReportEndpoints() const { return report_endpoints_; }
+  bool UseReportingApi() const { return use_reporting_api_; }
   uint8_t RequireSRIForTokens() const { return require_sri_for_; }
   bool IsFrameAncestorsEnforced() const {
     return frame_ancestors_.Get() && !IsReportOnly();
@@ -199,6 +200,8 @@ class CORE_EXPORT CSPDirectiveList
                       String& value);
   void ParseRequireSRIFor(const String& name, const String& value);
   void ParseReportURI(const String& name, const String& value);
+  void ParseReportTo(const String& name, const String& value);
+  void ParseAndAppendReportEndpoints(const String& value);
   void ParsePluginTypes(const String& name, const String& value);
   void AddDirective(const String& name, const String& value);
   void ApplySandboxPolicy(const String& name, const String& sandbox_policy);
@@ -338,6 +341,7 @@ class CORE_EXPORT CSPDirectiveList
   uint8_t require_sri_for_;
 
   Vector<String> report_endpoints_;
+  bool use_reporting_api_;
 
   String eval_disabled_error_message_;
 };
