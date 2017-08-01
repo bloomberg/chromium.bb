@@ -22,15 +22,23 @@ class ThirdPartyMetricsRecorder : public ModuleDatabaseObserver {
   // ModuleDatabaseObserver:
   void OnNewModuleFound(const ModuleInfoKey& module_key,
                         const ModuleInfoData& module_data) override;
+  void OnModuleDatabaseIdle() override;
 
  private:
   void OnInstalledProgramsInitialized(ModuleDatabase* module_database);
 
-  // Returns true if |module_data| is a third party module. Third party modules
-  // are defined as not being signed by Google or Microsoft.
-  bool IsThirdPartyModule(const ModuleInfoData& module_data);
-
   InstalledPrograms installed_programs_;
+
+  // Flag used to avoid sending module counts multiple times.
+  bool metrics_emitted_ = false;
+
+  // Counters for different types of modules.
+  size_t module_count_ = 0;
+  size_t signed_module_count_ = 0;
+  size_t catalog_module_count_ = 0;
+  size_t microsoft_module_count_ = 0;
+  size_t loaded_third_party_module_count_ = 0;
+  size_t not_loaded_third_party_module_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ThirdPartyMetricsRecorder);
 };
