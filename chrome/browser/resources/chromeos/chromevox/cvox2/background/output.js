@@ -187,7 +187,7 @@ Output.ROLE_INFO_ = {
   },
   status: {msgId: 'role_status'},
   tab: {msgId: 'role_tab'},
-  tabList: {msgId: 'role_tablist'},
+  tabList: {msgId: 'role_tablist', inherits: 'abstractContainer'},
   tabPanel: {msgId: 'role_tabpanel'},
   textBox: {msgId: 'input_type_text', earconId: 'EDITABLE_TEXT'},
   textField: {msgId: 'input_type_text', earconId: 'EDITABLE_TEXT'},
