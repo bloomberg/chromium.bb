@@ -78,6 +78,10 @@ class TestContentViewDelegate : public ArcNotificationContentViewDelegate {
   void RequestFocusOnCloseButton() override {}
   void UpdateControlButtonsVisibility() override {}
   void OnSlideChanged() override {}
+  message_center::NotificationControlButtonsView* GetControlButtonsView()
+      const override {
+    return nullptr;
+  }
 };
 
 class TestNotificationDelegate : public message_center::NotificationDelegate {

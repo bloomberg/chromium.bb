@@ -856,4 +856,10 @@ void NotificationViewMD::UpdateControlButtonsVisibility() {
   header_row_->SetControlButtonsVisible(target_visibility);
 }
 
+NotificationControlButtonsView* NotificationViewMD::GetControlButtonsView()
+    const {
+  // TODO(yoshiki): have this view use NotificationControlButtonsView.
+  return nullptr;
+}
+
 }  // namespace message_center

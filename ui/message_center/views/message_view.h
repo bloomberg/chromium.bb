@@ -28,6 +28,7 @@ class ScrollView;
 namespace message_center {
 
 class Notification;
+class NotificationControlButtonsView;
 class MessageCenterController;
 
 // An base class for a notification entry. Contains background and other
@@ -49,6 +50,7 @@ class MESSAGE_CENTER_EXPORT MessageView
   // Creates a shadow around the notification and changes slide-out behavior.
   void SetIsNested();
 
+  virtual NotificationControlButtonsView* GetControlButtonsView() const = 0;
   virtual bool IsCloseButtonFocused() const = 0;
   virtual void RequestFocusOnCloseButton() = 0;
   virtual void UpdateControlButtonsVisibility() = 0;

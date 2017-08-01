@@ -41,6 +41,8 @@ class ArcNotificationView : public message_center::MessageView {
   void RequestFocusOnCloseButton() override;
   void UpdateControlButtonsVisibility() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  message_center::NotificationControlButtonsView* GetControlButtonsView()
+      const override;
 
   // views::SlideOutController::Delegate:
   void OnSlideChanged() override;

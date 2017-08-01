@@ -27,6 +27,7 @@
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/message_view_context_menu_controller.h"
 #include "ui/message_center/views/message_view_factory.h"
+#include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/notifier_settings_view.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
@@ -210,12 +211,15 @@ void MessageCenterView::SetIsClosing(bool is_closing) {
 
 void MessageCenterView::OnDidChangeFocus(views::View* before,
                                          views::View* now) {
-  if (message_list_view_ && (message_list_view_->Contains(before) ||
-                             message_list_view_->Contains(now))) {
-    // Focus state of a children of message view center is changed.
-    for (auto pair : notification_views_) {
-      if (pair.second->Contains(before) || pair.second->Contains(now))
-        pair.second->UpdateControlButtonsVisibility();
+  // Update the button visibility when the focus state is changed.
+  for (auto pair : notification_views_) {
+    // ControlButtonsView is not in the same view hierarchy on ARC++
+    // notifications, so check it separately.
+    if (pair.second->Contains(before) || pair.second->Contains(now) ||
+        (pair.second->GetControlButtonsView() &&
+         (pair.second->GetControlButtonsView()->Contains(before) ||
+          pair.second->GetControlButtonsView()->Contains(now)))) {
+      pair.second->UpdateControlButtonsVisibility();
     }
   }
 }
