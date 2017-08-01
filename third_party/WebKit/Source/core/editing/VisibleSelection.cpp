@@ -532,10 +532,13 @@ void VisibleSelectionTemplate<Strategy>::Validate(
                     editing_adjusted_range.StartPosition()),
                 MostBackwardCaretPosition(editing_adjusted_range.EndPosition()))
           : editing_adjusted_range;
-  if (selection_type_ != kCaretSelection) {
-    // Affinity only makes sense for a caret
-    affinity_ = TextAffinity::kDownstream;
+  if (selection_type_ == kCaretSelection) {
+    base_ = extent_ = range.StartPosition();
+    base_is_first_ = true;
+    return;
   }
+  // Affinity only makes sense for a caret
+  affinity_ = TextAffinity::kDownstream;
   base_ = base_is_first_ ? range.StartPosition() : range.EndPosition();
   extent_ = base_is_first_ ? range.EndPosition() : range.StartPosition();
 }
