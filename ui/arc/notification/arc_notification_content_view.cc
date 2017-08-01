@@ -110,8 +110,10 @@ class ArcNotificationContentView::SlideHelper
     // Reset opacity to 1 to handle to case when the surface is sliding before
     // getting managed by this class, e.g. sliding in a popup before showing
     // in a message center view.
-    if (owner_->surface_ && owner_->surface_->GetWindow())
+    if (owner_->surface_) {
+      DCHECK(owner_->surface_->GetWindow());
       owner_->surface_->GetWindow()->layer()->SetOpacity(1.0f);
+    }
   }
   ~SlideHelper() override {
     if (GetSlideOutLayer())
@@ -142,8 +144,9 @@ class ArcNotificationContentView::SlideHelper
   }
 
   void OnSlideStart() {
-    if (!owner_->surface_ || !owner_->surface_->GetWindow())
+    if (!owner_->surface_)
       return;
+    DCHECK(owner_->surface_->GetWindow());
     surface_copy_ = ::wm::RecreateLayers(owner_->surface_->GetWindow());
     // |surface_copy_| is at (0, 0) in owner_->layer().
     surface_copy_->root()->SetBounds(gfx::Rect(surface_copy_->root()->size()));
@@ -152,8 +155,9 @@ class ArcNotificationContentView::SlideHelper
   }
 
   void OnSlideEnd() {
-    if (!owner_->surface_ || !owner_->surface_->GetWindow())
+    if (!owner_->surface_)
       return;
+    DCHECK(owner_->surface_->GetWindow());
     owner_->surface_->GetWindow()->layer()->SetOpacity(1.0f);
     owner_->Layout();
     surface_copy_.reset();
@@ -309,8 +313,10 @@ void ArcNotificationContentView::SetSurface(ArcNotificationSurface* surface) {
   floating_control_buttons_widget_.reset();
   control_buttons_view_ = nullptr;
 
-  if (surface_ && surface_->GetWindow()) {
-    surface_->GetWindow()->RemoveObserver(this);
+  if (surface_) {
+    DCHECK(surface_->GetWindow());
+    DCHECK(surface_->GetContentWindow());
+    surface_->GetContentWindow()->RemoveObserver(this);
     surface_->GetWindow()->RemovePreTargetHandler(event_forwarder_.get());
 
     if (surface_->IsAttached()) {
@@ -321,8 +327,10 @@ void ArcNotificationContentView::SetSurface(ArcNotificationSurface* surface) {
 
   surface_ = surface;
 
-  if (surface_ && surface_->GetWindow()) {
-    surface_->GetWindow()->AddObserver(this);
+  if (surface_) {
+    DCHECK(surface_->GetWindow());
+    DCHECK(surface_->GetContentWindow());
+    surface_->GetContentWindow()->AddObserver(this);
     surface_->GetWindow()->AddPreTargetHandler(event_forwarder_.get());
 
     if (GetWidget())
