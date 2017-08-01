@@ -176,14 +176,6 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // Typed visits to page score this, compared to 1 for untyped visits.
   static float typed_value_;
 
-  // True if we should fix a bug in frequency scoring relating to how we
-  // extrapolate frecency when the URL has been visited few times.
-  static bool fix_few_visits_bug_;
-
-  // Determines whether GetFrequency() returns a score based on on the weighted
-  // sum of visit scores instead of the weighted average.
-  static bool frequency_uses_sum_;
-
   // The maximum number of recent visits to examine in GetFrequency().
   static size_t max_visits_to_score_;
 

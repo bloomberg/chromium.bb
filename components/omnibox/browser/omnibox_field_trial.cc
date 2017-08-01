@@ -508,7 +508,7 @@ float OmniboxFieldTrial::HQPExperimentalTopicalityThreshold() {
   double topicality_threshold;
   if (topicality_threshold_str.empty() ||
       !base::StringToDouble(topicality_threshold_str, &topicality_threshold))
-    return 0.8f;
+    return 0.5f;
 
   return static_cast<float>(topicality_threshold);
 }
@@ -524,17 +524,6 @@ int OmniboxFieldTrial::MaxNumHQPUrlsIndexedAtStartup() {
     return num_urls;
   // Default value is set to -1 for unlimited number of urls.
   return -1;
-}
-
-bool OmniboxFieldTrial::HQPFixFewVisitsBug() {
-  return variations::GetVariationParamValue(
-      kBundledExperimentFieldTrialName,
-      kHQPFixFewVisitsBugRule) == "true";
-}
-
-bool OmniboxFieldTrial::HQPFreqencyUsesSum() {
-  return variations::GetVariationParamValue(kBundledExperimentFieldTrialName,
-                                            kHQPFreqencyUsesSumRule) == "true";
 }
 
 size_t OmniboxFieldTrial::HQPMaxVisitsToScore() {
@@ -558,7 +547,7 @@ float OmniboxFieldTrial::HQPTypedValue() {
   std::string typed_value_str = variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName, kHQPTypedValueRule);
   if (typed_value_str.empty())
-    return 20;
+    return 1.5;
   // This is a best-effort conversion; we trust the hand-crafted parameters
   // downloaded from the server to be perfect.  There's no need for handle
   // errors smartly.
@@ -570,8 +559,11 @@ float OmniboxFieldTrial::HQPTypedValue() {
 OmniboxFieldTrial::NumMatchesScores OmniboxFieldTrial::HQPNumMatchesScores() {
   std::string str = variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName, kHQPNumMatchesScoresRule);
-  // The parameter is a comma-separated list of (number, value) pairs, e.g.
-  // "1:3,2:2.5,3:2,4:1.5".
+  static constexpr char kDefaultNumMatchesScores[] = "1:3,2:2.5,3:2,4:1.5";
+  if (str.empty())
+    str = kDefaultNumMatchesScores;
+  // The parameter is a comma-separated list of (number, value) pairs such as
+  // listed above.
   // This is a best-effort conversion; we trust the hand-crafted parameters
   // downloaded from the server to be perfect.  There's no need to handle
   // errors smartly.
@@ -755,8 +747,6 @@ OmniboxFieldTrial::kMeasureSuggestPollingDelayFromLastKeystrokeRule[] =
     "MeasureSuggestPollingDelayFromLastKeystroke";
 const char OmniboxFieldTrial::kSuggestPollingDelayMsRule[] =
     "SuggestPollingDelayMs";
-const char OmniboxFieldTrial::kHQPFixFewVisitsBugRule[] = "HQPFixFewVisitsBug";
-const char OmniboxFieldTrial::kHQPFreqencyUsesSumRule[] = "HQPFreqencyUsesSum";
 const char OmniboxFieldTrial::kHQPMaxVisitsToScoreRule[] =
     "HQPMaxVisitsToScoreRule";
 const char OmniboxFieldTrial::kHQPNumMatchesScoresRule[] =

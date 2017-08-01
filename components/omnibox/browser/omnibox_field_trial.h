@@ -311,7 +311,7 @@ class OmniboxFieldTrial {
   static std::string HQPExperimentalScoringBuckets();
 
   // Returns the topicality threshold for HQP experiments. Returns a default
-  // value of 0.8 if no threshold is specified in the field trial.
+  // value of 0.5 if no threshold is specified in the field trial.
   static float HQPExperimentalTopicalityThreshold();
 
   // ---------------------------------------------------------
@@ -327,25 +327,18 @@ class OmniboxFieldTrial {
   // For the HQPFixFrequencyScoring experiment that's part of the
   // bundled omnibox field trial.
 
-  // Returns true if HQP should apply the bug fix to discount the visits to
-  // pages visited less than ten times.
-  static bool HQPFixFewVisitsBug();
-
-  // Returns true if HQP should use the weighted sum when computing frequency
-  // scores.  False means to use the weighted average.  Returns false if the
-  // experiment isn't active.
-  static bool HQPFreqencyUsesSum();
-
   // Returns the number of visits HQP should use when computing frequency
   // scores.  Returns 10 if the epxeriment isn't active.
   static size_t HQPMaxVisitsToScore();
 
   // Returns the score that should be given to typed transitions.  (The score
-  // of non-typed transitions is 1.)  Returns 20 if the experiment isn't active.
+  // of non-typed transitions is 1.)  Returns 1.5 if the experiment isn't
+  // active.
   static float HQPTypedValue();
 
   // Returns NumMatchesScores; see comment by the declaration of it.
-  // Returns an empty NumMatchesScores if the experiment isn't active.
+  // If the experiment isn't active, returns an NumMatchesScores of
+  // {{1, 3}, {2, 2.5}, {3, 2}, {4, 1.5}}.
   static NumMatchesScores HQPNumMatchesScores();
 
   // ---------------------------------------------------------
@@ -466,7 +459,6 @@ class OmniboxFieldTrial {
   static const char kDemoteByTypeRule[];
   static const char kHQPBookmarkValueRule[];
   static const char kHQPTypedValueRule[];
-  static const char kHQPDiscountFrecencyWhenFewVisitsRule[];
   static const char kHQPAllowMatchInTLDRule[];
   static const char kHQPAllowMatchInSchemeRule[];
   static const char kZeroSuggestRule[];
@@ -475,8 +467,6 @@ class OmniboxFieldTrial {
   static const char kDisableResultsCachingRule[];
   static const char kMeasureSuggestPollingDelayFromLastKeystrokeRule[];
   static const char kSuggestPollingDelayMsRule[];
-  static const char kHQPFixFewVisitsBugRule[];
-  static const char kHQPFreqencyUsesSumRule[];
   static const char kHQPMaxVisitsToScoreRule[];
   static const char kHQPNumMatchesScoresRule[];
   static const char kHQPNumTitleWordsRule[];
