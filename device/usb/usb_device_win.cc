@@ -29,12 +29,13 @@ UsbDeviceWin::UsbDeviceWin(
 
 UsbDeviceWin::~UsbDeviceWin() {}
 
-void UsbDeviceWin::Open(const OpenCallback& callback) {
+void UsbDeviceWin::Open(OpenCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(std::move(callback), nullptr));
 }
 
-void UsbDeviceWin::ReadDescriptors(const base::Callback<void(bool)>& callback) {
+void UsbDeviceWin::ReadDescriptors(base::OnceCallback<void(bool)> callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   scoped_refptr<UsbDeviceHandle> device_handle;
   base::win::ScopedHandle handle(
@@ -45,23 +46,24 @@ void UsbDeviceWin::ReadDescriptors(const base::Callback<void(bool)>& callback) {
         new UsbDeviceHandleWin(this, std::move(handle), blocking_task_runner_);
   } else {
     USB_PLOG(ERROR) << "Failed to open " << hub_path_;
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
-  ReadUsbDescriptors(device_handle, base::Bind(&UsbDeviceWin::OnReadDescriptors,
-                                               this, callback, device_handle));
+  ReadUsbDescriptors(device_handle,
+                     base::BindOnce(&UsbDeviceWin::OnReadDescriptors, this,
+                                    std::move(callback), device_handle));
 }
 
 void UsbDeviceWin::OnReadDescriptors(
-    const base::Callback<void(bool)>& callback,
+    base::OnceCallback<void(bool)> callback,
     scoped_refptr<UsbDeviceHandle> device_handle,
     std::unique_ptr<UsbDeviceDescriptor> descriptor) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!descriptor) {
     USB_LOG(ERROR) << "Failed to read descriptors from " << device_path_ << ".";
     device_handle->Close();
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
 
@@ -75,13 +77,14 @@ void UsbDeviceWin::OnReadDescriptors(
   if (descriptor_.i_serial_number)
     (*string_map)[descriptor_.i_serial_number] = base::string16();
 
-  ReadUsbStringDescriptors(device_handle, std::move(string_map),
-                           base::Bind(&UsbDeviceWin::OnReadStringDescriptors,
-                                      this, callback, device_handle));
+  ReadUsbStringDescriptors(
+      device_handle, std::move(string_map),
+      base::BindOnce(&UsbDeviceWin::OnReadStringDescriptors, this,
+                     std::move(callback), device_handle));
 }
 
 void UsbDeviceWin::OnReadStringDescriptors(
-    const base::Callback<void(bool)>& callback,
+    base::OnceCallback<void(bool)> callback,
     scoped_refptr<UsbDeviceHandle> device_handle,
     std::unique_ptr<std::map<uint8_t, base::string16>> string_map) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -94,7 +97,7 @@ void UsbDeviceWin::OnReadStringDescriptors(
   if (descriptor_.i_serial_number)
     serial_number_ = (*string_map)[descriptor_.i_serial_number];
 
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 }  // namespace device

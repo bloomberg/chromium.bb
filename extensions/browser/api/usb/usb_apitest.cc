@@ -42,7 +42,7 @@ namespace {
 ACTION_TEMPLATE(InvokeCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(p1)) {
-  ::std::tr1::get<k>(args).Run(p1);
+  std::move(std::get<k>(args)).Run(p1);
 }
 
 ACTION_TEMPLATE(InvokeUsbTransferCallback,
@@ -55,7 +55,7 @@ ACTION_TEMPLATE(InvokeUsbTransferCallback,
     io_buffer = new net::IOBuffer(length);
     memset(io_buffer->data(), 0, length);  // Avoid uninitialized reads.
   }
-  ::std::tr1::get<k>(args).Run(p1, io_buffer, 1);
+  std::move(std::get<k>(args)).Run(p1, io_buffer, 1);
 }
 
 ACTION_P2(InvokeUsbIsochronousTransferOutCallback,
@@ -72,7 +72,7 @@ ACTION_P2(InvokeUsbIsochronousTransferOutCallback,
       packets[i].status = UsbTransferStatus::TRANSFER_ERROR;
     }
   }
-  arg4.Run(arg1, packets);
+  std::move(arg4).Run(arg1, packets);
 }
 
 ACTION_P2(InvokeUsbIsochronousTransferInCallback,
@@ -156,7 +156,7 @@ class UsbApiTest : public ShellApiTest {
     mock_device_ = new MockUsbDevice(0, 0, "Test Manufacturer", "Test Device",
                                      "ABC123", configs);
     mock_device_handle_ = new MockUsbDeviceHandle(mock_device_.get());
-    EXPECT_CALL(*mock_device_, Open(_))
+    EXPECT_CALL(*mock_device_, OpenInternal(_))
         .WillRepeatedly(InvokeCallback<0>(mock_device_handle_));
     device_client_->usb_service()->AddDevice(mock_device_);
   }

@@ -59,17 +59,17 @@ scoped_refptr<UsbDeviceAndroid> UsbDeviceAndroid::Create(
       manufacturer_string, product_string, serial_number, wrapper));
 }
 
-void UsbDeviceAndroid::RequestPermission(const ResultCallback& callback) {
+void UsbDeviceAndroid::RequestPermission(ResultCallback callback) {
   if (!permission_granted_ && service_) {
-    request_permission_callbacks_.push_back(callback);
+    request_permission_callbacks_.push_back(std::move(callback));
     service_->RequestDevicePermission(j_object_, device_id_);
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, permission_granted_));
+        FROM_HERE, base::BindOnce(std::move(callback), permission_granted_));
   }
 }
 
-void UsbDeviceAndroid::Open(const OpenCallback& callback) {
+void UsbDeviceAndroid::Open(OpenCallback callback) {
   scoped_refptr<UsbDeviceHandle> device_handle;
   if (service_) {
     JNIEnv* env = base::android::AttachCurrentThread();
@@ -81,7 +81,7 @@ void UsbDeviceAndroid::Open(const OpenCallback& callback) {
     }
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, device_handle));
+      FROM_HERE, base::BindOnce(std::move(callback), device_handle));
 }
 
 bool UsbDeviceAndroid::permission_granted() const {
@@ -163,8 +163,8 @@ void UsbDeviceAndroid::CallRequestPermissionCallbacks(bool granted) {
   permission_granted_ = granted;
   std::list<ResultCallback> callbacks;
   callbacks.swap(request_permission_callbacks_);
-  for (const auto& callback : callbacks)
-    callback.Run(granted);
+  for (auto& callback : callbacks)
+    std::move(callback).Run(granted);
 }
 
 void UsbDeviceAndroid::OnDeviceOpenedToReadDescriptors(

@@ -134,7 +134,7 @@ struct UsbDeviceDescriptor {
 
 void ReadUsbDescriptors(
     scoped_refptr<UsbDeviceHandle> device_handle,
-    const base::Callback<void(std::unique_ptr<UsbDeviceDescriptor>)>& callback);
+    base::OnceCallback<void(std::unique_ptr<UsbDeviceDescriptor>)> callback);
 
 bool ParseUsbStringDescriptor(const std::vector<uint8_t>& descriptor,
                               base::string16* output);
@@ -142,8 +142,8 @@ bool ParseUsbStringDescriptor(const std::vector<uint8_t>& descriptor,
 void ReadUsbStringDescriptors(
     scoped_refptr<UsbDeviceHandle> device_handle,
     std::unique_ptr<std::map<uint8_t, base::string16>> index_map,
-    const base::Callback<
-        void(std::unique_ptr<std::map<uint8_t, base::string16>>)>& callback);
+    base::OnceCallback<void(std::unique_ptr<std::map<uint8_t, base::string16>>)>
+        callback);
 
 }  // namespace device
 

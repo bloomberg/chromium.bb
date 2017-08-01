@@ -22,7 +22,7 @@ namespace {
 ACTION_P2(InvokeCallback, data, length) {
   size_t transferred_length = std::min(length, arg7);
   memcpy(arg6->data(), data, transferred_length);
-  arg9.Run(UsbTransferStatus::COMPLETED, arg6, transferred_length);
+  std::move(arg9).Run(UsbTransferStatus::COMPLETED, arg6, transferred_length);
 }
 
 void ExpectStringDescriptors(
