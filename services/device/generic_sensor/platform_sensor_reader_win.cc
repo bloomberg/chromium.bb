@@ -7,7 +7,6 @@
 #include <Sensors.h>
 #include <objbase.h>
 
-#include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -26,8 +25,8 @@ struct ReaderInitParams {
   // ISensorDataReport* report - report that contains new sensor data.
   // SensorReading* reading    - out parameter that must be populated.
   // Returns HRESULT           - S_OK on success, otherwise error code.
-  using ReaderFunctor = base::Callback<HRESULT(ISensorDataReport* report,
-                                               SensorReading* reading)>;
+  using ReaderFunctor = HRESULT (*)(ISensorDataReport* report,
+                                    SensorReading* reading);
   SENSOR_TYPE_ID sensor_type_id;
   ReaderFunctor reader_func;
   unsigned long min_reporting_interval_ms = 0;
@@ -60,7 +59,7 @@ std::unique_ptr<ReaderInitParams> CreateAmbientLightReaderInitParams() {
   auto params = base::MakeUnique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_AMBIENT_LIGHT;
   params->reader_func =
-      base::Bind([](ISensorDataReport* report, SensorReading* reading) {
+      [](ISensorDataReport* report, SensorReading* reading) {
         double lux = 0.0;
         if (!GetReadingValueForProperty(SENSOR_DATA_TYPE_LIGHT_LEVEL_LUX,
                                         report, &lux)) {
@@ -68,7 +67,7 @@ std::unique_ptr<ReaderInitParams> CreateAmbientLightReaderInitParams() {
         }
         reading->values[0] = lux;
         return S_OK;
-      });
+      };
   return params;
 }
 
@@ -77,7 +76,7 @@ std::unique_ptr<ReaderInitParams> CreateAccelerometerReaderInitParams() {
   auto params = base::MakeUnique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_ACCELEROMETER_3D;
   params->reader_func =
-      base::Bind([](ISensorDataReport* report, SensorReading* reading) {
+      [](ISensorDataReport* report, SensorReading* reading) {
         double x = 0.0;
         double y = 0.0;
         double z = 0.0;
@@ -97,7 +96,7 @@ std::unique_ptr<ReaderInitParams> CreateAccelerometerReaderInitParams() {
         reading->values[1] = -y * kMeanGravity;
         reading->values[2] = -z * kMeanGravity;
         return S_OK;
-      });
+      };
   return params;
 }
 
@@ -106,7 +105,7 @@ std::unique_ptr<ReaderInitParams> CreateGyroscopeReaderInitParams() {
   auto params = base::MakeUnique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_GYROMETER_3D;
   params->reader_func =
-      base::Bind([](ISensorDataReport* report, SensorReading* reading) {
+      [](ISensorDataReport* report, SensorReading* reading) {
         double x = 0.0;
         double y = 0.0;
         double z = 0.0;
@@ -129,7 +128,7 @@ std::unique_ptr<ReaderInitParams> CreateGyroscopeReaderInitParams() {
         reading->values[1] = -y * kRadiansInDegrees;
         reading->values[2] = -z * kRadiansInDegrees;
         return S_OK;
-      });
+      };
   return params;
 }
 
@@ -138,7 +137,7 @@ std::unique_ptr<ReaderInitParams> CreateMagnetometerReaderInitParams() {
   auto params = base::MakeUnique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_COMPASS_3D;
   params->reader_func =
-      base::Bind([](ISensorDataReport* report, SensorReading* reading) {
+      [](ISensorDataReport* report, SensorReading* reading) {
         double x = 0.0;
         double y = 0.0;
         double z = 0.0;
@@ -162,7 +161,7 @@ std::unique_ptr<ReaderInitParams> CreateMagnetometerReaderInitParams() {
         reading->values[1] = -y * kMicroteslaInMilligauss;
         reading->values[2] = -z * kMicroteslaInMilligauss;
         return S_OK;
-      });
+      };
   return params;
 }
 
@@ -172,7 +171,7 @@ CreateAbsoluteOrientationEulerAnglesReaderInitParams() {
   auto params = base::MakeUnique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_INCLINOMETER_3D;
   params->reader_func =
-      base::Bind([](ISensorDataReport* report, SensorReading* reading) {
+      [](ISensorDataReport* report, SensorReading* reading) {
         double x = 0.0;
         double y = 0.0;
         double z = 0.0;
@@ -189,7 +188,7 @@ CreateAbsoluteOrientationEulerAnglesReaderInitParams() {
         reading->values[1] = y;
         reading->values[2] = z;
         return S_OK;
-      });
+      };
   return params;
 }
 
@@ -199,7 +198,7 @@ CreateAbsoluteOrientationQuaternionReaderInitParams() {
   auto params = base::MakeUnique<ReaderInitParams>();
   params->sensor_type_id = SENSOR_TYPE_AGGREGATED_DEVICE_ORIENTATION;
   params->reader_func =
-      base::Bind([](ISensorDataReport* report, SensorReading* reading) {
+      [](ISensorDataReport* report, SensorReading* reading) {
         base::win::ScopedPropVariant quat_variant;
         HRESULT hr = report->GetSensorValue(SENSOR_DATA_TYPE_QUATERNION,
                                             quat_variant.Receive());
@@ -218,7 +217,7 @@ CreateAbsoluteOrientationQuaternionReaderInitParams() {
         reading->values[2] = -quat[2];  // z*sin(Theta/2)
         reading->values[3] = quat[3];   // cos(Theta/2)
         return S_OK;
-      });
+      };
   return params;
 }
 
@@ -411,7 +410,7 @@ PlatformSensorReaderWin::PlatformSensorReaderWin(
       event_listener_(new EventListener(this)),
       weak_factory_(this) {
   DCHECK(init_params_);
-  DCHECK(!init_params_->reader_func.is_null());
+  DCHECK(init_params_->reader_func);
   DCHECK(sensor_);
 }
 
@@ -484,7 +483,7 @@ HRESULT PlatformSensorReaderWin::SensorReadingChanged(
   if (!client_)
     return E_FAIL;
 
-  HRESULT hr = init_params_->reader_func.Run(report, reading);
+  HRESULT hr = init_params_->reader_func(report, reading);
   if (SUCCEEDED(hr))
     client_->OnReadingUpdated(*reading);
   return hr;
