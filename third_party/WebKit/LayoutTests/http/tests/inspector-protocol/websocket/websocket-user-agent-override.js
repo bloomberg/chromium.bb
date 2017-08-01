@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(
+  var {page, session, dp} = await testRunner.startBlank(
       `Tests that WebSocket headers are set properly from overriden User Agent.`);
 
   var url = 'ws://localhost:8880/echo';

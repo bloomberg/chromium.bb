@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(`
+  var {page, session, dp} = await testRunner.startBlank(`
     Tests that device emulation affects media rules, viewport meta tag, body dimensions and window.screen.
     Emulating small device on a page with viewport "width=device-width" set should work without reload for page without scrollbar.
   `);

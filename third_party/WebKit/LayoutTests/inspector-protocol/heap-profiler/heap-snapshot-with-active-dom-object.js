@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(
+  var {page, session, dp} = await testRunner.startBlank(
     `Test that all ActiveDOMObjects with pending activities will get into one group in the heap snapshot. Bug 426809.`);
 
   await session.evaluate(`

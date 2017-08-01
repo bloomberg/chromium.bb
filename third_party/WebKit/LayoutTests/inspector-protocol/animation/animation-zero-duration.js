@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startHTML(`
+  var {page, session, dp} = await testRunner.startHTML(`
     <style type='text/css'>
     #node.anim {
         animation: anim 0 ease-in-out;

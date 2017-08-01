@@ -151,6 +151,8 @@ var TestRunner = class {
 
   async _start(description, html, url) {
     try {
+      if (!description)
+        throw new Error('Please provide a description for the test!');
       this.log(description);
       var page = await this.createPage();
       if (url)

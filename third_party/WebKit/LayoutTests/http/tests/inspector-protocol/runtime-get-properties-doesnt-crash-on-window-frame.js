@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(
+  var {page, session, dp} = await testRunner.startBlank(
       `Tests that Runtime.getProperties doesn't crash on window.frames[0]. Should not crash.`);
 
   await session.evaluateAsync(`

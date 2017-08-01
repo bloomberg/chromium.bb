@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(
+  var {page, session, dp} = await testRunner.startBlank(
       `Test that inspected page won't crash if inspected worker is terminated while it is paused. Test passes if it doesn't crash. Bug 101065.`);
 
   await session.evaluate(`

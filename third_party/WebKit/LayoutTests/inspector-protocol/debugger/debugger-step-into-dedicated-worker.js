@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(`Tests that dedicated worker won't crash on attempt to step into.Bug 232392.`);
+  var {page, session, dp} = await testRunner.startBlank(`Tests that dedicated worker won't crash on attempt to step into.Bug 232392.`);
 
   var workerId;
   var workerRequestId = 1;

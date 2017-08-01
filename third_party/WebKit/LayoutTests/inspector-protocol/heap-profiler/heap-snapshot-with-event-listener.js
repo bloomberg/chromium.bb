@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(
+  var {page, session, dp} = await testRunner.startBlank(
       `Test that all nodes from the detached DOM tree will get into one group in the heap snapshot. Bug 107819.`);
 
   await session.evaluate(`

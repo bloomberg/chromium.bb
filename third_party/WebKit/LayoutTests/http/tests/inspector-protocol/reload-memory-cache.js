@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startURL(
+  var {page, session, dp} = await testRunner.startURL(
       'resources/reload-memory-cache.html',
       `Tests that reloads when coming from protocol still use memory cache.`);
 

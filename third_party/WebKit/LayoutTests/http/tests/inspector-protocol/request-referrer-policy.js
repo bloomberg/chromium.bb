@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(
+  var {page, session, dp} = await testRunner.startBlank(
       `Tests that network requests are annotated with the correct referrer policy.`);
 
   await dp.Network.enable();

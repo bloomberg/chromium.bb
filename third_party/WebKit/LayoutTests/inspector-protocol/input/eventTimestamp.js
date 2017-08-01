@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(`Tests timestamps in multiple input domain methods.`);
+  var {page, session, dp} = await testRunner.startBlank(`Tests timestamps in multiple input domain methods.`);
 
   await session.evaluate(`
     var logs = [];
@@ -34,7 +34,7 @@
       }
 
       function isNear(a, b) {
-        var epsilon = 0.5;
+        var epsilon = 5;
         return Math.abs(b - a) < epsilon;
       }
 

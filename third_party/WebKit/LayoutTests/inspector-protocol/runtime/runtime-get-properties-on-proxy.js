@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(`Check that while Runtime.getProperties call on proxy object no user defined trap will be executed.`);
+  var {page, session, dp} = await testRunner.startBlank(`Check that while Runtime.getProperties call on proxy object no user defined trap will be executed.`);
 
   function testFunction() {
     window.counter = 0;

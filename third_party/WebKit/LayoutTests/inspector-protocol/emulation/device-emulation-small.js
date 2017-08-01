@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(`
+  var {page, session, dp} = await testRunner.startBlank(`
     Tests that device emulation affects media rules, viewport meta tag, body dimensions and window.screen.
     Emulating small device on a page without viewport set should take UA viewport settings into account.
   `);

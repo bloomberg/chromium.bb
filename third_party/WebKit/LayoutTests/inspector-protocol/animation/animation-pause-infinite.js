@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startHTML(`
+  var {page, session, dp} = await testRunner.startHTML(`
     <div id='node' style='background-color: red; height: 100px'></div>
   `, 'Tests that the animation is correctly paused.');
 

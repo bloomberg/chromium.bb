@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startURL('../resources/frame-attached-stacktrace-page.html', 'Tests stackTrace reported on frame attach.');
+  var {page, session, dp} = await testRunner.startURL('../resources/frame-attached-stacktrace-page.html', 'Tests stackTrace reported on frame attach.');
 
   const expectedNumberOfFrames = 3;
   var currentFrameCount = 0;

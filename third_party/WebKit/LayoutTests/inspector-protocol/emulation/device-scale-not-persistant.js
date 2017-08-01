@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startURL('../resources/device-scale-not-persistant.html',
+  var {page, session, dp} = await testRunner.startURL('../resources/device-scale-not-persistant.html',
       'Test that srcset does not use wrong image when override scalefactor and then disabled.');
 
   function getSrcsetImage() {

@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(`Tests that default execution context is selected correctly.`);
+  var {page, session, dp} = await testRunner.startBlank(`Tests that default execution context is selected correctly.`);
 
   await session.evaluateAsync(`
     var frame = document.createElement('iframe');

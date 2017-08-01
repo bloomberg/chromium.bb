@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startHTML(`<div>Привет мир</div>`,
+  var {page, session, dp} = await testRunner.startHTML(`<div>Привет мир</div>`,
       'Tests that Page.setDocumentContent works.');
 
   await dp.Page.enable();

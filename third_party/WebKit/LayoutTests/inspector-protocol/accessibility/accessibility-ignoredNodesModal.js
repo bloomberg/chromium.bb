@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startHTML(`
+  var {page, session, dp} = await testRunner.startHTML(`
     <style>
     body.done * {
       display: none;

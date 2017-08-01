@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('Tests setScriptSource functionality.');
+  var {page, session, dp} = await testRunner.startBlank('Tests setScriptSource functionality.');
 
   function logEqualsCheck(actual, expected) {
     if (actual == expected) {

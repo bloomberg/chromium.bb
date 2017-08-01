@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(
+  var {page, session, dp} = await testRunner.startBlank(
       `Tests canceling an HTTP auth challenge via DevTools protocol.`);
 
   var InterceptionHelper = await testRunner.loadScript('../resources/interception-test.js');

@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('Tests that Paint Profiler refuses to load a picture with empty dimensions');
+  var {page, session, dp} = await testRunner.startBlank('Tests that Paint Profiler refuses to load a picture with empty dimensions');
 
   var response = await dp.LayerTree.loadSnapshot({
     tiles: [{

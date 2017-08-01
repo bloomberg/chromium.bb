@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(`Tests that Command Line API doesn't override defined on window methods and can be overridden during evaluation.`);
+  var {page, session, dp} = await testRunner.startBlank(`Tests that Command Line API doesn't override defined on window methods and can be overridden during evaluation.`);
 
   await session.evaluate(`
     function overrideDir() {

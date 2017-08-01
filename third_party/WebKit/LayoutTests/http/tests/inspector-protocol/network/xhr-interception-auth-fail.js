@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(
+  var {page, session, dp} = await testRunner.startBlank(
       `Tests interception of an XHR request that fails due to lack of credentials.`);
 
   var InterceptionHelper = await testRunner.loadScript('../resources/interception-test.js');

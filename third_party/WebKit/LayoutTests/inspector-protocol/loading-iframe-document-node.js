@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('Testing that the Node ID can be retrieved before the onload event is triggered');
+  var {page, session, dp} = await testRunner.startBlank('Testing that the Node ID can be retrieved before the onload event is triggered');
     /*
      1. Create an iframe and point it to a page with a debugger statement.
      2. Wait until the debugger statement is hit and pause using the inspector protocol.

@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(`Tests that property defined on console.__proto__ doesn't observable on other Objects.`);
+  var {page, session, dp} = await testRunner.startBlank(`Tests that property defined on console.__proto__ doesn't observable on other Objects.`);
   testRunner.logMessage(await dp.Runtime.evaluate({expression: `
     var amountOfProperties = 0;
     for (var p in {})

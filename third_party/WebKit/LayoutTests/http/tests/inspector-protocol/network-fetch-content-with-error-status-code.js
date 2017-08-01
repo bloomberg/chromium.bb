@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(
+  var {page, session, dp} = await testRunner.startBlank(
       `Test to make sure if an xhr is fetched with the response as a blob and cross origin devtools can get body.`);
 
   var requestWillBeSentPromise = dp.Network.onceRequestWillBeSent();

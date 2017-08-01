@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(`Tests how console messages from worker get into page's console once worker is destroyed.`);
+  var {page, session, dp} = await testRunner.startBlank(`Tests how console messages from worker get into page's console once worker is destroyed.`);
 
   await session.evaluate(`
     var worker = null;

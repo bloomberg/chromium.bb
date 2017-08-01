@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(
+  var {page, session, dp} = await testRunner.startBlank(
       'Tests that the unreachable url is reported when navigating to a ' +
       'nonexistent page.');
 
@@ -9,7 +9,7 @@
     frame.src = '${testRunner.url('../resources/idont_exist.html')}';
     document.body.appendChild(frame);
   `);
-  let result = await dp.Page.onceFrameNavigated();
+  var result = await dp.Page.onceFrameNavigated();
   testRunner.log('Page navigated, url = ' + result.params.frame.url);
   testRunner.log('UnreachableUrl = ' +
       result.params.frame.unreachableUrl.split('/').pop());

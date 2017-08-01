@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startHTML(`
+  var {page, session, dp} = await testRunner.startHTML(`
     <div>Non-hidden div for comparison</div>
       <div role='tree'>
           <div role='treeitem'>non-hidden treeitem</div>

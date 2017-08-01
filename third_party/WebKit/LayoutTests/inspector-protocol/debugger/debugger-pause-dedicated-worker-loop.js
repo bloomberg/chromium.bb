@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('Tests that worker can be interrupted and paused.');
+  var {page, session, dp} = await testRunner.startBlank('Tests that worker can be interrupted and paused.');
 
   await session.evaluate(`
     window.worker = new Worker('${testRunner.url('resources/dedicated-worker-loop.js')}');

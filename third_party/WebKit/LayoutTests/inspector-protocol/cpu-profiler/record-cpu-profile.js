@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(
+  var {page, session, dp} = await testRunner.startBlank(
       'Test that profiler is able to record a profile. ' +
       'Also it tests that profiler returns an error when it unable to find the profile.');
 

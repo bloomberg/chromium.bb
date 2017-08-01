@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('Test that heap tracking actually reports data fragments.');
+  var {page, session, dp} = await testRunner.startBlank('Test that heap tracking actually reports data fragments.');
 
   await session.evaluate(`
     var junkArray = new Array(1000);

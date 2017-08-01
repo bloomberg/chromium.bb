@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(
+  var {page, session, dp} = await testRunner.startBlank(
       `Tests interception blocking, modification of network fetches.`);
 
   var InterceptionHelper = await testRunner.loadScript('../resources/interception-test.js');

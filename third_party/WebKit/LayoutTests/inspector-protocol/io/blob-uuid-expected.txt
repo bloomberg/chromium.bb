@@ -1,4 +1,4 @@
-
+Tests resolving blob to UUID through IO domain.
 Blobs:
 uuid_a: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 uuid_b: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx

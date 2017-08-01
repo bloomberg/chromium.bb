@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startHTML(`
+  var {page, session, dp} = await testRunner.startHTML(`
     <div id='host'></div>
     <template id='tmpl'>
       <style> .red { color: red; } </style>

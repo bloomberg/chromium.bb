@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(`Check that console.log is reported through Console domain as well.`);
+  var {page, session, dp} = await testRunner.startBlank(`Check that console.log is reported through Console domain as well.`);
 
   var expectedMessages = 4;
   var messages = [];

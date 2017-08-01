@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(
+  var {page, session, dp} = await testRunner.startBlank(
       `Tests modifying a GET into a POST.`);
 
   var InterceptionHelper = await testRunner.loadScript('../resources/interception-test.js');

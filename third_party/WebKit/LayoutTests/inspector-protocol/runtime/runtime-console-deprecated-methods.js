@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank(`Tests checks that deprecation messages for console.`);
+  var {page, session, dp} = await testRunner.startBlank(`Tests checks that deprecation messages for console.`);
 
   var messagesLeft = 3;
   dp.Runtime.onConsoleAPICalled(data => {

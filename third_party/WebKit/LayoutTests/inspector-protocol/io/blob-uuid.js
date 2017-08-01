@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('');
+  var {page, session, dp} = await testRunner.startBlank('Tests resolving blob to UUID through IO domain.');
 
   async function createBlob(content) {
     const result = await dp.Runtime.evaluate({expression: `new Blob(["${content}"])`});
@@ -18,7 +18,7 @@
 
   testRunner.log('Not a blob:');
   const objectId = (await dp.Runtime.evaluate({expression: '({})'})).result.result.objectId;
-  let error = (await dp.IO.resolveBlob({'objectId': objectId})).error;
+  var error = (await dp.IO.resolveBlob({'objectId': objectId})).error;
   testRunner.log('error:' + JSON.stringify(error));
 
   testRunner.log('Bad id:');

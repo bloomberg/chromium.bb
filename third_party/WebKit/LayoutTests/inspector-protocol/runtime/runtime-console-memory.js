@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startHTML(`
+  var {page, session, dp} = await testRunner.startHTML(`
     <div id='mydiv'>div from page</div>
   `, `Tests that console.memory works correct.`);
 

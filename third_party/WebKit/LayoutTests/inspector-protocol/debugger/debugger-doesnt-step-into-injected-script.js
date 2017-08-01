@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('Check that stepInto at then end of the script go to next user script instead InjectedScriptSource.js.');
+  var {page, session, dp} = await testRunner.startBlank('Check that stepInto at then end of the script go to next user script instead InjectedScriptSource.js.');
 
   function logStack(event) {
     testRunner.log('Stack trace:');

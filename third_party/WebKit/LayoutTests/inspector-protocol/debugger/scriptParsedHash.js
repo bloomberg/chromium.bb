@@ -1,5 +1,5 @@
 (async function(testRunner) {
-  let {page, session, dp} = await testRunner.startBlank('Tests hash field in scriptParsed event.');
+  var {page, session, dp} = await testRunner.startBlank('Tests hash field in scriptParsed event.');
 
   var hashes = new Set(['1C6D2E82E4E4F1BA4CB5762843D429DC872EBA18',
                         'EBF1ECD351E7A3294CB5762843D429DC872EBA18',
