@@ -32,7 +32,6 @@ CONTENT_EXPORT extern const base::Feature kCompositorTouchAction;
 CONTENT_EXPORT extern const base::Feature kExpensiveBackgroundTimerThrottling;
 CONTENT_EXPORT extern const base::Feature kFeaturePolicy;
 CONTENT_EXPORT extern const base::Feature kFetchKeepaliveTimeoutSetting;
-CONTENT_EXPORT extern const base::Feature kFilterSameOriginTinyPlugin;
 CONTENT_EXPORT extern const base::Feature kFontCacheScaling;
 CONTENT_EXPORT extern const base::Feature
     kFramebustingNeedsSameOriginOrUserGesture;

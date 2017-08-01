@@ -565,7 +565,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ZoomIndependent) {
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BlockTinyPlugins) {
   LoadHTML("/block_tiny_plugins.html");
 
-  VerifyPluginMarkedEssential(GetActiveWebContents(), "tiny_same_origin");
+  VerifyPluginIsPlaceholderOnly("tiny_same_origin");
   VerifyPluginIsPlaceholderOnly("tiny_cross_origin_1");
   VerifyPluginIsPlaceholderOnly("tiny_cross_origin_2");
   VerifyPluginIsPlaceholderOnly("completely_obscured");
@@ -595,27 +595,6 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ExpandingTinyPlugins) {
 
   VerifyPluginIsThrottled(GetActiveWebContents(), "expand_to_peripheral");
   VerifyPluginMarkedEssential(GetActiveWebContents(), "expand_to_essential");
-}
-
-// Separate test case with FilterSameOriginTinyPlugins feature flag on.
-class PluginPowerSaverFilterSameOriginTinyPluginsBrowserTest
-    : public PluginPowerSaverBrowserTest {
- public:
-  void SetUpInProcessBrowserTestFixture() override {
-    // Although this is redundant with the Field Trial testing configuration,
-    // the official builders don't read that.
-    feature_list.InitWithFeatures({features::kFilterSameOriginTinyPlugin},
-                                  {features::kPreferHtmlOverPlugins});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list;
-};
-
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverFilterSameOriginTinyPluginsBrowserTest,
-                       BlockSameOriginTinyPlugin) {
-  LoadHTML("/same_origin_tiny_plugin.html");
-  VerifyPluginIsPlaceholderOnly("tiny_same_origin");
 }
 
 // Separate test case with HTML By Default feature flag on.

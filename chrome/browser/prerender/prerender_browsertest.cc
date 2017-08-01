@@ -1387,6 +1387,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDelayLoadPlugin) {
   PrerenderTestURL("/prerender/prerender_plugin_delay_load.html",
                    FINAL_STATUS_USED, 1);
   NavigateToDestURL();
+
+  // Because NavigateToDestURL relies on a synchronous check, and the plugin
+  // loads asynchronously, we use a separate DidPluginLoad() test. Failure
+  // is indicated by timeout, as plugins may take arbitrarily long to load.
+  bool plugin_loaded = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetActiveWebContents(), "DidPluginLoad()", &plugin_loaded));
+  EXPECT_TRUE(plugin_loaded);
 }
 
 // For Plugin Power Saver, checks that plugins are not loaded while

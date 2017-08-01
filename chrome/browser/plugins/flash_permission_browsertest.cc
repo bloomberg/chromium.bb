@@ -53,6 +53,12 @@ class FlashPermissionBrowserTest : public PermissionsBrowserTest {
 
     ASSERT_TRUE(ppapi::RegisterFlashTestPlugin(command_line));
 
+    // These tests are for the permission prompt to add and remove Flash from
+    // navigator.plugins. We disable Plugin Power Saver, because its plugin
+    // throttling make it harder to test if Flash was succcessfully enabled.
+    command_line->AppendSwitchASCII(
+        switches::kOverridePluginPowerSaverForTesting, "never");
+
     // Set a high engagement threshhold so it doesn't interfere with testing the
     // permission.
     content::EnableFeatureWithParam(features::kPreferHtmlOverPlugins,

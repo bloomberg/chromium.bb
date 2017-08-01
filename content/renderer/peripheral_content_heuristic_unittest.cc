@@ -5,7 +5,6 @@
 #include "content/renderer/peripheral_content_heuristic.h"
 
 #include "base/test/scoped_feature_list.h"
-#include "content/public/common/content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
@@ -43,7 +42,7 @@ TEST(PeripheralContentHeuristic, DisallowCrossOriginUnlessLarge) {
 }
 
 TEST(PeripheralContentHeuristic, TinyContent) {
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_ESSENTIAL_SAME_ORIGIN,
+  EXPECT_EQ(RenderFrame::CONTENT_STATUS_TINY,
             PeripheralContentHeuristic::GetPeripheralStatus(
                 std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
                 url::Origin(GURL(kSameOrigin)), gfx::Size(1, 1)));
@@ -59,16 +58,6 @@ TEST(PeripheralContentHeuristic, TinyContent) {
             PeripheralContentHeuristic::GetPeripheralStatus(
                 std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
                 url::Origin(GURL(kOtherOrigin)), gfx::Size(10, 10)));
-}
-
-TEST(PeripheralContentHeuristic, FilterSameOriginTinyPlugins) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kFilterSameOriginTinyPlugin);
-
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_TINY,
-            PeripheralContentHeuristic::GetPeripheralStatus(
-                std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
-                url::Origin(GURL(kSameOrigin)), gfx::Size(1, 1)));
 }
 
 TEST(PeripheralContentHeuristic, TemporaryOriginWhitelist) {
@@ -87,19 +76,20 @@ TEST(PeripheralContentHeuristic, TemporaryOriginWhitelist) {
 }
 
 TEST(PeripheralContentHeuristic, UndefinedSize) {
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_ESSENTIAL_SAME_ORIGIN,
+  // Undefined size plugins from any origin (including same-origin and
+  // whitelisted origins) are marked tiny until proven otherwise.
+  EXPECT_EQ(RenderFrame::CONTENT_STATUS_TINY,
             PeripheralContentHeuristic::GetPeripheralStatus(
                 std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
                 url::Origin(GURL(kSameOrigin)), gfx::Size()));
 
   std::set<url::Origin> whitelist;
   whitelist.insert(url::Origin(GURL(kOtherOrigin)));
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_WHITELISTED,
+  EXPECT_EQ(RenderFrame::CONTENT_STATUS_TINY,
             PeripheralContentHeuristic::GetPeripheralStatus(
                 whitelist, url::Origin(GURL(kSameOrigin)),
                 url::Origin(GURL(kOtherOrigin)), gfx::Size()));
 
-  // Undefined size plugins are now marked as Tiny.
   EXPECT_EQ(RenderFrame::CONTENT_STATUS_TINY,
             PeripheralContentHeuristic::GetPeripheralStatus(
                 std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
