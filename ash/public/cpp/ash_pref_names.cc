@@ -34,6 +34,15 @@ const char kNightLightScheduleType[] = "ash.night_light.schedule_type";
 const char kNightLightCustomStartTime[] = "ash.night_light.custom_start_time";
 const char kNightLightCustomEndTime[] = "ash.night_light.custom_end_time";
 
+// Boolean pref indicating whether to show a logout button in the system tray.
+const char kShowLogoutButtonInTray[] = "show_logout_button_in_tray";
+
+// Integer pref indicating the length of time in milliseconds for which a
+// confirmation dialog should be shown when the user presses the logout button.
+// A value of 0 indicates that logout should happen immediately, without showing
+// a confirmation dialog.
+const char kLogoutDialogDurationMs[] = "logout_dialog_duration_ms";
+
 }  // namespace prefs
 
 }  // namespace ash

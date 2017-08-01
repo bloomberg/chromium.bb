@@ -4,17 +4,21 @@
 
 #include "ash/system/session/logout_button_tray.h"
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/session/logout_confirmation_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_controller.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/user/login_status.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/size.h"
@@ -31,6 +35,8 @@ LogoutButtonTray::LogoutButtonTray(Shelf* shelf)
                                           base::string16(),
                                           CONTEXT_LAUNCHER_BUTTON)),
       show_logout_button_in_tray_(false) {
+  DCHECK(shelf);
+  Shell::Get()->AddShellObserver(this);
   SetLayoutManager(new views::FillLayout);
   AddChildView(container_);
 
@@ -38,12 +44,17 @@ LogoutButtonTray::LogoutButtonTray(Shelf* shelf)
   button_->SetBgColorOverride(gfx::kGoogleRed700);
 
   container_->AddChildView(button_);
-  Shell::Get()->system_tray_notifier()->AddLogoutButtonObserver(this);
   SetVisible(false);
 }
 
 LogoutButtonTray::~LogoutButtonTray() {
-  Shell::Get()->system_tray_notifier()->RemoveLogoutButtonObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
+}
+
+// static
+void LogoutButtonTray::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kShowLogoutButtonInTray, false);
+  registry->RegisterIntegerPref(prefs::kLogoutDialogDurationMs, 20000);
 }
 
 void LogoutButtonTray::UpdateAfterShelfAlignmentChange() {
@@ -66,18 +77,41 @@ void LogoutButtonTray::ButtonPressed(views::Button* sender,
   }
 }
 
+void LogoutButtonTray::OnActiveUserPrefServiceChanged(PrefService* prefs) {
+  pref_change_registrar_.reset();
+  if (!prefs)  // Null during startup, user switch and tests.
+    return;
+  pref_change_registrar_ = base::MakeUnique<PrefChangeRegistrar>();
+  pref_change_registrar_->Init(prefs);
+  pref_change_registrar_->Add(
+      prefs::kShowLogoutButtonInTray,
+      base::Bind(&LogoutButtonTray::UpdateShowLogoutButtonInTray,
+                 base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kLogoutDialogDurationMs,
+      base::Bind(&LogoutButtonTray::UpdateLogoutDialogDuration,
+                 base::Unretained(this)));
+
+  // Read the initial values.
+  UpdateShowLogoutButtonInTray();
+  UpdateLogoutDialogDuration();
+}
+
 void LogoutButtonTray::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   View::GetAccessibleNodeData(node_data);
   node_data->SetName(button_->GetText());
 }
 
-void LogoutButtonTray::OnShowLogoutButtonInTrayChanged(bool show) {
-  show_logout_button_in_tray_ = show;
+void LogoutButtonTray::UpdateShowLogoutButtonInTray() {
+  show_logout_button_in_tray_ = pref_change_registrar_->prefs()->GetBoolean(
+      prefs::kShowLogoutButtonInTray);
   UpdateVisibility();
 }
 
-void LogoutButtonTray::OnLogoutDialogDurationChanged(base::TimeDelta duration) {
-  dialog_duration_ = duration;
+void LogoutButtonTray::UpdateLogoutDialogDuration() {
+  const int duration_ms = pref_change_registrar_->prefs()->GetInteger(
+      prefs::kLogoutDialogDurationMs);
+  dialog_duration_ = base::TimeDelta::FromMilliseconds(duration_ms);
 }
 
 void LogoutButtonTray::UpdateAfterLoginStatusChange() {

@@ -80,6 +80,7 @@
 #include "ash/system/power/power_status.h"
 #include "ash/system/power/video_activity_notifier.h"
 #include "ash/system/screen_layout_observer.h"
+#include "ash/system/session/logout_button_tray.h"
 #include "ash/system/session/logout_confirmation_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/toast/toast_manager.h"
@@ -328,6 +329,7 @@ bool Shell::ShouldUseIMEService() {
 
 // static
 void Shell::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  LogoutButtonTray::RegisterProfilePrefs(registry);
   NightLightController::RegisterProfilePrefs(registry);
 }
 

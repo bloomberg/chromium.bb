@@ -5,12 +5,17 @@
 #ifndef ASH_SYSTEM_SESSION_LOGOUT_BUTTON_TRAY_H_
 #define ASH_SYSTEM_SESSION_LOGOUT_BUTTON_TRAY_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
-#include "ash/system/session/logout_button_observer.h"
+#include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
+
+class PrefChangeRegistrar;
+class PrefRegistrySimple;
 
 namespace views {
 class MdTextButton;
@@ -23,11 +28,13 @@ class TrayContainer;
 // Adds a logout button to the launcher's status area if enabled by the
 // kShowLogoutButtonInTray pref.
 class ASH_EXPORT LogoutButtonTray : public views::View,
-                                    public LogoutButtonObserver,
-                                    public views::ButtonListener {
+                                    public views::ButtonListener,
+                                    public ShellObserver {
  public:
   explicit LogoutButtonTray(Shelf* shelf);
   ~LogoutButtonTray() override;
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   void UpdateAfterLoginStatusChange();
   void UpdateAfterShelfAlignmentChange();
@@ -35,14 +42,15 @@ class ASH_EXPORT LogoutButtonTray : public views::View,
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
-  // LogoutButtonObserver:
-  void OnShowLogoutButtonInTrayChanged(bool show) override;
-  void OnLogoutDialogDurationChanged(base::TimeDelta duration) override;
-
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // ShellObserver:
+  void OnActiveUserPrefServiceChanged(PrefService* prefs) override;
+
  private:
+  void UpdateShowLogoutButtonInTray();
+  void UpdateLogoutDialogDuration();
   void UpdateVisibility();
   void UpdateButtonTextAndImage();
 
@@ -51,6 +59,9 @@ class ASH_EXPORT LogoutButtonTray : public views::View,
   views::MdTextButton* const button_;
   bool show_logout_button_in_tray_;
   base::TimeDelta dialog_duration_;
+
+  // Observes user profile prefs.
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(LogoutButtonTray);
 };
