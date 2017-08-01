@@ -36,9 +36,8 @@
 #include "core/dom/SecurityContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/exported/WebDataSourceImpl.h"
-#include "core/exported/WebFactory.h"
-#include "core/exported/WebViewBase.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/exported/WebViewImpl.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -294,8 +293,7 @@ void WebEmbeddedWorkerImpl::PrepareShadowPageForLoader() {
   // This code, and probably most of the code in this class should be shared
   // with SharedWorker.
   DCHECK(!web_view_);
-  web_view_ = WebFactory::GetInstance().CreateWebViewBase(
-      nullptr, kWebPageVisibilityStateVisible);
+  web_view_ = WebViewImpl::Create(nullptr, kWebPageVisibilityStateVisible);
   WebSettings* settings = web_view_->GetSettings();
   // FIXME: http://crbug.com/363843. This needs to find a better way to
   // not create graphics layers.
@@ -306,8 +304,8 @@ void WebEmbeddedWorkerImpl::PrepareShadowPageForLoader() {
   settings->SetStrictMixedContentChecking(true);
   settings->SetAllowRunningOfInsecureContent(false);
   settings->SetDataSaverEnabled(worker_start_data_.data_saver_enabled);
-  main_frame_ = WebFactory::GetInstance().CreateMainWebLocalFrameBase(
-      web_view_, this, nullptr);
+  main_frame_ = WebLocalFrameImpl::CreateMainFrame(
+      web_view_, this, nullptr, nullptr, g_empty_atom, WebSandboxFlags::kNone);
   main_frame_->SetDevToolsAgentClient(this);
 
   // If we were asked to wait for debugger then it is the good time to do that.

@@ -37,9 +37,8 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MessageEvent.h"
 #include "core/exported/WebDataSourceImpl.h"
-#include "core/exported/WebFactory.h"
-#include "core/exported/WebViewBase.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/exported/WebViewImpl.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
@@ -133,8 +132,7 @@ void WebSharedWorkerImpl::InitializeLoader(bool data_saver_enabled) {
   // loading requests from the worker context to the rest of WebKit and Chromium
   // infrastructure.
   DCHECK(!web_view_);
-  web_view_ = WebFactory::GetInstance().CreateWebViewBase(
-      nullptr, kWebPageVisibilityStateVisible);
+  web_view_ = WebViewImpl::Create(nullptr, kWebPageVisibilityStateVisible);
   // FIXME: http://crbug.com/363843. This needs to find a better way to
   // not create graphics layers.
   web_view_->GetSettings()->SetAcceleratedCompositingEnabled(false);
@@ -142,8 +140,8 @@ void WebSharedWorkerImpl::InitializeLoader(bool data_saver_enabled) {
   // FIXME: Settings information should be passed to the Worker process from
   // Browser process when the worker is created (similar to
   // RenderThread::OnCreateNewView).
-  main_frame_ = WebFactory::GetInstance().CreateMainWebLocalFrameBase(
-      web_view_, this, nullptr);
+  main_frame_ = WebLocalFrameImpl::CreateMainFrame(
+      web_view_, this, nullptr, nullptr, g_empty_atom, WebSandboxFlags::kNone);
   main_frame_->SetDevToolsAgentClient(this);
 
   // If we were asked to pause worker context on start and wait for debugger

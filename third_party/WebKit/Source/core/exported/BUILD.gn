@@ -32,8 +32,6 @@ blink_core_sources("exported") {
     "WebDocument.cpp",
     "WebElement.cpp",
     "WebElementCollection.cpp",
-    "WebFactory.cpp",
-    "WebFactory.h",
     "WebFileChooserCompletionImpl.cpp",
     "WebFileChooserCompletionImpl.h",
     "WebFormControlElement.cpp",
