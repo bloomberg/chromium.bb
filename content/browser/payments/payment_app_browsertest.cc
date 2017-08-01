@@ -105,6 +105,38 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
       int64_t registration_id,
       const std::string& supported_method,
       const std::string& instrument_key) {
+    base::RunLoop run_loop;
+    PaymentHandlerResponsePtr response;
+    PaymentAppProvider::GetInstance()->InvokePaymentApp(
+        shell()->web_contents()->GetBrowserContext(), registration_id,
+        CreatePaymentRequestEventData(supported_method, instrument_key),
+        base::Bind(&InvokePaymentAppCallback, run_loop.QuitClosure(),
+                   &response));
+    run_loop.Run();
+
+    return response;
+  }
+
+  void ClearStoragePartitionData() {
+    // Clear data from the storage partition. Parameters are set to clear data
+    // for service workers, for all origins, for an unbounded time range.
+    base::RunLoop run_loop;
+
+    static_cast<StoragePartitionImpl*>(
+        content::BrowserContext::GetDefaultStoragePartition(
+            shell()->web_contents()->GetBrowserContext()))
+        ->ClearData(StoragePartition::REMOVE_DATA_MASK_SERVICE_WORKERS,
+                    StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, GURL(),
+                    StoragePartition::OriginMatcherFunction(), base::Time(),
+                    base::Time::Max(), run_loop.QuitClosure());
+
+    run_loop.Run();
+  }
+
+ private:
+  PaymentRequestEventDataPtr CreatePaymentRequestEventData(
+      const std::string& supported_method,
+      const std::string& instrument_key) {
     PaymentRequestEventDataPtr event_data = PaymentRequestEventData::New();
 
     event_data->top_level_origin = GURL("https://example.com");
@@ -131,39 +163,29 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
 
     event_data->instrument_key = instrument_key;
 
-    base::RunLoop run_loop;
-    PaymentHandlerResponsePtr response;
-    PaymentAppProvider::GetInstance()->InvokePaymentApp(
-        shell()->web_contents()->GetBrowserContext(), registration_id,
-        std::move(event_data),
-        base::Bind(&InvokePaymentAppCallback, run_loop.QuitClosure(),
-                   &response));
-    run_loop.Run();
-
-    return response;
+    return event_data;
   }
 
-  void ClearStoragePartitionData() {
-    // Clear data from the storage partition. Parameters are set to clear data
-    // for service workers, for all origins, for an unbounded time range.
-    base::RunLoop run_loop;
-
-    static_cast<StoragePartitionImpl*>(
-        content::BrowserContext::GetDefaultStoragePartition(
-            shell()->web_contents()->GetBrowserContext()))
-        ->ClearData(StoragePartition::REMOVE_DATA_MASK_SERVICE_WORKERS,
-                    StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, GURL(),
-                    StoragePartition::OriginMatcherFunction(), base::Time(),
-                    base::Time::Max(), run_loop.QuitClosure());
-
-    run_loop.Run();
-  }
-
- private:
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentAppBrowserTest);
 };
+
+IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, PaymentAppInvocationAndFailed) {
+  RegisterPaymentApp();
+
+  std::vector<int64_t> registrationIds = GetAllPaymentAppRegistrationIDs();
+  ASSERT_EQ(1U, registrationIds.size());
+
+  // Remove all payment apps and service workers to cause error.
+  ClearStoragePartitionData();
+
+  PaymentHandlerResponsePtr response(InvokePaymentAppWithTestData(
+      registrationIds[0], "basic-card", "basic-card-payment-app-id"));
+  ASSERT_EQ("", response->method_name);
+
+  ClearStoragePartitionData();
+}
 
 IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, PaymentAppInvocation) {
   RegisterPaymentApp();
