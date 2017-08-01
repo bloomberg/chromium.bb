@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "headless/public/devtools/domains/page.h"
+#include "headless/public/devtools/domains/network.h"
 #include "headless/public/util/navigation_request.h"
 
 namespace headless {
@@ -19,7 +19,7 @@ class HeadlessShell;
 class ShellNavigationRequest : public NavigationRequest {
  public:
   ShellNavigationRequest(base::WeakPtr<HeadlessShell> headless_shell,
-                         const page::NavigationRequestedParams& params);
+                         const network::RequestInterceptedParams& params);
 
   ~ShellNavigationRequest() override;
 
@@ -28,12 +28,12 @@ class ShellNavigationRequest : public NavigationRequest {
  private:
   // Note the navigation likely isn't done when this is called, however we
   // expect it will have been committed and the initial resource load requested.
-  static void ProcessNavigationResult(
+  static void ContinueInterceptedRequestResult(
       base::Closure done_callback,
-      std::unique_ptr<page::ProcessNavigationResult>);
+      std::unique_ptr<network::ContinueInterceptedRequestResult>);
 
   base::WeakPtr<HeadlessShell> headless_shell_;
-  int navigation_id_;
+  std::string interception_id_;
 };
 
 }  // namespace headless

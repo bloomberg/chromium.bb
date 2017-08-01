@@ -488,25 +488,6 @@
                 "parameters": [
                     { "name": "threshold", "type": "number", "description": "If set to a positive number, specifies threshold in seconds for input event latency that will cause a console warning about blocked event to be issued. If zero or less, the warning is disabled." }
                 ]
-            },
-            {
-                "name": "setControlNavigations",
-                "parameters": [
-                    { "name": "enabled", "type": "boolean" }
-                ],
-                "description": "Toggles navigation throttling which allows programatic control over navigation and redirect response.",
-                "experimental": true,
-                "handlers": ["browser"]
-            },
-            {
-                "name": "processNavigation",
-                "parameters": [
-                    { "name": "response", "$ref": "NavigationResponse" },
-                    { "name": "navigationId", "type": "integer" }
-                ],
-                "description": "Should be sent in response to a navigationRequested or a redirectRequested event, telling the browser how to handle the navigation.",
-                "experimental": true,
-                "handlers": ["browser"]
             }
         ],
         "events": [
@@ -633,17 +614,6 @@
             {
                 "name": "interstitialHidden",
                 "description": "Fired when interstitial page was hidden",
-                "handlers": ["browser"]
-            },
-            {
-                "name": "navigationRequested",
-                "description": "Fired when a navigation is started if navigation throttles are enabled.  The navigation will be deferred until processNavigation is called.",
-                "parameters": [
-                    { "name": "isInMainFrame", "type": "boolean", "description": "Whether the navigation is taking place in the main frame or in a subframe." },
-                    { "name": "isRedirect", "type": "boolean", "description": "Whether the navigation has encountered a server redirect or not." },
-                    { "name": "navigationId", "type": "integer" },
-                    { "name": "url", "type": "string", "description": "URL of requested navigation." }
-                ],
                 "handlers": ["browser"]
             }
         ]

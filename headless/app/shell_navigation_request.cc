@@ -10,9 +10,9 @@ namespace headless {
 
 ShellNavigationRequest::ShellNavigationRequest(
     base::WeakPtr<HeadlessShell> headless_shell,
-    const page::NavigationRequestedParams& params)
+    const network::RequestInterceptedParams& params)
     : headless_shell_(headless_shell),
-      navigation_id_(params.GetNavigationId()) {}
+      interception_id_(params.GetInterceptionId()) {}
 
 ShellNavigationRequest::~ShellNavigationRequest() {}
 
@@ -22,21 +22,20 @@ void ShellNavigationRequest::StartProcessing(base::Closure done_callback) {
 
   // Allow the navigation to proceed.
   headless_shell_->devtools_client()
-      ->GetPage()
+      ->GetNetwork()
       ->GetExperimental()
-      ->ProcessNavigation(
-          headless::page::ProcessNavigationParams::Builder()
-              .SetNavigationId(navigation_id_)
-              .SetResponse(headless::page::NavigationResponse::PROCEED)
+      ->ContinueInterceptedRequest(
+          headless::network::ContinueInterceptedRequestParams::Builder()
+              .SetInterceptionId(interception_id_)
               .Build(),
-          base::Bind(&ShellNavigationRequest::ProcessNavigationResult,
+          base::Bind(&ShellNavigationRequest::ContinueInterceptedRequestResult,
                      done_callback));
 }
 
 // static
-void ShellNavigationRequest::ProcessNavigationResult(
+void ShellNavigationRequest::ContinueInterceptedRequestResult(
     base::Closure done_callback,
-    std::unique_ptr<page::ProcessNavigationResult>) {
+    std::unique_ptr<network::ContinueInterceptedRequestResult>) {
   done_callback.Run();
 }
 

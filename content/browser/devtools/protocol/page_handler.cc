@@ -21,7 +21,6 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/devtools/devtools_session.h"
-#include "content/browser/devtools/page_navigation_throttle.h"
 #include "content/browser/devtools/protocol/emulation_handler.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -107,8 +106,6 @@ PageHandler::PageHandler(EmulationHandler* emulation_handler)
       session_id_(0),
       frame_counter_(0),
       frames_in_flight_(0),
-      navigation_throttle_enabled_(false),
-      next_navigation_id_(0),
       host_(nullptr),
       emulation_handler_(emulation_handler),
       weak_factory_(this) {
@@ -211,7 +208,6 @@ Response PageHandler::Enable() {
 Response PageHandler::Disable() {
   enabled_ = false;
   screencast_enabled_ = false;
-  SetControlNavigations(false);
   return Response::FallThrough();
 }
 
@@ -542,38 +538,6 @@ Response PageHandler::RequestAppBanner() {
   return Response::OK();
 }
 
-Response PageHandler::SetControlNavigations(bool enabled) {
-  navigation_throttle_enabled_ = enabled;
-  // We don't own the page PageNavigationThrottles so we can't delete them, but
-  // we can turn them into NOPs.
-  for (auto& pair : navigation_throttles_) {
-    pair.second->AlwaysProceed();
-  }
-  navigation_throttles_.clear();
-  return Response::OK();
-}
-
-Response PageHandler::ProcessNavigation(const std::string& response,
-                                        int navigation_id) {
-  auto it = navigation_throttles_.find(navigation_id);
-  if (it == navigation_throttles_.end())
-    return Response::InvalidParams("Unknown navigation id");
-
-  if (response == Page::NavigationResponseEnum::Proceed) {
-    it->second->Resume();
-    return Response::OK();
-  } else if (response == Page::NavigationResponseEnum::Cancel) {
-    it->second->CancelDeferredNavigation(content::NavigationThrottle::CANCEL);
-    return Response::OK();
-  } else if (response == Page::NavigationResponseEnum::CancelAndIgnore) {
-    it->second->CancelDeferredNavigation(
-        content::NavigationThrottle::CANCEL_AND_IGNORE);
-    return Response::OK();
-  }
-
-  return Response::InvalidParams("Unrecognized response");
-}
-
 Response PageHandler::BringToFront() {
   WebContentsImpl* wc = GetWebContents();
   if (wc) {
@@ -581,32 +545,6 @@ Response PageHandler::BringToFront() {
     return Response::OK();
   }
   return Response::InternalError();
-}
-
-std::unique_ptr<PageNavigationThrottle>
-PageHandler::CreateThrottleForNavigation(NavigationHandle* navigation_handle) {
-  if (!navigation_throttle_enabled_)
-    return nullptr;
-
-  std::unique_ptr<PageNavigationThrottle> throttle(new PageNavigationThrottle(
-      weak_factory_.GetWeakPtr(), next_navigation_id_, navigation_handle));
-  navigation_throttles_[next_navigation_id_++] = throttle.get();
-  return throttle;
-}
-
-void PageHandler::OnPageNavigationThrottleDisposed(int navigation_id) {
-  DCHECK(navigation_throttles_.find(navigation_id) !=
-         navigation_throttles_.end());
-  navigation_throttles_.erase(navigation_id);
-}
-
-void PageHandler::NavigationRequested(const PageNavigationThrottle* throttle) {
-  NavigationHandle* navigation_handle = throttle->navigation_handle();
-  frontend_->NavigationRequested(
-      navigation_handle->IsInMainFrame(),
-      navigation_handle->WasServerRedirect(),
-      throttle->navigation_id(),
-      navigation_handle->GetURL().spec());
 }
 
 WebContentsImpl* PageHandler::GetWebContents() {

@@ -897,33 +897,40 @@ HEADLESS_ASYNC_DEVTOOLED_TEST_F(TargetDomainCreateTwoContexts);
 
 class HeadlessDevToolsNavigationControlTest
     : public HeadlessAsyncDevTooledBrowserTest,
+      network::ExperimentalObserver,
       page::ExperimentalObserver {
  public:
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
     base::RunLoop run_loop;
     devtools_client_->GetPage()->GetExperimental()->AddObserver(this);
+    devtools_client_->GetNetwork()->GetExperimental()->AddObserver(this);
     devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
     base::MessageLoop::ScopedNestableTaskAllower nest_loop(
         base::MessageLoop::current());
     run_loop.Run();
-    devtools_client_->GetPage()->GetExperimental()->SetControlNavigations(
-        headless::page::SetControlNavigationsParams::Builder()
-            .SetEnabled(true)
-            .Build());
+    devtools_client_->GetNetwork()->Enable();
+    devtools_client_->GetNetwork()
+        ->GetExperimental()
+        ->SetRequestInterceptionEnabled(
+            headless::network::SetRequestInterceptionEnabledParams::Builder()
+                .SetEnabled(true)
+                .Build());
     devtools_client_->GetPage()->Navigate(
         embedded_test_server()->GetURL("/hello.html").spec());
   }
 
-  void OnNavigationRequested(
-      const headless::page::NavigationRequestedParams& params) override {
-    navigation_requested_ = true;
+  void OnRequestIntercepted(
+      const network::RequestInterceptedParams& params) override {
+    if (params.GetIsNavigationRequest())
+      navigation_requested_ = true;
     // Allow the navigation to proceed.
-    devtools_client_->GetPage()->GetExperimental()->ProcessNavigation(
-        headless::page::ProcessNavigationParams::Builder()
-            .SetNavigationId(params.GetNavigationId())
-            .SetResponse(headless::page::NavigationResponse::PROCEED)
-            .Build());
+    devtools_client_->GetNetwork()
+        ->GetExperimental()
+        ->ContinueInterceptedRequest(
+            headless::network::ContinueInterceptedRequestParams::Builder()
+                .SetInterceptionId(params.GetInterceptionId())
+                .Build());
   }
 
   void OnFrameStoppedLoading(
@@ -1426,7 +1433,7 @@ class FailedUrlRequestTest : public HeadlessAsyncDevTooledBrowserTest,
           ->ContinueInterceptedRequest(
               network::ContinueInterceptedRequestParams::Builder()
                   .SetInterceptionId(params.GetInterceptionId())
-                  .SetErrorReason(network::ErrorReason::ABORTED)
+                  .SetErrorReason(network::ErrorReason::FAILED)
                   .Build());
     } else {
       // Allow everything else to continue.

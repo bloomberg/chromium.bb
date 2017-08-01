@@ -536,8 +536,6 @@ source_set("browser") {
     "devtools/devtools_url_request_interceptor.h",
     "devtools/forwarding_agent_host.cc",
     "devtools/forwarding_agent_host.h",
-    "devtools/page_navigation_throttle.cc",
-    "devtools/page_navigation_throttle.h",
     "devtools/protocol/devtools_domain_handler.cc",
     "devtools/protocol/devtools_domain_handler.h",
     "devtools/protocol/dom_handler.cc",

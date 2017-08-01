@@ -185,19 +185,21 @@ class DevToolsURLRequestInterceptor::State::InterceptedWebContentsObserver
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
   }
 
-  void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
+  void RenderFrameHostChanged(RenderFrameHost* old_host,
+                              RenderFrameHost* new_host) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    if (old_host)
+      FrameDeleted(old_host);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&DevToolsURLRequestInterceptor::State::
-                           StartInterceptingRequestsInternal,
-                       state_, render_frame_host->GetRoutingID(),
-                       render_frame_host->GetFrameTreeNodeId(),
-                       render_frame_host->GetProcess()->GetID(), web_contents(),
-                       network_handler_));
+        base::BindOnce(
+            &DevToolsURLRequestInterceptor::State::
+                StartInterceptingRequestsInternal,
+            state_, new_host->GetRoutingID(), new_host->GetFrameTreeNodeId(),
+            new_host->GetProcess()->GetID(), web_contents(), network_handler_));
   }
 
-  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override {
+  void FrameDeleted(RenderFrameHost* render_frame_host) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
