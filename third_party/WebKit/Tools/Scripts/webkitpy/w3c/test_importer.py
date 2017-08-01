@@ -143,12 +143,6 @@ class TestImporter(object):
         """
         _log.info('Triggering try jobs for updating expectations.')
         self.git_cl.trigger_try_jobs()
-
-        # If we also trigger a CQ dry run at this point and there are no
-        # new baselines or expectation lines required, then this will save
-        # us from having to wait for the CQ later on.
-        self.git_cl.run(['try'])
-
         try_results = self.git_cl.wait_for_try_jobs(
             poll_delay_seconds=POLL_DELAY_SECONDS,
             timeout_seconds=TIMEOUT_SECONDS)
@@ -169,9 +163,6 @@ class TestImporter(object):
 
     def run_commit_queue_for_cl(self):
         """Triggers CQ and either commits or aborts; returns True on success."""
-        # If a CQ dry was was previously done and no new patch was uploaded
-        # for test expectations, it's still OK to run `git cl try` again; no
-        # new unnecessary try jobs should be started.
         _log.info('Triggering CQ try jobs.')
         self.git_cl.run(['try'])
         try_results = self.git_cl.wait_for_try_jobs(
