@@ -25,6 +25,10 @@ class NetworkQualityEstimator;
 
 namespace metrics {
 
+SystemProfileProto::Network::EffectiveConnectionType
+ConvertEffectiveConnectionType(
+    net::EffectiveConnectionType effective_connection_type);
+
 // Registers as observer with net::NetworkChangeNotifier and keeps track of
 // the network environment.
 class NetworkMetricsProvider

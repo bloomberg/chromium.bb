@@ -8,6 +8,8 @@
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/metrics/net/network_metrics_provider.h"
+#include "components/metrics/proto/system_profile.pb.h"
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
@@ -29,7 +31,7 @@ const char kUkmForegroundDurationName[] = "PageTiming.ForegroundDuration";
 const char kUkmFailedProvisionaLoadName[] =
     "PageTiming.NavigationToFailedProvisionalLoad";
 const char kUkmEffectiveConnectionType[] =
-    "Net.EffectiveConnectionType.OnNavigationStart";
+    "Net.EffectiveConnectionType2.OnNavigationStart";
 const char kUkmHttpRttEstimate[] = "Net.HttpRttEstimate.OnNavigationStart";
 const char kUkmTransportRttEstimate[] =
     "Net.TransportRttEstimate.OnNavigationStart";
@@ -189,10 +191,18 @@ void UkmPageLoadMetricsObserver::RecordPageLoadExtraInfoMetrics(
     builder->AddMetric(internal::kUkmForegroundDurationName,
                        foreground_duration.value().InMilliseconds());
   }
-  if (effective_connection_type_ != net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+
+  // Convert to the EffectiveConnectionType as used in SystemProfileProto
+  // before persisting the metric.
+  metrics::SystemProfileProto::Network::EffectiveConnectionType
+      proto_effective_connection_type =
+          metrics::ConvertEffectiveConnectionType(effective_connection_type_);
+  if (proto_effective_connection_type !=
+      metrics::SystemProfileProto::Network::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
     builder->AddMetric(internal::kUkmEffectiveConnectionType,
-                       static_cast<int64_t>(effective_connection_type_));
+                       static_cast<int64_t>(proto_effective_connection_type));
   }
+
   if (http_rtt_estimate_) {
     builder->AddMetric(
         internal::kUkmHttpRttEstimate,

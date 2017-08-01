@@ -375,7 +375,7 @@ message SystemProfileProto {
       // Deprecated: Specifies that the connection_type changed during the
       // lifetime of the log.
       DEPRECATED_EFFECTIVE_CONNECTION_TYPE_AMBIGUOUS = 1 [deprecated = true];
-      DEPRECATED_EFFECTIVE_CONNECTION_TYPE_OFFLINE = 2 [deprecated = true];
+      EFFECTIVE_CONNECTION_TYPE_OFFLINE = 2;
       EFFECTIVE_CONNECTION_TYPE_SLOW_2G = 3;
       EFFECTIVE_CONNECTION_TYPE_2G = 4;
       EFFECTIVE_CONNECTION_TYPE_3G = 5;
