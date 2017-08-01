@@ -26,11 +26,7 @@ SSLStatus::SSLStatus(const net::SSLInfo& ssl_info)
       key_exchange_group(ssl_info.key_exchange_group),
       connection_status(ssl_info.connection_status),
       content_status(NORMAL_CONTENT),
-      pkp_bypassed(ssl_info.pkp_bypassed) {
-  for (const auto& sct_and_status : ssl_info.signed_certificate_timestamps) {
-    sct_statuses.push_back(sct_and_status.status);
-  }
-}
+      pkp_bypassed(ssl_info.pkp_bypassed) {}
 
 SSLStatus::SSLStatus(const SSLStatus& other) = default;
 
