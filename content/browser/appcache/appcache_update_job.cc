@@ -14,6 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_histograms.h"
+#include "content/browser/appcache/appcache_update_request_base.h"
 #include "content/browser/appcache/appcache_update_url_fetcher.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
@@ -342,22 +343,21 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLFetcher* fetcher,
 
   manifest_fetcher_ = NULL;
 
-  net::URLRequest* request = fetcher->request();
+  UpdateRequestBase* request = fetcher->request();
   int response_code = -1;
   bool is_valid_response_code = false;
   if (net_error == net::OK) {
     response_code = request->GetResponseCode();
     is_valid_response_code = (response_code / 100 == 2);
 
-    std::string mime_type;
-    request->GetMimeType(&mime_type);
+    std::string mime_type = request->GetMimeType();
     manifest_has_valid_mime_type_ = (mime_type == "text/cache-manifest");
   }
 
   if (is_valid_response_code) {
     manifest_data_ = fetcher->manifest_data();
     manifest_response_info_.reset(
-        new net::HttpResponseInfo(request->response_info()));
+        new net::HttpResponseInfo(request->GetResponseInfo()));
     if (update_type_ == UPGRADE_ATTEMPT)
       CheckIfManifestChanged();  // continues asynchronously
     else
@@ -484,8 +484,8 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLFetcher* fetcher,
                                                 int net_error) {
   DCHECK(internal_state_ == DOWNLOADING);
 
-  net::URLRequest* request = fetcher->request();
-  const GURL& url = request->original_url();
+  UpdateRequestBase* request = fetcher->request();
+  const GURL& url = request->GetOriginalURL();
   pending_url_fetches_.erase(url);
   NotifyAllProgress(url);
   ++url_fetches_completed_;
@@ -585,8 +585,8 @@ void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(URLFetcher* fetcher,
   // master entry fetches when entering cache failure state so this will never
   // be called in CACHE_FAILURE state.
 
-  net::URLRequest* request = fetcher->request();
-  const GURL& url = request->original_url();
+  UpdateRequestBase* request = fetcher->request();
+  const GURL& url = request->GetOriginalURL();
   master_entry_fetches_.erase(url);
   ++master_entries_completed_;
 
@@ -638,13 +638,10 @@ void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(URLFetcher* fetcher,
 
     const char kFormatString[] = "Manifest fetch failed (%d) %s";
     std::string message = FormatUrlErrorMessage(
-        kFormatString, request->url(), fetcher->result(), response_code);
-    host_notifier.SendErrorNotifications(
-        AppCacheErrorDetails(message,
-                     APPCACHE_MANIFEST_ERROR,
-                     request->url(),
-                     response_code,
-                     false /*is_cross_origin*/));
+        kFormatString, request->GetURL(), fetcher->result(), response_code);
+    host_notifier.SendErrorNotifications(AppCacheErrorDetails(
+        message, APPCACHE_MANIFEST_ERROR, request->GetURL(), response_code,
+        false /*is_cross_origin*/));
 
     // In downloading case, update result is different if all master entries
     // failed vs. only some failing.
@@ -655,13 +652,11 @@ void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(URLFetcher* fetcher,
 
       // Section 6.9.4, step 22.3.
       if (update_type_ == CACHE_ATTEMPT && pending_master_entries_.empty()) {
-        HandleCacheFailure(AppCacheErrorDetails(message,
-                                        APPCACHE_MANIFEST_ERROR,
-                                        request->url(),
-                                        response_code,
-                                        false /*is_cross_origin*/),
-                           fetcher->result(),
-                           GURL());
+        HandleCacheFailure(
+            AppCacheErrorDetails(message, APPCACHE_MANIFEST_ERROR,
+                                 request->GetURL(), response_code,
+                                 false /*is_cross_origin*/),
+            fetcher->result(), GURL());
         return;
       }
     }

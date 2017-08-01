@@ -11,7 +11,6 @@
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/appcache_update_job.h"
 #include "net/base/io_buffer.h"
-#include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -19,7 +18,7 @@ namespace content {
 // Helper class to fetch resources. Depending on the fetch type,
 // can either fetch to an in-memory string or write the response
 // data out to the disk cache.
-class URLFetcher : public net::URLRequest::Delegate {
+class AppCacheUpdateJob::URLFetcher {
  public:
   enum FetchType {
     MANIFEST_FETCH,
@@ -31,10 +30,10 @@ class URLFetcher : public net::URLRequest::Delegate {
              FetchType fetch_type,
              AppCacheUpdateJob* job,
              int buffer_size);
-  ~URLFetcher() override;
+  ~URLFetcher();
   void Start();
   FetchType fetch_type() const { return fetch_type_; }
-  net::URLRequest* request() const { return request_.get(); }
+  UpdateRequestBase* request() const { return request_.get(); }
   const AppCacheEntry& existing_entry() const { return existing_entry_; }
   const std::string& manifest_data() const { return manifest_data_; }
   AppCacheResponseWriter* response_writer() const {
@@ -50,12 +49,9 @@ class URLFetcher : public net::URLRequest::Delegate {
   int redirect_response_code() const { return redirect_response_code_; }
 
  private:
-  // URLRequest::Delegate overrides
-  void OnReceivedRedirect(net::URLRequest* request,
-                          const net::RedirectInfo& redirect_info,
-                          bool* defer_redirect) override;
-  void OnResponseStarted(net::URLRequest* request, int net_error) override;
-  void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
+  void OnReceivedRedirect(const net::RedirectInfo& redirect_info);
+  void OnResponseStarted(int net_error);
+  void OnReadCompleted(int bytes_read);
 
   void AddConditionalHeaders(const net::HttpResponseHeaders* headers);
   void OnWriteComplete(int result);
@@ -64,12 +60,15 @@ class URLFetcher : public net::URLRequest::Delegate {
   void OnResponseCompleted(int net_error);
   bool MaybeRetryRequest();
 
+  friend class UpdateURLRequest;
+  friend class UpdateURLLoaderRequest;
+
   GURL url_;
   AppCacheUpdateJob* job_;
   FetchType fetch_type_;
   int retry_503_attempts_;
   scoped_refptr<net::IOBuffer> buffer_;
-  std::unique_ptr<net::URLRequest> request_;
+  std::unique_ptr<UpdateRequestBase> request_;
   AppCacheEntry existing_entry_;
   scoped_refptr<net::HttpResponseHeaders> existing_response_headers_;
   std::string manifest_data_;
