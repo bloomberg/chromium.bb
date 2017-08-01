@@ -49,6 +49,9 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   virtual void CountUsage(WebFeature) const = 0;
   virtual void CountDeprecation(WebFeature) const = 0;
 
+  void AddWarningConsoleMessage(const String&, LogSource) const override;
+  void AddErrorConsoleMessage(const String&, LogSource) const override;
+
  protected:
   // Used for security checks.
   virtual bool AllowScriptFromSource(const KURL&) const = 0;
@@ -75,8 +78,8 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   virtual const SecurityOrigin* GetParentSecurityOrigin() const = 0;
   virtual Optional<WebAddressSpace> GetAddressSpace() const = 0;
   virtual const ContentSecurityPolicy* GetContentSecurityPolicy() const = 0;
+
   virtual void AddConsoleMessage(ConsoleMessage*) const = 0;
-  using FetchContext::AddConsoleMessage;
 
   // Utility method that can be used to implement other methods.
   void PrintAccessDeniedMessage(const KURL&) const;

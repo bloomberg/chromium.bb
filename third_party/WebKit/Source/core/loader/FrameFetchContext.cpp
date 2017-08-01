@@ -744,24 +744,6 @@ void FrameFetchContext::SendImagePing(const KURL& url) {
   PingLoader::LoadImage(GetFrame(), url);
 }
 
-void FrameFetchContext::AddConsoleMessage(const String& message,
-                                          LogMessageType message_type) const {
-  if (IsDetached())
-    return;
-
-  MessageLevel level = message_type == kLogWarningMessage ? kWarningMessageLevel
-                                                          : kErrorMessageLevel;
-  ConsoleMessage* console_message =
-      ConsoleMessage::Create(kJSMessageSource, level, message);
-  // Route the console message through Document if it's attached, so
-  // that script line numbers can be included. Otherwise, route directly to the
-  // FrameConsole, to ensure we never drop a message.
-  if (document_ && document_->GetFrame())
-    document_->AddConsoleMessage(console_message);
-  else
-    GetFrame()->Console().AddMessage(console_message);
-}
-
 SecurityOrigin* FrameFetchContext::GetSecurityOrigin() const {
   if (IsDetached())
     return frozen_state_->security_origin.Get();
@@ -1037,8 +1019,16 @@ const ContentSecurityPolicy* FrameFetchContext::GetContentSecurityPolicy()
 }
 
 void FrameFetchContext::AddConsoleMessage(ConsoleMessage* message) const {
-  if (document_)
+  if (IsDetached())
+    return;
+
+  // Route the console message through Document if it's attached, so
+  // that script line numbers can be included. Otherwise, route directly to the
+  // FrameConsole, to ensure we never drop a message.
+  if (document_ && document_->GetFrame())
     document_->AddConsoleMessage(message);
+  else
+    GetFrame()->Console().AddMessage(message);
 }
 
 ContentSettingsClient* FrameFetchContext::GetContentSettingsClient() const {

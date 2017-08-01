@@ -135,8 +135,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   bool PageDismissalEventBeingDispatched() const override;
   bool UpdateTimingInfoForIFrameNavigation(ResourceTimingInfo*) override;
   void SendImagePing(const KURL&) override;
-  void AddConsoleMessage(const String&,
-                         LogMessageType = kLogErrorMessage) const override;
+
   SecurityOrigin* GetSecurityOrigin() const override;
 
   void PopulateResourceRequest(Resource::Type,
