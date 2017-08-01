@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "components/wallpaper/wallpaper_info.h"
+#include "components/wallpaper/wallpaper_layout.h"
 #include "components/wallpaper/wallpaper_resizer_observer.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"

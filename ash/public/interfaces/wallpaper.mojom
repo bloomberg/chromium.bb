@@ -4,35 +4,10 @@
 
 module ash.mojom;
 
-import "mojo/common/time.mojom";
 import "skia/public/interfaces/bitmap.mojom";
 
 // These values match wallpaper::WallpaperLayout.
-enum WallpaperLayout {
-  CENTER,
-  CENTER_CROPPED,
-  STRETCH,
-  TILE,
-};
-
-// These values match user_manager::User::WallpaperType.
-enum WallpaperType {
-  DAILY,
-  CUSTOMIZED,
-  DEFAULT,
-  ONLINE,
-  POLICY,
-  THIRDPARTY,
-  DEVICE,
-};
-
-// This corresponds to wallpaper::WallpaperInfo.
-struct WallpaperInfo {
-  string location;
-  WallpaperLayout layout;
-  WallpaperType type;
-  mojo.common.mojom.Time date;
-};
+enum WallpaperLayout { CENTER, CENTER_CROPPED, STRETCH, TILE, };
 
 // Used by Chrome to set the wallpaper displayed by ash.
 interface WallpaperController {
@@ -43,11 +18,11 @@ interface WallpaperController {
   // Set the wallpaper picker interface, to let ash trigger Chrome's picker.
   SetWallpaperPicker(WallpaperPicker picker);
 
-  // Set the wallpaper bitmap and info used for the ash desktop background.
+  // Set the wallpaper bitmap and layout used for the ash desktop background.
   // A null or empty |wallpaper| bitmap is treated as a no-op.
   // TODO(crbug.com/655875): Optimize ash wallpaper transport; avoid sending
   // large bitmaps over Mojo; use shared memory like BitmapUploader, etc.
-  SetWallpaper(skia.mojom.Bitmap? wallpaper, WallpaperInfo info);
+  SetWallpaper(skia.mojom.Bitmap? wallpaper, WallpaperLayout layout);
 
   // Runs to get wallpaper prominent colors.
   GetWallpaperColors() => (array<uint32> prominent_colors);

@@ -22,7 +22,7 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "components/wallpaper/wallpaper_files_id.h"
-#include "components/wallpaper/wallpaper_info.h"
+#include "components/wallpaper/wallpaper_layout.h"
 #include "components/wallpaper/wallpaper_resizer.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/codec/png_codec.h"

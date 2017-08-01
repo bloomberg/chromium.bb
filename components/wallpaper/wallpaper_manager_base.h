@@ -21,11 +21,13 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/wallpaper/wallpaper_export.h"
-#include "components/wallpaper/wallpaper_info.h"
+#include "components/wallpaper/wallpaper_layout.h"
 #include "ui/gfx/image/image_skia.h"
 
 class PrefRegistrySimple;
@@ -57,6 +59,26 @@ class WALLPAPER_EXPORT MovableOnDestroyCallback {
 
 using MovableOnDestroyCallbackHolder =
     std::unique_ptr<MovableOnDestroyCallback>;
+
+struct WALLPAPER_EXPORT WallpaperInfo {
+  WallpaperInfo();
+  WallpaperInfo(const std::string& in_location,
+                WallpaperLayout in_layout,
+                user_manager::User::WallpaperType in_type,
+                const base::Time& in_date);
+  ~WallpaperInfo();
+
+  // Either file name of migrated wallpaper including first directory level
+  // (corresponding to user wallpaper_files_id) or online wallpaper URL.
+  std::string location;
+  WallpaperLayout layout;
+  user_manager::User::WallpaperType type;
+  base::Time date;
+  bool operator==(const WallpaperInfo& other) {
+    return (location == other.location) && (layout == other.layout) &&
+           (type == other.type);
+  }
+};
 
 // Asserts that the current task is sequenced with any other task that calls
 // this.
@@ -93,11 +115,15 @@ WALLPAPER_EXPORT extern const int kLargeWallpaperMaxHeight;
 WALLPAPER_EXPORT extern const int kWallpaperThumbnailWidth;
 WALLPAPER_EXPORT extern const int kWallpaperThumbnailHeight;
 
-// A dictionary pref that maps usernames to wallpaper info.
+// A dictionary that maps usernames to wallpaper properties.
 WALLPAPER_EXPORT extern const char kUsersWallpaperInfo[];
 
-// A dictionary pref that maps wallpaper file paths to their prominent colors.
-WALLPAPER_EXPORT extern const char kWallpaperColors[];
+// A dictionary pref that maps usernames to file paths to their wallpapers.
+// Deprecated. Will remove this const char after done migration.
+WALLPAPER_EXPORT extern const char kUserWallpapers[];
+
+// A dictionary pref that maps usernames to wallpaper properties.
+WALLPAPER_EXPORT extern const char kUserWallpapersProperties[];
 
 class WallpaperFilesId;
 
@@ -479,7 +505,7 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
   // because that's the callback interface provided by UserImageLoader.)
   virtual void OnWallpaperDecoded(
       const AccountId& account_id,
-      const WallpaperInfo& info,
+      WallpaperLayout layout,
       bool update_wallpaper,
       MovableOnDestroyCallbackHolder on_finish,
       std::unique_ptr<user_manager::UserImage> user_image) = 0;
