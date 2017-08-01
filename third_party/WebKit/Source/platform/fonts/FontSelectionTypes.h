@@ -99,9 +99,6 @@ class FontSelectionValue {
 
 // Temporary types until we move from CSSPrimitiveValueMappings to
 // StyleBuilderConverter for those types.
-class FontSelectionValueStretch : public FontSelectionValue {
-  using FontSelectionValue::FontSelectionValue;
-};
 class FontSelectionValueStyle : public FontSelectionValue {
   using FontSelectionValue::FontSelectionValue;
 };
@@ -225,56 +222,56 @@ static inline const FontSelectionValue& WeightSearchThreshold() {
   return weightSearchThreshold;
 }
 
-static inline const FontSelectionValueStretch& UltraCondensedWidthValue() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValueStretch,
+static inline const FontSelectionValue& UltraCondensedWidthValue() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue,
                                   ultraCondensedWidthValue, (50));
   return ultraCondensedWidthValue;
 }
 
-static inline const FontSelectionValueStretch& ExtraCondensedWidthValue() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValueStretch,
+static inline const FontSelectionValue& ExtraCondensedWidthValue() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue,
                                   extraCondensedWidthValue, (62.5f));
   return extraCondensedWidthValue;
 }
 
-static inline const FontSelectionValueStretch& CondensedWidthValue() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValueStretch,
-                                  condensedWidthValue, (75));
+static inline const FontSelectionValue& CondensedWidthValue() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue, condensedWidthValue,
+                                  (75));
   return condensedWidthValue;
 }
 
-static inline const FontSelectionValueStretch& SemiCondensedWidthValue() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValueStretch,
+static inline const FontSelectionValue& SemiCondensedWidthValue() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue,
                                   semiCondensedWidthValue, (87.5f));
   return semiCondensedWidthValue;
 }
 
-static inline const FontSelectionValueStretch& NormalWidthValue() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValueStretch,
-                                  normalWidthValue, (100.0f));
+static inline const FontSelectionValue& NormalWidthValue() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue, normalWidthValue,
+                                  (100.0f));
   return normalWidthValue;
 }
 
-static inline const FontSelectionValueStretch& SemiExpandedWidthValue() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValueStretch,
+static inline const FontSelectionValue& SemiExpandedWidthValue() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue,
                                   semiExpandedWidthValue, (112.5f));
   return semiExpandedWidthValue;
 }
 
-static inline const FontSelectionValueStretch& ExpandedWidthValue() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValueStretch,
-                                  expandedWidthValue, (125));
+static inline const FontSelectionValue& ExpandedWidthValue() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue, expandedWidthValue,
+                                  (125));
   return expandedWidthValue;
 }
 
-static inline const FontSelectionValueStretch& ExtraExpandedWidthValue() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValueStretch,
+static inline const FontSelectionValue& ExtraExpandedWidthValue() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue,
                                   extraExpandedWidthValue, (150));
   return extraExpandedWidthValue;
 }
 
-static inline const FontSelectionValueStretch& UltraExpandedWidthValue() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValueStretch,
+static inline const FontSelectionValue& UltraExpandedWidthValue() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(const FontSelectionValue,
                                   ultraExpandedWidthValue, (200));
   return ultraExpandedWidthValue;
 }
