@@ -49,7 +49,7 @@
 #include "components/ntp_snippets/contextual_suggestions_source.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
-#include "components/ntp_snippets/remote/contextual_suggestions_fetcher.h"
+#include "components/ntp_snippets/remote/contextual_suggestions_fetcher_impl.h"
 #include "components/ntp_snippets/remote/persistent_scheduler.h"
 #include "components/ntp_snippets/remote/prefetched_pages_tracker.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
@@ -107,7 +107,7 @@ using ntp_snippets::BreakingNewsGCMAppHandler;
 using ntp_snippets::BreakingNewsSuggestionsProvider;
 using ntp_snippets::CategoryRanker;
 using ntp_snippets::ContentSuggestionsService;
-using ntp_snippets::ContextualSuggestionsFetcher;
+using ntp_snippets::ContextualSuggestionsFetcherImpl;
 using ntp_snippets::ContextualSuggestionsSource;
 using ntp_snippets::ForeignSessionsSuggestionsProvider;
 using ntp_snippets::GetFetchEndpoint;
@@ -183,7 +183,7 @@ void RegisterContextualSuggestionsSourceIfEnabled(
   scoped_refptr<net::URLRequestContextGetter> request_context =
       profile->GetRequestContext();
   auto contextual_suggestions_fetcher =
-      base::MakeUnique<ContextualSuggestionsFetcher>(
+      base::MakeUnique<ContextualSuggestionsFetcherImpl>(
           signin_manager, token_service, request_context, pref_service,
           base::Bind(&safe_json::SafeJsonParser::Parse));
   base::FilePath database_dir(
