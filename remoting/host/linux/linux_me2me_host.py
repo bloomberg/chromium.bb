@@ -130,6 +130,11 @@ MAX_LAUNCH_FAILURES = SHORT_BACKOFF_THRESHOLD + 10
 # Number of seconds to save session output to the log.
 SESSION_OUTPUT_TIME_LIMIT_SECONDS = 30
 
+# This is the file descriptor used to pass messages to the user_session binary
+# during startup. It must be kept in sync with kMessageFd in
+# remoting_user_session.cc.
+USER_SESSION_MESSAGE_FD = 202
+
 # Globals needed by the atexit cleanup() handler.
 g_desktop = None
 g_host_hash = hashlib.md5(socket.gethostname()).hexdigest()
@@ -885,23 +890,46 @@ class ParentProcessLogger(object):
   daemon removes the log-handler and closes the pipe, causing the the parent
   process to reach end-of-file while reading the pipe and exit.
 
-  The (singleton) logger should be instantiated before forking. The parent
-  process should call wait_for_logs() before exiting. The (grand-)child process
-  should call start_logging() when it starts, and then use logging.* to issue
-  log statements, as usual. When the child has either succesfully started the
-  host or terminated, it must call release_parent() to allow the parent to exit.
+  When daemonizing, the (singleton) logger should be instantiated before
+  forking. The parent process should call wait_for_logs() before exiting. When
+  running via user-session, the file descriptor for the pipe to the parent
+  process should be passed to the constructor. In the latter case, wait_for_logs
+  may not be used.
+
+  In either case, the (grand-)child process should call start_logging() when it
+  starts, and then use logging.* to issue log statements, as usual. When the
+  child has either succesfully started the host or terminated, it must call
+  release_parent() to allow the parent to exit.
   """
 
   __instance = None
 
-  def __init__(self):
-    """Constructor. Must be called before forking."""
-    read_pipe, write_pipe = os.pipe()
+  def __init__(self, write_fd=None):
+    """Constructor. When daemonizing, must be called before forking.
+
+    Constructs the singleton instance of ParentProcessLogger. This should be
+    called at most once.
+
+    write_fd: If specified, the logger will use the file descriptor provided
+              for sending log messages instead of creating a new pipe. It is
+              assumed that this is the write end of a pipe created by an
+              already-existing parent process, such as user-session. If
+              write_fd is not a valid file descriptor, the constructor will
+              throw either IOError or OSError.
+    """
+    if write_fd is None:
+      read_pipe, write_pipe = os.pipe()
+    else:
+      read_pipe = None
+      write_pipe = write_fd
     # Ensure write_pipe is closed on exec, otherwise it will be kept open by
     # child processes (X, host), preventing the read pipe from EOF'ing.
     old_flags = fcntl.fcntl(write_pipe, fcntl.F_GETFD)
     fcntl.fcntl(write_pipe, fcntl.F_SETFD, old_flags | fcntl.FD_CLOEXEC)
-    self._read_file = os.fdopen(read_pipe, 'r')
+    if read_pipe is not None:
+      self._read_file = os.fdopen(read_pipe, 'r')
+    else:
+      self._read_file = None
     self._write_file = os.fdopen(write_pipe, 'w')
     self._logging_handler = None
     ParentProcessLogger.__instance = self
@@ -913,7 +941,8 @@ class ParentProcessLogger(object):
 
     Must be called by the child process.
     """
-    self._read_file.close()
+    if self._read_file is not None:
+      self._read_file.close()
     self._logging_handler = logging.StreamHandler(self._write_file)
     self._logging_handler.setFormatter(logging.Formatter(fmt='MSG:%(message)s'))
     logging.getLogger().addHandler(self._logging_handler)
@@ -1490,6 +1519,16 @@ Web Store: https://chrome.google.com/remotedesktop"""
   # requested to run in the foreground.
   if not options.foreground:
     daemonize()
+  else:
+    # Log to existing messaging pipe if it exists.
+    try:
+      ParentProcessLogger(USER_SESSION_MESSAGE_FD).start_logging()
+    except (IOError, OSError):
+      # One of these will be thrown if the file descriptor is invalid, such as
+      # if the script is not being run under the wrapper or the fd got closed by
+      # the login shell. In either case, just continue without sending log
+      # messages.
+      pass
 
   if host.host_id:
     logging.info("Using host_id: " + host.host_id)
