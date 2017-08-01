@@ -65,12 +65,13 @@ CGFloat OriginY(CGRect targetFrame,
 
 CGFloat MaxWidth(CGRect targetFrame,
                  BubbleAlignment alignment,
-                 CGFloat boundingWidth) {
+                 CGFloat boundingWidth,
+                 bool isRTL) {
   CGFloat anchorX = CGRectGetMidX(targetFrame);
   CGFloat maxWidth;
   switch (alignment) {
     case BubbleAlignmentLeading:
-      if (base::i18n::IsRTL()) {
+      if (isRTL) {
         // The bubble is aligned right, and can use space to the left of the
         // anchor point and within |kBubbleAlignmentOffset| from the right.
         maxWidth = anchorX + kBubbleAlignmentOffset;
@@ -86,7 +87,7 @@ CGFloat MaxWidth(CGRect targetFrame,
       maxWidth = MIN(anchorX, boundingWidth - anchorX) * 2.0f;
       break;
     case BubbleAlignmentTrailing:
-      if (base::i18n::IsRTL()) {
+      if (isRTL) {
         // The bubble is aligned left, and can use space to the right of the
         // anchor point and within |kBubbleAlignmentOffset| from the left.
         maxWidth = boundingWidth - anchorX + kBubbleAlignmentOffset;
@@ -101,6 +102,13 @@ CGFloat MaxWidth(CGRect targetFrame,
       break;
   }
   return maxWidth;
+}
+
+CGFloat MaxWidth(CGRect targetFrame,
+                 BubbleAlignment alignment,
+                 CGFloat boundingWidth) {
+  bool isRTL = base::i18n::IsRTL();
+  return MaxWidth(targetFrame, alignment, boundingWidth, isRTL);
 }
 
 }  // namespace bubble_util

@@ -31,8 +31,15 @@ CGFloat OriginY(CGRect targetFrame,
 // Calculate the maximum width of the bubble such that it stays within its
 // bounding coordinate space. |targetFrame| is the frame the target UI element
 // in the coordinate system in which the bubble is drawn. |alignment| is the
-// bubble's alignment, and |boundingWidth| is the width of the coordinate space
-// in which the bubble is drawn.
+// bubble's alignment, |boundingWidth| is the width of the coordinate space
+// in which the bubble is drawn, and |isRTL| is true if the language is RTL.
+CGFloat MaxWidth(CGRect targetFrame,
+                 BubbleAlignment alignment,
+                 CGFloat boundingWidth,
+                 bool isRTL);
+
+// Convenience method for calculating the maximum width of the bubble. Uses the
+// ICU default locale of the device to determine whether the language is RTL.
 CGFloat MaxWidth(CGRect targetFrame,
                  BubbleAlignment alignment,
                  CGFloat boundingWidth);
