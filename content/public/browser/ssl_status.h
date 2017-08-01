@@ -68,7 +68,6 @@ struct CONTENT_EXPORT SSLStatus {
            key_exchange_group == status.key_exchange_group &&
            connection_status == status.connection_status &&
            content_status == status.content_status &&
-           sct_statuses == status.sct_statuses &&
            pkp_bypassed == status.pkp_bypassed;
   }
 
@@ -80,10 +79,6 @@ struct CONTENT_EXPORT SSLStatus {
   int connection_status;
   // A combination of the ContentStatusFlags above.
   int content_status;
-  // The validation statuses of the Signed Certificate Timestamps (SCTs)
-  // of Certificate Transparency (CT) that were served with the
-  // main resource.
-  std::vector<net::ct::SCTVerifyStatus> sct_statuses;
   // True if PKP was bypassed due to a local trust anchor.
   bool pkp_bypassed;
 };
