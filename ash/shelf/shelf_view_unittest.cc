@@ -95,14 +95,25 @@ class TestShelfObserver : public ShelfObserver {
   // ShelfObserver implementation.
   void OnShelfIconPositionsChanged() override {
     icon_positions_changed_ = true;
+
+    icon_positions_animation_duration_ =
+        ShelfViewTestAPI(shelf_->GetShelfViewForTesting())
+            .GetAnimationDuration();
   }
 
   bool icon_positions_changed() const { return icon_positions_changed_; }
-  void Reset() { icon_positions_changed_ = false; }
+  void Reset() {
+    icon_positions_changed_ = false;
+    icon_positions_animation_duration_ = 0;
+  }
+  int icon_positions_animation_duration() const {
+    return icon_positions_animation_duration_;
+  }
 
  private:
   Shelf* shelf_;
   bool icon_positions_changed_ = false;
+  int icon_positions_animation_duration_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestShelfObserver);
 };
@@ -1953,6 +1964,45 @@ TEST_F(ShelfViewTest, TestHideOverflow) {
   EXPECT_TRUE(test_api_->IsShowingOverflowBubble());
 }
 
+// Verify the animations of the shelf items are as long as expected.
+TEST_F(ShelfViewTest, TestShelfItemsAnimations) {
+  TestShelfObserver observer(shelf_view_->shelf());
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  ShelfID first_app_id = AddAppShortcut();
+  ShelfID second_app_id = AddAppShortcut();
+
+  // Set the animation duration for shelf items.
+  const int animation_duration = 100;
+  test_api_->SetAnimationDuration(animation_duration);
+
+  // The shelf items should animate if they are moved within the shelf, either
+  // by swapping or if the items need to be rearranged due to an item getting
+  // ripped off.
+  generator.set_current_location(GetButtonCenter(first_app_id));
+  generator.DragMouseTo(GetButtonCenter(second_app_id));
+  generator.DragMouseBy(0, 50);
+  test_api_->RunMessageLoopUntilAnimationsDone();
+  EXPECT_EQ(animation_duration, observer.icon_positions_animation_duration());
+
+  // The shelf items should not animate when the whole shelf and its contents
+  // have to move.
+  observer.Reset();
+  shelf_view_->shelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  test_api_->RunMessageLoopUntilAnimationsDone();
+  EXPECT_EQ(1, observer.icon_positions_animation_duration());
+
+  // The shelf items should animate if we are entering or exiting tablet mode.
+  observer.Reset();
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  test_api_->RunMessageLoopUntilAnimationsDone();
+  EXPECT_EQ(animation_duration, observer.icon_positions_animation_duration());
+
+  observer.Reset();
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  test_api_->RunMessageLoopUntilAnimationsDone();
+  EXPECT_EQ(animation_duration, observer.icon_positions_animation_duration());
+}
+
 class ShelfViewVisibleBoundsTest : public ShelfViewTest,
                                    public testing::WithParamInterface<bool> {
  public:
@@ -2600,10 +2650,17 @@ TEST_P(AppListButtonInkDropTest, AppListButtonInTabletMode) {
     return;
 
   InitAppListButtonInkDrop();
+  // Finish all setup tasks. In particular we want to finish the GetSwitchStates
+  // post task in (Fake)PowerManagerClient which is triggered by
+  // TabletModeController otherwise this will cause tablet mode to exit while we
+  // wait for animations in the test.
+  RunAllPendingInMessageLoop();
 
   // Verify the app list button bounds change when we enter tablet mode.
   const gfx::Rect old_bounds = app_list_button_->GetBoundsInScreen();
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  test_api_->RunMessageLoopUntilAnimationsDone();
+
   gfx::Rect new_bounds = app_list_button_->GetBoundsInScreen();
   EXPECT_EQ(new_bounds.height(), old_bounds.height());
   EXPECT_GT(new_bounds.width(), old_bounds.width());
@@ -2659,6 +2716,7 @@ TEST_P(AppListButtonInkDropTest, AppListButtonInTabletMode) {
   // Verify when we leave tablet mode, the bounds should return to be the same
   // as they were before we entered tablet mode.
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  test_api_->RunMessageLoopUntilAnimationsDone();
   new_bounds = app_list_button_->GetBoundsInScreen();
   EXPECT_EQ(new_bounds, old_bounds);
 }

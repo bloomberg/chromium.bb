@@ -285,6 +285,8 @@ void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
   const bool is_tablet_mode = Shell::Get()
                                   ->tablet_mode_controller()
                                   ->IsTabletModeWindowManagerEnabled();
+  const double current_animation_value =
+      shelf_view_->GetAppListButtonAnimationCurrentValue();
   gfx::PointF circle_center(GetAppListButtonCenterPoint());
 
   // Paint the circular background.
@@ -293,7 +295,7 @@ void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
   bg_flags.setAntiAlias(true);
   bg_flags.setStyle(cc::PaintFlags::kFill_Style);
 
-  if (is_tablet_mode) {
+  if (is_tablet_mode || current_animation_value > 0.0) {
     // Draw the tablet mode app list background. It will look something like
     // [1] when the shelf is horizontal and [2] when the shelf is vertical,
     // where 1. is the back button and 2. is the app launcher circle.
@@ -340,8 +342,17 @@ void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
     // TODO(sammiequon): Check if the back button should be flipped in RTL.
     gfx::ImageSkia back_button =
         CreateVectorIcon(kShelfBackIcon, SK_ColorTRANSPARENT);
+
+    // Fades the back button in or out. The button is opaque when we are in
+    // tablet mode and the animation has finished.
+    int opacity = current_animation_value > 0.0
+                      ? static_cast<int>((is_tablet_mode
+                                              ? current_animation_value
+                                              : 1.0 - current_animation_value) *
+                                         255.0)
+                      : 255;
     canvas->DrawImageInt(back_button, back_center.x() - back_button.width() / 2,
-                         back_center.y() - back_button.height() / 2);
+                         back_center.y() - back_button.height() / 2, opacity);
   } else {
     canvas->DrawCircle(circle_center, kAppListButtonRadius, bg_flags);
   }
@@ -359,7 +370,6 @@ void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
     gfx::ScopedCanvas scoped_canvas(canvas);
     const float dsf = canvas->UndoDeviceScaleFactor();
     circle_center.Scale(dsf);
-
     cc::PaintFlags fg_flags;
     fg_flags.setAntiAlias(true);
     fg_flags.setStyle(cc::PaintFlags::kStroke_Style);
@@ -392,7 +402,7 @@ gfx::Point AppListButton::GetAppListButtonCenterPoint() const {
   // than width (in the case of touch-dragging the shelf upwards) or a larger
   // width than height (in the case of a shelf hide/show animation), so adjust
   // the y-position of the circle's center to ensure correct layout. Similarly
-  // adjust the x-position for a left- or right-aligned shelf. In maximized
+  // adjust the x-position for a left- or right-aligned shelf. In tablet
   // mode, the button will increase it's primary axis size to accomodate the
   // back button arrow in addition to the app list button circle.
   const int x_mid = width() / 2.f;
@@ -400,24 +410,26 @@ gfx::Point AppListButton::GetAppListButtonCenterPoint() const {
   const bool is_tablet_mode = Shell::Get()
                                   ->tablet_mode_controller()
                                   ->IsTabletModeWindowManagerEnabled();
+  const bool is_animating =
+      shelf_view_->GetAppListButtonAnimationCurrentValue() > 0.0;
 
   ShelfAlignment alignment = shelf_->alignment();
   if (alignment == SHELF_ALIGNMENT_BOTTOM ||
       alignment == SHELF_ALIGNMENT_BOTTOM_LOCKED) {
-    if (is_tablet_mode) {
+    if (is_tablet_mode || is_animating) {
       return gfx::Point(width() - kShelfButtonSize / 2.f,
                         kShelfButtonSize / 2.f);
     }
     return gfx::Point(x_mid, x_mid);
   } else if (alignment == SHELF_ALIGNMENT_RIGHT) {
-    if (is_tablet_mode) {
+    if (is_tablet_mode || is_animating) {
       return gfx::Point(kShelfButtonSize / 2.f,
                         height() - kShelfButtonSize / 2.f);
     }
     return gfx::Point(y_mid, y_mid);
   } else {
     DCHECK_EQ(alignment, SHELF_ALIGNMENT_LEFT);
-    if (is_tablet_mode) {
+    if (is_tablet_mode || is_animating) {
       return gfx::Point(width() - kShelfButtonSize / 2.f,
                         height() - kShelfButtonSize / 2.f);
     }
@@ -426,10 +438,6 @@ gfx::Point AppListButton::GetAppListButtonCenterPoint() const {
 }
 
 gfx::Point AppListButton::GetBackButtonCenterPoint() const {
-  DCHECK(Shell::Get()
-             ->tablet_mode_controller()
-             ->IsTabletModeWindowManagerEnabled());
-
   if (shelf_->alignment() == SHELF_ALIGNMENT_LEFT)
     return gfx::Point(width() - kShelfButtonSize / 2.f, kShelfButtonSize / 2.f);
 
