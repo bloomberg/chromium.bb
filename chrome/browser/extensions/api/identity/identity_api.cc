@@ -36,7 +36,6 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
@@ -183,7 +182,19 @@ void IdentityAPI::OnAccountSignInChanged(const gaia::AccountIds& ids,
                 api::identity::OnSignInChanged::kEventName, std::move(args),
                 browser_context_));
 
+  if (on_signin_changed_callback_for_testing_)
+    on_signin_changed_callback_for_testing_.Run(event.get());
+
   EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
+}
+
+void IdentityAPI::SetAccountStateForTesting(const std::string& account_id,
+                                         bool signed_in) {
+  gaia::AccountIds ids;
+  ids.account_key = account_id;
+  ids.email = account_id;
+  ids.gaia = account_id;
+  account_tracker_.SetAccountStateForTest(ids, signed_in);
 }
 
 template <>
