@@ -7,13 +7,12 @@
 #include "bindings/core/v8/WindowProxy.h"
 #include "core/dom/RemoteSecurityContext.h"
 #include "core/dom/SecurityContext.h"
-#include "core/exported/WebFactory.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/RemoteFrameClientImpl.h"
 #include "core/frame/RemoteFrameOwner.h"
 #include "core/frame/Settings.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/fullscreen/Fullscreen.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -154,8 +153,8 @@ WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
     const WebParsedFeaturePolicy& container_policy,
     const WebFrameOwnerProperties& frame_owner_properties,
     WebFrame* opener) {
-  WebLocalFrameBase* child = WebFactory::GetInstance().CreateWebLocalFrameBase(
-      scope, client, interface_registry, opener);
+  WebLocalFrameBase* child =
+      WebLocalFrameImpl::Create(scope, client, interface_registry, opener);
   InsertAfter(child, previous_sibling);
   RemoteFrameOwner* owner =
       RemoteFrameOwner::Create(static_cast<SandboxFlags>(sandbox_flags),

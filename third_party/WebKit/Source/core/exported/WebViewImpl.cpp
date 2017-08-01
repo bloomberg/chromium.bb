@@ -55,7 +55,6 @@
 #include "core/events/WebInputEventConversion.h"
 #include "core/events/WheelEvent.h"
 #include "core/exported/WebDevToolsAgentImpl.h"
-#include "core/exported/WebFactory.h"
 #include "core/exported/WebPluginContainerImpl.h"
 #include "core/exported/WebRemoteFrameImpl.h"
 #include "core/exported/WebSettingsImpl.h"
@@ -91,6 +90,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderStateMachine.h"
 #include "core/loader/PrerendererClient.h"
+#include "core/page/ChromeClientImpl.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/ContextMenuProvider.h"
 #include "core/page/FocusController.h"
@@ -288,7 +288,7 @@ void WebViewImpl::SetPrerendererClient(
 WebViewImpl::WebViewImpl(WebViewClient* client,
                          WebPageVisibilityState visibility_state)
     : client_(client),
-      chrome_client_(WebFactory::GetInstance().CreateChromeClient(this)),
+      chrome_client_(ChromeClientImpl::Create(this)),
       context_menu_client_(*this),
       editor_client_(*this),
       spell_checker_client_impl_(this),

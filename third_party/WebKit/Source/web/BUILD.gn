@@ -38,8 +38,6 @@ component("web") {
   sources = [
     "AssertMatchingEnums.cpp",
     "WebExport.h",
-    "WebFactoryImpl.cpp",
-    "WebFactoryImpl.h",
     "WebKit.cpp",
   ]
 
