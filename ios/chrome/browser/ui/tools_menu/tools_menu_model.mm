@@ -7,6 +7,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/commands/application_commands.h"
+#include "ios/chrome/browser/ui/commands/browser_commands.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/tools_menu/new_tab_menu_view_item.h"
 #import "ios/chrome/browser/ui/tools_menu/reading_list_menu_view_item.h"
@@ -53,7 +54,8 @@ const MenuItemInfo itemInfoList[kToolsMenuNumberOfItems] = {
     IDC_SHOW_BOOKMARK_MANAGER, nullptr,   ToolbarTypeWebAll,
     0,                                    nil },
   { IDS_IOS_TOOLS_MENU_READING_LIST,      kToolsMenuReadingListId,
-    IDC_SHOW_READING_LIST, nullptr,       ToolbarTypeWebAll,
+    TOOLS_READING_LIST,
+    @selector(showReadingList),           ToolbarTypeWebAll,
     0,                                    [ReadingListMenuViewItem class] },
   { IDS_IOS_TOOLS_MENU_RECENT_TABS,       kToolsMenuOtherDevicesId,
     IDC_SHOW_OTHER_DEVICES, nullptr,      ToolbarTypeWebAll,
@@ -76,7 +78,8 @@ const MenuItemInfo itemInfoList[kToolsMenuNumberOfItems] = {
     IDC_REQUEST_MOBILE_SITE, nullptr,     ToolbarTypeWebAll,
     0,                                    nil },
   { IDS_IOS_TOOLS_MENU_READER_MODE,       kToolsMenuReaderMode,
-    IDC_READER_MODE, nullptr,             ToolbarTypeWebAll,
+    TOOLS_READER_MODE,
+    @selector(switchToReaderMode),        ToolbarTypeWebAll,
     0,                                    nil },
   { IDS_IOS_TOOLS_MENU_SETTINGS,          kToolsMenuSettingsId,
     TOOLS_SETTINGS_ITEM,

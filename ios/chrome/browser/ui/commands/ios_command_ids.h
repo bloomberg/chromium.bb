@@ -44,9 +44,7 @@
 #define IDC_PRELOAD_VOICE_SEARCH                       40937
 #define IDC_CLOSE_SETTINGS                             40944
 #define IDC_SHOW_SAVE_PASSWORDS_SETTINGS               40945
-#define IDC_READER_MODE                                40947
 #define IDC_RATE_THIS_APP                              40948
-#define IDC_SHOW_READING_LIST                          40950
 #define IDC_SHOW_CLEAR_BROWSING_DATA_SETTINGS          40951
 #define IDC_SHOW_SYNC_PASSPHRASE_SETTINGS              40952
 #define IDC_SHOW_AUTOFILL_SETTINGS                     40956

@@ -62,6 +62,13 @@ class NavigationItem;
 // Navigate back/forward to the selected entry in the tab's history.
 - (void)navigateToHistoryItem:(const web::NavigationItem*)item;
 
+// Shows the Reading List UI.
+- (void)showReadingList;
+
+// Asks the active tab to enter into reader mode, presenting a streamlined view
+// of the current content.
+- (void)switchToReaderMode;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_BROWSER_COMMANDS_H_
