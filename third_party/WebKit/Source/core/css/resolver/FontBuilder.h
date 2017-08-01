@@ -112,7 +112,7 @@ class CORE_EXPORT FontBuilder {
   static FontSmoothingMode InitialFontSmoothing() { return kAutoSmoothing; }
 
   static FontSelectionValue InitialStretch() { return NormalWidthValue(); }
-  static FontSelectionValueStyle InitialStyle() { return NormalSlopeValue(); }
+  static FontSelectionValue InitialStyle() { return NormalSlopeValue(); }
   static FontSelectionValue InitialWeight() { return NormalWeightValue(); }
 
  private:

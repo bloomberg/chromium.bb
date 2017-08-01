@@ -941,37 +941,6 @@ inline FontSmoothingMode CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(FontSelectionValueStyle italic)
-    : CSSValue(kIdentifierClass) {
-  if (italic == NormalSlopeValue()) {
-    value_id_ = CSSValueNormal;
-    return;
-  }
-  if (italic == ItalicSlopeValue()) {
-    value_id_ = CSSValueItalic;
-    return;
-  }
-
-  NOTREACHED();
-  value_id_ = CSSValueNormal;
-}
-
-template <>
-inline FontSelectionValueStyle CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueOblique:
-    case CSSValueItalic:
-      return ItalicSlopeValue();
-    case CSSValueNormal:
-      return NormalSlopeValue();
-    default:
-      break;
-  }
-  NOTREACHED();
-  return NormalSlopeValue();
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(TextRenderingMode e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
