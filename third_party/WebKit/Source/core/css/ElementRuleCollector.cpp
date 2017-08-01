@@ -365,20 +365,6 @@ void ElementRuleCollector::SortMatchedRules() {
   std::sort(matched_rules_.begin(), matched_rules_.end(), CompareRules);
 }
 
-bool ElementRuleCollector::HasAnyMatchingRules(RuleSet* rule_set) {
-  ClearMatchedRules();
-
-  mode_ = SelectorChecker::kSharingRules;
-  // To check whether a given RuleSet has any rule matching a given element,
-  // should not see the element's treescope. Because RuleSet has no information
-  // about "scope".
-  MatchRequest match_request(rule_set);
-  CollectMatchingRules(match_request);
-  CollectMatchingShadowHostRules(match_request);
-
-  return !matched_rules_.IsEmpty();
-}
-
 void ElementRuleCollector::AddMatchedRulesToTracker(
     StyleRuleUsageTracker* tracker) const {
   for (auto matched_rule : matched_rules_) {

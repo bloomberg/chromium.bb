@@ -73,12 +73,6 @@ class SelectorChecker {
     // disables the special handling for positional selectors during parsing
     // and also enables static profile only selectors like >>>.
     kQueryingRules,
-
-    // Used when matching selectors for style sharing inside SharedStyleFinder.
-    // During style sharing we match selectors from a global list without having
-    // the correct owning scope for the rules. In this mode we'll consider
-    // selectors which require scope matching (ex. :host) as always matching.
-    kSharingRules
   };
 
   struct Init {
