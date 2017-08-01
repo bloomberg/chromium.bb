@@ -39,8 +39,6 @@ static_library("utils") {
     "origin_security_checker.h",
     "payment_details_validation.cc",
     "payment_details_validation.h",
-    "payment_manifest_downloader.cc",
-    "payment_manifest_downloader.h",
     "payment_manifest_parser_host.cc",
     "payment_manifest_parser_host.h",
     "payments_validators.cc",
@@ -50,8 +48,6 @@ static_library("utils") {
   deps = [
     "//base",
     "//components/autofill/core/browser",
-    "//components/data_use_measurement/core",
-    "//components/link_header_util",
     "//components/payments/core",
     "//components/payments/mojom:mojom_parser",
     "//components/strings",
@@ -72,7 +68,6 @@ static_library("utils") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "payment_manifest_downloader_unittest.cc",
     "payment_request_spec_unittest.cc",
     "payment_request_state_unittest.cc",
     "payment_response_helper_unittest.cc",
@@ -90,7 +85,6 @@ source_set("unit_tests") {
     "//components/payments/core:test_support",
     "//components/strings:components_strings_grit",
     "//content/test:test_support",
-    "//net:test_support",
     "//testing/gtest",
     "//third_party/WebKit/public:blink_headers",
     "//third_party/icu",

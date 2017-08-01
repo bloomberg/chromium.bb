@@ -7,6 +7,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace payments {
 
 // URL payment method identifiers for iOS payment apps.
