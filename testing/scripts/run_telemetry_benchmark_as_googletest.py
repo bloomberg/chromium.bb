@@ -48,88 +48,80 @@ def main():
       '--isolated-script-test-chartjson-output', required=False)
   parser.add_argument('--xvfb', help='Start xvfb.', action='store_true')
   args, rest_args = parser.parse_known_args()
-  xvfb_proc = None
-  openbox_proc = None
-  xcompmgr_proc = None
   env = os.environ.copy()
   # Assume we want to set up the sandbox environment variables all the
   # time; doing so is harmless on non-Linux platforms and is needed
   # all the time on Linux.
   env[CHROME_SANDBOX_ENV] = CHROME_SANDBOX_PATH
-  if args.xvfb and xvfb.should_start_xvfb(env):
-    xvfb_proc, openbox_proc, xcompmgr_proc = xvfb.start_xvfb(env=env,
-                                                             build_dir='.')
-    assert xvfb_proc and openbox_proc and xcompmgr_proc, 'Failed to start xvfb'
+  tempfile_dir = tempfile.mkdtemp('telemetry')
+  valid = True
+  failures = []
+  chartjson_results_present = '--output-format=chartjson' in rest_args
+  chartresults = None
+  json_test_results = None
+
+  results = None
   try:
-    tempfile_dir = tempfile.mkdtemp('telemetry')
-    valid = True
-    failures = []
-    chartjson_results_present = '--output-format=chartjson' in rest_args
-    chartresults = None
-    json_test_results = None
+    cmd = [sys.executable] + rest_args + [
+      '--output-dir', tempfile_dir,
+      '--output-format=json-test-results',
+    ]
+    if args.xvfb:
+      rc = xvfb.run_executable(cmd, env)
+    else:
+      rc = common.run_command(cmd, env=env)
 
-    results = None
-    try:
-      rc = common.run_command([sys.executable] + rest_args + [
-        '--output-dir', tempfile_dir,
-        '--output-format=json-test-results',
-      ], env=env)
-            # If we have also output chartjson read it in and return it.
-      # results-chart.json is the file name output by telemetry when the
-      # chartjson output format is included
-      if chartjson_results_present:
-        chart_tempfile_name = os.path.join(tempfile_dir, 'results-chart.json')
-        with open(chart_tempfile_name) as f:
-          chartresults = json.load(f)
-      # We need to get chartjson results first as this may be a disabled
-      # benchmark that was run
-      # TODO(ashleymarie): potentially remove the following if it's dead code
-      # http://crbug.com/748638
-      if (not chartjson_results_present or
-         (chartjson_results_present and chartresults.get('enabled', True))):
-        tempfile_name = os.path.join(tempfile_dir, 'results.json')
-        with open(tempfile_name) as f:
-          results = json.load(f)
-        for value in results['per_page_values']:
-          if value['type'] == 'failure':
-            page_data = results['pages'][str(value['page_id'])]
-            name = page_data.get('name')
-            if not name:
-              name = page_data['url']
-
-            failures.append(name)
-        valid = bool(rc == 0 or failures)
-
-      tempfile_name = os.path.join(tempfile_dir, 'test-results.json')
+    # If we have also output chartjson read it in and return it.
+    # results-chart.json is the file name output by telemetry when the
+    # chartjson output format is included
+    if chartjson_results_present:
+      chart_tempfile_name = os.path.join(tempfile_dir, 'results-chart.json')
+      with open(chart_tempfile_name) as f:
+        chartresults = json.load(f)
+    # We need to get chartjson results first as this may be a disabled
+    # benchmark that was run
+    # TODO(ashleymarie): potentially remove the following if it's dead code
+    # http://crbug.com/748638
+    if (not chartjson_results_present or
+       (chartjson_results_present and chartresults.get('enabled', True))):
+      tempfile_name = os.path.join(tempfile_dir, 'results.json')
       with open(tempfile_name) as f:
-        json_test_results = json.load(f)
+        results = json.load(f)
+      for value in results['per_page_values']:
+        if value['type'] == 'failure':
+          page_data = results['pages'][str(value['page_id'])]
+          name = page_data.get('name')
+          if not name:
+            name = page_data['url']
 
-    except Exception:
-      traceback.print_exc()
-      if results:
-        print 'results, which possibly caused exception: %s' % json.dumps(
-            results, indent=2)
-      valid = False
-    finally:
-      shutil.rmtree(tempfile_dir)
+          failures.append(name)
+      valid = bool(rc == 0 or failures)
 
-    if not valid and not failures:
-      failures = ['(entire test suite)']
-      if rc == 0:
-        rc = 1  # Signal an abnormal exit.
+    tempfile_name = os.path.join(tempfile_dir, 'test-results.json')
+    with open(tempfile_name) as f:
+      json_test_results = json.load(f)
 
-    if chartjson_results_present and args.isolated_script_test_chartjson_output:
-      chartjson_output_file = \
-        open(args.isolated_script_test_chartjson_output, 'w')
-      json.dump(chartresults, chartjson_output_file)
-
-    json.dump(json_test_results, args.isolated_script_test_output)
-    return rc
-
+  except Exception:
+    traceback.print_exc()
+    if results:
+      print 'results, which possibly caused exception: %s' % json.dumps(
+          results, indent=2)
+    valid = False
   finally:
-    xvfb.kill(xvfb_proc)
-    xvfb.kill(openbox_proc)
-    xvfb.kill(xcompmgr_proc)
+    shutil.rmtree(tempfile_dir)
+
+  if not valid and not failures:
+    failures = ['(entire test suite)']
+    if rc == 0:
+      rc = 1  # Signal an abnormal exit.
+
+  if chartjson_results_present and args.isolated_script_test_chartjson_output:
+    chartjson_output_file = \
+      open(args.isolated_script_test_chartjson_output, 'w')
+    json.dump(chartresults, chartjson_output_file)
+
+  json.dump(json_test_results, args.isolated_script_test_output)
+  return rc
 
 
 # This is not really a "script test" so does not need to manually add
