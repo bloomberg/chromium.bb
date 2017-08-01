@@ -30,7 +30,6 @@
 <translation id="1966382378801805537">A Chromium problémába ütközött az alapértelmezett böngésző megállapításakor vagy beállításakor</translation>
 <translation id="1967743265616885482">Egy ugyanilyen nevű modul ismereteink szerint ütközik a Chromiummal.</translation>
 <translation id="2008474315282236005">Ezzel egyetlen elemet töröl erről az eszközről. Az adatok későbbi lekéréséhez jelentkezzen be a Chromiumba a következő e-mail-címmel: <ph name="USER_EMAIL" />.</translation>
-<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Ezzel véglegesen töröl legalább $1 elemet erről az eszközről. Az adatok későbbi lekéréséhez jelentkezzen be a Chromiumba mint $2.}other{Ezzel véglegesen töröl legalább $1 elemet erről az eszközről. Az adatok későbbi lekéréséhez jelentkezzen be a Chromiumba mint $2.}}</translation>
 <translation id="2077129598763517140">Hardveres gyorsítás alkalmazása lehetőség szerint</translation>
 <translation id="2119636228670142020">A &amp;Chromium OS névjegye</translation>
 <translation id="2158734852934720349">Chromium OS nyílt forráskódú licencek</translation>
@@ -81,7 +80,6 @@
 <translation id="3549345495227188780">A Chromium OS használatának megkezdése</translation>
 <translation id="3582788516608077514">A Chromium frissítése...</translation>
 <translation id="358997566136285270">Chromium embléma</translation>
-<translation id="3645040538872234961">Ezzel az eszközön lévő összes böngészési adat véglegesen törlődik. Az adatok későbbi lekéréséhez jelentkezzen be a Chromiumba mint $2.</translation>
 <translation id="3738139272394829648">Érintéssel keresés</translation>
 <translation id="3762167353400286894">A Chromium OS ezen a nyelven jelenik meg</translation>
 <translation id="378917192836375108">A Chromium egyetlen kattintással lehetővé teszi a weboldalakon található telefonszámok felhívását Skype-on!</translation>
@@ -153,7 +151,6 @@
 <translation id="59625444380784159">A névjegyek részletei révén gyorsabban kitöltheti az űrlapokat a Chromiumban.</translation>
 <translation id="5987687638152509985">Frissítse a Chromiumot a szinkronizálás megkezdéséhez</translation>
 <translation id="6055895534982063517">Elérhető a Chromium új verziója, amely minden korábbinál sokkal gyorsabb.</translation>
-<translation id="6077017812234345835">Ezzel véglegesen töröl legalább <ph name="TOTAL_COUNT" /> elemet erről az eszközről. Az adatok későbbi lekéréséhez jelentkezzen be a Chromiumba mint $2.</translation>
 <translation id="608189560609172163">A Chromium egy bejelentkezési hiba miatt nem tudta szinkronizálni az adatokat.</translation>
 <translation id="6129621093834146363">A(z) <ph name="FILE_NAME" /> veszélyes, ezért a Chromium letiltotta.</translation>
 <translation id="6212496753309875659">A számítógépen már megtalálható a Chromium újabb verziója. Ha a szoftver nem működik, kérjük, távolítsa el a Chromiumot, majd próbálkozzon újra.</translation>
@@ -188,7 +185,6 @@
 <translation id="705851970750939768">A Chromium frissítése</translation>
 <translation id="7066436765290594559">A Chromium OS nem tudta szinkronizálni az adatokat. Kérjük, frissítse a szinkronizálás jelszavát.</translation>
 <translation id="707471633328071618">Google Payments (a Chromiumra másolva)</translation>
-<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Ezzel véglegesen töröl $1 elemet erről az eszközről. Az adatok későbbi lekéréséhez jelentkezzen be a Chromiumba mint $2.}other{Ezzel véglegesen töröl $1 elemet erről az eszközről. Az adatok későbbi lekéréséhez jelentkezzen be a Chromiumba mint $2.}}</translation>
 <translation id="7138853919861947730">A Chromium internetes szolgáltatások használatával javíthatja a böngészési élményt.</translation>
 <translation id="7162152143154757523">A Chromium pontosabb helyesírás-ellenőrzést tud biztosítani azáltal, hogy a böngészőbe beírt szöveget elküldi a Google szervereinek, ami lehetővé teszi, hogy Ön ugyanazt a helyesírás-ellenőrző technológiát használja, amelyet a Google-keresés is.</translation>
 <translation id="7196020411877309443">Miért jelenik meg ez az üzenet?</translation>
@@ -210,7 +206,6 @@ Ha szeretné megakadályozni, hogy <ph name="NEW_PROFILE_NAME" /> hozzáférjen 
 <ph name="BEGIN_LINK_2" />További információ<ph name="END_LINK_2" />.
 
 További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-mailekben talál.</translation>
-<translation id="7421823331379285070">A Chromium Windows XP-t vagy újabb operációs rendszert igényel. Lehet, hogy korábbi verziójú operációs rendszeren néhány funkció nem fog működni.</translation>
 <translation id="7473891865547856676">Nem, köszönöm</translation>
 <translation id="7483335560992089831">Nem lehet ugyanazt a Chromium-verziót telepíteni, amely jelenleg is fut. Zárja be a Chromiumot, és próbálja újra.</translation>
 <translation id="7549178288319965365">A Chromium OS névjegye</translation>
@@ -221,6 +216,7 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="7729447699958282447">A Chromium nem tudta szinkronizálni az adatait, mert a szinkronizálás nem érhető el az Ön domainjénél.</translation>
 <translation id="7745317241717453663">Ezzel az eszközön lévő összes böngészési adat törlődik. Az adatok későbbi lekéréséhez jelentkezzen be a Chromiumba a következő e-mail-címmel: <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">A telepítőnek nem sikerült létrehoznia az ideiglenes könyvtárat. Kérjük ellenőrizze, hogy van-e elegendő hely a lemezen, és rendelkezik-e engedéllyel a szoftvertelepítésre.</translation>
+<translation id="7756122083761163394">A személy böngészési adatai törlődnek az eszközről. Az adatok visszaállításához jelentkezzen be a Chrome-ba $2 felhasználóként.</translation>
 <translation id="7937630085815544518"><ph name="USER_EMAIL_ADDRESS" /> néven volt bejelentkezve a Chromiumba. Kérjük, ugyanazzal a fiókkal jelentkezzen be újra.</translation>
 <translation id="795025003224538582">Ne indítsa újra</translation>
 <translation id="7962572577636132072">A Chromium automatikusan frissít, így Ön mindig a legújabb verzióval rendelkezik.</translation>

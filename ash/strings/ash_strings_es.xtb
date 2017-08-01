@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Botón de menú adicional</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl + Tecla de búsqueda + H</translation>
 <translation id="2049639323467105390">Este dispositivo está gestionado por <ph name="DOMAIN" /></translation>
 <translation id="2050339315714019657">Vertical</translation>
 <translation id="207439088875642105">Esta es una cuenta infantil administrada por <ph name="FIRST_PARENT_EMAIL" /> y <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Teclas persistentes</translation>
 <translation id="2509468283778169019">Bloqueo de mayúsculas activado</translation>
 <translation id="2532589005999780174">Modo de contraste alto</translation>
+<translation id="2597972630681408282">Luz nocturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">La sesión finalizará dentro de <ph name="SESSION_TIME_REMAINING" />. Se cerrará tu sesión.</translation>
 <translation id="2727977024730340865">Conectado a un cargador de baja potencia. Es posible que la carga de la batería no sea fiable.</translation>
 <translation id="2761704814324807722">Bandeja de estado, hora <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">Salida</translation>
 <translation id="3019353588588144572">Tiempo restante hasta que se cargue la batería por completo: <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">Esta es una cuenta infantil administrada por <ph name="MANAGER_EMAIL" /></translation>
-<translation id="3050422059534974565">El BLOQUEO DE MAYÚSCULAS está activado.
-Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="3077734595579995578">mayús</translation>
 <translation id="3087734570205094154">Inferior</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -136,6 +136,7 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="4849058404725798627">Resaltar el objeto con el foco del teclado</translation>
 <translation id="4872237917498892622">Alt+tecla de búsqueda o Mayús</translation>
 <translation id="4895488851634969361">La batería está llena.</translation>
+<translation id="4905614135390995787">La combinación de teclas para activar el modo de contraste alto ha cambiado. Utiliza <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Aceptar</translation>
 <translation id="4961318399572185831">Enviar pantalla</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -147,7 +148,7 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="5313326810920013265">Ajustes de Bluetooth</translation>
 <translation id="5331975486040154427">Dispositivo USB tipo C (puerto trasero izquierdo)</translation>
 <translation id="5397578532367286026">El administrador puede consultar el uso y el historial de este usuario (<ph name="MANAGER_EMAIL" />) en la página chrome.com.</translation>
-<translation id="5430931332414098647">Conexión instantánea mediante dispositivo portátil</translation>
+<translation id="5430931332414098647">Conexión compartida instantánea</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Todos los usuarios disponibles ya se han añadido a esta sesión.</translation>
 <translation id="553675580533261935">Saliendo de la sesión</translation>
@@ -159,8 +160,10 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="5744083938413354016">Tocar y arrastrar</translation>
 <translation id="5777841717266010279">¿Dejar de compartir la pantalla?</translation>
 <translation id="57838592816432529">Silenciar</translation>
+<translation id="5860033963881614850">No</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901316534475909376">Mayús+Esc</translation>
+<translation id="5916664084637901428">Activar</translation>
 <translation id="5927132638760172455">Enviando contenido a un receptor desconocido</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Deshacer</translation>
@@ -169,8 +172,8 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="5977415296283489383">Auriculares</translation>
 <translation id="5978382165065462689">Compartiendo control de la pantalla a través de Asistencia remota.</translation>
 <translation id="5980301590375426705">Salir de la sesión de invitado</translation>
+<translation id="5992218262414051481">Se ha habilitado el modo de contraste alto. Pulsa Ctrl + Tecla de búsqueda + H de nuevo para desactivarlo.</translation>
 <translation id="6018164090099858612">Saliendo del modo de proyección</translation>
-<translation id="6041154455840261787">Se ha habilitado el modo de contraste alto. Vuelve a pulsar Búsqueda+Mayús+H para desactivarlo.</translation>
 <translation id="6043212731627905357">Este monitor no se puede utilizar con tu <ph name="DEVICE_TYPE" /> (el monitor no es compatible).</translation>
 <translation id="6043994281159824495">Salir ahora</translation>
 <translation id="6047696787498798094">Cuando cambies de usuario, la pantalla dejará de compartirse. ¿Quieres continuar?</translation>
@@ -195,6 +198,7 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="6585808820553845416">La sesión finalizará dentro de <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tecla de búsqueda + Mayús + K</translation>
 <translation id="6650933572246256093">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para vincularse. Introduce la clave de contraseña <ph name="PASSKEY" /> en el dispositivo</translation>
+<translation id="6691659475504239918">Tecla de búsqueda + Mayús + H</translation>
 <translation id="6700713906295497288">Botón de menú de IME</translation>
 <translation id="6713285437468012787">Se ha vinculado el dispositivo Bluetooth "<ph name="DEVICE_NAME" />" y ya está disponible para todos los usuarios. Para eliminar esta vinculación, accede a Configuración.</translation>
 <translation id="6785414152754474415">La batería se está cargando y está al <ph name="PERCENTAGE" />%.</translation>
@@ -214,8 +218,7 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt + Mayús + K</translation>
 <translation id="7168224885072002358">Restableciendo la resolución anterior en <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">El BLOQUEO DE MAYÚSCULAS está activado.
-Pulsa Alt y la tecla de búsqueda o Mayús para cancelar la operación.</translation>
+<translation id="7199454189089571166">Modo Asistente</translation>
 <translation id="7246339268451149667">¿Habilitar el desbloqueo con huella digital?</translation>
 <translation id="7256634071279256947">Micrófono trasero</translation>
 <translation id="7348093485538360975">Teclado en pantalla</translation>
@@ -233,10 +236,10 @@ Pulsa Alt y la tecla de búsqueda o Mayús para cancelar la operación.</transla
 <translation id="7649070708921625228">Ayuda</translation>
 <translation id="7692480393933218409">Cargando los dispositivos USB tipo C conectados</translation>
 <translation id="776344839111254542">Haz clic para ver los detalles de la actualización</translation>
+<translation id="7798302898096527229">Pulsa la tecla de búsqueda o Mayús para cancelarlo.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> y <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">El idioma ha cambiado de "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" después de sincronizar tu configuración.</translation>
 <translation id="7904094684485781019">El administrador de esta cuenta ha inhabilitado el inicio de sesión múltiple.</translation>
-<translation id="7951523953736115461">Luz nocturna</translation>
 <translation id="7977927628060636163">Buscando redes móviles…</translation>
 <translation id="7982789257301363584">Red</translation>
 <translation id="8000066093800657092">Ninguna red</translation>
@@ -255,6 +258,7 @@ Pulsa Alt y la tecla de búsqueda o Mayús para cancelar la operación.</transla
 <translation id="8433977262951327081">La combinación de teclas para mostrar el cuadro del menú de opciones de entrada en la estantería ha cambiado. Utiliza <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">La conexión Wi-Fi está activada.</translation>
 <translation id="847056008324733326">Configuración de escala de pantalla</translation>
+<translation id="8477270416194247200">Pulsa Alt + tecla de búsqueda o Mayús para cancelarlo.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: volviendo a conectar...</translation>
 <translation id="8517041960877371778">Es posible que tu <ph name="DEVICE_TYPE" /> no se cargue mientras esté encendido.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante</translation>

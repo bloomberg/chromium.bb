@@ -32,7 +32,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="1966382378801805537">Hindi matukoy o maitakda ng Chromium ang default na browser</translation>
 <translation id="1967743265616885482">May module na may kaparehong pangalan ang natuklasang sumasalungat sa Chromium.</translation>
 <translation id="2008474315282236005">Magde-delete ito ng 1 item sa device na ito. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chromium bilang <ph name="USER_EMAIL" />.</translation>
-<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Permanente itong magde-delete ng hindi bababa sa $1 item sa device na ito. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chromium bilang $2.}one{Permanente itong magde-delete ng hindi bababa sa $1 item sa device na ito. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chromium bilang $2.}other{Permanente itong magde-delete ng hindi bababa sa $1 na item sa device na ito. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chromium bilang $2.}}</translation>
 <translation id="2077129598763517140">Gamitin ang pagpapabilis ng hardware kapag available</translation>
 <translation id="2119636228670142020">Tungkol sa &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Mga lisensya ng open source ng Chromium OS</translation>
@@ -83,7 +82,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="3549345495227188780">Magsimula sa Chromium OS</translation>
 <translation id="3582788516608077514">Ina-update ang Chromium...</translation>
 <translation id="358997566136285270">Logo ng Chromium</translation>
-<translation id="3645040538872234961">Permanente nitong ide-delete sa device na ito ang iyong data mula sa pagba-browse. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chromium bilang $2.</translation>
 <translation id="3738139272394829648">Pindutin upang Hanapin</translation>
 <translation id="3762167353400286894">Ipinapakita ang Chromium OS sa wikang ito</translation>
 <translation id="378917192836375108">Pinapayagan ka ng Google Chrome na mag-click sa isang numero ng telepono sa web at tawagan ito gamit ang Skype!</translation>
@@ -155,7 +153,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="59625444380784159">Ang mga detalye mula sa iyong mga contact ay maaaring makatulong sa iyong sumagot ng mga form nang mas mabilis sa Chromium.</translation>
 <translation id="5987687638152509985">I-update ang Chromium upang simulan ang pag-sync</translation>
 <translation id="6055895534982063517">May available na bagong bersyon ng Chromium, at mas mabilis ito kaysa sa dati.</translation>
-<translation id="6077017812234345835">Permanente itong magde-delete ng hind bababa sa <ph name="TOTAL_COUNT" /> (na) item sa device na ito. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chrome bilang $2.</translation>
 <translation id="608189560609172163">Hindi mai-sync ng Chromium ang iyong data dahil sa isang error sa pagsa-sign in.</translation>
 <translation id="6129621093834146363">Mapanganib ang <ph name="FILE_NAME" />, kaya na-block ito ng Chromium.</translation>
 <translation id="6212496753309875659">May mas bagong bersyon ng Chromium na ang computer na ito. Kung hindi gumagana ang software, mangyaring i-uninstall ang Chromium at subukang muli.</translation>
@@ -192,7 +189,6 @@ Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktory
 <translation id="705851970750939768">I-update ang Chromium</translation>
 <translation id="7066436765290594559">Hindi ma-sync ng Chromium OS ang iyong data. Paki-update ang iyong Passphrase sa pag-sync.</translation>
 <translation id="707471633328071618">Google Payments (kinopya sa Chromium)</translation>
-<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Permanente itong magde-delete ng $1 item sa device na ito. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chromium bilang $2.}one{Permanente itong magde-delete ng $1 item sa device na ito. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chromium bilang $2.}other{Permanente itong magde-delete ng $1 na item sa device na ito. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chromium bilang $2.}}</translation>
 <translation id="7138853919861947730">Maaaring gumamit ang Chromium ng mga serbisyo sa web upang mapahusay ang iyong karanasan sa pagba-browse.</translation>
 <translation id="7162152143154757523">Maaaring magbigay ang Chromium ng mas pinahusay na pag-i-spell check sa pamamagitan ng pagpapadala sa mga server ng Google ng tina-type mo sa browser, na nagbibigay-daan sa iyo na gamitin ang parehong teknolohiya ng pag-i-spell check na ginamit ng paghahanap sa Google.</translation>
 <translation id="7196020411877309443">Bakit ko nakikita ito?</translation>
@@ -214,7 +210,6 @@ Upang mapigilan si <ph name="NEW_PROFILE_NAME" /> na ma-access ang iyong account
 <ph name="BEGIN_LINK_2" />Matuto nang higit pa<ph name="END_LINK_2" />
 
 Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdagang tagubilin.</translation>
-<translation id="7421823331379285070">Nangangailangan ang Chromium ng Windows XP o mas bago. Maaaring hindi gumana ang ilang tampok.</translation>
 <translation id="7473891865547856676">Hindi, Salamat</translation>
 <translation id="7483335560992089831">Hindi ma-install ang parehong Bersyon ng Chromium na kasalukuyang tumatakbo. Pakisara ang Chromium at subukang muli.</translation>
 <translation id="7549178288319965365">Tungkol sa Chromium OS</translation>
@@ -225,6 +220,7 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 <translation id="7729447699958282447">Hindi mai-sync ng Chromium ang iyong data dahil hindi available ang Pag-sync para sa iyong domain.</translation>
 <translation id="7745317241717453663">Ide-delete nito ang iyong data mula sa pag-browse sa device na ito. Upang makuha ang iyong data sa ibang pagkakataon, mag-sign in sa Chromium bilang <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Hindi makalikha ng pansamantalang direktoryo ang installer. Paki-suri para sa puwang sa disk na walang laman at pahintulot upang i-install ang software.</translation>
+<translation id="7756122083761163394">Made-delete sa device na ito ang data mula sa pag-browse ng taong ito. Upang ma-recover ang data, mag-sign in sa Chrome bilang $2.</translation>
 <translation id="7937630085815544518">Naka-sign in ka sa Chromium bilang <ph name="USER_EMAIL_ADDRESS" />. Pakigamit ang parehong account upang mag-sign in muli.</translation>
 <translation id="795025003224538582">Huwag i-restart</translation>
 <translation id="7962572577636132072">Awtomatikong nag-a-update ang Chromium upang palagi kang may pinakabagong bersyon.</translation>

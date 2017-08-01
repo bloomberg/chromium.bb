@@ -30,7 +30,6 @@
 <translation id="1966382378801805537">Chromium tidak dapat menentukan atau menetapkan penyemak imbas lalai</translation>
 <translation id="1967743265616885482">Modul dengan nama yang sama telah diketahui bercanggah dengan Chromium.</translation>
 <translation id="2008474315282236005">Tindakan ini akan memadamkan 1 item daripada peranti ini. Untuk mendapatkan kembali data anda kemudian, log masuk ke Chromium sebagai <ph name="USER_EMAIL" />.</translation>
-<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Tindakan ini akan memadamkan sekurang-kurangnya $1 item daripada peranti ini selama-lamanya. Untuk mendapatkan semula data anda kemudian, log masuk ke Chromium sebagai $2.}other{Tindakan ini akan memadamkan sekurang-kurangnya $1 item daripada peranti ini selama-lamanya. Untuk mendapatkan semula data anda kemudian, log masuk ke Chromium sebagai $2.}}</translation>
 <translation id="2077129598763517140">Gunakan pecutan perkakasan apabila tersedia</translation>
 <translation id="2119636228670142020">Mengenai &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Lesen sumber terbuka Chromium OS</translation>
@@ -81,7 +80,6 @@
 <translation id="3549345495227188780">Bermula dengan OS Chromium</translation>
 <translation id="3582788516608077514">Mengemas kini Chromium...</translation>
 <translation id="358997566136285270">Logo Chromium</translation>
-<translation id="3645040538872234961">Tindakan ini akan memadamkan data semakan imbas anda daripada peranti ini selama-lamanya. Untuk mendapatkan semula data anda kemudian, log masuk ke Chromium sebagai $2.</translation>
 <translation id="3738139272394829648">Sentuh untuk Cari</translation>
 <translation id="3762167353400286894">OS Chromium dipaparkan dalam bahasa ini</translation>
 <translation id="378917192836375108">Chromium membolehkan anda mengklik nombor telefon pada web dan menghubunginya dengan Skype!</translation>
@@ -153,7 +151,6 @@
 <translation id="59625444380784159">Butiran daripada kenalan anda dapat membantu anda mengisi borang dengan lebih cepat di Chromium.</translation>
 <translation id="5987687638152509985">Kemas kini Chromium untuk memulakan penyegerakan</translation>
 <translation id="6055895534982063517">Terdapat versi baharu Chromium yang lebih pantas daripada biasa tersedia.</translation>
-<translation id="6077017812234345835">Tindakan ini akan memadamkan sekurang-kurangnya <ph name="TOTAL_COUNT" /> item daripada peranti ini selama-lamanya. Untuk mendapatkan semula data anda kemudian, log masuk ke Chromium sebagai $2.</translation>
 <translation id="608189560609172163">Chromium tidak dapat menyegerakkan data anda disebabkan ralat melog masuk.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> berbahaya, jadi Chromium telah menyekat fail itu.</translation>
 <translation id="6212496753309875659">Komputer ini telah mempunyai versi Chromium yang lebih baharu. Jika perisian tidak berfungsi, sila nyahpasang Chromium dan cuba lagi.</translation>
@@ -190,7 +187,6 @@ Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbez
 <translation id="705851970750939768">Kemas kini Chromium</translation>
 <translation id="7066436765290594559">OS Chromium tidak dapat menyegerakkan data anda. Sila kemas kini frasa laluan Segerak anda.</translation>
 <translation id="707471633328071618">Google Payments (disalin ke Chromium)</translation>
-<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Tindakan ini akan memadamkan $1 item daripada peranti ini selama-lamanya. Untuk mendapatkan semula data anda kemudian, log masuk ke Chromium sebagai $2.}other{Tindakan ini akan memadamkan $1 item daripada peranti ini selama-lamanya. Untuk mendapatkan semula data anda kemudian, log masuk ke Chromium sebagai $2.}}</translation>
 <translation id="7138853919861947730">Chromium boleh menggunakan perkhidmatan web untuk meningkatkan pengalaman penyemakan imbas anda.</translation>
 <translation id="7162152143154757523">Chromium dapat menyediakan semakan ejaan yang lebih pintar dengan menghantar apa yang anda taip dalam penyemak imbas kepada pelayan Google, membolehkan anda menggunakan teknologi semakan ejaan yang sama seperti yang digunakan oleh carian Google.</translation>
 <translation id="7196020411877309443">Mengapakah halaman ini yang saya lihat?</translation>
@@ -212,7 +208,6 @@ Untuk menghalang <ph name="NEW_PROFILE_NAME" /> daripada mengakses akaun anda, p
 <ph name="BEGIN_LINK_2" />Ketahui lebih lanjut<ph name="END_LINK_2" />
 
 Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</translation>
-<translation id="7421823331379285070">Chromium memerlukan Windows XP atau yang lebih baharu. Beberapa ciri mungkin tidak berfungsi.</translation>
 <translation id="7473891865547856676">Tidak, Terima Kasih</translation>
 <translation id="7483335560992089831">Tidak boleh memasang versi Chromium yang sama dengan yang sedang dijalankan. Sila tutup Chromium dan cuba lagi.</translation>
 <translation id="7549178288319965365">Mengenai Chromium OS</translation>
@@ -223,6 +218,7 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="7729447699958282447">Chromium tidak dapat menyegerakkan data anda kerana Segerak tidak tersedia untuk domain anda.</translation>
 <translation id="7745317241717453663">Tindakan ini akan memadamkan data semakan imbas anda daripada peranti ini. Untuk mendapatkan kembali data anda kemudian, log masuk ke Chromium sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Pemasang tidak dapat mencipta direktori sementara. Sila semak ruang cakera kosong dan kebenaran untuk memasang perisian.</translation>
+<translation id="7756122083761163394">Data semakan imbas orang ini akan dipadamkan daripada peranti ini. Untuk memulihkan data itu, log masuk ke Chrome sebagai $2.</translation>
 <translation id="7937630085815544518">Anda telah log masuk ke Chromium sebagai <ph name="USER_EMAIL_ADDRESS" />. Sila gunakan akaun yang sama untuk log masuk lagi.</translation>
 <translation id="795025003224538582">Jangan mulakan semula</translation>
 <translation id="7962572577636132072">Chromium dikemas kini secara automatik supaya anda sentiasa mempunyai versi yang terbaharu.</translation>

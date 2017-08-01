@@ -167,7 +167,6 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="573759479754913123">關於 Chrome 作業系統</translation>
 <translation id="5749068826913805084">Chrome 必須取得儲存空間的存取權才能下載檔案。</translation>
 <translation id="5774845247549698882">Chrome 作業系統的介面文字已設為這種語言</translation>
-<translation id="5832596086758878896">{NUM_ITEMS,plural, =1{這會將 $1 個項目從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chrome。}other{這會將 $1 個項目從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chrome。}}</translation>
 <translation id="5855036575689098185">你電腦上執行的軟體與 Google Chrome 不相容。</translation>
 <translation id="5877064549588274448">版本已變更。請重新啟動裝置以套用變更。</translation>
 <translation id="5895138241574237353">重新啟動</translation>
@@ -212,7 +211,6 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="7125719106133729027">由於 Chrome 無法更新至最新版本，你現在無法使用各種最新功能和安全性修正。請以人工方式重新安裝 Chrome。</translation>
 <translation id="7161904924553537242">歡迎使用 Google Chrome</translation>
 <translation id="7164397146364144019">你可以自動將疑似安全性事件的詳細資料傳送給 Google，協助我們讓 Chrome 變得更安全、更好用。</translation>
-<translation id="7177347454226092725">這會將您的瀏覽資料從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chrome。</translation>
 <translation id="7185038942300673794">已將 <ph name="EXTENSION_NAME" /> 加到 Chrome。</translation>
 <translation id="7196020411877309443">為何出現這個對話框？</translation>
 <translation id="7242029209006116544">你已登入管理化環境下的帳戶，並將管理控制權授予你的 Chrome 設定檔。你的 Chrome 資料 (例如應用程式、書籤、紀錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME" /> 建立關聯。你可以透過 Google 帳戶資訊主頁刪除這些資料，但你無法將這些資料與其他帳戶建立關聯。如要另行保留現有的 Chromium 資料，你可以選擇建立新的設定檔。<ph name="LEARN_MORE" /></translation>
@@ -223,18 +221,17 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="7400722733683201933">關於 Google Chrome</translation>
 <translation id="7408085963519505752">Chrome 作業系統條款</translation>
 <translation id="7419046106786626209">你的網域無法使用「同步功能」，因此 Chrome 作業系統無法同步處理你的資料。</translation>
-<translation id="7436949144778751379">Google Chrome 需要 Windows XP 或更新版本的作業系統。某些功能可能無法執行。</translation>
 <translation id="7437998757836447326">登出 Chrome</translation>
 <translation id="7459554271817304652">設定同步處理功能，即可在網路上儲存你的個人化瀏覽器功能，並且透過任何電腦從 Google Chrome 使用這些功能。</translation>
 <translation id="7473136999113284234">Chrome 會自動更新，隨時讓你使用最新版本。</translation>
 <translation id="7473891865547856676">不用了，謝謝</translation>
 <translation id="7494905215383356681">Chrome 開放原始碼授權</translation>
-<translation id="7520096660192498279">{NUM_ITEMS,plural, =1{這會將至少 $1 個項目從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chrome。}other{這會將至少 $1 個項目從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chrome。}}</translation>
 <translation id="7535429826459677826">Google Chrome 開發人員版</translation>
 <translation id="7552219221109926349">將 Chrome 作業系統的介面文字設為這種語言</translation>
 <translation id="7592736734348559088">你的帳戶登入詳細資料尚未更新，因此 Google Chrome 無法同步處理你的資料。</translation>
 <translation id="7626032353295482388">歡迎使用 Chrome</translation>
 <translation id="7747138024166251722">安裝程式無法建立暫時目錄，請檢查可用磁碟空間與權限，以順利安裝軟體。</translation>
+<translation id="7756122083761163394">這位使用者的瀏覽資料將從這個裝置上刪除。如要還原資料，請以「$2」的身分登入 Chrome。</translation>
 <translation id="7761834446675418963">按一下你的名稱即可開啟 Chrome 並開始瀏覽。</translation>
 <translation id="7781002470561365167">Google Chrome 已推出新版。</translation>
 <translation id="7787950393032327779">另一台電腦 (<ph name="HOST_NAME" />) 的 Google Chrome 處理程序 (<ph name="PROCESS_ID" />) 正在使用這個設定檔。Chrome 已鎖定此設定檔，確保其不致受損。如果你確定其他處理程序目前未使用此設定檔，請予以解除鎖定，然後重新啟動 Chrome。</translation>
@@ -253,7 +250,6 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="8129812357326543296">關於 Google Chrome(&amp;G)</translation>
 <translation id="8179874765710681175">在手機上安裝 Chrome。我們會傳送簡訊到你的手機。</translation>
 <translation id="8183957050892517584">Chrome 會妥善保存您的個人詳細資料，讓您不必重複輸入相同的資料。</translation>
-<translation id="8211929904040702368">這會將至少 <ph name="TOTAL_COUNT" /> 個項目從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chrome。</translation>
 <translation id="8255190535488645436">Google Chrome 正在使用你的攝影機和麥克風。</translation>
 <translation id="8286862437124483331">Google Chrome 現在會嘗試顯示密碼。如果你同意的話，請輸入你的 Windows 密碼。</translation>
 <translation id="8290100596633877290">真糟糕！Google Chrome 當掉了，要立即重新啟動嗎？</translation>

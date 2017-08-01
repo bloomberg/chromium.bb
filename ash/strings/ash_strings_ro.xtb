@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Buton pentru meniul suplimentar</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl + tasta de căutare + H</translation>
 <translation id="2049639323467105390">Acest dispozitiv este gestionat de <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Portret</translation>
 <translation id="207439088875642105">Acesta este un cont pentru copii gestionat de <ph name="FIRST_PARENT_EMAIL" /> și de <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Taste adezive</translation>
 <translation id="2509468283778169019">Tasta CAPS LOCK este activată</translation>
 <translation id="2532589005999780174">Mod de contrast ridicat</translation>
+<translation id="2597972630681408282">Lumină de noapte: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">Sesiunea se încheie peste <ph name="SESSION_TIME_REMAINING" />. Veți fi deconectat(ă).</translation>
 <translation id="2727977024730340865">V-ați conectat la un încărcător de putere joasă. Încărcarea bateriei poate fi nesigură.</translation>
 <translation id="2761704814324807722">Bară de stare, durată <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">Ieșiri</translation>
 <translation id="3019353588588144572">Timp rămas până la încărcarea completă a bateriei: <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">Acesta este un cont pentru copii gestionat de <ph name="MANAGER_EMAIL" /></translation>
-<translation id="3050422059534974565">Tasta CAPS LOCK este activată.
-Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Jos</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -136,6 +136,7 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="4849058404725798627">Evidențiază obiectul focalizat de la tastatură</translation>
 <translation id="4872237917498892622">Alt+Căutare sau Shift</translation>
 <translation id="4895488851634969361">Bateria este încărcată complet.</translation>
+<translation id="4905614135390995787">Comanda rapidă pentru comutarea modului Contrast ridicat s-a modificat. Folosește <ph name="NEW_SHORTCUT" /> în loc de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Accept</translation>
 <translation id="4961318399572185831">Proiectează ecranul</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="5744083938413354016">Tragere prin atingere</translation>
 <translation id="5777841717266010279">Oprești permiterea accesului la ecran?</translation>
 <translation id="57838592816432529">Dezactivează sunetul</translation>
+<translation id="5860033963881614850">Dezactivat</translation>
 <translation id="5895138241574237353">Reîncepe</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>
+<translation id="5916664084637901428">Activat</translation>
 <translation id="5927132638760172455">Se proiectează pe un receiver necunoscut</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Reveniți</translation>
@@ -169,8 +172,8 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="5977415296283489383">Căști</translation>
 <translation id="5978382165065462689">În prezent, permiți controlul la ecran prin Asistență la distanță.</translation>
 <translation id="5980301590375426705">Ieșiți din modul pentru invitați</translation>
+<translation id="5992218262414051481">Modul Contrast ridicat este activat. Apasă din nou pe Ctrl + tasta de căutare + H pentru a-l dezactiva.</translation>
 <translation id="6018164090099858612">Se iese din modul oglindă</translation>
-<translation id="6041154455840261787">Modul Contrast ridicat este activat. Apasă din nou pe tasta de căutare + Shift + H pentru a-l dezactiva.</translation>
 <translation id="6043212731627905357">Monitorul nu funcționează cu <ph name="DEVICE_TYPE" /> (monitorul nu este compatibil).</translation>
 <translation id="6043994281159824495">Deconectați-vă acum</translation>
 <translation id="6047696787498798094">Permiterea accesului la ecran încetează când comuți la alt utilizator. Dorești să continui?</translation>
@@ -195,6 +198,7 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="6585808820553845416">Sesiunea se încheie peste <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tasta de căutare + Shift + K</translation>
 <translation id="6650933572246256093">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” solicită permisiunea de a se conecta. Introduceți această parolă pe dispozitivul respectiv: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Tasta de căutare + Shift + H</translation>
 <translation id="6700713906295497288">Butonul de meniu IME</translation>
 <translation id="6713285437468012787">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” a fost conectat și este disponibil acum pentru toți utilizatorii. Puteți elimina această conexiune din Setări.</translation>
 <translation id="6785414152754474415">Nivelul bateriei este de <ph name="PERCENTAGE" />% și se încarcă.</translation>
@@ -214,8 +218,7 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Se revine la rezoluția anterioară în <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">Tasta CAPS LOCK este activată.
-Apăsați Alt+Căutare sau Shift pentru a anula.</translation>
+<translation id="7199454189089571166">Modul Asistent</translation>
 <translation id="7246339268451149667">Activezi Deblocarea prin amprentă?</translation>
 <translation id="7256634071279256947">Microfonul din spate</translation>
 <translation id="7348093485538360975">Tastatură pe ecran</translation>
@@ -233,10 +236,10 @@ Apăsați Alt+Căutare sau Shift pentru a anula.</translation>
 <translation id="7649070708921625228">Ajutor</translation>
 <translation id="7692480393933218409">Se încarcă dispozitivele USB-C conectate</translation>
 <translation id="776344839111254542">Dă clic pentru a vedea detaliile actualizării</translation>
+<translation id="7798302898096527229">Apasă pe tasta de căutare sau pe Shift pentru a anula.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">După sincronizarea setărilor, limba a fost modificată de la „<ph name="FROM_LOCALE" />” la „<ph name="TO_LOCALE" />”.</translation>
 <translation id="7904094684485781019">Administratorul acestui cont a dezactivat conectarea multiplă.</translation>
-<translation id="7951523953736115461">Lumină de noapte</translation>
 <translation id="7977927628060636163">Se caută rețele mobile…</translation>
 <translation id="7982789257301363584">Rețea</translation>
 <translation id="8000066093800657092">Nicio rețea</translation>
@@ -255,6 +258,7 @@ Apăsați Alt+Căutare sau Shift pentru a anula.</translation>
 <translation id="8433977262951327081">Comanda rapidă pentru afișarea în raft a balonului meniului cu opțiunile de introducere a textului a fost modificată. Folosește <ph name="NEW_SHORTCUT" /> în loc de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Conexiunea Wi-Fi este activată.</translation>
 <translation id="847056008324733326">Setările pentru scara afișajului</translation>
+<translation id="8477270416194247200">Apasă pe Alt + tasta de căutare sau pe Shift pentru a anula.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: se reconectează...</translation>
 <translation id="8517041960877371778">Este posibil ca <ph name="DEVICE_TYPE" /> să nu se încarce cât timp este pornit.</translation>
 <translation id="8639760480004882931">Nivelul bateriei: <ph name="PERCENTAGE" /></translation>

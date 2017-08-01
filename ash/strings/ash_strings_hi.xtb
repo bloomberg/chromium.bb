@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">ओवरफ़्लो बटन</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">यह डिवाइस <ph name="DOMAIN" /> द्वारा प्रबंधित है.</translation>
 <translation id="2050339315714019657">पोर्ट्रेट</translation>
 <translation id="207439088875642105">यह बच्‍चों के लिए बनाया गया खाता है जिसे <ph name="FIRST_PARENT_EMAIL" /> और <ph name="SECOND_PARENT_EMAIL" /> द्वारा प्रबंधित किया जाता है</translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">रोचक कुंजियां</translation>
 <translation id="2509468283778169019">CAPS LOCK चालू है</translation>
 <translation id="2532589005999780174">उच्च कंट्रास्ट मोड</translation>
+<translation id="2597972630681408282">नाइट लाइट: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">सत्र <ph name="SESSION_TIME_REMAINING" /> में समाप्त होने वाला है. आप प्रस्थान कर जाएंगे.</translation>
 <translation id="2727977024730340865">कम-शक्ति वाले चार्जर में प्लग इन करें. बैटरी चार्ज करना संभवत: विश्वसनीय नहीं होगा.</translation>
 <translation id="2761704814324807722">स्थिति ट्रे, समय <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">आउटपुट</translation>
 <translation id="3019353588588144572">बैटरी के पूरी तरह से चार्ज होने में शेष समय, <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">यह बच्‍चों के लिए बनाया गया खाता है जिसे <ph name="MANAGER_EMAIL" /> द्वारा प्रबंधित किया जाता है</translation>
-<translation id="3050422059534974565">CAPS LOCK चालू है.
-रद्द करने के लिए Search या Shift दबाएं.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">नीचे</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (ब्लूटूथ)</translation>
@@ -136,6 +136,7 @@
 <translation id="4849058404725798627">कीबोर्ड फ़ोकस वाला ऑब्जेक्ट हाइलाइट करें</translation>
 <translation id="4872237917498892622">Alt+Search या Shift</translation>
 <translation id="4895488851634969361">बैटरी भरी हुई है.</translation>
+<translation id="4905614135390995787">उच्च कंट्रास्ट मोड को टॉगल करने का शॉर्टकट बदल गया है. कृपया<ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
 <translation id="4918086044614829423">स्वीकार करें</translation>
 <translation id="4961318399572185831">स्‍क्रीन कास्‍ट करें</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@
 <translation id="5744083938413354016">टैप करके खींचना</translation>
 <translation id="5777841717266010279">स्‍क्रीन साझाकरण बंद करें?</translation>
 <translation id="57838592816432529">आवाज़ बंद करें</translation>
+<translation id="5860033963881614850">बंद</translation>
 <translation id="5895138241574237353">पुन: प्रारंभ करें</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">चालू</translation>
 <translation id="5927132638760172455">किसी अज्ञात प्राप्तकर्ता को कास्ट कर रहा है</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">वापस लाएं</translation>
@@ -169,8 +172,8 @@
 <translation id="5977415296283489383">हेडफ़ोन</translation>
 <translation id="5978382165065462689">आपकी स्‍क्रीन का नियंत्रण दूरस्‍थ सहायका के द्वारा साझा किया जा रहा है.</translation>
 <translation id="5980301590375426705">अतिथि सत्र से बाहर निकलें</translation>
+<translation id="5992218262414051481">उच्च कंट्रास्ट मोड सक्षम है. उसे बंद पर टॉगल करने के लिए Ctrl+Search+H फिर से दबाएं.</translation>
 <translation id="6018164090099858612">मिरर मोड से बाहर निकाला जा रहा है</translation>
-<translation id="6041154455840261787">उच्च कंट्रास्ट मोड सक्षम है. उसे बंद पर टॉगल करने के लिए Search+Shift+H फिर से दबाएं.</translation>
 <translation id="6043212731627905357">यह मॉनीटर आपके <ph name="DEVICE_TYPE" /> के साथ काम नहीं कर रहा है (मॉनीटर समर्थित नहीं है).</translation>
 <translation id="6043994281159824495">अब प्रस्थान करें</translation>
 <translation id="6047696787498798094">आपके द्वारा किसी अन्‍य उपयोगकर्ता पर स्‍विच करने से स्‍क्रीन साझाकरण रुक जाएगा. क्‍या आप जारी रखना चाहते हैं?</translation>
@@ -195,6 +198,7 @@
 <translation id="6585808820553845416">सत्र <ph name="SESSION_TIME_REMAINING" /> में समाप्त होने वाला है.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है. कृपया डिवाइस पर यह पासकुंजी डालें: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6700713906295497288">IME मेनू बटन</translation>
 <translation id="6713285437468012787">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" यु्ग्मित हो गया है और अब वह सभी उपयोगकर्ताओं के लिए उपलब्ध है. आप सेटिंग का उपयोग करके इस युग्मन को निकाल सकते हैं.</translation>
 <translation id="6785414152754474415">बैटरी <ph name="PERCENTAGE" />% भरी हुई है और चार्ज हो रही है.</translation>
@@ -214,8 +218,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> में पुराने रिज़ॉल्यूशन में वापस लौट रहा है</translation>
-<translation id="7209101170223508707">CAPS LOCK चालू है.
-रद्द करने के लिए Alt+Search या Shift दबाएं.</translation>
+<translation id="7199454189089571166">Assistant मोड</translation>
 <translation id="7246339268451149667">फ़िंगरप्रिंट अनलॉक सक्षम करें?</translation>
 <translation id="7256634071279256947">पीछे वाला माइक्रोफ़ोन</translation>
 <translation id="7348093485538360975">ऑन-स्‍क्रीन कीबोर्ड</translation>
@@ -233,10 +236,10 @@
 <translation id="7649070708921625228">सहायता</translation>
 <translation id="7692480393933218409">कनेक्ट किए गए USB-C डिवाइस चार्ज कर रहा है</translation>
 <translation id="776344839111254542">अपडेट के विवरण देखने के लिए क्लिक करें</translation>
+<translation id="7798302898096527229">रद्द करने के लिए Search या Shift दबाएं.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> और <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">आपकी सेटिंग समन्वयित करने के बाद भाषा को "<ph name="FROM_LOCALE" />" से "<ph name="TO_LOCALE" />" में बदल दिया गया है.</translation>
 <translation id="7904094684485781019">इस खाते के व्यवस्थापक ने एकाधिक प्रवेश को अस्वीकार कर दिया है.</translation>
-<translation id="7951523953736115461">नाइट लाइट</translation>
 <translation id="7977927628060636163">मोबाइल नेटवर्क खोजे जा रहे हैं...</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
 <translation id="8000066093800657092">नेटवर्क नहीं है</translation>
@@ -255,6 +258,7 @@
 <translation id="8433977262951327081">शेल्फ़ में इनपुट विकल्पों का मेनू बबल दिखाने वाला शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
 <translation id="8454013096329229812">वाई-फ़ाई  चालू है.</translation>
 <translation id="847056008324733326">प्रदर्शन पैमाने की सेटिंग</translation>
+<translation id="8477270416194247200">रद्द करने के लिए Alt+Search या Shift दबाएं.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: पुनः कनेक्ट कर रहा है...</translation>
 <translation id="8517041960877371778">हो सकता है आपका <ph name="DEVICE_TYPE" /> चालू होने पर चार्ज नहीं होता हो.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> शेष</translation>

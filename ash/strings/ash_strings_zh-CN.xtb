@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">溢出按钮</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+搜索键+H</translation>
 <translation id="2049639323467105390">此设备由 <ph name="DOMAIN" /> 管理。</translation>
 <translation id="2050339315714019657">纵向</translation>
 <translation id="207439088875642105">此帐号是由 <ph name="FIRST_PARENT_EMAIL" /> 和 <ph name="SECOND_PARENT_EMAIL" /> 管理的未成年人帐号</translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">粘滞键</translation>
 <translation id="2509468283778169019">CAPS LOCK 已打开</translation>
 <translation id="2532589005999780174">高反差模式</translation>
+<translation id="2597972630681408282">夜间模式：<ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">会话将在<ph name="SESSION_TIME_REMAINING" />后结束，到时您将自动退出。</translation>
 <translation id="2727977024730340865">已插入低功率充电器；可能无法保证充电成功。</translation>
 <translation id="2761704814324807722">状态栏，时间为<ph name="TIME" />，<ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">输出</translation>
 <translation id="3019353588588144572">电池电量将在 <ph name="TIME_REMAINING" />后充满</translation>
 <translation id="3047477924825107454">此帐号是由 <ph name="MANAGER_EMAIL" /> 管理的未成年人帐号</translation>
-<translation id="3050422059534974565">CAPS LOCK 已开启。
-按搜索键或 Shift 可取消。</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">底部</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" />（蓝牙）</translation>
@@ -136,6 +136,7 @@
 <translation id="4849058404725798627">突出显示键盘焦点所在对象</translation>
 <translation id="4872237917498892622">Alt + 搜索键或 Shift</translation>
 <translation id="4895488851634969361">电池电量已满。</translation>
+<translation id="4905614135390995787">用于切换高反差模式的快捷键已更改。请使用 <ph name="NEW_SHORTCUT" />，而不是 <ph name="OLD_SHORTCUT" />。</translation>
 <translation id="4918086044614829423">接受</translation>
 <translation id="4961318399572185831">投射屏幕</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@
 <translation id="5744083938413354016">点按拖动</translation>
 <translation id="5777841717266010279">要停止屏幕共享吗？</translation>
 <translation id="57838592816432529">静音</translation>
+<translation id="5860033963881614850">关闭</translation>
 <translation id="5895138241574237353">重新启动</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">启用</translation>
 <translation id="5927132638760172455">正在投射至未知接收器</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">还原</translation>
@@ -169,8 +172,8 @@
 <translation id="5977415296283489383">耳机</translation>
 <translation id="5978382165065462689">正在通过远程协助共享您屏幕的控制权限。</translation>
 <translation id="5980301590375426705">退出访客模式</translation>
+<translation id="5992218262414051481">已启用高反差模式。再按一次 Ctrl+搜索键+H 组合键即可关闭此模式。</translation>
 <translation id="6018164090099858612">正在退出镜像模式</translation>
-<translation id="6041154455840261787">已启用高反差模式。再按一次 Search+Shift+H 组合键即可关闭此模式。</translation>
 <translation id="6043212731627905357">该显示器与您的<ph name="DEVICE_TYPE" />不兼容（系统不支持该显示器）。</translation>
 <translation id="6043994281159824495">立即退出</translation>
 <translation id="6047696787498798094">切换到其他用户后将停止屏幕共享。要继续吗？</translation>
@@ -195,6 +198,7 @@
 <translation id="6585808820553845416">会话将在<ph name="SESSION_TIME_REMAINING" />后结束。</translation>
 <translation id="6627638273713273709">搜索键+Shift+K</translation>
 <translation id="6650933572246256093">蓝牙设备“<ph name="DEVICE_NAME" />”需要配对许可。请在该设备上输入以下配对密钥：<ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">搜索键+Shift+H</translation>
 <translation id="6700713906295497288">IME 菜单按钮</translation>
 <translation id="6713285437468012787">蓝牙设备“<ph name="DEVICE_NAME" />”已配对，现可供所有用户使用。您可以通过“设置”取消此配对。</translation>
 <translation id="6785414152754474415">电池电量为<ph name="PERCENTAGE" />%（正在充电）。</translation>
@@ -214,8 +218,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />秒后恢复到原分辨率</translation>
-<translation id="7209101170223508707">Caps Lock 已开启。
-按 Alt + 搜索键或 Shift 可取消。</translation>
+<translation id="7199454189089571166">智能助理模式</translation>
 <translation id="7246339268451149667">启用指纹解锁功能？</translation>
 <translation id="7256634071279256947">后置麦克风</translation>
 <translation id="7348093485538360975">屏幕键盘</translation>
@@ -233,10 +236,10 @@
 <translation id="7649070708921625228">帮助</translation>
 <translation id="7692480393933218409">正在为已连接的 USB-C 设备充电</translation>
 <translation id="776344839111254542">点击即可查看相关更新的详情</translation>
+<translation id="7798302898096527229">按搜索键或按 Shift 键可取消。</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">同步了您的设置后，该语言已由“<ph name="FROM_LOCALE" />”更改为“<ph name="TO_LOCALE" />”。</translation>
 <translation id="7904094684485781019">此帐号的管理员已停用多帐号登录。</translation>
-<translation id="7951523953736115461">夜间模式</translation>
 <translation id="7977927628060636163">正在搜索移动网络…</translation>
 <translation id="7982789257301363584">网络</translation>
 <translation id="8000066093800657092">未连接任何网络</translation>
@@ -255,6 +258,7 @@
 <translation id="8433977262951327081">用于在任务栏中显示输入法选项菜单气泡的快捷键已更改。请使用<ph name="NEW_SHORTCUT" />（而不是 <ph name="OLD_SHORTCUT" />）。</translation>
 <translation id="8454013096329229812">Wi-Fi 已打开。</translation>
 <translation id="847056008324733326">显示比例设置</translation>
+<translation id="8477270416194247200">按 Alt+搜索键或按 Shift 键可取消。</translation>
 <translation id="8484916590211895857"><ph name="NAME" />：正在重新连接…</translation>
 <translation id="8517041960877371778">您的 <ph name="DEVICE_TYPE" /> 在开启时可能无法充电。</translation>
 <translation id="8639760480004882931">剩余电量：<ph name="PERCENTAGE" /></translation>

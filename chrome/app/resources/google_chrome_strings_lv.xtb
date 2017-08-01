@@ -169,7 +169,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="573759479754913123">Par &amp;Chrome OS</translation>
 <translation id="5749068826913805084">Chrome ir nepieciešama piekļuve krātuvei, lai varētu lejupielādēt failus.</translation>
 <translation id="5774845247549698882">Chrome OS tiek rādīta šajā valodā.</translation>
-<translation id="5832596086758878896">{NUM_ITEMS,plural, =1{Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsts $1 vienums. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chrome kā $2.}zero{Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsti $1 vienumi. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chrome kā $2.}one{Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsts $1 vienums. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chrome kā $2.}other{Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsti $1 vienumi. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chrome kā $2.}}</translation>
 <translation id="5855036575689098185">Programmatūra, kas darbojas jūsu datorā, nav saderīga ar pārlūku Google Chrome.</translation>
 <translation id="5877064549588274448">Kanāls tika mainīts. Lai lietotu izmaiņas, restartējiet ierīci.</translation>
 <translation id="5895138241574237353">Restartēt</translation>
@@ -214,7 +213,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="7125719106133729027">Pārlūku Chrome nevarēja automātiski atjaunināt uz jaunāko versiju, tāpēc jums nav pieejamas vairākas jaunas, noderīgas funkcijas un drošības uzlabojumi. Jums manuāli jāpārinstalē pārlūks Chrome.</translation>
 <translation id="7161904924553537242">Laipni lūdzam Google Chrome</translation>
 <translation id="7164397146364144019">Varat palīdzēt uzlabot Chrome drošību un lietošanas ērtumu, automātiski nosūtot Google serveriem informāciju par iespējamām drošības problēmām.</translation>
-<translation id="7177347454226092725">Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsti jūsu pārlūkošanas dati. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chrome kā $2.</translation>
 <translation id="7185038942300673794">Paplašinājums <ph name="EXTENSION_NAME" /> ir pievienots pārlūkam Chrome.</translation>
 <translation id="7196020411877309443">Kāpēc es redzu šo dialoglodziņu?</translation>
 <translation id="7242029209006116544">Jūs pierakstāties ar pārvaldītu kontu un nodrošināt, ka tā administrators var pārvaldīt jūsu Google Chrome profilu. Jūsu Chrome dati, piemēram, lietotnes, grāmatzīmes, vēsture, paroles un citi iestatījumi tiks neatgriezeniski saistīti ar lietotāju <ph name="USER_NAME" />. Varēsiet dzēst šos datus, izmantojot Google kontu informācijas paneli, taču nevarēsiet saistīt šos datus ar citu kontu. Ja vēlaties, varat izveidot jaunu profilu, lai atsevišķi glabātu Chrome datus. <ph name="LEARN_MORE" /></translation>
@@ -225,18 +223,17 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="7400722733683201933">Par Google Chrome</translation>
 <translation id="7408085963519505752">Chrome OS noteikumi</translation>
 <translation id="7419046106786626209">Chrome OS nevarēja sinhronizēt jūsu datus, jo sinhronizācija jūsu domēnā nav pieejama.</translation>
-<translation id="7436949144778751379">Google Chrome darbībai nepieciešams Windows XP vai jaunāka operētājsistēma. Dažas funkcijas var nedarboties.</translation>
 <translation id="7437998757836447326">Izrakstīšanās no pārlūka Chrome</translation>
 <translation id="7459554271817304652">Iestatiet sinhronizāciju, lai saglabātu savas personalizētās pārlūka funkcijas tīmeklī un piekļūtu tām no pārlūka Google Chrome jebkurā datorā.</translation>
 <translation id="7473136999113284234">Pārlūks Chrome tiek atjaunināts automātiski, tādēļ jums vienmēr būs pieejama visjaunākā versija.</translation>
 <translation id="7473891865547856676">Nē, paldies!</translation>
 <translation id="7494905215383356681">Chrome atklātā pirmkoda licences</translation>
-<translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsts vismaz $1 vienums. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chrome kā $2.}zero{Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsti vismaz $1 vienumi. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chrome kā $2.}one{Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsts vismaz $1 vienums. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chrome kā $2.}other{Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsti vismaz $1 vienumi. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chrome kā $2.}}</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Rādīt Chrome OS šajā valodā</translation>
 <translation id="7592736734348559088">Google Chrome nevarēja sinhronizēt jūsu datus, jo jūsu konta pierakstīšanās informācija ir novecojusi.</translation>
 <translation id="7626032353295482388">Laipni lūdzam pārlūkā Chrome</translation>
 <translation id="7747138024166251722">Instalētājam neizdevās izveidot pagaidu katalogu. Lūdzu, pārbaudiet, vai diskā pietiek vietas un vai ir atļauja instalēt programmatūru.</translation>
+<translation id="7756122083761163394">Šīs personas pārlūkošanas dati šajā ierīcē tiks dzēsti. Lai atgūtu datus, pierakstieties pārlūkā Chrome kā $2.</translation>
 <translation id="7761834446675418963">Noklikšķiniet uz sava vārda, lai atvērtu pārlūku Chrome un sāktu pārlūkošanu.</translation>
 <translation id="7781002470561365167">Pieejama jauna Google Chrome versija.</translation>
 <translation id="7787950393032327779">Šķiet, ka profils tiek izmantots citā Google Chrome procesā (<ph name="PROCESS_ID" />) citā datorā (<ph name="HOST_NAME" />). Lai profils netiktu bojāts, pārlūkā Chrome tas ir bloķēts. Ja esat pārliecināts, ka šis profils netiek izmantots citos procesos, varat to atbloķēt un restartēt pārlūku Chrome.</translation>
@@ -255,7 +252,6 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="8129812357326543296">Par &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Instalējiet pārlūkprogrammu Chrome savā tālrunī. Mēs nosūtīsim īsziņu uz jūsu tālruņa numuru.</translation>
 <translation id="8183957050892517584">Chrome droši saglabās jūsu privāto informāciju, lai tā vairs nebūtu atkārtoti jāievada.</translation>
-<translation id="8211929904040702368">Veicot šo darbību, no šīs ierīces tiks neatgriezeniski izdzēsti vismaz <ph name="TOTAL_COUNT" /> vienumi. Lai izgūtu datus vēlāk, pierakstieties pārlūkā Chrome kā $2.</translation>
 <translation id="8255190535488645436">Pārlūkā Google Chrome tiek izmantota kamera un mikrofons.</translation>
 <translation id="8286862437124483331">Google Chrome mēģina rādīt paroles. Lai to atļautu, ierakstiet savu Windows paroli.</translation>
 <translation id="8290100596633877290">Eh! Google Chrome ir avarējis. Vai restartēt to tūlīt?</translation>

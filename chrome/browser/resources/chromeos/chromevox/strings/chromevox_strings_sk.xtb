@@ -165,6 +165,7 @@
 <translation id="27527859628328957">Prejsť na ďalšiu zamerateľnú položku</translation>
 <translation id="2770781857296573485">Vstúpiť do režimu preskúmavania skupín</translation>
 <translation id="2777845298774924149">Ukončené</translation>
+<translation id="2781264313200109999">Začiatok odkazu</translation>
 <translation id="2800204403141299078">Žiadne ďalšie odlišné prvky</translation>
 <translation id="2800780099804980316">Žiadny predchádzajúci nadpis 1. úrovne</translation>
 <translation id="280499067616661124">Vyhľadávanie ChromeVox na stránke</translation>
@@ -317,6 +318,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="3716845769494773620">Viac riadkov</translation>
 <translation id="3731746171184829332">Žiadny predchádzajúci nadpis</translation>
 <translation id="3735039640698208086">Pri prehrávaní zvuku…</translation>
+<translation id="3755561384917041694">Ak chcete používať rozšírené príkazy Braillovho písma, aktivujte klávesnicu na stavovom paneli v časti Dostupnosť.</translation>
 <translation id="3762198587642264450">Prejsť na koniec aktuálneho riadka</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">Ukončili ste dialógové okno</translation>
@@ -575,6 +577,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="6037602951055904232">Posunúť zobrazenie dopredu</translation>
 <translation id="6044160928851315051">Stmaviť obrazovku</translation>
 <translation id="6082768461603900813">Základná navigácia</translation>
+<translation id="6092707270915298410">Koniec odkazu</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">Koniec bunky</translation>
 <translation id="6122013438240733403">tlačidlo</translation>
@@ -811,7 +814,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="8721861170709424373">Zoznam príkazov čítačky ChromeVox Next</translation>
 <translation id="8735450637152821465">Začnite výber</translation>
 <translation id="8743786158317878347">zadať štruktúrovaný obsah, ako sú napríklad tabuľky</translation>
-<translation id="8747966237988593539">Zoradený zoznam</translation>
+<translation id="8747966237988593539">Číslovaný zoznam</translation>
 <translation id="8759334257841767240">Žiadny ďalší odkaz</translation>
 <translation id="8767968232364267681">Ďalšia hlavička 4. úrovne</translation>
 <translation id="8770473310765924354">ukončiť štruktúrovaný obsah, ako sú napríklad tabuľky</translation>

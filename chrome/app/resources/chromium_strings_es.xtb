@@ -32,7 +32,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1966382378801805537">Chromium no puede determinar ni establecer el navegador predeterminado</translation>
 <translation id="1967743265616885482">Se ha detectado que un módulo con el mismo nombre provoca un conflicto con Chromium.</translation>
 <translation id="2008474315282236005">Se eliminará un elemento de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chromium como <ph name="USER_EMAIL" />.</translation>
-<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Se eliminará permanentemente al menos $1 elemento de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chromium como $2.}other{Se eliminarán permanentemente al menos $1 elementos de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chromium como $2.}}</translation>
 <translation id="2077129598763517140">Utilizar aceleración por hardware cuando esté disponible</translation>
 <translation id="2119636228670142020">Información de &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Licencias de código abierto de Chromium OS</translation>
@@ -83,7 +82,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="3549345495227188780">Introducción a Chromium OS</translation>
 <translation id="3582788516608077514">Actualizando Chromium...</translation>
 <translation id="358997566136285270">Logotipo de Chromium</translation>
-<translation id="3645040538872234961">Se eliminarán permanentemente tus datos de navegación de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chromium como $2.</translation>
 <translation id="3738139272394829648">Tocar para Buscar</translation>
 <translation id="3762167353400286894">Chromium OS se muestra en este idioma</translation>
 <translation id="378917192836375108">Chromium te permite hacer clic en un número de teléfono en la Web y llamar mediante Skype.</translation>
@@ -155,7 +153,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="59625444380784159">Los detalles de tus contactos pueden ayudar a completar los formularios de forma más rápida en Chromium.</translation>
 <translation id="5987687638152509985">Actualiza Chromium para iniciar la sincronización</translation>
 <translation id="6055895534982063517">Hay una nueva versión de Chromium disponible que funciona a una velocidad sin precedentes.</translation>
-<translation id="6077017812234345835">Se eliminarán permanentemente al menos <ph name="TOTAL_COUNT" /> elementos de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chromium como $2.</translation>
 <translation id="608189560609172163">Chromium no ha podido sincronizar los datos debido a un error de inicio de sesión.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> es peligroso, por lo que Chromium lo ha bloqueado.</translation>
 <translation id="6212496753309875659">Este ordenador ya cuenta con una versión más reciente de Chromium. Si el software no funciona, desinstala Chromium y vuelve a intentarlo.</translation>
@@ -193,7 +190,6 @@ Es posible que algunas funciones no estén disponibles. Especifica un directorio
 <translation id="705851970750939768">Actualizar Chromium</translation>
 <translation id="7066436765290594559">Chromium OS no ha podido sincronizar tus datos. Actualiza tu frase de contraseña de sincronización.</translation>
 <translation id="707471633328071618">Google Payments (copiada en Chromium)</translation>
-<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Se eliminará permanentemente $1 elemento de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chromium como $2.}other{Se eliminarán permanentemente $1 elementos de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chromium como $2.}}</translation>
 <translation id="7138853919861947730">Chromium puede utilizar servicios web para mejorar la experiencia de navegación de los usuarios.</translation>
 <translation id="7162152143154757523">Chromium puede proporcionar un corrector ortográfico más inteligente si envías el texto que introduces en el navegador a los servidores de Google, lo que te permitirá utilizar la misma tecnología de corrección ortográfica que usa la Búsqueda de Google.</translation>
 <translation id="7196020411877309443">¿Por qué aparece este mensaje?</translation>
@@ -215,7 +211,6 @@ Para evitar que <ph name="NEW_PROFILE_NAME" /> acceda a tu cuenta, bloquea tu pe
 <ph name="BEGIN_LINK_2" />Más información<ph name="END_LINK_2" />
 
 Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más información.</translation>
-<translation id="7421823331379285070">Chromium requiere Windows XP o una versión posterior. Es posible que algunas características no funcionen.</translation>
 <translation id="7473891865547856676">No, gracias</translation>
 <translation id="7483335560992089831">No se puede instalar la misma versión de Chromium que se está ejecutando actualmente. Cierra Chromium y vuelve a intentarlo.</translation>
 <translation id="7549178288319965365">Información de Chromium OS</translation>
@@ -226,6 +221,7 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="7729447699958282447">Chromium no ha podido sincronizar los datos porque la función de sincronización no está disponible para tu dominio.</translation>
 <translation id="7745317241717453663">Se eliminarán tus datos de navegación de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chromium como <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">El programa de instalación no ha podido crear un directorio temporal. Comprueba si hay espacio libre en el disco y si tienes autorización para instalar el software.</translation>
+<translation id="7756122083761163394">Los datos de navegación de este usuario se eliminarán de este dispositivo. Para recuperarlos, inicia sesión en Chrome como $2.</translation>
 <translation id="7937630085815544518">Habías iniciado sesión en Chromium como <ph name="USER_EMAIL_ADDRESS" />. Utiliza la misma cuenta para volver a iniciar sesión.</translation>
 <translation id="795025003224538582">No reiniciar</translation>
 <translation id="7962572577636132072">Chromium se actualiza automáticamente para que siempre dispongas de la última versión.</translation>

@@ -53,13 +53,6 @@
       Als dit beleid niet is ingesteld, is de standaardfrequentie 3 uur. De minimaal toegestane frequentie is 60 seconden.</translation>
 <translation id="1221359380862872747">Gespecificeerde URL's laden in demo-aanmeldvenster</translation>
 <translation id="1265053460044691532">De offline inlogtijd beperken voor een gebruiker die is geverifieerd via SAML</translation>
-<translation id="127699919157094139">Hiermee wordt gegevenssynchronisatie uitgeschakeld in <ph name="PRODUCT_NAME" /> via door Google gehoste synchronisatieservices. Gebruikers kunnen deze instelling niet aanpassen.
-
-      Als je deze instelling inschakelt, kunnen gebruikers de instelling niet aanpassen of negeren in <ph name="PRODUCT_NAME" />.
-
-      Als dit beleid niet wordt ingesteld, kan de gebruiker zelf besluiten Google Sync wel of niet te gebruiken.
-
-      Als je Google Sync volledig wilt uitschakelen, kun je de Google Sync-service het beste uitschakelen in de Google Beheerdersconsole.</translation>
 <translation id="1291880496936992484">Waarschuwing: RC4 wordt volledig verwijderd van <ph name="PRODUCT_NAME" /> na versie 52 (rond september 2016) en dit beleid werkt vanaf dan niet meer.
 
       Als het beleid niet is ingesteld of is ingesteld op 'onwaar', worden de RC4-coderingssuites in TLS niet ingeschakeld. Anders kan het worden ingesteld op 'waar' om compatibiliteit met een verouderde server te behouden. Dit is een tijdelijke oplossing en de server moet opnieuw worden geconfigureerd.</translation>
@@ -254,12 +247,12 @@
           Als dit beleid niet is ingesteld, worden alle vier de schema's gebruikt.</translation>
 <translation id="2067011586099792101">Toegang blokkeren naar sites die zich niet in inhoudspakketten bevinden</translation>
 <translation id="2077129598763517140">Hardwareversnelling gebruiken indien beschikbaar</translation>
-<translation id="2077273864382355561">Vertraging van scherm uitschakelen wanneer op de accu wordt gewerkt</translation>
+<translation id="2077273864382355561">Vertraging van scherm uitschakelen wanneer op de batterij wordt gewerkt</translation>
 <translation id="209586405398070749">Stabiel kanaal</translation>
 <translation id="2098658257603918882">Rapportage van gebruiks- en crashgegevens inschakelen</translation>
 <translation id="2113068765175018713">Uptime van apparaat beperken door automatisch opnieuw op te starten</translation>
 <translation id="2127599828444728326">Meldingen op deze sites toestaan</translation>
-<translation id="2131902621292742709">Vertraging van dimmen van scherm wanneer op de accu wordt gewerkt</translation>
+<translation id="2131902621292742709">Vertraging van dimmen van scherm wanneer op de batterij wordt gewerkt</translation>
 <translation id="2134437727173969994">Schermvergrendeling toestaan</translation>
 <translation id="2137064848866899664">Als dit beleid is ingesteld, wordt elke display bij opnieuw opstarten
       gedraaid tot de gespecificeerde stand, plus de eerste keer dat de
@@ -501,7 +494,7 @@
 <translation id="2753637905605932878">Het bereik beperken van lokale UDP-poorten die door WebRTC worden gebruikt</translation>
 <translation id="2757054304033424106">Typen extensies/apps die mogen worden geïnstalleerd</translation>
 <translation id="2759224876420453487">Het gebruikersgedrag beheren in een multiprofielsessie</translation>
-<translation id="2761483219396643566">Inactieve waarschuwingsvertraging wanneer op de accu wordt gewerkt</translation>
+<translation id="2761483219396643566">Inactieve waarschuwingsvertraging wanneer op de batterij wordt gewerkt</translation>
 <translation id="2762164719979766599">Hiermee wordt de lijst met lokale accounts op het apparaat weergegeven op het aanmeldscherm.
 
       Elke lijstvermelding specificeert een ID die intern wordt gebruikt om de verschillende lokale accounts van het apparaat te onderscheiden.</translation>
@@ -528,6 +521,11 @@
 
       Als er geen instelling voor dit beleid is opgegeven, staat dit gelijk aan het inschakelen van het beleid (zie de beschrijving hierboven).</translation>
 <translation id="285480231336205327">Modus voor hoog contrast inschakelen</translation>
+<translation id="2854919890879212089">Zorgt ervoor dat <ph name="PRODUCT_NAME" /> de standaardprinter van het systeem gebruikt als standaardkeuze bij Afdrukvoorbeeld in plaats van de laatst gebruikte printer.
+
+      Als je deze instelling uitschakelt of geen waarde instelt, gebruikt Afdrukvoorbeeld de laatst gebruikte printer als standaardbestemming.
+
+      Als je deze instelling inschakelt, gebruikt Afdrukvoorbeeld de standaardprinter van het besturingssysteem als standaardbestemming.</translation>
 <translation id="2872961005593481000">Afsluiten</translation>
 <translation id="2874209944580848064">Opmerking voor <ph name="PRODUCT_OS_NAME" />-apparaten die Android-apps ondersteunen:</translation>
 <translation id="2877225735001246144">CNAME-lookup uitschakelen bij het verwerken van Kerberos-authenticatie</translation>
@@ -545,7 +543,7 @@
 <translation id="2957513448235202597">Accounttype voor <ph name="HTTP_NEGOTIATE" />-verificatie</translation>
 <translation id="2959898425599642200">Regels voor proxyomzeiling</translation>
 <translation id="2960691910306063964">Verificatie zonder pincode in- of uitschakelen voor hosts voor externe toegang</translation>
-<translation id="2976002782221275500">Hiermee wordt de tijdsduur zonder input van gebruikers gespecificeerd waarna het scherm wordt gedimd wanneer er op de accu wordt gewerkt.
+<translation id="2976002782221275500">Hiermee wordt de tijdsduur zonder input van gebruikers gespecificeerd waarna het scherm wordt gedimd wanneer er op de batterij wordt gewerkt.
 
           Als dit beleid is ingesteld op een grotere waarde dan nul, specificeert het de tijd die de gebruiker inactief moet blijven voordat het scherm wordt gedimd door <ph name="PRODUCT_OS_NAME" />.
 
@@ -1014,6 +1012,7 @@
 
           Standaard krijgen gebruikers een waarschuwing en geen foutmelding te zien als de pincode als zwak wordt beschouwd.</translation>
 <translation id="4723829699367336876">Firewallpassage vanaf client voor externe toegang inschakelen</translation>
+<translation id="4725123658714754485">Hiermee wordt beheerd of gebruiksstatistieken en diagnostische gegevens, waaronder crashrapporten, worden gerapporteerd aan Google. Als dit is ingesteld op 'true' (waar), rapporteert <ph name="PRODUCT_OS_NAME" /> gebruiksstatistieken en diagnostische gegevens. Als het niet is geconfigureerd of is ingesteld op 'false' (onwaar), wordt de rapportage van statistieken en diagnostische gegevens uitgeschakeld.</translation>
 <translation id="4725528134735324213">Android Backup Service inschakelen</translation>
 <translation id="4733471537137819387">Beleid met betrekking tot geïntegreerde HTTP-authenticatie.</translation>
 <translation id="4744190513568488164">Servers waarnaar <ph name="PRODUCT_NAME" /> mag delegeren.
@@ -1088,7 +1087,7 @@
 <translation id="5056708224511062314">Vergrootglas uitgeschakeld</translation>
 <translation id="5067143124345820993">Aanmelden bij witte lijst van gebruikers</translation>
 <translation id="5085647276663819155">Afdrukvoorbeeld uitschakelen</translation>
-<translation id="5105313908130842249">Vertraging van schermvergrendeling wanneer op de accu wordt gewerkt</translation>
+<translation id="5105313908130842249">Vertraging van schermvergrendeling wanneer op de batterij wordt gewerkt</translation>
 <translation id="5130288486815037971">Of RC4-coderingssuites in TLS zijn ingeschakeld</translation>
 <translation id="5141670636904227950">Het standaardtype van vergrootglas instellen dat op het inlogscherm is ingeschakeld</translation>
 <translation id="5142301680741828703">De volgende URL-patronen altijd verwerken in <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -1143,7 +1142,7 @@
       Hiermee wordt toegestaan dat de gebruiker inlogt bij <ph name="PRODUCT_NAME" />.
 
       Als je dit beleid instelt, kun je bepalen of een gebruiker mag inloggen bij <ph name="PRODUCT_NAME" />. Als dit beleid is ingesteld op 'onwaar', werken de apps en extensies die de API chrome.identity gebruiken niet meer. Daarom kun je in plaats hiervan ook SyncDisabled gebruiken.</translation>
-<translation id="5304269353650269372">Hiermee wordt de tijdsduur zonder gebruikersinvoer gespecificeerd waarna een waarschuwingsdialoogvenster wordt weergegeven wanneer op de accu wordt gewerkt.
+<translation id="5304269353650269372">Hiermee wordt de tijdsduur zonder gebruikersinvoer gespecificeerd waarna een waarschuwingsdialoogvenster wordt weergegeven wanneer op de batterij wordt gewerkt.
 
           Als dit beleid is ingesteld, specificeert het de tijdsduur dat de gebruiker inactief moet zijn voordat <ph name="PRODUCT_OS_NAME" /> een waarschuwingsdialoogvenster aan de gebruiker laat zien om aan te geven dat de actie voor inactiviteit bijna wordt ondernomen.
 
@@ -1264,7 +1263,7 @@
 
 
           Als er geen instelling is opgegeven, gebruikt <ph name="PRODUCT_NAME" /> een standaard bibliotheeknaam.</translation>
-<translation id="5781806558783210276">Hiermee wordt de tijdsduur zonder input van gebruikers gespecificeerd waarna de inactieve actie wordt ondernomen wanneer op de accu wordt gewerkt.
+<translation id="5781806558783210276">Hiermee wordt de tijdsduur zonder input van gebruikers gespecificeerd waarna de inactieve actie wordt ondernomen wanneer op de batterij wordt gewerkt.
 
           Als dit beleid is ingesteld, specificeert het de tijd die de gebruiker inactief moet blijven voordat de inactieve actie wordt ondernomen door <ph name="PRODUCT_OS_NAME" />, die afzonderlijk kan worden geconfigureerd.
 
@@ -1370,7 +1369,7 @@
 
       Als dit beleid niet is geconfigureerd, is de lijst met USB-apparaten die kunnen worden ontkoppeld leeg.</translation>
 <translation id="6093156968240188330">Externe gebruikers toestaan om een vensters met verhoogde bevoegdheid te gebruiken tijdens een sessie voor ondersteuning op afstand</translation>
-<translation id="6095999036251797924">Specificeert de periode zonder gebruikersinvoer waarna het scherm wordt vergrendeld wanneer het apparaat op netstroom of op de accu werkt.
+<translation id="6095999036251797924">Specificeert de periode zonder gebruikersinvoer waarna het scherm wordt vergrendeld wanneer het apparaat op netstroom of op de batterij werkt.
 
           Wanneer de periode is ingesteld op een waarde groter dan nul, is dit de tijd dat de gebruiker inactief moet zijn voordat <ph name="PRODUCT_OS_NAME" /> het scherm vergrendelt.
 
@@ -1471,7 +1470,7 @@
           Als je het PAC-script voor de proxy kiest, ontvangen de Android-apps de script-URL.</translation>
 <translation id="6491139795995924304">Bluetooth toestaan op apparaat</translation>
 <translation id="6520802717075138474">Zoekmachines importeren uit standaardbrowser bij eerste uitvoering</translation>
-<translation id="653608967792832033">Hiermee wordt de tijdsduur zonder input van gebruikers gespecificeerd waarna het scherm wordt vergrendeld wanneer op de accu wordt gewerkt.
+<translation id="653608967792832033">Hiermee wordt de tijdsduur zonder input van gebruikers gespecificeerd waarna het scherm wordt vergrendeld wanneer op de batterij wordt gewerkt.
 
           Als dit beleid is ingesteld op een grotere waarde dan nul, specificeert het de tijd die de gebruiker inactief moet blijven voordat het scherm wordt vergrendeld door <ph name="PRODUCT_OS_NAME" />.
 
@@ -1532,6 +1531,11 @@
 
       Als je deze optie uitschakelt of niet instelt, wordt de zoekfunctie voor plug-ins geactiveerd.</translation>
 <translation id="6699880231565102694">Authenticatie in twee stappen inschakelen voor hosts voor externe toegang</translation>
+<translation id="6724842112053619797">Als je deze instelling inschakelt, worden de instellingen die zijn opgeslagen in <ph name="PRODUCT_NAME" />-profielen (zoals bladwijzers, gegevens voor automatisch aanvullen, wachtwoorden, enzovoort), ook geschreven naar een bestand dat is opgeslagen in de map voor roaming-gebruikersprofielen of op een locatie die de beheerder heeft opgegeven via het beleid <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Als je dit beleid inschakelt, wordt cloud-synchronisatie uitgeschakeld.
+
+      Als dit beleid is uitgeschakeld of niet wordt ingesteld, worden alleen de gewone lokale profielen gebruikt.
+
+      Met het beleid <ph name="SYNC_DISABLED_POLICY_NAME" /> wordt alle gegevenssynchronisatie uitgeschakeld (RoamingProfileSupportEnabled wordt overschreven).</translation>
 <translation id="6757438632136860443">Hiermee kun je een lijst met URL-patronen opgeven voor sites die de <ph name="FLASH_PLUGIN_NAME" />-plug-in mogen uitvoeren.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites. Je vindt deze in het beleid 'DefaultPluginsSetting' (als dit is ingesteld), of in de persoonlijke configuratie van de gebruiker.</translation>
@@ -1577,6 +1581,13 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="6943577887654905793">Voorkeursnaam voor Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter die een functie voor zoeken op afbeelding levert voor de standaardzoekprovider</translation>
 <translation id="6956272732789158625">Sites niet toestaan sleutels te genereren</translation>
+<translation id="6994082778848658360">Geeft aan hoe de ingebouwde Secure Element-hardware kan worden gebruikt voor authenticatie met meerdere factoren, indien de hardware geschikt is voor deze functie. De aan/uit-knop van de machine wordt gebruikt om de fysieke aanwezigheid van de gebruiker te detecteren.
+
+      Als Uitgeschakeld is geselecteerd, wordt er geen tweede factor verstrekt.
+
+      Als U2F is geselecteerd, gedraagt de geïntegreerde tweede factor zich overeenkomstig de FIDO U2F-specificatie.
+
+      Als U2F_EXTENDED is geselecteerd, verstrekt de geïntegreerde tweede factor de U2F-functies plus enkele extensies voor individuele bevestiging.</translation>
 <translation id="6997592395211691850">Of online OCSP/CRL-controles zijn vereist voor lokale vertrouwensankers</translation>
 <translation id="7003334574344702284">Indien ingeschakeld, wordt met dit beleid afgedwongen dat de opgeslagen wachtwoorden worden geïmporteerd uit de vorige standaardbrowser. Als het beleid is ingeschakeld, is dit ook van invloed op het dialoogvenster voor importeren.
 
@@ -1684,7 +1695,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Als dit is ingesteld op 'onwaar', worden er geen automatisch gegenereerde contentsuggesties weergegeven op de nieuwe tabbladpagina.</translation>
 <translation id="7323896582714668701">Extra opdrachtregelparameters voor <ph name="PRODUCT_NAME" /></translation>
-<translation id="7329842439428490522">Hiermee wordt de tijdsduur zonder input van gebruikers gespecificeerd waarna het scherm wordt uitgeschakeld als er op de accu wordt gewerkt.
+<translation id="7329842439428490522">Hiermee wordt de tijdsduur zonder input van gebruikers gespecificeerd waarna het scherm wordt uitgeschakeld als er op de batterij wordt gewerkt.
 
           Als dit beleid is ingesteld op een grotere waarde dan nul, specificeert het de tijd die de gebruiker inactief moet blijven voordat het scherm wordt uitgeschakeld door <ph name="PRODUCT_OS_NAME" />.
 
@@ -1784,7 +1795,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7713608076604149344">Downloadbeperkingen</translation>
 <translation id="7715711044277116530">Percentage waarmee de dimvertraging van het scherm in de presentatiemodus wordt geschaald</translation>
 <translation id="7717938661004793600">Toegankelijkheidsfuncties van <ph name="PRODUCT_OS_NAME" /> configureren.</translation>
-<translation id="7719251660743813569">Controleert of gebruiksstatistieken worden gerapporteerd aan Google. Als dit is ingesteld op 'true', rapporteert <ph name="PRODUCT_OS_NAME" /> gebruiksstatistieken. Als het niet is geconfigureerd of is ingesteld op 'false', wordt de rapportage van statistieken uitgeschakeld.</translation>
 <translation id="7724994675283793633">Met dit beleid wordt HTTP/0.9 ingeschakeld voor poorten anders dan poort 80 voor HTTP en poort 443 voor HTTPS.
 
       Dit beleid is standaard uitgeschakeld. Als dit is ingeschakeld, hebben gebruikers te maken met het volgende beveiligingsprobleem: https://crbug.com/600352.
@@ -1892,7 +1902,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8050080920415773384">Systeemeigen printer</translation>
 <translation id="8059164285174960932">URL waarbij clients met externe toegang hun verificatietoken moeten ophalen</translation>
 <translation id="8073243368829195">Hiermee kan Smart Lock worden gebruikt</translation>
-<translation id="8099880303030573137">Inactieve vertraging wanneer op de accu wordt gewerkt</translation>
+<translation id="8099880303030573137">Inactieve vertraging wanneer op de batterij wordt gewerkt</translation>
 <translation id="8102913158860568230">Standaardinstelling voor mediastreams</translation>
 <translation id="8104962233214241919">Clientcertificaten automatisch selecteren voor deze sites</translation>
 <translation id="8112122435099806139">Hiermee wordt de klokindeling voor het apparaat aangegeven.
@@ -2116,6 +2126,15 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="891435090623616439">gecodeerd als een JSON-tekenreeks. Ga voor meer informatie naar <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Apparaatlocatie rapporteren</translation>
 <translation id="8951350807133946005">Directory voor schijfcache instellen</translation>
+<translation id="8952317565138994125">Hiermee wordt gegevenssynchronisatie uitgeschakeld in <ph name="PRODUCT_NAME" /> via door Google gehoste synchronisatieservices. Gebruikers kunnen deze instelling niet wijzigen.
+
+      Als je deze instelling inschakelt, kunnen gebruikers deze instelling niet wijzigen of overschrijven in <ph name="PRODUCT_NAME" />.
+
+      Als dit beleid niet wordt ingesteld, kan de gebruiker zelf besluiten Google Sync wel of niet te gebruiken.
+
+      Als je Google Sync volledig wilt uitschakelen, kun je de Google Sync-service het beste uitschakelen in de Google Beheerdersconsole.
+
+      Dit beleid moet niet worden ingeschakeld wanneer het beleid <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> is ingeschakeld, omdat die functie dezelfde functionaliteit aan clientzijde gebruikt. De door Google gehoste synchronisatie wordt in dit geval volledig uitgeschakeld.</translation>
 <translation id="8955719471735800169">Bovenkant pagina</translation>
 <translation id="8960850473856121830">Patronen in deze lijst worden vergeleken met de beveiligingsoorsprong van de aanvragende URL. Als een overeenkomst wordt gevonden, wordt toegang tot apparaten voor het vastleggen van audio zonder prompt toegestaan.
 
@@ -2123,6 +2142,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8970205333161758602">De prompt <ph name="PRODUCT_FRAME_NAME" /> negeren</translation>
 <translation id="8971221018777092728">Timer voor automatisch inloggen bij de openbare sessie</translation>
 <translation id="8976248126101463034">Gnubby-verificatie toestaan voor hosts voor externe toegang</translation>
+<translation id="8976531594979650914">Standaardprinter van systeem gebruiken als standaard</translation>
 <translation id="8992176907758534924">Niet toestaan dat sites afbeeldingen weergeven</translation>
 <translation id="9035964157729712237">Extensie-ID's die zijn vrijgesteld van de zwarte lijst</translation>
 <translation id="9042911395677044526">Hiermee kun je een gebruikerspecifieke netwerkconfiguratie toepassen op een <ph name="PRODUCT_OS_NAME" />-apparaat. De netwerkconfiguratie is een tekenreeks met JSON-indeling, zoals gedefinieerd door de indeling voor open netwerkconfiguratie, beschreven op <ph name="ONC_SPEC_URL" /></translation>

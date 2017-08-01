@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">溢位按鈕</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl 鍵 + 搜尋鍵 + H 鍵</translation>
 <translation id="2049639323467105390">這個裝置由 <ph name="DOMAIN" /> 管理。</translation>
 <translation id="2050339315714019657">縱向</translation>
 <translation id="207439088875642105">這是由 <ph name="FIRST_PARENT_EMAIL" /> 和 <ph name="SECOND_PARENT_EMAIL" /> 所管理的兒童專用帳戶</translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">相黏鍵</translation>
 <translation id="2509468283778169019">大寫鍵已啟用</translation>
 <translation id="2532589005999780174">高反差模式</translation>
+<translation id="2597972630681408282">夜燈功能：<ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">這個工作階段將在 <ph name="SESSION_TIME_REMAINING" />後結束，屆時系統會將你登出。</translation>
 <translation id="2727977024730340865">使用低功率充電器，可能導致充電狀態不穩定。</translation>
 <translation id="2761704814324807722">狀態匣：時間 <ph name="TIME" />，<ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">輸出</translation>
 <translation id="3019353588588144572">電池剩餘充電時間：<ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">這是由 <ph name="MANAGER_EMAIL" /> 所管理的兒童專用帳戶</translation>
-<translation id="3050422059534974565">大寫鍵已啟用。
-按下搜尋鍵或 Shift 鍵即可取消。</translation>
 <translation id="3077734595579995578">Shift</translation>
 <translation id="3087734570205094154">置底</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (藍牙)</translation>
@@ -136,6 +136,7 @@
 <translation id="4849058404725798627">醒目顯示鍵盤焦點所在物件</translation>
 <translation id="4872237917498892622">Alt + 搜尋鍵或 Shift 鍵</translation>
 <translation id="4895488851634969361">電池電量已滿。</translation>
+<translation id="4905614135390995787">切換高對比模式的快速鍵已變更，請改用 <ph name="NEW_SHORTCUT" /> (停用 <ph name="OLD_SHORTCUT" />)。</translation>
 <translation id="4918086044614829423">接受</translation>
 <translation id="4961318399572185831">投放螢幕</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@
 <translation id="5744083938413354016">輕觸拖曳</translation>
 <translation id="5777841717266010279">停止共用螢幕？</translation>
 <translation id="57838592816432529">靜音</translation>
+<translation id="5860033963881614850">關閉</translation>
 <translation id="5895138241574237353">重新啟動</translation>
 <translation id="5901316534475909376">Shift + Esc 鍵</translation>
+<translation id="5916664084637901428">開啟</translation>
 <translation id="5927132638760172455">正在投放至不明接收端</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">還原</translation>
@@ -169,8 +172,8 @@
 <translation id="5977415296283489383">耳機</translation>
 <translation id="5978382165065462689">透過遠端協助分享螢幕控制功能。</translation>
 <translation id="5980301590375426705">結束訪客工作階段</translation>
+<translation id="5992218262414051481">高對比模式已啟用。再次按下 Ctrl 鍵 + 搜尋鍵 + H 鍵即可停用。</translation>
 <translation id="6018164090099858612">退出鏡像模式</translation>
-<translation id="6041154455840261787">高對比模式已啟用。再次按下搜尋鍵 + Shift 鍵 + H 鍵即可停用。</translation>
 <translation id="6043212731627905357">這個顯示器與你的 <ph name="DEVICE_TYPE" /> 不相容 (這是不支援的顯示器)。</translation>
 <translation id="6043994281159824495">立即登出</translation>
 <translation id="6047696787498798094">切換到另一個使用者會停止共用螢幕，你要繼續嗎？</translation>
@@ -195,6 +198,7 @@
 <translation id="6585808820553845416">這個工作階段將在 <ph name="SESSION_TIME_REMAINING" />後結束。</translation>
 <translation id="6627638273713273709">搜尋鍵 + Shift + K 鍵</translation>
 <translation id="6650933572246256093">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限，請在裝置上輸入此密碼金鑰：<ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">搜尋鍵 + Shift 鍵 + H 鍵</translation>
 <translation id="6700713906295497288">IME 選單按鈕</translation>
 <translation id="6713285437468012787">藍牙裝置「<ph name="DEVICE_NAME" />」已配對成功，可供所有使用者使用。如要移除配對，請使用「設定」。</translation>
 <translation id="6785414152754474415">電池電量為 <ph name="PERCENTAGE" />% (充電中)。</translation>
@@ -214,8 +218,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt + Shift + K 鍵</translation>
 <translation id="7168224885072002358">系統將在 <ph name="TIMEOUT_SECONDS" /> 秒後還原成原來的解析度</translation>
-<translation id="7209101170223508707">大寫鍵已啟用。
-按下 Alt + 搜尋鍵或 Shift 鍵即可取消。</translation>
+<translation id="7199454189089571166">個人助理模式</translation>
 <translation id="7246339268451149667">要啟用指紋解鎖功能嗎？</translation>
 <translation id="7256634071279256947">後置麥克風</translation>
 <translation id="7348093485538360975">螢幕小鍵盤</translation>
@@ -233,10 +236,10 @@
 <translation id="7649070708921625228">說明</translation>
 <translation id="7692480393933218409">正在為連接的 USB-C 裝置充電</translation>
 <translation id="776344839111254542">按一下即可查看更新詳細資料</translation>
+<translation id="7798302898096527229">按下搜尋鍵或 Shift 鍵即可取消。</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> 小時 <ph name="MINUTE" /> 分鐘</translation>
 <translation id="7823564328645135659">同步處理你的設定後，系統已將語言從「<ph name="FROM_LOCALE" />」變更為「<ph name="TO_LOCALE" />」。</translation>
 <translation id="7904094684485781019">這個帳戶的管理員已禁止多重登入。</translation>
-<translation id="7951523953736115461">夜燈</translation>
 <translation id="7977927628060636163">正在搜尋行動網路...</translation>
 <translation id="7982789257301363584">網路</translation>
 <translation id="8000066093800657092">沒有網路</translation>
@@ -255,6 +258,7 @@
 <translation id="8433977262951327081">在檔案櫃中顯示輸入選項選單方塊的快速鍵已變更，請改用：<ph name="NEW_SHORTCUT" /> (停用 <ph name="OLD_SHORTCUT" />)。</translation>
 <translation id="8454013096329229812">Wi-Fi 已開啟。</translation>
 <translation id="847056008324733326">顯示比例設定</translation>
+<translation id="8477270416194247200">按下 Alt + 搜尋鍵或 Shift 鍵即可取消。</translation>
 <translation id="8484916590211895857"><ph name="NAME" />：正在重新連線...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> 在開啟時可能無法充電。</translation>
 <translation id="8639760480004882931">剩餘電量：<ph name="PERCENTAGE" /></translation>

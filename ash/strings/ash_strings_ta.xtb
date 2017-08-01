@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">கூடுதல் விருப்பங்களுக்கான பொத்தான்</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">கன்ட்ரோல்+தேடல்+H</translation>
 <translation id="2049639323467105390"><ph name="DOMAIN" /> ஆல் இந்த சாதனம் நிர்வகிக்கப்படுகிறது.</translation>
 <translation id="2050339315714019657">செங்குத்து நிலை</translation>
 <translation id="207439088875642105">இது <ph name="FIRST_PARENT_EMAIL" /> மற்றும் <ph name="SECOND_PARENT_EMAIL" /> ஆல் நிர்வகிக்கப்படும் குழந்தைகளுக்கான கணக்காகும்</translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">ஸ்டிக்கி விசைகள்</translation>
 <translation id="2509468283778169019">CAPS LOCK இயக்கத்தில்</translation>
 <translation id="2532589005999780174">அதிக ஒளி மாறுபாட்டுப் பயன்முறை</translation>
+<translation id="2597972630681408282">இரவு ஒளி: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING" /> இல் அமர்வு முடிந்துவிடும். வெளியேற்றப்படுவீர்கள்.</translation>
 <translation id="2727977024730340865">குறைந்த சக்தியிலான சார்ஜர் செருகப்பட்டுள்ளது. பேட்டரி சார்ஜிங் நம்பகமானதாக இல்லாமல் இருக்கலாம்.</translation>
 <translation id="2761704814324807722">நிலைத் தட்டு, நேரம் <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">வெளியீடு</translation>
 <translation id="3019353588588144572"><ph name="TIME_REMAINING" /> இல் பேட்டரி முழுவதும் சார்ஜ் ஆகிவிடும்</translation>
 <translation id="3047477924825107454">இது <ph name="MANAGER_EMAIL" /> ஆல் நிர்வகிக்கப்படும் குழந்தைகளுக்கான கணக்காகும்</translation>
-<translation id="3050422059534974565">CAPS LOCK இயக்கத்தில் உள்ளது.
-ரத்துசெய்ய Search அல்லது Shift ஐ அழுத்தவும்.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">கீழே</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (புளூடூத்)</translation>
@@ -136,6 +136,7 @@
 <translation id="4849058404725798627">விசைப்பலகை ஃபோகஸ் மூலம் ஆப்ஜெக்ட்டைத் தனிப்படுத்து</translation>
 <translation id="4872237917498892622">Alt+Search அல்லது Shift</translation>
 <translation id="4895488851634969361">பேட்டரி நிரம்பியது.</translation>
+<translation id="4905614135390995787">அதிக ஒளி மாறுபாட்டுப் பயன்முறையை மாற்றும் குறுக்குவழி மாற்றப்பட்டது. <ph name="OLD_SHORTCUT" />க்குப் பதிலாக, <ph name="NEW_SHORTCUT" />ஐப் பயன்படுத்தவும்.</translation>
 <translation id="4918086044614829423">ஏற்கிறேன்</translation>
 <translation id="4961318399572185831">அனுப்புதல் திரை</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@
 <translation id="5744083938413354016">தட்டி நகர்த்துதல்</translation>
 <translation id="5777841717266010279">திரைப் பகிர்வதை நிறுத்தவா?</translation>
 <translation id="57838592816432529">ஒலியடக்கு</translation>
+<translation id="5860033963881614850">ஆஃப்</translation>
 <translation id="5895138241574237353">மறுதொடக்கம்</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">இயக்கு</translation>
 <translation id="5927132638760172455">தெரியாத ரிசீவருக்கு அனுப்புகிறது</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">மாற்றியமை</translation>
@@ -169,8 +172,8 @@
 <translation id="5977415296283489383">ஹெட்ஃபோன்</translation>
 <translation id="5978382165065462689">தொலைநிலை உதவி மூலம் உங்கள் திரையின் கட்டுப்பாட்டைப் பகிர்கிறது.</translation>
 <translation id="5980301590375426705">விருந்தினரிலிருந்து வெளியேறவும்</translation>
+<translation id="5992218262414051481">அதிக ஒளி மாறுபாட்டுப் பயன்முறை இயக்கப்பட்டது. அதை முடக்க, கன்ட்ரோல்+தேடல்+Hஐ மீண்டும் அழுத்தவும்.</translation>
 <translation id="6018164090099858612">கண்ணாடிப் பயன்முறையிலிருந்து வெளியேறுகிறது</translation>
-<translation id="6041154455840261787">உயர் ஒளி மாறுபாட்டுப் பயன்முறை இயக்கப்பட்டது. அதை முடக்க, தேடு+ஷிஃப்ட்+H விசைகளை அழுத்தவும்.</translation>
 <translation id="6043212731627905357">இந்த மானிட்டர் உங்கள் <ph name="DEVICE_TYPE" /> உடன் செயல்படவில்லை (இந்த மானிட்டர் ஆதரிக்கப்படவில்லை).</translation>
 <translation id="6043994281159824495">இப்போது வெளியேறு</translation>
 <translation id="6047696787498798094">நீங்கள் வேறொரு பயனருக்கு மாறும்போது, திரைப் பகிர்வு நிறுத்தப்படும். தொடர விருப்பமா?</translation>
@@ -195,6 +198,7 @@
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> இல் அமர்வு முடிந்துவிடும்.</translation>
 <translation id="6627638273713273709">தேடல்+ஷிஃப்ட்+K</translation>
 <translation id="6650933572246256093">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />" இணைப்பதற்கான அனுமதியை விரும்புகிறது. அந்தச் சாதனத்தில் இந்தக் கடவுச்சொல்லை உள்ளிடவும்: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">தேடல்+ஷிஃப்ட்+H</translation>
 <translation id="6700713906295497288">IME மெனு பொத்தான்</translation>
 <translation id="6713285437468012787">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />" ஆனது இணைக்கப்பட்டது மற்றும் இப்போது எல்லா பயனர்களுக்கும் கிடைக்கக்கூடியதாக உள்ளது. அமைப்புகளைப் பயன்படுத்தி இந்த இணைத்தலை நீங்கள் அகற்றலாம்.</translation>
 <translation id="6785414152754474415">பேட்டரி <ph name="PERCENTAGE" />% நிரம்பியது, மேலும் சார்ஜ் ஆகிறது.</translation>
@@ -214,8 +218,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">ஆல்ட்+ஷிஃப்ட்+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> வினாடிகளில் பழைய தெளிவுதிறனுக்கு மாற்றியமைக்கப்படும்</translation>
-<translation id="7209101170223508707">CAPS LOCK இயக்கத்தில் உள்ளது.
-ரத்துசெய்ய Alt+Search அல்லது Shift ஐ அழுத்தவும்.</translation>
+<translation id="7199454189089571166">அசிஸ்டண்ட் பயன்முறை</translation>
 <translation id="7246339268451149667">கைரேகை மூலம் திறப்பதை இயக்கவா?</translation>
 <translation id="7256634071279256947">பின்பக்க மைக்ரோஃபோன்</translation>
 <translation id="7348093485538360975">ஆன்-ஸ்கிரீன் விசைப்பலகை</translation>
@@ -233,10 +236,10 @@
 <translation id="7649070708921625228">உதவி</translation>
 <translation id="7692480393933218409">இணைக்கப்பட்ட USB-C சாதனங்களுக்குச் சார்ஜ் ஏற்றப்படுகிறது</translation>
 <translation id="776344839111254542">புதுப்பிப்பு விவரங்களைப் பார்க்க, கிளிக் செய்யவும்</translation>
+<translation id="7798302898096527229">ரத்துசெய்ய, தேடல் அல்லது ஷிஃப்ட் விசையை அழுத்தவும்.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> மற்றும் <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">உங்கள் அமைப்புகளை ஒத்திசைத்த பிறகு, மொழியானது "<ph name="FROM_LOCALE" />" இலிருந்து "<ph name="TO_LOCALE" />" க்கு மாற்றப்பட்டுள்ளது.</translation>
 <translation id="7904094684485781019">இந்தக் கணக்கிற்கான நிர்வாகி பல உள்நுழைவுகளை அனுமதிக்கவில்லை.</translation>
-<translation id="7951523953736115461">இரவு ஒளி</translation>
 <translation id="7977927628060636163">மொபைல் நெட்வொர்க்குகளைத் தேடுகிறது...</translation>
 <translation id="7982789257301363584">நெட்வொர்க்</translation>
 <translation id="8000066093800657092">நெட்வொர்க் இல்லை</translation>
@@ -255,6 +258,7 @@
 <translation id="8433977262951327081">உள்ளீட்டு விருப்பங்கள் மெனு குமிழியை, ஷெல்ஃபில் காட்டுவதற்கான குறுக்குவழி மாறியுள்ளது. <ph name="OLD_SHORTCUT" />க்குப் பதிலாக <ph name="NEW_SHORTCUT" />ஐப் பயன்படுத்தவும்.</translation>
 <translation id="8454013096329229812">வைஃபை இயக்கத்தில் உள்ளது.</translation>
 <translation id="847056008324733326">திரை அளவு அமைப்புகள்</translation>
+<translation id="8477270416194247200">ரத்துசெய்ய, ஆல்ட்+தேடல் அல்லது ஷிஃப்ட் விசையை அழுத்தவும்.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: மீண்டும் இணைக்கிறது...</translation>
 <translation id="8517041960877371778">இயக்கப்பட்டிருக்கும் போது உங்கள் <ph name="DEVICE_TYPE" /> இல் சார்ஜ் ஏறாது.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> மீதமுள்ளது</translation>

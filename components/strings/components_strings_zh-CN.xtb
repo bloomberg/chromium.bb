@@ -54,7 +54,6 @@
         <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">注册域：</translation>
 <translation id="1340482604681802745">取货地址</translation>
-<translation id="1344211575059133124">您似乎需要获得许可，然后才能访问此网站</translation>
 <translation id="1344588688991793829">Chromium自动填充设置…</translation>
 <translation id="1348198688976932919">您要访问的网站包含危险应用</translation>
 <translation id="1374468813861204354">建议</translation>
@@ -68,6 +67,7 @@
 <translation id="1430915738399379752">打印</translation>
 <translation id="1506687042165942984">显示为此页面保存的已知过时副本。</translation>
 <translation id="1517433312004943670">必须提供电话号码</translation>
+<translation id="1517500485252541695">接受的信用卡和借记卡</translation>
 <translation id="1519264250979466059">构建日期</translation>
 <translation id="1527263332363067270">正在等待建立连接…</translation>
 <translation id="153384715582417236">暂无新内容</translation>
@@ -120,9 +120,11 @@
 <translation id="187918866476621466">打开启动页</translation>
 <translation id="1883255238294161206">收起列表</translation>
 <translation id="1898423065542865115">过滤</translation>
+<translation id="1916770123977586577">要将您更新后的设置应用到此网站，请重新加载此页面</translation>
 <translation id="1919345977826869612">广告</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{无}=1{1 个网站}other{# 个网站}}</translation>
 <translation id="194030505837763158">请访问<ph name="LINK" /></translation>
+<translation id="1948773908305951926">接受的预付卡</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" />书签</translation>
 <translation id="1973335181906896915">序列化错误</translation>
 <translation id="1974060860693918893">高级</translation>
@@ -166,6 +168,7 @@
 <translation id="2292556288342944218">您被禁止访问互联网</translation>
 <translation id="230155334948463882">要使用新信用卡吗？</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> 要求提供用户名和密码。</translation>
+<translation id="2317583587496011522">接受借记卡。</translation>
 <translation id="2337852623177822836">设置由管理员控制</translation>
 <translation id="2354001756790975382">其他书签</translation>
 <translation id="2354430244986887761">Google 安全浏览功能最近在 <ph name="SITE" /> 上<ph name="BEGIN_LINK" />发现了有害应用<ph name="END_LINK" />。</translation>
@@ -175,7 +178,6 @@
 <translation id="2359808026110333948">继续</translation>
 <translation id="2365563543831475020">于 <ph name="CRASH_TIME" /> 获取的崩溃报告未上传</translation>
 <translation id="2367567093518048410">级别</translation>
-<translation id="237718015863234333">没有可用的界面备选项</translation>
 <translation id="2384307209577226199">在企业环境中默认实施</translation>
 <translation id="2386255080630008482">服务器的证书已撤消。</translation>
 <translation id="2392959068659972793">显示未设定值的政策</translation>
@@ -191,8 +193,8 @@
 <translation id="2495093607237746763">选中后，Chromium 会将您的信用卡副本存储在此设备上，以加快表单填写速度。</translation>
 <translation id="2498091847651709837">扫描新的信用卡</translation>
 <translation id="2501278716633472235">返回</translation>
+<translation id="2503184589641749290">接受的借记卡和预付卡</translation>
 <translation id="2515629240566999685">检查您所在区域的网络信号</translation>
-<translation id="2516305470678292029">界面备选项</translation>
 <translation id="2539524384386349900">检测</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> 发送的响应无效。</translation>
 <translation id="2556876185419854533">撤消修改(&amp;U)</translation>
@@ -226,12 +228,14 @@
 <translation id="277133753123645258">送货方式</translation>
 <translation id="277499241957683684">缺少设备记录</translation>
 <translation id="2784949926578158345">连接已重置。</translation>
+<translation id="2788784517760473862">接受的信用卡</translation>
 <translation id="2794233252405721443">网站已被屏蔽</translation>
 <translation id="2799020568854403057">您要访问的网站包含有害应用</translation>
 <translation id="2803306138276472711">Google安全浏览功能最近在<ph name="SITE" />上<ph name="BEGIN_LINK" />检测到了恶意软件<ph name="END_LINK" />。平常非常安全的网站有时也会感染恶意软件。</translation>
 <translation id="2824775600643448204">地址和搜索栏</translation>
 <translation id="2826760142808435982">该连接使用 <ph name="CIPHER" /> 进行加密和身份验证，并使用 <ph name="KX" /> 作为密钥交换机制。</translation>
 <translation id="2835170189407361413">清除表单</translation>
+<translation id="2851634818064021665">您需获得许可，才能访问此网站</translation>
 <translation id="2856444702002559011">攻击者可能会试图从 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 窃取您的信息（例如：密码、通讯内容或信用卡信息）。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2889159643044928134">不重新加载</translation>
 <translation id="2909946352844186028">检测到了网络变化。</translation>
@@ -245,6 +249,7 @@
 <translation id="2966678944701946121">到期日期：<ph name="EXPIRATION_DATE_ABBR" />；添加日期：<ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="2969319727213777354">要建立安全连接，您的时钟设置必须正确。这是因为，网站用于证明身份的证书仅在特定时间段有效。由于您设备的时钟不正确，因此 Google Chrome 无法验证这些证书。</translation>
 <translation id="2972581237482394796">重做(&amp;R)</translation>
+<translation id="2977665033722899841">目前已选择“<ph name="ROW_NAME" />”。<ph name="ROW_CONTENT" /></translation>
 <translation id="2985306909656435243">启用后，Chromium 会将您的信用卡副本存储在此设备上，以加快表单填写速度。</translation>
 <translation id="2985398929374701810">请输入有效的送货地址</translation>
 <translation id="2986368408720340940">该取货方式不可用。请另选一种方式。</translation>
@@ -335,6 +340,7 @@
 
       &lt;p&gt;请在&lt;strong&gt;设置&lt;/strong&gt;应用的&lt;strong&gt;常规&lt;/strong&gt;部分调整日期和时间。&lt;/p&gt;<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3574305903863751447"><ph name="COUNTRY" /><ph name="STATE" /><ph name="CITY" /></translation>
+<translation id="358285529439630156">接受信用卡和预付卡。</translation>
 <translation id="3582930987043644930">添加名称</translation>
 <translation id="3583757800736429874">恢复移动(&amp;R)</translation>
 <translation id="3586931643579894722">隐藏详细信息</translation>
@@ -349,10 +355,10 @@
 <translation id="3655670868607891010">如果您频繁遇到此问题，请尝试这些<ph name="HELP_LINK" />。</translation>
 <translation id="3658742229777143148">修订版本</translation>
 <translation id="3678029195006412963">无法签署该请求</translation>
+<translation id="3678529606614285348">在新的无痕式窗口中打开网页 (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">崩溃报告的获取时间：<ph name="CRASH_TIME" />；上传时间：<ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">证书信息</translation>
 <translation id="3690164694835360974">登录方式不安全</translation>
-<translation id="3693415264595406141">密码：</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> - <ph name="BOOKMARKED" /> - <ph name="TITLE" /> - <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">正在加载...</translation>
 <translation id="3712624925041724820">许可已用尽</translation>
@@ -376,6 +382,7 @@
 <translation id="3886446263141354045">系统已将您想访问此网站的请求发送给<ph name="NAME" /></translation>
 <translation id="3890664840433101773">添加电子邮件地址</translation>
 <translation id="3901925938762663762">此信用卡已过期</translation>
+<translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3945915738023014686">已上传的崩溃报告的 ID：<ph name="CRASH_ID" />（本地崩溃 ID：<ph name="CRASH_LOCAL_ID" />）</translation>
 <translation id="3949571496842715403">此服务器无法证实它就是 <ph name="DOMAIN" /> - 它的安全证书没有指定主题备用名称。这可能是因为某项配置有误或某个攻击者拦截了您的连接。</translation>
 <translation id="3949601375789751990">您的浏览记录会显示在此处</translation>
@@ -431,12 +438,12 @@
 <translation id="4356973930735388585">此网站上的攻击者可能会试图在您的计算机上安装危险程序，以窃取或删除您的信息（例如：照片、密码、通讯内容和信用卡信息）。</translation>
 <translation id="4372948949327679948">应使用<ph name="VALUE_TYPE" />值。</translation>
 <translation id="4377125064752653719">您尝试访问的是 <ph name="DOMAIN" />，但服务器出示的证书已被其颁发者吊销。这表明绝对不应该信任此服务器出示的安全凭据。您可能正在与攻击者进行通信。</translation>
-<translation id="4381091992796011497">用户名：</translation>
 <translation id="4394049700291259645">停用</translation>
 <translation id="4406896451731180161">搜索结果</translation>
 <translation id="4424024547088906515">此服务器无法证明它是<ph name="DOMAIN" />；Chrome不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> 不接受您的登录证书，或者您可能没有提供登录证书。</translation>
 <translation id="443673843213245140">已停用代理，但是指定了明确的代理配置。</translation>
+<translation id="445100540951337728">接受的借记卡</translation>
 <translation id="4506176782989081258">验证错误：<ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">联系系统管理员</translation>
 <translation id="450710068430902550">与管理员分享</translation>
@@ -448,12 +455,14 @@
 <translation id="4587425331216688090">从 Chrome 中移除地址？</translation>
 <translation id="4592951414987517459">您与 <ph name="DOMAIN" /> 之间的连接采用新型加密套件进行了加密。</translation>
 <translation id="4594403342090139922">撤消删除(&amp;U)</translation>
+<translation id="4611292653554630842">登录</translation>
 <translation id="4619615317237390068">从其他设备打开的标签页</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书有误。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="4690462567478992370">停止使用无效的证书</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /><ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">您的连接已中断</translation>
+<translation id="471880041731876836">您无权访问此网站</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />运行 Windows 网络诊断<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">重新加载政策</translation>
 <translation id="4728558894243024398">平台</translation>
@@ -477,11 +486,13 @@
 <translation id="4858792381671956233">您已向父母发送请求，询问他们是否允许您访问此网站</translation>
 <translation id="4880827082731008257">搜索历史记录</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />、<ph name="TYPE_2" />、<ph name="TYPE_3" /></translation>
+<translation id="4913131542719409934">需要进行身份验证</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{和另外 1 个网页}other{和另外 # 个网页}}</translation>
 <translation id="4916962322362512664"><ph name="DEVICE_NAME" /></translation>
 <translation id="4923417429809017348">翻译服务器已将此网页从某种未知语言翻译成了<ph name="LANGUAGE_LANGUAGE" />。</translation>
 <translation id="4923459931733593730">付款</translation>
 <translation id="4926049483395192435">必须指定。</translation>
+<translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="495170559598752135">操作</translation>
 <translation id="4958444002117714549">展开列表</translation>
 <translation id="4974590756084640048">重新启用警告功能</translation>
@@ -505,6 +516,7 @@
 <translation id="5115563688576182185">（64 位）</translation>
 <translation id="5141240743006678641">使用您的 Google 凭据加密已同步的密码</translation>
 <translation id="5145883236150621069">策略响应中存在错误代码</translation>
+<translation id="5159010409087891077">在新的无痕式窗口中打开网页 (⇧⌘N)</translation>
 <translation id="5171045022955879922">搜索或输入网址</translation>
 <translation id="5172758083709347301">本机</translation>
 <translation id="5179510805599951267">不是<ph name="ORIGINAL_LANGUAGE" />？报告此错误</translation>
@@ -514,6 +526,16 @@
 <translation id="5222812217790122047">需要提供电子邮件地址</translation>
 <translation id="5251803541071282808">云端</translation>
 <translation id="5277279256032773186">使用 Chrome 办公？企业可以为其员工管理 Chrome 设置。了解详情</translation>
+<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />按照下述步骤操作可临时停用此类软件，以便您能够连接到网络。您需要具有管理员权限。<ph name="END_PARAGRAPH" />
+
+    <ph name="BEGIN_LIST" />
+    <ph name="LIST_ITEM" />点击<ph name="BEGIN_BOLD" />开始<ph name="END_BOLD" />，然后搜索并选择<ph name="BEGIN_BOLD" />“查看本地服务”<ph name="END_BOLD" />
+    <ph name="LIST_ITEM" />选择 <ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" />
+    <ph name="LIST_ITEM" />选择<ph name="BEGIN_BOLD" />启动类型<ph name="END_BOLD" />下方的<ph name="BEGIN_BOLD" />停用<ph name="END_BOLD" />
+    <ph name="LIST_ITEM" />点击<ph name="BEGIN_BOLD" />服务状态<ph name="END_BOLD" />下方的<ph name="BEGIN_BOLD" />停止<ph name="END_BOLD" />
+    <ph name="LIST_ITEM" />依次点击<ph name="BEGIN_BOLD" />应用<ph name="END_BOLD" />和<ph name="BEGIN_BOLD" />确定<ph name="END_BOLD" />
+    <ph name="LIST_ITEM" />访问 <ph name="BEGIN_LEARN_MORE_LINK" />Chrome 帮助中心<ph name="END_LEARN_MORE_LINK" />，了解如何从您的计算机中永久移除此类软件
+    <ph name="END_LIST" /></translation>
 <translation id="5297526204711817721">您与此网站建立的不是私密连接。您可以随时取下头戴式设备，然后按“返回”，以退出 VR 模式。</translation>
 <translation id="5299298092464848405">解析策略时出错</translation>
 <translation id="5308689395849655368">已停用崩溃报告。</translation>
@@ -530,7 +552,6 @@
 <translation id="5439770059721715174">“<ph name="ERROR_PATH" />”中存在模式验证错误：<ph name="ERROR" /></translation>
 <translation id="5452270690849572955">找不到 <ph name="HOST_NAME" /> 的网页</translation>
 <translation id="5455374756549232013">策略时间戳无效</translation>
-<translation id="5455790498993699893">第 <ph name="ACTIVE_MATCH" /> 条，共 <ph name="TOTAL_MATCHCOUNT" /> 条</translation>
 <translation id="5457113250005438886">无效</translation>
 <translation id="5470861586879999274">恢复修改(&amp;R)</translation>
 <translation id="5481076368049295676">此内容可能会试图在您的设备上安装危险的软件来窃取或删除您的信息。<ph name="BEGIN_LINK" />仍然显示<ph name="END_LINK" /></translation>
@@ -545,6 +566,7 @@
 <translation id="5540224163453853">找不到请求的文章。</translation>
 <translation id="5544037170328430102"><ph name="SITE" /> 上的嵌入式页面显示：</translation>
 <translation id="5556459405103347317">重新加载</translation>
+<translation id="5560088892362098740">到期日期</translation>
 <translation id="5565735124758917034">主动</translation>
 <translation id="5571083550517324815">无法从此地址取货。请另选一个地址。</translation>
 <translation id="5572851009514199876">请启动并登录 Chrome，以便 Chrome 能够检查您是否可以访问此网站。</translation>
@@ -565,6 +587,7 @@
 <translation id="5669703222995421982">获取个性化内容</translation>
 <translation id="5675650730144413517">该网页无法正常运作</translation>
 <translation id="5710435578057952990">此网站尚未经过身份验证。</translation>
+<translation id="5719499550583120431">接受预付卡。</translation>
 <translation id="5720705177508910913">当前用户</translation>
 <translation id="5732392974455271431">您的父母可为您取消屏蔽此网站</translation>
 <translation id="5763042198335101085">请输入有效的电子邮件地址</translation>
@@ -580,6 +603,7 @@
 <translation id="5869405914158311789">无法访问此网站</translation>
 <translation id="5869522115854928033">已保存的密码</translation>
 <translation id="5872918882028971132">家长建议</translation>
+<translation id="5893752035575986141">接受信用卡。</translation>
 <translation id="5901630391730855834">黄色</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" />（已同步）</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{正在使用 1 个}other{正在使用 # 个}}</translation>
@@ -635,6 +659,7 @@
 <translation id="6358450015545214790">这分别意味着什么？</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 条其他建议}other{# 条其他建议}}</translation>
 <translation id="6387478394221739770">想试试超酷的 Chrome 新功能？欢迎访问 chrome.com/beta，试用我们的测试版！</translation>
+<translation id="6397451950548600259">您计算机上的软件导致 Chrome 无法安全地连接到网络</translation>
 <translation id="6404511346730675251">修改书签</translation>
 <translation id="6410264514553301377">请输入“<ph name="CREDIT_CARD" />”的到期日期和银行卡验证码 (CVC)</translation>
 <translation id="6414888972213066896">您已向父亲/母亲发送请求，询问其是否允许您访问此网站</translation>
@@ -649,6 +674,7 @@
 <translation id="647261751007945333">设备政策</translation>
 <translation id="6477321094435799029">Chrome 在此网页上检测到了异常代码。为保护您的个人信息（例如密码、电话号码和信用卡信息），Chrome 已将该网页拦截。</translation>
 <translation id="6489534406876378309">开始上传崩溃数据</translation>
+<translation id="6507833130742554667">接受信用卡和借记卡。</translation>
 <translation id="6508722015517270189">重新启动 Chrome</translation>
 <translation id="6529602333819889595">恢复删除(&amp;R)</translation>
 <translation id="6534179046333460208">实物网建议</translation>
@@ -663,6 +689,7 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> 搜索</translation>
 <translation id="6630809736994426279">攻击者可能会试图通过 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 在您的 Mac 上安装危险程序，以窃取或删除您的信息（如照片、密码、通讯内容和信用卡信息）。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6644283850729428850">此政策已弃用。</translation>
+<translation id="6657585470893396449">密码</translation>
 <translation id="6671697161687535275">要从 Chromium 中移除表单填写建议吗？</translation>
 <translation id="6685834062052613830">请退出并完成设置</translation>
 <translation id="6710213216561001401">上一个</translation>
@@ -748,6 +775,7 @@
 <translation id="7514365320538308">下载</translation>
 <translation id="7518003948725431193">找不到与以下网址对应的网页：<ph name="URL" /></translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7526934274050461096">您与此网站的连接不是私密连接</translation>
 <translation id="7535087603100972091">值</translation>
 <translation id="7537536606612762813">强制</translation>
 <translation id="7542403920425041731">一旦您予以确认，系统便会将您的信用卡详情共享给此网站。</translation>
@@ -801,6 +829,7 @@
 <translation id="7815407501681723534">找到了 <ph name="NUMBER_OF_RESULTS" /> 个与“<ph name="SEARCH_STRING" />”相符的<ph name="SEARCH_RESULTS" /></translation>
 <translation id="785549533363645510">但是，这并不意味着您能完全隐身。即使您进入隐身模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7878176543348854470">接受借记卡和预付卡。</translation>
 <translation id="7887683347370398519">请检查您的银行卡验证码 (CVC)，然后重试</translation>
 <translation id="79338296614623784">请输入有效的电话号码</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -835,6 +864,7 @@
 <translation id="8218327578424803826">分配的位置：</translation>
 <translation id="8225771182978767009">设置此计算机的用户已选择屏蔽此网站。</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />、<ph name="TYPE_2" /></translation>
+<translation id="8238581221633243064">在新的无痕式标签页中打开网页</translation>
 <translation id="8241707690549784388">您所查找的网页要使用已输入的信息。返回此页可能需要重复已进行的所有操作。是否要继续操作？</translation>
 <translation id="8241712895048303527">在此网站上拦截</translation>
 <translation id="8249320324621329438">最后一次抓取时间：</translation>
@@ -864,6 +894,7 @@
 <translation id="8483780878231876732">要使用您 Google 帐号中的信用卡，请登录 Chrome</translation>
 <translation id="8488350697529856933">适用对象</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> 的响应时间过长。</translation>
+<translation id="8503813439785031346">用户名</translation>
 <translation id="8543181531796978784">您可以<ph name="BEGIN_ERROR_LINK" />报告检测问题<ph name="END_ERROR_LINK" />；或者，如果您了解自己将面临的安全风险，则可以<ph name="BEGIN_LINK" />访问这个不安全的网站<ph name="END_LINK" />。</translation>
 <translation id="8553075262323480129">系统无法确定该网页的语言，因此无法进行翻译。</translation>
 <translation id="8571890674111243710">正在将网页翻译成<ph name="LANGUAGE" />...</translation>
@@ -872,6 +903,7 @@
 <translation id="859285277496340001">证书未指定用于检查是否已吊销证书的机制。</translation>
 <translation id="8620436878122366504">您的父母尚未批准此请求</translation>
 <translation id="8647750283161643317">全部重置为默认值</translation>
+<translation id="8660471606262461360">来自 Google Payments</translation>
 <translation id="8703575177326907206">您与 <ph name="DOMAIN" /> 的连接未加密。</translation>
 <translation id="8718314106902482036">未能完成付款</translation>
 <translation id="8725066075913043281">重试</translation>
@@ -899,6 +931,7 @@
 <translation id="8903921497873541725">放大</translation>
 <translation id="8931333241327730545">要将此卡的信息保存到您的 Google 帐号吗？</translation>
 <translation id="8932102934695377596">您的时钟慢了</translation>
+<translation id="8938939909778640821">接受的信用卡和预付卡</translation>
 <translation id="8971063699422889582">服务器的证书已过期。</translation>
 <translation id="8986494364107987395">将使用情况统计信息和崩溃报告自动发送给 Google</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -936,9 +969,9 @@
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">清除表单内容</translation>
 <translation id="939736085109172342">新建文件夹</translation>
-<translation id="941721044073577244">您似乎无权访问此网站</translation>
 <translation id="969892804517981540">正式版本</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{无}=1{1 项内容}other{# 项内容}}</translation>
+<translation id="981121421437150478">离线</translation>
 <translation id="988159990683914416">开发者内部版本</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
 </translationbundle>

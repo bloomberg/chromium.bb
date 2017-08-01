@@ -33,6 +33,7 @@
 <translation id="129553762522093515">เพิ่งปิด</translation>
 <translation id="1303671224831497365">ไม่พบอุปกรณ์บลูทูธ</translation>
 <translation id="1326317727527857210">ลงชื่อเข้าใช้ Chrome เพื่อรับแท็บจากอุปกรณ์เครื่องอื่นๆ ของคุณ</translation>
+<translation id="132830257261478853">แถบที่อยู่เว็บ ดึงลงเพื่อปิดแผงการนำทาง</translation>
 <translation id="1332501820983677155">แป้นพิมพ์ลัดสำหรับฟีเจอร์ของ Google Chrome</translation>
 <translation id="1339917386316755344">นำคุณออกจากระบบของเว็บไซต์ส่วนใหญ่ แต่คุณจะไม่ออกจากระบบบัญชี Google</translation>
 <translation id="1369915414381695676">เพิ่มเว็บไซต์ <ph name="SITE_NAME" /> แล้ว</translation>
@@ -127,12 +128,14 @@
 <translation id="2156074688469523661">เว็บไซต์ที่เหลือ (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">ปกป้องคุณและอุปกรณ์ของคุณจากเว็บไซต์อันตราย</translation>
 <translation id="2206488550163399966">เว็บแอป <ph name="APP_NAME" />, <ph name="APP_URL" /></translation>
+<translation id="2227444325776770048">ดำเนินการต่อในชื่อ <ph name="USER_FULL_NAME" /></translation>
 <translation id="2246961355222023276">ใช้อินเทอร์เน็ตไป:</translation>
 <translation id="2268044343513325586">ปรับแต่ง</translation>
 <translation id="2286841657746966508">ที่อยู่สำหรับเรียกเก็บเงิน</translation>
 <translation id="2315043854645842844">ระบบปฏิบัติการไม่สนับสนุนการเลือกใบรับรองฝั่งลูกค้า</translation>
 <translation id="2321958826496381788">ลากแถบเลื่อนจนกว่าคุณจะสามารถอ่านได้อย่างสะดวก ข้อความควรมีขนาดเท่านี้เป็นอย่างน้อยหลังจากแตะ 2 ครั้งบนย่อหน้า</translation>
 <translation id="2323763861024343754">พื้นที่เก็บข้อมูลเว็บไซต์</translation>
+<translation id="2342981853652716282">ลงชื่อเข้าใช้ Chrome เพื่อรับบุ๊กมาร์ก รหัสผ่าน และข้อมูลอื่นๆ ในอุปกรณ์ทุกเครื่องของคุณ</translation>
 <translation id="2343328333327081434">กำลังติดตั้ง…</translation>
 <translation id="2346253980530904022">เซิร์ฟเวอร์ของ Google จะเพิ่มประสิทธิภาพหน้าที่คุณเข้าชม ยกเว้นหน้าที่เปิดบน HTTPS และที่เปิดในโหมดไม่ระบุตัวตน</translation>
 <translation id="2349710944427398404">ข้อมูลทั้งหมดที่ Chrome ใช้ รวมถึงบัญชี บุ๊กมาร์ก และการตั้งค่าที่บันทึกไว้</translation>
@@ -176,6 +179,7 @@
 <translation id="2762000892062317888">เมื่อสักครู่</translation>
 <translation id="2777555524387840389">เหลือ <ph name="SECONDS" /> วิ</translation>
 <translation id="2781151931089541271">เหลือ 1 วิ</translation>
+<translation id="2810645512293415242">ลดรายละเอียดหน้าเว็บเพื่อประหยัดเน็ตมือถือและโหลดได้เร็วขึ้น</translation>
 <translation id="2836148919159985482">แตะปุ่มกลับเพื่อออกจากโหมดเต็มหน้าจอ</translation>
 <translation id="2842985007712546952">โฟลเดอร์ระดับบนสุด</translation>
 <translation id="2870560284913253234">เว็บไซต์</translation>
@@ -224,6 +228,7 @@
 <translation id="3282568296779691940">ลงชื่อเข้าใช้ Chrome</translation>
 <translation id="3295602654194328831">ซ่อนข้อมูล</translation>
 <translation id="3303414029551471755">ต้องการดำเนินการดาวน์โหลดเนื้อหานี้ไหม</translation>
+<translation id="3319792846664697699">แผงการนำทาง</translation>
 <translation id="3321222012623826478">บริการนี้ต้องส่งที่อยู่เว็บไซต์นี้แบบไม่ระบุตัวตนไปยังเซิร์ฟเวอร์ของ Google เพื่อการยืนยัน</translation>
 <translation id="3328801116991980348">ข้อมูลไซต์</translation>
 <translation id="3350687908700087792">ปิดแท็บไม่ระบุตัวตนทั้งหมด</translation>
@@ -273,7 +278,6 @@
 <translation id="3744111561329211289">ซิงค์ในแบ็กกราวด์</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />เปิดบลูทูธ<ph name="END_LINK" />เพื่อให้จับคู่ได้</translation>
 <translation id="3789841737615482174">ติดตั้ง</translation>
-<translation id="380076759404194828">{NUM_SELECTED,plural, =1{เลือกแล้ว 1 รายการ}other{เลือกแล้ว # รายการ}}</translation>
 <translation id="3810838688059735925">วิดีโอ</translation>
 <translation id="3810973564298564668">จัดการ</translation>
 <translation id="3819178904835489326">ลบการดาวน์โหลด <ph name="NUMBER_OF_DOWNLOADS" /> รายการแล้ว</translation>
@@ -370,7 +374,6 @@
 <translation id="4807098396393229769">ชื่อบนบัตร</translation>
 <translation id="4807963036345170158">โปรแกรมประหยัดอินเทอร์เน็ตปิดอยู่</translation>
 <translation id="4816465935029283692">ชนิดข้อมูล</translation>
-<translation id="4835385943915508971">Chrome ไม่มีสิทธิ์เข้าถึงทรัพยากรที่ขอ</translation>
 <translation id="4837753911714442426">เปิดตัวเลือกในการพิมพ์หน้า</translation>
 <translation id="4850886885716139402">มุมมอง</translation>
 <translation id="4860895144060829044">โทร</translation>
@@ -425,7 +428,6 @@
 <translation id="5345040418939504969">ลบ <ph name="BOOKMARK_TITLE" /> แล้ว</translation>
 <translation id="5345083863238459644">การเข้าถึงตำแหน่งถูก<ph name="BEGIN_LINK" />ปิดสำหรับอุปกรณ์นี้<ph name="END_LINK" />ด้วย</translation>
 <translation id="5372829067651257087">คัดลอก URL แล้ว</translation>
-<translation id="5384883051496921101">ไซต์นี้กำลังจะแชร์ข้อมูลกับแอปนอกโหมดไม่ระบุตัวตน</translation>
 <translation id="5400569084694353794">การใช้แอปพลิเคชันนี้แสดงว่า คุณยอมรับ<ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" />และ<ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK2" />ของ Chrome</translation>
 <translation id="5403644198645076998">อนุญาตเฉพาะบางไซต์</translation>
 <translation id="5414836363063783498">กำลังยืนยัน…</translation>
@@ -452,6 +454,7 @@
 <translation id="5568069709869097550">ไม่สามารถลงชื่อเข้าใช้</translation>
 <translation id="557283862590186398">Chrome ต้องการสิทธิ์เข้าถึงไมโครโฟนของคุณสำหรับไซต์นี้</translation>
 <translation id="5578795271662203820">ค้นหาภาพนี้ใน <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5585019845078534178">บัตร</translation>
 <translation id="5595485650161345191">แก้ไขที่อยู่</translation>
 <translation id="5596627076506792578">ตัวเลือกเพิ่มเติม</translation>
 <translation id="5620928963363755975">หาไฟล์และหน้าในโฟลเดอร์ดาวน์โหลดจากปุ่มตัวเลือกเพิ่มเติม</translation>
@@ -520,6 +523,7 @@
 <translation id="6177390657002841081">เปิดโปรแกรมประหยัดอินเทอร์เน็ต</translation>
 <translation id="6181444274883918285">เพิ่มข้อยกเว้นของเว็บไซต์</translation>
 <translation id="6192792657125177640">ข้อยกเว้น</translation>
+<translation id="6210748933810148297"><ph name="EMAIL" /> ไม่ใช่บัญชีที่ฉันจะใช้</translation>
 <translation id="6232535412751077445">การเปิดใช้ "ไม่ติดตาม" หมายความว่าจะมีการรวมคำขอหนึ่งไว้กับการเข้าชมของคุณ ผลกระทบทั้งหมดขึ้นอยู่กับว่าเว็บไซต์ตอบสนองต่อคำขอนั้นไหม และวิธีตีความคำขอ
 
 ตัวอย่างเช่น บางเว็บไซต์อาจตอบสนองต่อคำขอนี้โดยแสดงให้คุณเห็นโฆษณาที่ไม่ได้อิงอยู่กับเว็บไซต์อื่นๆ ที่คุณเข้าชม เว็บไซต์จำนวนมากจะยังคงรวบรวมและใช้ข้อมูลการท่องเว็บของคุณเพื่อปรับปรุงความปลอดภัย เพื่อแสดงเนื้อหา โฆษณา และคำแนะนำ และเพื่อสร้างสถิติในการรายงาน เป็นต้น</translation>
@@ -558,6 +562,7 @@
 <translation id="654446541061731451">เลือกแท็บที่จะบีม</translation>
 <translation id="6545017243486555795">ล้างข้อมูลทั้งหมด</translation>
 <translation id="6550675742724504774">ตัวเลือก</translation>
+<translation id="6556716549745717622">บล็อกหากไซต์มักแสดงโฆษณาที่แทรก (แนะนำ)</translation>
 <translation id="6560414384669816528">ค้นหาด้วย Sogou</translation>
 <translation id="6566259936974865419">Chrome ได้ประหยัดพื้นที่ให้คุณไป <ph name="GIGABYTES" /> GB</translation>
 <translation id="656628257199996201">แปลภาษา<ph name="SOURCE_LANGUAGE" />เสมอ</translation>
@@ -566,7 +571,6 @@
 <translation id="6583199322650523874">บุ๊กมาร์กหน้าปัจจุบัน</translation>
 <translation id="6600954340915313787">คัดลอกไปยัง Chrome แล้ว</translation>
 <translation id="6612358246767739896">เนื้อหาที่ได้รับความคุ้มครอง</translation>
-<translation id="662080504995468778">อยู่ต่อ</translation>
 <translation id="6627583120233659107">แก้ไขโฟลเดอร์</translation>
 <translation id="6643016212128521049">ล้าง</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> รายการ}other{<ph name="CONTACT_PREVIEW" />\u2026 และอีก <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> รายการ}}</translation>
@@ -592,6 +596,7 @@
 <translation id="6831043979455480757">แปลภาษา</translation>
 <translation id="6846298663435243399">กำลังโหลด…</translation>
 <translation id="6850830437481525139">ปิดแล้ว <ph name="TAB_COUNT" /> แท็บ</translation>
+<translation id="6856477143496886355">ใช้ข้อมูลบัตรและที่อยู่จาก Google Payments</translation>
 <translation id="6864459304226931083">ดาวน์โหลดรูปภาพ</translation>
 <translation id="6865313869410766144">ข้อมูลฟอร์มที่ป้อนอัตโนมัติ</translation>
 <translation id="6868088497967843822">ลงชื่อเข้าใช้เพื่อรับบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดของคุณ</translation>
@@ -620,6 +625,7 @@
 <translation id="7053983685419859001">บล็อก</translation>
 <translation id="7062545763355031412">ยอมรับและเปลี่ยนบัญชี</translation>
 <translation id="7063006564040364415">ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์การซิงค์</translation>
+<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{เลือก 1 รายการ}other{เลือก # รายการ}}</translation>
 <translation id="7121362699166175603">ล้างประวัติและการเติมข้อความอัตโนมัติในแถบที่อยู่เว็บ บัญชี Google อาจมีประวัติการท่องเว็บรูปแบบอื่นๆ ที่ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="7128222689758636196">อนุญาตสำหรับเครื่องมือค้นหาปัจจุบัน</translation>
 <translation id="7138678301420049075">อื่นๆ</translation>
@@ -770,7 +776,6 @@
 ในการรับใบอนุญาตใหม่ ให้เชื่อมต่ออินเทอร์เน็ตและเล่นเนื้อหาที่ดาวน์โหลดไว้ของคุณ</translation>
 <translation id="8636825310635137004">เปิดการซิงค์เพื่อรับแท็บจากอุปกรณ์เครื่องอื่นๆ ของคุณ</translation>
 <translation id="8641930654639604085">พยายามบล็อกไซต์สำหรับผู้ใหญ่</translation>
-<translation id="8660471606262461360">จาก Google Payments</translation>
 <translation id="8662811608048051533">นำคุณออกจากระบบของเว็บไซต์ส่วนใหญ่</translation>
 <translation id="8676374126336081632">ล้างข้อมูลที่ป้อน</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{ระดับความแรงของสัญญาณ: # แถบ}other{ระดับความแรงของสัญญาณ: # แถบ}}</translation>
@@ -794,7 +799,6 @@
 <translation id="8922289737868596582">ดาวน์โหลดหน้าจากปุ่มตัวเลือกเพิ่มเติมเพื่อใช้งานแบบออฟไลน์</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">เปิดในหน้าต่างอื่น</translation>
-<translation id="894871326938397531">ออกจากโหมดไม่ระบุตัวตนไหม</translation>
 <translation id="8951232171465285730">Chrome ได้ประหยัดพื้นที่ให้คุณไป <ph name="MEGABYTES" /> MB</translation>
 <translation id="8959122750345127698">ไม่สามารถเข้าถึงการนำทางได้: <ph name="URL" /></translation>
 <translation id="896250263197055929">เลือกแท็บดาวน์โหลดแล้ว</translation>

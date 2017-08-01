@@ -4,7 +4,6 @@
 <translation id="1016495303386450659">مورد به‌روز شد</translation>
 <translation id="1047726139967079566">نشانک گذاری این صفحه...</translation>
 <translation id="1049743911850919806">ناشناس</translation>
-<translation id="1073594902069885687">احراز هویت ناموفق بود. گذرواژه کپی نشد.</translation>
 <translation id="1076421457278169141">کد اسکن شد</translation>
 <translation id="1084365883616172403">‏پست Facebook ارسال شد.</translation>
 <translation id="1104948393051856124">پذیرش و ادامه</translation>
@@ -34,9 +33,11 @@
 <translation id="1430915738399379752">چاپ</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> مورد</translation>
 <translation id="1491277525950327607">برای جابه‌جایی بین تنظیمات، دو ضربه سریع بزنید</translation>
+<translation id="152234381334907219">هرگز ذخیره نمی‌شود</translation>
 <translation id="1540800554400757039">آدرس ۱</translation>
 <translation id="1545749641540134597">‏اسکن کد QR</translation>
 <translation id="1580783302095112590">نامه ارسال شد.</translation>
+<translation id="1612730193129642006">نمایش شبکه برگه</translation>
 <translation id="1646446875146297738">فعال کردن «ردیابی نشود» بدین معناست که درخواستی در ترافیک مرور شما لحاظ خواهد شد. هر گونه تأثیر به این بستگی دارد که وب‌سایت به درخواست پاسخ می‌دهد یا نه و درخواست چگونه تفسیر می‌شود.
 
 به عنوان مثال، ممکن است برخی از وب‌سایت‌ها با نشان دادن آگهی‌هایی که براساس وب‌سایت‌های دیگری که بازدید کرده‌اید، نیستند به این درخواست پاسخ دهند. بسیاری از وب‌سایت‌ها همچنان داده‌های مرور شما را جمع‌آوری و استفاده خواهند کرد - به عنوان مثال برای بهبود ایمنی، برای ارائه محتوا، سرویس‌ها، آگهی‌ها و توصیه‌های مربوط به وب‌سایت‌هایشان و برای تولید گزارش‌های آماری.
@@ -67,7 +68,6 @@
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> مورد منتقل شدند</translation>
 <translation id="2149973817440762519">ویرایش نشانک</translation>
 <translation id="2230173723195178503">صفحه وب بار شد</translation>
-<translation id="2241634353105152135">فقط یک بار</translation>
 <translation id="2267753748892043616">افزودن حساب</translation>
 <translation id="2273327106802955778">منوی بیشتر</translation>
 <translation id="2320166752086256636">پنهان کردن صفحه‌کلید</translation>
@@ -80,6 +80,7 @@
 <translation id="2572712655377361602">خط‌مشی دستگاه دسترسی به عکس‌هایتان را مسدود کرد</translation>
 <translation id="2584132361465095047">افزودن حساب…</translation>
 <translation id="2593774076813182497">این صفحه چاپ نمی‌شود.</translation>
+<translation id="2625189173221582860">گذرواژه کپی شد</translation>
 <translation id="2648803196158606475">حذف خوانده‌شده‌ها</translation>
 <translation id="2653659639078652383">ارائه</translation>
 <translation id="2684815431982545828">برگه جدید</translation>
@@ -121,6 +122,7 @@
 <translation id="3244271242291266297">ماه</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />، ‏<ph name="ADDITIONAL_INFO" />، ‏<ph name="INDEX" /> از <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">برگه‌های باز</translation>
+<translation id="3277021493514034324">نشانی سایت کپی شد</translation>
 <translation id="3324193307694657476">آدرس ۲</translation>
 <translation id="3329904751041170572">اتصال به سرور امکان‌پذیر نیست.</translation>
 <translation id="3335947283844343239">باز کردن مجدد برگه بسته شده</translation>
@@ -133,7 +135,6 @@
 <translation id="3474649192738347024">فرم‌ها پر شد.</translation>
 <translation id="3478058380795961209">ماه انقضا</translation>
 <translation id="3482959374254649722">درحال همگام‌سازی برگه‌های شما...</translation>
-<translation id="3489372701259491571">حذف گذرواژه ذخیره شده</translation>
 <translation id="3494788280727468875">تأیید پاک کردن داده‌های مرور</translation>
 <translation id="3519193562722059437">برگه‌ای برای مرور وب باز کنید.</translation>
 <translation id="3527085408025491307">پوشه</translation>
@@ -150,10 +151,8 @@
 <translation id="3638472932233958418">صفحات وب از پیش بارگیری شده</translation>
 <translation id="3691593122358196899">نشانک به <ph name="FOLDER_TITLE" /> اضافه شد</translation>
 <translation id="3738139272394829648">لمس کردن برای جستجو</translation>
-<translation id="3742082982782149146">نشانی وب‌سایت کپی شد.</translation>
 <translation id="3771033907050503522">برگه‌های ناشناس</translation>
 <translation id="3783017676699494206">ذخیره تصویر</translation>
-<translation id="3789841737615482174">نصب</translation>
 <translation id="385051799172605136">بازگشت</translation>
 <translation id="3897092660631435901">منو</translation>
 <translation id="3928666092801078803">ادغام کردن داده‌های من</translation>
@@ -165,7 +164,6 @@
 <translation id="4038354071007134711">برنامه‌ای در این دستگاه نمی‌تواند فایل را باز کند.</translation>
 <translation id="4049507953662678203">مطمئن شوید اتصال شبکه دارید و دوباره امتحان کنید.</translation>
 <translation id="411254640334432676">بارگیری نشد.</translation>
-<translation id="4117350985506774529">نام کاربری‌تان کپی شد.</translation>
 <translation id="4121993058175073134">برای ارسال داده‌های صادراتی شبکه، لطفاً حساب ایمیل‌تان را در برنامه تنظیمات پیکربندی کنید.</translation>
 <translation id="4124987746317609294">محدوده زمانی</translation>
 <translation id="4172051516777682613">همیشه نشان داده شود</translation>
@@ -188,7 +186,6 @@
 
 داده‌های شما با عبارت عبور همگام‌سازی رمزگذاری می‌شود. برای شروع همگام‌سازی آن را وارد کنید.</translation>
 <translation id="473775607612524610">به‌روزرسانی</translation>
-<translation id="4773461607542755386">این صفحه در برنامه <ph name="APP_NAME" /> باز شود؟</translation>
 <translation id="481968316161811770">کوکی‌ها، داده‌های سایت</translation>
 <translation id="4860895144060829044">تماس</translation>
 <translation id="4875622588773761625">می‌خواهید <ph name="PASSWORD_MANAGER_BRAND" /> گذرواژه‌تان را برای این سایت به‌روزرسانی کند؟</translation>
@@ -216,6 +213,7 @@
 <translation id="5327248766486351172">نام</translation>
 <translation id="5388358297987318779">بازکردن تصویر</translation>
 <translation id="5409365236829784218">برنامه‌ای که بتواند این فایل را باز کند در سیستم نصب نشده است.</translation>
+<translation id="5433691172869980887">نام کاربری کپی شد</translation>
 <translation id="54401264925851789">اطلاعات امنیتی صفحه</translation>
 <translation id="5525269841082836315">ایجاد عبارت عبور</translation>
 <translation id="5531274207066050939">Google Payments</translation>
@@ -265,6 +263,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6196207969502475924">جستجوی گفتاری</translation>
 <translation id="6254066287920239840">پیوندها به‌جای مرورگر در برنامه باز شوند.</translation>
 <translation id="6255097610484507482">ویرایش کارت اعتباری</translation>
+<translation id="6273258929211277933"><ph name="TITLE" />، <ph name="PUBLISHER_INFORMATION" />، <ph name="PUBLICATION_DATE" />، <ph name="STATE" /></translation>
 <translation id="6308436439357671616">این کار به شما اجازه می‌دهد عکس بگیرید و آن‌ها را بارگذاری کنید.</translation>
 <translation id="6314335155547195432">تولید گذرواژه</translation>
 <translation id="6324528485781869530">تغییر وضعیت حساب همگام‌سازی</translation>
@@ -291,7 +290,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6570040839871198836">تکمیل خودکار</translation>
 <translation id="6656103420185847513">ویرایش پوشه</translation>
 <translation id="6657585470893396449">گذرواژه</translation>
-<translation id="666731172850799929">باز کردن در <ph name="APP_NAME" /></translation>
 <translation id="667999046851023355">سند</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6762156594045689028">برای تغییر این تنظیم، <ph name="BEGIN_LINK" />همگام‌سازی را بازنشانی کنید<ph name="END_LINK" /></translation>
@@ -318,6 +316,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7189598951263744875">در حال اشتراک‌گذاری...</translation>
 <translation id="7203585745079012652">پاسخ گفتاری</translation>
 <translation id="722055596168483966">‏شخصی‌سازی خدمات Google</translation>
+<translation id="7272437679830969316">نمی‌توانیم هویتتان را به تأیید برسانیم. گذرواژه کپی نشد.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> درصد بارگیری شد</translation>
 <translation id="7346909386216857016">بله متوجه شدم.</translation>
 <translation id="7400418766976504921">نشانی وب</translation>
@@ -357,7 +356,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="806745655614357130">داده‌های من مجزا باشد</translation>
 <translation id="8076014560081431679">تنظیمات ذخیره‌شده سایت حذف نمی‌شوند و احتمالاً عادات مرور شما را نشان می‌دهند. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">بستن همه برگه‌ها</translation>
-<translation id="8108697784695284144">گذرواژه شما کپی شد.</translation>
 <translation id="8137558756159375272">‏«لمس برای جستجو» کلمه انتخاب شده و صفحه کنونی را به عنوان محتوای زمینه به جستجوی Google ارسال می‌کند. می‌توانید آن را در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> خاموش کنید.</translation>
 <translation id="8205564605687841303">لغو</translation>
 <translation id="8225985093977202398">تصاویر و فایل‌های قرار گرفته در حافظه پنهان</translation>
@@ -365,6 +363,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8272426682713568063">کارت‌های اعتباری</translation>
 <translation id="8281781826761538115">پیش‌فرض - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">‏نحوه استفاده Google را از سابقه مرورتان برای شخصی‌سازی جستجو، آگهی‌ها و سایر سرویس‌های Google کنترل کنید</translation>
+<translation id="842017693807136194">ورود به سیستم با</translation>
 <translation id="8428045167754449968">شهر / شهرک</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8433678324664858900">نمایش پیشنهادات</translation>
@@ -389,6 +388,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8775144690796719618">نشانی وب نامعتبر</translation>
 <translation id="8820817407110198400">نشانک‌ها</translation>
 <translation id="8840513115188359703">‏از حساب Google خود خارج نمی‌شوید.</translation>
+<translation id="8881801611828450202">جستجوی <ph name="SEARCH_ENGINE" /> برای این تصویر</translation>
 <translation id="8904976895050290827">‏همگام‌سازی Chrome</translation>
 <translation id="895541991026785598">گزارش یک مسئله</translation>
 <translation id="8971089644512329999">بله، متوجه شدم</translation>
@@ -407,6 +407,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="9188680907066685419">خروج از حساب مدیریت‌شده</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">گزارش خرابی ارسال شد.</translation>
+<translation id="932327136139879170">منزل</translation>
 <translation id="935490618240037774">‏نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات در حساب Google شما همگام‌سازی می‌شوند تا بتوانید از آن‌ها در همه دستگاه‌هایتان استفاده کنید.</translation>
 <translation id="939598580284253335">عبارت ورود را وارد کنید</translation>
 <translation id="976982866697960176">مدیریت داده‌های همگام‌سازی‌شده…</translation>

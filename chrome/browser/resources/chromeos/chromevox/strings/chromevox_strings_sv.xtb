@@ -166,6 +166,7 @@
 <translation id="27527859628328957">Hoppa till nästa fokuserbara objekt</translation>
 <translation id="2770781857296573485">Börja utforska grupper</translation>
 <translation id="2777845298774924149">Stängdes</translation>
+<translation id="2781264313200109999">Länkstart</translation>
 <translation id="2800204403141299078">Inga flera olika element.</translation>
 <translation id="2800780099804980316">Det finns ingen föregående rubrik på nivå 1.</translation>
 <translation id="280499067616661124">Hitta på sidan med ChromeVox</translation>
@@ -318,6 +319,7 @@ Om du är klar med självstudiekursen kan du använda ChromeVox till att naviger
 <translation id="3716845769494773620">Flerradigt</translation>
 <translation id="3731746171184829332">Det finns ingen föregående rubrik.</translation>
 <translation id="3735039640698208086">Vid ljuduppspelning …</translation>
+<translation id="3755561384917041694">Aktivera skärmtangentbordet under Tillgänglighet på statusfältet för att använda utökade punktskriftskommandon.</translation>
 <translation id="3762198587642264450">Flytta till slutet av aktuell rad</translation>
 <translation id="3777255250339039212">rubr1</translation>
 <translation id="3793710123303304873">Dialogrutan stängdes.</translation>
@@ -576,6 +578,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="6037602951055904232">Panorera framåt</translation>
 <translation id="6044160928851315051">Släck skärmen</translation>
 <translation id="6082768461603900813">Grundläggande navigering</translation>
+<translation id="6092707270915298410">Länkslut</translation>
 <translation id="611827076493383239">besökt</translation>
 <translation id="6119955456199054975">Slutet av cellen.</translation>
 <translation id="6122013438240733403">knapp</translation>

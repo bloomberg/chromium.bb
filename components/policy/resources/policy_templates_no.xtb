@@ -54,13 +54,6 @@
       Korteste tillatte frekvens er 60 sekunder.</translation>
 <translation id="1221359380862872747">Last inn angitte nettadresser ved demo-pålogging</translation>
 <translation id="1265053460044691532">Begrens hvor lenge en bruker som er autentisert via SAML kan logge på uten nett</translation>
-<translation id="127699919157094139">Slår av datasynkronisering i <ph name="PRODUCT_NAME" /> ved hjelp av synkroniseringstjenester Google er vert for, og hindrer brukerne i å endre denne innstillingen.
-
-      Hvis du slår på denne innstillingen, kan ikke brukerne endre eller overstyre den i <ph name="PRODUCT_NAME" />.
-
-      Hvis denne innstillingen ikke angis, kan brukerne selv velge om Google Synkronisering skal brukes eller ikke.
-
-      For å slå av Google Synkronisering fullstendig anbefaler vi at du slår av Google Synkronisering-tjenesten i Googles Administrasjonskonsoll.</translation>
 <translation id="1291880496936992484">Advarsel: RC4 fjernes helt fra <ph name="PRODUCT_NAME" /> etter versjon 52 (rundt september 2016), og da slutter denne regelen å fungere.
 
       Hvis regelen ikke er angitt eller er satt til false (usann), er ikke RC4-chifferserier i TLS slått på. Ellers kan den settes til true (sann) for å sikre kompatibilitet med en utdatert tjener. Dette er en midlertidig løsning, og tjeneren bør konfigureres på nytt.</translation>
@@ -518,6 +511,11 @@
 
       Hvis du ikke denne regelen ikke spesifiseres, er effekten den samme som om den var slått på. Se beskrivelsen ovenfor.</translation>
 <translation id="285480231336205327">Aktiver modus for høy kontrast</translation>
+<translation id="2854919890879212089">Gjør at <ph name="PRODUCT_NAME" /> bruker skriveren som er standard for systemet, i stedet for skriveren som ble brukt sist, som standardvalg i forhåndsvisning av utskrift.
+
+      Hvis du deaktiverer denne innstillingen eller ikke angir noen verdi, brukes skriveren som ble brukt sist, som standard destinasjonsvalg i forhåndsvisningen for utskrifter.
+
+      Hvis du aktiverer denne innstillingen, brukes skriveren som er standard for OS-et, som standard destinasjonsvalg.</translation>
 <translation id="2872961005593481000">Slå av</translation>
 <translation id="2874209944580848064">Merknad for <ph name="PRODUCT_OS_NAME" />-enheter som støtter Android-apper:</translation>
 <translation id="2877225735001246144">Deaktiver CNAME-oppslag under forhandling om Kerberos-godkjenning</translation>
@@ -987,6 +985,7 @@
 
           Som standard ser brukerne en advarsel – ikke en feilmelding – hvis PIN-koden anses som svak.</translation>
 <translation id="4723829699367336876">Aktiver kryssing av brannmur fra ekstern tilgangsklient</translation>
+<translation id="4725123658714754485">Kontrollerer om bruksberegninger og diagnostikkdata, inkludert programstopprapporter, rapporteres til Google. Hvis regelen er angitt som «True» (sann), rapporterer <ph name="PRODUCT_OS_NAME" /> bruksberegninger og diagnostikkdata. Hvis den ikke er konfigurert eller er angitt som «False» (usann), er rapportering av beregninger og dianostikkdata deaktivert.</translation>
 <translation id="4725528134735324213">Slå på Android Backup Service</translation>
 <translation id="4733471537137819387">Retningslinjer knyttet til integrert HTTP-autentisering.</translation>
 <translation id="4744190513568488164">Tjenere <ph name="PRODUCT_NAME" /> kan delegere til.
@@ -1503,6 +1502,11 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 
       Hvis dette alternativet deaktiveres eller ikke angis, vil programtilleggsøket være aktivt.</translation>
 <translation id="6699880231565102694">Aktiver to-delt autentisering for verter med ekstern adgang</translation>
+<translation id="6724842112053619797">Hvis du slår på denne innstillingen, blir innstillingene som er lagret i <ph name="PRODUCT_NAME" />-profiler (for eksempel bokmerker, autofylldata, passord også videre), også skrevet til en fil som lagres i mappen for roaming-brukerprofilen, eller på et sted som bestemmes av administratoren via regelen <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Når du slår på denne regelen, deaktiveres skysynkronisering.
+
+      Hvis denne regelen er slått av eller ikke er angitt, blir bare de vanlige, lokale profilene brukt.
+
+      <ph name="SYNC_DISABLED_POLICY_NAME" />-regelen deaktiverer all datasynkronisering og overstyrer RoamingProfileSupportEnabled.</translation>
 <translation id="6757438632136860443">Lar deg angi en liste med nettadressemønstre for å spesifisere nettsteder hvor <ph name="FLASH_PLUGIN_NAME" />-programtillegget skal kunne kjøres automatisk.
 
           Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettsteder. Denne verdien hentes fra «DefaultPluginsSetting»-regelen hvis den er angitt, eller fra brukerens personlige konfigurasjon hvis den ikke er angitt.</translation>
@@ -1548,6 +1552,13 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="6943577887654905793">Innstillingsnavn for Mac/Linux:</translation>
 <translation id="69525503251220566">Parameteret som tilbyr search-by-image-funksjonen for standardsøkemotoren</translation>
 <translation id="6956272732789158625">Ikke tillat noen nettsteder å bruke nøkkelgenerering</translation>
+<translation id="6994082778848658360">Spesifiserer hvordan det integrerte sikre maskinvareelementet kan brukes til å tilby tofaktor-autentisering hvis det er kompatibelt med denne funksjonen. Av/på-knappen på maskinen brukes til å finne ut om brukeren er fysisk til stede.
+
+      Hvis «Disabled» (deaktivert) er valgt, tilbys ingen tofaktor-autentisering.
+
+      Hvis «U2F» er valgt, fungerer den integrerte tofaktor-autentiseringen i henhold til FIDO-spesifikasjonen for U2F.
+
+      Hvis «U2F_EXTENDED» (utvidet U2F) er valgt, brukes den integrerte tofaktor-autentiseringen til å tilby U2F-funksjonene samt enkelte utvidelser for individuell attestering.</translation>
 <translation id="6997592395211691850">Hvorvidt OCSP/CRL-sjekker på nettet er påkrevd for lokale klareringsankere</translation>
 <translation id="7003334574344702284">Denne retningslinjen tvinger import av de lagrede passordene fra forrige standardnettleser hvis den er aktivert. Hvis den er aktivert, påvirker retningslinjen også importeringsdialogen.
 
@@ -1751,7 +1762,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7713608076604149344">Begrensninger for nedlastinger</translation>
 <translation id="7715711044277116530">Prosentandelen det skaleres etter for forsinkelse av skjermdemping i presentasjonsmodus</translation>
 <translation id="7717938661004793600">Konfigurer tilgjengelighetfunksjonene for <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7719251660743813569">Kontrollerer om bruksberegninger rapporteres til Google. Hvis innstillingen er angitt som Sann, rapporterer <ph name="PRODUCT_OS_NAME" /> bruksberegninger. Hvis innstillingen ikke konfigureres eller angis som Usann, deaktiveres rapportering av beregninger.</translation>
 <translation id="7724994675283793633">Denne regelen slår på HTTP/0.9 for andre porter enn 80 for HTTP og 443 for HTTPS.
 
       Denne regelen er slått av som standard. Hvis den slås på, kan brukere bli eksponert for følgende sikkerhetsproblem: https://crbug.com/600352.
@@ -2073,6 +2083,15 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="891435090623616439">kodet som en JSON-streng – se <ph name="COMPLEX_POLICIES_URL" /> for nærmere informasjon</translation>
 <translation id="8947415621777543415">Rapportering av enhetsposisjonen</translation>
 <translation id="8951350807133946005">Angi katalog for diskbufring</translation>
+<translation id="8952317565138994125">Slår av datasynkronisering i <ph name="PRODUCT_NAME" /> ved hjelp av synkroniseringstjenester Google er vert for, og hindrer brukerne i å endre denne innstillingen.
+
+      Hvis du slår på denne innstillingen, kan ikke brukerne endre eller overstyre den i <ph name="PRODUCT_NAME" />.
+
+      Hvis denne innstillingen ikke angis, kan brukerne selv velge om Google-synkronisering skal brukes eller ikke.
+
+      For å slå av Google-synkronisering fullstendig anbefaler vi at du slår av Google-tjenesten for synkronisering i Google Administrasjonskonsoll.
+
+      Denne innstillingen bør ikke være slått på mens regelen <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> er slått på, ettersom disse funksjonene har samme funksjonalitet på klientsiden. Hvis begge er slått på, deaktiveres synkroniseringen Google er vert for, fullstendig.</translation>
 <translation id="8955719471735800169">Tilbake til toppen</translation>
 <translation id="8960850473856121830">Mønstrene i denne listen sammenlignes med sikkerhetskilden
       til nettadressen forespørselen kommer fra. Hvis det finnes samsvar, blir 
@@ -2082,6 +2101,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="8970205333161758602">Ignorer avslagsforespørsel for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Tidtaker for automatisk påloggging til offentlig økt</translation>
 <translation id="8976248126101463034">Tillat gnubby-autentisering for fjerntilgangsverter</translation>
+<translation id="8976531594979650914">Bruk standardskriveren i systemet, som standard</translation>
 <translation id="8992176907758534924">Ikke la noen nettsteder vise bilder</translation>
 <translation id="9035964157729712237">Utvidelses-ID-er som skal unntas sperrelisten</translation>
 <translation id="9042911395677044526">Tillater skyving av nettverkskonfigurasjon for enkeltbrukere på en <ph name="PRODUCT_OS_NAME" />-enhet. Nettverkskonfigurasjon er en JSON-formatert streng, som definert av Open Network Configuration-formatet beskrevet på <ph name="ONC_SPEC_URL" /></translation>

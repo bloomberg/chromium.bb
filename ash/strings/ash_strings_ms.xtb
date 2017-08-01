@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Butang limpahan</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+Cari+H</translation>
 <translation id="2049639323467105390">Peranti ini diuruskan oleh <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Potret</translation>
 <translation id="207439088875642105">Ini ialah akaun kanak-kanak yang diurus oleh <ph name="FIRST_PARENT_EMAIL" /> dan <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Kekunci lekit</translation>
 <translation id="2509468283778169019">Kekunci CAPS LOCK dihidupkan</translation>
 <translation id="2532589005999780174">Mod kontras tinggi</translation>
+<translation id="2597972630681408282">Lampu Malam: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">Sesi tamat dalam <ph name="SESSION_TIME_REMAINING" />. Anda akan dilog keluar.</translation>
 <translation id="2727977024730340865">Dipalamkan pada pengecas berkuasa rendah. Pengecasan bateri mungkin tidak boleh diharapkan.</translation>
 <translation id="2761704814324807722">Dulang status, masa <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,7 +78,6 @@
 <translation id="3009178788565917040">Output</translation>
 <translation id="3019353588588144572">Masa yang tinggal sehingga bateri dicas sepenuhnya, <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">Ini ialah akaun untuk kanak-kanak yang diurus oleh <ph name="MANAGER_EMAIL" /></translation>
-<translation id="3050422059534974565">CAPS LOCK dihidupkan. Tekan Search atau Shift untuk membatalkan.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Bawah</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -135,6 +136,7 @@
 <translation id="4849058404725798627">Serlahkan objek dengan fokus papan kekunci</translation>
 <translation id="4872237917498892622">Alt+Search atau Shift</translation>
 <translation id="4895488851634969361">Bateri penuh.</translation>
+<translation id="4905614135390995787">Pintasan untuk menogol Mod Kontras Tinggi telah ditukar. Sila gunakan <ph name="NEW_SHORTCUT" /> dan bukannya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Terima</translation>
 <translation id="4961318399572185831">Hantar skrin</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -158,8 +160,10 @@
 <translation id="5744083938413354016">Penyeretan ketik</translation>
 <translation id="5777841717266010279">Hentikan perkongsian skrin?</translation>
 <translation id="57838592816432529">Redam</translation>
+<translation id="5860033963881614850">Dimatikan</translation>
 <translation id="5895138241574237353">Mulakan Semula</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">Hidupkan</translation>
 <translation id="5927132638760172455">Menghantar ke penerima yang tidak diketahui</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Berbalik</translation>
@@ -168,8 +172,8 @@
 <translation id="5977415296283489383">Fon kepala</translation>
 <translation id="5978382165065462689">Berkongsi kawalan skrin anda melalui Bantuan Jauh.</translation>
 <translation id="5980301590375426705">Keluar dari tetamu</translation>
+<translation id="5992218262414051481">Mod Kontras Tinggi didayakan. Tekan Ctrl+Cari+H semula untuk mematikannya.</translation>
 <translation id="6018164090099858612">Keluar daripada mod cermin</translation>
-<translation id="6041154455840261787">Mod Kontras Tinggi didayakan. Tekan Search+Shift+H semula untuk menogolnya kepada mati.</translation>
 <translation id="6043212731627905357">Monitor ini tidak serasi dengan <ph name="DEVICE_TYPE" /> anda (monitor tidak disokong).</translation>
 <translation id="6043994281159824495">Log keluar sekarang</translation>
 <translation id="6047696787498798094">Perkongsian skrin akan berhenti apabila anda beralih kepada pengguna lain. Adakah anda ingin meneruskan?</translation>
@@ -194,6 +198,7 @@
 <translation id="6585808820553845416">Sesi berakhir dalam <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">Peranti Bluetooth "<ph name="DEVICE_NAME" />" ingin kebenaran untuk berpasangan. Sila masukkan kekunci laluan ini pada peranti tersebut: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Cari+Shift+H</translation>
 <translation id="6700713906295497288">Butang menu IME</translation>
 <translation id="6713285437468012787">Peranti Bluetooth "<ph name="DEVICE_NAME" />" telah dipasangkan dan kini tersedia untuk semua pengguna. Anda boleh mengalih keluar pasangan ini menggunakan Tetapan.</translation>
 <translation id="6785414152754474415">Bateri <ph name="PERCENTAGE" />% penuh dan sedang dicas.</translation>
@@ -213,8 +218,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Kembali kepada peleraian lama dalam <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">CAPS LOCK dihidupkan.
-Tekan Alt+Search atau Shift untuk membatalkan.</translation>
+<translation id="7199454189089571166">Mod pembantu</translation>
 <translation id="7246339268451149667">Dayakan buka kunci menggunakan Cap Jari?</translation>
 <translation id="7256634071279256947">Mikrofon belakang</translation>
 <translation id="7348093485538360975">Papan kekunci pada skrin</translation>
@@ -232,10 +236,10 @@ Tekan Alt+Search atau Shift untuk membatalkan.</translation>
 <translation id="7649070708921625228">Bantuan</translation>
 <translation id="7692480393933218409">Mengecas peranti USB-C yang disambungkan</translation>
 <translation id="776344839111254542">Klik untuk melihat butiran kemas kini</translation>
+<translation id="7798302898096527229">Tekan Search atau Shift untuk membatalkan.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> dan <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Bahasa telah ditukar daripada "<ph name="FROM_LOCALE" />" kepada "<ph name="TO_LOCALE" />" selepas menyegerakkan tetapan anda.</translation>
 <translation id="7904094684485781019">Pentadbir akaun ini tidak membenarkan berbilang log masuk.</translation>
-<translation id="7951523953736115461">Cahaya malam</translation>
 <translation id="7977927628060636163">Mencari rangkaian mudah alih...</translation>
 <translation id="7982789257301363584">Rangkaian</translation>
 <translation id="8000066093800657092">Tiada rangkaian</translation>
@@ -254,6 +258,7 @@ Tekan Alt+Search atau Shift untuk membatalkan.</translation>
 <translation id="8433977262951327081">Pintasan untuk menunjukkan gelembung menu pilihan input dalam rak telah berubah. Sila gunakan <ph name="NEW_SHORTCUT" /> dan bukannya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Wi-Fi dihidupkan.</translation>
 <translation id="847056008324733326">Tetapan skala paparan</translation>
+<translation id="8477270416194247200">Tekan Alt+Search atau Shift untuk membatalkan.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Menyambung semula...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> anda mungkin tidak akan dicas semasa dihidupkan.</translation>
 <translation id="8639760480004882931">Berbaki <ph name="PERCENTAGE" /></translation>

@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Taşma düğmesi</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+Arama+H</translation>
 <translation id="2049639323467105390">Bu cihaz <ph name="DOMAIN" /> tarafından yönetiliyor.</translation>
 <translation id="2050339315714019657">Dikey</translation>
 <translation id="207439088875642105">Bu hesap çocuklar içindir ve <ph name="FIRST_PARENT_EMAIL" /> ile <ph name="SECOND_PARENT_EMAIL" /> tarafından yönetilmektedir</translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Yapışkan tuşlar</translation>
 <translation id="2509468283778169019">CAPS LOCK açık</translation>
 <translation id="2532589005999780174">Yüksek kontrast modu</translation>
+<translation id="2597972630681408282">Gece Işığı: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">Oturumun süresi <ph name="SESSION_TIME_REMAINING" /> içinde bitiyor. Süre dolduğunda oturumunuz kapatılacaktır.</translation>
 <translation id="2727977024730340865">Düşük güçlü bir şarj cihazına takıldı. Şarj durumu güvenilir olmayabilir.</translation>
 <translation id="2761704814324807722">Durum tepsisi, saat: <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">Çıkış</translation>
 <translation id="3019353588588144572">Pilin tam olarak şarj olması için kalan süre, <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">Bu hesap çocuklar içindir ve <ph name="MANAGER_EMAIL" /> tarafından yönetilmektedir</translation>
-<translation id="3050422059534974565">CAPS LOCK açık.
-İptal için Arama veya Üst Karakter tuşlarına basın.</translation>
 <translation id="3077734595579995578">üstkrktr</translation>
 <translation id="3087734570205094154">Alt</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -136,6 +136,7 @@
 <translation id="4849058404725798627">Klavye odağının olduğu nesneyi vurgula</translation>
 <translation id="4872237917498892622">Alt+Arama veya Üst Karakter</translation>
 <translation id="4895488851634969361">Pil dolu.</translation>
+<translation id="4905614135390995787">Yüksek Kontrast Modunu açma/kapatma kısayolu değişti. Lütfen <ph name="OLD_SHORTCUT" /> yerine <ph name="NEW_SHORTCUT" /> tuşlarını kullanın.</translation>
 <translation id="4918086044614829423">Kabul et</translation>
 <translation id="4961318399572185831">Ekranı yayınla</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@
 <translation id="5744083938413354016">Dokunarak sürükleme</translation>
 <translation id="5777841717266010279">Ekran paylaşma durdurulsun mu?</translation>
 <translation id="57838592816432529">Sesi kapat</translation>
+<translation id="5860033963881614850">Kapalı</translation>
 <translation id="5895138241574237353">Yeniden başlat</translation>
 <translation id="5901316534475909376">Üst Karakter+Esc</translation>
+<translation id="5916664084637901428">Açık</translation>
 <translation id="5927132638760172455">Bilinmeyen bir alıcıya yayınlanıyor</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Geri döndür</translation>
@@ -169,8 +172,8 @@
 <translation id="5977415296283489383">Kulaklık</translation>
 <translation id="5978382165065462689">Ekranınızın kontrolü Uzaktan Yardım kullanılarak paylaşılıyor.</translation>
 <translation id="5980301590375426705">Misafir oturumundan çık</translation>
+<translation id="5992218262414051481">Yüksek Kontrast Modu etkinleştirildi. Modu kapatmak için tekrar Ctrl+Arama+H tuşlarına basın.</translation>
 <translation id="6018164090099858612">Ayna modundan çıkılıyor</translation>
-<translation id="6041154455840261787">Yüksek Kontrast Modu etkinleştirildi. Kapatmak için tekrar Ara+Üst Karakter+H tuşlarına basın.</translation>
 <translation id="6043212731627905357">Bu monitör <ph name="DEVICE_TYPE" /> cihazınızla uyuşmuyor (monitör desteklenmiyor).</translation>
 <translation id="6043994281159824495">Şimdi çıkış yap</translation>
 <translation id="6047696787498798094">Başka bir kullanıcıya geçtiğinizde ekran paylaşma özelliği durur. Devam etmek istiyor musunuz?</translation>
@@ -196,6 +199,7 @@
 <translation id="6585808820553845416">Oturumun süresi <ph name="SESSION_TIME_REMAINING" /> içinde bitiyor.</translation>
 <translation id="6627638273713273709">Ara+Üst Karakter+K</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşleme izni istiyor. Lütfen söz konusu cihazda bu parolayı girin: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Arama+Üst Karakter+H</translation>
 <translation id="6700713906295497288">IME menü düğmesi</translation>
 <translation id="6713285437468012787">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşlendi ve artık tüm kullanıcılar tarafından kullanılabilir. Bu eşlemeyi Ayarlar'ı kullanarak kaldırabilirsiniz.</translation>
 <translation id="6785414152754474415">Pil %<ph name="PERCENTAGE" /> dolu ve şarj oluyor.</translation>
@@ -215,8 +219,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Üst Karakter+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> saniye içinde eski çözünürlüğe dönülüyor</translation>
-<translation id="7209101170223508707">CAPS LOCK açık.
-İptal için Alt+Arama veya Üst Karakter tuşlarına basın.</translation>
+<translation id="7199454189089571166">Asistan modu</translation>
 <translation id="7246339268451149667">Parmak iziyle kilit açma etkinleştirilsin mi?</translation>
 <translation id="7256634071279256947">Arka mikrofon</translation>
 <translation id="7348093485538360975">Ekran klavyesi</translation>
@@ -234,10 +237,10 @@
 <translation id="7649070708921625228">Yardım</translation>
 <translation id="7692480393933218409">Bağlı USB-C cihazlar şarj ediliyor</translation>
 <translation id="776344839111254542">Güncelleme ayrıntılarını görüntülemek için tıklayın</translation>
+<translation id="7798302898096527229">İptal etmek için Ara veya Üst Karakter tuşuna basın.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> ve <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Ayarlarınız senkronize edildikten sonra "<ph name="FROM_LOCALE" />" olan dil "<ph name="TO_LOCALE" />" olarak değiştirildi.</translation>
 <translation id="7904094684485781019">Bu hesabın yöneticisi, çoklu oturum açmayı engelledi.</translation>
-<translation id="7951523953736115461">Gece ışığı</translation>
 <translation id="7977927628060636163">Mobil ağlar aranıyor...</translation>
 <translation id="7982789257301363584">Ağ</translation>
 <translation id="8000066093800657092">Ağ yok</translation>
@@ -256,6 +259,7 @@
 <translation id="8433977262951327081">Giriş seçenekleri menüsü balonunu rafta görüntüleme kısa yolu değişti. <ph name="OLD_SHORTCUT" /> yerine <ph name="NEW_SHORTCUT" /> kısayolunu kullanın.</translation>
 <translation id="8454013096329229812">Kablosuz açık.</translation>
 <translation id="847056008324733326">Ekran ölçeği ayarları</translation>
+<translation id="8477270416194247200">İptal etmek için Alt+Ara veya Üst Karakter tuşuna basın.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Yeniden bağlanılıyor...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> cihazınız açıkken şarj olmayabilir.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> kaldı</translation>

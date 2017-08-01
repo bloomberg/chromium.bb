@@ -30,7 +30,6 @@
 <translation id="1966382378801805537">O Chromium não consegue determinar ou definir o navegador predefinido</translation>
 <translation id="1967743265616885482">É conhecido um módulo com o mesmo nome que entra em conflito com o Chromium.</translation>
 <translation id="2008474315282236005">Esta ação elimina 1 item deste dispositivo. Para recuperar os dados mais tarde, inicie sessão no Chromium como <ph name="USER_EMAIL" />.</translation>
-<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Esta ação elimina permanentemente, no mínimo, $1 item deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chromium como $2.}one{This will permanently delete at least $1 items from this device. To retrieve your data later, sign in to Chromium as $2.}other{Esta ação elimina permanentemente, no mínimo, $1 itens deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chromium como $2.}}</translation>
 <translation id="2077129598763517140">Utilizar aceleração de hardware sempre que estiver disponível</translation>
 <translation id="2119636228670142020">Acerca do SO &amp;Chromium</translation>
 <translation id="2158734852934720349">Licenças de código aberto do SO Chromium</translation>
@@ -81,7 +80,6 @@
 <translation id="3549345495227188780">Introdução ao SO Chromium</translation>
 <translation id="3582788516608077514">A atualizar o Chromium...</translation>
 <translation id="358997566136285270">Logótipo do Chromium</translation>
-<translation id="3645040538872234961">Esta ação elimina permanentemente os seus dados de navegação deste dispositivo. Para recuperar os dados mais tarde, inicie sessão no Chromium como $2.</translation>
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
 <translation id="3762167353400286894">O SO Chromium é apresentado neste idioma</translation>
 <translation id="378917192836375108">O Chromium permite-lhe clicar num número de telefone na Web e fazer a chamada com o Skype!</translation>
@@ -153,7 +151,6 @@
 <translation id="59625444380784159">Os detalhes dos seus contactos podem ajudar a preencher formulários mais rapidamente no Chromium.</translation>
 <translation id="5987687638152509985">Atualize o Chromium para iniciar a sincronização</translation>
 <translation id="6055895534982063517">Está disponível uma nova versão do Chromium, mais rápida do que nunca.</translation>
-<translation id="6077017812234345835">Esta ação elimina permanentemente, no mínimo, <ph name="TOTAL_COUNT" /> itens deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chromium como $2.</translation>
 <translation id="608189560609172163">O Chromium não conseguiu sincronizar os dados devido a um erro de início de sessão.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> é perigoso, por isso o Chromium bloqueou-o.</translation>
 <translation id="6212496753309875659">Este computador já tem uma versão mais recente do Chromium. Se o software não estiver a funcionar, desinstale o Chromium e tente novamente.</translation>
@@ -190,7 +187,6 @@ Algumas funcionalidades podem não estar disponíveis. Especifique um diretório
 <translation id="705851970750939768">Atualizar o Chromium</translation>
 <translation id="7066436765290594559">O SO Chromium não conseguiu sincronizar os dados. Atualize a frase de acesso de sincronização.</translation>
 <translation id="707471633328071618">Google Payments (copiado para o Chromium)</translation>
-<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Esta ação elimina permanentemente $1 item deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chromium como $2.}one{This will permanently delete $1 items from this device. To retrieve your data later, sign in to Chromium as $2.}other{Esta ação elimina permanentemente $1 itens deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chromium como $2.}}</translation>
 <translation id="7138853919861947730">O Chromium pode utilizar serviços Web para melhorar a sua experiência de navegação.</translation>
 <translation id="7162152143154757523">O Chromium pode disponibilizar uma verificação ortográfica mais inteligente ao enviar o que escreve no navegador para os servidores da Google, o que lhe permite utilizar a mesma tecnologia de verificação ortográfica da Pesquisa Google.</translation>
 <translation id="7196020411877309443">Por que motivo estou a ver esta caixa de diálogo?</translation>
@@ -212,7 +208,6 @@ Para evitar que <ph name="NEW_PROFILE_NAME" /> aceda à sua conta, certifique-se
 <ph name="BEGIN_LINK_2" />Saber mais<ph name="END_LINK_2" />
 
 Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" />.</translation>
-<translation id="7421823331379285070">O Chromium necessita do Windows XP ou posterior. Algumas funcionalidades podem não funcionar.</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7483335560992089831">Não é possível instalar a mesma versão do Chromium que está atualmente em execução. Feche o Chromium e tente novamente.</translation>
 <translation id="7549178288319965365">Acerca do SO Chromium</translation>
@@ -223,6 +218,7 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="7729447699958282447">O Chromium não conseguiu sincronizar os dados porque a Sincronização não está disponível para o seu domínio.</translation>
 <translation id="7745317241717453663">Esta ação elimina os dados de navegação deste dispositivo. Para recuperar os dados mais tarde, inicie sessão no Chromium como <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">O programa de instalação não conseguiu criar um directório temporário. Verifique se há espaço livre no disco e permissão para a instalação do software.</translation>
+<translation id="7756122083761163394">Os dados de navegação desta pessoa serão eliminados deste dispositivo. Para recuperar os dados, inicie sessão no Chrome como $2.</translation>
 <translation id="7937630085815544518">Iniciou sessão no Chromium com a conta <ph name="USER_EMAIL_ADDRESS" />. Utilize a mesma conta para iniciar sessão novamente.</translation>
 <translation id="795025003224538582">Não reiniciar</translation>
 <translation id="7962572577636132072">O Chromium é atualizado automaticamente para que tenha sempre a versão mais recente.</translation>

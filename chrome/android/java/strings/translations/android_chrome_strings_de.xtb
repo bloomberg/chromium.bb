@@ -33,6 +33,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="129553762522093515">Kürzlich geschlossen</translation>
 <translation id="1303671224831497365">Keine Bluetooth-Geräte gefunden</translation>
 <translation id="1326317727527857210">Melden Sie sich in Chrome an, um Tabs von Ihren anderen Geräten abzurufen.</translation>
+<translation id="132830257261478853">Adressleiste. Nach unten ziehen, um den Navigationsbereich zu schließen.</translation>
 <translation id="1332501820983677155">Tastenkombinationen für Google Chrome-Funktionen</translation>
 <translation id="1339917386316755344">Sie werden von den meisten Websites, aber nicht aus Ihrem Google-Konto abgemeldet.</translation>
 <translation id="1369915414381695676">Website "<ph name="SITE_NAME" />" hinzugefügt</translation>
@@ -127,12 +128,14 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="2156074688469523661">Verbleibende Websites (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Mich und mein Gerät vor schädlichen Websites schützen</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, Web-App. <ph name="APP_URL" /></translation>
+<translation id="2227444325776770048">Als <ph name="USER_FULL_NAME" /> fortfahren</translation>
 <translation id="2246961355222023276">Genutzte Datenmenge:</translation>
 <translation id="2268044343513325586">Verfeinern</translation>
 <translation id="2286841657746966508">Rechnungsadresse</translation>
 <translation id="2315043854645842844">Die clientseitige Zertifikatauswahl wird vom Betriebssystem nicht unterstützt.</translation>
 <translation id="2321958826496381788">Ziehen Sie den Schieberegler, bis Sie diesen Text problemlos lesen können. Nach dem Doppeltippen auf einen Abschnitt sollte der Text mindestens so groß sein.</translation>
 <translation id="2323763861024343754">Websitespeicher</translation>
+<translation id="2342981853652716282">Melden Sie sich in Chrome an, um Daten wie Lesezeichen und Passwörter auf allen Ihren Geräten zu nutzen.</translation>
 <translation id="2343328333327081434">Wird installiert…</translation>
 <translation id="2346253980530904022">Google-Server optimieren die Seiten, die Sie besuchen, außer für HTTPS und Seiten im Inkognitomodus.</translation>
 <translation id="2349710944427398404">Gesamtdaten, die von Chrome verwendet werden, wie Konten, Lesezeichen und gespeicherte Einstellungen</translation>
@@ -176,6 +179,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="2762000892062317888">gerade eben</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> Sekunden übrig</translation>
 <translation id="2781151931089541271">1 Sekunde übrig</translation>
+<translation id="2810645512293415242">Vereinfachte Seite für einen geringeren Datenverbrauch und schnelleres Laden.</translation>
 <translation id="2836148919159985482">Tippen Sie zum Beenden des Vollbildmodus auf die Zurück-Taste.</translation>
 <translation id="2842985007712546952">Übergeordneter Ordner</translation>
 <translation id="2870560284913253234">Website</translation>
@@ -224,6 +228,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="3282568296779691940">In Chrome anmelden</translation>
 <translation id="3295602654194328831">Informationen ausblenden</translation>
 <translation id="3303414029551471755">Inhalt herunterladen?</translation>
+<translation id="3319792846664697699">Navigationsbereich</translation>
 <translation id="3321222012623826478">Dieser Dienst muss die Adresse dieser Website zur Überprüfung anonym an Google-Server senden.</translation>
 <translation id="3328801116991980348">Websiteinformationen</translation>
 <translation id="3350687908700087792">Alle Inkognitotabs schließen</translation>
@@ -273,7 +278,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="3744111561329211289">Hintergrundsync</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Aktivieren Sie Bluetooth<ph name="END_LINK" />, um die Kopplung zu ermöglichen</translation>
 <translation id="3789841737615482174">Installieren</translation>
-<translation id="380076759404194828">{NUM_SELECTED,plural, =1{1 Element ausgewählt}other{# Elemente ausgewählt}}</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Verwalten</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> Downloads gelöscht</translation>
@@ -370,7 +374,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4807098396393229769">Name auf Karte</translation>
 <translation id="4807963036345170158">Datensparmodus deaktiviert</translation>
 <translation id="4816465935029283692">Datentypen</translation>
-<translation id="4835385943915508971">Chrome hat keinen Zugriff auf die angeforderte Ressource.</translation>
 <translation id="4837753911714442426">Optionen zum Drucken einer Seite öffnen</translation>
 <translation id="4850886885716139402">Anzeigen</translation>
 <translation id="4860895144060829044">Anrufen</translation>
@@ -425,7 +428,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> gelöscht</translation>
 <translation id="5345083863238459644">Der Standortzugriff ist auch <ph name="BEGIN_LINK" />für dieses Gerät deaktiviert<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">URL kopiert.</translation>
-<translation id="5384883051496921101">Diese Website ist im Begriff, Informationen mit einer App außerhalb des Inkognitomodus zu teilen.</translation>
 <translation id="5400569084694353794">Durch die Verwendung dieser App stimmen Sie den <ph name="BEGIN_LINK1" />Nutzungsbedingungen<ph name="END_LINK1" /> und <ph name="BEGIN_LINK2" />Datenschutzhinweisen<ph name="END_LINK2" /> von Chrome zu.</translation>
 <translation id="5403644198645076998">Nur bestimmte Websites zulassen</translation>
 <translation id="5414836363063783498">Überprüfung...</translation>
@@ -452,6 +454,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5568069709869097550">Anmeldung nicht möglich</translation>
 <translation id="557283862590186398">Chrome benötigt für diese Website die Berechtigung, auf Ihr Mikrofon zuzugreifen.</translation>
 <translation id="5578795271662203820">In <ph name="SEARCH_ENGINE" /> nach dem Bild suchen</translation>
+<translation id="5585019845078534178">Karten</translation>
 <translation id="5595485650161345191">Adresse bearbeiten</translation>
 <translation id="5596627076506792578">Weitere Optionen</translation>
 <translation id="5620928963363755975">Ihre Dateien und Seiten finden Sie durch Auswahl der Schaltfläche "Weitere Optionen" unter "Downloads"</translation>
@@ -520,6 +523,7 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="6177390657002841081">Datensparmodus aktivieren</translation>
 <translation id="6181444274883918285">Ausnahme für Website hinzufügen</translation>
 <translation id="6192792657125177640">Ausnahmen</translation>
+<translation id="6210748933810148297"><ph name="EMAIL" /> ist nicht Ihre E-Mail-Adresse?</translation>
 <translation id="6232535412751077445">Wenn Sie das Kästchen "Do Not Track" anklicken, wird mit Ihren Browserzugriffen eine Anforderung gesendet. Wie sich diese Anforderung auswirkt, hängt davon ab, ob eine Website darauf reagiert und wie die Anforderung interpretiert wird.
 
 Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht darauf basiert, welche Websites Sie zuvor besucht haben. Viele Websites erfassen weiterhin Ihre Browserdaten und verwenden sie, um beispielsweise die Sicherheit zu verbessern oder Inhalte, Werbeanzeigen und Empfehlungen bereitzustellen und Statistiken für Berichte zu erstellen.</translation>
@@ -558,6 +562,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="654446541061731451">Tab zum Beamen auswählen</translation>
 <translation id="6545017243486555795">Alle Daten löschen</translation>
 <translation id="6550675742724504774">Optionen</translation>
+<translation id="6556716549745717622">Blockieren, wenn Website für gewöhnlich aufdringliche Werbung anzeigt (empfohlen)</translation>
 <translation id="6560414384669816528">Suche mit Sogou</translation>
 <translation id="6566259936974865419">Dank Chrome haben Sie <ph name="GIGABYTES" /> GB eingespart</translation>
 <translation id="656628257199996201"><ph name="SOURCE_LANGUAGE" /> immer übersetzen</translation>
@@ -566,7 +571,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6583199322650523874">Aktuelle Seite als Lesezeichen speichern</translation>
 <translation id="6600954340915313787">In Chrome kopiert</translation>
 <translation id="6612358246767739896">Geschützte Inhalte</translation>
-<translation id="662080504995468778">Bleiben</translation>
 <translation id="6627583120233659107">Ordner bearbeiten</translation>
 <translation id="6643016212128521049">Löschen</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 und <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> weitere}other{<ph name="CONTACT_PREVIEW" />\u2026 und <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> weitere}}</translation>
@@ -592,6 +596,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6831043979455480757">Übersetzen</translation>
 <translation id="6846298663435243399">Wird geladen…</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> Tabs geschlossen</translation>
+<translation id="6856477143496886355">Karten und Adressen für Google Payments</translation>
 <translation id="6864459304226931083">Bild herunterladen</translation>
 <translation id="6865313869410766144">AutoFill-Formulardaten</translation>
 <translation id="6868088497967843822">Melden Sie sich an, um Ihre Lesezeichen, Ihren Verlauf, Ihre Passwörter und andere Einstellungen auf allen Ihren Geräten aufzurufen.</translation>
@@ -620,6 +625,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7053983685419859001">Blockieren</translation>
 <translation id="7062545763355031412">Akzeptieren und Konto wechseln</translation>
 <translation id="7063006564040364415">Verbindung zum Synchronisierungsserver konnte nicht hergestellt werden.</translation>
+<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ausgewählt}other{# ausgewählt}}</translation>
 <translation id="7121362699166175603">Löscht den Verlauf und Autovervollständigungen in der Adressleiste. Möglicherweise verfügt Ihr Google-Konto unter <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> über andere Browserverläufe.</translation>
 <translation id="7128222689758636196">Für aktuelle Suchmaschine zulassen</translation>
 <translation id="7138678301420049075">Sonstiges</translation>
@@ -770,7 +776,6 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spielen Sie die heruntergeladenen Inhalte ab.</translation>
 <translation id="8636825310635137004">Aktivieren Sie die Synchronisierung, um Tabs von Ihren anderen Geräten abzurufen.</translation>
 <translation id="8641930654639604085">Versuchen, nicht jugendfreie Websites zu blockieren</translation>
-<translation id="8660471606262461360">Aus Google Payments</translation>
 <translation id="8662811608048051533">Sie werden von den meisten Websites abgemeldet.</translation>
 <translation id="8676374126336081632">Eingabe löschen</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalstärke: # Balken}other{Signalstärke: # Balken}}</translation>
@@ -794,7 +799,6 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="8922289737868596582">Seiten über die Schaltfläche "Weitere Optionen" zur Offline-Ansicht herunterladen</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">In anderem Fenster öffnen</translation>
-<translation id="894871326938397531">Inkognitomodus deaktivieren?</translation>
 <translation id="8951232171465285730">Dank Chrome haben Sie <ph name="MEGABYTES" /> MB eingespart</translation>
 <translation id="8959122750345127698">Navigation nicht möglich: <ph name="URL" /> ist nicht erreichbar.</translation>
 <translation id="896250263197055929">Tab "Downloads" ausgewählt</translation>
@@ -804,7 +808,7 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="8993760627012879038">Neuen Tab im Inkognitomodus öffnen</translation>
 <translation id="8998729206196772491">Sie melden sich mit einem von <ph name="MANAGED_DOMAIN" /> verwalteten Konto an und geben dem Administrator der Domain Kontrolle über Ihre Chrome-Daten. Die Daten werden diesem Konto dauerhaft zugeordnet. Wenn Sie sich von Chrome abmelden, werden Ihre Daten auf dem Gerät gelöscht, bleiben jedoch in Ihrem Google-Konto erhalten.</translation>
 <translation id="9019902583201351841">Von deinen Eltern verwaltet</translation>
-<translation id="9038649477754266430">Vorhersagedienst zum schnelleren Laden von Seiten verwenden</translation>
+<translation id="9038649477754266430">Vervollständigungsfunktion zum schnelleren Laden von Seiten verwenden</translation>
 <translation id="9050666287014529139">Passphrase</translation>
 <translation id="9060538597317784206">App <ph name="APP_NAME" /> im Play Store anzeigen. Bewertung: <ph name="APP_RATING" /></translation>
 <translation id="9063523880881406963">"Desktopversion anfordern" deaktivieren</translation>

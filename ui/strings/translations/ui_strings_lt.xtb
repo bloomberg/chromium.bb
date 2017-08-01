@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">Išskleisti</translation>
 <translation id="1413622004203049571">Išjungti pranešimus nuo <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minutė ir }one{# minutė ir }few{# minutės ir }many{# minutės ir }other{# minučių ir }}</translation>
+<translation id="1643823602425662293">Pranešimas</translation>
 <translation id="1685967565548146460">Skrybėlės</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minutė}one{# minutė}few{# minutės}many{# minutės}other{# minučių}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">peršokti</translation>
 <translation id="4250229828105606438">Ekrano kopija</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{Prieš 1 mėnesį}one{Prieš # mėnesį}few{Prieš # mėnesius}many{Prieš # mėnesio}other{Prieš # mėnesių}}</translation>
+<translation id="4316910396681052118">VISOS PROGRAMOS</translation>
 <translation id="4320177379694898372">Nėra interneto ryšio</translation>
 <translation id="4588090240171750605">Slinkti į dešinę</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Liko 1 mėnuo}one{Liko # mėnuo}few{Liko # mėnesiai}many{Liko # mėnesio}other{Liko # mėnesių}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">Aplankas be pavadinimo</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 sek.}one{# sek.}few{# sek.}many{# sek.}other{# sek.}}</translation>
 <translation id="9150735707954472829">Skirtukas</translation>
+<translation id="9161053988251441839">SIŪLOMOS PROGRAMOS</translation>
 <translation id="9170848237812810038">&amp;Atšaukti</translation>
 <translation id="932327136139879170">Kontaktinė namų informacija</translation>
 </translationbundle>

@@ -54,13 +54,6 @@
       dopuštena učestalost iznosi 60 sekundi.</translation>
 <translation id="1221359380862872747">Učitaj navedene URL-ove pri demonstracijskoj prijavi</translation>
 <translation id="1265053460044691532">Ograničite vrijeme koliko se dugo korisnik autentificiran putem SAML-a može izvanmrežno prijaviti</translation>
-<translation id="127699919157094139">Onemogućuje sinkronizaciju podataka u proizvodu <ph name="PRODUCT_NAME" /> pomoću usluga sinkronizacije hostiranih na Googleu i onemogućuje korisnicima promjenu te postavke.
-
-      Ako omogućite tu postavku, korisnici neće moći promijeniti ni nadjačati tu postavku u proizvodu <ph name="PRODUCT_NAME" />.
-
-      Ako se to pravilo ne postavi, Google sinkronizacija bit će dostupna i korisnici će moći odlučiti žele li je upotrebljavati.
-
-      Da biste potpuno isključili Google sinkronizaciju, preporučujemo da onemogućite uslugu Google sinkronizacija na Google Admin consoleu.</translation>
 <translation id="1291880496936992484">Upozorenje: RC4 potpuno će se ukloniti iz preglednika <ph name="PRODUCT_NAME" /> nakon verzije 52 (oko rujna 2016.) i ovo će pravilo tada prestati funkcionirati.
 
       Ako se to pravilo ne postavi ili se postavi na "False", RC4 paketi šifri u TLS-u neće biti omogućeni. U protivnom se može postaviti na "True" radi održanja kompatibilnosti sa zastarjelim poslužiteljem. To je privremena mjera i poslužitelj se treba ponovo konfigurirati.</translation>
@@ -504,6 +497,11 @@
 
       Ako se pravilo ne postavi, to ima jednak učinak kao da se omogući. Pogledajte prethodni opis.</translation>
 <translation id="285480231336205327">Omogućavanje načina visokog kontrasta</translation>
+<translation id="2854919890879212089">Određuje da <ph name="PRODUCT_NAME" /> u Pregledu ispisa upotrebljava zadani pisač sustava, a ne pisač koji je upotrijebljen zadnji put.
+
+      Ako onemogućite tu postavku ili ne postavite nikakvu vrijednost, zadani će odredišni pisač u Pregledu ispisa biti pisač koji je upotrijebljen zadnji put.
+
+      Ako omogućite tu postavku, u Pregledu ispisa upotrebljavat će se zadani pisač OS-a kao zadani odredišni pisač.</translation>
 <translation id="2872961005593481000">Isključi</translation>
 <translation id="2874209944580848064">Napomena za uređaje <ph name="PRODUCT_OS_NAME" /> koji podržavaju Androidove aplikacije:</translation>
 <translation id="2877225735001246144">Onemogući CNAME pretraživanje prilikom provjere Kerberos autentičnosti</translation>
@@ -958,6 +956,7 @@
 
           Prema zadanim postavkama korisnicima će se prikazivati upozorenje, a ne pogreška, ako se PIN smatra slabim.</translation>
 <translation id="4723829699367336876">Omogući prijelaz vatrozida iz klijenta za daljinski pristup</translation>
+<translation id="4725123658714754485">Kontrolira šalju li se Googleu izvješća o mjernim podacima o upotrebi i dijagnostičkim podacima, uključujući izvješća o rušenju. Ako se postavi na točno, <ph name="PRODUCT_OS_NAME" /> slat će izvješća o mjernim podacima o upotrebi i dijagnostičkim podacima. Ako se ne konfigurira ili se postavi na netočno, onemogućit će se izvješćivanje o mjernim i dijagnostičkim podacima.</translation>
 <translation id="4725528134735324213">Omogući Androidovu uslugu sigurnosnog kopiranja</translation>
 <translation id="4733471537137819387">Pravila koja se odnose na integriranu HTTP autentifikaciju.</translation>
 <translation id="4744190513568488164">Poslužitelji koje <ph name="PRODUCT_NAME" /> može ovlastiti.
@@ -1439,6 +1438,11 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="6689792153960219308">Izvješćivanje o statusu hardvera</translation>
 <translation id="6693751878507293182">Ako omogućite ovu postavku, automatsko pretraživanje i instalacija dodataka koji nedostaju bit će onemogućeni u proizvodu <ph name="PRODUCT_NAME" />. Ako onemogućite ovu opciju ili ju ne postavite, alat za traženje dodataka bit će aktivan.</translation>
 <translation id="6699880231565102694">Omogući autentifikaciju s dva čimbenika za hostove daljinskog pristupa</translation>
+<translation id="6724842112053619797">Ako omogućite tu postavku, postavke pohranjene u <ph name="PRODUCT_NAME" /> profilima kao što su oznake, podaci za automatsko popunjavanje, zaporke itd. također će se bilježiti u datoteku pohranjenu u mapu korisničkog profila na Roamingu ili na lokaciju koju je odredio administrator pomoću pravila <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Omogućivanjem tog pravila onemogućuje se sinkronizacija u oblaku.
+
+      Ako se to pravilo onemogući ili ne postavi, upotrebljavat će se samo uobičajeni lokalni profili.
+
+      Pravilo <ph name="SYNC_DISABLED_POLICY_NAME" /> onemogućuje svu sinkronizaciju podataka nadjačavajući RoamingProfileSupportEnabled.</translation>
 <translation id="6757438632136860443">Omogućuje vam postavljanje popisa uzoraka URL-ova koji navode web-lokacije kojima je dopušteno pokretanje dodatka <ph name="FLASH_PLUGIN_NAME" />.
 
           Ako se to pravilo ne postavi, za sve web-lokacije upotrebljavat će se globalna zadana vrijednost iz pravila "DefaultPluginsSetting", ako je to pravilo postavljeno, ili vrijednost iz korisnikove osobne konfiguracije.</translation>
@@ -1482,6 +1486,13 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="6943577887654905793">Naziv Mac/Linux preferencije:</translation>
 <translation id="69525503251220566">Značajka pretraživanja po slici koja pruža parametre za zadanog davatelja usluge pretraživanja</translation>
 <translation id="6956272732789158625">Nemoj dopustiti nijednoj web-lokaciji da upotrebljava generiranje ključeva</translation>
+<translation id="6994082778848658360">Određuje način na koji se hardver s ugrađenim sigurnosnim elementom može upotrebljavati za pružanje dvostruke autentifikacije ako je kompatibilan s ovom značajkom. Tipka za uključivanje/isključivanje uređaja upotrebljava se za otkrivanje korisnikove fizičke prisutnosti.
+
+      Ako se odabere "Onemogućeno", dvostruka se autentifikacija ne upotrebljava.
+
+      Ako se odabere "U2F", integrirana dvostruka autentifikacija ponašat će se u skladu sa specifikacijom za FIDO U2F.
+
+      Ako se odabere "U2F_EXTENDED", integrirana dvostruka autentifikacija pružat će funkcije U2F i neka proširenja za pojedinačno atestiranje.</translation>
 <translation id="6997592395211691850">Jesu li potrebne mrežne OCSP/CRL provjere za lokalna pouzdana sidra</translation>
 <translation id="7003334574344702284">Ako je omogućeno, ovo pravilo prisilno uvozi spremljene zaporke iz prethodno zadanog preglednika. Ako je omogućeno, ovo pravilo također utječe na dijaloški okvir za uvoz. Ako je onemogućeno, spremljene se zaporke ne uvoze. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti zaporke ili do uvoza može doći automatski.</translation>
 <translation id="7003746348783715221">Postavke za <ph name="PRODUCT_NAME" /></translation>
@@ -1669,7 +1680,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="7713608076604149344">Ograničenja za preuzimanja</translation>
 <translation id="7715711044277116530">Postotak za skaliranje odgode zatamnjenja zaslona u načinu prezentacije</translation>
 <translation id="7717938661004793600">Konfiguriranje značajki pristupačnosti proizvoda <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7719251660743813569">Kontrolira hoće li se mjerni podaci upotrebe prijavljivati Googleu. Ako je to pravilo postavljeno na "istinito", sustav <ph name="PRODUCT_OS_NAME" /> prijavljivat će mjerne podatke o upotrebi. Ako to pravilo nije konfigurirano ili je postavljeno na "lažno", prijavljivanje mjernih podataka o upotrebi bit će onemogućeno.</translation>
 <translation id="7724994675283793633">To pravilo omogućuje HTTP/0.9 na priključcima osim priključka 80 za HTTP i 443 za HTTPS.
 
       To je pravilo onemogućeno prema zadanim postavkama. Ako se omogući, korisnici mogu biti izloženi sigurnosnoj poteškoći https://crbug.com/600352.
@@ -1980,6 +1990,15 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="891435090623616439">kodirano kao JSON niz, pojedinosti potražite na stranici <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Prijava lokacije uređaja</translation>
 <translation id="8951350807133946005">Postavi direktorij predmemorije na disku</translation>
+<translation id="8952317565138994125">Onemogućuje sinkronizaciju podataka na usluzi <ph name="PRODUCT_NAME" /> putem usluga sinkronizacije hostiranih na Googleu i onemogućuje korisnicima da promjene tu postavku.
+
+      Ako omogućite tu postavku, korisnici ne mogu promijeniti niti nadjačati tu postavku na usluzi <ph name="PRODUCT_NAME" />.
+
+      Ako se to pravilo ne postavi, korisnik će moći odabrati hoće li upotrebljavati Google sinkronizaciju.
+
+      Da biste potpuno onemogućili Google sinkronizaciju, preporučuje se da onemogućite uslugu Google sinkronizacije na konzoli Google Admina.
+
+      To se pravilo ne bi trebalo omogućivati kada je pravilo <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> postavljeno na omogućeno jer ta značajka dijeli istu klijentsku funkciju. Sinkronizacija hostirana na Googleu u tom je slučaju potpuno onemogućena.</translation>
 <translation id="8955719471735800169">Natrag na vrh</translation>
 <translation id="8960850473856121830">Uzorci na tom popisu usporedit će se sa sigurnosnim izvorištem
       URL-a koji šalje zahtjev. Ako se pronađe podudaranje, pristup uređajima
@@ -1989,6 +2008,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="8970205333161758602">Zaustavljanje upita za odbijanje usluge <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Odbrojavanje za automatsku prijavu u javnu sesiju</translation>
 <translation id="8976248126101463034">Dopusti autentifikaciju "gnubby" za hostove daljinskog pristupa</translation>
+<translation id="8976531594979650914">Upotrijebi zadani pisač sustava kao zadani</translation>
 <translation id="8992176907758534924">Ne dopuštaj web-lokacijama prikazivanje slika</translation>
 <translation id="9035964157729712237">ID-jevi proširenja za izuzimanje s crne liste</translation>
 <translation id="9042911395677044526">Omogućuje nametanje mrežne konfiguracije za primjenu po korisniku na uređaju <ph name="PRODUCT_OS_NAME" />. Mrežna je konfiguracija niz u formatu JSON, kao što je definirano formatom "Open Network Configuration" koji je opisan na adresi <ph name="ONC_SPEC_URL" /></translation>

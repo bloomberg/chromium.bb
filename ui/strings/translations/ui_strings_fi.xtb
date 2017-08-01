@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">Suurenna</translation>
 <translation id="1413622004203049571">Poista ilmoitukset käytöstä sovellukselta <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuutti ja }other{# minuuttia ja }}</translation>
+<translation id="1643823602425662293">Ilmoitus</translation>
 <translation id="1685967565548146460">Tyytyväisyyskysely</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minuutti}other{# minuuttia}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> t</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">siirry</translation>
 <translation id="4250229828105606438">Kuvakaappaus</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 kuukausi sitten}other{# kuukautta sitten}}</translation>
+<translation id="4316910396681052118">KAIKKI SOVELLUKSET</translation>
 <translation id="4320177379694898372">Ei internetyhteyttä</translation>
 <translation id="4588090240171750605">Vieritä oikealle</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 kuukausi jäljellä}other{# kuukautta jäljellä}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">Nimetön kansio</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}other{# s}}</translation>
 <translation id="9150735707954472829">Välilehti</translation>
+<translation id="9161053988251441839">SOVELLUSEHDOTUKSET</translation>
 <translation id="9170848237812810038">K&amp;umoa</translation>
 <translation id="932327136139879170">Etusivu</translation>
 </translationbundle>

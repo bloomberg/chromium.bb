@@ -165,7 +165,6 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="573759479754913123">Acerca de Chrome OS</translation>
 <translation id="5749068826913805084">Chrome necesita acceder al almacenamiento para descargar archivos.</translation>
 <translation id="5774845247549698882">El Sistema operativo Chrome se muestra en este idioma</translation>
-<translation id="5832596086758878896">{NUM_ITEMS,plural, =1{Esta acción borrará de forma permanente $1 elemento de este dispositivo. Si más adelante deseas recuperar tus datos, accede a Chrome como $2.}other{Esta acción borrará de forma permanente $1 elementos de este dispositivo. Si más adelante deseas recuperar tus datos, accede a Chrome como $2.}}</translation>
 <translation id="5855036575689098185">El software que se ejecuta en tu computadora no es compatible con Google Chrome.</translation>
 <translation id="5877064549588274448">Se cambió el canal. Reinicia el dispositivo para aplicar los cambios.</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
@@ -210,7 +209,6 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="7125719106133729027">Chrome no pudo actualizarse a la versión más reciente, por lo que no estás aprovechando las funciones geniales ni las correcciones de seguridad que se agregaron. Debes reinstalar Chrome de forma manual.</translation>
 <translation id="7161904924553537242">Bienvenido a Google Chrome</translation>
 <translation id="7164397146364144019">Puedes ayudar a que Chrome sea más seguro y fácil de usar si informas automáticamente detalles de posibles incidentes de seguridad en Google.</translation>
-<translation id="7177347454226092725">Esta acción borrará de forma permanente tus datos de navegación de este dispositivo. Si más adelante deseas recuperarlos, accede a Chrome como $2.</translation>
 <translation id="7185038942300673794">Se agregó <ph name="EXTENSION_NAME" /> a Chrome.</translation>
 <translation id="7196020411877309443">¿Por qué estoy viendo esto?</translation>
 <translation id="7242029209006116544">Estás por acceder con una cuenta administrada, lo que significa que proporcionarás al administrador el control sobre tu perfil de Google Chrome. Tus datos de Google Chrome, como las aplicaciones, los favoritos, el historial, las contraseñas y otros parámetros de configuración quedarán vinculados a <ph name="USER_NAME" /> de forma permanente. Podrás eliminar estos datos a través del Panel de control de Cuentas de Google, pero no podrás asociarlos a otra cuenta. También puedes crear un perfil para mantener separados tus datos de Chrome. <ph name="LEARN_MORE" /></translation>
@@ -221,18 +219,17 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="7400722733683201933">Acerca de Google Chrome</translation>
 <translation id="7408085963519505752">Condiciones del Sistema operativo Chrome</translation>
 <translation id="7419046106786626209">El Sistema operativo Chrome no pudo sincronizar los datos porque la sincronización no está disponible para el dominio.</translation>
-<translation id="7436949144778751379">Google Chrome requiere Windows XP o versiones posteriores. Es posible que no funcionen algunas características.</translation>
 <translation id="7437998757836447326">Salir de Chrome</translation>
 <translation id="7459554271817304652">Configura la sincronización para guardar las funciones personalizadas de tu navegador en la Web y acceder a ellas desde Google Chrome en cualquier equipo.</translation>
 <translation id="7473136999113284234">Chrome se actualiza automáticamente para que siempre tengas la versión más reciente.</translation>
 <translation id="7473891865547856676">No, gracias</translation>
 <translation id="7494905215383356681">Licencias de código abierto de Chrome</translation>
-<translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Esta acción borrará de forma permanente al menos $1 elemento de este dispositivo. Si más adelante deseas recuperar tus datos, accede a Chrome como $2.}other{Esta acción borrará de forma permanente al menos $1 elementos de este dispositivo. Si más adelante deseas recuperar tus datos, accede a Chrome como $2.}}</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Mostrar el SO Chrome en este idioma</translation>
 <translation id="7592736734348559088">Google Chrome no pudo sincronizar los datos porque los datos de acceso de la cuenta están obsoletos.</translation>
 <translation id="7626032353295482388">Te damos la bienvenida a Chrome</translation>
 <translation id="7747138024166251722">El instalador no pudo crear un directorio temporal. Verifique si hay espacio disponible en el disco y cuenta con permiso para instalar software.</translation>
+<translation id="7756122083761163394">Los datos de navegación de esta persona se borrarán de este dispositivo. Para recuperarlos, accede a Chrome como $2.</translation>
 <translation id="7761834446675418963">Haz clic en tu nombre para abrir Chrome y empezar a navegar.</translation>
 <translation id="7781002470561365167">Hay una nueva versión disponible de Google Chrome.</translation>
 <translation id="7787950393032327779">Parece que otro proceso de Google Chrome (<ph name="PROCESS_ID" />) está utilizando el perfil en otra computadora (<ph name="HOST_NAME" />). Chrome bloqueó el perfil para que no se dañe. Si puedes confirmar que ningún otro proceso está utilizando este perfil, puedes desbloquearlo y volver a iniciar Chrome.</translation>
@@ -251,7 +248,6 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="8129812357326543296">Acerca de &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Instala Chrome en el teléfono. Te enviaremos un SMS a ese dispositivo.</translation>
 <translation id="8183957050892517584">Chromium almacenará de forma segura tus datos personales para que no tengas que volver a escribirlos.</translation>
-<translation id="8211929904040702368">Esta acción borrará de forma permanente al menos <ph name="TOTAL_COUNT" /> elementos de este dispositivo. Si más adelante deseas recuperar tus datos, accede a Chrome como $2.</translation>
 <translation id="8255190535488645436">Google Chrome está usando tu cámara y tu micrófono.</translation>
 <translation id="8286862437124483331">Google Chrome está intentando mostrar contraseñas. Para permitirlo, ingresa tu contraseña de Windows.</translation>
 <translation id="8290100596633877290">¡Vaya! Se ha producido un bloqueo en Google Chrome. ¿Quieres reiniciar el navegador ahora?</translation>

@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Overflyt-knapp</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl + Søk + H</translation>
 <translation id="2049639323467105390">Denne enheten administreres av <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Stående</translation>
 <translation id="207439088875642105">Dette er en konto for barn, som administreres av <ph name="FIRST_PARENT_EMAIL" /> og <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Trege taster</translation>
 <translation id="2509468283778169019">Caps Lock er på</translation>
 <translation id="2532589005999780174">Høykontrastmodus</translation>
+<translation id="2597972630681408282">Nattlys: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">Økten slutter om <ph name="SESSION_TIME_REMAINING" />. Du blir logget av automatisk.</translation>
 <translation id="2727977024730340865">Tilkoblet laveffektslader. Batteriladingen kan være upålitelig.</translation>
 <translation id="2761704814324807722">Statusfelt, klokken <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">Utdata</translation>
 <translation id="3019353588588144572">Tid som gjenstår til batteriet er fulladet – <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">Dette er en konto for barn, som administreres av <ph name="MANAGER_EMAIL" /></translation>
-<translation id="3050422059534974565">Caps Lock er på.
-Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Bunn</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -136,6 +136,7 @@ Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="4849058404725798627">Fremhev objektet med tastaturfokus</translation>
 <translation id="4872237917498892622">Alt + Søk eller Shift</translation>
 <translation id="4895488851634969361">Batteriet er fullt.</translation>
+<translation id="4905614135390995787">Hurtigtasten for å slå høykontrastmodus av eller på er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Godta</translation>
 <translation id="4961318399572185831">Cast skjermen</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@ Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="5744083938413354016">Trykk-og-dra</translation>
 <translation id="5777841717266010279">Vil du stoppe skjermdelingen?</translation>
 <translation id="57838592816432529">Kutt lyden</translation>
+<translation id="5860033963881614850">Av</translation>
 <translation id="5895138241574237353">Start på nytt</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">På</translation>
 <translation id="5927132638760172455">Caster til en ukjent mottaker</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Tilbakestill</translation>
@@ -169,8 +172,8 @@ Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="5977415296283489383">Hodetelefon</translation>
 <translation id="5978382165065462689">Deler kontroll av skjermen via fjernhjelp.</translation>
 <translation id="5980301590375426705">Avslutt gjesteøkten</translation>
+<translation id="5992218262414051481">Høykontrastmodus er slått på. Trykk på Ctrl + Søk + H på nytt for å slå den av.</translation>
 <translation id="6018164090099858612">Avslutter speilingsmodus</translation>
-<translation id="6041154455840261787">Høykontrastmodus er slått på. Trykk på Søk+Shift+H igjen for å slå det av.</translation>
 <translation id="6043212731627905357">Denne skjermen liker ikke <ph name="DEVICE_TYPE" /> (skjermen støttes ikke).</translation>
 <translation id="6043994281159824495">Logg av nå</translation>
 <translation id="6047696787498798094">Skjermdelingen stopper hvis du bytter til en annen bruker.</translation>
@@ -195,6 +198,7 @@ Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="6585808820553845416">Økten slutter om <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Søk + Shift + K</translation>
 <translation id="6650933572246256093">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til. Skriv inn denne tilgangskoden på den aktuelle enheten: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Søk + Shift + H</translation>
 <translation id="6700713906295497288">IME-menyknappen</translation>
 <translation id="6713285437468012787">Nå er Bluetooth-enheten «<ph name="DEVICE_NAME" />» koblet til og tilgjengelig for alle brukere. Du kan oppheve denne tilkoblingen via Innstillinger.</translation>
 <translation id="6785414152754474415">Batteriet er <ph name="PERCENTAGE" /> % fullt og til lading.</translation>
@@ -214,8 +218,7 @@ Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Går tilbake til den gamle oppløsningen om <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">Caps Lock er på.
-Trykk på Alt + Søk eller Shift for å avbryte.</translation>
+<translation id="7199454189089571166">Assistentmodus</translation>
 <translation id="7246339268451149667">Vil du slå på opplåsing med fingeravtrykk?</translation>
 <translation id="7256634071279256947">Mikrofon bak</translation>
 <translation id="7348093485538360975">Skjermtastatur</translation>
@@ -233,10 +236,10 @@ Trykk på Alt + Søk eller Shift for å avbryte.</translation>
 <translation id="7649070708921625228">Hjelp</translation>
 <translation id="7692480393933218409">Lader de tilkoblede USB-C-enhetene</translation>
 <translation id="776344839111254542">Klikk for å se oppdateringsdetaljene</translation>
+<translation id="7798302898096527229">Trykk på Søk eller Shift for å avbryte</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> og <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Språket er endret fra <ph name="FROM_LOCALE" /> til <ph name="TO_LOCALE" /> etter synkronisering av innstillingene dine.</translation>
 <translation id="7904094684485781019">Administratoren for denne kontoen har forbudt multipålogging.</translation>
-<translation id="7951523953736115461">Nattlys</translation>
 <translation id="7977927628060636163">Søker etter mobilnettverk …</translation>
 <translation id="7982789257301363584">Nettverk</translation>
 <translation id="8000066093800657092">Ingen nettverk</translation>
@@ -255,6 +258,7 @@ Trykk på Alt + Søk eller Shift for å avbryte.</translation>
 <translation id="8433977262951327081">Hurtigtasten for å vise boblen med menyen for valg av inndataalternativer på hyllen er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Wi-Fi er slått på.</translation>
 <translation id="847056008324733326">Innstillinger for visningsskala</translation>
+<translation id="8477270416194247200">Trykk på Alt + Søk eller Shift for å avbryte.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Kobler til på nytt ...</translation>
 <translation id="8517041960877371778">Det kan hende at din <ph name="DEVICE_TYPE" /> ikke lader når den er slått på.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> igjen</translation>

@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="1413622004203049571">Desativar notificações de <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{Um minuto e }one{# minutos e }other{# minutos e }}</translation>
+<translation id="1643823602425662293">Notificação</translation>
 <translation id="1685967565548146460">HaTS</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minuto}one{# minutos}other{# minutos}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> bytes</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">pular</translation>
 <translation id="4250229828105606438">Captura de tela</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 mês atrás}one{# mês atrás}other{# meses atrás}}</translation>
+<translation id="4316910396681052118">TODOS OS APPS</translation>
 <translation id="4320177379694898372">Sem conexão com a Internet</translation>
 <translation id="4588090240171750605">Percorrer à direita</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 mês restante}one{# mês restante}other{# meses restantes}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">Pasta sem nome</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}one{# s}other{# s}}</translation>
 <translation id="9150735707954472829">Guia</translation>
+<translation id="9161053988251441839">APPS SUGERIDOS</translation>
 <translation id="9170848237812810038">&amp;Desfazer</translation>
 <translation id="932327136139879170">Início</translation>
 </translationbundle>

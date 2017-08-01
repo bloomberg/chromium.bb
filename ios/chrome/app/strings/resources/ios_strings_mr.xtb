@@ -4,7 +4,6 @@
 <translation id="1016495303386450659">आयटम अद्यतनित केला</translation>
 <translation id="1047726139967079566">हे पृष्ठ बुकमार्क करा...</translation>
 <translation id="1049743911850919806">गुप्त</translation>
-<translation id="1073594902069885687">प्रमाणीकरण अयशस्वी झाले. आपला संकेतशब्द कॉपी केला नव्हता.</translation>
 <translation id="1076421457278169141">कोड स्कॅन केला</translation>
 <translation id="1084365883616172403">Facebook पोस्ट पूर्ण केले.</translation>
 <translation id="1104948393051856124">स्वीकारा आणि सुरू ठेवा</translation>
@@ -34,9 +33,11 @@
 <translation id="1430915738399379752">मुद्रण</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> आयटम</translation>
 <translation id="1491277525950327607">सेटिंग टॉगल करण्यासाठी दोनदा टॅप करा</translation>
+<translation id="152234381334907219">कधीही जतन न केलेले</translation>
 <translation id="1540800554400757039">पत्ता 1</translation>
 <translation id="1545749641540134597">QR कोड स्कॅन करा</translation>
 <translation id="1580783302095112590">मेल पाठवले.</translation>
+<translation id="1612730193129642006">टॅब ग्रिड दाखवा</translation>
 <translation id="1646446875146297738">'Do Not Track' सक्षम करणे अर्थात आपल्या ब्राउझिंग रहदारीसह एक विनंती समाविष्ट‍ केली जाईल. कोणताही प्रभाव यावर अवलंबून असतो कि वेबसाइट विनंतीस प्रतिसाद देते किंवा नाही आणि विनंतीचा निष्कर्ष कसा काढला जातो.
 
 उदाहरणार्थ, काही वेबसाइट आपण भेट दिलेल्या इतर वेबसाइटवर आधारित नसलेल्या जाहिराती आपल्याला दर्शवून या विनंतीस प्रतिसाद देऊ शकतात. अनेक वेबसाइट अद्यापही आपला ब्राउझिंग डेटा संकलित करून त्याचा वापर करतील - उदाहरणार्थ सुरक्षितता सुधारणे, सामग्री प्रदान करणे, त्यांच्या वेबसाइटवर जाहिराती आणि शिफारसी आणि अहवाल आकडेवारी व्युत्पन्न करणे. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
@@ -66,7 +67,6 @@
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> आयटम हलविले</translation>
 <translation id="2149973817440762519">बुकमार्क संपादित करा</translation>
 <translation id="2230173723195178503">वेबपृष्ठ लोड केले</translation>
-<translation id="2241634353105152135">फक्त एकदाच</translation>
 <translation id="2267753748892043616">खाते जोडा</translation>
 <translation id="2273327106802955778">अधिक मेनू</translation>
 <translation id="2320166752086256636">कीबोर्ड लपवा</translation>
@@ -79,6 +79,7 @@
 <translation id="2572712655377361602">डिव्हाइस धोरणाने आपल्या फोटोंंमधील प्रवेश अवरोधित केला</translation>
 <translation id="2584132361465095047">खाते जोडा...</translation>
 <translation id="2593774076813182497">या पृष्ठाचे मुद्रण केले जाऊ शकत नाही.</translation>
+<translation id="2625189173221582860">पासवर्ड कॉपी केला</translation>
 <translation id="2648803196158606475">वाचलेले हटवा</translation>
 <translation id="2653659639078652383">सबमिट करा</translation>
 <translation id="2684815431982545828">नवीन टॅब</translation>
@@ -120,6 +121,7 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="NUM_SUGGESTIONS" /> पैकी <ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /></translation>
 <translation id="3268451620468152448">उघडे Tabs</translation>
+<translation id="3277021493514034324">साइट पत्ता कॉपी केला</translation>
 <translation id="3324193307694657476">पत्ता 2</translation>
 <translation id="3329904751041170572">सर्व्हरशी कनेक्ट करू शकलो नाही.</translation>
 <translation id="3335947283844343239">बंद केलेले टॅब पुन्हा उघडा</translation>
@@ -132,7 +134,6 @@
 <translation id="3474649192738347024">फॉर्म भरले.</translation>
 <translation id="3478058380795961209">कालबाह्यता महिना:</translation>
 <translation id="3482959374254649722">आपले टॅब संकालित करीत आहे...</translation>
-<translation id="3489372701259491571">जतन केलेला संकेतशब्द हटवा</translation>
 <translation id="3494788280727468875">ब्राउझिंग डेटा साफ करता याची पुष्टी करा</translation>
 <translation id="3519193562722059437">वेब ब्राउझ करण्‍यासाठी एक टॅब उघडा.</translation>
 <translation id="3527085408025491307">फोल्डर</translation>
@@ -149,10 +150,8 @@
 <translation id="3638472932233958418">वेबपृष्ठे प्रीलोड करा</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> मध्ये बुकमार्क केले</translation>
 <translation id="3738139272394829648">शोधण्यासाठी स्विच करा</translation>
-<translation id="3742082982782149146">साइट URL कॉपी करण्यात आली होती.</translation>
 <translation id="3771033907050503522">गुप्त टॅब</translation>
 <translation id="3783017676699494206">प्रतिमा जतन करा</translation>
-<translation id="3789841737615482174">स्थापना करा</translation>
 <translation id="385051799172605136">मागील</translation>
 <translation id="3897092660631435901">मेनू</translation>
 <translation id="3928666092801078803">माझा डेटा एकत्र करा</translation>
@@ -164,12 +163,11 @@
 <translation id="4038354071007134711">या डिव्हाइसवरील कोणताही अनुप्रयोग फाईल उघडू शकत नाही.</translation>
 <translation id="4049507953662678203">आपल्याकडे नेटवर्क कनेक्शन आहे हे सुनिश्चित करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="411254640334432676">डाउनलोड अयशस्वी.</translation>
-<translation id="4117350985506774529">तुमचे वापरकर्ता नाव कॉपी करण्यात होते.</translation>
 <translation id="4121993058175073134">निव्वळ-निर्यात डेटा पाठविण्यासाठी, कृपया सेटिंग्ज अॅप मध्ये आपले ईमेल खाते कॉन्फिगर करा.</translation>
 <translation id="4124987746317609294">वेळ श्रेणी</translation>
 <translation id="4172051516777682613">नेहमी दर्शवा</translation>
 <translation id="418156467088430727">नवीन टॅबमध्‍ये ऑफलाइन आवृत्ती पहा</translation>
-<translation id="4237682350741091554">Chrome सिंक आणि वैयक्तिकरणाचे <ph name="BEGIN_LINK" />सेटिंग्ज<ph name="END_LINK" />मधून व्यवस्थापन करा</translation>
+<translation id="4237682350741091554">Chrome सिंक आणि पर्सनलायझेशन <ph name="BEGIN_LINK" />सेटिंग्ज<ph name="END_LINK" /> मधून व्यवस्थापित करा.</translation>
 <translation id="424315890655130736">सांकेतिक वाक्यांश प्रविष्ट करा</translation>
 <translation id="4272631900155121838">QR कोड स्कॅन करण्‍यासाठी, सेटिंग्ज मधून कॅमेरा सक्षम करा</translation>
 <translation id="4281844954008187215">सेवा अटी</translation>
@@ -188,7 +186,6 @@
 
 आपला डेटा आपल्या संकालित वाक्यांशासह कूटबद्ध केला आहे. संकालन सुरू करण्यासाठी तो प्रविष्ट करा.</translation>
 <translation id="473775607612524610">अद्यतनित करा</translation>
-<translation id="4773461607542755386"><ph name="APP_NAME" /> अॅपमध्ये हे पृष्ठ उघडायचे?</translation>
 <translation id="481968316161811770">कुकीज, साइट डेटा</translation>
 <translation id="4860895144060829044">कॉल करा</translation>
 <translation id="4875622588773761625"><ph name="PASSWORD_MANAGER_BRAND" /> नी या साइटसाठी आपला संकेतशब्द अद्यतनित करावा असे आपण इच्छिता?</translation>
@@ -216,6 +213,7 @@
 <translation id="5327248766486351172">नाव</translation>
 <translation id="5388358297987318779">प्रतिमा उघडा</translation>
 <translation id="5409365236829784218">ही फाईल उघडू शकणारे कोणतेही अनुप्रयोग स्थापित केलेले नाहीत.</translation>
+<translation id="5433691172869980887">वापरकर्तानाव कॉपी केले</translation>
 <translation id="54401264925851789">पृष्‍ठ सुरक्षितता माहिती</translation>
 <translation id="5525269841082836315">सांकेतिक वाक्यांश तयार करा</translation>
 <translation id="5531274207066050939">Google Payments</translation>
@@ -265,6 +263,7 @@
 <translation id="6196207969502475924">व्हॉइस शोध</translation>
 <translation id="6254066287920239840">ब्राउझर ऐवजी अॅपमध्ये दुवे उघडा.</translation>
 <translation id="6255097610484507482">क्रेडिट कार्ड संपादित करा</translation>
+<translation id="6273258929211277933"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" />, <ph name="STATE" /></translation>
 <translation id="6308436439357671616">हे आपल्याला फोटो घेऊ आणि अपलोड करू देते.</translation>
 <translation id="6314335155547195432">संकेतशब्द व्युत्पन्न करा</translation>
 <translation id="6324528485781869530">संकालन खाते स्विच करा</translation>
@@ -291,7 +290,6 @@
 <translation id="6570040839871198836">स्वयं-भरण फॉर्म</translation>
 <translation id="6656103420185847513">फोल्डर संपादित करा</translation>
 <translation id="6657585470893396449">संकेतशब्द</translation>
-<translation id="666731172850799929"><ph name="APP_NAME" /> मध्ये उघडा</translation>
 <translation id="667999046851023355">दस्तऐवज</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6762156594045689028">हे सेटिंग बदलण्यासाठी, <ph name="BEGIN_LINK" />संकालन रीसेट करा<ph name="END_LINK" /></translation>
@@ -318,6 +316,7 @@
 <translation id="7189598951263744875">सामयिक करा...</translation>
 <translation id="7203585745079012652">उत्तरे वाचून सांगा</translation>
 <translation id="722055596168483966">Google सेेव वैयक्तिकृत करा</translation>
+<translation id="7272437679830969316">तुमच्या ओळखीची पडताळणी करू शकत नाही. पासवर्ड कॉपी केला नाही.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> टक्के डाउनलोड केले</translation>
 <translation id="7346909386216857016">ठीक, समजले</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -357,7 +356,6 @@
 <translation id="806745655614357130">माझा डेटा स्वतंत्र ठेवा</translation>
 <translation id="8076014560081431679">जतन केलेल्या साइट सेटिंग्ज हटविल्या जाणार नाहीत आणि कदाचित आपल्या ब्राउझिंग सवयी दर्शवेल. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">सर्व टॅब बंद करा</translation>
-<translation id="8108697784695284144">आपला संकेतशब्द कॉपी केला होता.</translation>
 <translation id="8137558756159375272">शोधण्यासाठी स्पर्श करा हे Google शोध कडे संदर्भ म्हणून निवडलेला शब्द आणि वर्तमान पृष्ठ पाठविते. आपण हे <ph name="BEGIN_LINK" />सेटिंग्ज<ph name="END_LINK" /> मध्ये बंद करू शकता.</translation>
 <translation id="8205564605687841303">रद्द करा</translation>
 <translation id="8225985093977202398">कॅश   प्रतिमा आणि फायली</translation>
@@ -365,6 +363,7 @@
 <translation id="8272426682713568063">क्रेडिट कार्ड</translation>
 <translation id="8281781826761538115">डीफॉल्ट - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">शोध, जाहिरात आणि इतर Google सेवा वैयक्तीकृत करण्यास Google आपल्या ब्राउझिंग इतिहासाचा कसा वापर करते ते नियंत्रित करा</translation>
+<translation id="842017693807136194">यासह साइन इन केले</translation>
 <translation id="8428045167754449968">शहर / नगर</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>
 <translation id="8433678324664858900">सूचना दर्शवा</translation>
@@ -389,6 +388,7 @@
 <translation id="8775144690796719618">अवैध URL</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="8840513115188359703">आपल्याला आपल्या Google खात्यामधून साइन आउट केले जाणार नाही.</translation>
+<translation id="8881801611828450202">या इमेजसाठी <ph name="SEARCH_ENGINE" /> शोधा</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">समस्या नोंदवणे</translation>
 <translation id="8971089644512329999">ठीक, समजले</translation>
@@ -407,6 +407,7 @@
 <translation id="9188680907066685419">व्यवस्थापित केलेल्या खात्यामधून साइन आउट करा</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">क्रॅश अहवाल पाठवला.</translation>
+<translation id="932327136139879170">मुख्यपृष्ठ</translation>
 <translation id="935490618240037774">आपले बुकमार्क, इतिहास, संकेतशब्द आणि इतर सेटिंग्ज आपल्या Google खात्यात संकालित केल्या जातील जेणेकरून आपण आपल्या सर्व डिव्हाइसेसवर त्यांचा वापर करू शकता.</translation>
 <translation id="939598580284253335">सांकेतिक वाक्यांश प्रविष्ट करा</translation>
 <translation id="976982866697960176">संकालित केलेला डेटा व्यवस्थापित करा...</translation>

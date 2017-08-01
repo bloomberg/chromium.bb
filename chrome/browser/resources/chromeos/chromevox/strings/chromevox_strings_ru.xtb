@@ -166,6 +166,7 @@
 <translation id="27527859628328957">Перейти к следующему активируемому элементу</translation>
 <translation id="2770781857296573485">Ввести значение для перехода по группам</translation>
 <translation id="2777845298774924149">Окно закрыто.</translation>
+<translation id="2781264313200109999">Начало ссылки</translation>
 <translation id="2800204403141299078">Отличающихся элементов больше нет.</translation>
 <translation id="2800780099804980316">Предыдущего заголовка первого уровня нет.</translation>
 <translation id="280499067616661124">Поиск на странице (ChromeVox)</translation>
@@ -318,6 +319,7 @@
 <translation id="3716845769494773620">Несколько строк</translation>
 <translation id="3731746171184829332">Предыдущего заголовка нет.</translation>
 <translation id="3735039640698208086">При воспроизведении аудио…</translation>
+<translation id="3755561384917041694">Чтобы использовать дополнительные команды Брайля, включите экранную клавиатуру, выбрав строку состояния &gt; "Специальные возможности".</translation>
 <translation id="3762198587642264450">Перейти к концу текущей строки</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">Диалоговое окно закрыто.</translation>
@@ -576,6 +578,7 @@
 <translation id="6037602951055904232">Перейти вперед</translation>
 <translation id="6044160928851315051">Затемнить экран</translation>
 <translation id="6082768461603900813">Навигация</translation>
+<translation id="6092707270915298410">Конец ссылки</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">Конец ячейки.</translation>
 <translation id="6122013438240733403">btn</translation>

@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Overflow button</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">This device is managed by <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Portrait</translation>
 <translation id="207439088875642105">This is an account for kids managed by <ph name="FIRST_PARENT_EMAIL" /> and <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Sticky keys</translation>
 <translation id="2509468283778169019">CAPS LOCK is on</translation>
 <translation id="2532589005999780174">High contrast mode</translation>
+<translation id="2597972630681408282">Night Light: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">Session ends in <ph name="SESSION_TIME_REMAINING" />. You will be signed out.</translation>
 <translation id="2727977024730340865">Plugged in to a low-power charger. Battery charging may not be reliable.</translation>
 <translation id="2761704814324807722">Status tray, time <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">Output</translation>
 <translation id="3019353588588144572">Time remaining until battery is fully charged, <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">This is an account for kids managed by <ph name="MANAGER_EMAIL" /></translation>
-<translation id="3050422059534974565">CAPS LOCK is on.
-Press Search or Shift to cancel.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Bottom</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -136,6 +136,7 @@ Press Search or Shift to cancel.</translation>
 <translation id="4849058404725798627">Highlight object with keyboard focus</translation>
 <translation id="4872237917498892622">Alt+Search or Shift</translation>
 <translation id="4895488851634969361">Battery is full.</translation>
+<translation id="4905614135390995787">The shortcut to toggle high contrast mode has changed. Please use <ph name="NEW_SHORTCUT" /> instead of <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Accept</translation>
 <translation id="4961318399572185831">Cast screen</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@ Press Search or Shift to cancel.</translation>
 <translation id="5744083938413354016">Tap dragging</translation>
 <translation id="5777841717266010279">Stop screen sharing?</translation>
 <translation id="57838592816432529">Mute</translation>
+<translation id="5860033963881614850">Off</translation>
 <translation id="5895138241574237353">Restart</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">On</translation>
 <translation id="5927132638760172455">Casting to an unknown receiver</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Revert</translation>
@@ -169,8 +172,8 @@ Press Search or Shift to cancel.</translation>
 <translation id="5977415296283489383">Headphone</translation>
 <translation id="5978382165065462689">Sharing control of your screen via Remote Assistance.</translation>
 <translation id="5980301590375426705">Exit guest</translation>
+<translation id="5992218262414051481">High contrast mode enabled. Press Ctrl+Search+H again to toggle it off.</translation>
 <translation id="6018164090099858612">Exiting mirror mode</translation>
-<translation id="6041154455840261787">High Contrast Mode enabled. Press Search+Shift+H again to toggle it off.</translation>
 <translation id="6043212731627905357">This monitor isn't getting along with your <ph name="DEVICE_TYPE" /> (the monitor is not supported).</translation>
 <translation id="6043994281159824495">Sign out now</translation>
 <translation id="6047696787498798094">Screen sharing will stop when you switch to another user. Do you want to continue?</translation>
@@ -195,6 +198,7 @@ Press Search or Shift to cancel.</translation>
 <translation id="6585808820553845416">Session ends in <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair. Please enter this passkey on that device: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6700713906295497288">IME menu button</translation>
 <translation id="6713285437468012787">Bluetooth device "<ph name="DEVICE_NAME" />" has been paired and is now available to all users. You may remove this pairing using Settings.</translation>
 <translation id="6785414152754474415">Battery is <ph name="PERCENTAGE" />% full and charging.</translation>
@@ -214,8 +218,7 @@ Press Search or Shift to cancel.</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Reverting to old resolution in <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">CAPS LOCK is on.
-Press Alt+Search or Shift to cancel.</translation>
+<translation id="7199454189089571166">Assistant mode</translation>
 <translation id="7246339268451149667">Enable Fingerprint unlock?</translation>
 <translation id="7256634071279256947">Rear microphone</translation>
 <translation id="7348093485538360975">On-Screen Keyboard</translation>
@@ -233,10 +236,10 @@ Press Alt+Search or Shift to cancel.</translation>
 <translation id="7649070708921625228">Help</translation>
 <translation id="7692480393933218409">Charging connected USB-C devices</translation>
 <translation id="776344839111254542">Click to view update details</translation>
+<translation id="7798302898096527229">Press Search or Shift to cancel.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> and <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">The language has changed from "<ph name="FROM_LOCALE" />" to "<ph name="TO_LOCALE" />" after syncing your settings.</translation>
 <translation id="7904094684485781019">The administrator for this account has disallowed multiple sign-in.</translation>
-<translation id="7951523953736115461">Night light</translation>
 <translation id="7977927628060636163">Searching for mobile networks...</translation>
 <translation id="7982789257301363584">Network</translation>
 <translation id="8000066093800657092">No network</translation>
@@ -255,6 +258,7 @@ Press Alt+Search or Shift to cancel.</translation>
 <translation id="8433977262951327081">The shortcut to show the input options menu bubble in the shelf has changed. Please use <ph name="NEW_SHORTCUT" /> instead of <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Wi-Fi is turned on.</translation>
 <translation id="847056008324733326">Display scale settings</translation>
+<translation id="8477270416194247200">Press Alt+Search or Shift to cancel.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Reconnecting...</translation>
 <translation id="8517041960877371778">Your <ph name="DEVICE_TYPE" /> may not charge while it is turned on.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> remaining</translation>

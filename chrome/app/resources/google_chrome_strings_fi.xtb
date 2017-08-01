@@ -166,7 +166,6 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="573759479754913123">Tietoja Chrome-käyttöjärjestelmästä</translation>
 <translation id="5749068826913805084">Chrome tarvitsee tallennustilan käyttöoikeuden tiedostojen lataamiseen.</translation>
 <translation id="5774845247549698882">Chrome-käyttöjärjestelmä näytetään tällä kielellä.</translation>
-<translation id="5832596086758878896">{NUM_ITEMS,plural, =1{$1 kohde poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromeen käyttäjänä $2.}other{$1 kohdetta poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromeen käyttäjänä $2.}}</translation>
 <translation id="5855036575689098185">Tietokoneellasi käynnissä oleva ohjelmisto on yhteensopimaton Google Chromen kanssa.</translation>
 <translation id="5877064549588274448">Kanava vaihdettiin. Ota muutokset käyttöön käynnistämällä laite uudelleen.</translation>
 <translation id="5895138241574237353">Käynnistä uudelleen</translation>
@@ -211,7 +210,6 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="7125719106133729027">Chrome ei voinut päivittää uusimpaan versioon, joten uudet ominaisuudet ja tietoturvapäivitykset eivät ole käytössäsi. Asenna Chrome uudelleen manuaalisesti.</translation>
 <translation id="7161904924553537242">Tervetuloa Google Chromeen</translation>
 <translation id="7164397146364144019">Voit auttaa meitä parantamaan Chromen turvallisuutta ja tekemään selaimesta helppokäyttöisemmän ilmoittamalla mahdollisista turvallisuusongelmista Googlelle automaattisesti.</translation>
-<translation id="7177347454226092725">Selaustiedot poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromeen käyttäjänä $2.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> on lisätty Chromeen.</translation>
 <translation id="7196020411877309443">Miksi minulle näytetään tämä ilmoitus?</translation>
 <translation id="7242029209006116544">Olet kirjautumassa sisään hallinnoidulla tilillä ja antamassa tilin järjestelmänvalvojalle oikeuden hallita Google Chrome -profiiliasi. Chrome-tietosi, kuten sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi, yhdistetään pysyvästi käyttäjätiliin <ph name="USER_NAME" />. Voit poistaa nämä tiedot Google-tilien Hallintapaneelissa, mutta et voi liittää tietoja toiseen tiliin. Voit myös halutessasi luoda uuden profiilin, jos haluat pitää aiemmat Chrome-tietosi erillään. <ph name="LEARN_MORE" /></translation>
@@ -222,18 +220,17 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="7400722733683201933">Tietoja Google Chromesta</translation>
 <translation id="7408085963519505752">Chrome-käyttöjärjestelmän käyttöehdot</translation>
 <translation id="7419046106786626209">Chrome-käyttöjärjestelmä ei voinut synkronoida tietoja, koska synkronointi ei ole käytettävissä verkkotunnuksessasi.</translation>
-<translation id="7436949144778751379">Google Chrome vaatii Windows XP:n tai uudemman version. Jotkin ominaisuudet eivät välttämättä toimi.</translation>
 <translation id="7437998757836447326">Uloskirjautuminen Chromesta</translation>
 <translation id="7459554271817304652">Määrittämällä synkronoinnin voit tallentaa selaimesi tiedot verkkoon ja käyttää niitä minkä tahansa tietokoneen Google Chromella.</translation>
 <translation id="7473136999113284234">Chrome päivitetään automaattisesti, joten käytössäsi on aina uusin versio</translation>
 <translation id="7473891865547856676">Ei kiitos</translation>
 <translation id="7494905215383356681">Chromen avoimen lähdekoodin lisenssit</translation>
-<translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Vähintään $1 kohde poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromeen käyttäjänä $2.}other{Vähintään $1 kohdetta poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromeen käyttäjänä $2.}}</translation>
 <translation id="7535429826459677826">Google Chromen kehittäjäversio</translation>
 <translation id="7552219221109926349">Näytä Chrome-käyttöjärjestelmä tällä kielellä</translation>
 <translation id="7592736734348559088">Google Chrome ei voinut synkronoida tietoja, sillä tilin kirjautumistiedot ovat vanhentuneet.</translation>
 <translation id="7626032353295482388">Tervetuloa Chromeen</translation>
 <translation id="7747138024166251722">Asennusohjelma ei pystynyt luomaan väliaikaista hakemistoa. Tarkista, että käytettävissä on riittävästi levytilaa ja että sinulla on oikeus asentaa ohjelmia.</translation>
+<translation id="7756122083761163394">Käyttäjän selaustiedot poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromeen käyttäjänä $2.</translation>
 <translation id="7761834446675418963">Avaa Chrome klikkaamalla nimeäsi ja aloita selaaminen.</translation>
 <translation id="7781002470561365167">Google Chromen uusi versio on saatavilla.</translation>
 <translation id="7787950393032327779">Profiili näyttäisi olevan toisen Google Chrome -prosessin (<ph name="PROCESS_ID" />) käytössä toisella tietokoneella (<ph name="HOST_NAME" />). Chrome on lukinnut profiilin, jotta se ei vioitu. Jos olet varma, että mikään toinen prosessi ei käytä tätä profiilia, voit poistaa profiilin lukituksen ja käynnistää Chromen uudelleen.</translation>
@@ -252,7 +249,6 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="8129812357326543296">Tietoja &amp;Google Chromesta</translation>
 <translation id="8179874765710681175">Asenna Chrome puhelimeesi. Lähetämme tekstiviestin puhelimeen.</translation>
 <translation id="8183957050892517584">Chrome tallentaa tietosi turvalliseen paikkaan, jottei sinun tarvitse kirjoittaa tietoja uudelleen.</translation>
-<translation id="8211929904040702368">Vähintään <ph name="TOTAL_COUNT" /> kohdetta poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromeen käyttäjänä $2.</translation>
 <translation id="8255190535488645436">Google Chrome käyttää kameraasi ja mikrofoniasi.</translation>
 <translation id="8286862437124483331">Google Chrome yrittää näyttää salasanoja. Salli tämä kirjoittamalla Windows-salasanasi.</translation>
 <translation id="8290100596633877290">Hups! Google Chrome kaatui. Käynnistetäänkö uudelleen?</translation>

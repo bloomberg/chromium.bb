@@ -26,6 +26,7 @@
 <translation id="1677472565718498478"><ph name="TIME" /> शिल्लक</translation>
 <translation id="1698760176351776263">IPv6 पत्ता: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">या डिव्हाइसला संस्थेेने व्यवस्थापित केेले आहे</translation>
+<translation id="1746730358044914197">तुमच्या प्रशासकाद्वारे कॉन्फिगर केलेल्या इनपुट पद्धती.</translation>
 <translation id="1747827819627189109">ऑन-स्क्रीन कीबोर्ड सक्षम</translation>
 <translation id="1823873187264960516">इथरनेट: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">Wi-Fi बंद आहे.</translation>
@@ -37,6 +38,7 @@
 <translation id="1942830294380034169">ओव्हरफ्लो बटण</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390"><ph name="DOMAIN" /> याद्वारे हे डिव्हाइस व्यवस्‍थापित केले जाते.</translation>
 <translation id="2050339315714019657">पोर्ट्रेट</translation>
 <translation id="207439088875642105">हे खाते <ph name="FIRST_PARENT_EMAIL" /> आणि <ph name="SECOND_PARENT_EMAIL" /> द्वारे व्यवस्थापित केलेल्या मुलांसाठी आहे</translation>
@@ -57,6 +59,7 @@
 <translation id="2501920221385095727">स्टिकी की</translation>
 <translation id="2509468283778169019">CAPS LOCK सुरु आहे</translation>
 <translation id="2532589005999780174">उच्च तीव्रता मोड</translation>
+<translation id="2597972630681408282">रात्रीचा प्रकाश: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING" /> मध्ये सत्र समाप्त होते. आपल्याला साइन आउट केले जाईल.</translation>
 <translation id="2727977024730340865">एका निम्न-उर्जेच्या चार्जरवर प्लग इन केले. बॅटरी चार्जिंग विश्वसनीय असू शकत नाही.</translation>
 <translation id="2761704814324807722">स्थिती ट्रे, वेळ <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +79,6 @@
 <translation id="3009178788565917040">आउटपुट</translation>
 <translation id="3019353588588144572">बॅटरी पूर्णपणे चार्ज होईपर्यंत उर्वरित वेळ, <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">हे मुलांसाठी असलेले खाते <ph name="MANAGER_EMAIL" /> द्वारे व्‍यवस्‍थापित केले</translation>
-<translation id="3050422059534974565">CAPS LOCK चालू आहे.
-रद्द करण्यासाठी Search किंवा Shift दाबा.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">तळाकडील</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -136,6 +137,7 @@
 <translation id="4849058404725798627">कीबोर्ड फोकससह ऑब्जेक्ट हायलाइट करा</translation>
 <translation id="4872237917498892622">Alt+Search किंवा Shift</translation>
 <translation id="4895488851634969361">बॅटरी भरली आहे.</translation>
+<translation id="4905614135390995787">उच्च तीव्रता मोड टॉगल करण्यासाठी शॉर्टकट बदलला आहे. कृपया <ph name="OLD_SHORTCUT" /> ऐवजी <ph name="NEW_SHORTCUT" /> वापरा.</translation>
 <translation id="4918086044614829423">स्वीकारा</translation>
 <translation id="4961318399572185831">स्क्रीन कास्ट करा</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +161,10 @@
 <translation id="5744083938413354016">टॅप ड्रॅगिंग</translation>
 <translation id="5777841717266010279">स्क्रीन सामायिकरण थांबवायचे?</translation>
 <translation id="57838592816432529">निःशब्द करा</translation>
+<translation id="5860033963881614850">बंद</translation>
 <translation id="5895138241574237353">रीस्टार्ट करा</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">चालू</translation>
 <translation id="5927132638760172455">एका अज्ञात प्राप्तकर्त्यावर कास्ट करीत आहे</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">परत करा</translation>
@@ -169,8 +173,8 @@
 <translation id="5977415296283489383">हेडफोन</translation>
 <translation id="5978382165065462689">दूरस्थ सहाय्याद्वारे आपल्या स्क्रीनचे नियंत्रण सामायिक करत आहे.</translation>
 <translation id="5980301590375426705">अतिथी निर्गमन करा</translation>
+<translation id="5992218262414051481">उच्च तीव्रता मोड चालू केला आहे. तो बंदवर टॉगल करण्यासाठी Ctrl+Search+H दाबा.</translation>
 <translation id="6018164090099858612">मिरर मोडमधून बाहेर पडत आहे</translation>
-<translation id="6041154455840261787">उच्च तीव्रता मोड सक्षम केला. तो बंद वर टॉगल करण्‍यासाठी पुन्हा Search+Shift+H दाबा.</translation>
 <translation id="6043212731627905357">हा मॉनिटर आपल्या <ph name="DEVICE_TYPE" /> सह प्राप्त होत नाही (मॉनिटर समर्थित नाही).</translation>
 <translation id="6043994281159824495">आता साइन आउट करा</translation>
 <translation id="6047696787498798094">आपण दुसर्‍या वापरकर्त्यावर स्‍विच करता तेव्‍हा स्क्रीन सामायिकरण थांबेल. आपण सुरु ठेवू इच्छिता?</translation>
@@ -195,6 +199,7 @@
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> मध्ये सत्र समाप्त होते.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते. कृपया त्या डिव्हाइसवर ही पासकी प्रविष्ट करा: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6700713906295497288">IME मेनू बटण</translation>
 <translation id="6713285437468012787">"<ph name="DEVICE_NAME" />" Bluetooth डिव्हाइस जोडले गेले आहे आणि सर्व वापरकर्त्यांसाठी आता उपलब्ध आहे. आपण सेटिंग्ज वापरून ही जोडणी काढू शकता.</translation>
 <translation id="6785414152754474415">बॅटरी <ph name="PERCENTAGE" />% भरली आहे आणि चार्ज होत आहे.</translation>
@@ -214,8 +219,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> मध्ये जुन्या रिजोल्यूशनवर परत करत आहे</translation>
-<translation id="7209101170223508707">CAPS LOCK चालू आहे.
-रद्द करण्यासाठी Alt+Search किंवा Shift दाबा.</translation>
+<translation id="7199454189089571166">साहाय्यक मोड</translation>
 <translation id="7246339268451149667">फिंगरप्रिंट अनलॉक सक्षम करायचे?</translation>
 <translation id="7256634071279256947">मागील मायक्रोफोन</translation>
 <translation id="7348093485538360975">ऑन-स्क्रीन कीबोर्ड</translation>
@@ -233,10 +237,10 @@
 <translation id="7649070708921625228">मदत</translation>
 <translation id="7692480393933218409">कनेक्ट केलेले USB-C डिव्‍हाइसेस चार्ज करीत आहे</translation>
 <translation id="776344839111254542">अपडेट तपशील पाहण्यासाठी क्लिक करा</translation>
+<translation id="7798302898096527229">रद्द करण्यासाठी Search किंवा Shift दाबा.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> आणि <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">आपली सेटिंग्ज संंकालित केल्यानंतर भाषा "<ph name="FROM_LOCALE" />" मधून "<ph name="TO_LOCALE" />" मध्ये बदलली आहे.</translation>
 <translation id="7904094684485781019">या खात्याच्या प्रशासकाने एकाधिक साइन इन ची अनुमती रद्द केली आहे.</translation>
-<translation id="7951523953736115461">रात्रीचा प्रकाश</translation>
 <translation id="7977927628060636163">मोबाइल नेटवर्क शोधत आहे...</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
 <translation id="8000066093800657092">कोणतेही नेटवर्क नाही</translation>
@@ -255,6 +259,7 @@
 <translation id="8433977262951327081">शेल्फमधील इनपुट पर्याय मेनू दर्शविण्यासाठीचा शॉर्टकट बदलला आहे. कृपया <ph name="OLD_SHORTCUT" /> ऐवजी <ph name="NEW_SHORTCUT" /> वापरा.</translation>
 <translation id="8454013096329229812">Wi-Fi चालू आहे.</translation>
 <translation id="847056008324733326">स्केल सेटिंग्‍ज दाखवा</translation>
+<translation id="8477270416194247200">रद्द करण्यासाठी Alt+Search किंवा Shift दाबा.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: पुन्हा कनेक्ट करीत आहे...</translation>
 <translation id="8517041960877371778">आपले <ph name="DEVICE_TYPE" /> चालू केले असताना कदाचित चार्ज होणार नाही.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> शिल्लक</translation>

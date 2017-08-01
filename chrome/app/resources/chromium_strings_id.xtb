@@ -30,7 +30,6 @@
 <translation id="1966382378801805537">Chromium tidak dapat menentukan atau menyetel browser default</translation>
 <translation id="1967743265616885482">Modul dengan nama yang sama biasanya konflik dengan Chromium.</translation>
 <translation id="2008474315282236005">Tindakan ini akan menghapus 1 item dari perangkat. Untuk mengambil data nanti, login ke Chromium sebagai <ph name="USER_EMAIL" />.</translation>
-<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Tindakan ini akan menghapus setidaknya $1 item dari perangkat ini secara permanen. Untuk mengambil data Anda nanti, masuk ke Chromium sebagai $2.}other{Tindakan ini akan menghapus setidaknya $1 item dari perangkat ini secara permanen. Untuk mengambil data Anda nanti, masuk ke Chromium sebagai $2.}}</translation>
 <translation id="2077129598763517140">Gunakan akselerasi hardware jika tersedia</translation>
 <translation id="2119636228670142020">Tentang &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Lisensi sumber terbuka Chromium OS</translation>
@@ -81,7 +80,6 @@
 <translation id="3549345495227188780">Memulai dengan Chromium OS</translation>
 <translation id="3582788516608077514">Memperbarui Chromium...</translation>
 <translation id="358997566136285270">Logo Chromium</translation>
-<translation id="3645040538872234961">Tindakan ini akan menghapus data penjelajahan dari perangkat ini secara permanen. Untuk mengambil data Anda nanti, masuk ke Chromium sebagai $2.</translation>
 <translation id="3738139272394829648">Sentuh untuk Menelusuri</translation>
 <translation id="3762167353400286894">Chromium OS ditampilkan dalam bahasa ini</translation>
 <translation id="378917192836375108">Chromium memungkinkan Anda mengeklik nomor telepon pada web dan menghubunginya melalui Skype!</translation>
@@ -153,7 +151,6 @@
 <translation id="59625444380784159">Detail dari kontak dapat membantu Anda mengisi formulir lebih cepat di Chromium.</translation>
 <translation id="5987687638152509985">Perbarui Chromium untuk memulai sinkronisasi</translation>
 <translation id="6055895534982063517">Tersedia Chromium versi baru, dan versi ini lebih cepat dari sebelumnya.</translation>
-<translation id="6077017812234345835">Tindakan ini akan menghapus setidaknya <ph name="TOTAL_COUNT" /> item dari perangkat ini secara permanen. Untuk mengambil data Anda nanti, masuk ke Chromium sebagai $2.</translation>
 <translation id="608189560609172163">Chromium tidak dapat menyinkronkan data Anda karena kesalahan saat masuk.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> berbahaya, sehingga Chromium memblokirnya.</translation>
 <translation id="6212496753309875659">Komputer ini sudah memiliki versi Chromium yang lebih baru. Jika software tidak bekerja, harap coba uninstal Chromium, lalu cobalah kembali.</translation>
@@ -190,7 +187,6 @@ Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda at
 <translation id="705851970750939768">Perbarui Chromium</translation>
 <translation id="7066436765290594559">Chromium OS tidak dapat menyinkronkan data Anda. Perbarui frasa sandi Sinkronisasi Anda.</translation>
 <translation id="707471633328071618">Google Payments (disalin ke Chromium)</translation>
-<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Tindakan ini akan menghapus $1 item dari perangkat ini secara permanen. Untuk mengambil data Anda nanti, masuk ke Chromium sebagai $2.}other{Tindakan ini akan menghapus $1 item dari perangkat ini secara permanen. Untuk mengambil data Anda nanti, masuk ke Chromium sebagai $2.}}</translation>
 <translation id="7138853919861947730">Chromium dapat menggunakan layanan web untuk meningkatkan pengalaman penjelajahan Anda.</translation>
 <translation id="7162152143154757523">Chromium dapat memberikan pemeriksa ejaan yang lebih pintar dengan mengirimkan apa yang Anda ketik di browser ke server Google, sehingga memungkinkan Anda menggunakan teknologi pemeriksa ejaan yang sama seperti yang digunakan oleh penelusuran Google.</translation>
 <translation id="7196020411877309443">Mengapa saya melihat ini?</translation>
@@ -212,7 +208,6 @@ Agar <ph name="NEW_PROFILE_NAME" /> tidak dapat mengakses akun Anda, pastikan pr
 <ph name="BEGIN_LINK_2" />Pelajari lebih lanjut<ph name="END_LINK_2" />
 
 Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</translation>
-<translation id="7421823331379285070">Chromium memerlukan Windows XP atau yang lebih baru. Sebagian fitur mungkin tidak berfungsi.</translation>
 <translation id="7473891865547856676">Lain Kali</translation>
 <translation id="7483335560992089831">Tidak dapat memasang Chromium versi yang sama dengan yang sedang Anda jalankan. Tutup Chromium dan coba lagi.</translation>
 <translation id="7549178288319965365">Tentang OS Chromium</translation>
@@ -223,6 +218,7 @@ Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</tr
 <translation id="7729447699958282447">Chromium tidak dapat menyinkronkan data Anda karena Sinkronisasi tidak tersedia untuk domain Anda.</translation>
 <translation id="7745317241717453663">Tindakan ini akan menghapus data browsing dari perangkat. Untuk mengambil data nanti, login ke Chromium sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Pemasang tidak dapat membuat direktori sementara. Periksa kapasitas kosong pada disk dan izin untuk memasang software.</translation>
+<translation id="7756122083761163394">Data browsing pengguna ini akan dihapus dari perangkat ini. Untuk memulihkan data, login ke Chrome sebagai $2.</translation>
 <translation id="7937630085815544518">Anda telah masuk ke Chromium sebagai <ph name="USER_EMAIL_ADDRESS" />. Gunakan akun yang sama untuk masuk kembali.</translation>
 <translation id="795025003224538582">Jangan memulai ulang</translation>
 <translation id="7962572577636132072">Chromium otomatis diperbarui sehingga Anda selalu memiliki versi terbaru.</translation>

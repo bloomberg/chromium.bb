@@ -26,6 +26,7 @@
 <translation id="1677472565718498478"><ph name="TIME" /> ಬಾಕಿ ಉಳಿದಿದೆ</translation>
 <translation id="1698760176351776263">IPv6 ವಿಳಾಸ: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">ಈ ಸಾಧನವನ್ನು ಎಂಟರ್‌ಪ್ರೈಸ್ ನಿರ್ವಹಣೆ ಮಾಡುತ್ತಿದೆ</translation>
+<translation id="1746730358044914197">ನಿಮ್ಮ ಇನ್‌ಪುಟ್‌ ವಿಧಾನಗಳನ್ನು ನಿರ್ವಾಹಕರ ಸಹಾಯದಿಂದ ಕಾನ್ಫಿಗರ್‌ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="1747827819627189109">ಆನ್ ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್ ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="1823873187264960516">ಇಥರ್ನೆಟ್: <ph name="ADDRESS" /></translation>
 <translation id="1850504506766569011">ವೈ-ಫೈ ಆಫ್ ಮಾಡಲಾಗಿದೆ.</translation>
@@ -37,6 +38,7 @@
 <translation id="1942830294380034169">ಓವರ್‌ಫ್ಲೋ ಬಟನ್‌</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+ಹುಡುಕಾಟ+H</translation>
 <translation id="2049639323467105390">ಈ ಸಾಧನವು <ph name="DOMAIN" /> ನಿಂದ ನಿರ್ವಹಿಸಲ್ಪಟ್ಟಿದೆ.</translation>
 <translation id="2050339315714019657">ಪೋಟ್ರೇಟ್</translation>
 <translation id="207439088875642105">ಇದು <ph name="FIRST_PARENT_EMAIL" /> ಮತ್ತು <ph name="SECOND_PARENT_EMAIL" /> ಅವರು ನಿರ್ವಹಿಸುವಂತಹ ಮಕ್ಕಳ ಖಾತೆಯಾಗಿದೆ</translation>
@@ -57,6 +59,7 @@
 <translation id="2501920221385095727">ಸ್ಟಿಕಿ ಕೀಗಳು</translation>
 <translation id="2509468283778169019">CAPS LOCK ಆನ್ ಆಗಿದೆ</translation>
 <translation id="2532589005999780174">ಹೆಚ್ಚಿನ ಕಾಂಟ್ರಾಸ್ಟ್ ಮೋಡ್</translation>
+<translation id="2597972630681408282">ನೈಟ್ ಲೈಟ್: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">ಸೆಷನ್ <ph name="SESSION_TIME_REMAINING" /> ರಲ್ಲಿ ಕೊನೆಗೊಳ್ಳಲಿದೆ. ನೀವು ಸೈನ್ ಔಟ್ ಆಗಲಿರುವಿರಿ.</translation>
 <translation id="2727977024730340865">ಕಡಿಮೆ ವಿದ್ಯುತ್ ಚಾರ್ಜರ್‌ಗೆ ಪ್ಲಗ್ ಮಾಡಲಾಗಿದೆ. ಬ್ಯಾಟರಿ ಚಾರ್ಜಿಂಗ್ ವಿಶ್ವಾಸಾರ್ಹವಾಗಿಲ್ಲದಿರಬಹುದು.</translation>
 <translation id="2761704814324807722">ಸ್ಥಿತಿ ಟ್ರೇ, ಸಮಯ <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +79,6 @@
 <translation id="3009178788565917040">ಔಟ್‌ಪುಟ್</translation>
 <translation id="3019353588588144572">ಬ್ಯಾಟರಿ ಪೂರ್ಣವಾಗಿ ಚಾರ್ಜ್ ಆಗುವವರೆಗೆ ಉಳಿದಿರುವ ಸಮಯ, <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">ಮಕ್ಕಳಿಗೆ ಈ ಖಾತೆಯನ್ನು <ph name="MANAGER_EMAIL" /> ಅವರು ನಿರ್ವಹಿಸುತ್ತಿದ್ದಾರೆ</translation>
-<translation id="3050422059534974565">CAPS LOCK ಆನ್ ಆಗಿದೆ.
-ರದ್ದುಗೊಳಿಸಲು ಹುಡುಕಾಟ ಅಥವಾ Shift ಕೀಲಿಯನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">ಕೆಳಗೆ</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (ಬ್ಲೂಟೂತ್‌)</translation>
@@ -136,6 +137,7 @@
 <translation id="4849058404725798627">ಕೀಬೋರ್ಡ್‌ ಫೋಕಸ್‌ ಮೂಲಕ ವಿಷಯವನ್ನು ಎದ್ದುಗಾಣಿಸಿ</translation>
 <translation id="4872237917498892622">Alt+ಹುಡುಕಾಟ ಅಥವಾ Shift</translation>
 <translation id="4895488851634969361">ಬ್ಯಾಟರಿ ತುಂಬಿದೆ.</translation>
+<translation id="4905614135390995787">ಹೆಚ್ಚು ಕಾಂಟ್ರಾಸ್ಟ್ ಮೋಡ್ ಅನ್ನು ಟಾಗಲ್‌ ಮಾಡಲು ಶಾರ್ಟ್‌ಕಟ್ ಬದಲಾಗಿದೆ. <ph name="OLD_SHORTCUT" /> ಬದಲಿಗೆ <ph name="NEW_SHORTCUT" /> ಅನ್ನು ಬಳಸಿ.</translation>
 <translation id="4918086044614829423">ಸಮ್ಮತಿಸು</translation>
 <translation id="4961318399572185831">ಪರದೆಯನ್ನು ಬಿತ್ತರಿಸಿ</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +161,10 @@
 <translation id="5744083938413354016">ಟ್ಯಾಪ್ ಎಳೆಯುವಿಕೆ</translation>
 <translation id="5777841717266010279">ಸ್ಕ್ರೀನ್ ಹಂಚಿಕೆ ನಿಲ್ಲಿಸುವುದೇ?</translation>
 <translation id="57838592816432529">ಮ್ಯೂಟ್</translation>
+<translation id="5860033963881614850">ಆಫ್</translation>
 <translation id="5895138241574237353">ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">ಆನ್‌</translation>
 <translation id="5927132638760172455">ಅಪರಿಚಿತ ಸ್ವೀಕರಿಸುವವರಿಗೆ ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">ಹಿಂತಿರುಗಿಸು</translation>
@@ -169,8 +173,9 @@
 <translation id="5977415296283489383">ಹೆಡ್‌ಫೋನ್</translation>
 <translation id="5978382165065462689">ರಿಮೋಟ್ ಸಹಾಯಕದ ಮೂಲಕ ನಿಮ್ಮ ಪರದೆಯ ಹಂಚಿಕೆಯ ನಿಯಂತ್ರಣ</translation>
 <translation id="5980301590375426705">ಅತಿಥಿ ಸೆಶೆನ್‌ನಿಂದ ನಿರ್ಗಮಿಸಿ</translation>
+<translation id="5992218262414051481">ಹೆಚ್ಚು ಕಾಂಟ್ರಾಸ್ಟ್ ಮೋಡ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ. ಅದನ್ನು ಟಾಗಲ್‌ ಆಫ್‌ ಮಾಡಲು ಪುನಃ
+Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="6018164090099858612">ಪ್ರತಿಬಿಂಬ ಮೋಡ್ ನಿರ್ಗಮಿಸಲಾಗುತ್ತಿದೆ</translation>
-<translation id="6041154455840261787">ಉನ್ನತ ಕಾಂಟ್ರಾಸ್ಟ್ ಮೋಡ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ. ಆಫ್ ಮಾಡುವುದಕ್ಕಾಗಿ ಟಾಗಲ್ ಮಾಡಲು ಮತ್ತೆ Search+Shift+H ಅನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="6043212731627905357">ಈ ಮಾನಿಟರ್ ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಜೊತೆ ಸಿಗುತ್ತಿಲ್ಲ (ಮಾನಿಟರ್ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ).</translation>
 <translation id="6043994281159824495">ಈಗ ಸೈನ್ ಔಟ್ ಮಾಡಿ</translation>
 <translation id="6047696787498798094">ನೀವು ಬೇರೊಬ್ಬ ಬಳಕೆದಾರರಿಗೆ ಬದಲಾಯಿಸಿದಾಗ ಸ್ಕ್ರೀನ್ ಹಂಚಿಕೆಯು ನಿಲ್ಲುತ್ತದೆ. ನೀವು ಮುಂದುವರಿಸಲು ಬಯಸುತ್ತೀರಾ?</translation>
@@ -195,6 +200,7 @@
 <translation id="6585808820553845416">ಸೆಷನ್ <ph name="SESSION_TIME_REMAINING" /> ರಲ್ಲಿ ಕೊನೆಗೊಳ್ಳಲಿದೆ.</translation>
 <translation id="6627638273713273709">ಹುಡುಕಾಟ+Shift+K</translation>
 <translation id="6650933572246256093">ಬ್ಲೂಟೂತ್‌ ಸಾಧನವು "<ph name="DEVICE_NAME" />" ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತದೆ. ಆ ಸಾಧನದಲ್ಲಿ ಈ ಪಾಸ್‌ಕೀಲಿಯನ್ನು ನಮೂದಿಸಿ: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">ಹುಡುಕಾಟ+Shift+H</translation>
 <translation id="6700713906295497288">IME ಮೆನು ಬಟನ್</translation>
 <translation id="6713285437468012787">ಬ್ಲೂಟೂತ್‌ ಸಾಧನವನ್ನು "<ph name="DEVICE_NAME" />" ಜೋಡಿಸಲಾಗಿದೆ ಮತ್ತು ಇದೀಗ ಎಲ್ಲಾ ಬಳಕೆದಾರರಿಗೂ ಲಭ್ಯವಿದೆ. ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬಳಸಿಕೊಂಡು ನೀವು ಈ ಜೋಡಣೆಯನ್ನು ತೆಗೆದುಹಾಕಬಹುದು.</translation>
 <translation id="6785414152754474415">ಬ್ಯಾಟರಿ <ph name="PERCENTAGE" />% ಪೂರ್ಣಗೊಂಡಿದೆ ಮತ್ತು ಚಾರ್ಜ್ ಆಗುತ್ತಿದೆ.</translation>
@@ -214,8 +220,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> ನಲ್ಲಿ ಹಳೆಯ ರೆಸಲ್ಯೂಷನ್‌ಗೆ ಹಿಂತಿರುಗಿಸಲಾಗುತ್ತಿದೆ</translation>
-<translation id="7209101170223508707">CAPS LOCK ಆನ್ ಆಗಿದೆ.
-ರದ್ದುಗೊಳಿಸಲು Alt+ಹುಡುಕಾಟ ಅಥವಾ Shift ಕೀಲಿಯನ್ನು ಒತ್ತಿರಿ</translation>
+<translation id="7199454189089571166">ಸಹಾಯಕ ಮೋಡ್</translation>
 <translation id="7246339268451149667">ಬೆರಳಚ್ಚು ಅನ್‌ಲಾಕ್ ಸಕ್ರಿಯಗೊಳಿಸುವುದೇ?</translation>
 <translation id="7256634071279256947">ಹಿಂಭಾಗದ ಮೈಕ್ರೊಫೋನ್</translation>
 <translation id="7348093485538360975">ಆನ್ ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್</translation>
@@ -233,10 +238,10 @@
 <translation id="7649070708921625228">ಸಹಾಯ</translation>
 <translation id="7692480393933218409">ಸಂಪರ್ಕಿತ USB-C ಸಾಧನಗಳನ್ನು ಚಾರ್ಜ್ ಮಾಡುತ್ತಿದೆ</translation>
 <translation id="776344839111254542">ಅಪ್‌ಡೇಟ್‌ ವಿವರಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
+<translation id="7798302898096527229">ರದ್ದುಗೊಳಿಸಲು 'ಹುಡುಕಾಟ' ಅಥವಾ Shift ಅನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> ಮತ್ತು <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಿದ ನಂತರ ಭಾಷೆಯನ್ನು "<ph name="FROM_LOCALE" />" ನಿಂದ "<ph name="TO_LOCALE" />" ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ.</translation>
 <translation id="7904094684485781019">ಈ ಖಾತೆಗಾಗಿ ನಿರ್ವಾಹಕರು ಬಹುವಿಧದ ಸೈನ್ ಇನ್ ಅನುಮತಿಸಿಲ್ಲ.</translation>
-<translation id="7951523953736115461">ನೈಟ್ ಲೈಟ್</translation>
 <translation id="7977927628060636163">ಮೊಬೈಲ್ ನೆಟ್‌ವರ್ಕ್‌ಗಳಿಗೆ ಹುಡುಕಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="7982789257301363584">ನೆಟ್‌ವರ್ಕ್</translation>
 <translation id="8000066093800657092">ನೆಟ್‌ವರ್ಕ್ ಇಲ್ಲ</translation>
@@ -255,6 +260,7 @@
 <translation id="8433977262951327081">ಶೆಲ್ಫ್‌ನಲ್ಲಿ ಇನ್‌ಪುಟ್ ಆಯ್ಕೆಗಳ ಮೆನು ಬಬಲ್ ತೋರಿಸುವ ಶಾರ್ಟ್‌ಕಟ್ ಬದಲಾಗಿದೆ. <ph name="OLD_SHORTCUT" /> ಬದಲಿಗೆ <ph name="NEW_SHORTCUT" /> ಬಳಸಿ.</translation>
 <translation id="8454013096329229812">ವೈ-ಫೈ ಆನ್ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="847056008324733326">ಪ್ರದರ್ಶನ ಮಾಪಕ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
+<translation id="8477270416194247200">ರದ್ದುಗೊಳಿಸಲು Alt+ಹುಡುಕಾಟ ಅಥವಾ Shift ಅನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: ಮರುಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="8517041960877371778">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಆನ್ ಮಾಡಿರುವಾಗ ಅದನ್ನು ಚಾರ್ಜ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> ಉಳಿದಿದೆ</translation>

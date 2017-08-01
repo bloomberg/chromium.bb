@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">오버플로 버튼</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />(USB)</translation>
+<translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">기기는 <ph name="DOMAIN" />에서 관리합니다.</translation>
 <translation id="2050339315714019657">세로 방향</translation>
 <translation id="207439088875642105"><ph name="FIRST_PARENT_EMAIL" />님과 <ph name="SECOND_PARENT_EMAIL" />님이 관리하는 어린이용 계정입니다.</translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">고정키</translation>
 <translation id="2509468283778169019">CAPS LOCK이 켜져 있습니다.</translation>
 <translation id="2532589005999780174">고대비 모드</translation>
+<translation id="2597972630681408282">야간 조명: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">세션이 <ph name="SESSION_TIME_REMAINING" /> 후에 종료되어 로그아웃됩니다.</translation>
 <translation id="2727977024730340865">저출력 충전기에 연결되었습니다. 배터리 충전 상태가 불안정합니다.</translation>
 <translation id="2761704814324807722">상태 표시줄, 시간 <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">출력</translation>
 <translation id="3019353588588144572">배터리 충전이 완료될 때까지 남은 시간은 <ph name="TIME_REMAINING" />입니다.</translation>
 <translation id="3047477924825107454"><ph name="MANAGER_EMAIL" />님이 관리하는 어린이용 계정입니다.</translation>
-<translation id="3050422059534974565">CAPS LOCK이 켜져 있습니다.
-취소하려면 검색 또는 Shift 키를 누릅니다.</translation>
 <translation id="3077734595579995578">Shift</translation>
 <translation id="3087734570205094154">맨 아래</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" />(블루투스)</translation>
@@ -136,6 +136,7 @@
 <translation id="4849058404725798627">키보드 포커스로 개체 강조표시</translation>
 <translation id="4872237917498892622">Alt+검색 또는 Shift 키</translation>
 <translation id="4895488851634969361">배터리 충전이 완료되었습니다.</translation>
+<translation id="4905614135390995787">고대비 모드 전환 단축키가 변경되었습니다. <ph name="OLD_SHORTCUT" /> 대신 <ph name="NEW_SHORTCUT" />을(를) 사용하세요.</translation>
 <translation id="4918086044614829423">수락</translation>
 <translation id="4961318399572185831">화면 전송</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@
 <translation id="5744083938413354016">탭 드래그</translation>
 <translation id="5777841717266010279">화면 공유를 중단하시겠습니까?</translation>
 <translation id="57838592816432529">음소거</translation>
+<translation id="5860033963881614850">사용 안함</translation>
 <translation id="5895138241574237353">다시 시작</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">사용</translation>
 <translation id="5927132638760172455">알 수 없는 수신자로 전송 중</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">되돌리기</translation>
@@ -169,8 +172,8 @@
 <translation id="5977415296283489383">헤드폰</translation>
 <translation id="5978382165065462689">원격 지원을 통해 화면 제어 공유</translation>
 <translation id="5980301590375426705">손님 세션 종료</translation>
+<translation id="5992218262414051481">고대비 모드가 사용 설정되었습니다. 사용 중지하려면 다시 Ctrl+Search+H를 누르세요.</translation>
 <translation id="6018164090099858612">미러링 모드 종료 중</translation>
-<translation id="6041154455840261787">고대비 모드가 사용 설정되었습니다. 사용 중지하려면 Search+Shift+H를 다시 누르세요.</translation>
 <translation id="6043212731627905357"><ph name="DEVICE_TYPE" />과(와) 호환되지 않는 모니터입니다(지원되지 않는 모니터임).</translation>
 <translation id="6043994281159824495">지금 로그아웃</translation>
 <translation id="6047696787498798094">다른 사용자로 전환하면 화면 공유가 중단됩니다. 계속하시겠습니까?</translation>
@@ -195,6 +198,7 @@
 <translation id="6585808820553845416">세션이 <ph name="SESSION_TIME_REMAINING" /> 후에 종료됩니다.</translation>
 <translation id="6627638273713273709">검색+Shift+K</translation>
 <translation id="6650933572246256093">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 해당 기기에서 다음 패스키를 입력하세요. <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6700713906295497288">IME 메뉴 버튼</translation>
 <translation id="6713285437468012787">블루투스 기기 '<ph name="DEVICE_NAME" />'이(가) 페어링되어 이제 모든 사용자가 사용할 수 있습니다. 설정에서 이 페어링을 삭제할 수 있습니다.</translation>
 <translation id="6785414152754474415">배터리가 <ph name="PERCENTAGE" />% 충전되었으며 충전 중입니다.</translation>
@@ -214,8 +218,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />초 후 기존 해상도로 돌아갑니다.</translation>
-<translation id="7209101170223508707">CAPS LOCK이 켜져 있습니다.
-취소하려면 Alt+검색 또는 Shift 키를 누릅니다.</translation>
+<translation id="7199454189089571166">어시스턴트 모드</translation>
 <translation id="7246339268451149667">지문 잠금 해제를 사용하시겠습니까?</translation>
 <translation id="7256634071279256947">후면 마이크</translation>
 <translation id="7348093485538360975">터치 키보드</translation>
@@ -233,10 +236,10 @@
 <translation id="7649070708921625228">도움말</translation>
 <translation id="7692480393933218409">연결된 USB-C 기기 충전 중</translation>
 <translation id="776344839111254542">업데이트 세부정보를 보려면 클릭하세요.</translation>
+<translation id="7798302898096527229">취소하려면 검색 또는 Shift 키를 누르세요.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" />시간 <ph name="MINUTE" />분</translation>
 <translation id="7823564328645135659">설정을 동기화한 뒤 Chrome의 언어가 '<ph name="FROM_LOCALE" />'에서 '<ph name="TO_LOCALE" />'(으)로 변경되었습니다.</translation>
 <translation id="7904094684485781019">이 계정의 관리자가 멀티 로그인을 허용하지 않습니다.</translation>
-<translation id="7951523953736115461">야간 조명</translation>
 <translation id="7977927628060636163">모바일 네트워크 검색 중...</translation>
 <translation id="7982789257301363584">네트워크</translation>
 <translation id="8000066093800657092">네트워크 없음</translation>
@@ -255,6 +258,7 @@
 <translation id="8433977262951327081">실행기에서 입력 옵션 메뉴 도움말 풍선을 표시하는 단축키가 변경되었습니다. <ph name="OLD_SHORTCUT" /> 대신 <ph name="NEW_SHORTCUT" />을(를) 사용하세요.</translation>
 <translation id="8454013096329229812">Wi-Fi가 켜져 있습니다.</translation>
 <translation id="847056008324733326">배율 설정 표시</translation>
+<translation id="8477270416194247200">취소하려면 Alt+검색 또는 Shift 키를 누르세요.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: 다시 연결하는 중...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" />이(가) 켜져 있는 동안에는 충전되지 않을 수 있습니다.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> 남음</translation>

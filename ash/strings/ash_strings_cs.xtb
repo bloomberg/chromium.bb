@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Tlačítko přetečení</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+Hledat+H</translation>
 <translation id="2049639323467105390">Zařízení je spravováno doménou <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Na výšku</translation>
 <translation id="207439088875642105">Toto je dětský účet spravovaný uživateli <ph name="FIRST_PARENT_EMAIL" /> a <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Jedním prstem</translation>
 <translation id="2509468283778169019">CAPS LOCK je zapnutý</translation>
 <translation id="2532589005999780174">Režim vysokého kontrastu</translation>
+<translation id="2597972630681408282">Noční režim: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">Relace skončí za <ph name="SESSION_TIME_REMAINING" />. Poté budete odhlášeni.</translation>
 <translation id="2727977024730340865">Byla připojena nabíječka s nízkým výkonem. Nabíjení baterie nemusí probíhat spolehlivě.</translation>
 <translation id="2761704814324807722">Systémový panel, čas <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,7 +78,6 @@
 <translation id="3009178788565917040">Výstup</translation>
 <translation id="3019353588588144572">Čas zbývající do úplného nabití baterie: <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">Toto je dětský účet spravovaný uživatelem <ph name="MANAGER_EMAIL" /></translation>
-<translation id="3050422059534974565">CAPS LOCK je zapnutý. Vypnete jej stisknutím klávesy Vyhledávání nebo Shift.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Až dolů</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -135,6 +136,7 @@
 <translation id="4849058404725798627">Zvýraznit objekt se zaměřením pro zadávání</translation>
 <translation id="4872237917498892622">Alt + Vyhledávání nebo Shift</translation>
 <translation id="4895488851634969361">Baterie je plně nabita.</translation>
+<translation id="4905614135390995787">Zkratka k přepínání režimu vysokého kontrastu se změnila. Namísto zkratky <ph name="OLD_SHORTCUT" /> používejte zkratku <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Přijmout</translation>
 <translation id="4961318399572185831">Odesílání obrazovky</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -158,8 +160,10 @@
 <translation id="5744083938413354016">Přetažení klepnutím</translation>
 <translation id="5777841717266010279">Ukončit sdílení obrazovky?</translation>
 <translation id="57838592816432529">Ztlumit</translation>
+<translation id="5860033963881614850">Vypnuto</translation>
 <translation id="5895138241574237353">Restartovat</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">Zapnuto</translation>
 <translation id="5927132638760172455">Odesílání do neznámého přijímače</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Vrátit zpět</translation>
@@ -168,8 +172,8 @@
 <translation id="5977415296283489383">Sluchátka</translation>
 <translation id="5978382165065462689">Ovládání obrazovky je sdíleno prostřednictvím Vzdálené pomoci.</translation>
 <translation id="5980301590375426705">Odhlásit hosta</translation>
+<translation id="5992218262414051481">Je aktivován režim vysokého kontrastu. Vypnete jej opětovným stisknutím kombinace kláves Ctrl+Hledat+H.</translation>
 <translation id="6018164090099858612">Ukončování režimu zrcadlení</translation>
-<translation id="6041154455840261787">Je aktivován režim vysokého kontrastu. Vypnete jej opětovným stisknutím kombinace kláves Hledat+Shift+H.</translation>
 <translation id="6043212731627905357">Tento monitor si se zařízením <ph name="DEVICE_TYPE" /> nerozumí (monitor není podporován).</translation>
 <translation id="6043994281159824495">Odhlásit se</translation>
 <translation id="6047696787498798094">Pokud přepnete na jiného uživatele, sdílení obrazovky bude ukončeno. Chcete pokračovat?</translation>
@@ -194,6 +198,7 @@
 <translation id="6585808820553845416">Relace skončí za <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Vyhledávací tlačítko + Shift + K</translation>
 <translation id="6650933572246256093">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ žádá o povolení ke spárování. V zařízení prosím zadejte následující přístupový klíč: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Hledat+Shift+H</translation>
 <translation id="6700713906295497288">Tlačítko nabídky IME</translation>
 <translation id="6713285437468012787">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ bylo spárováno a je nyní k dispozici všem uživatelům. Toto párování můžete odebrat pomocí Nastavení.</translation>
 <translation id="6785414152754474415">Baterie je nabita na <ph name="PERCENTAGE" /> % a nabíjí se.</translation>
@@ -213,8 +218,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Původní rozlišení bude obnoveno za <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">CAPS LOCK je zapnutý. 
-Vypnete jej stisknutím kombinace kláves Alt + Vyhledávání nebo Shift.</translation>
+<translation id="7199454189089571166">Režim asistenta</translation>
 <translation id="7246339268451149667">Povolit odemknutí otiskem prstu?</translation>
 <translation id="7256634071279256947">Zadní mikrofon</translation>
 <translation id="7348093485538360975">Softwarová klávesnice</translation>
@@ -232,10 +236,10 @@ Vypnete jej stisknutím kombinace kláves Alt + Vyhledávání nebo Shift.</tran
 <translation id="7649070708921625228">Nápověda</translation>
 <translation id="7692480393933218409">Nabíjení připojených zařízení USB Type-C</translation>
 <translation id="776344839111254542">Kliknutím zobrazíte podrobnosti o aktualizaci</translation>
+<translation id="7798302898096527229">Vypnete jej stisknutím klávesy Hledat nebo Shift.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> a <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Jazyk prohlížeče Chrome se po synchronizaci nastavení změnil z jazyka <ph name="FROM_LOCALE" /> na jazyk <ph name="TO_LOCALE" />.</translation>
 <translation id="7904094684485781019">Správce tohoto účtu zakázal vícenásobné přihlášení.</translation>
-<translation id="7951523953736115461">Noční režim</translation>
 <translation id="7977927628060636163">Vyhledávání mobilních sítí...</translation>
 <translation id="7982789257301363584">Síť</translation>
 <translation id="8000066093800657092">Žádná síť</translation>
@@ -254,6 +258,7 @@ Vypnete jej stisknutím kombinace kláves Alt + Vyhledávání nebo Shift.</tran
 <translation id="8433977262951327081">Klávesová zkratka k zobrazení bubliny s možnostmi vstupu na poličce se změnila. Namísto zkratky <ph name="OLD_SHORTCUT" /> používejte zkratku <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Připojení Wi-Fi je zapnuto.</translation>
 <translation id="847056008324733326">Zobrazit nastavení měřítka</translation>
+<translation id="8477270416194247200">Vypnete jej stisknutím kombinace kláves Alt + Hledat nebo klávesy Shift.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Obnovování připojení...</translation>
 <translation id="8517041960877371778">Je možné, že když bude zařízení <ph name="DEVICE_TYPE" /> zapnuté, nebude se nabíjet.</translation>
 <translation id="8639760480004882931">Zbývá <ph name="PERCENTAGE" /> %</translation>

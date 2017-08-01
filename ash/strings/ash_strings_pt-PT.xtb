@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Botão de sobrecarga</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl + Pesquisa + H</translation>
 <translation id="2049639323467105390">Este aparelho é gerido por <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Vertical</translation>
 <translation id="207439088875642105">Esta é uma conta para crianças gerida por <ph name="FIRST_PARENT_EMAIL" /> e <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Teclas aderentes</translation>
 <translation id="2509468283778169019">CAPS LOCK está ativado</translation>
 <translation id="2532589005999780174">Modo de alto contraste</translation>
+<translation id="2597972630681408282">Luz noturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">A sessão termina em <ph name="SESSION_TIME_REMAINING" />. A sua sessão será terminada.</translation>
 <translation id="2727977024730340865">Ligado a um carregador de baixo consumo. O carregamento da bateria pode não ser fiável.</translation>
 <translation id="2761704814324807722">Tabuleiro do estado, hora <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">Saída</translation>
 <translation id="3019353588588144572">Tempo restante até a bateria estar totalmente carregada: <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">Esta é uma conta para crianças gerida por <ph name="MANAGER_EMAIL" /></translation>
-<translation id="3050422059534974565">CAPS LOCK ativado.
-Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Parte inferior</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -136,6 +136,7 @@ Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="4849058404725798627">Realçar objeto com foco do teclado</translation>
 <translation id="4872237917498892622">Alt + Pesquisar ou Shift</translation>
 <translation id="4895488851634969361">A bateria está carregada.</translation>
+<translation id="4905614135390995787">O atalho para ativar/desativar o Modo de alto contraste foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Aceitar</translation>
 <translation id="4961318399572185831">Transmitir ecrã</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@ Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="5744083938413354016">Arrastamento através do toque</translation>
 <translation id="5777841717266010279">Parar a partilha do ecrã?</translation>
 <translation id="57838592816432529">Desativar som</translation>
+<translation id="5860033963881614850">Desativado</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">Ativado</translation>
 <translation id="5927132638760172455">A transmitir para um recetor desconhecido</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Reverter</translation>
@@ -169,8 +172,8 @@ Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="5977415296283489383">Auscultador</translation>
 <translation id="5978382165065462689">A partilhar o controlo do seu ecrã através da Assistência remota.</translation>
 <translation id="5980301590375426705">Sair da sessão de convidado</translation>
+<translation id="5992218262414051481">Modo de alto contraste ativado. Prima Ctrl + Pesquisa + H novamente para o desativar.</translation>
 <translation id="6018164090099858612">A sair do modo espelhado</translation>
-<translation id="6041154455840261787">Modo de alto contraste ativado. Prima Pesquisar + Shift + H novamente para o desativar.</translation>
 <translation id="6043212731627905357">Este monitor está em conflito com o seu <ph name="DEVICE_TYPE" /> (o monitor não é compatível).</translation>
 <translation id="6043994281159824495">Terminar sessão agora</translation>
 <translation id="6047696787498798094">A partilha do ecrã será interrompida quando mudar para outro utilizador. Pretende continuar?</translation>
@@ -195,6 +198,7 @@ Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="6585808820553845416">A sessão termina em <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Pesquisar+Shift+K</translation>
 <translation id="6650933572246256093">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar. Introduza esta chave nesse dispositivo: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Pesquisa + Shift + H</translation>
 <translation id="6700713906295497288">Botão de menu IME</translation>
 <translation id="6713285437468012787">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" foi sincronizado e está agora disponível para todos os utilizadores. Pode remover esta sincronização através das Definições.</translation>
 <translation id="6785414152754474415">A bateria está <ph name="PERCENTAGE" />% cheia e a carregar.</translation>
@@ -214,8 +218,7 @@ Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">A reverter para a resolução antiga dentro de <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">CAPS LOCK ativado.
-Prima Alt + Pesquisar ou Shift para cancelar.</translation>
+<translation id="7199454189089571166">Modo do Assistente</translation>
 <translation id="7246339268451149667">Pretende ativar o desbloqueio por impressão digital?</translation>
 <translation id="7256634071279256947">Microfone posterior</translation>
 <translation id="7348093485538360975">Teclado no ecrã</translation>
@@ -233,10 +236,10 @@ Prima Alt + Pesquisar ou Shift para cancelar.</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7692480393933218409">A carregar os dispositivos USB-C ligados</translation>
 <translation id="776344839111254542">Clique para ver os detalhes da atualização</translation>
+<translation id="7798302898096527229">Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> e <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">O idioma foi alterado de <ph name="FROM_LOCALE" /> para <ph name="TO_LOCALE" /> depois de sincronizar as suas definições.</translation>
 <translation id="7904094684485781019">O administrador desta conta removeu a permissão de início de sessão integrado.</translation>
-<translation id="7951523953736115461">Luz noturna</translation>
 <translation id="7977927628060636163">A pesquisar redes móveis...</translation>
 <translation id="7982789257301363584">Rede</translation>
 <translation id="8000066093800657092">Sem rede</translation>
@@ -255,6 +258,7 @@ Prima Alt + Pesquisar ou Shift para cancelar.</translation>
 <translation id="8433977262951327081">O atalho para mostrar o balão do menu de opções de introdução na prateleira foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">A ligação Wi-Fi está ativada.</translation>
 <translation id="847056008324733326">Definições de escala do ecrã</translation>
+<translation id="8477270416194247200">Prima Alt + Pesquisar ou Shift para cancelar.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: a restabelecer ligação...</translation>
 <translation id="8517041960877371778">O <ph name="DEVICE_TYPE" /> pode não carregar enquanto estiver ligado.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante</translation>

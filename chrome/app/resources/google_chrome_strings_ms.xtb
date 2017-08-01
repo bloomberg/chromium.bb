@@ -165,7 +165,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="573759479754913123">Mengenai Chrome OS</translation>
 <translation id="5749068826913805084">Chrome memerlukan akses storan untuk memuat turun fail.</translation>
 <translation id="5774845247549698882">OS Chrome dipaparkan dalam bahasa ini</translation>
-<translation id="5832596086758878896">{NUM_ITEMS,plural, =1{Tindakan ini akan memadamkan $1 item daripada peranti ini selama-lamanya. Untuk mendapatkan semula data anda kemudian, log masuk ke Chrome sebagai $2.}other{Tindakan ini akan memadamkan $1 item daripada peranti ini selama-lamanya. Untuk mendapatkan semula data anda kemudian, log masuk ke Chrome sebagai $2.}}</translation>
 <translation id="5855036575689098185">Perisian yang dijalankan pada komputer anda tidak serasi dengan Google Chrome.</translation>
 <translation id="5877064549588274448">Saluran berubah. Mulakan semula peranti anda untuk menggunakan perubahan.</translation>
 <translation id="5895138241574237353">Mulakan Semula</translation>
@@ -210,7 +209,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="7125719106133729027">Chrome tidak dapat dikemas kini kepada versi yang terbaharu, jadi anda terlepas ciri baharu yang hebat dan pembetulan keselamatan. Anda perlu memasang semula Chrome secara manual.</translation>
 <translation id="7161904924553537242">Selamat Datang ke Google Chrome</translation>
 <translation id="7164397146364144019">Anda boleh membantu menjadikan Chrome lebih selamat dan lebih mudah untuk digunakan dengan melaporkan butiran kemungkinan insiden keselamatan secara automatik kepada Google.</translation>
-<translation id="7177347454226092725">Tindakan ini akan memadamkan data semakan imbas anda daripada peranti ini selama-lamanya. Untuk mendapatkan semula data anda kemudian, log masuk ke Chrome sebagai $2.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> telah ditambahkan pada Chrome.</translation>
 <translation id="7196020411877309443">Mengapakah halaman ini yang saya lihat?</translation>
 <translation id="7242029209006116544">Anda log masuk menggunakan akaun terurus dan memberikan pentadbirnya kawalan terhadap profil Google Chrome anda. Data Chrome anda, seperti apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan terikat kepada <ph name="USER_NAME" /> secara kekal. Anda akan dapat memadamkan data ini melalui Papan Pemuka Akaun Google, tetapi anda tidak akan dapat mengaitkan data ini dengan akaun lain. Anda boleh memilih membuat profil baharu untuk mengasingkan data Chrome anda yang sedia ada. <ph name="LEARN_MORE" /></translation>
@@ -221,18 +219,17 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="7400722733683201933">Mengenai Google Chrome</translation>
 <translation id="7408085963519505752">Syarat Chrome OS</translation>
 <translation id="7419046106786626209">OS Chrome tidak dapat menyegerakkan data anda kerana Segerak tidak tersedia untuk domain anda.</translation>
-<translation id="7436949144778751379">Google Chrome memerlukan Windows XP atau seterusnya. Beberapa ciri mungkin tidak berfungsi.</translation>
 <translation id="7437998757836447326">Log keluar dari Chrome</translation>
 <translation id="7459554271817304652">Sediakan Penyegerakan untuk menyimpan ciri penyemak imbas anda yang diperibadikan ke web dan mengaksesnya dari Google Chrome pada mana-mana komputer.</translation>
 <translation id="7473136999113284234">Chrome dikemas kini secara automatik supaya anda sentiasa mempunyai versi yang terbaharu.</translation>
 <translation id="7473891865547856676">Tidak, Terima Kasih</translation>
 <translation id="7494905215383356681">Lesen sumber terbuka Chrome</translation>
-<translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Tindakan ini akan memadamkan sekurang-kurangnya $1 item daripada peranti ini selama-lamanya. Untuk mendapatkan semula data anda kemudian, log masuk ke Chrome sebagai $2.}other{Tindakan ini akan memadamkan sekurang-kurangnya $1 item daripada peranti ini selama-lamanya. Untuk mendapatkan semula data anda kemudian, log masuk ke Chrome sebagai $2.}}</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Paparkan OS Chrome dalam bahasa ini</translation>
 <translation id="7592736734348559088">Google Chrome tidak dapat menyegerakkan data anda kerana butiran log masuk akaun anda sudah lapuk.</translation>
 <translation id="7626032353295482388">Selamat Datang ke Chrome</translation>
 <translation id="7747138024166251722">Pemasang tidak dapat mencipta direktori sementara. Sila semak ruang cakera kosong dan kebenaran untuk memasang perisian.</translation>
+<translation id="7756122083761163394">Data semakan imbas orang ini akan dipadamkan daripada peranti ini. Untuk memulihkan data itu, log masuk ke Chrome sebagai $2.</translation>
 <translation id="7761834446675418963">Klik nama anda untuk membuka Chrome dan mula menyemak imbas.</translation>
 <translation id="7781002470561365167">Terdapat versi Google Chrome baharu yang tersedia.</translation>
 <translation id="7787950393032327779">Nampaknya profil digunakan oleh proses Google Chrome lain (<ph name="PROCESS_ID" />) pada komputer lain (<ph name="HOST_NAME" />). Chrome telah mengunci profil supaya profil tidak rosak. Jika anda pasti tiada proses lain yang menggunakan profil ini, anda boleh membuka profil dan melancarkan semula Chrome.</translation>
@@ -251,7 +248,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="8129812357326543296">Mengenai &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Pasang Chrome pada telefon anda. Kami akan menghantar SMS ke telefon anda.</translation>
 <translation id="8183957050892517584">Chrome akan menyimpan butiran peribadi anda dengan selamat supaya anda tidak perlu menaipnya semula.</translation>
-<translation id="8211929904040702368">Tindakan ini akan memadamkan sekurang-kurangnya <ph name="TOTAL_COUNT" /> item daripada peranti ini selama-lamanya. Untuk mendapatkan semula data anda kemudian, log masuk ke Chrome sebagai $2.</translation>
 <translation id="8255190535488645436">Google Chrome menggunakan kamera dan mikrofon anda.</translation>
 <translation id="8286862437124483331">Google Chrome cuba menunjukkan kata laluan. Taip kata laluan Windows anda untuk membenarkannya.</translation>
 <translation id="8290100596633877290">Alamak! Google Chrome mengalami ranap sistem. Lancarkan semula sekarang?</translation>

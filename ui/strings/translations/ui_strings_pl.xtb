@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">Maksymalizuj</translation>
 <translation id="1413622004203049571">Wyłącz powiadomienia z <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuta i }few{# minuty i }many{# minut i }other{# minuty i }}</translation>
+<translation id="1643823602425662293">Powiadomienie</translation>
 <translation id="1685967565548146460">Ankiety zadowolenia użytkowników</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minuta}few{# minuty}many{# minut}other{# minuty}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">przejdź</translation>
 <translation id="4250229828105606438">Zrzut ekranu</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{miesiąc temu}few{# miesiące temu}many{# miesięcy temu}other{# miesiąca temu}}</translation>
+<translation id="4316910396681052118">WSZYSTKIE APLIKACJE</translation>
 <translation id="4320177379694898372">Brak połączenia z internetem</translation>
 <translation id="4588090240171750605">Przewiń w prawo</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Pozostał miesiąc}few{Pozostały # miesiące}many{Pozostało # miesięcy}other{Pozostało # miesiąca}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">Folder bez nazwy</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}few{# s}many{# s}other{# s}}</translation>
 <translation id="9150735707954472829">Karta</translation>
+<translation id="9161053988251441839">SUGEROWANE APLIKACJE</translation>
 <translation id="9170848237812810038">&amp;Cofnij</translation>
 <translation id="932327136139879170">Strona główna</translation>
 </translationbundle>

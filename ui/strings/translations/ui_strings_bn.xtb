@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">বড় করুন</translation>
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> এর থেকে বিজ্ঞপ্তিগুলি অক্ষম করুন</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{১ মিনিট এবং }one{# মিনিট এবং }other{# মিনিট এবং }}</translation>
+<translation id="1643823602425662293">বিজ্ঞপ্তি</translation>
 <translation id="1685967565548146460">টুপি</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{১ মিনিট}one{# মিনিট}other{# মিনিট}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">লাফ দিন</translation>
 <translation id="4250229828105606438">স্ক্রীনশট</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{১ মাস আগে}one{# মাস আগে}other{# মাস আগে}}</translation>
+<translation id="4316910396681052118">সব অ্যাপ</translation>
 <translation id="4320177379694898372">কোনো ইন্টারনেট সংযোগ নেই</translation>
 <translation id="4588090240171750605">ডান দিকে স্ক্রোল করুন</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{১ মাস বাকি}one{# মাস বাকি}other{# মাস বাকি}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">নামবিহীন ফোল্ডার</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{১ সেকেন্ড}one{# সেকেন্ড}other{# সেকেন্ড}}</translation>
 <translation id="9150735707954472829">ট্যাব</translation>
+<translation id="9161053988251441839">প্রস্তাবিত অ্যাপ</translation>
 <translation id="9170848237812810038">&amp;পূর্বাবস্থায় ফিরুন</translation>
 <translation id="932327136139879170">হোম</translation>
 </translationbundle>

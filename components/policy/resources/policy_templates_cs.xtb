@@ -53,13 +53,6 @@ Pokud je nastavena na hodnotu true nebo nastavena není, statistiky hlášeny bu
 Není-li tato zásada nastavena, výchozí frekvence je 3 hodiny. Minimální povolená frekvence je 60 sekund.</translation>
 <translation id="1221359380862872747">Načíst konkrétní adresy URL při přihlášení do ukázky</translation>
 <translation id="1265053460044691532">Omezit dobu, po kterou se uživatel ověřený pomocí technologie SAML může přihlásit offline</translation>
-<translation id="127699919157094139">Deaktivuje v prohlížeči <ph name="PRODUCT_NAME" /> synchronizaci dat pomocí synchronizačních služeb hostovaných na Googlu a zabrání uživatelům ve změně tohoto nastavení.
-
-      Pokud toto nastavení aktivujete, uživatelé jej v prohlížeči <ph name="PRODUCT_NAME" /> nebudou moci změnit ani přepsat.
-
-      Pokud tuto zásadu ponecháte nenastavenou, uživatel bude moci zvolit, zda chce službu Google Sync používat či nikoliv.
-
-      Chcete-li službu Google Sync úplně zakázat, doporučujeme vám zakázat ji v administrátorské konzoli Google.</translation>
 <translation id="1291880496936992484">Upozornění: Po verzi 52 (přibližně v září 2016) bude šifrovací algoritmus RC4 z prohlížeče <ph name="PRODUCT_NAME" /> zcela odstraněn a tato zásada přestane fungovat.
 
       Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, v protokolu TLS nebudou povoleny šifrovací sady RC4. Nastavením této zásady na hodnotu true je možné zajistit kompatibilitu se zastaralým serverem. Toto nastavení by však mělo být použito pouze jako dočasné nouzové opatření a server by měl být překonfigurován.</translation>
@@ -509,6 +502,11 @@ Pokud toto nastavení deaktivujete, Vyhledání klepnutím bude zcela vypnuté.
 
 Pokud zásadu nenastavíte, bude se považovat za aktivované (viz popis výše).</translation>
 <translation id="285480231336205327">Aktivovat vysoce kontrastní režim</translation>
+<translation id="2854919890879212089">Způsobí, že bude <ph name="PRODUCT_NAME" /> v Náhledu tisku jako výchozí výběr používat výchozí tiskárnu systému (namísto naposledy použité tiskárny).
+
+      Pokud toto nastavení zakážete nebo nenastavíte žádnou hodnotu, bude Náhled tisku jako výchozí cíl používat naposledy použitou tiskárnu.
+
+      Pokud aktivujete toto nastavení, bude Náhled tisku jako výchozí cíl používat výchozí tiskárnu systému.</translation>
 <translation id="2872961005593481000">Vypnout</translation>
 <translation id="2874209944580848064">Poznámka ohledně zařízení se systémem <ph name="PRODUCT_OS_NAME" />, která podporují aplikace pro Android:</translation>
 <translation id="2877225735001246144">Deaktivovat vyhledání záznamů CNAME při vyjednávání ověření protokolu Kerberos</translation>
@@ -989,6 +987,7 @@ Samotná zásada je na výše uvedených platformách podporována. Funkce, kter
 
           Pokud uživatelé zadají slabý kód PIN, ve výchozím nastavení se jim zobrazí upozornění (nikoli chyba).</translation>
 <translation id="4723829699367336876">Povolení přechodu přes bránu firewall z klienta vzdáleného připojení</translation>
+<translation id="4725123658714754485">Udává, zda se do Googlu hlásí metriky využití a diagnostická data včetně zpráv o selhání. Pokud je tato zásada nastavena na hodnotu true, bude systém <ph name="PRODUCT_OS_NAME" /> hlásit metriky využití a diagnostická data. Pokud není nakonfigurována nebo je nastavena na hodnotu false, bude hlášení metrik a diagnostických dat zakázáno.</translation>
 <translation id="4725528134735324213">Povolit službu Android Backup Service</translation>
 <translation id="4733471537137819387">Zásady související s integrovaným ověřením pomocí protokolu HTTP</translation>
 <translation id="4744190513568488164">Servery, na které může <ph name="PRODUCT_NAME" /> delegovat ověření.
@@ -1506,6 +1505,11 @@ Není-li tato zásada nastavena na konkrétní hodnotu, bude předvídání sít
 
       Pokud tuto možnost deaktivujete nebo nenastavíte, bude nástroj pro vyhledávání pluginů aktivní.</translation>
 <translation id="6699880231565102694">Povolit dvoufázové ověření pro hostitele vzdáleného přístupu</translation>
+<translation id="6724842112053619797">Pokud zapnete toto nastavení, budou nastavení uložená v profilech <ph name="PRODUCT_NAME" /> (např. záložky, data automatického vyplňování nebo hesla) zapsána také do souboru uloženého ve složce cestovního uživatelského profilu nebo v umístění, které definuje administrátor prostřednictvím zásady <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Aktivací této zásady deaktivujete cloudovou synchronizaci.
+
+      Pokud je tato zásada zakázána nebo není nastavena, budou se používat pouze běžné místní profily.
+
+      Zásada <ph name="SYNC_DISABLED_POLICY_NAME" /> zakáže veškerou synchronizaci dat a tím zásadu RoamingProfileSupportEnabled přepíše.</translation>
 <translation id="6757438632136860443">Umožňuje nastavit seznam vzorů adres URL webů, které mají povoleno spouštět plugin <ph name="FLASH_PLUGIN_NAME" />.
 
           Pokud tuto zásadu nenastavíte, použije se pro všechny weby globální výchozí hodnota buď ze zásady DefaultPluginsSetting (pokud je nastavena), nebo z osobní konfigurace uživatele.</translation>
@@ -1550,6 +1554,13 @@ Pokud ji ponecháte nenastavenou, bude hlasová odezva ve výchozím nastavení 
 <translation id="6943577887654905793">Název nastavení v systémech Mac/Linux:</translation>
 <translation id="69525503251220566">Parametr poskytující funkci vyhledávání podle obrázku pro výchozího poskytovatele vyhledávání</translation>
 <translation id="6956272732789158625">Nepovolit žádnému webu generovat klíče</translation>
+<translation id="6994082778848658360">Udává, jak lze integrovaný bezpečnostní hardwarový prvek používat k dvoufaktorovému ověření, pokud je s touto funkcí kompatibilní. Ke zjištění fyzické přítomnosti uživatele se používá vypínač počítače.
+
+      Pokud je vybrána možnost Deaktivováno, druhý faktor není k dispozici.
+
+      Pokud je vybrána možnost U2F, bude se integrovaný druhý faktor chovat podle specifikace FIDO U2F.
+
+      Pokud je vybrána možnost U2F_EXTENDED, bude integrovaný druhý faktor poskytovat funkce U2F plus rozšíření pro individuální atestaci.</translation>
 <translation id="6997592395211691850">Určuje, zda jsou online kontroly OCSP/CRL vyžadovány pro místní kotvy důvěryhodnosti.</translation>
 <translation id="7003334574344702284">Je-li tato zásada aktivovaná, vynucuje import uložených hesel z předchozího výchozího prohlížeče. Aktivace této zásady má také vliv na dialogové okno importu.
 
@@ -1757,7 +1768,6 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 <translation id="7713608076604149344">Omezení stahování</translation>
 <translation id="7715711044277116530">Procento prodloužení prodlevy ztmavení obrazovky v režimu prezentace</translation>
 <translation id="7717938661004793600">Konfiguruje funkce usnadnění přístupu v systému <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7719251660743813569">Určuje, zda se budou Googlu nahlašovat metriky využití. Je-li tato zásada nastavena na hodnotu True, bude systém <ph name="PRODUCT_OS_NAME" /> hlásit metriky využití. Pokud není nastavena, nebo je nastavena na hodnotu False, budou hlášení o metrikách vypnuta.</translation>
 <translation id="7724994675283793633">Tato zásada povolí protokol HTTP/0.9 na portech jiných než 80 pro HTTP a 443 pro HTTPS.
 
       Tato zásada je ve výchozím nastavení vypnuta. Pokud ji zapnete, vystavíte tím uživatele bezpečnostnímu riziku popsanému na stránce https://crbug.com/600352.
@@ -2077,6 +2087,15 @@ Pokud tato zásada není nakonfigurována nebo je hodnota nižší než 1 MB, <p
 <translation id="891435090623616439">Zakódováno jako řetězec JSON, podrobnosti naleznete zde: <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Oznamovat polohu zařízení</translation>
 <translation id="8951350807133946005">Nastavit adresář mezipaměti na disku</translation>
+<translation id="8952317565138994125">Deaktivuje v prohlížeči <ph name="PRODUCT_NAME" /> synchronizaci dat pomocí synchronizačních služeb hostovaných na Googlu a zabrání uživatelům ve změně tohoto nastavení.
+
+      Pokud toto nastavení aktivujete, uživatelé jej v prohlížeči <ph name="PRODUCT_NAME" /> nebudou moci změnit ani přepsat.
+
+      Pokud tuto zásadu ponecháte nenastavenou, uživatel bude moci zvolit, zda chce službu Google Sync používat, či nikoliv.
+
+      Chcete-li službu Google Sync úplně zakázat, doporučujeme vám zakázat ji v administrátorské konzoli Google.
+
+      Tuto zásadu byste neměli aktivovat v případě, že je zásada <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> zapnuta na Povoleno. Obě se totiž týkají stejné funkce na straně klienta. V tomto případě je synchronizace hostovaná na Googlu zcela vypnuta.</translation>
 <translation id="8955719471735800169">Zpět na začátek</translation>
 <translation id="8960850473856121830">Vzory v tomto seznamu budou porovnány s bezpečnostními údaji o původu požadované adresy URL. Pokud bude nalezena shoda, přístup k zařízením pro záznam zvuku bude udělen bez vyzvání.
 
@@ -2084,6 +2103,7 @@ POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veře
 <translation id="8970205333161758602">Potlačení oznámení o ukončení podpory pluginu <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Časovač automatického přihlášení do veřejné relace</translation>
 <translation id="8976248126101463034">Povolit ověřování gnubby pro hostitele vzdáleného přístupu</translation>
+<translation id="8976531594979650914">Jako výchozí tiskárnu použít výchozí tiskárnu systému</translation>
 <translation id="8992176907758534924">Nepovolit zobrazení obrázků žádným webovým stránkám</translation>
 <translation id="9035964157729712237">ID rozšíření, která mají být vyňata ze seznamu zakázaných</translation>
 <translation id="9042911395677044526">Umožňuje přenést nastavení sítě, která se uplatní pro jednotlivé uživatele v zařízení se systémem <ph name="PRODUCT_OS_NAME" />. Konfigurace sítě je řetězec ve formátu JSON, který se řídí definicí formátu Open Network Configuration popsanou na stránce <ph name="ONC_SPEC_URL" />.</translation>

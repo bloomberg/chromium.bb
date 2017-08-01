@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Ülevoolunupp</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl + otsinguklahv + H</translation>
 <translation id="2049639323467105390">Seadet haldab <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Vertikaalpaigutus</translation>
 <translation id="207439088875642105">See on lastekonto, mida haldavad <ph name="FIRST_PARENT_EMAIL" /> ja <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Nakkeklahvid</translation>
 <translation id="2509468283778169019">SUURTÄHELUKK on sisse lülitatud</translation>
 <translation id="2532589005999780174">Suure kontrastsusega režiim</translation>
+<translation id="2597972630681408282">Öövalgus: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">Seansi lõpuni on jäänud <ph name="SESSION_TIME_REMAINING" />. Teid logitakse välja.</translation>
 <translation id="2727977024730340865">Ühendatud väikese energiakuluga laadijaga. Aku laadimine võib olla ebastabiilne.</translation>
 <translation id="2761704814324807722">Olekusalv, kellaaeg <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">Väljund</translation>
 <translation id="3019353588588144572">Aku täitumiseni on aega <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">Seda lastekontot haldab <ph name="MANAGER_EMAIL" /></translation>
-<translation id="3050422059534974565">SUURTÄHELUKK on sisse lülitatud.
-Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="3077734595579995578">tõstuklahv</translation>
 <translation id="3087734570205094154">Alaserv</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -136,6 +136,7 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="4849058404725798627">Klaviatuuri fookusega objekti esiletõstmine</translation>
 <translation id="4872237917498892622">Alt + otsinguklahv või tõstuklahv</translation>
 <translation id="4895488851634969361">Aku on täis.</translation>
+<translation id="4905614135390995787">Suure kontrastsusega režiimi aktiveerimise otsetee on muutunud. Kasutage edaspidi otseteed <ph name="NEW_SHORTCUT" />, mitte <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Nõustu</translation>
 <translation id="4961318399572185831">Ekraani ülekandmine</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="5744083938413354016">Puudutusega lohistamine</translation>
 <translation id="5777841717266010279">Kas peatada ekraani jagamine?</translation>
 <translation id="57838592816432529">Vaigista</translation>
+<translation id="5860033963881614850">Väljas</translation>
 <translation id="5895138241574237353">Taaskäivitamine</translation>
 <translation id="5901316534475909376">Tõstuklahv + ESC</translation>
+<translation id="5916664084637901428">Sees</translation>
 <translation id="5927132638760172455">Ülekandmine teadmata vastuvõtjasse</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Ennista</translation>
@@ -169,8 +172,8 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="5977415296283489383">Kõrvaklapid</translation>
 <translation id="5978382165065462689">Ekraani juhtimise jagamine kaugabi kaudu.</translation>
 <translation id="5980301590375426705">Välju külastajaseansist</translation>
+<translation id="5992218262414051481">Suure kontrastsusega režiim on lubatud. Vajutage selle väljalülitamiseks uuesti klahvikombinatsiooni Ctrl + otsinguklahv + H.</translation>
 <translation id="6018164090099858612">Peeglirežiimist väljumine</translation>
-<translation id="6041154455840261787">Suure kontrastiga režiim on lubatud. Selle väljalülitamiseks vajutage uuesti klahvikombinatsiooni Otsing + Tõstuklahv + H.</translation>
 <translation id="6043212731627905357">See monitor ei toimi teie seadmega <ph name="DEVICE_TYPE" /> (seda monitori ei toetata).</translation>
 <translation id="6043994281159824495">Logi nüüd välja</translation>
 <translation id="6047696787498798094">Teisele kasutajale lülitumine peatab ekraani jagamise. Kas soovite jätkata?</translation>
@@ -195,6 +198,7 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="6585808820553845416">Seansi lõpuni on jäänud <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Otsing + Tõstuklahv + K</translation>
 <translation id="6650933572246256093">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks. Sisestage seadmesse see parool: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Otsinguklahv + tõstuklahv + H</translation>
 <translation id="6700713906295497288">IME menüünupp</translation>
 <translation id="6713285437468012787">Bluetoothi seade „<ph name="DEVICE_NAME" />” on nüüd seotud ja saadaval kõikidele kasutajatele. Võite sidumise tühistada jaotises Seaded.</translation>
 <translation id="6785414152754474415">Aku on <ph name="PERCENTAGE" />% täis ja seda laetakse.</translation>
@@ -214,8 +218,7 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt + Tõstuklahv + K</translation>
 <translation id="7168224885072002358">Ekraan ennistatakse vanale eraldusvõimele <ph name="TIMEOUT_SECONDS" /> pärast</translation>
-<translation id="7209101170223508707">SUURTÄHELUKK on sisse lülitatud.
-Tühistamiseks vajutage klahvikombinatsiooni Alt + otsinguklahv või tõstuklahv</translation>
+<translation id="7199454189089571166">Assistendirežiim</translation>
 <translation id="7246339268451149667">Kas lubada sõrmejäljega avamine?</translation>
 <translation id="7256634071279256947">Tagumine mikrofon</translation>
 <translation id="7348093485538360975">Ekraanil kuvatav klaviatuur</translation>
@@ -233,10 +236,10 @@ Tühistamiseks vajutage klahvikombinatsiooni Alt + otsinguklahv või tõstuklahv
 <translation id="7649070708921625228">Abi</translation>
 <translation id="7692480393933218409">Ühendatud C-tüüpi USB-seadmete laadimine</translation>
 <translation id="776344839111254542">Klõpsake värskenduse üksikasjade vaatamiseks</translation>
+<translation id="7798302898096527229">Tühistamiseks vajutage otsinguklahvi või tõstuklahvi.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> ja <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Pärast seadete sünkroonimist asendati <ph name="FROM_LOCALE" /> keel <ph name="TO_LOCALE" /> keelega.</translation>
 <translation id="7904094684485781019">Selle konto administraator on mitmesse kontosse sisselogimise keelanud.</translation>
-<translation id="7951523953736115461">Öövalgus</translation>
 <translation id="7977927628060636163">Mobiilsidevõrkude otsimine …</translation>
 <translation id="7982789257301363584">Võrk</translation>
 <translation id="8000066093800657092">Võrku pole</translation>
@@ -255,6 +258,7 @@ Tühistamiseks vajutage klahvikombinatsiooni Alt + otsinguklahv või tõstuklahv
 <translation id="8433977262951327081">Otsetee sisestusvalikute menüü mulli kuvamiseks riiulil on muutunud. Kasutage otsetee <ph name="OLD_SHORTCUT" /> asemel otseteed <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">WiFi on sisse lülitatud.</translation>
 <translation id="847056008324733326">Ekraani skaala seaded</translation>
+<translation id="8477270416194247200">Tühistamiseks vajutage klahvikombinatsiooni Alt + Otsing või tõstuklahvi.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: uuesti ühendamine …</translation>
 <translation id="8517041960877371778">Kui seade <ph name="DEVICE_TYPE" /> on sisse lülitatud, ei pruugita seda laadida.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> on jäänud</translation>

@@ -112,7 +112,7 @@
 <translation id="3649256019230929621">উইন্ডো সংক্ষিপ্তায়ন করুন</translation>
 <translation id="369442766917958684">অফলাইন।</translation>
 <translation id="3695446226812920698">কীভাবে করবেন তা জানুন</translation>
-<translation id="3718805989288361841">Chrome দূরবর্তী ডেস্কটপের পলিসি সেটিংসে একটি ত্রুটি হয়েছে। সহায়তার জন্য আপনার সিস্টেম প্রশাসকের সাথে যোগাযোগ করুন।</translation>
+<translation id="3718805989288361841">Chrome দূরবর্তী ডেস্কটপের নীতি সেটিংসে একটি ত্রুটি হয়েছে। সহায়তার জন্য আপনার সিস্টেম প্রশাসকের সাথে যোগাযোগ করুন।</translation>
 <translation id="3776024066357219166">আপনার Chrome দূরবর্তী ডেস্কটপ অধিবেশন শেষ হয়েছে৷</translation>
 <translation id="3785447812627779171">Chromoting
 Host</translation>
@@ -250,6 +250,7 @@ Host</translation>
 <translation id="7401733114166276557">Chrome দূরবর্তী ডেস্কটপ</translation>
 <translation id="7434397035092923453">এই ক্লায়েন্টের জন্য অ্যাক্সেস স্বীকৃত নয়: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">ক্লায়েন্ট সংযুক্ত: <ph name="CLIENT_USERNAME" />৷</translation>
+<translation id="7526139040829362392">অ্যাকাউন্ট পরিবর্তন করুন</translation>
 <translation id="7589941250119944644">Chrome দূরবর্তী ডেস্কটপ এখন থেকে ওয়েবে পাওয়া যাবে। আমাদের
  <ph name="LINK_BEGIN" />ওয়েব অ্যাপ<ph name="LINK_END" /> লিঙ্কটিতে গিয়ে অ্যাপটি দেখুন—এটি দ্রুত এবং একদম ফ্রি, এবং এর পুরনো সমস্ত বৈশিষ্ট্য এখনও ব্যবহার করা যাচ্ছে।</translation>
 <translation id="7606912958770842224">দূরবর্তী সংযোগগুলি সক্ষম করুন</translation>

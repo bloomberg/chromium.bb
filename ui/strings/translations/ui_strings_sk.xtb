@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">Maximalizovať</translation>
 <translation id="1413622004203049571">Zakázať upozornenia od <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minúta a }few{# minúty a }many{# minúty a }other{# minút a }}</translation>
+<translation id="1643823602425662293">Upozornenie</translation>
 <translation id="1685967565548146460">Prieskum na sledovanie spokojnosti</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minúta}few{# minúty}many{# minúty}other{# minút}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">skok</translation>
 <translation id="4250229828105606438">Snímka obrazovky</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{pred mesiacom}few{pred # mesiacmi}many{pred # mesiacom}other{pred # mesiacmi}}</translation>
+<translation id="4316910396681052118">VŠETKY APLIKÁCIE</translation>
 <translation id="4320177379694898372">Žiadne internetové pripojenie</translation>
 <translation id="4588090240171750605">Rolovať doprava</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{zostáva 1 mesiac}few{zostávajú # mesiace}many{zostáva # mesiaca}other{zostáva # mesiacov}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">Priečinok bez názvu</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}few{# s}many{# s}other{# s}}</translation>
 <translation id="9150735707954472829">Karta</translation>
+<translation id="9161053988251441839">ODPORÚČANÉ APLIKÁCIE</translation>
 <translation id="9170848237812810038">&amp;Naspäť</translation>
 <translation id="932327136139879170">Domov</translation>
 </translationbundle>

@@ -165,7 +165,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="573759479754913123">Sobre Chrome OS</translation>
 <translation id="5749068826913805084">Chrome necessita tenir accés a l'emmagatzematge per poder baixar fitxers.</translation>
 <translation id="5774845247549698882">Chrome OS es mostra en aquest idioma</translation>
-<translation id="5832596086758878896">{NUM_ITEMS,plural, =1{Amb aquesta acció, se suprimirà $1 element d'aquest dispositiu de manera permanent. Per recuperar les vostres dades més endavant, inicieu la sessió a Chrome com a $2.}other{Amb aquesta acció, se suprimiran $1 elements d'aquest dispositiu de manera permanent. Per recuperar les vostres dades més endavant, inicieu la sessió a Chrome com a $2.}}</translation>
 <translation id="5855036575689098185">El programari que s'executa al vostre ordinador no és compatible amb Google Chrome.</translation>
 <translation id="5877064549588274448">El canal ha canviat. Reinicieu el dispositiu perquè s'apliquin els canvis.</translation>
 <translation id="5895138241574237353">Reinicia</translation>
@@ -210,7 +209,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="7125719106133729027">No s'ha pogut fer l'actualització de Chrome a la versió més recent, de manera que esteu perdent funcions noves i correccions de seguretat magnífiques. Cal que torneu a instal·lar Chrome manualment.</translation>
 <translation id="7161904924553537242">Us donem la benvinguda a Google Chrome.</translation>
 <translation id="7164397146364144019">Si voleu col·laborar perquè Chrome sigui més segur i fàcil d'utilitzar, informeu automàticament Google dels detalls sobre possibles incidències de seguretat.</translation>
-<translation id="7177347454226092725">Amb aquesta acció, se suprimiran les dades de navegació d'aquest dispositiu de manera permanent. Per recuperar-les més endavant, inicieu la sessió a Chrome com a $2.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> s'ha afegit a Chrome.</translation>
 <translation id="7196020411877309443">Per què veig aquest missatge?</translation>
 <translation id="7242029209006116544">Esteu a punt d'iniciar la sessió amb un compte gestionat i d'atorgar el control del vostre perfil de Google Chrome a l'administrador corresponent. Les vostres dades de Chrome, com ara aplicacions, adreces d'interès, historial, contrasenyes i altres configuracions, s'enllaçaran permanentment amb <ph name="USER_NAME" />. Podreu suprimir aquestes dades mitjançant el Tauler de Comptes de Google, però no les podreu associar amb un altre compte. De manera opcional, podeu crear un perfil nou per mantenir les vostres dades de Chrome a part. <ph name="LEARN_MORE" /></translation>
@@ -221,18 +219,17 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="7400722733683201933">Sobre Google Chrome</translation>
 <translation id="7408085963519505752">Condicions de Chrome OS</translation>
 <translation id="7419046106786626209">Chrome OS no ha pogut sincronitzar les vostres dades perquè la sincronització no està disponible per al vostre domini.</translation>
-<translation id="7436949144778751379">Google Chrome necessita Windows XP o una versió posterior. És possible que algunes funcions no estiguin disponibles.</translation>
 <translation id="7437998757836447326">Tancar la sessió de Chrome</translation>
 <translation id="7459554271817304652">Configureu la sincronització per desar al web les funcions personalitzades del navegador i per accedir-hi des de qualsevol ordinador mitjançant Google Chrome.</translation>
 <translation id="7473136999113284234">Chrome s'actualitza automàticament perquè en tingueu sempre la versió més recent.</translation>
 <translation id="7473891865547856676">No, gràcies</translation>
 <translation id="7494905215383356681">Llicències de programari lliure de Chrome</translation>
-<translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Amb aquesta acció, se suprimirà almenys $1 element d'aquest dispositiu de manera permanent. Per recuperar les vostres dades més endavant, inicieu la sessió a Chrome com a $2.}other{Amb aquesta acció, se suprimiran almenys $1 elements d'aquest dispositiu de manera permanent. Per recuperar les vostres dades més endavant, inicieu la sessió a Chrome com a $2.}}</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Mostra Google Chrome en aquest idioma</translation>
 <translation id="7592736734348559088">Google Chrome no ha pogut sincronitzar les dades perquè els detalls d'inici de sessió del compte no estan actualitzats.</translation>
 <translation id="7626032353295482388">Us donem la benvinguda a Chrome</translation>
 <translation id="7747138024166251722">L'instal·lador no ha pogut crear un directori temporal. Comprova que hi ha espai lliure al disc i que tens permís per instal·lar el programari.</translation>
+<translation id="7756122083761163394">Les dades de navegació d'aquesta persona se suprimiran d'aquest dispositiu. Per recuperar-ne les dades, inicia la sessió a Chrome com a $2.</translation>
 <translation id="7761834446675418963">Feu clic al vostre nom per obrir Chrome i començar a navegar.</translation>
 <translation id="7781002470561365167">Hi ha disponible una versió nova de Google Chrome.</translation>
 <translation id="7787950393032327779">Sembla que un altre procés de Google Chrome (<ph name="PROCESS_ID" />) està fent servir el perfil en un altre ordinador (<ph name="HOST_NAME" />). Chrome ha bloquejat el perfil perquè no es malmeti. Si esteu segur que no hi ha cap altre procés que utilitzi el perfil, podeu desbloquejar-lo i tornar a iniciar Chrome.</translation>
@@ -251,7 +248,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="8129812357326543296">Quant a &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Instal·la Chrome al telèfon. T'enviarem un SMS al telèfon.</translation>
 <translation id="8183957050892517584">Chrome emmagatzemarà de manera segura les vostres dades personals perquè no les hàgiu de tornar a escriure</translation>
-<translation id="8211929904040702368">Amb aquesta acció, se suprimiran almenys <ph name="TOTAL_COUNT" /> elements d'aquest dispositiu de manera permanent. Per recuperar les vostres dades més endavant, inicieu la sessió a Chrome com a $2.</translation>
 <translation id="8255190535488645436">Google Chrome està utilitzant la càmera i el micròfon.</translation>
 <translation id="8286862437124483331">Google Chrome està provant de mostrar contrasenyes. Escriviu la vostra contrasenya de Windows per permetre-ho.</translation>
 <translation id="8290100596633877290">Google Chrome s'ha bloquejat. Voleu tornar-lo a iniciar?</translation>

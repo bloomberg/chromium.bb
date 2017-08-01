@@ -30,7 +30,6 @@
 <translation id="1966382378801805537">Chromium no puede determinar ni establecer el navegador predeterminado</translation>
 <translation id="1967743265616885482">Un módulo con el mismo nombre provoca un conflicto con Chromium.</translation>
 <translation id="2008474315282236005">Esta acción borrará 1 elemento de este dispositivo. Si más adelante deseas recuperar los datos, accede a tu cuenta en Chromium como <ph name="USER_EMAIL" />.</translation>
-<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Esta acción borrará de forma permanente al menos $1 elemento de este dispositivo. Si más adelante deseas recuperar tus datos, accede a Chromium como $2.}other{Esta acción borrará de forma permanente al menos $1 elementos de este dispositivo. Si más adelante deseas recuperar tus datos, accede a Chromium como $2.}}</translation>
 <translation id="2077129598763517140">Usar aceleración de hardware cuando esté disponible</translation>
 <translation id="2119636228670142020">Acerca de &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Licencias de código abierto del Sistema operativo Chromium</translation>
@@ -79,7 +78,6 @@
 <translation id="3549345495227188780">Introducción al Sistema operativo de Chromium</translation>
 <translation id="3582788516608077514">Actualizando Chromium...</translation>
 <translation id="358997566136285270">Logotipo de Chromium</translation>
-<translation id="3645040538872234961">Esta acción borrará de forma permanente tus datos de navegación de este dispositivo. Si más adelante deseas recuperarlos, accede a Chromium como $2.</translation>
 <translation id="3738139272394829648">Tocar para buscar</translation>
 <translation id="3762167353400286894">El SO Chromium se muestra en este idioma</translation>
 <translation id="378917192836375108">Chromium te permite hacer clic en un número de teléfono en la Web y comunicarte con este por Skype.</translation>
@@ -151,7 +149,6 @@
 <translation id="59625444380784159">Los detalles de tus contactos pueden ayudar a completar los formularios de forma más rápida en Chromium.</translation>
 <translation id="5987687638152509985">Actualiza Chromium para iniciar la sincronización</translation>
 <translation id="6055895534982063517">Hay una nueva versión de Chromium disponible, y es más rápida que nunca.</translation>
-<translation id="6077017812234345835">Esta acción borrará de forma permanente al menos <ph name="TOTAL_COUNT" /> elementos de este dispositivo. Si más adelante deseas recuperar tus datos, accede a Chromium como $2.</translation>
 <translation id="608189560609172163">Chromium no pudo sincronizar los datos porque se produjo un error de acceso.</translation>
 <translation id="6129621093834146363">Chromium bloqueó <ph name="FILE_NAME" /> porque es un archivo peligroso.</translation>
 <translation id="6212496753309875659">Este equipo ya tiene una versión más reciente de Chromium. Si el software no funciona, desinstala Chromium y vuelve a intentarlo.</translation>
@@ -186,7 +183,6 @@
 <translation id="705851970750939768">Actualizar Chromium</translation>
 <translation id="7066436765290594559">El Sistema operativo Chromium no pudo sincronizar los datos. Actualiza la frase de contraseña de sincronización.</translation>
 <translation id="707471633328071618">Google Payments (copiada en Chromium)</translation>
-<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Esta acción borrará de forma permanente $1 elemento de este dispositivo. Si más adelante deseas recuperar tus datos, accede a Chromium como $2.}other{Esta acción borrará de forma permanente $1 elementos de este dispositivo. Si más adelante deseas recuperar tus datos, accede a Chromium como $2.}}</translation>
 <translation id="7138853919861947730">Chromium puede utilizar servicios web para mejorar tu experiencia de navegación.</translation>
 <translation id="7162152143154757523">Chromium puede proporcionar una corrección ortográfica más inteligente al enviar lo que escribes en el navegador a los servidores de Google. Esto te permite usar la misma tecnología de corrección ortográfica que usa la Búsqueda de Google.</translation>
 <translation id="7196020411877309443">¿Por qué estoy viendo esto?</translation>
@@ -206,7 +202,6 @@ Para impedir que <ph name="NEW_PROFILE_NAME" /> acceda a tu cuenta, asegúrate d
 <ph name="BEGIN_LINK_2" />Más información<ph name="END_LINK_2" />
 
 Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCOUNT_EMAIL" />.</translation>
-<translation id="7421823331379285070">Chromium requiere Windows XP o versiones posteriores. Es posible que no funcionen algunas características.</translation>
 <translation id="7473891865547856676">No, gracias</translation>
 <translation id="7483335560992089831">No es posible instalar la misma versión de Chromium que se está ejecutando. Cierra Chromium y vuelve a intentarlo.</translation>
 <translation id="7549178288319965365">Acerca de Chromium OS</translation>
@@ -217,6 +212,7 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="7729447699958282447">Chromium no pudo sincronizar los datos porque la sincronización no está disponible para el dominio.</translation>
 <translation id="7745317241717453663">Esta acción borrará tus datos de navegación de este dispositivo. Si más adelante deseas recuperarlos, accede a tu cuenta en Chromium como <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">El instalador no pudo crear un directorio temporal. Verifique si hay espacio disponible en el disco y cuenta con permiso para instalar software.</translation>
+<translation id="7756122083761163394">Los datos de navegación de esta persona se borrarán de este dispositivo. Para recuperarlos, accede a Chrome como $2.</translation>
 <translation id="7937630085815544518">Accediste a Chromium con <ph name="USER_EMAIL_ADDRESS" />. Usa la misma cuenta para volver a acceder.</translation>
 <translation id="795025003224538582">No reiniciar</translation>
 <translation id="7962572577636132072">Chromium se actualiza automáticamente para que siempre tengas la versión más reciente.</translation>

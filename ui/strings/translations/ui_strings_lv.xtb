@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">Maksimizēt</translation>
 <translation id="1413622004203049571">Atspējot paziņojumu saņemšanu no: <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minūte un }zero{# minūtes un }one{# minūte un }other{# minūtes un }}</translation>
+<translation id="1643823602425662293">Paziņojums</translation>
 <translation id="1685967565548146460">Hats</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minūte}zero{# minūtes}one{# minūte}other{# minūtes}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">lekt</translation>
 <translation id="4250229828105606438">Ekrānuzņēmums</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{Pirms 1 mēneša}zero{Pirms # mēnešiem}one{Pirms # mēneša}other{Pirms # mēnešiem}}</translation>
+<translation id="4316910396681052118">VISAS LIETOTNES</translation>
 <translation id="4320177379694898372">Nav interneta savienojuma.</translation>
 <translation id="4588090240171750605">Ritināt pa labi</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Atlicis 1 mēnesis}zero{Atlikuši # mēneši}one{Atlicis # mēnesis}other{Atlikuši # mēneši}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">Mape bez nosaukuma</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}zero{# s}one{# s}other{# s}}</translation>
 <translation id="9150735707954472829">Cilne</translation>
+<translation id="9161053988251441839">IETEIKTĀS LIETOTNES</translation>
 <translation id="9170848237812810038">&amp;Atsaukt</translation>
 <translation id="932327136139879170">Sākums</translation>
 </translationbundle>

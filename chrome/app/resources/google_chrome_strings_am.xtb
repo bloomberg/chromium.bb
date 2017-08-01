@@ -173,7 +173,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="573759479754913123">ስለ Chrome OS</translation>
 <translation id="5749068826913805084">Chrome ፋይሎችን ለማውረድ የማከማቻ መዳረሻ ያስፈልገዋል።</translation>
 <translation id="5774845247549698882">Chrome OS በዚህ ቋንቋ እየታየ ነው</translation>
-<translation id="5832596086758878896">{NUM_ITEMS,plural, =1{ይሄ $1 ንጥል እስከመጨረሻው ከዚህ መሣሪያ ይሰርዘዋል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ $2 ሆነው ወደ Chrome ይግቡ።}one{ይሄ $1 ንጥሎችን እስከመጨረሻው ከዚህ መሣሪያ ይሰርዛቸዋል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ $2 ሆነው ወደ Chrome ይግቡ።}other{ይሄ $1 ንጥሎችን እስከመጨረሻው ከዚህ መሣሪያ ይሰርዛቸዋል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ $2 ሆነው ወደ Chrome ይግቡ።}}</translation>
 <translation id="5855036575689098185">በኮምፒውተርዎ ላይ እያሄደ ያለ ሶፍትዌር ከGoogle Chrome ጋር ተኳሃኝ አይደለም።</translation>
 <translation id="5877064549588274448">ሰርጥ ተለውጧል። ለውጦችን ለመተግበር መሳሪያዎን ዳግም ያስጀምሩ።</translation>
 <translation id="5895138241574237353">እንደገና ጀምር</translation>
@@ -218,7 +217,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="7125719106133729027">Chrome እራሱን ወደ የቅርብ ጊዜው ስሪት ማዘመን አልቻለም፣ ስለዚህ አንዳንድ ግሩም አዲስ ባህሪያት እና የደህንነት ጥገናዎች እያመለጡዎት ነው። Chromeን እራስዎ ዳግም መጫን ያስፈልግዎታል።</translation>
 <translation id="7161904924553537242">ወደ Google Chrome እንኳን ደህና መጡ</translation>
 <translation id="7164397146364144019">የደህንነት ሊሆኑ የሚችሉ ክስተቶችን በራስ-ሰር ለGoogle ሪፖርት በማድረግ Chrome ይበልጥ ደህንነቱ የተጠበቀ እና ለመጠቀም ቀላል እንዲሆን ማድረግ ይችላሉ።</translation>
-<translation id="7177347454226092725">ይሄ የአሰሳ ውሂብዎን ከዚህ መሣሪያ እስከመጨረሻው ይሰርዘዋል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ $2 ሆነው ወደ Chrome ይግቡ።</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> ወደ Chrome ታክሏል።</translation>
 <translation id="7196020411877309443">ለምን ይህን አያለሁ?</translation>
 <translation id="7242029209006116544">በሚተዳደር መለያ እየገቡ ነው፣ እና አስተዳዳሪው በእርስዎ Google Chrome መገለጫ ላይ ቁጥጥር እየሰጡት ነው። እንደየእርስዎ  መተግበሪያዎች፣ ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች ያሉ የእርስዎ Chrome ውሂብ እስከ መጨረሻው ከ<ph name="USER_NAME" /> ጋር የተያያዙ ይሆናሉ። ይህን ውሂብ በGoogle የመለያዎች Dashboard አማካኝነት ሊሰርዙት ይችላሉ፣ ነገር ግን ይህን ውሂብ ከሌላ መለያ ጋር ሊያጎዳኙት አይችሉም። ነባሩ የእርስዎ Chrome ውሂብ ለይተው ለማስቀመጥም አዲስ መገለጫ እንደ አማራጭ መፍጠር ይችላሉ። <ph name="LEARN_MORE" /></translation>
@@ -229,18 +227,17 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="7400722733683201933">ስለ Google Chrome</translation>
 <translation id="7408085963519505752">የChrome OS ውል</translation>
 <translation id="7419046106786626209">ማመሳሰል ለጎራዎ ስለማይገኝ Chrome OS ውሂብዎን ማመሳሰል አልቻለም።</translation>
-<translation id="7436949144778751379">Google Chrome Windows XP ወይም ከዚያ በኋላ የሆነ ያስፈልገዋል። አንዳንድ ባህሪያት ላይሰሩ ይችላሉ።</translation>
 <translation id="7437998757836447326">ዘግተው ከChrome ይውጡ</translation>
 <translation id="7459554271817304652">ግላዊነት የተላበሰው የአሳሽ ባህሪዎችዎ ድር ላይ ለማስቀመጥና ከዚያ Google Chrome ካለው ማንኛውም ኮምፒውተር ለመድረስ አመሳስልን ያዋቅሩ።</translation>
 <translation id="7473136999113284234">Chrome በራስ-ሰር ይዘመናል፣ ስለዚህ ሁልጊዜ አዲሱ ስሪት ይኖርዎታል።</translation>
 <translation id="7473891865547856676">አይ፣ አመሰግናለሁ</translation>
 <translation id="7494905215383356681">Chrome የክፍት ምንጭ ፈቃዶች</translation>
-<translation id="7520096660192498279">{NUM_ITEMS,plural, =1{ይህ ቢያንስ $1 ንጥል ከዚህ መሣሪያ ይሰርዛል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ $2 ሆነው ወደ Chrome ይግቡ።}one{ይህ ቢያንስ $1 ንጥሎችን ከዚህ መሣሪያ ይሰርዛል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ $2 ሆነው ወደ Chrome ይግቡ።}other{ይህ ቢያንስ $1 ንጥሎችን ከዚህ መሣሪያ ይሰርዛል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ $2 ሆነው ወደ Chrome ይግቡ።}}</translation>
 <translation id="7535429826459677826">Google Chrome ገንቢ</translation>
 <translation id="7552219221109926349">Chrome OSን በዚህ ቋንቋ አሳይ</translation>
 <translation id="7592736734348559088">የመለያዎ መግቢያ ዝርዝሮች ጊዜያቸው ያለፈባቸው ስለሆኑ Google Chrome ውሂብዎን ማመሳሰል አልቻለም።</translation>
 <translation id="7626032353295482388">ወደ Chrome እንኳን ደህና መጡ</translation>
 <translation id="7747138024166251722">ጫኝው ጊዜያዊ ማውጫ መፍጠር አልቻለም። እባክዎ ነፃ የዲስክ ቦታ እና ሶፍትዌር የመጫን ፍቃድ እንዳለ ይፈትሹ።</translation>
+<translation id="7756122083761163394">የዚህ ግለሰብ የአሰሳ ውሂብ ከዚህ መሣሪያ ላይ ይሰረዛል። ውሂቡን ወደነበረበት ለመመለስ እንደ $2 በመለያ ሆነው ወደ Chrome ይግቡ።</translation>
 <translation id="7761834446675418963">Chromeን ለመክፈት እና ማሰስ ለመጀመር ስምዎን ጠቅ ያድርጉት።</translation>
 <translation id="7781002470561365167">የGoogle Chrome አዲስ ስሪት አለ።</translation>
 <translation id="7787950393032327779">መገለጫው በሌላ ኮምፒውተር (<ph name="HOST_NAME" />) ላይ በሌላ የGoogle Chrome ሂደት (<ph name="PROCESS_ID" />) የተያዘ ይመስላል። Chrome መገለጫው እንዳይበላሽ ቆልፎታል።  ሌሎች ሂደቶች ይህን መገለጫ እየተጠቀሙበት እንዳልሆኑ እርግጠኛ ከሆኑ መገለጫውን አስከፍተው Chromeን ዳግም ማስጀመር ይችላሉ።</translation>
@@ -259,7 +256,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="8129812357326543296">ስለ &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Chromeን በእርስዎ ስልክ ላይ ይጫኑ። አንድ ኤስኤምኤስ ወደ የእርስዎ ስልክ እንልካለን።</translation>
 <translation id="8183957050892517584">Chrome የግል መረጃዎችዎን ዳግም መተየብ እንዳይኖርብዎት በጥንቃቄ ያከማቻቸዋል።</translation>
-<translation id="8211929904040702368">ይሄ ቢያንስ <ph name="TOTAL_COUNT" /> ንጥሎችን ከዚህ መሣሪያ እስከመጨረሻው ይሰርዛቸዋል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ $2 ሆነው ወደ Chrome ይግቡ።</translation>
 <translation id="8255190535488645436">Google Chrome ካሜራዎን እና ማይክሮፎንዎን እየተጠቀመ ነው።</translation>
 <translation id="8286862437124483331">Google Chrome የይለፍ ቃሎችን ለማሳየት እየሞከረ ነው። ይህንን ለመፍቀድ የእርስዎን Windows የይለፍ ቃል ይተይቡ።</translation>
 <translation id="8290100596633877290">ኧረ ገዳይ! Google Chrome ተሰናክሏል። አሁን እንደገና ይጀመር?</translation>

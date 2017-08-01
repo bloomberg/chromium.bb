@@ -173,7 +173,6 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="573759479754913123">O operačním systému Chrome OS</translation>
 <translation id="5749068826913805084">Aby bylo možné stahovat soubory, Chrome potřebuje přístup k úložišti.</translation>
 <translation id="5774845247549698882">Chrome OS se zobrazuje v tomto jazyce</translation>
-<translation id="5832596086758878896">{NUM_ITEMS,plural, =1{Touto akcí z tohoto zařízení trvale smažete $1 položku. Budete-li chtít své údaje později načíst, přihlaste se do Chromu jako $2.}few{Touto akcí z tohoto zařízení trvale smažete $1 položky. Budete-li chtít své údaje později načíst, přihlaste se do Chromu jako $2.}many{Touto akcí z tohoto zařízení trvale smažete $1 položky. Budete-li chtít své údaje později načíst, přihlaste se do Chromu jako $2.}other{Touto akcí z tohoto zařízení trvale smažete $1 položek. Budete-li chtít své údaje později načíst, přihlaste se do Chromu jako $2.}}</translation>
 <translation id="5855036575689098185">Software spuštěný v počítači není kompatibilní s prohlížečem Google Chrome.</translation>
 <translation id="5877064549588274448">Verze byla změněna. Změny se projeví po restartování zařízení.</translation>
 <translation id="5895138241574237353">Restartovat</translation>
@@ -218,7 +217,6 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="7125719106133729027">Prohlížeč Chrome se nemohl aktualizovat na nejnovější verzi. Nebudete mít proto k dispozici skvělé nové funkce a opravy zabezpečení. Chrome je potřeba ručně přeinstalovat.</translation>
 <translation id="7161904924553537242">Vítá vás Google Chrome</translation>
 <translation id="7164397146364144019">Automatickým hlášením podrobností o možných bezpečnostních incidentech do Googlu můžete pomoci zrychlit prohlížeč Chrome a usnadnit jeho používání.</translation>
-<translation id="7177347454226092725">Tímto z tohoto zařízení trvale smažete své údaje o prohlížení. Budete-li chtít své údaje později načíst, přihlaste se do Chromu jako $2.</translation>
 <translation id="7185038942300673794">Do prohlížeče Chrome bylo přidáno rozšíření <ph name="EXTENSION_NAME" />.</translation>
 <translation id="7196020411877309443">Proč je zobrazeno toto dialogové okno?</translation>
 <translation id="7242029209006116544">Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontrolu nad vaším profilem Google Chrome. Vaše údaje prohlížeče Chrome, například aplikace, záložky, historie, hesla a jiná nastavení, budou trvale přidružena k účtu <ph name="USER_NAME" />. Tyto údaje budete moci smazat pomocí Hlavního panelu v Účtech Google, ale nebudete je moci přidružit k jinému účtu. Pokud chcete uchovat existující údaje Chrome odděleně, můžete vytvořit nový profil. <ph name="LEARN_MORE" /></translation>
@@ -229,18 +227,17 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="7400722733683201933">O aplikaci Google Chrome</translation>
 <translation id="7408085963519505752">Smluvní podmínky systému Chrome OS</translation>
 <translation id="7419046106786626209">Chrome OS nemohl synchronizovat vaše data, protože Synchronizace ve vaší doméně není k dispozici.</translation>
-<translation id="7436949144778751379">Google Chrome vyžaduje operační systém Windows XP nebo novější. Některé funkce možná nebudou dostupné.</translation>
 <translation id="7437998757836447326">Odhlášení z Chromu</translation>
 <translation id="7459554271817304652">Chcete-li uložit personalizované funkce prohlížeče na web a získat k nim přístup z prohlížeče Google Chrome v libovolném prohlížeči, nastavte synchronizaci.</translation>
 <translation id="7473136999113284234">Chrome se automaticky aktualizuje, abyste měli vždy nejaktuálnější verzi.</translation>
 <translation id="7473891865547856676">Ne, děkuji</translation>
 <translation id="7494905215383356681">Chrome – licence open source</translation>
-<translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Touto akcí z tohoto zařízení trvale smažete minimálně $1 položku. Budete-li chtít své údaje později načíst, přihlaste se do Chromu jako $2.}few{Touto akcí z tohoto zařízení trvale smažete minimálně $1 položky. Budete-li chtít své údaje později načíst, přihlaste se do Chromu jako $2.}many{Touto akcí z tohoto zařízení trvale smažete minimálně $1 položky. Budete-li chtít své údaje později načíst, přihlaste se do Chromu jako $2.}other{Touto akcí z tohoto zařízení trvale smažete minimálně $1 položek. Budete-li chtít své údaje později načíst, přihlaste se do Chromu jako $2.}}</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Zobrazit Chrome OS v tomto jazyce</translation>
 <translation id="7592736734348559088">Google Chrome vaše data nemohl synchronizovat, protože vaše přihlašovací údaje nejsou aktuální.</translation>
 <translation id="7626032353295482388">Vítá vás Chrome</translation>
 <translation id="7747138024166251722">Instalační soubor nemohl vytvořit dočasný adresář. Zkontrolujte prosím volné místo na disku a povolení instalovat software.</translation>
+<translation id="7756122083761163394">Ze zařízení budou smazány údaje této osoby o prohlížení. Chcete-li tyto údaje znovu získat, přihlaste se do Chromu jako $2.</translation>
 <translation id="7761834446675418963">Chcete-li otevřít Chrome a začít procházet Internet, klikněte na svoje jméno.</translation>
 <translation id="7781002470561365167">K dispozici je nová verze prohlížeče Google Chrome.</translation>
 <translation id="7787950393032327779">Profil je zřejmě využíván jiným procesem prohlížeče Google Chrome (<ph name="PROCESS_ID" />) nebo v jiném počítač (<ph name="HOST_NAME" />). Chrome profil uzamkl, aby nedošlo k jeho poškození. Pokud jste si jisti, že žádný jiný proces tento profil nevyužívá, můžete jej odemknout a Chrome znovu spustit.</translation>
@@ -259,7 +256,6 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="8129812357326543296">O aplikaci &amp;Google Chrome</translation>
 <translation id="8179874765710681175">Nainstalujte si Chrome do telefonu. Zašleme vám na telefon SMS.</translation>
 <translation id="8183957050892517584">Chrome vaše osobní údaje bezpečně uloží, abyste je nemuseli zadávat znovu.</translation>
-<translation id="8211929904040702368">Touto akcí z tohoto zařízení trvale smažete minimálně následující počet položek: <ph name="TOTAL_COUNT" />. Budete-li chtít své údaje později načíst, přihlaste se do Chromu jako $2.</translation>
 <translation id="8255190535488645436">Google Chrome používá vaši kameru a mikrofon.</translation>
 <translation id="8286862437124483331">Aplikace Google Chrome se pokouší zobrazit hesla. Tato akce vyžaduje zadání hesla systému Windows.</translation>
 <translation id="8290100596633877290">Ouha! Prohlížeč Google Chrome spadl. Restartovat?</translation>

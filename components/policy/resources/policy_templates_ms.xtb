@@ -54,13 +54,6 @@
       minimum yang dibenarkan ialah 60 saat.</translation>
 <translation id="1221359380862872747">Memuatkan url tertentu pada log masuk tunjuk cara</translation>
 <translation id="1265053460044691532">Hadkan masa untuk pengguna yang membuat pengesahan melalui SAML boleh melog masuk dalam talian.</translation>
-<translation id="127699919157094139">Melumpuhkan penyegerakan data dalam <ph name="PRODUCT_NAME" /> menggunakan perkhidmatan penyegerakan yang dihoskan Google dan menghalang pengguna daripada mengubah tetapan ini.
-
-      Jika anda mendayakan tetapan ini, pengguna tidak boleh mengubah atau membatalkan tetapan ini dalam <ph name="PRODUCT_NAME" />.
-
-      Jika dasar ini dibiarkan tanpa ditetapkan, Google Sync akan tersedia kepada pengguna untuk memilih sama ada hendak menggunakannya atau tidak.
-
-      Untuk melumpuhkan Google Sync sepenuhnya, anda disyorkan agar melumpuhkan perkhidmatan Google Sync dalam konsol Google Admin.</translation>
 <translation id="1291880496936992484">Amaran: RC4 akan dialih keluar sepenuhnya daripada <ph name="PRODUCT_NAME" /> selepas versi 52 (sekitar September 2016) dan dasar ini akan berhenti berfungsi selepas itu.
 
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka suit sifer RC4 dalam TLS tidak akan didayakan. Jika tidak, dasar mungkin ditetapkan kepada benar untuk mengekalkan keserasian dengan pelayan yang sudah lapuk. Ini adalah langkah sementara dan pelayan harus dikonfigurasi semula.</translation>
@@ -528,6 +521,11 @@
 
       Jika dasar ini dibiarkan tanpa ditetapkan, keadaannya sama seperti tetapan ini didayakan, lihat huraian di atas.</translation>
 <translation id="285480231336205327">Dayakan mod kontras tinggi</translation>
+<translation id="2854919890879212089">Menyebabkan <ph name="PRODUCT_NAME" /> menggunakan pencetak lalai sistem sebagai pilihan lalai dalam Pratonton Cetakan dan bukannya pencetak yang paling baru digunakan.
+
+      Jika anda melumpuhkan tetapan ini atau tidak menetapkan nilai, Pratonton Cetakan akan menggunakan pencetak yang paling baru digunakan sebagai pilihan destinasi lalai.
+
+      Jika anda mendayakan tetapan ini, Pratonton Cetakan akan menggunakan pencetak lalai sistem OS sebagai pilihan destinasi lalai.</translation>
 <translation id="2872961005593481000">Mematikan</translation>
 <translation id="2874209944580848064">Nota untuk peranti <ph name="PRODUCT_OS_NAME" /> yang menyokong apl Android:</translation>
 <translation id="2877225735001246144">Lumpuhkan carian CNAME apabila berunding pengesahan Kerberos</translation>
@@ -1014,6 +1012,7 @@
 
           Secara lalai, jika PIN dianggap lemah, pengguna akan mendapat amaran dan bukannya ralat.</translation>
 <translation id="4723829699367336876">Dayakan penyusuran tembok api daripada klien akses jauh</translation>
+<translation id="4725123658714754485">Mengawal sama ada metrik penggunaan dan data diagnostik, termasuk laporan ranap dilaporkan kembali kepada Google. Jika ditetapkan kepada benar, <ph name="PRODUCT_OS_NAME" /> akan melaporkan metrik penggunaan dan data diagnostik. Jika tidak dikonfigurasikan atau ditetapkan kepada palsu, pelaporan metrik dan data diagnostik akan dilumpuhkan.</translation>
 <translation id="4725528134735324213">Dayakan Perkhidmatan Sandaran Android</translation>
 <translation id="4733471537137819387">Dasar berkaitan pengesahan HTTP bersepadu.</translation>
 <translation id="4744190513568488164">Pelayan yang mungkin diwakilkan untuk <ph name="PRODUCT_NAME" />.
@@ -1533,6 +1532,11 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Menetapkan pilihan ini kepada dilumpuhkan atau membiarkannya tanpa ditetapkan, pencari pemalam akan diaktifkan.</translation>
 <translation id="6699880231565102694">Dayakan pengesahan dua faktor untuk hos akses jauh</translation>
+<translation id="6724842112053619797">Jika anda mendayakan tetapan ini, tetapan yang disimpan dalam profil <ph name="PRODUCT_NAME" /> seperti penanda halaman, data autolengkap, kata laluan dan sebagainya akan turut ditulis pada fail yang disimpan dalam folder profil "Roaming" pengguna atau lokasi yang ditentukan oleh Pentadbir melaui dasar <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Sekiranya dasar ini didayakan, penyegerakan awan akan dilumpuhkan.
+
+      Jika dasar ini dilumpuhkan atau dibiarkan tidak ditetapkan, hanya profil "local" biasa akan digunakan.
+
+      Dasar <ph name="SYNC_DISABLED_POLICY_NAME" /> melumpuhkan semua penyegerakan data, mengatasi RoamingProfileSupportEnabled.</translation>
 <translation id="6757438632136860443">Membolehkan anda menetapkan senarai corak url bagi menentukan tapak yang dibenarkan menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" />.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultPluginsSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna akan digunakan.</translation>
@@ -1578,6 +1582,13 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="6943577887654905793">Nama keutamaan Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter yang menyediakan ciri cari melalui imej untuk penyedia carian lalai</translation>
 <translation id="6956272732789158625">Jangan benarkan mana-mana tapak untuk menggunakan penghasilan kunci</translation>
+<translation id="6994082778848658360">Menyatakan cara perkakasan unsur selamat atas papan boleh digunakan untuk menyediakan pengesahan faktor kedua jika serasi dengan ciri ini. Butang kuasa mesin digunakan untuk mengesan kehadiran fizikal pengguna.
+
+      Jika 'Dilumpuhkan' dipilih, faktor kedua tidak disediakan.
+
+      Jika 'U2F' dipilih, faktor kedua bersepadu akan berkelakuan menurut spesifikasi FIDO U2F.
+
+      Jika 'U2F_EXTENDED' dipilih, faktor kedua bersepadu akan menyediakan fungsi U2F di samping beberapa sambungan untuk pembuktian individu.</translation>
 <translation id="6997592395211691850">Sama ada semakan OCSP/CRL dalam talian diperlukan untuk pengukuhan kepercayaan setempat</translation>
 <translation id="7003334574344702284">Dasar ini memaksa kata laluan yang disimpan diimport dari pelayar lalai sebelumnya jika didayakan. Jika didayakan, dasar ini juga memberi kesan pada dialog import.
 
@@ -1786,7 +1797,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7713608076604149344">Sekatan muat turun</translation>
 <translation id="7715711044277116530">Peratusan yang digunakan untuk skala kelewatan pemalapan skrin dalam mod penyampaian</translation>
 <translation id="7717938661004793600">Konfigurasi ciri kebolehcapaian <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7719251660743813569">Mengawal sama ada metrik penggunaan dilaporkan kembali kepada Google. Jika ditetapkan kepada benar, <ph name="PRODUCT_OS_NAME" /> akan melaporkan metrik penggunaan. Jika tidak dikonfigurasi atau ditetapkan kepada palsu, laporan metrik akan dilumpuhkan.</translation>
 <translation id="7724994675283793633">Dasar ini mendayakan HTTP/0.9 pada port selain 80 untuk HTTP dan 443 untuk HTTPS.
 
       Dasar ini dilumpuhkan secara lalai dan jika didayakan akan menyebabkan pengguna terdedah kepada isu keselamatan https://crbug.com/600352.
@@ -2119,6 +2129,15 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="891435090623616439">dikodkan sebagai rentetan JSON, untuk mendapatkan butiran lanjut, lihat <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Laporkan lokasi peranti</translation>
 <translation id="8951350807133946005">Tetapkan direktori cache cakera</translation>
+<translation id="8952317565138994125">Melumpuhkan penyegerakan data dalam <ph name="PRODUCT_NAME" /> menggunakan perkhidmatan penyegerakan yang dihoskan Google dan menghalang pengguna daripada menukar tetapan ini.
+
+      Jika anda mendayakan tetapan ini, pengguna tidak boleh menukar atau mengatasi tetapan ini dalam <ph name="PRODUCT_NAME" />.
+
+      Jika dasar ini dibiarkan tidak ditetapkan, Google Sync akan tersedia untuk dipilih oleh pengguna sama ada hendak digunakan atau tidak.
+
+      Untuk melumpuhkan Google Sync sepenuhnya, anda disyorkan supaya melumpuhkan perkhidmatan Google Sync dalam konsol Google Admin.
+
+      Dasar ini tidak seharusnya didayakan apabila dasar <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> ditetapkan kepada didayakan kerana ciri itu berkongsi fungsi bahagian pelanggan yang sama. Penyegerakan yang dihoskan Google dilumpuhkan sepenuhnya dalam hal ini.</translation>
 <translation id="8955719471735800169">Kembali ke atas</translation>
 <translation id="8960850473856121830">Pola dalam senarai ini akan dipadankan dengan keselamatan
       asal URL yang meminta.  Jika padanan ditemui, akses kepada peranti
@@ -2128,6 +2147,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="8970205333161758602">Sekat gesaan penolakan <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Pemasa log masuk automatik sesi terbuka</translation>
 <translation id="8976248126101463034">Benarkan pengesahan gnubby untuk hos akses jauh</translation>
+<translation id="8976531594979650914">Gunakan Pencetak Lalai Sistem sebagai Lalai</translation>
 <translation id="8992176907758534924">Jangan benarkan mana-mana tapak untuk menunjukkan imej</translation>
 <translation id="9035964157729712237">ID sambungan untuk dikecualikan daripada senarai hitam</translation>
 <translation id="9042911395677044526">Membenarkan penolakan konfigurasi rangkaian digunakan untuk setiap pengguna pada peranti <ph name="PRODUCT_OS_NAME" />. Konfigurasi rangkaian ialah rentetan berformat JSON seperti yang ditakrifkan oleh format Konfigurasi Rangkaian Terbuka yang dihuraikan di <ph name="ONC_SPEC_URL" /></translation>

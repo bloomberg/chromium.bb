@@ -31,7 +31,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1966382378801805537">Impossible d'identifier ou de définir le navigateur par défaut avec Chromium</translation>
 <translation id="1967743265616885482">Nous avons constaté qu'un module du même nom n'est pas compatible avec Chromium.</translation>
 <translation id="2008474315282236005">Cette action aura pour effet de supprimer 1 élément de cet appareil. Pour récupérer vos données ultérieurement, connectez-vous à Chromium en tant que <ph name="USER_EMAIL" />.</translation>
-<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Cette action aura pour effet de supprimer définitivement au moins $1 élément de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chromium en tant que $2.}one{Cette action aura pour effet de supprimer définitivement au moins $1 élément de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chromium en tant que $2.}other{Cette action aura pour effet de supprimer définitivement au moins $1 éléments de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chromium en tant que $2.}}</translation>
 <translation id="2077129598763517140">Utiliser l'accélération matérielle (le cas échéant)</translation>
 <translation id="2119636228670142020">À propos de &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Licences Chromium OS Open Source</translation>
@@ -82,7 +81,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="3549345495227188780">Premiers pas avec Chromium OS</translation>
 <translation id="3582788516608077514">Mise à jour de Chromium en cours…</translation>
 <translation id="358997566136285270">Logo Chromium</translation>
-<translation id="3645040538872234961">Cette action aura pour effet de supprimer définitivement vos données de navigation de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chromium en tant que $2.</translation>
 <translation id="3738139272394829648">Appuyer pour rechercher</translation>
 <translation id="3762167353400286894">Chromium OS est affiché dans cette langue</translation>
 <translation id="378917192836375108">Avec Chromium, cliquez sur un numéro de téléphone sur le Web et appelez-le dans Skype !</translation>
@@ -154,7 +152,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="59625444380784159">Les coordonnées de vos contacts peuvent vous aider à remplir les formulaires plus rapidement dans Chromium.</translation>
 <translation id="5987687638152509985">Mettre à jour Chromium pour lancer la synchronisation</translation>
 <translation id="6055895534982063517">Une nouvelle version de Chromium encore plus rapide est disponible.</translation>
-<translation id="6077017812234345835">Cette action aura pour effet de supprimer définitivement au moins <ph name="TOTAL_COUNT" /> éléments de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chromium en tant que $2.</translation>
 <translation id="608189560609172163">Impossible de synchroniser vos données dans Chromium, car une erreur s'est produite lors de la connexion.</translation>
 <translation id="6129621093834146363">Chromium a bloqué <ph name="FILE_NAME" />, car ce fichier est dangereux.</translation>
 <translation id="6212496753309875659">Cet ordinateur dispose déjà d'une version plus récente de Chromium. Si le logiciel ne fonctionne pas, veuillez le désinstaller, puis réessayer.</translation>
@@ -191,7 +188,6 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="705851970750939768">Mettre à jour Chromium</translation>
 <translation id="7066436765290594559">Impossible de synchroniser vos données dans Chromium OS. Veuillez mettre à jour votre phrase secrète de synchronisation.</translation>
 <translation id="707471633328071618">Google Payments (copiée vers Chromium)</translation>
-<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Cette action aura pour effet de supprimer définitivement $1 élément de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chromium en tant que $2.}one{Cette action aura pour effet de supprimer définitivement $1 élément de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chromium en tant que $2.}other{Cette action aura pour effet de supprimer définitivement $1 éléments de cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chromium en tant que $2.}}</translation>
 <translation id="7138853919861947730">Chromium utilise parfois des services Web pour améliorer votre confort de navigation.</translation>
 <translation id="7162152143154757523">Chromium peut vous proposer une correction orthographique plus intelligente en envoyant ce que vous saisissez dans le navigateur aux serveurs Google, ce qui vous permet d'utiliser la même technologie de correction orthographique que la recherche Google.</translation>
 <translation id="7196020411877309443">Pourquoi ce message s'affiche-t-il ?</translation>
@@ -213,7 +209,6 @@ Pour empêcher <ph name="NEW_PROFILE_NAME" /> d'accéder à votre compte, assure
 <ph name="BEGIN_LINK_2" />En savoir plus<ph name="END_LINK_2" />
 
 Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie (<ph name="ACCOUNT_EMAIL" />).</translation>
-<translation id="7421823331379285070">Chromium requiert Windows XP ou une version ultérieure. Certaines fonctionnalités risquent de ne pas fonctionner.</translation>
 <translation id="7473891865547856676">Non, merci</translation>
 <translation id="7483335560992089831">Impossible d'installer la même version de Chromium que celle qui est en cours d'exécution. Veuillez fermer Chromium, puis réessayer.</translation>
 <translation id="7549178288319965365">À propos de Chromium OS</translation>
@@ -224,6 +219,7 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="7729447699958282447">Impossible de synchroniser vos données dans Chromium, car la synchronisation n'est pas disponible pour votre domaine.</translation>
 <translation id="7745317241717453663">Cette action aura pour effet de supprimer vos données de navigation de cet appareil. Pour récupérer vos données ultérieurement, connectez-vous à Chromium en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Le programme d'installation n'a pas pu créer de répertoire temporaire. Vérifiez que le disque a suffisamment d'espace libre et que vous disposez des autorisations nécessaires pour installer le logiciel.</translation>
+<translation id="7756122083761163394">Les données de navigation de cet utilisateur vont être supprimées de cet appareil. Pour récupérer les données, connectez-vous à Chrome en tant que $2.</translation>
 <translation id="7937630085815544518">Vous étiez connecté à Chromium en tant que <ph name="USER_EMAIL_ADDRESS" />. Veuillez utiliser le même compte pour vous reconnecter.</translation>
 <translation id="795025003224538582">Ne pas redémarrer</translation>
 <translation id="7962572577636132072">Chromium est automatiquement mis à jour pour vous permettre de toujours disposer de la dernière version.</translation>

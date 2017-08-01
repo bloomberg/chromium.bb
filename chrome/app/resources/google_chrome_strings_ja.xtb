@@ -165,7 +165,6 @@
 <translation id="573759479754913123">Chrome OS について</translation>
 <translation id="5749068826913805084">Chrome でファイルをダウンロードするにはストレージへのアクセス権が必要です。</translation>
 <translation id="5774845247549698882">Chrome OS はこの言語で表示されています</translation>
-<translation id="5832596086758878896">{NUM_ITEMS,plural, =1{$1 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chrome にログインしてください。}other{$1 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chrome にログインしてください。}}</translation>
 <translation id="5855036575689098185">お使いのパソコンで実行されているソフトウェアは Google Chrome に対応していません。</translation>
 <translation id="5877064549588274448">チャンネルが変更されました。変更を適用するには、デバイスを再起動してください。</translation>
 <translation id="5895138241574237353">再起動</translation>
@@ -210,7 +209,6 @@
 <translation id="7125719106133729027">Chrome を最新バージョンに自動更新できませんでした。新機能とセキュリティの修正が適用されていません。Chrome を手動で再インストールする必要があります。</translation>
 <translation id="7161904924553537242">Google Chrome へようこそ</translation>
 <translation id="7164397146364144019">セキュリティに関する事象についての詳細を Google に自動送信して、Chrome の安全性と利便性の向上にご協力ください。</translation>
-<translation id="7177347454226092725">閲覧データがこの端末から完全に削除されます。後でデータを取得するには、$2 として Chrome にログインしてください。</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> が Chrome に追加されました。</translation>
 <translation id="7196020411877309443">このウィンドウが表示される理由</translation>
 <translation id="7242029209006116544">現在、管理対象アカウントでログインしており、あなたの Google Chrome プロフィールを管理者が制御できる状態になっています。あなたの Chrome データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。新しいプロフィールを作成して、既存の Chrome データを別に保管することができます。<ph name="LEARN_MORE" /></translation>
@@ -221,18 +219,17 @@
 <translation id="7400722733683201933">Google Chrome について</translation>
 <translation id="7408085963519505752">Chrome OS 利用規約</translation>
 <translation id="7419046106786626209">お使いのドメインでは同期を利用できないため、Chrome OS はデータを同期できませんでした。</translation>
-<translation id="7436949144778751379">Google Chrome では Windows XP 以降が必要です。機能の一部が動作しない可能性があります。</translation>
 <translation id="7437998757836447326">Chromeからログアウト</translation>
 <translation id="7459554271817304652">同期を設定すると、パーソナライズされたブラウザ機能をウェブ上に保存して、どのパソコンの Google Chrome からでも使用できるようになります。</translation>
 <translation id="7473136999113284234">Chrome は自動的に更新されるため、常に最新版をご利用になれます。</translation>
 <translation id="7473891865547856676">スキップ</translation>
 <translation id="7494905215383356681">Chrome オープンソース ライセンス</translation>
-<translation id="7520096660192498279">{NUM_ITEMS,plural, =1{少なくとも $1 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chrome にログインしてください。}other{少なくとも $1 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chrome にログインしてください。}}</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Chrome OS をこの言語で表示</translation>
 <translation id="7592736734348559088">アカウントのログイン情報が最新ではないため、Google Chrome はデータを同期できませんでした。</translation>
 <translation id="7626032353295482388">Chrome にようこそ</translation>
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
+<translation id="7756122083761163394">この操作を行うと、このユーザーの閲覧データがこの端末から削除されます。データを復元するには、$2 として Chrome にログインしてください。</translation>
 <translation id="7761834446675418963">Chrome を開いてブラウジングを始めるには、名前をクリックしてください。</translation>
 <translation id="7781002470561365167">Google クロームブラウザの最新バージョンを是非お試しください。</translation>
 <translation id="7787950393032327779">プロフィールは、別のコンピュータ（<ph name="HOST_NAME" />）の別の Google Chrome プロセス（<ph name="PROCESS_ID" />）で使用されているようです。Chrome はプロフィールが破損しないようにプロフィールをロックしています。他のプロセスがこのプロフィールを使用していないことが確実であれば、プロフィールのロックを解除して Chrome を再起動できます。</translation>
@@ -251,7 +248,6 @@
 <translation id="8129812357326543296">Google Chrome について(&amp;G)</translation>
 <translation id="8179874765710681175">Chrome をスマートフォンにインストールしませんか。Google よりスマートフォンに SMS をお送りします。</translation>
 <translation id="8183957050892517584">Chrome でユーザーの情報が安全に保存されるので、再度入力する必要がなくなります。</translation>
-<translation id="8211929904040702368">少なくとも <ph name="TOTAL_COUNT" /> 件の項目がこの端末から完全に削除されます。後でデータを取得するには、$2 として Chrome にログインしてください。</translation>
 <translation id="8255190535488645436">Google Chrome がカメラとマイクを使用しています。</translation>
 <translation id="8286862437124483331">Google Chrome でパスワードを表示しようとしています。続行するには、Windows のパスワードを入力してください。</translation>
 <translation id="8290100596633877290">エラー: Google Chrome で問題が発生しました。今すぐ再起動しますか？</translation>

@@ -54,13 +54,6 @@
       lubatud sagedus on 60 sekundit.</translation>
 <translation id="1221359380862872747">Laadi määratud URL-id demosse sisselogimisel</translation>
 <translation id="1265053460044691532">Piirake aega, mille jooksul SAML-i kaudu autenditud kasutaja saab võrguühenduseta sisse logida</translation>
-<translation id="127699919157094139">Keelab rakenduses <ph name="PRODUCT_NAME" /> andmete sünkroonimise Google'i hostitud sünkroonimisteenuste abil ega lase kasutajatel seadet muuta.
-
-      Seade lubamisel ei saa kasutajad seadet teenuses <ph name="PRODUCT_NAME" /> muuta ega alistada.
-
-      Kui seda reeglit ei määrata, siis saavad kasutajad otsustada, kas nad soovivad Google Synci kasutada.
-
-      Kui soovite Google Synci täielikult keelata, on soovitatav keelata Google Synci teenus Google'i administraatorikonsoolil.</translation>
 <translation id="1291880496936992484">Hoiatus. RC4 eemaldatakse teenusest <ph name="PRODUCT_NAME" /> pärast versiooni 52 täielikult (umbes septembris 2016) ja sellest hetkest see reegel enam ei tööta.
 
       Kui reegel on määramata või selle väärtuseks on määratud Väär, siis ei ole RC4 šifreerimiskomplektid TLS-is lubatud. Selle väärtuseks võib olla määratud ka Tõene, et säilitada ühilduvus aegunud serveriga. See on ajutine meede ja server tuleks ümber seadistada.</translation>
@@ -529,6 +522,11 @@
 
       Kui seda reeglit ei määrata, on see võrdväärne lubatuga (vt eelnevat kirjeldust).</translation>
 <translation id="285480231336205327">Luba kõrge kontrastiga režiim</translation>
+<translation id="2854919890879212089"><ph name="PRODUCT_NAME" /> kasutab selle seade puhul printimise eelvaates vaikevalikuna süsteemi vaikeprinterit, mitte viimati kasutatud printerit.
+
+      Kui keelate seade või jätate väärtuse määramata, kasutab printimise eelvaade vaikesihtkohana viimati kasutatud printerit.
+
+      Kui lubate selle seade, kasutab printimise eelvaade vaikesihtkohana operatsioonisüsteemi vaikeprinterit.</translation>
 <translation id="2872961005593481000">Lülita välja</translation>
 <translation id="2874209944580848064">Märkus Androidi rakendusi toetavate operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete kohta.</translation>
 <translation id="2877225735001246144">Keela CNAME-i otsing Kerberose autentimise läbirääkimisel</translation>
@@ -1003,6 +1001,7 @@
 
           Vaikimisi kuvatakse kasutajatele nõrga PIN-koodi korral hoiatus, mitte veateade.</translation>
 <translation id="4723829699367336876">Luba tulemüüri läbimine kaugjuurdepääsu kliendist</translation>
+<translation id="4725123658714754485">Määrab, kas kasutusmõõdikute teave ja diagnostikaandmed, sealhulgas krahhiaruanded, edastatakse Google'ile. Kui määrate reegli väärtuse Tõene, edastab <ph name="PRODUCT_OS_NAME" /> kasutusmõõdikute teavet ja diagnostikaandmeid. Kui jätate reegli seadistamata või seate selle väärtusele Väär, keelatakse mõõdikute teabe ja diagnostikaandmete edastamine.</translation>
 <translation id="4725528134735324213">Androidi varundusteenuse lubamine</translation>
 <translation id="4733471537137819387">Integreeritud HTTP autentimisega seotud reeglid</translation>
 <translation id="4744190513568488164">Serverid, kuhu toode <ph name="PRODUCT_NAME" /> võib delegeerida.
@@ -1523,6 +1522,11 @@
 
       Kui keelate valiku või jätate selle määramata, siis on pistikprogrammide leidja aktiivne.</translation>
 <translation id="6699880231565102694">Kahetasandilise autentimise lubamine kaugjuurdepääsu hostidele</translation>
+<translation id="6724842112053619797">Kui lubate selle seade, kirjutatakse teenuse <ph name="PRODUCT_NAME" /> profiilide salvestatud seaded, näiteks järjehoidjad, automaatse täitmise andmed, paroolid jms, faili, mis talletatakse rändlust kasutava profiili kausta või asukohta, mille administraator määrab reegliga <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Reegli lubamine keelab pilveteenusega sünkroonimise.
+
+      Kui keelate selle reegli või jätate selle määramata, kasutatakse ainult tavalisi kohalikke profiile.
+
+      Reegel <ph name="SYNC_DISABLED_POLICY_NAME" /> keelab kogu andmete sünkroonimise, alistades reegli RoamingProfileSupportEnabled.</translation>
 <translation id="6757438632136860443">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud pistikprogrammi <ph name="FLASH_PLUGIN_NAME" /> käitada.
 
           Kui jätate selle reegli määramata, kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultPluginsSetting” (kui see on määratud) või kasutaja isiklikust seadistusest.</translation>
@@ -1570,6 +1574,13 @@
 <translation id="6943577887654905793">Maci/Linuxi eelistuse nimi:</translation>
 <translation id="69525503251220566">Parameeter otsingu vaikepakkujale pildi järgi otsimise funktsiooni pakkumiseks</translation>
 <translation id="6956272732789158625">Ära luba ühelgi saidil võtmeid luua</translation>
+<translation id="6994082778848658360">Määrab, kuidas kasutada sisseehitatud turvalist elementi kahe teguriga autentimise funktsiooni pakkumiseks, kui element ühildub selle funktsiooniga. Kasutaja füüsilise kohaloleku tuvastamiseks kasutatakse seadme toitenuppu.
+
+      Kui valite väärtuse „Keelatud”, ei pakuta kahe teguriga autentimist.
+
+      Kui valite väärtuse „U2F”, käitub integreeritud teine tegur FIDO U2F-i spetsifikatsiooni kohaselt.
+
+      Kui valite väärtuse „U2F_EXTENDED”, pakub sisseehitatud teine tegur U2F-i funktsioone ja ka teatud laiendusi individuaalse atesteerimise jaoks.</translation>
 <translation id="6997592395211691850">Kas OCSP/CRL-i onlain-kontroll on vajalikud kohalike usaldusvõtmete puhul või mitte</translation>
 <translation id="7003334574344702284">Reegli lubamisel imporditakse salvestatud paroolid eelmisest vaikebrauserist. Lubamisel mõjutab reegel ka importimisdialoogi.
 
@@ -1778,7 +1789,6 @@
 <translation id="7713608076604149344">Allalaadimise piirangud</translation>
 <translation id="7715711044277116530">Esitlusrežiimis ekraani tumenduse viivituse skaleerimise määr protsentides</translation>
 <translation id="7717938661004793600">Seadistage teenuse <ph name="PRODUCT_OS_NAME" /> juurdepääsufunktsioonid.</translation>
-<translation id="7719251660743813569">Määrab, kas kasutusmõõdikute tulemused saadetakse Google'ile. Selle reegli lubamisel teatab <ph name="PRODUCT_OS_NAME" /> kasutusmõõdikute tulemusi. Kui jätate selle reegli seadistamata või keelate, siis keelatakse mõõdikute aruandlus.</translation>
 <translation id="7724994675283793633">See reegel lubab HTTP/0.9 portides, mis ei ole HTTP puhul 80 ja HTTPS-i puhul 443.
 
       See reegel on vaikimisi keelatud. Kui see on lubatud, võivad kasutajad kokku puutuda turvaprobleemiga https://crbug.com/600352.
@@ -2108,6 +2118,15 @@
 <translation id="891435090623616439">kodeeritud JSON-stringina. Lisateavet vaadake saidilt <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Esita seadme asukoht</translation>
 <translation id="8951350807133946005">Vahemälu kataloogi seadmine</translation>
+<translation id="8952317565138994125">Keelab teenuses <ph name="PRODUCT_NAME" /> andmete sünkroonimise Google'i hostitavate sünkroonimisteenuste kaudu ja takistab kasutajaid seda seadet muutmast.
+
+      Kui lubate selle seade, ei saa kasutajad seda teenuses <ph name="PRODUCT_NAME" /> muuta ega alistada.
+
+      Kui jätate reegli määramata, saavad kasutajad valida, kas nad soovivad Google Synci kasutada.
+
+      Google Synci täielikuks keelamiseks on soovitatav keelata Google Synci teenus Google'i administraatorikonsoolil.
+
+      Reeglit ei tohi lubada juhul, kui reegel <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> on lubatud, kuna sellel on samad kliendipoolsed funktsioonid. Google'i hostitav sünkroonimine keelatakse sel juhul täielikult.</translation>
 <translation id="8955719471735800169">Tagasi üles</translation>
 <translation id="8960850473856121830">Selles loendis olevaid mustreid võrreldakse taotleva URL-i
       algse turvalisusega. Vaste leidmisel antakse juurdepääs
@@ -2117,6 +2136,7 @@
 <translation id="8970205333161758602">Toote <ph name="PRODUCT_FRAME_NAME" /> tagasilükkamisviiba keelamine</translation>
 <translation id="8971221018777092728">Avaliku seansi automaatse sisselogimise ajasti</translation>
 <translation id="8976248126101463034">Gnubby autentimise lubamine kaugjuurdepääsuhostidele</translation>
+<translation id="8976531594979650914">Kasuta vaikeseadena süsteemi vaikeprinterit</translation>
 <translation id="8992176907758534924">Keela kõigil saitidel kujutiste näitamine</translation>
 <translation id="9035964157729712237">Mustast nimekirjast välistatud laienduste ID-d</translation>
 <translation id="9042911395677044526">Võimaldab võrguseadistuse kasutajapõhiselt teenuse <ph name="PRODUCT_OS_NAME" /> seadmes jõustada. Võrguseadistus on JSON-i vormingus string, mille määratleb Open Network Configuration vorming, mida kirjeldatakse aadressil <ph name="ONC_SPEC_URL" /></translation>

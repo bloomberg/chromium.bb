@@ -166,7 +166,6 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="573759479754913123">Sobre o Chrome OS</translation>
 <translation id="5749068826913805084">O Chrome precisa de acesso de armazenamento para fazer o download de arquivos.</translation>
 <translation id="5774845247549698882">O Chrome OS é exibido neste idioma</translation>
-<translation id="5832596086758878896">{NUM_ITEMS,plural, =1{Isso excluirá permanentemente $1 item deste dispositivo. Para recuperar seus dados mais tarde, faça login no Chrome como $2.}one{Isso excluirá permanentemente $1 itens deste dispositivo. Para recuperar seus dados mais tarde, faça login no Chrome como $2.}other{Isso excluirá permanentemente $1 itens deste dispositivo. Para recuperar seus dados mais tarde, faça login no Chrome como $2.}}</translation>
 <translation id="5855036575689098185">O software que está sendo executado em seu computador não é compatível com o Google Chrome.</translation>
 <translation id="5877064549588274448">Canal alterado. Reinicie o dispositivo para aplicar as alterações.</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
@@ -211,7 +210,6 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="7125719106133729027">Não foi possível atualizar o Google Chrome para a versão mais recente. Com isso, você está perdendo novos recursos e correções de segurança incríveis. Reinstale o Chrome manualmente.</translation>
 <translation id="7161904924553537242">Bem-vindo ao Google Chrome</translation>
 <translation id="7164397146364144019">Você pode ajudar a tornar o Google Chrome mais seguro e mais fácil de usar, informando automaticamente ao Google detalhes sobre possíveis incidentes de segurança.</translation>
-<translation id="7177347454226092725">Essa ação excluirá permanentemente seus dados de navegação deste dispositivo. Para recuperar os dados mais tarde, faça login no Chrome como $2.</translation>
 <translation id="7185038942300673794">A extensão <ph name="EXTENSION_NAME" /> foi adicionada ao Google Chrome.</translation>
 <translation id="7196020411877309443">Por que estou vendo este aviso?</translation>
 <translation id="7242029209006116544">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Google Chrome. Seus dados do Google Chrome, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME" />. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. Você tem a opção de criar um novo perfil para manter seus dados existentes do Google Chrome separados. <ph name="LEARN_MORE" /></translation>
@@ -222,18 +220,17 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="7400722733683201933">Sobre o Google Chrome</translation>
 <translation id="7408085963519505752">Termos do Chrome OS</translation>
 <translation id="7419046106786626209">O Chrome OS não pôde sincronizar seus dados porque a sincronização não está disponível para seu domínio.</translation>
-<translation id="7436949144778751379">O Google Chrome requer Windows XP ou superior. Alguns recursos talvez não funcionem.</translation>
 <translation id="7437998757836447326">Sair do Google Chrome</translation>
 <translation id="7459554271817304652">Configure a sincronização para salvar seus recursos de navegador personalizados na web e acessá-los do Google Chrome em qualquer computador.</translation>
 <translation id="7473136999113284234">O Google Chrome é atualizado automaticamente para que você tenha sempre a versão mais recente.</translation>
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7494905215383356681">Licenças de código aberto do Google Chrome</translation>
-<translation id="7520096660192498279">{NUM_ITEMS,plural, =1{Isso excluirá permanentemente pelo menos $1 item deste dispositivo. Para recuperar seus dados mais tarde, faça login no Chrome como $2.}one{Isso excluirá permanentemente pelo menos $1 itens deste dispositivo. Para recuperar seus dados mais tarde, faça login no Chrome como $2.}other{Isso excluirá permanentemente pelo menos $1 itens deste dispositivo. Para recuperar seus dados mais tarde, faça login no Chrome como $2.}}</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7552219221109926349">Exibir o Chrome OS neste idioma</translation>
 <translation id="7592736734348559088">O Google Chrome não pôde sincronizar seus dados, pois os detalhes de login da sua conta estão desatualizados.</translation>
 <translation id="7626032353295482388">Bem-vindo ao Google Chrome</translation>
 <translation id="7747138024166251722">O instalador não conseguiu criar um diretório temporário. Verifique se há espaço livre em disco e se há permissão para a instalação de software.</translation>
+<translation id="7756122083761163394">Os dados de navegação dessa pessoa serão excluídos deste dispositivo. Para recuperar os dados, faça login no Chrome como $2.</translation>
 <translation id="7761834446675418963">Clique no seu nome para abrir o Chrome e começar a navegar.</translation>
 <translation id="7781002470561365167">Uma nova versão do Google Chrome está disponível.</translation>
 <translation id="7787950393032327779">O perfil parece estar em uso por outro processo do Google Chrome (<ph name="PROCESS_ID" />) em outro computador (<ph name="HOST_NAME" />). O Chrome bloqueou o perfil para que ele não seja corrompido. Se você tiver certeza de que nenhum outro processo está usando este perfil, pode desbloquear o perfil e reiniciar o Chrome.</translation>
@@ -252,7 +249,6 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="8129812357326543296">Sobre o Google Chrome</translation>
 <translation id="8179874765710681175">Instale o Chrome no seu smartphone. Enviaremos um SMS para seu número.</translation>
 <translation id="8183957050892517584">O Chrome armazenará seus dados pessoais com segurança para que não seja necessário digitá-los novamente.</translation>
-<translation id="8211929904040702368">Essa ação excluirá permanentemente pelo menos <ph name="TOTAL_COUNT" /> itens deste dispositivo. Para recuperar seus dados mais tarde, faça login no Chrome como $2.</translation>
 <translation id="8255190535488645436">O Google Chrome está usando sua câmera e seu microfone.</translation>
 <translation id="8286862437124483331">O Google Chrome está tentando mostrar senhas. Digite sua senha do Windows para permitir isso.</translation>
 <translation id="8290100596633877290">Nossa! Houve uma falha no Google Chrome. Reiniciar agora?</translation>

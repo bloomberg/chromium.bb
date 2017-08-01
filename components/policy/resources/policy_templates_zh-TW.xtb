@@ -54,13 +54,6 @@
       是 60 秒。</translation>
 <translation id="1221359380862872747">在示範登入時載入指定的網址</translation>
 <translation id="1265053460044691532">限制透過 SAML 驗證的使用者可離線登入的時間</translation>
-<translation id="127699919157094139">使用 Google 代管的同步處理服務停用 <ph name="PRODUCT_NAME" /> 的資料同步處理功能，並禁止使用者變更這項設定。
-
-      如果啟用這項設定，使用者就無法在 <ph name="PRODUCT_NAME" /> 中變更或覆寫這項設定。
-
-      如未設定這項政策，則使用者可自行決定是否要使用 Google Sync。
-
-      如要全面停用 Google Sync，建議你在 Google 管理控制台中停用 Google Sync。</translation>
 <translation id="1291880496936992484">警告：自 <ph name="PRODUCT_NAME" /> 52 版 (將於 2016 年 9 月左右推出) 起，系統將全面移除 RC4，屆時這項政策將停止運作。
 
       如果未設定這項政策或將其設為 False，系統就不會在 TLS 中啟用 RC4 加密套件。您也可以將這項政策設為 True，以保持與過舊伺服器的相容性。這種方法是權宜之計，伺服器應重新設定，才是正確的做法。</translation>
@@ -504,6 +497,11 @@
 
       未設定這項政策則等同於啟用這項功能，請見上方說明。</translation>
 <translation id="285480231336205327">啟用高反差模式</translation>
+<translation id="2854919890879212089">讓 <ph name="PRODUCT_NAME" /> 使用系統預設印表機做為預覽列印中的預設選擇，取代最近使用的印表機。
+
+      如果停用這項設定或未設定值，預覽列印會以最近使用的印表機做為預設目的地選擇。
+
+      如果啟用這項設定，預覽列印會使用作業系統預設印表機做為預設目的地選擇。</translation>
 <translation id="2872961005593481000">關閉</translation>
 <translation id="2874209944580848064">支援 Android 裝置的 <ph name="PRODUCT_OS_NAME" />裝置注意事項：</translation>
 <translation id="2877225735001246144">在交涉 Kerberos 驗證時，停用 CNAME 查詢</translation>
@@ -960,6 +958,7 @@
 
           在預設情況下，當使用者輸入的 PIN 強度不足時，系統會顯示警告訊息 (而非錯誤訊息)。</translation>
 <translation id="4723829699367336876">允許遠端存取用戶端穿越防火牆</translation>
+<translation id="4725123658714754485">控制是否要將使用指標、診斷資料 (含當機報告) 回報給 Google。如果設為 True，<ph name="PRODUCT_OS_NAME" /> 會回報使用指標和診斷資料。如未設定或設為 False，指標和診斷資料回報功能就會停用。</translation>
 <translation id="4725528134735324213">啟用 Android 備份服務</translation>
 <translation id="4733471537137819387">與整合 HTTP 驗證相關的政策。</translation>
 <translation id="4744190513568488164"><ph name="PRODUCT_NAME" /> 要委派的目標伺服器。
@@ -1436,6 +1435,11 @@
 <translation id="6689792153960219308">回報硬體狀態</translation>
 <translation id="6693751878507293182">如果你將這項設定調整為啟用，則系統會停用「<ph name="PRODUCT_NAME" />」中的自動搜尋功能，且缺漏的外掛程式也不會自動安裝。如果將這個選項設為停用，或未調整這項設定，即可啟動外掛程式尋找工具。</translation>
 <translation id="6699880231565102694">為遠端存取主機啟用雙重驗證機制</translation>
+<translation id="6724842112053619797">如果啟用這項設定，系統會將儲存在 <ph name="PRODUCT_NAME" /> 設定檔中的設定 (例如書籤、自動填入資料、密碼等) 一併寫入儲存在漫遊使用者設定檔資料夾中的檔案，或是管理員透過 <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> 政策指定的位置。啟用這項政策時，雲端同步處理功能會遭到停用：
+
+      如果停用或未設定這項政策，系統只會使用一般本機設定檔。
+
+      <ph name="SYNC_DISABLED_POLICY_NAME" /> 政策會停用所有資料同步處理功能，並覆寫 RoamingProfileSupportEnabled。</translation>
 <translation id="6757438632136860443">允許你設定網址模式清單，指定允許執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式的網站。
 
           如未設定這項政策，系統會從「DefaultPluginsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
@@ -1479,6 +1483,13 @@
 <translation id="6943577887654905793">Mac/Linux 偏好設定名稱：</translation>
 <translation id="69525503251220566">為預設搜尋引擎提供圖片搜尋功能的參數</translation>
 <translation id="6956272732789158625">不允許任何網站使用金鑰產生功能</translation>
+<translation id="6994082778848658360">如果你安裝的安全元素硬體和雙重驗證功能相容，就可以使用這項政策來指定如何使用該硬體提供雙重驗證功能。裝置的電源鍵會用來偵測使用者是否真實存在。
+
+      如果選取 [已停用]，系統就不會提供雙重驗證功能。
+
+      如果選取 [U2F]，整合式雙重驗證將依照 FIDO U2F 規格運作。
+
+      如果選取 [U2F_EXTENDED]，整合式雙重驗證會為個人認證提供 U2F 功能和一些擴充功能。</translation>
 <translation id="6997592395211691850">是否需要為本機信任錨點執行線上 OCSP/CRL 檢查。</translation>
 <translation id="7003334574344702284">如果啟用這項政策，則會強制從之前的預設瀏覽器匯入儲存的密碼，並影響匯入對話方塊。如果停用這項政策，則不會匯入儲存的密碼。如果未設定這項政策，系統會自動匯入儲存的密碼，或詢問使用者是否要匯入儲存的密碼。</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME" /> 偏好設定</translation>
@@ -1666,7 +1677,6 @@
 <translation id="7713608076604149344">下載限制</translation>
 <translation id="7715711044277116530">簡報模式中的螢幕調暗延遲時間延長百分比</translation>
 <translation id="7717938661004793600">設定 <ph name="PRODUCT_OS_NAME" /> 協助工具功能。</translation>
-<translation id="7719251660743813569">控制是否要將使用計量回報給 Google。如果設為 True，<ph name="PRODUCT_OS_NAME" /> 會回報使用計量。如未設定或設為 False，計量回報就會遭到停用。</translation>
 <translation id="7724994675283793633">這項政策可讓你在 80 (HTTP) 和 443 (HTTPS) 以外的通訊埠啟用 HTTP/0.9。
 
       這項政策預設為停用，啟用後使用者可能會遇到安全性問題 https://crbug.com/600352。
@@ -1964,6 +1974,15 @@
 <translation id="891435090623616439">以 JSON 字串格式編碼，詳情請參閱 <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">回報裝置位置</translation>
 <translation id="8951350807133946005">設定磁碟快取目錄</translation>
+<translation id="8952317565138994125">使用 Google 代管的同步處理服務停用 <ph name="PRODUCT_NAME" /> 的資料同步處理功能，並禁止使用者變更這項設定。
+
+      如果啟用這項設定，使用者就無法在 <ph name="PRODUCT_NAME" /> 中變更或覆寫這項設定。
+
+      如果未設定這項政策，則使用者可自行決定是否要使用 Google Sync。
+
+      如要全面停用 Google Sync，建議在 Google 管理控制台中停用 Google Sync 服務。
+
+      啟用 <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> 政策時，請勿啟用這項政策。原因是該功能具有同樣的用戶端功能，會導致 Google 代管的同步處理服務完全停用。</translation>
 <translation id="8955719471735800169">返回頁首</translation>
 <translation id="8960850473856121830">系統會將這份清單中的模式與要求網址的安全性
       來源進行比對。如果找到相符的結果，系統就會授權存取
@@ -1973,6 +1992,7 @@
 <translation id="8970205333161758602">隱藏停止支援 <ph name="PRODUCT_FRAME_NAME" />的提示</translation>
 <translation id="8971221018777092728">公開工作階段自動登入計時器</translation>
 <translation id="8976248126101463034">允許針對遠端存取主機進行 gnubby 驗證機制</translation>
+<translation id="8976531594979650914">使用系統預設印表機做為預設值</translation>
 <translation id="8992176907758534924">不允許任何網站顯示圖片</translation>
 <translation id="9035964157729712237">要從黑名單上移除的擴充功能 ID</translation>
 <translation id="9042911395677044526">允許將網路設定按照使用者套用至安裝了 <ph name="PRODUCT_OS_NAME" /> 的裝置。本網路設定是由開放網路設定格式 (網址為：<ph name="ONC_SPEC_URL" />) 所定義的 JSON 格式字串。</translation>

@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Botó de desbordament</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+Cerca+H</translation>
 <translation id="2049639323467105390">Aquest dispositiu està gestionat per <ph name="DOMAIN" /></translation>
 <translation id="2050339315714019657">Vertical</translation>
 <translation id="207439088875642105">Aquest és un compte infantil gestionat per <ph name="FIRST_PARENT_EMAIL" /> i per <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Tecles permanents</translation>
 <translation id="2509468283778169019">BLOQ MAJ està activat.</translation>
 <translation id="2532589005999780174">Mode d'alt contrast</translation>
+<translation id="2597972630681408282">Llum nocturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">La sessió finalitzarà d'aquí a <ph name="SESSION_TIME_REMAINING" /> i es tancarà.</translation>
 <translation id="2727977024730340865">S'ha connectat a un carregador de baix consum. És possible que la càrrega de la bateria no sigui fiable.</translation>
 <translation id="2761704814324807722">Safata d'estat. Hora: <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">Sortida</translation>
 <translation id="3019353588588144572">Temps restant fins que la bateria no estigui totalment carregada: <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">Aquest és un compte infantil gestionat per <ph name="MANAGER_EMAIL" /></translation>
-<translation id="3050422059534974565">Bloq Maj està activat.
-Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="3077734595579995578">maj</translation>
 <translation id="3087734570205094154">Part inferior</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -136,6 +136,7 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="4849058404725798627">Ressalta l'objecte amb el focus del teclat</translation>
 <translation id="4872237917498892622">Alt+Cerca o Maj</translation>
 <translation id="4895488851634969361">La bateria està carregada.</translation>
+<translation id="4905614135390995787">La drecera per activar/desactivar el mode d'alt contrast ha canviat. A partir d'ara, utilitza <ph name="NEW_SHORTCUT" /> en lloc de la drecera <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Accepta</translation>
 <translation id="4961318399572185831">Emet la pantalla</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="5744083938413354016">Tocar i arrossegar</translation>
 <translation id="5777841717266010279">Voleu deixar de compartir la pantalla?</translation>
 <translation id="57838592816432529">Silencia</translation>
+<translation id="5860033963881614850">Desactivat</translation>
 <translation id="5895138241574237353">Reinicia</translation>
 <translation id="5901316534475909376">Maj + Esc</translation>
+<translation id="5916664084637901428">Activat</translation>
 <translation id="5927132638760172455">S'està emetent a un receptor desconegut</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Reverteix</translation>
@@ -169,8 +172,8 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="5977415296283489383">Auricular</translation>
 <translation id="5978382165065462689">Es comparteix el control de la pantalla mitjançant l'Assistència remota.</translation>
 <translation id="5980301590375426705">Surt de la sessió de convidat</translation>
+<translation id="5992218262414051481">El mode d'alt contrast està activat. Torna a prémer Ctrl+Cerca+H per desactivar-lo.</translation>
 <translation id="6018164090099858612">S'està sortint del mode de rèplica</translation>
-<translation id="6041154455840261787">El mode d'alt contrast s'ha activat. Torna a prémer Cerca+Maj+H per desactivar-lo.</translation>
 <translation id="6043212731627905357">Aquest monitor i el teu <ph name="DEVICE_TYPE" /> no s'entenen (el monitor no és compatible).</translation>
 <translation id="6043994281159824495">Tanca la sessió ara</translation>
 <translation id="6047696787498798094">La pantalla es deixarà de compartir quan canvieu d'usuari. Voleu continuar?</translation>
@@ -195,6 +198,7 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="6585808820553845416">La sessió finalitzarà d'aquí a <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Cerca+Maj+K</translation>
 <translation id="6650933572246256093">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per emparellar-se. Introduïu-hi aquesta contrasenya: <ph name="PASSKEY" />.</translation>
+<translation id="6691659475504239918">Cerca+Maj+H</translation>
 <translation id="6700713906295497288">Botó del menú d'IME</translation>
 <translation id="6713285437468012787">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" s'ha emparellat i ja està disponible per a tots els usuaris. Podeu eliminar l'emparellament a la Configuració.</translation>
 <translation id="6785414152754474415">La bateria està carregada fins al <ph name="PERCENTAGE" />% i s'està carregant.</translation>
@@ -214,8 +218,7 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Maj+K</translation>
 <translation id="7168224885072002358">Es revertirà a la resolució anterior d'aquí a <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">Bloq Maj està activat.
-Premeu Alt+Cerca o Maj per cancel·lar.</translation>
+<translation id="7199454189089571166">Mode assistent</translation>
 <translation id="7246339268451149667">Vols activar el desbloqueig amb empremta digital?</translation>
 <translation id="7256634071279256947">Micròfon posterior</translation>
 <translation id="7348093485538360975">Teclat en pantalla</translation>
@@ -233,10 +236,10 @@ Premeu Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7692480393933218409">S'estan carregant els dispositius USB-C connectats</translation>
 <translation id="776344839111254542">Fes clic per veure els detalls de l'actualització</translation>
+<translation id="7798302898096527229">Prem Cerca o Maj per cancel·lar.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> i <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">L'idioma ha canviat de "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" després de sincronitzar la vostra configuració.</translation>
 <translation id="7904094684485781019">L'administrador d'aquest compte no ha permès l'inici de sessió múltiple.</translation>
-<translation id="7951523953736115461">Llum nocturna</translation>
 <translation id="7977927628060636163">S'estan cercant xarxes mòbils…</translation>
 <translation id="7982789257301363584">Xarxa</translation>
 <translation id="8000066093800657092">No hi ha cap xarxa</translation>
@@ -255,6 +258,7 @@ Premeu Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="8433977262951327081">La drecera per mostrar el quadre d'ajuda amb el menú d'opcions d'introducció al prestatge ha canviat. Fes servir <ph name="NEW_SHORTCUT" /> en lloc de la drecera <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">La Wi-Fi està activada.</translation>
 <translation id="847056008324733326">Configuració de l'escala de visualització</translation>
+<translation id="8477270416194247200">Prem Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: s'està tornant a connectar…</translation>
 <translation id="8517041960877371778">És possible que el dispositiu <ph name="DEVICE_TYPE" /> no es carregui mentre està encès.</translation>
 <translation id="8639760480004882931">Queda un <ph name="PERCENTAGE" /></translation>

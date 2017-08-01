@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">オーバーフロー ボタン</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />（USB）</translation>
+<translation id="2012624427112548395">Ctrl+検索+H</translation>
 <translation id="2049639323467105390">この端末は <ph name="DOMAIN" /> によって管理されています。</translation>
 <translation id="2050339315714019657">縦</translation>
 <translation id="207439088875642105">これは <ph name="FIRST_PARENT_EMAIL" /> と <ph name="SECOND_PARENT_EMAIL" /> によって管理されている子供向けのアカウントです</translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">固定キー</translation>
 <translation id="2509468283778169019">Caps Lock がオンになっています</translation>
 <translation id="2532589005999780174">ハイコントラスト モード</translation>
+<translation id="2597972630681408282">読書灯: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">セッション終了まであと <ph name="SESSION_TIME_REMAINING" />です。終了するとログアウトします。</translation>
 <translation id="2727977024730340865">低電力の充電器に接続しています。バッテリーが充電されない可能性があります。</translation>
 <translation id="2761704814324807722">ステータス トレイ、時刻 <ph name="TIME" />、<ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">出力</translation>
 <translation id="3019353588588144572">バッテリーがフル充電されるまであと: <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">これは <ph name="MANAGER_EMAIL" /> によって管理されている子供向けのアカウントです</translation>
-<translation id="3050422059534974565">CapsLock がオンになっています。
-検索/Shift キーを押すと解除されます。</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">下</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" />（Bluetooth）</translation>
@@ -118,7 +118,7 @@
 <translation id="3967919079500697218">スクリーンショットを撮る機能は、管理者によって無効にされています。</translation>
 <translation id="397105322502079400">計算しています...</translation>
 <translation id="3995138139523574647">USB-C デバイス（右奥のポート）</translation>
-<translation id="4279490309300973883">ミラーリングしています</translation>
+<translation id="4279490309300973883">ミラーリング</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4378551569595875038">接続中...</translation>
 <translation id="4421231901400348175">リモート サポート経由で <ph name="HELPER_NAME" /> と画面の制御を共有しています。</translation>
@@ -136,6 +136,7 @@
 <translation id="4849058404725798627">キーボードのフォーカスがある項目をハイライト表示する</translation>
 <translation id="4872237917498892622">Alt+ 検索/Shift</translation>
 <translation id="4895488851634969361">バッテリー残量: 満。</translation>
+<translation id="4905614135390995787">ハイ コントラスト モードを切り替えるショートカットが変わりました。これまでの <ph name="OLD_SHORTCUT" /> キーではなく <ph name="NEW_SHORTCUT" /> キーを使用してください。</translation>
 <translation id="4918086044614829423">承諾</translation>
 <translation id="4961318399572185831">画面をキャスト</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@
 <translation id="5744083938413354016">タップによるドラッグ</translation>
 <translation id="5777841717266010279">画面の共有を解除しますか？</translation>
 <translation id="57838592816432529">ミュート</translation>
+<translation id="5860033963881614850">オフ</translation>
 <translation id="5895138241574237353">再起動</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">オン</translation>
 <translation id="5927132638760172455">不明な受信デバイスにキャストしています</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">元に戻す</translation>
@@ -169,8 +172,8 @@
 <translation id="5977415296283489383">ヘッドホン</translation>
 <translation id="5978382165065462689">リモート サポート経由で画面の制御を共有しています。</translation>
 <translation id="5980301590375426705">ゲスト セッションを終了</translation>
+<translation id="5992218262414051481">ハイコントラスト モードが有効になりました。無効にするには、Ctrl+検索+H キーをもう一度押します。</translation>
 <translation id="6018164090099858612">ミラーモードを終了しています</translation>
-<translation id="6041154455840261787">ハイコントラスト モードが有効になりました。無効にするには、検索+Shift+H キーをもう一度押します。</translation>
 <translation id="6043212731627905357">このモニターは <ph name="DEVICE_TYPE" /> では使用できません（サポートされていません）。</translation>
 <translation id="6043994281159824495">ログアウト</translation>
 <translation id="6047696787498798094">別のユーザーに切り替えると画面の共有は解除されます。続行してもよろしいですか？</translation>
@@ -195,6 +198,7 @@
 <translation id="6585808820553845416">セッション終了まであと <ph name="SESSION_TIME_REMAINING" />です。</translation>
 <translation id="6627638273713273709">検索+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。このデバイスに次のパスキーを入力してください: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">検索+Shift+H</translation>
 <translation id="6700713906295497288">IME メニューボタン</translation>
 <translation id="6713285437468012787">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定されました。すべてのユーザーはこのデバイスを使用できます。[設定] から、このペア設定を削除することもできます。</translation>
 <translation id="6785414152754474415">バッテリー残量: <ph name="PERCENTAGE" />%、充電しています。</translation>
@@ -214,8 +218,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> 秒後に元の解像度に戻ります</translation>
-<translation id="7209101170223508707">CapsLock がオンになっています。
-Alt+ 検索/Shift キーを押すと解除されます。</translation>
+<translation id="7199454189089571166">アシスタント モード</translation>
 <translation id="7246339268451149667">指紋によるロック解除を有効にしますか？</translation>
 <translation id="7256634071279256947">後方のマイク</translation>
 <translation id="7348093485538360975">画面キーボード</translation>
@@ -233,10 +236,10 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="7649070708921625228">ヘルプ</translation>
 <translation id="7692480393933218409">接続された USB-C デバイスを充電しています</translation>
 <translation id="776344839111254542">クリックしてアップデートの詳細を表示する</translation>
+<translation id="7798302898096527229">キャンセルするには検索キーまたは Shift キーを押します。</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">設定の同期後に言語が「<ph name="FROM_LOCALE" />」から「<ph name="TO_LOCALE" />」に変更されました。</translation>
 <translation id="7904094684485781019">このアカウントの管理者がマルチ ログインを許可していません。</translation>
-<translation id="7951523953736115461">読書灯</translation>
 <translation id="7977927628060636163">モバイル ネットワークを検索しています...</translation>
 <translation id="7982789257301363584">ネットワーク</translation>
 <translation id="8000066093800657092">ネットワーク接続なし</translation>
@@ -255,6 +258,7 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="8433977262951327081">シェルフに入力オプション メニューのふきだしを表示するためのショートカットが変わりました。今後は <ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> を使用してください。</translation>
 <translation id="8454013096329229812">Wi-Fi が有効になりました。</translation>
 <translation id="847056008324733326">表示スケールの設定</translation>
+<translation id="8477270416194247200">キャンセルするには Alt+検索キーを押すか Shift キーを押します。</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: 再接続しています...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> は電源がオンでも充電できない可能性があります。</translation>
 <translation id="8639760480004882931">バッテリー残量: <ph name="PERCENTAGE" /></translation>

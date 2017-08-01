@@ -53,13 +53,6 @@
       povolená frekvencia je 60 sekúnd.</translation>
 <translation id="1221359380862872747">Po prihlásení v režime ukážky načítať zadané webové adresy</translation>
 <translation id="1265053460044691532">Stanovte časový limit prihlásenia v režime offline pre používateľa, ktorého totožnosť bola overená prostredníctvom štandardu SAML</translation>
-<translation id="127699919157094139">Zakáže v prehliadači <ph name="PRODUCT_NAME" /> synchronizáciu dát pomocou služieb synchronizácie hostených spoločnosťou Google a zabráni používateľom toto nastavenie meniť.
-
-      Ak toto nastavenie povolíte, používatelia ho v prehliadači <ph name="PRODUCT_NAME" /> nebudú môcť zmeniť ani prepísať.
-
-      Ak toto pravidlo ponecháte nenastavené, používatelia si budú môcť vybrať, či chcú Synchronizáciu Google použiť.
-
-      Ak chcete Synchronizáciu Google úplne deaktivovať, odporúčame ju zakázať v konzole služby Google Admin.</translation>
 <translation id="1291880496936992484">Upozornenie: Po verzii 52 (približne v septembri 2016) bude šifrovací algoritmus RC4 z prehliadača <ph name="PRODUCT_NAME" /> úplne odstránený a toto pravidlo prestane fungovať.
 
       Ak toto pravidlo nie je nastavené alebo je nastavené na hodnotu False, v protokole TLS nebudú povolené šifrovacie súpravy RC4. Nastavením tohto pravidla na hodnotu True je možné zaistiť kompatibilitu so zastaraným serverom. Ide o krátkodobé riešenie, takže konfigurácia príslušného servera by mala byť upravená.</translation>
@@ -522,6 +515,11 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Ak toto pravidlo nenastavíte, prehliadač sa bude správať rovnako, ako keby ste ho povolili (prečítajte si popis vyššie).</translation>
 <translation id="285480231336205327">Povoliť režim s vysokým kontrastom</translation>
+<translation id="2854919890879212089">Umožňuje nastaviť, aby prehliadač <ph name="PRODUCT_NAME" /> predvolene používal v časti Ukážka tlače namiesto poslednej použitej tlačiarne predvolenú tlačiareň systému.
+
+      Ak toto nastavenie zakážete alebo nenastavíte žiadnu hodnotu, Ukážka tlače bude používať poslednú použitú tlačiareň ako predvolenú cieľovú možnosť.
+
+      Ak povolíte toto zariadenie, Ukážka tlače bude používať predvolenú tlačiareň operačného systému OS ako predvolenú cieľovú možnosť.</translation>
 <translation id="2872961005593481000">Vypnúť</translation>
 <translation id="2874209944580848064">Poznámka pre zariadenia so systémom <ph name="PRODUCT_OS_NAME" />, ktoré podporujú aplikácie pre Android:</translation>
 <translation id="2877225735001246144">Zakázať hľadanie záznamov CNAME pri absolvovaní overenia Kerberos</translation>
@@ -1002,6 +1000,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Ak bude kód PIN považovaný za slabý, používatelia predvolene dostanú upozornenie, nie chybové hlásenie.</translation>
 <translation id="4723829699367336876">Povoliť prechod cez bránu firewall v smere od klienta vzdialeného prístupu</translation>
+<translation id="4725123658714754485">Určuje, či sa budú Googlu spätne nahlasovať metriky používania a diagnostické údaje vrátane správ o zlyhaní. Ak je pravidlo nastavené na hodnotu True, systém <ph name="PRODUCT_OS_NAME" /> bude nahlasovať metriky používania a diagnostické údaje. Ak nie je nakonfigurované alebo je nastavené na hodnotu False, nahlasovanie metrík a diagnostických údajov bude zakázané.</translation>
 <translation id="4725528134735324213">Povolenie služby Android Backup Service</translation>
 <translation id="4733471537137819387">Pravidlá týkajúce sa integrovaného overenia pomocou protokolu HTTP</translation>
 <translation id="4744190513568488164">Servery, na ktoré môže <ph name="PRODUCT_NAME" /> delegovať poverenia.
@@ -1521,6 +1520,11 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
       Ak túto možnosť nastavíte ako zakázanú alebo ju ponecháte nenastavenú, nástroj na vyhľadávanie doplnkov bude aktívny.</translation>
 <translation id="6699880231565102694">Povolenie dvojfázového overenia totožnosti pre hostiteľov vzdialeného prístupu</translation>
+<translation id="6724842112053619797">Ak povolíte toto nastavenie, nastavenia uložené v profiloch <ph name="PRODUCT_NAME" /> (napr. záložky, údaje automatického dopĺňania, heslá atď.) sa zapíšu tiež do súboru uloženého v priečinku roamingového používateľského profilu alebo v umiestnení špecifikovanom správcom prostredníctvom pravidla <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Povolenie tohto pravidla vypne synchronizáciu s cloudom.
+
+      Ak je toto pravidlo zakázané alebo nie je nastavené, budú sa používať iba miestne profily.
+
+      Pravidlo <ph name="SYNC_DISABLED_POLICY_NAME" /> vypne synchronizáciu všetkých údajov a prepíše pravidlo RoamingProfileSupportEnabled.</translation>
 <translation id="6757438632136860443">Umožňuje nastaviť zoznam vzorov webových adries určujúcich weby, ktoré majú povolené spustiť doplnok <ph name="FLASH_PLUGIN_NAME" />.
 
           Ak toto pravidlo nenastavíte, pre všetky weby sa použije globálna predvolená hodnota, ktorá je určená buď pravidlom DefaultCookiesSetting (ak je nastavené), alebo inou osobnou konfiguráciou od používateľa.</translation>
@@ -1568,6 +1572,13 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="6943577887654905793">Názov predvoľby v systéme Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter poskytujúci funkciu vyhľadávania podľa obrázka pre predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="6956272732789158625">Nepovoliť žiadnym webovým stránkam používať generovanie kľúčov</translation>
+<translation id="6994082778848658360">Umožňuje určiť, ako môže byť hardvér zabezpečeného prvku na základnej doske počítača použitý na poskytovanie druhého faktora overenia totožnosti, ak je kompatibilný s touto funkciou. Vypínač zariadenia sa používa na rozpoznanie fyzickej prítomnosti používateľa.
+
+      Ak vyberiete možnosť Zakázané, druhý faktor nebude poskytovaný.
+
+      Ak vyberiete možnosť U2F, integrovaný druhý faktor sa bude správať v súlade so špecifikáciou FIDO U2F.
+
+      Ak vyberiete možnosť U2F_EXTENDED, integrovaný druhý faktor bude poskytovať funkcie U2F a niekoľko rozšírení na individuálne preverovanie.</translation>
 <translation id="6997592395211691850">Toto pravidlo určuje, či sa pre miestne dôveryhodné ukotvenia vyžadujú kontroly OCSP/CRL online</translation>
 <translation id="7003334574344702284">Ak je toto pravidlo povolené, uložené heslá sú importované z predchádzajúceho predvoleného prehliadača. Povolenie tohto pravidla má vplyv aj na dialógové okno importu.
 
@@ -1775,7 +1786,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="7713608076604149344">Obmedzenia súborov na stiahnutie</translation>
 <translation id="7715711044277116530">Percento predĺženia oneskorenia stmavenia obrazovky v režime prezentácie</translation>
 <translation id="7717938661004793600">Konfigurujte funkcie zjednodušenia prístupu v systéme <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7719251660743813569">Určuje, či sa budú spoločnosti Google spätne nahlasovať metriky používania. Ak je pravidlo nastavené na hodnotu true, systém <ph name="PRODUCT_OS_NAME" /> bude nahlasovať metriky používania. Ak nie je nakonfigurované alebo je nastavené na hodnotu false, nahlasovanie metrík bude zakázané.</translation>
 <translation id="7724994675283793633">Toto pravidlo povoľuje protokol HTTP/0.9 na portoch iných ako 80 (v prípade protokolu HTTP) a 443 (v prípade protokolu HTTPS).
 
       Toto pravidlo je predvolene zakázané a po povolení vystavuje používateľov problému so zabezpečením – https://crbug.com/600352.
@@ -2106,6 +2116,15 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="891435090623616439">kódované ako reťazec JSON, podrobnosti nájdete na adrese <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Nahlasovať polohu zariadenia</translation>
 <translation id="8951350807133946005">Nastaviť adresár diskovej vyrovnávacej pamäte</translation>
+<translation id="8952317565138994125">Zakáže v prehliadači <ph name="PRODUCT_NAME" /> synchronizáciu údajov pomocou služieb synchronizácie hostených Googlom a zabráni používateľom toto nastavenie zmeniť.
+
+      Ak toto nastavenie povolíte, používatelia ho v prehliadači <ph name="PRODUCT_NAME" /> nebudú môcť zmeniť ani prepísať.
+
+      Ak toto pravidlo ponecháte nenastavené, používateľ si bude môcť vybrať, či sa má Synchronizácia Google používať.
+
+      Ak chcete Synchronizáciu Google zakázať úplne, odporúčame vypnúť službu Synchronizácie Google v Správcovskej konzole Google.
+
+      Toto pravidlo by ste nemali povoľovať zároveň s pravidlom <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />, keďže obe funkcie fungujú na strane klienta rovnako. Synchronizácia hostená Googlom je v tomto prípade úplne zakázaná.</translation>
 <translation id="8955719471735800169">Späť na začiatok</translation>
 <translation id="8960850473856121830">Vzory v tomto zozname sa porovnajú s pôvodom
       zabezpečenia webovej adresy, ktorá odoslala žiadosť. Ak sa nájde zhoda, prístup k zariadeniam
@@ -2114,6 +2133,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="8970205333161758602">Potlačiť výzvu o zamietnutie od rámca <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Časovač automatického prihlásenia do verejnej relácie</translation>
 <translation id="8976248126101463034">Povoliť overovanie gnubby pre hostiteľov so vzdialeným prístupom</translation>
+<translation id="8976531594979650914">Ako predvolenú tlačiareň použiť predvolenú tlačiareň systému</translation>
 <translation id="8992176907758534924">Zakázať všetkým stránkam zobrazovať obrázky</translation>
 <translation id="9035964157729712237">ID rozšírení, ktoré majú byť zo zoznamu zakázaných rozšírení vyňaté</translation>
 <translation id="9042911395677044526">Umožňuje preniesť konfiguráciu siete, ktorá sa použije pre jednotlivých používateľov v zariadení so systémom <ph name="PRODUCT_OS_NAME" />. Konfigurácia siete je reťazec vo formáte JSON, ktorý sa riadi definíciou formátu Open Network Configuration uvedenou na adrese <ph name="ONC_SPEC_URL" /></translation>

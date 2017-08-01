@@ -173,7 +173,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="573759479754913123">Chrome OS 정보</translation>
 <translation id="5749068826913805084">Chrome에서 파일을 다운로드하려면 저장소 액세스 권한이 있어야 합니다.</translation>
 <translation id="5774845247549698882">현재 Chrome OS에서 사용 중인 언어</translation>
-<translation id="5832596086758878896">{NUM_ITEMS,plural, =1{이 기기에서 $1개 항목이 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chrome에 로그인하세요.}other{이 기기에서 $1개 항목이 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chrome에 로그인하세요.}}</translation>
 <translation id="5855036575689098185">컴퓨터에서 실행 중인 소프트웨어가 Chrome과 호환되지 않습니다.</translation>
 <translation id="5877064549588274448">채널이 변경되었습니다. 변경사항을 적용하려면 기기를 다시 시작하세요.</translation>
 <translation id="5895138241574237353">다시 시작</translation>
@@ -218,7 +217,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7125719106133729027">Chrome을 최신 버전으로 자동 업데이트할 수 없기 때문에 새로운 기능과 보안 수정사항 업데이트가 누락될 수 있습니다. Chrome을 직접 다시 설치해야 합니다.</translation>
 <translation id="7161904924553537242">신개념 브라우저 - Chrome</translation>
 <translation id="7164397146364144019">Google에 발생할 수 있는 보안 문제에 대한 세부정보를 자동으로 보고하도록 설정하면 Chrome을 더 안전하고 편리하게 사용할 수 있습니다.</translation>
-<translation id="7177347454226092725">인터넷 사용 기록이 이 기기에서 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chrome에 로그인하세요.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" />이(가) Chrome에 추가되었습니다.</translation>
 <translation id="7196020411877309443">이 메시지가 표시되는 이유</translation>
 <translation id="7242029209006116544">관리 계정으로 로그인하고 관리자에게 Chrome 프로필에 대한 제어권을 부여하려고 합니다. 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정과 같은 Chrome 데이터가 <ph name="USER_NAME" /> 계정에 영구적으로 연결됩니다. 이후 이 데이터를 Google 계정 대시보드에서 삭제할 수는 있지만 다른 계정에 연결할 수는 없습니다. 기존 Chrome 데이터를 유지하려면 새 프로필을 만드는 방법이 있습니다. <ph name="LEARN_MORE" /></translation>
@@ -229,18 +227,17 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7400722733683201933">Chrome 정보</translation>
 <translation id="7408085963519505752">Chrome OS 이용약관</translation>
 <translation id="7419046106786626209">내 도메인에서 동기화를 사용할 수 없으므로 Chrome OS에서 데이터를 동기화하지 못했습니다.</translation>
-<translation id="7436949144778751379">Chrome에는 Windows XP 이상이 필요합니다. 일부 기능이 작동하지 않을 수 있습니다.</translation>
 <translation id="7437998757836447326">Chrome에서 로그아웃</translation>
 <translation id="7459554271817304652">맞춤설정한 브라우저 기능을 웹에 저장하고 모든 컴퓨터의 Chrome에서 액세스할 수 있도록 동기화를 설정합니다.</translation>
 <translation id="7473136999113284234">Chrome은 자동으로 업데이트되므로 항상 최신 버전을 사용할 수 있습니다.</translation>
 <translation id="7473891865547856676">건너뛰기</translation>
 <translation id="7494905215383356681">Chrome 오픈소스 라이선스</translation>
-<translation id="7520096660192498279">{NUM_ITEMS,plural, =1{이 기기에서 $1개 이상의 항목이 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chrome에 로그인하세요.}other{이 기기에서 $1개 이상의 항목이 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chrome에 로그인하세요.}}</translation>
 <translation id="7535429826459677826">Chrome 개발자</translation>
 <translation id="7552219221109926349">이 언어로 Chrome OS 표시</translation>
 <translation id="7592736734348559088">계정의 로그인 세부정보가 오래되어 Chrome에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="7626032353295482388">Chrome에 오신 것을 환영합니다.</translation>
 <translation id="7747138024166251722">설치 프로그램이 임시 디렉토리를 만들지 못했습니다. 디스크 공간 및 설치 권한을 확인해 보세요.</translation>
+<translation id="7756122083761163394">선택한 사용자의 인터넷 사용 기록이 이 기기에서 삭제됩니다. 데이터를 복원하려면 $2(으)로 Chrome에 로그인하세요.</translation>
 <translation id="7761834446675418963">Chrome을 열고 탐색을 시작하려면 내 이름을 클릭하세요.</translation>
 <translation id="7781002470561365167">Chrome의 새 버전이 출시되었습니다.</translation>
 <translation id="7787950393032327779">다른 컴퓨터(<ph name="HOST_NAME" />)의 다른 Chrome 프로세스(<ph name="PROCESS_ID" />)에서 프로필을 사용 중인 것 같습니다. 프로필이 손상되지 않도록 Chrome에서 잠금 설정했습니다. 다른 프로세스에서 프로필을 사용 중이지 않은 것이 확실한 경우 프로필을 잠금 해제하고 Chrome을 다시 시작하세요.</translation>
@@ -259,7 +256,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8129812357326543296">Chrome 정보(&amp;G)</translation>
 <translation id="8179874765710681175">휴대전화에 Chrome을 설치하세요. 휴대전화로 SMS를 보내 드리겠습니다.</translation>
 <translation id="8183957050892517584">Chrome은 개인정보를 안전하게 저장하므로 정보를 다시 입력할 필요가 없습니다.</translation>
-<translation id="8211929904040702368"><ph name="TOTAL_COUNT" />개 이상의 항목이 이 기기에서 완전히 삭제됩니다. 나중에 데이터를 검색하려면 $2(으)로 Chrome에 로그인하세요.</translation>
 <translation id="8255190535488645436">Chrome에서 카메라와 마이크를 사용 중입니다.</translation>
 <translation id="8286862437124483331">Chrome에서 비밀번호를 표시하려고 합니다. 허용하려면 Windows 비밀번호를 입력하세요.</translation>
 <translation id="8290100596633877290">Chrome이 다운되었습니다. 다시 시작하시겠습니까?</translation>
@@ -289,7 +285,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="9026991721384951619">계정의 로그인 세부정보가 오래되어 Chrome OS에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="9067395829937117663">Chrome은 Windows 7 이상 버전에서 사용할 수 있습니다.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />경고:<ph name="END_BOLD" /> Chrome에서는 확장 프로그램에 인터넷 사용기록이 저장될 수 있습니다. 시크릿 모드에서 이 확장 프로그램을 사용 중지하려면 옵션을 선택 취소하세요.</translation>
-<translation id="911206726377975832">인터넷 사용정보도 삭제하시겠습니까?</translation>
+<translation id="911206726377975832">인터넷 사용 기록도 삭제하시겠습니까?</translation>
 <translation id="919706545465235479">동기화를 시작하려면 Chrome을 업데이트하세요.</translation>
 <translation id="924447568950697217">Chrome을 기본 브라우저로 지정</translation>
 <translation id="989369509083708165">Chrome이 기본 브라우저로 설정되어 있습니다.</translation>

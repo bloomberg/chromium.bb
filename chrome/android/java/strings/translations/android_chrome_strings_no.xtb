@@ -33,6 +33,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="129553762522093515">Nylig lukket</translation>
 <translation id="1303671224831497365">Fant ingen Bluetooth-enheter</translation>
 <translation id="1326317727527857210">For å få fanene dine fra de andre enhetene du bruker, logg på Chrome.</translation>
+<translation id="132830257261478853">Adressefeltet. Dra nedover for å lukke navigasjonspanelet.</translation>
 <translation id="1332501820983677155">Hurtigtaster for funksjoner i Google Chrome.</translation>
 <translation id="1339917386316755344">Logger deg av de fleste nettsteder. Du blir ikke logget ut av Google-kontoen din.</translation>
 <translation id="1369915414381695676">Nettstedet <ph name="SITE_NAME" /> er lagt til</translation>
@@ -127,12 +128,14 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="2156074688469523661">Andre nettsteder (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="219985413780390209">Beskytt deg selv og enheten din mot farlige nettsteder</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, nettprogram. <ph name="APP_URL" /></translation>
+<translation id="2227444325776770048">Fortsett som <ph name="USER_FULL_NAME" /></translation>
 <translation id="2246961355222023276">Data brukt:</translation>
 <translation id="2268044343513325586">Finstem</translation>
 <translation id="2286841657746966508">Faktureringsadresse</translation>
 <translation id="2315043854645842844">Operativsystemet har ikke støtte for sertifikatvalg på klientsiden.</translation>
 <translation id="2321958826496381788">Dra glidebryteren til du kan lese dette uten problemer. Når du har dobbelttrykket på et avsnitt, bør teksten være minst like stor som dette.</translation>
 <translation id="2323763861024343754">Nettstedslagring</translation>
+<translation id="2342981853652716282">Logg på Chrome for å hente blant annet bokmerkene og passordene dine på alle enhetene du bruker.</translation>
 <translation id="2343328333327081434">Installerer …</translation>
 <translation id="2346253980530904022">Google-tjenerne optimaliserer sidene du besøker. Dette gjelder ikke HTTPS-nettadresser eller inkognitomodus.</translation>
 <translation id="2349710944427398404">Total datamengde som brukes av Chrome, deriblant kontoer, bokmerker og lagrede innstillinger</translation>
@@ -176,6 +179,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="2762000892062317888">akkurat nå</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder igjen</translation>
 <translation id="2781151931089541271">1 sekund igjen</translation>
+<translation id="2810645512293415242">Siden er forenklet for å spare data og laste den inn raskere.</translation>
 <translation id="2836148919159985482">Trykk på tilbakeknappen for å avslutte fullskjerm.</translation>
 <translation id="2842985007712546952">Overordnet mappe</translation>
 <translation id="2870560284913253234">Nettsted</translation>
@@ -224,6 +228,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="3282568296779691940">Logg på Chrome</translation>
 <translation id="3295602654194328831">Skjul informasjonen</translation>
 <translation id="3303414029551471755">Vil du gå videre med å laste ned innholdet?</translation>
+<translation id="3319792846664697699">Navigasjonspanelet</translation>
 <translation id="3321222012623826478">Denne tjenesten må sende dette nettstedets adresse til Google anonymt for bekreftelse.</translation>
 <translation id="3328801116991980348">Informasjon om nettstedet</translation>
 <translation id="3350687908700087792">Lukk alle inkognitofaner</translation>
@@ -273,7 +278,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="3744111561329211289">Bakgrunnssynkronisering</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Slå på Bluetooth<ph name="END_LINK" /> for å tillate tilkobling</translation>
 <translation id="3789841737615482174">Installer</translation>
-<translation id="380076759404194828">{NUM_SELECTED,plural, =1{1 element er valgt}other{# elementer er valgt}}</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Administrer</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> nedlastinger er slettet</translation>
@@ -370,7 +374,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4807098396393229769">Navn som er oppført på kortet</translation>
 <translation id="4807963036345170158">Datasparing er av</translation>
 <translation id="4816465935029283692">Datatyper</translation>
-<translation id="4835385943915508971">Chrome har ikke tilgang til den forespurte ressursen.</translation>
 <translation id="4837753911714442426">Åpne alternativene for å skrive ut siden</translation>
 <translation id="4850886885716139402">Visning</translation>
 <translation id="4860895144060829044">Ring</translation>
@@ -425,7 +428,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="5345040418939504969">Slettet <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Posisjonstilgang er også <ph name="BEGIN_LINK" />slått av for denne enheten<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">Nettadressen er kopiert.</translation>
-<translation id="5384883051496921101">Dette nettstedet er i ferd med å dele informasjon med en app utenfor inkognitomodus.</translation>
 <translation id="5400569084694353794">Ved å bruke dette programmet samtykker du i Chromes <ph name="BEGIN_LINK1" />vilkår for bruk<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />merknad om personvern<ph name="END_LINK2" />.</translation>
 <translation id="5403644198645076998">Tillat bare visse nettsteder</translation>
 <translation id="5414836363063783498">Bekrefter …</translation>
@@ -452,6 +454,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="5568069709869097550">Kan ikke logge på</translation>
 <translation id="557283862590186398">Chrome trenger tilgang til mikrofonen din for dette nettstedet.</translation>
 <translation id="5578795271662203820">Søk etter dette bildet i <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5585019845078534178">Kort</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
 <translation id="5596627076506792578">Flere alternativer</translation>
 <translation id="5620928963363755975">Du finner filene og sidene dine under Nedlastinger via Flere alternativer-knappen</translation>
@@ -520,6 +523,7 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="6177390657002841081">Slå på Datasparing</translation>
 <translation id="6181444274883918285">Legg til et nettsted som unntak</translation>
 <translation id="6192792657125177640">Unntak</translation>
+<translation id="6210748933810148297">Ikke <ph name="EMAIL" />?</translation>
 <translation id="6232535412751077445">Hvis du slår på «Deaktivering av sporing», blir det sendt en forespørsel sammen med nettrafikken din. Hvilke virkninger dette eventuelt får, avhenger av om det aktuelle nettstedet svarer på forespørselen eller ikke, samt hvordan forespørselen tolkes.
 
 Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg annonser som ikke er basert på andre nettsteder du har besøkt. Mange nettsteder samler likevel inn og bruker nettlesingsdataene dine – for eksempel for å forbedre sikkerheten, for å levere innhold, annonser og anbefalinger og for å generere rapporteringsstatistikk.</translation>
@@ -558,6 +562,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="654446541061731451">Velg en fane for beaming</translation>
 <translation id="6545017243486555795">Slett alle data</translation>
 <translation id="6550675742724504774">Alternativer</translation>
+<translation id="6556716549745717622">Blokkér hvis nettstedet ofte viser forstyrrende annonser (anbefalt)</translation>
 <translation id="6560414384669816528">Søk med Sogou</translation>
 <translation id="6566259936974865419">Chrome har spart deg for <ph name="GIGABYTES" /> GB</translation>
 <translation id="656628257199996201">Oversett alltid <ph name="SOURCE_LANGUAGE" /></translation>
@@ -566,7 +571,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6583199322650523874">Sett den aktive siden som bokmerke</translation>
 <translation id="6600954340915313787">Kopiert til Chrome</translation>
 <translation id="6612358246767739896">Beskyttet innhold</translation>
-<translation id="662080504995468778">Bli her</translation>
 <translation id="6627583120233659107">Rediger mappen</translation>
 <translation id="6643016212128521049">Tøm</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> til}other{<ph name="CONTACT_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> til}}</translation>
@@ -592,6 +596,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6831043979455480757">Oversett</translation>
 <translation id="6846298663435243399">Laster inn …</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> faner ble lukket</translation>
+<translation id="6856477143496886355">Kort og adresser ved bruk av Google Payments</translation>
 <translation id="6864459304226931083">Last ned bildet</translation>
 <translation id="6865313869410766144">Skjemadata lagret med autofyll</translation>
 <translation id="6868088497967843822">Logg på for å få bokmerkene, loggen, passordene og de andre innstillingene dine på alle enhetene du bruker.</translation>
@@ -620,6 +625,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7053983685419859001">Blokkér</translation>
 <translation id="7062545763355031412">Godta og bytt konto</translation>
 <translation id="7063006564040364415">Kunne ikke koble til synkroniseringstjeneren.</translation>
+<translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 er valgt}other{# er valgt}}</translation>
 <translation id="7121362699166175603">Tømmer loggen og fjerner autofullføringer i adressefeltet. Det kan hende Google-kontoen din har andre typer nettlesingslogger på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Tillat for den aktive søkemotoren</translation>
 <translation id="7138678301420049075">Annet</translation>
@@ -770,7 +776,6 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 For å få nye lisenser må du koble deg til Internett og spille av innholdet du har lastet ned.</translation>
 <translation id="8636825310635137004">For å få fanene dine fra de andre enhetene du bruker, slå på synkronisering.</translation>
 <translation id="8641930654639604085">Prøv å blokkere nettsteder med voksent innhold</translation>
-<translation id="8660471606262461360">Fra Google Payments</translation>
 <translation id="8662811608048051533">Logger deg av de fleste nettsteder.</translation>
 <translation id="8676374126336081632">Slett teksten</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalstyrkenivå: # stolpe}other{Signalstyrkenivå: # stolper}}</translation>
@@ -794,7 +799,6 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="8922289737868596582">Last ned sider via Flere alternativer-knappen for å bruke dem uten nett</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Åpne i et annet vindu</translation>
-<translation id="894871326938397531">Vil du avslutte inkognitomodus?</translation>
 <translation id="8951232171465285730">Chrome har spart deg for <ph name="MEGABYTES" /> MB</translation>
 <translation id="8959122750345127698">Nettadressen er utilgjengelig: <ph name="URL" /></translation>
 <translation id="896250263197055929">Nedlastingsfanen er valgt</translation>

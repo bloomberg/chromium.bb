@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Кнопка додаткового меню</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2049639323467105390">Цим пристроєм керує домен <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Портретна</translation>
 <translation id="207439088875642105"><ph name="FIRST_PARENT_EMAIL" /> і <ph name="SECOND_PARENT_EMAIL" /> керують цим обліковим записом для дітей</translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Залипання клавіш</translation>
 <translation id="2509468283778169019">Режим CAPS LOCK увімкнено</translation>
 <translation id="2532589005999780174">Режим високого контрасту</translation>
+<translation id="2597972630681408282">Нічний режим: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">Сеанс закінчиться через <ph name="SESSION_TIME_REMAINING" />. Ви вийдете.</translation>
 <translation id="2727977024730340865">Підключено до зарядного пристрою низької потужності. Акумулятор може заряджатися неналежним чином.</translation>
 <translation id="2761704814324807722">Панель статусу, час: <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">Вихід</translation>
 <translation id="3019353588588144572">До повного зарядження акумулятора залишилося <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454"><ph name="MANAGER_EMAIL" /> керує цим обліковим записом для дітей.</translation>
-<translation id="3050422059534974565">Клавішу CAPS LOCK увімкнено.
-Натисніть клавішу пошуку або Shift, щоб скасувати.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Низ</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -136,6 +136,7 @@
 <translation id="4849058404725798627">Підсвічувати об’єкт, вибраний на клавіатурі</translation>
 <translation id="4872237917498892622">Alt+клавіша пошуку або Shift</translation>
 <translation id="4895488851634969361">Акумулятор заряджений.</translation>
+<translation id="4905614135390995787">Комбінація клавіш для керування режимом високого контрасту змінилася. Тепер це <ph name="NEW_SHORTCUT" />, а не <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Прийняти</translation>
 <translation id="4961318399572185831">Трансляція екрана</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@
 <translation id="5744083938413354016">Перетягування дотиком</translation>
 <translation id="5777841717266010279">Скасувати спільний доступ до екрана?</translation>
 <translation id="57838592816432529">Вимкнути звук</translation>
+<translation id="5860033963881614850">Вимк.</translation>
 <translation id="5895138241574237353">Перезапустити</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">Увімкнути</translation>
 <translation id="5927132638760172455">Трансляція на невідомий приймач</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Повернути</translation>
@@ -169,8 +172,8 @@
 <translation id="5977415296283489383">Навушники</translation>
 <translation id="5978382165065462689">Спільний доступ до екрана через віддалену допомогу.</translation>
 <translation id="5980301590375426705">Завершити сеанс у режимі гостя</translation>
+<translation id="5992218262414051481">Увімкнено режим високого контрасту. Щоб вимкнути його, знову натисніть Ctrl+Search+H.</translation>
 <translation id="6018164090099858612">Вихід із режиму віддзеркалення</translation>
-<translation id="6041154455840261787">Увімкнено режим високого контрасту. Щоб вимкнути його, знову натисніть Search+Shift+H.</translation>
 <translation id="6043212731627905357">Ваш пристрій <ph name="DEVICE_TYPE" /> не підтримує цей монітор.</translation>
 <translation id="6043994281159824495">Вийти зараз</translation>
 <translation id="6047696787498798094">Якщо змінити користувача, спільний доступ до екрана буде скасовано. Продовжити?</translation>
@@ -195,6 +198,7 @@
 <translation id="6585808820553845416">Сеанс закінчиться через <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">Пристрою Bluetooth "<ph name="DEVICE_NAME" />" потрібен дозвіл на підключення. Введіть на пристрої цей ключ доступу: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6700713906295497288">Кнопка меню IME</translation>
 <translation id="6713285437468012787">Пристрій Bluetooth "<ph name="DEVICE_NAME" />" підключено. Він доступний для всіх користувачів. Відключити пристрій можна в Налаштуваннях.</translation>
 <translation id="6785414152754474415">Акумулятор заряджений на <ph name="PERCENTAGE" />% і заряджається.</translation>
@@ -214,8 +218,7 @@
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Попередня роздільна здатність повернеться через <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">Клавішу CAPS LOCK увімкнено.
-Натисніть Alt+клавішу пошуку або Shift, щоб скасувати.</translation>
+<translation id="7199454189089571166">Режим Помічника</translation>
 <translation id="7246339268451149667">Увімкнути розблокування відбитком пальця?</translation>
 <translation id="7256634071279256947">Мікрофон на задній панелі</translation>
 <translation id="7348093485538360975">Екранна клавіатура</translation>
@@ -233,10 +236,10 @@
 <translation id="7649070708921625228">Довідка</translation>
 <translation id="7692480393933218409">Заряджає пристрої, під’єднанї до порту USB-C</translation>
 <translation id="776344839111254542">Натисніть, щоб переглянути деталі оновлення</translation>
+<translation id="7798302898096527229">Щоб скасувати, натисніть клавішу Search або Shift.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> і <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Після синхронізації налаштувань мову змінено. Попередня: <ph name="FROM_LOCALE" />, нова: <ph name="TO_LOCALE" />.</translation>
 <translation id="7904094684485781019">Адміністратор цього облікового запису заборонив паралельний вхід.</translation>
-<translation id="7951523953736115461">Нічний режим</translation>
 <translation id="7977927628060636163">Пошук мобільних мереж…</translation>
 <translation id="7982789257301363584">Мережа</translation>
 <translation id="8000066093800657092">Немає мережі</translation>
@@ -255,6 +258,7 @@
 <translation id="8433977262951327081">Комбінація клавіш для виклику спливаючої підказки з опціями введення змінилась. Тепер це <ph name="NEW_SHORTCUT" />, а не <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Wi-Fi увімкнено.</translation>
 <translation id="847056008324733326">Налаштування масштабу дисплея</translation>
+<translation id="8477270416194247200">Щоб скасувати, натисніть Alt+Search або Shift.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: під’єднання…</translation>
 <translation id="8517041960877371778">Пристрій <ph name="DEVICE_TYPE" /> може не заряджатися, коли він увімкнений.</translation>
 <translation id="8639760480004882931">Залишилося <ph name="PERCENTAGE" /></translation>

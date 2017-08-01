@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">Maksimumkan</translation>
 <translation id="1413622004203049571">Lumpuhkan pemberitahuan daripada <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minit dan }other{# minit dan }}</translation>
+<translation id="1643823602425662293">Pemberitahuan</translation>
 <translation id="1685967565548146460">Topi</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minit}other{# minit}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">lompat</translation>
 <translation id="4250229828105606438">Tangkapan skrin</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 bulan yang lalu}other{# bulan yang lalu}}</translation>
+<translation id="4316910396681052118">SEMUA APL</translation>
 <translation id="4320177379694898372">Tiada sambungan Internet</translation>
 <translation id="4588090240171750605">Tatal ke Kanan</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Berbaki 1 bulan}other{Berbaki # bulan}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">Folder Tanpa Nama</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 saat}other{# saat}}</translation>
 <translation id="9150735707954472829">Tab</translation>
+<translation id="9161053988251441839">APL DISYORKAN</translation>
 <translation id="9170848237812810038">&amp;Buat asal</translation>
 <translation id="932327136139879170">Laman Utama</translation>
 </translationbundle>

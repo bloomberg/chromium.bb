@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">Büyüt</translation>
 <translation id="1413622004203049571"><ph name="NOTIFIER_NAME" /> bildirimlerini devre dışı bırak</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 dakika ve }other{# dakika ve }}</translation>
+<translation id="1643823602425662293">Bildirim</translation>
 <translation id="1685967565548146460">Hats</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 dakika}other{# dakika}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">git</translation>
 <translation id="4250229828105606438">Ekran görüntüsü</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 ay önce}other{# ay önce}}</translation>
+<translation id="4316910396681052118">TÜM UYGULAMALAR</translation>
 <translation id="4320177379694898372">İnternet bağlantısı yok</translation>
 <translation id="4588090240171750605">Sağa Kaydır</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 ay kaldı}other{# ay kaldı}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">Adsız Klasör</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 sn.}other{# sn.}}</translation>
 <translation id="9150735707954472829">Sekme</translation>
+<translation id="9161053988251441839">ÖNERİLEN UYGULAMALAR</translation>
 <translation id="9170848237812810038">&amp;Geri al</translation>
 <translation id="932327136139879170">Ana Sayfa</translation>
 </translationbundle>

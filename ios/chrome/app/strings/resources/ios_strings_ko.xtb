@@ -4,7 +4,6 @@
 <translation id="1016495303386450659">북마크가 업데이트되었습니다.</translation>
 <translation id="1047726139967079566">현재 페이지를 북마크에 추가...</translation>
 <translation id="1049743911850919806">시크릿</translation>
-<translation id="1073594902069885687">인증에 실패하여 비밀번호가 복사되지 않았습니다.</translation>
 <translation id="1076421457278169141">코드 스캔됨</translation>
 <translation id="1084365883616172403">Facebook 게시가 완료되었습니다.</translation>
 <translation id="1104948393051856124">동의 및 계속</translation>
@@ -34,9 +33,11 @@
 <translation id="1430915738399379752">인쇄</translation>
 <translation id="145015347812617860">항목 <ph name="COUNT" />개</translation>
 <translation id="1491277525950327607">설정을 전환하려면 두 번 탭하세요.</translation>
+<translation id="152234381334907219">저장되지 않음</translation>
 <translation id="1540800554400757039">주소 1</translation>
 <translation id="1545749641540134597">QR 코드 스캔</translation>
 <translation id="1580783302095112590">메일이 전송되었습니다.</translation>
+<translation id="1612730193129642006">탭 격자 보기</translation>
 <translation id="1646446875146297738">'추적 안함'을 사용 설정하면 요청이 탐색 트래픽에 포함됩니다. 웹사이트가 요청에 응답하는지 여부와 요청이 어떻게 해석되는가에 따라 결과가 달라집니다.
 
 예를 들어, 일부 웹사이트는 사용자의 웹사이트 방문 기록과 관계없는 광고를 표시하여 요청에 응답할 수 있습니다. 상당수의 웹사이트는 보안 강화, 웹사이트에 콘텐츠, 서비스, 광고 및 추천 정보 제공, 보고서 통계 생성 등과 같은 용도로 여전히 인터넷 사용 기록을 수집하고 이용합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
@@ -66,7 +67,6 @@
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />개 항목 이동함</translation>
 <translation id="2149973817440762519">북마크 수정</translation>
 <translation id="2230173723195178503">웹페이지 로드됨</translation>
-<translation id="2241634353105152135">한 번만</translation>
 <translation id="2267753748892043616">계정 추가</translation>
 <translation id="2273327106802955778">더보기 메뉴</translation>
 <translation id="2320166752086256636">키보드 숨기기</translation>
@@ -79,6 +79,7 @@
 <translation id="2572712655377361602">기기 정책으로 인해 사진 액세스가 차단되었습니다.</translation>
 <translation id="2584132361465095047">계정 추가...</translation>
 <translation id="2593774076813182497">이 페이지는 인쇄할 수 없습니다.</translation>
+<translation id="2625189173221582860">비밀번호 복사됨</translation>
 <translation id="2648803196158606475">읽은 항목 삭제</translation>
 <translation id="2653659639078652383">제출</translation>
 <translation id="2684815431982545828">새 탭</translation>
@@ -120,6 +121,7 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" />/<ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">열린 탭</translation>
+<translation id="3277021493514034324">사이트 주소가 복사되었습니다.</translation>
 <translation id="3324193307694657476">주소 2</translation>
 <translation id="3329904751041170572">서버에 연결하지 못했습니다.</translation>
 <translation id="3335947283844343239">닫은 탭 다시 열기</translation>
@@ -132,7 +134,6 @@
 <translation id="3474649192738347024">양식 작성이 완료되었습니다.</translation>
 <translation id="3478058380795961209">만료 월</translation>
 <translation id="3482959374254649722">탭을 동기화하는 중...</translation>
-<translation id="3489372701259491571">저장된 비밀번호 삭제</translation>
 <translation id="3494788280727468875">인터넷 사용 기록 삭제 확인</translation>
 <translation id="3519193562722059437">새 탭을 열어 웹을 탐색하세요.</translation>
 <translation id="3527085408025491307">폴더</translation>
@@ -149,10 +150,8 @@
 <translation id="3638472932233958418">웹페이지 미리 로드하기</translation>
 <translation id="3691593122358196899">북마크를 <ph name="FOLDER_TITLE" />에 추가함</translation>
 <translation id="3738139272394829648">터치하여 검색</translation>
-<translation id="3742082982782149146">사이트 URL이 복사되었습니다.</translation>
 <translation id="3771033907050503522">시크릿 탭</translation>
 <translation id="3783017676699494206">이미지 저장</translation>
-<translation id="3789841737615482174">설치</translation>
 <translation id="385051799172605136">뒤로</translation>
 <translation id="3897092660631435901">메뉴</translation>
 <translation id="3928666092801078803">내 데이터 결합하기</translation>
@@ -164,7 +163,6 @@
 <translation id="4038354071007134711">파일을 열 수 있는 애플리케이션이 기기에 없습니다.</translation>
 <translation id="4049507953662678203">네트워크에 연결되었는지 확인한 후 다시 시도해 주세요.</translation>
 <translation id="411254640334432676">다운로드에 실패했습니다.</translation>
-<translation id="4117350985506774529">사용자 이름이 복사되었습니다.</translation>
 <translation id="4121993058175073134">순 내보내기 데이터를 전송하려면 설정 앱에서 이메일 계정을 설정하시기 바랍니다.</translation>
 <translation id="4124987746317609294">기간</translation>
 <translation id="4172051516777682613">항상 표시</translation>
@@ -187,7 +185,6 @@
 
 동기화 암호로 데이터가 암호화되어 있습니다. 동기화를 시작하려면 입력하세요.</translation>
 <translation id="473775607612524610">업데이트</translation>
-<translation id="4773461607542755386"><ph name="APP_NAME" /> 앱에서 이 페이지를 여시겠습니까?</translation>
 <translation id="481968316161811770">쿠키, 사이트 데이터</translation>
 <translation id="4860895144060829044">전화걸기</translation>
 <translation id="4875622588773761625"><ph name="PASSWORD_MANAGER_BRAND" />에서 이 사이트의 비밀번호를 업데이트하도록 하시겠습니까?</translation>
@@ -215,6 +212,7 @@
 <translation id="5327248766486351172">이름</translation>
 <translation id="5388358297987318779">이미지 열기</translation>
 <translation id="5409365236829784218">이 파일을 열 수 있는 애플리케이션이 설치되어 있지 않습니다.</translation>
+<translation id="5433691172869980887">사용자 이름 복사됨</translation>
 <translation id="54401264925851789">페이지 보안 정보</translation>
 <translation id="5525269841082836315">암호 만들기</translation>
 <translation id="5531274207066050939">Google Payments</translation>
@@ -264,6 +262,7 @@
 <translation id="6196207969502475924">음성 검색</translation>
 <translation id="6254066287920239840">브라우저 대신 앱에서 링크 열기</translation>
 <translation id="6255097610484507482">신용카드 수정</translation>
+<translation id="6273258929211277933"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" />, <ph name="STATE" /></translation>
 <translation id="6308436439357671616">액세스를 허용하면 사진을 찍고 업로드할 수 있습니다.</translation>
 <translation id="6314335155547195432">비밀번호 생성</translation>
 <translation id="6324528485781869530">동기화 계정 전환</translation>
@@ -290,7 +289,6 @@
 <translation id="6570040839871198836">양식 자동완성</translation>
 <translation id="6656103420185847513">폴더 수정</translation>
 <translation id="6657585470893396449">비밀번호</translation>
-<translation id="666731172850799929"><ph name="APP_NAME" />에서 열기</translation>
 <translation id="667999046851023355">문서</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6762156594045689028">이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />합니다.</translation>
@@ -317,6 +315,7 @@
 <translation id="7189598951263744875">공유...</translation>
 <translation id="7203585745079012652">음성 응답</translation>
 <translation id="722055596168483966">Google 서비스 맞춤설정</translation>
+<translation id="7272437679830969316">신원을 인증할 수 없습니다. 비밀번호가 복사되지 않았습니다.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />% 다운로드됨</translation>
 <translation id="7346909386216857016">확인</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -356,7 +355,6 @@
 <translation id="806745655614357130">내 데이터 별도로 유지</translation>
 <translation id="8076014560081431679">저장된 사이트 설정은 삭제되지 않으며 인터넷 사용 습관이 반영될 수 있습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">탭 모두 닫기</translation>
-<translation id="8108697784695284144">비밀번호가 복사되었습니다.</translation>
 <translation id="8137558756159375272">터치하여 검색에서 선택한 단어와 현재 페이지를 Google 검색에 컨텍스트로 발송하세요. <ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 이 기능을 사용 중지할 수 있습니다.</translation>
 <translation id="8205564605687841303">취소</translation>
 <translation id="8225985093977202398">캐시된 이미지 및 파일</translation>
@@ -364,6 +362,7 @@
 <translation id="8272426682713568063">신용카드</translation>
 <translation id="8281781826761538115">기본값 - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">Google이 검색, 광고 및 다른 Google 서비스를 맞춤설정하기 위하여 내 인터넷 사용 기록을 사용하는 방법을 제어하세요.</translation>
+<translation id="842017693807136194">다음을 사용하여 로그인함</translation>
 <translation id="8428045167754449968">시/군/구</translation>
 <translation id="8428213095426709021">설정</translation>
 <translation id="8433678324664858900">추천 보기</translation>
@@ -388,6 +387,7 @@
 <translation id="8775144690796719618">URL이 올바르지 않습니다.</translation>
 <translation id="8820817407110198400">북마크</translation>
 <translation id="8840513115188359703">Google 계정에서 로그아웃되지 않습니다.</translation>
+<translation id="8881801611828450202"><ph name="SEARCH_ENGINE" />에서 이 이미지 검색</translation>
 <translation id="8904976895050290827">크롬 동기화</translation>
 <translation id="895541991026785598">문제 신고</translation>
 <translation id="8971089644512329999">확인</translation>
@@ -406,6 +406,7 @@
 <translation id="9188680907066685419">관리 계정에서 로그아웃</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">비정상 종료 보고서 전송 완료</translation>
+<translation id="932327136139879170">홈</translation>
 <translation id="935490618240037774">북마크, 방문 기록, 비밀번호, 기타 설정이 Google 계정에 동기화되므로 모든 기기에서 사용할 수 있습니다.</translation>
 <translation id="939598580284253335">암호 입력</translation>
 <translation id="976982866697960176">동기화된 데이터 관리…</translation>

@@ -51,13 +51,6 @@
       Se questa norma non viene impostata, la frequenza predefinita è pari a tre ore. La frequenza minima consentita è pari a 60 secondi.</translation>
 <translation id="1221359380862872747">Carica gli URL specificati all'accesso demo</translation>
 <translation id="1265053460044691532">Limita il tempo per cui un utente autenticato tramite SAML può eseguire l'accesso offline</translation>
-<translation id="127699919157094139">Consente di disattivare la sincronizzazione dei dati in <ph name="PRODUCT_NAME" /> tramite i servizi di sincronizzazione ospitati da Google e impedisce agli utenti di modificare questa impostazione.
-
-      Se questa impostazione viene attivata, gli utenti non possono modificare o eseguire l'override dell'impostazione in <ph name="PRODUCT_NAME" />.
-
-      Se la norma non viene impostata, l'utente può scegliere se utilizzare Google Sync o meno.
-
-      Per disattivare completamente Google Sync, si consiglia di disabilitare il servizio Google Sync nella Console di amministrazione di Google.</translation>
 <translation id="1291880496936992484">Avviso. RC4 sarà rimosso completamente da <ph name="PRODUCT_NAME" /> dopo la versione 52 (nel periodo di settembre 2016), dopodiché questa norma non sarà più attiva.
 
       Se la norma non viene impostata o se viene impostata su false, i pacchetti di crittografia RC4 in TLS non saranno attivati. In alternativa, la norma può essere impostata su true per mantenere la compatibilità con un server obsoleto. Si tratta di una soluzione temporanea ed è necessario configurare nuovamente il server.</translation>
@@ -487,6 +480,11 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 
       Non impostare questa norma equivale ad attivarla; leggere la descrizione precedente.</translation>
 <translation id="285480231336205327">Attiva modalità ad alto contrasto</translation>
+<translation id="2854919890879212089">Consente di impostare in <ph name="PRODUCT_NAME" /> l'uso della stampante predefinita del sistema, anziché della stampante usata più di recente, come opzione predefinita della finestra Anteprima di stampa.
+
+      Se disattivi o non configuri questa impostazione, in Anteprima di stampa viene indicata la stampante utilizzata più di recente come destinazione predefinita.
+
+      Se attivi questa impostazione, in Anteprima di stampa viene usata la stampante predefinita del sistema operativo come destinazione predefinita.</translation>
 <translation id="2872961005593481000">Spegni</translation>
 <translation id="2874209944580848064">Nota per i dispositivi <ph name="PRODUCT_OS_NAME" /> che supportano le app Android:</translation>
 <translation id="2877225735001246144">Disabilita ricerca CNAME durante la negoziazione con Kerberos</translation>
@@ -933,6 +931,7 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
 
           Per impostazione predefinita, gli utenti riceveranno un avviso, e non un errore, se il PIN è considerato non sicuro.</translation>
 <translation id="4723829699367336876">Abilita attraversamento firewall da client di accesso remoto</translation>
+<translation id="4725123658714754485">Consente di stabilire se riferire o meno le metriche sull'utilizzo e i dati diagnostici, inclusi i rapporti sugli arresti anomali, a Google. Se la norma viene impostata su true, <ph name="PRODUCT_OS_NAME" /> riferirà le metriche sull'utilizzo e i dati diagnostici. Se non viene configurata o viene impostata su false, i rapporti sulle metriche e sui dati diagnostici verranno disattivati.</translation>
 <translation id="4725528134735324213">Attiva Android Backup Service</translation>
 <translation id="4733471537137819387">Norme relative all'autenticazione HTTP integrata.</translation>
 <translation id="4744190513568488164">Server a cui <ph name="PRODUCT_NAME" /> potrebbe delegare le credenziali utente.
@@ -1401,6 +1400,11 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6689792153960219308">Segnala lo stato dell'hardware</translation>
 <translation id="6693751878507293182">Se attivi questa impostazione, la ricerca automatica e l'installazione dei plug-in mancanti verranno disattivate in <ph name="PRODUCT_NAME" />. Se disattivi questa opzione o non la imposti, la funzione di ricerca dei plug-in sarà attiva.</translation>
 <translation id="6699880231565102694">Abilita autenticazione a due fattori per gli host di accesso remoto</translation>
+<translation id="6724842112053619797">Se attivi questa impostazione, le impostazioni memorizzate nei profili <ph name="PRODUCT_NAME" />, come i preferiti, i dati della compilazione automatica, le password e così via, saranno scritte anche in un file memorizzato nella cartella del profilo utente Roaming o in una posizione specificata dall'amministratore tramite la norma <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Se si attiva questa norma, viene disattivata la sincronizzazione nella cloud.
+
+      Se questa norma viene disattivata o non viene impostata, saranno utilizzati solo i normali profili locali.
+
+      La norma <ph name="SYNC_DISABLED_POLICY_NAME" /> consente di disattivare la sincronizzazione di tutti i dati e sostituisce la norma RoamingProfileSupportEnabled.</translation>
 <translation id="6757438632136860443">Consente di impostare un elenco di pattern URL che specificano i siti che possono eseguire il plug-in <ph name="FLASH_PLUGIN_NAME" />.
 
           Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultPluginsSetting", se impostata, oppure la configurazione personale dell'utente..</translation>
@@ -1446,6 +1450,13 @@ Se la norma non viene configurata, la lettura vocale viene inizialmente disattiv
 <translation id="6943577887654905793">Nome di preferenza per Mac/Linux:</translation>
 <translation id="69525503251220566">Parametro che fornisce la funzione di ricerca tramite immagine per il provider di ricerca predefinito</translation>
 <translation id="6956272732789158625">Non consentire a nessun sito di utilizzare la generazione di chiavi</translation>
+<translation id="6994082778848658360">Consente di specificare in che modo è possibile usare l'hardware degli elementi di sicurezza su scheda per fornire l'autenticazione a due fattori, se compatibile con questa funzione. Il tasto di accensione del computer viene usato per rilevare la presenza fisica dell'utente.
+
+       Se selezioni l'opzione "Disabilitata", non viene fornita l'autenticazione a due fattori.
+
+      Se selezioni l'opzione "U2F", il funzionamento dell'autenticazione a due fattori integrata dipenderà dalla specifica FIDO U2F.
+
+      Se selezioni l'opzione "U2F_EXTENDED", l'autenticazione a due fattori integrata fornirà le funzioni U2F più alcune estensioni per la singola attestazione.</translation>
 <translation id="6997592395211691850">Se i controlli OCSP/CRL online sono obbligatori o meno per i trust anchor locali</translation>
 <translation id="7003334574344702284">Se è attiva, questa norma impone l'importazione delle password salvate dal browser predefinito precedente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, le password salvate non vengono importate. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="7003746348783715221">Preferenze di <ph name="PRODUCT_NAME" /></translation>
@@ -1632,7 +1643,6 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
 <translation id="7713608076604149344">Limitazioni dei download</translation>
 <translation id="7715711044277116530">Percentuale di regolazione del ritardo di oscuramento dello schermo in modalità di presentazione</translation>
 <translation id="7717938661004793600">Configura le funzioni di accessibilità di <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7719251660743813569">Consente di stabilire se riferire o meno le metriche sull'utilizzo a Google. Se la norma viene impostata su true, <ph name="PRODUCT_OS_NAME" /> riferirà le metriche sull'utilizzo. Se non viene configurata o viene impostata su false, i rapporti sulle metriche verranno disattivati.</translation>
 <translation id="7724994675283793633">La norma consente di attivare HTTP/0.9 sulle porte diverse da 80 per HTTP e 443 per HTTPS.
 
       Per impostazione predefinita, la norma è disattivata e, se attivata, espone gli utenti al problema di sicurezza https://crbug.com/600352.
@@ -1928,6 +1938,15 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="891435090623616439">codificato sotto forma di stringa JSON; per informazioni dettagliate, visita la pagina <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Segnala posizione del dispositivo</translation>
 <translation id="8951350807133946005">Impostazione directory della cache su disco</translation>
+<translation id="8952317565138994125">Consente di disattivare la sincronizzazione dei dati in <ph name="PRODUCT_NAME" /> tramite servizi di sincronizzazione in hosting su Google e di impedire agli utenti di modificare questa impostazione.
+
+      Se attivi questa impostazione, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME" />.
+
+      Se questa norma non viene impostata, gli utenti potranno scegliere se utilizzare o meno Google Sync.
+
+      Per disattivare completamente Google Sync, si consiglia di disattivare il servizio Google Sync nella Console amministrazione Google.
+
+      Questa norma non deve essere attivata quando la norma <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> è attiva, perché tale funzione ha la stessa funzionalità lato client. La sincronizzazione in hosting su Google viene completamente disattivata in questo caso.</translation>
 <translation id="8955719471735800169">Torna all'inizio</translation>
 <translation id="8960850473856121830">I pattern di questo elenco verranno confrontati con l'origine di sicurezza dell'URL richiedente. Se viene trovata una corrispondenza, l'accesso ai dispositivi di acquisizione audio viene concesso senza richieste.
 
@@ -1935,6 +1954,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="8970205333161758602">Eliminazione del messaggio di richiesta di turndown di <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Timer accesso automatico a sessione pubblica</translation>
 <translation id="8976248126101463034">Consenti l'autenticazione Gnubby per gli host di accesso remoto</translation>
+<translation id="8976531594979650914">Usa stampante di sistema come predefinita</translation>
 <translation id="8992176907758534924">Non consentire la visualizzazione di immagini nei siti</translation>
 <translation id="9035964157729712237">ID delle estensioni da escludere dalla blacklist</translation>
 <translation id="9042911395677044526">Consente di forzare l'applicazione della configurazione di rete per utente su un dispositivo <ph name="PRODUCT_OS_NAME" />. La configurazione di rete è una stringa in formato JSON definita secondo il formato Open Network Configuration descritto all'indirizzo <ph name="ONC_SPEC_URL" />.</translation>

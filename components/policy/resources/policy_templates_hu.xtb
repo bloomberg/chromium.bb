@@ -54,13 +54,6 @@
       A legkisebb megengedett gyakoriság hatvan másodperc.</translation>
 <translation id="1221359380862872747">Megadott URL-ek betöltése a Demó módban való bejelentkezésnél</translation>
 <translation id="1265053460044691532">Azon időtartam korlátozása, amennyit egy SAML révén hitelesített felhasználó offline bejelentkezve eltölthet</translation>
-<translation id="127699919157094139">Tiltja az adatok szinkronizálását a Google szinkronizálási szolgáltatásainak segítségével a(z) <ph name="PRODUCT_NAME" /> alkalmazásban, valamint megakadályozza, hogy a felhasználók módosítsák ezt a beállítást.
-
-      Ha engedélyezi ezt a beállítást, a felhasználók nem módosíthatják, illetve nem írhatják felül a(z) <ph name="PRODUCT_NAME" /> ezen beállítását.
-
-      Ha ez a házirend beállítatlanul marad, akkor a felhasználó dönthet arról, hogy kívánja-e használni a Google Sync szolgáltatást.
-
-      A Google Sync teljes kikapcsolásához javasoljuk, hogy kapcsolja ki a Google Sync szolgáltatást a Google Felügyeleti konzolban.</translation>
 <translation id="1291880496936992484">Figyelem: az RC4 teljes mértékben eltávolításra kerül a <ph name="PRODUCT_NAME" /> 52-es verziója után (2016 szeptembere körül), és ez a házirend onnantól kezdve nem lesz használható.
 
       Ha a házirend nincs beállítva, illetve értéke hamis, akkor a TLS protokoll RC4 rejtjelezési csomagjai nem lesznek engedélyezve. Igaz értékre állítva megmarad a kompatibilitás az elavult szerverekkel. Ez átmeneti intézkedés, a szervert újra kell konfigurálni.</translation>
@@ -503,6 +496,11 @@
 
       Ha nem határozza meg ezt a beállítást, az ugyanolyan, mintha aktiválná (lásd feljebb).</translation>
 <translation id="285480231336205327">Nagy kontrasztú mód engedélyezése</translation>
+<translation id="2854919890879212089">Azt eredményezi, hogy a(z) <ph name="PRODUCT_NAME" /> a rendszer alapértelmezett nyomtatóját használja alapértelmezett választásként a nyomtatási előnézetben a legutóbb használt nyomtató helyett.
+
+      Ha letiltja ezt a beállítást, illetve nem adja meg az értékét, a nyomtatási előnézet a legutóbb használt nyomtatót választja ki alapértelmezettként.
+
+      Ha engedélyezi ezt a beállítást, a nyomtatási előnézet az operációs rendszer alapértelmezett nyomtatóját használja alapértelmezettként.</translation>
 <translation id="2872961005593481000">Leállítás</translation>
 <translation id="2874209944580848064">Megjegyzés az Android-alkalmazásokat támogató <ph name="PRODUCT_OS_NAME" /> rendszerű eszközökhöz:</translation>
 <translation id="2877225735001246144">CNAME keresés tiltása a Kerberos hitelesítési tárgyalások során</translation>
@@ -955,6 +953,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
           Alapértelmezés szerint gyengének minősülő PIN-kódok esetén csak figyelmeztetjük a felhasználókat, és nem kapnak hibaüzenetet.</translation>
 <translation id="4723829699367336876">Engedélyezze a tűzfalon való átjárást a távoli ügyfelek felől</translation>
+<translation id="4725123658714754485">Beállítja, hogy kapjon-e a Google jelentést a használati statisztikákról és diagnosztikai adatokról (például összeomlási jelentéseket). Ha az értéke igaz, akkor a(z) <ph name="PRODUCT_OS_NAME" /> jelenti a használati statisztikákat és diagnosztikai adatokat. Ha nincs beállítva, vagy a beállítás hamis, akkor a rendszer letiltja a használati statisztikák és diagnosztikai adatok jelentését.</translation>
 <translation id="4725528134735324213">Az Android Backup Service engedélyezése</translation>
 <translation id="4733471537137819387">Az integrált HTTP-hitelesítéssel kapcsolatos szabályok.</translation>
 <translation id="4744190513568488164">Szerverek, amelyekre a <ph name="PRODUCT_NAME" /> delegálhat.
@@ -1432,6 +1431,11 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6689792153960219308">Hardverállapot jelentése</translation>
 <translation id="6693751878507293182">Ha engedélyezi ezt a beállítást, akkor azzal letiltja a hiányzó bővítmények automatikus keresését és telepítését a következőben: <ph name="PRODUCT_NAME" />. Ha nem engedélyezi, illetve konfigurálatlanul hagyja ezt a beállítást, akkor a bővítménykereső aktiválódik.</translation>
 <translation id="6699880231565102694">A kétlépcsős azonosítás engedélyezése távoli hozzáférésű gazdagépekhez</translation>
+<translation id="6724842112053619797">Ha engedélyezi ezt a beállítást, a rendszer a(z) <ph name="PRODUCT_NAME" />-profilokban tárolt beállításokat (például könyvjelzők, automatikus kitöltési adatok, jelszavak stb.) a Barangoló felhasználói profil mappájában, illetve a rendszergazda által, a(z) <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> házirendnek megfelelően megadott helyen tárolt fájlba is beírja. A házirend engedélyezésével letiltja a felhőalapú szinkronizálást.
+
+      Ha a házirend le van tiltva, vagy ha nincs beállítva, a rendszer kizárólag a normál helyi profilokat használja.
+
+      A(z) <ph name="SYNC_DISABLED_POLICY_NAME" /> házirend letilt minden adatszinkronizálást, felülbírálva a RoamingProfileSupportEnabled házirendet.</translation>
 <translation id="6757438632136860443">Lehetővé teszi URL-minták olyan listájának megadását, amely meghatározza, hogy mely webhelyek futtathatják a(z) <ph name="FLASH_PLUGIN_NAME" /> beépülő modult.
 
           Ha nem állítja be ezt a házirendet, akkor a böngésző valamennyi webhelyre vonatkozóan a globális alapértelmezett értéket használja a „DefaultPluginsSetting” házirend (ha be van állítva) vagy a felhasználó személyes konfigurációja alapján.</translation>
@@ -1477,6 +1481,13 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6943577887654905793">Mac/Linux preferencia neve:</translation>
 <translation id="69525503251220566">Paraméter az alapértelmezett keresési szolgáltatóval végezhető képalapú keresési funkció biztosításához</translation>
 <translation id="6956272732789158625">A kulcsgenerálás használatának letiltása minden webhelyen</translation>
+<translation id="6994082778848658360">Meghatározza, hogyan használható az integrált biztonságos hardverelem a kétlépcsős azonosítás biztosítására, amennyiben kompatibilis ezzel a funkcióval. A készülék bekapcsológombja használható a felhasználó fizikai jelenlétének észlelésére.
+
+      A „Letiltva” érték kiválasztása esetén nincs használatban kétlépcsős azonosítás.
+
+      Az „U2F” kiválasztása esetén az integrált kétlépcsős azonosítás a FIDO U2F specifikációk szerint viselkedik.
+
+      Az „U2F_EXTENDED” kiválasztása esetén az integrált kétlépcsős azonosítás biztosítja az U2F-funkciókat, továbbá néhány bővítményt az egyéni hitelesítéshez.</translation>
 <translation id="6997592395211691850">Szükség van-e online OCSP- vagy CRL-ellenőrzésekre a helyi megbízhatósági kapcsolatok alapjainál</translation>
 <translation id="7003334574344702284">Ez a házirend engedélyezése esetén kikényszeríti a mentett jelszavak importálását a jelenlegi alapértelmezett böngészőből. Bekapcsolása esetén a házirend az importálás párbeszédpanelére is hatással van. Letiltása esetén a mentett jelszavak importálása nem történik meg. Ha nincs beállítva, akkor előfordulhat, hogy a rendszer a felhasználótól kérdezi meg, hogy megtörténjen-e az importálás, vagy hogy lehet-e automatikus az importálás.</translation>
 <translation id="7003746348783715221">A <ph name="PRODUCT_NAME" /> beállításai</translation>
@@ -1664,7 +1675,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="7713608076604149344">Letöltési korlátozások</translation>
 <translation id="7715711044277116530">Az a százalék, amellyel a képernyő-sötétedési késleltetés skálázódik prezentációs módban</translation>
 <translation id="7717938661004793600">A <ph name="PRODUCT_OS_NAME" /> kisegítő funkcióinak konfigurálása.</translation>
-<translation id="7719251660743813569">Beállítja, hogy a használati mutatókat jelentse-e a szolgáltatás a Google-nak. Ha az értéke igaz, akkor a(z) <ph name="PRODUCT_OS_NAME" /> jelenti a felhasználói mutatókat. Ha nincs beállítva, vagy a beállítás hamis, akkor a rendszer letiltja a mutató jelentését.</translation>
 <translation id="7724994675283793633">Ez a házirend a HTTP/0.9 protokoll használatát más portokon is engedélyezi a HTTP 80-as és a HTTPS 443-as portja mellett.
 
       Ez a házirend alapértelmezés szerint le van tiltva, és engedélyezése esetén a felhasználók ki lesznek téve a következő biztonsági problémának: https://crbug.com/600352.
@@ -1971,6 +1981,15 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="891435090623616439">JSON-karakterláncként kódolva; a részletekért lásd: <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Eszköz helyének jelentése</translation>
 <translation id="8951350807133946005">A lemez gyorsítótár-könyvtárának beállítása</translation>
+<translation id="8952317565138994125">Letiltja az adatok szinkronizálását a Google által tárolt szinkronizálási szolgáltatások segítségével a(z) <ph name="PRODUCT_NAME" /> alkalmazásban, valamint megakadályozza, hogy a felhasználók módosítsák ezt a beállítást.
+
+      Ha engedélyezi ezt a beállítást, a felhasználók nem módosíthatják és nem írhatják felül a(z) <ph name="PRODUCT_NAME" /> beállítását.
+
+      Ha ez a házirend beállítatlanul marad, akkor a felhasználó dönthet arról, hogy kívánja-e használni a Google Sync szolgáltatást.
+
+      A Google Sync teljes kikapcsolásához javasoljuk, hogy kapcsolja ki a Google Sync szolgáltatást a Google Felügyeleti Konzolban.
+
+      Ne engedélyezze ezt a házirendet, ha engedélyezve van a(z) <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> házirend, ugyanis a két funkció ugyanazt az ügyféloldali funkciót kezeli. A Google által tárolt szinkronizálás ebben az esetben teljesen le van tiltva.</translation>
 <translation id="8955719471735800169">Vissza az oldal tetejére</translation>
 <translation id="8960850473856121830">A listában szereplő mintákat a böngésző egyezteti a kérelmező URL
       biztonsági eredetével. Egyezés esetén a hangrögzítő
@@ -1980,6 +1999,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="8970205333161758602">A(z) <ph name="PRODUCT_FRAME_NAME" /> kikapcsolási figyelmeztetésének elrejtése</translation>
 <translation id="8971221018777092728">Nyilvános munkamenet automatikus bejelentkezési időzítője</translation>
 <translation id="8976248126101463034">Gnubby hitelesítés engedélyezése a távoli hitelesítésű gazdagépeknél</translation>
+<translation id="8976531594979650914">A rendszer alapértelmezett nyomtatójának használata alapértelmezettként</translation>
 <translation id="8992176907758534924">Egy webhely sem jeleníthet meg képeket</translation>
 <translation id="9035964157729712237">A feketelista alól kivételt képező bővítményazonosítók.</translation>
 <translation id="9042911395677044526">Lehetővé teszi a hálózati konfiguráció push módszerrel történő alkalmazását <ph name="PRODUCT_OS_NAME" /> eszközre. A hálózati konfiguráció a JSON formátumú karakterlánc által meghatározott Open Network Configuration formában leírt karakterlánc, amely a következő helyen van meghatározva: <ph name="ONC_SPEC_URL" /></translation>

@@ -32,7 +32,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1966382378801805537">Chromium nemůže určit ani nastavit výchozí prohlížeč</translation>
 <translation id="1967743265616885482">O modulu se stejným názvem je známo, že u něj dochází ke konfliktu s prohlížečem Chromium.</translation>
 <translation id="2008474315282236005">Z tohoto zařízení bude smazána 1 položka. Budete-li chtít své údaje později načíst, přihlaste se do prohlížeče Chromium jako <ph name="USER_EMAIL" />.</translation>
-<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Touto akcí z tohoto zařízení trvale smažete minimálně $1 položku. Budete-li chtít své údaje později načíst, přihlaste se do prohlížeče Chromium jako $2.}few{Touto akcí z tohoto zařízení trvale smažete minimálně $1 položky. Budete-li chtít své údaje později načíst, přihlaste se do prohlížeče Chromium jako $2.}many{Touto akcí z tohoto zařízení trvale smažete minimálně $1 položky. Budete-li chtít své údaje později načíst, přihlaste se do prohlížeče Chromium jako $2.}other{Touto akcí z tohoto zařízení trvale smažete minimálně $1 položek. Budete-li chtít své údaje později načíst, přihlaste se do prohlížeče Chromium jako $2.}}</translation>
 <translation id="2077129598763517140">V případě dostupnosti použít hardwarovou akceleraci</translation>
 <translation id="2119636228670142020">O systému &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Chromium OS – licence open source</translation>
@@ -83,7 +82,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="3549345495227188780">Začínáme se systémem Chromium OS</translation>
 <translation id="3582788516608077514">Aktualizace prohlížeče Chromium...</translation>
 <translation id="358997566136285270">Logo Chromium</translation>
-<translation id="3645040538872234961">Tímto z tohoto zařízení trvale smažete své údaje o prohlížení. Budete-li chtít své údaje později načíst, přihlaste se do prohlížeče Chromium jako $2.</translation>
 <translation id="3738139272394829648">Vyhledání klepnutím</translation>
 <translation id="3762167353400286894">Chromium OS se zobrazuje v tomto jazyce</translation>
 <translation id="378917192836375108">Chromium umožňuje kliknout na telefonní číslo na webu a volat na něj prostřednictvím aplikace Skype.</translation>
@@ -155,7 +153,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="59625444380784159">Podrobnosti vašich kontaktů vám mohou pomoci vyplňovat formuláře v prohlížeči Chromium rychleji.</translation>
 <translation id="5987687638152509985">Chcete-li zahájit synchronizaci, aktualizujte Chromium</translation>
 <translation id="6055895534982063517">K dispozici je nová verze prohlížeče Chromium, ještě rychlejší než ty předchozí.</translation>
-<translation id="6077017812234345835">Touto akcí z tohoto zařízení trvale smažete minimálně následující počet položek: <ph name="TOTAL_COUNT" />. Budete-li chtít své údaje později načíst, přihlaste se do prohlížeče Chromium jako $2.</translation>
 <translation id="608189560609172163">Přihlížeč Chromium vaše data nemohl synchronizovat, protože při přihlašování došlo k chybě.</translation>
 <translation id="6129621093834146363">Soubor <ph name="FILE_NAME" /> je nebezpečný, proto jej prohlížeč Chromium zablokoval.</translation>
 <translation id="6212496753309875659">V tomto počítači je již nainstalována novější verze prohlížeče Chromium. Jestliže tento software nefunguje, odinstalujte Chromium a zkuste to znovu.</translation>
@@ -192,7 +189,6 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 <translation id="705851970750939768">Aktualizovat Chromium</translation>
 <translation id="7066436765290594559">Chromium OS vaše data nemohl synchronizovat. Aktualizujte prosím heslovou frázi pro synchronizaci.</translation>
 <translation id="707471633328071618">Google Payments (zkopírováno do prohlížeče Chromium)</translation>
-<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{Touto akcí z tohoto zařízení trvale smažete $1 položku. Budete-li chtít své údaje později načíst, přihlaste se do prohlížeče Chromium jako $2.}few{Touto akcí z tohoto zařízení trvale smažete $1 položky. Budete-li chtít své údaje později načíst, přihlaste se do prohlížeče Chromium jako $2.}many{Touto akcí z tohoto zařízení trvale smažete $1 položky. Budete-li chtít své údaje později načíst, přihlaste se do prohlížeče Chromium jako $2.}other{Touto akcí z tohoto zařízení trvale smažete $1 položek. Budete-li chtít své údaje později načíst, přihlaste se do prohlížeče Chromium jako $2.}}</translation>
 <translation id="7138853919861947730">Chromium vám může usnadnit prohlížení pomocí webových služeb.</translation>
 <translation id="7162152143154757523">Chromium může poskytovat lepší kontrolu pravopisu tím, že text zadaný do prohlížeče odešle na servery Google. Umožňuje vám tak používat stejnou technologii kontroly pravopisu, jakou používá Vyhledávání Google.</translation>
 <translation id="7196020411877309443">Proč je zobrazeno toto dialogové okno?</translation>
@@ -214,7 +210,6 @@ Abyste uživateli <ph name="NEW_PROFILE_NAME" /> zabránili v přístupu k va�
 <ph name="BEGIN_LINK_2" />Další informace<ph name="END_LINK_2" />
 
 Další pokyny naleznete v e-mailu ve svém účtu <ph name="ACCOUNT_EMAIL" />.</translation>
-<translation id="7421823331379285070">Chromium vyžaduje operační systém Windows XP nebo novější. Některé funkce možná nebudou dostupné.</translation>
 <translation id="7473891865547856676">Ne, děkuji</translation>
 <translation id="7483335560992089831">Nelze nainstalovat verzi prohlížeče Chromium, která je právě spuštěná. Ukončete prohlížeč Chromium a zkuste to znovu.</translation>
 <translation id="7549178288319965365">O systému Chromium OS</translation>
@@ -225,6 +220,7 @@ Další pokyny naleznete v e-mailu ve svém účtu <ph name="ACCOUNT_EMAIL" />.
 <translation id="7729447699958282447">Prohlížeč Chromium nemůže synchronizovat data, protože ve vaší doméně není k dispozici Synchronizace.</translation>
 <translation id="7745317241717453663">Ze zařízení budou smazány vaše údaje o prohlížení. Budete-li chtít své údaje později načíst, přihlaste se do prohlížeče Chromium jako <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Instalační soubor nemohl vytvořit dočasný adresář. Zkontrolujte prosím volné místo na disku a povolení instalovat software.</translation>
+<translation id="7756122083761163394">Ze zařízení budou smazány údaje této osoby o prohlížení. Chcete-li tyto údaje znovu získat, přihlaste se do Chromu jako $2.</translation>
 <translation id="7937630085815544518">K prohlížeči Chromium jste byli přihlášeni s účtem <ph name="USER_EMAIL_ADDRESS" />. Přihlaste se prosím znovu pomocí stejného účtu.</translation>
 <translation id="795025003224538582">Nerestartovat</translation>
 <translation id="7962572577636132072">Prohlížeč Chromium se automaticky aktualizuje, abyste vždy měli k dispozici nejnovější verzi.</translation>

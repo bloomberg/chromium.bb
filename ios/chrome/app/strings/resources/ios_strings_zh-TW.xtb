@@ -4,7 +4,6 @@
 <translation id="1016495303386450659">項目已更新</translation>
 <translation id="1047726139967079566">把此頁加入書籤...</translation>
 <translation id="1049743911850919806">無痕模式</translation>
-<translation id="1073594902069885687">驗證失敗，系統未複製您的密碼。</translation>
 <translation id="1076421457278169141">已掃描圖碼/條碼</translation>
 <translation id="1084365883616172403">已順利發佈到 Facebook。</translation>
 <translation id="1104948393051856124">接受並繼續</translation>
@@ -34,9 +33,11 @@
 <translation id="1430915738399379752">列印</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> 個項目</translation>
 <translation id="1491277525950327607">輕觸兩下即可切換設定</translation>
+<translation id="152234381334907219">永不儲存</translation>
 <translation id="1540800554400757039">地址 1</translation>
 <translation id="1545749641540134597">掃描 QR 圖碼</translation>
 <translation id="1580783302095112590">已傳送郵件。</translation>
+<translation id="1612730193129642006">顯示分頁方格</translation>
 <translation id="1646446875146297738">啟用「不追蹤」選項後，您的瀏覽流量會置入一項特定的要求，其作用則視網站是否回應要求，以及網站解讀要求的方式而定。
 
 舉例來說，部分網站可能會以隨機顯示廣告的方式回應這類要求，而這些廣告並非根據您所造訪的其他網站紀錄而產生。許多網站仍會收集並使用您的瀏覽資料，藉此提升安全性、提供網站上的內容、服務、廣告和推薦項目，以及產生報告統計資料。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
@@ -66,7 +67,6 @@
 <translation id="2116625576999540962">已移動 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
 <translation id="2149973817440762519">編輯書籤</translation>
 <translation id="2230173723195178503">已載入網頁</translation>
-<translation id="2241634353105152135">只有這一次</translation>
 <translation id="2267753748892043616">新增帳戶</translation>
 <translation id="2273327106802955778">[更多] 選單</translation>
 <translation id="2320166752086256636">隱藏鍵盤</translation>
@@ -79,6 +79,7 @@
 <translation id="2572712655377361602">裝置政策禁止您存取相片</translation>
 <translation id="2584132361465095047">新增帳戶…</translation>
 <translation id="2593774076813182497">這個頁面無法列印。</translation>
+<translation id="2625189173221582860">已複製密碼</translation>
 <translation id="2648803196158606475">刪除已讀取的項目</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2684815431982545828">新分頁</translation>
@@ -120,6 +121,7 @@
 <translation id="3244271242291266297">月</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />，<ph name="ADDITIONAL_INFO" /> (第 <ph name="INDEX" /> 項建議，共 <ph name="NUM_SUGGESTIONS" /> 項)</translation>
 <translation id="3268451620468152448">開啟的分頁</translation>
+<translation id="3277021493514034324">已複製網站網址</translation>
 <translation id="3324193307694657476">地址 2</translation>
 <translation id="3329904751041170572">無法連上伺服器。</translation>
 <translation id="3335947283844343239">重新開啟先前關閉的分頁</translation>
@@ -132,7 +134,6 @@
 <translation id="3474649192738347024">表單填寫完成。</translation>
 <translation id="3478058380795961209">到期月份</translation>
 <translation id="3482959374254649722">正在同步處理您的分頁...</translation>
-<translation id="3489372701259491571">刪除已儲存的密碼</translation>
 <translation id="3494788280727468875">確認清除瀏覽資料</translation>
 <translation id="3519193562722059437">透過新開啟的分頁瀏覽網頁。</translation>
 <translation id="3527085408025491307">資料夾</translation>
@@ -149,10 +150,8 @@
 <translation id="3638472932233958418">預先載入網頁</translation>
 <translation id="3691593122358196899">已將書籤加入「<ph name="FOLDER_TITLE" />」</translation>
 <translation id="3738139272394829648">輕觸搜尋</translation>
-<translation id="3742082982782149146">已複製網站網址。</translation>
 <translation id="3771033907050503522">無痕式分頁</translation>
 <translation id="3783017676699494206">儲存圖片</translation>
-<translation id="3789841737615482174">安裝</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3897092660631435901">選單</translation>
 <translation id="3928666092801078803">合併我的資料</translation>
@@ -164,7 +163,6 @@
 <translation id="4038354071007134711">這個裝置上沒有能開啟此檔案的應用程式。</translation>
 <translation id="4049507953662678203">請確定您已連上網路，然後再試一次。</translation>
 <translation id="411254640334432676">下載失敗。</translation>
-<translation id="4117350985506774529">已複製你的使用者名稱。</translation>
 <translation id="4121993058175073134">如要傳送淨匯出資料，請在「設定」應用程式中設定你的電子郵件帳戶。</translation>
 <translation id="4124987746317609294">時間範圍</translation>
 <translation id="4172051516777682613">一律顯示</translation>
@@ -187,7 +185,6 @@
 
 您已使用同步通關密語對資料進行加密，請輸入通關密語開始進行同步。</translation>
 <translation id="473775607612524610">更新</translation>
-<translation id="4773461607542755386">在「<ph name="APP_NAME" />」應用程式中開啟這個網頁？</translation>
 <translation id="481968316161811770">Cookie、網站資料</translation>
 <translation id="4860895144060829044">撥號</translation>
 <translation id="4875622588773761625">您要讓 <ph name="PASSWORD_MANAGER_BRAND" /> 更新您在這個網站設定的密碼嗎？</translation>
@@ -215,6 +212,7 @@
 <translation id="5327248766486351172">名稱</translation>
 <translation id="5388358297987318779">開啟圖片</translation>
 <translation id="5409365236829784218">未安裝可開啟這個檔案的應用程式。</translation>
+<translation id="5433691172869980887">已複製使用者名稱</translation>
 <translation id="54401264925851789">網頁安全性資訊</translation>
 <translation id="5525269841082836315">建立通關密語</translation>
 <translation id="5531274207066050939">Google Payments</translation>
@@ -264,6 +262,7 @@
 <translation id="6196207969502475924">語音搜尋</translation>
 <translation id="6254066287920239840">使用應用程式開啟連結，而不要在瀏覽器中開啟。</translation>
 <translation id="6255097610484507482">編輯信用卡</translation>
+<translation id="6273258929211277933"><ph name="TITLE" />，<ph name="PUBLISHER_INFORMATION" />，<ph name="PUBLICATION_DATE" />，<ph name="STATE" /></translation>
 <translation id="6308436439357671616">可讓你拍照並上傳相片。</translation>
 <translation id="6314335155547195432">產生密碼</translation>
 <translation id="6324528485781869530">切換同步處理帳戶</translation>
@@ -290,7 +289,6 @@
 <translation id="6570040839871198836">自動填入表單</translation>
 <translation id="6656103420185847513">編輯資料夾</translation>
 <translation id="6657585470893396449">密碼</translation>
-<translation id="666731172850799929">在「<ph name="APP_NAME" />」中開啟</translation>
 <translation id="667999046851023355">文件</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6762156594045689028">如要變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
@@ -317,6 +315,7 @@
 <translation id="7189598951263744875">分享...</translation>
 <translation id="7203585745079012652">語音答覆</translation>
 <translation id="722055596168483966">享有個人化的 Google 服務</translation>
+<translation id="7272437679830969316">無法驗證你的身分，因此未複製密碼。</translation>
 <translation id="7336264872878993241">已下載 <ph name="PERCENT" /> %</translation>
 <translation id="7346909386216857016">好，我瞭解了</translation>
 <translation id="7400418766976504921">網址</translation>
@@ -356,7 +355,6 @@
 <translation id="806745655614357130">分開保留我的資料</translation>
 <translation id="8076014560081431679">已儲存的網站設定不會遭到刪除，而且可能會反映您的瀏覽習慣。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">關閉所有分頁</translation>
-<translation id="8108697784695284144">系統已複製您的密碼。</translation>
 <translation id="8137558756159375272">「輕觸搜尋」會將選取的字詞和目前所在的網頁 (以便建立關聯) 傳送給 Google 搜尋。您可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中關閉這項功能。</translation>
 <translation id="8205564605687841303">取消</translation>
 <translation id="8225985093977202398">快取圖片和檔案</translation>
@@ -364,6 +362,7 @@
 <translation id="8272426682713568063">信用卡</translation>
 <translation id="8281781826761538115">預設 - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">控管 Google 使用您瀏覽紀錄的方式，針對 Google 所提供的個人化搜尋服務、廣告內容和其他各項 Google 服務調整相關設定</translation>
+<translation id="842017693807136194">目前登入身分</translation>
 <translation id="8428045167754449968">鄉/鎮/市/區</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433678324664858900">顯示建議</translation>
@@ -388,6 +387,7 @@
 <translation id="8775144690796719618">網址無效</translation>
 <translation id="8820817407110198400">書籤</translation>
 <translation id="8840513115188359703">您不會因此登出 Google 帳戶。</translation>
+<translation id="8881801611828450202">透過 <ph name="SEARCH_ENGINE" /> 搜尋這張圖片</translation>
 <translation id="8904976895050290827">Google Chrome 同步功能</translation>
 <translation id="895541991026785598">回報問題</translation>
 <translation id="8971089644512329999">好，我知道了</translation>
@@ -406,6 +406,7 @@
 <translation id="9188680907066685419">登出受管理的帳戶</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">當機報告已送出。</translation>
+<translation id="932327136139879170">首頁</translation>
 <translation id="935490618240037774">您的書籤、歷史紀錄、密碼和其他設定都會在您的 Google 帳戶中保持同步，以便您在所有個人裝置上使用。</translation>
 <translation id="939598580284253335">請輸入通關密語</translation>
 <translation id="976982866697960176">管理同步資料…</translation>

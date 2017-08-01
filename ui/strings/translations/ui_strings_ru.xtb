@@ -10,6 +10,7 @@
 <translation id="1398853756734560583">Развернуть</translation>
 <translation id="1413622004203049571">Отключить оповещения от <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минута }one{# минута }few{# минуты }many{# минут }other{# минуты }}</translation>
+<translation id="1643823602425662293">Оповещение</translation>
 <translation id="1685967565548146460">HaTS</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 минута}one{# минута}few{# минуты}many{# минут}other{# минуты}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> Б</translation>
@@ -57,6 +58,7 @@
 <translation id="4202807286478387388">перейти</translation>
 <translation id="4250229828105606438">Скриншот</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{месяц назад}one{# месяц назад}few{# месяца назад}many{# месяцев назад}other{# месяца назад}}</translation>
+<translation id="4316910396681052118">ВСЕ ПРИЛОЖЕНИЯ</translation>
 <translation id="4320177379694898372">Нет подключения к Интернету</translation>
 <translation id="4588090240171750605">Прокрутка вправо</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{остался 1 месяц}one{остался # месяц}few{осталось # месяца}many{осталось # месяцев}other{осталось # месяца}}</translation>
@@ -126,7 +128,7 @@
 <translation id="815598010540052116">Прокрутка вниз</translation>
 <translation id="8179976553408161302">ВВОД</translation>
 <translation id="8210608804940886430">Прокрутка вниз</translation>
-<translation id="8245914219290430011">Вкладка</translation>
+<translation id="8245914219290430011">Tab</translation>
 <translation id="8328145009876646418">Левый край</translation>
 <translation id="8331626408530291785">Прокрутка вверх</translation>
 <translation id="8352146631962686268">{YEARS,plural, =1{1 год}one{# год}few{# года}many{# лет}other{# года}}</translation>
@@ -145,6 +147,7 @@
 <translation id="9038489124413477075">Без названия</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 сек.}one{# сек.}few{# сек.}many{# сек.}other{# сек.}}</translation>
 <translation id="9150735707954472829">Вкладка</translation>
+<translation id="9161053988251441839">РЕКОМЕНДУЕМЫЕ ПРИЛОЖЕНИЯ</translation>
 <translation id="9170848237812810038">&amp;Отменить</translation>
 <translation id="932327136139879170">Главная страница</translation>
 </translationbundle>

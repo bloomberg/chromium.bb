@@ -30,7 +30,6 @@
 <translation id="1966382378801805537">Chromium ei voi tunnistaa tai asettaa oletusselainta.</translation>
 <translation id="1967743265616885482">Samanniminen moduuli on aiheuttanut aiemmin ristiriitoja Chromiumin kanssa.</translation>
 <translation id="2008474315282236005">Tämä poistaa yhden kohteen pysyvästi laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromiumiin käyttäjänä <ph name="USER_EMAIL" />.</translation>
-<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{Vähintään $1 kohde poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromiumiin käyttäjänä $2.}other{Vähintään $1 kohdetta poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromiumiin käyttäjänä $2.}}</translation>
 <translation id="2077129598763517140">Käytä laitteistokiihdytystä, jos mahdollista</translation>
 <translation id="2119636228670142020">Tietoja &amp;Chromium-käyttöjärjestelmästä</translation>
 <translation id="2158734852934720349">Chromium-käyttöjärjestelmän avoimen lähdekoodin lisenssit</translation>
@@ -81,7 +80,6 @@
 <translation id="3549345495227188780">Aloita Chromium-käyttöjärjestelmän käyttö</translation>
 <translation id="3582788516608077514">Päivitetään Chromiumia...</translation>
 <translation id="358997566136285270">Chromium-logo</translation>
-<translation id="3645040538872234961">Selaustiedot poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromiumiin käyttäjänä $2.</translation>
 <translation id="3738139272394829648">Koskettamalla hakeminen</translation>
 <translation id="3762167353400286894">Chromium-käyttöjärjestelmä näytetään tällä kielellä.</translation>
 <translation id="378917192836375108">Chromiumin avulla voit soittaa Skypellä puhelinnumeroon klikkaamalla sitä verkossa!</translation>
@@ -153,7 +151,6 @@
 <translation id="59625444380784159">Yhteystietojesi avulla lomakkeiden täyttäminen Chromiumissa sujuu helpommin.</translation>
 <translation id="5987687638152509985">Aloita synkronointi päivittämällä Chromium.</translation>
 <translation id="6055895534982063517">Chromiumista on saatavilla uusi versio, joka on entistäkin nopeampi.</translation>
-<translation id="6077017812234345835">Vähintään <ph name="TOTAL_COUNT" /> kohdetta poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromiumiin käyttäjänä $2.</translation>
 <translation id="608189560609172163">Chromium ei voinut synkronoida tietoja kirjautumisvirheen vuoksi.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> on vaarallinen, joten Chromium on estänyt sen.</translation>
 <translation id="6212496753309875659">Tälle tietokoneelle on jo asennettu Chromiumin uudempi versio. Jos Chromium ei toimi, poista sen asennus ja yritä uudelleen.</translation>
@@ -190,7 +187,6 @@ Kaikki ominaisuudet eivät ehkä ole käytettävissä. Määritä jokin muu prof
 <translation id="705851970750939768">Päivitä Chromium</translation>
 <translation id="7066436765290594559">Chromium-käyttöjärjestelmä ei voi synkronoida tietoja. Päivitä synkronoinnin tunnuslause.</translation>
 <translation id="707471633328071618">Google Payments (kopioitu Chromiumiin)</translation>
-<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{$1 kohde poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromiumiin käyttäjänä $2.}other{$1 kohdetta poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromiumiin käyttäjänä $2.}}</translation>
 <translation id="7138853919861947730">Chromium voi käyttää verkkopalveluita parantaakseen selauskokemusta.</translation>
 <translation id="7162152143154757523">Chromium voi tarjota älykkäämmän oikeinkirjoituksen tarkistuspalvelun lähettämällä selaimeen kirjoittamasi tekstin Googlen palvelimille. Näin voit käyttää Google-haun kanssa samaa oikeinkirjoituksen tarkistustekniikkaa.</translation>
 <translation id="7196020411877309443">Miksi minulle näytetään tämä ilmoitus?</translation>
@@ -212,7 +208,6 @@ Jotta <ph name="NEW_PROFILE_NAME" /> ei voi käyttää tiliäsi, lukitse profiil
 <ph name="BEGIN_LINK_2" />Lisätietoja<ph name="END_LINK_2" />
 
 Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />.</translation>
-<translation id="7421823331379285070">Chromium vaatii Windows XP:n tai uudemman version. Kaikki ominaisuudet eivät välttämättä toimi.</translation>
 <translation id="7473891865547856676">Ei kiitos</translation>
 <translation id="7483335560992089831">Chromiumista ei voi asentaa versiota, joka on tällä hetkellä käynnissä. Sulje Chromium ja yritä uudelleen.</translation>
 <translation id="7549178288319965365">Tietoja Chromium-käyttöjärjestelmästä</translation>
@@ -223,6 +218,7 @@ Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />
 <translation id="7729447699958282447">Chromium ei voinut synkronoida tietoja, koska synkronointi ei ole käytettävissä verkkotunnuksessasi.</translation>
 <translation id="7745317241717453663">Tämä poistaa selaustiedot pysyvästi laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromiumiin käyttäjänä <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">Asennusohjelma ei pystynyt luomaan väliaikaista hakemistoa. Tarkista, että käytettävissä on riittävästi levytilaa ja että sinulla on oikeus asentaa ohjelmia.</translation>
+<translation id="7756122083761163394">Käyttäjän selaustiedot poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromeen käyttäjänä $2.</translation>
 <translation id="7937630085815544518">Chromiumiin kirjautunut käyttäjä: <ph name="USER_EMAIL_ADDRESS" />. Kirjaudu uudelleen sisään samalla tilillä.</translation>
 <translation id="795025003224538582">Älä käynnistä uudelleen</translation>
 <translation id="7962572577636132072">Chromium päivitetään automaattisesti, joten käytössäsi on aina uusin versio.</translation>

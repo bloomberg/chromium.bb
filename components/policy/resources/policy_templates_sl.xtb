@@ -54,13 +54,6 @@
       dovoljena vrednost pogostosti je 60 sekund.</translation>
 <translation id="1221359380862872747">Naloži določene URL-je v predstavitveni seji</translation>
 <translation id="1265053460044691532">Omejitev časa, ki je uporabniku, katerega pristnost je preverjena prek SAML-ja, na voljo za prijavo brez internetne povezave</translation>
-<translation id="127699919157094139">Onemogoči sinhronizacijo podatkov v izdelku <ph name="PRODUCT_NAME" /> s storitvami sinhronizacije, ki jih gosti Google, in prepreči uporabnikom spreminjanje te nastavitve.
-
-      Če to nastavitev omogočite, je uporabniki v izdelku <ph name="PRODUCT_NAME" /> ne morejo spreminjati ali preglasiti.
-
-      Če ta pravilnik ni nastavljen, bo lahko uporabnik izbral, ali se Google Sync uporablja ali ne.
-
-      Če želite v celoti onemogočiti Google Sync, priporočamo, da onemogočite storitev Google Sync v konzoli Google Admin console.</translation>
 <translation id="1291880496936992484">Opozorilo: RC4 bo v celoti odstranjen iz programa <ph name="PRODUCT_NAME" /> po različici 52 (okoli septembra 2016) in ta pravilnik bo takrat prenehal delovati.
 
       Če pravilnik ni nastavljen ali je onemogočen, šifrirane zbirke v protokolu TLS ne bodo omogočene, sicer pa je lahko omogočen zaradi ohranjanja združljivosti z zastarelim strežnikom. To je začasen ukrep in strežnik je treba na novo konfigurirati.</translation>
@@ -530,6 +523,11 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
       Če ta pravilnik ni nastavljen, je enako, kot če je funkcija omogočena. Glejte zgornji opis.</translation>
 <translation id="285480231336205327">Omogoči visokokontrastni način</translation>
+<translation id="2854919890879212089">Povzroči, da <ph name="PRODUCT_NAME" /> kot privzeto možnost v predogledu tiskanja uporabi sistemsko privzet tiskalnik namesto nazadnje uporabljenega tiskalnika.
+
+      Če onemogočite to nastavitev ali ne nastavite vrednosti, predogled tiskanja kot privzeti cilj uporabi nazadnje uporabljeni tiskalnik.
+
+      Če omogočite to nastavitev, predogled tiskanja kot privzeti cilj uporabi privzeti tiskalnik operacijskega sistema.</translation>
 <translation id="2872961005593481000">Zaustavitev</translation>
 <translation id="2874209944580848064">Opomba glede naprav s sistemom <ph name="PRODUCT_OS_NAME" />, ki podpirajo aplikacije za Android:</translation>
 <translation id="2877225735001246144">Onemogoči iskanje CNAME pri pogajanju o preverjanju pristnosti Kerberos</translation>
@@ -1017,6 +1015,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Če se koda PIN smatra za šibko, uporabniki privzeto prejmejo opozorilo, ne pa napake.</translation>
 <translation id="4723829699367336876">Omogoči prehod skozi požarni zid iz odjemalca za oddaljeni dostop</translation>
+<translation id="4725123658714754485">Nadzira, ali so podatki meritev uporabe in diagnostični podatki, vključno s poročili o zrušitvah, poslani Googlu. Če je pravilnik omogočen, <ph name="PRODUCT_OS_NAME" /> pošlje podatke meritev uporabe in diagnostične podatke. Če ni konfiguriran ali je onemogočen, je pošiljanje podatkov meritev in diagnostičnih podatkov onemogočeno.</translation>
 <translation id="4725528134735324213">Omogočanje storitve Android Backup Service</translation>
 <translation id="4733471537137819387">Pravilniki, povezani z integriranim preverjanjem pristnosti HTTP.</translation>
 <translation id="4744190513568488164">Strežniki, v katere lahko <ph name="PRODUCT_NAME" /> delegira.
@@ -1538,6 +1537,11 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če to možnost onemogočite ali je ne nastavite, bo iskalnik vtičnikov dejaven.</translation>
 <translation id="6699880231565102694">Omogočanje preverjanja pristnosti v dveh korakih za gostitelje oddaljenega dostopa</translation>
+<translation id="6724842112053619797">Če omogočite to nastavitev, se podatki, shranjeni v profilih izdelka <ph name="PRODUCT_NAME" />, kot so zaznamki, podatki samodejnega izpolnjevanja, gesla in drugi podatki, prav tako zapišejo v datoteko, shranjeno v mapo uporabniškega profila za gostovanje ali na lokacijo, ki jo določi skrbnik s pravilnikom <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Če omogočite ta pravilnik, onemogočite sinhronizacijo z oblakom.
+
+      Če je ta pravilnik onemogočen ali ni nastavljen, se uporabijo samo lokalni profili.
+
+      Pravilnik <ph name="SYNC_DISABLED_POLICY_NAME" /> onemogoči vso sinhronizacijo podatkov in preglasi pravilnik RoamingProfileSupportEnabled.</translation>
 <translation id="6757438632136860443">Omogoča nastavitev seznama vzorcev URL-jev, ki določa, katerim spletnim mestom je dovoljeno izvajanje vtičnika <ph name="FLASH_PLUGIN_NAME" />.
 
           Če ta pravilnik ni nastavljen, se za vsa spletna mesta uporabi globalna privzeta vrednost iz pravilnika »DefaultPluginsSetting«, kadar je ta pravilnik nastavljen, sicer pa iz osebnih nastavitev uporabnika.</translation>
@@ -1585,6 +1589,13 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="6943577887654905793">Ime nastavitve za Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter, ki omogoča funkcijo iskanja po sliki za privzetega ponudnika iskanja</translation>
 <translation id="6956272732789158625">Spletnim mestom ne dovoli uporabe ustvarjanja ključev</translation>
+<translation id="6994082778848658360">Določa, kako lahko vgrajena strojna oprema za varnostni element zagotovi dvojno preverjanje pristnosti, če je združljiva s to funkcijo. Gumb za vklop na računalniku zazna fizično prisotnost uporabnika.
+
+      Če je izbrana možnost »Onemogočeno«, dvojno preverjanje ni zagotovljeno.
+
+      Če je izbrana možnost »U2F«, se integrirano dvojno preverjanje uporablja v skladu z določitvijo FIDO U2F.
+
+      Če je izbrana možnost »U2F_EXTENDED«, integrirano dvojno preverjanje zagotovi funkcije U2F in nekatere razširitve za posamezno potrditev.</translation>
 <translation id="6997592395211691850">Ali so potrebna spletna preverjanja OCSP/CRL za lokalna sidra zaupanja?</translation>
 <translation id="7003334574344702284">Če je pravilnik omogočen, se shranjena gesla uvozijo iz prejšnjega privzetega brskalnika. Če je pravilnik omogočen, vpliva tudi na pogovorno okno za uvoz.
 
@@ -1792,7 +1803,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7713608076604149344">Omejitve prenosov</translation>
 <translation id="7715711044277116530">Odstotek prilagoditve časovnega zamika zatemnitve zaslona v načinu predstavitve</translation>
 <translation id="7717938661004793600">Konfiguriranje funkcij za ljudi s posebnimi potrebami za <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7719251660743813569">Nadzira, ali so podatki o uporabi poslani Googlu. Če je pravilnik omogočen, <ph name="PRODUCT_OS_NAME" /> pošlje podatke o uporabi. Če ni nastavljen ali je onemogočen, podatkov ne pošilja.</translation>
 <translation id="7724994675283793633">Ta pravilnik omogoča protokol HTTP/0.9 za vrata, ki niso 80 (HTTP) ali 443 (HTTPS).
 
       Ta pravilnik je privzeto onemogočen. Če je omogočen, so uporabniki izpostavljeni tej varnostni težavi: https://crbug.com/600352.
@@ -2123,6 +2133,15 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="891435090623616439">kodirano kot niz JSON; več informacij je na voljo na <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Prijava lokacije naprave</translation>
 <translation id="8951350807133946005">Nastavi imenik predpomnilnika diska</translation>
+<translation id="8952317565138994125">Onemogoča sinhronizacijo podatkov v izdelku <ph name="PRODUCT_NAME" /> s storitvami sinhronizacije, ki jih gosti Google, in uporabnikom prepreči spreminjanje te nastavitve.
+
+      Če to nastavitev omogočite, je uporabniki v izdelku <ph name="PRODUCT_NAME" /> ne morejo spremeniti ali preglasiti.
+
+      Če ta pravilnik ni nastavljen, bo lahko uporabnik izbral, ali se Google Sync uporablja ali ne.
+
+      Če želite storitev Google Sync povsem onemogočiti, priporočamo, da onemogočite storitev Google Sync v konzoli Google Admin console.
+
+      Ta pravilnik ne sme biti omogočen, ko je omogočen pravilnik <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />, saj ta funkcija uporablja enako funkcijo pri odjemalcu. Sinhronizacija, ki jo gosti Google, je v tem primeru povsem onemogočena.</translation>
 <translation id="8955719471735800169">Nazaj na vrh</translation>
 <translation id="8960850473856121830">Vzorci na tem seznamu se bodo primerjali z varnostnim
       izvorom zahtevajočega URL-ja. Če je najdeno ujemanje, bo dostop do naprav
@@ -2132,6 +2151,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="8970205333161758602">Ne prikaže poziva za preklop za <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Merilnik časa za samodejno prijavo v javno sejo</translation>
 <translation id="8976248126101463034">Dovoli preverjanje pristnosti »gnubby« za gostitelje za oddaljeni dostop</translation>
+<translation id="8976531594979650914">Uporaba sistemsko privzetega tiskalnika kot privzeti tiskalnik</translation>
 <translation id="8992176907758534924">Nobenemu spletnemu mestu ne dovoli prikaza slik</translation>
 <translation id="9035964157729712237">ID-ji razširitev, ki naj bodo izvzete s seznama prepovedanih</translation>
 <translation id="9042911395677044526">Omogoča pošiljanje omrežne konfiguracije, ki se uporablja glede na uporabnika, v napravo s sistemom <ph name="PRODUCT_OS_NAME" />. Omrežna konfiguracija je niz v obliki zapisa JSON, kot je določeno z obliko konfiguracije odprtega omrežja, opisane na <ph name="ONC_SPEC_URL" /></translation>

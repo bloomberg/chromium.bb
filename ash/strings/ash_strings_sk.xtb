@@ -37,6 +37,7 @@
 <translation id="1942830294380034169">Tlačidlo Viac</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="2012624427112548395">Ctrl+Hľadať+H</translation>
 <translation id="2049639323467105390">Toto zariadenie je spravované doménou <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Na výšku</translation>
 <translation id="207439088875642105">Toto je detský účet spravovaný používateľmi <ph name="FIRST_PARENT_EMAIL" /> a <ph name="SECOND_PARENT_EMAIL" /></translation>
@@ -57,6 +58,7 @@
 <translation id="2501920221385095727">Funkcia sticky keys</translation>
 <translation id="2509468283778169019">Kláves CAPS LOCK je zapnutý</translation>
 <translation id="2532589005999780174">Režim s vysokým kontrastom</translation>
+<translation id="2597972630681408282">Nočný režim: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2700058918926273959">Relácia sa skončí o <ph name="SESSION_TIME_REMAINING" />. Následne budete odhlásený/-á.</translation>
 <translation id="2727977024730340865">Batéria je zapojená do nabíjačky s nízkym výkonom. Nabíjanie batérie nemusí byť spoľahlivé.</translation>
 <translation id="2761704814324807722">Stavový panel, čas <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -76,8 +78,6 @@
 <translation id="3009178788565917040">Výstup</translation>
 <translation id="3019353588588144572">Čas zostávajúci do úplného nabitia batérie: <ph name="TIME_REMAINING" /></translation>
 <translation id="3047477924825107454">Toto je detský účet spravovaný používateľom <ph name="MANAGER_EMAIL" /></translation>
-<translation id="3050422059534974565">Kláves CAPS LOCK je zapnutý.
-Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Spodok</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
@@ -136,6 +136,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="4849058404725798627">Zvýrazniť objekt so zameraním klávesnice</translation>
 <translation id="4872237917498892622">Alt + Hľadať alebo Shift</translation>
 <translation id="4895488851634969361">Batéria je úplne nabitá.</translation>
+<translation id="4905614135390995787">Skratka na prepnutie režimu vysokého kontrastu sa zmenila. Namiesto skratky <ph name="OLD_SHORTCUT" /> používajte kombináciu klávesov <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Prijať</translation>
 <translation id="4961318399572185831">Prenášanie obrazovky</translation>
 <translation id="5011233892417813670">Chromebook</translation>
@@ -159,8 +160,10 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="5744083938413354016">Presunutie klepnutím</translation>
 <translation id="5777841717266010279">Chcete ukončiť zdieľanie obrazovky?</translation>
 <translation id="57838592816432529">Vypnúť zvuk</translation>
+<translation id="5860033963881614850">Vypnuté</translation>
 <translation id="5895138241574237353">Reštartovať</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5916664084637901428">Zapnúť</translation>
 <translation id="5927132638760172455">Prebieha prenášanie na neznámy prijímač</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Vrátiť</translation>
@@ -169,8 +172,8 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="5977415296283489383">Slúchadlo</translation>
 <translation id="5978382165065462689">Ovládanie obrazovky sa zdieľa prostredníctvom Vzdialenej pomoci.</translation>
 <translation id="5980301590375426705">Ukončiť reláciu hosťa</translation>
+<translation id="5992218262414051481">Režim vysokého kontrastu je aktívny. Vypnete ho opätovným stlačením kombinácie klávesov Ctrl+Hľadať+H.</translation>
 <translation id="6018164090099858612">Ukončuje sa režim zrkadlenia</translation>
-<translation id="6041154455840261787">Bol zapnutý režim vysokého kontrastu. Vypnete ho opätovným stlačením kombinácie klávesov Hľadať+Shift+H.</translation>
 <translation id="6043212731627905357">Tento monitor nie je kompatibilný s vaším zariadením <ph name="DEVICE_TYPE" /> (monitor nie je podporovaný).</translation>
 <translation id="6043994281159824495">Odhlásiť sa</translation>
 <translation id="6047696787498798094">Keď prepnete na iného používateľa, zdieľanie obrazovky sa ukončí. Chcete pokračovať?</translation>
@@ -195,6 +198,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="6585808820553845416">Relácia sa skončí o <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="6627638273713273709">Hľadať+Shift+K</translation>
 <translation id="6650933572246256093">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania. Zadajte na danom zariadení tento prístupový kľúč: <ph name="PASSKEY" /></translation>
+<translation id="6691659475504239918">Hľadať+Shift+H</translation>
 <translation id="6700713906295497288">Tlačidlo ponuky IME</translation>
 <translation id="6713285437468012787">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> bolo spárované a je k dispozícii pre všetkých používateľov. Párovanie môžete zrušiť pomocou ponuky Nastavenia.</translation>
 <translation id="6785414152754474415">Batéria je nabitá na <ph name="PERCENTAGE" /> % a nabíja sa.</translation>
@@ -214,8 +218,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Vrátenie starého rozlíšenia prebehne o <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7209101170223508707">Kláves CAPS LOCK je zapnutý.
-Ak ho chcete zrušiť, stlačte klávesy Alt + Hľadať alebo Shift.</translation>
+<translation id="7199454189089571166">Režim asistenta</translation>
 <translation id="7246339268451149667">Povoliť odomykanie odtlačkom prsta?</translation>
 <translation id="7256634071279256947">Zadný mikrofóm</translation>
 <translation id="7348093485538360975">Klávesnica na obrazovke</translation>
@@ -233,10 +236,10 @@ Ak ho chcete zrušiť, stlačte klávesy Alt + Hľadať alebo Shift.</translatio
 <translation id="7649070708921625228">Pomocník</translation>
 <translation id="7692480393933218409">Nabíjajú sa pripojené zariadenia USB-C</translation>
 <translation id="776344839111254542">Kliknutím zobrazíte podrobnosti o aktualizácii</translation>
+<translation id="7798302898096527229">Ak to chcete zrušiť, stlačte kláves Hľadať alebo Shift.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> a <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Po synchronizácii vašich nastavení bol zmenený jazyk „<ph name="FROM_LOCALE" />“ na jazyk „<ph name="TO_LOCALE" />“.</translation>
 <translation id="7904094684485781019">Správca tohto účtu zakázal viacnásobné prihlásenie.</translation>
-<translation id="7951523953736115461">Nočný režim</translation>
 <translation id="7977927628060636163">Hľadajú sa mobilné siete...</translation>
 <translation id="7982789257301363584">Sieť</translation>
 <translation id="8000066093800657092">Žiadna sieť</translation>
@@ -255,6 +258,7 @@ Ak ho chcete zrušiť, stlačte klávesy Alt + Hľadať alebo Shift.</translatio
 <translation id="8433977262951327081">Klávesová skratka na zobrazenie bubliny s možnosťami vstupu na poličke sa zmenila. Namiesto skratky <ph name="OLD_SHORTCUT" /> použite skratku <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="8454013096329229812">Pripojenie Wi-Fi je zapnuté.</translation>
 <translation id="847056008324733326">Nastavenia hustoty zobrazenia</translation>
+<translation id="8477270416194247200">Ak to chcete zrušiť, stlačte klávesy Alt+Hľadať alebo Shift.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Opätovné pripájanie...</translation>
 <translation id="8517041960877371778">Vaše zariadenie <ph name="DEVICE_TYPE" /> sa nemusí nabíjať, keď je zapnuté.</translation>
 <translation id="8639760480004882931">Zostávajúca kapacita: <ph name="PERCENTAGE" /></translation>

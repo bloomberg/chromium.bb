@@ -32,7 +32,6 @@
 <translation id="1966382378801805537">Chromium ነባሪ አሳሹን ማወቅ ወይም ማቀናበር አልቻለም</translation>
 <translation id="1967743265616885482">ተመሳሳይ ስም ያለው ሞዱል ከChromium ጋር የሚጋጭ መሆኑ ይታወቃል።</translation>
 <translation id="2008474315282236005">ይሄ 1 ንጥል ከዚህ መሣሪያ ይሰርዛል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ <ph name="USER_EMAIL" /> ሆነው ወደ Chromium ይግቡ።</translation>
-<translation id="2061399003623151192">{NUM_ITEMS,plural, =1{ይህ ቢያንስ $1 ንጥል ከዚህ መሣሪያ ይሰርዛል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ $2 ሆነው ወደ Chromium ይግቡ።}one{ይህ ቢያንስ $1 ንጥሎችን ከዚህ መሣሪያ ይሰርዛል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ $2 ሆነው ወደ Chromium ይግቡ።}other{ይህ ቢያንስ $1 ንጥሎችን ከዚህ መሣሪያ ይሰርዛል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ $2 ሆነው ወደ Chromium ይግቡ።}}</translation>
 <translation id="2077129598763517140">ሲገኝ የሃርድዌር ማጣደፍን ተጠቀም</translation>
 <translation id="2119636228670142020">&amp;ስለChromium ስርዓተ ክወና</translation>
 <translation id="2158734852934720349">Chromium OS የክፍት ምንጭ ፈቃዶች</translation>
@@ -83,7 +82,6 @@
 <translation id="3549345495227188780">በChromium ስርዓተ ክወና ይጀምሩ</translation>
 <translation id="3582788516608077514">Chromiumን በማዘመን ላይ...</translation>
 <translation id="358997566136285270">የChromium አርማ</translation>
-<translation id="3645040538872234961">ይሄ የአሰሳ ውሂብዎን ከዚህ መሣሪያ እስከመጨረሻው ይሰርዘዋል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ $2 ሆነው ወደ Chromium ይግቡ።</translation>
 <translation id="3738139272394829648">ለመፈለግ ይንኩ</translation>
 <translation id="3762167353400286894">Chromium OS በዚህ ቋንቋ እየታየ ነው</translation>
 <translation id="378917192836375108">Chromium ድር ላይ ያለ ስልክ ቁጥር ጠቅ እንዲያደርጉትና በSkype እንዲደውሉበት ያስችልዎታል!</translation>
@@ -155,7 +153,6 @@
 <translation id="59625444380784159">የእውቂያዎችዎ ዝርዝሮች በChromium ውስጥ ቅጾችን በበለጠ ፍጥነት እንዲሞሉ ያግዘዎታል።</translation>
 <translation id="5987687638152509985">ስምረትን ለመጀመር Chromiumን ያዘምኑ</translation>
 <translation id="6055895534982063517">አዲስ የChromium ስሪት ይገኛል፣ እና ከመቼውም በበለጠ ፈጣን ሆኗል።</translation>
-<translation id="6077017812234345835">ይሄ ቢያንስ <ph name="TOTAL_COUNT" /> ንጥሎችን ከዚህ መሣሪያ እስከመጨረሻው ይሰርዛል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ $2 ሆነው ወደ Chromium ይግቡ።</translation>
 <translation id="608189560609172163">በመለያ ሲገባ በነበረ ስህተት ምክንያት Chromium ውሂብዎን ማመሳሰል አልቻለም።</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> አደገኛ ነው፣ ስለዚህ Chromium አግዶታል።</translation>
 <translation id="6212496753309875659">ይህ ኮምፒውተር አስቀድሞ ይበልጥ አዲስ የሆነ የChromium ስሪት አለው። ሶፍትዌሩ የማይሰራ ከሆነ እባክዎ Chromiumን ያራግፉና እንደገና ይሞክሩ።</translation>
@@ -192,7 +189,6 @@
 <translation id="705851970750939768">Chromiumን አዘምን</translation>
 <translation id="7066436765290594559">Chromium OS የእርስዎን ውሂብ ማመሳሰል አልቻለም። የእርስዎን የማመሳሰያ የይለፍ ሐረግ እባክዎ ያዘምኑ።</translation>
 <translation id="707471633328071618">Google Payments (ወደ Chromium ተቀድቷል)</translation>
-<translation id="7114836556269756734">{NUM_ITEMS,plural, =1{ይሄ $1 ንጥል እስከመጨረሻው ከዚህ መሣሪያ ይሰርዘዋል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ $2 ሆነው ወደ Chromium ይግቡ።}one{ይሄ $1 ንጥሎችን እስከመጨረሻው ከዚህ መሣሪያ ይሰርዛቸዋል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ $2 ሆነው ወደ Chromium ይግቡ።}other{ይሄ $1 ንጥሎችን እስከመጨረሻው ከዚህ መሣሪያ ይሰርዛቸዋል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ $2 ሆነው ወደ Chromium ይግቡ።}}</translation>
 <translation id="7138853919861947730">Chromium የማሰስ ተሞክሮዎን ለማሻሻል የድር አገልግሎቶችን ሊጠቀም ይችላል።</translation>
 <translation id="7162152143154757523">Chromium አሳሹ ላይ የሚተይቡትን ለGoogle አገልጋዮች በመላክ ይበልጥ አዋቂ የሆነ ፊደል አራሚ ሊያቀርብልዎት ይችላል፣ ይህም Google ፍለጋ የሚጠቀመውን ተመሳሳዩ የፊደል አራሚ ቴክኖሎጂ እንዲጠቀሙ ያስችልዎታል።</translation>
 <translation id="7196020411877309443">ለምን ይህን አያለሁ?</translation>
@@ -214,7 +210,6 @@ Chromium ቅንብሮችዎን ማስመለስ አልቻለም።</translation>
 <ph name="BEGIN_LINK_2" />የበለጠ ለመረዳት<ph name="END_LINK_2" />
 
 ለተጨማሪ መመሪያዎች እባክዎ በ<ph name="ACCOUNT_EMAIL" /> ላይ የእርስዎን ኢሜይል ይፈትሹ።</translation>
-<translation id="7421823331379285070">Chromium Windows XP ወይም ከዚያ በኋላ ይፈልጋል። አንዳንድ ባህሪያት ላይሰሩ ይችላሉ።</translation>
 <translation id="7473891865547856676">አይ፣ አመሰግናለሁ</translation>
 <translation id="7483335560992089831">እየሄደ ያለውን ተመሳሳዩን የChromium ስሪት መጫን አይቻልም። እባክዎ Chromiumን ይዝጉና እንደገና ይሞክሩ።</translation>
 <translation id="7549178288319965365">ስለ Chromium OS</translation>
@@ -225,6 +220,7 @@ Chromium ቅንብሮችዎን ማስመለስ አልቻለም።</translation>
 <translation id="7729447699958282447">ማመሳሰል ለጎራዎ ስለማይገኝ Chromium ውሂብዎን ማመሳሰል አይችልም።</translation>
 <translation id="7745317241717453663">ይሄ የአሰሳ ውሂብዎን ከዚህ መሣሪያ ይሰርዘዋል። ውሂብዎን በኋላ ላይ ሰርስረው ለማውጣት እንደ <ph name="USER_EMAIL" /> ሆነው ወደ Chromium ይግቡ።</translation>
 <translation id="7747138024166251722">ጫኝው ጊዜያዊ ማውጫ መፍጠር አልቻለም። እባክዎ ነፃ የዲስክ ቦታ እና ሶፍትዌር የመጫን ፍቃድ እንዳለ ይፈትሹ።</translation>
+<translation id="7756122083761163394">የዚህ ግለሰብ የአሰሳ ውሂብ ከዚህ መሣሪያ ላይ ይሰረዛል። ውሂቡን ወደነበረበት ለመመለስ እንደ $2 በመለያ ሆነው ወደ Chrome ይግቡ።</translation>
 <translation id="7937630085815544518">እንደ <ph name="USER_EMAIL_ADDRESS" /> ሆነው ወደ Chromium ገብተዋል። እባክዎ እንደገና ለመግባት ተመሳሳዩን መለያ ይጠቀሙ።</translation>
 <translation id="795025003224538582">ዳግም አታስጀምር</translation>
 <translation id="7962572577636132072">Chromium በራስ-ሰር ይዘመናል፣ ስለዚህ ሁልጊዜ አዲሱ ስሪት ይኖርዎታል።</translation>

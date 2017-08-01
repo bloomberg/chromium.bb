@@ -54,13 +54,6 @@
       최소 빈도는 60초입니다.</translation>
 <translation id="1221359380862872747">데모 로그인 시 지정된 URL 로드</translation>
 <translation id="1265053460044691532">SAML을 통해 인증한 사용자가 오프라인에서 로그인할 수 있는 기간을 제한</translation>
-<translation id="127699919157094139">Google에서 호스팅하는 동기화 서비스를 사용하는 <ph name="PRODUCT_NAME" />의 데이터 동기화를 사용 중지하고 사용자가 이 설정을 변경하지 못하게 합니다.
-
-      이 설정을 사용하면 사용자가 <ph name="PRODUCT_NAME" />에서 이 설정을 변경하거나 무시할 수 없습니다.
-
-      이 정책을 설정하지 않은 경우 Google 동기화에서 사용자가 설정을 사용할지 선택할 수 있습니다.
-
-      Google 동기화를 완전히 중지하려면 Google 관리 콘솔에서 Google 동기화 서비스를 사용 중지하는 것이 좋습니다.</translation>
 <translation id="1291880496936992484">경고: 버전 52(2016년 9월경)부터 <ph name="PRODUCT_NAME" />에서 RC4가 완전히 제거되며, 이후 이 정책은 적용되지 않습니다.
 
       이 정책이 설정되지 않았거나 'false'로 설정된 경우 TLS RC4 암호화 기술이 사용되지 않습니다. 그렇지 않으면 정책을 'true'로 설정해 오래된 서버와의 호환성을 유지할 수 있습니다. 이는 임시 조치이며 서버는 다시 구성해야 합니다.</translation>
@@ -528,6 +521,11 @@
 
       이 정책을 설정하지 않으면 위에 설명된 사용 설정한 경우와 동일하게 적용됩니다.</translation>
 <translation id="285480231336205327">고대비 모드 사용</translation>
+<translation id="2854919890879212089"><ph name="PRODUCT_NAME" />이(가) 가장 최근에 사용한 프린터 대신 시스템 기본 프린터를 인쇄 미리보기에서 기본으로 선택하게 합니다.
+
+      이 설정을 사용 중지하거나 값을 저장하지 않으면 인쇄 미리보기에서 가장 최근에 사용한 프린터를 기본 선택으로 사용합니다.
+
+      이 설정을 사용하면 인쇄 미리보기에서 OS 시스템 기본 프린터를 기본 선택으로 사용합니다.</translation>
 <translation id="2872961005593481000">종료</translation>
 <translation id="2874209944580848064">Android 앱을 지원하는 <ph name="PRODUCT_OS_NAME" /> 기기 관련 주의사항:</translation>
 <translation id="2877225735001246144">Kerberos 인증을 협상할 때 CNAME 조회 사용 중지</translation>
@@ -1010,6 +1008,7 @@
 
           PIN의 보안 강도가 약하다고 간주되는 경우 기본적으로 사용자에게 오류가 아닌 경고가 표시됩니다.</translation>
 <translation id="4723829699367336876">원격 액세스 클라이언트의 방화벽 통과 허용</translation>
+<translation id="4725123658714754485">비정상 종료 보고서를 비롯한 사용 통계 및 진단 데이터를 Google에 보고할지 여부를 지정합니다. true로 설정하면 <ph name="PRODUCT_OS_NAME" />에서 사용 통계 및 진단 데이터를 보고합니다. 설정하지 않거나 false로 설정하면 통계 및 진단 데이터 보고가 사용 중지됩니다.</translation>
 <translation id="4725528134735324213">Android Backup Service 사용</translation>
 <translation id="4733471537137819387">통합 HTTP 인증과 관련된 정책입니다.</translation>
 <translation id="4744190513568488164"><ph name="PRODUCT_NAME" />이(가) 위임할 수 있는 서버입니다.
@@ -1529,6 +1528,11 @@
 
       이 옵션을 사용하지 않도록 설정하거나 설정하지 않으면 플러그인 Finder가 실행됩니다.</translation>
 <translation id="6699880231565102694">원격 액세스 호스트를 위한 2단계 인증 사용</translation>
+<translation id="6724842112053619797">이 설정을 사용하면 북마크, 데이터 자동완성, 비밀번호 등 <ph name="PRODUCT_NAME" /> 프로필에 저장된 설정이 로밍 사용자 프로필 폴더나 <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> 정책을 통해 관리자가 지정한 위치에 저장된 파일에도 작성됩니다. 이 정책을 사용하면 클라우드 동기화는 사용 중지됩니다.
+
+      이 정책을 사용 중지하거나 설정하지 않으면 일반 로컬 프로필만 사용됩니다.
+
+      <ph name="SYNC_DISABLED_POLICY_NAME" /> 정책은 모든 데이터 동기화를 사용 중지하며 RoamingProfileSupportEnabled를 무시합니다.</translation>
 <translation id="6757438632136860443"><ph name="FLASH_PLUGIN_NAME" /> 플러그인 실행을 허용할 사이트를 지정하는 URL 패턴 목록을 설정하도록 허용합니다.
 
           이 정책을 설정하지 않으면 'DefaultPluginsSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.</translation>
@@ -1576,6 +1580,13 @@
 <translation id="6943577887654905793">Mac 및 Linux 환경설정 이름:</translation>
 <translation id="69525503251220566">기본 검색엔진에 이미지로 검색 기능을 제공하는 매개변수</translation>
 <translation id="6956272732789158625">모든 사이트에서 키 생성 사용 허용 안함</translation>
+<translation id="6994082778848658360">내장된 보안 요소 하드웨어가 2단계 인증과 호환될 경우, 2단계 인증을 제공하는 데 어떻게 사용할지 지정합니다. 기기 전원 버튼은 사용자가 실제로 있는지 감지하는 데 사용됩니다.
+
+      '사용 안함'을 선택하면 2차 요소가 제공되지 않습니다.
+
+      'U2F'를 선택하면 FIDO U2F 사양에 따라 통합된 2차 요소가 작동합니다.
+
+      'U2F_EXTENDED'를 선택하면 통합된 2차 요소가 U2F 기능과 함께 개별 인증용 확장 프로그램을 일부 제공합니다.</translation>
 <translation id="6997592395211691850">신뢰할 수 있는 로컬 앵커에 온라인 OCSP/CRL 확인이 필요한지 여부입니다.</translation>
 <translation id="7003334574344702284">이 정책을 사용하도록 설정하면 이전 기본 브라우저에서 저장된 비밀번호를 강제로 가져옵니다. 또한 가져오기 대화상자에 영향을 미칩니다.
 
@@ -1783,7 +1794,6 @@
 <translation id="7713608076604149344">다운로드 제한</translation>
 <translation id="7715711044277116530">프레젠테이션 모드에서 화면 어둡게 하기 지연 시간이 조정되는 비율</translation>
 <translation id="7717938661004793600"><ph name="PRODUCT_OS_NAME" /> 접근성 기능을 구성합니다.</translation>
-<translation id="7719251660743813569">사용 통계를 Google에 다시 보고할 지 여부를 조정합니다. true로 설정하면, <ph name="PRODUCT_OS_NAME" />은(는) 사용 통계를 보고합니다. 구성하지 않거나 false로 설정하면 통계 보고는 사용하지 않습니다.</translation>
 <translation id="7724994675283793633">이 정책은 HTTP:80 및 HTTPS:443이 아닌 포트에서 HTTP/0.9를 사용합니다.
 
       이 정책은 기본적으로 중지되어 있으며 사용 설정할 경우 사용자가 보안 문제(https://crbug.com/600352)에 노출됩니다.
@@ -2113,6 +2123,15 @@
 <translation id="891435090623616439">JSON 문자열로 인코딩됨, 자세한 내용은 <ph name="COMPLEX_POLICIES_URL" /> 참조</translation>
 <translation id="8947415621777543415">기기 위치 신고</translation>
 <translation id="8951350807133946005">디스크 캐시 디렉토리 설정</translation>
+<translation id="8952317565138994125">Google에서 호스팅하는 동기화 서비스를 사용하는 <ph name="PRODUCT_NAME" />의 데이터 동기화를 사용 중지하고 사용자가 이 설정을 변경하지 못하게 합니다.
+
+      이 설정을 사용하면 사용자가 <ph name="PRODUCT_NAME" />에서 이 설정을 변경하거나 무시할 수 없습니다.
+
+      이 정책을 설정하지 않은 경우 사용자가 Google 동기화를 사용할지 선택할 수 있습니다.
+
+      Google 동기화를 완전히 중지하려면 Google 관리 콘솔에서 Google 동기화 서비스를 사용 중지하는 것이 좋습니다.
+
+      이 정책은 <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> 정책을 사용하도록 설정한 경우 해당 기능에서 동일한 클라이언트측 기능을 공유하기 때문에 사용 설정하면 안 됩니다. 이 경우 Google에서 호스팅하는 동기화 서비스는 완전히 사용 중지됩니다.</translation>
 <translation id="8955719471735800169">맨위로</translation>
 <translation id="8960850473856121830">이 목록의 패턴을 요청 URL의 보안 출처와 비교합니다.
       일치하는 항목이 확인되는 경우 메시지를 표시하지 않고 오디오 캡처
@@ -2122,6 +2141,7 @@
 <translation id="8970205333161758602"><ph name="PRODUCT_FRAME_NAME" /> 종료 프롬프트를 표시하지 않음</translation>
 <translation id="8971221018777092728">공개 세션 자동 로그인 타이머</translation>
 <translation id="8976248126101463034">원격 액세스 호스트에 대한 gnubby 인증 허용</translation>
+<translation id="8976531594979650914">시스템 기본 프린터를 기본값으로 사용</translation>
 <translation id="8992176907758534924">모든 사이트에서 이미지 표시 허용 안함</translation>
 <translation id="9035964157729712237">차단목록에서 제외할 확장 프로그램 ID</translation>
 <translation id="9042911395677044526"><ph name="PRODUCT_OS_NAME" /> 기기에 사용자별로 적용되는 네트워크 구성을 사용하도록 허용합니다. 네트워크 구성은 <ph name="ONC_SPEC_URL" />에서 설명한 개방형 네트워크 구성에서 정의한 대로 JSON 형식의 문자열입니다. </translation>

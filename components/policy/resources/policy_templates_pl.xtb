@@ -52,13 +52,6 @@
       godziny. Minimalna dopuszczalna częstotliwość to 60 sekund.</translation>
 <translation id="1221359380862872747">Załaduj podane URL-e przy logowaniu demonstracyjnym</translation>
 <translation id="1265053460044691532">Ograniczenie czasu, przez który użytkownik uwierzytelniony za pomocą SAML może logować się offline</translation>
-<translation id="127699919157094139">Wyłącza w <ph name="PRODUCT_NAME" /> synchronizację danych za pomocą usług synchronizacji Google i uniemożliwia użytkownikom zmianę tego ustawienia.
-
-      W przypadku włączenia tego ustawienia użytkownicy nie mogą go zmieniać ani zastępować w <ph name="PRODUCT_NAME" />.
-
-      Jeśli ta zasada nie zostanie skonfigurowana, użytkownik będzie mógł wybrać, czy chce korzystać z Google Sync.
-
-      Aby całkowicie wyłączyć Google Sync, należy wyłączyć usługę Google Sync w konsoli administracyjnej Google.</translation>
 <translation id="1291880496936992484">Ostrzeżenie: RC4 zostanie całkowicie usunięty z <ph name="PRODUCT_NAME" /> po wersji 52 (około września 2016 r.) i wtedy ta zasada przestanie działać.
 
       Jeśli ta zasada nie jest ustawiona lub jest wyłączona, to mechanizmy szyfrowania RC4 w TLS będą wyłączone. Można ją włączyć dla zachowania zgodności z przestarzałym serwerem. Jest to rozwiązanie tymczasowe i konieczna jest zmiana konfiguracji serwera.</translation>
@@ -284,7 +277,7 @@
       Jeśli ta zasada nie jest ustawiona, stosowana jest wartość TimezoneAutomaticDetectionUsersDecide.
 
       Tę zasadę zastępuje włączona zasada SystemTimezone. Jeśli obowiązuje zasada SystemTimezone, automatyczne wykrywanie strefy czasowej jest całkowicie wyłączone.</translation>
-<translation id="2178899310296064282">Wymuś co najmniej umiarkowany tryb ograniczonego dostępu w YouTube</translation>
+<translation id="2178899310296064282">Wymuszaj co najmniej umiarkowany tryb ograniczonego dostępu w YouTube</translation>
 <translation id="2183294522275408937">To ustawienie określa, jak często trzeba podawać hasło na ekranie blokady, gdy używane jest szybkie odblokowanie. Szybkie odblokowanie ekranu blokady nie będzie możliwe, jeśli od ostatniego wpisania hasła minęło więcej czasu, niż określa to wartość tego ustawienia. Jeśli ekran blokady będzie otwarty dłużej niż wartość tego ustawienia, użytkownik będzie musiał podać hasło po podaniu błędnego kodu lub ponownym wyświetleniu ekranu blokady, w zależności od tego, co nastąpi wcześniej.
 
           Jeśli to ustawienie jest skonfigurowane, jego wartość określa, jak często użytkownicy korzystający z szybkiego odblokowania muszą podawać swoje hasło na ekranie blokady.
@@ -503,6 +496,11 @@
 
       Pozostawienie tej zasady nieustawionej jest równoznaczne z jej włączeniem – patrz opis powyżej.</translation>
 <translation id="285480231336205327">Włącz tryb wysokiego kontrastu</translation>
+<translation id="2854919890879212089">Sprawia, że w podglądzie wydruku w <ph name="PRODUCT_NAME" /> zostanie wybrana domyślna drukarka systemowa, a nie ostatnio użyta.
+
+      Jeśli wyłączysz to ustawienie lub pozostawisz je puste, w podglądzie wydruku zostanie wybrana ostatnio użyta drukarka.
+
+      Jeśli włączysz to ustawienie, w podglądzie wydruku zostanie wybrana domyślna drukarka systemowa.</translation>
 <translation id="2872961005593481000">Wyłącz</translation>
 <translation id="2874209944580848064">Uwaga dotycząca urządzeń z <ph name="PRODUCT_OS_NAME" /> obsługujących aplikacje na Androida:</translation>
 <translation id="2877225735001246144">Wyłącz wyszukiwanie rekordu CNAME podczas negocjowania uwierzytelniania Kerberos</translation>
@@ -635,7 +633,7 @@
       W przypadku wyłączenia tej zasady <ph name="PRODUCT_OS_NAME" /> nie będzie zezwalać na uruchamianie sesji gościa.</translation>
 <translation id="3418871497193485241">Wymusza minimalny tryb ograniczonego dostępu w YouTube i uniemożliwia użytkownikom wybór trybu z mniejszymi ograniczeniami.
 
-Jeśli wybierzesz ustawienie „Ścisły”, ścisły tryb ograniczony będzie zawsze aktywny w YouTube.
+Jeśli wybierzesz ustawienie „Ścisły”, ścisły tryb ograniczonego dostępu będzie zawsze aktywny w YouTube.
 
 Jeśli wybierzesz ustawienie „Umiarkowany”, użytkownik może wybrać tylko umiarkowany lub ścisły tryb ograniczonego dostępu w YouTube i nie może go wyłączyć.
 
@@ -953,6 +951,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4680961954980851756">Włącz autouzupełnianie</translation>
 <translation id="4722399051042571387">Jeśli to ustawienie jest wyłączone, użytkownicy nie mogą ustawiać kodów PIN, które są słabe i łatwe do odgadnięcia. Słabe kody PIN to na przykład ciągi takich samych cyfr (1111), kolejnych cyfr w porządku rosnącym (1234) lub malejącym (4321) i ciągi często używane. Domyślnie po wpisaniu słabego kodu PIN nie pojawia się komunikat o błędzie, a tylko ostrzeżenie.</translation>
 <translation id="4723829699367336876">Włącz omijanie zapory sieciowej przez klienta dostępu zdalnego</translation>
+<translation id="4725123658714754485">Określa, czy statystyki użytkowania i dane diagnostyczne (w tym raporty o awariach) mają być przesyłane do Google. Jeśli włączysz tę opcję, <ph name="PRODUCT_OS_NAME" /> będzie przesyłać statystyki użytkowania i dane diagnostyczne. Jeśli jej nie włączysz lub nie skonfigurujesz, przesyłanie statystyk i danych diagnostycznych będzie wyłączone.</translation>
 <translation id="4725528134735324213">Włącz Android Backup Service</translation>
 <translation id="4733471537137819387">Zasady dotyczące zintegrowanego uwierzytelniania HTTP.</translation>
 <translation id="4744190513568488164">Serwery, którym <ph name="PRODUCT_NAME" /> może przekazywać dane logowania.
@@ -1428,6 +1427,11 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6689792153960219308">Raportuj stan sprzętu</translation>
 <translation id="6693751878507293182">Jeśli włączysz to ustawienie, automatyczne wyszukiwanie i instalowanie brakujących wtyczek zostanie wyłączone w <ph name="PRODUCT_NAME" />. W przypadku wyłączenia lub nieskonfigurowania tej opcji mechanizm wyszukujący wtyczki będzie aktywny.</translation>
 <translation id="6699880231565102694">Włącz uwierzytelnianie dwuskładnikowe dla hostów zdalnego dostępu</translation>
+<translation id="6724842112053619797">Jeśli włączysz to ustawienie, ustawienia zapisane w profilach <ph name="PRODUCT_NAME" />, takie jak zakładki, dane autouzupełniania, hasła itp., będą też zapisywane w folderze profilu przenośnego (Roaming) użytkownika lub w lokalizacji ustawionej przez administratora w zasadzie <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Włączenie tej zasady wyłącza synchronizację z chmurą.
+
+      Jeśli nie włączysz tej zasady lub jej nie skonfigurujesz, używane będą tylko zwykłe profile lokalne.
+
+      Zasada <ph name="SYNC_DISABLED_POLICY_NAME" /> powoduje wyłączenie wszystkich synchronizacji danych i zastępuje zasadę RoamingProfileSupportEnabled.</translation>
 <translation id="6757438632136860443">Pozwala utworzyć listę wzorców URL-i określających witryny, które mogą uruchamiać wtyczkę <ph name="FLASH_PLUGIN_NAME" />.
 
           Jeśli ta zasada nie zostanie skonfigurowana, będzie używana wartość domyślna pobrana z zasady „DefaultPluginsSetting” (jeśli jest określona) lub z osobistej konfiguracji użytkownika.</translation>
@@ -1463,6 +1467,13 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6943577887654905793">Nazwa ustawienia w systemie Mac OS/Linux:</translation>
 <translation id="69525503251220566">Parametr udostępniający funkcję wyszukiwania obrazem dla domyślnego dostawcy wyszukiwania</translation>
 <translation id="6956272732789158625">Nie zezwalaj na generowanie kluczy w żadnej witrynie</translation>
+<translation id="6994082778848658360">Określa, jak można użyć zainstalowanego sprzętowego elementu zabezpieczeń w celu stosowania uwierzytelniania dwuskładnikowego, jeśli jest on zgodny z tą funkcją. Przycisk zasilania komputera wykrywa fizyczną obecność użytkownika.
+
+      Jeśli wybierzesz „Wyłączone”, uwierzytelnianie dwuskładnikowe nie będzie dostępne.
+
+      Jeśli wybierzesz „U2F”, zintegrowany drugi składnik będzie działać zgodnie ze specyfikacjami U2F FIDO.
+
+      Jeśli wybierzesz „U2F_EXTENDED”, zintegrowany drugi składnik będzie zapewniał funkcje U2F oraz kilka rozszerzeń na potrzeby indywidualnego poświadczania.</translation>
 <translation id="6997592395211691850">Określa, czy dla lokalnych kotwic zaufania są wymagane sprawdzenia online OCSP/CRL</translation>
 <translation id="7003334574344702284">Po włączeniu tej zasady wymuszany jest import zapisanych haseł z poprzedniej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia zapisane hasła nie są importowane. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zaimportować hasła lub operacja ta zostanie wykonana automatycznie.</translation>
 <translation id="7003746348783715221">Ustawienia przeglądarki <ph name="PRODUCT_NAME" /></translation>
@@ -1650,7 +1661,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7713608076604149344">Ograniczenia pobierania</translation>
 <translation id="7715711044277116530">Wartość procentowa skalowania opóźnienia przyciemnienia ekranu w trybie prezentacji</translation>
 <translation id="7717938661004793600">Skonfiguruj ułatwienia dostępu w <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="7719251660743813569">Określa, czy statystyki użytkowania są przesyłane do Google. W przypadku włączenia tej opcji <ph name="PRODUCT_OS_NAME" /> będzie przesyłać statystyki użytkowania. Jeśli opcja będzie wyłączona lub nieskonfigurowana, przesyłanie statystyk zostanie wyłączone.</translation>
 <translation id="7724994675283793633">Ta zasada włącza HTTP/0.9 w portach innych niż 80 dla HTTP i 443 dla HTTPS.
 
       Domyślnie zasada jest wyłączona. Jeśli zostanie włączona, naraża to użytkowników na problem związany z bezpieczeństwem: https://crbug.com/600352
@@ -1961,6 +1971,15 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="891435090623616439">zakodowane jako ciąg JSON – więcej szczegółów znajdziesz na <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8947415621777543415">Zgłoś lokalizację urządzenia</translation>
 <translation id="8951350807133946005">Ustaw katalog podręcznej pamięci dyskowej</translation>
+<translation id="8952317565138994125">Wyłącza synchronizację danych w <ph name="PRODUCT_NAME" /> przy użyciu usług synchronizacji obsługiwanych przez Google i uniemożliwia użytkownikom zmianę tego ustawienia.
+
+      Jeśli włączysz to ustawienie, użytkownicy nie będą go mogli zmienić ani zastąpić w <ph name="PRODUCT_NAME" />.
+
+      Jeśli nie skonfigurujesz tej zasady, użytkownicy będą mogli wybrać, czy chcą używać Google Sync czy nie.
+
+      Aby całkowicie wyłączyć Google Sync, zalecamy wyłączenie usługi Google Sync w konsoli administracyjnej Google.
+
+      Nie należy włączać tej zasady, gdy włączona jest zasada <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />, ponieważ używa ona tych samych funkcji po stronie klienta. Synchronizacja obsługiwana przez Google jest w takim przypadku całkowicie wyłączana.</translation>
 <translation id="8955719471735800169">Powrót do góry</translation>
 <translation id="8960850473856121830">Wzorce na tej liście są porównywane ze źródłem zabezpieczeń
       adresu URL, z którego pochodzi żądanie. Gdy znaleziono odpowiednik,
@@ -1970,6 +1989,7 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="8970205333161758602">Pomiń monit o odinstalowanie <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8971221018777092728">Zegar automatycznego logowania do sesji publicznej</translation>
 <translation id="8976248126101463034">Zezwalaj na uwierzytelnianie Gnubby w przypadku hostów dostępu zdalnego</translation>
+<translation id="8976531594979650914">Użyj domyślnej drukarki systemowej</translation>
 <translation id="8992176907758534924">Nie zezwalaj na pokazywanie grafik w żadnej witrynie</translation>
 <translation id="9035964157729712237">Identyfikatory rozszerzeń nieobjętych czarną listą</translation>
 <translation id="9042911395677044526">Pozwala na przesyłanie konfiguracji sieciowej w trybie push do urządzeń z <ph name="PRODUCT_OS_NAME" /> dla poszczególnych użytkowników. Konfiguracja sieci to łańcuch w formacie JSON zgodny z formatem Open Network Configuration opisanym na <ph name="ONC_SPEC_URL" /></translation>
