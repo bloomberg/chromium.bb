@@ -166,7 +166,14 @@ v8::Local<v8::Value> ToV8(const IDBAny* impl,
   return v8::Undefined(isolate);
 }
 
+#if defined(NDEBUG)
 static const size_t kMaximumDepth = 2000;
+#else
+// Stack frames in debug builds are generally much larger than in release
+// builds. Use a lower recursion depth to avoid stack overflows (see e.g.
+// http://crbug.com/729334).
+static const size_t kMaximumDepth = 1000;
+#endif
 
 static IDBKey* CreateIDBKeyFromValue(v8::Isolate* isolate,
                                      v8::Local<v8::Value> value,
