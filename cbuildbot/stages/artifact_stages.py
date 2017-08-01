@@ -228,6 +228,17 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
         parallel.RunTasksInProcessPool(ArchiveStandaloneArtifact,
                                        [[x] for x in self.artifacts])
 
+    def ArchiveEbuildLogs():
+      """Tar and archive Ebuild logs.
+
+      This includes all the files in /build/$BOARD/tmp/portage/logs.
+      """
+      tarpath = commands.BuildEbuildLogsTarball(self._build_root,
+                                                self._current_board,
+                                                self.archive_path)
+      if tarpath is not None:
+        self._release_upload_queue.put([tarpath])
+
     def ArchiveZipFiles():
       """Build and archive zip files.
 
@@ -363,6 +374,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
 
       with self.ArtifactUploader(self._upload_queue, archive=False):
         parallel.RunParallelSteps(steps)
+      steps.append(ArchiveEbuildLogs)
 
     if not self._run.config.afdo_generate_min:
       BuildAndArchiveArtifacts()

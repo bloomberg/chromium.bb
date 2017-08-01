@@ -1401,6 +1401,70 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     # GCE expects the tarball to be in a particular format.
     cros_test_lib.VerifyTarball(output_path, ['disk.raw'])
 
+  def testBuildEbuildLogsTarballPositive(self):
+    """Verifies that the ebuild logs archiver builds correct logs"""
+    # Names of log files typically found in a build directory.
+    log_files = (
+        '',
+        'x11-libs:libdrm-2.4.81-r24:20170816-175008.log',
+        'x11-libs:libpciaccess-0.12.902-r2:20170816-174849.log',
+        'x11-libs:libva-1.7.1-r2:20170816-175019.log',
+        'x11-libs:libva-intel-driver-1.7.1-r4:20170816-175029.log',
+        'x11-libs:libxkbcommon-0.4.3-r2:20170816-174908.log',
+        'x11-libs:pango-1.32.5-r1:20170816-174954.log',
+        'x11-libs:pixman-0.32.4:20170816-174832.log',
+        'x11-misc:xkeyboard-config-2.15-r3:20170816-174908.log',
+        'x11-proto:kbproto-1.0.5:20170816-174849.log',
+        'x11-proto:xproto-7.0.31:20170816-174849.log',
+    )
+    tarred_files = [os.path.join('logs', x) for x in log_files]
+    board = 'samus'
+    log_files_root = os.path.join(self.tempdir,
+                                  '%s/tmp/portage/logs' % board)
+    # Generate a representative set of log files produced by a typical build.
+    cros_test_lib.CreateOnDiskHierarchy(log_files_root, log_files)
+    # Create an archive from the simulated logs directory
+    tarball = os.path.join(self.tempdir,
+                           commands.BuildEbuildLogsTarball(self.tempdir, board,
+                                                           self.tempdir))
+    # Verify the tarball contents.
+    cros_test_lib.VerifyTarball(tarball, tarred_files)
+
+  def testBuildEbuildLogsTarballNegative(self):
+    """Verifies that the Ebuild logs archiver handles wrong inputs"""
+    # Names of log files typically found in a build directory.
+    log_files = (
+        '',
+        'x11-libs:libdrm-2.4.81-r24:20170816-175008.log',
+        'x11-libs:libpciaccess-0.12.902-r2:20170816-174849.log',
+        'x11-libs:libva-1.7.1-r2:20170816-175019.log',
+        'x11-libs:libva-intel-driver-1.7.1-r4:20170816-175029.log',
+        'x11-libs:libxkbcommon-0.4.3-r2:20170816-174908.log',
+        'x11-libs:pango-1.32.5-r1:20170816-174954.log',
+        'x11-libs:pixman-0.32.4:20170816-174832.log',
+        'x11-misc:xkeyboard-config-2.15-r3:20170816-174908.log',
+        'x11-proto:kbproto-1.0.5:20170816-174849.log',
+        'x11-proto:xproto-7.0.31:20170816-174849.log',
+    )
+
+    board = 'samus'
+    # Create a malformed directory name.
+    log_files_root = os.path.join(self.tempdir,
+                                  '%s/tmp/portage/wrong_dir_name' % board)
+    # Generate a representative set of log files produced by a typical build.
+    cros_test_lib.CreateOnDiskHierarchy(log_files_root, log_files)
+
+    # Create an archive from the simulated logs directory
+    wrong_board = 'chell'
+    tarball_rel_path = commands.BuildEbuildLogsTarball(self.tempdir,
+                                                       wrong_board,
+                                                       self.tempdir)
+    self.assertEquals(tarball_rel_path, None)
+    tarball_rel_path = commands.BuildEbuildLogsTarball(self.tempdir,
+                                                       board, self.tempdir)
+    self.assertEquals(tarball_rel_path, None)
+
+
 
 class ImageTestCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
   """Test commands related to ImageTest tests."""
