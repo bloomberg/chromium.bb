@@ -20,31 +20,9 @@ class ProximityAuthPrefManager {
   ProximityAuthPrefManager() {}
   virtual ~ProximityAuthPrefManager() {}
 
-  // Methods used to handle remote BLE devices stored in prefs
-  // (kProximityAuthRemoteBleDevices).
-  //
-  // Each device correspond to a (public_key, bluetooth_address) pair. The
-  // bluetooth_address <-> public_key mapping is unique, i.e. if there is
-  // another device with same bluetooth address or public key that device will
-  // be replaced.
-  virtual void AddOrUpdateDevice(const std::string& bluetooth_address,
-                                 const std::string& public_key) = 0;
-
-  // Removes the unique device with |bluetooth_address| (|public_key|). Returns
-  // false if no device was found.
-  virtual bool RemoveDeviceWithAddress(
-      const std::string& bluetooth_address) = 0;
-  virtual bool RemoveDeviceWithPublicKey(const std::string& public_key) = 0;
-
-  // Queries the devices stored in |kProximityAuthRemoteBleDevices| pref by
-  // |bluetooth_address| or |public_key|. Virtual for testing.
-  virtual bool HasDeviceWithAddress(
-      const std::string& bluetooth_address) const = 0;
-  virtual bool HasDeviceWithPublicKey(const std::string& public_key) const = 0;
-  virtual std::string GetDevicePublicKey(
-      const std::string& bluetooth_address) const = 0;
-  virtual std::string GetDeviceAddress(const std::string& public_key) const = 0;
-  virtual std::vector<std::string> GetPublicKeys() const = 0;
+  // Returns true if EasyUnlock is allowed. Note: there is no corresponding
+  // setter because this pref is pushed through an enterprise policy.
+  virtual bool IsEasyUnlockAllowed() const = 0;
 
   // Setter and getter for the timestamp of the last password entry. This
   // preference is used to enforce reauthing with the password after a given

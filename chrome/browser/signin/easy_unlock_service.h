@@ -48,6 +48,7 @@ class PrefRegistrySyncable;
 }
 
 namespace proximity_auth {
+class ProximityAuthPrefManager;
 class ProximityAuthSystem;
 }
 
@@ -87,6 +88,11 @@ class EasyUnlockService : public KeyedService {
 
   // Returns the identifier for the device.
   static std::string GetDeviceId();
+
+  // Returns the ProximityAuthPrefManager, responsible for managing all
+  // EasyUnlock preferences.
+  virtual proximity_auth::ProximityAuthPrefManager*
+  GetProximityAuthPrefManager();
 
   // Returns the EasyUnlockService type.
   virtual Type GetType() const = 0;

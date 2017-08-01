@@ -92,8 +92,12 @@ void ChromeProximityAuthClient::GetChallengeForUserAndDevice(
 #endif
 }
 
-PrefService* ChromeProximityAuthClient::GetPrefService() {
-  return profile_->GetPrefs();
+proximity_auth::ProximityAuthPrefManager*
+ChromeProximityAuthClient::GetPrefManager() {
+  EasyUnlockService* service = EasyUnlockService::Get(profile_);
+  if (service)
+    return service->GetProximityAuthPrefManager();
+  return nullptr;
 }
 
 std::unique_ptr<cryptauth::SecureMessageDelegate>

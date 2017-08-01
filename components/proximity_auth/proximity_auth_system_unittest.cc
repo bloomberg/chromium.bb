@@ -86,17 +86,16 @@ class MockProximityAuthPrefManager : public ProximityAuthProfilePrefManager {
 // Harness for ProximityAuthSystem to make it testable.
 class TestableProximityAuthSystem : public ProximityAuthSystem {
  public:
-  TestableProximityAuthSystem(
-      ScreenlockType screenlock_type,
-      ProximityAuthClient* proximity_auth_client,
-      std::unique_ptr<UnlockManager> unlock_manager,
-      std::unique_ptr<base::Clock> clock,
-      std::unique_ptr<ProximityAuthPrefManager> pref_manager)
+  TestableProximityAuthSystem(ScreenlockType screenlock_type,
+                              ProximityAuthClient* proximity_auth_client,
+                              std::unique_ptr<UnlockManager> unlock_manager,
+                              std::unique_ptr<base::Clock> clock,
+                              ProximityAuthPrefManager* pref_manager)
       : ProximityAuthSystem(screenlock_type,
                             proximity_auth_client,
                             std::move(unlock_manager),
                             std::move(clock),
-                            std::move(pref_manager)),
+                            pref_manager),
         life_cycle_(nullptr) {}
   ~TestableProximityAuthSystem() override {}
 
@@ -121,7 +120,8 @@ class TestableProximityAuthSystem : public ProximityAuthSystem {
 class ProximityAuthSystemTest : public testing::Test {
  protected:
   ProximityAuthSystemTest()
-      : task_runner_(new base::TestSimpleTaskRunner()),
+      : pref_manager_(new NiceMock<MockProximityAuthPrefManager>()),
+        task_runner_(new base::TestSimpleTaskRunner()),
         thread_task_runner_handle_(task_runner_) {}
 
   void SetUp() override {
@@ -155,17 +155,13 @@ class ProximityAuthSystemTest : public testing::Test {
         base::MakeUnique<base::SimpleTestClock>();
     clock_ = clock.get();
 
-    std::unique_ptr<MockProximityAuthPrefManager> pref_manager(
-        new NiceMock<MockProximityAuthPrefManager>());
-    pref_manager_ = pref_manager.get();
-
     clock_->SetNow(base::Time::FromJavaTime(kTimestampBeforeReauthMs));
     ON_CALL(*pref_manager_, GetLastPasswordEntryTimestampMs())
         .WillByDefault(Return(kLastPasswordEntryTimestampMs));
 
     proximity_auth_system_.reset(new TestableProximityAuthSystem(
         type, &proximity_auth_client_, std::move(unlock_manager),
-        std::move(clock), std::move(pref_manager)));
+        std::move(clock), pref_manager_.get()));
   }
 
   void LockScreen() { ScreenlockBridge::Get()->SetLockHandler(&lock_handler_); }
@@ -191,7 +187,7 @@ class ProximityAuthSystemTest : public testing::Test {
   std::unique_ptr<TestableProximityAuthSystem> proximity_auth_system_;
   MockUnlockManager* unlock_manager_;
   base::SimpleTestClock* clock_;
-  MockProximityAuthPrefManager* pref_manager_;
+  std::unique_ptr<MockProximityAuthPrefManager> pref_manager_;
 
   RemoteDeviceList user1_remote_devices_;
   RemoteDeviceList user2_remote_devices_;

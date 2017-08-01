@@ -463,7 +463,6 @@ extern const char kPushMessagingAppIdentifierMap[];
 extern const char kGCMProductCategoryForSubtypes[];
 
 extern const char kEasyUnlockAllowed[];
-extern const char kEasyUnlockEnabled[];
 extern const char kEasyUnlockPairing[];
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

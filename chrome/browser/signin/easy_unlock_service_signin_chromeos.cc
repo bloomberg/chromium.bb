@@ -28,6 +28,7 @@
 #include "chromeos/tpm/tpm_token_loader.h"
 #include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/logging/logging.h"
+#include "components/proximity_auth/proximity_auth_local_state_pref_manager.h"
 #include "components/proximity_auth/switches.h"
 
 namespace {
@@ -203,6 +204,11 @@ void EasyUnlockServiceSignin::WrapChallengeForUserAndDevice(
   callback.Run(std::string());
 }
 
+proximity_auth::ProximityAuthPrefManager*
+EasyUnlockServiceSignin::GetProximityAuthPrefManager() {
+  return pref_manager_.get();
+}
+
 EasyUnlockService::Type EasyUnlockServiceSignin::GetType() const {
   return EasyUnlockService::TYPE_SIGNIN;
 }
@@ -324,6 +330,9 @@ void EasyUnlockServiceSignin::InitializeInternal() {
 
   service_active_ = true;
 
+  pref_manager_.reset(new proximity_auth::ProximityAuthLocalStatePrefManager(
+      g_browser_process->local_state()));
+
   chromeos::LoginState::Get()->AddObserver(this);
   proximity_auth::ScreenlockBridge* screenlock_bridge =
       proximity_auth::ScreenlockBridge::Get();
@@ -409,6 +418,8 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
           proximity_auth::switches::kEnableChromeOSLogin)) {
     return;
   }
+
+  pref_manager_->SetActiveUser(account_id);
 
   if (should_update_app_state) {
     UpdateAppState();

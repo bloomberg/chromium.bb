@@ -10,7 +10,10 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/proximity_auth/proximity_auth_pref_manager.h"
+#include "components/signin/core/account_id/account_id.h"
 
 class PrefService;
 
@@ -32,24 +35,19 @@ class ProximityAuthProfilePrefManager : public ProximityAuthPrefManager {
   // |pref_service| (persistent across browser restarts). |pref_service| should
   // have been registered using RegisterPrefs(). Not owned, must out live this
   // instance.
-  explicit ProximityAuthProfilePrefManager(PrefService* pref_service);
+  ProximityAuthProfilePrefManager(PrefService* pref_service);
   ~ProximityAuthProfilePrefManager() override;
+
+  // Initializes the manager to listen to pref changes and sync prefs to the
+  // user's local state.
+  void StartSyncingToLocalState(PrefService* local_state,
+                                const AccountId& account_id);
 
   // Registers the prefs used by this class to the given |pref_service|.
   static void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // ProximityAuthPrefManager:
-  void AddOrUpdateDevice(const std::string& bluetooth_address,
-                         const std::string& public_key) override;
-  bool RemoveDeviceWithAddress(const std::string& bluetooth_address) override;
-  bool RemoveDeviceWithPublicKey(const std::string& public_key) override;
-  bool HasDeviceWithAddress(
-      const std::string& bluetooth_address) const override;
-  bool HasDeviceWithPublicKey(const std::string& public_key) const override;
-  std::string GetDevicePublicKey(
-      const std::string& bluetooth_address) const override;
-  std::string GetDeviceAddress(const std::string& public_key) const override;
-  std::vector<std::string> GetPublicKeys() const override;
+  bool IsEasyUnlockAllowed() const override;
   void SetLastPasswordEntryTimestampMs(int64_t timestamp_ms) override;
   int64_t GetLastPasswordEntryTimestampMs() const override;
   void SetLastPromotionCheckTimestampMs(int64_t timestamp_ms) override;
@@ -64,9 +62,22 @@ class ProximityAuthProfilePrefManager : public ProximityAuthPrefManager {
  private:
   const base::DictionaryValue* GetRemoteBleDevices() const;
 
+  void SyncPrefsToLocalState();
+
   // Contains perferences that outlive the lifetime of this object and across
   // process restarts. Not owned and must outlive this instance.
   PrefService* pref_service_;
+
+  // Listens to pref changes so they can be synced to the local state.
+  PrefChangeRegistrar registrar_;
+
+  // The local state to which to sync the profile prefs.
+  PrefService* local_state_;
+
+  // The account id of the current profile.
+  AccountId account_id_;
+
+  base::WeakPtrFactory<ProximityAuthProfilePrefManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthProfilePrefManager);
 };
