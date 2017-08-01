@@ -269,18 +269,19 @@ TEST_F(VisibleSelectionTest, SelectAllWithInputElement) {
   Element* const input = GetDocument().QuerySelector("input");
   Node* const last_child = GetDocument().body()->lastChild();
 
-  const VisibleSelection& visible_selectin_in_dom_tree = CreateVisibleSelection(
-      SelectionInDOMTree::Builder()
-          .Collapse(Position::FirstPositionInNode(*html_element))
-          .Extend(Position::LastPositionInNode(*html_element))
-          .Build());
+  const VisibleSelection& visible_selection_in_dom_tree =
+      CreateVisibleSelection(
+          SelectionInDOMTree::Builder()
+              .Collapse(Position::FirstPositionInNode(*html_element))
+              .Extend(Position::LastPositionInNode(*html_element))
+              .Build());
   EXPECT_EQ(SelectionInDOMTree::Builder()
                 .Collapse(Position::BeforeNode(*input))
                 .Extend(Position(last_child, 3))
                 .Build(),
-            visible_selectin_in_dom_tree.AsSelection());
+            visible_selection_in_dom_tree.AsSelection());
 
-  const VisibleSelectionInFlatTree& visible_selectin_in_flat_tree =
+  const VisibleSelectionInFlatTree& visible_selection_in_flat_tree =
       CreateVisibleSelection(
           SelectionInFlatTree::Builder()
               .Collapse(PositionInFlatTree::FirstPositionInNode(*html_element))
@@ -290,7 +291,7 @@ TEST_F(VisibleSelectionTest, SelectAllWithInputElement) {
                 .Collapse(PositionInFlatTree::BeforeNode(*input))
                 .Extend(PositionInFlatTree(last_child, 3))
                 .Build(),
-            visible_selectin_in_flat_tree.AsSelection());
+            visible_selection_in_flat_tree.AsSelection());
 }
 
 TEST_F(VisibleSelectionTest, ShadowCrossing) {
