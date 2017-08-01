@@ -85,8 +85,7 @@ void DrmOverlayManager::CheckOverlaySupport(
     for (size_t i = 0; i < size; i++) {
       DCHECK(returns[i] == OVERLAY_STATUS_ABLE ||
              returns[i] == OVERLAY_STATUS_NOT);
-      candidates->at(i).overlay_handled =
-          returns[i] == OVERLAY_STATUS_ABLE ? true : false;
+      candidates->at(i).overlay_handled = returns[i] == OVERLAY_STATUS_ABLE;
     }
     return;
   }
@@ -100,13 +99,9 @@ void DrmOverlayManager::CheckOverlaySupport(
     needs_gpu_validation = true;
   }
 
-  std::vector<OverlayStatus> returns(result_candidates.size());
-  if (needs_gpu_validation) {
-    for (auto param : returns) {
-      param = OVERLAY_STATUS_PENDING;
-    }
-  }
-
+  const auto initial_status =
+      needs_gpu_validation ? OVERLAY_STATUS_PENDING : OVERLAY_STATUS_NOT;
+  std::vector<OverlayStatus> returns(result_candidates.size(), initial_status);
   cache_.Put(result_candidates, returns);
 
   if (needs_gpu_validation)
