@@ -6,6 +6,9 @@
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/subresource_filter/subresource_filter_content_settings_manager.h"
 #include "chrome/browser/subresource_filter/subresource_filter_test_harness.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "components/rappor/public/rappor_parameters.h"
+#include "components/rappor/test_rappor_service.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_test_utils.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
@@ -221,4 +224,24 @@ TEST_F(SubresourceFilterTest, ToggleForceActivation) {
   EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
   histogram_tester.ExpectBucketCount(actions_histogram,
                                      kActionForcedActivationEnabled, 1);
+}
+
+TEST_F(SubresourceFilterTest, UIShown_LogsRappor) {
+  rappor::TestRapporServiceImpl rappor_tester;
+  TestingBrowserProcess::GetGlobal()->SetRapporServiceImpl(&rappor_tester);
+  const char kRapporMetric[] = "SubresourceFilter.UIShown";
+  const GURL url("https://example.test");
+
+  ConfigureAsSubresourceFilterOnlyURL(url);
+  SimulateNavigateAndCommit(url, main_rfh());
+  EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(main_rfh()));
+  EXPECT_TRUE(GetClient()->did_show_ui_for_navigation());
+
+  std::string sample_string;
+  rappor::RapporType type;
+  EXPECT_TRUE(rappor_tester.GetRecordedSampleForMetric(kRapporMetric,
+                                                       &sample_string, &type));
+  EXPECT_EQ(rappor::RapporType::UMA_RAPPOR_TYPE, type);
+  // The host is the same as the etld+1 in this case.
+  EXPECT_EQ(url.host(), sample_string);
 }

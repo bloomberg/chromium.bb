@@ -20,6 +20,9 @@
 #include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/rappor/public/rappor_parameters.h"
+#include "components/rappor/public/rappor_utils.h"
+#include "components/rappor/rappor_service_impl.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/subresource_filter/content/browser/content_ruleset_service.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
@@ -131,6 +134,13 @@ void ChromeSubresourceFilterClient::ToggleNotificationVisibility(
     content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_ADS);
 
     LogAction(kActionUIShown);
+
+    if (rappor::RapporService* rappor_service =
+            g_browser_process->rappor_service()) {
+      rappor_service->RecordSampleString(
+          "SubresourceFilter.UIShown", rappor::UMA_RAPPOR_TYPE,
+          rappor::GetDomainAndRegistrySampleFromGURL(top_level_url));
+    }
     did_show_ui_for_navigation_ = true;
     settings_manager_->OnDidShowUI(top_level_url);
   } else {
