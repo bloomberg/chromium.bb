@@ -332,6 +332,26 @@ WebVector<WebRect> WebLayerImpl::TouchEventHandlerRegion() const {
   return result;
 }
 
+WebVector<WebRect>
+WebLayerImpl::TouchEventHandlerRegionForTouchActionForTesting(
+    cc::TouchAction touch_action) const {
+  size_t num_rects = 0;
+  for (cc::Region::Iterator region_rects(
+           layer_->touch_action_region().GetRegionForTouchAction(touch_action));
+       region_rects.has_rect(); region_rects.next())
+    ++num_rects;
+
+  WebVector<WebRect> result(num_rects);
+  size_t i = 0;
+  for (cc::Region::Iterator region_rects(
+           layer_->touch_action_region().GetRegionForTouchAction(touch_action));
+       region_rects.has_rect(); region_rects.next()) {
+    result[i] = region_rects.rect();
+    ++i;
+  }
+  return result;
+}
+
 void WebLayerImpl::SetIsContainerForFixedPositionLayers(bool enable) {
   layer_->SetIsContainerForFixedPositionLayers(enable);
 }

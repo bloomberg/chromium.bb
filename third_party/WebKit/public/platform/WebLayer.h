@@ -191,6 +191,8 @@ class WebLayer {
 
   virtual void SetTouchEventHandlerRegion(const WebVector<WebTouchInfo>&) = 0;
   virtual WebVector<WebRect> TouchEventHandlerRegion() const = 0;
+  virtual WebVector<WebRect> TouchEventHandlerRegionForTouchActionForTesting(
+      WebTouchAction) const = 0;
 
   virtual void SetIsContainerForFixedPositionLayers(bool) = 0;
   virtual bool IsContainerForFixedPositionLayers() const = 0;

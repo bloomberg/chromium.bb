@@ -110,6 +110,9 @@ class CC_BLINK_EXPORT WebLayerImpl : public NON_EXPORTED_BASE(blink::WebLayer) {
   void SetTouchEventHandlerRegion(
       const blink::WebVector<blink::WebTouchInfo>& touch_info) override;
   blink::WebVector<blink::WebRect> TouchEventHandlerRegion() const override;
+  blink::WebVector<blink::WebRect>
+      TouchEventHandlerRegionForTouchActionForTesting(
+          cc::TouchAction) const override;
   void SetIsContainerForFixedPositionLayers(bool is_container) override;
   bool IsContainerForFixedPositionLayers() const override;
   void SetPositionConstraint(
