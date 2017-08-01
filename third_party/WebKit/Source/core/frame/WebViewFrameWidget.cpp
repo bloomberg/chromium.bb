@@ -5,14 +5,14 @@
 #include "core/frame/WebViewFrameWidget.h"
 
 #include "core/exported/WebViewBase.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/layout/HitTestResult.h"
 
 namespace blink {
 
 WebViewFrameWidget::WebViewFrameWidget(WebWidgetClient& client,
                                        WebViewBase& web_view,
-                                       WebLocalFrameBase& main_frame)
+                                       WebLocalFrameImpl& main_frame)
     : client_(&client),
       web_view_(&web_view),
       main_frame_(&main_frame),
@@ -204,7 +204,7 @@ void WebViewFrameWidget::SetBaseBackgroundColor(WebColor color) {
   web_view_->SetBaseBackgroundColor(color);
 }
 
-WebLocalFrameBase* WebViewFrameWidget::LocalRoot() const {
+WebLocalFrameImpl* WebViewFrameWidget::LocalRoot() const {
   return web_view_->MainFrameImpl();
 }
 

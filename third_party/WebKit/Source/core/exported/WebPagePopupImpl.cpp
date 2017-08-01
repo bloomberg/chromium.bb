@@ -40,7 +40,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/api/LayoutAPIShim.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -202,7 +202,7 @@ class PagePopupChromeClient final : public EmptyChromeClient {
 
   void SetTouchAction(LocalFrame* frame, TouchAction touch_action) override {
     DCHECK(frame);
-    WebLocalFrameBase* web_frame = WebLocalFrameBase::FromFrame(frame);
+    WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
     WebFrameWidget* widget = web_frame->LocalRoot()->FrameWidget();
     if (!widget)
       return;

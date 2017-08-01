@@ -35,7 +35,7 @@
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/FrameTestHelpers.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "platform/SerializedResource.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"

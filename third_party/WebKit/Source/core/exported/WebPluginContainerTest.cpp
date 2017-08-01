@@ -41,7 +41,7 @@
 #include "core/exported/WebViewBase.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameTestHelpers.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/Page.h"
 #include "platform/graphics/GraphicsContext.h"

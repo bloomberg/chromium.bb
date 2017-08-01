@@ -36,7 +36,7 @@
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/geometry/DOMRect.h"
 #include "core/geometry/DOMRectList.h"
 #include "core/html/HTMLIFrameElement.h"

@@ -9,7 +9,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/RootFrameViewport.h"
 #include "core/frame/VisualViewport.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/geometry/DOMRect.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutBox.h"
@@ -771,7 +771,7 @@ TEST_P(RootScrollerTest, DISABLED_RemoteMainFrame) {
 #else
 TEST_P(RootScrollerTest, RemoteMainFrame) {
 #endif
-  WebLocalFrameBase* local_frame;
+  WebLocalFrameImpl* local_frame;
   WebFrameWidget* widget;
 
   Initialize("root-scroller-iframe.html");

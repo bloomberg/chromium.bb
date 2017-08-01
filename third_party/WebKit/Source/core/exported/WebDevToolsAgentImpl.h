@@ -57,7 +57,7 @@ class InspectorTraceEvents;
 class LocalFrame;
 class WebDevToolsAgentClient;
 class WebLayerTreeView;
-class WebLocalFrameBase;
+class WebLocalFrameImpl;
 class WebString;
 
 class CORE_EXPORT WebDevToolsAgentImpl final
@@ -70,7 +70,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
       public NON_EXPORTED_BASE(InspectorLayerTreeAgent::Client),
       private WebThread::TaskObserver {
  public:
-  static WebDevToolsAgentImpl* Create(WebLocalFrameBase*,
+  static WebDevToolsAgentImpl* Create(WebLocalFrameImpl*,
                                       WebDevToolsAgentClient*);
   ~WebDevToolsAgentImpl() override;
   DECLARE_VIRTUAL_TRACE();
@@ -106,7 +106,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   WebString EvaluateInWebInspectorOverlay(const WebString& script) override;
 
  private:
-  WebDevToolsAgentImpl(WebLocalFrameBase*,
+  WebDevToolsAgentImpl(WebLocalFrameImpl*,
                        WebDevToolsAgentClient*,
                        bool include_view_agents);
 
@@ -152,7 +152,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   bool Attached() const { return !!sessions_.size(); }
 
   WebDevToolsAgentClient* client_;
-  Member<WebLocalFrameBase> web_local_frame_impl_;
+  Member<WebLocalFrameImpl> web_local_frame_impl_;
 
   Member<CoreProbeSink> probe_sink_;
   Member<InspectorResourceContentLoader> resource_content_loader_;

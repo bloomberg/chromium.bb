@@ -32,7 +32,7 @@
 
 #include "core/exported/WebViewBase.h"
 #include "core/frame/FrameTestHelpers.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "platform/mhtml/MHTMLArchive.h"
 #include "platform/mhtml/MHTMLParser.h"
 #include "platform/testing/HistogramTester.h"
@@ -183,7 +183,7 @@ class WebFrameSerializerSanitizationTest : public ::testing::Test {
 
   WebViewBase* WebView() { return helper_.WebView(); }
 
-  WebLocalFrameBase* MainFrameImpl() { return helper_.LocalMainFrame(); }
+  WebLocalFrameImpl* MainFrameImpl() { return helper_.LocalMainFrame(); }
 
   HistogramTester histogram_tester_;
 

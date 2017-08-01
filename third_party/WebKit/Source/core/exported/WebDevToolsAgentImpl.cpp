@@ -43,7 +43,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/inspector/DevToolsEmulator.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorAnimationAgent.h"
@@ -91,7 +91,7 @@ namespace blink {
 
 namespace {
 
-bool IsMainFrame(WebLocalFrameBase* frame) {
+bool IsMainFrame(WebLocalFrameImpl* frame) {
   // TODO(dgozman): sometimes view->mainFrameImpl() does return null, even
   // though |frame| is meant to be main frame.  See http://crbug.com/526162.
   return frame->ViewImpl() && !frame->Parent();
@@ -118,7 +118,7 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
       instance_->QuitNow();
   }
 
-  static void PauseForCreateWindow(WebLocalFrameBase* frame) {
+  static void PauseForCreateWindow(WebLocalFrameImpl* frame) {
     if (instance_)
       instance_->RunForCreateWindow(frame);
   }
@@ -143,10 +143,10 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
 
     running_for_debug_break_ = true;
     if (!running_for_create_window_)
-      RunLoop(WebLocalFrameBase::FromFrame(frame));
+      RunLoop(WebLocalFrameImpl::FromFrame(frame));
   }
 
-  void RunForCreateWindow(WebLocalFrameBase* frame) {
+  void RunForCreateWindow(WebLocalFrameImpl* frame) {
     if (running_for_create_window_)
       return;
 
@@ -155,7 +155,7 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
       RunLoop(frame);
   }
 
-  void RunLoop(WebLocalFrameBase* frame) {
+  void RunLoop(WebLocalFrameImpl* frame) {
     // 0. Flush pending frontend messages.
     WebDevToolsAgentImpl* agent = frame->DevToolsAgentImpl();
     agent->FlushProtocolNotifications();
@@ -209,7 +209,7 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
       return;
     // Otherwise, pass to the client (embedded workers do it differently).
     WebDevToolsAgentImpl* agent =
-        WebLocalFrameBase::FromFrame(frame)->DevToolsAgentImpl();
+        WebLocalFrameImpl::FromFrame(frame)->DevToolsAgentImpl();
     if (agent && agent->Client())
       agent->Client()->ResumeStartup();
   }
@@ -226,7 +226,7 @@ ClientMessageLoopAdapter* ClientMessageLoopAdapter::instance_ = nullptr;
 
 // static
 WebDevToolsAgentImpl* WebDevToolsAgentImpl::Create(
-    WebLocalFrameBase* frame,
+    WebLocalFrameImpl* frame,
     WebDevToolsAgentClient* client) {
   if (!IsMainFrame(frame)) {
     WebDevToolsAgentImpl* agent =
@@ -243,7 +243,7 @@ WebDevToolsAgentImpl* WebDevToolsAgentImpl::Create(
 }
 
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
-    WebLocalFrameBase* web_local_frame_impl,
+    WebLocalFrameImpl* web_local_frame_impl,
     WebDevToolsAgentClient* client,
     bool include_view_agents)
     : client_(client),
@@ -569,7 +569,7 @@ void WebDevToolsAgentImpl::WaitForCreateWindow(LocalFrame* frame) {
   if (!Attached())
     return;
   if (client_ &&
-      client_->RequestDevToolsForFrame(WebLocalFrameBase::FromFrame(frame)))
+      client_->RequestDevToolsForFrame(WebLocalFrameImpl::FromFrame(frame)))
     ClientMessageLoopAdapter::PauseForCreateWindow(web_local_frame_impl_);
 }
 

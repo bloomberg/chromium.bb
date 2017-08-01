@@ -8,7 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentInit.h"
 #include "core/frame/FrameTestHelpers.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "platform/testing/URLTestHelpers.h"

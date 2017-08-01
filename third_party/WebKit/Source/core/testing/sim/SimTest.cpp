@@ -7,7 +7,7 @@
 #include "core/dom/Document.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalDOMWindow.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -66,7 +66,7 @@ WebViewBase& SimTest::WebView() {
   return *web_view_helper_.WebView();
 }
 
-WebLocalFrameBase& SimTest::MainFrame() {
+WebLocalFrameImpl& SimTest::MainFrame() {
   return *WebView().MainFrameImpl();
 }
 

@@ -30,7 +30,7 @@
 
 #include "core/exported/WebViewBase.h"
 #include "core/frame/FrameTestHelpers.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/forms/ColorChooserClient.h"
 #include "core/html/forms/DateTimeChooser.h"
@@ -98,7 +98,7 @@ class CreateWindowTest : public ::testing::Test {
 
 TEST_F(CreateWindowTest, CreateWindowFromSuspendedPage) {
   ScopedPageSuspender suspender;
-  LocalFrame* frame = ToWebLocalFrameBase(main_frame_)->GetFrame();
+  LocalFrame* frame = ToWebLocalFrameImpl(main_frame_)->GetFrame();
   FrameLoadRequest request(frame->GetDocument());
   WebWindowFeatures features;
   EXPECT_EQ(nullptr, chrome_client_impl_->CreateWindow(
@@ -206,7 +206,7 @@ class PagePopupSuppressionTest : public ::testing::Test {
  protected:
   FrameTestHelpers::WebViewHelper helper_;
   WebViewBase* web_view_;
-  Persistent<WebLocalFrameBase> main_frame_;
+  Persistent<WebLocalFrameImpl> main_frame_;
   Persistent<ChromeClientImpl> chrome_client_impl_;
   Persistent<FakeColorChooserClient> color_chooser_client_;
   Persistent<FakeDateTimeChooserClient> date_time_chooser_client_;

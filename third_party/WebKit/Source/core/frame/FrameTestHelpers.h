@@ -100,7 +100,7 @@
 namespace blink {
 
 class WebFrame;
-class WebLocalFrameBase;
+class WebLocalFrameImpl;
 class WebRemoteFrameImpl;
 class WebSettings;
 
@@ -144,20 +144,20 @@ WebMouseEvent CreateMouseEvent(WebInputEvent::Type,
 // ensuring that non-null clients outlive the created frame.
 
 // Helper for creating a local child frame of a local parent frame.
-WebLocalFrameBase* CreateLocalChild(WebLocalFrame& parent,
+WebLocalFrameImpl* CreateLocalChild(WebLocalFrame& parent,
                                     WebTreeScopeType,
                                     TestWebFrameClient* = nullptr);
 
 // Similar, but unlike the overload which takes the client as a raw pointer,
 // ownership of the TestWebFrameClient is transferred to the test framework.
 // TestWebFrameClient may not be null.
-WebLocalFrameBase* CreateLocalChild(WebLocalFrame& parent,
+WebLocalFrameImpl* CreateLocalChild(WebLocalFrame& parent,
                                     WebTreeScopeType,
                                     std::unique_ptr<TestWebFrameClient>);
 
 // Helper for creating a provisional local frame that can replace a remote
 // frame.
-WebLocalFrameBase* CreateProvisional(WebRemoteFrame& old_frame,
+WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
                                      TestWebFrameClient* = nullptr);
 
 // Helper for creating a remote frame. Generally used when creating a remote
@@ -167,7 +167,7 @@ WebLocalFrameBase* CreateProvisional(WebRemoteFrame& old_frame,
 WebRemoteFrameImpl* CreateRemote(TestWebRemoteFrameClient* = nullptr);
 
 // Helper for creating a local child frame of a remote parent frame.
-WebLocalFrameBase* CreateLocalChild(
+WebLocalFrameImpl* CreateLocalChild(
     WebRemoteFrame& parent,
     const WebString& name = WebString(),
     const WebFrameOwnerProperties& = WebFrameOwnerProperties(),
@@ -315,7 +315,7 @@ class WebViewHelper {
 
   WebViewBase* WebView() const { return web_view_; }
 
-  WebLocalFrameBase* LocalMainFrame() const;
+  WebLocalFrameImpl* LocalMainFrame() const;
   WebRemoteFrameImpl* RemoteMainFrame() const;
 
  private:
