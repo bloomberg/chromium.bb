@@ -96,9 +96,10 @@ CRWSessionController* WKBasedNavigationManagerImpl::GetSessionController()
 }
 
 void WKBasedNavigationManagerImpl::AddTransientItem(const GURL& url) {
-  transient_item_ =
-      CreateNavigationItem(url, Referrer(), ui::PAGE_TRANSITION_CLIENT_REDIRECT,
-                           NavigationInitiationType::USER_INITIATED);
+  transient_item_ = CreateNavigationItemWithRewriters(
+      url, Referrer(), ui::PAGE_TRANSITION_CLIENT_REDIRECT,
+      NavigationInitiationType::USER_INITIATED,
+      nullptr /* use default rewriters only */);
   transient_item_->SetTimestamp(
       time_smoother_.GetSmoothedTime(base::Time::Now()));
 
@@ -116,8 +117,10 @@ void WKBasedNavigationManagerImpl::AddPendingItem(
     UserAgentOverrideOption user_agent_override_option) {
   DiscardNonCommittedItems();
 
-  pending_item_ =
-      CreateNavigationItem(url, referrer, navigation_type, initiation_type);
+  pending_item_ = CreateNavigationItemWithRewriters(
+      url, referrer, navigation_type, initiation_type,
+      &transient_url_rewriters_);
+  RemoveTransientURLRewriters();
 
   // WKBasedNavigationManagerImpl does not track
   // native URLs yet so just inherit from the
@@ -343,18 +346,15 @@ NavigationItemImpl* WKBasedNavigationManagerImpl::GetNavigationItemImplAtIndex(
   // TODO(crbug.com/734150): Add a stat counter to track rebuilding frequency.
   WKBackForwardListItem* prev_wk_item =
       index == 0 ? nil : GetWKItemAtIndex(index - 1);
-  // TODO(crbug.com/734150): CreateNavigationItem is not const because it clears
-  // transient rewriters. Perhaps transient rewriters should not be used for
-  // lazily created items. Investigate and make a decision before this code goes
-  // live.
   std::unique_ptr<web::NavigationItemImpl> new_item =
-      const_cast<WKBasedNavigationManagerImpl*>(this)->CreateNavigationItem(
+      CreateNavigationItemWithRewriters(
           net::GURLWithNSURL(wk_item.URL),
           (prev_wk_item ? web::Referrer(net::GURLWithNSURL(prev_wk_item.URL),
                                         web::ReferrerPolicyAlways)
                         : web::Referrer()),
           ui::PageTransition::PAGE_TRANSITION_LINK,
-          NavigationInitiationType::RENDERER_INITIATED);
+          NavigationInitiationType::RENDERER_INITIATED,
+          nullptr /* use default rewriters only */);
   SetNavigationItemInWKItem(wk_item, std::move(new_item));
   return GetNavigationItemFromWKItem(wk_item);
 }

@@ -23,6 +23,18 @@
 
 namespace web {
 
+// Query parameter that will be appended by AppendingUrlRewriter if it is
+// installed into NavigationManager by a test case.
+const char kRewrittenQueryParam[] = "wknavigationmanagerrewrittenquery";
+
+// Appends |kRewrittenQueryParam| to |url|.
+bool AppendingUrlRewriter(GURL* url, BrowserState* browser_state) {
+  GURL::Replacements query_replacements;
+  query_replacements.SetQueryStr(kRewrittenQueryParam);
+  *url = url->ReplaceComponents(query_replacements);
+  return false;
+}
+
 // Test fixture for WKBasedNavigationManagerImpl.
 class WKBasedNavigationManagerTest : public PlatformTest {
  protected:
@@ -186,6 +198,34 @@ TEST_F(WKBasedNavigationManagerTest, ReusePendingItemForHistoryNavigation) {
       web::NavigationManager::UserAgentOverrideOption::MOBILE);
 
   EXPECT_EQ(original_item0, manager_->GetPendingItem());
+}
+
+// Tests that transient URL rewriters are only applied to a new pending item.
+TEST_F(WKBasedNavigationManagerTest,
+       TransientURLRewritersOnlyUsedForPendingItem) {
+  manager_->AddPendingItem(GURL("http://www.0.com"), Referrer(),
+                           ui::PAGE_TRANSITION_TYPED,
+                           NavigationInitiationType::USER_INITIATED,
+                           NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  // Install transient URL rewriters.
+  manager_->AddTransientURLRewriter(&AppendingUrlRewriter);
+  [mock_wk_list_ setCurrentURL:@"http://www.0.com"];
+
+  // Transient URL rewriters do not apply to lazily synced items.
+  NavigationItem* item0 = manager_->GetItemAtIndex(0);
+  EXPECT_EQ(GURL("http://www.0.com"), item0->GetURL());
+
+  // Transient URL rewriters do not apply to transient items.
+  manager_->AddTransientItem(GURL("http://www.1.com"));
+  EXPECT_EQ(GURL("http://www.1.com"), manager_->GetTransientItem()->GetURL());
+
+  // Transient URL rewriters are applied to a new pending item.
+  manager_->AddPendingItem(GURL("http://www.2.com"), Referrer(),
+                           ui::PAGE_TRANSITION_TYPED,
+                           NavigationInitiationType::USER_INITIATED,
+                           NavigationManager::UserAgentOverrideOption::INHERIT);
+  EXPECT_EQ(kRewrittenQueryParam, manager_->GetPendingItem()->GetURL().query());
 }
 
 // Tests DiscardNonCommittedItems discards both pending and transient items.

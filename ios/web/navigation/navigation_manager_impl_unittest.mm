@@ -40,6 +40,18 @@ bool UrlRewriter(GURL* url, BrowserState* browser_state) {
   return false;
 }
 
+// Query parameter that will be appended by AppendingUrlRewriter if it is
+// installed into NavigationManager by a test case.
+const char kRewrittenQueryParam[] = "navigationmanagerrewrittenquery";
+
+// Appends |kRewrittenQueryParam| to |url|.
+bool AppendingUrlRewriter(GURL* url, BrowserState* browser_state) {
+  GURL::Replacements query_replacements;
+  query_replacements.SetQueryStr(kRewrittenQueryParam);
+  *url = url->ReplaceComponents(query_replacements);
+  return false;
+}
+
 // Stub class for NavigationManagerDelegate.
 class TestNavigationManagerDelegate : public NavigationManagerDelegate {
  public:
@@ -1413,6 +1425,28 @@ TEST_P(NavigationManagerTest, RewritingAppSpecificUrls) {
   GURL rewritten_url4(
       url::SchemeHostPort(kTestWebUIScheme, "test4", 0).Serialize());
   EXPECT_EQ(rewritten_url4, navigation_manager()->GetPendingItem()->GetURL());
+}
+
+// Tests that transient URLRewriters are applied for pending items.
+TEST_P(NavigationManagerTest, ApplyTransientRewriters) {
+  navigation_manager()->AddTransientURLRewriter(&AppendingUrlRewriter);
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.0.com"), Referrer(), ui::PAGE_TRANSITION_LINK,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  NavigationItem* pending_item = navigation_manager()->GetPendingItem();
+  EXPECT_EQ(kRewrittenQueryParam, pending_item->GetURL().query());
+
+  // Now that the transient rewriters are consumed, the next URL should not be
+  // changed.
+  GURL url("http://www.1.com");
+  navigation_manager()->AddPendingItem(
+      url, Referrer(), ui::PAGE_TRANSITION_LINK,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  EXPECT_EQ(url, navigation_manager()->GetPendingItem()->GetURL());
 }
 
 // Tests that GetIndexOfItem() returns the correct values.
