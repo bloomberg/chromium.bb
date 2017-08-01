@@ -43,6 +43,7 @@
           "blink::mojom::TextSuggestionBackend",
           "content::mojom::ImageDownloader",
           "content::mojom::FrameInputHandler",
+          "content::mojom::MediaStreamDispatcher",
           "content::mojom::Widget",
           "mojom::MediaDevicesListener"
         ]

@@ -18,6 +18,24 @@ enum MediaStreamType {
   NUM_MEDIA_TYPES
 };
 
+// See content/public/common/media_stream_request.h.
+enum MediaStreamRequestResult {
+  OK,
+  PERMISSION_DENIED,
+  PERMISSION_DISMISSED,
+  INVALID_STATE,
+  NO_HARDWARE,
+  INVALID_SECURITY_ORIGIN_DEPRECATED,
+  TAB_CAPTURE_FAILURE,
+  SCREEN_CAPTURE_FAILURE,
+  CAPTURE_FAILURE,
+  CONSTRAINT_NOT_SATISFIED,
+  TRACK_START_FAILURE,
+  NOT_SUPPORTED,
+  FAILED_DUE_TO_SHUTDOWN,
+  KILL_SWITCH_ON
+};
+
 // See content/common/media/media_stream_options.h.
 struct TrackControls {
   bool requested;
@@ -31,6 +49,14 @@ struct StreamControls {
   TrackControls video;
   bool hotword_enabled;
   bool disable_local_echo;
+};
+
+interface MediaStreamDispatcher {
+  // TODO(c.padhi): Migrate the rest of the browser-to-renderer messages,
+  // see https://crbug.com/742682.
+
+  // Informs the renderer that browser has failed to generate a stream.
+  OnStreamGenerationFailed(int32 request_id, MediaStreamRequestResult result);
 };
 
 interface MediaStreamDispatcherHost {
@@ -66,7 +92,3 @@ interface MediaStreamDispatcherHost {
   // Tells the browser process that the stream has been started successfully.
   StreamStarted(string label);
 };
-
-// TODO(c.padhi): Migrate the browser-to-renderer messages,
-// see https://crbug.com/742682.
-interface MediaStreamDispatcher{};

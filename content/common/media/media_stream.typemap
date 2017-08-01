@@ -20,6 +20,7 @@ deps = [
 ]
 
 type_mappings = [
+  "content.mojom.MediaStreamRequestResult=content::MediaStreamRequestResult",
   "content.mojom.MediaStreamType=content::MediaStreamType",
   "content.mojom.StreamControls=content::StreamControls",
   "content.mojom.TrackControls=content::TrackControls",

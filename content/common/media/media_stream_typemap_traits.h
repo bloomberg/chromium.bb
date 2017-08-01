@@ -20,6 +20,16 @@ struct EnumTraits<content::mojom::MediaStreamType, content::MediaStreamType> {
 };
 
 template <>
+struct EnumTraits<content::mojom::MediaStreamRequestResult,
+                  content::MediaStreamRequestResult> {
+  static content::mojom::MediaStreamRequestResult ToMojom(
+      content::MediaStreamRequestResult result);
+
+  static bool FromMojom(content::mojom::MediaStreamRequestResult input,
+                        content::MediaStreamRequestResult* out);
+};
+
+template <>
 struct StructTraits<content::mojom::TrackControlsDataView,
                     content::TrackControls> {
   static bool requested(const content::TrackControls& controls) {
