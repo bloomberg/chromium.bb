@@ -520,7 +520,7 @@ public class ItemChooserDialog {
         // Round to (an integer + 0.5) times LIST_ROW_HEIGHT.
         heightDp = (Math.round(heightDp / LIST_ROW_HEIGHT_DP - 0.5f) + 0.5f) * LIST_ROW_HEIGHT_DP;
         heightDp = MathUtils.clamp(heightDp, MIN_HEIGHT_DP, MAX_HEIGHT_DP);
-        return (int) Math.round(heightDp * density);
+        return Math.round(heightDp * density);
     }
 
     private void showDialogForView(View view) {
