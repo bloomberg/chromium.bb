@@ -1024,6 +1024,7 @@ void DownloadManifestToBuffer(PP_Instance instance,
         FROM_HERE,
         base::Bind(callback.func, callback.user_data,
                    static_cast<int32_t>(PP_ERROR_FAILED)));
+    return;
   }
   const blink::WebDocument& document =
       plugin_instance->GetContainer()->GetDocument();
@@ -1379,6 +1380,7 @@ void PPBNaClPrivate::DownloadNexe(PP_Instance instance,
         FROM_HERE,
         base::Bind(callback.func, callback.user_data,
                    static_cast<int32_t>(PP_ERROR_FAILED)));
+    return;
   }
   const blink::WebDocument& document =
       plugin_instance->GetContainer()->GetDocument();
@@ -1531,6 +1533,7 @@ void DownloadFile(PP_Instance instance,
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, static_cast<int32_t>(PP_ERROR_FAILED),
                               kInvalidNaClFileInfo));
+    return;
   }
   const blink::WebDocument& document =
       plugin_instance->GetContainer()->GetDocument();
