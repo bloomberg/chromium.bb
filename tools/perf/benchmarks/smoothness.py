@@ -209,7 +209,9 @@ class SmoothnessKeyDesktopMoveCases(_Smoothness):
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # Nothing.
+        self.DisableStory('https://mail.google.com/mail/',
+                          [story_module.expectations.ALL_WIN],
+                          'crbug.com/750131')
     return StoryExpectations()
 
 
