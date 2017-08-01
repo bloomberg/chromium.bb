@@ -6,12 +6,12 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame_mus.h"
 #include "chrome/browser/ui/views/frame/desktop_browser_frame_aurax11.h"
-#include "services/service_manager/runner/common/client_util.h"
+#include "ui/aura/env.h"
 
 NativeBrowserFrame* NativeBrowserFrameFactory::Create(
     BrowserFrame* browser_frame,
     BrowserView* browser_view) {
-  if (service_manager::ServiceManagerIsRemote())
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
     return new BrowserFrameMus(browser_frame, browser_view);
   return new DesktopBrowserFrameAuraX11(browser_frame, browser_view);
 }

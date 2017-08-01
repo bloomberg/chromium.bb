@@ -26,6 +26,7 @@
 #include "services/ui/public/cpp/input_devices/input_device_client.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/input_devices/input_device_server.mojom.h"
+#include "ui/aura/env.h"
 #include "ui/display/screen.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
@@ -103,7 +104,7 @@ void ChromeBrowserMainExtraPartsViews::PreCreateThreads() {
 void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
 #if defined(USE_AURA)
   // IME driver must be available at login screen, so initialize before profile.
-  if (service_manager::ServiceManagerIsRemote())
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
     IMEDriver::Register();
 
   // Start devtools server
@@ -158,7 +159,7 @@ void ChromeBrowserMainExtraPartsViews::ServiceManagerConnectionStarted(
     content::ServiceManagerConnection* connection) {
   DCHECK(connection);
 #if defined(USE_AURA)
-  if (!service_manager::ServiceManagerIsRemote())
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL)
     return;
 
   input_device_client_ = base::MakeUnique<ui::InputDeviceClient>();
