@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/geometry_binding.h"
+#include "components/viz/service/display/geometry_binding.h"
 
 #include <stdint.h>
 
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-namespace cc {
+namespace viz {
 
 void SetupGLContext(gpu::gles2::GLES2Interface* gl,
                     GLuint quad_elements_vbo,
@@ -21,8 +21,7 @@ void SetupGLContext(gpu::gles2::GLES2Interface* gl,
   // "const GLvoid*" even though it is actually an offset into the buffer
   // object's data store and not a pointer to the client's address space.
   const void* offsets[3] = {
-      0,
-      reinterpret_cast<const void*>(3 * sizeof(float)),
+      0, reinterpret_cast<const void*>(3 * sizeof(float)),
       reinterpret_cast<const void*>(5 * sizeof(float)),
   };
 
@@ -72,4 +71,4 @@ GeometryBindingQuadIndex::GeometryBindingQuadIndex(uint16_t index0,
   data[5] = index5;
 }
 
-}  // namespace cc
+}  // namespace viz

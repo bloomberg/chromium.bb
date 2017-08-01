@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/static_geometry_binding.h"
+#include "components/viz/service/display/static_geometry_binding.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -10,7 +10,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-namespace cc {
+namespace viz {
 
 StaticGeometryBinding::StaticGeometryBinding(gpu::gles2::GLES2Interface* gl,
                                              const gfx::RectF& quad_vertex_rect)
@@ -71,4 +71,4 @@ void StaticGeometryBinding::PrepareForDraw() {
   SetupGLContext(gl_, quad_elements_vbo_, quad_vertices_vbo_);
 }
 
-}  // namespace cc
+}  // namespace viz

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/shader.h"
+#include "components/viz/service/display/shader.h"
 
 #include <stddef.h>
 
@@ -11,14 +11,14 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "cc/output/static_geometry_binding.h"
+#include "components/viz/service/display/static_geometry_binding.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/gfx/color_transform.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 
 template <size_t size>
-std::string StripLambda(const char(&shader)[size]) {
+std::string StripLambda(const char (&shader)[size]) {
   // Must contain at least "[]() {}" and trailing null (included in size).
   static_assert(size >= 8,
                 "String passed to StripLambda must be at least 8 characters");
@@ -42,7 +42,7 @@ std::string StripLambda(const char(&shader)[size]) {
 
 using gpu::gles2::GLES2Interface;
 
-namespace cc {
+namespace viz {
 
 namespace {
 
@@ -153,10 +153,8 @@ TexCoordPrecision TexCoordPrecisionRequired(GLES2Interface* context,
                                             int* highp_threshold_cache,
                                             int highp_threshold_min,
                                             const gfx::Point& max_coordinate) {
-  return TexCoordPrecisionRequired(context,
-                                   highp_threshold_cache,
-                                   highp_threshold_min,
-                                   max_coordinate.x(),
+  return TexCoordPrecisionRequired(context, highp_threshold_cache,
+                                   highp_threshold_min, max_coordinate.x(),
                                    max_coordinate.y());
 }
 
@@ -164,10 +162,8 @@ TexCoordPrecision TexCoordPrecisionRequired(GLES2Interface* context,
                                             int* highp_threshold_cache,
                                             int highp_threshold_min,
                                             const gfx::Size& max_size) {
-  return TexCoordPrecisionRequired(context,
-                                   highp_threshold_cache,
-                                   highp_threshold_min,
-                                   max_size.width(),
+  return TexCoordPrecisionRequired(context, highp_threshold_cache,
+                                   highp_threshold_min, max_size.width(),
                                    max_size.height());
 }
 
@@ -647,15 +643,14 @@ std::string FragmentShader::GetHelperFunctions() const {
       float minComp = min(min(outColor.r, outColor.g), outColor.b);
       float maxComp = max(max(outColor.r, outColor.g), outColor.b);
       if (minComp < 0.0 && outLum != minComp) {
-        outColor = outLum +
-                   ((outColor - vec3(outLum, outLum, outLum)) * outLum) /
-                       (outLum - minComp);
+        outColor =
+            outLum + ((outColor - vec3(outLum, outLum, outLum)) * outLum) /
+                         (outLum - minComp);
       }
       if (maxComp > alpha && maxComp != outLum) {
-        outColor =
-            outLum +
-            ((outColor - vec3(outLum, outLum, outLum)) * (alpha - outLum)) /
-                (maxComp - outLum);
+        outColor = outLum + ((outColor - vec3(outLum, outLum, outLum)) *
+                             (alpha - outLum)) /
+                                (maxComp - outLum);
       }
       return outColor;
     }
@@ -1028,4 +1023,4 @@ std::string FragmentShader::GetShaderSource() const {
   return header + source;
 }
 
-}  // namespace cc
+}  // namespace viz

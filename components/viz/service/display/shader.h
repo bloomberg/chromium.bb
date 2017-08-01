@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_SHADER_H_
-#define CC_OUTPUT_SHADER_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_SHADER_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_SHADER_H_
 
 #include <string>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "cc/cc_export.h"
+#include "components/viz/service/viz_service_export.h"
 
 namespace gfx {
 class ColorTransform;
 class Point;
 class Size;
-}
+}  // namespace gfx
 
 namespace gpu {
 namespace gles2 {
 class GLES2Interface;
 }
-}
+}  // namespace gpu
 
-namespace cc {
+namespace viz {
 
 enum TexCoordPrecision {
   TEX_COORD_PRECISION_NA = 0,
@@ -158,19 +158,19 @@ enum MaskMode {
 // the caching multi-thread/context safe in an easy low-overhead manner.
 // The caller must make sure to clear highp_threshold_cache to 0, so it can be
 // reinitialized, if a new or different context is used.
-CC_EXPORT TexCoordPrecision
-    TexCoordPrecisionRequired(gpu::gles2::GLES2Interface* context,
-                              int* highp_threshold_cache,
-                              int highp_threshold_min,
-                              const gfx::Point& max_coordinate);
+VIZ_SERVICE_EXPORT TexCoordPrecision
+TexCoordPrecisionRequired(gpu::gles2::GLES2Interface* context,
+                          int* highp_threshold_cache,
+                          int highp_threshold_min,
+                          const gfx::Point& max_coordinate);
 
-CC_EXPORT TexCoordPrecision TexCoordPrecisionRequired(
-    gpu::gles2::GLES2Interface* context,
-    int *highp_threshold_cache,
-    int highp_threshold_min,
-    const gfx::Size& max_size);
+VIZ_SERVICE_EXPORT TexCoordPrecision
+TexCoordPrecisionRequired(gpu::gles2::GLES2Interface* context,
+                          int* highp_threshold_cache,
+                          int highp_threshold_min,
+                          const gfx::Size& max_size);
 
-class CC_EXPORT VertexShader {
+class VIZ_SERVICE_EXPORT VertexShader {
  public:
   VertexShader();
   void Init(gpu::gles2::GLES2Interface* context,
@@ -221,7 +221,7 @@ class CC_EXPORT VertexShader {
   int edge_location_ = -1;
 };
 
-class CC_EXPORT FragmentShader {
+class VIZ_SERVICE_EXPORT FragmentShader {
  public:
   virtual void Init(gpu::gles2::GLES2Interface* context,
                     unsigned program,
@@ -255,7 +255,7 @@ class CC_EXPORT FragmentShader {
 
   // Always use sampler2D and texture2D for the RGBA texture, regardless of the
   // specified SamplerType.
-  // TODO(ccameron): Change viz::GLRenderer to always specify the correct
+  // TODO(ccameron): Change GLRenderer to always specify the correct
   // SamplerType.
   bool ignore_sampler_type_ = false;
 
@@ -321,6 +321,6 @@ class CC_EXPORT FragmentShader {
   DISALLOW_COPY_AND_ASSIGN(FragmentShader);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_SHADER_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_SHADER_H_

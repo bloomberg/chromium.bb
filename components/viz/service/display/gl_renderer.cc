@@ -31,11 +31,9 @@
 #include "cc/debug/debug_colors.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_metadata.h"
-#include "cc/output/dynamic_geometry_binding.h"
 #include "cc/output/layer_quad.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_frame.h"
-#include "cc/output/static_geometry_binding.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "cc/quads/draw_polygon.h"
 #include "cc/quads/picture_draw_quad.h"
@@ -48,6 +46,8 @@
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/copy_output_request.h"
+#include "components/viz/service/display/dynamic_geometry_binding.h"
+#include "components/viz/service/display/static_geometry_binding.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -88,9 +88,9 @@ Float4 UVTransform(const cc::TextureDrawQuad* quad) {
 // To prevent sampling outside the visible rect.
 Float4 UVClampRect(gfx::RectF uv_visible_rect,
                    const gfx::Size& texture_size,
-                   cc::SamplerType sampler) {
+                   SamplerType sampler) {
   gfx::SizeF half_texel(0.5f, 0.5f);
-  if (sampler != cc::SAMPLER_TYPE_2D_RECT) {
+  if (sampler != SAMPLER_TYPE_2D_RECT) {
     half_texel.Scale(1.f / texture_size.width(), 1.f / texture_size.height());
   } else {
     uv_visible_rect.Scale(texture_size.width(), texture_size.height());
@@ -110,59 +110,59 @@ Float4 PremultipliedColor(SkColor color, float opacity) {
   return result;
 }
 
-cc::SamplerType SamplerTypeFromTextureTarget(GLenum target) {
+SamplerType SamplerTypeFromTextureTarget(GLenum target) {
   switch (target) {
     case GL_TEXTURE_2D:
-      return cc::SAMPLER_TYPE_2D;
+      return SAMPLER_TYPE_2D;
     case GL_TEXTURE_RECTANGLE_ARB:
-      return cc::SAMPLER_TYPE_2D_RECT;
+      return SAMPLER_TYPE_2D_RECT;
     case GL_TEXTURE_EXTERNAL_OES:
-      return cc::SAMPLER_TYPE_EXTERNAL_OES;
+      return SAMPLER_TYPE_EXTERNAL_OES;
     default:
       NOTREACHED();
-      return cc::SAMPLER_TYPE_2D;
+      return SAMPLER_TYPE_2D;
   }
 }
 
-cc::BlendMode BlendModeFromSkXfermode(SkBlendMode mode) {
+BlendMode BlendModeFromSkXfermode(SkBlendMode mode) {
   switch (mode) {
     case SkBlendMode::kSrcOver:
-      return cc::BLEND_MODE_NORMAL;
+      return BLEND_MODE_NORMAL;
     case SkBlendMode::kDstIn:
-      return cc::BLEND_MODE_DESTINATION_IN;
+      return BLEND_MODE_DESTINATION_IN;
     case SkBlendMode::kScreen:
-      return cc::BLEND_MODE_SCREEN;
+      return BLEND_MODE_SCREEN;
     case SkBlendMode::kOverlay:
-      return cc::BLEND_MODE_OVERLAY;
+      return BLEND_MODE_OVERLAY;
     case SkBlendMode::kDarken:
-      return cc::BLEND_MODE_DARKEN;
+      return BLEND_MODE_DARKEN;
     case SkBlendMode::kLighten:
-      return cc::BLEND_MODE_LIGHTEN;
+      return BLEND_MODE_LIGHTEN;
     case SkBlendMode::kColorDodge:
-      return cc::BLEND_MODE_COLOR_DODGE;
+      return BLEND_MODE_COLOR_DODGE;
     case SkBlendMode::kColorBurn:
-      return cc::BLEND_MODE_COLOR_BURN;
+      return BLEND_MODE_COLOR_BURN;
     case SkBlendMode::kHardLight:
-      return cc::BLEND_MODE_HARD_LIGHT;
+      return BLEND_MODE_HARD_LIGHT;
     case SkBlendMode::kSoftLight:
-      return cc::BLEND_MODE_SOFT_LIGHT;
+      return BLEND_MODE_SOFT_LIGHT;
     case SkBlendMode::kDifference:
-      return cc::BLEND_MODE_DIFFERENCE;
+      return BLEND_MODE_DIFFERENCE;
     case SkBlendMode::kExclusion:
-      return cc::BLEND_MODE_EXCLUSION;
+      return BLEND_MODE_EXCLUSION;
     case SkBlendMode::kMultiply:
-      return cc::BLEND_MODE_MULTIPLY;
+      return BLEND_MODE_MULTIPLY;
     case SkBlendMode::kHue:
-      return cc::BLEND_MODE_HUE;
+      return BLEND_MODE_HUE;
     case SkBlendMode::kSaturation:
-      return cc::BLEND_MODE_SATURATION;
+      return BLEND_MODE_SATURATION;
     case SkBlendMode::kColor:
-      return cc::BLEND_MODE_COLOR;
+      return BLEND_MODE_COLOR;
     case SkBlendMode::kLuminosity:
-      return cc::BLEND_MODE_LUMINOSITY;
+      return BLEND_MODE_LUMINOSITY;
     default:
       NOTREACHED();
-      return cc::BLEND_MODE_NONE;
+      return BLEND_MODE_NONE;
   }
 }
 
@@ -636,7 +636,7 @@ void GLRenderer::DoDrawQuad(const cc::DrawQuad* quad,
 void GLRenderer::DrawDebugBorderQuad(const cc::DebugBorderDrawQuad* quad) {
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
-  SetUseProgram(cc::ProgramKey::DebugBorder(), gfx::ColorSpace::CreateSRGB());
+  SetUseProgram(ProgramKey::DebugBorder(), gfx::ColorSpace::CreateSRGB());
 
   // Use the full quad_rect for debug quads to not move the edges based on
   // partial swaps.
@@ -1344,26 +1344,26 @@ void GLRenderer::UpdateRPDQBlendMode(DrawRenderPassDrawQuadParams* params) {
 }
 
 void GLRenderer::ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params) {
-  cc::TexCoordPrecision tex_coord_precision = cc::TexCoordPrecisionRequired(
+  TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       gl_, &highp_threshold_cache_, settings_->highp_threshold_min,
       params->quad->shared_quad_state->visible_quad_layer_rect.bottom_right());
 
-  cc::BlendMode shader_blend_mode =
+  BlendMode shader_blend_mode =
       params->use_shaders_for_blending
           ? BlendModeFromSkXfermode(params->quad->shared_quad_state->blend_mode)
-          : cc::BLEND_MODE_NONE;
+          : BLEND_MODE_NONE;
 
-  cc::SamplerType sampler_type = cc::SAMPLER_TYPE_2D;
-  cc::MaskMode mask_mode = cc::NO_MASK;
+  SamplerType sampler_type = SAMPLER_TYPE_2D;
+  MaskMode mask_mode = NO_MASK;
   bool mask_for_background = params->mask_for_background;
   if (params->mask_resource_lock) {
-    mask_mode = cc::HAS_MASK;
+    mask_mode = HAS_MASK;
     sampler_type =
         SamplerTypeFromTextureTarget(params->mask_resource_lock->target());
   }
-  SetUseProgram(cc::ProgramKey::RenderPass(
+  SetUseProgram(ProgramKey::RenderPass(
                     tex_coord_precision, sampler_type, shader_blend_mode,
-                    params->use_aa ? cc::USE_AA : cc::NO_AA, mask_mode,
+                    params->use_aa ? USE_AA : NO_AA, mask_mode,
                     mask_for_background, params->use_color_matrix),
                 params->contents_color_space);
 }
@@ -1406,7 +1406,7 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
 
     gfx::RectF mask_uv_rect = params->quad->mask_uv_rect;
     if (SamplerTypeFromTextureTarget(params->mask_resource_lock->target()) !=
-        cc::SAMPLER_TYPE_2D) {
+        SAMPLER_TYPE_2D) {
       mask_uv_rect.Scale(params->quad->mask_texture_size.width(),
                          params->quad->mask_texture_size.height());
     }
@@ -1807,7 +1807,7 @@ void GLRenderer::DrawSolidColorQuad(const cc::SolidColorDrawQuad* quad,
   // TODO(ccameron): Solid color draw quads need to specify their implied
   // color space. Assume SRGB (which is wrong) for now.
   gfx::ColorSpace quad_color_space = gfx::ColorSpace::CreateSRGB();
-  SetUseProgram(cc::ProgramKey::SolidColor(use_aa ? cc::USE_AA : cc::NO_AA),
+  SetUseProgram(ProgramKey::SolidColor(use_aa ? USE_AA : NO_AA),
                 quad_color_space);
   SetShaderColor(color, opacity);
 
@@ -1944,7 +1944,7 @@ void GLRenderer::DrawContentQuadAA(const cc::ContentDrawQuadBase* quad,
   float vertex_tex_scale_x = tile_rect.width() / clamp_geom_rect.width();
   float vertex_tex_scale_y = tile_rect.height() / clamp_geom_rect.height();
 
-  cc::TexCoordPrecision tex_coord_precision = cc::TexCoordPrecisionRequired(
+  TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       gl_, &highp_threshold_cache_, settings_->highp_threshold_min,
       quad->texture_size);
 
@@ -1955,7 +1955,7 @@ void GLRenderer::DrawContentQuadAA(const cc::ContentDrawQuadBase* quad,
   cc::ResourceProvider::ScopedSamplerGL quad_resource_lock(
       resource_provider_, resource_id,
       quad->nearest_neighbor ? GL_NEAREST : GL_LINEAR);
-  cc::SamplerType sampler =
+  SamplerType sampler =
       SamplerTypeFromTextureTarget(quad_resource_lock.target());
 
   float fragment_tex_translate_x = clamp_tex_rect.x();
@@ -1964,7 +1964,7 @@ void GLRenderer::DrawContentQuadAA(const cc::ContentDrawQuadBase* quad,
   float fragment_tex_scale_y = clamp_tex_rect.height();
 
   // Map to normalized texture coordinates.
-  if (sampler != cc::SAMPLER_TYPE_2D_RECT) {
+  if (sampler != SAMPLER_TYPE_2D_RECT) {
     gfx::Size texture_size = quad->texture_size;
     DCHECK(!texture_size.IsEmpty());
     fragment_tex_translate_x /= texture_size.width();
@@ -1974,9 +1974,8 @@ void GLRenderer::DrawContentQuadAA(const cc::ContentDrawQuadBase* quad,
   }
 
   SetUseProgram(
-      cc::ProgramKey::Tile(
-          tex_coord_precision, sampler, cc::USE_AA,
-          quad->swizzle_contents ? cc::DO_SWIZZLE : cc::NO_SWIZZLE, false),
+      ProgramKey::Tile(tex_coord_precision, sampler, USE_AA,
+                       quad->swizzle_contents ? DO_SWIZZLE : NO_SWIZZLE, false),
       quad_resource_lock.color_space());
 
   gl_->Uniform3fv(current_program_->edge_location(), 8, edge);
@@ -2028,7 +2027,7 @@ void GLRenderer::DrawContentQuadNoAA(const cc::ContentDrawQuadBase* quad,
 
   cc::ResourceProvider::ScopedSamplerGL quad_resource_lock(resource_provider_,
                                                            resource_id, filter);
-  cc::SamplerType sampler =
+  SamplerType sampler =
       SamplerTypeFromTextureTarget(quad_resource_lock.target());
 
   float vertex_tex_translate_x = tex_coord_rect.x();
@@ -2037,7 +2036,7 @@ void GLRenderer::DrawContentQuadNoAA(const cc::ContentDrawQuadBase* quad,
   float vertex_tex_scale_y = tex_coord_rect.height();
 
   // Map to normalized texture coordinates.
-  if (sampler != cc::SAMPLER_TYPE_2D_RECT) {
+  if (sampler != SAMPLER_TYPE_2D_RECT) {
     gfx::Size texture_size = quad->texture_size;
     DCHECK(!texture_size.IsEmpty());
     vertex_tex_translate_x /= texture_size.width();
@@ -2046,15 +2045,15 @@ void GLRenderer::DrawContentQuadNoAA(const cc::ContentDrawQuadBase* quad,
     vertex_tex_scale_y /= texture_size.height();
   }
 
-  cc::TexCoordPrecision tex_coord_precision = cc::TexCoordPrecisionRequired(
+  TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       gl_, &highp_threshold_cache_, settings_->highp_threshold_min,
       quad->texture_size);
 
-  SetUseProgram(cc::ProgramKey::Tile(
-                    tex_coord_precision, sampler, cc::NO_AA,
-                    quad->swizzle_contents ? cc::DO_SWIZZLE : cc::NO_SWIZZLE,
-                    !quad->ShouldDrawWithBlending()),
-                quad_resource_lock.color_space());
+  SetUseProgram(
+      ProgramKey::Tile(tex_coord_precision, sampler, NO_AA,
+                       quad->swizzle_contents ? DO_SWIZZLE : NO_SWIZZLE,
+                       !quad->ShouldDrawWithBlending()),
+      quad_resource_lock.color_space());
 
   gl_->Uniform4f(current_program_->vertex_tex_transform_location(),
                  vertex_tex_translate_x, vertex_tex_translate_y,
@@ -2108,16 +2107,16 @@ void GLRenderer::DrawYUVVideoQuad(const cc::YUVVideoDrawQuad* quad,
                                   const gfx::QuadF* clip_region) {
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
-  cc::TexCoordPrecision tex_coord_precision = cc::TexCoordPrecisionRequired(
+  TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       gl_, &highp_threshold_cache_, settings_->highp_threshold_min,
       quad->shared_quad_state->visible_quad_layer_rect.bottom_right());
-  cc::YUVAlphaTextureMode alpha_texture_mode = quad->a_plane_resource_id()
-                                                   ? cc::YUV_HAS_ALPHA_TEXTURE
-                                                   : cc::YUV_NO_ALPHA_TEXTURE;
-  cc::UVTextureMode uv_texture_mode =
+  YUVAlphaTextureMode alpha_texture_mode = quad->a_plane_resource_id()
+                                               ? YUV_HAS_ALPHA_TEXTURE
+                                               : YUV_NO_ALPHA_TEXTURE;
+  UVTextureMode uv_texture_mode =
       quad->v_plane_resource_id() == quad->u_plane_resource_id()
-          ? cc::UV_TEXTURE_MODE_UV
-          : cc::UV_TEXTURE_MODE_U_V;
+          ? UV_TEXTURE_MODE_UV
+          : UV_TEXTURE_MODE_U_V;
 
   // TODO(ccameron): There are currently three sources of the color space: the
   // resource, quad->color_space, and quad->video_color_space. Remove two of
@@ -2158,7 +2157,7 @@ void GLRenderer::DrawYUVVideoQuad(const cc::YUVVideoDrawQuad* quad,
   // TODO(jbauman): Use base::Optional when available.
   std::unique_ptr<cc::ResourceProvider::ScopedSamplerGL> v_plane_lock;
 
-  if (uv_texture_mode == cc::UV_TEXTURE_MODE_U_V) {
+  if (uv_texture_mode == UV_TEXTURE_MODE_U_V) {
     v_plane_lock.reset(new cc::ResourceProvider::ScopedSamplerGL(
         resource_provider_, quad->v_plane_resource_id(), GL_TEXTURE3,
         GL_LINEAR));
@@ -2166,7 +2165,7 @@ void GLRenderer::DrawYUVVideoQuad(const cc::YUVVideoDrawQuad* quad,
     DCHECK_EQ(y_plane_lock.color_space(), v_plane_lock->color_space());
   }
   std::unique_ptr<cc::ResourceProvider::ScopedSamplerGL> a_plane_lock;
-  if (alpha_texture_mode == cc::YUV_HAS_ALPHA_TEXTURE) {
+  if (alpha_texture_mode == YUV_HAS_ALPHA_TEXTURE) {
     a_plane_lock.reset(new cc::ResourceProvider::ScopedSamplerGL(
         resource_provider_, quad->a_plane_resource_id(), GL_TEXTURE4,
         GL_LINEAR));
@@ -2174,15 +2173,15 @@ void GLRenderer::DrawYUVVideoQuad(const cc::YUVVideoDrawQuad* quad,
   }
 
   // All planes must have the same sampler type.
-  cc::SamplerType sampler = SamplerTypeFromTextureTarget(y_plane_lock.target());
+  SamplerType sampler = SamplerTypeFromTextureTarget(y_plane_lock.target());
 
-  SetUseProgram(cc::ProgramKey::YUVVideo(tex_coord_precision, sampler,
-                                         alpha_texture_mode, uv_texture_mode),
+  SetUseProgram(ProgramKey::YUVVideo(tex_coord_precision, sampler,
+                                     alpha_texture_mode, uv_texture_mode),
                 src_color_space, dst_color_space);
 
   gfx::SizeF ya_tex_scale(1.0f, 1.0f);
   gfx::SizeF uv_tex_scale(1.0f, 1.0f);
-  if (sampler != cc::SAMPLER_TYPE_2D_RECT) {
+  if (sampler != SAMPLER_TYPE_2D_RECT) {
     DCHECK(!quad->ya_tex_size.IsEmpty());
     DCHECK(!quad->uv_tex_size.IsEmpty());
     ya_tex_scale = gfx::SizeF(1.0f / quad->ya_tex_size.width(),
@@ -2234,13 +2233,13 @@ void GLRenderer::DrawYUVVideoQuad(const cc::YUVVideoDrawQuad* quad,
                  uv_clamp_rect.bottom());
 
   gl_->Uniform1i(current_program_->y_texture_location(), 1);
-  if (uv_texture_mode == cc::UV_TEXTURE_MODE_UV) {
+  if (uv_texture_mode == UV_TEXTURE_MODE_UV) {
     gl_->Uniform1i(current_program_->uv_texture_location(), 2);
   } else {
     gl_->Uniform1i(current_program_->u_texture_location(), 2);
     gl_->Uniform1i(current_program_->v_texture_location(), 3);
   }
-  if (alpha_texture_mode == cc::YUV_HAS_ALPHA_TEXTURE)
+  if (alpha_texture_mode == YUV_HAS_ALPHA_TEXTURE)
     gl_->Uniform1i(current_program_->a_texture_location(), 4);
 
   gl_->Uniform1f(current_program_->resource_multiplier_location(),
@@ -2279,14 +2278,14 @@ void GLRenderer::DrawStreamVideoQuad(const cc::StreamVideoDrawQuad* quad,
              ->ContextCapabilities()
              .egl_image_external);
 
-  cc::TexCoordPrecision tex_coord_precision = cc::TexCoordPrecisionRequired(
+  TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       gl_, &highp_threshold_cache_, settings_->highp_threshold_min,
       quad->shared_quad_state->visible_quad_layer_rect.bottom_right());
 
   cc::ResourceProvider::ScopedReadLockGL lock(resource_provider_,
                                               quad->resource_id());
 
-  SetUseProgram(cc::ProgramKey::VideoStream(tex_coord_precision),
+  SetUseProgram(ProgramKey::VideoStream(tex_coord_precision),
                 lock.color_space());
 
   DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
@@ -2301,7 +2300,7 @@ void GLRenderer::DrawStreamVideoQuad(const cc::StreamVideoDrawQuad* quad,
   gfx::Size texture_size = lock.size();
   gfx::Vector2dF uv = quad->matrix.Scale2d();
   gfx::RectF uv_visible_rect(0, 0, uv.x(), uv.y());
-  const cc::SamplerType sampler = SamplerTypeFromTextureTarget(lock.target());
+  const SamplerType sampler = SamplerTypeFromTextureTarget(lock.target());
   Float4 tex_clamp_rect = UVClampRect(uv_visible_rect, texture_size, sampler);
   gl_->Uniform4f(current_program_->tex_clamp_rect_location(),
                  tex_clamp_rect.data[0], tex_clamp_rect.data[1],
@@ -2325,7 +2324,7 @@ void GLRenderer::DrawStreamVideoQuad(const cc::StreamVideoDrawQuad* quad,
 
 void GLRenderer::DrawOverlayCandidateQuadBorder(float* gl_matrix) {
   SetBlendEnabled(false);
-  SetUseProgram(cc::ProgramKey::DebugBorder(), gfx::ColorSpace::CreateSRGB());
+  SetUseProgram(ProgramKey::DebugBorder(), gfx::ColorSpace::CreateSRGB());
 
   gl_->UniformMatrix4fv(current_program_->matrix_location(), 1, false,
                         gl_matrix);
@@ -2441,25 +2440,24 @@ void GLRenderer::EnqueueTextureQuad(const cc::TextureDrawQuad* quad,
     FlushTextureQuadCache(SHARED_BINDING);
   }
 
-  cc::TexCoordPrecision tex_coord_precision = cc::TexCoordPrecisionRequired(
+  TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       gl_, &highp_threshold_cache_, settings_->highp_threshold_min,
       quad->shared_quad_state->visible_quad_layer_rect.bottom_right());
 
   cc::ResourceProvider::ScopedReadLockGL lock(resource_provider_,
                                               quad->resource_id());
-  const cc::SamplerType sampler = SamplerTypeFromTextureTarget(lock.target());
+  const SamplerType sampler = SamplerTypeFromTextureTarget(lock.target());
 
   bool need_tex_clamp_rect = !quad->resource_size_in_pixels().IsEmpty() &&
                              (quad->uv_top_left != gfx::PointF(0, 0) ||
                               quad->uv_bottom_right != gfx::PointF(1, 1));
-  cc::ProgramKey program_key = cc::ProgramKey::Texture(
+  ProgramKey program_key = ProgramKey::Texture(
       tex_coord_precision, sampler,
-      quad->premultiplied_alpha ? cc::PREMULTIPLIED_ALPHA
-                                : cc::NON_PREMULTIPLIED_ALPHA,
+      quad->premultiplied_alpha ? PREMULTIPLIED_ALPHA : NON_PREMULTIPLIED_ALPHA,
       quad->background_color != SK_ColorTRANSPARENT, need_tex_clamp_rect);
   int resource_id = quad->resource_id();
 
-  size_t max_quads = cc::StaticGeometryBinding::NUM_QUADS;
+  size_t max_quads = StaticGeometryBinding::NUM_QUADS;
   if (draw_cache_.is_empty || draw_cache_.program_key != program_key ||
       draw_cache_.resource_id != resource_id ||
       draw_cache_.needs_blending != quad->ShouldDrawWithBlending() ||
@@ -2479,7 +2477,7 @@ void GLRenderer::EnqueueTextureQuad(const cc::TextureDrawQuad* quad,
   Float4 uv_transform = {{0.0f, 0.0f, 1.0f, 1.0f}};
   if (!clip_region)
     uv_transform = UVTransform(quad);
-  if (sampler == cc::SAMPLER_TYPE_2D_RECT) {
+  if (sampler == SAMPLER_TYPE_2D_RECT) {
     // Un-normalize the texture coordiantes for rectangle targets.
     gfx::Size texture_size = lock.size();
     uv_transform.data[0] *= texture_size.width();
@@ -3088,8 +3086,8 @@ void GLRenderer::InitializeSharedObjects() {
   gl_->GenFramebuffers(1, &offscreen_framebuffer_id_);
 
   shared_geometry_ =
-      base::MakeUnique<cc::StaticGeometryBinding>(gl_, QuadVertexRect());
-  clipped_geometry_ = base::MakeUnique<cc::DynamicGeometryBinding>(gl_);
+      base::MakeUnique<StaticGeometryBinding>(gl_, QuadVertexRect());
+  clipped_geometry_ = base::MakeUnique<DynamicGeometryBinding>(gl_);
 }
 
 void GLRenderer::PrepareGeometry(BoundGeometry binding) {
@@ -3110,7 +3108,7 @@ void GLRenderer::PrepareGeometry(BoundGeometry binding) {
   bound_geometry_ = binding;
 }
 
-void GLRenderer::SetUseProgram(const cc::ProgramKey& program_key,
+void GLRenderer::SetUseProgram(const ProgramKey& program_key,
                                const gfx::ColorSpace& src_color_space) {
   // The source color space for non-YUV draw quads should always be full-range
   // RGB.
@@ -3129,18 +3127,18 @@ void GLRenderer::SetUseProgram(const cc::ProgramKey& program_key,
   }
 }
 
-void GLRenderer::SetUseProgram(const cc::ProgramKey& program_key_no_color,
+void GLRenderer::SetUseProgram(const ProgramKey& program_key_no_color,
                                const gfx::ColorSpace& src_color_space,
                                const gfx::ColorSpace& dst_color_space) {
-  cc::ProgramKey program_key = program_key_no_color;
+  ProgramKey program_key = program_key_no_color;
   const gfx::ColorTransform* color_transform =
       GetColorTransform(src_color_space, dst_color_space);
   program_key.SetColorTransform(color_transform);
 
   // Create and set the program if needed.
-  std::unique_ptr<cc::Program>& program = program_cache_[program_key];
+  std::unique_ptr<Program>& program = program_cache_[program_key];
   if (!program) {
-    program.reset(new cc::Program);
+    program.reset(new Program);
     program->Initialize(output_surface_->context_provider(), program_key);
   }
   DCHECK(program);
@@ -3175,8 +3173,8 @@ void GLRenderer::SetUseProgram(const cc::ProgramKey& program_key_no_color,
   }
 }
 
-const cc::Program* GLRenderer::GetProgramIfInitialized(
-    const cc::ProgramKey& desc) const {
+const Program* GLRenderer::GetProgramIfInitialized(
+    const ProgramKey& desc) const {
   const auto found = program_cache_.find(desc);
   if (found == program_cache_.end())
     return nullptr;
@@ -3632,7 +3630,7 @@ void GLRenderer::FlushOverdrawFeedback(const gfx::Rect& output_rect) {
 
   PrepareGeometry(SHARED_BINDING);
 
-  SetUseProgram(cc::ProgramKey::DebugBorder(), gfx::ColorSpace::CreateSRGB());
+  SetUseProgram(ProgramKey::DebugBorder(), gfx::ColorSpace::CreateSRGB());
 
   gfx::Transform render_matrix;
   render_matrix.Translate(0.5 * output_rect.width() + output_rect.x(),

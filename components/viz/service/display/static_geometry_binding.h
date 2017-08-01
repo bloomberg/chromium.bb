@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_STATIC_GEOMETRY_BINDING_H_
-#define CC_OUTPUT_STATIC_GEOMETRY_BINDING_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_STATIC_GEOMETRY_BINDING_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_STATIC_GEOMETRY_BINDING_H_
 
 #include "base/macros.h"
-#include "cc/cc_export.h"
-#include "cc/output/geometry_binding.h"
+#include "components/viz/service/display/geometry_binding.h"
+#include "components/viz/service/viz_service_export.h"
 
 using gpu::gles2::GLES2Interface;
 
-namespace cc {
+namespace viz {
 
-class CC_EXPORT StaticGeometryBinding {
+class VIZ_SERVICE_EXPORT StaticGeometryBinding {
  public:
   StaticGeometryBinding(gpu::gles2::GLES2Interface* gl,
                         const gfx::RectF& quad_vertex_rect);
@@ -34,6 +34,6 @@ class CC_EXPORT StaticGeometryBinding {
   DISALLOW_COPY_AND_ASSIGN(StaticGeometryBinding);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_STATIC_GEOMETRY_BINDING_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_STATIC_GEOMETRY_BINDING_H_

@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_PROGRAM_BINDING_H_
-#define CC_OUTPUT_PROGRAM_BINDING_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_PROGRAM_BINDING_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_PROGRAM_BINDING_H_
 
 #include <string>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "cc/cc_export.h"
-#include "cc/output/shader.h"
+#include "build/build_config.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/service/display/shader.h"
+#include "components/viz/service/viz_service_export.h"
 
 namespace gfx {
 class ColorTransform;
@@ -21,11 +22,11 @@ namespace gpu {
 namespace gles2 {
 class GLES2Interface;
 }
-}
+}  // namespace gpu
 
-namespace cc {
+namespace viz {
 
-class CC_EXPORT ProgramBindingBase {
+class VIZ_SERVICE_EXPORT ProgramBindingBase {
  public:
   ProgramBindingBase();
   ~ProgramBindingBase();
@@ -69,7 +70,7 @@ enum ProgramType {
   PROGRAM_TYPE_YUV_VIDEO,
 };
 
-class CC_EXPORT ProgramKey {
+class VIZ_SERVICE_EXPORT ProgramKey {
  public:
   ProgramKey();
   ProgramKey(const ProgramKey& other);
@@ -156,12 +157,11 @@ struct ProgramKeyHash {
   }
 };
 
-class CC_EXPORT Program : public ProgramBindingBase {
+class VIZ_SERVICE_EXPORT Program : public ProgramBindingBase {
  public:
   Program() {}
 
-  void Initialize(viz::ContextProvider* context_provider,
-                  const ProgramKey& key) {
+  void Initialize(ContextProvider* context_provider, const ProgramKey& key) {
     // Set parameters that are common to all sub-classes.
     vertex_shader_.aa_mode_ = key.aa_mode_;
     fragment_shader_.aa_mode_ = key.aa_mode_;
@@ -406,7 +406,7 @@ class CC_EXPORT Program : public ProgramBindingBase {
     fragment_shader_.uv_texture_mode_ = key.uv_texture_mode_;
   }
 
-  void InitializeInternal(viz::ContextProvider* context_provider) {
+  void InitializeInternal(ContextProvider* context_provider) {
     DCHECK(context_provider);
     DCHECK(!initialized_);
 
@@ -421,10 +421,10 @@ class CC_EXPORT Program : public ProgramBindingBase {
     }
 
     int base_uniform_index = 0;
-    vertex_shader_.Init(context_provider->ContextGL(),
-                        program_, &base_uniform_index);
-    fragment_shader_.Init(context_provider->ContextGL(),
-                          program_, &base_uniform_index);
+    vertex_shader_.Init(context_provider->ContextGL(), program_,
+                        &base_uniform_index);
+    fragment_shader_.Init(context_provider->ContextGL(), program_,
+                          &base_uniform_index);
 
     // Link after binding uniforms
     if (!Link(context_provider->ContextGL())) {
@@ -441,6 +441,6 @@ class CC_EXPORT Program : public ProgramBindingBase {
   DISALLOW_COPY_AND_ASSIGN(Program);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_PROGRAM_BINDING_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_PROGRAM_BINDING_H_

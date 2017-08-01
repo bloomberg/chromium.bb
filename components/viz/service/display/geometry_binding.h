@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_GEOMETRY_BINDING_H_
-#define CC_OUTPUT_GEOMETRY_BINDING_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_GEOMETRY_BINDING_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_GEOMETRY_BINDING_H_
 
 #include <stdint.h>
 
@@ -12,7 +12,7 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-namespace cc {
+namespace viz {
 
 struct GeometryBindingVertex {
   float a_position[3];
@@ -55,6 +55,6 @@ void SetupGLContext(gpu::gles2::GLES2Interface* gl,
                     GLuint quad_elements_vbo,
                     GLuint quad_vertices_vbo);
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_GEOMETRY_BINDING_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_GEOMETRY_BINDING_H_

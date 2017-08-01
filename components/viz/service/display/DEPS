@@ -13,6 +13,7 @@ include_rules = [
   "+media/base",
   "+skia",
   "+third_party/skia",
+  "+third_party/khronos",
   "+ui/gfx",
   "+ui/latency",
 ]
