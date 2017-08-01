@@ -1734,9 +1734,9 @@ v8::Local<v8::Value> InspectorDOMAgent::NodeV8Value(
 void InspectorDOMAgent::CollectNodes(Node* node,
                                      int depth,
                                      bool pierce,
-                                     Function<bool(Node*)>* filter,
+                                     const Function<bool(Node*)>& filter,
                                      HeapVector<Member<Node>>* result) {
-  if (filter && filter->operator()(node))
+  if (filter && filter(node))
     result->push_back(node);
   if (--depth <= 0)
     return;

@@ -69,9 +69,8 @@ void SensorProxy::Initialize() {
                                             callback);
 }
 
-void SensorProxy::AddConfiguration(
-    SensorConfigurationPtr configuration,
-    std::unique_ptr<Function<void(bool)>> callback) {
+void SensorProxy::AddConfiguration(SensorConfigurationPtr configuration,
+                                   Function<void(bool)> callback) {
   DCHECK(IsInitialized());
   auto wrapper = WTF::Bind(&SensorProxy::OnAddConfigurationCompleted,
                            WrapWeakPersistent(this), configuration->frequency,
@@ -226,17 +225,16 @@ void SensorProxy::OnSensorCreated(SensorInitParamsPtr params,
     observer->OnSensorInitialized();
 }
 
-void SensorProxy::OnAddConfigurationCompleted(
-    double frequency,
-    std::unique_ptr<Function<void(bool)>> callback,
-    bool result) {
+void SensorProxy::OnAddConfigurationCompleted(double frequency,
+                                              Function<void(bool)> callback,
+                                              bool result) {
   if (result) {
     frequencies_used_.push_back(frequency);
     std::sort(frequencies_used_.begin(), frequencies_used_.end());
     UpdatePollingStatus();
   }
 
-  (*callback)(result);
+  callback(result);
 }
 
 void SensorProxy::OnRemoveConfigurationCompleted(double frequency,

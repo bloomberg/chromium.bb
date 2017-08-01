@@ -232,10 +232,9 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
 
   WebLocalFrameBase* GetWebLocalFrameBase(LocalFrame*) override;
 
-  void RequestDecode(
-      LocalFrame*,
-      const PaintImage&,
-      std::unique_ptr<WTF::Function<void(bool)>> callback) override;
+  void RequestDecode(LocalFrame*,
+                     const PaintImage&,
+                     WTF::Function<void(bool)> callback) override;
 
  private:
   explicit ChromeClientImpl(WebViewBase*);

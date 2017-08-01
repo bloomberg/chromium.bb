@@ -226,7 +226,7 @@ MainThreadDebugger* MainThreadDebugger::Instance() {
 }
 
 void MainThreadDebugger::InterruptMainThreadAndRun(
-    std::unique_ptr<InspectorTaskRunner::Task> task) {
+    InspectorTaskRunner::Task task) {
   MutexLocker locker(CreationMutex());
   if (instance_) {
     instance_->task_runner_->AppendTask(std::move(task));

@@ -12,7 +12,7 @@ namespace blink {
 
 void BackgroundTaskRunner::PostOnBackgroundThread(
     const WebTraceLocation& location,
-    std::unique_ptr<CrossThreadClosure> closure) {
+    CrossThreadClosure closure) {
   base::PostTaskWithTraits(location,
                            {base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
                            ConvertToBaseCallback(std::move(closure)));

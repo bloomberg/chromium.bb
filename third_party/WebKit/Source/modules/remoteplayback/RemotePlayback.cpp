@@ -45,9 +45,10 @@ const AtomicString& RemotePlaybackStateToString(WebRemotePlaybackState state) {
 }
 
 void RunNotifyInitialAvailabilityTask(ExecutionContext* context,
-                                      std::unique_ptr<WTF::Closure> task) {
-  probe::AsyncTask async_task(context, task.get());
-  (*task)();
+                                      WTF::Closure task,
+                                      std::unique_ptr<int> identifier) {
+  probe::AsyncTask async_task(context, identifier.get());
+  task();
 }
 
 WebURL GetAvailabilityUrl(const WebURL& source, bool is_source_supported) {
@@ -245,15 +246,17 @@ int RemotePlayback::WatchAvailabilityInternal(
   // TODO(yuryu): Wrapping notifyInitialAvailability with WTF::Closure as
   // InspectorInstrumentation requires a globally unique pointer to track tasks.
   // We can remove the wrapper if InspectorInstrumentation returns a task id.
-  std::unique_ptr<WTF::Closure> task = WTF::Bind(
-      &RemotePlayback::NotifyInitialAvailability, WrapPersistent(this), id);
+  WTF::Closure task = WTF::Bind(&RemotePlayback::NotifyInitialAvailability,
+                                WrapPersistent(this), id);
+  std::unique_ptr<int> identifier = WTF::MakeUnique<int>(0);
   probe::AsyncTaskScheduled(GetExecutionContext(), "watchAvailabilityCallback",
-                            task.get());
+                            identifier.get());
   TaskRunnerHelper::Get(TaskType::kMediaElementEvent, GetExecutionContext())
       ->PostTask(BLINK_FROM_HERE,
                  WTF::Bind(RunNotifyInitialAvailabilityTask,
                            WrapPersistent(GetExecutionContext()),
-                           WTF::Passed(std::move(task))));
+                           WTF::Passed(std::move(task)),
+                           WTF::Passed(std::move(identifier))));
 
   MaybeStartListeningForAvailability();
   return id;

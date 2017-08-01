@@ -35,13 +35,13 @@ class SVGElementReferenceObserver : public IdTargetObserver {
  public:
   SVGElementReferenceObserver(TreeScope& tree_scope,
                               const AtomicString& id,
-                              std::unique_ptr<WTF::Closure> closure)
+                              WTF::Closure closure)
       : IdTargetObserver(tree_scope.GetIdTargetObserverRegistry(), id),
         closure_(std::move(closure)) {}
 
  private:
-  void IdTargetChanged() override { (*closure_)(); }
-  std::unique_ptr<WTF::Closure> closure_;
+  void IdTargetChanged() override { closure_(); }
+  WTF::Closure closure_;
 };
 }
 
@@ -134,7 +134,7 @@ Element* SVGURIReference::ObserveTarget(Member<IdTargetObserver>& observer,
 Element* SVGURIReference::ObserveTarget(Member<IdTargetObserver>& observer,
                                         TreeScope& tree_scope,
                                         const AtomicString& id,
-                                        std::unique_ptr<WTF::Closure> closure) {
+                                        WTF::Closure closure) {
   DCHECK(!observer);
   if (id.IsEmpty())
     return nullptr;

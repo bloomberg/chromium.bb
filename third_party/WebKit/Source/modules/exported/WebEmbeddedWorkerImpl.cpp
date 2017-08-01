@@ -365,7 +365,7 @@ void WebEmbeddedWorkerImpl::DidFinishDocumentLoad() {
       WebURLRequest::kRequestContextServiceWorker,
       WebURLRequest::kFetchRequestModeSameOrigin,
       WebURLRequest::kFetchCredentialsModeSameOrigin,
-      worker_start_data_.address_space, nullptr,
+      worker_start_data_.address_space, WTF::Closure(),
       Bind(&WebEmbeddedWorkerImpl::OnScriptLoaderFinished,
            WTF::Unretained(this)));
   // Do nothing here since onScriptLoaderFinished() might have been already

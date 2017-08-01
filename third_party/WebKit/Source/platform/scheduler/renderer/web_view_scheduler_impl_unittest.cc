@@ -85,9 +85,8 @@ namespace {
 
 void RunRepeatingTask(RefPtr<blink::WebTaskRunner> task_runner, int* run_count);
 
-std::unique_ptr<WTF::Closure> MakeRepeatingTask(
-    RefPtr<blink::WebTaskRunner> task_runner,
-    int* run_count) {
+WTF::Closure MakeRepeatingTask(RefPtr<blink::WebTaskRunner> task_runner,
+                               int* run_count) {
   return WTF::Bind(&RunRepeatingTask, WTF::Passed(std::move(task_runner)),
                    WTF::Unretained(run_count));
 }
@@ -189,7 +188,7 @@ void RunVirtualTimeRecorderTask(base::SimpleTestTickClock* clock,
       web_task_runner->MonotonicallyIncreasingVirtualTimeSeconds() * 1000.0);
 }
 
-std::unique_ptr<WTF::Closure> MakeVirtualTimeRecorderTask(
+WTF::Closure MakeVirtualTimeRecorderTask(
     base::SimpleTestTickClock* clock,
     RefPtr<blink::WebTaskRunner> web_task_runner,
     std::vector<base::TimeTicks>* out_real_times,
@@ -427,7 +426,7 @@ TEST_F(WebViewSchedulerImplTest, VirtualTimeSettings_NewWebFrameScheduler) {
 namespace {
 
 template <typename T>
-std::unique_ptr<WTF::Closure> MakeDeletionTask(T* obj) {
+WTF::Closure MakeDeletionTask(T* obj) {
   return WTF::Bind([](T* obj) { delete obj; }, WTF::Unretained(obj));
 }
 

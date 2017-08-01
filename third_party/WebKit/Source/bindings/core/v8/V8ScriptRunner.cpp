@@ -321,7 +321,7 @@ typedef Function<v8::MaybeLocal<v8::Script>(v8::Isolate*,
 
 // Select a compile function from any of the above, mainly depending on
 // cacheOptions.
-static std::unique_ptr<CompileFn> SelectCompileFunction(
+static CompileFn SelectCompileFunction(
     V8CacheOptions cache_options,
     CachedMetadataHandler* cache_handler,
     PassRefPtr<CachedMetadata> code_cache,
@@ -390,9 +390,9 @@ static std::unique_ptr<CompileFn> SelectCompileFunction(
 }
 
 // Select a compile function for a streaming compile.
-std::unique_ptr<CompileFn> SelectCompileFunction(V8CacheOptions cache_options,
-                                                 ScriptResource* resource,
-                                                 ScriptStreamer* streamer) {
+CompileFn SelectCompileFunction(V8CacheOptions cache_options,
+                                ScriptResource* resource,
+                                ScriptStreamer* streamer) {
   // We don't stream scripts which don't have a Resource.
   DCHECK(resource);
   // Failed resources should never get this far.
@@ -490,12 +490,12 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
       cache_handler ? cache_handler->GetCachedMetadata(
                           CacheTag(kCacheTagCode, cache_handler))
                     : nullptr);
-  std::unique_ptr<CompileFn> compile_fn =
+  CompileFn compile_fn =
       streamer ? SelectCompileFunction(cache_options, resource, streamer)
                : SelectCompileFunction(cache_options, cache_handler, code_cache,
                                        code, cacheability_if_no_handler);
 
-  return (*compile_fn)(isolate, code, origin);
+  return compile_fn(isolate, code, origin);
 }
 
 v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(

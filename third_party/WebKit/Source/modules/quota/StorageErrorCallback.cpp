@@ -34,7 +34,7 @@
 
 namespace blink {
 
-std::unique_ptr<WTF::Closure> StorageErrorCallback::CreateSameThreadTask(
+WTF::Closure StorageErrorCallback::CreateSameThreadTask(
     StorageErrorCallback* callback,
     ExceptionCode ec) {
   return WTF::Bind(&StorageErrorCallback::Run, WrapPersistent(callback), ec);

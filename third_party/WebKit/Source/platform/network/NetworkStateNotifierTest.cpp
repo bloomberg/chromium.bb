@@ -85,7 +85,7 @@ class StateObserver : public NetworkStateNotifier::NetworkStateObserver {
     callback_count_ += 1;
 
     if (closure_)
-      (*closure_)();
+      closure_();
   }
 
   virtual void OnLineStateChange(bool on_line) {
@@ -93,7 +93,7 @@ class StateObserver : public NetworkStateNotifier::NetworkStateObserver {
     callback_count_ += 1;
 
     if (closure_)
-      (*closure_)();
+      closure_();
   }
 
   WebConnectionType ObservedType() const { return observed_type_; }
@@ -111,12 +111,12 @@ class StateObserver : public NetworkStateNotifier::NetworkStateObserver {
   bool ObservedOnLineState() const { return observed_on_line_state_; }
   int CallbackCount() const { return callback_count_; }
 
-  void SetNotificationCallback(std::unique_ptr<WTF::Closure> closure) {
+  void SetNotificationCallback(WTF::Closure closure) {
     closure_ = std::move(closure);
   }
 
  private:
-  std::unique_ptr<WTF::Closure> closure_;
+  WTF::Closure closure_;
   WebConnectionType observed_type_;
   double observed_max_bandwidth_mbps_;
   WebEffectiveConnectionType observed_effective_type_;

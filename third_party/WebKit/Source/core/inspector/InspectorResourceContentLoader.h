@@ -31,8 +31,7 @@ class CORE_EXPORT InspectorResourceContentLoader final
   DECLARE_TRACE();
 
   int CreateClientId();
-  void EnsureResourcesContentLoaded(int client_id,
-                                    std::unique_ptr<WTF::Closure> callback);
+  void EnsureResourcesContentLoaded(int client_id, WTF::Closure callback);
   void Cancel(int client_id);
   void DidCommitLoadForLocalFrame(LocalFrame*);
 
@@ -46,7 +45,7 @@ class CORE_EXPORT InspectorResourceContentLoader final
   void Stop();
   bool HasFinished();
 
-  using Callbacks = Vector<std::unique_ptr<WTF::Closure>>;
+  using Callbacks = Vector<WTF::Closure>;
   HashMap<int, Callbacks> callbacks_;
   bool all_requests_started_;
   bool started_;

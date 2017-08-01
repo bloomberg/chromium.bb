@@ -175,7 +175,7 @@ int InspectorResourceContentLoader::CreateClientId() {
 
 void InspectorResourceContentLoader::EnsureResourcesContentLoaded(
     int client_id,
-    std::unique_ptr<WTF::Closure> callback) {
+    WTF::Closure callback) {
   if (!started_)
     Start();
   callbacks_.insert(client_id, Callbacks())
@@ -230,7 +230,7 @@ void InspectorResourceContentLoader::CheckDone() {
   callbacks.swap(callbacks_);
   for (const auto& key_value : callbacks) {
     for (const auto& callback : key_value.value)
-      (*callback)();
+      callback();
   }
 }
 

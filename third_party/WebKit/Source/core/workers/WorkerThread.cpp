@@ -220,8 +220,7 @@ ThreadableLoadingContext* WorkerThread::GetLoadingContext() {
   return loading_context_;
 }
 
-void WorkerThread::AppendDebuggerTask(
-    std::unique_ptr<CrossThreadClosure> task) {
+void WorkerThread::AppendDebuggerTask(CrossThreadClosure task) {
   DCHECK(IsMainThread());
   if (requested_to_terminate_)
     return;
@@ -246,12 +245,12 @@ void WorkerThread::StartRunningDebuggerTasksOnPauseOnWorkerThread() {
     worker_inspector_controller_->FlushProtocolNotifications();
   paused_in_debugger_ = true;
   ThreadDebugger::IdleStarted(GetIsolate());
-  std::unique_ptr<CrossThreadClosure> task;
+  CrossThreadClosure task;
   do {
     task =
         inspector_task_runner_->TakeNextTask(InspectorTaskRunner::kWaitForTask);
     if (task)
-      (*task)();
+      task();
     // Keep waiting until execution is resumed.
   } while (task && paused_in_debugger_);
   ThreadDebugger::IdleFinished(GetIsolate());
@@ -545,8 +544,7 @@ void WorkerThread::PerformShutdownOnWorkerThread() {
   shutdown_event_->Signal();
 }
 
-void WorkerThread::PerformDebuggerTaskOnWorkerThread(
-    std::unique_ptr<CrossThreadClosure> task) {
+void WorkerThread::PerformDebuggerTaskOnWorkerThread(CrossThreadClosure task) {
   DCHECK(IsCurrentThread());
   InspectorTaskRunner::IgnoreInterruptsScope scope(
       inspector_task_runner_.get());
@@ -561,7 +559,7 @@ void WorkerThread::PerformDebuggerTaskOnWorkerThread(
         CustomCountHistogram, scoped_us_counter,
         ("WorkerThread.DebuggerTask.Time", 0, 10000000, 50));
     ScopedUsHistogramTimer timer(scoped_us_counter);
-    (*task)();
+    task();
   }
   ThreadDebugger::IdleStarted(GetIsolate());
   {
@@ -572,11 +570,10 @@ void WorkerThread::PerformDebuggerTaskOnWorkerThread(
 
 void WorkerThread::PerformDebuggerTaskDontWaitOnWorkerThread() {
   DCHECK(IsCurrentThread());
-  std::unique_ptr<CrossThreadClosure> task =
-      inspector_task_runner_->TakeNextTask(
-          InspectorTaskRunner::kDontWaitForTask);
+  CrossThreadClosure task = inspector_task_runner_->TakeNextTask(
+      InspectorTaskRunner::kDontWaitForTask);
   if (task)
-    (*task)();
+    task();
 }
 
 void WorkerThread::SetThreadState(const MutexLocker& lock,

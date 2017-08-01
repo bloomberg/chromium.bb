@@ -4675,7 +4675,7 @@ EventQueue* Document::GetEventQueue() const {
   return dom_window_->GetEventQueue();
 }
 
-void Document::EnqueueAnimationFrameTask(std::unique_ptr<WTF::Closure> task) {
+void Document::EnqueueAnimationFrameTask(WTF::Closure task) {
   EnsureScriptedAnimationController().EnqueueTask(std::move(task));
 }
 

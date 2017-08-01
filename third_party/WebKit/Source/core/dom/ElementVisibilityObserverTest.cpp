@@ -63,8 +63,8 @@ class ElementVisibilityObserverTest : public ::testing::Test {
 TEST_F(ElementVisibilityObserverTest, ObserveElementWithoutDocumentFrame) {
   HTMLElement* element = HTMLDivElement::Create(
       *DOMImplementation::Create(GetDocument())->createHTMLDocument("test"));
-  ElementVisibilityObserver* observer =
-      new ElementVisibilityObserver(element, nullptr);
+  ElementVisibilityObserver* observer = new ElementVisibilityObserver(
+      element, ElementVisibilityObserver::VisibilityCallback());
   observer->Start();
   observer->Stop();
   // It should not crash.

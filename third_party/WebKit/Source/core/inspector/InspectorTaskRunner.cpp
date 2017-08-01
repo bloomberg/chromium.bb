@@ -24,7 +24,7 @@ InspectorTaskRunner::InspectorTaskRunner()
 
 InspectorTaskRunner::~InspectorTaskRunner() {}
 
-void InspectorTaskRunner::AppendTask(std::unique_ptr<Task> task) {
+void InspectorTaskRunner::AppendTask(Task task) {
   MutexLocker lock(mutex_);
   if (killed_)
     return;
@@ -32,7 +32,7 @@ void InspectorTaskRunner::AppendTask(std::unique_ptr<Task> task) {
   condition_.Signal();
 }
 
-std::unique_ptr<InspectorTaskRunner::Task> InspectorTaskRunner::TakeNextTask(
+InspectorTaskRunner::Task InspectorTaskRunner::TakeNextTask(
     InspectorTaskRunner::WaitMode wait_mode) {
   MutexLocker lock(mutex_);
   bool timed_out = false;
@@ -44,7 +44,7 @@ std::unique_ptr<InspectorTaskRunner::Task> InspectorTaskRunner::TakeNextTask(
   DCHECK(!timed_out || absolute_time != infinite_time);
 
   if (killed_ || timed_out)
-    return nullptr;
+    return Task();
 
   SECURITY_DCHECK(!queue_.IsEmpty());
   return queue_.TakeFirst();
@@ -63,10 +63,10 @@ void InspectorTaskRunner::InterruptAndRunAllTasksDontWait(
 
 void InspectorTaskRunner::RunAllTasksDontWait() {
   while (true) {
-    std::unique_ptr<Task> task = TakeNextTask(kDontWaitForTask);
+    Task task = TakeNextTask(kDontWaitForTask);
     if (!task)
       return;
-    (*task)();
+    task();
   }
 }
 

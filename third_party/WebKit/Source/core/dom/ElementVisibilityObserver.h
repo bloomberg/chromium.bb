@@ -32,7 +32,7 @@ class CORE_EXPORT ElementVisibilityObserver final
  public:
   using VisibilityCallback = Function<void(bool), WTF::kSameThreadAffinity>;
 
-  ElementVisibilityObserver(Element*, std::unique_ptr<VisibilityCallback>);
+  ElementVisibilityObserver(Element*, VisibilityCallback);
   virtual ~ElementVisibilityObserver();
 
   // The |threshold| is the minimum fraction that needs to be visible.
@@ -53,7 +53,7 @@ class CORE_EXPORT ElementVisibilityObserver final
 
   Member<Element> element_;
   Member<IntersectionObserver> intersection_observer_;
-  std::unique_ptr<VisibilityCallback> callback_;
+  VisibilityCallback callback_;
 };
 
 }  // namespace blink

@@ -79,7 +79,7 @@ class MODULES_EXPORT DatabaseTracker {
   void CloseDatabasesImmediately(SecurityOrigin*, const String& name);
 
   using DatabaseCallback = Function<void(Database*)>;
-  void ForEachOpenDatabaseInPage(Page*, std::unique_ptr<DatabaseCallback>);
+  void ForEachOpenDatabaseInPage(Page*, DatabaseCallback);
 
   void PrepareToOpenDatabase(Database*);
   void FailedToOpenDatabase(Database*);

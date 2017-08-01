@@ -83,7 +83,7 @@ class PLATFORM_EXPORT WebViewScheduler {
   // policy is not affected when the budget expires.
   virtual void GrantVirtualTimeBudget(
       base::TimeDelta budget,
-      std::unique_ptr<WTF::Closure> budget_exhausted_callback) = 0;
+      WTF::Closure budget_exhausted_callback) = 0;
 
   virtual void AudioStateChanged(bool is_audio_playing) = 0;
 

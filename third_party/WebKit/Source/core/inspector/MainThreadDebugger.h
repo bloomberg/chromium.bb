@@ -65,8 +65,7 @@ class CORE_EXPORT MainThreadDebugger final : public ThreadDebugger {
   ~MainThreadDebugger() override;
 
   static MainThreadDebugger* Instance();
-  static void InterruptMainThreadAndRun(
-      std::unique_ptr<InspectorTaskRunner::Task>);
+  static void InterruptMainThreadAndRun(InspectorTaskRunner::Task);
 
   InspectorTaskRunner* TaskRunner() const { return task_runner_.get(); }
   bool IsWorker() override { return false; }

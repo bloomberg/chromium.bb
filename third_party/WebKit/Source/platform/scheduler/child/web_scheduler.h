@@ -113,9 +113,8 @@ class PLATFORM_EXPORT WebScheduler {
   // Helpers for posting bound functions as tasks.
   typedef Function<void(double deadline_seconds)> IdleTask;
 
-  void PostIdleTask(const WebTraceLocation&, std::unique_ptr<IdleTask>);
-  void PostNonNestableIdleTask(const WebTraceLocation&,
-                               std::unique_ptr<IdleTask>);
+  void PostIdleTask(const WebTraceLocation&, IdleTask);
+  void PostNonNestableIdleTask(const WebTraceLocation&, IdleTask);
 #endif
 };
 

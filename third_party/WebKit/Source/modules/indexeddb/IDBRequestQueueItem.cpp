@@ -17,10 +17,9 @@
 
 namespace blink {
 
-IDBRequestQueueItem::IDBRequestQueueItem(
-    IDBRequest* request,
-    DOMException* error,
-    std::unique_ptr<WTF::Closure> on_result_load_complete)
+IDBRequestQueueItem::IDBRequestQueueItem(IDBRequest* request,
+                                         DOMException* error,
+                                         WTF::Closure on_result_load_complete)
     : request_(request),
       error_(error),
       on_result_load_complete_(std::move(on_result_load_complete)),
@@ -31,10 +30,9 @@ IDBRequestQueueItem::IDBRequestQueueItem(
   request_->queue_item_ = this;
 }
 
-IDBRequestQueueItem::IDBRequestQueueItem(
-    IDBRequest* request,
-    int64_t value,
-    std::unique_ptr<WTF::Closure> on_result_load_complete)
+IDBRequestQueueItem::IDBRequestQueueItem(IDBRequest* request,
+                                         int64_t value,
+                                         WTF::Closure on_result_load_complete)
     : request_(request),
       on_result_load_complete_(std::move(on_result_load_complete)),
       int64_value_(value),
@@ -45,9 +43,8 @@ IDBRequestQueueItem::IDBRequestQueueItem(
   request_->queue_item_ = this;
 }
 
-IDBRequestQueueItem::IDBRequestQueueItem(
-    IDBRequest* request,
-    std::unique_ptr<WTF::Closure> on_result_load_complete)
+IDBRequestQueueItem::IDBRequestQueueItem(IDBRequest* request,
+                                         WTF::Closure on_result_load_complete)
     : request_(request),
       on_result_load_complete_(std::move(on_result_load_complete)),
       response_type_(kVoid),
@@ -57,10 +54,9 @@ IDBRequestQueueItem::IDBRequestQueueItem(
   request_->queue_item_ = this;
 }
 
-IDBRequestQueueItem::IDBRequestQueueItem(
-    IDBRequest* request,
-    IDBKey* key,
-    std::unique_ptr<WTF::Closure> on_result_load_complete)
+IDBRequestQueueItem::IDBRequestQueueItem(IDBRequest* request,
+                                         IDBKey* key,
+                                         WTF::Closure on_result_load_complete)
     : request_(request),
       key_(key),
       on_result_load_complete_(std::move(on_result_load_complete)),
@@ -71,11 +67,10 @@ IDBRequestQueueItem::IDBRequestQueueItem(
   request_->queue_item_ = this;
 }
 
-IDBRequestQueueItem::IDBRequestQueueItem(
-    IDBRequest* request,
-    RefPtr<IDBValue> value,
-    bool attach_loader,
-    std::unique_ptr<WTF::Closure> on_result_load_complete)
+IDBRequestQueueItem::IDBRequestQueueItem(IDBRequest* request,
+                                         RefPtr<IDBValue> value,
+                                         bool attach_loader,
+                                         WTF::Closure on_result_load_complete)
     : request_(request),
       on_result_load_complete_(std::move(on_result_load_complete)),
       response_type_(kValue),
@@ -88,11 +83,10 @@ IDBRequestQueueItem::IDBRequestQueueItem(
     loader_ = WTF::MakeUnique<IDBRequestLoader>(this, &values_);
 }
 
-IDBRequestQueueItem::IDBRequestQueueItem(
-    IDBRequest* request,
-    const Vector<RefPtr<IDBValue>>& values,
-    bool attach_loader,
-    std::unique_ptr<WTF::Closure> on_result_load_complete)
+IDBRequestQueueItem::IDBRequestQueueItem(IDBRequest* request,
+                                         const Vector<RefPtr<IDBValue>>& values,
+                                         bool attach_loader,
+                                         WTF::Closure on_result_load_complete)
     : request_(request),
       values_(values),
       on_result_load_complete_(std::move(on_result_load_complete)),
@@ -105,13 +99,12 @@ IDBRequestQueueItem::IDBRequestQueueItem(
     loader_ = WTF::MakeUnique<IDBRequestLoader>(this, &values_);
 }
 
-IDBRequestQueueItem::IDBRequestQueueItem(
-    IDBRequest* request,
-    IDBKey* key,
-    IDBKey* primary_key,
-    RefPtr<IDBValue> value,
-    bool attach_loader,
-    std::unique_ptr<WTF::Closure> on_result_load_complete)
+IDBRequestQueueItem::IDBRequestQueueItem(IDBRequest* request,
+                                         IDBKey* key,
+                                         IDBKey* primary_key,
+                                         RefPtr<IDBValue> value,
+                                         bool attach_loader,
+                                         WTF::Closure on_result_load_complete)
     : request_(request),
       key_(key),
       primary_key_(primary_key),
@@ -126,14 +119,13 @@ IDBRequestQueueItem::IDBRequestQueueItem(
     loader_ = WTF::MakeUnique<IDBRequestLoader>(this, &values_);
 }
 
-IDBRequestQueueItem::IDBRequestQueueItem(
-    IDBRequest* request,
-    std::unique_ptr<WebIDBCursor> cursor,
-    IDBKey* key,
-    IDBKey* primary_key,
-    RefPtr<IDBValue> value,
-    bool attach_loader,
-    std::unique_ptr<WTF::Closure> on_result_load_complete)
+IDBRequestQueueItem::IDBRequestQueueItem(IDBRequest* request,
+                                         std::unique_ptr<WebIDBCursor> cursor,
+                                         IDBKey* key,
+                                         IDBKey* primary_key,
+                                         RefPtr<IDBValue> value,
+                                         bool attach_loader,
+                                         WTF::Closure on_result_load_complete)
     : request_(request),
       key_(key),
       primary_key_(primary_key),
@@ -161,7 +153,7 @@ void IDBRequestQueueItem::OnResultLoadComplete() {
   ready_ = true;
 
   DCHECK(on_result_load_complete_);
-  (*on_result_load_complete_)();
+  on_result_load_complete_();
 }
 
 void IDBRequestQueueItem::OnResultLoadComplete(DOMException* error) {

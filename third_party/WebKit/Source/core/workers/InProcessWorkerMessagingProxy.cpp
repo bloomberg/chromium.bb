@@ -137,7 +137,7 @@ void InProcessWorkerMessagingProxy::PostMessageToWorkerGlobalScope(
     // A message event is an activity and may initiate another activity.
     worker_global_scope_has_pending_activity_ = true;
     ++unconfirmed_message_count_;
-    std::unique_ptr<WTF::CrossThreadClosure> task = CrossThreadBind(
+    WTF::CrossThreadClosure task = CrossThreadBind(
         &InProcessWorkerObjectProxy::ProcessMessageFromWorkerObject,
         CrossThreadUnretained(&WorkerObjectProxy()), std::move(message),
         WTF::Passed(std::move(channels)),
@@ -190,7 +190,7 @@ void InProcessWorkerMessagingProxy::WorkerThreadCreated() {
   DCHECK_EQ(0u, unconfirmed_message_count_);
   unconfirmed_message_count_ = queued_early_tasks_.size();
   for (auto& queued_task : queued_early_tasks_) {
-    std::unique_ptr<WTF::CrossThreadClosure> task = CrossThreadBind(
+    WTF::CrossThreadClosure task = CrossThreadBind(
         &InProcessWorkerObjectProxy::ProcessMessageFromWorkerObject,
         CrossThreadUnretained(&WorkerObjectProxy()),
         std::move(queued_task.message),

@@ -261,25 +261,23 @@ template <typename T>
 class WebCryptoResultAdapter : public ScriptFunction {
  private:
   WebCryptoResultAdapter(ScriptState* script_state,
-                         std::unique_ptr<WTF::Function<void(T)>> function)
+                         WTF::Function<void(T)> function)
       : ScriptFunction(script_state), function_(std::move(function)) {}
 
   ScriptValue Call(ScriptValue value) final {
-    (*function_)(ConvertCryptoResult<T>(value));
+    function_(ConvertCryptoResult<T>(value));
     return ScriptValue::From(GetScriptState(), ToV8UndefinedGenerator());
   }
 
-  std::unique_ptr<WTF::Function<void(T)>> function_;
+  WTF::Function<void(T)> function_;
   template <typename U>
-  friend WebCryptoResult ToWebCryptoResult(
-      ScriptState*,
-      std::unique_ptr<WTF::Function<void(U)>>);
+  friend WebCryptoResult ToWebCryptoResult(ScriptState*,
+                                           WTF::Function<void(U)>);
 };
 
 template <typename T>
-WebCryptoResult ToWebCryptoResult(
-    ScriptState* script_state,
-    std::unique_ptr<WTF::Function<void(T)>> function) {
+WebCryptoResult ToWebCryptoResult(ScriptState* script_state,
+                                  WTF::Function<void(T)> function) {
   CryptoResultImpl* result = CryptoResultImpl::Create(script_state);
   result->Promise().Then(
       (new WebCryptoResultAdapter<T>(script_state, std::move(function)))

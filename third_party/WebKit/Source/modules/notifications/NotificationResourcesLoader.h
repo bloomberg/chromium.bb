@@ -34,7 +34,7 @@ class MODULES_EXPORT NotificationResourcesLoader final
   // the same function to handle the callbacks.
   using CompletionCallback = Function<void(NotificationResourcesLoader*)>;
 
-  explicit NotificationResourcesLoader(std::unique_ptr<CompletionCallback>);
+  explicit NotificationResourcesLoader(CompletionCallback);
   ~NotificationResourcesLoader();
 
   // Starts fetching the resources specified in the given WebNotificationData.
@@ -58,7 +58,7 @@ class MODULES_EXPORT NotificationResourcesLoader final
   void LoadImage(ExecutionContext*,
                  NotificationImageLoader::Type,
                  const KURL&,
-                 std::unique_ptr<NotificationImageLoader::ImageCallback>);
+                 NotificationImageLoader::ImageCallback);
   void DidLoadImage(const SkBitmap& image);
   void DidLoadIcon(const SkBitmap& image);
   void DidLoadBadge(const SkBitmap& image);
@@ -69,7 +69,7 @@ class MODULES_EXPORT NotificationResourcesLoader final
   void DidFinishRequest();
 
   bool started_;
-  std::unique_ptr<CompletionCallback> completion_callback_;
+  CompletionCallback completion_callback_;
   int pending_request_count_;
   HeapVector<Member<NotificationImageLoader>> image_loaders_;
   SkBitmap image_;

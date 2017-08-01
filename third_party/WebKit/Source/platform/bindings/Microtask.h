@@ -70,7 +70,7 @@ class PLATFORM_EXPORT Microtask {
   // TODO(jochen): Make all microtasks pass in the ScriptState they want to be
   // executed in. Until then, all microtasks have to keep track of their
   // ScriptState themselves.
-  static void EnqueueMicrotask(std::unique_ptr<WTF::Closure>);
+  static void EnqueueMicrotask(WTF::Closure);
 };
 
 }  // namespace blink

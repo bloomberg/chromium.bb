@@ -46,7 +46,7 @@ class WaitUntilObserver::ThenFunction final : public ScriptFunction {
       ScriptState* script_state,
       WaitUntilObserver* observer,
       ResolveType type,
-      std::unique_ptr<PromiseSettledCallback> callback) {
+      PromiseSettledCallback callback) {
     ThenFunction* self =
         new ThenFunction(script_state, observer, type, std::move(callback));
     return self->BindToV8Function();
@@ -61,7 +61,7 @@ class WaitUntilObserver::ThenFunction final : public ScriptFunction {
   ThenFunction(ScriptState* script_state,
                WaitUntilObserver* observer,
                ResolveType type,
-               std::unique_ptr<PromiseSettledCallback> callback)
+               PromiseSettledCallback callback)
       : ScriptFunction(script_state),
         observer_(observer),
         resolve_type_(type),
@@ -71,7 +71,7 @@ class WaitUntilObserver::ThenFunction final : public ScriptFunction {
     DCHECK(observer_);
     DCHECK(resolve_type_ == kFulfilled || resolve_type_ == kRejected);
     if (callback_)
-      (*callback_)(value);
+      callback_(value);
     // According from step 4 of ExtendableEvent::waitUntil() in spec:
     // https://w3c.github.io/ServiceWorker/#dom-extendableevent-waituntil
     // "Upon fulfillment or rejection of f, queue a microtask to run these
@@ -101,7 +101,7 @@ class WaitUntilObserver::ThenFunction final : public ScriptFunction {
 
   Member<WaitUntilObserver> observer_;
   ResolveType resolve_type_;
-  std::unique_ptr<PromiseSettledCallback> callback_;
+  PromiseSettledCallback callback_;
 };
 
 WaitUntilObserver* WaitUntilObserver::Create(ExecutionContext* context,
@@ -131,12 +131,11 @@ void WaitUntilObserver::DidDispatchEvent(bool event_dispatch_failed) {
   MaybeCompleteEvent();
 }
 
-void WaitUntilObserver::WaitUntil(
-    ScriptState* script_state,
-    ScriptPromise script_promise,
-    ExceptionState& exception_state,
-    std::unique_ptr<PromiseSettledCallback> on_promise_fulfilled,
-    std::unique_ptr<PromiseSettledCallback> on_promise_rejected) {
+void WaitUntilObserver::WaitUntil(ScriptState* script_state,
+                                  ScriptPromise script_promise,
+                                  ExceptionState& exception_state,
+                                  PromiseSettledCallback on_promise_fulfilled,
+                                  PromiseSettledCallback on_promise_rejected) {
   if (pending_promises_ == 0) {
     switch (event_dispatch_state_) {
       case EventDispatchState::kInitial:

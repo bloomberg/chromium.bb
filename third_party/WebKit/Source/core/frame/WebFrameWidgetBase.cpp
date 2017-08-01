@@ -251,9 +251,8 @@ void WebFrameWidgetBase::DidLosePointerLock() {
   GetPage()->GetPointerLockController().DidLosePointerLock();
 }
 
-void WebFrameWidgetBase::RequestDecode(
-    const PaintImage& image,
-    std::unique_ptr<WTF::Function<void(bool)>> callback) {
+void WebFrameWidgetBase::RequestDecode(const PaintImage& image,
+                                       WTF::Function<void(bool)> callback) {
   View()->RequestDecode(image, std::move(callback));
 }
 

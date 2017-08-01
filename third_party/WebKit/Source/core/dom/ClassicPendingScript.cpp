@@ -69,7 +69,7 @@ void ClassicPendingScript::StreamingFinished() {
   CheckState();
   DCHECK(streamer_);  // Should only be called by ScriptStreamer.
 
-  std::unique_ptr<WTF::Closure> done(std::move(streamer_done_));
+  WTF::Closure done = std::move(streamer_done_);
   if (ready_state_ == kWaitingForStreaming) {
     FinishWaitingForStreaming();
   } else if (ready_state_ == kReadyStreaming) {
@@ -79,7 +79,7 @@ void ClassicPendingScript::StreamingFinished() {
   }
 
   if (done)
-    (*done)();
+    done();
 }
 
 void ClassicPendingScript::FinishWaitingForStreaming() {
@@ -241,7 +241,7 @@ void ClassicPendingScript::OnPurgeMemory() {
 
 bool ClassicPendingScript::StartStreamingIfPossible(
     ScriptStreamer::Type streamer_type,
-    std::unique_ptr<WTF::Closure> done) {
+    WTF::Closure done) {
   // We can start streaming in two states: While still loading
   // (kWaitingForResource), or after having loaded (kReady).
   if (ready_state_ != kWaitingForResource && ready_state_ != kReady)

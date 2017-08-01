@@ -682,7 +682,7 @@ void ImageCapture::OnMojoGetPhotoState(
     return;
   }
 
-  (*resolve_function)(resolver);
+  resolve_function(resolver);
   service_requests_.erase(resolver);
 }
 

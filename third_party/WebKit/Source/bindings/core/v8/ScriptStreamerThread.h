@@ -26,7 +26,7 @@ class CORE_EXPORT ScriptStreamerThread {
   static void Init();
   static ScriptStreamerThread* Shared();
 
-  void PostTask(std::unique_ptr<CrossThreadClosure>);
+  void PostTask(CrossThreadClosure);
 
   bool IsRunningTask() const {
     MutexLocker locker(mutex_);

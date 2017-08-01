@@ -48,29 +48,26 @@ class BackgroundFetchBridge final
   void Fetch(const String& tag,
              Vector<WebServiceWorkerRequest> requests,
              const BackgroundFetchOptions&,
-             std::unique_ptr<RegistrationCallback>);
+             RegistrationCallback);
 
   // Updates the user interface for the Background Fetch identified by |tag|
   // with the updated |title|. Will invoke the |callback| when the interface
   // has been requested to update.
-  void UpdateUI(const String& tag,
-                const String& title,
-                std::unique_ptr<UpdateUICallback>);
+  void UpdateUI(const String& tag, const String& title, UpdateUICallback);
 
   // Aborts the active Background Fetch for |tag|. Will invoke the |callback|
   // when the Background Fetch identified by |tag| has been aborted, or could
   // not be aborted for operational reasons.
-  void Abort(const String& tag, std::unique_ptr<AbortCallback>);
+  void Abort(const String& tag, AbortCallback);
 
   // Gets the Background Fetch registration for the given |tag|. Will invoke the
   // |callback| with the Background Fetch registration, which may be a nullptr
   // if the |tag| does not exist, when the Mojo call has completed.
-  void GetRegistration(const String& tag,
-                       std::unique_ptr<RegistrationCallback>);
+  void GetRegistration(const String& tag, RegistrationCallback);
 
   // Gets the sequence of tags for active Background Fetch registrations. Will
   // invoke the |callback| with the tags when the Mojo call has completed.
-  void GetTags(std::unique_ptr<GetTagsCallback>);
+  void GetTags(GetTagsCallback);
 
  private:
   explicit BackgroundFetchBridge(ServiceWorkerRegistration&);
@@ -83,7 +80,7 @@ class BackgroundFetchBridge final
   // established after the first call to this method.
   mojom::blink::BackgroundFetchServicePtr& GetService();
 
-  void DidGetRegistration(std::unique_ptr<RegistrationCallback>,
+  void DidGetRegistration(RegistrationCallback,
                           mojom::blink::BackgroundFetchError,
                           mojom::blink::BackgroundFetchRegistrationPtr);
 

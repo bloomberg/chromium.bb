@@ -133,7 +133,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
     return worker_reporting_proxy_;
   }
 
-  void AppendDebuggerTask(std::unique_ptr<CrossThreadClosure>);
+  void AppendDebuggerTask(CrossThreadClosure);
 
   // Runs only debugger tasks while paused in debugger.
   void StartRunningDebuggerTasksOnPauseOnWorkerThread();
@@ -243,9 +243,8 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   void PrepareForShutdownOnWorkerThread();
   void PerformShutdownOnWorkerThread();
   template <WTF::FunctionThreadAffinity threadAffinity>
-  void PerformTaskOnWorkerThread(
-      std::unique_ptr<Function<void(), threadAffinity>> task);
-  void PerformDebuggerTaskOnWorkerThread(std::unique_ptr<CrossThreadClosure>);
+  void PerformTaskOnWorkerThread(Function<void(), threadAffinity> task);
+  void PerformDebuggerTaskOnWorkerThread(CrossThreadClosure);
   void PerformDebuggerTaskDontWaitOnWorkerThread();
 
   // These must be called with |m_threadStateMutex| acquired.

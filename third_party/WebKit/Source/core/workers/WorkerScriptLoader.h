@@ -72,8 +72,8 @@ class CORE_EXPORT WorkerScriptLoader final
                           WebURLRequest::FetchRequestMode,
                           WebURLRequest::FetchCredentialsMode,
                           WebAddressSpace,
-                          std::unique_ptr<WTF::Closure> response_callback,
-                          std::unique_ptr<WTF::Closure> finished_callback);
+                          WTF::Closure response_callback,
+                          WTF::Closure finished_callback);
 
   // This will immediately invoke |finishedCallback| if loadAsynchronously()
   // is in progress.
@@ -131,8 +131,8 @@ class CORE_EXPORT WorkerScriptLoader final
   void ProcessContentSecurityPolicy(const ResourceResponse&);
 
   // Callbacks for loadAsynchronously().
-  std::unique_ptr<WTF::Closure> response_callback_;
-  std::unique_ptr<WTF::Closure> finished_callback_;
+  WTF::Closure response_callback_;
+  WTF::Closure finished_callback_;
 
   Persistent<ThreadableLoader> threadable_loader_;
   String response_encoding_;

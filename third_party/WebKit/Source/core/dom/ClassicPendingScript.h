@@ -53,8 +53,7 @@ class CORE_EXPORT ClassicPendingScript final
   bool IsExternal() const override { return GetResource(); }
   bool ErrorOccurred() const override;
   bool WasCanceled() const override;
-  bool StartStreamingIfPossible(ScriptStreamer::Type,
-                                std::unique_ptr<WTF::Closure>) override;
+  bool StartStreamingIfPossible(ScriptStreamer::Type, WTF::Closure) override;
   bool IsCurrentlyStreaming() const override;
   KURL UrlForClassicScript() const override;
   void RemoveFromMemoryCache() override;
@@ -101,7 +100,7 @@ class CORE_EXPORT ClassicPendingScript final
   bool integrity_failure_;
 
   Member<ScriptStreamer> streamer_;
-  std::unique_ptr<WTF::Closure> streamer_done_;
+  WTF::Closure streamer_done_;
 
   // This is a temporary flag to confirm that ClassicPendingScript is not
   // touched after its refinalizer call and thus https://crbug.com/715309

@@ -491,7 +491,7 @@ void CanvasAsyncBlobCreator::IdleTaskCompleteTimeoutEvent() {
 
 void CanvasAsyncBlobCreator::PostDelayedTaskToCurrentThread(
     const WebTraceLocation& location,
-    std::unique_ptr<WTF::Closure> task,
+    WTF::Closure task,
     double delay_ms) {
   TaskRunnerHelper::Get(TaskType::kCanvasBlobSerialization, document_)
       ->PostDelayedTask(location, std::move(task),

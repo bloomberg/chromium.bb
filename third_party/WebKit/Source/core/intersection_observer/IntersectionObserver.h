@@ -45,7 +45,7 @@ class CORE_EXPORT IntersectionObserver final
   static IntersectionObserver* Create(const Vector<Length>& root_margin,
                                       const Vector<float>& thresholds,
                                       Document*,
-                                      std::unique_ptr<EventCallback>,
+                                      EventCallback,
                                       ExceptionState& = ASSERT_NO_EXCEPTION);
   static void ResumeSuspendedObservers();
 

@@ -64,33 +64,33 @@ typedef Function<void(ExceptionCode, const String&)> FailureCallback;
 class SetContentDecryptionModuleResult final
     : public ContentDecryptionModuleResult {
  public:
-  SetContentDecryptionModuleResult(std::unique_ptr<SuccessCallback> success,
-                                   std::unique_ptr<FailureCallback> failure)
+  SetContentDecryptionModuleResult(SuccessCallback success,
+                                   FailureCallback failure)
       : success_callback_(std::move(success)),
         failure_callback_(std::move(failure)) {}
 
   // ContentDecryptionModuleResult implementation.
   void Complete() override {
     DVLOG(EME_LOG_LEVEL) << __func__ << ": promise resolved.";
-    (*success_callback_)();
+    success_callback_();
   }
 
   void CompleteWithContentDecryptionModule(
       WebContentDecryptionModule*) override {
     NOTREACHED();
-    (*failure_callback_)(kInvalidStateError, "Unexpected completion.");
+    failure_callback_(kInvalidStateError, "Unexpected completion.");
   }
 
   void CompleteWithSession(
       WebContentDecryptionModuleResult::SessionStatus status) override {
     NOTREACHED();
-    (*failure_callback_)(kInvalidStateError, "Unexpected completion.");
+    failure_callback_(kInvalidStateError, "Unexpected completion.");
   }
 
   void CompleteWithKeyStatus(
       WebEncryptedMediaKeyInformation::KeyStatus key_status) override {
     NOTREACHED();
-    (*failure_callback_)(kInvalidStateError, "Unexpected completion.");
+    failure_callback_(kInvalidStateError, "Unexpected completion.");
   }
 
   void CompleteWithError(WebContentDecryptionModuleException code,
@@ -111,13 +111,12 @@ class SetContentDecryptionModuleResult final
     DVLOG(EME_LOG_LEVEL) << __func__ << ": promise rejected with code " << code
                          << " and message: " << result.ToString();
 
-    (*failure_callback_)(WebCdmExceptionToExceptionCode(code),
-                         result.ToString());
+    failure_callback_(WebCdmExceptionToExceptionCode(code), result.ToString());
   }
 
  private:
-  std::unique_ptr<SuccessCallback> success_callback_;
-  std::unique_ptr<FailureCallback> failure_callback_;
+  SuccessCallback success_callback_;
+  FailureCallback failure_callback_;
 };
 
 ScriptPromise SetMediaKeysHandler::Create(ScriptState* script_state,
@@ -188,9 +187,9 @@ void SetMediaKeysHandler::ClearExistingMediaKeys() {
       //       attribute to decrypt media data and remove the association
       //       with the media element.
       // (All 3 steps handled as needed in Chromium.)
-      std::unique_ptr<SuccessCallback> success_callback = WTF::Bind(
+      SuccessCallback success_callback = WTF::Bind(
           &SetMediaKeysHandler::SetNewMediaKeys, WrapPersistent(this));
-      std::unique_ptr<FailureCallback> failure_callback =
+      FailureCallback failure_callback =
           WTF::Bind(&SetMediaKeysHandler::ClearFailed, WrapPersistent(this));
       ContentDecryptionModuleResult* result =
           new SetContentDecryptionModuleResult(std::move(success_callback),
@@ -219,9 +218,9 @@ void SetMediaKeysHandler::SetNewMediaKeys() {
     //       algorithm on the media element.
     //       (Handled in Chromium).
     if (element_->GetWebMediaPlayer()) {
-      std::unique_ptr<SuccessCallback> success_callback =
+      SuccessCallback success_callback =
           WTF::Bind(&SetMediaKeysHandler::Finish, WrapPersistent(this));
-      std::unique_ptr<FailureCallback> failure_callback =
+      FailureCallback failure_callback =
           WTF::Bind(&SetMediaKeysHandler::SetFailed, WrapPersistent(this));
       ContentDecryptionModuleResult* result =
           new SetContentDecryptionModuleResult(std::move(success_callback),

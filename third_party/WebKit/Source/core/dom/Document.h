@@ -1087,7 +1087,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void EnqueueResizeEvent();
   void EnqueueScrollEventForNode(Node*);
-  void EnqueueAnimationFrameTask(std::unique_ptr<WTF::Closure>);
+  void EnqueueAnimationFrameTask(WTF::Closure);
   void EnqueueAnimationFrameEvent(Event*);
   // Only one event for a target/event type combination will be dispatched per
   // frame.
