@@ -178,6 +178,18 @@ void VerifyExtendedKeyUsage(const ParsedCertificate& cert,
           return;
       }
 
+      // Add a warning if the certificate contains Netscape Server Gated Crypto.
+      // nsSGC is a deprecated mechanism, and not part of RFC 5280's
+      // profile. Some unexpired certificate chains still rely on it though
+      // (there are intermediates valid until 2020 that use it). See
+      // crbug.com/733403 for details.
+      for (const auto& key_purpose_oid : cert.extended_key_usage()) {
+        if (key_purpose_oid == NetscapeServerGatedCrypto()) {
+          errors->AddWarning(cert_errors::kEkuLacksServerAuthButHasGatedCrypto);
+          break;
+        }
+      }
+
       errors->AddError(cert_errors::kEkuLacksServerAuth);
       break;
     }

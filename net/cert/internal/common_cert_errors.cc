@@ -40,6 +40,9 @@ DEFINE_CERT_ERROR_ID(kSignatureAlgorithmsDifferentEncoding,
                      "than TBSCertificate.signature");
 DEFINE_CERT_ERROR_ID(kEkuLacksServerAuth,
                      "The extended key usage does not include server auth");
+DEFINE_CERT_ERROR_ID(kEkuLacksServerAuthButHasGatedCrypto,
+                     "The extended key usage does not include server auth but "
+                     "instead includes Netscape Server Gated Crypto");
 DEFINE_CERT_ERROR_ID(kEkuLacksClientAuth,
                      "The extended key usage does not include client auth");
 DEFINE_CERT_ERROR_ID(kCertIsNotTrustAnchor,

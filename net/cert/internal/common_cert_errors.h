@@ -108,6 +108,10 @@ NET_EXPORT extern const CertErrorId kUnacceptableSignatureAlgorithm;
 // What constitutes as "acceptable" is determined by the verification delegate.
 NET_EXPORT extern const CertErrorId kUnacceptablePublicKey;
 
+// The certificate's EKU is missing serverAuth. However Netscape Server Gated
+// Crypto is present instead.
+NET_EXPORT extern const CertErrorId kEkuLacksServerAuthButHasGatedCrypto;
+
 }  // namespace cert_errors
 
 }  // namespace net
