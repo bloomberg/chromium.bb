@@ -79,7 +79,10 @@ struct SiteSettingSourceStringMapping {
 
 const SiteSettingSourceStringMapping kSiteSettingSourceStringMapping[] = {
     {SiteSettingSource::kDefault, "default"},
+    {SiteSettingSource::kEmbargo, "embargo"},
     {SiteSettingSource::kExtension, "extension"},
+    {SiteSettingSource::kInsecureOrigin, "insecure-origin"},
+    {SiteSettingSource::kKillSwitch, "kill-switch"},
     {SiteSettingSource::kPolicy, "policy"},
     {SiteSettingSource::kPreference, "preference"},
 };
@@ -91,29 +94,30 @@ static_assert(arraysize(kSiteSettingSourceStringMapping) ==
 // Retrieves the corresponding string, according to the following precedence
 // order from highest to lowest priority:
 //    1. Kill-switch.
-//    2. Enterprise policy.
-//    3. Extensions.
-//    4. User-set per-origin setting.
-//    5. Embargo.
-//    6. User-set patterns.
-//    7. User-set global default for a ContentSettingsType.
-//    8. Chrome's built-in default.
-std::string CalculateSiteSettingSourceString(
+//    2. Insecure origins (some permissions are denied to insecure origins).
+//    3. Enterprise policy.
+//    4. Extensions.
+//    5. User-set per-origin setting.
+//    6. Embargo.
+//    7. User-set patterns.
+//    8. User-set global default for a ContentSettingsType.
+//    9. Chrome's built-in default.
+SiteSettingSource CalculateSiteSettingSource(
     const content_settings::SettingInfo& info,
     PermissionStatusSource permission_status_source) {
-  // TODO(patricialor): Do some plumbing for sources #1, #2, #3, and #5 through
-  // to the Web UI. Currently there aren't strings to represent these sources.
-  SiteSettingSource site_setting_source = SiteSettingSource::kNumSources;
   if (permission_status_source == PermissionStatusSource::KILL_SWITCH)
-    site_setting_source = SiteSettingSource::kPreference;  // Source #1.
+    return SiteSettingSource::kKillSwitch;  // Source #1.
+
+  if (permission_status_source == PermissionStatusSource::INSECURE_ORIGIN)
+    return SiteSettingSource::kInsecureOrigin;  // Source #2.
 
   if (info.source == content_settings::SETTING_SOURCE_POLICY ||
       info.source == content_settings::SETTING_SOURCE_SUPERVISED) {
-    site_setting_source = SiteSettingSource::kPolicy;  // Source #2.
+    return SiteSettingSource::kPolicy;  // Source #3.
   }
 
   if (info.source == content_settings::SETTING_SOURCE_EXTENSION)
-    site_setting_source = SiteSettingSource::kExtension;  // Source #3.
+    return SiteSettingSource::kExtension;  // Source #4.
 
   DCHECK_NE(content_settings::SETTING_SOURCE_NONE, info.source);
   if (info.source == content_settings::SETTING_SOURCE_USER) {
@@ -122,22 +126,22 @@ std::string CalculateSiteSettingSourceString(
         permission_status_source ==
             PermissionStatusSource::MULTIPLE_DISMISSALS ||
         permission_status_source == PermissionStatusSource::MULTIPLE_IGNORES) {
-      site_setting_source = SiteSettingSource::kPreference;  // Source #5.
-    } else if (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
-               info.secondary_pattern == ContentSettingsPattern::Wildcard()) {
-      site_setting_source = SiteSettingSource::kDefault;  // Source #7, #8.
-    } else {
-      // Source #4, #6. When #4 is the source, |permission_status_source| won't
-      // be set to any of the source #5 enum values, as PermissionManager is
-      // aware of the difference between these two sources internally. The
-      // subtlety here should go away when PermissionManager can handle all
-      // content settings and all possible sources.
-      site_setting_source = SiteSettingSource::kPreference;
+      return SiteSettingSource::kEmbargo;  // Source #6.
     }
+    if (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
+        info.secondary_pattern == ContentSettingsPattern::Wildcard()) {
+      return SiteSettingSource::kDefault;  // Source #8, #9.
+    }
+    // Source #5, #7. When #5 is the source, |permission_status_source| won't
+    // be set to any of the source #6 enum values, as PermissionManager is
+    // aware of the difference between these two sources internally. The
+    // subtlety here should go away when PermissionManager can handle all
+    // content settings and all possible sources.
+    return SiteSettingSource::kPreference;
   }
 
-  DCHECK_NE(SiteSettingSource::kNumSources, site_setting_source);
-  return SiteSettingSourceToString(site_setting_source);
+  NOTREACHED();
+  return SiteSettingSource::kPreference;
 }
 
 }  // namespace
@@ -404,7 +408,8 @@ ContentSetting GetContentSettingForOrigin(
   }
 
   // Retrieve the source of the content setting.
-  *source_string = CalculateSiteSettingSourceString(info, result.source);
+  *source_string = SiteSettingSourceToString(
+      CalculateSiteSettingSource(info, result.source));
   *display_name = GetDisplayNameForGURL(origin, extension_registry);
   return result.content_setting;
 }

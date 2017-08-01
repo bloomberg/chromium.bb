@@ -157,6 +157,7 @@ void PermissionContextBase::RequestPermission(
                                     kPermissionBlockedBlacklistMessage,
                                     content_settings_type_);
         break;
+      case PermissionStatusSource::INSECURE_ORIGIN:
       case PermissionStatusSource::UNSPECIFIED:
         break;
     }
@@ -232,7 +233,7 @@ PermissionResult PermissionContextBase::GetPermissionStatus(
   if (IsRestrictedToSecureOrigins()) {
     if (!content::IsOriginSecure(requesting_origin)) {
       return PermissionResult(CONTENT_SETTING_BLOCK,
-                              PermissionStatusSource::UNSPECIFIED);
+                              PermissionStatusSource::INSECURE_ORIGIN);
     }
 
     // TODO(raymes): We should check the entire chain of embedders here whenever
@@ -243,7 +244,7 @@ PermissionResult PermissionContextBase::GetPermissionStatus(
     if (!requesting_origin.SchemeIs(extensions::kExtensionScheme) &&
         !content::IsOriginSecure(embedding_origin)) {
       return PermissionResult(CONTENT_SETTING_BLOCK,
-                              PermissionStatusSource::UNSPECIFIED);
+                              PermissionStatusSource::INSECURE_ORIGIN);
     }
   }
 
