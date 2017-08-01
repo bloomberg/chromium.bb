@@ -639,6 +639,10 @@ void WebStateImpl::ExecuteJavaScript(const base::string16& javascript,
                    }];
 }
 
+void WebStateImpl::ExecuteUserJavaScript(NSString* javaScript) {
+  [web_controller_ executeUserJavaScript:javaScript completionHandler:nil];
+}
+
 const std::string& WebStateImpl::GetContentLanguageHeader() const {
   return content_language_header_;
 }

@@ -2391,7 +2391,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   }
 
-  [self setUserInteractionRegistered:YES];
+  [self touched:YES];
   [self executeJavaScript:script completionHandler:completion];
 }
 
