@@ -16,6 +16,7 @@
 #include "components/guest_view/common/guest_view_messages.h"
 #include "components/zoom/page_zoom.h"
 #include "components/zoom/zoom_controller.h"
+#include "content/public/browser/guest_mode.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -744,7 +745,9 @@ void GuestViewBase::DispatchEventToGuestProxy(
 }
 
 void GuestViewBase::DispatchEventToView(std::unique_ptr<GuestViewEvent> event) {
-  if (attached() || can_owner_receive_events()) {
+  if ((attached() && pending_events_.empty()) ||
+      (can_owner_receive_events() &&
+       !content::GuestMode::IsCrossProcessFrameGuest(web_contents()))) {
     event->Dispatch(this, view_instance_id_);
     return;
   }
