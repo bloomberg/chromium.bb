@@ -11,6 +11,8 @@ source_set("payments") {
     "ios_can_make_payment_query_factory.h",
     "ios_payment_instrument.h",
     "ios_payment_instrument.mm",
+    "ios_payment_instrument_finder.h",
+    "ios_payment_instrument_finder.mm",
     "ios_payment_request_cache_factory.h",
     "ios_payment_request_cache_factory.mm",
     "itunes_json_request.cc",
@@ -29,6 +31,7 @@ source_set("payments") {
   deps = [
     "//base",
     "//components/autofill/core/browser",
+    "//components/image_fetcher/ios",
     "//components/keyed_service/ios",
     "//components/payments/core",
     "//components/prefs",
@@ -51,6 +54,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "ios_payment_instrument_finder_unittest.mm",
     "payment_request_unittest.mm",
     "payment_response_helper_unittest.mm",
   ]
@@ -68,6 +72,7 @@ source_set("unit_tests") {
     "//ios/testing:ocmock_support",
     "//ios/web",
     "//ios/web/public/test/fakes",
+    "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

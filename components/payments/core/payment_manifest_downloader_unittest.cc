@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/content/payment_manifest_downloader.h"
+#include "components/payments/core/payment_manifest_downloader.h"
 
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
@@ -34,7 +34,7 @@ class PaymentMethodManifestDownloaderTest : public testing::Test {
   net::TestURLFetcher* fetcher() { return factory_.GetFetcherByID(0); }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   net::TestURLFetcherFactory factory_;
   scoped_refptr<net::TestURLRequestContextGetter> context_;
   PaymentManifestDownloader downloader_;
@@ -237,7 +237,7 @@ class WebAppManifestDownloaderTest : public testing::Test {
   net::TestURLFetcher* fetcher() { return factory_.GetFetcherByID(0); }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   net::TestURLFetcherFactory factory_;
   scoped_refptr<net::TestURLRequestContextGetter> context_;
   PaymentManifestDownloader downloader_;
