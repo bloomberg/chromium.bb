@@ -97,6 +97,11 @@ bool RadioButton::IsGroupFocusTraversable() const {
   return false;
 }
 
+void RadioButton::OnFocus() {
+  Checkbox::OnFocus();
+  SetChecked(true);
+}
+
 void RadioButton::NotifyClick(const ui::Event& event) {
   // Set the checked state to true only if we are unchecked, since we can't
   // be toggled on and off like a checkbox.
