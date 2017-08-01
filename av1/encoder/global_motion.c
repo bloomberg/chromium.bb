@@ -245,7 +245,7 @@ static unsigned char *downconvert_frame(YV12_BUFFER_CONFIG *frm,
   int i, j;
   uint16_t *orig_buf = CONVERT_TO_SHORTPTR(frm->y_buffer);
   uint8_t *buf_8bit = frm->y_buffer_8bit;
-  assert(!buf_8bit);
+  assert(buf_8bit);
   for (i = 0; i < frm->y_height; ++i)
     for (j = 0; j < frm->y_width; ++j)
       buf_8bit[i * frm->y_stride + j] =
