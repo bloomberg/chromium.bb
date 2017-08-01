@@ -81,10 +81,14 @@ void CrossProcessFrameConnector::set_view(
 
   view_ = view;
 
-  // Attach ourselves to the new view and size it appropriately.
+  // Attach ourselves to the new view and size it appropriately. Also update
+  // visibility in case the frame owner is hidden in parent process. We should
+  // try to move these updates to a single IPC (see https://crbug.com/750179).
   if (view_) {
     view_->SetCrossProcessFrameConnector(this);
     SetRect(child_frame_rect_);
+    if (is_hidden_)
+      OnVisibilityChanged(false);
   }
 }
 
@@ -277,6 +281,7 @@ void CrossProcessFrameConnector::OnUpdateViewportIntersection(
 }
 
 void CrossProcessFrameConnector::OnVisibilityChanged(bool visible) {
+  is_hidden_ = !visible;
   if (!view_)
     return;
 
