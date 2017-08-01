@@ -752,8 +752,10 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker] interface OffscreenCanvasRenderingContext2D
 [Worker]     attribute @@toStringTag
 [Worker]     getter canvas
+[Worker]     getter direction
 [Worker]     getter fillStyle
 [Worker]     getter filter
+[Worker]     getter font
 [Worker]     getter globalAlpha
 [Worker]     getter globalCompositeOperation
 [Worker]     getter imageSmoothingEnabled
@@ -768,6 +770,8 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter shadowOffsetX
 [Worker]     getter shadowOffsetY
 [Worker]     getter strokeStyle
+[Worker]     getter textAlign
+[Worker]     getter textBaseline
 [Worker]     method arc
 [Worker]     method arcTo
 [Worker]     method beginPath
@@ -785,11 +789,13 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method ellipse
 [Worker]     method fill
 [Worker]     method fillRect
+[Worker]     method fillText
 [Worker]     method getImageData
 [Worker]     method getLineDash
 [Worker]     method isPointInPath
 [Worker]     method isPointInStroke
 [Worker]     method lineTo
+[Worker]     method measureText
 [Worker]     method moveTo
 [Worker]     method putImageData
 [Worker]     method quadraticCurveTo
@@ -803,10 +809,13 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method setTransform
 [Worker]     method stroke
 [Worker]     method strokeRect
+[Worker]     method strokeText
 [Worker]     method transform
 [Worker]     method translate
+[Worker]     setter direction
 [Worker]     setter fillStyle
 [Worker]     setter filter
+[Worker]     setter font
 [Worker]     setter globalAlpha
 [Worker]     setter globalCompositeOperation
 [Worker]     setter imageSmoothingEnabled
@@ -821,6 +830,8 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     setter shadowOffsetX
 [Worker]     setter shadowOffsetY
 [Worker]     setter strokeStyle
+[Worker]     setter textAlign
+[Worker]     setter textBaseline
 [Worker] interface Path2D
 [Worker]     attribute @@toStringTag
 [Worker]     method addPath

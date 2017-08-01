@@ -53,7 +53,6 @@ class CanvasImageSource;
 class Element;
 class ExceptionState;
 class Font;
-class FontMetrics;
 class HitRegion;
 class HitRegionOptions;
 class HitRegionManager;
@@ -113,12 +112,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   String font() const;
   void setFont(const String&) override;
-
-  String textAlign() const;
-  void setTextAlign(const String&);
-
-  String textBaseline() const;
-  void setTextBaseline(const String&);
 
   String direction() const;
   void setDirection(const String&);
@@ -228,7 +221,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
                         double* max_width = nullptr);
 
   const Font& AccessFont();
-  float GetFontBaseline(const FontMetrics&) const;
 
   void DrawFocusIfNeededInternal(const Path&, Element*);
   bool FocusRingCallIsValid(const Path&, Element*);

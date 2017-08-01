@@ -258,7 +258,8 @@ void CanvasRenderingContext2DState::SetFont(const Font& font,
   font_ = font;
   font_.Update(selector);
   realized_font_ = true;
-  selector->RegisterForInvalidationCallbacks(this);
+  if (selector)
+    selector->RegisterForInvalidationCallbacks(this);
 }
 
 const Font& CanvasRenderingContext2DState::GetFont() const {

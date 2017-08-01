@@ -37,6 +37,12 @@
 
 namespace blink {
 
+const char BaseRenderingContext2D::kDefaultFont[] = "10px sans-serif";
+const char BaseRenderingContext2D::kInheritDirectionString[] = "inherit";
+const char BaseRenderingContext2D::kRtlDirectionString[] = "rtl";
+const char BaseRenderingContext2D::kLtrDirectionString[] = "ltr";
+const double BaseRenderingContext2D::kCDeviceScaleFactor = 1.0;
+
 BaseRenderingContext2D::BaseRenderingContext2D()
     : clip_antialiasing_(kNotAntiAliased), color_management_enabled_(false) {
   state_stack_.push_back(CanvasRenderingContext2DState::Create());
@@ -1853,6 +1859,69 @@ void BaseRenderingContext2D::CheckOverdraw(
   }
 
   GetImageBuffer()->WillOverwriteCanvas();
+}
+
+float BaseRenderingContext2D::GetFontBaseline(
+    const FontMetrics& font_metrics) const {
+  // If the font is so tiny that the lroundf operations result in two
+  // different types of text baselines to return the same baseline, use
+  // floating point metrics (crbug.com/338908).
+  // If you changed the heuristic here, for consistency please also change it
+  // in SimpleFontData::platformInit().
+  bool use_float_ascent_descent =
+      font_metrics.Ascent() < 3 || font_metrics.Height() < 2;
+  switch (GetState().GetTextBaseline()) {
+    case kTopTextBaseline:
+      return use_float_ascent_descent ? font_metrics.FloatAscent()
+                                      : font_metrics.Ascent();
+    case kHangingTextBaseline:
+      // According to
+      // http://wiki.apache.org/xmlgraphics-fop/LineLayout/AlignmentHandling
+      // "FOP (Formatting Objects Processor) puts the hanging baseline at 80% of
+      // the ascender height"
+      return use_float_ascent_descent ? (font_metrics.FloatAscent() * 4.0) / 5.0
+                                      : (font_metrics.Ascent() * 4) / 5;
+    case kBottomTextBaseline:
+    case kIdeographicTextBaseline:
+      return use_float_ascent_descent ? -font_metrics.FloatDescent()
+                                      : -font_metrics.Descent();
+    case kMiddleTextBaseline:
+      return use_float_ascent_descent
+                 ? -font_metrics.FloatDescent() +
+                       font_metrics.FloatHeight() / 2.0
+                 : -font_metrics.Descent() + font_metrics.Height() / 2;
+    case kAlphabeticTextBaseline:
+    default:
+      // Do nothing.
+      break;
+  }
+  return 0;
+}
+
+String BaseRenderingContext2D::textAlign() const {
+  return TextAlignName(GetState().GetTextAlign());
+}
+
+void BaseRenderingContext2D::setTextAlign(const String& s) {
+  TextAlign align;
+  if (!ParseTextAlign(s, align))
+    return;
+  if (GetState().GetTextAlign() == align)
+    return;
+  ModifiableState().SetTextAlign(align);
+}
+
+String BaseRenderingContext2D::textBaseline() const {
+  return TextBaselineName(GetState().GetTextBaseline());
+}
+
+void BaseRenderingContext2D::setTextBaseline(const String& s) {
+  TextBaseline baseline;
+  if (!ParseTextBaseline(s, baseline))
+    return;
+  if (GetState().GetTextBaseline() == baseline)
+    return;
+  ModifiableState().SetTextBaseline(baseline);
 }
 
 const BaseRenderingContext2D::UsageCounters&
