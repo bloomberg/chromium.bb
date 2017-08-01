@@ -6,7 +6,7 @@
 
 #include "core/dom/Document.h"
 #include "core/paint/AppliedDecorationPainter.h"
-#include "core/paint/BoxPainter.h"
+#include "core/paint/BoxPainterBase.h"
 #include "core/paint/PaintInfo.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ShadowList.h"
@@ -125,7 +125,8 @@ TextPainterBase::Style TextPainterBase::TextPaintingStyle(
     DCHECK(document.Printing() == is_printing ||
            RuntimeEnabledFeatures::PrintBrowserEnabled());
     bool force_background_to_white =
-        BoxPainter::ShouldForceWhiteBackgroundForPrintEconomy(document, style);
+        BoxPainterBase::ShouldForceWhiteBackgroundForPrintEconomy(document,
+                                                                  style);
     if (force_background_to_white) {
       text_style.fill_color =
           TextColorForWhiteBackground(text_style.fill_color);

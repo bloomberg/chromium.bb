@@ -6,31 +6,64 @@
 #define BoxPainterBase_h
 
 #include "core/layout/BackgroundBleedAvoidance.h"
-#include "core/style/ShadowData.h"
 #include "core/style/StyleImage.h"
-#include "platform/graphics/GraphicsTypes.h"
+#include "platform/geometry/LayoutRectOutsets.h"
+#include "platform/geometry/LayoutSize.h"
+#include "platform/graphics/Color.h"
 #include "platform/wtf/Allocator.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 
 namespace blink {
 
+class BackgroundImageGeometry;
 class ComputedStyle;
+class DisplayItemClient;
 class Document;
-class FloatRoundedRect;
-class LayoutRect;
 class FillLayer;
-class LayoutRectOutsets;
+class FloatRoundedRect;
 class ImageResourceObserver;
+class LayoutPoint;
+class LayoutRect;
 struct PaintInfo;
 
 // Base class for box painting. Has no dependencies on the layout tree and thus
 // provides functionality and definitions that can be shared between both legacy
-// layout and LayoutNG. For performance reasons no virtual methods are utilized.
+// layout and LayoutNG.
 class BoxPainterBase {
   STACK_ALLOCATED();
 
  public:
-  BoxPainterBase() {}
+  BoxPainterBase(const DisplayItemClient& display_item,
+                 const Document* document,
+                 const ComputedStyle& style,
+                 Node* node,
+                 LayoutRectOutsets border,
+                 LayoutRectOutsets padding)
+      : display_item_(display_item),
+        document_(document),
+        style_(style),
+        node_(node),
+        border_(border),
+        padding_(padding) {}
+
+  void PaintFillLayers(const PaintInfo&,
+                       const Color&,
+                       const FillLayer&,
+                       const LayoutRect&,
+                       BackgroundImageGeometry&,
+                       BackgroundBleedAvoidance = kBackgroundBleedNone,
+                       SkBlendMode = SkBlendMode::kSrcOver);
+
+  void PaintFillLayer(const PaintInfo&,
+                      const Color&,
+                      const FillLayer&,
+                      const LayoutRect&,
+                      BackgroundBleedAvoidance,
+                      BackgroundImageGeometry&,
+                      SkBlendMode = SkBlendMode::kSrcOver);
+
+  LayoutRect BoundsForDrawingRecorder(const PaintInfo&,
+                                      const LayoutPoint& adjusted_paint_offset);
 
   static void PaintNormalBoxShadow(const PaintInfo&,
                                    const LayoutRect&,
@@ -66,13 +99,10 @@ class BoxPainterBase {
   // in top-bottom order.
   bool CalculateFillLayerOcclusionCulling(
       FillLayerOcclusionOutputList& reversed_paint_list,
-      const FillLayer&,
-      const Document&,
-      const ComputedStyle&);
+      const FillLayer&);
 
   struct FillLayerInfo {
     STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(FillLayerInfo);
 
    public:
     FillLayerInfo(const Document&,
@@ -100,30 +130,53 @@ class BoxPainterBase {
     bool should_paint_color;
   };
 
-  static FloatRoundedRect GetBackgroundRoundedRect(
-      const ComputedStyle&,
-      const LayoutRect& border_rect,
-      bool has_line_box_sibling,
-      const LayoutSize& inline_box_size,
-      bool include_logical_left_edge,
-      bool include_logical_right_edge);
-  static FloatRoundedRect BackgroundRoundedRectAdjustedForBleedAvoidance(
-      const ComputedStyle&,
+ protected:
+  FloatRoundedRect BackgroundRoundedRectAdjustedForBleedAvoidance(
       const LayoutRect& border_rect,
       BackgroundBleedAvoidance,
-      bool has_line_box_sibling,
-      const LayoutSize& box_size,
       bool include_logical_left_edge,
-      bool include_logical_right_edge);
-  static FloatRoundedRect RoundedBorderRectForClip(
-      const ComputedStyle&,
+      bool include_logical_right_edge) const;
+  FloatRoundedRect RoundedBorderRectForClip(
       const FillLayerInfo&,
       const FillLayer&,
       const LayoutRect&,
       BackgroundBleedAvoidance,
-      bool has_line_box_sibling,
-      const LayoutSize&,
-      LayoutRectOutsets border_padding_insets);
+      LayoutRectOutsets border_padding_insets) const;
+
+  void PaintFillLayerBackground(GraphicsContext&,
+                                const FillLayerInfo&,
+                                Image*,
+                                SkBlendMode,
+                                const BackgroundImageGeometry&,
+                                LayoutRect scrolled_paint_rect);
+  LayoutRectOutsets BorderOutsets(const FillLayerInfo&) const;
+  LayoutRectOutsets PaddingOutsets(const FillLayerInfo&) const;
+
+  virtual void PaintFillLayerTextFillBox(GraphicsContext&,
+                                         const FillLayerInfo&,
+                                         Image*,
+                                         SkBlendMode composite_op,
+                                         const BackgroundImageGeometry&,
+                                         const LayoutRect&,
+                                         LayoutRect scrolled_paint_rect) = 0;
+  virtual LayoutRect AdjustForScrolledContent(const PaintInfo&,
+                                              const FillLayerInfo&,
+                                              const LayoutRect&) = 0;
+  virtual FillLayerInfo GetFillLayerInfo(const Color&,
+                                         const FillLayer&,
+                                         BackgroundBleedAvoidance) const = 0;
+  virtual FloatRoundedRect GetBackgroundRoundedRect(
+      const LayoutRect& border_rect,
+      bool include_logical_left_edge,
+      bool include_logical_right_edge) const;
+
+ private:
+  const DisplayItemClient& display_item_;
+  Member<const Document> document_;
+  const ComputedStyle& style_;
+  Member<Node> node_;
+  LayoutRectOutsets border_;
+  LayoutRectOutsets padding_;
 };
 
 }  // namespace blink

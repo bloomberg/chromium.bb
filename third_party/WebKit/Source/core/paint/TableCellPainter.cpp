@@ -9,6 +9,7 @@
 #include "core/paint/BlockPainter.h"
 #include "core/paint/BoxModelObjectPainter.h"
 #include "core/paint/BoxPainter.h"
+#include "core/paint/BoxPainterBase.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
@@ -100,18 +101,18 @@ void TableCellPainter::PaintBoxDecorationBackground(
 
   LayoutRect paint_rect = PaintRectNotIncludingVisualOverflow(paint_offset);
 
-  BoxPainter::PaintNormalBoxShadow(paint_info, paint_rect, style);
+  BoxPainterBase::PaintNormalBoxShadow(paint_info, paint_rect, style);
   PaintBackground(paint_info, paint_rect, layout_table_cell_);
   // TODO(wangxianzhu): Calculate the inset shadow bounds by insetting paintRect
   // by half widths of collapsed borders.
-  BoxPainter::PaintInsetBoxShadow(paint_info, paint_rect, style);
+  BoxPainterBase::PaintInsetBoxShadow(paint_info, paint_rect, style);
 
   if (!needs_to_paint_border)
     return;
 
-  BoxPainter::PaintBorder(layout_table_cell_, layout_table_cell_.GetDocument(),
-                          layout_table_cell_.GeneratingNode(), paint_info,
-                          paint_rect, style);
+  BoxPainterBase::PaintBorder(
+      layout_table_cell_, layout_table_cell_.GetDocument(),
+      layout_table_cell_.GeneratingNode(), paint_info, paint_rect, style);
 }
 
 void TableCellPainter::PaintMask(const PaintInfo& paint_info,

@@ -8,7 +8,7 @@
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/ListMarkerText.h"
 #include "core/layout/api/SelectionState.h"
-#include "core/paint/BoxPainter.h"
+#include "core/paint/BoxModelObjectPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/TextPainter.h"
@@ -95,7 +95,7 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
 
   Color color(layout_list_marker_.ResolveColor(CSSPropertyColor));
 
-  if (BoxPainter::ShouldForceWhiteBackgroundForPrintEconomy(
+  if (BoxModelObjectPainter::ShouldForceWhiteBackgroundForPrintEconomy(
           layout_list_marker_.ListItem()->GetDocument(),
           layout_list_marker_.StyleRef()))
     color = TextPainter::TextColorForWhiteBackground(color);

@@ -6,7 +6,6 @@
 #define BoxPainter_h
 
 #include "core/layout/BackgroundBleedAvoidance.h"
-#include "core/paint/BoxPainterBase.h"
 #include "core/paint/RoundedInnerRectClipper.h"
 #include "platform/geometry/LayoutSize.h"
 #include "platform/graphics/GraphicsTypes.h"
@@ -18,8 +17,9 @@ class LayoutPoint;
 class LayoutRect;
 struct PaintInfo;
 class LayoutBox;
+class Color;
 
-class BoxPainter : public BoxPainterBase {
+class BoxPainter {
   STACK_ALLOCATED();
 
  public:
@@ -43,7 +43,6 @@ class BoxPainter : public BoxPainterBase {
                        const LayoutRect&,
                        const Color& background_color,
                        BackgroundBleedAvoidance = kBackgroundBleedNone);
-  Node* GetNode();
 
   const LayoutBox& layout_box_;
 };
