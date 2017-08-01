@@ -476,17 +476,9 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   switch (type) {
     case ContentSuggestionTypeArticle:
       [self.suggestionCommandHandler
-          displayContextMenuForSuggestion:touchedItem
-                                  atPoint:touchLocation
-                              atIndexPath:touchedItemIndexPath
-                          readLaterAction:YES];
-      break;
-    case ContentSuggestionTypeReadingList:
-      [self.suggestionCommandHandler
-          displayContextMenuForSuggestion:touchedItem
-                                  atPoint:touchLocation
-                              atIndexPath:touchedItemIndexPath
-                          readLaterAction:NO];
+          displayContextMenuForArticle:touchedItem
+                               atPoint:touchLocation
+                           atIndexPath:touchedItemIndexPath];
       break;
     case ContentSuggestionTypeMostVisited:
       [self.suggestionCommandHandler

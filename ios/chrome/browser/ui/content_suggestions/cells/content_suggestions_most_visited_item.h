@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 
-@protocol ContentSuggestionsGestureCommands;
 @class FaviconAttributes;
 class GURL;
 
@@ -27,9 +26,6 @@ class GURL;
 @property(nonatomic, assign) ntp_tiles::TileSource source;
 // Attributes for favicon.
 @property(nonatomic, strong, nullable) FaviconAttributes* attributes;
-// Command handler for the accessibility custom actions.
-@property(nonatomic, weak, nullable) id<ContentSuggestionsGestureCommands>
-    commandHandler;
 
 - (ntp_tiles::TileVisualType)tileType;
 

@@ -25,7 +25,6 @@ class MostVisitedSites;
 }
 
 @protocol ContentSuggestionsCommands;
-@protocol ContentSuggestionsGestureCommands;
 @protocol ContentSuggestionsHeaderProvider;
 @class ContentSuggestionIdentifier;
 class GURL;
@@ -50,9 +49,8 @@ initWithContentService:
 - (nullable instancetype)init NS_UNAVAILABLE;
 
 // Command handler for the mediator.
-@property(nonatomic, weak, nullable)
-    id<ContentSuggestionsCommands, ContentSuggestionsGestureCommands>
-        commandHandler;
+@property(nonatomic, weak, nullable) id<ContentSuggestionsCommands>
+    commandHandler;
 
 @property(nonatomic, weak, nullable) id<ContentSuggestionsHeaderProvider>
     headerProvider;

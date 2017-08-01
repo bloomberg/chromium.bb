@@ -64,7 +64,6 @@ ContentSuggestionsItem* ConvertSuggestion(
   }
   if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES)) {
     suggestion.hasImage = YES;
-    suggestion.readLaterAction = YES;
   }
 
   return suggestion;
