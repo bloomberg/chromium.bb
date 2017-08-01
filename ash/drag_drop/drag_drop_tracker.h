@@ -31,7 +31,7 @@ class ASH_EXPORT DragDropTracker {
 
   // Tells our |capture_window_| to take capture. This is not done right at
   // creation to give the caller a chance to perform any operations needed
-  // before the capture is transfered.
+  // before the capture is transferred.
   void TakeCapture();
 
   // Gets the target located at |event| in the coordinates of the active root

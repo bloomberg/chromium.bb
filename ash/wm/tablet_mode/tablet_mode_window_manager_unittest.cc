@@ -528,7 +528,7 @@ std::string GetPlacementOverride(aura::Window* window) {
 }
 
 // Test that the restore state will be kept at its original value for
-// session restauration purposes.
+// session restoration purposes.
 TEST_F(TabletModeWindowManagerTest, TestRestoreIntegrety) {
   gfx::Rect bounds(10, 10, 200, 50);
   gfx::Size empty_size;

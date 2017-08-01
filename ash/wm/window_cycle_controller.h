@@ -44,7 +44,7 @@ class ASH_EXPORT WindowCycleController {
   // Returns true if we are in the middle of a window cycling gesture.
   bool IsCycling() const { return window_cycle_list_.get() != NULL; }
 
-  // Call to start cycling windows. This funtion adds a pre-target handler to
+  // Call to start cycling windows. This function adds a pre-target handler to
   // listen to the alt key release.
   void StartCycling();
 

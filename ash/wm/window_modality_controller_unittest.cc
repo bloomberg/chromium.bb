@@ -321,7 +321,7 @@ TEST_F(WindowModalityControllerTest, ChangeCapture) {
 // capture window if the current capture window is in the hierarchy of the child
 // modal window's modal parent window.
 TEST_F(WindowModalityControllerTest, ReleaseCapture) {
-  // Create a window hierachy like this:
+  // Create a window hierarchy like this:
   //            _______________w0______________
   //            |               |              |
   //           w1     <------   w3             w2

@@ -155,7 +155,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
   // Activates the bubble and starts key navigation with the |key_event|.
   void ActivateAndStartNavigation(const ui::KeyEvent& key_event);
 
-  // Creates the default set of items for the sytem tray.
+  // Creates the default set of items for the system tray.
   void CreateItems(SystemTrayDelegate* delegate);
 
   // Resets |system_bubble_| and clears any related state.

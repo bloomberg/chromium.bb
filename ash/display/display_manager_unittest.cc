@@ -693,7 +693,7 @@ TEST_F(DisplayManagerTest, NoOverlappedDisplays) {
   }
 
   {
-    // The following is a layout with an overlap occuring above the primary
+    // The following is a layout with an overlap occurring above the primary
     // display.
     //
     //    +------+--+------+

@@ -625,8 +625,8 @@ TEST_F(TabletModeControllerTest, ForceClamshellModeTest) {
 }
 
 // Verify when the force touch view mode flag is turned on, tablet mode is on
-// intially, and opening the lid to less than 180 degress or setting tablet mode
-// to off will not turn off tablet mode.
+// initially, and opening the lid to less than 180 degress or setting tablet
+// mode to off will not turn off tablet mode.
 TEST_F(TabletModeControllerTest, ForceTouchViewModeTest) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAshForceTabletMode, switches::kAshForceTabletModeTouchView);

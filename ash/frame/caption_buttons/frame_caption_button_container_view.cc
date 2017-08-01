@@ -291,7 +291,7 @@ void FrameCaptionButtonContainerView::AnimationProgressed(
 void FrameCaptionButtonContainerView::SetButtonIcon(FrameCaptionButton* button,
                                                     CaptionButtonIcon icon,
                                                     Animate animate) {
-  // The early return is dependant on |animate| because callers use
+  // The early return is dependent on |animate| because callers use
   // SetButtonIcon() with ANIMATE_NO to progress |button|'s crossfade animation
   // to the end.
   if (button->icon() == icon &&

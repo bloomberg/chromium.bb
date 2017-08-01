@@ -168,7 +168,7 @@ TEST_F(LaserSegmentUtilsTest, AngleOfPointInNewCoordinates) {
 TEST_F(LaserSegmentUtilsTest, ComputeNormalLineVariables) {
   {
     // Verify a line y=x should have a normal line y=-x+b. At point (0,0), b
-    // should equal y+x = 0. At point (1,1), b shoudl equal y+x = 2.
+    // should equal y+x = 0. At point (1,1), b should equal y+x = 2.
     const gfx::PointF start(0.0f, 0.0f);
     const gfx::PointF end(1.0f, 1.0f);
     float slope = -1.0f;
@@ -207,7 +207,7 @@ TEST_F(LaserSegmentUtilsTest, ComputeNormalLineVariables) {
 
 TEST_F(LaserSegmentUtilsTest, ComputeProjectedPoints) {
   {
-    // Verify projecting along y=x from (0, 0) by distance sqrt(2) shoudl result
+    // Verify projecting along y=x from (0, 0) by distance sqrt(2) should result
     // in two projections: (1, 1) and (-1, -1). We start from (0, 0) and
     // translate by (1, 1) and (-1, -1) (vectors with slope 1) to get to (1, 1)
     // and (-1, -1). The length of the distance from (1, 1) is sqrt(1*1 + 1*1) =

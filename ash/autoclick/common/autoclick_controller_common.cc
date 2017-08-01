@@ -62,7 +62,7 @@ void AutoclickControllerCommon::HandleMouseEvent(const ui::MouseEvent& event) {
     // must exceed a certain threshold to initiate a new autoclick countdown.
     // This ensures that mouse jitter caused by poor motor control does not
     // 1. initiate an unwanted autoclick from rest
-    // 2. prevent the autoclick from ever occuring when the mouse
+    // 2. prevent the autoclick from ever occurring when the mouse
     //    arrives at the target.
     gfx::Vector2d delta = mouse_location - anchor_location_;
     if (delta.LengthSquared() >= kMovementThreshold * kMovementThreshold) {
