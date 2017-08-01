@@ -391,9 +391,9 @@ class MidiManagerWin::InPort final : public Port {
   }
 
   void NotifyPortStateSet(MidiManagerWin* manager) {
-    manager->PostReplyTask(base::Bind(&MidiManagerWin::SetInputPortState,
-                                      base::Unretained(manager), index_,
-                                      info_.state));
+    manager->PostReplyTask(base::Bind(
+        &MidiManagerWin::SetInputPortState, base::Unretained(manager),
+        static_cast<uint32_t>(index_), info_.state));
   }
 
   void NotifyPortAdded(MidiManagerWin* manager) {
@@ -489,9 +489,9 @@ class MidiManagerWin::OutPort final : public Port {
   }
 
   void NotifyPortStateSet(MidiManagerWin* manager) {
-    manager->PostReplyTask(base::Bind(&MidiManagerWin::SetOutputPortState,
-                                      base::Unretained(manager), index_,
-                                      info_.state));
+    manager->PostReplyTask(base::Bind(
+        &MidiManagerWin::SetOutputPortState, base::Unretained(manager),
+        static_cast<uint32_t>(index_), info_.state));
   }
 
   void NotifyPortAdded(MidiManagerWin* manager) {
