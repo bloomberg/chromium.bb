@@ -49,8 +49,7 @@ using bookmarks::BookmarkNode;
                             configuration:configuration])) {
     // "Add Page..." has no "node" so this may be NULL.
     node_ = node;
-    urlFieldEditor_.reset([[DialogTextFieldEditor alloc] init]);
-    nameFieldEditor_.reset([[DialogTextFieldEditor alloc] init]);
+    touchBarFieldEditor_.reset([[DialogTextFieldEditor alloc] init]);
   }
   return self;
 }
@@ -85,19 +84,14 @@ using bookmarks::BookmarkNode;
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
-  [urlFieldEditor_ setFieldEditor:NO];
-  [nameFieldEditor_ setFieldEditor:NO];
-
-  urlFieldEditor_.reset();
-  nameFieldEditor_.reset();
+  [touchBarFieldEditor_ setFieldEditor:NO];
+  touchBarFieldEditor_.reset();
   [super windowWillClose:notification];
 }
 
 - (id)windowWillReturnFieldEditor:(NSWindow*)sender toObject:(id)obj {
-  if (obj == urlField_)
-    return urlFieldEditor_.get();
-  else if (obj == nameTextField_)
-    return nameFieldEditor_.get();
+  if (obj == urlField_ || obj == nameTextField_)
+    return touchBarFieldEditor_.get();
 
   return nil;
 }
