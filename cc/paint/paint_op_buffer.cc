@@ -14,6 +14,7 @@
 #include "cc/paint/paint_record.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkRegion.h"
 
 namespace cc {
 namespace {
@@ -163,36 +164,37 @@ void RasterWithAlpha(const PaintOp* op,
 
 }  // namespace
 
-#define TYPES(M)           \
-  M(AnnotateOp)            \
-  M(ClipPathOp)            \
-  M(ClipRectOp)            \
-  M(ClipRRectOp)           \
-  M(ConcatOp)              \
-  M(DrawArcOp)             \
-  M(DrawCircleOp)          \
-  M(DrawColorOp)           \
-  M(DrawDRRectOp)          \
-  M(DrawImageOp)           \
-  M(DrawImageRectOp)       \
-  M(DrawIRectOp)           \
-  M(DrawLineOp)            \
-  M(DrawOvalOp)            \
-  M(DrawPathOp)            \
-  M(DrawPosTextOp)         \
-  M(DrawRecordOp)          \
-  M(DrawRectOp)            \
-  M(DrawRRectOp)           \
-  M(DrawTextOp)            \
-  M(DrawTextBlobOp)        \
-  M(NoopOp)                \
-  M(RestoreOp)             \
-  M(RotateOp)              \
-  M(SaveOp)                \
-  M(SaveLayerOp)           \
-  M(SaveLayerAlphaOp)      \
-  M(ScaleOp)               \
-  M(SetMatrixOp)           \
+#define TYPES(M)      \
+  M(AnnotateOp)       \
+  M(ClipDeviceRectOp) \
+  M(ClipPathOp)       \
+  M(ClipRectOp)       \
+  M(ClipRRectOp)      \
+  M(ConcatOp)         \
+  M(DrawArcOp)        \
+  M(DrawCircleOp)     \
+  M(DrawColorOp)      \
+  M(DrawDRRectOp)     \
+  M(DrawImageOp)      \
+  M(DrawImageRectOp)  \
+  M(DrawIRectOp)      \
+  M(DrawLineOp)       \
+  M(DrawOvalOp)       \
+  M(DrawPathOp)       \
+  M(DrawPosTextOp)    \
+  M(DrawRecordOp)     \
+  M(DrawRectOp)       \
+  M(DrawRRectOp)      \
+  M(DrawTextOp)       \
+  M(DrawTextBlobOp)   \
+  M(NoopOp)           \
+  M(RestoreOp)        \
+  M(RotateOp)         \
+  M(SaveOp)           \
+  M(SaveLayerOp)      \
+  M(SaveLayerAlphaOp) \
+  M(ScaleOp)          \
+  M(SetMatrixOp)      \
   M(TranslateOp)
 
 static constexpr size_t kNumOpTypes =
@@ -327,6 +329,8 @@ std::string PaintOpTypeToString(PaintOpType type) {
   switch (type) {
     case PaintOpType::Annotate:
       return "Annotate";
+    case PaintOpType::ClipDeviceRect:
+      return "ClipDeviceRect";
     case PaintOpType::ClipPath:
       return "ClipPath";
     case PaintOpType::ClipRect:
@@ -411,6 +415,13 @@ size_t AnnotateOp::Serialize(const PaintOp* base_op,
   helper.Write(op->rect);
   helper.Write(op->data);
   return helper.size();
+}
+
+size_t ClipDeviceRectOp::Serialize(const PaintOp* op,
+                                   void* memory,
+                                   size_t size,
+                                   const SerializeOptions& options) {
+  return SimpleSerialize<ClipDeviceRectOp>(op, memory, size);
 }
 
 size_t ClipPathOp::Serialize(const PaintOp* base_op,
@@ -746,6 +757,14 @@ PaintOp* AnnotateOp::Deserialize(const void* input,
 
   UpdateTypeAndSkip(op);
   return op;
+}
+
+PaintOp* ClipDeviceRectOp::Deserialize(const void* input,
+                                       size_t input_size,
+                                       void* output,
+                                       size_t output_size) {
+  return SimpleDeserialize<ClipDeviceRectOp>(input, input_size, output,
+                                             output_size);
 }
 
 PaintOp* ClipPathOp::Deserialize(const void* input,
@@ -1193,6 +1212,16 @@ void AnnotateOp::Raster(const AnnotateOp* op,
       break;
     }
   }
+}
+
+void ClipDeviceRectOp::Raster(const ClipDeviceRectOp* op,
+                              SkCanvas* canvas,
+                              const PlaybackParams& params) {
+  SkRegion device_region;
+  device_region.setRect(op->device_rect);
+  if (!op->subtract_rect.isEmpty())
+    device_region.op(op->subtract_rect, SkRegion::kDifference_Op);
+  canvas->clipRegion(device_region, op->op);
 }
 
 void ClipPathOp::Raster(const ClipPathOp* op,
