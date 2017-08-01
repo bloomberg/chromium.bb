@@ -35,13 +35,6 @@
 namespace blink {
 
 void StyleResolverStats::Reset() {
-  shared_style_lookups = 0;
-  shared_style_candidates = 0;
-  shared_style_found = 0;
-  shared_style_missed = 0;
-  shared_style_rejected_by_uncommon_attribute_rules = 0;
-  shared_style_rejected_by_sibling_rules = 0;
-  shared_style_rejected_by_parent = 0;
   matched_property_apply = 0;
   matched_property_cache_hit = 0;
   matched_property_cache_inherited_hit = 0;
@@ -59,26 +52,8 @@ void StyleResolverStats::Reset() {
   custom_properties_applied = 0;
 }
 
-bool StyleResolverStats::AllCountersEnabled() const {
-  bool all_counters_enabled;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink.style"),
-                                     &all_counters_enabled);
-  return all_counters_enabled;
-}
-
 std::unique_ptr<TracedValue> StyleResolverStats::ToTracedValue() const {
   std::unique_ptr<TracedValue> traced_value = TracedValue::Create();
-  traced_value->SetInteger("sharedStyleLookups", shared_style_lookups);
-  traced_value->SetInteger("sharedStyleCandidates", shared_style_candidates);
-  traced_value->SetInteger("sharedStyleFound", shared_style_found);
-  if (AllCountersEnabled())
-    traced_value->SetInteger("sharedStyleMissed", shared_style_missed);
-  traced_value->SetInteger("sharedStyleRejectedByUncommonAttributeRules",
-                           shared_style_rejected_by_uncommon_attribute_rules);
-  traced_value->SetInteger("sharedStyleRejectedBySiblingRules",
-                           shared_style_rejected_by_sibling_rules);
-  traced_value->SetInteger("sharedStyleRejectedByParent",
-                           shared_style_rejected_by_parent);
   traced_value->SetInteger("matchedPropertyApply", matched_property_apply);
   traced_value->SetInteger("matchedPropertyCacheHit",
                            matched_property_cache_hit);

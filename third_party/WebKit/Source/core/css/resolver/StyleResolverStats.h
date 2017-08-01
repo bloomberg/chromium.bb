@@ -47,16 +47,8 @@ class StyleResolverStats {
   }
 
   void Reset();
-  bool AllCountersEnabled() const;
   std::unique_ptr<TracedValue> ToTracedValue() const;
 
-  unsigned shared_style_lookups;
-  unsigned shared_style_candidates;
-  unsigned shared_style_found;
-  unsigned shared_style_missed;
-  unsigned shared_style_rejected_by_uncommon_attribute_rules;
-  unsigned shared_style_rejected_by_sibling_rules;
-  unsigned shared_style_rejected_by_parent;
   unsigned matched_property_apply;
   unsigned matched_property_cache_hit;
   unsigned matched_property_cache_inherited_hit;
