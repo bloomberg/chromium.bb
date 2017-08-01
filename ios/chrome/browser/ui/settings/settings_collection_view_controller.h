@@ -35,7 +35,7 @@ extern NSString* const kSettingsVoiceSearchCellId;
     : SettingsRootCollectionViewController<SettingsControllerProtocol>
 
 // The controller used to signin on this screen. Returns nil unless a signin is
-// currently occuring.
+// currently occurring.
 @property(weak, nonatomic, readonly)
     SigninInteractionController* signinInteractionController;
 

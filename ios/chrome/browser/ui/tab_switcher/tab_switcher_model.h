@@ -98,7 +98,7 @@ bool TabSwitcherSessionTypeIsLocalSession(TabSwitcherSessionType sessionType);
 - (TabSwitcherSignInPanelsType)signInPanelType;
 // Returns the tag of the session at index |index|.
 - (std::string const&)tagOfDistantSessionAtIndex:(int)index;
-// Notifies the delegate that changes occured for the distant sessions.
+// Notifies the delegate that changes occurred for the distant sessions.
 - (void)syncedSessionsChanged;
 @end
 

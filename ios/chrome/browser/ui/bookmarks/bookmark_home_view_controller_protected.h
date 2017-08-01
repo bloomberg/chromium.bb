@@ -25,7 +25,7 @@ class BookmarkNode;
 @class BookmarkPanelView;
 @class BookmarkPromoController;
 
-// BookmarkHomeViewController class extention for protected read/write
+// BookmarkHomeViewController class extension for protected read/write
 // properties and methods for subclasses.
 @interface BookmarkHomeViewController ()
 

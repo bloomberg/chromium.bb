@@ -108,13 +108,13 @@ ActivityType TypeFromString(NSString* activityString) {
       [activityString rangeOfString:kFindLoginActionBundleSubstring];
   if (found.length)
     return APPEX_PASSWORD_MANAGEMENT;
-  for (auto const& assocation : prefixTypeAssociations) {
-    if (assocation.requiresExactMatch_) {
-      if ([activityString isEqualToString:assocation.prefix_])
-        return assocation.type_;
+  for (auto const& association : prefixTypeAssociations) {
+    if (association.requiresExactMatch_) {
+      if ([activityString isEqualToString:association.prefix_])
+        return association.type_;
     } else {
-      if ([activityString hasPrefix:assocation.prefix_])
-        return assocation.type_;
+      if ([activityString hasPrefix:association.prefix_])
+        return association.type_;
     }
   }
   if (IsPasswordManagerActivity(activityString))

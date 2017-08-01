@@ -65,7 +65,7 @@ typedef NSMutableArray<id<ApplicationStep>> ApplicationStepArray;
 // Steps invoked during the phase change methods must update this property.
 @property(nonatomic, assign) ApplicationPhase phase;
 
-// Persistant storage for application steps that need to have objects live
+// Persistent storage for application steps that need to have objects live
 // beyond the execution of the step. This should be used sparingly for objects
 // that actually need to persist for the lifetime of the app.
 @property(nonatomic, readonly) base::SupportsUserData* persistentState;

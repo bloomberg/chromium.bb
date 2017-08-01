@@ -18,7 +18,7 @@ __gCrWeb['contextualSearch_unittest'] = {};
 new function() {
 
 /**
- * Generate a tap event on an element. Remove the span arround the element.
+ * Generate a tap event on an element. Remove the span around the element.
  * @param {string} elementID The ID of the element to tap.
  * @return {object} Empty if element did not trigger CS. Else, the CS context.
  */

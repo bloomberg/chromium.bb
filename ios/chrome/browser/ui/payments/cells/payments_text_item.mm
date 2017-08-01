@@ -162,7 +162,7 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
   _textLabel.preferredMaxLayoutWidth = preferredMaxLayoutWidth;
   _detailTextLabel.preferredMaxLayoutWidth = preferredMaxLayoutWidth;
 
-  // Re-layout with the new preferred width to allow the labels to adjust thier
+  // Re-layout with the new preferred width to allow the labels to adjust their
   // height.
   [super layoutSubviews];
 }

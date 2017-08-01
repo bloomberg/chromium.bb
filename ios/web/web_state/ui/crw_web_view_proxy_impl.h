@@ -20,7 +20,7 @@
 // WebViewScrollViewProxy.
 @property(nonatomic, weak) CRWContentView* contentView;
 
-// Init with a weak reference of web controller, used for passing thru calls.
+// Init with a weak reference of web controller, used for passing through calls.
 - (instancetype)initWithWebController:(CRWWebController*)webController;
 
 @end

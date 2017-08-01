@@ -269,7 +269,7 @@ class UpgradeInfoBarDismissObserver
 - (BOOL)infoBarShownRecently {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   NSDate* lastDisplay = [defaults objectForKey:kLastInfobarDisplayTimeKey];
-  // Absolute value is to ensure the infobar won't be supressed forever if the
+  // Absolute value is to ensure the infobar won't be suppressed forever if the
   // clock temporarily jumps to the distant future.
   if (lastDisplay &&
       fabs([lastDisplay timeIntervalSinceNow]) < kInfobarDisplayInterval) {
@@ -332,7 +332,7 @@ class UpgradeInfoBarDismissObserver
 
 - (void)dismissedInfoBar:(NSString*)tabId performUpgrade:(BOOL)shouldUpgrade {
   // If the tabId is not in the upgradeInfoBarDelegates_ just ignore the
-  // notification. In all likelyhood it was trigerred by calling
+  // notification. In all likelihood it was trigerred by calling
   // -hideUpgradeInfoBars. Or because a tab was closed without dismissing the
   // infobar.
   DelegateHolder* delegateHolder =

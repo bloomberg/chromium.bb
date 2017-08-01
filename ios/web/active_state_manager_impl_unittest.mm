@@ -37,7 +37,7 @@ class ActiveStateManagerObserver : public ActiveStateManager::Observer {
 
 }  // namespace
 
-// Tests that an ActiveStateManagerImpl is succesfully created with a
+// Tests that an ActiveStateManagerImpl is successfully created with a
 // BrowserState and that it can be made active/inactive.
 TEST_F(ActiveStateManagerImplTest, ActiveState) {
   ActiveStateManager* active_state_manager =

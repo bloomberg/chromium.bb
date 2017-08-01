@@ -47,7 +47,7 @@ CGFloat kShadowOpacity = 0.2f;
   // View controller for the search bar.
   HistorySearchViewController* _searchViewController;
   // Container view for history collection and clear browsing button to enable
-  // use of autolayout in conjuction with Material App Bar.
+  // use of autolayout in conjunction with Material App Bar.
   UIView* _containerView;
   // The header view.
   MDCAppBar* _appBar;

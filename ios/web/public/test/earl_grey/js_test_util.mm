@@ -71,10 +71,10 @@ id ExecuteJavaScript(WebState* web_state,
             }];
 
   // Wait for completion.
-  BOOL suceeded = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+  BOOL succeeded = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return did_complete;
   });
-  GREYAssert(suceeded, @"Script execution timed out");
+  GREYAssert(succeeded, @"Script execution timed out");
 
   return result;
 }
@@ -89,10 +89,10 @@ id ExecuteScriptOnInterstitial(WebState* web_state, NSString* script) {
     script_result = [result copy];
     did_finish = true;
   });
-  BOOL suceeded = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+  BOOL succeeded = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return did_finish;
   });
-  GREYAssert(suceeded, @"Script execution timed out");
+  GREYAssert(succeeded, @"Script execution timed out");
   return script_result;
 }
 

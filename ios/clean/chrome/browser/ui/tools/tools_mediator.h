@@ -13,7 +13,7 @@ namespace web {
 class WebState;
 }
 
-// A mediator object that sets a ToolsMenuVC appeareance based on various data
+// A mediator object that sets a ToolsMenuVC appearance based on various data
 // sources.
 @interface ToolsMediator : NSObject
 - (nullable instancetype)initWithConsumer:(nonnull id<ToolsConsumer>)consumer

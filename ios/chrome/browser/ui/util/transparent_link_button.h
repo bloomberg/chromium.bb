@@ -9,7 +9,7 @@
 
 class GURL;
 
-// Minumum height and width for a link's tappable area.  On touch-down events,
+// Minimum height and width for a link's tappable area.  On touch-down events,
 // the portion of the button directly on top of the link text will be
 // highlighted with a gray overlay.
 extern const CGFloat kLinkTapAreaMinimum;

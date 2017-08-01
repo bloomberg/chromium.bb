@@ -37,7 +37,7 @@ class WebState;
                            overlays:(NSArray*)overlays;
 
 // Retrieve a cached snapshot for the |sessionID| and return it via the callback
-// if it exists. The callback is garanteed to be called synchronously if the
+// if it exists. The callback is guaranteed to be called synchronously if the
 // image is in memory. It will be called asynchronously if the image is on disk
 // or with nil if the image is not present at all.
 - (void)retrieveImageForSessionID:(NSString*)sessionID

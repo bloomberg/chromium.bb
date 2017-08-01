@@ -34,7 +34,7 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
     ClipboardRecentContentImplIOS* clipboardRecentContent;
 
 // Updates the widget with latest data from the clipboard. Returns whether any
-// visual updates occured.
+// visual updates occurred.
 - (BOOL)updateWidget;
 // Opens the main application with the given |command|.
 - (void)openAppWithCommand:(NSString*)command;

@@ -99,7 +99,7 @@ base::FilePath CreateTempBrowserStateDir(base::ScopedTempDir* temp_dir) {
     base::FilePath system_tmp_dir;
     bool success = PathService::Get(base::DIR_TEMP, &system_tmp_dir);
 
-    // We're severly screwed if we can't get the system temporary
+    // We're severely screwed if we can't get the system temporary
     // directory. Die now to avoid writing to the filesystem root
     // or other bad places.
     CHECK(success);

@@ -20,7 +20,7 @@
 
 // This delegate is used to drive the TabSwitcher dismissal and execute code
 // when the presentation and dismmiss animations finishes. The main controller
-// is a good exemple of the implementation of this delegate.
+// is a good example of the implementation of this delegate.
 @protocol TabSwitcherDelegate<NSObject>
 
 // Informs the delegate the stack controller is starting to be dismissed with

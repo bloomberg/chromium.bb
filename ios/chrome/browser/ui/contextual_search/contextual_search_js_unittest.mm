@@ -301,7 +301,7 @@ TEST_F(ContextualSearchJsTest, TestHighlightThroughBlock) {
   EXPECT_NSEQ(highlighted, @"Left cell right cell");
 };
 
-// Test that blocks add spaces if there are not arround it.
+// Test that blocks add spaces if there are not around it.
 TEST_F(ContextualSearchJsTest, TestHighlightBlockAddsSpace) {
   LoadHtml(kHTMLWithDiv);
   ContextualSearchStruct searchContext;

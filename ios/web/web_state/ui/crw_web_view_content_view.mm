@@ -28,7 +28,7 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
   CGFloat _topContentPadding;
 }
 
-// Changes web view frame to match |self.bounds| and optionally accomodates for
+// Changes web view frame to match |self.bounds| and optionally accommodates for
 // |_topContentPadding| (iff |_webView| is a WKWebView).
 - (void)updateWebViewFrame;
 

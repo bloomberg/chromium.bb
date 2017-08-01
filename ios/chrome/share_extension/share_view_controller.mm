@@ -60,7 +60,7 @@ const CGFloat kMediumAlpha = 0.5;
 // Loads all the shared elements from the extension context and update the UI.
 - (void)loadElementsFromContext;
 
-// Sets constaints to the widget so that margin are at least
+// Sets constraints to the widget so that margin are at least
 // kShareExtensionMargin points and widget width is closest up to
 // kShareExtensionMaxWidth points.
 - (void)constrainWidgetWidth;

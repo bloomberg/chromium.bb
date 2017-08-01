@@ -57,7 +57,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   }
 
  private:
-  // Returns a url for which this responce provider will never reply.
+  // Returns a url for which this response provider will never reply.
   GURL GetInfinitePendingResponseUrl() const {
     GURL::Replacements replacements;
     replacements.SetPathStr("resource");

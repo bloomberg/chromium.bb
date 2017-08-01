@@ -39,7 +39,7 @@ TEST_F(CertHostPairTest, Construction) {
   EXPECT_EQ(std::string(kHostName1), pair.host_);
 }
 
-// Tests comparision with different certs and hosts.
+// Tests comparison with different certs and hosts.
 TEST_F(CertHostPairTest, ComparisonWithDifferentCertsAndHosts) {
   scoped_refptr<net::X509Certificate> cert1 = GetCert(kCertFileName1);
   ASSERT_TRUE(cert1);
@@ -54,7 +54,7 @@ TEST_F(CertHostPairTest, ComparisonWithDifferentCertsAndHosts) {
               (pair2 < pair1 && !(pair1 < pair2)));
 }
 
-// Tests comparision with same cert.
+// Tests comparison with same cert.
 TEST_F(CertHostPairTest, ComparisonWithSameCert) {
   scoped_refptr<net::X509Certificate> cert1 = GetCert(kCertFileName1);
   ASSERT_TRUE(cert1);
@@ -69,7 +69,7 @@ TEST_F(CertHostPairTest, ComparisonWithSameCert) {
               (pair2 < pair1 && !(pair1 < pair2)));
 }
 
-// Tests comparision with same host.
+// Tests comparison with same host.
 TEST_F(CertHostPairTest, ComparisonWithSameHost) {
   scoped_refptr<net::X509Certificate> cert1 = GetCert(kCertFileName1);
   ASSERT_TRUE(cert1);
@@ -84,7 +84,7 @@ TEST_F(CertHostPairTest, ComparisonWithSameHost) {
               (pair2 < pair1 && !(pair1 < pair2)));
 }
 
-// Tests comparision with same cert and host.
+// Tests comparison with same cert and host.
 TEST_F(CertHostPairTest, ComparisonWithSameCertAndHost) {
   scoped_refptr<net::X509Certificate> cert1 = GetCert(kCertFileName1);
   ASSERT_TRUE(cert1);

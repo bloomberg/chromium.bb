@@ -52,7 +52,7 @@ CAMediaTimingFunction* TransformCurve2() {
 CAMediaTimingFunction* TimingFunction(Curve curve) {
   switch (curve) {
     case CurveEaseInOut:
-      // This curve is slow both at the begining and end.
+      // This curve is slow both at the beginning and end.
       // Visualization of curve  http://cubic-bezier.com/#.4,0,.2,1
       return [[CAMediaTimingFunction alloc] initWithControlPoints:
                                                              0.4f:
@@ -66,7 +66,7 @@ CAMediaTimingFunction* TimingFunction(Curve curve) {
                                                              0.0f:
                                                              0.2f:1.0f];
     case CurveEaseIn:
-      // This curve is slow at the begining.
+      // This curve is slow at the beginning.
       // Visualization of curve  http://cubic-bezier.com/#.4,0,1,1
       return [[CAMediaTimingFunction alloc] initWithControlPoints:
                                                              0.4f:

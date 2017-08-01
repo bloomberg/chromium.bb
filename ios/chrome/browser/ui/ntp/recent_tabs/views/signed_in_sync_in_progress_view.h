@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-// View indicating that the syncing is currently occuring.
+// View indicating that the syncing is currently occurring.
 @interface SignedInSyncInProgressView : UIView
 
 // Designated initializer.

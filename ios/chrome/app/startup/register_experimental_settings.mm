@@ -99,7 +99,7 @@ BOOL IsDefaultSettingValueValid(id value) {
   NSArray* preferencesArray =
       [rootDictionary objectForKey:@"PreferenceSpecifiers"];
 
-  // Scan thru all the preferences in the plist file.
+  // Scan through all the preferences in the plist file.
   for (NSDictionary* preferenceSpecifier in preferencesArray) {
     NSString* keyValue = [preferenceSpecifier objectForKey:@"Key"];
     if (!keyValue)

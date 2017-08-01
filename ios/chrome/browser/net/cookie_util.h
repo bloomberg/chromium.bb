@@ -70,7 +70,7 @@ struct CookieStoreConfig {
   net::CookieCryptoDelegate* crypto_delegate;
 };
 
-// Creates a cookie store wich is internally either a CookieMonster or a
+// Creates a cookie store which is internally either a CookieMonster or a
 // CookieStoreIOS.
 std::unique_ptr<net::CookieStore> CreateCookieStore(
     const CookieStoreConfig& config);

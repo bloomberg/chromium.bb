@@ -295,7 +295,7 @@ initWithRootViewController:(UIViewController*)rootViewController
     }
   }
 
-  // Sync changes cannot be cancelled and they must always be commited when
+  // Sync changes cannot be cancelled and they must always be committed when
   // existing settings.
   if (shouldCommitSyncChangesOnDismissal_) {
     SyncSetupServiceFactory::GetForBrowserState([self mainBrowserState])

@@ -331,8 +331,8 @@ class PaymentRequest : public PaymentOptionsProvider,
   // use |supported_card_networks_| for merchant support checks.
   std::set<std::string> basic_card_specified_networks_;
 
-  // A vector of url-based payment method identifers supported by the merchant
-  // which encompasses one of the two types of payment method identifers, the
+  // A vector of url-based payment method identifiers supported by the merchant
+  // which encompasses one of the two types of payment method identifiers, the
   // other being standardized payment method identifiers i.e., basic-card.
   std::vector<std::string> url_payment_method_identifiers_;
 

@@ -113,7 +113,7 @@ class HttpServer : public base::RefCountedThreadSafe<HttpServer> {
   GURL MakeUrlForHttpServer(const std::string& url) const;
 
   // Returns the response provider that can handle the |request|.
-  // Note: No more than one reponse provider can handle the request.
+  // Note: No more than one response provider can handle the request.
   // Thread safe.
   scoped_refptr<RefCountedResponseProviderWrapper>
   GetResponseProviderForRequest(const web::ResponseProvider::Request& request);

@@ -10,7 +10,7 @@
 // A WebContentsConsumer (typically a view controller) uses data provided by
 // this protocol to display a web view.
 @protocol WebContentsConsumer
-// Called when the content view that the reciever should display changes.
+// Called when the content view that the receiver should display changes.
 - (void)contentViewDidChange:(UIView*)contentView;
 @end
 

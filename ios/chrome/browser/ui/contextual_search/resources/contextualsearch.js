@@ -430,7 +430,7 @@ Context.debugMode = false;
 Context.GET_RANGE_TIMEOUT_MS = 50;
 
 /**
- * Number of surrouding sentences when calculating the surrounding text.
+ * Number of surrounding sentences when calculating the surrounding text.
  * @const {number}
  */
 Context.NUMBER_OF_CHARS_IN_SURROUNDING_SENTENCES = 1500;

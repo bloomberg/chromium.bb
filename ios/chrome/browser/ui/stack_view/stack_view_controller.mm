@@ -326,7 +326,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
 // presentation and |transitionStyle| = StackTransitionStyleDismissing for
 // dismissal.
 - (void)animateTransitionWithStyle:(StackTransitionStyle)transitionStyle;
-// Updates the view heirarchy for the transition based on the current transition
+// Updates the view hierarchy for the transition based on the current transition
 // style.  If the style is STACK_TRANSITION_STYLE_PRESENTING or
 // STACK_TRANSITION_STYLE_DISMISSING, the display views are added to the root
 // view and the toolbar is inserted between them.  If the style is
@@ -783,7 +783,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   // be done only once, however, and viewWillAppear: can be called more than
   // once. For initial display, the transition animation will handle initial
   // layout. Avoid doing it here since that will potentially cause more views
-  // to be added to the hierarchy synchronously, slowing down inital load.  The
+  // to be added to the hierarchy synchronously, slowing down initial load.  The
   // rest of the time refreshing is necessary because the card views may have
   // been purged and recreated or the orientation might have changed while in
   // a modal view.
@@ -2784,7 +2784,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   // animation of switching to main-card-set-only mode, so if the incognito set
   // finishes closing while the main set is still animating (in the case of
   // closing all cards at once) wait until the main set finishes before updating
-  // the display (neccessary so the state is right if a new tab is opened).
+  // the display (necessary so the state is right if a new tab is opened).
   if ((closedSet == _otrCardSet && ![_mainCardSet ignoresTabModelChanges]) ||
       (closedSet == _mainCardSet && [[_otrCardSet cards] count] == 0)) {
     [self displayMainCardSetOnly];

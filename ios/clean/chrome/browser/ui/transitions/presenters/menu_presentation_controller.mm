@@ -69,7 +69,7 @@
 
 // Checks if the presenting view controller conforms to
 // MenuPresentationDelegate and, if so, sets that view controller as the
-// presentation delegate. This can't be done at init time, becuase the
+// presentation delegate. This can't be done at init time, because the
 // presenting view controller may not have been determined by UIKit yet.
 - (void)updatePresentationDelegate {
   if ([self.presentingViewController

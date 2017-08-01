@@ -195,7 +195,7 @@ using bookmarks::BookmarkNode;
 
 - (void)didMoveToSuperview {
   [super didMoveToSuperview];
-  // The background color depends on where in the view hierachy the menu is.
+  // The background color depends on where in the view hierarchy the menu is.
   // For example, the menu may be moved to a slide over panel if the
   // horizontal size class changes from regular to compact.
   self.tableView.backgroundColor = bookmark_utils_ios::menuBackgroundColor();

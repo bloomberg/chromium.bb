@@ -55,7 +55,7 @@ void UpdateReversedAnimation(ReversedAnimation* reversedAnimation,
 @property(nonatomic, retain) CAAnimation* originalAnimation;
 // The current direction for the animation.
 @property(nonatomic, assign) AnimationDirection animationDirection;
-// The offset into the original animation's duration at the begining of the
+// The offset into the original animation's duration at the beginning of the
 // reverse animation.
 @property(nonatomic, assign) CFTimeInterval animationTimeOffset;
 

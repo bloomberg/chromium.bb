@@ -178,8 +178,8 @@ enum {
 // is initiated, and when WebController calls -willBeDismissed.
 @property(nonatomic, weak) UIViewController* parentViewController;
 
-// To ease modernizing the NTP a non-descript CommandDispatcher is passed thru
-// to be used by the reuabled NTP panels.
+// To ease modernizing the NTP a non-descript CommandDispatcher is passed
+// through to be used by the reuabled NTP panels.
 @property(nonatomic, weak) id dispatcher;
 
 // Panel displaying the "Home" view, with the logo and the fake omnibox.
@@ -477,7 +477,7 @@ enum {
     return;
 
   // Only create views when they need to be visible.  This will create a slight
-  // jank on first creation, but it doesn't seem very noticable.  The trade off
+  // jank on first creation, but it doesn't seem very noticeable.  The trade off
   // is loading the adjacent panels, and a longer initial NTP startup.
   if (position - index > 0)
     [self loadControllerWithIndex:index + 1];

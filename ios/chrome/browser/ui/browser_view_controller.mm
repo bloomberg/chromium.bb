@@ -621,7 +621,7 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 // Updates view-related functionality with the given tab model and browser
 // state. The view must have been loaded.  Uses |_browserState| and |_model|.
 - (void)addUIFunctionalityForModelAndBrowserState;
-// Sets the correct frame and heirarchy for subviews and helper views.
+// Sets the correct frame and hierarchy for subviews and helper views.
 - (void)setUpViewLayout;
 // Sets the correct frame for the tab strip based on the given maximum width.
 - (void)layoutTabStripForWidth:(CGFloat)maxWidth;

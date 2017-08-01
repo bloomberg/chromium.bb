@@ -2392,7 +2392,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 
   // In the past, when the current tab was prerendered, taking a snapshot
   // sometimes lead to layout of its UIWebView. As this may be the fist time
-  // the UIWebViews was layed out, its scroll view was scrolled. This lead
+  // the UIWebViews was laid out, its scroll view was scrolled. This lead
   // to scroll events that changed the frame of the toolbar when fullscreen
   // was enabled.
   // DCHECK that the toolbar frame does not change while taking a snapshot.

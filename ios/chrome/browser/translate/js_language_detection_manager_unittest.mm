@@ -289,7 +289,7 @@ TEST_F(JsLanguageDetectionManagerDetectLanguageTest,
        DetectLanguageTranslationNotAllowed) {
   LoadHtmlAndInject(@"<html></html>");
   [manager_ startLanguageDetection];
-  // Wait until the original injection has recived a command.
+  // Wait until the original injection has received a command.
   base::test::ios::WaitUntilCondition(^bool() {
     return !commands_received_.empty();
   });
@@ -326,7 +326,7 @@ TEST_F(JsLanguageDetectionManagerDetectLanguageTest,
                    @"</head></html>";
   LoadHtmlAndInject(html);
   [manager_ startLanguageDetection];
-  // Wait until the original injection has recived a command.
+  // Wait until the original injection has received a command.
   base::test::ios::WaitUntilCondition(^bool() {
     return !commands_received_.empty();
   });

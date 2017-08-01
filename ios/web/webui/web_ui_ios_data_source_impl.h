@@ -75,7 +75,7 @@ class WebUIIOSDataSourceImpl : public URLDataSourceIOSImpl,
   std::map<std::string, int> path_to_idr_map_;
   // The replacements are initiallized in the main thread and then used in the
   // IO thread. The map is safe to read from multiple threads as long as no
-  // futher changes are made to it after initialization.
+  // further changes are made to it after initialization.
   ui::TemplateReplacements replacements_;
   // The |replacements_| is intended to replace |localized_strings_|.
   base::DictionaryValue localized_strings_;

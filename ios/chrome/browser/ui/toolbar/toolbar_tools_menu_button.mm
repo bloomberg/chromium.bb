@@ -62,7 +62,7 @@ const CGFloat kLineWidthAtApogee = 3;
 // Initializes the pathLayers.
 - (void)initializeShapeLayers;
 // Returns a keyframe-based animation of the property identified by |keyPath|.
-// The animation immidiately sets the property's value to |initialValue|.
+// The animation immediately sets the property's value to |initialValue|.
 // After |frameStart| frames, the property's value animates to
 // |intermediaryValue|, and then to |finalValue|.
 - (CAAnimation*)animationWithInitialValue:(id)initialValue

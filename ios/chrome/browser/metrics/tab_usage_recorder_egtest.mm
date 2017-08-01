@@ -242,7 +242,7 @@ void SelectTabUsingUI(NSString* title) {
   }
 
   // Evict the tab. Create a dummy tab so that switching back to normal mode
-  // does not trigger a reload immediatly.
+  // does not trigger a reload immediately.
   chrome_test_util::OpenNewTab();
   OpenNewIncognitoTabUsingUIAndEvictMainTabs();
   [ChromeEarlGrey waitForIncognitoTabCount:1];

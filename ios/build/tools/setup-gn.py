@@ -230,7 +230,7 @@ def WriteToFileIfChanged(filename, content, overwrite):
 
 
 def NinjaNeedEscape(arg):
-  '''Returns True if |arg| need to be escaped when writen to .ninja file.'''
+  '''Returns True if |arg| needs to be escaped when written to .ninja file.'''
   return ':' in arg or '*' in arg or ';' in arg
 
 

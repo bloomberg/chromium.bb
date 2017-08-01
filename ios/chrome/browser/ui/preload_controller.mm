@@ -46,7 +46,7 @@ const char kPrerenderTabEvictionTrialGroup[] = "NoPrerendering";
 // The name of the histogram for recording final status (e.g. used/cancelled)
 // of prerender requests.
 const char kPrerenderFinalStatusHistogramName[] = "Prerender.FinalStatus";
-// The name of the histogram for recording the number of sucessful prerenders.
+// The name of the histogram for recording the number of successful prerenders.
 const char kPrerendersPerSessionCountHistogramName[] =
     "Prerender.PrerendersPerSessionCount";
 

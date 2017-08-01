@@ -424,7 +424,7 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 }
 
 - (void)dismissKeyboard {
-  // Uses self.view directly instead of going throught self.view to
+  // Uses self.view directly instead of going through self.view to
   // avoid creating the view hierarchy unnecessarily.
   [self.view endEditing:YES];
 }

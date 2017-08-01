@@ -80,14 +80,14 @@ initiationType:(web::NavigationInitiationType)initiationType;
 - (BOOL)isRedirectTransitionForItemAtIndex:(size_t)index;
 
 // Should create a new pending item if the new pending item is not a duplicate
-// of the last added or commited item. Returns YES if one of the following rules
-// apply:
+// of the last added or committed item. Returns YES if one of the following
+// rules apply:
 // 1. There is no last added or committed item.
-// 2. The new item has different url from the last added or commited item.
+// 2. The new item has different url from the last added or committed item.
 // 3. Url is the same, but the new item is a form submission resulted from the
 //    last added or committed item.
 // 4. Url is the same, but new item is a reload with different user agent type
-//    resulted from last added or commited item.
+//    resulted from last added or committed item.
 - (BOOL)shouldCreatePendingItemWithURL:(const GURL&)URL
                             transition:(ui::PageTransition)transition
                userAgentOverrideOption:
@@ -354,7 +354,7 @@ initiationType:(web::NavigationInitiationType)initiationType;
       currentItem->GetTransitionType(), ui::PAGE_TRANSITION_FORM_SUBMIT);
   if (isPendingTransitionFormSubmit && !isCurrentTransitionFormSubmit) {
     // |isPendingTransitionFormSubmit| indicates that the new item is a form
-    // submission resulted from the last added or commited item, and
+    // submission resulted from the last added or committed item, and
     // |!isCurrentTransitionFormSubmit| shows that the form submission is not
     // counted multiple times.
     return YES;

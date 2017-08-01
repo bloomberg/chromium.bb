@@ -31,7 +31,7 @@ namespace {
 // Hostname for test WebUI page.
 const char kTestWebUIURLHost[] = "testwebui";
 
-// Timeout in seconds to wait for a sucessful message exchange between native
+// Timeout in seconds to wait for a successful message exchange between native
 // code and a web page using Mojo.
 const NSTimeInterval kMessageTimeout = 5.0;
 
@@ -131,7 +131,7 @@ class TestWebUIControllerFactory : public WebUIIOSControllerFactory {
 };
 }  // namespace
 
-// A test fixture for verifying mojo comminication for WebUI.
+// A test fixture for verifying mojo communication for WebUI.
 class WebUIMojoTest : public WebIntTest {
  protected:
   void SetUp() override {
@@ -172,8 +172,8 @@ class WebUIMojoTest : public WebIntTest {
 };
 
 // Tests that JS can send messages to the native code and vice versa.
-// TestUIHandler is used for communication and test suceeds only when
-// |TestUIHandler| sucessfully receives "ack" message from WebUI page.
+// TestUIHandler is used for communication and test succeeds only when
+// |TestUIHandler| successfully receives "ack" message from WebUI page.
 #if TARGET_IPHONE_SIMULATOR
 #define MAYBE_MessageExchange MessageExchange
 #else

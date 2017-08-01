@@ -73,7 +73,7 @@ class ChromeBrowserStateIOData {
   static bool IsHandledProtocol(const std::string& scheme);
 
   // Utility to install additional WebUI handlers into the |job_factory|.
-  // Ownership of the handlers is transfered from |protocol_handlers|
+  // Ownership of the handlers is transferred from |protocol_handlers|
   // to the |job_factory|.
   static void InstallProtocolHandlers(
       net::URLRequestJobFactoryImpl* job_factory,
@@ -169,7 +169,7 @@ class ChromeBrowserStateIOData {
     std::unique_ptr<net::ProxyConfigService> proxy_config_service;
 
     // The browser state this struct was populated from. It's passed as a void*
-    // to ensure it's not accidently used on the IO thread.
+    // to ensure it's not accidentally used on the IO thread.
     void* browser_state;
   };
 
