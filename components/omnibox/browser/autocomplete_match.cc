@@ -489,23 +489,27 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
 
 // static
 url_formatter::FormatUrlTypes AutocompleteMatch::GetFormatTypes(
-    bool trim_scheme) {
+    bool preserve_scheme,
+    bool preserve_subdomain,
+    bool preserve_after_host) {
   auto format_types = url_formatter::kFormatUrlOmitAll;
-  if (!trim_scheme) {
+  if (preserve_scheme) {
     format_types &= ~url_formatter::kFormatUrlOmitHTTP;
   } else if (base::FeatureList::IsEnabled(
                  omnibox::kUIExperimentHideSuggestionUrlScheme)) {
     format_types |= url_formatter::kFormatUrlExperimentalOmitHTTPS;
   }
 
-  if (base::FeatureList::IsEnabled(
-          omnibox::kUIExperimentElideSuggestionUrlAfterHost)) {
-    format_types |= url_formatter::kFormatUrlExperimentalElideAfterHost;
-  }
-
-  if (base::FeatureList::IsEnabled(
+  if (!preserve_subdomain &&
+      base::FeatureList::IsEnabled(
           omnibox::kUIExperimentHideSuggestionUrlTrivialSubdomains)) {
     format_types |= url_formatter::kFormatUrlExperimentalOmitTrivialSubdomains;
+  }
+
+  if (!preserve_after_host &&
+      base::FeatureList::IsEnabled(
+          omnibox::kUIExperimentElideSuggestionUrlAfterHost)) {
+    format_types |= url_formatter::kFormatUrlExperimentalElideAfterHost;
   }
 
   return format_types;
