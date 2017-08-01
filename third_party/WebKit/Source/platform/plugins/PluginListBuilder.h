@@ -54,7 +54,7 @@ class PluginListBuilder final : public WebPluginListBuilder {
   void AddFileExtensionToLastMediaType(const WebString& extension) override;
 
  private:
-  Member<HeapVector<Member<PluginInfo>>> results_;
+  HeapVector<Member<PluginInfo>>* results_;
 };
 
 }  // namespace blink
