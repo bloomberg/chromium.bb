@@ -189,6 +189,12 @@ class PpdProviderTest : public ::testing::Test {
     captured_resolve_ppd_references_.push_back({code, ref});
   }
 
+  void CaptureReverseLookup(PpdProvider::CallbackResultCode code,
+                            const std::string& manufacturer,
+                            const std::string& model) {
+    captured_reverse_lookup_.push_back({code, manufacturer, model});
+  }
+
   // Discard the result of a ResolvePpd() call.
   void DiscardResolvePpd(PpdProvider::CallbackResultCode code,
                          const std::string& contents) {}
@@ -236,6 +242,13 @@ class PpdProviderTest : public ::testing::Test {
 
   std::vector<std::pair<PpdProvider::CallbackResultCode, Printer::PpdReference>>
       captured_resolve_ppd_references_;
+
+  struct CapturedReverseLookup {
+    PpdProvider::CallbackResultCode code;
+    std::string manufacturer;
+    std::string model;
+  };
+  std::vector<CapturedReverseLookup> captured_reverse_lookup_;
 
   std::unique_ptr<net::TestURLRequestInterceptor> interceptor_;
 
@@ -570,6 +583,35 @@ TEST_F(PpdProviderTest, ExtractPpdFilters) {
   EXPECT_EQ(
       std::vector<std::string>({"another_real_filter", "the_real_filter"}),
       captured_resolve_ppd_[1].ppd_filters);
+}
+
+// Verifies that we can extract the Manufacturer and Model selectison for a
+// given effective make and model.
+TEST_F(PpdProviderTest, ReverseLookup) {
+  StartFakePpdServer();
+  auto provider = CreateProvider("en");
+  std::string ref = "printer_a_ref";
+  provider->ReverseLookup(ref,
+                          base::Bind(&PpdProviderTest::CaptureReverseLookup,
+                                     base::Unretained(this)));
+  // TODO(skau): PpdProvider has a race condition that prevents running these
+  // requests in parallel.
+  scoped_task_environment_.RunUntilIdle();
+
+  std::string ref_fail = "printer_does_not_exist";
+  provider->ReverseLookup(ref_fail,
+                          base::Bind(&PpdProviderTest::CaptureReverseLookup,
+                                     base::Unretained(this)));
+  scoped_task_environment_.RunUntilIdle();
+
+  ASSERT_EQ(2U, captured_reverse_lookup_.size());
+  CapturedReverseLookup success_capture = captured_reverse_lookup_[0];
+  EXPECT_EQ(PpdProvider::SUCCESS, success_capture.code);
+  EXPECT_EQ("manufacturer_a_en", success_capture.manufacturer);
+  EXPECT_EQ("printer_a", success_capture.model);
+
+  CapturedReverseLookup failed_capture = captured_reverse_lookup_[1];
+  EXPECT_EQ(PpdProvider::NOT_FOUND, failed_capture.code);
 }
 
 }  // namespace
