@@ -36,11 +36,9 @@
 #include "chrome/installer/util/google_update_settings.h"
 #endif
 
-ChromeRLZTrackerDelegate::ChromeRLZTrackerDelegate() {
-}
+ChromeRLZTrackerDelegate::ChromeRLZTrackerDelegate() {}
 
-ChromeRLZTrackerDelegate::~ChromeRLZTrackerDelegate() {
-}
+ChromeRLZTrackerDelegate::~ChromeRLZTrackerDelegate() {}
 
 // static
 void ChromeRLZTrackerDelegate::RegisterProfilePrefs(
@@ -94,10 +92,6 @@ void ChromeRLZTrackerDelegate::Cleanup() {
 
 bool ChromeRLZTrackerDelegate::IsOnUIThread() {
   return content::BrowserThread::CurrentlyOn(content::BrowserThread::UI);
-}
-
-base::SequencedWorkerPool* ChromeRLZTrackerDelegate::GetBlockingPool() {
-  return content::BrowserThread::GetBlockingPool();
 }
 
 net::URLRequestContextGetter* ChromeRLZTrackerDelegate::GetRequestContext() {

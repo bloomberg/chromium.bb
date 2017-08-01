@@ -10,11 +10,6 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "base/threading/sequenced_worker_pool.h"
-
-namespace base {
-class SequencedWorkerPool;
-}
 
 namespace net {
 class URLRequestContextGetter;
@@ -34,10 +29,6 @@ class RLZTrackerDelegate {
 
   // Returns whether the current thread is the UI thread.
   virtual bool IsOnUIThread() = 0;
-
-  // Returns the SequencedWorkerPool where the RLZTracker will post its tasks
-  // that should be executed in the background.
-  virtual base::SequencedWorkerPool* GetBlockingPool() = 0;
 
   // Returns the URLRequestContextGetter to use for network connections.
   virtual net::URLRequestContextGetter* GetRequestContext() = 0;

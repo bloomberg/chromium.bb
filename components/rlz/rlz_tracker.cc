@@ -13,9 +13,12 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/rlz/rlz_tracker_delegate.h"
@@ -165,7 +168,11 @@ RLZTracker::RLZTracker()
       omnibox_used_(false),
       homepage_used_(false),
       app_list_used_(false),
-      min_init_delay_(kMinInitDelay) {
+      min_init_delay_(kMinInitDelay),
+      background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+           base::WithBaseSyncPrimitives(), base::TaskPriority::BACKGROUND})) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 RLZTracker::~RLZTracker() {
@@ -186,7 +193,6 @@ void RLZTracker::SetDelegate(std::unique_ptr<RLZTrackerDelegate> delegate) {
   DCHECK(delegate);
   DCHECK(!delegate_);
   delegate_ = std::move(delegate);
-  worker_pool_token_ = delegate_->GetBlockingPool()->GetSequenceToken();
 }
 
 // static
@@ -264,12 +270,13 @@ void RLZTracker::ScheduleDelayedInit(base::TimeDelta delay) {
   DCHECK(delegate_) << "RLZTracker used before initialization";
   // The RLZTracker is a singleton object that outlives any runnable tasks
   // that will be queued up.
-  delegate_->GetBlockingPool()->PostDelayedSequencedWorkerTask(
-      worker_pool_token_, FROM_HERE,
-      base::Bind(&RLZTracker::DelayedInit, base::Unretained(this)), delay);
+  background_task_runner_->PostDelayedTask(
+      FROM_HERE, base::Bind(&RLZTracker::DelayedInit, base::Unretained(this)),
+      delay);
 }
 
 void RLZTracker::DelayedInit() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(delegate_) << "RLZTracker used before initialization";
   bool schedule_ping = false;
 
@@ -302,13 +309,12 @@ void RLZTracker::DelayedInit() {
 
 void RLZTracker::ScheduleFinancialPing() {
   DCHECK(delegate_) << "RLZTracker used before initialization";
-  delegate_->GetBlockingPool()->PostSequencedWorkerTaskWithShutdownBehavior(
-      worker_pool_token_, FROM_HERE,
-      base::Bind(&RLZTracker::PingNowImpl, base::Unretained(this)),
-      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+  background_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&RLZTracker::PingNowImpl, base::Unretained(this)));
 }
 
 void RLZTracker::PingNowImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(delegate_) << "RLZTracker used before initialization";
   TRACE_EVENT0("RLZ", "RLZTracker::PingNowImpl");
   base::string16 lang;
@@ -368,6 +374,8 @@ bool RLZTracker::RecordProductEventImpl(rlz_lib::Product product,
   if (ScheduleRecordProductEvent(product, point, event_id))
     return true;
 
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   bool ret = rlz_lib::RecordProductEvent(product, point, event_id);
 
   // If chrome has been reactivated, record the event for this brand as well.
@@ -386,12 +394,9 @@ bool RLZTracker::ScheduleRecordProductEvent(rlz_lib::Product product,
   if (!delegate_->IsOnUIThread())
     return false;
 
-  delegate_->GetBlockingPool()->PostSequencedWorkerTaskWithShutdownBehavior(
-      worker_pool_token_, FROM_HERE,
-      base::Bind(base::IgnoreResult(&RLZTracker::RecordProductEvent), product,
-                 point, event_id),
-      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
-
+  background_task_runner_->PostTask(
+      FROM_HERE, base::Bind(base::IgnoreResult(&RLZTracker::RecordProductEvent),
+                            product, point, event_id));
   return true;
 }
 
@@ -402,24 +407,26 @@ void RLZTracker::RecordFirstSearch(rlz_lib::AccessPoint point) {
   if (ScheduleRecordFirstSearch(point))
     return;
 
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   bool* record_used = GetAccessPointRecord(point);
 
   // Try to record event now, else set the flag to try later when we
   // attempt the ping.
-  if (!RecordProductEvent(rlz_lib::CHROME, point, rlz_lib::FIRST_SEARCH))
+  if (!RecordProductEvent(rlz_lib::CHROME, point, rlz_lib::FIRST_SEARCH)) {
     *record_used = true;
-  else if (send_ping_immediately_ && point == ChromeOmnibox())
+  } else if (send_ping_immediately_ && point == ChromeOmnibox()) {
     ScheduleDelayedInit(base::TimeDelta());
+  }
 }
 
 bool RLZTracker::ScheduleRecordFirstSearch(rlz_lib::AccessPoint point) {
   DCHECK(delegate_) << "RLZTracker used before initialization";
   if (!delegate_->IsOnUIThread())
     return false;
-  delegate_->GetBlockingPool()->PostSequencedWorkerTaskWithShutdownBehavior(
-      worker_pool_token_, FROM_HERE,
-      base::Bind(&RLZTracker::RecordFirstSearch, base::Unretained(this), point),
-      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+  background_task_runner_->PostTask(FROM_HERE,
+                                    base::Bind(&RLZTracker::RecordFirstSearch,
+                                               base::Unretained(this), point));
   return true;
 }
 
@@ -489,6 +496,8 @@ bool RLZTracker::GetAccessPointRlzImpl(rlz_lib::AccessPoint point,
   if (!rlz_lib::GetAccessPointRlz(point, str_rlz, rlz_lib::kMaxRlzLength))
     return false;
 
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   base::string16 rlz_local(base::ASCIIToUTF16(str_rlz));
   if (rlz)
     *rlz = rlz_local;
@@ -504,11 +513,9 @@ bool RLZTracker::ScheduleGetAccessPointRlz(rlz_lib::AccessPoint point) {
     return false;
 
   base::string16* not_used = nullptr;
-  delegate_->GetBlockingPool()->PostSequencedWorkerTaskWithShutdownBehavior(
-      worker_pool_token_, FROM_HERE,
-      base::Bind(base::IgnoreResult(&RLZTracker::GetAccessPointRlz), point,
-                 not_used),
-      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+  background_task_runner_->PostTask(
+      FROM_HERE, base::Bind(base::IgnoreResult(&RLZTracker::GetAccessPointRlz),
+                            point, not_used));
   return true;
 }
 
@@ -524,6 +531,8 @@ void RLZTracker::ClearRlzStateImpl() {
   DCHECK(delegate_) << "RLZTracker used before initialization";
   if (ScheduleClearRlzState())
     return;
+
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   rlz_lib::ClearAllProductEvents(rlz_lib::CHROME);
 }
 
@@ -532,10 +541,9 @@ bool RLZTracker::ScheduleClearRlzState() {
   if (!delegate_->IsOnUIThread())
     return false;
 
-  delegate_->GetBlockingPool()->PostSequencedWorkerTaskWithShutdownBehavior(
-      worker_pool_token_, FROM_HERE,
-      base::Bind(&RLZTracker::ClearRlzStateImpl, base::Unretained(this)),
-      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+  background_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&RLZTracker::ClearRlzStateImpl, base::Unretained(this)));
   return true;
 }
 #endif
