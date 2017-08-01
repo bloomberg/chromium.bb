@@ -1,11 +1,5 @@
 let sampleRate = 44100.0;
 
-// HRTF extra frames.  This is a magic constant currently in
-// AudioBufferSourceNode::process that always extends the
-// duration by this number of samples.  See bug 77224
-// (https://bugs.webkit.org/show_bug.cgi?id=77224).
-let extraFramesHRTF = 512;
-
 // How many grains to play.
 let numberOfTests = 100;
 
@@ -13,9 +7,8 @@ let numberOfTests = 100;
 let duration = 0.01;
 
 // Time step between the start of each grain.  We need to add a little
-// bit of silence so we can detect grain boundaries and also account
-// for the extra frames for HRTF.
-let timeStep = duration + .005 + extraFramesHRTF / sampleRate;
+// bit of silence so we can detect grain boundaries
+let timeStep = duration + .005;
 
 // Time step between the start for each grain.
 let grainOffsetStep = 0.001;
@@ -30,11 +23,10 @@ let renderedData;
 // returns the desired value at sample frame k.
 function createSignalBuffer(context, f) {
   // Make sure the buffer has enough data for all of the possible
-  // grain offsets and durations.  Need to include the extra frames
-  // for HRTF.  The additional 1 is for any round-off errors.
-  let signalLength = Math.floor(
-      1 + extraFramesHRTF +
-      sampleRate * (numberOfTests * grainOffsetStep + duration));
+  // grain offsets and durations.  The additional 1 is for any
+  // round-off errors.
+  let signalLength =
+      Math.floor(1 + sampleRate * (numberOfTests * grainOffsetStep + duration));
 
   let buffer = context.createBuffer(2, signalLength, sampleRate);
   let data = buffer.getChannelData(0);
@@ -128,9 +120,8 @@ function verifyStartAndEndFrames(startEndFrames, should) {
   // expectations.
   for (let k = 0; k < startFrames.length; ++k) {
     let expectedStart = timeToSampleFrame(k * timeStep, sampleRate);
-    // The end point is the duration, plus the extra frames
-    // for HRTF.
-    let expectedEnd = extraFramesHRTF + expectedStart +
+    // The end point is the duration.
+    let expectedEnd = expectedStart +
         grainLengthInSampleFrames(k * grainOffsetStep, duration, sampleRate);
 
     if (startFrames[k] != expectedStart)

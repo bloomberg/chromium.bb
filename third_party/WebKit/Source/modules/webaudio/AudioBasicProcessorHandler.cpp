@@ -151,6 +151,10 @@ unsigned AudioBasicProcessorHandler::NumberOfChannels() {
   return Output(0).NumberOfChannels();
 }
 
+bool AudioBasicProcessorHandler::RequiresTailProcessing() const {
+  return processor_->RequiresTailProcessing();
+}
+
 double AudioBasicProcessorHandler::TailTime() const {
   return processor_->TailTime();
 }

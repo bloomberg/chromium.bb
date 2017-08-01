@@ -32,6 +32,7 @@ class IIRDSPKernel final : public AudioDSPKernel {
 
   double TailTime() const override;
   double LatencyTime() const override;
+  bool RequiresTailProcessing() const final;
 
  protected:
   IIRFilter iir_;

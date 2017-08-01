@@ -136,6 +136,12 @@ void AudioDSPKernelProcessor::SetNumberOfChannels(unsigned number_of_channels) {
     number_of_channels_ = number_of_channels;
 }
 
+bool AudioDSPKernelProcessor::RequiresTailProcessing() const {
+  // Always return true even if the tail time and latency might both
+  // be zero.
+  return true;
+}
+
 double AudioDSPKernelProcessor::TailTime() const {
   DCHECK(!IsMainThread());
   MutexTryLocker try_locker(process_lock_);

@@ -48,6 +48,7 @@ class PLATFORM_EXPORT AudioDelayDSPKernel : public AudioDSPKernel {
 
   double TailTime() const override;
   double LatencyTime() const override;
+  bool RequiresTailProcessing() const override;
 
  protected:
   AudioDelayDSPKernel(AudioDSPKernelProcessor*,

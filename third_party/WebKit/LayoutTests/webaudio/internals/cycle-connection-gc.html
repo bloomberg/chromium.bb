@@ -21,12 +21,16 @@
 
       function createCycle() {
         let source = context.createBufferSource();
-        let delay1 = context.createDelay();
-        let delay2 = context.createDelay();
-        source.connect(delay1);
-        delay1.connect(delay2);
-        delay2.connect(delay1);
-        delay1.connect(context.destination);
+        // Can't use DelayNode here because they now have a tail time that keeps
+        // the node handler alive to process the tail.  Use GainNodes instead
+        // because they have no tail time.  (Strictly speaking, there should be
+        // a delay node in the cycle, but we don't enforce this.)
+        let gain1 = context.createGain();
+        let gain2 = context.createGain();
+        source.connect(gain1);
+        gain1.connect(gain2);
+        gain2.connect(gain1);
+        gain1.connect(context.destination);
       }
     </script>
   </body>

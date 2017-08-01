@@ -67,6 +67,7 @@ class MODULES_EXPORT AudioBasicProcessorHandler : public AudioHandler {
                              AudioNode&,
                              float sample_rate,
                              std::unique_ptr<AudioProcessor>);
+  bool RequiresTailProcessing() const final;
   double TailTime() const final;
   double LatencyTime() const final;
 

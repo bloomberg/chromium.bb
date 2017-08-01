@@ -80,6 +80,7 @@ class ScriptProcessorHandler final : public AudioHandler {
                          unsigned number_of_output_channels);
   double TailTime() const override;
   double LatencyTime() const override;
+  bool RequiresTailProcessing() const final;
 
   void FireProcessEvent(unsigned);
   void FireProcessEventForOfflineAudioContext(unsigned, WaitableEvent*);
