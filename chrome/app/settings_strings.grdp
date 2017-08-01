@@ -2248,6 +2248,9 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_USAGE" desc="The Usage header, used to group disk and battery usage information on the Site Details page.">
     Usage
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_USAGE_NONE" desc="The text shown under the 'Usage' header when there is no disk and battery usage data available on the Site Details page.">
+    No usage data
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_PERMISSIONS" desc="The Permissions header, used to group together permissions, such as Geolocation, on the Site Details page.">
     Permissions
   </message>
