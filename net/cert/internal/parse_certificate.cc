@@ -167,6 +167,132 @@ WARN_UNUSED_RESULT bool BitStringIsAllZeros(const der::BitString& bits) {
   return true;
 }
 
+// Parses a DistributionPointName.
+//
+// Currently this implementation is only concerned with URIs encoded in
+// fullName and skips the rest (it does not fully parse the GeneralNames).
+//
+// URIs found in fullName are appended to |uris|.
+//
+// From RFC 5280:
+//
+//    DistributionPointName ::= CHOICE {
+//      fullName                [0]     GeneralNames,
+//      nameRelativeToCRLIssuer [1]     RelativeDistinguishedName }
+bool ParseDistributionPointName(const der::Input& dp_name,
+                                std::vector<der::Input>* uris) {
+  bool has_full_name;
+  der::Input full_name;
+  if (!der::Parser(dp_name).ReadOptionalTag(
+          der::kTagContextSpecific | der::kTagConstructed | 0, &full_name,
+          &has_full_name)) {
+    return false;
+  }
+  if (!has_full_name) {
+    // Only process DistributionPoints which provide "fullName".
+    return true;
+  }
+
+  // "fullName" is a GeneralNames. However this code is only interested in
+  // extracting the URIs from it and will skip the rest.
+  //
+  // TODO(eroman): share code with NameConstraint's parsing of GeneralNames.
+  //
+  // GeneralNames ::= SEQUENCE SIZE (1..MAX) OF GeneralName
+  // GeneralName ::= CHOICE {
+  //   ...
+  //   uniformResourceIdentifier [6]  IA5String,
+  //   ... }
+  der::Parser general_names_parser(full_name);
+  while (general_names_parser.HasMore()) {
+    bool present;
+    der::Input url;
+    if (!general_names_parser.ReadOptionalTag(der::kTagContextSpecific | 6,
+                                              &url, &present)) {
+      return false;
+    }
+
+    if (present) {
+      // This does not validate that |url| is a valid IA5String.
+      uris->push_back(url);
+    } else {
+      der::Tag unused_tag;
+      der::Input unused_value;
+      if (!general_names_parser.ReadTagAndValue(&unused_tag, &unused_value)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+// RFC 5280, section 4.2.1.13.
+//
+// DistributionPoint ::= SEQUENCE {
+//  distributionPoint       [0]     DistributionPointName OPTIONAL,
+//  reasons                 [1]     ReasonFlags OPTIONAL,
+//  cRLIssuer               [2]     GeneralNames OPTIONAL }
+bool ParseAndAddDistributionPoint(
+    der::Parser* parser,
+    std::vector<ParsedDistributionPoint>* distribution_points) {
+  ParsedDistributionPoint distribution_point;
+
+  // DistributionPoint ::= SEQUENCE {
+  der::Parser distrib_point_parser;
+  if (!parser->ReadSequence(&distrib_point_parser))
+    return false;
+
+  //  distributionPoint       [0]     DistributionPointName OPTIONAL,
+  bool distribution_point_present;
+  der::Input name;
+  if (!distrib_point_parser.ReadOptionalTag(
+          der::kTagContextSpecific | der::kTagConstructed | 0, &name,
+          &distribution_point_present)) {
+    return false;
+  }
+
+  if (!distribution_point_present) {
+    // Only process DistributionPoints which provide a "distributionPoint".
+    return true;
+  }
+
+  //  reasons                 [1]     ReasonFlags OPTIONAL,
+  bool reasons_present;
+  if (!distrib_point_parser.SkipOptionalTag(der::kTagContextSpecific | 1,
+                                            &reasons_present)) {
+    return false;
+  }
+
+  // If it contains a subset of reasons then we skip it. We aren't
+  // interested in subsets of CRLs and the RFC states that there MUST be
+  // a CRL that covers all reasons.
+  if (reasons_present) {
+    return true;
+  }
+
+  // Extract the URIs from the DistributionPointName.
+  if (!ParseDistributionPointName(name, &distribution_point.uris))
+    return false;
+
+  //  cRLIssuer               [2]     GeneralNames OPTIONAL }
+  bool crl_issuer_present;
+  der::Input crl_issuer;
+  if (!distrib_point_parser.ReadOptionalTag(
+          der::kTagContextSpecific | der::kTagConstructed | 2, &crl_issuer,
+          &crl_issuer_present)) {
+    return false;
+  }
+
+  distribution_point.has_crl_issuer = crl_issuer_present;
+  // TODO(eroman): Parse "cRLIssuer".
+
+  if (distrib_point_parser.HasMore())
+    return false;
+
+  distribution_points->push_back(std::move(distribution_point));
+  return true;
+}
+
 }  // namespace
 
 ParsedTbsCertificate::ParsedTbsCertificate() {}
@@ -551,6 +677,16 @@ der::Input AdOcspOid() {
   return der::Input(oid);
 }
 
+der::Input CrlDistributionPointsOid() {
+  // From RFC 5280:
+  //
+  //     id-ce-cRLDistributionPoints OBJECT IDENTIFIER ::=  { id-ce 31 }
+  //
+  // In dotted notation: 2.5.29.31
+  static const uint8_t oid[] = {0x55, 0x1d, 0x1f};
+  return der::Input(oid);
+}
+
 NET_EXPORT bool ParseExtensions(
     const der::Input& extensions_tlv,
     std::map<der::Input, ParsedExtension>* extensions) {
@@ -725,6 +861,39 @@ bool ParseAuthorityInfoAccess(
       else if (access_method_oid == AdOcspOid())
         out_ocsp_uris->push_back(uri);
     }
+  }
+
+  return true;
+}
+
+ParsedDistributionPoint::ParsedDistributionPoint() = default;
+ParsedDistributionPoint::ParsedDistributionPoint(
+    ParsedDistributionPoint&& other) = default;
+ParsedDistributionPoint::~ParsedDistributionPoint() = default;
+
+bool ParseCrlDistributionPoints(
+    const der::Input& extension_value,
+    std::vector<ParsedDistributionPoint>* distribution_points) {
+  distribution_points->clear();
+
+  // RFC 5280, section 4.2.1.13.
+  //
+  // CRLDistributionPoints ::= SEQUENCE SIZE (1..MAX) OF DistributionPoint
+  der::Parser extension_value_parser(extension_value);
+  der::Parser distribution_points_parser;
+  if (!extension_value_parser.ReadSequence(&distribution_points_parser))
+    return false;
+  if (extension_value_parser.HasMore())
+    return false;
+
+  // Sequence must have a minimum of 1 item.
+  if (!distribution_points_parser.HasMore())
+    return false;
+
+  while (distribution_points_parser.HasMore()) {
+    if (!ParseAndAddDistributionPoint(&distribution_points_parser,
+                                      distribution_points))
+      return false;
   }
 
   return true;
