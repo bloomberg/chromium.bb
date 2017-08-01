@@ -29,7 +29,6 @@
  */
 
 #include "bindings/core/v8/V8Initializer.h"
-#include "bindings/modules/v8/V8ContextSnapshotExternalReferences.h"
 #include "core/animation/AnimationClock.h"
 #include "modules/ModulesInitializer.h"
 #include "platform/bindings/Microtask.h"
@@ -69,8 +68,8 @@ static ModulesInitializer& GetModulesInitializer() {
 void Initialize(Platform* platform) {
   Platform::Initialize(platform);
 
-  V8Initializer::InitializeMainThread(
-      V8ContextSnapshotExternalReferences::GetTable());
+  V8Initializer::InitializeMainThread();
+
   GetModulesInitializer().Initialize();
 
   // currentThread is null if we are running on a thread without a message loop.
