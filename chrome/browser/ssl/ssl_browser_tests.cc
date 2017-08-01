@@ -366,6 +366,24 @@ net::SpawnedTestServer::SSLOptions GetOCSPSSLOptions(
   return ssl_options;
 }
 
+// Compares two SSLStatuses to check if they match up before and after an
+// interstitial. To match up, they should have the same connection information
+// properties, such as certificate, connection status, connection security,
+// etc. Content status and user data are not compared. Returns true if the
+// statuses match and false otherwise.
+bool ComparePreAndPostInterstitialSSLStatuses(const content::SSLStatus& one,
+                                              const content::SSLStatus& two) {
+  return one.initialized == two.initialized &&
+         !!one.certificate == !!two.certificate &&
+         (one.certificate ? one.certificate->Equals(two.certificate.get())
+                          : true) &&
+         one.cert_status == two.cert_status &&
+         one.security_bits == two.security_bits &&
+         one.key_exchange_group == two.key_exchange_group &&
+         one.connection_status == two.connection_status &&
+         one.pkp_bypassed == two.pkp_bypassed;
+}
+
 }  // namespace
 
 class SSLUITest : public InProcessBrowserTest {
@@ -3510,8 +3528,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   ASSERT_TRUE(entry);
 
   content::SSLStatus after_interstitial_ssl_status = entry->GetSSL();
-  ASSERT_NO_FATAL_FAILURE(
-      after_interstitial_ssl_status.Equals(interstitial_ssl_status));
+  EXPECT_TRUE(ComparePreAndPostInterstitialSSLStatuses(
+      interstitial_ssl_status, after_interstitial_ssl_status));
 }
 
 // As above, but for a bad clock interstitial. Tests that a clock
@@ -3561,8 +3579,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   entry = tab->GetController().GetActiveEntry();
   ASSERT_TRUE(entry);
   content::SSLStatus after_interstitial_ssl_status = entry->GetSSL();
-  ASSERT_NO_FATAL_FAILURE(
-      after_interstitial_ssl_status.Equals(clock_interstitial_ssl_status));
+  EXPECT_TRUE(ComparePreAndPostInterstitialSSLStatuses(
+      clock_interstitial_ssl_status, after_interstitial_ssl_status));
 }
 
 // A URLRequestJob that serves valid time server responses, but delays

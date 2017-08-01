@@ -22,6 +22,20 @@ namespace content {
 
 // Collects the SSL information for this NavigationEntry.
 struct CONTENT_EXPORT SSLStatus {
+  // SSLStatus consumers can attach instances of derived UserData classes to an
+  // SSLStatus. This allows an embedder to attach data to the NavigationEntry
+  // without SSLStatus having to know about it. Derived UserData classes have to
+  // be cloneable since NavigationEntrys are cloned during navigations.
+  class UserData {
+   public:
+    UserData() {}
+    virtual ~UserData() = default;
+    virtual std::unique_ptr<UserData> Clone() = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(UserData);
+  };
+
   // Flags used for the page security content status.
   enum ContentStatusFlags {
     // HTTP page, or HTTPS page with no insecure content.
@@ -56,20 +70,8 @@ struct CONTENT_EXPORT SSLStatus {
   SSLStatus();
   SSLStatus(const net::SSLInfo& ssl_info);
   SSLStatus(const SSLStatus& other);
+  SSLStatus& operator=(SSLStatus other);
   ~SSLStatus();
-
-  bool Equals(const SSLStatus& status) const {
-    return initialized == status.initialized &&
-           !!certificate == !!status.certificate &&
-           (certificate ? certificate->Equals(status.certificate.get())
-                        : true) &&
-           cert_status == status.cert_status &&
-           security_bits == status.security_bits &&
-           key_exchange_group == status.key_exchange_group &&
-           connection_status == status.connection_status &&
-           content_status == status.content_status &&
-           pkp_bypassed == status.pkp_bypassed;
-  }
 
   bool initialized;
   scoped_refptr<net::X509Certificate> certificate;
@@ -81,6 +83,11 @@ struct CONTENT_EXPORT SSLStatus {
   int content_status;
   // True if PKP was bypassed due to a local trust anchor.
   bool pkp_bypassed;
+
+  std::unique_ptr<UserData> user_data;
+
+  // If you add new fields here, be sure to add them in the copy constructor and
+  // copy assignment operator definitions in ssl_status.cc.
 };
 
 }  // namespace content

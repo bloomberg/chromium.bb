@@ -436,8 +436,10 @@ void SSLManager::UpdateEntry(NavigationEntryImpl* entry,
     }
   }
 
-  if (!entry->GetSSL().Equals(original_ssl_status))
+  if (entry->GetSSL().initialized != original_ssl_status.initialized ||
+      entry->GetSSL().content_status != original_ssl_status.content_status) {
     NotifyDidChangeVisibleSSLState();
+  }
 }
 
 void SSLManager::UpdateLastCommittedEntry(int add_content_status_flags,
