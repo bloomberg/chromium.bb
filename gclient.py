@@ -707,9 +707,14 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     self._gn_args_file = local_scope.get('gclient_gn_args_file')
     self._gn_args = local_scope.get('gclient_gn_args', [])
 
+    self._vars = local_scope.get('vars', {})
+    if self.parent:
+      for key, value in self.parent.get_vars().iteritems():
+        if key in self._vars:
+          self._vars[key] = value
     # Since we heavily post-process things, freeze ones which should
     # reflect original state of DEPS.
-    self._vars = gclient_utils.freeze(local_scope.get('vars', {}))
+    self._vars = gclient_utils.freeze(self._vars)
 
     # If use_relative_paths is set in the DEPS file, regenerate
     # the dictionary using paths relative to the directory containing
