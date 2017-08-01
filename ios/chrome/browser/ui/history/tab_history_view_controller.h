@@ -9,11 +9,14 @@
 
 #include "ios/web/public/navigation_item_list.h"
 
+@protocol BrowserCommands;
+
 // View controller for displaying a list of NavigationItems in a table.
 @interface TabHistoryViewController : UICollectionViewController
 
 // Designated initializer that takes a NavigationItemList.
 - (instancetype)initWithItems:(const web::NavigationItemList&)items
+                   dispatcher:(id<BrowserCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
 
 // TabHistoryViewControllers must be initialized with |-initWithItems:|.

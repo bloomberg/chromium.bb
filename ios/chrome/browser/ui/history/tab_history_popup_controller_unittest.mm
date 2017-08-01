@@ -53,7 +53,8 @@ class TabHistoryPopupControllerTest : public PlatformTest {
     popup_ = [[TabHistoryPopupController alloc]
         initWithOrigin:CGPointZero
             parentView:parent_
-                 items:web::CreateRawNavigationItemList(items_)];
+                 items:web::CreateRawNavigationItemList(items_)
+            dispatcher:nil];
   }
 
   web::ScopedNavigationItemList items_;

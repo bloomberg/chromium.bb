@@ -9,6 +9,8 @@
 
 #include "ios/web/public/navigation_item_list.h"
 
+@protocol BrowserCommands;
+
 // The view controller for the tab history menu that appears when the user long
 // presses the back or forward button.
 @interface TabHistoryPopupController : PopupMenuController
@@ -19,7 +21,7 @@
 - (id)initWithOrigin:(CGPoint)origin
           parentView:(UIView*)parent
                items:(const web::NavigationItemList&)items
-    NS_DESIGNATED_INITIALIZER;
+          dispatcher:(id<BrowserCommands>)dispatcher NS_DESIGNATED_INITIALIZER;
 
 @end
 

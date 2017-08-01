@@ -64,12 +64,14 @@ static const CGFloat kHeightPercentage = 0.85;
 
 - (id)initWithOrigin:(CGPoint)origin
           parentView:(UIView*)parent
-               items:(const web::NavigationItemList&)items {
+               items:(const web::NavigationItemList&)items
+          dispatcher:(id<BrowserCommands>)dispatcher {
   DCHECK(parent);
   if ((self = [super initWithParentView:parent])) {
     // Create the table view controller.
     _tabHistoryTableViewController =
-        [[TabHistoryViewController alloc] initWithItems:items];
+        [[TabHistoryViewController alloc] initWithItems:items
+                                             dispatcher:dispatcher];
 
     // Set up the container view.
     _tabHistoryTableViewContainer = [[UIView alloc] initWithFrame:CGRectZero];
