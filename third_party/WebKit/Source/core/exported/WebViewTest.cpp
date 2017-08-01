@@ -3997,13 +3997,13 @@ TEST_P(WebViewTest, PasswordFieldEditingIsUserGesture) {
 TEST_P(WebViewTest, CreatedDuringPageSuspension) {
   {
     WebViewBase* web_view = web_view_helper_.Initialize();
-    EXPECT_FALSE(web_view->GetPage()->Suspended());
+    EXPECT_FALSE(web_view->GetPage()->Paused());
   }
 
   {
     ScopedPageSuspender suspender;
     WebViewBase* web_view = web_view_helper_.Initialize();
-    EXPECT_TRUE(web_view->GetPage()->Suspended());
+    EXPECT_TRUE(web_view->GetPage()->Paused());
   }
 }
 
@@ -4056,27 +4056,27 @@ TEST_P(WebViewTest, SubframeBeforeUnloadUseCounter) {
 // destroyed.
 TEST_P(WebViewTest, NestedPageSuspensions) {
   WebViewBase* web_view = web_view_helper_.Initialize();
-  EXPECT_FALSE(web_view->GetPage()->Suspended());
+  EXPECT_FALSE(web_view->GetPage()->Paused());
 
   {
     ScopedPageSuspender suspender;
-    EXPECT_TRUE(web_view->GetPage()->Suspended());
+    EXPECT_TRUE(web_view->GetPage()->Paused());
 
     {
       ScopedPageSuspender suspender2;
-      EXPECT_TRUE(web_view->GetPage()->Suspended());
+      EXPECT_TRUE(web_view->GetPage()->Paused());
     }
 
-    EXPECT_TRUE(web_view->GetPage()->Suspended());
+    EXPECT_TRUE(web_view->GetPage()->Paused());
   }
 
-  EXPECT_FALSE(web_view->GetPage()->Suspended());
+  EXPECT_FALSE(web_view->GetPage()->Paused());
 }
 
 TEST_P(WebViewTest, ClosingPageIsSuspended) {
   WebViewBase* web_view = web_view_helper_.Initialize();
   Page* page = web_view_helper_.WebView()->GetPage();
-  EXPECT_FALSE(page->Suspended());
+  EXPECT_FALSE(page->Paused());
 
   web_view->SetOpenedByDOM();
 
@@ -4092,7 +4092,7 @@ TEST_P(WebViewTest, ClosingPageIsSuspended) {
 
   {
     ScopedPageSuspender suspender;
-    EXPECT_TRUE(page->Suspended());
+    EXPECT_TRUE(page->Paused());
   }
 }
 

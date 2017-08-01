@@ -306,7 +306,7 @@ void FrameLoader::Init() {
   // Suppress finish notifications for initial empty documents, since they don't
   // generate start notifications.
   document_loader_->SetSentDidFinishLoad();
-  if (frame_->GetPage()->Suspended())
+  if (frame_->GetPage()->Paused())
     SetDefersLoading(true);
 
   TakeObjectSnapshot();

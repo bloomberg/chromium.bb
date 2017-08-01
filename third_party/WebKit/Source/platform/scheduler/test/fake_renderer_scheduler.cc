@@ -80,7 +80,7 @@ void FakeRendererScheduler::SetRendererHidden(bool hidden) {}
 
 void FakeRendererScheduler::SetRendererBackgrounded(bool backgrounded) {}
 
-void FakeRendererScheduler::SuspendRenderer() {}
+void FakeRendererScheduler::PauseRenderer() {}
 
 void FakeRendererScheduler::ResumeRenderer() {}
 
@@ -104,7 +104,7 @@ void FakeRendererScheduler::RemoveTaskObserver(
 
 void FakeRendererScheduler::Shutdown() {}
 
-void FakeRendererScheduler::SuspendTimerQueue() {}
+void FakeRendererScheduler::PauseTimerQueue() {}
 
 void FakeRendererScheduler::ResumeTimerQueue() {}
 
@@ -112,7 +112,7 @@ void FakeRendererScheduler::VirtualTimePaused() {}
 
 void FakeRendererScheduler::VirtualTimeResumed() {}
 
-void FakeRendererScheduler::SetTimerQueueSuspensionWhenBackgroundedEnabled(
+void FakeRendererScheduler::SetTimerQueueStoppingWhenBackgroundedEnabled(
     bool enabled) {}
 
 void FakeRendererScheduler::SetTopLevelBlameContext(

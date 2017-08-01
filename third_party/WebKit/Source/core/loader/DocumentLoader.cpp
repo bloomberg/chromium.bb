@@ -431,7 +431,7 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
 
 void DocumentLoader::FinishedLoading(double finish_time) {
   DCHECK(frame_->Loader().StateMachine()->CreatingInitialEmptyDocument() ||
-         !frame_->GetPage()->Suspended() ||
+         !frame_->GetPage()->Paused() ||
          MainThreadDebugger::Instance()->IsPaused());
 
   double response_end_time = finish_time;
@@ -613,7 +613,7 @@ void DocumentLoader::ResponseReceived(
     }
   }
 
-  DCHECK(!frame_->GetPage()->Suspended());
+  DCHECK(!frame_->GetPage()->Paused());
 
   if (response.DidServiceWorkerNavigationPreload())
     UseCounter::Count(frame_, WebFeature::kServiceWorkerNavigationPreload);
@@ -707,7 +707,7 @@ void DocumentLoader::DataReceived(Resource* resource,
   DCHECK(length);
   DCHECK_EQ(resource, main_resource_);
   DCHECK(!response_.IsNull());
-  DCHECK(!frame_->GetPage()->Suspended());
+  DCHECK(!frame_->GetPage()->Paused());
 
   if (in_data_received_) {
     // If this function is reentered, defer processing of the additional data to

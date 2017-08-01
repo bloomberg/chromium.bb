@@ -84,7 +84,8 @@ MainThreadTaskQueue::MainThreadTaskQueue(
       queue_class_(QueueClassForQueueType(params.queue_type)),
       can_be_blocked_(params.can_be_blocked),
       can_be_throttled_(params.can_be_throttled),
-      can_be_suspended_(params.can_be_suspended),
+      can_be_paused_(params.can_be_paused),
+      can_be_stopped_(params.can_be_stopped),
       used_for_control_tasks_(params.used_for_control_tasks),
       renderer_scheduler_(renderer_scheduler) {
   GetTaskQueueImpl()->SetOnTaskCompletedHandler(base::Bind(

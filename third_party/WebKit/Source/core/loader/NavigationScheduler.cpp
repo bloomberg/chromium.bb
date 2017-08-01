@@ -485,7 +485,7 @@ void NavigationScheduler::NavigateTask() {
 
   if (!frame_->GetPage())
     return;
-  if (frame_->GetPage()->Suspended()) {
+  if (frame_->GetPage()->Paused()) {
     probe::frameClearedScheduledNavigation(frame_);
     return;
   }

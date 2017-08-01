@@ -129,7 +129,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                       bool has_played_media_before,
                       const base::Closure& closure) override;
   bool RunIdleHandlerWhenWidgetsHidden() override;
-  bool AllowTimerSuspensionWhenProcessBackgrounded() override;
+  bool AllowStoppingTimersWhenProcessBackgrounded() override;
   bool AllowPopup() override;
   bool ShouldFork(blink::WebLocalFrame* frame,
                   const GURL& url,

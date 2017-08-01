@@ -656,9 +656,9 @@ class RendererSchedulerImplTest : public ::testing::Test {
         RendererSchedulerImpl::kEndIdleWhenHiddenDelayMillis);
   }
 
-  static base::TimeDelta suspend_timers_when_backgrounded_delay() {
+  static base::TimeDelta stop_timers_when_backgrounded_delay() {
     return base::TimeDelta::FromMilliseconds(
-        RendererSchedulerImpl::kSuspendTimersWhenBackgroundedDelayMillis);
+        RendererSchedulerImpl::kStopTimersWhenBackgroundedDelayMillis);
   }
 
   static base::TimeDelta rails_response_time() {
@@ -2362,11 +2362,11 @@ TEST_F(RendererSchedulerImplTest, TimerQueueEnabledByDefault) {
               ::testing::ElementsAre(std::string("T1"), std::string("T2")));
 }
 
-TEST_F(RendererSchedulerImplTest, SuspendAndResumeTimerQueue) {
+TEST_F(RendererSchedulerImplTest, StopAndResumeTimerQueue) {
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "T1 T2");
 
-  scheduler_->SuspendTimerQueue();
+  scheduler_->PauseTimerQueue();
   RunUntilIdle();
   EXPECT_THAT(run_order, ::testing::ElementsAre());
 
@@ -2376,11 +2376,11 @@ TEST_F(RendererSchedulerImplTest, SuspendAndResumeTimerQueue) {
               ::testing::ElementsAre(std::string("T1"), std::string("T2")));
 }
 
-TEST_F(RendererSchedulerImplTest, SuspendAndThrottleTimerQueue) {
+TEST_F(RendererSchedulerImplTest, StopAndThrottleTimerQueue) {
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "T1 T2");
 
-  scheduler_->SuspendTimerQueue();
+  scheduler_->PauseTimerQueue();
   RunUntilIdle();
   scheduler_->task_queue_throttler()->IncreaseThrottleRefCount(
       static_cast<TaskQueue*>(timer_task_runner_.get()));
@@ -2388,25 +2388,25 @@ TEST_F(RendererSchedulerImplTest, SuspendAndThrottleTimerQueue) {
   EXPECT_THAT(run_order, ::testing::ElementsAre());
 }
 
-TEST_F(RendererSchedulerImplTest, ThrottleAndSuspendTimerQueue) {
+TEST_F(RendererSchedulerImplTest, ThrottleAndPauseTimerQueue) {
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "T1 T2");
 
   scheduler_->task_queue_throttler()->IncreaseThrottleRefCount(
       static_cast<TaskQueue*>(timer_task_runner_.get()));
   RunUntilIdle();
-  scheduler_->SuspendTimerQueue();
+  scheduler_->PauseTimerQueue();
   RunUntilIdle();
   EXPECT_THAT(run_order, ::testing::ElementsAre());
 }
 
-TEST_F(RendererSchedulerImplTest, MultipleSuspendsNeedMultipleResumes) {
+TEST_F(RendererSchedulerImplTest, MultipleStopsNeedMultipleResumes) {
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "T1 T2");
 
-  scheduler_->SuspendTimerQueue();
-  scheduler_->SuspendTimerQueue();
-  scheduler_->SuspendTimerQueue();
+  scheduler_->PauseTimerQueue();
+  scheduler_->PauseTimerQueue();
+  scheduler_->PauseTimerQueue();
   RunUntilIdle();
   EXPECT_THAT(run_order, ::testing::ElementsAre());
 
@@ -2424,14 +2424,15 @@ TEST_F(RendererSchedulerImplTest, MultipleSuspendsNeedMultipleResumes) {
               ::testing::ElementsAre(std::string("T1"), std::string("T2")));
 }
 
-TEST_F(RendererSchedulerImplTest, SuspendRenderer) {
+TEST_F(RendererSchedulerImplTest, PauseRenderer) {
+  scheduler_->SetTimerQueueStoppingWhenBackgroundedEnabled(true);
   // Assume that the renderer is backgrounded.
   scheduler_->SetRendererBackgrounded(true);
 
-  // Tasks in some queues don't fire when the renderer is suspended.
+  // Tasks in some queues don't fire when the renderer is paused.
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "D1 C1 L1 I1 T1");
-  scheduler_->SuspendRenderer();
+  scheduler_->PauseRenderer();
   EnableIdleTasks();
   RunUntilIdle();
   EXPECT_THAT(run_order,
@@ -2447,8 +2448,8 @@ TEST_F(RendererSchedulerImplTest, SuspendRenderer) {
 
   run_order.clear();
   PostTestTasks(&run_order, "D2 T2");
-  // The renderer is foregrounded. Suspending doesn't take effect.
-  scheduler_->SuspendRenderer();
+  // The renderer is foregrounded. Suspension doesn't take effect.
+  scheduler_->PauseRenderer();
   RunUntilIdle();
   EXPECT_THAT(run_order,
               ::testing::ElementsAre(std::string("D2"), std::string("T2")));
@@ -2460,10 +2461,10 @@ TEST_F(RendererSchedulerImplTest, ResumeRenderer) {
   // Assume that the renderer is backgrounded.
   scheduler_->SetRendererBackgrounded(true);
 
-  // Tasks in some queues don't fire when the renderer is suspended.
+  // Tasks in some queues don't fire when the renderer is paused.
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "D1 C1 L1 I1 T1");
-  scheduler_->SuspendRenderer();
+  scheduler_->PauseRenderer();
   EnableIdleTasks();
   RunUntilIdle();
   EXPECT_THAT(run_order,
@@ -2478,10 +2479,10 @@ TEST_F(RendererSchedulerImplTest, ResumeRenderer) {
               ::testing::ElementsAre(std::string("L1"), std::string("T1")));
 
   run_order.clear();
-  // No crash occurs when the renderer is suspended again, and
-  // tasks in some queues don't fire because of suspended.
+  // No crash occurs when the renderer is paused again, and
+  // tasks in some queues don't fire because of paused.
   PostTestTasks(&run_order, "D2 C2 L2 I2 T2");
-  scheduler_->SuspendRenderer();
+  scheduler_->PauseRenderer();
   EnableIdleTasks();
   RunUntilIdle();
   EXPECT_THAT(run_order,
@@ -2551,7 +2552,7 @@ TEST_F(RendererSchedulerImplTest, ShutdownPreventsPostingOfNewTasks) {
 }
 
 TEST_F(RendererSchedulerImplTest, TestRendererBackgroundedTimerSuspension) {
-  scheduler_->SetTimerQueueSuspensionWhenBackgroundedEnabled(true);
+  scheduler_->SetTimerQueueStoppingWhenBackgroundedEnabled(true);
 
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "T1 T2");
@@ -2575,14 +2576,14 @@ TEST_F(RendererSchedulerImplTest, TestRendererBackgroundedTimerSuspension) {
   EXPECT_THAT(run_order, ::testing::ElementsAre(std::string("T3")));
 
   // Advance the time until after the scheduled timer queue suspension.
-  now = base::TimeTicks() + suspend_timers_when_backgrounded_delay() +
+  now = base::TimeTicks() + stop_timers_when_backgrounded_delay() +
         base::TimeDelta::FromMilliseconds(10);
   run_order.clear();
   clock_->SetNowTicks(now);
   RunUntilIdle();
   ASSERT_TRUE(run_order.empty());
 
-  // Timer tasks should be suspended until the foregrounded signal.
+  // Timer tasks should be paused until the foregrounded signal.
   PostTestTasks(&run_order, "T4 T5");
   now += base::TimeDelta::FromSeconds(10);
   clock_->SetNowTicks(now);
@@ -3166,13 +3167,13 @@ TEST_F(RendererSchedulerImplTest, BlockedTimerNotification) {
             web_view_scheduler.Interventions()[0].find("crbug.com/574343"));
 }
 
-TEST_F(RendererSchedulerImplTest, BlockedTimerNotification_TimersSuspended) {
+TEST_F(RendererSchedulerImplTest, BlockedTimerNotification_TimersStopped) {
   // Make sure we don't report warnings about blocked tasks when timers are
   // being blocked for other reasons.
   WebViewSchedulerImplForTest web_view_scheduler(scheduler_.get());
 
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
-  scheduler_->SuspendTimerQueue();
+  scheduler_->PauseTimerQueue();
   DoMainFrame();
   SimulateExpensiveTasks(timer_task_runner_);
   SimulateCompositorGestureStart(TouchEventPolicy::SEND_TOUCH_START);
@@ -3337,7 +3338,7 @@ TEST_F(RendererSchedulerImplTest,
 }
 
 TEST_F(RendererSchedulerImplTest,
-       SYNCHRONIZED_GESTURE_TimerTaskThrottling_TimersSuspended) {
+       SYNCHRONIZED_GESTURE_TimerTaskThrottling_TimersStopped) {
   SimulateCompositorGestureStart(TouchEventPolicy::SEND_TOUCH_START);
 
   base::TimeTicks first_throttled_run_time =
@@ -3350,7 +3351,7 @@ TEST_F(RendererSchedulerImplTest,
       FROM_HERE, base::Bind(SlowCountingTask, &count, clock_.get(), 7,
                             scheduler_->TimerTaskQueue()));
 
-  bool suspended = false;
+  bool paused = false;
   for (int i = 0; i < 1000; i++) {
     viz::BeginFrameArgs begin_frame_args = viz::BeginFrameArgs::Create(
         BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
@@ -3378,7 +3379,7 @@ TEST_F(RendererSchedulerImplTest,
     // will be disabled until the throttled queue is pumped.
     bool expect_queue_enabled =
         (i == 0) || (clock_->NowTicks() > first_throttled_run_time);
-    if (suspended)
+    if (paused)
       expect_queue_enabled = false;
     EXPECT_EQ(expect_queue_enabled,
               scheduler_->TimerTaskQueue()->IsQueueEnabled())
@@ -3386,15 +3387,15 @@ TEST_F(RendererSchedulerImplTest,
 
     // After we've run any expensive tasks suspend the queue.  The throttling
     // helper should /not/ re-enable this queue under any circumstances while
-    // timers are suspended.
-    if (count > 0 && !suspended) {
+    // timers are paused.
+    if (count > 0 && !paused) {
       EXPECT_EQ(2u, count);
-      scheduler_->SuspendTimerQueue();
-      suspended = true;
+      scheduler_->PauseTimerQueue();
+      paused = true;
     }
   }
 
-  // Make sure the timer queue stayed suspended!
+  // Make sure the timer queue stayed paused!
   EXPECT_EQ(2u, count);
 }
 
@@ -3721,7 +3722,7 @@ TEST_F(RendererSchedulerImplTest, UnthrottledTaskRunner) {
   unthrottled_task_runner->PostTask(
       FROM_HERE, base::Bind(SlowCountingTask, &unthrottled_count, clock_.get(),
                             7, unthrottled_task_runner));
-  scheduler_->SuspendTimerQueue();
+  scheduler_->PauseTimerQueue();
 
   for (int i = 0; i < 1000; i++) {
     viz::BeginFrameArgs begin_frame_args = viz::BeginFrameArgs::Create(

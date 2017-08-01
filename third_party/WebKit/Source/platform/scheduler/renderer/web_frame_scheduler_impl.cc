@@ -41,7 +41,7 @@ WebFrameSchedulerImpl::WebFrameSchedulerImpl(
       blame_context_(blame_context),
       frame_visible_(true),
       page_visible_(true),
-      frame_suspended_(false),
+      frame_paused_(false),
       cross_origin_(false),
       active_connection_count_(0),
       weak_factory_(this) {}
@@ -156,7 +156,7 @@ RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::LoadingTaskRunner() {
     loading_task_queue_->SetBlameContext(blame_context_);
     loading_queue_enabled_voter_ =
         loading_task_queue_->CreateQueueEnabledVoter();
-    loading_queue_enabled_voter_->SetQueueEnabled(!frame_suspended_);
+    loading_queue_enabled_voter_->SetQueueEnabled(!frame_paused_);
     loading_web_task_runner_ = WebTaskRunnerImpl::Create(loading_task_queue_);
   }
   return loading_web_task_runner_;
@@ -170,7 +170,7 @@ RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::LoadingControlTaskRunner() {
     loading_control_task_queue_->SetBlameContext(blame_context_);
     loading_control_queue_enabled_voter_ =
         loading_control_task_queue_->CreateQueueEnabledVoter();
-    loading_control_queue_enabled_voter_->SetQueueEnabled(!frame_suspended_);
+    loading_control_queue_enabled_voter_->SetQueueEnabled(!frame_paused_);
     loading_control_web_task_runner_ =
         WebTaskRunnerImpl::Create(loading_control_task_queue_);
   }
@@ -184,7 +184,7 @@ RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::TimerTaskRunner() {
         MainThreadTaskQueue::QueueType::FRAME_TIMER);
     timer_task_queue_->SetBlameContext(blame_context_);
     timer_queue_enabled_voter_ = timer_task_queue_->CreateQueueEnabledVoter();
-    timer_queue_enabled_voter_->SetQueueEnabled(!frame_suspended_);
+    timer_queue_enabled_voter_->SetQueueEnabled(!frame_paused_);
 
     CPUTimeBudgetPool* time_budget_pool =
         parent_web_view_scheduler_->BackgroundCPUTimeBudgetPool();
@@ -211,13 +211,13 @@ RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::SuspendableTaskRunner() {
         MainThreadTaskQueue::QueueCreationParams(
             MainThreadTaskQueue::QueueType::FRAME_UNTHROTTLED)
             .SetCanBeBlocked(true)
-            .SetCanBeSuspended(true));
+            .SetCanBePaused(true));
     suspendable_task_queue_->SetBlameContext(blame_context_);
     suspendable_web_task_runner_ =
         WebTaskRunnerImpl::Create(suspendable_task_queue_);
     suspendable_queue_enabled_voter_ =
         suspendable_task_queue_->CreateQueueEnabledVoter();
-    suspendable_queue_enabled_voter_->SetQueueEnabled(!frame_suspended_);
+    suspendable_queue_enabled_voter_->SetQueueEnabled(!frame_paused_);
   }
   return suspendable_web_task_runner_;
 }
@@ -359,20 +359,20 @@ void WebFrameSchedulerImpl::SetPageVisible(bool page_visible) {
   }
 }
 
-void WebFrameSchedulerImpl::SetSuspended(bool frame_suspended) {
+void WebFrameSchedulerImpl::SetPaused(bool frame_paused) {
   DCHECK(parent_web_view_scheduler_);
-  if (frame_suspended_ == frame_suspended)
+  if (frame_paused_ == frame_paused)
     return;
 
-  frame_suspended_ = frame_suspended;
+  frame_paused_ = frame_paused;
   if (loading_queue_enabled_voter_)
-    loading_queue_enabled_voter_->SetQueueEnabled(!frame_suspended);
+    loading_queue_enabled_voter_->SetQueueEnabled(!frame_paused);
   if (loading_control_queue_enabled_voter_)
-    loading_control_queue_enabled_voter_->SetQueueEnabled(!frame_suspended);
+    loading_control_queue_enabled_voter_->SetQueueEnabled(!frame_paused);
   if (timer_queue_enabled_voter_)
-    timer_queue_enabled_voter_->SetQueueEnabled(!frame_suspended);
+    timer_queue_enabled_voter_->SetQueueEnabled(!frame_paused);
   if (suspendable_queue_enabled_voter_)
-    suspendable_queue_enabled_voter_->SetQueueEnabled(!frame_suspended);
+    suspendable_queue_enabled_voter_->SetQueueEnabled(!frame_paused);
 }
 
 void WebFrameSchedulerImpl::OnFirstMeaningfulPaint() {

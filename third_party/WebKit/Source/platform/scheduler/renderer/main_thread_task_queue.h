@@ -55,7 +55,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
           spec(NameForQueueType(queue_type)),
           can_be_blocked(false),
           can_be_throttled(false),
-          can_be_suspended(false),
+          can_be_paused(false),
+          can_be_stopped(false),
           used_for_control_tasks(false) {}
 
     QueueCreationParams SetCanBeBlocked(bool value) {
@@ -68,8 +69,13 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
       return *this;
     }
 
-    QueueCreationParams SetCanBeSuspended(bool value) {
-      can_be_suspended = value;
+    QueueCreationParams SetCanBePaused(bool value) {
+      can_be_paused = value;
+      return *this;
+    }
+
+    QueueCreationParams SetCanBeStopped(bool value) {
+      can_be_stopped = value;
       return *this;
     }
 
@@ -105,7 +111,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
     TaskQueue::Spec spec;
     bool can_be_blocked;
     bool can_be_throttled;
-    bool can_be_suspended;
+    bool can_be_paused;
+    bool can_be_stopped;
     bool used_for_control_tasks;
   };
 
@@ -119,7 +126,9 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
 
   bool CanBeThrottled() const { return can_be_throttled_; }
 
-  bool CanBeSuspended() const { return can_be_suspended_; }
+  bool CanBePaused() const { return can_be_paused_; }
+
+  bool CanBeStopped() const { return can_be_stopped_; }
 
   bool UsedForControlTasks() const { return used_for_control_tasks_; }
 
@@ -141,7 +150,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
   QueueClass queue_class_;
   const bool can_be_blocked_;
   const bool can_be_throttled_;
-  const bool can_be_suspended_;
+  const bool can_be_paused_;
+  const bool can_be_stopped_;
   const bool used_for_control_tasks_;
 
   // Needed to notify renderer scheduler about completed tasks.

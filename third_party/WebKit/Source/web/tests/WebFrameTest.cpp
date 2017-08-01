@@ -9954,12 +9954,12 @@ TEST_P(ParameterizedWebFrameTest, SuspendedPageLoadWithRemoteMainFrame) {
   // Check that ScopedPageSuspender properly triggers deferred loading for
   // the current Page.
   Page* page = remote_root->GetFrame()->GetPage();
-  EXPECT_FALSE(page->Suspended());
+  EXPECT_FALSE(page->Paused());
   {
     ScopedPageSuspender suspender;
-    EXPECT_TRUE(page->Suspended());
+    EXPECT_TRUE(page->Paused());
   }
-  EXPECT_FALSE(page->Suspended());
+  EXPECT_FALSE(page->Paused());
 
   // Repeat this for a page with a local child frame, and ensure that the
   // child frame's loads are also suspended.
@@ -9968,16 +9968,16 @@ TEST_P(ParameterizedWebFrameTest, SuspendedPageLoadWithRemoteMainFrame) {
   RegisterMockedHttpURLLoad("foo.html");
   FrameTestHelpers::LoadFrame(web_local_child, base_url_ + "foo.html");
   LocalFrame* local_child = web_local_child->GetFrame();
-  EXPECT_FALSE(page->Suspended());
+  EXPECT_FALSE(page->Paused());
   EXPECT_FALSE(
       local_child->GetDocument()->Fetcher()->Context().DefersLoading());
   {
     ScopedPageSuspender suspender;
-    EXPECT_TRUE(page->Suspended());
+    EXPECT_TRUE(page->Paused());
     EXPECT_TRUE(
         local_child->GetDocument()->Fetcher()->Context().DefersLoading());
   }
-  EXPECT_FALSE(page->Suspended());
+  EXPECT_FALSE(page->Paused());
   EXPECT_FALSE(
       local_child->GetDocument()->Fetcher()->Context().DefersLoading());
 }

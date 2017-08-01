@@ -39,7 +39,7 @@ class CORE_EXPORT ScopedPageSuspender final {
  private:
   friend class Page;
 
-  static void SetSuspended(bool);
+  static void SetPaused(bool);
   static bool IsActive();
 };
 

@@ -6186,7 +6186,7 @@ void Document::TasksWereResumed() {
 
 bool Document::TasksNeedSuspension() {
   Page* page = this->GetPage();
-  return page && page->Suspended();
+  return page && page->Paused();
 }
 
 void Document::AddToTopLayer(Element* element, const Element* before) {

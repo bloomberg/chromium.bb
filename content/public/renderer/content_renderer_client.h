@@ -189,7 +189,7 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Returns true if the renderer process should allow shared timer suspension
   // after the process has been backgrounded. Defaults to false.
-  virtual bool AllowTimerSuspensionWhenProcessBackgrounded();
+  virtual bool AllowStoppingTimersWhenProcessBackgrounded();
 
   // Returns true if a popup window should be allowed.
   virtual bool AllowPopup();

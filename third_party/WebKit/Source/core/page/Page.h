@@ -233,14 +233,14 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
     return tab_key_cycles_through_elements_;
   }
 
-  // Suspension is used to implement the "Optionally, pause while waiting for
+  // Pausing is used to implement the "Optionally, pause while waiting for
   // the user to acknowledge the message" step of simple dialog processing:
   // https://html.spec.whatwg.org/multipage/webappapis.html#simple-dialogs
   //
   // Per https://html.spec.whatwg.org/multipage/webappapis.html#pause, no loads
   // are allowed to start/continue in this state, and all background processing
-  // is also suspended.
-  bool Suspended() const { return suspended_; }
+  // is also paused.
+  bool Paused() const { return paused_; }
 
   void SetPageScaleFactor(float);
   float PageScaleFactor() const;
@@ -313,7 +313,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   void SettingsChanged(SettingsDelegate::ChangeType) override;
 
   // ScopedPageSuspender helpers.
-  void SetSuspended(bool);
+  void SetPaused(bool);
 
   // Notify |plugins_changed_observers_| that plugins have changed.
   void NotifyPluginsChanged() const;
@@ -371,7 +371,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   bool is_closing_;
 
   bool tab_key_cycles_through_elements_;
-  bool suspended_;
+  bool paused_;
 
   float device_scale_factor_;
 
