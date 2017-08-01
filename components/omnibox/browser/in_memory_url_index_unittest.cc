@@ -530,11 +530,22 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
   EXPECT_EQ(ASCIIToUTF16("Practically Perfect Search Result"),
             matches[0].url_info.title());
 
-  // Search which should result in very poor result.
-  // No results since it will be suppressed by default scoring.
-  matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("qui c"),
+  // Search which should result in very poor result.  (It's a mid-word match
+  // in a hostname.)  No results since it will be suppressed by default scoring.
+  matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("heinqui"),
                                              base::string16::npos, kMaxMatches);
   EXPECT_EQ(0U, matches.size());
+  // But if the user adds a term that matches well against the same result,
+  // the result should be returned.
+  matches =
+      url_index_->HistoryItemsForTerms(ASCIIToUTF16("heinqui microprocessor"),
+                                       base::string16::npos, kMaxMatches);
+  ASSERT_EQ(1U, matches.size());
+  EXPECT_EQ(18, matches[0].url_info.id());
+  EXPECT_EQ("http://www.theinquirer.net/", matches[0].url_info.url().spec());
+  EXPECT_EQ(ASCIIToUTF16("THE INQUIRER - Microprocessor, Server, Memory, PCS, "
+                         "Graphics, Networking, Storage"),
+            matches[0].url_info.title());
 
   // A URL that comes from the default search engine should not be returned.
   matches = url_index_->HistoryItemsForTerms(ASCIIToUTF16("query"),

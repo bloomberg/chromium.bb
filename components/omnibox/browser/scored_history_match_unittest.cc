@@ -570,78 +570,30 @@ TEST_F(ScoredHistoryMatchTest, GetFrequency) {
   // Now consider pages visited twice, with one visit being typed and one
   // untyped.
 
-  // With default scoring, a two-visit score should have a higher score than the
-  // single typed visit score.
+  // A two-visit score should have a higher score than the single typed visit
+  // score.
   visits = {{now, ui::PAGE_TRANSITION_TYPED},
             {now - base::TimeDelta::FromDays(1), ui::PAGE_TRANSITION_LINK}};
   const float two_visits_score = match.GetFrequency(now, false, visits);
   EXPECT_GT(two_visits_score, one_typed_score);
 
-  // Likewise, with |frequency_uses_sum_|, the two-visit score should be higher
-  // than the single typed visit score because the sum is greater.
-  float two_visits_score_uses_sum;
-  {
-    base::AutoReset<bool> tmp(&ScoredHistoryMatch::frequency_uses_sum_, true);
-    two_visits_score_uses_sum = match.GetFrequency(now, false, visits);
-    EXPECT_GT(two_visits_score_uses_sum, one_typed_score);
-  }
-
-  // With |fix_few_visits_bug_|, its two-visit score should be higher than the
-  // one-visit score but lower than the regular two-visit score because the
-  // fix-few-visits score computes the average visit score and the untyped
-  // visit brings the average down.
-  float two_visits_score_fix_few_visits;
-  {
-    base::AutoReset<bool> tmp(&ScoredHistoryMatch::fix_few_visits_bug_, true);
-    two_visits_score_fix_few_visits = match.GetFrequency(now, false, visits);
-    EXPECT_GT(two_visits_score_fix_few_visits, one_typed_score);
-    EXPECT_LT(two_visits_score_fix_few_visits, two_visits_score);
-  }
-
   // Add an third untyped visit.
   visits.push_back(
       {now - base::TimeDelta::FromDays(2), ui::PAGE_TRANSITION_LINK});
 
-  // With default scoring and with |frequency_uses_sum_|, the score should be
-  // higher than the two-visit score.
+  // The score should be higher than the two-visit score.
   const float three_visits_score = match.GetFrequency(now, false, visits);
   EXPECT_GT(three_visits_score, two_visits_score);
-  {
-    base::AutoReset<bool> tmp(&ScoredHistoryMatch::frequency_uses_sum_, true);
-    const float three_visits_score_uses_sum =
-        match.GetFrequency(now, false, visits);
-    EXPECT_GT(three_visits_score_uses_sum, two_visits_score);
-    EXPECT_GT(three_visits_score_uses_sum, two_visits_score_uses_sum);
-  }
 
-  // With |fix_few_visits_bug_|, the score should also go up but not as much as
-  // under regular scoring.
-  {
-    base::AutoReset<bool> tmp(&ScoredHistoryMatch::fix_few_visits_bug_, true);
-    const float three_visits_score_fix_few_visits =
-        match.GetFrequency(now, false, visits);
-    EXPECT_GT(three_visits_score_fix_few_visits,
-              two_visits_score_fix_few_visits);
-    EXPECT_LT(three_visits_score_fix_few_visits, three_visits_score);
-  }
-
-  // In the uses-sum case, if we're only supposed to consider the most recent
-  // two visits, then all the scores should be the same as in the two-visit
-  // case.  (For the regular scoring and the fix-few-visits cases, the
-  // situation is more complicated because in these cases both the numerator--
-  // the value of the visits used--and the denominator--the number of visits
-  // used--changed.  We don't test this complicated logic separately from having
-  // tested the simpler components already.)
+  // If we're only supposed to consider the most recent two visits, then the
+  // score should be the same as in the two-visit case.
   {
     base::AutoReset<size_t> tmp1(&ScoredHistoryMatch::max_visits_to_score_, 2);
-    base::AutoReset<bool> tmp2(&ScoredHistoryMatch::frequency_uses_sum_, true);
-    EXPECT_EQ(two_visits_score_uses_sum,
-              match.GetFrequency(now, false, visits));
+    EXPECT_EQ(two_visits_score, match.GetFrequency(now, false, visits));
 
     // Check again with the third visit being typed.
     visits[2].second = ui::PAGE_TRANSITION_TYPED;
-    EXPECT_EQ(two_visits_score_uses_sum,
-              match.GetFrequency(now, false, visits));
+    EXPECT_EQ(two_visits_score, match.GetFrequency(now, false, visits));
   }
 }
 
@@ -655,7 +607,7 @@ TEST_F(ScoredHistoryMatchTest, GetDocumentSpecificityScore) {
   ScoredHistoryMatch match(row, visits, ASCIIToUTF16("foo"), Make1Term("foo"),
                            WordStarts{0}, row_word_starts, false, 1, now);
 
-  EXPECT_EQ(1.0, match.GetDocumentSpecificityScore(1));
+  EXPECT_EQ(3.0, match.GetDocumentSpecificityScore(1));
   EXPECT_EQ(1.0, match.GetDocumentSpecificityScore(5));
   EXPECT_EQ(1.0, match.GetDocumentSpecificityScore(50));
 

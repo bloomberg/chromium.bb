@@ -788,7 +788,7 @@ HQPOrderingTest::GetTestData() {
       {"http://store.steampowered.com/", "", 6, 6, 1},
       {"http://techmeme.com/", "techmeme", 111, 110, 4},
       {"http://www.teamliquid.net/tlpd", "team liquid progaming database", 15,
-       15, 2},
+       15, 4},
       {"http://store.steampowered.com/", "the steam summer camp sale", 6, 6, 1},
       {"http://www.teamliquid.net/tlpd/korean/players",
        "tlpd - bw korean - player index", 25, 7, 219},
@@ -823,7 +823,7 @@ TEST_F(HQPOrderingTest, TEAMatch) {
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://www.teamliquid.net/");
   expected_urls.push_back("http://www.teamliquid.net/tlpd");
-  expected_urls.push_back("http://www.teamliquid.net/tlpd/korean/players");
+  expected_urls.push_back("http://teamliquid.net/");
   RunTest(ASCIIToUTF16("tea"), false, expected_urls, true,
           ASCIIToUTF16("www.teamliquid.net"),
                  ASCIIToUTF16("mliquid.net"));
