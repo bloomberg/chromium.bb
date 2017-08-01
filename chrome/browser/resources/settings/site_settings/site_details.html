@@ -35,13 +35,13 @@
     </style>
     <!-- Confirm Delete dialog -->
     <dialog is="cr-dialog" id="confirmDeleteDialog" close-text="$i18n{close}">
-      <div class="title" slot="title">
+      <div slot="title">
         $i18n{siteSettingsSiteResetDialogTitle}
       </div>
-      <div class="body" slot="body">
+      <div slot="body">
         $i18n{siteSettingsSiteResetConfirmation}
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <paper-button class="cancel-button" on-tap="onCloseDialog_">
           $i18n{cancel}
         </paper-button>

@@ -12,7 +12,7 @@
 <dom-module id="settings-add-languages-dialog">
   <template>
     <style include="settings-shared">
-      .body {
+      [slot=body] {
         -webkit-padding-end: 0 !important;
         display: flex;
         flex-direction: column;
@@ -40,12 +40,12 @@
       }
     </style>
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
-      <div class="title" slot="title">$i18n{addLanguagesDialogTitle}</div>
-      <div class="body" slot="body" scrollable>
+      <div slot="title">$i18n{addLanguagesDialogTitle}</div>
+      <div slot="body" scrollable>
         <settings-subpage-search label="[[searchLabel]]"
             on-search-changed="onSearchChanged_" autofocus>
         </settings-subpage-search>
-        <iron-list class="ripple-padding" scroll-target="[[$$('.body')]]"
+        <iron-list class="ripple-padding" scroll-target="[[$$('[slot=body]')]]"
             items="[[getLanguages_(
                 languages.supported, languages.enabled.*, filterValue_)]]">
           <template>
@@ -58,7 +58,7 @@
           </template>
         </iron-list>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <div class="action-buttons">
           <paper-button class="cancel-button" on-tap="onCancelButtonTap_">
             $i18n{cancel}

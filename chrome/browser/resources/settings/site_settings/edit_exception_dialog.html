@@ -10,15 +10,15 @@
   <template>
     <style include="settings-shared"></style>
     <dialog is="cr-dialog" id="dialog">
-      <div class="title" slot="title">$i18n{editSiteTitle}</div>
-      <div class="body" slot="body">
+      <div slot="title">$i18n{editSiteTitle}</div>
+      <div slot="body">
         <paper-input always-float-label label="$i18n{addSite}"
             placeholder="$i18n{addSiteExceptionPlaceholder}" value="{{origin_}}"
             on-input="validate_" error-message="$i18n{notValidWebAddress}"
             invalid="[[invalid_]]" autofocus>
         </paper-input>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <div class="action-buttons">
           <paper-button class="cancel-button" on-tap="onCancelTap_"
               id="cancel">$i18n{cancel}</paper-button>

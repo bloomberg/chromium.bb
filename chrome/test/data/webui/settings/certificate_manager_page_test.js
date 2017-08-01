@@ -298,7 +298,8 @@ cr.define('certificate_manager_page', function() {
       test('DeleteSuccess', function() {
         assertTrue(dialog.$.dialog.open);
         // Check that the dialog title includes the certificate name.
-        var titleEl = Polymer.dom(dialog.$.dialog).querySelector('.title');
+        var titleEl =
+            Polymer.dom(dialog.$.dialog).querySelector('[slot=title]');
         assertTrue(titleEl.textContent.includes(model.name));
 
         // Simulate clicking 'OK'.

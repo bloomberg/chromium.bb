@@ -8,9 +8,9 @@
     <style include="settings-shared"></style>
 
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
-      <div class="title" slot="title">$i18n{historyDeletionDialogTitle}</div>
-      <div class="body" slot="body">$i18nRaw{historyDeletionDialogBody}</div>
-      <div class="button-container" slot="button-container">
+      <div slot="title">$i18n{historyDeletionDialogTitle}</div>
+      <div slot="body">$i18nRaw{historyDeletionDialogBody}</div>
+      <div slot="button-container">
         <paper-button class="action-button" on-tap="onOkTap_">
           $i18n{historyDeletionDialogOK}
         </paper-button>

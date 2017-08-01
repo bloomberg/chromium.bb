@@ -19,8 +19,8 @@
     <style include="device-emulator-shared-styles cr-shared-style iron-flex iron-flex-alignment iron-positioning">
     </style>
     <dialog is="cr-dialog" id="editDialog">
-      <div class="title" slot="title">[[currentEditableObject.deviceName]]</div>
-      <div class="body" slot="body">
+      <div slot="title">[[currentEditableObject.deviceName]]</div>
+      <div slot="body">
         <form>
           <div class="form-field-section">
             <paper-input value="{{currentEditableObject.deviceName}}"
@@ -54,7 +54,7 @@
           </div>
         </form>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <paper-button class="action-button" on-click="insertEditedAudioNode">
           Done
         </paper-button>

@@ -26,7 +26,7 @@
         margin-top: var(--first-card-padding-top);
       }
 
-      dialog .body {
+      dialog [slot=body] {
         white-space: pre-wrap;
       }
     </style>
@@ -59,9 +59,9 @@
 
     <template is="cr-lazy-render" id="dialog">
       <dialog is="cr-dialog">
-        <div class="title" slot="title">$i18n{removeSelected}</div>
-        <div class="body" slot="body">$i18n{deleteWarning}</div>
-        <div class="button-container" slot="button-container">
+        <div slot="title">$i18n{removeSelected}</div>
+        <div slot="body">$i18n{deleteWarning}</div>
+        <div slot="button-container">
           <paper-button class="cancel-button" on-tap="onDialogCancelTap_">
             $i18n{cancel}
           </paper-button>

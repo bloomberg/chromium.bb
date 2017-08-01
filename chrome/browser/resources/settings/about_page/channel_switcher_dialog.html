@@ -12,8 +12,8 @@
   <template>
     <style include="settings-shared"></style>
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
-      <div class="title" slot="title">$i18n{aboutChangeChannel}</div>
-      <div class="body" slot="body">
+      <div slot="title">$i18n{aboutChangeChannel}</div>
+      <div slot="body">
         <!-- TODO(dbeam): this can be policy-controlled. Show this in the UI.
              https://www.chromium.org/administrators/policy-list-3#ChromeOsReleaseChannel
         -->
@@ -34,7 +34,7 @@
           <div>[[warning_.description]]</div>
         </div>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <paper-button class="cancel-button" on-tap="onCancelTap_"
             id="cancel">$i18n{cancel}</paper-button>
         <paper-button id="changeChannel" class="action-button"

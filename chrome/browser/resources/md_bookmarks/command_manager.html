@@ -51,9 +51,9 @@
     </template>
     <template is="cr-lazy-render" id="openDialog">
       <dialog is="cr-dialog">
-        <div class="title" slot="title">$i18n{openDialogTitle}</div>
-        <div class="body" slot="body"></div>
-        <div class="button-container" slot="button-container">
+        <div slot="title">$i18n{openDialogTitle}</div>
+        <div slot="body"></div>
+        <div slot="button-container">
           <paper-button class="cancel-button" on-tap="onOpenCancelTap_">
             $i18n{cancel}
           </paper-button>

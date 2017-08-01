@@ -9,8 +9,8 @@
   <template>
     <style include="settings-shared"></style>
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
-      <div class="title" slot="title">[[model.title]]</div>
-      <div class="body" slot="body">
+      <div slot="title">[[model.title]]</div>
+      <div slot="body">
         <div>[[model.description]]</div>
         <template is="dom-if" if="[[model.certificateErrors]]">
           <template is="dom-repeat" items="[[model.certificateErrors]]">
@@ -18,7 +18,7 @@
           </template>
         </template>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <paper-button id="ok" class="action-button" on-tap="onOkTap_">
           $i18n{ok}
         </paper-button>

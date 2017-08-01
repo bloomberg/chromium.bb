@@ -18,13 +18,13 @@
       }
     </style>
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
-      <div class="title" slot="title">$i18n{addUsers}</div>
-      <div class="body" slot="body">
+      <div slot="title">$i18n{addUsers}</div>
+      <div slot="body">
         <paper-input id="addUserInput" label="$i18n{addUsersEmail}" autofocus
             on-input="validate_" invalid="[[!isValid_]]">
         </paper-input>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <paper-button class="cancel-button" on-tap="onCancelTap_">
           $i18n{cancel}
         </paper-button>

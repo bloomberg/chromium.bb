@@ -45,8 +45,8 @@
 
     <dialog is="cr-dialog" id="dialog" on-close="close"
         close-text="$i18n{close}">
-      <div class="title" slot="title">[[getTitleMessage_(isConfirmStep_)]]</div>
-      <div class="body" slot="body">
+      <div slot="title">[[getTitleMessage_(isConfirmStep_)]]</div>
+      <div slot="body">
         <!-- Pin keyboard -->
         <div id="pinKeyboardDiv" class="settings-box continuation">
           <pin-keyboard id="pinKeyboard" on-pin-change="onPinChange_"
@@ -61,7 +61,7 @@
           </pin-keyboard>
         </div>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <paper-button class="cancel-button" on-tap="onCancelTap_">
           $i18n{cancel}
         </paper-button>

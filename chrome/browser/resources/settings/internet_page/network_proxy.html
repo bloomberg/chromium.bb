@@ -210,13 +210,13 @@ link rel="import" href="network_proxy_exclusions.html">
     <dialog is="cr-dialog" id="confirmAllowSharedDialog"
         close-text="$i18n{close}" on-cancel="onAllowSharedDialogCancel_"
         on-close="onAllowSharedDialogClose_">
-      <div class="title" slot="title">
+      <div slot="title">
         $i18n{networkProxyAllowSharedWarningTitle}
       </div>
-      <div class="body" slot="body">
+      <div slot="body">
         $i18n{networkProxyAllowSharedWarningMessage}
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <paper-button class="cancel-button"
             on-tap="onAllowSharedDialogCancel_">
           $i18n{cancel}

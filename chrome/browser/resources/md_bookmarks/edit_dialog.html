@@ -11,10 +11,10 @@
   <template>
     <style include="cr-shared-style"></style>
     <dialog is="cr-dialog" id="dialog">
-      <div class="title" slot="title">
+      <div slot="title">
         [[getDialogTitle_(isFolder_, isEdit_)]]
       </div>
-      <div class="body" slot="body">
+      <div slot="body">
         <paper-input always-float-label id="name"
             label="$i18n{editDialogNameInput}"
             value="{{titleValue_}}"
@@ -29,7 +29,7 @@
             required>
         </paper-input>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <paper-button class="cancel-button" on-tap="onCancelButtonTap_">
           $i18n{cancel}
         </paper-button>

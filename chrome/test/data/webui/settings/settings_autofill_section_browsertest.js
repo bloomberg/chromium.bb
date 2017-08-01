@@ -607,25 +607,26 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
     });
 
     test('verifyAddAddressDialog', function() {
-      return self.createAddressDialog_(
-          FakeDataMaker.emptyAddressEntry()).then(function(dialog) {
-        var title = dialog.$$('.title');
-        assertEquals(loadTimeData.getString('addAddressTitle'),
-            title.textContent);
-        // Shouldn't be possible to save until something is typed in.
-        assertTrue(dialog.$.saveButton.disabled);
-      });
+      return self.createAddressDialog_(FakeDataMaker.emptyAddressEntry())
+          .then(function(dialog) {
+            var title = dialog.$$('[slot=title]');
+            assertEquals(
+                loadTimeData.getString('addAddressTitle'), title.textContent);
+            // Shouldn't be possible to save until something is typed in.
+            assertTrue(dialog.$.saveButton.disabled);
+          });
     });
 
     test('verifyEditAddressDialog', function() {
-      return self.createAddressDialog_(
-          FakeDataMaker.addressEntry()).then(function(dialog) {
-        var title = dialog.$$('.title');
-        assertEquals(
-            loadTimeData.getString('editAddressTitle'), title.textContent);
-        // Should be possible to save when editing because fields are populated.
-        assertFalse(dialog.$.saveButton.disabled);
-      });
+      return self.createAddressDialog_(FakeDataMaker.addressEntry())
+          .then(function(dialog) {
+            var title = dialog.$$('[slot=title]');
+            assertEquals(
+                loadTimeData.getString('editAddressTitle'), title.textContent);
+            // Should be possible to save when editing because fields are
+            // populated.
+            assertFalse(dialog.$.saveButton.disabled);
+          });
     });
 
     test('verifyCountryIsSaved', function() {

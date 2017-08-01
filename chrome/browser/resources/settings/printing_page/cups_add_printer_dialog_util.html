@@ -108,7 +108,7 @@
           border-bottom: 1px solid var(--paper-grey-300) !important;
         };
       }
-      #dialog .body {
+      #dialog [slot=body] {
         -webkit-padding-end: 0;
         -webkit-padding-start: 0;
         height: 350px;
@@ -116,13 +116,13 @@
     </style>
 
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
-      <div class="title" slot="title">
+      <div slot="title">
         <slot name="dialog-title"></slot>
       </div>
-      <div class="body" slot="body">
+      <div slot="body">
         <slot name="dialog-body"></slot>
       </div>
-      <div class="button-container" slot="button-container">
+      <div slot="button-container">
         <slot name="dialog-buttons"></slot>
       </div>
     </dialog>

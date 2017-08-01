@@ -7,13 +7,13 @@
   <template>
     <style include="cr-shared-style"></style>
     <dialog is="cr-dialog" id="dialog" no-cancel>
-      <div class="title" slot="title">
+      <div slot="title">
         [[strings.errorDialogTitle]]
       </div>
-      <div class="body" slot="body">
+      <div slot="body">
         [[strings.pageLoadFailed]]
       </div>
-      <div class="button-container" slot="button-container"
+      <div slot="button-container">
           hidden$="[[!reloadFn]]">
         <paper-button class="action-button" on-click="reload">
           [[strings.pageReload]]
