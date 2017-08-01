@@ -16,11 +16,8 @@ TestWallpaperDelegate::~TestWallpaperDelegate() {}
 void TestWallpaperDelegate::UpdateWallpaper(bool clear_cache) {
   DefaultWallpaperDelegate::UpdateWallpaper(clear_cache);
   if (!custom_wallpaper_.isNull()) {
-    wallpaper::WallpaperInfo info("", wallpaper::WALLPAPER_LAYOUT_STRETCH,
-                                  user_manager::User::DEFAULT,
-                                  base::Time::Now().LocalMidnight());
-    Shell::Get()->wallpaper_controller()->SetWallpaperImage(custom_wallpaper_,
-                                                            info);
+    Shell::Get()->wallpaper_controller()->SetWallpaperImage(
+        custom_wallpaper_, wallpaper::WALLPAPER_LAYOUT_STRETCH);
   }
   update_wallpaper_count_++;
 }

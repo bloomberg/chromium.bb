@@ -219,8 +219,7 @@ class WallpaperControllerTest : public AshTestBase {
   // Convenience function to ensure ShouldCalculateColors() returns true.
   void EnableShelfColoring() {
     const gfx::ImageSkia kImage = CreateImage(10, 10, kCustomWallpaperColor);
-    controller_->SetWallpaperImage(
-        kImage, CreateWallpaperInfo(WALLPAPER_LAYOUT_STRETCH));
+    controller_->SetWallpaperImage(kImage, WALLPAPER_LAYOUT_STRETCH);
     AddCommandLineSwitch(switches::kAshShelfColorEnabled);
     SetSessionState(SessionState::ACTIVE);
 
@@ -236,14 +235,6 @@ class WallpaperControllerTest : public AshTestBase {
   void AddCommandLineSwitch(const std::string& value_string) {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kAshShelfColor, value_string);
-  }
-
-  // Helper function to create a |WallpaperInfo| struct with dummy values
-  // given the desired layout.
-  wallpaper::WallpaperInfo CreateWallpaperInfo(
-      wallpaper::WallpaperLayout layout) {
-    return wallpaper::WallpaperInfo("", layout, user_manager::User::DEFAULT,
-                                    base::Time::Now().LocalMidnight());
   }
 
   // Wrapper for private ShouldCalculateColors()
@@ -412,8 +403,7 @@ TEST_F(WallpaperControllerTest, ResizeCustomWallpaper) {
 
   // Set the image as custom wallpaper, wait for the resize to finish, and check
   // that the resized image is the expected size.
-  controller_->SetWallpaperImage(image,
-                                 CreateWallpaperInfo(WALLPAPER_LAYOUT_STRETCH));
+  controller_->SetWallpaperImage(image, WALLPAPER_LAYOUT_STRETCH);
   EXPECT_TRUE(image.BackedBySameObjectAs(controller_->GetWallpaper()));
   RunAllTasksUntilIdle();
   gfx::ImageSkia resized_image = controller_->GetWallpaper();
@@ -423,8 +413,7 @@ TEST_F(WallpaperControllerTest, ResizeCustomWallpaper) {
   // Load the original wallpaper again and check that we're still using the
   // previously-resized image instead of doing another resize
   // (http://crbug.com/321402).
-  controller_->SetWallpaperImage(image,
-                                 CreateWallpaperInfo(WALLPAPER_LAYOUT_STRETCH));
+  controller_->SetWallpaperImage(image, WALLPAPER_LAYOUT_STRETCH);
   RunAllTasksUntilIdle();
   EXPECT_TRUE(resized_image.BackedBySameObjectAs(controller_->GetWallpaper()));
 }
@@ -484,16 +473,14 @@ TEST_F(WallpaperControllerTest, DontScaleWallpaperWithCenterLayout) {
   UpdateDisplay("1200x600*2");
   {
     SCOPED_TRACE(base::StringPrintf("1200x600*2 high resolution"));
-    controller_->SetWallpaperImage(
-        image_high_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER));
+    controller_->SetWallpaperImage(image_high_res, WALLPAPER_LAYOUT_CENTER);
     WallpaperFitToNativeResolution(
         wallpaper_view(), high_dsf, high_resolution.width(),
         high_resolution.height(), kCustomWallpaperColor);
   }
   {
     SCOPED_TRACE(base::StringPrintf("1200x600*2 low resolution"));
-    controller_->SetWallpaperImage(
-        image_low_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER));
+    controller_->SetWallpaperImage(image_low_res, WALLPAPER_LAYOUT_CENTER);
     WallpaperFitToNativeResolution(
         wallpaper_view(), high_dsf, low_resolution.width(),
         low_resolution.height(), kCustomWallpaperColor);
@@ -502,16 +489,14 @@ TEST_F(WallpaperControllerTest, DontScaleWallpaperWithCenterLayout) {
   UpdateDisplay("1200x600");
   {
     SCOPED_TRACE(base::StringPrintf("1200x600 high resolution"));
-    controller_->SetWallpaperImage(
-        image_high_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER));
+    controller_->SetWallpaperImage(image_high_res, WALLPAPER_LAYOUT_CENTER);
     WallpaperFitToNativeResolution(
         wallpaper_view(), low_dsf, high_resolution.width(),
         high_resolution.height(), kCustomWallpaperColor);
   }
   {
     SCOPED_TRACE(base::StringPrintf("1200x600 low resolution"));
-    controller_->SetWallpaperImage(
-        image_low_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER));
+    controller_->SetWallpaperImage(image_low_res, WALLPAPER_LAYOUT_CENTER);
     WallpaperFitToNativeResolution(
         wallpaper_view(), low_dsf, low_resolution.width(),
         low_resolution.height(), kCustomWallpaperColor);
@@ -520,16 +505,14 @@ TEST_F(WallpaperControllerTest, DontScaleWallpaperWithCenterLayout) {
   UpdateDisplay("1200x600/u@1.5");  // 1.5 ui scale
   {
     SCOPED_TRACE(base::StringPrintf("1200x600/u@1.5 high resolution"));
-    controller_->SetWallpaperImage(
-        image_high_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER));
+    controller_->SetWallpaperImage(image_high_res, WALLPAPER_LAYOUT_CENTER);
     WallpaperFitToNativeResolution(
         wallpaper_view(), low_dsf, high_resolution.width(),
         high_resolution.height(), kCustomWallpaperColor);
   }
   {
     SCOPED_TRACE(base::StringPrintf("1200x600/u@1.5 low resolution"));
-    controller_->SetWallpaperImage(
-        image_low_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER));
+    controller_->SetWallpaperImage(image_low_res, WALLPAPER_LAYOUT_CENTER);
     WallpaperFitToNativeResolution(
         wallpaper_view(), low_dsf, low_resolution.width(),
         low_resolution.height(), kCustomWallpaperColor);

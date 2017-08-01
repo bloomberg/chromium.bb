@@ -11,7 +11,7 @@ component("wallpaper") {
     "wallpaper_color_profile.h",
     "wallpaper_files_id.cc",
     "wallpaper_files_id.h",
-    "wallpaper_info.h",
+    "wallpaper_layout.h",
     "wallpaper_resizer.cc",
     "wallpaper_resizer.h",
     "wallpaper_resizer_observer.h",

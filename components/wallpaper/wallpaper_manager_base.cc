@@ -19,13 +19,19 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "components/wallpaper/wallpaper_files_id.h"
+#include "components/wallpaper/wallpaper_layout.h"
+#include "components/wallpaper/wallpaper_manager_base.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
@@ -135,6 +141,24 @@ MovableOnDestroyCallback::~MovableOnDestroyCallback() {
     callback_.Run();
 }
 
+WallpaperInfo::WallpaperInfo()
+    : layout(WALLPAPER_LAYOUT_CENTER),
+      type(user_manager::User::WALLPAPER_TYPE_COUNT) {
+}
+
+WallpaperInfo::WallpaperInfo(const std::string& in_location,
+                             WallpaperLayout in_layout,
+                             user_manager::User::WallpaperType in_type,
+                             const base::Time& in_date)
+    : location(in_location),
+      layout(in_layout),
+      type(in_type),
+      date(in_date) {
+}
+
+WallpaperInfo::~WallpaperInfo() {
+}
+
 void AssertCalledOnWallpaperSequence(base::SequencedTaskRunner* task_runner) {
 #if DCHECK_IS_ON()
   DCHECK(task_runner->RunsTasksInCurrentSequence());
@@ -160,7 +184,8 @@ const int kWallpaperThumbnailHeight = 68;
 
 const char kUsersWallpaperInfo[] = "user_wallpaper_info";
 
-const char kWallpaperColors[] = "wallpaper_colors";
+const char kUserWallpapers[] = "UserWallpapers";
+const char kUserWallpapersProperties[] = "UserWallpapersProperties";
 
 const base::FilePath&
 WallpaperManagerBase::CustomizedWallpaperRescaledFiles::path_downloaded()
@@ -284,7 +309,8 @@ base::FilePath WallpaperManagerBase::GetCustomWallpaperDir(
 // static
 void WallpaperManagerBase::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kUsersWallpaperInfo);
-  registry->RegisterDictionaryPref(kWallpaperColors);
+  registry->RegisterDictionaryPref(kUserWallpapers);
+  registry->RegisterDictionaryPref(kUserWallpapersProperties);
 }
 
 void WallpaperManagerBase::EnsureLoggedInUserWallpaperLoaded() {

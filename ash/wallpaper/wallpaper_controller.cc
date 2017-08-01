@@ -22,11 +22,8 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/values.h"
-#include "components/prefs/scoped_user_pref_update.h"
 #include "components/wallpaper/wallpaper_color_calculator.h"
 #include "components/wallpaper/wallpaper_color_profile.h"
-#include "components/wallpaper/wallpaper_manager_base.h"
 #include "components/wallpaper/wallpaper_resizer.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -49,44 +46,6 @@ constexpr int kWallpaperReloadDelayMs = 100;
 
 // How long to wait for resizing of the the wallpaper.
 constexpr int kCompositorLockTimeoutMs = 750;
-
-// Caches color calculation results in local state pref service.
-void CacheProminentColors(const std::vector<SkColor>& colors,
-                          const std::string& current_location) {
-  // Local state is null in the case of Config::MASH.
-  if (!Shell::Get()->GetLocalStatePrefService())
-    return;
-  DictionaryPrefUpdate wallpaper_colors_update(
-      Shell::Get()->GetLocalStatePrefService(), wallpaper::kWallpaperColors);
-  auto wallpaper_colors = base::MakeUnique<base::ListValue>();
-  for (SkColor color : colors)
-    wallpaper_colors->AppendDouble(static_cast<double>(color));
-  wallpaper_colors_update->SetWithoutPathExpansion(current_location,
-                                                   std::move(wallpaper_colors));
-}
-
-// Gets prominent color cache from local state pref service. Returns an empty
-// value if cache is not available.
-base::Optional<std::vector<SkColor>> GetCachedColors(
-    const std::string& current_location) {
-  base::Optional<std::vector<SkColor>> cached_colors_out;
-  const base::ListValue* prominent_colors = nullptr;
-  // Local state is null in the case of Config::MASH.
-  if (!Shell::Get()->GetLocalStatePrefService() ||
-      !Shell::Get()
-           ->GetLocalStatePrefService()
-           ->GetDictionary(wallpaper::kWallpaperColors)
-           ->GetListWithoutPathExpansion(current_location, &prominent_colors)) {
-    return cached_colors_out;
-  }
-  cached_colors_out = std::vector<SkColor>();
-  for (base::ListValue::const_iterator iter = prominent_colors->begin();
-       iter != prominent_colors->end(); ++iter) {
-    cached_colors_out.value().push_back(
-        static_cast<SkColor>(iter->GetDouble()));
-  }
-  return cached_colors_out;
-}
 
 // Returns true if a color should be extracted from the wallpaper based on the
 // command kAshShelfColor line arg.
@@ -215,10 +174,8 @@ wallpaper::WallpaperLayout WallpaperController::GetWallpaperLayout() const {
   return wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
 }
 
-void WallpaperController::SetWallpaperImage(
-    const gfx::ImageSkia& image,
-    const wallpaper::WallpaperInfo& info) {
-  wallpaper::WallpaperLayout layout = info.layout;
+void WallpaperController::SetWallpaperImage(const gfx::ImageSkia& image,
+                                            wallpaper::WallpaperLayout layout) {
   VLOG(1) << "SetWallpaper: image_id="
           << wallpaper::WallpaperResizer::GetImageId(image)
           << " layout=" << layout;
@@ -228,12 +185,6 @@ void WallpaperController::SetWallpaperImage(
     return;
   }
 
-  current_location_ = info.location;
-  // Cancel any in-flight color calculation because we have a new wallpaper.
-  if (color_calculator_) {
-    color_calculator_->RemoveObserver(this);
-    color_calculator_.reset();
-  }
   current_wallpaper_.reset(new wallpaper::WallpaperResizer(
       image, GetMaxDisplaySizeInNative(), layout, sequenced_task_runner_));
   current_wallpaper_->AddObserver(this);
@@ -358,11 +309,11 @@ void WallpaperController::SetWallpaperPicker(mojom::WallpaperPickerPtr picker) {
 }
 
 void WallpaperController::SetWallpaper(const SkBitmap& wallpaper,
-                                       const wallpaper::WallpaperInfo& info) {
+                                       wallpaper::WallpaperLayout layout) {
   if (wallpaper.isNull())
     return;
 
-  SetWallpaperImage(gfx::ImageSkia::CreateFrom1xBitmap(wallpaper), info);
+  SetWallpaperImage(gfx::ImageSkia::CreateFrom1xBitmap(wallpaper), layout);
 }
 
 void WallpaperController::GetWallpaperColors(
@@ -378,8 +329,6 @@ void WallpaperController::OnWallpaperResized() {
 void WallpaperController::OnColorCalculationComplete() {
   const std::vector<SkColor> colors = color_calculator_->prominent_colors();
   color_calculator_.reset();
-  if (!current_location_.empty())
-    CacheProminentColors(colors, current_location_);
   SetProminentColors(colors);
 }
 
@@ -469,18 +418,6 @@ void WallpaperController::CalculateWallpaperColors() {
     color_calculator_.reset();
   }
 
-  if (!current_location_.empty()) {
-    base::Optional<std::vector<SkColor>> cached_colors =
-        GetCachedColors(current_location_);
-    if (cached_colors.has_value()) {
-      SetProminentColors(cached_colors.value());
-      return;
-    }
-  }
-
-  // Color calculation is only allowed during an active session for performance
-  // reasons. Observers outside an active session are notified of the cache, or
-  // an invalid color if a previous calculation during active session failed.
   if (!ShouldCalculateColors()) {
     SetProminentColors(
         std::vector<SkColor>(color_profiles_.size(), kInvalidColor));
