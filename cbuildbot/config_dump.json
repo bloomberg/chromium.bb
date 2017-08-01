@@ -5711,6 +5711,7 @@
             "arm-generic",
             "amd64-generic"
         ],
+        "build_timeout": 64800,
         "build_type": "chroot",
         "builder_class_name": "sdk_builders.ChrootSdkBuilder",
         "buildslave_type": "baremetal",

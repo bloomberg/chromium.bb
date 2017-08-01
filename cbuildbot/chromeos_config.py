@@ -3441,6 +3441,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       use_sdk=False,
       trybot_list=True,
       prebuilts=constants.PUBLIC,
+      build_timeout=18 * 60 * 60,
       description='Build the SDK and all the cross-compilers',
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
           'TOC-Continuous',
