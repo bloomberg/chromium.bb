@@ -42,7 +42,7 @@ class RemoteSuggestionsSchedulerImpl : public RemoteSuggestionsScheduler {
                                  PrefService* local_state_prefs,
                                  std::unique_ptr<base::Clock> clock);
 
-  ~RemoteSuggestionsSchedulerImpl();
+  ~RemoteSuggestionsSchedulerImpl() override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 

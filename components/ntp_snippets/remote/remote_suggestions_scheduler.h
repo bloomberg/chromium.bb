@@ -19,6 +19,8 @@ struct Status;
 //     their events.
 class RemoteSuggestionsScheduler {
  public:
+  virtual ~RemoteSuggestionsScheduler() = default;
+
   // Set the provider that performs background fetching. Should be only called
   // by the factory.
   virtual void SetProvider(RemoteSuggestionsProvider* provider) = 0;
