@@ -901,10 +901,12 @@ int SSLClientSocketImpl::Init() {
     return ERR_UNEXPECTED;
   }
 
-  bssl::UniquePtr<SSL_SESSION> session = context->session_cache()->Lookup(
-      GetSessionCacheKey(), &ssl_session_cache_lookup_count_);
-  if (session)
-    SSL_set_session(ssl_.get(), session.get());
+  if (!ssl_session_cache_shard_.empty()) {
+    bssl::UniquePtr<SSL_SESSION> session = context->session_cache()->Lookup(
+        GetSessionCacheKey(), &ssl_session_cache_lookup_count_);
+    if (session)
+      SSL_set_session(ssl_.get(), session.get());
+  }
 
   transport_adapter_.reset(new SocketBIOAdapter(
       transport_->socket(), GetBufferSize("SSLBufferSizeRecv"),
@@ -1143,8 +1145,11 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
     return ERR_SSL_VERSION_INTERFERENCE;
   }
 
-  SSLContext::GetInstance()->session_cache()->ResetLookupCount(
-      GetSessionCacheKey());
+  if (!ssl_session_cache_shard_.empty()) {
+    SSLContext::GetInstance()->session_cache()->ResetLookupCount(
+        GetSessionCacheKey());
+  }
+
   // Check that if token binding was negotiated, then extended master secret
   // and renegotiation indication must also be negotiated.
   if (tb_was_negotiated_ &&
@@ -1736,8 +1741,10 @@ void SSLClientSocketImpl::MaybeCacheSession() {
   // Only cache the session once both a new session has been established and the
   // certificate has been verified. Due to False Start, these events may happen
   // in either order.
-  if (!pending_session_ || !certificate_verified_)
+  if (!pending_session_ || !certificate_verified_ ||
+      ssl_session_cache_shard_.empty()) {
     return;
+  }
 
   SSLContext::GetInstance()->session_cache()->Insert(GetSessionCacheKey(),
                                                      pending_session_.get());
@@ -1745,6 +1752,9 @@ void SSLClientSocketImpl::MaybeCacheSession() {
 }
 
 int SSLClientSocketImpl::NewSessionCallback(SSL_SESSION* session) {
+  if (ssl_session_cache_shard_.empty())
+    return 0;
+
   // OpenSSL passes a reference to |session|.
   pending_session_.reset(session);
   MaybeCacheSession();
@@ -1756,6 +1766,11 @@ void SSLClientSocketImpl::AddCTInfoToSSLInfo(SSLInfo* ssl_info) const {
 }
 
 std::string SSLClientSocketImpl::GetSessionCacheKey() const {
+  // If there is no session cache shard configured, disable session
+  // caching. GetSessionCacheKey may not be called. When
+  // https://crbug.com/458365 is fixed, this check will not be needed.
+  DCHECK(!ssl_session_cache_shard_.empty());
+
   std::string result = host_and_port_.ToString();
   result.push_back('/');
   result.append(ssl_session_cache_shard_);
