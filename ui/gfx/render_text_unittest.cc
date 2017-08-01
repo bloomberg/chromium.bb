@@ -428,6 +428,14 @@ class RenderTextTest : public testing::Test,
         renderer_(canvas()) {}
 
  protected:
+  bool IsWin8Plus() const {
+#if defined(OS_WIN)
+    return base::win::GetVersion() >= base::win::VERSION_WIN8;
+#else
+    return false;
+#endif
+  }
+
   std::unique_ptr<RenderText> CreateRenderTextInstance() const {
     switch (GetParam()) {
       case RENDER_TEXT_HARFBUZZ:
@@ -3939,11 +3947,11 @@ TEST_P(RenderTextTest, TextDoesntClip) {
     {
 #if !defined(OS_CHROMEOS)
       int top_test_height = kTestSize;
-#if defined(OS_WIN)
-      // Windows 8+ draws 1 pixel above the display rect.
-      if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+      // Windows 8+ and RenderTextMac (since 10.13) draw 1 pixel above the
+      // display rect.
+      if (IsWin8Plus() || GetParam() == RENDER_TEXT_MAC)
         top_test_height = kTestSize - 1;
-#endif // OS_WIN
+
       // TODO(dschuyler): On ChromeOS text draws above the GetStringSize rect.
       SCOPED_TRACE("TextDoesntClip Top Side");
       rect_buffer.EnsureSolidRect(SK_ColorWHITE, 0, 0, kCanvasSize.width(),
@@ -3953,13 +3961,11 @@ TEST_P(RenderTextTest, TextDoesntClip) {
     {
       int bottom_test_y = kTestSize + string_size.height();
       int bottom_test_height = kTestSize;
-#if defined(OS_WIN)
       // Windows 8+ draws 1 pixel below the display rect.
-      if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+      if (IsWin8Plus()) {
         bottom_test_y = kTestSize + string_size.height() + 1;
         bottom_test_height = kTestSize - 1;
       }
-#endif // OS_WIN
       SCOPED_TRACE("TextDoesntClip Bottom Side");
       rect_buffer.EnsureSolidRect(SK_ColorWHITE, 0, bottom_test_y,
                                   kCanvasSize.width(), bottom_test_height);
