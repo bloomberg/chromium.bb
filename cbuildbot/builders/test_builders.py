@@ -10,6 +10,7 @@ from chromite.lib import cros_logging as logging
 
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot.builders import generic_builders
+from chromite.cbuildbot.builders import simple_builders
 from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import android_stages
 from chromite.cbuildbot.stages import chrome_stages
@@ -86,3 +87,22 @@ class ChromiteTestsBuilder(generic_builders.PreCqBuilder):
     """Run something after sync/reexec."""
     self._RunStage(build_stages.InitSDKStage)
     self._RunStage(test_stages.ChromiteTestStage)
+
+
+class VMInformationalBuilder(simple_builders.SimpleBuilder):
+  """Builder that runs vm test for informational purpose."""
+  def RunStages(self):
+    assert len(self._run.config.boards) == 1
+    board = self._run.config.boards[0]
+
+    self._RunStage(build_stages.UprevStage)
+    self._RunStage(build_stages.InitSDKStage)
+    self._RunStage(build_stages.RegenPortageCacheStage)
+    self._RunStage(build_stages.SetupBoardStage, board)
+    self._RunStage(chrome_stages.SyncChromeStage)
+    self._RunStage(chrome_stages.PatchChromeStage)
+    self._RunStage(android_stages.UprevAndroidStage)
+    self._RunStage(android_stages.AndroidMetadataStage)
+    self._RunStage(build_stages.BuildPackagesStage, board)
+    self._RunStage(build_stages.BuildImage, board)
+    self._RunStage(test_stages.VMTestStage, board)

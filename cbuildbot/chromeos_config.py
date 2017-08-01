@@ -3504,6 +3504,21 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       active_waterfall=constants.WATERFALL_TRYBOT,
   )
 
+  site_config.AddWithoutTemplate(
+      'betty-vmtest-informational',
+      site_config.templates.no_hwtest_builder,
+      description='VMTest Informational Builder for running deqp on betty.',
+      build_type=constants.GENERIC_TYPE,
+      boards=['betty'],
+      builder_class_name='test_builders.VMInformationalBuilder',
+      vm_tests=[config_lib.VMTestConfig(
+          constants.VMTEST_INFORMATIONAL_TEST_TYPE,
+          timeout=12*60*60)],
+      vm_tests_override=[config_lib.VMTestConfig(
+          constants.VMTEST_INFORMATIONAL_TEST_TYPE,
+          timeout=12*60*60)],
+  )
+
   # Create our unittest stress build configs (used for tryjobs only)
   site_config.AddForBoards(
       'unittest-stress',

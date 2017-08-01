@@ -3829,6 +3829,22 @@
             "chrome_internal"
         ]
     },
+    "betty-vmtest-informational": {
+        "boards": [
+            "betty"
+        ],
+        "build_type": "generic",
+        "builder_class_name": "test_builders.VMInformationalBuilder",
+        "buildslave_type": "baremetal",
+        "description": "VMTest Informational Builder for running deqp on betty.",
+        "hw_tests_override": [],
+        "vm_tests": [
+            "{\n    \"test_type\": \"vmtest_informational_suite\",\n    \"timeout\": 43200\n}"
+        ],
+        "vm_tests_override": [
+            "{\n    \"test_type\": \"vmtest_informational_suite\",\n    \"timeout\": 43200\n}"
+        ]
+    },
     "binhost-pre-cq": {
         "_template": "pre_cq",
         "binhost_test": true,
