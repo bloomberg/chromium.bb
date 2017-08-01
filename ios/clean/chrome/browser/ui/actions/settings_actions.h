@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 // HACK: This whole file and the two remaining action calls need to
-// dissapear. We just need to decide how VC's will deal with tap/actions that
+// disappear. We just need to decide how VC's will deal with tap/actions that
 // were set by the mediator or some other file. Target/Action methods relating
 // to the Settings UI. (Actions should only be used to communicate into or
 // between the View Controller layer).

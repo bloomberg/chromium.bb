@@ -54,8 +54,8 @@ class AuthenticationService : public KeyedService,
   bool ShouldPromptForSignIn();
 
   // Returns whether the token service accounts have changed since the last time
-  // they were stored in the browser state prefs. This storing happens everytime
-  // the accounts change in foreground.
+  // they were stored in the browser state prefs. This storing happens every
+  // time the accounts change in foreground.
   // This reloads the cached accounts if the information might be stale.
   virtual bool HaveAccountsChanged();
 

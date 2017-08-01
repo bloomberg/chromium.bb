@@ -22,7 +22,7 @@ class HttpAuthResponseProvider : public HtmlResponseProvider {
  public:
   // Constructs provider which will respond to the given |url| and will use the
   // given authenticaion |realm|. |username| and |password| are credentials
-  // required for sucessfull authentication. Use different realms and
+  // required for successful authentication. Use different realms and
   // username/password combination for different tests to prevent credentials
   // caching.
   HttpAuthResponseProvider(const GURL& url,
@@ -38,7 +38,7 @@ class HttpAuthResponseProvider : public HtmlResponseProvider {
       scoped_refptr<net::HttpResponseHeaders>* headers,
       std::string* response_body) override;
 
-  // Text returned in response if authentication was successfull.
+  // Text returned in response if authentication was successful.
   static std::string page_text() { return "authenticated"; }
 
  private:

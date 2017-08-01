@@ -37,8 +37,8 @@ NSString* kDisplayedSSORecallPromoCountKey = @"DisplayedSSORecallPromoCount";
 // Name of the UMA SSO Recall histogram.
 const char* const kUMASSORecallPromoAction = "SSORecallPromo.PromoAction";
 
-// Name of the histogram recording how many accounts were avilable on the device
-// when the promo was shown.
+// Name of the histogram recording how many accounts were available on the
+// device when the promo was shown.
 const char* const kUMASSORecallAccountsAvailable =
     "SSORecallPromo.AccountsAvailable";
 

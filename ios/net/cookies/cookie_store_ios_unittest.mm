@@ -80,7 +80,7 @@ void IgnoreString(const std::string& ignored) {
 
 }  // namespace
 
-// Test fixture to exersize net::CookieStoreIOS created without backend and
+// Test fixture to exercise net::CookieStoreIOS created without backend and
 // synchronized with |[NSHTTPCookieStorage sharedHTTPCookieStorage]|.
 class CookieStoreIOSTest : public testing::Test {
  public:

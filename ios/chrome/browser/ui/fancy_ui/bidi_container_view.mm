@@ -25,7 +25,7 @@ enum AdjustSubviewsForRTLType {
   NSMutableSet* subviewsToBeAdjustedForRTL_;
 }
 // Changes the autoresizing mask by mirroring it horizontally so that the RTL
-// layout is bind to oposite sites than LRT one.
+// layout is bind to opposite sites than LRT one.
 + (UIViewAutoresizing)mirrorAutoresizingMask:
     (UIViewAutoresizing)autoresizingMask;
 @end

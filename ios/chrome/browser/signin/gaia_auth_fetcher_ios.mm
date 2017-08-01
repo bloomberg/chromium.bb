@@ -64,7 +64,7 @@ NSString* const kPostRequestTemplate =
      "}"
      "</script></html>";
 
-// JavaScript template to read the reponse to a GET or POST request. There is
+// JavaScript template to read the response to a GET or POST request. There is
 // two different cases:
 // * GET request, which was made by simply loading a request to the correct
 //   URL. The response is the inner text (to avoid formatting in case of JSON

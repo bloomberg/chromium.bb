@@ -55,7 +55,7 @@ class GeolocationUpdaterProvider {
   virtual ~GeolocationUpdaterProvider();
 
   // Creates a new GeolocationUpdater.
-  // The returned object is retained and it is the responsability of the caller
+  // The returned object is retained and it is the responsibility of the caller
   // to release it.
   virtual id<GeolocationUpdater> CreateGeolocationUpdater(bool enabled)
       NS_RETURNS_RETAINED;

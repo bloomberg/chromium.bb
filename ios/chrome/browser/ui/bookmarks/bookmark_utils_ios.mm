@@ -480,7 +480,7 @@ class FolderNodeComparator : public std::binary_function<const BookmarkNode*,
   explicit FolderNodeComparator(icu::Collator* collator)
       : collator_(collator) {}
 
-  // Returns true if |n1| preceeds |n2|.
+  // Returns true if |n1| precedes |n2|.
   bool operator()(const BookmarkNode* n1, const BookmarkNode* n2) {
     if (!collator_)
       return n1->GetTitle() < n2->GetTitle();

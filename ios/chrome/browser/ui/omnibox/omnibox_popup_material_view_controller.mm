@@ -253,7 +253,7 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
   }
 
   // DetailTextLabel and textLabel are fading labels placed in each row. The
-  // textLabel is layed out above the detailTextLabel, and vertically centered
+  // textLabel is laid out above the detailTextLabel, and vertically centered
   // if the detailTextLabel is empty.
   // For the detail text label, we use either the regular detail label, which
   // truncates by fading, or the answer label, which uses UILabel's standard

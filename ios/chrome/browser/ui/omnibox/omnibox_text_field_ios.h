@@ -105,7 +105,7 @@ typedef enum {
 // property.
 - (UIColor*)displayedTextColor;
 
-// Fade in/out the text and auxillary views depending on |style|.
+// Fade in/out the text and auxiliary views depending on |style|.
 - (void)animateFadeWithStyle:(OmniboxTextFieldFadeStyle)style;
 // Reverses animations added by |-animateFadeWithStyle:|.
 - (void)reverseFadeAnimations;

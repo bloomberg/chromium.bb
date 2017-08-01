@@ -161,7 +161,7 @@ void ReadingListDistillerPage::OnLoadURLDone(
         original_url_, CurrentWebState()->GetContentsMimeType());
   }
   if (!CurrentWebState()->ContentIsHTML()) {
-    // If content is not HTML, distillation will fail immediatly.
+    // If content is not HTML, distillation will fail immediately.
     // Call the handler to make sure cleaning methods are called correctly.
     // There is no need to wait for rendering either.
     DistillerPageIOS::OnLoadURLDone(load_completion_status);

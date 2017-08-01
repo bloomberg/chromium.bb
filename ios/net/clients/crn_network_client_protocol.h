@@ -56,7 +56,7 @@ typedef base::Callback<void(bool auth_ok,
 // clients have the opportunity to modify the request at this time.
 - (void)didCreateNativeRequest:(net::URLRequest*)nativeRequest;
 
-// Called when an authentication challenge represented by |authInfo| is recieved
+// Called when an authentication challenge represented by |authInfo| is received
 // from |nativeRequest|.
 // Clients that won't handle the challenge should forward this call down the
 // client stack.
@@ -66,7 +66,7 @@ typedef base::Callback<void(bool auth_ok,
 // |callback|'s first parameter is a boolean that indicates if authentication
 // was successful.
 // If authentication was successful, |callback|'s second and third parameters
-// are username and password; if unsuccesful they are empty strings.
+// are username and password; if unsuccessful they are empty strings.
 - (void)didRecieveAuthChallenge:(net::AuthChallengeInfo*)authInfo
                   nativeRequest:(const net::URLRequest&)nativeRequest
                        callback:(const network_client::AuthCallback&)callback;

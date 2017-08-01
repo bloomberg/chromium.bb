@@ -66,7 +66,7 @@ HttpServer& HttpServer::GetSharedInstanceWithResponseProviders(
     ProviderList response_providers) {
   DCHECK([NSThread isMainThread]);
   HttpServer& server = HttpServer::GetSharedInstance();
-  // Use non-const reference as the response_provider ownership is transfered.
+  // Use non-const reference as the response_provider ownership is transferred.
   for (std::unique_ptr<ResponseProvider>& provider : response_providers)
     server.AddResponseProvider(std::move(provider));
   return server;

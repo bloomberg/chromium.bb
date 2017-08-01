@@ -180,7 +180,7 @@ class IOSIOThread : public web::WebThreadDelegate {
   // Returns an SSLConfigService instance.
   net::SSLConfigService* GetSSLConfigService();
 
-  // Discards confidental data. To be called on IO thread only.
+  // Discards confidential data. To be called on IO thread only.
   void ChangedToOnTheRecordOnIOThread();
 
   static net::URLRequestContext* ConstructSystemRequestContext(

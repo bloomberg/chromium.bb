@@ -18,7 +18,7 @@ namespace web {
 // Tracks information related to a single navigation.
 class NavigationContextImpl : public NavigationContext {
  public:
-  // Creates navigation context for sucessful navigation to a different page.
+  // Creates navigation context for successful navigation to a different page.
   // Response headers will ne null.
   static std::unique_ptr<NavigationContextImpl> CreateNavigationContext(
       WebState* web_state,

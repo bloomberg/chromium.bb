@@ -1218,10 +1218,10 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD" desc="Label indicating that the text displayed below is a password. [Length: 20em] [iOS only]">
         Password
       </message>
-      <message name="IDS_IOS_SHOW_PASSWORD_VIEW_SITE" desc="Label indicating that the text displayed below is the site on which the associated password was saved. The password is displayed in the same view, but under a diferent label. [Length: 20em] [iOS only]">
+      <message name="IDS_IOS_SHOW_PASSWORD_VIEW_SITE" desc="Label indicating that the text displayed below is the site on which the associated password was saved. The password is displayed in the same view, but under a different label. [Length: 20em] [iOS only]">
         Site
       </message>
-      <message name="IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME" desc="Label indicating that the text displayed below is the username to which a saved password corresponds. The password is displayed in the same view, but under a diferent label. [Length: 20em] [iOS only]">
+      <message name="IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME" desc="Label indicating that the text displayed below is the username to which a saved password corresponds. The password is displayed in the same view, but under a different label. [Length: 20em] [iOS only]">
         Username
       </message>
       <message name="IDS_IOS_SHOW_PASSWORD_VIEW_FEDERATION" desc="Label indicating that the text displayed below is the hostname of the identity provider used for the displayed credential. [Length: to fit on one line] [iOS only]">

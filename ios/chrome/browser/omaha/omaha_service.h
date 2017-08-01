@@ -143,7 +143,7 @@ class OmahaService : public net::URLFetcherDelegate {
   void SetInstallRetryRequestId(const std::string& request_id);
 
   // Clears the stored request id for a installation/update ping retry. Must be
-  // called after a successfull installation/update ping.
+  // called after a successful installation/update ping.
   void ClearInstallRetryRequestId();
 
   // Clears the all persistent state. Should only be used for testing.

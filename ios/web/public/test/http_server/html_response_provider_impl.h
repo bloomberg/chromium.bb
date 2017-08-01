@@ -50,7 +50,7 @@ class HtmlResponseProviderImpl {
 
   virtual ~HtmlResponseProviderImpl();
 
-  // Creates a reponse based on a redirect to |destination_url|.
+  // Creates a response based on a redirect to |destination_url|.
   static HtmlResponseProviderImpl::Response GetRedirectResponse(
       const GURL& destination_url,
       const net::HttpStatusCode& http_status);

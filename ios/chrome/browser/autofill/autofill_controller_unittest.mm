@@ -143,7 +143,7 @@ void CheckField(const FormStructure& form,
   FAIL() << "Missing field " << name;
 }
 
-// WebDataServiceConsumer for receving vectors of strings and making them
+// WebDataServiceConsumer for receiving vectors of strings and making them
 // available to tests.
 class TestConsumer : public WebDataServiceConsumer {
  public:
@@ -497,8 +497,8 @@ TEST_F(AutofillControllerTest, KeyValueSuggestions) {
 };
 
 // Checks that typing events (simulated in script) result in suggestions. Note
-// that the field is not explictly focused before typing starts; this can happen
-// in practice and should not result in a crash or incorrect behavior.
+// that the field is not explicitly focused before typing starts; this can
+// happen in practice and should not result in a crash or incorrect behavior.
 TEST_F(AutofillControllerTest, KeyValueTypedSuggestions) {
   SetUpKeyValueData();
   ExecuteJavaScript(@"document.forms[0].greeting.select()");

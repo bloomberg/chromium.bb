@@ -66,7 +66,7 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
 // Fills section |sectionIdentifier| with the items from |array|.
 - (void)loadItemsFromArray:(NSArray<CollectionViewItem*>*)array
                  toSection:(SectionIdentifier)sectionIdentifier;
-// Reloads the data if a changed occured during editing
+// Reloads the data if a change occurred during editing
 - (void)applyPendingUpdates;
 // Returns whether there are elements in the section identified by
 // |sectionIdentifier|.

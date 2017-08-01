@@ -30,7 +30,7 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 @property(nonatomic, strong) NSArray<NTPTile*>* sites;
 
 // Updates the widget with latest data. Returns whether any visual updates
-// occured.
+// occurred.
 - (BOOL)updateWidget;
 // Opens the main application with the given |URL|.
 - (void)openAppWithURL:(NSString*)URL;

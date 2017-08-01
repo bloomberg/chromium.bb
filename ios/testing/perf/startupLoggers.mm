@@ -32,7 +32,7 @@ void RegisterAppDidBecomeActiveTime() {
 }
 
 bool LogData(NSString* testName) {
-  // Store the data into a format compatiable with infra scripts.
+  // Store the data into a format compatible with infra scripts.
   double finishLaunchingDuration =
       g_finish_launching_time->ToDoubleT() - g_start_time->ToDoubleT();
   double becomeActiveDuration =

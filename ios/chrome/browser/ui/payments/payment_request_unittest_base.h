@@ -27,7 +27,7 @@ class CreditCard;
 
 class SigninManager;
 
-// Base class for various payment request related unit tests. This purposedly
+// Base class for various payment request related unit tests. This purposely
 // does not inherit from PlatformTest (testing::Test) so that it can be used
 // by ViewController unit tests.
 class PaymentRequestUnitTestBase {

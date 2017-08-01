@@ -33,7 +33,7 @@ typedef NS_ENUM(NSUInteger, Curve) {
 // Per material spec, a motion curve with "follow through".
 CAMediaTimingFunction* TransformCurve2();
 
-// Returns a timing funtion related to the given |curve|.
+// Returns a timing function related to the given |curve|.
 CAMediaTimingFunction* TimingFunction(Curve curve);
 
 }  // material

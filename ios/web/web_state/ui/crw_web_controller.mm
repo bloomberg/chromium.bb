@@ -123,7 +123,7 @@ struct UserInteractionEvent {
       : main_document_url(url), time(CFAbsoluteTimeGetCurrent()) {}
   // Main document URL at the time the interaction occurred.
   GURL main_document_url;
-  // Time that the interaction occured, measured in seconds since Jan 1 2001.
+  // Time that the interaction occurred, measured in seconds since Jan 1 2001.
   CFAbsoluteTime time;
 };
 
@@ -661,7 +661,7 @@ registerLoadRequestForURL:(const GURL&)URL
 // For same-document navigations and navigations affected by
 // window.history.[push/replace]State(), the URL and serialized state object
 // will be updated to the current NavigationItem's values.  A popState event
-// will be triggered for all same-document navigations.  Additionaly, a
+// will be triggered for all same-document navigations.  Additionally, a
 // hashchange event will be triggered for same-document navigations where the
 // only difference between the current and previous URL is the fragment.
 - (void)updateHTML5HistoryState;
@@ -4339,7 +4339,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   }
 
-  // The page will not be changed until this navigation is commited, so the
+  // The page will not be changed until this navigation is committed, so the
   // retrieved state will be pending until |didCommitNavigation| callback.
   [self updatePendingNavigationInfoFromNavigationAction:action];
 
@@ -4393,7 +4393,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
         HTTPHeaders.get(), net::GURLWithNSURL(navigationResponse.response.URL));
   }
 
-  // The page will not be changed until this navigation is commited, so the
+  // The page will not be changed until this navigation is committed, so the
   // retrieved state will be pending until |didCommitNavigation| callback.
   [self updatePendingNavigationInfoFromNavigationResponse:navigationResponse];
 
@@ -4947,7 +4947,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
            // the window location would not have changed to the new
            // URL when the script was called.
            BOOL windowLocationMatchesNewURL = JSURL == URL;
-           // Re-check origin in case navigaton has occured since
+           // Re-check origin in case navigaton has occurred since
            // start of JavaScript evaluation.
            BOOL newURLOriginMatchesDocumentURLOrigin =
                _documentURL.GetOrigin() == URL.GetOrigin();

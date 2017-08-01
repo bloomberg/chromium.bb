@@ -157,7 +157,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   // Overscroll actions locking and unlocking works by listening to balanced
   // notifications. One notification lock and it's counterpart unlock. This
   // dictionary is used to retrieve the notification name from it's notification
-  // counterpart name. Exemple:
+  // counterpart name. Example:
   // UIKeyboardWillShowNotification trigger a lock. Its counterpart notification
   // name is UIKeyboardWillHideNotification.
   NSDictionary* _lockNotificationsCounterparts;
@@ -580,7 +580,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 
 - (void)setup {
   UIPanGestureRecognizer* panGesture;
-  // Workaround a bug occuring when Speak Selection is enabled.
+  // Workaround a bug occurring when Speak Selection is enabled.
   // See crbug.com/699655.
   if (UIAccessibilityIsSpeakSelectionEnabled()) {
     panGesture = [[OverscrollActionsGestureRecognizer alloc]

@@ -126,7 +126,7 @@
 - (void)viewWillTransitionToSize:(CGSize)size
        withTransitionCoordinator:
            (id<UIViewControllerTransitionCoordinator>)coordinator {
-  // We need to dismiss the ToolsMenu everytime the Toolbar frame changes
+  // We need to dismiss the ToolsMenu every time the Toolbar frame changes
   // (e.g. Size changes, rotation changes, etc.)
   [self.dispatcher closeToolsMenu];
 }

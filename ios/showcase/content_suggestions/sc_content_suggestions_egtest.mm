@@ -19,7 +19,7 @@
 #endif
 
 namespace {
-// Returns a text label begining with |text|.
+// Returns a text label beginning with |text|.
 id<GREYMatcher> TextBeginsWith(NSString* text) {
   MatchesBlock matches = ^BOOL(id element) {
     return [[element text] hasPrefix:text];

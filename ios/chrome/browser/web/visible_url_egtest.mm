@@ -119,7 +119,7 @@ class PausableResponseProvider : public HtmlResponseProvider {
 // Spec of the last request URL that reached the server.
 @property(nonatomic, copy, readonly) NSString* lastRequestURLSpec;
 
-// Pauses reponse server and disables EG synchronization if |paused| is YES.
+// Pauses response server and disables EG synchronization if |paused| is YES.
 // Pending navigation will not complete until server is unpaused.
 - (void)setServerPaused:(BOOL)paused;
 

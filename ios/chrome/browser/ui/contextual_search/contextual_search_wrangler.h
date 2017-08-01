@@ -38,7 +38,7 @@ class ChromeBrowserState;
 - (void)updateToolbarBackgroundAlpha:(CGFloat)alpha;
 
 // Tell the provider that a tab load inside contextual search has completed.
-// |tab| is that tab that has loaded, and |sucess| is YES if the tab loaded
+// |tab| is that tab that has loaded, and |success| is YES if the tab loaded
 // without error, and NO otherwise.
 - (void)tabLoadComplete:(Tab*)tab withSuccess:(BOOL)success;
 
@@ -57,7 +57,7 @@ class ChromeBrowserState;
 @end
 
 // An object that manages the interactions of the contextual search system with
-// the rest of teh application. An instance of this object handles creating and
+// the rest of the application. An instance of this object handles creating and
 // positioning all of the views required for contextual search, as well as all
 // of the other controller objects.
 @interface ContextualSearchWrangler : NSObject
@@ -72,7 +72,7 @@ class ChromeBrowserState;
 // receiver was initialized with.
 - (void)insertPanelView;
 
-// Starts contextual search using the reciever for |browserState|. This should
+// Starts contextual search using the receiver for |browserState|. This should
 // only be called once in the lifetime of the receiver. If it is possible
 // (as determined by TouchToSearchPermissionsMediator) to start contextual
 // search on this device, and |browserState| isn't incognito, then this method
@@ -80,7 +80,7 @@ class ChromeBrowserState;
 // observing the tab model it was initialized with.
 - (void)maybeStartForBrowserState:(ios::ChromeBrowserState*)browserState;
 
-// Enables or disables contextual search for the reciever; this may be called
+// Enables or disables contextual search for the receiver; this may be called
 // multiple times during the lifetime of the receiver.
 - (void)enable:(BOOL)enabled;
 

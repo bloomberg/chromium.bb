@@ -12,7 +12,7 @@
 
 @protocol TabCommands;
 
-// A mediator object that sets an NTP home view controller's appeareance based
+// A mediator object that sets an NTP home view controller's appearance based
 // on various data sources.
 @interface NTPHomeMediator : NSObject<UrlLoader, OmniboxFocuser>
 

@@ -22,7 +22,7 @@ namespace payments {
 
 // A map is maintained to enumerate scheme names corresponding with iOS
 // payment apps. These scheme names are needed as a form of installation
-// check. If canOpenURL of UIApplication suceeds on the scheme name then
+// check. If canOpenURL of UIApplication succeeds on the scheme name then
 // that's a guarantee that the app is installed on the user's device.
 // These scheme names MUST be enumerated in LSApplicationQueriesSchemes
 // in the plist file.

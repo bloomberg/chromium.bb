@@ -58,7 +58,7 @@ class WebJsTest : public WebTestT {
 
 template <class WebTestT>
 void WebJsTest<WebTestT>::Inject() {
-  // Main web injection should have occured.
+  // Main web injection should have occurred.
   ASSERT_NSEQ(@"object", WebTestT::ExecuteJavaScript(@"typeof __gCrWeb"));
 
   for (NSString* java_script_path in java_script_paths_.get()) {

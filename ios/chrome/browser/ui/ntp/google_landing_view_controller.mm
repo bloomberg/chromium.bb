@@ -911,7 +911,7 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
         indexPathForCell:static_cast<UICollectionViewCell*>(sender.view)];
     const NSUInteger index = indexPath.row;
 
-    // A long press occured on one of the most visited button. Popup a context
+    // A long press occurred on one of the most visited button. Popup a context
     // menu.
     DCHECK(index < [self numberOfItems]);
 

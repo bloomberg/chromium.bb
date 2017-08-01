@@ -9,7 +9,7 @@
 
 @protocol NTPConsumer;
 
-// A mediator object that sets an NTP view controller's appeareance based on
+// A mediator object that sets an NTP view controller's appearance based on
 // various data sources.
 @interface NTPMediator : NSObject
 - (instancetype)initWithConsumer:(id<NTPConsumer>)consumer

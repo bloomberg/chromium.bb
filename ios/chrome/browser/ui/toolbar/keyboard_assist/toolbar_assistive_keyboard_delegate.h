@@ -13,10 +13,11 @@
 // Notifies the delegate that the Voice Search button was pressed.
 - (void)keyboardAccessoryVoiceSearchTouchDown:(UIView*)view;
 
-// Notifies the delegate that a touch up occured in the the Voice Search button.
+// Notifies the delegate that a touch up occurred in the the Voice Search
+// button.
 - (void)keyboardAccessoryVoiceSearchTouchUpInside:(UIView*)view;
 
-// Notifies the delegate that a touch up occured in the the Camera Search
+// Notifies the delegate that a touch up occurred in the the Camera Search
 // button.
 - (void)keyboardAccessoryCameraSearchTouchUp;
 

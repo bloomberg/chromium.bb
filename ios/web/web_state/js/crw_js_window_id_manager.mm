@@ -52,7 +52,7 @@ const size_t kUniqueKeyLength = 16;
       stringByReplacingOccurrencesOfString:@"$(WINDOW_ID)"
                                 withString:_windowID];
   // WKUserScript may not be injected yet. Make windowID script return boolean
-  // indicating whether the injection was successfull.
+  // indicating whether the injection was successful.
   NSString* scriptWithResult = [NSString
       stringWithFormat:@"if (!window.__gCrWeb) {false; } else { %@; true; }",
                        script];

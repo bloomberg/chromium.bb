@@ -38,7 +38,7 @@ class NavigationManagerDelegate {
   // Informs the delegate that a navigation item has been changed.
   virtual void OnNavigationItemChanged() = 0;
 
-  // Informs the delegate that a navigation item has been commited.
+  // Informs the delegate that a navigation item has been committed.
   virtual void OnNavigationItemCommitted(
       const LoadCommittedDetails& load_details) = 0;
 

@@ -37,7 +37,7 @@ NSString* kJavaScriptGoPrev = @"__gCrWeb.findInPage.goPrev()";
 NSString* kJavaScriptIndex = @"__gCrWeb.findInPage.index";
 NSString* kJavaScriptSpansLength = @"__gCrWeb.findInPage.spans.length";
 
-// HTML that contains several occurences of the string 'foo', some visible and
+// HTML that contains several occurrences of the string 'foo', some visible and
 // some not visible (the first 'foo' is hidden, the next is visible, the next is
 // hidden and so on until the final 'foo' which is hidden.
 NSString* kHtmlWithFoos = @"<html><body>"
@@ -53,7 +53,7 @@ NSString* kHtmlWithFoos = @"<html><body>"
 // The number of times 'foo' occurs in |kHtmlWithFoos| (hidden and visible).
 const int kNumberOfFoosInHtml = 7;
 
-// HTML that contains several occurences of the string 'foo', none visible.
+// HTML that contains several occurrences of the string 'foo', none visible.
 NSString* kHtmlWithNoVisibleFoos = @"<html><body>"
                                     "  <span style='display:none'>foo</span>"
                                     "  <span style='display:none'>foo</span>"
@@ -87,7 +87,7 @@ class FindInPageJsTest : public ChromeWebTest {
 
   // Loads the test HTML containing 'foo' strings and invokes the JavaScript
   // necessary to search for and highlight any matches. Note that the JavaScript
-  // sets the current index to the first visible occurence of 'foo'.
+  // sets the current index to the first visible occurrence of 'foo'.
   void SearchForFoo() {
     LoadHtml(kHtmlWithFoos);
 
@@ -96,7 +96,7 @@ class FindInPageJsTest : public ChromeWebTest {
     AssertJavaScriptValue(kJavaScriptSpansLength, 0);
 
     // Search for 'foo'. Performing the search sets the index to point to the
-    // first visible occurence of 'foo'.
+    // first visible occurrence of 'foo'.
     ExecuteJavaScript(kJavaScriptToSearchForFoo);
     AssertJavaScriptValue(kJavaScriptIndex, 1);
     AssertJavaScriptValue(kJavaScriptSpansLength, kNumberOfFoosInHtml);
@@ -217,7 +217,7 @@ TEST_F(FindInPageJsTest, SearchForNonAscii) {
   AssertJavaScriptValue(kJavaScriptSpansLength, 0);
 
   // Search for the non-Ascii value. Performing the search sets the index to
-  // point to the first visible occurence of the non-Ascii.
+  // point to the first visible occurrence of the non-Ascii.
   NSString* result = ExecuteJavaScript([NSString
       stringWithFormat:@"__gCrWeb.findInPage.highlightWord('%@', false, 1000)",
                        kNonAscii]);

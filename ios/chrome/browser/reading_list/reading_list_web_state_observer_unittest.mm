@@ -137,7 +137,7 @@ TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListDistilledCommitted) {
   GURL distilled_url = reading_list::OfflineURLForPath(
       entry->DistilledPath(), entry->URL(), entry->DistilledURL());
 
-  // Test on commited entry, there must be no pending item.
+  // Test on committed entry, there must be no pending item.
   test_navigation_manager_->SetPendingItem(nullptr);
   test_navigation_manager_->GetLastCommittedItem()->SetURL(url);
   test_web_state_.SetLoading(true);

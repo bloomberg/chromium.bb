@@ -75,7 +75,7 @@ void SerializableUserDataImpl::Decode(NSCoder* coder) {
   NSMutableDictionary<NSString*, id<NSCoding>>* data =
       [[coder decodeObjectForKey:kSerializedUserDataKey] mutableCopy];
   if (!data) {
-    // Sessions saved with version M-57 or ealier do not have a serialized
+    // Sessions saved with version M-57 or earlier do not have a serialized
     // user data. Ensure that |data| is non-null.
     // TODO(crbug.com/661633): remove this once migration from version M-57
     // or earlier is no longer supported.

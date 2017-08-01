@@ -11,7 +11,7 @@
 
 namespace web {
 
-// A Response provider that delays the response provided by another reponse
+// A Response provider that delays the response provided by another response
 // provider
 class DelayedResponseProvider : public ResponseProvider {
  public:
