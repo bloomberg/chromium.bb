@@ -26,44 +26,33 @@ constexpr int kStrokeFadeoutDelayMs = 500;
 constexpr int kStrokeFadeoutDurationMs = 500;
 constexpr int kStrokeScaleDurationMs = 300;
 
-gfx::RectF GetPenTipRect(const gfx::PointF& p) {
-  return gfx::RectF(p.x() - kPenTipWidth / 2, p.y() - kPenTipHeight / 2,
-                    kPenTipWidth, kPenTipHeight);
+gfx::Rect InflateDamageRect(const gfx::Rect& r) {
+  gfx::Rect inflated = r;
+  inflated.Inset(
+      -kOutsetForAntialiasing - static_cast<int>(kPenTipWidth / 2 + 1),
+      -kOutsetForAntialiasing - static_cast<int>(kPenTipHeight / 2 + 1));
+  return inflated;
 }
 
-gfx::Rect GetSegmentDamageRect(const gfx::RectF& r1, const gfx::RectF& r2) {
-  gfx::RectF rect = r1;
-  rect.Union(r2);
-  rect.Inset(-kOutsetForAntialiasing, -kOutsetForAntialiasing);
-  return gfx::ToEnclosingRect(rect);
-}
-
-// A highlighter segment is best imagined as a result of a rectangle
-// being dragged along a straight line, while keeping its orientation.
-// r1 is the start position of the rectangle and r2 is the final position.
+// A highlighter segment is a parallelogram with two vertical sides.
+// |p1| and |p2| are the center points of the vertical sides.
+// |height| is the height of a vertical side.
 void DrawSegment(gfx::Canvas& canvas,
-                 const gfx::RectF& r1,
-                 const gfx::RectF& r2,
+                 const gfx::PointF& p1,
+                 const gfx::PointF& p2,
+                 int height,
                  const cc::PaintFlags& flags) {
-  if (r1.x() > r2.x()) {
-    DrawSegment(canvas, r2, r1, flags);
-    return;
-  }
-
+  const float y_offset = height / 2;
   SkPath path;
-  path.moveTo(r1.x(), r1.y());
-  if (r1.y() < r2.y())
-    path.lineTo(r1.right(), r1.y());
-  else
-    path.lineTo(r2.x(), r2.y());
-  path.lineTo(r2.right(), r2.y());
-  path.lineTo(r2.right(), r2.bottom());
-  if (r1.y() < r2.y())
-    path.lineTo(r2.x(), r2.bottom());
-  else
-    path.lineTo(r1.right(), r1.bottom());
-  path.lineTo(r1.x(), r1.bottom());
-  path.lineTo(r1.x(), r1.y());
+  // When drawn with a thick round-joined outline, starting in the middle
+  // of a vertical edge ensures smooth joining with the last edge.
+  path.moveTo(p1.x(), p1.y());
+  path.lineTo(p1.x(), p1.y() - y_offset);
+  path.lineTo(p2.x(), p2.y() - y_offset);
+  path.lineTo(p2.x(), p2.y() + y_offset);
+  path.lineTo(p1.x(), p1.y() + y_offset);
+  path.lineTo(p1.x(), p1.y() - y_offset);
+  path.lineTo(p1.x(), p1.y());
   canvas.DrawPath(path, flags);
 }
 
@@ -83,8 +72,8 @@ void HighlighterView::AddNewPoint(const gfx::PointF& point) {
   TRACE_EVENT1("ui", "HighlighterView::AddNewPoint", "point", point.ToString());
 
   if (!points_.empty()) {
-    UpdateDamageRect(GetSegmentDamageRect(GetPenTipRect(points_.back()),
-                                          GetPenTipRect(point)));
+    UpdateDamageRect(InflateDamageRect(
+        gfx::ToEnclosingRect(gfx::BoundingRect(points_.back(), point))));
   }
 
   points_.push_back(point);
@@ -143,17 +132,28 @@ void HighlighterView::OnRedraw(gfx::Canvas& canvas,
     return;
 
   cc::PaintFlags flags;
-  flags.setStyle(cc::PaintFlags::kFill_Style);
+  flags.setStyle(cc::PaintFlags::kStrokeAndFill_Style);
   flags.setAntiAlias(true);
   flags.setColor(kPenColor);
   flags.setBlendMode(SkBlendMode::kSrc);
+  flags.setStrokeWidth(kPenTipWidth);
+  flags.setStrokeJoin(cc::PaintFlags::kRound_Join);
+
+  // Decrease the segment height by the outline stroke width,
+  // so that the vertical cross-section of the drawn segment
+  // is exactly kPenTipHeight.
+  const int height = kPenTipHeight - kPenTipWidth;
 
   for (size_t i = 1; i < points_.size(); ++i) {
-    const gfx::RectF tip1 = GetPenTipRect(points_[i - 1]) - offset;
-    const gfx::RectF tip2 = GetPenTipRect(points_[i]) - offset;
-    // Only draw the segment if it is touching the clip rect.
-    if (clip_rect.Intersects(GetSegmentDamageRect(tip1, tip2)))
-      DrawSegment(canvas, tip1, tip2, flags);
+    const gfx::PointF p1 = points_[i - 1] - offset;
+    const gfx::PointF p2 = points_[i] - offset;
+    if (i != 0) {
+      const gfx::Rect damage_rect =
+          InflateDamageRect(gfx::ToEnclosingRect(gfx::BoundingRect(p1, p2)));
+      // Only draw the segment if it is touching the clip rect.
+      if (clip_rect.Intersects(damage_rect))
+        DrawSegment(canvas, p1, p2, height, flags);
+    }
   }
 }
 
