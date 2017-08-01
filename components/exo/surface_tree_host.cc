@@ -288,12 +288,12 @@ void SurfaceTreeHost::SubmitCompositorFrame(Surface::FrameType frame_type) {
       &frame_callbacks_, &presentation_callbacks_);
   frame.render_pass_list.back()->output_rect =
       gfx::Rect(root_surface_->content_size());
-  layer_tree_frame_sink_holder_->frame_sink()->SubmitCompositorFrame(
-      std::move(frame));
   host_window_->SetBounds(gfx::Rect(host_window_->bounds().origin(),
                                     root_surface_->content_size()));
   host_window_->layer()->SetFillsBoundsOpaquely(
       root_surface_->FillsBoundsOpaquely());
+  layer_tree_frame_sink_holder_->frame_sink()->SubmitCompositorFrame(
+      std::move(frame));
 
   if (current_begin_frame_ack_.sequence_number !=
       viz::BeginFrameArgs::kInvalidFrameNumber) {
