@@ -62,6 +62,9 @@ class ShelfViewTestAPI {
   // Returns true if the overflow bubble is visible.
   bool IsShowingOverflowBubble() const;
 
+  // An accessor for the |bounds_animator_| duration.
+  int GetAnimationDuration() const;
+
   // Sets animation duration in milliseconds for test.
   void SetAnimationDuration(int duration_ms);
 

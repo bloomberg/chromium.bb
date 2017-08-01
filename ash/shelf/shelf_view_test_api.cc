@@ -92,6 +92,11 @@ const gfx::Rect& ShelfViewTestAPI::GetIdealBoundsByIndex(int index) {
   return shelf_view_->view_model_->ideal_bounds(index);
 }
 
+int ShelfViewTestAPI::GetAnimationDuration() const {
+  DCHECK(shelf_view_->bounds_animator_);
+  return shelf_view_->bounds_animator_->GetAnimationDuration();
+}
+
 void ShelfViewTestAPI::SetAnimationDuration(int duration_ms) {
   shelf_view_->bounds_animator_->SetAnimationDuration(duration_ms);
 }
