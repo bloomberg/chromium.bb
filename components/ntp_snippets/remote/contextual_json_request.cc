@@ -208,7 +208,8 @@ ContextualJsonRequest::Builder::BuildURLFetcher(
     const std::string& headers,
     const std::string& body) const {
   net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("ntp_contextual_suggestion_fetch", R"(
+      net::DefineNetworkTrafficAnnotation("ntp_contextual_suggestions_fetch",
+                                          R"(
         semantics {
           sender: "New Tab Page Contextual Suggestions Fetch"
           description:
@@ -217,9 +218,8 @@ ContextualJsonRequest::Builder::BuildURLFetcher(
           trigger:
             "Triggered when Home sheet is pulled up."
           data:
-            "The Chromium UI language, as well as a second language the user "
-            "understands, based on translate::LanguageModel. For signed-in "
-            "users, the requests is authenticated."
+            "Only for a white-listed signed-in test user, the URL of the "
+            "current tab."
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
