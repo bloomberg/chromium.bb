@@ -6,7 +6,7 @@
 
 #include <queue>
 #include "core/frame/FrameTestHelpers.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/page/Page.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -35,7 +35,7 @@ class DocumentLoaderTest : public ::testing::Test {
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 
-  WebLocalFrameBase* MainFrame() { return web_view_helper_.LocalMainFrame(); }
+  WebLocalFrameImpl* MainFrame() { return web_view_helper_.LocalMainFrame(); }
 
   FrameTestHelpers::WebViewHelper web_view_helper_;
 };

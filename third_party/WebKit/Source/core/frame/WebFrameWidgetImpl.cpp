@@ -51,7 +51,7 @@
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/frame/WebViewFrameWidget.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/input/ContextMenuAllowedScope.h"
@@ -86,7 +86,7 @@ WebFrameWidget* WebFrameWidget::Create(WebWidgetClient* client,
   if (!local_root->Parent()) {
     // Note: this isn't a leak, as the object has a self-reference that the
     // caller needs to release by calling Close().
-    WebLocalFrameBase& main_frame = ToWebLocalFrameBase(*local_root);
+    WebLocalFrameImpl& main_frame = ToWebLocalFrameImpl(*local_root);
     DCHECK(main_frame.ViewImpl());
     // Note: this can't DCHECK that the view's main frame points to
     // |main_frame|, as provisional frames violate this precondition.
@@ -112,7 +112,7 @@ WebFrameWidgetImpl* WebFrameWidgetImpl::Create(WebWidgetClient* client,
 WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient* client,
                                        WebLocalFrame* local_root)
     : client_(client),
-      local_root_(ToWebLocalFrameBase(local_root)),
+      local_root_(ToWebLocalFrameImpl(local_root)),
       mutator_(nullptr),
       layer_tree_view_(nullptr),
       root_layer_(nullptr),
@@ -468,8 +468,8 @@ void WebFrameWidgetImpl::UpdateBaseBackgroundColor() {
 
 WebInputMethodController*
 WebFrameWidgetImpl::GetActiveWebInputMethodController() const {
-  WebLocalFrameBase* local_frame =
-      WebLocalFrameBase::FromFrame(FocusedLocalFrameInWidget());
+  WebLocalFrameImpl* local_frame =
+      WebLocalFrameImpl::FromFrame(FocusedLocalFrameInWidget());
   return local_frame ? local_frame->GetInputMethodController() : nullptr;
 }
 
@@ -738,7 +738,7 @@ bool WebFrameWidgetImpl::GetCompositionCharacterBounds(
   if (!frame)
     return false;
 
-  WebLocalFrameBase* web_local_frame = WebLocalFrameBase::FromFrame(frame);
+  WebLocalFrameImpl* web_local_frame = WebLocalFrameImpl::FromFrame(frame);
   size_t character_count = range.length();
   size_t offset = range.StartOffset();
   WebVector<WebRect> result(character_count);

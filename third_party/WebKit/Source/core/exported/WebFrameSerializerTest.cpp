@@ -32,7 +32,7 @@
 
 #include "core/exported/WebViewBase.h"
 #include "core/frame/FrameTestHelpers.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/weborigin/KURL.h"
@@ -124,7 +124,7 @@ class WebFrameSerializerTest : public ::testing::Test {
     return serializer_client.ToString();
   }
 
-  WebLocalFrameBase* MainFrameImpl() { return helper_.LocalMainFrame(); }
+  WebLocalFrameImpl* MainFrameImpl() { return helper_.LocalMainFrame(); }
 
  private:
   FrameTestHelpers::WebViewHelper helper_;

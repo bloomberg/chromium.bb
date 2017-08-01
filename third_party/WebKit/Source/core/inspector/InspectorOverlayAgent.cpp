@@ -47,7 +47,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/IdentifiersFactory.h"
@@ -214,7 +214,7 @@ class InspectorOverlayAgent::InspectorOverlayChromeClient final
 };
 
 InspectorOverlayAgent::InspectorOverlayAgent(
-    WebLocalFrameBase* frame_impl,
+    WebLocalFrameImpl* frame_impl,
     InspectedFrames* inspected_frames,
     v8_inspector::V8InspectorSession* v8_session,
     InspectorDOMAgent* dom_agent)

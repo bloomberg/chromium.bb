@@ -13,7 +13,7 @@
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/VisualViewport.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/page/Page.h"
@@ -33,7 +33,7 @@ class TextFinderTest : public ::testing::Test {
  protected:
   TextFinderTest() {
     web_view_helper_.Initialize();
-    WebLocalFrameBase& frame_impl = *web_view_helper_.LocalMainFrame();
+    WebLocalFrameImpl& frame_impl = *web_view_helper_.LocalMainFrame();
     frame_impl.ViewImpl()->Resize(WebSize(640, 480));
     frame_impl.ViewImpl()->UpdateAllLifecyclePhases();
     document_ = static_cast<Document*>(frame_impl.GetDocument());

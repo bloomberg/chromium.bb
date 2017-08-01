@@ -7,7 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/frame/WebFrameWidgetBase.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "platform/wtf/Noncopyable.h"
@@ -39,7 +39,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
  public:
   explicit WebViewFrameWidget(WebWidgetClient&,
                               WebViewBase&,
-                              WebLocalFrameBase&);
+                              WebLocalFrameImpl&);
   virtual ~WebViewFrameWidget();
 
   // WebFrameWidget overrides:
@@ -91,7 +91,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void SetBaseBackgroundColorOverride(WebColor) override;
   void ClearBaseBackgroundColorOverride() override;
   void SetBaseBackgroundColor(WebColor) override;
-  WebLocalFrameBase* LocalRoot() const override;
+  WebLocalFrameImpl* LocalRoot() const override;
   WebInputMethodController* GetActiveWebInputMethodController() const override;
 
   // WebFrameWidgetBase overrides:
@@ -111,7 +111,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
  private:
   WebWidgetClient* client_;
   RefPtr<WebViewBase> web_view_;
-  Member<WebLocalFrameBase> main_frame_;
+  Member<WebLocalFrameImpl> main_frame_;
 
   SelfKeepAlive<WebViewFrameWidget> self_keep_alive_;
 };

@@ -12,7 +12,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/page/Page.h"

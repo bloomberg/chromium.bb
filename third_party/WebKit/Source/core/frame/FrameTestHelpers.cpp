@@ -33,7 +33,7 @@
 #include <utility>
 
 #include "core/exported/WebRemoteFrameImpl.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/testing/WebLayerTreeViewImplForTesting.h"
@@ -147,33 +147,33 @@ WebMouseEvent CreateMouseEvent(WebInputEvent::Type type,
   return result;
 }
 
-WebLocalFrameBase* CreateLocalChild(WebLocalFrame& parent,
+WebLocalFrameImpl* CreateLocalChild(WebLocalFrame& parent,
                                     WebTreeScopeType scope,
                                     TestWebFrameClient* client) {
   auto owned_client = CreateDefaultClientIfNeeded(client);
-  WebLocalFrameBase* frame =
-      ToWebLocalFrameBase(parent.CreateLocalChild(scope, client, nullptr));
+  WebLocalFrameImpl* frame =
+      ToWebLocalFrameImpl(parent.CreateLocalChild(scope, client, nullptr));
   client->Bind(frame, std::move(owned_client));
   return frame;
 }
 
-WebLocalFrameBase* CreateLocalChild(
+WebLocalFrameImpl* CreateLocalChild(
     WebLocalFrame& parent,
     WebTreeScopeType scope,
     std::unique_ptr<TestWebFrameClient> self_owned) {
   DCHECK(self_owned);
   TestWebFrameClient* client = self_owned.get();
-  WebLocalFrameBase* frame =
-      ToWebLocalFrameBase(parent.CreateLocalChild(scope, client, nullptr));
+  WebLocalFrameImpl* frame =
+      ToWebLocalFrameImpl(parent.CreateLocalChild(scope, client, nullptr));
   client->Bind(frame, std::move(self_owned));
   return frame;
 }
 
-WebLocalFrameBase* CreateProvisional(WebRemoteFrame& old_frame,
+WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
                                      TestWebFrameClient* client) {
   auto owned_client = CreateDefaultClientIfNeeded(client);
-  WebLocalFrameBase* frame =
-      ToWebLocalFrameBase(WebLocalFrame::CreateProvisional(
+  WebLocalFrameImpl* frame =
+      ToWebLocalFrameImpl(WebLocalFrame::CreateProvisional(
           client, nullptr, &old_frame, WebSandboxFlags::kNone,
           WebParsedFeaturePolicy()));
   client->Bind(frame, std::move(owned_client));
@@ -201,14 +201,14 @@ WebRemoteFrameImpl* CreateRemote(TestWebRemoteFrameClient* client) {
   return frame;
 }
 
-WebLocalFrameBase* CreateLocalChild(WebRemoteFrame& parent,
+WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
                                     const WebString& name,
                                     const WebFrameOwnerProperties& properties,
                                     WebFrame* previous_sibling,
                                     TestWebFrameClient* client,
                                     TestWebWidgetClient* widget_client) {
   auto owned_client = CreateDefaultClientIfNeeded(client);
-  auto* frame = ToWebLocalFrameBase(parent.CreateLocalChild(
+  auto* frame = ToWebLocalFrameImpl(parent.CreateLocalChild(
       WebTreeScopeType::kDocument, name, WebSandboxFlags::kNone, client,
       nullptr, previous_sibling, WebParsedFeaturePolicy(), properties,
       nullptr));
@@ -325,8 +325,8 @@ void WebViewHelper::Reset() {
   }
 }
 
-WebLocalFrameBase* WebViewHelper::LocalMainFrame() const {
-  return ToWebLocalFrameBase(web_view_->MainFrame());
+WebLocalFrameImpl* WebViewHelper::LocalMainFrame() const {
+  return ToWebLocalFrameImpl(web_view_->MainFrame());
 }
 
 WebRemoteFrameImpl* WebViewHelper::RemoteMainFrame() const {

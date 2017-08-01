@@ -254,10 +254,10 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebURLRequest RequestForReload(WebFrameLoadType,
                                  const WebURL&) const override;
   void Load(const WebURLRequest&,
-            WebFrameLoadType,
-            const WebHistoryItem&,
-            WebHistoryLoadType,
-            bool is_client_redirect) override;
+            WebFrameLoadType = WebFrameLoadType::kStandard,
+            const WebHistoryItem& = WebHistoryItem(),
+            WebHistoryLoadType = kWebHistoryDifferentDocumentLoad,
+            bool is_client_redirect = false) override;
   void LoadData(const WebData&,
                 const WebString& mime_type,
                 const WebString& text_encoding,

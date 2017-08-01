@@ -89,7 +89,7 @@ class WebElement;
 class WebInputMethodController;
 class WebLayerTreeView;
 class WebLocalFrame;
-class WebLocalFrameBase;
+class WebLocalFrameImpl;
 class CompositorMutatorImpl;
 class WebRemoteFrame;
 class WebSettingsImpl;
@@ -296,7 +296,7 @@ class CORE_EXPORT WebViewImpl final
 
   // Returns the main frame associated with this view. This may be null when
   // the page is shutting down, but will be valid at all other times.
-  WebLocalFrameBase* MainFrameImpl() const override;
+  WebLocalFrameImpl* MainFrameImpl() const override;
 
   // Event related methods:
   void MouseContextMenu(const WebMouseEvent&);
@@ -559,7 +559,7 @@ class CORE_EXPORT WebViewImpl final
   WebGestureEvent CreateGestureScrollEventFromFling(WebInputEvent::Type,
                                                     WebGestureDevice) const;
 
-  void EnablePopupMouseWheelEventListener(WebLocalFrameBase* local_root);
+  void EnablePopupMouseWheelEventListener(WebLocalFrameImpl* local_root);
   void DisablePopupMouseWheelEventListener();
 
   void CancelPagePopup();
@@ -700,7 +700,7 @@ class CORE_EXPORT WebViewImpl final
 
   // The local root whose document has |popup_mouse_wheel_event_listener_|
   // registered.
-  WeakPersistent<WebLocalFrameBase> local_root_with_empty_mouse_wheel_listener_;
+  WeakPersistent<WebLocalFrameImpl> local_root_with_empty_mouse_wheel_listener_;
 
   WebPageImportanceSignals page_importance_signals_;
 

@@ -11,7 +11,7 @@
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLHtmlElement.h"
@@ -1775,7 +1775,7 @@ TEST_P(VisualViewportTest, TestMainFrameInitializationSizing) {
   RegisterMockedHttpURLLoad("content-width-1000-min-scale.html");
   NavigateTo(base_url_ + "content-width-1000-min-scale.html");
 
-  WebLocalFrameBase* local_frame = WebViewImpl()->MainFrameImpl();
+  WebLocalFrameImpl* local_frame = WebViewImpl()->MainFrameImpl();
   // The shutdown() calls are a hack to prevent this test from violating
   // invariants about frame state during navigation/detach.
   local_frame->GetFrame()->GetDocument()->Shutdown();

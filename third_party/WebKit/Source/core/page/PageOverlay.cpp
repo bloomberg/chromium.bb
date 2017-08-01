@@ -32,7 +32,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebFrameWidgetBase.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -45,12 +45,12 @@
 namespace blink {
 
 std::unique_ptr<PageOverlay> PageOverlay::Create(
-    WebLocalFrameBase* frame_impl,
+    WebLocalFrameImpl* frame_impl,
     std::unique_ptr<PageOverlay::Delegate> delegate) {
   return WTF::WrapUnique(new PageOverlay(frame_impl, std::move(delegate)));
 }
 
-PageOverlay::PageOverlay(WebLocalFrameBase* frame_impl,
+PageOverlay::PageOverlay(WebLocalFrameImpl* frame_impl,
                          std::unique_ptr<PageOverlay::Delegate> delegate)
     : frame_impl_(frame_impl), delegate_(std::move(delegate)) {}
 

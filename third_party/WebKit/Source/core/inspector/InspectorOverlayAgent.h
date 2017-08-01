@@ -57,7 +57,7 @@ class Page;
 class PageOverlay;
 class WebGestureEvent;
 class WebMouseEvent;
-class WebLocalFrameBase;
+class WebLocalFrameImpl;
 class WebTouchEvent;
 
 class CORE_EXPORT InspectorOverlayAgent final
@@ -67,7 +67,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   USING_GARBAGE_COLLECTED_MIXIN(InspectorOverlayAgent);
 
  public:
-  InspectorOverlayAgent(WebLocalFrameBase*,
+  InspectorOverlayAgent(WebLocalFrameImpl*,
                         InspectedFrames*,
                         v8_inspector::V8InspectorSession*,
                         InspectorDOMAgent*);
@@ -190,7 +190,7 @@ class CORE_EXPORT InspectorOverlayAgent final
                           bool omit_tooltip);
   void InnerHideHighlight();
 
-  Member<WebLocalFrameBase> frame_impl_;
+  Member<WebLocalFrameImpl> frame_impl_;
   Member<InspectedFrames> inspected_frames_;
   bool enabled_;
   String paused_in_debugger_message_;

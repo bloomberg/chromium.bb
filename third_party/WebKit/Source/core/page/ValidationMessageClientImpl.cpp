@@ -29,7 +29,7 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrameView.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ValidationMessageOverlayDelegate.h"
 #include "platform/LayoutTestSupport.h"
@@ -106,7 +106,7 @@ void ValidationMessageClientImpl::ShowValidationMessage(
   auto* target_frame =
       web_view_.MainFrameImpl()
           ? web_view_.MainFrameImpl()
-          : WebLocalFrameBase::FromFrame(anchor.GetDocument().GetFrame());
+          : WebLocalFrameImpl::FromFrame(anchor.GetDocument().GetFrame());
   auto delegate = ValidationMessageOverlayDelegate::Create(
       *web_view_.GetPage(), anchor, message_, message_dir, sub_message,
       sub_message_dir);
