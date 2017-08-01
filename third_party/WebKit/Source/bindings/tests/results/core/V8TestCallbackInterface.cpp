@@ -35,12 +35,12 @@ DEFINE_TRACE(V8TestCallbackInterface) {
 }
 
 void V8TestCallbackInterface::voidMethod() {
+  if (!script_state_->ContextIsValid())
+    return;
   ExecutionContext* executionContext =
       ExecutionContext::From(script_state_.Get());
   DCHECK(!executionContext->IsContextSuspended());
   if (!executionContext || executionContext->IsContextDestroyed())
-    return;
-  if (!script_state_->ContextIsValid())
     return;
 
   ScriptState::Scope scope(script_state_.Get());
@@ -57,12 +57,12 @@ void V8TestCallbackInterface::voidMethod() {
 }
 
 bool V8TestCallbackInterface::booleanMethod() {
+  if (!script_state_->ContextIsValid())
+    return true;
   ExecutionContext* executionContext =
       ExecutionContext::From(script_state_.Get());
   DCHECK(!executionContext->IsContextSuspended());
   if (!executionContext || executionContext->IsContextDestroyed())
-    return true;
-  if (!script_state_->ContextIsValid())
     return true;
 
   ScriptState::Scope scope(script_state_.Get());
@@ -82,12 +82,12 @@ bool V8TestCallbackInterface::booleanMethod() {
 }
 
 void V8TestCallbackInterface::voidMethodBooleanArg(bool boolArg) {
+  if (!script_state_->ContextIsValid())
+    return;
   ExecutionContext* executionContext =
       ExecutionContext::From(script_state_.Get());
   DCHECK(!executionContext->IsContextSuspended());
   if (!executionContext || executionContext->IsContextDestroyed())
-    return;
-  if (!script_state_->ContextIsValid())
     return;
 
   ScriptState::Scope scope(script_state_.Get());
@@ -105,12 +105,12 @@ void V8TestCallbackInterface::voidMethodBooleanArg(bool boolArg) {
 }
 
 void V8TestCallbackInterface::voidMethodSequenceArg(const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg) {
+  if (!script_state_->ContextIsValid())
+    return;
   ExecutionContext* executionContext =
       ExecutionContext::From(script_state_.Get());
   DCHECK(!executionContext->IsContextSuspended());
   if (!executionContext || executionContext->IsContextDestroyed())
-    return;
-  if (!script_state_->ContextIsValid())
     return;
 
   ScriptState::Scope scope(script_state_.Get());
@@ -128,12 +128,12 @@ void V8TestCallbackInterface::voidMethodSequenceArg(const HeapVector<Member<Test
 }
 
 void V8TestCallbackInterface::voidMethodFloatArg(float floatArg) {
+  if (!script_state_->ContextIsValid())
+    return;
   ExecutionContext* executionContext =
       ExecutionContext::From(script_state_.Get());
   DCHECK(!executionContext->IsContextSuspended());
   if (!executionContext || executionContext->IsContextDestroyed())
-    return;
-  if (!script_state_->ContextIsValid())
     return;
 
   ScriptState::Scope scope(script_state_.Get());
@@ -151,12 +151,12 @@ void V8TestCallbackInterface::voidMethodFloatArg(float floatArg) {
 }
 
 void V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) {
+  if (!script_state_->ContextIsValid())
+    return;
   ExecutionContext* executionContext =
       ExecutionContext::From(script_state_.Get());
   DCHECK(!executionContext->IsContextSuspended());
   if (!executionContext || executionContext->IsContextDestroyed())
-    return;
-  if (!script_state_->ContextIsValid())
     return;
 
   ScriptState::Scope scope(script_state_.Get());
@@ -174,12 +174,12 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty
 }
 
 void V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) {
+  if (!script_state_->ContextIsValid())
+    return;
   ExecutionContext* executionContext =
       ExecutionContext::From(script_state_.Get());
   DCHECK(!executionContext->IsContextSuspended());
   if (!executionContext || executionContext->IsContextDestroyed())
-    return;
-  if (!script_state_->ContextIsValid())
     return;
 
   ScriptState::Scope scope(script_state_.Get());
@@ -198,12 +198,12 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(TestInterfac
 }
 
 void V8TestCallbackInterface::callbackWithThisValueVoidMethodStringArg(ScriptValue thisValue, const String& stringArg) {
+  if (!script_state_->ContextIsValid())
+    return;
   ExecutionContext* executionContext =
       ExecutionContext::From(script_state_.Get());
   DCHECK(!executionContext->IsContextSuspended());
   if (!executionContext || executionContext->IsContextDestroyed())
-    return;
-  if (!script_state_->ContextIsValid())
     return;
 
   ScriptState::Scope scope(script_state_.Get());
