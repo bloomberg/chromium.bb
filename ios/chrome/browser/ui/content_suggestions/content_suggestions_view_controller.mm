@@ -210,6 +210,13 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
   [self.collectionUpdater updateMostVisitedForSize:size];
   [self.collectionView reloadData];
+
+  void (^alongsideBlock)(id<UIViewControllerTransitionCoordinatorContext>) =
+      ^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        [self.headerCommandHandler
+            updateFakeOmniboxForScrollView:self.collectionView];
+      };
+  [coordinator animateAlongsideTransition:alongsideBlock completion:nil];
 }
 
 - (void)willTransitionToTraitCollection:(UITraitCollection*)newCollection
