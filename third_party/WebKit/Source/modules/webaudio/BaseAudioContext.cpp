@@ -171,7 +171,10 @@ void BaseAudioContext::Initialize() {
     listener_ = AudioListener::Create(*this);
   }
 
-  if (RuntimeEnabledFeatures::AudioWorkletEnabled()) {
+  // Check if a document or a frame supports AudioWorklet. If not, AudioWorklet
+  // cannot be accssed.
+  if (RuntimeEnabledFeatures::AudioWorkletEnabled() &&
+      WindowAudioWorklet::audioWorklet(this)) {
     WindowAudioWorklet::audioWorklet(this)->RegisterContext(this);
   }
 }
@@ -187,12 +190,11 @@ void BaseAudioContext::Clear() {
 void BaseAudioContext::Uninitialize() {
   DCHECK(IsMainThread());
 
-  if (RuntimeEnabledFeatures::AudioWorkletEnabled()) {
-    // AudioWorklet may be destroyed before the context goes away. So we have to
-    // check the pointer. See: crbug.com/503845
-    AudioWorklet* audioWorklet = WindowAudioWorklet::audioWorklet(this);
-    if (audioWorklet)
-      audioWorklet->UnregisterContext(this);
+  // AudioWorklet may be destroyed before the context goes away. So we have to
+  // check the pointer. See: crbug.com/503845
+  if (RuntimeEnabledFeatures::AudioWorkletEnabled() &&
+      WindowAudioWorklet::audioWorklet(this)) {
+    WindowAudioWorklet::audioWorklet(this)->UnregisterContext(this);
   }
 
   if (!IsDestinationInitialized())
