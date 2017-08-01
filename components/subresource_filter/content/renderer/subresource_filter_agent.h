@@ -64,8 +64,8 @@ class SubresourceFilterAgent
   static ActivationState GetParentActivationState(
       content::RenderFrame* render_frame);
 
-  void OnActivateForNextCommittedLoad(ActivationState activation_state);
-  void RecordHistogramsOnLoadCommitted();
+  void OnActivateForNextCommittedLoad(const ActivationState& activation_state);
+  void RecordHistogramsOnLoadCommitted(const ActivationState& activation_state);
   void RecordHistogramsOnLoadFinished();
   void ResetActivatonStateForNextCommit();
 
