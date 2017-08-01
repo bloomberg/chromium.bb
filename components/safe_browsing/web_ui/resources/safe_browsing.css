@@ -9,18 +9,18 @@ body {
 p {
   white-space: pre-wrap;
 }
-.sbPageContent {
+.content {
   background-color: #fbfbfb;
   border: 1px solid #cecece;
   border-radius: 3px;
   padding: 19px;
   line-height: 1.5;
 }
-#sbTitle {
+#sb-title {
   font-size: 2em;
   margin-bottom: 0.8em;
 }
 h1, h2, h3, p {
   font-weight: normal;
-  line-height: 1;
+  line-height: 1.5;
 }

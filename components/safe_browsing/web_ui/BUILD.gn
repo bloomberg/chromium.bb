@@ -18,6 +18,7 @@ static_library("web_ui") {
     "//components/resources:components_scaled_resources_grit",
     "//components/safe_browsing:features",
     "//components/safe_browsing/common:safe_browsing_prefs",
+    "//components/safe_browsing_db:v4_local_database_manager",
     "//components/strings:components_strings_grit",
     "//components/user_prefs:user_prefs",
     "//content/public/browser",
