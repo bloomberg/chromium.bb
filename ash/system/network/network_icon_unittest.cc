@@ -131,7 +131,7 @@ class NetworkIconTest : public chromeos::NetworkStateTest {
 // This tests that the correct icons are being generated for the correct
 // networks by pairwise comparison of three different network types, verifying
 // that the Tether and cellular icon are the same, Tether and Wi-Fi icons are
-// different, and cellular and Wi-Fi icons are different. Additionaly, it
+// different, and cellular and Wi-Fi icons are different. Additionally, it
 // verifies that the Tether network and Wi-Fi network with associated Tether
 // guid are treated the same for purposes of icon display
 TEST_F(NetworkIconTest, CompareImagesByNetworkType_NotVisible) {

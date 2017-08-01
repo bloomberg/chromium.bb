@@ -139,7 +139,7 @@ class ASH_EXPORT ScreenOrientationController
   };
 
   // Sets the display rotation for the given |source|. The new |rotation| will
-  // also become active. Display changed notifications are surpressed for this
+  // also become active. Display changed notifications are suppressed for this
   // change.
   void SetDisplayRotation(display::Display::Rotation rotation,
                           display::Display::RotationSource source);

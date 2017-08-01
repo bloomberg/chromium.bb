@@ -1707,7 +1707,7 @@ TEST_F(WindowTreeHostManagerTest, KeyEventFromSecondaryDisplay) {
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0);
   ui::Event::DispatcherApi dispatcher_api(&key_event);
   // Set the target to the second display. WindowTreeHostManager will end up
-  // targetting the primary display.
+  // targeting the primary display.
   dispatcher_api.set_target(
       Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
           GetSecondaryDisplay().id()));

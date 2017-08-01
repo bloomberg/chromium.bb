@@ -116,7 +116,7 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplaysInNative) {
   // 1st dislay.
   EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(500, 123)));
   // TODO(oshima): Due to a bug in EventGenerator, the screen coordinates
-  // is shrinked by dsf once. Fix this.
+  // is shrunk by dsf once. Fix this.
   EXPECT_EQ("498,61",
             aura::Env::GetInstance()->last_mouse_location().ToString());
 }

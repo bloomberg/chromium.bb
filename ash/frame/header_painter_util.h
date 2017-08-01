@@ -19,7 +19,7 @@ class Widget;
 
 namespace ash {
 
-// Static-only helper class for functionality used accross multiple
+// Static-only helper class for functionality used across multiple
 // implementations of HeaderPainter.
 class ASH_EXPORT HeaderPainterUtil {
  public:

@@ -276,7 +276,7 @@ void ScreenPinningController::OnDisplayConfigurationChanged() {
   if (!IsPinned())
     return;
 
-  // On display detaching, all necessary windows are transfered to the
+  // On display detaching, all necessary windows are transferred to the
   // primary display's tree, and called this.
   // So, delete WindowDimmers which are not a part of target system modal
   // container.

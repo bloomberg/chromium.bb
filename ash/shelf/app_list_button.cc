@@ -403,7 +403,7 @@ gfx::Point AppListButton::GetAppListButtonCenterPoint() const {
   // width than height (in the case of a shelf hide/show animation), so adjust
   // the y-position of the circle's center to ensure correct layout. Similarly
   // adjust the x-position for a left- or right-aligned shelf. In tablet
-  // mode, the button will increase it's primary axis size to accomodate the
+  // mode, the button will increase it's primary axis size to accommodate the
   // back button arrow in addition to the app list button circle.
   const int x_mid = width() / 2.f;
   const int y_mid = height() / 2.f;

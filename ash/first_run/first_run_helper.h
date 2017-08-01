@@ -19,7 +19,7 @@ class Widget;
 
 namespace ash {
 
-// Interface used by first-run tutorial to manipulate and retreive information
+// Interface used by first-run tutorial to manipulate and retrieve information
 // about shell elements.
 // All returned coordinates are in screen coordinate system.
 class ASH_EXPORT FirstRunHelper {

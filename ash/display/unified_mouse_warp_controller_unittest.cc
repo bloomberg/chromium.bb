@@ -198,7 +198,7 @@ TEST_F(UnifiedMouseWarpControllerTest, WarpMouse) {
   EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(10, 10)));
   // Touch the right edge of the first display. Pointer should warp.
   EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(499, 10)));
-  EXPECT_EQ("250,5",  // moved to 501 by 2px, devided by 2 (dsf).
+  EXPECT_EQ("250,5",  // moved to 501 by 2px, divided by 2 (dsf).
             aura::Env::GetInstance()->last_mouse_location().ToString());
 
   // Touch the left edge of the second display. Pointer should warp.

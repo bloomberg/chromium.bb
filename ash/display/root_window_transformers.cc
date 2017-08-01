@@ -93,7 +93,7 @@ class AshRootWindowTransformer : public RootWindowTransformer {
         CreateRootWindowRotationTransform(root, display);
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kAshEnableMirroredScreen)) {
-      // Apply the tranform that flips the screen image horizontally so that
+      // Apply the transform that flips the screen image horizontally so that
       // the screen looks normal when reflected on a mirror.
       root_window_bounds_transform_ =
           root_window_bounds_transform_ * CreateMirrorTransform(display);

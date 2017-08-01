@@ -932,7 +932,7 @@ void PanelLayoutManager::OnKeyboardBoundsChanging(
     }
   }
   // This bounds change will have caused a change to the Shelf which does not
-  // propogate automatically to this class, so manually recalculate bounds.
+  // propagate automatically to this class, so manually recalculate bounds.
   OnWindowResized();
 }
 

@@ -55,7 +55,7 @@ class ASH_EXPORT TouchpadAndKeyboardDisabler : public ShellObserver {
   ~TouchpadAndKeyboardDisabler() override;
 
   // Callback from running the disable closure.
-  void OnDisableAck(bool suceeded);
+  void OnDisableAck(bool succeeded);
 
   // ShellObserver:
   void OnShellDestroyed() override;

@@ -33,7 +33,7 @@ class ASH_EXPORT VirtualKeyboardController
   void OnTouchscreenDeviceConfigurationChanged() override;
   void OnKeyboardDeviceConfigurationChanged() override;
 
-  // Toggles whether the presense of an external keyboard should be ignored
+  // Toggles whether the presence of an external keyboard should be ignored
   // when determining whether or not to show the on-screen keyboard.
   void ToggleIgnoreExternalKeyboard();
 
@@ -57,7 +57,7 @@ class ASH_EXPORT VirtualKeyboardController
   bool has_internal_keyboard_;
   // True if a touchscreen is connected.
   bool has_touchscreen_;
-  // True if the presense of an external keyboard should be ignored.
+  // True if the presence of an external keyboard should be ignored.
   bool ignore_external_keyboard_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardController);

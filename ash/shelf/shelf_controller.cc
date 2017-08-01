@@ -130,7 +130,7 @@ void ShelfController::AddShelfItem(int32_t index, const ShelfItem& item) {
   DCHECK_EQ(Shell::GetAshConfig(), Config::MASH) << " Unexpected model sync";
   DCHECK(!applying_remote_shelf_model_changes_) << " Unexpected model change";
   index = index < 0 ? model_.item_count() : index;
-  DCHECK_GT(index, 0) << " Items can not preceed the AppList";
+  DCHECK_GT(index, 0) << " Items can not precede the AppList";
   DCHECK_LE(index, model_.item_count()) << " Index out of bounds";
   index = std::min(std::max(index, 1), model_.item_count());
   base::AutoReset<bool> reset(&applying_remote_shelf_model_changes_, true);
@@ -157,7 +157,7 @@ void ShelfController::MoveShelfItem(const ShelfID& id, int32_t index) {
   DCHECK_NE(current_index, 0) << " The AppList shelf item cannot be moved";
   if (current_index <= 0)
     return;
-  DCHECK_GT(index, 0) << " Items can not preceed the AppList";
+  DCHECK_GT(index, 0) << " Items can not precede the AppList";
   DCHECK_LT(index, model_.item_count()) << " Index out of bounds";
   index = std::min(std::max(index, 1), model_.item_count() - 1);
   DCHECK_NE(current_index, index) << " The item is already at the given index";

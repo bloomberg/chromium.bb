@@ -123,7 +123,7 @@ class ASH_EXPORT StickyKeysController : public ui::EventRewriter {
 };
 
 // StickyKeysHandler handles key event and controls sticky keysfor specific
-// modifier keys. If monitored keyboard events are recieved, StickyKeysHandler
+// modifier keys. If monitored keyboard events are received, StickyKeysHandler
 // changes internal state. If non modifier keyboard events or mouse events are
 // received, StickyKeysHandler will append modifier based on internal state.
 // For other events, StickyKeysHandler does nothing.
