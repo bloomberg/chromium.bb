@@ -7,8 +7,6 @@ import("//build/config/sysroot.gni")
 
 config("c++flags") {
   if (use_custom_libcxx) {
-    prefix = "//buildtools/third_party"
-    include = "trunk/include"
     if (!is_clang) {
       # Gcc has a built-in abs() definition with default visibility.
       # If it was not disabled, it would conflict with libc++'s abs()
@@ -17,14 +15,14 @@ config("c++flags") {
     }
     cflags_cc = [
       "-nostdinc++",
-      "-isystem" + rebase_path("$prefix/libc++/$include", root_build_dir),
-      "-isystem" + rebase_path("$prefix/libc++abi/$include", root_build_dir),
+      "-isystem" + rebase_path("$libcxx_prefix/include", root_build_dir),
+      "-isystem" + rebase_path("$libcxxabi_prefix/include", root_build_dir),
     ]
     if (is_linux && current_cpu == "arm") {
       cflags_c = [ "-isystem" +
-                   rebase_path("$prefix/libunwind/$include", root_build_dir) ]
+                   rebase_path("$libunwind_prefix/include", root_build_dir) ]
       cflags_cc += [ "-isystem" +
-                     rebase_path("$prefix/libunwind/$include", root_build_dir) ]
+                     rebase_path("$libunwind_prefix/include", root_build_dir) ]
     }
 
     # Make sure we don't link against libc++ or libstdc++.
