@@ -23,7 +23,8 @@ GamingSeat::GamingSeat(GamingSeatDelegate* delegate,
 }
 
 GamingSeat::~GamingSeat() {
-  ui::GamepadProviderOzone::GetInstance()->RemoveGamepadObserver(this);
+  if (focused_)
+    ui::GamepadProviderOzone::GetInstance()->RemoveGamepadObserver(this);
   delegate_->OnGamingSeatDestroying(this);
   // Disconnect all the gamepads.
   for (auto& entry : gamepads_)
@@ -48,11 +49,14 @@ void GamingSeat::OnWindowFocused(aura::Window* gained_focus,
   }
 
   bool focused = target && delegate_->CanAcceptGamepadEventsForSurface(target);
-  if (focused) {
-    ui::GamepadProviderOzone::GetInstance()->AddGamepadObserver(this);
-    OnGamepadDevicesUpdated();
-  } else {
-    ui::GamepadProviderOzone::GetInstance()->RemoveGamepadObserver(this);
+  if (focused_ != focused) {
+    focused_ = focused;
+    if (focused) {
+      ui::GamepadProviderOzone::GetInstance()->AddGamepadObserver(this);
+      OnGamepadDevicesUpdated();
+    } else {
+      ui::GamepadProviderOzone::GetInstance()->RemoveGamepadObserver(this);
+    }
   }
 }
 

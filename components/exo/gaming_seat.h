@@ -65,6 +65,10 @@ class GamingSeat : public WMHelper::FocusObserver
 #if defined(USE_OZONE_GAMEPAD)
   // Contains the delegate for each gamepad device.
   base::flat_map<int, GamepadDelegate*> gamepads_;
+
+  // The flag if a valid target for gaming seat is focused. In other words, if
+  // it's true, this class is observing gamepad events.
+  bool focused_ = false;
 #else
   class ThreadSafeGamepadChangeFetcher;
 
