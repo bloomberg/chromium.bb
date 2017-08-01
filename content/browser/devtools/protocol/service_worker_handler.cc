@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/containers/flat_set.h"
 #include "content/browser/background_sync/background_sync_context.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
@@ -366,8 +367,8 @@ void ServiceWorkerHandler::OnWorkerVersionUpdated(
   std::unique_ptr<protocol::Array<Version>> result =
       protocol::Array<Version>::create();
   for (const auto& version : versions) {
-    std::unique_ptr<protocol::Array<std::string>> clients =
-        protocol::Array<std::string>::create();
+    base::flat_set<std::string> client_set;
+
     for (const auto& client : version.clients) {
       if (client.second.type == SERVICE_WORKER_PROVIDER_FOR_WINDOW) {
         // PlzNavigate: a navigation may not yet be associated with a
@@ -381,7 +382,7 @@ void ServiceWorkerHandler::OnWorkerVersionUpdated(
         // because of the thread hopping.
         if (!web_contents)
           continue;
-        clients->addItem(
+        client_set.insert(
             DevToolsAgentHost::GetOrCreateFor(web_contents)->GetId());
       } else if (client.second.type ==
                  SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER) {
@@ -389,9 +390,14 @@ void ServiceWorkerHandler::OnWorkerVersionUpdated(
             DevToolsAgentHost::GetForWorker(client.second.process_id,
                                             client.second.route_id));
         if (agent_host)
-          clients->addItem(agent_host->GetId());
+          client_set.insert(agent_host->GetId());
       }
     }
+    std::unique_ptr<protocol::Array<std::string>> clients =
+        protocol::Array<std::string>::create();
+    for (auto& c : client_set)
+      clients->addItem(c);
+
     std::unique_ptr<Version> version_value = Version::Create()
         .SetVersionId(base::Int64ToString(version.version_id))
         .SetRegistrationId(
