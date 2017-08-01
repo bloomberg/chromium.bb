@@ -59,12 +59,14 @@ bool PlatformSensorFusion::StartSensor(
   }
 
   if (GetReportingMode() == mojom::ReportingMode::CONTINUOUS) {
-    timer_.Start(FROM_HERE,
-                 base::TimeDelta::FromMicroseconds(
-                     base::Time::kMicrosecondsPerSecond /
-                     GetDefaultConfiguration().frequency()),
-                 this, &PlatformSensorFusion::OnSensorReadingChanged);
+    timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond /
+                                          configuration.frequency()),
+        this, &PlatformSensorFusion::OnSensorReadingChanged);
   }
+
+  fusion_algorithm_->SetFrequency(configuration.frequency());
 
   return true;
 }
@@ -75,6 +77,8 @@ void PlatformSensorFusion::StopSensor() {
 
   if (timer_.IsRunning())
     timer_.Stop();
+
+  fusion_algorithm_->Reset();
 }
 
 bool PlatformSensorFusion::CheckSensorConfiguration(

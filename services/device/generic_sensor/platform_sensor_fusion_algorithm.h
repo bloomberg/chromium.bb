@@ -26,6 +26,15 @@ class PlatformSensorFusionAlgorithm {
   virtual void GetFusedData(const std::vector<SensorReading>& readings,
                             SensorReading* fused_reading) = 0;
 
+  // Sets frequency at which data is expected to be obtained from the platform.
+  // This might be needed e.g., to calculate cut-off frequency of low/high-pass
+  // filters.
+  virtual void SetFrequency(double frequency);
+
+  // Algorithms that use statistical data (moving average, Kalman filter, etc),
+  // might need to be reset when sensor is stopped.
+  virtual void Reset();
+
  private:
   // Default threshold for comparing SensorReading values. If a
   // different threshold is better for a certain sensor type, set_threshold()

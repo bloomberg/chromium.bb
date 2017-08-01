@@ -19,7 +19,7 @@ platform.
 | AMBIENT_LIGHT                     | TYPE_LIGHT                | in_illuminance | AppleLMUController                    | SENSOR_TYPE_AMBIENT_LIGHT                 |
 | PROXIMITY                         |                           |                |                                       |                                           |
 | ACCELEROMETER                     | TYPE_ACCELEROMETER        | in_accel       | SMCMotionSensor                       | SENSOR_TYPE_ACCELEROMETER_3D              |
-| LINEAR_ACCELEROMETER              | TYPE_LINEAR_ACCELEROMETER |                |                                       |                                           |
+| LINEAR_ACCELEROMETER              | TYPE_LINEAR_ACCELEROMETER |                |                                       | ACCELEROMETER (*)                         |
 | GYROSCOPE                         | TYPE_GYROSCOPE            | in_anglvel     |                                       | SENSOR_TYPE_GYROMETER_3D                  |
 | MAGNETOMETER                      | TYPE_MAGNETIC_FIELD       | in_magn        |                                       | SENSOR_TYPE_COMPASS_3D                    |
 | PRESSURE                          |                           |                |                                       |                                           |
