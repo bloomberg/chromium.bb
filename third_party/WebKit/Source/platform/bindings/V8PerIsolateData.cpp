@@ -27,7 +27,6 @@
 
 #include <memory>
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/bindings/DOMDataStore.h"
@@ -53,58 +52,24 @@ static void MicrotasksCompletedCallback(v8::Isolate* isolate) {
   V8PerIsolateData::From(isolate)->RunEndOfScopeTasks();
 }
 
-V8PerIsolateData::V8PerIsolateData(
-    WebTaskRunner* task_runner,
-    intptr_t* table,
-    V8ContextSnapshotMode v8_context_snapshot_mode)
-    : v8_context_snapshot_mode_(v8_context_snapshot_mode),
-      isolate_holder_(
+V8PerIsolateData::V8PerIsolateData(WebTaskRunner* task_runner)
+    : isolate_holder_(
           task_runner ? task_runner->ToSingleThreadTaskRunner() : nullptr,
           gin::IsolateHolder::kSingleThread,
           IsMainThread() ? gin::IsolateHolder::kDisallowAtomicsWait
-                         : gin::IsolateHolder::kAllowAtomicsWait,
-          table,
-          v8_context_snapshot_mode_ == V8ContextSnapshotMode::kUseSnapshot
-              ? &startup_data_
-              : nullptr),
-      interface_template_map_for_v8_context_snapshot_(GetIsolate()),
+                         : gin::IsolateHolder::kAllowAtomicsWait),
       string_cache_(WTF::WrapUnique(new StringCache(GetIsolate()))),
       private_property_(V8PrivateProperty::Create()),
       constructor_mode_(ConstructorMode::kCreateNewObject),
       use_counter_disabled_(false),
       is_handling_recursion_level_error_(false),
       is_reporting_exception_(false) {
-  // If it fails to load the snapshot file, falls back to kDontUseSnapshot mode.
-  // TODO(peria): Remove this fallback routine.
-  if (v8_context_snapshot_mode_ == V8ContextSnapshotMode::kUseSnapshot &&
-      !startup_data_.data) {
-    v8_context_snapshot_mode_ = V8ContextSnapshotMode::kDontUseSnapshot;
-  }
-
   // FIXME: Remove once all v8::Isolate::GetCurrent() calls are gone.
   GetIsolate()->Enter();
   GetIsolate()->AddBeforeCallEnteredCallback(&BeforeCallEnteredCallback);
   GetIsolate()->AddMicrotasksCompletedCallback(&MicrotasksCompletedCallback);
   if (IsMainThread())
     g_main_thread_per_isolate_data = this;
-}
-
-// This constructor is used for taking a V8 context snapshot. It must run on the
-// main thread.
-V8PerIsolateData::V8PerIsolateData(intptr_t* reference_table)
-    : v8_context_snapshot_mode_(V8ContextSnapshotMode::kTakeSnapshot),
-      isolate_holder_(reference_table, nullptr),
-      interface_template_map_for_v8_context_snapshot_(GetIsolate()),
-      string_cache_(WTF::WrapUnique(new StringCache(GetIsolate()))),
-      private_property_(V8PrivateProperty::Create()),
-      constructor_mode_(ConstructorMode::kCreateNewObject),
-      use_counter_disabled_(false),
-      is_handling_recursion_level_error_(false),
-      is_reporting_exception_(false) {
-  CHECK(IsMainThread());
-
-  // SnapshotCreator enters the isolate, so we don't call Isolate::Enter() here.
-  g_main_thread_per_isolate_data = this;
 }
 
 V8PerIsolateData::~V8PerIsolateData() {}
@@ -114,21 +79,8 @@ v8::Isolate* V8PerIsolateData::MainThreadIsolate() {
   return g_main_thread_per_isolate_data->GetIsolate();
 }
 
-v8::Isolate* V8PerIsolateData::Initialize(WebTaskRunner* task_runner,
-                                          intptr_t* reference_table,
-                                          V8ContextSnapshotMode context_mode) {
-  DCHECK(context_mode == V8ContextSnapshotMode::kDontUseSnapshot ||
-         reference_table);
-
-  V8PerIsolateData* data = nullptr;
-  if (context_mode == V8ContextSnapshotMode::kTakeSnapshot) {
-    CHECK(reference_table);
-    data = new V8PerIsolateData(reference_table);
-  } else {
-    data = new V8PerIsolateData(task_runner, reference_table, context_mode);
-  }
-  DCHECK(data);
-
+v8::Isolate* V8PerIsolateData::Initialize(WebTaskRunner* task_runner) {
+  V8PerIsolateData* data = new V8PerIsolateData(task_runner);
   v8::Isolate* isolate = data->GetIsolate();
   isolate->SetData(gin::kEmbedderBlink, data);
   return isolate;
@@ -212,11 +164,6 @@ v8::Local<v8::FunctionTemplate> V8PerIsolateData::FindOrCreateOperationTemplate(
 v8::Local<v8::FunctionTemplate> V8PerIsolateData::FindInterfaceTemplate(
     const DOMWrapperWorld& world,
     const void* key) {
-  if (GetV8ContextSnapshotMode() == V8ContextSnapshotMode::kTakeSnapshot) {
-    const WrapperTypeInfo* type = reinterpret_cast<const WrapperTypeInfo*>(key);
-    return interface_template_map_for_v8_context_snapshot_.Get(type);
-  }
-
   auto& map = SelectInterfaceTemplateMap(world);
   auto result = map.find(key);
   if (result != map.end())
@@ -228,19 +175,8 @@ void V8PerIsolateData::SetInterfaceTemplate(
     const DOMWrapperWorld& world,
     const void* key,
     v8::Local<v8::FunctionTemplate> value) {
-  if (GetV8ContextSnapshotMode() == V8ContextSnapshotMode::kTakeSnapshot) {
-    auto& map = interface_template_map_for_v8_context_snapshot_;
-    const WrapperTypeInfo* type = reinterpret_cast<const WrapperTypeInfo*>(key);
-    map.Set(type, value);
-  } else {
-    auto& map = SelectInterfaceTemplateMap(world);
-    map.insert(key, v8::Eternal<v8::FunctionTemplate>(GetIsolate(), value));
-  }
-}
-
-void V8PerIsolateData::ClearPersistentsForV8ContextSnapshot() {
-  interface_template_map_for_v8_context_snapshot_.Clear();
-  private_property_.reset();
+  auto& map = SelectInterfaceTemplateMap(world);
+  map.insert(key, v8::Eternal<v8::FunctionTemplate>(GetIsolate(), value));
 }
 
 const v8::Eternal<v8::Name>* V8PerIsolateData::FindOrCreateEternalNameCache(
