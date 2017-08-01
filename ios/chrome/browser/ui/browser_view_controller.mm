@@ -3705,8 +3705,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (void)loadJavaScriptFromLocationBar:(NSString*)script {
   [_preloadController cancelPrerender];
   DCHECK([_model currentTab]);
-  [[_model currentTab].webController executeUserJavaScript:script
-                                         completionHandler:nil];
+  if ([self currentWebState])
+    [self currentWebState]->ExecuteUserJavaScript(script);
 }
 
 - (web::WebState*)currentWebState {

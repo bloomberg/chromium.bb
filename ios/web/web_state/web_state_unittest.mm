@@ -10,7 +10,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/ios/wait_util.h"
 #include "base/values.h"
+#import "ios/testing/wait_util.h"
 #import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/test/fakes/test_web_state_delegate.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -18,6 +20,9 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using testing::WaitUntilConditionOrTimeout;
+using testing::kWaitForJSCompletionTimeout;
 
 namespace web {
 
@@ -48,6 +53,25 @@ TEST_F(WebStateTest, ScriptExecution) {
   std::string string_result;
   execution_result->GetAsString(&string_result);
   EXPECT_EQ("bar", string_result);
+}
+
+// Tests that executing user JavaScript registers user interaction.
+TEST_F(WebStateTest, UserScriptExecution) {
+  web::TestWebStateDelegate delegate;
+  web_state()->SetDelegate(&delegate);
+  ASSERT_TRUE(delegate.child_windows().empty());
+
+  LoadHtml("<html></html>");
+  web_state()->ExecuteUserJavaScript(@"window.open('', target='_blank');");
+
+  web::TestWebStateDelegate* delegate_ptr = &delegate;
+  bool suceess = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    // Child window can only be open if the user interaction was registered.
+    return delegate_ptr->child_windows().size() == 1;
+  });
+
+  ASSERT_TRUE(suceess);
+  EXPECT_TRUE(delegate.child_windows()[0]);
 }
 
 // Tests loading progress.

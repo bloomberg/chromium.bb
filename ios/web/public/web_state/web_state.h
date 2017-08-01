@@ -162,6 +162,10 @@ class WebState : public base::SupportsUserData {
   virtual void ExecuteJavaScript(const base::string16& javascript,
                                  const JavaScriptResultCallback& callback) = 0;
 
+  // Asynchronously executes |javaScript| in the main frame's context,
+  // registering user interaction.
+  virtual void ExecuteUserJavaScript(NSString* javaScript) = 0;
+
   // Gets the contents MIME type.
   virtual const std::string& GetContentsMimeType() const = 0;
 

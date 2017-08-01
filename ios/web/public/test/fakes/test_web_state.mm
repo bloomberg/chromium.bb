@@ -111,6 +111,8 @@ void TestWebState::ExecuteJavaScript(const base::string16& javascript,
   callback.Run(nullptr);
 }
 
+void TestWebState::ExecuteUserJavaScript(NSString* javaScript) {}
+
 const std::string& TestWebState::GetContentsMimeType() const {
   return mime_type_;
 }
