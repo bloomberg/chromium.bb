@@ -311,6 +311,9 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
 }
 
 static void temporal_filter_iterate_c(AV1_COMP *cpi,
+#if CONFIG_BGSPRITE
+                                      YV12_BUFFER_CONFIG *target,
+#endif  // CONFIG_BGSPRITE
                                       YV12_BUFFER_CONFIG **frames,
                                       int frame_count, int alt_ref_index,
                                       int strength,
@@ -452,9 +455,17 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
       if (mbd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
         uint16_t *dst1_16;
         uint16_t *dst2_16;
+#if CONFIG_BGSPRITE
+        dst1 = target->y_buffer;
+#else
         dst1 = cpi->alt_ref_buffer.y_buffer;
+#endif  // CONFIG_BGSPRITE
         dst1_16 = CONVERT_TO_SHORTPTR(dst1);
+#if CONFIG_BGSPRITE
+        stride = target->y_stride;
+#else
         stride = cpi->alt_ref_buffer.y_stride;
+#endif  // CONFIG_BGSPRITE
         byte = mb_y_offset;
         for (i = 0, k = 0; i < 16; i++) {
           for (j = 0; j < 16; j++, k++) {
@@ -494,8 +505,13 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
         }
       } else {
 #endif  // CONFIG_HIGHBITDEPTH
-        dst1 = cpi->alt_ref_buffer.y_buffer;
-        stride = cpi->alt_ref_buffer.y_stride;
+#if CONFIG_BGSPRITE
+        dst1 = target->y_buffer;
+        stride = target->y_stride;
+#else
+      dst1 = cpi->alt_ref_buffer.y_buffer;
+      stride = cpi->alt_ref_buffer.y_stride;
+#endif  // CONFIG_BGSPRITE
         byte = mb_y_offset;
         for (i = 0, k = 0; i < 16; i++) {
           for (j = 0; j < 16; j++, k++) {
@@ -507,10 +523,15 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
           }
           byte += stride - 16;
         }
-
-        dst1 = cpi->alt_ref_buffer.u_buffer;
-        dst2 = cpi->alt_ref_buffer.v_buffer;
-        stride = cpi->alt_ref_buffer.uv_stride;
+#if CONFIG_BGSPRITE
+        dst1 = target->u_buffer;
+        dst2 = target->v_buffer;
+        stride = target->uv_stride;
+#else
+      dst1 = cpi->alt_ref_buffer.u_buffer;
+      dst2 = cpi->alt_ref_buffer.v_buffer;
+      stride = cpi->alt_ref_buffer.uv_stride;
+#endif  // CONFIG_BGSPRITE
         byte = mb_uv_offset;
         for (i = 0, k = 256; i < mb_uv_height; i++) {
           for (j = 0; j < mb_uv_width; j++, k++) {
@@ -604,7 +625,7 @@ static void adjust_arnr_filter(AV1_COMP *cpi, int distance, int group_boost,
 
 void av1_temporal_filter(AV1_COMP *cpi,
 #if CONFIG_BGSPRITE
-                         YV12_BUFFER_CONFIG *bg,
+                         YV12_BUFFER_CONFIG *bg, YV12_BUFFER_CONFIG *target,
 #endif  // CONFIG_BGSPRITE
                          int distance) {
   RATE_CONTROL *const rc = &cpi->rc;
@@ -685,6 +706,10 @@ void av1_temporal_filter(AV1_COMP *cpi,
 #endif  // CONFIG_HIGHBITDEPTH
   }
 
-  temporal_filter_iterate_c(cpi, frames, frames_to_blur,
-                            frames_to_blur_backward, strength, &sf);
+  temporal_filter_iterate_c(cpi,
+#if CONFIG_BGSPRITE
+                            target,
+#endif  // CONFIG_BGSPRITE
+                            frames, frames_to_blur, frames_to_blur_backward,
+                            strength, &sf);
 }

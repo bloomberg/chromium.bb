@@ -5739,7 +5739,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 #endif  // CONFIG_BGSPRITE
           av1_temporal_filter(cpi,
 #if CONFIG_BGSPRITE
-                              NULL,
+                              NULL, &cpi->alt_ref_buffer,
 #endif  // CONFIG_BGSPRITE
                               arf_src_index);
         aom_extend_frame_borders(&cpi->alt_ref_buffer);
