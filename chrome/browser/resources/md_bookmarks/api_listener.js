@@ -80,7 +80,7 @@ cr.define('bookmarks.ApiListener', function() {
    */
   function onBookmarkCreated(id, treeNode) {
     batchUIUpdates();
-    if (trackUpdatedItems)
+    if (trackUpdates)
       updatedItems.push(id);
     dispatch(bookmarks.actions.createBookmark(id, treeNode));
   }
@@ -107,7 +107,7 @@ cr.define('bookmarks.ApiListener', function() {
    */
   function onBookmarkMoved(id, moveInfo) {
     batchUIUpdates();
-    if (trackUpdatedItems)
+    if (trackUpdates)
       updatedItems.push(id);
     dispatch(bookmarks.actions.moveBookmark(
         id, moveInfo.parentId, moveInfo.index, moveInfo.oldParentId,
