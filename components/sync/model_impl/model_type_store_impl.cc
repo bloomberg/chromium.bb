@@ -85,7 +85,7 @@ class TaskRunnerMap {
   DISALLOW_COPY_AND_ASSIGN(TaskRunnerMap);
 };
 
-base::LazyInstance<TaskRunnerMap>::Leaky task_runner_map_singleton_ =
+base::LazyInstance<TaskRunnerMap>::Leaky task_runner_map_singleton =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -132,7 +132,7 @@ void ModelTypeStoreImpl::CreateStore(
   DCHECK(!callback.is_null());
   std::unique_ptr<leveldb::Env> env;
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      task_runner_map_singleton_.Get().GetOrCreateTaskRunner(path);
+      task_runner_map_singleton.Get().GetOrCreateTaskRunner(path);
   std::unique_ptr<Result> result(new Result());
   auto task = base::Bind(&ModelTypeStoreBackend::GetOrCreateBackend, path,
                          base::Passed(&env), result.get());

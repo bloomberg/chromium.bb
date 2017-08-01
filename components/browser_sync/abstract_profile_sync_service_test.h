@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/test/test_message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/browser_sync/profile_sync_test_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/syncable/change_record.h"
@@ -72,7 +72,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   // Use |data_type_thread_| for code disallowed on the UI thread.
   base::Thread data_type_thread_;
 
-  base::TestMessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   ProfileSyncServiceBundle profile_sync_service_bundle_;
   std::unique_ptr<TestProfileSyncService> sync_service_;
 
