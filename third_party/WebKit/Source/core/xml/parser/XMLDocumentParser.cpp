@@ -791,22 +791,23 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment,
       xml_errors_(&fragment->GetDocument()),
       script_start_position_(TextPosition::BelowRangePosition()),
       parsing_fragment_(true) {
-  // Add namespaces based on the parent node
+  // Step 2 of
+  // https://html.spec.whatwg.org/multipage/xhtml.html#xml-fragment-parsing-algorithm
+  // The following code collects prefix-namespace mapping in scope on
+  // |parent_element|.
   HeapVector<Member<Element>> elem_stack;
-  while (parent_element) {
+  for (; parent_element; parent_element = parent_element->parentElement())
     elem_stack.push_back(parent_element);
-
-    Element* grand_parent_element = parent_element->parentElement();
-    if (!grand_parent_element)
-      break;
-    parent_element = grand_parent_element;
-  }
 
   if (elem_stack.IsEmpty())
     return;
 
   for (; !elem_stack.IsEmpty(); elem_stack.pop_back()) {
     Element* element = elem_stack.back();
+    // According to https://dom.spec.whatwg.org/#locate-a-namespace, a namespace
+    // from the element name should have higher priority. So we check xmlns
+    // attributes first, then overwrite the map with the namespace of the
+    // element name.
     AttributeCollection attributes = element->Attributes();
     for (auto& attribute : attributes) {
       if (attribute.LocalName() == g_xmlns_atom)
@@ -814,12 +815,13 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment,
       else if (attribute.Prefix() == g_xmlns_atom)
         prefix_to_namespace_map_.Set(attribute.LocalName(), attribute.Value());
     }
+    if (element->namespaceURI().IsNull())
+      continue;
+    if (element->prefix().IsEmpty())
+      default_namespace_uri_ = element->namespaceURI();
+    else
+      prefix_to_namespace_map_.Set(element->prefix(), element->namespaceURI());
   }
-
-  // If the parent element is not in document tree, there may be no xmlns
-  // attribute; just default to the parent's namespace.
-  if (default_namespace_uri_.IsNull() && !parent_element->isConnected())
-    default_namespace_uri_ = parent_element->namespaceURI();
 }
 
 XMLParserContext::~XMLParserContext() {

@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL Child nodes of template element in XHTML documents must be appended to template content assert_equals: Wrong number of template child nodes expected 0 but got 2
-FAIL Child nodes of nested template element in XHTML documents must be appended to template content assert_equals: Wrong number of template child nodes expected 0 but got 3
-PASS Child nodes of template element in XHTML documents must be appended to template content. Test loading XHTML document from a file 
-PASS Child nodes of nested template element in XHTML documents must be appended to template content. Test loading XHTML document from a file 
-Harness: the test ran to completion.
-
