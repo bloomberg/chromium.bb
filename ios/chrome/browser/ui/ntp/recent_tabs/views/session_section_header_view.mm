@@ -6,11 +6,11 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/ui/constraints_ui_util.h"
 #include "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"
 #include "ios/chrome/browser/ui/ntp/recent_tabs/views/disclosure_view.h"
 #include "ios/chrome/browser/ui/ntp/recent_tabs/views/views_utils.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"

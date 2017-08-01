@@ -7,8 +7,8 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/passwords/password_generation_prompt_view.h"
-#import "ios/chrome/browser/ui/constraints_ui_util.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
