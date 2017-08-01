@@ -50,6 +50,7 @@ namespace {
 
 const char kPamName[] = "chrome-remote-desktop";
 const char kScriptName[] = "chrome-remote-desktop";
+const char kStartCommand[] = "start";
 const char kForegroundFlag[] = "--foreground";
 
 // This template will be formatted by strftime and then used by mkstemp
@@ -487,7 +488,7 @@ void Daemonize() {
 }  // namespace
 
 int main(int argc, char** argv) {
-  if (argc < 2 || strcmp(argv[1], "start") != 0) {
+  if (argc < 2 || std::strcmp(argv[1], kStartCommand) != 0) {
     PrintUsage();
     std::exit(EXIT_FAILURE);
   }
@@ -497,7 +498,7 @@ int main(int argc, char** argv) {
   argv += 2;
 
   bool foreground = false;
-  if (argc >= 1 && strcmp(argv[0], kForegroundFlag) == 0) {
+  if (argc >= 1 && std::strcmp(argv[0], kForegroundFlag) == 0) {
     foreground = true;
     argc -= 1;
     argv += 1;
