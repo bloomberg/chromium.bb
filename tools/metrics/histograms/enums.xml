@@ -3150,6 +3150,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Has worked at least once"/>
 </enum>
 
+<enum name="BooleanExceeded">
+  <int value="0" label="Not exceeded"/>
+  <int value="1" label="Exceeded"/>
+</enum>
+
 <enum name="BooleanExists">
   <int value="0" label="Does not exist"/>
   <int value="1" label="Exists"/>

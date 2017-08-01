@@ -7,6 +7,7 @@
 #include <memory>
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/safe_browsing/common/safebrowsing_messages.h"
@@ -62,11 +63,13 @@ TEST_F(ThreatDOMDetailsTest, Everything) {
   safe_browsing::ThreatDOMDetails::kMaxAttributes = 5;
 
   const char urlprefix[] = "data:text/html;charset=utf-8,";
-
+  const char kMaxNodesExceededMetric[] =
+      "SafeBrowsing.ThreatReport.MaxNodesExceededInFrame";
   {
     // A page with an internal script
     std::string html = "<html><head><script></script></head></html>";
     LoadHTML(html.c_str());
+    base::HistogramTester histograms;
     std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> params;
     details->ExtractResources(&params);
     ASSERT_EQ(1u, params.size());
@@ -75,6 +78,8 @@ TEST_F(ThreatDOMDetailsTest, Everything) {
     EXPECT_EQ(0, param.node_id);
     EXPECT_EQ(0, param.parent_node_id);
     EXPECT_TRUE(param.child_node_ids.empty());
+
+    histograms.ExpectBucketCount(kMaxNodesExceededMetric, false, 1);
   }
 
   {
@@ -204,6 +209,7 @@ TEST_F(ThreatDOMDetailsTest, Everything) {
     GURL url(urlprefix + html);
 
     LoadHTML(html.c_str());
+    base::HistogramTester histograms;
     std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> params;
     details->ExtractResources(&params);
     ASSERT_EQ(51u, params.size());
@@ -216,6 +222,8 @@ TEST_F(ThreatDOMDetailsTest, Everything) {
       EXPECT_EQ(0, param.parent_node_id);
       EXPECT_TRUE(param.child_node_ids.empty());
     }
+
+    histograms.ExpectBucketCount(kMaxNodesExceededMetric, true, 1);
   }
 
   {
@@ -230,6 +238,7 @@ TEST_F(ThreatDOMDetailsTest, Everything) {
     GURL url(urlprefix + html);
 
     LoadHTML(html.c_str());
+    base::HistogramTester histograms;
     std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> params;
     details->ExtractResources(&params);
     ASSERT_EQ(51u, params.size());
@@ -242,6 +251,8 @@ TEST_F(ThreatDOMDetailsTest, Everything) {
       EXPECT_EQ(0, param.parent_node_id);
       EXPECT_TRUE(param.child_node_ids.empty());
     }
+
+    histograms.ExpectBucketCount(kMaxNodesExceededMetric, true, 1);
   }
 
   {

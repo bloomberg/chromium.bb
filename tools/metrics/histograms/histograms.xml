@@ -64984,6 +64984,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.ThreatReport.MaxNodesExceededInFrame"
+    enum="BooleanExceeded">
+  <owner>lpz@chromium.org</owner>
+  <summary>
+    Whether the threat report generated for a subframe of a page hit the maximum
+    number of nodes. When this is true, the data from that frame will be
+    truncated.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.UnverifiedDownloads.Allowed"
     enum="SBClientDownloadExtensions">
   <owner>asanka@chromium.org</owner>

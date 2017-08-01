@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -309,17 +310,20 @@ void ThreatDOMDetails::ExtractResources(
   ElementToNodeMap element_to_node_map;
   blink::WebElementCollection elements = document.All();
   blink::WebElement element = elements.FirstItem();
+  bool max_nodes_exceeded = false;
   for (; !element.IsNull(); element = elements.NextItem()) {
     if (ShouldHandleElement(element, tag_and_attributes_list_)) {
       HandleElement(element, tag_and_attributes_list_, &details_node, resources,
                     &element_to_node_map);
       if (resources->size() >= kMaxNodes) {
         // We have reached kMaxNodes, exit early.
-        resources->push_back(details_node);
-        return;
+        max_nodes_exceeded = true;
+        break;
       }
     }
   }
+  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.ThreatReport.MaxNodesExceededInFrame",
+                        max_nodes_exceeded);
   resources->push_back(details_node);
 }
 
