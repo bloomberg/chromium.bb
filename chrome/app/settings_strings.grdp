@@ -2251,6 +2251,12 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_PERMISSIONS" desc="The Permissions header, used to group together permissions, such as Geolocation, on the Site Details page.">
     Permissions
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_SOURCE_KILL_SWITCH" desc="A label shown when a permission on the Site Details page is temporarily blocked for the user's safety.">
+    Temporarily blocked to protect your security
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_SOURCE_INSECURE_ORIGIN" desc="A label shown when a permission on the Site Details page is blocked because the site is insecure.">
+    Blocked to protect your privacy
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_RESET_BUTTON" desc="The Reset button, used to clear all permissions for a given site.">
     Reset site settings
   </message>

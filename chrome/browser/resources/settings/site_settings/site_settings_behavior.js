@@ -145,6 +145,8 @@ var SiteSettingsBehaviorImpl = {
     var origin = exception.origin;
     var embeddingOrigin = exception.embeddingOrigin;
 
+    // TODO(patricialor): |exception.source| should be one of the values defined
+    // in |settings.SiteSettingSource|.
     var enforcement = /** @type {?chrome.settingsPrivate.Enforcement} */ (null);
     if (exception.source == 'extension' || exception.source == 'HostedApp' ||
         exception.source == 'platform_app' || exception.source == 'policy') {

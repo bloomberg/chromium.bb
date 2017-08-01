@@ -21,13 +21,12 @@ var ContentSettingProvider = {
 /**
  * The site exception information passed from the C++ handler.
  * See also: SiteException.
- * TODO(patricialor): Investigate making the |source| field an enum type.
  * @typedef {{embeddingOrigin: string,
  *            incognito: boolean,
  *            origin: string,
  *            displayName: string,
  *            setting: !settings.ContentSetting,
- *            source: string}}
+ *            source: !settings.SiteSettingSource}}
  */
 var RawSiteException;
 

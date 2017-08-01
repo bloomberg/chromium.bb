@@ -13,12 +13,28 @@
   <template>
     <style include="settings-shared md-select"></style>
     <div id="details">
-      <div class="list-item">
+      <div id="permissionItem" class="list-item">
         <div>
           <iron-icon icon="[[icon]]">
           </iron-icon>
         </div>
-        <div class="middle" id="permissionHeader">[[label]]</div>
+        <div class="middle" id="permissionHeader">
+          [[label]]
+          <div class="secondary"
+              hidden$="[[!hasPermissionSourceString_(site.source)]]">
+            [[permissionSourceString_(
+                site.source,
+                '$i18nPolymer{siteSettingsSourceEmbargo}',
+                '$i18nPolymer{siteSettingsSourceInsecureOrigin}',
+                '$i18nPolymer{siteSettingsSourceKillSwitch}',
+                '$i18nPolymer{siteSettingsSourceExtensionAllow}',
+                '$i18nPolymer{siteSettingsSourceExtensionBlock}',
+                '$i18nPolymer{siteSettingsSourceExtensionAsk}',
+                '$i18nPolymer{siteSettingsSourcePolicyAllow}',
+                '$i18nPolymer{siteSettingsSourcePolicyBlock}',
+                '$i18nPolymer{siteSettingsSourcePolicyAsk}')]]
+          </div>
+        </div>
         <div class="md-select-wrapper">
           <select id="permission" class="md-select"
               aria-labelledby="permissionHeader"
