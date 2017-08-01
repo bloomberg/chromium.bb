@@ -14,7 +14,6 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/media_stream.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
@@ -63,8 +62,7 @@ class WebMediaPlayerMSCompositor;
 // blink::WebMediaPlayerClient
 //   WebKit client of this media player object.
 class CONTENT_EXPORT WebMediaPlayerMS
-    : public NON_EXPORTED_BASE(MediaStreamObserver),
-      public NON_EXPORTED_BASE(blink::WebMediaPlayer),
+    : public NON_EXPORTED_BASE(blink::WebMediaPlayer),
       public NON_EXPORTED_BASE(media::WebMediaPlayerDelegate::Observer),
       public NON_EXPORTED_BASE(base::SupportsWeakPtr<WebMediaPlayerMS>) {
  public:
@@ -181,10 +179,6 @@ class CONTENT_EXPORT WebMediaPlayerMS
                     bool flip_y,
                     bool premultiply_alpha) override;
 
-  // MediaStreamObserver implementation
-  void TrackAdded(const blink::WebMediaStreamTrack& track) override;
-  void TrackRemoved(const blink::WebMediaStreamTrack& track) override;
-
  private:
   friend class WebMediaPlayerMSTest;
 
@@ -206,11 +200,6 @@ class CONTENT_EXPORT WebMediaPlayerMS
 
   // Getter method to |client_|.
   blink::WebMediaPlayerClient* get_client() { return client_; }
-
-  // To be run when tracks are added or removed.
-  void Reload();
-  void ReloadVideo();
-  void ReloadAudio();
 
   blink::WebLocalFrame* const frame_;
 
@@ -277,10 +266,6 @@ class CONTENT_EXPORT WebMediaPlayerMS
   // True if playback should be started upon the next call to OnShown(). Only
   // used on Android.
   bool should_play_upon_shown_;
-  blink::WebMediaStream web_stream_;
-  // IDs of the tracks currently played.
-  blink::WebString current_video_track_id_;
-  blink::WebString current_audio_track_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerMS);
 };
