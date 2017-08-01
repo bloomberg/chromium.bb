@@ -104,6 +104,7 @@ Bug(none) virtual/without-smil/ [ Skip ]
 
 # Fail on SPv1, but succeed on SPv2
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Pass ]
+crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]
 
 Bug(none) paint/transparency/compositing-alpha-fold-crash.html [ Failure ]
 Bug(none) paint/invalidation/clip-flex-text.html [ Pass Failure ]
@@ -515,6 +516,7 @@ Bug(none) fast/canvas/OffscreenCanvas-fillRect-in-worker.html [ Failure ]
 Bug(none) fast/canvas/OffscreenCanvas-filter-in-worker.html [ Failure ]
 Bug(none) fast/canvas/OffscreenCanvas-paths-in-worker.html [ Failure ]
 Bug(none) fast/canvas/OffscreenCanvas-strokeRect-in-worker.html [ Failure ]
+Bug(none) fast/canvas/OffscreenCanvas-text-rendering-in-worker.html [ Failure ]
 Bug(none) fast/canvas/OffscreenCanvas-transform-shadow-in-worker.html [ Failure ]
 Bug(none) fast/canvas/webgl/pixelated.html [ Failure ]
 Bug(none) fast/clip/nestedTransparencyClip.html [ Failure ]
@@ -1134,6 +1136,7 @@ Bug(none) paint/invalidation/invalidate-descendants-when-receiving-paint-layer.h
 Bug(none) paint/invalidation/invalidate-paint-in-iframe-in-composited-layer.html [ Failure ]
 Bug(none) paint/invalidation/invalidation-after-opacity-change-subtree.html [ Failure ]
 Bug(none) paint/invalidation/invalidation-on-foreground-graphics-layer.html [ Failure ]
+Bug(none) paint/invalidation/japanese-rl-selection-clear.html [ Failure ]
 Bug(none) paint/invalidation/japanese-rl-selection-repaint.html [ Failure ]
 Bug(none) paint/invalidation/layout-state-only-positioned.html [ Failure ]
 Bug(none) paint/invalidation/media-audio-no-spurious-repaints.html [ Failure ]
@@ -1166,6 +1169,7 @@ Bug(none) paint/invalidation/paged-with-overflowing-block-rl.html [ Failure ]
 Bug(none) paint/invalidation/paint-invalidation-with-opacity.html [ Failure ]
 Bug(none) paint/invalidation/paint-invalidation-with-reparent-across-frame-boundaries.html [ Failure ]
 Bug(none) paint/invalidation/percent-size-image-resize-container.html [ Failure ]
+Bug(none) paint/invalidation/positioned-great-grandparent-change-location.html [ Failure ]
 Bug(none) paint/invalidation/reflection-invalidation-after-display.html [ Failure ]
 Bug(none) paint/invalidation/reflection-invalidation-positioned-child.html [ Failure ]
 Bug(none) paint/invalidation/reflection-redraw.html [ Failure ]
@@ -1186,6 +1190,7 @@ Bug(none) paint/invalidation/scroll-fixed-layer-with-transformed-parent-layer.ht
 Bug(none) paint/invalidation/scroll-fixed-reflected-layer.html [ Failure ]
 Bug(none) paint/invalidation/scroll-in-fixed-layer.html [ Failure ]
 Bug(none) paint/invalidation/scroll-stacking-context-backface-visiblity-leaves-traces.html [ Failure ]
+Bug(none) paint/invalidation/selection-after-remove.html [ Failure ]
 Bug(none) paint/invalidation/selection-clear.html [ Failure ]
 Bug(none) paint/invalidation/selection/invalidation-rect-includes-newline-for-rtl.html [ Failure ]
 Bug(none) paint/invalidation/selection/repaint-rect-for-vertical-writing-mode-with-positioned-root.html [ Failure ]
@@ -1643,7 +1648,7 @@ crbug.com/702370 virtual/threaded/animations/compositor-independent-transform-ca
 # composite animations that paint nothing. For now we mark this test as failing,
 # and can explore enhancing animation test infrastructure or other
 # approaches. http://crbug.com/692310#c12
-crbug.com/692310 virtual/threaded/animations/composited-animations-rotate-zero-degrees.html [ Failure Timeout ]
+crbug.com/692310 virtual/threaded/animations/composited-animations-rotate-zero-degrees.html [ Pass Failure Timeout ]
 
 Bug(none) virtual/threaded/animations/svg-attribute-composition/svg-startOffset-composition.html [ Failure ]
 
@@ -1732,7 +1737,6 @@ crbug.com/719721 virtual/threaded/animations/composited-animation-style-update.h
 Bug(none) paint/pagination/composited-paginated-outlined-box.html [ Failure ]
 Bug(none) paint/pagination/composited-paginated-inline.html [ Failure ]
 
-Bug(none) paint/invalidation/reflection-repaint-test.html [ Failure ]
 Bug(none) compositing/overflow/border-radius-outside-bounds-of-compositing-ancestor.html [ Failure ]
 Bug(none) fast/forms/validation-bubble-appearance-edge.html [ Failure ]
 Bug(none) fast/forms/validation-bubble-appearance-iframe.html [ Failure ]
