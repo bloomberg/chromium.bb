@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "cc/output/program_binding.h"
+#include "components/viz/service/display/program_binding.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace viz {
@@ -33,7 +33,7 @@ struct TexturedQuadDrawCache {
   bool is_empty = true;
 
   // Values tracked to determine if textured quads may be coalesced.
-  cc::ProgramKey program_key;
+  ProgramKey program_key;
   int resource_id = -1;
   bool needs_blending = false;
   bool nearest_neighbor = false;

@@ -11,28 +11,26 @@
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
-#include "cc/output/color_lut_cache.h"
 #include "cc/output/direct_renderer.h"
-#include "cc/output/program_binding.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
+#include "components/viz/service/display/color_lut_cache.h"
 #include "components/viz/service/display/gl_renderer_draw_cache.h"
+#include "components/viz/service/display/program_binding.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/latency/latency_info.h"
 
 namespace cc {
-class DynamicGeometryBinding;
 class GLRendererShaderTest;
 class OutputSurface;
 class Resource;
 class ResourcePool;
 class ScopedResource;
-class StaticGeometryBinding;
 class TextureMailboxDeleter;
 class StreamVideoDrawQuad;
 class TextureDrawQuad;
@@ -45,6 +43,9 @@ class GLES2Interface;
 }  // namespace gpu
 
 namespace viz {
+
+class DynamicGeometryBinding;
+class StaticGeometryBinding;
 struct DrawRenderPassDrawQuadParams;
 
 // Class that handles drawing of composited render layers using GL.
@@ -72,7 +73,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public cc::DirectRenderer {
   void DidChangeVisibility() override;
 
   const gfx::QuadF& SharedGeometryQuad() const { return shared_geometry_quad_; }
-  const cc::StaticGeometryBinding* SharedGeometry() const {
+  const StaticGeometryBinding* SharedGeometry() const {
     return shared_geometry_.get();
   }
 
@@ -228,10 +229,10 @@ class VIZ_SERVICE_EXPORT GLRenderer : public cc::DirectRenderer {
   // conversion.
   // TODO(ccameron): Remove the version with an explicit |dst_color_space|,
   // since that will always be the device color space.
-  void SetUseProgram(const cc::ProgramKey& program_key,
+  void SetUseProgram(const ProgramKey& program_key,
                      const gfx::ColorSpace& src_color_space,
                      const gfx::ColorSpace& dst_color_space);
-  void SetUseProgram(const cc::ProgramKey& program_key,
+  void SetUseProgram(const ProgramKey& program_key,
                      const gfx::ColorSpace& src_color_space);
 
   bool MakeContextCurrent();
@@ -294,17 +295,15 @@ class VIZ_SERVICE_EXPORT GLRenderer : public cc::DirectRenderer {
 
   unsigned offscreen_framebuffer_id_ = 0u;
 
-  std::unique_ptr<cc::StaticGeometryBinding> shared_geometry_;
-  std::unique_ptr<cc::DynamicGeometryBinding> clipped_geometry_;
+  std::unique_ptr<StaticGeometryBinding> shared_geometry_;
+  std::unique_ptr<DynamicGeometryBinding> clipped_geometry_;
   gfx::QuadF shared_geometry_quad_;
 
   // This will return nullptr if the requested program has not yet been
   // initialized.
-  const cc::Program* GetProgramIfInitialized(const cc::ProgramKey& key) const;
+  const Program* GetProgramIfInitialized(const ProgramKey& key) const;
 
-  std::unordered_map<cc::ProgramKey,
-                     std::unique_ptr<cc::Program>,
-                     cc::ProgramKeyHash>
+  std::unordered_map<ProgramKey, std::unique_ptr<Program>, ProgramKeyHash>
       program_cache_;
 
   const gfx::ColorTransform* GetColorTransform(const gfx::ColorSpace& src,
@@ -325,7 +324,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public cc::DirectRenderer {
   bool is_scissor_enabled_ = false;
   bool stencil_shadow_ = false;
   bool blend_shadow_ = false;
-  const cc::Program* current_program_ = nullptr;
+  const Program* current_program_ = nullptr;
   TexturedQuadDrawCache draw_cache_;
   int highp_threshold_cache_ = 0;
 

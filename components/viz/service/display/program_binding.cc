@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/program_binding.h"
+#include "components/viz/service/display/program_binding.h"
 
 #include "base/trace_event/trace_event.h"
-#include "cc/output/geometry_binding.h"
+#include "components/viz/service/display/geometry_binding.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/gfx/color_transform.h"
 
 using gpu::gles2::GLES2Interface;
 
-namespace cc {
+namespace viz {
 
 ProgramKey::ProgramKey() = default;
+
 ProgramKey::ProgramKey(const ProgramKey& other) = default;
+
 ProgramKey::~ProgramKey() = default;
 
 bool ProgramKey::operator==(const ProgramKey& other) const {
@@ -217,12 +219,9 @@ unsigned ProgramBindingBase::LoadShader(GLES2Interface* context,
   if (!shader)
     return 0u;
 
-  const char* shader_source_str[] = { shader_source.data() };
-  int shader_length[] = { static_cast<int>(shader_source.length()) };
-  context->ShaderSource(
-      shader, 1,
-      shader_source_str,
-      shader_length);
+  const char* shader_source_str[] = {shader_source.data()};
+  int shader_length[] = {static_cast<int>(shader_source.length())};
+  context->ShaderSource(shader, 1, shader_source_str, shader_length);
   context->CompileShader(shader);
 #if DCHECK_IS_ON()
   int compiled = 0;
@@ -275,4 +274,4 @@ bool ProgramBindingBase::IsContextLost(GLES2Interface* context) {
   return context->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
 }
 
-}  // namespace cc
+}  // namespace viz

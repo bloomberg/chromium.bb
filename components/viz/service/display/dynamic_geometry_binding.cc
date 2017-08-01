@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/dynamic_geometry_binding.h"
+#include "components/viz/service/display/dynamic_geometry_binding.h"
 
 #include <stdint.h>
 
@@ -10,7 +10,7 @@
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-namespace cc {
+namespace viz {
 
 DynamicGeometryBinding::DynamicGeometryBinding(gpu::gles2::GLES2Interface* gl)
     : gl_(gl), quad_vertices_vbo_(0), quad_elements_vbo_(0) {
@@ -66,4 +66,4 @@ void DynamicGeometryBinding::PrepareForDraw() {
   SetupGLContext(gl_, quad_elements_vbo_, quad_vertices_vbo_);
 }
 
-}  // namespace cc
+}  // namespace viz

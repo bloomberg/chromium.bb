@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_COLOR_LUT_CACHE_H_
-#define CC_OUTPUT_COLOR_LUT_CACHE_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_COLOR_LUT_CACHE_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_COLOR_LUT_CACHE_H_
 
 #include <map>
 
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
-#include "cc/cc_export.h"
+#include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/color_space.h"
 
 namespace gfx {
@@ -20,9 +20,9 @@ namespace gpu {
 namespace gles2 {
 class GLES2Interface;
 }
-}
+}  // namespace gpu
 
-class CC_EXPORT ColorLUTCache {
+class VIZ_SERVICE_EXPORT ColorLUTCache {
  public:
   explicit ColorLUTCache(gpu::gles2::GLES2Interface* gl,
                          bool texture_half_float_linear);
@@ -58,4 +58,4 @@ class CC_EXPORT ColorLUTCache {
   DISALLOW_COPY_AND_ASSIGN(ColorLUTCache);
 };
 
-#endif  // CC_OUTPUT_COLOR_LUT_CACHE_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_COLOR_LUT_CACHE_H_

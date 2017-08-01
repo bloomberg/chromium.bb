@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_DYNAMIC_GEOMETRY_BINDING_H_
-#define CC_OUTPUT_DYNAMIC_GEOMETRY_BINDING_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_DYNAMIC_GEOMETRY_BINDING_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_DYNAMIC_GEOMETRY_BINDING_H_
 
 #include "base/macros.h"
-#include "cc/cc_export.h"
-#include "cc/output/geometry_binding.h"
+#include "components/viz/service/display/geometry_binding.h"
+#include "components/viz/service/viz_service_export.h"
 
 namespace gfx {
 class QuadF;
 }
 
-namespace cc {
+namespace viz {
 
-class CC_EXPORT DynamicGeometryBinding {
+class VIZ_SERVICE_EXPORT DynamicGeometryBinding {
  public:
   explicit DynamicGeometryBinding(gpu::gles2::GLES2Interface* gl);
   void PrepareForDraw();
@@ -31,6 +31,6 @@ class CC_EXPORT DynamicGeometryBinding {
   DISALLOW_COPY_AND_ASSIGN(DynamicGeometryBinding);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_DYNAMIC_GEOMETRY_BINDING_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_DYNAMIC_GEOMETRY_BINDING_H_
