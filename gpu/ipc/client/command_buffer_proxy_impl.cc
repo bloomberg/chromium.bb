@@ -57,7 +57,7 @@ CommandBufferProxyImpl::CommandBufferProxyImpl(int channel_id,
       channel_id_(channel_id),
       route_id_(route_id),
       stream_id_(stream_id),
-      weak_this_(AsWeakPtr()) {
+      weak_ptr_factory_(this) {
   DCHECK(route_id);
 }
 
@@ -216,7 +216,8 @@ bool CommandBufferProxyImpl::Initialize(
 
   // Route must be added before sending the message, otherwise messages sent
   // from the GPU process could race against adding ourselves to the filter.
-  channel->AddRouteWithTaskRunner(route_id_, AsWeakPtr(), task_runner);
+  channel->AddRouteWithTaskRunner(route_id_, weak_ptr_factory_.GetWeakPtr(),
+                                  task_runner);
 
   // We're blocking the UI thread, which is generally undesirable.
   // In this case we need to wait for this before we can show any UI /anyway/,
@@ -798,7 +799,7 @@ void CommandBufferProxyImpl::TryUpdateStateThreadSafe() {
       callback_thread_->PostTask(
           FROM_HERE,
           base::Bind(&CommandBufferProxyImpl::LockAndDisconnectChannel,
-                     weak_this_));
+                     weak_ptr_factory_.GetWeakPtr()));
     }
   }
 }
@@ -932,7 +933,7 @@ void CommandBufferProxyImpl::DisconnectChannelInFreshCallStack() {
   // act fully on the lost context.
   callback_thread_->PostTask(
       FROM_HERE, base::Bind(&CommandBufferProxyImpl::LockAndDisconnectChannel,
-                            weak_this_));
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CommandBufferProxyImpl::LockAndDisconnectChannel() {

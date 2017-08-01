@@ -59,11 +59,9 @@ class GpuChannelHost;
 
 // Client side proxy that forwards messages synchronously to a
 // CommandBufferStub.
-class GPU_EXPORT CommandBufferProxyImpl
-    : public gpu::CommandBuffer,
-      public gpu::GpuControl,
-      public IPC::Listener,
-      public base::SupportsWeakPtr<CommandBufferProxyImpl> {
+class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
+                                          public gpu::GpuControl,
+                                          public IPC::Listener {
  public:
   class DeletionObserver {
    public:
@@ -295,8 +293,8 @@ class GPU_EXPORT CommandBufferProxyImpl
   SwapBuffersCompletionCallback swap_buffers_completion_callback_;
   UpdateVSyncParametersCallback update_vsync_parameters_completion_callback_;
 
-  base::WeakPtr<CommandBufferProxyImpl> weak_this_;
   scoped_refptr<base::SequencedTaskRunner> callback_thread_;
+  base::WeakPtrFactory<CommandBufferProxyImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferProxyImpl);
 };
