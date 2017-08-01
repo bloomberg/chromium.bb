@@ -11,9 +11,7 @@ import android.os.Handler;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.PasswordUIView;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -25,8 +23,6 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListene
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.components.sync.AndroidSyncSettings;
 
 /**
  * The main settings screen, shown when the user first opens Settings.
@@ -44,11 +40,6 @@ public class MainPreferences extends PreferenceFragment
 
     public static final String ACCOUNT_PICKER_DIALOG_TAG = "account_picker_dialog_tag";
     public static final String EXTRA_SHOW_SEARCH_ENGINE_PICKER = "show_search_engine_picker";
-
-    public static final String PREF_MANAGE_ACCOUNT_LINK = "manage_account_link";
-
-    @VisibleForTesting
-    public static final String VIEW_PASSWORDS = "view-passwords";
 
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
 
@@ -114,23 +105,11 @@ public class MainPreferences extends PreferenceFragment
         ChromeBasePreference passwordsPref =
                 (ChromeBasePreference) findPreference(PREF_SAVED_PASSWORDS);
 
-        ProfileSyncService syncService = ProfileSyncService.get();
-
-        if (AndroidSyncSettings.isSyncEnabled(getActivity().getApplicationContext())
-                && syncService.isEngineInitialized() && !syncService.isUsingSecondaryPassphrase()
-                && ChromeFeatureList.isEnabled(VIEW_PASSWORDS)) {
-            passwordsPref.setKey(PREF_MANAGE_ACCOUNT_LINK);
-            passwordsPref.setTitle(R.string.redirect_to_passwords_text);
-            passwordsPref.setSummary(R.string.redirect_to_passwords_link);
-            passwordsPref.setOnPreferenceClickListener(this);
-            passwordsPref.setManagedPreferenceDelegate(null);
-        } else {
-            passwordsPref.setTitle(getResources().getString(R.string.prefs_saved_passwords));
-            passwordsPref.setFragment(SavePasswordsPreferences.class.getCanonicalName());
-            setOnOffSummary(passwordsPref,
-                    PrefServiceBridge.getInstance().isRememberPasswordsEnabled());
-            passwordsPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
-        }
+        passwordsPref.setTitle(getResources().getString(R.string.prefs_saved_passwords));
+        passwordsPref.setFragment(SavePasswordsPreferences.class.getCanonicalName());
+        setOnOffSummary(
+                passwordsPref, PrefServiceBridge.getInstance().isRememberPasswordsEnabled());
+        passwordsPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
         Preference homepagePref = findPreference(PREF_HOMEPAGE);
         if (HomepageManager.shouldShowHomepageSetting()) {
