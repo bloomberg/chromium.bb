@@ -158,6 +158,7 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
     "//ui/aura",
+    "//ui/compositor:test_support",
     "//ui/events:dom_keycode_converter",
     "//ui/events:test_support",
     "//ui/gfx",
