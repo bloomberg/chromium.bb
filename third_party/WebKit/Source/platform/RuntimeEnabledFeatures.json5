@@ -989,7 +989,6 @@
     },
     {
       name: "SkipCompositingSmallScrollers",
-      status: "test",
     },
     {
       name: "SlimmingPaintStrictCullRectClipping",

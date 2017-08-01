@@ -455,6 +455,165 @@ TEST_F(PaintLayerScrollableAreaTest, OnlyOpaqueLayersPromoted) {
   EXPECT_FALSE(paint_layer->GraphicsLayerBacking());
 }
 
+// Test that small scrollers (area < 160000px) don't get promoted.
+TEST_F(PaintLayerScrollableAreaTest, SmallScrollerPromotionTest) {
+  GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
+      true);
+  RuntimeEnabledFeatures::SetSkipCompositingSmallScrollersEnabled(true);
+  SetBodyInnerHTML(
+      "<!DOCTYPE html>"
+      "<style>"
+      " .smallBox { overflow: scroll; width: 100px; height: 100px; }"
+      " .spacer { height: 2000px; }"
+      "</style>"
+      "<div id='small' class='smallBox'><div class='spacer'></div></div>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_TRUE(RuntimeEnabledFeatures::SkipCompositingSmallScrollersEnabled());
+  Element* small_scroller = GetDocument().getElementById("small");
+  PaintLayer* small_layer =
+      ToLayoutBoxModelObject(small_scroller->GetLayoutObject())->Layer();
+  ASSERT_TRUE(small_layer);
+  EXPECT_FALSE(small_layer->NeedsCompositedScrolling());
+}
+
+// Test that large scrollers get promoted with PreferCompositingToLCDEnabled or
+// other compositing reasons like will-change:transform.
+TEST_F(PaintLayerScrollableAreaTest, LargeScrollerPromotionTest) {
+  GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
+      false);
+  RuntimeEnabledFeatures::SetSkipCompositingSmallScrollersEnabled(true);
+  SetBodyInnerHTML(
+      "<!DOCTYPE html>"
+      "<style>"
+      " .largeBox { overflow: scroll; width: 400px; height: 400px; }"
+      " .composited { will-change: transform; }"
+      " .spacer { height: 2000px; }"
+      "</style>"
+      "<div id='largeBox1' class='composited largeBox'>"
+      " <div class='spacer'></div>"
+      "</div>"
+      "<div id='largeBox2' class='largeBox'><div class='spacer'></div></div>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_TRUE(RuntimeEnabledFeatures::SkipCompositingSmallScrollersEnabled());
+
+  Element* large_scroller = GetDocument().getElementById("largeBox1");
+  PaintLayer* large_layer =
+      ToLayoutBoxModelObject(large_scroller->GetLayoutObject())->Layer();
+  ASSERT_TRUE(large_layer);
+  EXPECT_TRUE(large_layer->NeedsCompositedScrolling());
+
+  large_scroller = GetDocument().getElementById("largeBox2");
+  large_layer =
+      ToLayoutBoxModelObject(large_scroller->GetLayoutObject())->Layer();
+  ASSERT_TRUE(large_layer);
+  EXPECT_FALSE(large_layer->NeedsCompositedScrolling());
+
+  GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
+      true);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_TRUE(large_layer->NeedsCompositedScrolling());
+}
+
+// Test that small scrollers with separate compositing reasons get promoted.
+TEST_F(PaintLayerScrollableAreaTest,
+       SmallScrollerWithSeparateCompositingReasonPromotionTest) {
+  GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
+      true);
+  RuntimeEnabledFeatures::SetSkipCompositingSmallScrollersEnabled(true);
+  SetBodyInnerHTML(
+      "<!DOCTYPE html>"
+      "<style>"
+      " .smallBox { overflow: scroll; width: 100px; height: 100px; }"
+      " .composited { backface-visibility: hidden; }"
+      " .composited2 { will-change: transform; }"
+      " .spacer { height: 2000px; }"
+      "</style>"
+      "<div id='box1' class='composited smallBox'>"
+      " <div class='spacer'></div>"
+      "</div>"
+      "<div id='box2' class='composited2 smallBox'>"
+      " <div class='spacer'></div>"
+      "</div>"
+      "<div class='composited smallBox'>"
+      " <div id='box3' style='opacity: 0.5;' class='smallBox'>"
+      "  <div class='spacer'></div>"
+      " </div>"
+      " <div class='spacer'></div>"
+      "</div>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_TRUE(RuntimeEnabledFeatures::SkipCompositingSmallScrollersEnabled());
+  Element* small_scroller = GetDocument().getElementById("box1");
+  PaintLayer* small_layer =
+      ToLayoutBoxModelObject(small_scroller->GetLayoutObject())->Layer();
+  ASSERT_TRUE(small_layer);
+  EXPECT_TRUE(small_layer->NeedsCompositedScrolling());
+
+  small_scroller = GetDocument().getElementById("box2");
+  small_layer =
+      ToLayoutBoxModelObject(small_scroller->GetLayoutObject())->Layer();
+  ASSERT_TRUE(small_layer);
+  EXPECT_TRUE(small_layer->NeedsCompositedScrolling());
+
+  small_scroller = GetDocument().getElementById("box3");
+  small_layer =
+      ToLayoutBoxModelObject(small_scroller->GetLayoutObject())->Layer();
+  ASSERT_TRUE(small_layer);
+  EXPECT_TRUE(small_layer->NeedsCompositedScrolling());
+}
+
+// Test that <input> elements get promoted with "will-change:transform".
+TEST_F(PaintLayerScrollableAreaTest, InputElementPromotionTest) {
+  SetBodyInnerHTML(
+      "<!DOCTYPE html>"
+      "<style>"
+      " .composited { will-change: transform; }"
+      "</style>"
+      "<input id='input' width=10 style='font-size:40pt;'/>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* element = GetDocument().getElementById("input");
+  PaintLayer* paint_layer =
+      ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
+  ASSERT_FALSE(paint_layer);
+
+  element->setAttribute("class", "composited");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  paint_layer = ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
+  ASSERT_TRUE(paint_layer);
+  ASSERT_TRUE(paint_layer->HasCompositedLayerMapping());
+}
+
+// Test that <select> elements get promoted with "will-change:transform".
+TEST_F(PaintLayerScrollableAreaTest, SelectElementPromotionTest) {
+  SetBodyInnerHTML(
+      "<!DOCTYPE html>"
+      "<style>"
+      " .composited { will-change: transform; }"
+      "</style>"
+      "<select id='select' size='2'>"
+      "  <option> value 1</option>"
+      "  <option> value 2</option>"
+      "  <option> value 3</option>"
+      "  <option> value 4</option>"
+      "</select>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* element = GetDocument().getElementById("select");
+  PaintLayer* paint_layer =
+      ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
+  ASSERT_TRUE(paint_layer);
+  ASSERT_FALSE(paint_layer->HasCompositedLayerMapping());
+
+  element->setAttribute("class", "composited");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  paint_layer = ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
+  ASSERT_TRUE(paint_layer);
+  ASSERT_TRUE(paint_layer->HasCompositedLayerMapping());
+}
+
 // Ensure OverlayScrollbarColorTheme get updated when page load
 TEST_F(PaintLayerScrollableAreaTest, OverlayScrollbarColorThemeUpdated) {
   SetBodyInnerHTML(
