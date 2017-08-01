@@ -41,6 +41,7 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/TouchAction.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -534,6 +535,35 @@ TEST_P(ScrollingCoordinatorTest, clippedBodyTest) {
   WebLayer* root_scroll_layer = GetRootScrollLayer();
   ASSERT_TRUE(root_scroll_layer);
   ASSERT_EQ(0u, root_scroll_layer->NonFastScrollableRegion().size());
+}
+
+TEST_P(ScrollingCoordinatorTest, touchAction) {
+  RegisterMockedHttpURLLoad("touch-action.html");
+  NavigateTo(base_url_ + "touch-action.html");
+  ForceFullCompositingUpdate();
+
+  Element* scrollable_element =
+      GetFrame()->GetDocument()->getElementById("scrollable");
+  DCHECK(scrollable_element);
+  ForceFullCompositingUpdate();
+
+  LayoutObject* layout_object = scrollable_element->GetLayoutObject();
+  ASSERT_TRUE(layout_object->IsBox());
+  ASSERT_TRUE(layout_object->HasLayer());
+
+  LayoutBox* box = ToLayoutBox(layout_object);
+  ASSERT_TRUE(box->UsesCompositedScrolling());
+  ASSERT_EQ(kPaintsIntoOwnBacking, box->Layer()->GetCompositingState());
+
+  CompositedLayerMapping* composited_layer_mapping =
+      box->Layer()->GetCompositedLayerMapping();
+
+  GraphicsLayer* graphics_layer = composited_layer_mapping->MainGraphicsLayer();
+  WebLayer* web_layer = graphics_layer->PlatformLayer();
+  WebVector<WebRect> rects =
+      web_layer->TouchEventHandlerRegionForTouchActionForTesting(
+          TouchAction::kTouchActionPanX | TouchAction::kTouchActionPanDown);
+  DCHECK_EQ(rects.size(), 1u);
 }
 
 TEST_P(ScrollingCoordinatorTest, overflowScrolling) {
