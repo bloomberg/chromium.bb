@@ -30,6 +30,7 @@
 #include "content/child/file_info_util.h"
 #include "content/child/fileapi/webfilesystem_impl.h"
 #include "content/child/indexed_db/webidbfactory_impl.h"
+#include "content/child/loader/cors_url_loader_factory.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/quota_message_filter.h"
 #include "content/child/storage_util.h"
@@ -195,131 +196,6 @@ media::AudioParameters GetAudioHardwareParams() {
                                                  web_frame->GetSecurityOrigin())
       .output_params();
 }
-
-// TODO(hintzed): Implement this.
-class CORSURLLoader : public mojom::URLLoader, public mojom::URLLoaderClient {
- public:
-  // Assumes network_loader_factory outlives this loader.
-  CORSURLLoader(
-      int32_t routing_id,
-      int32_t request_id,
-      uint32_t options,
-      const ResourceRequest& resource_request,
-      mojom::URLLoaderClientPtr client,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      mojom::URLLoaderFactory* network_loader_factory)
-      : network_loader_factory_(network_loader_factory),
-        network_client_binding_(this),
-        forwarding_client_(std::move(client)) {
-    mojom::URLLoaderClientPtr network_client;
-    network_client_binding_.Bind(mojo::MakeRequest(&network_client));
-    network_loader_factory_->CreateLoaderAndStart(
-        mojo::MakeRequest(&network_loader_), routing_id, request_id, options,
-        resource_request, std::move(network_client), traffic_annotation);
-  }
-  ~CORSURLLoader() override = default;
-
-  // mojom::URLLoader:
-  void FollowRedirect() override { network_loader_->FollowRedirect(); }
-  void SetPriority(net::RequestPriority priority,
-                   int32_t intra_priority_value) override {
-    network_loader_->SetPriority(priority, intra_priority_value);
-  }
-
-  // mojom::URLLoaderClient for simply proxying network for now:
-  void OnReceiveResponse(
-      const ResourceResponseHead& response_head,
-      const base::Optional<net::SSLInfo>& ssl_info,
-      mojom::DownloadedTempFilePtr downloaded_file) override {
-    forwarding_client_->OnReceiveResponse(response_head, ssl_info,
-                                          std::move(downloaded_file));
-  }
-  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const ResourceResponseHead& response_head) override {
-    forwarding_client_->OnReceiveRedirect(redirect_info, response_head);
-  }
-  void OnDataDownloaded(int64_t data_len, int64_t encoded_data_len) override {
-    forwarding_client_->OnDataDownloaded(data_len, encoded_data_len);
-  }
-  void OnUploadProgress(int64_t current_position,
-                        int64_t total_size,
-                        OnUploadProgressCallback ack_callback) override {
-    forwarding_client_->OnUploadProgress(current_position, total_size,
-                                         std::move(ack_callback));
-  }
-  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override {
-    forwarding_client_->OnReceiveCachedMetadata(data);
-  }
-  void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
-    forwarding_client_->OnTransferSizeUpdated(transfer_size_diff);
-  }
-  void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle body) override {
-    forwarding_client_->OnStartLoadingResponseBody(std::move(body));
-  }
-  void OnComplete(const ResourceRequestCompletionStatus& status) override {
-    forwarding_client_->OnComplete(status);
-  }
-
- private:
-  // Used to initiate the actual request (or any preflight requests)
-  // with the default network loader factory.
-  mojom::URLLoaderFactory* network_loader_factory_;
-
-  // For the actual request.
-  mojom::URLLoaderPtr network_loader_;
-  mojo::Binding<mojom::URLLoaderClient> network_client_binding_;
-
-  // To be a URLLoader for the client.
-  mojom::URLLoaderClientPtr forwarding_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(CORSURLLoader);
-};
-
-class CORSURLLoaderFactory : public mojom::URLLoaderFactory {
- public:
-  static void CreateAndBind(PossiblyAssociatedInterfacePtr<
-                                mojom::URLLoaderFactory> network_loader_factory,
-                            mojom::URLLoaderFactoryRequest request) {
-    mojo::MakeStrongBinding(base::MakeUnique<CORSURLLoaderFactory>(
-                                std::move(network_loader_factory)),
-                            std::move(request));
-  }
-
-  explicit CORSURLLoaderFactory(
-      PossiblyAssociatedInterfacePtr<mojom::URLLoaderFactory>
-          network_loader_factory)
-      : network_loader_factory_(std::move(network_loader_factory)) {}
-  ~CORSURLLoaderFactory() override = default;
-
-  void CreateLoaderAndStart(mojom::URLLoaderRequest request,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const ResourceRequest& resource_request,
-                            mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
-    mojo::MakeStrongBinding(
-        base::MakeUnique<CORSURLLoader>(routing_id, request_id, options,
-                                        resource_request, std::move(client),
-                                        traffic_annotation,
-                                        network_loader_factory_.get()),
-        std::move(request));
-  }
-
-  void SyncLoad(int32_t routing_id,
-                int32_t request_id,
-                const ResourceRequest& resource_request,
-                SyncLoadCallback callback) override {
-    network_loader_factory_->SyncLoad(routing_id, request_id, resource_request,
-                                      std::move(callback));
-  }
-
- private:
-  PossiblyAssociatedInterfacePtr<mojom::URLLoaderFactory>
-      network_loader_factory_;
-};
 
 }  // namespace
 
