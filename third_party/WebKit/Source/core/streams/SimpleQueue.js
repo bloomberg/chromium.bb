@@ -59,7 +59,8 @@
     push(element) {
       const oldBack = this[_back];
       let newBack = oldBack;
-      if (oldBack[_elements].length === QUEUE_MAX_ARRAY_SIZE) {
+      // assert(oldBack[_next] === undefined);
+      if (oldBack[_elements].length === QUEUE_MAX_ARRAY_SIZE - 1) {
         newBack = {
           [_elements]: new v8.InternalPackedArray(),
           [_next]: undefined,
@@ -68,7 +69,7 @@
 
       // push() is the mutation most likely to throw an exception, so it
       // goes first.
-      newBack[_elements].push(element);
+      oldBack[_elements].push(element);
       if (newBack !== oldBack) {
         this[_back] = newBack;
         oldBack[_next] = newBack;
@@ -128,6 +129,9 @@
           node = node[_next];
           elements = node[_elements];
           i = 0;
+          if (elements.length === 0) {
+            break;
+          }
         }
         callback(elements[i]);
         ++i;
