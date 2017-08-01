@@ -1,8 +1,8 @@
 CONSOLE WARNING: line 347: The provided value 'fancy' is not a valid enum value of type ChannelCountMode.
 CONSOLE WARNING: line 353: The provided value 'undefined' is not a valid enum value of type ChannelInterpretation.
-CONSOLE WARNING: line 504: The provided value '9x' is not a valid enum value of type OverSampleType.
-CONSOLE WARNING: line 748: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
-CONSOLE WARNING: line 779: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
+CONSOLE WARNING: line 509: The provided value '9x' is not a valid enum value of type OverSampleType.
+CONSOLE WARNING: line 753: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
+CONSOLE WARNING: line 784: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
 This is a testharness.js-based test.
 PASS # AUDIT TASK RUNNER STARTED. 
 PASS > [initialize] Initialize contexts for testing 
@@ -125,9 +125,10 @@ PASS   new OfflineAudioContext(0, 100, context.sampleRate) threw NotSupportedErr
 PASS   new OfflineAudioContext(99, 100, context.sampleRate) threw NotSupportedError: "Failed to construct 'OfflineAudioContext': The number of channels provided (99) is outside the range [1, 32].". 
 PASS   new OfflineAudioContext(1, 100, 1) threw NotSupportedError: "Failed to construct 'OfflineAudioContext': The sampleRate provided (1) is outside the range [3000, 384000].". 
 PASS   new OfflineAudioContext(1, 100, 1e6) threw NotSupportedError: "Failed to construct 'OfflineAudioContext': The sampleRate provided (1.00000e+6) is outside the range [3000, 384000].". 
-PASS   new OfflineAudioContext(1, -88200000000000, 44100) threw NotSupportedError: "Failed to construct 'OfflineAudioContext': OfflineAudioContext(1, 1448390656, 44100)". 
 PASS   new OfflineAudioContext(1, 0, 44100) threw NotSupportedError: "Failed to construct 'OfflineAudioContext': The number of frames provided (0) is less than the minimum bound (1).". 
-PASS < [offline-audio-context] All assertions passed. (total 7 assertions) 
+PASS   testContext = new OfflineAudioContext(1, -88200000000000, 44100) did not throw an exception. 
+PASS   testContext.startRendering() rejected correctly with NotSupportedError: startRendering failed to create AudioBuffer(1, 1448390656, 44100). 
+PASS < [offline-audio-context] All assertions passed. (total 8 assertions) 
 PASS > [waveshaper]  
 PASS   node.oversample = "9x" did not throw an exception. 
 PASS   node.oversample is equal to none. 

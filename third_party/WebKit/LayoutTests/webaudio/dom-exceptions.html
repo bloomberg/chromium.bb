@@ -484,17 +484,22 @@
             () => new OfflineAudioContext(1, 100, 1e6),
             'new OfflineAudioContext(1, 100, 1e6)')
             .throw('NotSupportedError');
-        // Invalid frame length (crbug.com/351277)
-        should(
-            () => new OfflineAudioContext(1, -88200000000000, 44100),
-            'new OfflineAudioContext(1, -88200000000000, 44100)')
-            .throw('NotSupportedError');
         should(
             () => new OfflineAudioContext(1, 0, 44100),
             'new OfflineAudioContext(1, 0, 44100)')
             .throw('NotSupportedError');
 
-        task.done();
+        // Invalid frame length (crbug.com/351277)
+        let testContext;
+
+        should(
+            () => testContext =
+                new OfflineAudioContext(1, -88200000000000, 44100),
+            'testContext = new OfflineAudioContext(1, -88200000000000, 44100)')
+            .notThrow();
+        should(testContext.startRendering(), 'testContext.startRendering()')
+            .beRejected()
+            .then(() => task.done());
       });
 
       audit.define('waveshaper', (task, should) => {
