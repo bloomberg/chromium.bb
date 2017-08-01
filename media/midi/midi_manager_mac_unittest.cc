@@ -12,9 +12,11 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
+#include "media/midi/midi_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace midi {
@@ -112,24 +114,22 @@ class FakeMidiManagerClient : public MidiManagerClient {
 class MidiManagerMacTest : public ::testing::Test {
  public:
   MidiManagerMacTest()
-      : manager_(new MidiManagerMac(nullptr)),
-        message_loop_(new base::MessageLoop) {}
+      : service_(base::MakeUnique<MidiService>()),
+        message_loop_(base::MakeUnique<base::MessageLoop>()) {}
   ~MidiManagerMacTest() override {
-    manager_->Shutdown();
+    service_->Shutdown();
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
   }
 
  protected:
   void StartSession(MidiManagerClient* client) {
-    manager_->StartSession(client);
+    service_->StartSession(client);
   }
-  void EndSession(MidiManagerClient* client) {
-    manager_->EndSession(client);
-  }
+  void EndSession(MidiManagerClient* client) { service_->EndSession(client); }
 
  private:
-  std::unique_ptr<MidiManager> manager_;
+  std::unique_ptr<MidiService> service_;
   std::unique_ptr<base::MessageLoop> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiManagerMacTest);
