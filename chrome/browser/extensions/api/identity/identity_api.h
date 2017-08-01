@@ -28,6 +28,7 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "components/signin/core/browser/profile_identity_provider.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/event_router.h"
 #include "google_apis/gaia/account_tracker.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -105,6 +106,20 @@ class IdentityAPI : public BrowserContextKeyedAPI,
     get_auth_token_function_ = get_auth_token_function;
   }
 
+  // TODO(blundell): Eliminate this method once this class is no longer using
+  // AccountTracker.
+  // Makes |account_tracker_| aware of this account.
+  void SetAccountStateForTesting(const std::string& account_id, bool signed_in);
+
+  // Callback that is used in testing contexts to test the implementation of
+  // the chrome.identity.onSignInChanged event. Note that the passed-in Event is
+  // valid only for the duration of the callback.
+  using OnSignInChangedCallback = base::RepeatingCallback<void(Event*)>;
+  void set_on_signin_changed_callback_for_testing(
+      const OnSignInChangedCallback& callback) {
+    on_signin_changed_callback_for_testing_ = callback;
+  }
+
  private:
   friend class BrowserContextKeyedAPIFactory<IdentityAPI>;
 
@@ -117,6 +132,8 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   CachedTokens token_cache_;
   ProfileIdentityProvider profile_identity_provider_;
   gaia::AccountTracker account_tracker_;
+
+  OnSignInChangedCallback on_signin_changed_callback_for_testing_;
 
   // May be null.
   IdentityGetAuthTokenFunction* get_auth_token_function_;
