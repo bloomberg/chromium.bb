@@ -8,6 +8,7 @@ include_rules = [
   "+services/ui/gpu/interfaces",
   "-services/ui/surfaces",
   "+services/viz/compositing/privileged/interfaces",
+  "+services/viz/gl/privileged/interfaces",
   "+services/viz/public/interfaces/compositing",
 ]
 
@@ -16,6 +17,7 @@ specific_include_rules = {
     "+services/ui/gpu/gpu_main.h",
   ],
   "gpu_host_unittest.cc": [
+    "+components/viz/service/gl/gpu_service_impl.h",
     "+services/ui/gpu"
   ],
   ".*_(unit|pixel|perf)test.*\.cc": [

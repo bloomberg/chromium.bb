@@ -13,8 +13,6 @@ source_set("gpu") {
   sources = [
     "gpu_main.cc",
     "gpu_main.h",
-    "gpu_service.cc",
-    "gpu_service.h",
   ]
 
   defines = [ "NOTIMPLEMENTED_POLICY=5" ]
@@ -26,8 +24,6 @@ source_set("gpu") {
     "//gpu/ipc/common",
     "//gpu/ipc/service",
     "//ipc",
-    "//media/gpu/ipc/service",
-    "//media/mojo/services",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
     "//services/ui/gpu/interfaces",
@@ -38,40 +34,5 @@ source_set("gpu") {
 
   if (use_ozone) {
     deps += [ "//ui/ozone:ozone" ]
-  }
-}
-
-if (use_aura) {
-  source_set("tests") {
-    testonly = true
-
-    sources = [
-      "gpu_service_unittest.cc",
-    ]
-
-    deps = [
-      ":gpu",
-      "//base",
-      "//gpu",
-      "//ipc",
-      "//services/ui/gpu/interfaces",
-      "//testing/gtest",
-      "//ui/gfx:memory_buffer",
-      "//ui/gfx/geometry",
-    ]
-
-    data_deps = [
-      "//services/ui",
-    ]
-  }
-
-  service_manifest("unittest_manifest") {
-    name = "mus_gpu_unittests"
-    source = "test_manifest.json"
-  }
-
-  catalog("tests_catalog") {
-    testonly = true
-    embedded_services = [ ":unittest_manifest" ]
   }
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/gpu/gpu_service.h"
+#include "components/viz/service/gl/gpu_service_impl.h"
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -15,7 +15,7 @@
 #include "services/ui/public/interfaces/gpu.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ui {
+namespace viz {
 namespace test {
 
 class GpuServiceTest : public testing::Test {
@@ -26,7 +26,7 @@ class GpuServiceTest : public testing::Test {
               base::WaitableEvent::InitialState::NOT_SIGNALED) {}
   ~GpuServiceTest() override {}
 
-  GpuService* gpu_service() { return gpu_service_.get(); }
+  GpuServiceImpl* gpu_service() { return gpu_service_.get(); }
 
   void DestroyService() { gpu_service_ = nullptr; }
 
@@ -48,7 +48,7 @@ class GpuServiceTest : public testing::Test {
   // testing::Test
   void SetUp() override {
     ASSERT_TRUE(io_thread_.Start());
-    gpu_service_ = base::MakeUnique<GpuService>(
+    gpu_service_ = base::MakeUnique<GpuServiceImpl>(
         gpu::GPUInfo(), nullptr /* watchdog_thread */, io_thread_.task_runner(),
         gpu::GpuFeatureInfo());
   }
@@ -61,19 +61,18 @@ class GpuServiceTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
   base::Thread io_thread_;
-  std::unique_ptr<GpuService> gpu_service_;
+  std::unique_ptr<GpuServiceImpl> gpu_service_;
   base::WaitableEvent wait_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuServiceTest);
 };
 
-// Tests that GpuService can be destroyed before Bind() succeeds on the IO
+// Tests that GpuServiceImpl can be destroyed before Bind() succeeds on the IO
 // thread.
 TEST_F(GpuServiceTest, ServiceDestroyedBeforeBind) {
-  // Block the IO thread to make sure that the GpuService is destroyed before
-  // the binding happens on the IO thread.
+  // Block the IO thread to make sure that the GpuServiceImpl is destroyed
+  // before the binding happens on the IO thread.
   mojom::GpuServicePtr ptr;
   BlockIOThread();
   gpu_service()->Bind(mojo::MakeRequest(&ptr));
@@ -81,7 +80,7 @@ TEST_F(GpuServiceTest, ServiceDestroyedBeforeBind) {
   DestroyService();
 }
 
-// Tests ghat GpuService can be destroyed after Bind() succeeds on the IO
+// Tests ghat GpuServiceImpl can be destroyed after Bind() succeeds on the IO
 // thread.
 TEST_F(GpuServiceTest, ServiceDestroyedAfterBind) {
   mojom::GpuServicePtr ptr;
@@ -95,4 +94,4 @@ TEST_F(GpuServiceTest, ServiceDestroyedAfterBind) {
 }
 
 }  // namespace test
-}  // namespace ui
+}  // namespace viz

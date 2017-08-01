@@ -10,14 +10,14 @@
 #include "services/ui/public/interfaces/gpu.mojom.h"
 
 namespace viz {
+namespace mojom {
+class GpuService;
+}  // namespace mojom
+
 class ServerGpuMemoryBufferManager;
 }
 
 namespace ui {
-
-namespace mojom {
-class GpuService;
-}  // namespace mojom
 
 namespace ws {
 
@@ -32,7 +32,7 @@ class GpuClient : public mojom::Gpu {
   GpuClient(int client_id,
             gpu::GPUInfo* gpu_info,
             viz::ServerGpuMemoryBufferManager* gpu_memory_buffer_manager,
-            mojom::GpuService* gpu_service);
+            viz::mojom::GpuService* gpu_service);
   ~GpuClient() override;
 
  private:
@@ -62,7 +62,7 @@ class GpuClient : public mojom::Gpu {
   // The objects these pointers refer to are owned by the GpuHost object.
   const gpu::GPUInfo* gpu_info_;
   viz::ServerGpuMemoryBufferManager* gpu_memory_buffer_manager_;
-  mojom::GpuService* gpu_service_;
+  viz::mojom::GpuService* gpu_service_;
 
   base::WeakPtrFactory<GpuClient> weak_factory_;
 

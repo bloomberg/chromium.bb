@@ -12,12 +12,12 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/viz/service/display_embedder/gpu_display_provider.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
-#include "services/ui/gpu/gpu_service.h"
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
@@ -121,7 +121,7 @@ GpuMain::~GpuMain() {
   io_thread_.Stop();
 }
 
-void GpuMain::CreateGpuService(mojom::GpuServiceRequest request,
+void GpuMain::CreateGpuService(viz::mojom::GpuServiceRequest request,
                                mojom::GpuHostPtr gpu_host,
                                const gpu::GpuPreferences& preferences,
                                mojo::ScopedSharedBufferHandle activity_flags) {
@@ -157,7 +157,7 @@ void GpuMain::InitOnGpuThread(
   if (!success)
     return;
 
-  gpu_service_ = base::MakeUnique<GpuService>(
+  gpu_service_ = base::MakeUnique<viz::GpuServiceImpl>(
       gpu_init_->gpu_info(), gpu_init_->TakeWatchdogThread(), io_runner,
       gpu_init_->gpu_feature_info());
 }
@@ -208,7 +208,7 @@ void GpuMain::TearDownOnGpuThread() {
 }
 
 void GpuMain::CreateGpuServiceOnGpuThread(
-    mojom::GpuServiceRequest request,
+    viz::mojom::GpuServiceRequest request,
     mojom::GpuHostPtr gpu_host,
     const gpu::GpuPreferences& preferences,
     gpu::GpuProcessActivityFlags activity_flags) {

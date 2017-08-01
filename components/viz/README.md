@@ -136,6 +136,15 @@ be composited.
 | viz/service/display/  |
 | viz/service/surfaces/ |
 
+#### service/gl
+**GL**: This component implements the Mojo interfaces for allocating (and
+deallocating) gpu memory buffers, setting up a channel for the command buffer,
+etc.
+
+| Can depend on:        |
+|:----------------------|
+| viz/common/*          |
+
 #### service/hit_test
 **Hit testing**: Service-side code to resolve input events to individual
 clients.

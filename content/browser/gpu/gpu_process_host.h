@@ -33,7 +33,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/gpu/interfaces/gpu_host.mojom.h"
 #include "services/ui/gpu/interfaces/gpu_main.mojom.h"
-#include "services/ui/gpu/interfaces/gpu_service.mojom.h"
+#include "services/viz/gl/privileged/interfaces/gpu_service.mojom.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "url/gurl.h"
@@ -163,7 +163,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   void LoadedShader(const std::string& key, const std::string& data);
 
-  CONTENT_EXPORT ui::mojom::GpuService* gpu_service();
+  CONTENT_EXPORT viz::mojom::GpuService* gpu_service();
 
  private:
   class ConnectionFilterImpl;
@@ -295,7 +295,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   std::string shader_prefix_key_info_;
 
   ui::mojom::GpuMainAssociatedPtr gpu_main_ptr_;
-  ui::mojom::GpuServicePtr gpu_service_ptr_;
+  viz::mojom::GpuServicePtr gpu_service_ptr_;
   mojo::Binding<ui::mojom::GpuHost> gpu_host_binding_;
   gpu::GpuProcessHostActivityFlags activity_flags_;
 

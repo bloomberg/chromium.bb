@@ -12,7 +12,7 @@
 #include "gpu/ipc/client/gpu_memory_buffer_impl.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl_shared_memory.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
-#include "services/ui/gpu/interfaces/gpu_service.mojom.h"
+#include "services/viz/gl/privileged/interfaces/gpu_service.mojom.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer_tracing.h"
 
@@ -33,7 +33,7 @@ ServerGpuMemoryBufferManager::BufferInfo::BufferInfo() = default;
 ServerGpuMemoryBufferManager::BufferInfo::~BufferInfo() = default;
 
 ServerGpuMemoryBufferManager::ServerGpuMemoryBufferManager(
-    ui::mojom::GpuService* gpu_service,
+    mojom::GpuService* gpu_service,
     int client_id)
     : gpu_service_(gpu_service),
       client_id_(client_id),
