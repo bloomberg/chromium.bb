@@ -43,6 +43,7 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
     private TextView mDataUsedTitle;
     private TextView mDataSavedTitle;
     private List<DataReductionDataUseItem> mDataUseItems;
+    private boolean mTextViewsNeedAttributesSet;
     @ColorInt
     private int mTextColor;
     @ColorInt
@@ -88,11 +89,21 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
         });
     }
 
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        if (mTextViewsNeedAttributesSet) {
+            mTextViewsNeedAttributesSet = false;
+            setTextViewUnsortedAttributes(mDataUsedTitle);
+            setTextViewSortedAttributes(mDataSavedTitle);
+        }
+    }
+
     /**
-     * Display the data use items once they have been fetched from the compression stats.
+     * Set and display the data use items once they have been fetched from the compression stats.
      * @param items A list of items split by hostname to show in the breakdown.
      */
-    public void onQueryDataUsageComplete(List<DataReductionDataUseItem> items) {
+    public void setAndDisplayDataUseItems(List<DataReductionDataUseItem> items) {
         mDataUseItems = items;
         setTextViewUnsortedAttributes(mDataUsedTitle);
         setTextViewSortedAttributes(mDataSavedTitle);
@@ -110,6 +121,12 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
     private void setTextViewSortedAttributes(TextView textView) {
         textView.setTextColor(mTextColor);
         Drawable arrowDrawable = getStartCompoundDrawable(textView);
+        // If the drawable has not been created yet, set mTextViewsNeedAttributesSet so that
+        // onMeasure will set the attributes after the drawable is created.
+        if (arrowDrawable == null) {
+            mTextViewsNeedAttributesSet = true;
+            return;
+        }
         arrowDrawable.mutate();
         arrowDrawable.setAlpha(255);
     }
@@ -117,6 +134,12 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
     private void setTextViewUnsortedAttributes(TextView textView) {
         textView.setTextColor(mLightTextColor);
         Drawable arrowDrawable = getStartCompoundDrawable(textView);
+        // If the drawable has not been created yet, set mTextViewsNeedAttributesSet so that
+        // onMeasure will set the attributes after the drawable is created.
+        if (arrowDrawable == null) {
+            mTextViewsNeedAttributesSet = true;
+            return;
+        }
         arrowDrawable.mutate();
         arrowDrawable.setAlpha(0);
     }

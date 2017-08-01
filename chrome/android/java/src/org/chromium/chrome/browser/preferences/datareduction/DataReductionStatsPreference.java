@@ -39,6 +39,7 @@ import java.util.TimeZone;
 public class DataReductionStatsPreference extends Preference {
     private NetworkStatsHistory mOriginalNetworkStatsHistory;
     private NetworkStatsHistory mReceivedNetworkStatsHistory;
+    private List<DataReductionDataUseItem> mSiteBreakdownItems;
 
     private TextView mOriginalSizeTextView;
     private TextView mReceivedSizeTextView;
@@ -94,7 +95,9 @@ public class DataReductionStatsPreference extends Preference {
                     DAYS_IN_CHART, new Callback<List<DataReductionDataUseItem>>() {
                         @Override
                         public void onResult(List<DataReductionDataUseItem> result) {
-                            mDataReductionBreakdownView.onQueryDataUsageComplete(result);
+                            mSiteBreakdownItems = result;
+                            mDataReductionBreakdownView.setAndDisplayDataUseItems(
+                                    mSiteBreakdownItems);
                         }
                     });
         }
@@ -154,7 +157,13 @@ public class DataReductionStatsPreference extends Preference {
         mDataReductionBreakdownView =
                 (DataReductionSiteBreakdownView) view.findViewById(R.id.breakdown);
         forceLayoutGravityOfGraphLabels();
-        if (mOriginalNetworkStatsHistory == null) updateReductionStatistics();
+        if (mOriginalNetworkStatsHistory == null) {
+            // This will query data usage. Only set mSiteBreakdownItems if the statistics are not
+            // being queried.
+            updateReductionStatistics();
+        } else if (mSiteBreakdownItems != null) {
+            mDataReductionBreakdownView.setAndDisplayDataUseItems(mSiteBreakdownItems);
+        }
         setDetailText();
 
         mChartDataUsageView = (ChartDataUsageView) view.findViewById(R.id.chart);
