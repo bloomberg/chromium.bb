@@ -10,10 +10,26 @@
 #include "base/strings/stringprintf.h"
 #include "components/ukm/ukm_service.h"
 #include "components/ukm/ukm_source.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "url/gurl.h"
 
 namespace ukm {
 namespace debug {
+
+namespace {
+
+struct SourceData {
+  UkmSource* source;
+  std::vector<mojom::UkmEntry*> entries;
+};
+
+std::string GetName(ukm::builders::DecodeMap& decode_map, uint64_t hash) {
+  if (decode_map.count(hash))
+    return decode_map[hash];
+  return base::StringPrintf("Unknown %" PRIu64, hash);
+}
+
+}  // namespace
 
 DebugPage::DebugPage(ServiceGetter service_getter)
     : service_getter_(service_getter) {}
@@ -54,18 +70,35 @@ void DebugPage::StartDataRequest(
     data.append(
         base::StringPrintf("<p>SessionId:%d</p>", ukm_service->session_id_));
 
-    data.append("<h2>Sources</h2>");
+    auto decode_map = ::ukm::builders::CreateDecodeMap();
+    std::map<SourceId, SourceData> source_data;
     for (const auto& kv : ukm_service->sources_) {
-      const auto* src = kv.second.get();
-      data.append(base::StringPrintf("<p>Id:%" PRId64 " Url:%s</p>", src->id(),
-                                     src->url().spec().c_str()));
+      source_data[kv.first].source = kv.second.get();
     }
 
-    data.append("<h2>Entries</h2>");
     for (const auto& v : ukm_service->entries_) {
-      const auto* entry = v.get();
-      data.append(base::StringPrintf("<h3>Id:%" PRId64 " Hash:%" PRIu64 "</h3>",
-                                     entry->source_id, entry->event_hash));
+      source_data[v.get()->source_id].entries.push_back(v.get());
+    }
+
+    data.append("<h2>Sources</h2>");
+    for (const auto& kv : source_data) {
+      const auto* src = kv.second.source;
+      if (src) {
+        data.append(base::StringPrintf("<h3>Id:%" PRId64 " Url:%s</h3>",
+                                       src->id(), src->url().spec().c_str()));
+      } else {
+        data.append(base::StringPrintf("<h3>Id:%" PRId64 "</h3>", kv.first));
+      }
+      for (auto* entry : kv.second.entries) {
+        data.append(
+            base::StringPrintf("<h4>Entry:%s</h4>",
+                               GetName(decode_map, entry->event_hash).c_str()));
+        for (const auto& metric : entry->metrics) {
+          data.append(base::StringPrintf(
+              "<h5>Metric:%s Value:%" PRId64 "</h5>",
+              GetName(decode_map, metric->metric_hash).c_str(), metric->value));
+        }
+      }
     }
   }
 

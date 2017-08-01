@@ -12,6 +12,7 @@ static_library("debug_page") {
     "//base",
     "//components/ukm",
     "//content/public/browser",
+    "//services/metrics/public/cpp:ukm_builders",
     "//url",
   ]
 }
