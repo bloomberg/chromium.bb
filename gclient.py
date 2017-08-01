@@ -1267,7 +1267,7 @@ it or fix the checkout.
     else:
       self._enforced_os = tuple(set(self._enforced_os).union(target_os))
 
-    cache_dir = config_dict.get('cache_dir')
+    cache_dir = config_dict.get('cache_dir', self._options.cache_dir)
     if cache_dir:
       cache_dir = os.path.join(self.root_dir, cache_dir)
       cache_dir = os.path.abspath(cache_dir)
@@ -2043,10 +2043,6 @@ def CMDconfig(parser, args):
                          'to have the main solution untouched by gclient '
                          '(gclient will check out unmanaged dependencies but '
                          'will never sync them)')
-  parser.add_option('--cache-dir',
-                    help='(git only) Cache all git repos into this dir and do '
-                         'shared clones from the cache, instead of cloning '
-                         'directly from the remote. (experimental)')
   parser.set_defaults(config_filename=None)
   (options, args) = parser.parse_args(args)
   if options.output_config_file:
@@ -2417,6 +2413,12 @@ class OptionParser(optparse.OptionParser):
         '--spec',
         help='create a gclient file containing the provided string. Due to '
             'Cygwin/Python brokenness, it can\'t contain any newlines.')
+    self.add_option(
+        '--cache-dir',
+        help='(git only) Cache all git repos into this dir and do '
+             'shared clones from the cache, instead of cloning '
+             'directly from the remote. (experimental)',
+        default=os.environ.get('GCLIENT_CACHE_DIR'))
     self.add_option(
         '--no-nag-max', default=False, action='store_true',
         help='Ignored for backwards compatibility.')
