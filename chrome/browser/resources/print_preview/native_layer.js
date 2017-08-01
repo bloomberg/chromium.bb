@@ -92,68 +92,40 @@ cr.define('print_preview', function() {
 
   /**
    * An interface to the native Chromium printing system layer.
-   * @constructor
    */
-  function NativeLayer() {
-  }
+  class NativeLayer {
+    /**
+     * Creates a new NativeLayer if the current instance is not set.
+     * @return {!print_preview.NativeLayer} The singleton instance.
+     */
+    static getInstance() {
+      if (currentInstance == null)
+        currentInstance = new NativeLayer();
+      return assert(currentInstance);
+    }
 
-  /** @private {?print_preview.NativeLayer} */
-  var currentInstance = null;
+    /**
+     * @param {!print_preview.NativeLayer} instance The NativeLayer instance
+     *     to set for print preview construction.
+     */
+    static setInstance(instance) {
+      currentInstance = instance;
+    }
 
-  /**
-   * @return {!print_preview.NativeLayer} The singleton instance.
-   * Creates a new NativeLayer if the current instance is not set.
-   */
-  NativeLayer.getInstance = function() {
-    if (currentInstance == null)
-      currentInstance = new NativeLayer();
-    return assert(currentInstance);
-  };
-
-  /**
-   * @param {!print_preview.NativeLayer} instance The NativeLayer instance
-   *     to set for print preview construction.
-   */
-  NativeLayer.setInstance = function(instance) {
-    currentInstance = instance;
-  };
-
-  /**
-   * Constant values matching printing::DuplexMode enum.
-   * @enum {number}
-   */
-  NativeLayer.DuplexMode = {SIMPLEX: 0, LONG_EDGE: 1, UNKNOWN_DUPLEX_MODE: -1};
-
-  /**
-   * Enumeration of color modes used by Chromium.
-   * @enum {number}
-   * @private
-   */
-  NativeLayer.ColorMode_ = {GRAY: 1, COLOR: 2};
-
-  /**
-   * Version of the serialized state of the print preview.
-   * @type {number}
-   * @const
-   * @private
-   */
-  NativeLayer.SERIALIZED_STATE_VERSION_ = 1;
-
-  NativeLayer.prototype = {
     /**
      * Requests access token for cloud print requests.
      * @param {string} authType type of access token.
      * @return {!Promise<string>}
      */
-    getAccessToken: function(authType) {
+    getAccessToken(authType) {
       return cr.sendWithPromise('getAccessToken', authType);
-    },
+    }
 
     /**
      * Gets the initial settings to initialize the print preview with.
      * @return {!Promise<!print_preview.NativeInitialSettings>}
      */
-    getInitialSettings: function() {
+    getInitialSettings() {
       return cr.sendWithPromise('getInitialSettings')
           .then(
               /**
@@ -182,16 +154,16 @@ cr.define('print_preview', function() {
                     initialSettings['defaultDestinationSelectionRules'] ||
                         null);
               });
-    },
+    }
 
     /**
      * Requests the system's local print destinations. The promise will be
      * resolved with a list of the local destinations.
      * @return {!Promise<!Array<print_preview.LocalDestinationInfo>>}
      */
-    getPrinters: function() {
+    getPrinters() {
       return cr.sendWithPromise('getPrinters');
-    },
+    }
 
     /**
      * Requests the network's privet print destinations. After this is called,
@@ -199,11 +171,11 @@ cr.define('print_preview', function() {
      * @return {!Promise} Resolves when privet printer search is completed.
      *     Rejected if privet printers are not enabled.
      */
-    getPrivetPrinters: function() {
+    getPrivetPrinters() {
       return cr.sendWithPromise(
           'getExtensionOrPrivetPrinters',
           print_preview.PrinterType.PRIVET_PRINTER);
-    },
+    }
 
     /**
      * Request a list of extension printers. Printers are reported as they are
@@ -211,11 +183,11 @@ cr.define('print_preview', function() {
      * @return {!Promise} Will be resolved when all extension managed printers
      *     have been sent.
      */
-    getExtensionPrinters: function() {
+    getExtensionPrinters() {
       return cr.sendWithPromise(
           'getExtensionOrPrivetPrinters',
           print_preview.PrinterType.EXTENSION_PRINTER);
-    },
+    }
 
     /**
      * Requests the destination's printing capabilities. Returns a promise that
@@ -223,9 +195,9 @@ cr.define('print_preview', function() {
      * @param {string} destinationId ID of the destination.
      * @return {!Promise<!print_preview.PrinterCapabilitiesResponse>}
      */
-    getPrinterCapabilities: function(destinationId) {
+    getPrinterCapabilities(destinationId) {
       return cr.sendWithPromise('getPrinterCapabilities', destinationId);
-    },
+    }
 
     /**
      * Requests the privet destination's printing capabilities. Returns a
@@ -234,11 +206,11 @@ cr.define('print_preview', function() {
      * @param {string} destinationId The ID of the destination
      * @return {!Promise<!print_preview.PrivetPrinterCapabilitiesResponse>}
      */
-    getPrivetPrinterCapabilities: function(destinationId) {
+    getPrivetPrinterCapabilities(destinationId) {
       return cr.sendWithPromise(
           'getExtensionOrPrivetPrinterCapabilities', destinationId,
           print_preview.PrinterType.PRIVET_PRINTER);
-    },
+    }
 
     /**
      * Requests the extension destination's printing capabilities. Returns a
@@ -248,11 +220,11 @@ cr.define('print_preview', function() {
      *     capabilities are requested.
      * @return {!Promise<!print_preview.Cdd>}
      */
-    getExtensionPrinterCapabilities: function(destinationId) {
+    getExtensionPrinterCapabilities(destinationId) {
       return cr.sendWithPromise(
           'getExtensionOrPrivetPrinterCapabilities', destinationId,
           print_preview.PrinterType.EXTENSION_PRINTER);
-    },
+    }
 
     /**
      * Requests Chrome to resolve provisional extension destination by granting
@@ -260,19 +232,19 @@ cr.define('print_preview', function() {
      * @param {string} provisionalDestinationId
      * @return {!Promise<!print_preview.ProvisionalDestinationInfo>}
      */
-    grantExtensionPrinterAccess: function(provisionalDestinationId) {
+    grantExtensionPrinterAccess(provisionalDestinationId) {
       return cr.sendWithPromise('grantExtensionPrinterAccess',
                                 provisionalDestinationId);
-    },
+    }
 
     /**
      * Requests that Chrome peform printer setup for the given printer.
      * @param {string} printerId
      * @return {!Promise<!print_preview.PrinterSetupResponse>}
      */
-    setupPrinter: function(printerId) {
+    setupPrinter(printerId) {
       return cr.sendWithPromise('setupPrinter', printerId);
-    },
+    }
 
     /**
      * @param {!print_preview.Destination} destination Destination to print to.
@@ -280,7 +252,7 @@ cr.define('print_preview', function() {
      * @return {number} Native layer color model.
      * @private
      */
-    getNativeColorModel_: function(destination, color) {
+    getNativeColorModel_(destination, color) {
       // For non-local printers native color model is ignored anyway.
       var option = destination.isLocal ? color.getSelectedOption() : null;
       var nativeColorModel = parseInt(option ? option.vendor_id : null, 10);
@@ -289,7 +261,7 @@ cr.define('print_preview', function() {
                                   NativeLayer.ColorMode_.GRAY;
       }
       return nativeColorModel;
-    },
+    }
 
     /**
      * Requests that a preview be generated. The following Web UI events may
@@ -307,7 +279,7 @@ cr.define('print_preview', function() {
      * @return {!Promise<number>} Promise that resolves with the unique ID of
      *     the preview UI when the preview has been generated.
      */
-    getPreview: function(
+    getPreview(
         destination, printTicketStore, documentInfo, generateDraft, requestId) {
       assert(
           printTicketStore.isTicketValidForPreview(),
@@ -373,7 +345,7 @@ cr.define('print_preview', function() {
       return cr.sendWithPromise(
           'getPreview', JSON.stringify(ticket),
           requestId > 0 ? documentInfo.pageCount : -1);
-    },
+    }
 
     /**
      * Requests that the document be printed.
@@ -390,7 +362,7 @@ cr.define('print_preview', function() {
      * @return {!Promise} Promise that will resolve when the print request is
      *     finished or rejected.
      */
-    print: function(
+    print(
         destination, printTicketStore, cloudPrintInterface, documentInfo,
         opt_isOpenPdfInPreview, opt_showSystemDialog) {
       assert(
@@ -467,26 +439,26 @@ cr.define('print_preview', function() {
       }
 
       return cr.sendWithPromise('print', JSON.stringify(ticket));
-    },
+    }
 
     /** Requests that the current pending print request be cancelled. */
-    cancelPendingPrintRequest: function() {
+    cancelPendingPrintRequest() {
       chrome.send('cancelPendingPrintRequest');
-    },
+    }
 
     /**
      * Sends the app state to be saved in the sticky settings.
      * @param {string} appStateStr JSON string of the app state to persist
      */
-    saveAppState: function(appStateStr) {
+    saveAppState(appStateStr) {
       chrome.send('saveAppState', [appStateStr]);
-    },
+    }
 
     /** Shows the system's native printing dialog. */
-    showSystemDialog: function() {
+    showSystemDialog() {
       assert(!cr.isWindows);
       chrome.send('showSystemDialog');
-    },
+    }
 
     /**
      * Closes the print preview dialog.
@@ -495,16 +467,16 @@ cr.define('print_preview', function() {
      * @param {boolean} isCancel whether this was called due to the user
      *     closing the dialog without printing.
      */
-    dialogClose: function(isCancel) {
+    dialogClose(isCancel) {
       if (isCancel)
         chrome.send('closePrintPreviewDialog');
       chrome.send('dialogClose');
-    },
+    }
 
     /** Hide the print preview dialog and allow the native layer to close it. */
-    hidePreview: function() {
+    hidePreview() {
       chrome.send('hidePreview');
-    },
+    }
 
     /**
      * Opens the Google Cloud Print sign-in tab. The DESTINATIONS_RELOAD event
@@ -514,14 +486,14 @@ cr.define('print_preview', function() {
      * @return {!Promise} Promise that resolves when the sign in tab has been
      *     closed and the destinations should be reloaded.
      */
-    signIn: function(addAccount) {
+    signIn(addAccount) {
       return cr.sendWithPromise('signIn', addAccount);
-    },
+    }
 
     /** Navigates the user to the system printer settings interface. */
-    manageLocalPrinters: function() {
+    manageLocalPrinters() {
       chrome.send('manageLocalPrinters');
-    },
+    }
 
     /**
      * Navigates the user to the Google Cloud Print management page.
@@ -529,39 +501,39 @@ cr.define('print_preview', function() {
      *     page for (user must be currently logged in, indeed) or {@code null}
      *     to open this page for the primary user.
      */
-    manageCloudPrinters: function(user) {
+    manageCloudPrinters(user) {
       chrome.send('manageCloudPrinters', [user || '']);
-    },
+    }
 
     /** Forces browser to open a new tab with the given URL address. */
-    forceOpenNewTab: function(url) {
+    forceOpenNewTab(url) {
       chrome.send('forceOpenNewTab', [url]);
-    },
+    }
 
     /**
      * Sends a message to the test, letting it know that an
      * option has been set to a particular value and that the change has
      * finished modifying the preview area.
      */
-    uiLoadedForTest: function() {
+    uiLoadedForTest() {
       chrome.send('UILoadedForTest');
-    },
+    }
 
     /**
      * Notifies the test that the option it tried to change
      * had not been changed successfully.
      */
-    uiFailedLoadingForTest: function() {
+    uiFailedLoadingForTest() {
       chrome.send('UIFailedLoadingForTest');
-    },
+    }
 
     /**
      * Notifies the metrics handler to record an action.
      * @param {string} action The action to record.
      */
-    recordAction: function(action) {
+    recordAction(action) {
       chrome.send('metricsHandler:recordAction', [action]);
-    },
+    }
 
     /**
      * Notifies the metrics handler to record a histogram value.
@@ -569,122 +541,149 @@ cr.define('print_preview', function() {
      * @param {number} bucket The bucket to record
      * @param {number} maxBucket The maximum bucket value in the histogram.
      */
-    recordInHistogram: function(histogram, bucket, maxBucket) {
+    recordInHistogram(histogram, bucket, maxBucket) {
       chrome.send(
           'metricsHandler:recordInHistogram', [histogram, bucket, maxBucket]);
-    },
-  };
+    }
+  }
+
+  /** @private {?print_preview.NativeLayer} */
+  var currentInstance = null;
+
+  /**
+   * Constant values matching printing::DuplexMode enum.
+   * @enum {number}
+   */
+  NativeLayer.DuplexMode = {SIMPLEX: 0, LONG_EDGE: 1, UNKNOWN_DUPLEX_MODE: -1};
+
+  /**
+   * Enumeration of color modes used by Chromium.
+   * @enum {number}
+   * @private
+   */
+  NativeLayer.ColorMode_ = {GRAY: 1, COLOR: 2};
+
+  /**
+   * Version of the serialized state of the print preview.
+   * @type {number}
+   * @const
+   * @private
+   */
+  NativeLayer.SERIALIZED_STATE_VERSION_ = 1;
 
   /**
    * Initial settings retrieved from the native layer.
-   * @param {boolean} isInKioskAutoPrintMode Whether the print preview should be
-   *     in auto-print mode.
-   * @param {boolean} isInAppKioskMode Whether the print preview is in App Kiosk
-   *     mode.
-   * @param {string} thousandsDelimeter Character delimeter of thousands digits.
-   * @param {string} decimalDelimeter Character delimeter of the decimal point.
-   * @param {!print_preview.MeasurementSystemUnitType} unitType Unit type of
-   *     local machine's measurement system.
-   * @param {boolean} isDocumentModifiable Whether the document to print is
-   *     modifiable.
-   * @param {string} documentTitle Title of the document.
-   * @param {boolean} documentHasSelection Whether the document has selected
-   *     content.
-   * @param {boolean} selectionOnly Whether only selected content should be
-   *     printed.
-   * @param {?string} systemDefaultDestinationId ID of the system default
-   *     destination.
-   * @param {?string} serializedAppStateStr Serialized app state.
-   * @param {?string} serializedDefaultDestinationSelectionRulesStr Serialized
-   *     default destination selection rules.
-   * @constructor
    */
-  function NativeInitialSettings(
-      isInKioskAutoPrintMode, isInAppKioskMode, thousandsDelimeter,
-      decimalDelimeter, unitType, isDocumentModifiable, documentTitle,
-      documentHasSelection, selectionOnly, systemDefaultDestinationId,
-      serializedAppStateStr, serializedDefaultDestinationSelectionRulesStr) {
+  class NativeInitialSettings {
     /**
-     * Whether the print preview should be in auto-print mode.
-     * @private {boolean}
+     * @param {boolean} isInKioskAutoPrintMode Whether the print preview should
+     *     be in auto-print mode.
+     * @param {boolean} isInAppKioskMode Whether the print preview is in App
+     *     Kiosk mode.
+     * @param {string} thousandsDelimeter Character delimeter of thousands
+     *     digits.
+     * @param {string} decimalDelimeter Character delimeter of the decimal
+     *     point.
+     * @param {!print_preview.MeasurementSystemUnitType} unitType Unit type of
+     *     local machine's measurement system.
+     * @param {boolean} isDocumentModifiable Whether the document to print is
+     *     modifiable.
+     * @param {string} documentTitle Title of the document.
+     * @param {boolean} documentHasSelection Whether the document has selected
+     *     content.
+     * @param {boolean} selectionOnly Whether only selected content should be
+     *     printed.
+     * @param {?string} systemDefaultDestinationId ID of the system default
+     *     destination.
+     * @param {?string} serializedAppStateStr Serialized app state.
+     * @param {?string} serializedDefaultDestinationSelectionRulesStr Serialized
+     *     default destination selection rules.
      */
-    this.isInKioskAutoPrintMode_ = isInKioskAutoPrintMode;
+    constructor(
+        isInKioskAutoPrintMode, isInAppKioskMode, thousandsDelimeter,
+        decimalDelimeter, unitType, isDocumentModifiable, documentTitle,
+        documentHasSelection, selectionOnly, systemDefaultDestinationId,
+        serializedAppStateStr, serializedDefaultDestinationSelectionRulesStr) {
+      /**
+       * Whether the print preview should be in auto-print mode.
+       * @private {boolean}
+       */
+      this.isInKioskAutoPrintMode_ = isInKioskAutoPrintMode;
 
-    /**
-     * Whether the print preview should switch to App Kiosk mode.
-     * @private {boolean}
-     */
-    this.isInAppKioskMode_ = isInAppKioskMode;
+      /**
+       * Whether the print preview should switch to App Kiosk mode.
+       * @private {boolean}
+       */
+      this.isInAppKioskMode_ = isInAppKioskMode;
 
-    /**
-     * Character delimeter of thousands digits.
-     * @private {string}
-     */
-    this.thousandsDelimeter_ = thousandsDelimeter;
+      /**
+       * Character delimeter of thousands digits.
+       * @private {string}
+       */
+      this.thousandsDelimeter_ = thousandsDelimeter;
 
-    /**
-     * Character delimeter of the decimal point.
-     * @private {string}
-     */
-    this.decimalDelimeter_ = decimalDelimeter;
+      /**
+       * Character delimeter of the decimal point.
+       * @private {string}
+       */
+      this.decimalDelimeter_ = decimalDelimeter;
 
-    /**
-     * Unit type of local machine's measurement system.
-     * @private {print_preview.MeasurementSystemUnitType}
-     */
-    this.unitType_ = unitType;
+      /**
+       * Unit type of local machine's measurement system.
+       * @private {print_preview.MeasurementSystemUnitType}
+       */
+      this.unitType_ = unitType;
 
-    /**
-     * Whether the document to print is modifiable.
-     * @private {boolean}
-     */
-    this.isDocumentModifiable_ = isDocumentModifiable;
+      /**
+       * Whether the document to print is modifiable.
+       * @private {boolean}
+       */
+      this.isDocumentModifiable_ = isDocumentModifiable;
 
-    /**
-     * Title of the document.
-     * @private {string}
-     */
-    this.documentTitle_ = documentTitle;
+      /**
+       * Title of the document.
+       * @private {string}
+       */
+      this.documentTitle_ = documentTitle;
 
-    /**
-     * Whether the document has selection.
-     * @private {boolean}
-     */
-    this.documentHasSelection_ = documentHasSelection;
+      /**
+       * Whether the document has selection.
+       * @private {boolean}
+       */
+      this.documentHasSelection_ = documentHasSelection;
 
-    /**
-     * Whether selection only should be printed.
-     * @private {boolean}
-     */
-    this.selectionOnly_ = selectionOnly;
+      /**
+       * Whether selection only should be printed.
+       * @private {boolean}
+       */
+      this.selectionOnly_ = selectionOnly;
 
-    /**
-     * ID of the system default destination.
-     * @private {?string}
-     */
-    this.systemDefaultDestinationId_ = systemDefaultDestinationId;
+      /**
+       * ID of the system default destination.
+       * @private {?string}
+       */
+      this.systemDefaultDestinationId_ = systemDefaultDestinationId;
 
-    /**
-     * Serialized app state.
-     * @private {?string}
-     */
-    this.serializedAppStateStr_ = serializedAppStateStr;
+      /**
+       * Serialized app state.
+       * @private {?string}
+       */
+      this.serializedAppStateStr_ = serializedAppStateStr;
 
-    /**
-     * Serialized default destination selection rules.
-     * @private {?string}
-     */
-    this.serializedDefaultDestinationSelectionRulesStr_ =
-        serializedDefaultDestinationSelectionRulesStr;
-  }
+      /**
+       * Serialized default destination selection rules.
+       * @private {?string}
+       */
+      this.serializedDefaultDestinationSelectionRulesStr_ =
+          serializedDefaultDestinationSelectionRulesStr;
+    }
 
-  NativeInitialSettings.prototype = {
     /**
      * @return {boolean} Whether the print preview should be in auto-print mode.
      */
     get isInKioskAutoPrintMode() {
       return this.isInKioskAutoPrintMode_;
-    },
+    }
 
     /**
      * @return {boolean} Whether the print preview should switch to App Kiosk
@@ -692,17 +691,17 @@ cr.define('print_preview', function() {
      */
     get isInAppKioskMode() {
       return this.isInAppKioskMode_;
-    },
+    }
 
     /** @return {string} Character delimeter of thousands digits. */
     get thousandsDelimeter() {
       return this.thousandsDelimeter_;
-    },
+    }
 
     /** @return {string} Character delimeter of the decimal point. */
     get decimalDelimeter() {
       return this.decimalDelimeter_;
-    },
+    }
 
     /**
      * @return {!print_preview.MeasurementSystemUnitType} Unit type of local
@@ -710,43 +709,43 @@ cr.define('print_preview', function() {
      */
     get unitType() {
       return this.unitType_;
-    },
+    }
 
     /** @return {boolean} Whether the document to print is modifiable. */
     get isDocumentModifiable() {
       return this.isDocumentModifiable_;
-    },
+    }
 
     /** @return {string} Document title. */
     get documentTitle() {
       return this.documentTitle_;
-    },
+    }
 
     /** @return {boolean} Whether the document has selection. */
     get documentHasSelection() {
       return this.documentHasSelection_;
-    },
+    }
 
     /** @return {boolean} Whether selection only should be printed. */
     get selectionOnly() {
       return this.selectionOnly_;
-    },
+    }
 
     /** @return {?string} ID of the system default destination. */
     get systemDefaultDestinationId() {
       return this.systemDefaultDestinationId_;
-    },
+    }
 
     /** @return {?string} Serialized app state. */
     get serializedAppStateStr() {
       return this.serializedAppStateStr_;
-    },
+    }
 
     /** @return {?string} Serialized default destination selection rules. */
     get serializedDefaultDestinationSelectionRulesStr() {
       return this.serializedDefaultDestinationSelectionRulesStr_;
     }
-  };
+  }
 
   // Export
   return {
