@@ -20,9 +20,22 @@ group("posix") {
 config("runtime_library") {
   if (!is_mac && !is_ios && sysroot != "") {
     # Pass the sysroot to all C compiler variants, the assembler, and linker.
-    cflags = [ "--sysroot=" + rebase_path(sysroot, root_build_dir) ]
-    asmflags = cflags
-    ldflags = cflags
+    sysroot_flags = [ "--sysroot=" + rebase_path(sysroot, root_build_dir) ]
+    asmflags = sysroot_flags
+    ldflags = sysroot_flags
+
+    # When use_custom_libcxx=true, some -isystem flags get passed to
+    # cflags_cc to set up libc++ include paths.  We want to make sure
+    # the sysroot includes take lower precendence than the libc++
+    # ones, so they must appear later in the command line.  However,
+    # the gn reference states "These variant-specific versions of
+    # cflags* will be appended on the compiler command line after
+    # 'cflags'."  Because of this, we must set the sysroot flags for
+    # all cflags variants instead of using 'cflags' directly.
+    cflags_c = sysroot_flags
+    cflags_cc = sysroot_flags
+    cflags_objc = sysroot_flags
+    cflags_objcc = sysroot_flags
 
     # Need to get some linker flags out of the sysroot.
     ld_paths = exec_script("sysroot_ld_path.py",
