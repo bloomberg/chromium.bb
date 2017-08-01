@@ -682,6 +682,12 @@ void MessageCenterView::UpdateNotification(const std::string& id) {
     }
   }
 
+  // Checks for investigation of the crash crbug.com/737858. It looks the view
+  // is stale, but we're not sure. These checks are to confirm that assumption.
+  // TODO(yoshiki): remove these after fixing the crash.
+  CHECK(notification_views_.find(id) != notification_views_.end());
+  CHECK(message_list_view_->Contains(view));
+
   // Notify accessibility that the contents have changed.
   view->NotifyAccessibilityEvent(ui::AX_EVENT_CHILDREN_CHANGED, false);
 }
