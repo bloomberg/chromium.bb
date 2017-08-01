@@ -63,3 +63,14 @@ source_set("unit_tests") {
     "//url",
   ]
 }
+
+source_set("constraints_ui") {
+  sources = [
+    "constraints_ui_util.h",
+    "constraints_ui_util.mm",
+  ]
+  deps = [
+    "//base",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}

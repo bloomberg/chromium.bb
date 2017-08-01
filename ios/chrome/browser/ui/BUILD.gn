@@ -40,7 +40,7 @@ source_set("ui") {
     "url_loader.h",
   ]
   public_deps = [
-    ":constraints_ui",
+    "//ios/chrome/browser/ui/util:constraints_ui",
   ]
   deps = [
     "//base",
@@ -57,17 +57,6 @@ source_set("ui") {
     "Accelerate.framework",
     "CoreGraphics.framework",
     "QuartzCore.framework",
-  ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-source_set("constraints_ui") {
-  sources = [
-    "constraints_ui_util.h",
-    "constraints_ui_util.mm",
-  ]
-  deps = [
-    "//base",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
