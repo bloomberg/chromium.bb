@@ -19,7 +19,7 @@ var FilesTooltip = Polymer({
     /**
      * Delay for showing the tooltip in milliseconds.
      */
-    'showTimeout': {
+    showTimeout: {
       type: Number,
       value: 500,  // ms
       readOnly: true
@@ -28,7 +28,7 @@ var FilesTooltip = Polymer({
     /**
      * Delay for hiding the tooltip in milliseconds.
      */
-    'hideTimeout': {
+    hideTimeout: {
       type: Number,
       value: 250,  // ms
       readOnly: true

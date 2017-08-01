@@ -16,14 +16,14 @@ var FilesToast = Polymer({
   is: 'files-toast',
 
   properties: {
-    'visible': {
+    visible: {
       type: Boolean,
       readOnly: true,
-      value: false
+      value: false,
     },
-    'duration': {
+    duration: {
       type: Number,
-      value: 5000 /* ms */
+      value: 5000, /* ms */
     }
   },
 
