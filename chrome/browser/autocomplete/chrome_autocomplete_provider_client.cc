@@ -293,8 +293,12 @@ void ChromeAutocompleteProviderClient::PrefetchImage(const GURL& url) {
 
 void ChromeAutocompleteProviderClient::StartServiceWorker(
     const GURL& destination_url) {
-  content::StoragePartition* partition =
-      content::BrowserContext::GetDefaultStoragePartition(profile_);
+  if (profile_->IsOffTheRecord())
+    return;
+
+  content::StoragePartition* partition = storage_partition_;
+  if (!partition)
+    partition = content::BrowserContext::GetDefaultStoragePartition(profile_);
   if (!partition)
     return;
 
