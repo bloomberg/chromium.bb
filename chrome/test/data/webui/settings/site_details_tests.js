@@ -63,7 +63,7 @@ suite('SiteDetails', function() {
             embeddingOrigin: 'https://foo.com:443',
             origin: 'https://foo.com:443',
             setting: settings.ContentSetting.ALLOW,
-            source: 'preference',
+            source: settings.SiteSettingSource.PREFERENCE,
           },
         ],
         background_sync: [
@@ -71,7 +71,7 @@ suite('SiteDetails', function() {
             embeddingOrigin: 'https://foo.com:443',
             origin: 'https://foo.com:443',
             setting: settings.ContentSetting.ALLOW,
-            source: 'preference',
+            source: settings.SiteSettingSource.PREFERENCE,
           },
         ],
         camera: [
@@ -79,7 +79,7 @@ suite('SiteDetails', function() {
             embeddingOrigin: 'https://foo.com:443',
             origin: 'https://foo.com:443',
             setting: settings.ContentSetting.ALLOW,
-            source: 'preference',
+            source: settings.SiteSettingSource.PREFERENCE,
           },
         ],
         geolocation: [
@@ -87,7 +87,7 @@ suite('SiteDetails', function() {
             embeddingOrigin: 'https://foo.com:443',
             origin: 'https://foo.com:443',
             setting: settings.ContentSetting.ALLOW,
-            source: 'preference',
+            source: settings.SiteSettingSource.PREFERENCE,
           },
         ],
         images: [
@@ -95,7 +95,7 @@ suite('SiteDetails', function() {
             embeddingOrigin: 'https://foo.com:443',
             origin: 'https://foo.com:443',
             setting: settings.ContentSetting.ALLOW,
-            source: 'default',
+            source: settings.SiteSettingSource.DEFAULT,
           },
         ],
         javascript: [
@@ -103,7 +103,7 @@ suite('SiteDetails', function() {
             embeddingOrigin: 'https://foo.com:443',
             origin: 'https://foo.com:443',
             setting: settings.ContentSetting.ALLOW,
-            source: 'preference',
+            source: settings.SiteSettingSource.PREFERENCE,
           },
         ],
         mic: [
@@ -111,7 +111,7 @@ suite('SiteDetails', function() {
             embeddingOrigin: 'https://foo.com:443',
             origin: 'https://foo.com:443',
             setting: settings.ContentSetting.ALLOW,
-            source: 'preference',
+            source: settings.SiteSettingSource.PREFERENCE,
           },
         ],
         midi_devices: [
@@ -119,7 +119,7 @@ suite('SiteDetails', function() {
             embeddingOrigin: 'https://foo.com:443',
             origin: 'https://foo.com:443',
             setting: settings.ContentSetting.ALLOW,
-            source: 'preference',
+            source: settings.SiteSettingSource.PREFERENCE,
           },
         ],
         notifications: [
@@ -127,7 +127,7 @@ suite('SiteDetails', function() {
             embeddingOrigin: 'https://foo.com:443',
             origin: 'https://foo.com:443',
             setting: settings.ContentSetting.BLOCK,
-            source: 'policy',
+            source: settings.SiteSettingSource.POLICY,
           },
         ],
         plugins: [
@@ -135,7 +135,7 @@ suite('SiteDetails', function() {
             embeddingOrigin: 'https://foo.com:443',
             origin: 'https://foo.com:443',
             setting: settings.ContentSetting.ALLOW,
-            source: 'extension',
+            source: settings.SiteSettingSource.EXTENSION,
           },
         ],
         popups: [
@@ -143,7 +143,7 @@ suite('SiteDetails', function() {
             embeddingOrigin: 'https://foo.com:443',
             origin: 'https://foo.com:443',
             setting: settings.ContentSetting.BLOCK,
-            source: 'default',
+            source: settings.SiteSettingSource.DEFAULT,
           },
         ],
         unsandboxed_plugins: [
@@ -151,7 +151,7 @@ suite('SiteDetails', function() {
             embeddingOrigin: 'https://foo.com:443',
             origin: 'https://foo.com:443',
             setting: settings.ContentSetting.ALLOW,
-            source: 'preference',
+            source: settings.SiteSettingSource.PREFERENCE,
           },
         ],
       }
@@ -199,7 +199,7 @@ suite('SiteDetails', function() {
           .forEach(function(siteDetailsPermission) {
             // Verify settings match the values specified in |prefs|.
             var expectedSetting = settings.ContentSetting.ALLOW;
-            var expectedSource = 'preference';
+            var expectedSource = settings.SiteSettingSource.PREFERENCE;
             var expectedMenuValue = settings.ContentSetting.ALLOW;
 
             // For all the categories with non-user-set 'Allow' preferences,
@@ -218,7 +218,8 @@ suite('SiteDetails', function() {
                   prefs.exceptions[siteDetailsPermission.category][0].setting;
               expectedSource =
                   prefs.exceptions[siteDetailsPermission.category][0].source;
-              expectedMenuValue = (expectedSource == 'default') ?
+              expectedMenuValue =
+                  (expectedSource == settings.SiteSettingSource.DEFAULT) ?
                   settings.ContentSetting.DEFAULT :
                   expectedSetting;
             }

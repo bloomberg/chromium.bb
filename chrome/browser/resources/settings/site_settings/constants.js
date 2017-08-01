@@ -51,6 +51,22 @@ settings.ContentSetting = {
 };
 
 /**
+ * Contains the possible sources of a ContentSetting.
+ * This should be kept in sync with the |SiteSettingSource| enum in
+ * chrome/browser/ui/webui/site_settings_helper.h
+ * @enum {string}
+ */
+settings.SiteSettingSource = {
+  EMBARGO: 'embargo',
+  EXTENSION: 'extension',
+  INSECURE_ORIGIN: 'insecure-origin',
+  KILL_SWITCH: 'kill-switch',
+  POLICY: 'policy',
+  PREFERENCE: 'preference',
+  DEFAULT: 'default',
+};
+
+/**
  * A category value to use for the All Sites list.
  * @const {string}
  */
