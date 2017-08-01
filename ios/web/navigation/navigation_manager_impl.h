@@ -123,8 +123,8 @@ class NavigationManagerImpl : public NavigationManager {
 
   // Creates a NavigationItem using the given properties. Calling this method
   // resets the transient URLRewriters cached in this instance.
-  // TODO(crbug.com/738020): Make this private when WKBasedNavigationManagerImpl
-  // is merged into this class.
+  // TODO(crbug.com/738020): This method is only used by CRWSessionController.
+  // Remove it after switching to WKBasedNavigationManagerImpl.
   std::unique_ptr<NavigationItemImpl> CreateNavigationItem(
       const GURL& url,
       const Referrer& referrer,
@@ -153,6 +153,18 @@ class NavigationManagerImpl : public NavigationManager {
       UserAgentOverrideOption override_option,
       const NavigationItem* inherit_from,
       NavigationItem* pending_item);
+
+  // Creates a NavigationItem using the given properties. If |url_rewriters| is
+  // not nullptr, apply them before applying the permanent URL rewriters from
+  // BrowserState.
+  // TODO(crbug.com/738020): Make this private when WKBasedNavigationManagerImpl
+  // is merged into this class.
+  std::unique_ptr<NavigationItemImpl> CreateNavigationItemWithRewriters(
+      const GURL& url,
+      const Referrer& referrer,
+      ui::PageTransition transition,
+      NavigationInitiationType initiation_type,
+      const std::vector<BrowserURLRewriter::URLRewriter>* url_rewriters) const;
 
   // Identical to GetItemAtIndex() but returns the underlying NavigationItemImpl
   // instead of the public NavigationItem interface. This is used by
