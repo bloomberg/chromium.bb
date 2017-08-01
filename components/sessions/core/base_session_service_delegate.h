@@ -5,10 +5,6 @@
 #ifndef COMPONENTS_SESSIONS_CORE_BASE_SESSION_SERVICE_DELEGATE_H_
 #define COMPONENTS_SESSIONS_CORE_BASE_SESSION_SERVICE_DELEGATE_H_
 
-namespace base {
-class SequencedWorkerPool;
-}
-
 namespace sessions {
 
 // The BaseSessionServiceDelegate decouples the BaseSessionService from
@@ -16,10 +12,6 @@ namespace sessions {
 class BaseSessionServiceDelegate {
  public:
   BaseSessionServiceDelegate() {}
-
-  // Get the sequenced worker pool for running tasks on the backend thread as
-  // long as the system is not shutting down.
-  virtual base::SequencedWorkerPool* GetBlockingPool() = 0;
 
   // Returns true if save operations can be performed as a delayed task - which
   // is usually only used by unit tests.

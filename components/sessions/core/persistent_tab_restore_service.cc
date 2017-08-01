@@ -150,7 +150,6 @@ class PersistentTabRestoreService::Delegate
   ~Delegate() override;
 
   // BaseSessionServiceDelegate:
-  base::SequencedWorkerPool* GetBlockingPool() override;
   bool ShouldUseDelayedSave() override;
   void OnWillSaveCommands() override;
 
@@ -281,11 +280,6 @@ PersistentTabRestoreService::Delegate::Delegate(TabRestoreServiceClient* client)
       load_state_(NOT_LOADED) {}
 
 PersistentTabRestoreService::Delegate::~Delegate() {}
-
-base::SequencedWorkerPool*
-PersistentTabRestoreService::Delegate::GetBlockingPool() {
-  return client_->GetBlockingPool();
-}
 
 bool PersistentTabRestoreService::Delegate::ShouldUseDelayedSave() {
   return true;

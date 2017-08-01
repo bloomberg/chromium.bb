@@ -20,7 +20,8 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/synchronization/waitable_event.h"
+#include "base/synchronization/atomic_flag.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -1020,6 +1021,15 @@ void PostBackToThread(base::MessageLoop* message_loop,
       FROM_HERE, base::Bind(&base::RunLoop::Quit, base::Unretained(run_loop)));
 }
 
+// Blocks until |keep_waiting| is false.
+void SimulateWaitForTesting(const base::AtomicFlag* flag) {
+  // Ideally this code would use WaitableEvent, but that triggers a DCHECK in
+  // thread_restrictions. Rather than inject a trait only for the test this
+  // code uses yield.
+  while (!flag->IsSet())
+    base::PlatformThread::YieldCurrentThread();
+}
+
 }  // namespace
 
 // Verifies that SessionService::GetLastSession() works correctly if the
@@ -1036,13 +1046,11 @@ void PostBackToThread(base::MessageLoop* message_loop,
 // The call to get the previous session should never be invoked because the
 // SessionService was destroyed before SessionService could process the results.
 TEST_F(SessionServiceTest, GetSessionsAndDestroy) {
+  base::AtomicFlag flag;
   base::CancelableTaskTracker cancelable_task_tracker;
   base::RunLoop run_loop;
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  helper_.RunTaskOnBackendThread(FROM_HERE,
-                                 base::Bind(&base::WaitableEvent::Wait,
-                                            base::Unretained(&event)));
+  helper_.RunTaskOnBackendThread(
+      FROM_HERE, base::Bind(&SimulateWaitForTesting, base::Unretained(&flag)));
   service()->GetLastSession(base::Bind(&OnGotPreviousSession),
                             &cancelable_task_tracker);
   helper_.RunTaskOnBackendThread(
@@ -1051,6 +1059,6 @@ TEST_F(SessionServiceTest, GetSessionsAndDestroy) {
                  base::Unretained(base::MessageLoop::current()),
                  base::Unretained(&run_loop)));
   delete helper_.ReleaseService();
-  event.Signal();
+  flag.Set();
   run_loop.Run();
 }
