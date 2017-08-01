@@ -10,7 +10,6 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/sessions/content/content_live_tab.h"
-#include "content/public/browser/browser_thread.h"
 #include "extensions/features/features.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -106,11 +105,6 @@ std::string ChromeTabRestoreServiceClient::GetExtensionAppIDForTab(
 #endif
 
   return extension_app_id;
-}
-
-base::SequencedWorkerPool* ChromeTabRestoreServiceClient::GetBlockingPool() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return content::BrowserThread::GetBlockingPool();
 }
 
 base::FilePath ChromeTabRestoreServiceClient::GetPathToSaveTo() {

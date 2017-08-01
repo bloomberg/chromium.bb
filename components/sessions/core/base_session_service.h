@@ -10,12 +10,14 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "components/sessions/core/sessions_export.h"
-#include "url/gurl.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace sessions {
 class BaseSessionServiceDelegate;
@@ -103,10 +105,9 @@ class SESSIONS_EXPORT BaseSessionService {
  private:
   friend class BaseSessionServiceTestHelper;
 
-  // This posts the task to the SequencedWorkerPool, or run immediately
-  // if the SequencedWorkerPool has been shutdown.
+  // This posts the task to the TaskRunner.
   void RunTaskOnBackendThread(const tracked_objects::Location& from_here,
-                              const base::Closure& task);
+                              base::OnceClosure task);
 
   // The backend object which reads and saves commands.
   scoped_refptr<SessionBackend> backend_;
@@ -123,8 +124,9 @@ class SESSIONS_EXPORT BaseSessionService {
 
   BaseSessionServiceDelegate* delegate_;
 
-  // A token to make sure that all tasks will be serialized.
-  base::SequencedWorkerPool::SequenceToken sequence_token_;
+  // TaskRunner all backend tasks are run on. This is a SequencedTaskRunner as
+  // all tasks *must* be processed in the order they are scheduled.
+  scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
   // Used to invoke Save.
   base::WeakPtrFactory<BaseSessionService> weak_factory_;

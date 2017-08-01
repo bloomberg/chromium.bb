@@ -16,7 +16,6 @@ class GURL;
 
 namespace base {
 class CancelableTaskTracker;
-class SequencedWorkerPool;
 }
 
 namespace sessions {
@@ -58,10 +57,6 @@ class SESSIONS_EXPORT TabRestoreServiceClient {
   // if there is no such ID (e.g., if extensions are not supported by the
   // embedder).
   virtual std::string GetExtensionAppIDForTab(LiveTab* tab) = 0;
-
-  // Get the sequenced worker pool for running tasks on the backend thread as
-  // long as the system is not shutting down.
-  virtual base::SequencedWorkerPool* GetBlockingPool() = 0;
 
   // Returns the path of the directory to save state into.
   virtual base::FilePath GetPathToSaveTo() = 0;

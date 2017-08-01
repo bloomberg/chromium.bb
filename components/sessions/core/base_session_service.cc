@@ -8,7 +8,8 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sessions/core/base_session_service_delegate.h"
@@ -48,14 +49,14 @@ void PostOrRunInternalGetCommandsCallback(
 // backend.
 static const int kSaveDelayMS = 2500;
 
-BaseSessionService::BaseSessionService(
-    SessionType type,
-    const base::FilePath& path,
-    BaseSessionServiceDelegate* delegate)
+BaseSessionService::BaseSessionService(SessionType type,
+                                       const base::FilePath& path,
+                                       BaseSessionServiceDelegate* delegate)
     : pending_reset_(false),
       commands_since_reset_(0),
       delegate_(delegate),
-      sequence_token_(delegate_->GetBlockingPool()->GetSequenceToken()),
+      backend_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       weak_factory_(this) {
   backend_ = new SessionBackend(type, path);
   DCHECK(backend_.get());
@@ -66,14 +67,14 @@ BaseSessionService::~BaseSessionService() {}
 void BaseSessionService::MoveCurrentSessionToLastSession() {
   Save();
   RunTaskOnBackendThread(
-      FROM_HERE, base::Bind(&SessionBackend::MoveCurrentSessionToLastSession,
-                            backend_));
+      FROM_HERE,
+      base::BindOnce(&SessionBackend::MoveCurrentSessionToLastSession,
+                     backend_));
 }
 
 void BaseSessionService::DeleteLastSession() {
   RunTaskOnBackendThread(
-      FROM_HERE,
-      base::Bind(&SessionBackend::DeleteLastSession, backend_));
+      FROM_HERE, base::BindOnce(&SessionBackend::DeleteLastSession, backend_));
 }
 
 void BaseSessionService::ScheduleCommand(
@@ -139,9 +140,8 @@ void BaseSessionService::Save() {
   // current commands. This will also clear the current list.
   RunTaskOnBackendThread(
       FROM_HERE,
-      base::Bind(&SessionBackend::AppendCommands, backend_,
-                 base::Passed(&pending_commands_),
-                 pending_reset_));
+      base::BindOnce(&SessionBackend::AppendCommands, backend_,
+                     base::Passed(&pending_commands_), pending_reset_));
 
   if (pending_reset_) {
     commands_since_reset_ = 0;
@@ -168,24 +168,15 @@ BaseSessionService::ScheduleGetLastSessionCommands(
                  run_if_not_canceled);
 
   RunTaskOnBackendThread(
-      FROM_HERE,
-      base::Bind(&SessionBackend::ReadLastSessionCommands, backend_,
-                 is_canceled, callback_runner));
+      FROM_HERE, base::BindOnce(&SessionBackend::ReadLastSessionCommands,
+                                backend_, is_canceled, callback_runner));
   return id;
 }
 
 void BaseSessionService::RunTaskOnBackendThread(
     const tracked_objects::Location& from_here,
-    const base::Closure& task) {
-  base::SequencedWorkerPool* pool = delegate_->GetBlockingPool();
-  if (!pool->IsShutdownInProgress()) {
-    pool->PostSequencedWorkerTask(sequence_token_, from_here, task);
-  } else {
-    // Fall back to executing on the main thread if the sequence
-    // worker pool has been requested to shutdown (around shutdown
-    // time).
-    task.Run();
-  }
+    base::OnceClosure task) {
+  backend_task_runner_->PostNonNestableTask(from_here, std::move(task));
 }
 
 }  // namespace sessions

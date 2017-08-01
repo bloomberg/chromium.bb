@@ -508,11 +508,6 @@ base::CancelableTaskTracker::TaskId SessionService::GetLastSession(
       tracker);
 }
 
-base::SequencedWorkerPool* SessionService::GetBlockingPool() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return content::BrowserThread::GetBlockingPool();
-}
-
 bool SessionService::ShouldUseDelayedSave() {
   return should_use_delayed_save_;
 }
