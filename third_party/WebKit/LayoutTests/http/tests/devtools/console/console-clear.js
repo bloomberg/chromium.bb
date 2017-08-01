@@ -5,7 +5,7 @@
 (async function() {
   TestRunner.addResult("Tests that console is cleared upon requestClearMessages call.\n");
 
-  await TestRunner.loadPanel("console");
+  await TestRunner.showPanel("console");
   await TestRunner.loadModule("console_test_runner");
 
   await TestRunner.evaluateInPagePromise(`

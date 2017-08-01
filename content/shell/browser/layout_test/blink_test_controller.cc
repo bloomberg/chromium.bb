@@ -401,7 +401,8 @@ void BlinkTestController::LoadDevToolsJSTest() {
   devtools_bindings_.reset(LayoutTestDevToolsBindings::LoadDevTools(
       devtools_window_->web_contents(), secondary->web_contents(), "",
       test_url_.spec()));
-  secondary->LoadURL(GURL(url::kAboutBlankURL));
+  secondary->LoadURL(
+      LayoutTestDevToolsBindings::GetInspectedPageURL(test_url_));
 }
 
 bool BlinkTestController::ResetAfterLayoutTest() {

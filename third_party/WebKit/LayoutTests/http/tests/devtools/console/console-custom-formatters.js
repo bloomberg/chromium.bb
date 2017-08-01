@@ -6,7 +6,7 @@
   TestRunner.addResult('Tests that console logging dumps properly when there are multiple custom formatters on the page\n');
 
   await TestRunner.loadModule('console_test_runner');
-  await TestRunner.loadPanel('console');
+  await TestRunner.showPanel('console');
 
   await TestRunner.evaluateInPagePromise(`
     var a = {name: "a"};

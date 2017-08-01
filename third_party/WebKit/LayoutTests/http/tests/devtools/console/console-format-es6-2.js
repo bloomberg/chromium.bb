@@ -6,7 +6,7 @@
   TestRunner.addResult('Tests that console properly displays information about ES6 features.\n');
 
   await TestRunner.loadModule('console_test_runner');
-  await TestRunner.loadPanel('console');
+  await TestRunner.showPanel('console');
 
   await TestRunner.evaluateInPagePromise(`
     var globals = [];
