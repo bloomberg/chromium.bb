@@ -31,6 +31,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
+#include "core/editing/EditingBoundary.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
@@ -177,6 +178,21 @@ static PositionInFlatTree AdjustPositionRespectUserSelectAll(
   return position;
 }
 
+static PositionInFlatTree ComputeStartFromEndForExtendForward(
+    const PositionInFlatTree& end,
+    TextGranularity granularity) {
+  if (granularity == TextGranularity::kCharacter)
+    return end;
+  // |ComputeStartRespectingGranularity()| returns next word/paragraph for
+  // end of word/paragraph position. To get start of word/paragraph at |end|,
+  // we pass previous position of |end|.
+  return ComputeStartRespectingGranularity(
+      PreviousPositionOf(CreateVisiblePosition(end),
+                         kCannotCrossEditingBoundary)
+          .DeepEquivalent(),
+      granularity);
+}
+
 static SelectionInFlatTree ExtendSelectionAsDirectional(
     const PositionInFlatTree& position,
     const VisibleSelectionInFlatTree& selection,
@@ -208,7 +224,7 @@ static SelectionInFlatTree ExtendSelectionAsDirectional(
   const PositionInFlatTree& new_start =
       selection.IsBaseFirst()
           ? start
-          : ComputeStartRespectingGranularity(end, granularity);
+          : ComputeStartFromEndForExtendForward(end, granularity);
   const PositionInFlatTree& new_end = ComputeEndRespectingGranularity(
       new_start, PositionInFlatTreeWithAffinity(position), granularity);
   return SelectionInFlatTree::Builder()
