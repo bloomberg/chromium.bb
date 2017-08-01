@@ -59,7 +59,6 @@ struct ServiceWorkerFetchRequest;
 // methods to add their own logic/verification code.
 //
 // See embedded_worker_instance_unittest.cc for example usages.
-//
 class EmbeddedWorkerTestHelper : public IPC::Sender,
                                  public IPC::Listener {
  public:

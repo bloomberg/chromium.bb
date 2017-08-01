@@ -444,7 +444,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, Simple) {
   ASSERT_TRUE(info);
   EXPECT_TRUE(info->was_fetched_via_service_worker());
   EXPECT_FALSE(info->was_fallback_required());
-  EXPECT_EQ(0u, info->url_list_via_service_worker().size());
+  EXPECT_TRUE(info->url_list_via_service_worker().empty());
   EXPECT_EQ(blink::mojom::FetchResponseType::kDefault,
             info->response_type_via_service_worker());
   EXPECT_FALSE(info->service_worker_start_time().is_null());

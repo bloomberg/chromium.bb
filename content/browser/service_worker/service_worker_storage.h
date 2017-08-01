@@ -260,6 +260,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
   friend class ServiceWorkerReadFromCacheJobTest;
   friend class ServiceWorkerRequestHandlerTest;
   friend class ServiceWorkerInstalledScriptsSenderTest;
+  friend class ServiceWorkerURLLoaderJobTest;
   friend class ServiceWorkerURLRequestJobTest;
   friend class ServiceWorkerVersionBrowserTest;
   friend class ServiceWorkerVersionTest;
