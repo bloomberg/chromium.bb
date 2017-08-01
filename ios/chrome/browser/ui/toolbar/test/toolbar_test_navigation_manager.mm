@@ -2,21 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/shared/chrome/browser/ui/toolbar/toolbar_test_util.h"
+#import "ios/chrome/browser/ui/toolbar/test/toolbar_test_navigation_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-ToolbarTestWebState::ToolbarTestWebState() : loading_progress_(0){};
-
-double ToolbarTestWebState::GetLoadingProgress() const {
-  return loading_progress_;
-}
-
-void ToolbarTestWebState::set_loading_progress(double loading_progress) {
-  loading_progress_ = loading_progress;
-}
 
 ToolbarTestNavigationManager::ToolbarTestNavigationManager()
     : can_go_back_(false), can_go_forward_(false) {}

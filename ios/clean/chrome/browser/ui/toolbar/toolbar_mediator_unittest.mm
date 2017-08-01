@@ -5,11 +5,12 @@
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_mediator.h"
 
 #include "base/memory/ptr_util.h"
+#import "ios/chrome/browser/ui/toolbar/test/toolbar_test_navigation_manager.h"
+#import "ios/chrome/browser/ui/toolbar/test/toolbar_test_web_state.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_consumer.h"
-#import "ios/shared/chrome/browser/ui/toolbar/toolbar_test_util.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"

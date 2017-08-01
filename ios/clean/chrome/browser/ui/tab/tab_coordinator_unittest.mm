@@ -7,12 +7,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#import "ios/chrome/browser/ui/toolbar/test/toolbar_test_web_state.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_container_view_controller.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator_test.h"
 #import "ios/shared/chrome/browser/ui/tab/tab_test_util.h"
-#import "ios/shared/chrome/browser/ui/toolbar/toolbar_test_util.h"
 #include "ios/web/public/test/test_web_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
