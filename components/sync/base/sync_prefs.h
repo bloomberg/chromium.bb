@@ -209,6 +209,8 @@ class SyncPrefs : public base::SupportsWeakPtr<SyncPrefs> {
   // configuration management.
   BooleanPrefMember pref_sync_managed_;
 
+  bool local_sync_enabled_;
+
   // Groups of prefs that always have the same value as a "master" pref.
   // For example, the APPS group has {APP_NOTIFICATIONS, APP_SETTINGS}
   // (as well as APPS, but that is implied), so
