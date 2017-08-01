@@ -44,6 +44,16 @@ class MockThreatDetailsFactory : public ThreatDetailsFactory {
     MockThreatDetails* threat_details = new MockThreatDetails();
     return threat_details;
   }
+
+  ThreatDetails* CreateTrimmedThreatDetails(
+      BaseUIManager* ui_manager,
+      content::WebContents* web_contents,
+      const security_interstitials::UnsafeResource& unsafe_resource,
+      net::URLRequestContextGetter* request_context_getter,
+      history::HistoryService* history_service) override {
+    return CreateThreatDetails(ui_manager, web_contents, unsafe_resource,
+                               request_context_getter, history_service);
+  }
 };
 
 class TriggerManagerTest : public ::testing::Test {

@@ -8,6 +8,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <unordered_set>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -42,6 +44,9 @@ namespace safe_browsing {
 ThreatDetailsFactory* ThreatDetails::factory_ = NULL;
 
 namespace {
+
+// An element ID indicating that an HTML Element has no parent.
+const int kElementIdNoParent = -1;
 
 typedef std::unordered_set<std::string> StringSet;
 // A set of HTTPS headers that are allowed to be collected. Contains both
@@ -151,6 +156,103 @@ CSBRR::SafeBrowsingUrlApiType GetUrlApiTypeForThreatSource(
   }
   return CSBRR::SAFE_BROWSING_URL_API_TYPE_UNSPECIFIED;
 }
+
+void TrimElements(const std::set<int> target_ids,
+                  ElementMap* elements,
+                  ResourceMap* resources) {
+  if (target_ids.empty()) {
+    elements->clear();
+    resources->clear();
+    return;
+  }
+
+  // First, scan over the elements and create a list ordered by element ID as
+  // well as a reverse mapping from element ID to its parent ID.
+  std::vector<HTMLElement*> elements_by_id(elements->size());
+
+  // The parent vector is initialized with |kElementIdNoParent| so we can
+  // identify elements that have no parent.
+  std::vector<int> element_id_to_parent_id(elements->size(),
+                                           kElementIdNoParent);
+  for (const auto& element_pair : *elements) {
+    HTMLElement* element = element_pair.second.get();
+    elements_by_id[element->id()] = element;
+
+    for (int child_id : element->child_ids()) {
+      element_id_to_parent_id[child_id] = element->id();
+    }
+  }
+
+  // Create a similar map for resources, ordered by resource ID.
+  std::vector<std::string> resource_id_to_url(resources->size());
+  for (const auto& resource_pair : *resources) {
+    const std::string& url = resource_pair.first;
+    ClientSafeBrowsingReportRequest::Resource* resource =
+        resource_pair.second.get();
+    resource_id_to_url[resource->id()] = url;
+  }
+
+  // Take a second pass and determine which element IDs to keep. We want to keep
+  // both siblings and children of the target ids. We start by identifying the
+  // siblings by finding the common parent of each target element, and keeping
+  // all of its children (ie: the siblings of the target elements).
+  std::vector<int> ids_to_keep;
+  // Keep track of ids that were kept to avoid duplicated. We still need the
+  // vector above for handling the children where it is used like a queue.
+  std::unordered_set<int> kept_ids;
+  for (int target_id : target_ids) {
+    const int parent_id = element_id_to_parent_id[target_id];
+    if (parent_id == kElementIdNoParent) {
+      // If one of the target elements has no parent then we skip trimming the
+      // report further. Since we collect all siblings of this element, it will
+      // effectively span the whole report, so no trimming necessary.
+      return;
+    }
+
+    const HTMLElement* parent_element = elements_by_id[parent_id];
+    for (int sibling_id : parent_element->child_ids()) {
+      if (kept_ids.count(sibling_id) == 0) {
+        ids_to_keep.push_back(sibling_id);
+        kept_ids.insert(sibling_id);
+      }
+    }
+  }
+
+  // Walk through |ids_to_keep| and append the children of each of element to
+  // |ids_to_keep|. This is effectively a breadth-first traversal of the tree.
+  // The list will stop growing when we reach the leaf nodes that have no more
+  // children.
+  for (size_t index = 0; index < ids_to_keep.size(); ++index) {
+    int cur_element_id = ids_to_keep[index];
+    const HTMLElement& element = *(elements_by_id[cur_element_id]);
+    for (int child_id : element.child_ids()) {
+      ids_to_keep.push_back(child_id);
+    }
+  }
+  // Sort the list for easier lookup below.
+  std::sort(ids_to_keep.begin(), ids_to_keep.end());
+
+  // Now we know which elements we want to keep, scan through |elements| and
+  // erase anything that we aren't keeping. If an erased element refers to a
+  // resource then remove it from |resources| as well.
+  for (auto element_iter = elements->begin();
+       element_iter != elements->end();) {
+    const HTMLElement& element = *element_iter->second;
+
+    // Delete any elements that we do not want to keep.
+    if (std::find(ids_to_keep.begin(), ids_to_keep.end(), element.id()) ==
+        ids_to_keep.end()) {
+      if (element.has_resource_id()) {
+        const std::string& resource_url =
+            resource_id_to_url[element.resource_id()];
+        resources->erase(resource_url);
+      }
+      element_iter = elements->erase(element_iter);
+    } else {
+      ++element_iter;
+    }
+  }
+}
 }  // namespace
 
 // The default ThreatDetailsFactory.  Global, made a singleton so we
@@ -164,7 +266,19 @@ class ThreatDetailsFactoryImpl : public ThreatDetailsFactory {
       net::URLRequestContextGetter* request_context_getter,
       history::HistoryService* history_service) override {
     return new ThreatDetails(ui_manager, web_contents, unsafe_resource,
-                             request_context_getter, history_service);
+                             request_context_getter, history_service,
+                             /*trim_to_ad_tags=*/false);
+  }
+
+  ThreatDetails* CreateTrimmedThreatDetails(
+      BaseUIManager* ui_manager,
+      WebContents* web_contents,
+      const security_interstitials::UnsafeResource& unsafe_resource,
+      net::URLRequestContextGetter* request_context_getter,
+      history::HistoryService* history_service) override {
+    return new ThreatDetails(ui_manager, web_contents, unsafe_resource,
+                             request_context_getter, history_service,
+                             /*trim_to_ad_tags=*/true);
   }
 
  private:
@@ -200,7 +314,8 @@ ThreatDetails::ThreatDetails(
     content::WebContents* web_contents,
     const UnsafeResource& resource,
     net::URLRequestContextGetter* request_context_getter,
-    history::HistoryService* history_service)
+    history::HistoryService* history_service,
+    bool trim_to_ad_tags)
     : content::WebContentsObserver(web_contents),
       request_context_getter_(request_context_getter),
       ui_manager_(ui_manager),
@@ -209,6 +324,7 @@ ThreatDetails::ThreatDetails(
       did_proceed_(false),
       num_visits_(0),
       ambiguous_dom_(false),
+      trim_to_ad_tags_(trim_to_ad_tags),
       cache_collector_(new ThreatDetailsCacheCollector) {
   redirects_collector_ = new ThreatDetailsRedirectsCollector(
       history_service ? history_service->AsWeakPtr()
@@ -216,11 +332,14 @@ ThreatDetails::ThreatDetails(
   StartCollection();
 }
 
+// TODO(lpz): Consider making this constructor delegate to the parameterized one
+// above.
 ThreatDetails::ThreatDetails()
     : cache_result_(false),
       did_proceed_(false),
       num_visits_(0),
-      ambiguous_dom_(false) {}
+      ambiguous_dom_(false),
+      trim_to_ad_tags_(false) {}
 
 ThreatDetails::~ThreatDetails() {}
 
@@ -336,6 +455,12 @@ void ThreatDetails::AddDomElement(
     HTMLElement::Attribute* attribute_pb = cur_element->add_attribute();
     attribute_pb->set_name(attribute.first);
     attribute_pb->set_value(attribute.second);
+
+    // Remember which the IDs of elements that represent ads so we can trim the
+    // report down to just those parts later.
+    if (trim_to_ad_tags_ && attribute_pb->name() == "data-google-query-id") {
+      trimmed_dom_element_ids_.insert(cur_element->id());
+    }
   }
 
   if (resource) {
@@ -544,6 +669,11 @@ void ThreatDetails::FinishCollection(bool did_proceed, int num_visit) {
       }
     }
   }
+
+  if (trim_to_ad_tags_) {
+    TrimElements(trimmed_dom_element_ids_, &elements_, &resources_);
+  }
+
   did_proceed_ = did_proceed;
   num_visits_ = num_visit;
   std::vector<GURL> urls;
