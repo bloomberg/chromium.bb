@@ -80,7 +80,13 @@ class AXContentNodeDataSparseAttributeAdapter
 
   void AddBoolAttribute(blink::WebAXBoolAttribute attribute,
                         bool value) override {
-    NOTREACHED();
+    switch (attribute) {
+      case blink::WebAXBoolAttribute::kAriaBusy:
+        dst_->AddBoolAttribute(ui::AX_ATTR_BUSY, value);
+        break;
+      default:
+        NOTREACHED();
+    }
   }
 
   void AddStringAttribute(blink::WebAXStringAttribute attribute,
@@ -634,9 +640,6 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
 
     if (src.IsInLiveRegion()) {
       dst->AddBoolAttribute(ui::AX_ATTR_LIVE_ATOMIC, src.LiveRegionAtomic());
-      dst->AddBoolAttribute(ui::AX_ATTR_LIVE_BUSY, src.LiveRegionBusy());
-      if (src.LiveRegionBusy())
-        dst->AddState(ui::AX_STATE_BUSY);
       if (!src.LiveRegionStatus().IsEmpty()) {
         dst->AddStringAttribute(ui::AX_ATTR_LIVE_STATUS,
                                 src.LiveRegionStatus().Utf8());

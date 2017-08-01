@@ -973,7 +973,10 @@ bool WebAXObjectProxy::IsAtomic() {
 
 bool WebAXObjectProxy::IsBusy() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.LiveRegionBusy();
+  SparseAttributeAdapter attribute_adapter;
+  accessibility_object_.GetSparseAXAttributes(attribute_adapter);
+  return attribute_adapter
+      .bool_attributes[blink::WebAXBoolAttribute::kAriaBusy];
 }
 
 std::string WebAXObjectProxy::Restriction() {

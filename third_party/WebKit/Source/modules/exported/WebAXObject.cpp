@@ -514,13 +514,6 @@ bool WebAXObject::LiveRegionAtomic() const {
   return private_->LiveRegionAtomic();
 }
 
-bool WebAXObject::LiveRegionBusy() const {
-  if (IsDetached())
-    return false;
-
-  return private_->LiveRegionBusy();
-}
-
 WebString WebAXObject::LiveRegionRelevant() const {
   if (IsDetached())
     return WebString();

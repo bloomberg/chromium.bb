@@ -237,7 +237,6 @@ class WebAXObject {
   // Live regions.
   BLINK_EXPORT bool IsInLiveRegion() const;
   BLINK_EXPORT bool LiveRegionAtomic() const;
-  BLINK_EXPORT bool LiveRegionBusy() const;
   BLINK_EXPORT WebString LiveRegionRelevant() const;
   BLINK_EXPORT WebString LiveRegionStatus() const;
   BLINK_EXPORT WebAXObject LiveRegionRoot() const;

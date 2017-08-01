@@ -912,7 +912,7 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_LIVE_ATOMIC:
         result += " atomic=" + value;
         break;
-      case AX_ATTR_LIVE_BUSY:
+      case AX_ATTR_BUSY:
         result += " busy=" + value;
         break;
       case AX_ATTR_CONTAINER_LIVE_ATOMIC:

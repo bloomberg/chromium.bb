@@ -792,7 +792,7 @@ var boolAttributes = [
     'containerLiveAtomic',
     'containerLiveBusy',
     'liveAtomic',
-    'liveBusy'];
+    'busy'];
 
 var intAttributes = [
     'backgroundColor',

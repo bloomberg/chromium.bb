@@ -210,7 +210,6 @@ Output.ROLE_INFO_ = {
  * @private
  */
 Output.STATE_INFO_ = {
-  busy: {on: {msgId: 'busy_state'}},
   collapsed: {on: {msgId: 'aria_expanded_false'}},
   default: {on: {msgId: 'default_state'}},
   expanded: {on: {msgId: 'aria_expanded_true'}},

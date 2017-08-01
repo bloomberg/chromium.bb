@@ -59,9 +59,6 @@ void FillLiveRegionProperties(AXObject& ax_object,
       CreateProperty(AXLiveRegionAttributesEnum::Relevant,
                      CreateValue(ax_object.ContainerLiveRegionRelevant(),
                                  AXValueTypeEnum::TokenList)));
-  properties.addItem(
-      CreateProperty(AXLiveRegionAttributesEnum::Busy,
-                     CreateBooleanValue(ax_object.ContainerLiveRegionBusy())));
 
   if (!ax_object.IsLiveRegion()) {
     properties.addItem(CreateProperty(
@@ -330,7 +327,13 @@ class SparseAttributeAXPropertyAdapter
   protocol::Array<AXProperty>& properties_;
 
   void AddBoolAttribute(AXBoolAttribute attribute, bool value) {
-    // Implement this when we add the first sparse bool attribute.
+    switch (attribute) {
+      case AXBoolAttribute::kAriaBusy:
+        properties_.addItem(
+            CreateProperty(AXGlobalStatesEnum::Busy,
+                           CreateValue(value, AXValueTypeEnum::Boolean)));
+        break;
+    }
   }
 
   void AddStringAttribute(AXStringAttribute attribute, const String& value) {

@@ -662,7 +662,7 @@ TEST(AXTreeTest, AttributeChangeCallbacks) {
   initial_state.nodes[0].AddStringAttribute(AX_ATTR_NAME, "N1");
   initial_state.nodes[0].AddStringAttribute(AX_ATTR_DESCRIPTION, "D1");
   initial_state.nodes[0].AddBoolAttribute(AX_ATTR_LIVE_ATOMIC, true);
-  initial_state.nodes[0].AddBoolAttribute(AX_ATTR_LIVE_BUSY, false);
+  initial_state.nodes[0].AddBoolAttribute(AX_ATTR_BUSY, false);
   initial_state.nodes[0].AddFloatAttribute(AX_ATTR_MIN_VALUE_FOR_RANGE, 1.0);
   initial_state.nodes[0].AddFloatAttribute(AX_ATTR_MAX_VALUE_FOR_RANGE, 10.0);
   initial_state.nodes[0].AddIntAttribute(AX_ATTR_SCROLL_X, 5);
@@ -680,7 +680,7 @@ TEST(AXTreeTest, AttributeChangeCallbacks) {
   update0.nodes[0].AddStringAttribute(AX_ATTR_NAME, "N2");
   update0.nodes[0].AddStringAttribute(AX_ATTR_DESCRIPTION, "D2");
   update0.nodes[0].AddBoolAttribute(AX_ATTR_LIVE_ATOMIC, false);
-  update0.nodes[0].AddBoolAttribute(AX_ATTR_LIVE_BUSY, true);
+  update0.nodes[0].AddBoolAttribute(AX_ATTR_BUSY, true);
   update0.nodes[0].AddFloatAttribute(AX_ATTR_MIN_VALUE_FOR_RANGE, 2.0);
   update0.nodes[0].AddFloatAttribute(AX_ATTR_MAX_VALUE_FOR_RANGE, 9.0);
   update0.nodes[0].AddIntAttribute(AX_ATTR_SCROLL_X, 6);
@@ -693,7 +693,7 @@ TEST(AXTreeTest, AttributeChangeCallbacks) {
   EXPECT_EQ("name changed from N1 to N2", change_log[0]);
   EXPECT_EQ("description changed from D1 to D2", change_log[1]);
   EXPECT_EQ("liveAtomic changed to false", change_log[2]);
-  EXPECT_EQ("liveBusy changed to true", change_log[3]);
+  EXPECT_EQ("busy changed to true", change_log[3]);
   EXPECT_EQ("minValueForRange changed from 1 to 2", change_log[4]);
   EXPECT_EQ("maxValueForRange changed from 10 to 9", change_log[5]);
   EXPECT_EQ("scrollX changed from 5 to 6", change_log[6]);
@@ -722,7 +722,7 @@ TEST(AXTreeTest, AttributeChangeCallbacks) {
   EXPECT_EQ("name changed from N2 to ", change_log2[0]);
   EXPECT_EQ("description changed from D2 to D3", change_log2[1]);
   EXPECT_EQ("value changed from  to V3", change_log2[2]);
-  EXPECT_EQ("liveBusy changed to false", change_log2[3]);
+  EXPECT_EQ("busy changed to false", change_log2[3]);
   EXPECT_EQ("modal changed to true", change_log2[4]);
   EXPECT_EQ("minValueForRange changed from 2 to 0", change_log2[5]);
   EXPECT_EQ("valueForRange changed from 0 to 5", change_log2[6]);

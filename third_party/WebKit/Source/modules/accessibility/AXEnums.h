@@ -224,6 +224,10 @@ enum TextStyle {
   kTextStyleLineThrough = 1 << 3
 };
 
+enum class AXBoolAttribute {
+  kAriaBusy,
+};
+
 enum class AXStringAttribute {
   kAriaKeyShortcuts,
   kAriaRoleDescription,

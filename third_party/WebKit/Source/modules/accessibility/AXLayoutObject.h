@@ -133,7 +133,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   const AtomicString& LiveRegionStatus() const override;
   const AtomicString& LiveRegionRelevant() const override;
   bool LiveRegionAtomic() const override;
-  bool LiveRegionBusy() const override;
 
   // AX name calc.
   String TextAlternative(bool recursive,
