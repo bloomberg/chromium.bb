@@ -798,6 +798,7 @@ Bug(none) http/tests/fetch/serviceworker/thorough/redirect-password-base-https-o
 Bug(none) http/tests/fetch/serviceworker/thorough/redirect-password-other-https.html [ Crash Timeout ]
 Bug(none) http/tests/fetch/serviceworker/thorough/redirect-password.html [ Crash Timeout ]
 Bug(none) http/tests/fetch/serviceworker/thorough/redirect.html [ Crash Timeout ]
+Bug(none) http/tests/fetch/serviceworker/thorough/scheme-blob-base-https-other-https.html [ Crash Timeout ]
 Bug(none) http/tests/fetch/serviceworker/thorough/scheme-blob-other-https.html [ Crash Timeout ]
 Bug(none) http/tests/fetch/serviceworker/thorough/scheme-data-base-https-other-https.html [ Crash Timeout ]
 Bug(none) http/tests/fetch/serviceworker/thorough/scheme-data-other-https.html [ Crash Timeout ]
