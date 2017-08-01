@@ -71,7 +71,6 @@ test("webkit_unit_tests") {
 
     "tests/LayoutGeometryMapTest.cpp",
     "tests/RunAllTests.cpp",
-    "tests/SpinLockTest.cpp",
     "tests/VirtualTimeTest.cpp",
     "tests/WebFrameSerializerSanitizationTest.cpp",
     "tests/WebFrameTest.cpp",

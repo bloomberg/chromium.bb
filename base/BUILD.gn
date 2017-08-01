@@ -2335,7 +2335,10 @@ test("base_unittests") {
   }
 
   if (use_partition_alloc) {
-    sources += [ "allocator/partition_allocator/partition_alloc_unittest.cc" ]
+    sources += [
+      "allocator/partition_allocator/partition_alloc_unittest.cc",
+      "allocator/partition_allocator/spin_lock_unittest.cc",
+    ]
   }
 
   if (is_mac) {
