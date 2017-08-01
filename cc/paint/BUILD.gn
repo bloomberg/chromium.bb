@@ -17,6 +17,7 @@ cc_component("paint") {
     "draw_image.cc",
     "draw_image.h",
     "image_id.h",
+    "image_provider.cc",
     "image_provider.h",
     "paint_canvas.cc",
     "paint_canvas.h",

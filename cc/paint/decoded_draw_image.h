@@ -24,6 +24,7 @@ class CC_PAINT_EXPORT DecodedDrawImage {
                    SkFilterQuality filter_quality);
   DecodedDrawImage(sk_sp<const SkImage> image, SkFilterQuality filter_quality);
   DecodedDrawImage(const DecodedDrawImage& other);
+  DecodedDrawImage();
   ~DecodedDrawImage();
 
   const sk_sp<const SkImage>& image() const { return image_; }
@@ -42,9 +43,9 @@ class CC_PAINT_EXPORT DecodedDrawImage {
 
  private:
   sk_sp<const SkImage> image_;
-  const SkSize src_rect_offset_;
-  const SkSize scale_adjustment_;
-  const SkFilterQuality filter_quality_;
+  SkSize src_rect_offset_;
+  SkSize scale_adjustment_;
+  SkFilterQuality filter_quality_;
   bool at_raster_decode_;
 };
 

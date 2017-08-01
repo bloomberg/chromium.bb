@@ -2532,17 +2532,6 @@ TEST(PaintOpBufferTest, BoundingRect_DrawTextBlobOp) {
   }
 }
 
-class MockImageHolder : public ImageProvider::DecodedImageHolder {
- public:
-  explicit MockImageHolder(DecodedDrawImage image) : image_(std::move(image)) {}
-  ~MockImageHolder() override = default;
-
-  const DecodedDrawImage& DecodedImage() override { return image_; }
-
- private:
-  DecodedDrawImage image_;
-};
-
 class MockImageProvider : public ImageProvider {
  public:
   MockImageProvider() = default;
@@ -2553,16 +2542,15 @@ class MockImageProvider : public ImageProvider {
 
   ~MockImageProvider() override = default;
 
-  std::unique_ptr<DecodedImageHolder> GetDecodedImage(
-      const PaintImage& paint_image,
-      const SkRect& src_rect,
-      SkFilterQuality filter_quality,
-      const SkMatrix& matrix) override {
+  ScopedDecodedDrawImage GetDecodedDrawImage(const PaintImage& paint_image,
+                                             const SkRect& src_rect,
+                                             SkFilterQuality filter_quality,
+                                             const SkMatrix& matrix) override {
     SkBitmap bitmap;
     bitmap.allocN32Pixels(10, 10);
     sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
     size_t i = index_++;
-    return base::MakeUnique<MockImageHolder>(
+    return ScopedDecodedDrawImage(
         DecodedDrawImage(image, src_rect_offset_[i], scale_[i], quality_[i]));
   }
 

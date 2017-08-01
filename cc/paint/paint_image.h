@@ -28,7 +28,7 @@ class CC_PAINT_EXPORT PaintImage {
   // This is the id used in places where we are currently not plumbing the
   // correct image id from blink.
   // TODO(khushalsagar): The only user of these seems to be the ImageBuffer in
-  // blink. Same goes for the animation and completeion states.
+  // blink. Same goes for the animation and completion states.
   static const Id kUnknownStableId = -2;
 
   // TODO(vmpstr): Work towards removing "UNKNOWN" value.
