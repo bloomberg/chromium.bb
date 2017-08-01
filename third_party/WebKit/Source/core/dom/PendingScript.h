@@ -92,8 +92,7 @@ class CORE_EXPORT PendingScript
   virtual bool WasCanceled() const = 0;
 
   // Support for script streaming.
-  virtual bool StartStreamingIfPossible(ScriptStreamer::Type,
-                                        std::unique_ptr<WTF::Closure>) = 0;
+  virtual bool StartStreamingIfPossible(ScriptStreamer::Type, WTF::Closure) = 0;
   virtual bool IsCurrentlyStreaming() const = 0;
 
   // The following two methods are used for document.write() intervention and

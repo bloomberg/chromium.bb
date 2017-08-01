@@ -34,25 +34,23 @@ class PLATFORM_EXPORT WebThreadSupportingGC final {
   static std::unique_ptr<WebThreadSupportingGC> CreateForThread(WebThread*);
   ~WebThreadSupportingGC();
 
-  void PostTask(const WebTraceLocation& location,
-                std::unique_ptr<WTF::Closure> task) {
+  void PostTask(const WebTraceLocation& location, WTF::Closure task) {
     thread_->GetWebTaskRunner()->PostTask(location, std::move(task));
   }
 
   void PostDelayedTask(const WebTraceLocation& location,
-                       std::unique_ptr<WTF::Closure> task,
+                       WTF::Closure task,
                        TimeDelta delay) {
     thread_->GetWebTaskRunner()->PostDelayedTask(location, std::move(task),
                                                  delay);
   }
 
-  void PostTask(const WebTraceLocation& location,
-                std::unique_ptr<CrossThreadClosure> task) {
+  void PostTask(const WebTraceLocation& location, CrossThreadClosure task) {
     thread_->GetWebTaskRunner()->PostTask(location, std::move(task));
   }
 
   void PostDelayedTask(const WebTraceLocation& location,
-                       std::unique_ptr<CrossThreadClosure> task,
+                       CrossThreadClosure task,
                        TimeDelta delay) {
     thread_->GetWebTaskRunner()->PostDelayedTask(location, std::move(task),
                                                  delay);

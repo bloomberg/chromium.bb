@@ -42,7 +42,7 @@ class MockCanvasAsyncBlobCreator : public CanvasAsyncBlobCreator {
   void CreateNullAndReturnResult() override {}
   void SignalAlternativeCodePathFinishedForTesting() override;
   void PostDelayedTaskToCurrentThread(const WebTraceLocation&,
-                                      std::unique_ptr<WTF::Closure>,
+                                      WTF::Closure,
                                       double delay_ms) override;
 };
 
@@ -52,7 +52,7 @@ void MockCanvasAsyncBlobCreator::SignalAlternativeCodePathFinishedForTesting() {
 
 void MockCanvasAsyncBlobCreator::PostDelayedTaskToCurrentThread(
     const WebTraceLocation& location,
-    std::unique_ptr<WTF::Closure> task,
+    WTF::Closure task,
     double delay_ms) {
   DCHECK(IsMainThread());
   Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(

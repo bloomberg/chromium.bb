@@ -25,10 +25,10 @@ class CORE_EXPORT InspectorTaskRunner final {
   ~InspectorTaskRunner();
 
   using Task = WTF::CrossThreadClosure;
-  void AppendTask(std::unique_ptr<Task>);
+  void AppendTask(Task);
 
   enum WaitMode { kWaitForTask, kDontWaitForTask };
-  std::unique_ptr<Task> TakeNextTask(WaitMode);
+  Task TakeNextTask(WaitMode);
 
   void InterruptAndRunAllTasksDontWait(v8::Isolate*);
   void RunAllTasksDontWait();
@@ -53,7 +53,7 @@ class CORE_EXPORT InspectorTaskRunner final {
   bool ignore_interrupts_;
   Mutex mutex_;
   ThreadCondition condition_;
-  Deque<std::unique_ptr<Task>> queue_;
+  Deque<Task> queue_;
   bool killed_;
 };
 

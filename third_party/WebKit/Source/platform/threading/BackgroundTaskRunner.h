@@ -13,9 +13,8 @@ namespace blink {
 
 namespace BackgroundTaskRunner {
 
-PLATFORM_EXPORT void PostOnBackgroundThread(
-    const WebTraceLocation&,
-    std::unique_ptr<CrossThreadClosure>);
+PLATFORM_EXPORT void PostOnBackgroundThread(const WebTraceLocation&,
+                                            CrossThreadClosure);
 
 }  // BackgroundTaskRunner
 

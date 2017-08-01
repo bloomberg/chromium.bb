@@ -44,7 +44,7 @@ class MODULES_EXPORT NotificationImageLoader final
   // Asynchronously downloads an image from the given url, decodes the loaded
   // data, and passes the bitmap to the callback. Times out if the load takes
   // too long and ImageCallback is invoked with an empty bitmap.
-  void Start(ExecutionContext*, const KURL&, std::unique_ptr<ImageCallback>);
+  void Start(ExecutionContext*, const KURL&, ImageCallback);
 
   // Cancels the pending load, if there is one. The |m_imageCallback| will not
   // be run.
@@ -66,7 +66,7 @@ class MODULES_EXPORT NotificationImageLoader final
   bool stopped_;
   double start_time_;
   RefPtr<SharedBuffer> data_;
-  std::unique_ptr<ImageCallback> image_callback_;
+  ImageCallback image_callback_;
   Member<ThreadableLoader> threadable_loader_;
 };
 

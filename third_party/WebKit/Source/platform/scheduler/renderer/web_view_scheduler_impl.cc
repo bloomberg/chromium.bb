@@ -286,7 +286,7 @@ void WebViewSchedulerImpl::SetVirtualTimePolicy(VirtualTimePolicy policy) {
 
 void WebViewSchedulerImpl::GrantVirtualTimeBudget(
     base::TimeDelta budget,
-    std::unique_ptr<WTF::Closure> budget_exhausted_callback) {
+    WTF::Closure budget_exhausted_callback) {
   virtual_time_budget_expired_task_handle_ =
       virtual_time_control_task_queue_->PostDelayedCancellableTask(
           BLINK_FROM_HERE, std::move(budget_exhausted_callback), budget);

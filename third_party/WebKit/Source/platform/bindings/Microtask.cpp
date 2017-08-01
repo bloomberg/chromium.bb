@@ -47,10 +47,11 @@ static void MicrotaskFunctionCallback(void* data) {
   (*task)();
 }
 
-void Microtask::EnqueueMicrotask(std::unique_ptr<WTF::Closure> callback) {
+void Microtask::EnqueueMicrotask(WTF::Closure callback) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  isolate->EnqueueMicrotask(&MicrotaskFunctionCallback,
-                            static_cast<void*>(callback.release()));
+  isolate->EnqueueMicrotask(
+      &MicrotaskFunctionCallback,
+      static_cast<void*>(new WTF::Closure(std::move(callback))));
 }
 
 }  // namespace blink

@@ -71,7 +71,7 @@ class CORE_EXPORT SVGURIReference : public GarbageCollectedMixin {
   static Element* ObserveTarget(Member<IdTargetObserver>&,
                                 TreeScope&,
                                 const AtomicString& id,
-                                std::unique_ptr<WTF::Closure>);
+                                WTF::Closure);
   // Unregister and destroy the observer.
   static void UnobserveTarget(Member<IdTargetObserver>&);
 

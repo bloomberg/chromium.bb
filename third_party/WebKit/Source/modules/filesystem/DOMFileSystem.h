@@ -88,7 +88,7 @@ class MODULES_EXPORT DOMFileSystem final
   // Schedule a callback. This should not cross threads (should be called on the
   // same context thread).
   static void ScheduleCallback(ExecutionContext* execution_context,
-                               std::unique_ptr<WTF::Closure> task);
+                               WTF::Closure task);
 
   DECLARE_VIRTUAL_TRACE();
 

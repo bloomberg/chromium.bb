@@ -194,9 +194,8 @@ void DatabaseTracker::CloseDatabasesImmediately(SecurityOrigin* origin,
   }
 }
 
-void DatabaseTracker::ForEachOpenDatabaseInPage(
-    Page* page,
-    std::unique_ptr<DatabaseCallback> callback) {
+void DatabaseTracker::ForEachOpenDatabaseInPage(Page* page,
+                                                DatabaseCallback callback) {
   MutexLocker open_database_map_lock(open_database_map_guard_);
   if (!open_database_map_)
     return;
@@ -206,7 +205,7 @@ void DatabaseTracker::ForEachOpenDatabaseInPage(
         ExecutionContext* context = database->GetExecutionContext();
         DCHECK(context->IsDocument());
         if (ToDocument(context)->GetFrame()->GetPage() == page)
-          (*callback)(database);
+          callback(database);
       }
     }
   }

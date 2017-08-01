@@ -62,7 +62,7 @@ class CORE_EXPORT ScriptedAnimationController
   void EnqueuePerFrameEvent(Event*);
 
   // Animation frame tasks are used for Fullscreen.
-  void EnqueueTask(std::unique_ptr<WTF::Closure>);
+  void EnqueueTask(WTF::Closure);
 
   // Used for the MediaQueryList change event.
   void EnqueueMediaQueryChangeListeners(
@@ -93,7 +93,7 @@ class CORE_EXPORT ScriptedAnimationController
   Member<Document> document_;
   FrameRequestCallbackCollection callback_collection_;
   int suspend_count_;
-  Vector<std::unique_ptr<WTF::Closure>> task_queue_;
+  Vector<WTF::Closure> task_queue_;
   HeapVector<Member<Event>> event_queue_;
   HeapListHashSet<std::pair<Member<const EventTarget>, const StringImpl*>>
       per_frame_events_;

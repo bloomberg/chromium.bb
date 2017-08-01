@@ -49,9 +49,7 @@
 namespace blink {
 
 WorkerScriptLoader::WorkerScriptLoader()
-    : response_callback_(nullptr),
-      finished_callback_(nullptr),
-      response_address_space_(kWebAddressSpacePublic) {}
+    : response_address_space_(kWebAddressSpacePublic) {}
 
 WorkerScriptLoader::~WorkerScriptLoader() {
   // If |m_threadableLoader| is still working, we have to cancel it here.
@@ -96,8 +94,8 @@ void WorkerScriptLoader::LoadAsynchronously(
     WebURLRequest::FetchRequestMode fetch_request_mode,
     WebURLRequest::FetchCredentialsMode fetch_credentials_mode,
     WebAddressSpace creation_address_space,
-    std::unique_ptr<WTF::Closure> response_callback,
-    std::unique_ptr<WTF::Closure> finished_callback) {
+    WTF::Closure response_callback,
+    WTF::Closure finished_callback) {
   DCHECK(response_callback || finished_callback);
   response_callback_ = std::move(response_callback);
   finished_callback_ = std::move(finished_callback);
@@ -170,7 +168,7 @@ void WorkerScriptLoader::DidReceiveResponse(
   }
 
   if (response_callback_)
-    (*response_callback_)();
+    response_callback_();
 }
 
 void WorkerScriptLoader::DidReceiveData(const char* data, unsigned len) {
@@ -245,8 +243,8 @@ void WorkerScriptLoader::NotifyFinished() {
   if (!finished_callback_)
     return;
 
-  std::unique_ptr<WTF::Closure> callback = std::move(finished_callback_);
-  (*callback)();
+  WTF::Closure callback = std::move(finished_callback_);
+  callback();
 }
 
 void WorkerScriptLoader::ProcessContentSecurityPolicy(

@@ -48,36 +48,35 @@ class IDBRequestQueueItem {
  public:
   IDBRequestQueueItem(IDBRequest*,
                       DOMException*,
-                      std::unique_ptr<WTF::Closure> on_result_load_complete);
+                      WTF::Closure on_result_load_complete);
   IDBRequestQueueItem(IDBRequest*,
                       int64_t,
-                      std::unique_ptr<WTF::Closure> on_result_load_complete);
-  IDBRequestQueueItem(IDBRequest*,
-                      std::unique_ptr<WTF::Closure> on_result_load_complete);
+                      WTF::Closure on_result_load_complete);
+  IDBRequestQueueItem(IDBRequest*, WTF::Closure on_result_load_complete);
   IDBRequestQueueItem(IDBRequest*,
                       IDBKey*,
-                      std::unique_ptr<WTF::Closure> on_result_load_complete);
+                      WTF::Closure on_result_load_complete);
   IDBRequestQueueItem(IDBRequest*,
                       RefPtr<IDBValue>,
                       bool attach_loader,
-                      std::unique_ptr<WTF::Closure> on_load_complete);
+                      WTF::Closure on_load_complete);
   IDBRequestQueueItem(IDBRequest*,
                       const Vector<RefPtr<IDBValue>>&,
                       bool attach_loader,
-                      std::unique_ptr<WTF::Closure> on_result_load_complete);
+                      WTF::Closure on_result_load_complete);
   IDBRequestQueueItem(IDBRequest*,
                       IDBKey*,
                       IDBKey* primary_key,
                       RefPtr<IDBValue>,
                       bool attach_loader,
-                      std::unique_ptr<WTF::Closure> on_result_load_complete);
+                      WTF::Closure on_result_load_complete);
   IDBRequestQueueItem(IDBRequest*,
                       std::unique_ptr<WebIDBCursor>,
                       IDBKey*,
                       IDBKey* primary_key,
                       RefPtr<IDBValue>,
                       bool attach_loader,
-                      std::unique_ptr<WTF::Closure> on_result_load_complete);
+                      WTF::Closure on_result_load_complete);
   ~IDBRequestQueueItem();
 
   // False if this result still requires post-processing.
@@ -156,7 +155,7 @@ class IDBRequestQueueItem {
   std::unique_ptr<IDBRequestLoader> loader_;
 
   // Called when result post-processing has completed.
-  std::unique_ptr<WTF::Closure> on_result_load_complete_;
+  WTF::Closure on_result_load_complete_;
 
   // The integer value argument to the IDBRequest callback.
   int64_t int64_value_;

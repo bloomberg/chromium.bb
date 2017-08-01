@@ -195,6 +195,13 @@ struct CrossThreadCopier<WTF::PassedWrapper<T>> {
   }
 };
 
+template <typename Signature>
+struct CrossThreadCopier<WTF::Function<Signature, WTF::kCrossThreadAffinity>> {
+  STATIC_ONLY(CrossThreadCopier);
+  using Type = WTF::Function<Signature, WTF::kCrossThreadAffinity>;
+  static Type Copy(Type&& value) { return std::move(value); }
+};
+
 template <>
 struct CrossThreadCopier<KURL> {
   STATIC_ONLY(CrossThreadCopier);

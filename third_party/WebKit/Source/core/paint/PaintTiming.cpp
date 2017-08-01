@@ -190,7 +190,7 @@ void PaintTiming::RegisterNotifySwapTime(PaintEvent event) {
 
 void PaintTiming::RegisterNotifySwapTime(
     PaintEvent event,
-    std::unique_ptr<WTF::Function<void(bool, double)>> callback) {
+    WTF::Function<void(bool, double)> callback) {
   // ReportSwapTime on layerTreeView will queue a swap-promise, the callback is
   // called when the swap for current render frame completes or fails to happen.
   if (!GetFrame() || !GetFrame()->GetPage())

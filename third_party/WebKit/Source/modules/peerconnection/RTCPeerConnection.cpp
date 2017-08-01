@@ -411,14 +411,13 @@ class WebRTCStatsReportCallbackResolver : public WebRTCStatsReportCallback {
 
 }  // namespace
 
-RTCPeerConnection::EventWrapper::EventWrapper(
-    Event* event,
-    std::unique_ptr<BoolFunction> function)
+RTCPeerConnection::EventWrapper::EventWrapper(Event* event,
+                                              BoolFunction function)
     : event_(event), setup_function_(std::move(function)) {}
 
 bool RTCPeerConnection::EventWrapper::Setup() {
   if (setup_function_) {
-    return (*setup_function_)();
+    return setup_function_();
   }
   return true;
 }
@@ -1608,12 +1607,11 @@ void RTCPeerConnection::CloseInternal() {
 }
 
 void RTCPeerConnection::ScheduleDispatchEvent(Event* event) {
-  ScheduleDispatchEvent(event, nullptr);
+  ScheduleDispatchEvent(event, BoolFunction());
 }
 
-void RTCPeerConnection::ScheduleDispatchEvent(
-    Event* event,
-    std::unique_ptr<BoolFunction> setup_function) {
+void RTCPeerConnection::ScheduleDispatchEvent(Event* event,
+                                              BoolFunction setup_function) {
   scheduled_events_.push_back(
       new EventWrapper(event, std::move(setup_function)));
 

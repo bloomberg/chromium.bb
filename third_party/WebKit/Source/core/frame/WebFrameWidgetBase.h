@@ -91,8 +91,7 @@ class CORE_EXPORT WebFrameWidgetBase
   void ShowContextMenu(WebMenuSourceType) override;
 
   // Image decode functionality.
-  void RequestDecode(const PaintImage&,
-                     std::unique_ptr<WTF::Function<void(bool)>> callback);
+  void RequestDecode(const PaintImage&, WTF::Function<void(bool)> callback);
 
   DECLARE_VIRTUAL_TRACE();
 

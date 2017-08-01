@@ -27,7 +27,7 @@ class AvailabilityCallbackWrapper final
 
  public:
   explicit AvailabilityCallbackWrapper(RemotePlaybackAvailabilityCallback*);
-  explicit AvailabilityCallbackWrapper(std::unique_ptr<WTF::Closure>);
+  explicit AvailabilityCallbackWrapper(WTF::Closure);
   ~AvailabilityCallbackWrapper() = default;
 
   void Run(RemotePlayback*, bool new_availability);
@@ -38,7 +38,7 @@ class AvailabilityCallbackWrapper final
  private:
   // Only one of these callbacks must be set.
   TraceWrapperMember<RemotePlaybackAvailabilityCallback> bindings_cb_;
-  std::unique_ptr<WTF::Closure> internal_cb_;
+  WTF::Closure internal_cb_;
 };
 
 }  // namespace blink

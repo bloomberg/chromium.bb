@@ -13,15 +13,14 @@ AvailabilityCallbackWrapper::AvailabilityCallbackWrapper(
     RemotePlaybackAvailabilityCallback* callback)
     : bindings_cb_(this, callback) {}
 
-AvailabilityCallbackWrapper::AvailabilityCallbackWrapper(
-    std::unique_ptr<WTF::Closure> callback)
+AvailabilityCallbackWrapper::AvailabilityCallbackWrapper(WTF::Closure callback)
     : bindings_cb_(nullptr, nullptr), internal_cb_(std::move(callback)) {}
 
 void AvailabilityCallbackWrapper::Run(RemotePlayback* remote_playback,
                                       bool new_availability) {
   if (internal_cb_) {
     DCHECK(!bindings_cb_);
-    (*internal_cb_.get())();
+    internal_cb_();
     return;
   }
 

@@ -47,9 +47,8 @@ class StorageErrorCallback
   DEFINE_INLINE_VIRTUAL_TRACE() {}
   virtual void handleEvent(DOMError*) = 0;
 
-  MODULES_EXPORT static std::unique_ptr<WTF::Closure> CreateSameThreadTask(
-      StorageErrorCallback*,
-      ExceptionCode);
+  MODULES_EXPORT static WTF::Closure CreateSameThreadTask(StorageErrorCallback*,
+                                                          ExceptionCode);
 
  private:
   static void Run(StorageErrorCallback*, ExceptionCode);

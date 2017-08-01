@@ -120,13 +120,13 @@ class DataConsumerHandleTestUtil {
         holder_ = nullptr;
       }
       void PostTaskToReadingThread(const WebTraceLocation& location,
-                                   std::unique_ptr<CrossThreadClosure> task) {
+                                   CrossThreadClosure task) {
         MutexLocker locker(holder_mutex_);
         DCHECK(holder_);
         holder_->ReadingThread()->PostTask(location, std::move(task));
       }
       void PostTaskToUpdatingThread(const WebTraceLocation& location,
-                                    std::unique_ptr<CrossThreadClosure> task) {
+                                    CrossThreadClosure task) {
         MutexLocker locker(holder_mutex_);
         DCHECK(holder_);
         holder_->UpdatingThread()->PostTask(location, std::move(task));
@@ -235,22 +235,20 @@ class DataConsumerHandleTestUtil {
     void SignalDone() { waitable_event_->Signal(); }
     String Result() { return context_->Result(); }
     void PostTaskToReadingThread(const WebTraceLocation& location,
-                                 std::unique_ptr<CrossThreadClosure> task) {
+                                 CrossThreadClosure task) {
       context_->PostTaskToReadingThread(location, std::move(task));
     }
     void PostTaskToUpdatingThread(const WebTraceLocation& location,
-                                  std::unique_ptr<CrossThreadClosure> task) {
+                                  CrossThreadClosure task) {
       context_->PostTaskToUpdatingThread(location, std::move(task));
     }
-    void PostTaskToReadingThreadAndWait(
-        const WebTraceLocation& location,
-        std::unique_ptr<CrossThreadClosure> task) {
+    void PostTaskToReadingThreadAndWait(const WebTraceLocation& location,
+                                        CrossThreadClosure task) {
       PostTaskToReadingThread(location, std::move(task));
       waitable_event_->Wait();
     }
-    void PostTaskToUpdatingThreadAndWait(
-        const WebTraceLocation& location,
-        std::unique_ptr<CrossThreadClosure> task) {
+    void PostTaskToUpdatingThreadAndWait(const WebTraceLocation& location,
+                                         CrossThreadClosure task) {
       PostTaskToUpdatingThread(location, std::move(task));
       waitable_event_->Wait();
     }

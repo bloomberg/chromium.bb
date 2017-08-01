@@ -95,10 +95,9 @@ SkBitmap NotificationImageLoader::ScaleDownIfNeeded(const SkBitmap& image,
   return image;
 }
 
-void NotificationImageLoader::Start(
-    ExecutionContext* execution_context,
-    const KURL& url,
-    std::unique_ptr<ImageCallback> image_callback) {
+void NotificationImageLoader::Start(ExecutionContext* execution_context,
+                                    const KURL& url,
+                                    ImageCallback image_callback) {
   DCHECK(!stopped_);
 
   start_time_ = MonotonicallyIncreasingTimeMS();
@@ -165,7 +164,7 @@ void NotificationImageLoader::DidFinishLoading(
       // The |ImageFrame*| is owned by the decoder.
       ImageFrame* image_frame = decoder->DecodeFrameBufferAtIndex(0);
       if (image_frame) {
-        (*image_callback_)(image_frame->Bitmap());
+        image_callback_(image_frame->Bitmap());
         return;
       }
     }
@@ -191,7 +190,7 @@ void NotificationImageLoader::RunCallbackWithEmptyBitmap() {
   if (stopped_)
     return;
 
-  (*image_callback_)(SkBitmap());
+  image_callback_(SkBitmap());
 }
 
 }  // namespace blink

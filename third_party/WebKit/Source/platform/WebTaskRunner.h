@@ -89,24 +89,22 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner
   // Helpers for posting bound functions as tasks.
 
   // For cross-thread posting. Can be called from any thread.
-  void PostTask(const WebTraceLocation&, std::unique_ptr<CrossThreadClosure>);
+  void PostTask(const WebTraceLocation&, CrossThreadClosure);
   void PostDelayedTask(const WebTraceLocation&,
-                       std::unique_ptr<CrossThreadClosure>,
+                       CrossThreadClosure,
                        TimeDelta delay);
 
   // For same-thread posting. Must be called from the associated WebThread.
-  void PostTask(const WebTraceLocation&, std::unique_ptr<WTF::Closure>);
-  void PostDelayedTask(const WebTraceLocation&,
-                       std::unique_ptr<WTF::Closure>,
-                       TimeDelta delay);
+  void PostTask(const WebTraceLocation&, WTF::Closure);
+  void PostDelayedTask(const WebTraceLocation&, WTF::Closure, TimeDelta delay);
 
   // For same-thread cancellable task posting. Returns a TaskHandle object for
   // cancellation.
-  WARN_UNUSED_RESULT TaskHandle
-  PostCancellableTask(const WebTraceLocation&, std::unique_ptr<WTF::Closure>);
+  WARN_UNUSED_RESULT TaskHandle PostCancellableTask(const WebTraceLocation&,
+                                                    WTF::Closure);
   WARN_UNUSED_RESULT TaskHandle
   PostDelayedCancellableTask(const WebTraceLocation&,
-                             std::unique_ptr<WTF::Closure>,
+                             WTF::Closure,
                              TimeDelta delay);
 
  protected:

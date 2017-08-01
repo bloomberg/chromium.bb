@@ -13,7 +13,7 @@ namespace blink {
 
 ElementVisibilityObserver::ElementVisibilityObserver(
     Element* element,
-    std::unique_ptr<VisibilityCallback> callback)
+    VisibilityCallback callback)
     : element_(element), callback_(std::move(callback)) {}
 
 ElementVisibilityObserver::~ElementVisibilityObserver() = default;
@@ -54,7 +54,7 @@ void ElementVisibilityObserver::OnVisibilityChanged(
     const HeapVector<Member<IntersectionObserverEntry>>& entries) {
   bool is_visible = entries.back()->intersectionRatio() >=
                     intersection_observer_->thresholds()[0];
-  (*callback_.get())(is_visible);
+  callback_(is_visible);
 }
 
 }  // namespace blink

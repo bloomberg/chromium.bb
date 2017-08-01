@@ -15,7 +15,7 @@
 namespace blink {
 
 NotificationResourcesLoader::NotificationResourcesLoader(
-    std::unique_ptr<CompletionCallback> completion_callback)
+    CompletionCallback completion_callback)
     : started_(false),
       completion_callback_(std::move(completion_callback)),
       pending_request_count_(0) {
@@ -80,7 +80,7 @@ void NotificationResourcesLoader::LoadImage(
     ExecutionContext* execution_context,
     NotificationImageLoader::Type type,
     const KURL& url,
-    std::unique_ptr<NotificationImageLoader::ImageCallback> image_callback) {
+    NotificationImageLoader::ImageCallback image_callback) {
   if (url.IsNull() || url.IsEmpty() || !url.IsValid()) {
     DidFinishRequest();
     return;
@@ -123,7 +123,8 @@ void NotificationResourcesLoader::DidFinishRequest() {
   pending_request_count_--;
   if (!pending_request_count_) {
     Stop();
-    (*completion_callback_)(this);
+    auto cb = std::move(completion_callback_);
+    cb(this);
     // The |this| pointer may have been deleted now.
   }
 }

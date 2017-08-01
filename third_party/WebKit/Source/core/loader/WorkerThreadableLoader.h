@@ -113,11 +113,9 @@ class WorkerThreadableLoader final : public ThreadableLoader {
   class TaskForwarder : public GarbageCollectedFinalized<TaskForwarder> {
    public:
     virtual ~TaskForwarder() {}
-    virtual void ForwardTask(const WebTraceLocation&,
-                             std::unique_ptr<CrossThreadClosure>) = 0;
-    virtual void ForwardTaskWithDoneSignal(
-        const WebTraceLocation&,
-        std::unique_ptr<CrossThreadClosure>) = 0;
+    virtual void ForwardTask(const WebTraceLocation&, CrossThreadClosure) = 0;
+    virtual void ForwardTaskWithDoneSignal(const WebTraceLocation&,
+                                           CrossThreadClosure) = 0;
     virtual void Abort() = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() {}

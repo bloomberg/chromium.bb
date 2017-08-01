@@ -28,32 +28,32 @@ class Receiver : public GarbageCollected<Receiver> {
 TEST(PersistentTest, BindCancellation) {
   Receiver* receiver = new Receiver;
   int counter = 0;
-  std::unique_ptr<WTF::Closure> function =
+  WTF::Closure function =
       WTF::Bind(&Receiver::Increment, WrapWeakPersistent(receiver),
                 WTF::Unretained(&counter));
 
-  (*function)();
+  function();
   EXPECT_EQ(1, counter);
 
   receiver = nullptr;
   PreciselyCollectGarbage();
-  (*function)();
+  function();
   EXPECT_EQ(1, counter);
 }
 
 TEST(PersistentTest, CrossThreadBindCancellation) {
   Receiver* receiver = new Receiver;
   int counter = 0;
-  std::unique_ptr<CrossThreadClosure> function = blink::CrossThreadBind(
+  CrossThreadClosure function = blink::CrossThreadBind(
       &Receiver::Increment, WrapCrossThreadWeakPersistent(receiver),
       WTF::CrossThreadUnretained(&counter));
 
-  (*function)();
+  function();
   EXPECT_EQ(1, counter);
 
   receiver = nullptr;
   PreciselyCollectGarbage();
-  (*function)();
+  function();
   EXPECT_EQ(1, counter);
 }
 

@@ -36,15 +36,14 @@
 namespace blink {
 
 std::unique_ptr<ContentSettingCallbacks> ContentSettingCallbacks::Create(
-    std::unique_ptr<WTF::Closure> allowed,
-    std::unique_ptr<WTF::Closure> denied) {
+    WTF::Closure allowed,
+    WTF::Closure denied) {
   return WTF::WrapUnique(
       new ContentSettingCallbacks(std::move(allowed), std::move(denied)));
 }
 
-ContentSettingCallbacks::ContentSettingCallbacks(
-    std::unique_ptr<WTF::Closure> allowed,
-    std::unique_ptr<WTF::Closure> denied)
+ContentSettingCallbacks::ContentSettingCallbacks(WTF::Closure allowed,
+                                                 WTF::Closure denied)
     : allowed_(std::move(allowed)), denied_(std::move(denied)) {}
 
 }  // namespace blink

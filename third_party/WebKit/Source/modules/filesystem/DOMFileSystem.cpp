@@ -44,6 +44,7 @@
 #include "platform/FileMetadata.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
@@ -56,12 +57,13 @@ namespace blink {
 namespace {
 
 void RunCallback(ExecutionContext* execution_context,
-                 std::unique_ptr<WTF::Closure> task) {
+                 WTF::Closure task,
+                 std::unique_ptr<int> identifier) {
   if (!execution_context)
     return;
   DCHECK(execution_context->IsContextThread());
-  probe::AsyncTask async_task(execution_context, task.get());
-  (*task)();
+  probe::AsyncTask async_task(execution_context, identifier.get());
+  task();
 }
 
 }  // namespace
@@ -205,14 +207,17 @@ void DOMFileSystem::CreateFile(const FileEntry* file_entry,
 }
 
 void DOMFileSystem::ScheduleCallback(ExecutionContext* execution_context,
-                                     std::unique_ptr<WTF::Closure> task) {
+                                     WTF::Closure task) {
   DCHECK(execution_context->IsContextThread());
+
+  std::unique_ptr<int> identifier = WTF::MakeUnique<int>(0);
   probe::AsyncTaskScheduled(execution_context, TaskNameForInstrumentation(),
-                            task.get());
+                            identifier.get());
   TaskRunnerHelper::Get(TaskType::kFileReading, execution_context)
       ->PostTask(BLINK_FROM_HERE,
                  WTF::Bind(&RunCallback, WrapWeakPersistent(execution_context),
-                           WTF::Passed(std::move(task))));
+                           WTF::Passed(std::move(task)),
+                           WTF::Passed(std::move(identifier))));
 }
 
 DEFINE_TRACE(DOMFileSystem) {

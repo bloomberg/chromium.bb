@@ -92,9 +92,8 @@ class CORE_EXPORT PaintTiming final
     return *fmp_detector_;
   }
 
-  void RegisterNotifySwapTime(
-      PaintEvent,
-      std::unique_ptr<WTF::Function<void(bool, double)>> callback);
+  void RegisterNotifySwapTime(PaintEvent,
+                              WTF::Function<void(bool, double)> callback);
   void ReportSwapTime(PaintEvent, bool did_swap, double timestamp);
 
   DECLARE_VIRTUAL_TRACE();

@@ -80,8 +80,7 @@ class MODULES_EXPORT ImageCapture final
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  using PromiseResolverFunction =
-      std::unique_ptr<Function<void(ScriptPromiseResolver*)>>;
+  using PromiseResolverFunction = Function<void(ScriptPromiseResolver*)>;
 
   ImageCapture(ExecutionContext*, MediaStreamTrack*);
 

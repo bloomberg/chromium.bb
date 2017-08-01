@@ -34,7 +34,7 @@ ScriptStreamerThread* ScriptStreamerThread::Shared() {
   return g_shared_thread;
 }
 
-void ScriptStreamerThread::PostTask(std::unique_ptr<CrossThreadClosure> task) {
+void ScriptStreamerThread::PostTask(CrossThreadClosure task) {
   DCHECK(IsMainThread());
   MutexLocker locker(mutex_);
   DCHECK(!running_task_);

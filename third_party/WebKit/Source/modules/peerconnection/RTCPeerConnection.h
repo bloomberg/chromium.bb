@@ -225,7 +225,7 @@ class MODULES_EXPORT RTCPeerConnection final
   typedef Function<bool()> BoolFunction;
   class EventWrapper : public GarbageCollectedFinalized<EventWrapper> {
    public:
-    EventWrapper(Event*, std::unique_ptr<BoolFunction>);
+    EventWrapper(Event*, BoolFunction);
     // Returns true if |m_setupFunction| returns true or it is null.
     // |m_event| will only be fired if setup() returns true;
     bool Setup();
@@ -235,7 +235,7 @@ class MODULES_EXPORT RTCPeerConnection final
     Member<Event> event_;
 
    private:
-    std::unique_ptr<BoolFunction> setup_function_;
+    BoolFunction setup_function_;
   };
 
   RTCPeerConnection(ExecutionContext*,
@@ -245,7 +245,7 @@ class MODULES_EXPORT RTCPeerConnection final
   void Dispose();
 
   void ScheduleDispatchEvent(Event*);
-  void ScheduleDispatchEvent(Event*, std::unique_ptr<BoolFunction>);
+  void ScheduleDispatchEvent(Event*, BoolFunction);
   void DispatchScheduledEvent();
   MediaStreamTrack* GetTrack(const WebMediaStreamTrack& web_track) const;
 

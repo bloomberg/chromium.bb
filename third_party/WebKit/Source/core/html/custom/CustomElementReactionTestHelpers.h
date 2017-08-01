@@ -36,12 +36,12 @@ class Call : public Command {
 
  public:
   using Callback = WTF::Function<void(Element*)>;
-  Call(std::unique_ptr<Callback> callback) : callback_(std::move(callback)) {}
+  Call(Callback callback) : callback_(std::move(callback)) {}
   ~Call() override = default;
-  void Run(Element* element) override { callback_->operator()(element); }
+  void Run(Element* element) override { callback_(element); }
 
  private:
-  std::unique_ptr<Callback> callback_;
+  Callback callback_;
 };
 
 class Unreached : public Command {
