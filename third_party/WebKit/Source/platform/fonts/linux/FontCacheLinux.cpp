@@ -62,8 +62,9 @@ void FontCache::GetFontForCharacter(
     WebFallbackFont web_fallback_font;
     Platform::Current()->GetSandboxSupport()->GetFallbackFontForCharacter(
         c, preferred_locale, &web_fallback_font);
-    fallback_font->name = String::FromUTF8(CString(web_fallback_font.name));
-    fallback_font->filename = web_fallback_font.filename;
+    fallback_font->name = web_fallback_font.name;
+    fallback_font->filename = CString(web_fallback_font.filename.Data(),
+                                      web_fallback_font.filename.size());
     fallback_font->fontconfig_interface_id =
         web_fallback_font.fontconfig_interface_id;
     fallback_font->ttc_index = web_fallback_font.ttc_index;
