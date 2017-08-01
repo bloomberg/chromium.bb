@@ -30,3 +30,27 @@ a {
 .subtitle {
   line-height: 20px;
 }
+
+#tpmFirmwareUpdate {
+  -webkit-margin-start: 20px;
+  color: rgba(0, 0, 0, 0.54);
+  font: 13px Roboto, sans-serif;
+  margin-bottom: 20px;
+  margin-top: 23px; /* = 36 - font size */
+  width: 100%;
+}
+
+#tpmFirmwareUpdateCheckbox {
+  --paper-checkbox-size: 16px;
+  --paper-checkbox-checked-color: var(--google-blue-500);
+  size: 16px;
+}
+
+#tpmFirmwareUpdateContainer {
+  -webkit-margin-start: 16px;
+}
+
+#tpmFirmwareUpdateContainer label {
+  color: rgba(0, 0, 0, .54);
+  line-height: 20px;
+}

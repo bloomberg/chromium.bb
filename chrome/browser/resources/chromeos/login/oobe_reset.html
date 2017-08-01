@@ -4,6 +4,7 @@
 
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 
 <iron-iconset-svg name="oobe-reset-32" size="32">
   <svg>
@@ -65,6 +66,18 @@
         <img srcset="images/reset_illustration_1x.png 1x,
                      images/reset_illustration_2x.png 2x"
             i18n-values="alt:resetScreenIllustrationTitle">
+        <div id="tpmFirmwareUpdate" class="layout horizontal"
+            hidden="[[!tpmFirmwareUpdateAvailable_]]">
+          <paper-checkbox aria-labelledby="tpm-firmware-update-label"
+              id="tpmFirmwareUpdateCheckbox"
+              checked="{{tpmFirmwareUpdateChecked_}}"
+              on-change="onTPMFirmwareUpdateChanged_">
+          </paper-checkbox>
+          <div id="tpmFirmwareUpdateContainer">
+            <label id="tpm-firmare-upate-label"
+                i18n-content="resetTPMFirmwareUpdate"></label>
+          </div>
+        </div>
       </div>
       <div class="bottom-buttons flex layout horizontal">
         <div class="flex"></div>
@@ -77,7 +90,8 @@
           <div i18n-content="resetButtonRestart"></div>
         </oobe-text-button>
         <oobe-text-button inverse on-tap="onPowerwashTap_"
-            hidden="[[!isState_(uiState_, 'rollback-proposal-view')]]">
+            hidden="[[!isState_(uiState_, 'rollback-proposal-view')]]"
+            disabled="[[tpmFirmwareUpdateChecked_]]">
           <div i18n-content="resetButtonPowerwashAndRollback"></div>
         </oobe-text-button>
         <oobe-text-button inverse on-tap="onPowerwashTap_"
