@@ -1236,6 +1236,7 @@ test("content_unittests") {
     "../browser/memory/memory_coordinator_impl_unittest.cc",
     "../browser/memory/memory_monitor_android_unittest.cc",
     "../browser/memory/memory_monitor_win_unittest.cc",
+    "../browser/memory/swap_metrics_driver_impl_unittest.cc",
     "../browser/memory/test_memory_monitor.cc",
     "../browser/memory/test_memory_monitor.h",
     "../browser/net/quota_policy_cookie_store_unittest.cc",

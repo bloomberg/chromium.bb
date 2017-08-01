@@ -258,6 +258,7 @@ source_set("browser_sources") {
     "stream_handle.h",
     "stream_info.cc",
     "stream_info.h",
+    "swap_metrics_driver.h",
     "touch_selection_controller_client_manager.h",
     "trace_uploader.h",
     "tracing_controller.h",
