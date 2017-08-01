@@ -119,13 +119,10 @@ def GetGeneratedTests():
         # replacing CALLS.
         new_test_file_data = new_test_file_data.replace('PREVIOUS_CALL', 'CALLS')
 
-        calls = result.group(1)
-        calls = ''.join(calls.split())    # Removes whitespace.
-        calls = calls.split('|')
-
-        for call in calls:
+        for call in result.group(1).split('|'):
             # Parse call
-            function_name, args, uuid_suffix = re.search(r'(.*?)\((.*?)\)(\[UUID\])?', call).groups()
+            call = call.strip()
+            function_name, args, uuid_suffix = re.search(r'(.*?)\((.*)\)(\[UUID\])?', call).groups()
 
             # Replace template tokens
             call_test_file_data = new_test_file_data

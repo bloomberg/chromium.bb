@@ -105,6 +105,12 @@ interface FakeCentral {
   // have completed or if there was an error during any of them.
   SetNextGATTDiscoveryResponse(string address, uint16 code) => (bool success);
 
+  // Signals a state change in a BluetoothRemoteGATTService. This involves any
+  // characteristics and/or descriptors that get added or removed from the
+  // service, as well as Service Changed indications from the remote device.
+  // https://webbluetoothcg.github.io/web-bluetooth/#event-types
+  SimulateGATTServicesChanged(string address) => (bool success);
+
   // Adds a fake GATT Service with |service_uuid| to |peripheral_address|
   // peripheral. The service will be found found when discovering the
   // peripheral's GATT Attributes. Runs its callback with the fake service's Id.
@@ -122,6 +128,13 @@ interface FakeCentral {
         CharacteristicProperties properties,
         string service_id,
         string peripheral_address) => (string? characteristic_id);
+
+  // Removes a fake GATT Characteristic with |identifier| to the fake service
+  // with |service_id| in |peripheral_address| peripheral.
+  RemoveFakeCharacteristic(
+        string identifier,
+        string service_id,
+        string peripheral_address) => (bool success);
 
   // Adds a fake GATT Descriptor with |descriptor_uuid| to the fake service with
   // |service_id| in |peripheral_address| peripheral. The descriptor will be
