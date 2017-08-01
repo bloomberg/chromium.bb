@@ -100,6 +100,15 @@ TEST(LayoutUnitTest, LayoutUnitRounding) {
   EXPECT_EQ(1, LayoutUnit::FromFloatRound(1.49f).Round());
   EXPECT_EQ(2, LayoutUnit::FromFloatRound(1.5f).Round());
   EXPECT_EQ(2, LayoutUnit::FromFloatRound(1.51f).Round());
+  // The fractional part of LayoutUnit::Max() is 0x3f, so it should round up.
+  EXPECT_EQ(((std::numeric_limits<int>::max() / kFixedPointDenominator) + 1),
+            LayoutUnit::Max().Round());
+  // The fractional part of LayoutUnit::Min() is 0, so the next bigger possible
+  // value should round down.
+  LayoutUnit epsilon;
+  epsilon.SetRawValue(1);
+  EXPECT_EQ(((std::numeric_limits<int>::min() / kFixedPointDenominator)),
+            (LayoutUnit::Min() + epsilon).Round());
 }
 
 TEST(LayoutUnitTest, LayoutUnitSnapSizeToPixel) {
