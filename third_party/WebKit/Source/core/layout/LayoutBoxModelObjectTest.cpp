@@ -17,6 +17,10 @@ namespace blink {
 
 class LayoutBoxModelObjectTest : public RenderingTest {
  protected:
+  PaintLayer* GetPaintLayerByElementId(const char* id) {
+    return ToLayoutBoxModelObject(GetLayoutObjectByElementId(id))->Layer();
+  }
+
   const FloatRect& GetScrollContainerRelativeContainingBlockRect(
       const StickyPositionScrollingConstraints& constraints) const {
     return constraints.ScrollContainerRelativeContainingBlockRect();
@@ -355,41 +359,38 @@ TEST_F(LayoutBoxModelObjectTest,
       "  </div>"
       "</div>");
 
-  LayoutBoxModelObject* sticky_outer_div =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyOuterDiv"));
-  LayoutBoxModelObject* sticky_outer_inline =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyOuterInline"));
-  LayoutBoxModelObject* unanchored_sticky =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("unanchoredSticky"));
-  LayoutBoxModelObject* sticky_inner_inline =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyInnerInline"));
+  PaintLayer* sticky_outer_div = GetPaintLayerByElementId("stickyOuterDiv");
+  PaintLayer* sticky_outer_inline =
+      GetPaintLayerByElementId("stickyOuterInline");
+  PaintLayer* unanchored_sticky = GetPaintLayerByElementId("unanchoredSticky");
+  PaintLayer* sticky_inner_inline =
+      GetPaintLayerByElementId("stickyInnerInline");
 
   PaintLayerScrollableArea* scrollable_area =
-      sticky_outer_div->Layer()->AncestorOverflowLayer()->GetScrollableArea();
+      sticky_outer_div->AncestorOverflowLayer()->GetScrollableArea();
   ASSERT_TRUE(scrollable_area);
   StickyConstraintsMap constraints_map =
       scrollable_area->GetStickyConstraintsMap();
 
-  ASSERT_TRUE(constraints_map.Contains(sticky_outer_div->Layer()));
-  ASSERT_TRUE(constraints_map.Contains(sticky_outer_inline->Layer()));
-  ASSERT_FALSE(constraints_map.Contains(unanchored_sticky->Layer()));
-  ASSERT_TRUE(constraints_map.Contains(sticky_inner_inline->Layer()));
+  ASSERT_TRUE(constraints_map.Contains(sticky_outer_div));
+  ASSERT_TRUE(constraints_map.Contains(sticky_outer_inline));
+  ASSERT_FALSE(constraints_map.Contains(unanchored_sticky));
+  ASSERT_TRUE(constraints_map.Contains(sticky_inner_inline));
 
   // The outer block element trivially has no sticky-box shifting ancestor.
-  EXPECT_FALSE(constraints_map.at(sticky_outer_div->Layer())
-                   .NearestStickyBoxShiftingStickyBox());
+  EXPECT_FALSE(constraints_map.at(sticky_outer_div)
+                   .NearestStickyLayerShiftingStickyBox());
 
   // Neither does the outer inline element, as its parent element is also its
   // containing block.
-  EXPECT_FALSE(constraints_map.at(sticky_outer_inline->Layer())
-                   .NearestStickyBoxShiftingStickyBox());
+  EXPECT_FALSE(constraints_map.at(sticky_outer_inline)
+                   .NearestStickyLayerShiftingStickyBox());
 
   // However the inner inline element does have a sticky-box shifting ancestor,
   // as its containing block is the ancestor block element, above its ancestor
   // sticky element.
-  EXPECT_EQ(sticky_outer_inline,
-            constraints_map.at(sticky_inner_inline->Layer())
-                .NearestStickyBoxShiftingStickyBox());
+  EXPECT_EQ(sticky_outer_inline, constraints_map.at(sticky_inner_inline)
+                                     .NearestStickyLayerShiftingStickyBox());
 }
 
 // Verifies that the correct containing-block shifting ancestor is found when
@@ -415,38 +416,34 @@ TEST_F(LayoutBoxModelObjectTest,
       "  </div>"
       "</div>");
 
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
-  LayoutBoxModelObject* sticky_parent =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyParent"));
-  LayoutBoxModelObject* sticky_child =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyChild"));
-  LayoutBoxModelObject* sticky_nested_child =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyNestedChild"));
+  PaintLayer* scroller = GetPaintLayerByElementId("scroller");
+  PaintLayer* sticky_parent = GetPaintLayerByElementId("stickyParent");
+  PaintLayer* sticky_child = GetPaintLayerByElementId("stickyChild");
+  PaintLayer* sticky_nested_child =
+      GetPaintLayerByElementId("stickyNestedChild");
 
-  PaintLayerScrollableArea* scrollable_area =
-      scroller->Layer()->GetScrollableArea();
+  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   ASSERT_TRUE(scrollable_area);
   StickyConstraintsMap constraints_map =
       scrollable_area->GetStickyConstraintsMap();
 
-  ASSERT_FALSE(constraints_map.Contains(scroller->Layer()));
-  ASSERT_TRUE(constraints_map.Contains(sticky_parent->Layer()));
-  ASSERT_TRUE(constraints_map.Contains(sticky_child->Layer()));
-  ASSERT_TRUE(constraints_map.Contains(sticky_nested_child->Layer()));
+  ASSERT_FALSE(constraints_map.Contains(scroller));
+  ASSERT_TRUE(constraints_map.Contains(sticky_parent));
+  ASSERT_TRUE(constraints_map.Contains(sticky_child));
+  ASSERT_TRUE(constraints_map.Contains(sticky_nested_child));
 
   // The outer <div> should not detect the scroller as its containing-block
   // shifting ancestor.
-  EXPECT_FALSE(constraints_map.at(sticky_parent->Layer())
-                   .NearestStickyBoxShiftingContainingBlock());
+  EXPECT_FALSE(constraints_map.at(sticky_parent)
+                   .NearestStickyLayerShiftingContainingBlock());
 
   // Both inner children should detect the parent <div> as their
   // containing-block shifting ancestor. They skip past unanchored sticky
   // because it will never have a non-zero offset.
-  EXPECT_EQ(sticky_parent, constraints_map.at(sticky_child->Layer())
-                               .NearestStickyBoxShiftingContainingBlock());
-  EXPECT_EQ(sticky_parent, constraints_map.at(sticky_nested_child->Layer())
-                               .NearestStickyBoxShiftingContainingBlock());
+  EXPECT_EQ(sticky_parent, constraints_map.at(sticky_child)
+                               .NearestStickyLayerShiftingContainingBlock());
+  EXPECT_EQ(sticky_parent, constraints_map.at(sticky_nested_child)
+                               .NearestStickyLayerShiftingContainingBlock());
 }
 
 // Verifies that the correct containing-block shifting ancestor is found when
@@ -462,24 +459,22 @@ TEST_F(LayoutBoxModelObjectTest,
       "<div id='stickyParent'><div><div id='stickyGrandchild'></div></div>"
       "</div>");
 
-  LayoutBoxModelObject* sticky_parent =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyParent"));
-  LayoutBoxModelObject* sticky_grandchild =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyGrandchild"));
+  PaintLayer* sticky_parent = GetPaintLayerByElementId("stickyParent");
+  PaintLayer* sticky_grandchild = GetPaintLayerByElementId("stickyGrandchild");
 
   PaintLayerScrollableArea* scrollable_area =
-      sticky_parent->Layer()->AncestorOverflowLayer()->GetScrollableArea();
+      sticky_parent->AncestorOverflowLayer()->GetScrollableArea();
   ASSERT_TRUE(scrollable_area);
   StickyConstraintsMap constraints_map =
       scrollable_area->GetStickyConstraintsMap();
 
-  ASSERT_TRUE(constraints_map.Contains(sticky_parent->Layer()));
-  ASSERT_TRUE(constraints_map.Contains(sticky_grandchild->Layer()));
+  ASSERT_TRUE(constraints_map.Contains(sticky_parent));
+  ASSERT_TRUE(constraints_map.Contains(sticky_grandchild));
 
   // The grandchild sticky should detect the parent as its containing-block
   // shifting ancestor.
-  EXPECT_EQ(sticky_parent, constraints_map.at(sticky_grandchild->Layer())
-                               .NearestStickyBoxShiftingContainingBlock());
+  EXPECT_EQ(sticky_parent, constraints_map.at(sticky_grandchild)
+                               .NearestStickyLayerShiftingContainingBlock());
 }
 
 // Verifies that the correct containing-block shifting ancestor is found when
@@ -495,27 +490,23 @@ TEST_F(LayoutBoxModelObjectTest,
       "<div id='scroller'><div id='stickyOuter'><table><thead><tr>"
       "<th id='stickyTh'></th></tr></thead></table></div></div>");
 
-  LayoutBoxModelObject* scroller =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
-  LayoutBoxModelObject* sticky_outer =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyOuter"));
-  LayoutBoxModelObject* sticky_th =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("stickyTh"));
+  PaintLayer* scroller = GetPaintLayerByElementId("scroller");
+  PaintLayer* sticky_outer = GetPaintLayerByElementId("stickyOuter");
+  PaintLayer* sticky_th = GetPaintLayerByElementId("stickyTh");
 
-  PaintLayerScrollableArea* scrollable_area =
-      scroller->Layer()->GetScrollableArea();
+  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
   ASSERT_TRUE(scrollable_area);
   StickyConstraintsMap constraints_map =
       scrollable_area->GetStickyConstraintsMap();
 
-  ASSERT_FALSE(constraints_map.Contains(scroller->Layer()));
-  ASSERT_TRUE(constraints_map.Contains(sticky_outer->Layer()));
-  ASSERT_TRUE(constraints_map.Contains(sticky_th->Layer()));
+  ASSERT_FALSE(constraints_map.Contains(scroller));
+  ASSERT_TRUE(constraints_map.Contains(sticky_outer));
+  ASSERT_TRUE(constraints_map.Contains(sticky_th));
 
   // The table cell should detect the outer <div> as its containing-block
   // shifting ancestor.
-  EXPECT_EQ(sticky_outer, constraints_map.at(sticky_th->Layer())
-                              .NearestStickyBoxShiftingContainingBlock());
+  EXPECT_EQ(sticky_outer, constraints_map.at(sticky_th)
+                              .NearestStickyLayerShiftingContainingBlock());
 }
 
 // Verifies that the calculated position:sticky offsets are correct when we have
@@ -928,9 +919,9 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionNestedFixedPos) {
 
   // The inner sticky should not detect the outer one as any sort of ancestor.
   EXPECT_FALSE(constraints_map.at(inner_sticky->Layer())
-                   .NearestStickyBoxShiftingStickyBox());
+                   .NearestStickyLayerShiftingStickyBox());
   EXPECT_FALSE(constraints_map.at(inner_sticky->Layer())
-                   .NearestStickyBoxShiftingContainingBlock());
+                   .NearestStickyLayerShiftingContainingBlock());
 
   // Scroll the page down.
   scrollable_area->ScrollToAbsolutePosition(
