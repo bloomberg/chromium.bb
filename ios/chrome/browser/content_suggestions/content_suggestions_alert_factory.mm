@@ -4,10 +4,9 @@
 
 #import "ios/chrome/browser/content_suggestions/content_suggestions_alert_factory.h"
 
+#import "ios/chrome/browser/content_suggestions/content_suggestions_alert_commands.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_gesture_commands.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -19,13 +18,12 @@
 @implementation ContentSuggestionsAlertFactory
 
 + (AlertCoordinator*)
-alertCoordinatorForSuggestionItem:(ContentSuggestionsItem*)item
+alertCoordinatorForSuggestionItem:(CollectionViewItem*)item
                  onViewController:(UIViewController*)viewController
                           atPoint:(CGPoint)touchLocation
                       atIndexPath:(NSIndexPath*)indexPath
-                  readLaterAction:(BOOL)readLaterAction
                    commandHandler:
-                       (id<ContentSuggestionsGestureCommands>)commandHandler {
+                       (id<ContentSuggestionsAlertCommands>)commandHandler {
   AlertCoordinator* alertCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:viewController
                            title:nil
@@ -34,15 +32,15 @@ alertCoordinatorForSuggestionItem:(ContentSuggestionsItem*)item
                                             0)
                             view:[viewController view]];
 
-  __weak ContentSuggestionsItem* weakItem = item;
-  __weak id<ContentSuggestionsGestureCommands> weakCommandHandler =
+  __weak CollectionViewItem* weakItem = item;
+  __weak id<ContentSuggestionsAlertCommands> weakCommandHandler =
       commandHandler;
 
   NSString* openInNewTabTitle =
       l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB);
   [alertCoordinator addItemWithTitle:openInNewTabTitle
                               action:^{
-                                ContentSuggestionsItem* strongItem = weakItem;
+                                CollectionViewItem* strongItem = weakItem;
                                 if (strongItem) {
                                   // TODO(crbug.com/691979): Add metrics.
                                   [weakCommandHandler
@@ -56,7 +54,7 @@ alertCoordinatorForSuggestionItem:(ContentSuggestionsItem*)item
       l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB);
   [alertCoordinator addItemWithTitle:openInNewTabIncognitoTitle
                               action:^{
-                                ContentSuggestionsItem* strongItem = weakItem;
+                                CollectionViewItem* strongItem = weakItem;
                                 if (strongItem) {
                                   // TODO(crbug.com/691979): Add metrics.
                                   [weakCommandHandler
@@ -66,26 +64,24 @@ alertCoordinatorForSuggestionItem:(ContentSuggestionsItem*)item
                               }
                                style:UIAlertActionStyleDefault];
 
-  if (readLaterAction) {
-    NSString* readLaterTitle =
-        l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST);
-    [alertCoordinator
-        addItemWithTitle:readLaterTitle
-                  action:^{
-                    ContentSuggestionsItem* strongItem = weakItem;
-                    if (strongItem) {
-                      // TODO(crbug.com/691979): Add metrics.
-                      [weakCommandHandler addItemToReadingList:strongItem];
-                    }
+  NSString* readLaterTitle =
+      l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST);
+  [alertCoordinator
+      addItemWithTitle:readLaterTitle
+                action:^{
+                  CollectionViewItem* strongItem = weakItem;
+                  if (strongItem) {
+                    // TODO(crbug.com/691979): Add metrics.
+                    [weakCommandHandler addItemToReadingList:strongItem];
                   }
-                   style:UIAlertActionStyleDefault];
-  }
+                }
+                 style:UIAlertActionStyleDefault];
 
   NSString* deleteTitle =
       l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_REMOVE);
   [alertCoordinator addItemWithTitle:deleteTitle
                               action:^{
-                                ContentSuggestionsItem* strongItem = weakItem;
+                                CollectionViewItem* strongItem = weakItem;
                                 if (strongItem) {
                                   // TODO(crbug.com/691979): Add metrics.
                                   [weakCommandHandler
@@ -104,12 +100,12 @@ alertCoordinatorForSuggestionItem:(ContentSuggestionsItem*)item
 }
 
 + (AlertCoordinator*)
-alertCoordinatorForMostVisitedItem:(ContentSuggestionsMostVisitedItem*)item
+alertCoordinatorForMostVisitedItem:(CollectionViewItem*)item
                   onViewController:(UIViewController*)viewController
                            atPoint:(CGPoint)touchLocation
                        atIndexPath:(NSIndexPath*)indexPath
                     commandHandler:
-                        (id<ContentSuggestionsGestureCommands>)commandHandler {
+                        (id<ContentSuggestionsAlertCommands>)commandHandler {
   AlertCoordinator* alertCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:viewController
                            title:nil
@@ -118,15 +114,15 @@ alertCoordinatorForMostVisitedItem:(ContentSuggestionsMostVisitedItem*)item
                                             0)
                             view:[viewController view]];
 
-  __weak ContentSuggestionsMostVisitedItem* weakItem = item;
-  __weak id<ContentSuggestionsGestureCommands> weakCommandHandler =
+  __weak CollectionViewItem* weakItem = item;
+  __weak id<ContentSuggestionsAlertCommands> weakCommandHandler =
       commandHandler;
 
   [alertCoordinator
       addItemWithTitle:l10n_util::GetNSStringWithFixup(
                            IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)
                 action:^{
-                  ContentSuggestionsMostVisitedItem* strongItem = weakItem;
+                  CollectionViewItem* strongItem = weakItem;
                   if (strongItem) {
                     [weakCommandHandler
                         openNewTabWithMostVisitedItem:strongItem
@@ -140,7 +136,7 @@ alertCoordinatorForMostVisitedItem:(ContentSuggestionsMostVisitedItem*)item
       addItemWithTitle:l10n_util::GetNSStringWithFixup(
                            IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)
                 action:^{
-                  ContentSuggestionsMostVisitedItem* strongItem = weakItem;
+                  CollectionViewItem* strongItem = weakItem;
                   if (strongItem) {
                     [weakCommandHandler
                         openNewTabWithMostVisitedItem:strongItem
@@ -154,7 +150,7 @@ alertCoordinatorForMostVisitedItem:(ContentSuggestionsMostVisitedItem*)item
       addItemWithTitle:l10n_util::GetNSStringWithFixup(
                            IDS_IOS_CONTENT_SUGGESTIONS_REMOVE)
                 action:^{
-                  ContentSuggestionsMostVisitedItem* strongItem = weakItem;
+                  CollectionViewItem* strongItem = weakItem;
                   if (strongItem) {
                     [weakCommandHandler removeMostVisited:strongItem];
                   }
