@@ -342,7 +342,6 @@ TEST_F(MediaStreamVideoSourceTest, SourceChangeFrameSize) {
   sink.DisconnectFromTrack();
 }
 
-#if defined(OS_ANDROID)
 TEST_F(MediaStreamVideoSourceTest, RotatedSource) {
   // Expect the source to start capture with the supported resolution.
   // Disable frame-rate adjustment in spec-compliant mode to ensure no frames
@@ -369,7 +368,6 @@ TEST_F(MediaStreamVideoSourceTest, RotatedSource) {
 
   sink.DisconnectFromTrack();
 }
-#endif
 
 // Test that a source producing no frames change the source ReadyState to muted.
 // that in a reasonable time frame the muted state turns to false.
