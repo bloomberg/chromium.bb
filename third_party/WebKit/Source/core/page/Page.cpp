@@ -92,7 +92,7 @@ Page* Page::CreateOrdinary(PageClients& page_clients) {
   Page* page = Create(page_clients);
   OrdinaryPages().insert(page);
   if (ScopedPageSuspender::IsActive())
-    page->SetSuspended(true);
+    page->SetPaused(true);
   return page;
 }
 
@@ -127,7 +127,7 @@ Page::Page(PageClients& page_clients)
                        : UseCounter::kDefaultContext),
       opened_by_dom_(false),
       tab_key_cycles_through_elements_(true),
-      suspended_(false),
+      paused_(false),
       device_scale_factor_(1),
       visibility_state_(kPageVisibilityStateVisible),
       is_cursor_visible_(true),
@@ -316,18 +316,18 @@ void Page::SetValidationMessageClient(ValidationMessageClient* client) {
   validation_message_client_ = client;
 }
 
-void Page::SetSuspended(bool suspended) {
-  if (suspended == suspended_)
+void Page::SetPaused(bool paused) {
+  if (paused == paused_)
     return;
 
-  suspended_ = suspended;
+  paused_ = paused;
   for (Frame* frame = MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
     if (!frame->IsLocalFrame())
       continue;
     LocalFrame* local_frame = ToLocalFrame(frame);
-    local_frame->Loader().SetDefersLoading(suspended);
-    local_frame->FrameScheduler()->SetSuspended(suspended);
+    local_frame->Loader().SetDefersLoading(paused);
+    local_frame->FrameScheduler()->SetPaused(paused);
   }
 }
 

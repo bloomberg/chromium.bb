@@ -20,7 +20,7 @@ class PLATFORM_EXPORT RendererWebSchedulerImpl : public WebSchedulerImpl {
 
   // WebScheduler implementation:
   WebTaskRunner* CompositorTaskRunner() override;
-  void SuspendTimerQueue() override;
+  void PauseTimerQueue() override;
   void ResumeTimerQueue() override;
   std::unique_ptr<WebViewScheduler> CreateWebViewScheduler(
       InterventionReporter* intervention_reporter,

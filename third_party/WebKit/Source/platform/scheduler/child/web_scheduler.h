@@ -85,7 +85,7 @@ class PLATFORM_EXPORT WebScheduler {
 
   // Suspends the timer queue and increments the timer queue suspension count.
   // May only be called from the main thread.
-  virtual void SuspendTimerQueue() = 0;
+  virtual void PauseTimerQueue() = 0;
 
   // Decrements the timer queue suspension count and re-enables the timer queue
   // if the suspension count is zero and the current scheduler policy allows it.

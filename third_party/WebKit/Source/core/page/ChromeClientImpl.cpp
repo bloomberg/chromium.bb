@@ -263,7 +263,7 @@ Page* ChromeClientImpl::CreateWindow(LocalFrame* frame,
   if (!web_view_->Client())
     return nullptr;
 
-  if (!frame->GetPage() || frame->GetPage()->Suspended())
+  if (!frame->GetPage() || frame->GetPage()->Paused())
     return nullptr;
   DCHECK(frame->GetDocument());
   Fullscreen::FullyExitFullscreen(*frame->GetDocument());

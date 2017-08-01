@@ -61,7 +61,7 @@ class WebFrameScheduler {
 
   // Set whether this frame is suspended. Only unthrottledTaskRunner tasks are
   // allowed to run on a suspended frame.
-  virtual void SetSuspended(bool) {}
+  virtual void SetPaused(bool) {}
 
   // Set whether this frame is cross origin w.r.t. the top level frame. Cross
   // origin frames may use a different scheduling policy from same origin
