@@ -6,6 +6,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_command_line.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
+#include "chrome/browser/extensions/activity_log/activity_log_task_runner.h"
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -25,10 +26,13 @@ class ActivityLogEnabledTest : public ChromeRenderViewHostTestHarness {
  protected:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+    SetActivityLogTaskRunnerForTesting(
+        base::ThreadTaskRunnerHandle::Get().get());
   }
 
   void TearDown() override {
     ChromeRenderViewHostTestHarness::TearDown();
+    SetActivityLogTaskRunnerForTesting(nullptr);
   }
 };
 

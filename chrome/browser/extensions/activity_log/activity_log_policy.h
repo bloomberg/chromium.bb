@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_database.h"
+#include "chrome/browser/extensions/activity_log/activity_log_task_runner.h"
 #include "chrome/common/extensions/api/activity_log_private.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
@@ -192,24 +193,21 @@ class ActivityLogDatabasePolicy : public ActivityLogPolicy,
   // separate thread.
   template<typename DatabaseType, typename DatabaseFunc>
   void ScheduleAndForget(DatabaseType db, DatabaseFunc func) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::DB, FROM_HERE,
-        base::BindOnce(func, base::Unretained(db)));
+    GetActivityLogTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(func, base::Unretained(db)));
   }
 
   template<typename DatabaseType, typename DatabaseFunc, typename ArgA>
   void ScheduleAndForget(DatabaseType db, DatabaseFunc func, ArgA a) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::DB, FROM_HERE,
-        base::BindOnce(func, base::Unretained(db), a));
+    GetActivityLogTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(func, base::Unretained(db), a));
   }
 
   template<typename DatabaseType, typename DatabaseFunc,
       typename ArgA, typename ArgB>
   void ScheduleAndForget(DatabaseType db, DatabaseFunc func, ArgA a, ArgB b) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::DB, FROM_HERE,
-        base::BindOnce(func, base::Unretained(db), a, b));
+    GetActivityLogTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(func, base::Unretained(db), a, b));
   }
 
   // Access to the underlying ActivityDatabase.

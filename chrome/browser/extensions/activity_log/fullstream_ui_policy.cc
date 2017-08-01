@@ -16,8 +16,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_runner_util.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/activity_database.h"
+#include "chrome/browser/extensions/activity_log/activity_log_task_runner.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -383,8 +385,6 @@ void FullStreamUIPolicy::OnDatabaseClose() {
 }
 
 void FullStreamUIPolicy::Close() {
-  // The policy object should have never been created if there's no DB thread.
-  DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::DB));
   ScheduleAndForget(activity_database(), &ActivityDatabase::Close);
 }
 
@@ -397,17 +397,11 @@ void FullStreamUIPolicy::ReadFilteredData(
     const int days_ago,
     const base::Callback<void(std::unique_ptr<Action::ActionVector>)>&
         callback) {
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB,
-      FROM_HERE,
+  base::PostTaskAndReplyWithResult(
+      GetActivityLogTaskRunner().get(), FROM_HERE,
       base::Bind(&FullStreamUIPolicy::DoReadFilteredData,
-                 base::Unretained(this),
-                 extension_id,
-                 type,
-                 api_name,
-                 page_url,
-                 arg_url,
-                 days_ago),
+                 base::Unretained(this), extension_id, type, api_name, page_url,
+                 arg_url, days_ago),
       callback);
 }
 

@@ -15,6 +15,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
+#include "chrome/browser/extensions/activity_log/activity_log_task_runner.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/prerender/prerender_handle.h"
@@ -59,6 +60,10 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
   virtual bool enable_activity_logging_switch() const { return true; }
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+
+    SetActivityLogTaskRunnerForTesting(
+        base::ThreadTaskRunnerHandle::Get().get());
+
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     if (enable_activity_logging_switch()) {
       base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -74,6 +79,7 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
 
   void TearDown() override {
     base::RunLoop().RunUntilIdle();
+    SetActivityLogTaskRunnerForTesting(nullptr);
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
