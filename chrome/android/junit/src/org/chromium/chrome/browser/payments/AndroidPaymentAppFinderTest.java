@@ -147,7 +147,7 @@ public class AndroidPaymentAppFinderTest {
         Bundle activityMetaData = new Bundle();
         activityMetaData.putString(
                 AndroidPaymentAppFinder.META_DATA_NAME_OF_DEFAULT_PAYMENT_METHOD_NAME,
-                "https://alicepay.com");
+                "basic-card");
         alicePay.activityInfo.metaData = activityMetaData;
         activities.add(alicePay);
 
@@ -184,7 +184,7 @@ public class AndroidPaymentAppFinderTest {
         Bundle alicePayMetaData = new Bundle();
         alicePayMetaData.putString(
                 AndroidPaymentAppFinder.META_DATA_NAME_OF_DEFAULT_PAYMENT_METHOD_NAME,
-                "https://alicepay.com");
+                "basic-card");
         alicePayMetaData.putInt(AndroidPaymentAppFinder.META_DATA_NAME_OF_PAYMENT_METHOD_NAMES, 1);
         alicePay.activityInfo.metaData = alicePayMetaData;
         activities.add(alicePay);
@@ -197,7 +197,7 @@ public class AndroidPaymentAppFinderTest {
         Bundle bobPayMetaData = new Bundle();
         bobPayMetaData.putString(
                 AndroidPaymentAppFinder.META_DATA_NAME_OF_DEFAULT_PAYMENT_METHOD_NAME,
-                "https://bobpay.com");
+                "basic-card");
         bobPayMetaData.putInt(AndroidPaymentAppFinder.META_DATA_NAME_OF_PAYMENT_METHOD_NAMES, 2);
         bobPay.activityInfo.metaData = bobPayMetaData;
         activities.add(bobPay);
@@ -216,11 +216,11 @@ public class AndroidPaymentAppFinderTest {
         Mockito.when(packageManagerDelegate.getStringArrayResourceForApplication(
                              ArgumentMatchers.eq(alicePay.activityInfo.applicationInfo),
                              ArgumentMatchers.eq(1)))
-                .thenReturn(new String[] {"https://alicepay.com", "basic-card"});
+                .thenReturn(new String[] {"https://alicepay.com"});
         Mockito.when(packageManagerDelegate.getStringArrayResourceForApplication(
                              ArgumentMatchers.eq(bobPay.activityInfo.applicationInfo),
                              ArgumentMatchers.eq(2)))
-                .thenReturn(new String[] {"https://bobpay.com", "basic-card"});
+                .thenReturn(new String[] {"https://bobpay.com"});
 
         Set<String> methodNames = new HashSet<>();
         methodNames.add("basic-card");
