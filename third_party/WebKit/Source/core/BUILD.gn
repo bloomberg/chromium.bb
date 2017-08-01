@@ -736,11 +736,14 @@ code_generator("make_core_generated_cssom_types") {
   ]
 }
 
-css_properties("make_core_generated_css_property_metadata") {
-  script = "../build/scripts/make_css_property_metadata.py"
-  other_inputs = [ "../build/scripts/templates/CSSPropertyMetadata.cpp.tmpl" ]
+code_generator("make_core_generated_css_property_metadata") {
+  script = "../build/scripts/core/css/make_css_property_metadata.py"
+  json_inputs = [ "css/CSSProperties.json5" ]
+  templates =
+      [ "../build/scripts/core/css/templates/CSSPropertyMetadata.cpp.tmpl" ]
+  other_inputs = [ "../build/scripts/core/css/css_properties.py" ]
   outputs = [
-    "$blink_core_output_dir/CSSPropertyMetadata.cpp",
+    "$blink_core_output_dir/css/CSSPropertyMetadata.cpp",
   ]
 }
 
