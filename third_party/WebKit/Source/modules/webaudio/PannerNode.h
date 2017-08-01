@@ -116,6 +116,7 @@ class PannerHandler final : public AudioHandler {
   double LatencyTime() const override {
     return panner_ ? panner_->LatencyTime() : 0;
   }
+  bool RequiresTailProcessing() const final;
 
   void SetChannelCount(unsigned long, ExceptionState&) final;
   void SetChannelCountMode(const String&, ExceptionState&) final;

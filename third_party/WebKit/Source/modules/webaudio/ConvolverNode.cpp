@@ -164,6 +164,12 @@ AudioBuffer* ConvolverHandler::Buffer() {
   return buffer_.Get();
 }
 
+bool ConvolverHandler::RequiresTailProcessing() const {
+  // Always return true even if the tail time and latency might both
+  // be zero.
+  return true;
+}
+
 double ConvolverHandler::TailTime() const {
   MutexTryLocker try_locker(process_lock_);
   if (try_locker.Locked())

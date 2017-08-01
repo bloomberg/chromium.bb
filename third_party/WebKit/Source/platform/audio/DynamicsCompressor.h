@@ -83,9 +83,14 @@ class PLATFORM_EXPORT DynamicsCompressor {
   float SampleRate() const { return sample_rate_; }
   float Nyquist() const { return sample_rate_ / 2; }
 
-  double TailTime() const { return 0; }
+  double TailTime() const;
   double LatencyTime() const {
     return compressor_.LatencyFrames() / static_cast<double>(SampleRate());
+  }
+  bool RequiresTailProcessing() const {
+    // Always return true even if the tail time and latency might both
+    // be zero.
+    return true;
   }
 
  protected:

@@ -46,6 +46,12 @@ void IIRDSPKernel::GetFrequencyResponse(int n_frequencies,
                             phase_response);
 }
 
+bool IIRDSPKernel::RequiresTailProcessing() const {
+  // Always return true even if the tail time and latency might both
+  // be zero.
+  return true;
+}
+
 double IIRDSPKernel::TailTime() const {
   return tail_time_;
 }

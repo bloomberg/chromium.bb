@@ -36,6 +36,7 @@
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "platform/wtf/Vector.h"
 
+// Higher values produce more debugging output.
 #define DEBUG_AUDIONODE_REFERENCES 0
 
 namespace blink {
@@ -151,14 +152,6 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   virtual void Initialize();
   virtual void Uninitialize();
 
-  // Clear internal state when the node is disabled. When a node is disabled,
-  // it is no longer pulled so any internal state is never updated. But some
-  // nodes (DynamicsCompressorNode) have internal state that is still
-  // accessible by the user. Update the internal state as if the node were
-  // still connected but processing all zeroes. This gives a consistent view
-  // to the user.
-  virtual void ClearInternalStateWhenDisabled();
-
   bool IsInitialized() const { return is_initialized_; }
 
   unsigned NumberOfInputs() const { return inputs_.size(); }
@@ -188,6 +181,18 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
 #if DEBUG_AUDIONODE_REFERENCES
   static void PrintNodeCounts();
 #endif
+#if DEBUG_AUDIONODE_REFERENCES > 1
+  void TailProcessingDebug(const char* note);
+  void AddTailProcessingDebug();
+  void RemoveTailProcessingDebug();
+#endif
+
+  // True if the node has a tail time or latency time that requires
+  // special tail processing to behave properly.  Ideally, this can be
+  // checked using TailTime and LatencyTime, but these aren't
+  // available on the main thread, and the tail processing check can
+  // happen on the main thread.
+  virtual bool RequiresTailProcessing() const = 0;
 
   // TailTime() is the length of time (not counting latency time) where
   // non-zero output may occur after continuous silent input.
@@ -212,6 +217,7 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
 
   void EnableOutputsIfNecessary();
   void DisableOutputsIfNecessary();
+  void DisableOutputs();
 
   unsigned long ChannelCount();
   virtual void SetChannelCount(unsigned long, ExceptionState&);

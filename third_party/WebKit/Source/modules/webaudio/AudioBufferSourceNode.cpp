@@ -231,12 +231,6 @@ bool AudioBufferSourceHandler::RenderFromBuffer(
                       grain_offset_ + grain_duration_, buffer_sample_rate)
                 : buffer_length;
 
-  // This is a HACK to allow for HRTF tail-time - avoids glitch at end.
-  // FIXME: implement tailTime for each AudioNode for a more general solution to
-  // this problem, https://bugs.webkit.org/show_bug.cgi?id=77224
-  if (is_grain_)
-    end_frame += 512;
-
   // Do some sanity checking.
   if (end_frame > buffer_length)
     end_frame = buffer_length;

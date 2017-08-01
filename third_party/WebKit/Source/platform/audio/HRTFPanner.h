@@ -61,6 +61,7 @@ class PLATFORM_EXPORT HRTFPanner final : public Panner {
 
   double TailTime() const override;
   double LatencyTime() const override;
+  bool RequiresTailProcessing() const override;
 
  private:
   // Given an azimuth angle in the range -180 -> +180, returns the corresponding

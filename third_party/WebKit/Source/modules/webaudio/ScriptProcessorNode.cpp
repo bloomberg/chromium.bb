@@ -307,6 +307,11 @@ void ScriptProcessorHandler::FireProcessEventForOfflineAudioContext(
   waitable_event->Signal();
 }
 
+bool ScriptProcessorHandler::RequiresTailProcessing() const {
+  // Always return true since the tail and latency are never zero.
+  return true;
+}
+
 double ScriptProcessorHandler::TailTime() const {
   return std::numeric_limits<double>::infinity();
 }
