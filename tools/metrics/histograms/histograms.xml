@@ -93003,6 +93003,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="CustomTabs.IntentToFirstCommitNavigationTime2"/>
   <affected-histogram name="CustomTabs.IntentToFirstCommitNavigationTime3"/>
   <affected-histogram name="Startup.FirstCommitNavigationTime2"/>
+  <affected-histogram name="Startup.FirstCommitNavigationTime3"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="InterProcessTimeTicksConversionType" separator="_">
