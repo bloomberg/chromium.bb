@@ -184,9 +184,7 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=new_tab";
 #pragma mark - ContentSuggestionsCommands
 
 - (void)openReadingList {
-  [self.suggestionsViewController
-      chromeExecuteCommand:[GenericChromeCommand
-                               commandWithTag:IDC_SHOW_READING_LIST]];
+  [self.dispatcher showReadingList];
 }
 
 - (void)openPageForItem:(CollectionViewItem*)item {

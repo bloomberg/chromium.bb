@@ -197,7 +197,7 @@ NS_INLINE void AnimateInViews(NSArray* views,
 }
 
 - (void)setCanUseReaderMode:(BOOL)enabled {
-  [self setItemEnabled:enabled withTag:IDC_READER_MODE];
+  [self setItemEnabled:enabled withTag:TOOLS_READER_MODE];
 }
 
 - (void)setCanShowFindBar:(BOOL)enabled {

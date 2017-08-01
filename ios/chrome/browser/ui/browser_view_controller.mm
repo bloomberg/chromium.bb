@@ -4101,6 +4101,19 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_toolbarController dismissTabHistoryPopup];
 }
 
+- (void)showReadingList {
+  _readingListCoordinator = [[ReadingListCoordinator alloc]
+      initWithBaseViewController:self
+                    browserState:self.browserState
+                          loader:self];
+
+  [_readingListCoordinator start];
+}
+
+- (void)switchToReaderMode {
+  [[_model currentTab] switchToReaderMode];
+}
+
 #pragma mark - Command Handling
 
 - (IBAction)chromeExecuteCommand:(id)sender {
@@ -4150,9 +4163,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     case IDC_SHOW_MAIL_COMPOSER:
       [self showMailComposer:sender];
       break;
-    case IDC_READER_MODE:
-      [[_model currentTab] switchToReaderMode];
-      break;
     case IDC_REQUEST_DESKTOP_SITE:
       [[_model currentTab] reloadWithUserAgentType:web::UserAgentType::DESKTOP];
       break;
@@ -4201,9 +4211,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       break;
     case IDC_RATE_THIS_APP:
       [self showRateThisAppDialog];
-      break;
-    case IDC_SHOW_READING_LIST:
-      [self showReadingList];
       break;
     case IDC_VOICE_SEARCH: {
       // If the voice search command is coming from a UIView sender, store it
@@ -4430,15 +4437,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   web::NavigationManager::WebLoadParams params(URL);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   [tab navigationManager]->LoadURLWithParams(params);
-}
-
-- (void)showReadingList {
-  _readingListCoordinator = [[ReadingListCoordinator alloc]
-      initWithBaseViewController:self
-                    browserState:self.browserState
-                          loader:self];
-
-  [_readingListCoordinator start];
 }
 
 - (void)showNTPPanel:(NewTabPage::PanelIdentifier)panel {

@@ -195,9 +195,7 @@ void AssertHeaderNotVisible(std::string header) {
 
 // Opens the reading list menu using command line.
 void OpenReadingList() {
-  GenericChromeCommand* command =
-      [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_READING_LIST];
-  chrome_test_util::RunCommandWithActiveViewController(command);
+  [chrome_test_util::BrowserCommandDispatcherForMainBVC() showReadingList];
 }
 
 // Adds a read and an unread entry to the model, opens the reading list menu and
