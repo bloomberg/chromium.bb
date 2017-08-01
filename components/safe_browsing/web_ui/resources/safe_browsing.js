@@ -13,8 +13,9 @@ cr.define('safe_browsing', function() {
   function initialize() {
     cr.sendWithPromise('getExperiments', []).then((experiments) =>
         addExperiments(experiments));
-    cr.sendWithPromise('getPrefs', []).then(
-        prefs=>addPrefs(prefs));
+    cr.sendWithPromise('getPrefs', []).then((prefs) => addPrefs(prefs));
+    cr.sendWithPromise('getDatabaseManagerInfo', []).then(
+        (databaseState) => addDatabaseInfo(databaseState));
   }
 
   function addExperiments(result) {
@@ -26,7 +27,7 @@ cr.define('safe_browsing', function() {
           "</b>: " + result[i] + "</div>";
       }
 
-      $('experimentsList').innerHTML = experimentsListFormatted;
+      $('experiments-list').innerHTML = experimentsListFormatted;
   }
 
   function addPrefs(result) {
@@ -37,7 +38,19 @@ cr.define('safe_browsing', function() {
         preferencesListFormatted += "<div><b>" + result[i + 1] + "</b>: " +
             result[i] + "</div>";
       }
-      $('preferencesList').innerHTML = preferencesListFormatted;
+      $('preferences-list').innerHTML = preferencesListFormatted;
+  }
+
+
+  function addDatabaseInfo(result) {
+      var resLength = result.length;
+      var preferencesListFormatted = "";
+
+      for (var i = 0; i < resLength; i += 2) {
+        preferencesListFormatted += "<div><b>" + result[i] + "</b>: " +
+            result[i+1] + "</div>";
+      }
+      $('database-info-list').innerHTML = preferencesListFormatted;
   }
 
   return {
