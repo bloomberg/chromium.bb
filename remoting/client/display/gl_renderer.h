@@ -127,6 +127,10 @@ class GlRenderer {
   int canvas_width_ = 0;
   int canvas_height_ = 0;
 
+  // Used to store the view size before the canvas is created.
+  int view_width_ = 0;
+  int view_height_ = 0;
+
   std::unique_ptr<Canvas> canvas_;
 
   GlCursor cursor_;
