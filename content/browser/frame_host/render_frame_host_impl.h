@@ -93,6 +93,7 @@ class LegacyIPCFrameInputHandler;
 class FeaturePolicy;
 class FrameTree;
 class FrameTreeNode;
+class GeolocationServiceImpl;
 class MediaInterfaceProxy;
 class NavigationHandleImpl;
 class PermissionServiceContext;
@@ -1105,6 +1106,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // long to execute, depending on the number of active frames in the
   // SiteInstance.  May be null in tests.
   std::unique_ptr<TimeoutMonitor> swapout_event_monitor_timeout_;
+
+  // GeolocationService which provides Geolocation.
+  std::unique_ptr<GeolocationServiceImpl> geolocation_service_;
 
   std::unique_ptr<AssociatedInterfaceRegistryImpl> associated_registry_;
 

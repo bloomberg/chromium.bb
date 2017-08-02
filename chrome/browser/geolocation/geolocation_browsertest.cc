@@ -572,9 +572,9 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TogglePersistBlocked) {
                 current_url(), current_url(), CONTENT_SETTINGS_TYPE_GEOLOCATION,
                 std::string()));
 
-  // Expect the block to be remembered at the blink layer, so a second request
-  // on this page doesn't create a request.
-  WatchPositionAndObservePermissionRequest(false);
+  // Expect the page to make another request since we have not persisted the
+  // user's response.
+  WatchPositionAndObservePermissionRequest(true);
 
   // Navigate and ensure that a prompt is shown when we request again.
   ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_DEFAULT));

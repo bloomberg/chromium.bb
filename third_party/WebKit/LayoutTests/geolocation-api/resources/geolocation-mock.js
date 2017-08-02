@@ -7,17 +7,11 @@
 
 class GeolocationMock {
   constructor() {
-    this.geolocationInterceptor_ = new MojoInterfaceInterceptor(
-        device.mojom.Geolocation.name);
-    this.geolocationInterceptor_.oninterfacerequest =
-        e => this.connectGeolocation_(e.handle);
-    this.geolocationInterceptor_.start();
-
-    this.permissionInterceptor_ = new MojoInterfaceInterceptor(
-        blink.mojom.PermissionService.name);
-    this.permissionInterceptor_.oninterfacerequest =
-        e => this.connectPermission_(e.handle);
-    this.permissionInterceptor_.start();
+    this.geolocationServiceInterceptor_ = new MojoInterfaceInterceptor(
+        device.mojom.GeolocationService.name);
+    this.geolocationServiceInterceptor_.oninterfacerequest =
+        e => this.connectGeolocationService_(e.handle);
+    this.geolocationServiceInterceptor_.start();
 
     /**
      * The next geoposition to return in response to a queryNextPosition()
@@ -41,29 +35,20 @@ class GeolocationMock {
      * @type {!blink.mojom.PermissionStatus}
      */
     this.permissionStatus_ = blink.mojom.PermissionStatus.ASK;
-    this.rejectPermissionConnections_ = false;
-    this.rejectGeolocationConnections_ = false;
+    this.rejectGeolocationServiceConnections_ = false;
 
     this.geolocationBindingSet_ = new mojo.BindingSet(
         device.mojom.Geolocation);
-    this.permissionBindingSet_ = new mojo.BindingSet(
-        blink.mojom.PermissionService);
+    this.geolocationServiceBindingSet_ = new mojo.BindingSet(
+        device.mojom.GeolocationService);
   }
 
-  connectGeolocation_(handle) {
-    if (this.rejectGeolocationConnections_) {
+  connectGeolocationService_(handle) {
+    if (this.rejectGeolocationServiceConnections_) {
       handle.close();
       return;
     }
-    this.geolocationBindingSet_.addBinding(this, handle);
-  }
-
-  connectPermission_(handle) {
-    if (this.rejectPermissionConnections_) {
-      handle.close();
-      return;
-    }
-    this.permissionBindingSet_.addBinding(this, handle);
+    this.geolocationServiceBindingSet_.addBinding(this, handle);
   }
 
   setHighAccuracy(highAccuracy) {
@@ -120,57 +105,39 @@ class GeolocationMock {
   }
 
   /**
-   * Reject any connection requests for the permission service. This will
-   * trigger a connection error in the client.
-   */
-  rejectPermissionConnections() {
-    this.rejectPermissionConnections_ = true;
-  }
-
-  /**
    * Reject any connection requests for the geolocation service. This will
    * trigger a connection error in the client.
    */
-  rejectGeolocationConnections() {
-    this.rejectGeolocationConnections_ = true;
+  rejectGeolocationServiceConnections() {
+    this.rejectGeolocationServiceConnections_ = true;
   }
 
   /**
-   * A mock implementation of PermissionService.requestPermission(). This
-   * returns the result set by a call to setGeolocationPermission(), waiting
-   * for a call if necessary. Any permission request that is not for
-   * geolocation is always denied.
+   * A mock implementation of GeolocationService.createGeolocation().
+   * This accepts the request as long as the permission has been set to
+   * granted.
    */
-  requestPermission(permissionDescriptor) {
-    if (permissionDescriptor.name != blink.mojom.PermissionName.GEOLOCATION)
-      return Promise.resolve(blink.mojom.PermissionStatus.DENIED);
+  createGeolocation(request, user_gesture) {
+    switch (this.permissionStatus_) {
+     case blink.mojom.PermissionStatus.ASK:
+      setTimeout(() => { this.createGeolocation(request, user_gesture)}, 50);
+      break;
 
-    return new Promise(resolve => {
-      if (this.pendingPermissionRequest_)
-        this.pendingPermissionRequest_(blink.mojom.PermissionStatus.ASK);
-      this.pendingPermissionRequest_ = resolve;
-      this.runPermissionCallback_();
-    });
-  }
+     case blink.mojom.PermissionStatus.GRANTED:
+      this.geolocationBindingSet_.addBinding(this, request);
+      break;
 
-  runPermissionCallback_() {
-    if (this.permissionStatus_ == blink.mojom.PermissionStatus.ASK ||
-        !this.pendingPermissionRequest_)
-      return;
-
-    this.pendingPermissionRequest_({status: this.permissionStatus_});
-    this.permissionStatus_ = blink.mojom.PermissionStatus.ASK;
-    this.pendingPermissionRequest_ = null;
+     default:
+      request.close();
+    }
   }
 
   /**
    * Sets whether the next geolocation permission request should be allowed.
    */
   setGeolocationPermission(allowed) {
-    this.permissionStatus_ = allowed ?
-        blink.mojom.PermissionStatus.GRANTED :
-        blink.mojom.PermissionStatus.DENIED;
-    this.runPermissionCallback_();
+    this.permissionStatus_ = allowed ? blink.mojom.PermissionStatus.GRANTED
+                                     : blink.mojom.PermissionStatus.DENIED;
   }
 }
 
