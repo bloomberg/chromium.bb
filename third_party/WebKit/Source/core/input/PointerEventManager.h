@@ -184,8 +184,7 @@ class CORE_EXPORT PointerEventManager
       PointerEvent*,
       EventTarget* hit_test_target,
       const String& canvas_region_id = String(),
-      const WebMouseEvent& = WebMouseEvent(),
-      bool send_mouse_event = false);
+      const WebMouseEvent* = nullptr);
 
   void RemoveTargetFromPointerCapturingMapping(PointerCapturingMap&,
                                                const EventTarget*);
