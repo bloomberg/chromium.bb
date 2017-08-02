@@ -21,6 +21,7 @@
 #include "base/metrics/persistent_sample_map.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
@@ -779,6 +780,7 @@ bool GlobalHistogramAllocator::CreateWithFile(
 
   std::unique_ptr<MemoryMappedFile> mmfile(new MemoryMappedFile());
   if (exists) {
+    size = saturated_cast<size_t>(file.GetLength());
     mmfile->Initialize(std::move(file), MemoryMappedFile::READ_WRITE);
   } else {
     mmfile->Initialize(std::move(file), {0, static_cast<int64_t>(size)},
