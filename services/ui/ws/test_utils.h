@@ -23,6 +23,7 @@
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/drag_controller.h"
 #include "services/ui/ws/event_dispatcher.h"
+#include "services/ui/ws/gpu_host.h"
 #include "services/ui/ws/platform_display.h"
 #include "services/ui/ws/platform_display_factory.h"
 #include "services/ui/ws/test_change_tracker.h"
