@@ -12,8 +12,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "cc/paint/paint_record.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "ui/base/layout.h"
@@ -366,15 +364,6 @@ class Tab : public gfx::AnimationDelegate,
   // data().favicon and may be modified for theming. It is created on demand
   // and thus may be null.
   gfx::ImageSkia favicon_;
-
-  // This timer allows us to delay updating the visibility of the loading
-  // indicator so that state changes of a very brief duration aren't visually
-  // apparent to the user.
-  base::OneShotTimer delayed_throbber_show_timer_;
-
-  // The last time the throbber was visible to the user. See notes in
-  // UpdateThrobber().
-  base::TimeTicks last_throbber_show_time_;
 
   class BackgroundCache {
    public:

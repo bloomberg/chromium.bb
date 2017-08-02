@@ -158,10 +158,6 @@ const char kDebugEnableFrameToggle[]        = "debug-enable-frame-toggle";
 // apps.
 const char kDebugPackedApps[]               = "debug-packed-apps";
 
-// Delay the toolbar icon switching between reload and stop when page load state
-// changes.
-const char kDelayReloadStopButtonChange[] = "delay-reload-stop-button-change";
-
 // Passes command line parameters to the DevTools front-end.
 const char kDevToolsFlags[]                 = "devtools-flags";
 

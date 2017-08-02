@@ -18,10 +18,8 @@ class CommandUpdater;
 // ReloadButton
 //
 // The reload button in the toolbar, which changes to a stop button when a page
-// load is in progress. The initial change from reload to stop is internally
-// delayed to avoid flicker for rapid page loads (as can happen when a page
-// fetches additional resources). The change from stop back to reload may be
-// delayed if the user is hovering the button, to prevent mis-clicks.
+// load is in progress. The change from stop back to reload may be delayed if
+// the user is hovering the button, to prevent mis-clicks.
 //
 ////////////////////////////////////////////////////////////////////////////////
 

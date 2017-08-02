@@ -3221,14 +3221,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kOmniboxSpareRenderer)},
 #endif
 
-#if defined(TOOLKIT_VIEWS)
-    {"delay-reload-stop-button-change",
-     flag_descriptions::kDelayReloadStopButtonChangeName,
-     flag_descriptions::kDelayReloadStopButtonChangeDescription,
-     kOsCrOS | kOsWin | kOsLinux,
-     SINGLE_VALUE_TYPE(switches::kDelayReloadStopButtonChange)},
-#endif  // TOOLKIT_VIEWS
-
     {"enable-async-image-decoding", flag_descriptions::kAsyncImageDecodingName,
      flag_descriptions::kAsyncImageDecodingDescription, kOsAll,
      MULTI_VALUE_TYPE(kAsyncImageDecodingChoices)},
