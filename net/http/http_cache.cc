@@ -838,7 +838,20 @@ int HttpCache::DoneWithResponseHeaders(ActiveEntry* entry,
     // Partial requests may have write mode even when there is a writer present
     // since they may be reader for a particular range and writer for another
     // range.
-    DCHECK(is_partial || (!entry->writer && entry->done_headers_queue.empty()));
+    if (!is_partial) {
+      // TODO(shivanisha): Convert these to DCHECKs after crbug.com/750725 is
+      // fixed.
+      CHECK(!entry->writer)
+          << "Writer's mode: " << entry->writer->mode() << " entry: " << entry
+          << " writer's entry: " << entry->writer->entry();
+      CHECK(entry->done_headers_queue.empty())
+          << "done_headers_queue size: " << entry->done_headers_queue.size()
+          << " first element's mode: "
+          << (*(entry->done_headers_queue.begin()))->mode()
+          << " first element's entry: "
+          << (*(entry->done_headers_queue.begin()))->entry()
+          << " entry: " << entry;
+    }
 
     if (!entry->writer) {
       entry->writer = transaction;
