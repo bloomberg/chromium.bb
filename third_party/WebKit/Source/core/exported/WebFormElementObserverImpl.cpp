@@ -5,7 +5,6 @@
 #include "core/exported/WebFormElementObserverImpl.h"
 
 #include "core/css/CSSComputedStyleDeclaration.h"
-#include "core/dom/MutationCallback.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/MutationObserverInit.h"
 #include "core/dom/MutationRecord.h"
@@ -19,20 +18,21 @@
 
 namespace blink {
 
-class WebFormElementObserverImpl::ObserverCallback : public MutationCallback {
+class WebFormElementObserverImpl::ObserverCallback
+    : public MutationObserver::Delegate {
  public:
   ObserverCallback(HTMLElement&,
                    std::unique_ptr<WebFormElementObserverCallback>);
-  DECLARE_VIRTUAL_TRACE();
 
   ExecutionContext* GetExecutionContext() const override;
 
+  void Deliver(const MutationRecordVector& records, MutationObserver&) override;
+
   void Disconnect();
 
- private:
-  void Call(const HeapVector<Member<MutationRecord>>& records,
-            MutationObserver*) override;
+  DECLARE_VIRTUAL_TRACE();
 
+ private:
   Member<HTMLElement> element_;
   Member<MutationObserver> mutation_observer_;
   std::unique_ptr<WebFormElementObserverCallback> callback_;
@@ -41,19 +41,13 @@ class WebFormElementObserverImpl::ObserverCallback : public MutationCallback {
 WebFormElementObserverImpl::ObserverCallback::ObserverCallback(
     HTMLElement& element,
     std::unique_ptr<WebFormElementObserverCallback> callback)
-    : element_(&element), callback_(std::move(callback)) {
-  DCHECK(element.ownerDocument());
-  mutation_observer_ = MutationObserver::Create(this);
-
+    : element_(element),
+      mutation_observer_(MutationObserver::Create(this)),
+      callback_(std::move(callback)) {
   {
-    Vector<String> filter;
-    filter.ReserveCapacity(3);
-    filter.push_back(String("action"));
-    filter.push_back(String("class"));
-    filter.push_back(String("style"));
     MutationObserverInit init;
     init.setAttributes(true);
-    init.setAttributeFilter(filter);
+    init.setAttributeFilter({"action", "class", "style"});
     mutation_observer_->observe(element_, init, ASSERT_NO_EXCEPTION);
   }
   if (element_->parentElement()) {
@@ -66,17 +60,12 @@ WebFormElementObserverImpl::ObserverCallback::ObserverCallback(
 
 ExecutionContext*
 WebFormElementObserverImpl::ObserverCallback::GetExecutionContext() const {
-  return element_->ownerDocument();
+  return &element_->GetDocument();
 }
 
-void WebFormElementObserverImpl::ObserverCallback::Disconnect() {
-  mutation_observer_->disconnect();
-  callback_.reset();
-}
-
-void WebFormElementObserverImpl::ObserverCallback::Call(
-    const HeapVector<Member<MutationRecord>>& records,
-    MutationObserver*) {
+void WebFormElementObserverImpl::ObserverCallback::Deliver(
+    const MutationRecordVector& records,
+    MutationObserver&) {
   for (const auto& record : records) {
     if (record->type() == "childList") {
       for (unsigned i = 0; i < record->removedNodes()->length(); ++i) {
@@ -108,10 +97,15 @@ void WebFormElementObserverImpl::ObserverCallback::Call(
   }
 }
 
+void WebFormElementObserverImpl::ObserverCallback::Disconnect() {
+  mutation_observer_->disconnect();
+  callback_.reset();
+}
+
 DEFINE_TRACE(WebFormElementObserverImpl::ObserverCallback) {
   visitor->Trace(element_);
   visitor->Trace(mutation_observer_);
-  MutationCallback::Trace(visitor);
+  MutationObserver::Delegate::Trace(visitor);
 }
 
 WebFormElementObserver* WebFormElementObserver::Create(

@@ -4,6 +4,8 @@
 
 #include "core/geometry/DOMMatrix.h"
 
+#include "core/dom/ExecutionContext.h"
+
 namespace blink {
 
 DOMMatrix* DOMMatrix::Create() {
