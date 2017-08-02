@@ -52,11 +52,8 @@ class ASH_EXPORT NativeCursorManagerAshMus : public NativeCursorManagerAsh {
 
   bool native_cursor_enabled_ = true;
 
-#if defined(USE_OZONE)
   std::unique_ptr<ui::CursorDataFactoryOzone> cursor_factory_ozone_;
-#endif
 
-  // Always nullptr when USE_OZONE is false.
   std::unique_ptr<::ui::ImageCursors> image_cursors_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeCursorManagerAshMus);

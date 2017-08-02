@@ -13,12 +13,9 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/image_cursors.h"
+#include "ui/base/cursor/ozone/cursor_data_factory_ozone.h"
 #include "ui/base/layout.h"
 #include "ui/wm/core/cursor_manager.h"
-
-#if defined(USE_OZONE)
-#include "ui/base/cursor/ozone/cursor_data_factory_ozone.h"
-#endif
 
 namespace ash {
 namespace {
@@ -27,17 +24,10 @@ namespace {
 
 void SetCursorOnAllRootWindows(gfx::NativeCursor cursor) {
   ui::CursorData mojo_cursor;
-  if (cursor.platform()) {
-#if defined(USE_OZONE)
+  if (cursor.platform())
     mojo_cursor = ui::CursorDataFactoryOzone::GetCursorData(cursor.platform());
-#else
-    NOTIMPLEMENTED()
-        << "Can't pass native platform cursors on non-ozone platforms";
-    mojo_cursor = ui::CursorData(ui::CursorType::kPointer);
-#endif
-  } else {
+  else
     mojo_cursor = ui::CursorData(cursor.native_type());
-  }
 
   // As the window manager, tell mus to use |mojo_cursor| everywhere. We do
   // this instead of trying to set per-window because otherwise we run into the
@@ -82,16 +72,14 @@ void NotifyMouseEventsEnableStateChange(bool enabled) {
 }  // namespace
 
 NativeCursorManagerAshMus::NativeCursorManagerAshMus() {
-#if defined(USE_OZONE)
   // If we're in a mus client, we aren't going to have all of ozone initialized
   // even though we're in an ozone build. All the hard coded USE_OZONE ifdefs
-  // that handle cursor code expect that there will be a CursorFactoryOzone
-  // instance. Partially initialize the ozone cursor internals here, like we
-  // partially initialize other ozone subsystems in
+  // that handle cursor code in //content/ expect that there will be a
+  // CursorFactoryOzone instance. Partially initialize the ozone cursor
+  // internals here, like we partially initialize other ozone subsystems in
   // ChromeBrowserMainExtraPartsViews.
   cursor_factory_ozone_ = base::MakeUnique<ui::CursorDataFactoryOzone>();
   image_cursors_ = base::MakeUnique<ui::ImageCursors>();
-#endif
 }
 
 NativeCursorManagerAshMus::~NativeCursorManagerAshMus() = default;

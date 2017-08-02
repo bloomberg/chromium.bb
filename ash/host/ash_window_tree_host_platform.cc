@@ -11,19 +11,16 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "base/trace_event/trace_event.h"
+#include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_platform.h"
 #include "ui/events/event_sink.h"
 #include "ui/events/null_event_targeter.h"
+#include "ui/events/ozone/chromeos/cursor_controller.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/transform.h"
 #include "ui/platform_window/platform_window.h"
-
-#if defined(USE_OZONE)
-#include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
-#include "services/ui/public/interfaces/window_manager.mojom.h"
-#include "ui/events/ozone/chromeos/cursor_controller.h"
-#endif
 
 namespace ash {
 
@@ -48,7 +45,6 @@ bool AshWindowTreeHostPlatform::ConfineCursorToRootWindow() {
   return true;
 }
 
-#if defined(USE_OZONE)
 void AshWindowTreeHostPlatform::SetCursorConfig(
     const display::Display& display,
     display::Display::Rotation rotation) {
@@ -66,7 +62,6 @@ void AshWindowTreeHostPlatform::ClearCursorConfig() {
   ui::CursorController::GetInstance()->ClearCursorConfigForWindow(
       GetAcceleratedWidget());
 }
-#endif
 
 void AshWindowTreeHostPlatform::SetRootWindowTransformer(
     std::unique_ptr<RootWindowTransformer> transformer) {
@@ -130,7 +125,6 @@ void AshWindowTreeHostPlatform::DispatchEvent(ui::Event* event) {
 }
 
 void AshWindowTreeHostPlatform::SetTapToClickPaused(bool state) {
-#if defined(USE_OZONE)
   ui::InputDeviceControllerClient* input_device_controller_client =
       Shell::Get()->shell_delegate()->GetInputDeviceControllerClient();
   if (!input_device_controller_client)
@@ -138,7 +132,6 @@ void AshWindowTreeHostPlatform::SetTapToClickPaused(bool state) {
 
   // Temporarily pause tap-to-click when the cursor is hidden.
   input_device_controller_client->SetTapToClickPaused(state);
-#endif
 }
 
 }  // namespace ash

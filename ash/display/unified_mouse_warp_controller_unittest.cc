@@ -72,14 +72,9 @@ class UnifiedMouseWarpControllerTest : public AshTestBase {
             &point_in_mirroring_host, &point_in_unified_host)) {
       return false;
     }
-#if defined(USE_OZONE)
     // The location of the ozone's native event is relative to the host.
     GetEventGenerator().MoveMouseToWithNative(point_in_unified_host,
                                               point_in_mirroring_host);
-#else
-    GetEventGenerator().MoveMouseToWithNative(point_in_unified_host,
-                                              point_in_native);
-#endif
     aura::Window* root = Shell::GetPrimaryRootWindow();
     gfx::Point new_location_in_unified_host =
         aura::Env::GetInstance()->last_mouse_location();

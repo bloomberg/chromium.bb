@@ -50,12 +50,9 @@
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/window.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/display/manager/forwarding_display_delegate.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/views/mus/pointer_watcher_event_router.h"
-
-#if defined(USE_OZONE)
-#include "ui/display/manager/forwarding_display_delegate.h"
-#endif
 
 namespace ash {
 namespace mus {
@@ -354,7 +351,6 @@ void ShellPortMash::OnHostsInitialized() {
 
 std::unique_ptr<display::NativeDisplayDelegate>
 ShellPortMash::CreateNativeDisplayDelegate() {
-#if defined(USE_OZONE)
   display::mojom::NativeDisplayDelegatePtr native_display_delegate;
   if (window_manager_->connector()) {
     window_manager_->connector()->BindInterface(ui::mojom::kServiceName,
@@ -362,11 +358,6 @@ ShellPortMash::CreateNativeDisplayDelegate() {
   }
   return base::MakeUnique<display::ForwardingDisplayDelegate>(
       std::move(native_display_delegate));
-#else
-  // The bots compile this config, but it is never run.
-  CHECK(false);
-  return nullptr;
-#endif
 }
 
 std::unique_ptr<AcceleratorController>

@@ -159,12 +159,10 @@ void ShellDelegateImpl::SetTouchscreenEnabledInPrefs(bool enabled,
 
 void ShellDelegateImpl::UpdateTouchscreenStatusFromPrefs() {}
 
-#if defined(USE_OZONE)
 ui::InputDeviceControllerClient*
 ShellDelegateImpl::GetInputDeviceControllerClient() {
   return nullptr;
 }
-#endif
 
 }  // namespace shell
 }  // namespace ash
