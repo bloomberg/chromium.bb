@@ -19,6 +19,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class MediaEngagementContentsObserverTest
@@ -164,38 +165,30 @@ class MediaEngagementContentsObserverTest
                       int visits_total,
                       int score,
                       int playbacks_delta) {
+    using Entry = ukm::builders::Media_Engagement_SessionFinished;
+
     std::vector<std::pair<const char*, int64_t>> metrics = {
-        {MediaEngagementContentsObserver::kUkmMetricPlaybacksTotalName,
-         playbacks_total},
-        {MediaEngagementContentsObserver::kUkmMetricVisitsTotalName,
-         visits_total},
-        {MediaEngagementContentsObserver::kUkmMetricEngagementScoreName, score},
-        {MediaEngagementContentsObserver::kUkmMetricPlaybacksDeltaName,
-         playbacks_delta},
+        {Entry::kPlaybacks_TotalName, playbacks_total},
+        {Entry::kVisits_TotalName, visits_total},
+        {Entry::kEngagement_ScoreName, score},
+        {Entry::kPlaybacks_DeltaName, playbacks_delta},
     };
 
     const ukm::UkmSource* source =
         test_ukm_recorder_.GetSourceForUrl(url.spec().c_str());
     EXPECT_EQ(url, source->url());
-    EXPECT_EQ(1, test_ukm_recorder_.CountEntries(
-                     *source, MediaEngagementContentsObserver::kUkmEntryName));
-    test_ukm_recorder_.ExpectMetric(
-        *source, MediaEngagementContentsObserver::kUkmEntryName,
-        MediaEngagementContentsObserver::kUkmMetricVisitsTotalName,
-        visits_total);
-    test_ukm_recorder_.ExpectMetric(
-        *source, MediaEngagementContentsObserver::kUkmEntryName,
-        MediaEngagementContentsObserver::kUkmMetricPlaybacksTotalName,
-        playbacks_total);
-    test_ukm_recorder_.ExpectMetric(
-        *source, MediaEngagementContentsObserver::kUkmEntryName,
-        MediaEngagementContentsObserver::kUkmMetricEngagementScoreName, score);
-    test_ukm_recorder_.ExpectMetric(
-        *source, MediaEngagementContentsObserver::kUkmEntryName,
-        MediaEngagementContentsObserver::kUkmMetricPlaybacksDeltaName,
-        playbacks_delta);
-    test_ukm_recorder_.ExpectEntry(
-        *source, MediaEngagementContentsObserver::kUkmEntryName, metrics);
+    EXPECT_EQ(1, test_ukm_recorder_.CountEntries(*source, Entry::kEntryName));
+    test_ukm_recorder_.ExpectMetric(*source, Entry::kEntryName,
+                                    Entry::kVisits_TotalName, visits_total);
+    test_ukm_recorder_.ExpectMetric(*source, Entry::kEntryName,
+                                    Entry::kPlaybacks_TotalName,
+                                    playbacks_total);
+    test_ukm_recorder_.ExpectMetric(*source, Entry::kEntryName,
+                                    Entry::kEngagement_ScoreName, score);
+    test_ukm_recorder_.ExpectMetric(*source, Entry::kEntryName,
+                                    Entry::kPlaybacks_DeltaName,
+                                    playbacks_delta);
+    test_ukm_recorder_.ExpectEntry(*source, Entry::kEntryName, metrics);
   }
 
   void ExpectNoUkmEntry() { EXPECT_FALSE(test_ukm_recorder_.sources_count()); }

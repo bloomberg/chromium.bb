@@ -159,12 +159,6 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
   // Record the score and change in score to UKM.
   void RecordUkmMetrics();
 
-  static const char* const kUkmEntryName;
-  static const char* const kUkmMetricPlaybacksTotalName;
-  static const char* const kUkmMetricVisitsTotalName;
-  static const char* const kUkmMetricEngagementScoreName;
-  static const char* const kUkmMetricPlaybacksDeltaName;
-
   bool is_visible_ = false;
   bool significant_playback_recorded_ = false;
 
