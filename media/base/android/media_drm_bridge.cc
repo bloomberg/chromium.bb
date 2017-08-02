@@ -49,6 +49,9 @@ namespace media {
 
 namespace {
 
+using CreateMediaDrmBridgeCB =
+    base::OnceCallback<scoped_refptr<MediaDrmBridge>(void)>;
+
 // These must be in sync with Android MediaDrm REQUEST_TYPE_XXX constants!
 // https://developer.android.com/reference/android/media/MediaDrm.KeyRequest.html
 enum class RequestType : uint32_t {
@@ -268,6 +271,24 @@ bool IsPersistentLicenseTypeSupportedByMediaDrm() {
          base::android::BuildInfo::GetInstance()->sdk_int() >= 23;
 }
 
+// Callback for MediaDrmStorageBridge::Initialize.
+// |create_media_drm_bridge_cb|, factory method to create MediaDrmBridge.
+// |created_cb|, callback to return the MediaDrmBridge to caller of
+// MediaDrmBridge::Create.
+void OnStorageInitialized(CreateMediaDrmBridgeCB create_media_drm_bridge_cb,
+                          MediaDrmBridge::CreatedCB created_cb,
+                          MediaDrmStorageBridge* storage) {
+  DCHECK(storage);
+
+  // MediaDrmStorageBridge should always return a valid origin ID after
+  // initialize. Otherwise the pipe is broken and we should not create
+  // MediaDrmBridge here.
+  std::move(created_cb)
+      .Run(storage->origin_id().empty()
+               ? nullptr
+               : std::move(create_media_drm_bridge_cb).Run());
+}
+
 }  // namespace
 
 // MediaDrm is not generally usable without MediaCodec. Thus, both the MediaDrm
@@ -319,7 +340,7 @@ std::vector<std::string> MediaDrmBridge::GetPlatformKeySystemNames() {
 }
 
 // static
-void MediaDrmBridge::CreateInternal(
+scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateInternal(
     const std::vector<uint8_t>& scheme_uuid,
     SecurityLevel security_level,
     std::unique_ptr<MediaDrmStorageBridge> storage,
@@ -327,8 +348,7 @@ void MediaDrmBridge::CreateInternal(
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
-    const SessionExpirationUpdateCB& session_expiration_update_cb,
-    CreatedCB created_cb) {
+    const SessionExpirationUpdateCB& session_expiration_update_cb) {
   // All paths requires the MediaDrmApis.
   DCHECK(AreMediaDrmApisAvailable());
   DCHECK(!scheme_uuid.empty());
@@ -339,11 +359,9 @@ void MediaDrmBridge::CreateInternal(
       session_expiration_update_cb));
 
   if (media_drm_bridge->j_media_drm_.is_null())
-    media_drm_bridge = nullptr;
+    return nullptr;
 
-  // Return |media_drm_bridge| asynchronously to make the callback binding
-  // easier.
-  std::move(created_cb).Run(std::move(media_drm_bridge));
+  return media_drm_bridge;
 }
 
 // static
@@ -375,18 +393,19 @@ void MediaDrmBridge::Create(
   auto storage = base::MakeUnique<MediaDrmStorageBridge>();
   MediaDrmStorageBridge* raw_storage = storage.get();
 
-  base::OnceClosure create_media_drm_cb = base::BindOnce(
+  CreateMediaDrmBridgeCB create_media_drm_bridge_cb = base::BindOnce(
       &MediaDrmBridge::CreateInternal, scheme_uuid, security_level,
-      base::Passed(&storage), create_fetcher_cb, session_message_cb,
-      session_closed_cb, session_keys_change_cb, session_expiration_update_cb,
-      base::Passed(&created_cb));
+      std::move(storage), create_fetcher_cb, session_message_cb,
+      session_closed_cb, session_keys_change_cb, session_expiration_update_cb);
 
   if (IsPersistentLicenseTypeSupported(key_system) &&
       !security_origin.is_empty() && !create_storage_cb.is_null()) {
-    raw_storage->Initialize(url::Origin(security_origin), create_storage_cb,
-                            std::move(create_media_drm_cb));
+    raw_storage->Initialize(
+        create_storage_cb, base::BindOnce(&OnStorageInitialized,
+                                          std::move(create_media_drm_bridge_cb),
+                                          std::move(created_cb), raw_storage));
   } else {
-    std::move(create_media_drm_cb).Run();
+    std::move(created_cb).Run(std::move(create_media_drm_bridge_cb).Run());
   }
 }
 
@@ -868,15 +887,8 @@ MediaDrmBridge::MediaDrmBridge(
       // CreateWithoutSessionSupport, which is used to reset credentials.
       !storage_->origin_id().empty();
 
-  // TODO(yucliu): Per EME spec on individualization, implementation should not
-  // expose application-specific information. Considering encode origin before
-  // passing to MediaDrm.
   ScopedJavaLocalRef<jstring> j_security_origin = ConvertUTF8ToJavaString(
       env, use_origin_isolated_storage ? storage_->origin_id() : "");
-
-  // TODO(yucliu): Use |create_storage_cb_| to create MediaDrmStorage which can
-  // be used by Java side to store/retrieve persistent data. This should only
-  // be used when |use_origin_isolated_storage| is true.
 
   // Note: OnMediaCryptoReady() could be called in this call.
   j_media_drm_.Reset(Java_MediaDrmBridge_create(

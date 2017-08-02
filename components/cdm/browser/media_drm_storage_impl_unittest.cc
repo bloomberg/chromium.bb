@@ -8,6 +8,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/test_message_loop.h"
+#include "base/unguessable_token.h"
 #include "components/prefs/testing_pref_service.h"
 #include "media/mojo/services/mojo_media_drm_storage.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -30,18 +31,7 @@ class MediaDrmStorageImplTest : public ::testing::Test {
     PrefRegistrySimple* registry = pref_service_->registry();
     MediaDrmStorageImpl::RegisterProfilePrefs(registry);
 
-    media::mojom::MediaDrmStoragePtr media_drm_storage_ptr;
-    auto request = mojo::MakeRequest(&media_drm_storage_ptr);
-
-    media_drm_storage_.reset(
-        new media::MojoMediaDrmStorage(std::move(media_drm_storage_ptr)));
-
-    // The created object will be destroyed on connection error.
-    new MediaDrmStorageImpl(nullptr,  // Use null RenderFrameHost for testing.
-                            pref_service_.get(), url::Origin(GURL(kTestOrigin)),
-                            std::move(request));
-
-    media_drm_storage_->Initialize(url::Origin(GURL(kTestOrigin)));
+    media_drm_storage_ = CreateAndInitMediaDrmStorage(&origin_id_);
   }
 
   void TearDown() override {
@@ -51,6 +41,35 @@ class MediaDrmStorageImplTest : public ::testing::Test {
 
  protected:
   using SessionData = media::MediaDrmStorage::SessionData;
+
+  std::unique_ptr<media::MediaDrmStorage> CreateAndInitMediaDrmStorage(
+      base::UnguessableToken* origin_id) {
+    DCHECK(origin_id);
+
+    media::mojom::MediaDrmStoragePtr media_drm_storage_ptr;
+    auto request = mojo::MakeRequest(&media_drm_storage_ptr);
+
+    auto media_drm_storage = base::MakeUnique<media::MojoMediaDrmStorage>(
+        std::move(media_drm_storage_ptr));
+
+    // The created object will be destroyed on connection error.
+    new MediaDrmStorageImpl(nullptr,  // Use null RenderFrameHost for testing.
+                            pref_service_.get(), url::Origin(GURL(kTestOrigin)),
+                            std::move(request));
+
+    media_drm_storage->Initialize(base::BindOnce(
+        [](base::UnguessableToken* out_origin_id,
+           const base::UnguessableToken& origin_id) {
+          DCHECK(origin_id);
+          *out_origin_id = origin_id;
+        },
+        origin_id));
+
+    base::RunLoop().RunUntilIdle();
+
+    DCHECK(*origin_id);
+    return media_drm_storage;
+  }
 
   void OnProvisioned() {
     media_drm_storage_->OnProvisioned(ExpectResult(true));
@@ -120,7 +139,19 @@ class MediaDrmStorageImplTest : public ::testing::Test {
   base::TestMessageLoop message_loop_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<media::MediaDrmStorage> media_drm_storage_;
+  base::UnguessableToken origin_id_;
 };
+
+// TODO(yucliu): Test origin ID is re-generated after clearing licenses.
+TEST_F(MediaDrmStorageImplTest, Initialize_OriginIdNotChanged) {
+  OnProvisioned();
+  base::RunLoop().RunUntilIdle();
+
+  base::UnguessableToken origin_id;
+  std::unique_ptr<media::MediaDrmStorage> storage =
+      CreateAndInitMediaDrmStorage(&origin_id);
+  EXPECT_EQ(origin_id, origin_id_);
+}
 
 TEST_F(MediaDrmStorageImplTest, OnProvisioned) {
   OnProvisioned();

@@ -4,7 +4,7 @@
 
 module media.mojom;
 
-import "url/mojo/origin.mojom";
+import "mojo/common/unguessable_token.mojom";
 
 struct SessionData {
   array<uint8> key_set_id;
@@ -14,11 +14,14 @@ struct SessionData {
 // Allows MediaDrmBridge to store and retrieve persistent data. This is needed
 // for features like per-origin provisioning and persistent license support.
 interface MediaDrmStorage {
-  // Initializes |this| to be bound to the |origin|. This should not modify
-  // anything in the storage.
-  Initialize(url.mojom.Origin origin);
+  // Initializes |this| and return a random orign ID which can identify the
+  // current origin. The origin ID should be randomly generated if it doesn't
+  // exist. |origin_id| must be valid.
+  // This should not modify anything in the storage.
+  Initialize() => (mojo.common.mojom.UnguessableToken origin_id);
 
-  // Saves |origin| in the storage after MediaDrm is provisioned for |origin|.
+  // Saves origin information (e.g. origin ID, provision time) in the storage
+  // after MediaDrm is provisioned for current origin.
   OnProvisioned() => (bool success);
 
   // Saves persistent session data for |session_id|.
