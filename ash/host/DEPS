@@ -17,9 +17,4 @@ specific_include_rules = {
     # ozone.
     "+ui/events/ozone/chromeos/cursor_controller.h",
   ],
-  # X11 support isn't used and will be removed soon, so it can depend on
-  # whatever.
-  "ash_window_tree_host_x11.cc": [
-    "+ui/events/devices",
-  ],
 }

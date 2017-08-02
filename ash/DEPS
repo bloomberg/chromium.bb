@@ -68,10 +68,6 @@ include_rules = [
   # TODO: This is temporary, ash should not use these. http://crbug.com/747415.
   "+ui/events/devices/device_data_manager.h",
   "+ui/events/devices/input_device_manager.h",
-
-  # X11 support isn't used in production and will go away soon.
-  # http://crbug.com/671355.
-  "+ui/events/devices/x11",
 ]
 
 specific_include_rules = {

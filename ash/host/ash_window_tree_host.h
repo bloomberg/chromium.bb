@@ -49,11 +49,9 @@ class ASH_EXPORT AshWindowTreeHost {
 
   virtual void RegisterMirroringHost(AshWindowTreeHost* mirroring_ash_host) {}
 
-#if defined(USE_OZONE)
   virtual void SetCursorConfig(const display::Display& display,
                                display::Display::Rotation rotation) = 0;
   virtual void ClearCursorConfig() = 0;
-#endif
 
  protected:
   // Translates the native mouse location into screen coordinates.

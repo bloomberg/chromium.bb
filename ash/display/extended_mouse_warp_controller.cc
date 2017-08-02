@@ -142,14 +142,12 @@ bool ExtendedMouseWarpController::WarpMouseCursor(ui::MouseEvent* event) {
   gfx::Point point_in_native =
       ui::EventSystemLocationFromNative(event->native_event());
 
-#if defined(USE_OZONE)
   // TODO(dnicoara): crbug.com/415680 Move cursor warping into Ozone once Ozone
   // has access to the logical display layout.
   // Native events in Ozone are in the native window coordinate system. We need
   // to translate them to get the global position.
   point_in_native.Offset(target->GetHost()->GetBoundsInPixels().x(),
                          target->GetHost()->GetBoundsInPixels().y());
-#endif
 
   return WarpMouseCursorInNativeCoords(point_in_native, point_in_screen, false);
 }
