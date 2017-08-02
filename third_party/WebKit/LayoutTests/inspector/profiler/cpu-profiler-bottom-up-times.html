@@ -11,7 +11,7 @@ function test()
         "target": function() {
           return SDK.targetManager.targets()[0];
         },
-        "_profile": {
+        "profileModel": () => new SDK.CPUProfileDataModel({
             "nodes": [
                 {
                     "id": 0,
@@ -111,7 +111,7 @@ function test()
             ],
             "startTime": 0,
             "endTime": 1e6
-        }
+        })
     };
     var view = new Profiler.CPUProfileView(profileAndExpectations);
     view.viewSelectComboBox.setSelectedIndex(1);
