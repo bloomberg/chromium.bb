@@ -66,11 +66,6 @@ bool TestExtensionService::is_ready() {
   return false;
 }
 
-base::SequencedTaskRunner* TestExtensionService::GetFileTaskRunner() {
-  ADD_FAILURE();
-  return NULL;
-}
-
 void TestExtensionService::AddExtension(const Extension* extension) {
   ADD_FAILURE();
 }

@@ -24,6 +24,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/content_verifier.h"
+#include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -154,12 +155,13 @@ void LoadUserScripts(UserScriptList* user_scripts,
   }
 }
 
-void LoadScriptsOnFileThread(
+void LoadScriptsOnFileTaskRunner(
     std::unique_ptr<UserScriptList> user_scripts,
     const ExtensionUserScriptLoader::HostsInfo& hosts_info,
     const std::set<int>& added_script_ids,
     const scoped_refptr<ContentVerifier>& verifier,
     UserScriptLoader::LoadScriptsCallback callback) {
+  DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
   DCHECK(user_scripts.get());
   LoadUserScripts(user_scripts.get(), hosts_info, added_script_ids, verifier);
   std::unique_ptr<base::SharedMemory> memory =
@@ -214,9 +216,9 @@ void ExtensionUserScriptLoader::LoadScripts(
     LoadScriptsCallback callback) {
   UpdateHostsInfo(changed_hosts);
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::BindOnce(&LoadScriptsOnFileThread, std::move(user_scripts),
+  GetExtensionFileTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&LoadScriptsOnFileTaskRunner, std::move(user_scripts),
                      hosts_info_, added_script_ids, content_verifier_,
                      std::move(callback)));
 }

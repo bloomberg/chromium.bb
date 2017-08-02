@@ -15,7 +15,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
@@ -23,6 +22,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/common/host_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -83,7 +83,7 @@ TEST_F(ExtensionUserScriptLoaderTest, NoScripts) {
       HostID(),
       true /* listen_for_extension_system_loaded */);
   loader.StartLoad();
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   ASSERT_TRUE(shared_memory_ != NULL);
 }
