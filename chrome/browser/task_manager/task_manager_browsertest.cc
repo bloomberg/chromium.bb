@@ -867,6 +867,109 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsOldUndockedWindow) {
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
 }
 
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, HistoryNavigationInNewTab) {
+  ShowTaskManager();
+
+  ui_test_utils::NavigateToURL(browser(), GetTestURL());
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+
+  ui_test_utils::NavigateToURL(browser(), GURL("about:version"));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("About Version")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+
+  chrome::GoBack(browser(), WindowOpenDisposition::NEW_BACKGROUND_TAB);
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("About Version")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
+
+  // In http://crbug.com/738169, the task_manager::Task for the background tab
+  // was created with process id 0, resulting in zero values for all process
+  // metrics. Ensure that this is not the case.
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
+      MatchTab("title1.html"), ColumnSpecifier::PROCESS_ID,
+      base::kNullProcessId));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
+      MatchTab("title1.html"), ColumnSpecifier::PHYSICAL_MEMORY, 1000));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
+      MatchTab("About Version"), ColumnSpecifier::PHYSICAL_MEMORY, 1000));
+}
+
+IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, SubframeHistoryNavigation) {
+  if (!ShouldExpectSubframes())
+    return;  // This test is lame without OOPIFs.
+
+  ShowTaskManager();
+
+  // This URL will have two out-of-process iframe processes (for b.com and
+  // c.com) under --site-per-process: it's an a.com page containing a b.com
+  // <iframe> containing a b.com <iframe> containing a c.com <iframe>.
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "a.com", "/cross_site_iframe_factory.html?a(b(b(c)))"));
+
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchTab("Cross-site iframe factory")));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchSubframe("http://b.com/")));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchSubframe("http://c.com/")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnySubframe()));
+
+  GURL d_url = embedded_test_server()->GetURL(
+      "d.com", "/cross_site_iframe_factory.html?d(e)");
+  ASSERT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+      "frames[0][0].location.href = '" + d_url.spec() + "';"));
+
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(0, MatchSubframe("http://c.com/")));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchSubframe("http://d.com/")));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchSubframe("http://e.com/")));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchSubframe("http://b.com/")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(3, MatchAnySubframe()));
+
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
+
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchSubframe("http://c.com/")));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(0, MatchSubframe("http://d.com/")));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(0, MatchSubframe("http://e.com/")));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchSubframe("http://b.com/")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnySubframe()));
+
+  chrome::GoForward(browser(), WindowOpenDisposition::NEW_BACKGROUND_TAB);
+
+  // When the subframe appears in the cloned process, it must have a valid
+  // process ID.
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
+      MatchSubframe("http://d.com/"), ColumnSpecifier::PROCESS_ID,
+      base::kNullProcessId));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
+      MatchSubframe("http://e.com/"), ColumnSpecifier::PROCESS_ID,
+      base::kNullProcessId));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(2, MatchSubframe("http://b.com/")));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(2, MatchSubframe("http://b.com/")));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchSubframe("http://c.com/")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(5, MatchAnySubframe()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
+
+  // Subframe processes should report some amount of physical memory usage.
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
+      MatchSubframe("http://d.com/"), ColumnSpecifier::PHYSICAL_MEMORY, 1000));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
+      MatchSubframe("http://e.com/"), ColumnSpecifier::PHYSICAL_MEMORY, 1000));
+}
+
 IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, KillSubframe) {
   ShowTaskManager();
 
@@ -1156,14 +1259,7 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnySubframe()));
 }
 
-// Flaky on Linux http://crbug.com/700684
-#if defined(OS_LINUX)
-#define MAYBE_OrderingOfDependentRows DISABLED_OrderingOfDependentRows
-#else
-#define MAYBE_OrderingOfDependentRows OrderingOfDependentRows
-#endif
-IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest,
-                       MAYBE_OrderingOfDependentRows) {
+IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, OrderingOfDependentRows) {
   ShowTaskManager();
 
   GURL a_with_frames(embedded_test_server()->GetURL(

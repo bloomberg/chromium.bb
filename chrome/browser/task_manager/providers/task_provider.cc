@@ -41,4 +41,13 @@ void TaskProvider::NotifyObserverTaskUnresponsive(Task* task) const {
   observer_->TaskUnresponsive(task);
 }
 
+void TaskProvider::UpdateTaskProcessInfoAndNotifyObserver(
+    Task* existing_task,
+    base::ProcessHandle new_process_handle,
+    base::ProcessId new_process_id) const {
+  DCHECK(observer_);
+  existing_task->UpdateProcessInfo(new_process_handle, new_process_id,
+                                   observer_);
+}
+
 }  // namespace task_manager
