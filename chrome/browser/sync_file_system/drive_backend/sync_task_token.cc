@@ -59,25 +59,7 @@ void SyncTaskToken::UpdateTask(const tracked_objects::Location& location,
   DVLOG(2) << "Token updated: " << location_.ToString();
 }
 
-SyncTaskToken::~SyncTaskToken() {
-  // All task on Client must hold TaskToken instance to ensure
-  // no other tasks are running. Also, as soon as a task finishes to work,
-  // it must return the token to TaskManager.
-  // Destroying a token with valid |client| indicates the token was
-  // dropped by a task without returning.
-  if (task_runner_.get() && task_runner_->RunsTasksInCurrentSequence() &&
-      manager_ && manager_->IsRunningTask(token_id_)) {
-    NOTREACHED()
-        << "Unexpected TaskToken deletion from: " << location_.ToString();
-
-    // Reinitializes the token.
-    SyncTaskManager::NotifyTaskDone(
-        base::WrapUnique(new SyncTaskToken(manager_, task_runner_.get(),
-                                           token_id_, std::move(task_blocker_),
-                                           SyncStatusCallback())),
-        SYNC_STATUS_OK);
-  }
-}
+SyncTaskToken::~SyncTaskToken() {}
 
 // static
 SyncStatusCallback SyncTaskToken::WrapToCallback(
