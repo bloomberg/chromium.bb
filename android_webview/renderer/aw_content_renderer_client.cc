@@ -46,7 +46,6 @@
 #include "content/public/renderer/render_view.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -178,11 +177,14 @@ void AwContentRendererClient::RenderFrameCreated(
         parent_frame->GetRoutingID(), render_frame->GetRoutingID()));
   }
 
+  registry_ = base::MakeUnique<service_manager::BinderRegistry>();
+
   // TODO(sgurun) do not create a password autofill agent (change
   // autofill agent to store a weakptr).
   autofill::PasswordAutofillAgent* password_autofill_agent =
-      new autofill::PasswordAutofillAgent(render_frame);
-  new autofill::AutofillAgent(render_frame, password_autofill_agent, NULL);
+      new autofill::PasswordAutofillAgent(render_frame, registry_.get());
+  new autofill::AutofillAgent(render_frame, password_autofill_agent, nullptr,
+                              registry_.get());
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   new SpellCheckProvider(render_frame, spellcheck_.get());

@@ -12,7 +12,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/features/features.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebClientHintsType.h"
 #include "third_party/WebKit/public/platform/WebContentSettingCallbacks.h"
@@ -90,7 +89,8 @@ ContentSetting GetContentSettingFromRules(
 ContentSettingsObserver::ContentSettingsObserver(
     content::RenderFrame* render_frame,
     extensions::Dispatcher* extension_dispatcher,
-    bool should_whitelist)
+    bool should_whitelist,
+    service_manager::BinderRegistry* registry)
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<ContentSettingsObserver>(
           render_frame),
@@ -105,7 +105,7 @@ ContentSettingsObserver::ContentSettingsObserver(
   ClearBlockedContentSettings();
   render_frame->GetWebFrame()->SetContentSettingsClient(this);
 
-  registry_.AddInterface(
+  registry->AddInterface(
       base::Bind(&ContentSettingsObserver::OnInsecureContentRendererRequest,
                  base::Unretained(this)));
 
@@ -157,12 +157,6 @@ void ContentSettingsObserver::DidBlockContentType(
     Send(new ChromeViewHostMsg_ContentBlocked(routing_id(), settings_type,
                                               details));
   }
-}
-
-void ContentSettingsObserver::OnInterfaceRequestForFrame(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
 bool ContentSettingsObserver::OnMessageReceived(const IPC::Message& message) {

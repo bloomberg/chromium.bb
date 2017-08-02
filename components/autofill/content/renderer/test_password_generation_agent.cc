@@ -7,8 +7,10 @@
 namespace autofill {
 
 TestPasswordGenerationAgent::TestPasswordGenerationAgent(
-    content::RenderFrame* render_frame, PasswordAutofillAgent* password_agent)
-    : PasswordGenerationAgent(render_frame, password_agent) {
+    content::RenderFrame* render_frame,
+    PasswordAutofillAgent* password_agent,
+    service_manager::BinderRegistry* registry)
+    : PasswordGenerationAgent(render_frame, password_agent, registry) {
   // Always enable when testing.
   set_enabled(true);
 }

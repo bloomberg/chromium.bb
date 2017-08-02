@@ -24,22 +24,17 @@ namespace dom_distiller {
 class DistillerJsRenderFrameObserver : public content::RenderFrameObserver {
  public:
   DistillerJsRenderFrameObserver(content::RenderFrame* render_frame,
-                                 const int distiller_isolated_world_id);
+                                 const int distiller_isolated_world_id,
+                                 service_manager::BinderRegistry* registry);
   ~DistillerJsRenderFrameObserver() override;
 
   // RenderFrameObserver implementation.
-  void OnInterfaceRequestForFrame(
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* interface_pipe) override;
   void DidStartProvisionalLoad(
       blink::WebDocumentLoader* document_loader) override;
   void DidFinishLoad() override;
   void DidCreateScriptContext(v8::Local<v8::Context> context,
                               int world_id) override;
 
-  // Add the mojo interface to a RenderFrame's
-  // service_manager::InterfaceRegistry.
-  void RegisterMojoInterface();
   // Flag the current page as a distiller page.
   void SetIsDistillerPage();
 
@@ -56,7 +51,9 @@ class DistillerJsRenderFrameObserver : public content::RenderFrameObserver {
   // Track if the current page is distilled. This is needed for testing.
   bool is_distiller_page_;
 
-  service_manager::BinderRegistry registry_;
+  // True if a load is in progress and we are currently able to bind requests
+  // for mojom::DistillerPageNotifierService.
+  bool load_active_ = false;
 
   // Handle to "distiller" JavaScript object functionality.
   std::unique_ptr<DistillerNativeJavaScript> native_javascript_handle_;

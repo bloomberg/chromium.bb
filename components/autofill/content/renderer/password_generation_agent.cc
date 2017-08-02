@@ -26,7 +26,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -155,7 +154,8 @@ PasswordGenerationAgent::AccountCreationFormData::~AccountCreationFormData() {}
 
 PasswordGenerationAgent::PasswordGenerationAgent(
     content::RenderFrame* render_frame,
-    PasswordAutofillAgent* password_agent)
+    PasswordAutofillAgent* password_agent,
+    service_manager::BinderRegistry* registry)
     : content::RenderFrameObserver(render_frame),
       password_is_generated_(false),
       is_manually_triggered_(false),
@@ -167,7 +167,7 @@ PasswordGenerationAgent::PasswordGenerationAgent(
       password_agent_(password_agent),
       binding_(this) {
   LogBoolean(Logger::STRING_GENERATION_RENDERER_ENABLED, enabled_);
-  registry_.AddInterface(base::Bind(&PasswordGenerationAgent::BindRequest,
+  registry->AddInterface(base::Bind(&PasswordGenerationAgent::BindRequest,
                                     base::Unretained(this)));
 }
 PasswordGenerationAgent::~PasswordGenerationAgent() {}
@@ -175,12 +175,6 @@ PasswordGenerationAgent::~PasswordGenerationAgent() {}
 void PasswordGenerationAgent::BindRequest(
     mojom::PasswordGenerationAgentRequest request) {
   binding_.Bind(std::move(request));
-}
-
-void PasswordGenerationAgent::OnInterfaceRequestForFrame(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
 void PasswordGenerationAgent::DidFinishDocumentLoad() {

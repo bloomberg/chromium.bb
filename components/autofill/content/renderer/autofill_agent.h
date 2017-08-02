@@ -56,7 +56,8 @@ class AutofillAgent : public content::RenderFrameObserver,
   // guaranteed to outlive AutofillAgent.
   AutofillAgent(content::RenderFrame* render_frame,
                 PasswordAutofillAgent* password_autofill_manager,
-                PasswordGenerationAgent* password_generation_agent);
+                PasswordGenerationAgent* password_generation_agent,
+                service_manager::BinderRegistry* registry);
   ~AutofillAgent() override;
 
   void BindRequest(mojom::AutofillAgentRequest request);
@@ -132,9 +133,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   };
 
   // content::RenderFrameObserver:
-  void OnInterfaceRequestForFrame(
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* interface_pipe) override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_document_navigation) override;
   void DidFinishDocumentLoad() override;
@@ -295,8 +293,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   mojo::Binding<mojom::AutofillAgent> binding_;
 
   mojom::AutofillDriverPtr autofill_driver_;
-
-  service_manager::BinderRegistry registry_;
 
   base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_;
 

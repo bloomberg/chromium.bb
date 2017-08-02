@@ -7,9 +7,9 @@
 namespace autofill {
 
 TestPasswordAutofillAgent::TestPasswordAutofillAgent(
-    content::RenderFrame* render_frame)
-    : PasswordAutofillAgent(render_frame) {
-}
+    content::RenderFrame* render_frame,
+    service_manager::BinderRegistry* registry)
+    : PasswordAutofillAgent(render_frame, registry) {}
 
 TestPasswordAutofillAgent::~TestPasswordAutofillAgent() {}
 

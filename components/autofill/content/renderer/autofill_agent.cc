@@ -42,7 +42,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "net/cert/cert_status_flags.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/WebKeyboardEvent.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -142,7 +141,8 @@ AutofillAgent::ShowSuggestionsOptions::ShowSuggestionsOptions()
 
 AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
                              PasswordAutofillAgent* password_autofill_agent,
-                             PasswordGenerationAgent* password_generation_agent)
+                             PasswordGenerationAgent* password_generation_agent,
+                             service_manager::BinderRegistry* registry)
     : content::RenderFrameObserver(render_frame),
       form_cache_(*render_frame->GetWebFrame()),
       password_autofill_agent_(password_autofill_agent),
@@ -160,7 +160,7 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
   render_frame->GetWebFrame()->SetAutofillClient(this);
   password_autofill_agent->SetAutofillAgent(this);
 
-  registry_.AddInterface(
+  registry->AddInterface(
       base::Bind(&AutofillAgent::BindRequest, base::Unretained(this)));
 }
 
@@ -174,12 +174,6 @@ bool AutofillAgent::FormDataCompare::operator()(const FormData& lhs,
                                                 const FormData& rhs) const {
   return std::tie(lhs.name, lhs.origin, lhs.action, lhs.is_form_tag) <
          std::tie(rhs.name, rhs.origin, rhs.action, rhs.is_form_tag);
-}
-
-void AutofillAgent::OnInterfaceRequestForFrame(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  registry_.TryBindInterface(interface_name, interface_pipe);
 }
 
 void AutofillAgent::DidCommitProvisionalLoad(bool is_new_navigation,

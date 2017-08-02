@@ -25,7 +25,8 @@ namespace {
 
 class MockContentSettingsObserver : public ContentSettingsObserver {
  public:
-  explicit MockContentSettingsObserver(content::RenderFrame* render_frame);
+  MockContentSettingsObserver(content::RenderFrame* render_frame,
+                              service_manager::BinderRegistry* registry);
 
   virtual bool Send(IPC::Message* message);
 
@@ -39,11 +40,11 @@ class MockContentSettingsObserver : public ContentSettingsObserver {
 };
 
 MockContentSettingsObserver::MockContentSettingsObserver(
-    content::RenderFrame* render_frame)
-    : ContentSettingsObserver(render_frame, NULL, false),
+    content::RenderFrame* render_frame,
+    service_manager::BinderRegistry* registry)
+    : ContentSettingsObserver(render_frame, NULL, false, registry),
       image_url_("http://www.foo.com/image.jpg"),
-      image_origin_("http://www.foo.com") {
-}
+      image_origin_("http://www.foo.com") {}
 
 bool MockContentSettingsObserver::Send(IPC::Message* message) {
   IPC_BEGIN_MESSAGE_MAP(MockContentSettingsObserver, *message)
@@ -60,7 +61,8 @@ bool MockContentSettingsObserver::Send(IPC::Message* message) {
 }  // namespace
 
 TEST_F(ChromeRenderViewTest, DidBlockContentType) {
-  MockContentSettingsObserver observer(view_->GetMainRenderFrame());
+  MockContentSettingsObserver observer(view_->GetMainRenderFrame(),
+                                       registry_.get());
   EXPECT_CALL(observer, OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES,
                                          base::string16()));
   observer.DidBlockContentType(CONTENT_SETTINGS_TYPE_COOKIES);
@@ -75,7 +77,8 @@ TEST_F(ChromeRenderViewTest, DidBlockContentType) {
 TEST_F(ChromeRenderViewTest, DISABLED_AllowDOMStorage) {
   // Load some HTML, so we have a valid security origin.
   LoadHTML("<html></html>");
-  MockContentSettingsObserver observer(view_->GetMainRenderFrame());
+  MockContentSettingsObserver observer(view_->GetMainRenderFrame(),
+                                       registry_.get());
   ON_CALL(observer,
           OnAllowDOMStorage(_, _, _, _, _)).WillByDefault(DeleteArg<4>());
   EXPECT_CALL(observer,
@@ -174,7 +177,8 @@ TEST_F(ChromeRenderViewTest, PluginsTemporarilyAllowed) {
 }
 
 TEST_F(ChromeRenderViewTest, ImagesBlockedByDefault) {
-  MockContentSettingsObserver mock_observer(view_->GetMainRenderFrame());
+  MockContentSettingsObserver mock_observer(view_->GetMainRenderFrame(),
+                                            registry_.get());
 
   // Load some HTML.
   LoadHTML("<html>Foo</html>");
@@ -212,7 +216,8 @@ TEST_F(ChromeRenderViewTest, ImagesBlockedByDefault) {
 }
 
 TEST_F(ChromeRenderViewTest, ImagesAllowedByDefault) {
-  MockContentSettingsObserver mock_observer(view_->GetMainRenderFrame());
+  MockContentSettingsObserver mock_observer(view_->GetMainRenderFrame(),
+                                            registry_.get());
 
   // Load some HTML.
   LoadHTML("<html>Foo</html>");
@@ -386,7 +391,8 @@ TEST_F(ChromeRenderViewTest, ContentSettingsNoscriptTag) {
 // Checks that same document navigations don't update content settings for the
 // page.
 TEST_F(ChromeRenderViewTest, ContentSettingsSameDocumentNavigation) {
-  MockContentSettingsObserver mock_observer(view_->GetMainRenderFrame());
+  MockContentSettingsObserver mock_observer(view_->GetMainRenderFrame(),
+                                            registry_.get());
   // Load a page which contains a script.
   const char kHtml[] =
       "<html>"
@@ -427,7 +433,8 @@ TEST_F(ChromeRenderViewTest, ContentSettingsSameDocumentNavigation) {
 }
 
 TEST_F(ChromeRenderViewTest, ContentSettingsInterstitialPages) {
-  MockContentSettingsObserver mock_observer(view_->GetMainRenderFrame());
+  MockContentSettingsObserver mock_observer(view_->GetMainRenderFrame(),
+                                            registry_.get());
   // Block scripts.
   RendererContentSettingRules content_setting_rules;
   ContentSettingsForOneType& script_setting_rules =
@@ -477,7 +484,8 @@ TEST_F(ChromeRenderViewTest, ContentSettingsInterstitialPages) {
 }
 
 TEST_F(ChromeRenderViewTest, AutoplayContentSettings) {
-  MockContentSettingsObserver mock_observer(view_->GetMainRenderFrame());
+  MockContentSettingsObserver mock_observer(view_->GetMainRenderFrame(),
+                                            registry_.get());
 
   // Load some HTML.
   LoadHTML("<html>Foo</html>");

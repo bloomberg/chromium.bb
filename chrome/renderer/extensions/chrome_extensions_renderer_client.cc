@@ -170,8 +170,9 @@ void ChromeExtensionsRendererClient::RenderThreadStarted() {
 }
 
 void ChromeExtensionsRendererClient::RenderFrameCreated(
-    content::RenderFrame* render_frame) {
-  new extensions::ExtensionsRenderFrameObserver(render_frame);
+    content::RenderFrame* render_frame,
+    service_manager::BinderRegistry* registry) {
+  new extensions::ExtensionsRenderFrameObserver(render_frame, registry);
   new extensions::ExtensionFrameHelper(render_frame,
                                        extension_dispatcher_.get());
   extension_dispatcher_->OnRenderFrameCreated(render_frame);

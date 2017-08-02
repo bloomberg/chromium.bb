@@ -18,32 +18,27 @@
 namespace contextual_search {
 
 OverlayJsRenderFrameObserver::OverlayJsRenderFrameObserver(
-    content::RenderFrame* render_frame)
+    content::RenderFrame* render_frame,
+    service_manager::BinderRegistry* registry)
     : RenderFrameObserver(render_frame),
       is_contextual_search_overlay_(false),
-      weak_factory_(this) {}
-
-OverlayJsRenderFrameObserver::~OverlayJsRenderFrameObserver() {}
-
-void OverlayJsRenderFrameObserver::OnInterfaceRequestForFrame(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  registry_.TryBindInterface(interface_name, interface_pipe);
-}
-
-void OverlayJsRenderFrameObserver::DidStartProvisionalLoad(
-    blink::WebDocumentLoader* document_loader) {
-  RegisterMojoInterface();
-}
-
-void OverlayJsRenderFrameObserver::RegisterMojoInterface() {
-  registry_.AddInterface(base::Bind(
+      weak_factory_(this) {
+  registry->AddInterface(base::Bind(
       &OverlayJsRenderFrameObserver::CreateOverlayPageNotifierService,
       weak_factory_.GetWeakPtr()));
 }
 
+OverlayJsRenderFrameObserver::~OverlayJsRenderFrameObserver() {}
+
+void OverlayJsRenderFrameObserver::DidStartProvisionalLoad(
+    blink::WebDocumentLoader* document_loader) {
+  can_bind_requests_ = true;
+}
+
 void OverlayJsRenderFrameObserver::CreateOverlayPageNotifierService(
     mojom::OverlayPageNotifierServiceRequest request) {
+  if (!can_bind_requests_)
+    return;
   mojo::MakeStrongBinding(
       base::MakeUnique<OverlayPageNotifierServiceImpl>(
           weak_factory_.GetWeakPtr()),
@@ -68,7 +63,7 @@ void OverlayJsRenderFrameObserver::DidFinishLoad() {
 }
 
 void OverlayJsRenderFrameObserver::DestroyOverlayPageNotifierService() {
-  registry_.RemoveInterface<mojom::OverlayPageNotifierService>();
+  can_bind_requests_ = false;
 }
 
 void OverlayJsRenderFrameObserver::OnDestruct() {
