@@ -92,6 +92,12 @@
   parent_->OnWindowKeyStatusChangedTo(false);
 }
 
+- (BOOL)windowShouldClose:(id)sender {
+  views::NonClientView* nonClientView =
+      [self nativeWidgetMac]->GetWidget()->non_client_view();
+  return !nonClientView || nonClientView->CanClose();
+}
+
 - (void)windowWillClose:(NSNotification*)notification {
   // Retain |self|. |parent_| should be cleared. OnWindowWillClose() may delete
   // |parent_|, but it may also dealloc |self| before returning. However, the
