@@ -2095,6 +2095,128 @@
       },
       {
         "args": [
+          "rasterize_and_record_micro.partial_invalidation",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rasterize_and_record_micro.partial_invalidation",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build14-b1--device4",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "rasterize_and_record_micro.partial_invalidation",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rasterize_and_record_micro.partial_invalidation.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build14-b1--device4",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "rasterize_and_record_micro.top_25",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rasterize_and_record_micro.top_25",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build48-b1--device4",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "rasterize_and_record_micro.top_25",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rasterize_and_record_micro.top_25.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build48-b1--device4",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
           "scheduler.tough_scheduling_cases",
           "-v",
           "--upload-results",
@@ -6807,6 +6929,128 @@
       },
       {
         "args": [
+          "rasterize_and_record_micro.partial_invalidation",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rasterize_and_record_micro.partial_invalidation",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build74-b1--device4",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "rasterize_and_record_micro.partial_invalidation",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rasterize_and_record_micro.partial_invalidation.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build74-b1--device4",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "rasterize_and_record_micro.top_25",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rasterize_and_record_micro.top_25",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build75-b1--device4",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "rasterize_and_record_micro.top_25",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rasterize_and_record_micro.top_25.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build75-b1--device4",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
           "scheduler.tough_scheduling_cases",
           "-v",
           "--upload-results",
@@ -10539,6 +10783,68 @@
       },
       {
         "args": [
+          "rasterize_and_record_micro.partial_invalidation",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-webview",
+          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
+        ],
+        "isolate_name": "telemetry_perf_webview_tests",
+        "name": "rasterize_and_record_micro.partial_invalidation",
+        "override_compile_targets": [
+          "telemetry_perf_webview_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build166-b1--device5",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "rasterize_and_record_micro.top_25",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-webview",
+          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
+        ],
+        "isolate_name": "telemetry_perf_webview_tests",
+        "name": "rasterize_and_record_micro.top_25",
+        "override_compile_targets": [
+          "telemetry_perf_webview_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build166-b1--device5",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
           "scheduler.tough_scheduling_cases",
           "-v",
           "--upload-results",
@@ -13979,6 +14285,128 @@
             {
               "android_devices": "1",
               "id": "build15-b1--device6",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "rasterize_and_record_micro.partial_invalidation",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rasterize_and_record_micro.partial_invalidation",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build16-b1--device4",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "rasterize_and_record_micro.partial_invalidation",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rasterize_and_record_micro.partial_invalidation.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build16-b1--device4",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "rasterize_and_record_micro.top_25",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rasterize_and_record_micro.top_25",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build45-b1--device4",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "rasterize_and_record_micro.top_25",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rasterize_and_record_micro.top_25.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build45-b1--device4",
               "os": "Android",
               "pool": "Chrome-perf"
             }
@@ -17755,6 +18183,68 @@
       },
       {
         "args": [
+          "rasterize_and_record_micro.partial_invalidation",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-webview",
+          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
+        ],
+        "isolate_name": "telemetry_perf_webview_tests",
+        "name": "rasterize_and_record_micro.partial_invalidation",
+        "override_compile_targets": [
+          "telemetry_perf_webview_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build114-b1--device5",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "rasterize_and_record_micro.top_25",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-webview",
+          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
+        ],
+        "isolate_name": "telemetry_perf_webview_tests",
+        "name": "rasterize_and_record_micro.top_25",
+        "override_compile_targets": [
+          "telemetry_perf_webview_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build114-b1--device5",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
           "scheduler.tough_scheduling_cases",
           "-v",
           "--upload-results",
@@ -21195,6 +21685,128 @@
             {
               "android_devices": "1",
               "id": "build9-b1--device6",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "rasterize_and_record_micro.partial_invalidation",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rasterize_and_record_micro.partial_invalidation",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build10-b1--device4",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "rasterize_and_record_micro.partial_invalidation",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rasterize_and_record_micro.partial_invalidation.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build10-b1--device4",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "rasterize_and_record_micro.top_25",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rasterize_and_record_micro.top_25",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build49-b1--device4",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "rasterize_and_record_micro.top_25",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rasterize_and_record_micro.top_25.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build49-b1--device4",
               "os": "Android",
               "pool": "Chrome-perf"
             }
@@ -25785,6 +26397,128 @@
             {
               "android_devices": "1",
               "id": "build17-b1--device6",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "rasterize_and_record_micro.partial_invalidation",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rasterize_and_record_micro.partial_invalidation",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build18-b1--device4",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "rasterize_and_record_micro.partial_invalidation",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rasterize_and_record_micro.partial_invalidation.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build18-b1--device4",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "rasterize_and_record_micro.top_25",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rasterize_and_record_micro.top_25",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build18-b1--device5",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "rasterize_and_record_micro.top_25",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rasterize_and_record_micro.top_25.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build18-b1--device5",
               "os": "Android",
               "pool": "Chrome-perf"
             }
