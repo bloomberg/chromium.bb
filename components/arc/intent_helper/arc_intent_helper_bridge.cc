@@ -156,6 +156,11 @@ void ArcIntentHelperBridge::RemoveObserver(ArcIntentHelperObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+bool ArcIntentHelperBridge::HasObserver(
+    ArcIntentHelperObserver* observer) const {
+  return observer_list_.HasObserver(observer);
+}
+
 std::unique_ptr<ash::LinkHandlerModel> ArcIntentHelperBridge::CreateModel(
     const GURL& url) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
