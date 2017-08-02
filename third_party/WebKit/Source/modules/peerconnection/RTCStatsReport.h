@@ -9,7 +9,6 @@
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebCString.h"
 #include "public/platform/WebRTCStats.h"
 
 #include <map>

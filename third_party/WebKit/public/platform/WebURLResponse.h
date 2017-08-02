@@ -35,7 +35,6 @@
 
 #include "base/time/time.h"
 #include "net/http/http_response_info.h"
-#include "public/platform/WebCString.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebSecurityStyle.h"
 #include "public/platform/WebString.h"
