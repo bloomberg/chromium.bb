@@ -134,12 +134,12 @@ class BASE_EXPORT RunLoop {
 
     // The client interface provided back to the caller who registers this
     // Delegate via RegisterDelegateForCurrentThread.
-    class Client {
+    class BASE_EXPORT Client {
      public:
-      // Returns the RunLoop with the topmost active Run() call on the stack.
-      // TODO(gab): Break the inter-dependency between MessageLoop and RunLoop
-      // further. http://crbug.com/703346
-      RunLoop* GetTopMostRunLoop() const;
+      // Returns true if the Delegate should return from the topmost Run() when
+      // it becomes idle. The Delegate is responsible for probing this when it
+      // becomes idle.
+      bool ShouldQuitWhenIdle() const;
 
       // Returns true if this |outer_| is currently in nested runs. This is a
       // shortcut for RunLoop::IsNestedOnCurrentThread() for the owner of this
@@ -166,7 +166,9 @@ class BASE_EXPORT RunLoop {
     // eventual matching Quit() call. Upon receiving a Quit() call it should
     // return from the Run() call as soon as possible without executing
     // remaining tasks/messages. Run() calls can nest in which case each Quit()
-    // call should result in the topmost active Run() call returning.
+    // call should result in the topmost active Run() call returning. The
+    // only other trigger for Run() to return is Client::ShouldQuitWhenIdle()
+    // which the Delegate should probe before sleeping when it becomes idle.
     virtual void Run() = 0;
     virtual void Quit() = 0;
 
@@ -207,17 +209,14 @@ class BASE_EXPORT RunLoop {
   static void QuitCurrentWhenIdleDeprecated();
 
  private:
-  // TODO(gab): Break the inter-dependency between MessageLoop and RunLoop
-  // further. http://crbug.com/703346
-  friend class MessageLoop;
 #if defined(OS_ANDROID)
-  // Android doesn't support the blocking MessageLoop::Run, so it calls
+  // Android doesn't support the blocking RunLoop::Run, so it calls
   // BeforeRun and AfterRun directly.
   friend class base::MessagePumpForUI;
 #endif
 
 #if defined(OS_IOS)
-  // iOS doesn't support the blocking MessageLoop::Run, so it calls
+  // iOS doesn't support the blocking RunLoop::Run, so it calls
   // BeforeRun directly.
   friend class base::MessagePumpUIApplication;
 #endif
@@ -237,8 +236,11 @@ class BASE_EXPORT RunLoop {
 
   bool quit_called_ = false;
   bool running_ = false;
-  // Used to record that QuitWhenIdle() was called on the MessageLoop, meaning
-  // that we should quit Run once it becomes idle.
+  // Used to record that QuitWhenIdle() was called on this RunLoop, meaning that
+  // the Delegate should quit Run() once it becomes idle (it's responsible for
+  // probing this state via Client::ShouldQuitWhenIdle()). This state is stored
+  // here rather than pushed to Delegate via, e.g., Delegate::QuitWhenIdle() to
+  // support nested RunLoops.
   bool quit_when_idle_received_ = false;
 
   // RunLoop is not thread-safe. Its state/methods, unless marked as such, may
