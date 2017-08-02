@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <queue>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -17,6 +18,7 @@
 #include "base/callback.h"
 #include "base/timer/timer.h"
 #include "components/arc/common/bluetooth.mojom.h"
+#include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -62,7 +64,10 @@ class ArcBluetoothBridge
 
   void OnAdapterInitialized(scoped_refptr<device::BluetoothAdapter> adapter);
 
-  // Overridden from device::BluetoothAdadpter::Observer
+  // Overridden from device::BluetoothAdapter::Observer
+  void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
+                             bool powered) override;
+
   void DeviceAdded(device::BluetoothAdapter* adapter,
                    device::BluetoothDevice* device) override;
 
@@ -341,6 +346,49 @@ class ArcBluetoothBridge
       std::unique_ptr<device::BluetoothGattNotifySession> notify_session);
 
  private:
+  // IntentHelperObserver listens to the OnInstanceReady call on the intent
+  // helper which indicated the IntentHelperService has been brought up and the
+  // initial powered state of Bluetooth adapter can be sent to Android.
+  class IntentHelperObserver
+      : public InstanceHolder<mojom::IntentHelperInstance>::Observer {
+   public:
+    explicit IntentHelperObserver(ArcBluetoothBridge* bluetooth_bridge);
+    ~IntentHelperObserver() override;
+
+   private:
+    // InstanceHolder<mojom::IntentHelperInstance>::Observer overrides
+    void OnInstanceReady() override;
+
+    // ArcBluetoothBridge owns IntentHelperObserver, and ArcBluetoothBridge will
+    // always outlive it.
+    ArcBluetoothBridge* const bluetooth_bridge_;
+
+    DISALLOW_COPY_AND_ASSIGN(IntentHelperObserver);
+  };
+
+  // Power state change on Bluetooth adapter.
+  enum class AdapterPowerState { TURN_OFF, TURN_ON };
+
+  bool IsInstanceUp() const { return is_bluetooth_instance_up_; }
+
+  // Indicates if a power change is initiated by Chrome / Android.
+  bool IsPowerChangeInitiatedByRemote(
+      ArcBluetoothBridge::AdapterPowerState powered) const;
+  bool IsPowerChangeInitiatedByLocal(
+      ArcBluetoothBridge::AdapterPowerState powered) const;
+
+  // Called by IntentHelperObserver to send the initial power state.
+  void SendInitialPowerChange();
+
+  // Manages the powered change intents sent to Android.
+  void EnqueueLocalPowerChange(AdapterPowerState powered);
+  void DequeueLocalPowerChange(AdapterPowerState powered);
+
+  // Manages the powered change requests received from Android.
+  void EnqueueRemotePowerChange(AdapterPowerState powered,
+                                const EnableAdapterCallback& callback);
+  void DequeueRemotePowerChange(AdapterPowerState powered);
+
   std::vector<mojom::BluetoothPropertyPtr> GetDeviceProperties(
       mojom::BluetoothPropertyType type,
       const device::BluetoothDevice* device) const;
@@ -361,6 +409,9 @@ class ArcBluetoothBridge
       mojom::BluetoothGattServiceIDPtr service_id,
       mojom::BluetoothGattIDPtr char_id,
       mojom::BluetoothGattIDPtr desc_id) const;
+
+  // Send the power status change to Android via an intent.
+  void SendBluetoothPoweredStateBroadcast(AdapterPowerState powered) const;
 
   // Propagates the list of paired device to Android.
   void SendCachedPairedDevices() const;
@@ -470,6 +521,19 @@ class ArcBluetoothBridge
   base::OneShotTimer discovery_off_timer_;
   // Timer to turn adapter discoverable off.
   base::OneShotTimer discoverable_off_timer_;
+
+  // This indicates whether the remote Bluetooth ARC instance is ready to
+  // receive events.
+  bool is_bluetooth_instance_up_;
+
+  // Observer to listen the start-up of Intent Helper.
+  IntentHelperObserver intent_helper_observer_;
+  // Queue to track the powered state changes initiated by Android.
+  std::queue<AdapterPowerState> remote_power_changes_;
+  // Queue to track the powered state changes initiated by Chrome.
+  std::queue<AdapterPowerState> local_power_changes_;
+  // Timer to track the completion of power-changed intent sent to Android.
+  base::OneShotTimer power_intent_timer_;
 
   // Holds advertising data registered by the instance.
   //
