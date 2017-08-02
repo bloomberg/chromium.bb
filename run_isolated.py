@@ -367,7 +367,7 @@ def run_command(command, cwd, env, hard_timeout, grace_period):
             # - processed exited late, exit code will be -9 on posix.
             logging.warning('Grace exhausted; sending SIGKILL')
             proc.kill()
-      logging.info('Waiting for proces exit')
+      logging.info('Waiting for process exit')
       exit_code = proc.wait()
     except OSError:
       # This is not considered to be an internal error. The executable simply
