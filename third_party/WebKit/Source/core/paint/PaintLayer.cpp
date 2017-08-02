@@ -1589,9 +1589,11 @@ bool PaintLayer::RequiresScrollableArea() const {
 void PaintLayer::UpdateScrollableArea() {
   if (RequiresScrollableArea() && !scrollable_area_) {
     scrollable_area_ = PaintLayerScrollableArea::Create(*this);
+    Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
   } else if (!RequiresScrollableArea() && scrollable_area_) {
     scrollable_area_->Dispose();
     scrollable_area_.Clear();
+    Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
   }
 }
 
