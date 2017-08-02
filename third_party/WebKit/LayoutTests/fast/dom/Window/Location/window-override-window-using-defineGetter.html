@@ -5,9 +5,11 @@
 </head>
 <body>
 <script>
-    window.__defineGetter__("window", function() {
-        return { location: "haxored" };
-    });
+    try {
+        window.__defineGetter__("window", function() {
+            return { location: "haxored" };
+        });
+    } catch (e) { }
 
     var result = normalizeURL(String(window.location));
     var correctValue = normalizeURL(document.URL);

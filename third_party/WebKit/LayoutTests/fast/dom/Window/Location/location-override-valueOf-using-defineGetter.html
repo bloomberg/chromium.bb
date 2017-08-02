@@ -5,9 +5,11 @@
 </head>
 <body>
 <script>
-    window.location.__defineGetter__("valueOf", function () {
-        return function() { return "haxored"; }
-    });
+    try {
+        window.location.__defineGetter__("valueOf", function () {
+            return function() { return "haxored"; }
+        });
+    } catch (e) { }
 
     var result = normalizeURL(String(window.location));
     var correctValue = normalizeURL(document.URL);
