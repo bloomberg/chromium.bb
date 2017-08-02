@@ -52,7 +52,7 @@
       'target_name': 'password_list_item',
       'dependencies': [
         '../compiled_resources2.gyp:focus_row_behavior',
-        '<(EXTERNS_GYP):passwords_private',
+        'show_password_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -74,6 +74,13 @@
       'target_name': 'password_edit_dialog',
       'dependencies': [
         '<(DEPTH)/third_party/polymer/v1_0/components-chromium/paper-input/compiled_resources2.gyp:paper-input-extracted',
+        'show_password_behavior',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'show_password_behavior',
+      'dependencies': [
         '<(EXTERNS_GYP):passwords_private',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
