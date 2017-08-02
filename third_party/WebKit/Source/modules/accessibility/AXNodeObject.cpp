@@ -1502,18 +1502,15 @@ unsigned AXNodeObject::HierarchicalLevel() const {
 }
 
 String AXNodeObject::AriaAutoComplete() const {
-  if (RoleValue() != kComboBoxRole)
+  if (!IsARIATextControl())
     return String();
 
   const AtomicString& aria_auto_complete =
       GetAOMPropertyOrARIAAttribute(AOMStringProperty::kAutocomplete)
           .DeprecatedLower();
 
-  if (aria_auto_complete == "inline" || aria_auto_complete == "list" ||
-      aria_auto_complete == "both")
-    return aria_auto_complete;
-
-  return String();
+  // Illegal values must be passed through, according to CORE-AAM.
+  return aria_auto_complete == "none" ? String() : aria_auto_complete;
 }
 
 namespace {

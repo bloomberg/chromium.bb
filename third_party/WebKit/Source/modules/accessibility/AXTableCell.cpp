@@ -237,9 +237,9 @@ SortDirection AXTableCell::GetSortDirection() const {
     return kSortDirectionAscending;
   if (EqualIgnoringASCIICase(aria_sort, "descending"))
     return kSortDirectionDescending;
-  if (EqualIgnoringASCIICase(aria_sort, "other"))
-    return kSortDirectionOther;
-  return kSortDirectionUndefined;
+  // Technically, illegal values should be exposed as is, but this does
+  // not seem to be worth the implementation effort at this time.
+  return kSortDirectionOther;
 }
 
 }  // namespace blink
