@@ -49,6 +49,9 @@ class TestFontSelector : public FontSelector {
   void FontCacheInvalidated() override {}
   void ReportNotDefGlyph() const override {}
 
+  void RegisterForInvalidationCallbacks(FontSelectorClient*) override {}
+  void UnregisterForInvalidationCallbacks(FontSelectorClient*) override {}
+
  private:
   TestFontSelector(PassRefPtr<FontCustomPlatformData> custom_platform_data)
       : custom_platform_data_(std::move(custom_platform_data)) {

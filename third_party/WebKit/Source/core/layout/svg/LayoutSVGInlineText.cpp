@@ -410,7 +410,7 @@ void LayoutSVGInlineText::ComputeNewScaledFontForStyle(
   font_description.SetComputedSize(scaled_font_size);
 
   scaled_font = Font(font_description);
-  scaled_font.Update(document.GetStyleEngine().FontSelector());
+  scaled_font.Update(document.GetStyleEngine().GetFontSelector());
 }
 
 LayoutRect LayoutSVGInlineText::AbsoluteVisualRect() const {

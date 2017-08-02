@@ -37,6 +37,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/modules/v8/RenderingContext.h"
 #include "core/CSSPropertyNames.h"
+#include "core/css/CSSFontSelector.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"
@@ -473,7 +474,7 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
       font_lru_list_.erase(new_font);
       font_lru_list_.insert(new_font);
       ModifiableState().SetFont(
-          i->value, canvas()->GetDocument().GetStyleEngine().FontSelector());
+          i->value, canvas()->GetDocument().GetStyleEngine().GetFontSelector());
     } else {
       MutableStylePropertySet* parsed_style =
           canvas_font_cache->ParseFont(new_font);
@@ -508,14 +509,16 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
       PruneLocalFontCache(canvas_font_cache->HardMaxFonts());  // hard limit
       should_prune_local_font_cache_ = true;  // apply soft limit
       ModifiableState().SetFont(
-          final_font, canvas()->GetDocument().GetStyleEngine().FontSelector());
+          final_font,
+          canvas()->GetDocument().GetStyleEngine().GetFontSelector());
     }
   } else {
     Font resolved_font;
     if (!canvas_font_cache->GetFontUsingDefaultStyle(new_font, resolved_font))
       return;
     ModifiableState().SetFont(
-        resolved_font, canvas()->GetDocument().GetStyleEngine().FontSelector());
+        resolved_font,
+        canvas()->GetDocument().GetStyleEngine().GetFontSelector());
   }
 
   // The parse succeeded.

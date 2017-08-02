@@ -603,7 +603,7 @@ RefPtr<ComputedStyle> StyleResolver::StyleForElement(
       style_not_yet_available_ = ComputedStyle::Create().LeakRef();
       style_not_yet_available_->SetDisplay(EDisplay::kNone);
       style_not_yet_available_->GetFont().Update(
-          GetDocument().GetStyleEngine().FontSelector());
+          GetDocument().GetStyleEngine().GetFontSelector());
     }
 
     GetDocument().SetHasNodesWithPlaceholderStyle();
@@ -766,7 +766,7 @@ RefPtr<AnimatableValue> StyleResolver::CreateAnimatableValueSnapshot(
   if (value) {
     StyleBuilder::ApplyProperty(property, state, *value);
     state.GetFontBuilder().CreateFont(
-        state.GetDocument().GetStyleEngine().FontSelector(),
+        state.GetDocument().GetStyleEngine().GetFontSelector(),
         state.MutableStyleRef());
   }
   return CSSAnimatableValueFactory::Create(property, *state.Style());
@@ -1026,7 +1026,8 @@ RefPtr<ComputedStyle> StyleResolver::StyleForText(Text* text_node) {
 
 void StyleResolver::UpdateFont(StyleResolverState& state) {
   state.GetFontBuilder().CreateFont(
-      GetDocument().GetStyleEngine().FontSelector(), state.MutableStyleRef());
+      GetDocument().GetStyleEngine().GetFontSelector(),
+      state.MutableStyleRef());
   state.SetConversionFontSizes(CSSToLengthConversionData::FontSizes(
       state.Style(), state.RootElementStyle()));
   state.SetConversionZoom(state.Style()->EffectiveZoom());

@@ -1835,7 +1835,7 @@ void Document::UpdateStyleInvalidationIfNeeded() {
 
 void Document::SetupFontBuilder(ComputedStyle& document_style) {
   FontBuilder font_builder(this);
-  CSSFontSelector* selector = GetStyleEngine().FontSelector();
+  CSSFontSelector* selector = GetStyleEngine().GetFontSelector();
   font_builder.CreateFontForDocument(selector, document_style);
 }
 

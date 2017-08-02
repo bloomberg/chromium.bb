@@ -5,9 +5,9 @@
 #ifndef CanvasRenderingContext2DState_h
 #define CanvasRenderingContext2DState_h
 
-#include "core/css/CSSFontSelectorClient.h"
 #include "modules/canvas2d/ClipList.h"
 #include "platform/fonts/Font.h"
+#include "platform/fonts/FontSelectorClient.h"
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/transforms/AffineTransform.h"
 #include "platform/wtf/Vector.h"
@@ -22,7 +22,7 @@ class Element;
 
 class CanvasRenderingContext2DState final
     : public GarbageCollectedFinalized<CanvasRenderingContext2DState>,
-      public CSSFontSelectorClient {
+      public FontSelectorClient {
   WTF_MAKE_NONCOPYABLE(CanvasRenderingContext2DState);
   USING_GARBAGE_COLLECTED_MIXIN(CanvasRenderingContext2DState);
 
@@ -49,8 +49,8 @@ class CanvasRenderingContext2DState final
     return new CanvasRenderingContext2DState(other, mode);
   }
 
-  // CSSFontSelectorClient implementation
-  void FontsNeedUpdate(CSSFontSelector*) override;
+  // FontSelectorClient implementation
+  void FontsNeedUpdate(FontSelector*) override;
 
   bool HasUnrealizedSaves() const { return unrealized_save_count_; }
   void Save() { ++unrealized_save_count_; }
@@ -80,7 +80,7 @@ class CanvasRenderingContext2DState final
     return clip_list_.GetCurrentClipPath();
   }
 
-  void SetFont(const Font&, CSSFontSelector*);
+  void SetFont(const Font&, FontSelector*);
   const Font& GetFont() const;
   bool HasRealizedFont() const { return realized_font_; }
   void SetUnparsedFont(const String& font) { unparsed_font_ = font; }
