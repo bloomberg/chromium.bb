@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/strings/string_split.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
@@ -31,5 +32,14 @@ TEST(HostAttributesTest, NoDuplicateKeys) {
     ASSERT_EQ(std::find(it + 1, results.end(), *it), results.end());
   }
 }
+
+#if defined(OS_WIN)
+TEST(HostAttributesTest, D3DInfoAreIncluded) {
+  std::string result = GetHostAttributes();
+  if (result.find("MinD3D") == std::string::npos) {
+    ASSERT_NE(result.find("No-DirectX-Capturer"), std::string::npos);
+  }
+}
+#endif
 
 }  // namespace remoting

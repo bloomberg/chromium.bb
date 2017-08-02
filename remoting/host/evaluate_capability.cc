@@ -18,6 +18,10 @@
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/switches.h"
 
+#if defined(OS_WIN)
+#include "remoting/host/win/evaluate_d3d.h"
+#endif
+
 namespace remoting {
 
 namespace {
@@ -117,6 +121,11 @@ int EvaluateCapabilityLocally(const std::string& type) {
   if (type == kEvaluateForward) {
     return EvaluateForward();
   }
+#if defined(OS_WIN)
+  if (type == kEvaluateD3D) {
+    return EvaluateD3D();
+  }
+#endif
 
   return kInvalidCommandLineExitCode;
 }

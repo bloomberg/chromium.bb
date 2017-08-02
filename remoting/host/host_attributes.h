@@ -13,6 +13,8 @@ namespace remoting {
 // vary if any system configurations change. So consumers should not cache the
 // result.
 // This function is thread-safe.
+// Note, this is not a cheap call on Windows: it spawns a new process to
+// retrieve some of the attributes.
 std::string GetHostAttributes();
 
 }  // namespace remoting
