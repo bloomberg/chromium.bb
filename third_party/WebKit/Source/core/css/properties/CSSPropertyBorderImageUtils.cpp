@@ -34,7 +34,7 @@ CSSValue* CSSPropertyBorderImageUtils::ConsumeWebkitBorderImage(
   CSSValue* outset = nullptr;
   CSSValue* repeat = nullptr;
   if (ConsumeBorderImageComponents(range, context, source, slice, width, outset,
-                                   repeat, true /* default_fill */))
+                                   repeat, DefaultFill::kFill))
     return CreateBorderImageValue(source, slice, width, outset, repeat);
   return nullptr;
 }
@@ -47,7 +47,7 @@ bool CSSPropertyBorderImageUtils::ConsumeBorderImageComponents(
     CSSValue*& width,
     CSSValue*& outset,
     CSSValue*& repeat,
-    bool default_fill) {
+    DefaultFill default_fill) {
   do {
     if (!source) {
       source = CSSPropertyParserHelpers::ConsumeImageOrNone(range, &context);
@@ -99,7 +99,7 @@ CSSValue* CSSPropertyBorderImageUtils::ConsumeBorderImageRepeat(
 
 CSSValue* CSSPropertyBorderImageUtils::ConsumeBorderImageSlice(
     CSSParserTokenRange& range,
-    bool default_fill) {
+    DefaultFill default_fill) {
   bool fill = CSSPropertyParserHelpers::ConsumeIdent<CSSValueFill>(range);
   CSSValue* slices[4] = {0};
 
@@ -122,7 +122,7 @@ CSSValue* CSSPropertyBorderImageUtils::ConsumeBorderImageSlice(
     fill = true;
   }
   CSSPropertyParserHelpers::Complete4Sides(slices);
-  if (default_fill)
+  if (default_fill == DefaultFill::kFill)
     fill = true;
   return CSSBorderImageSliceValue::Create(
       CSSQuadValue::Create(slices[0], slices[1], slices[2], slices[3],

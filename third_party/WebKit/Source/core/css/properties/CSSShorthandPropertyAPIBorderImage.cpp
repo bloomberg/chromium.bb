@@ -24,7 +24,8 @@ bool CSSShorthandPropertyAPIBorderImage::parseShorthand(
   CSSValue* repeat = nullptr;
 
   if (!CSSPropertyBorderImageUtils::ConsumeBorderImageComponents(
-          range, context, source, slice, width, outset, repeat, false)) {
+          range, context, source, slice, width, outset, repeat,
+          DefaultFill::kNoFill)) {
     return false;
   }
 

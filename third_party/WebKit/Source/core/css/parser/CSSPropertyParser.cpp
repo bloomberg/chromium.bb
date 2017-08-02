@@ -304,11 +304,6 @@ static CSSValue* ConsumeFontVariantList(CSSParserTokenRange& range) {
   return nullptr;
 }
 
-static CSSValue* ConsumeBackgroundBox(CSSParserTokenRange& range) {
-  return ConsumeIdent<CSSValueBorderBox, CSSValuePaddingBox,
-                      CSSValueContentBox>(range);
-}
-
 static CSSValue* ConsumePrefixedBackgroundBox(CSSParserTokenRange& range,
                                               const CSSParserContext* context,
                                               bool allow_text_value) {
@@ -356,13 +351,13 @@ static CSSValue* ConsumeBackgroundComponent(CSSPropertyID unresolved_property,
                                             const CSSParserContext* context) {
   switch (unresolved_property) {
     case CSSPropertyBackgroundClip:
-      return ConsumeBackgroundBox(range);
+      return CSSPropertyBackgroundUtils::ConsumeBackgroundBox(range);
     case CSSPropertyBackgroundBlendMode:
       return CSSPropertyBackgroundUtils::ConsumeBackgroundBlendMode(range);
     case CSSPropertyBackgroundAttachment:
       return CSSPropertyBackgroundUtils::ConsumeBackgroundAttachment(range);
     case CSSPropertyBackgroundOrigin:
-      return ConsumeBackgroundBox(range);
+      return CSSPropertyBackgroundUtils::ConsumeBackgroundBox(range);
     case CSSPropertyWebkitMaskComposite:
       return CSSPropertyBackgroundUtils::ConsumeBackgroundComposite(range);
     case CSSPropertyMaskSourceType:
@@ -672,55 +667,10 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyWebkitLogicalWidth:
     case CSSPropertyWebkitLogicalHeight:
       return CSSPropertyLengthUtils::ConsumeWidthOrHeight(range_, *context_);
-    case CSSPropertyAnimationDelay:
-    case CSSPropertyTransitionDelay:
-      return ConsumeCommaSeparatedList(ConsumeTime, range_, kValueRangeAll);
-    case CSSPropertyAnimationDuration:
-    case CSSPropertyTransitionDuration:
-      return ConsumeCommaSeparatedList(ConsumeTime, range_,
-                                       kValueRangeNonNegative);
-    case CSSPropertyAnimationTimingFunction:
-    case CSSPropertyTransitionTimingFunction:
-      return ConsumeCommaSeparatedList(CSSPropertyAnimationTimingFunctionUtils::
-                                           ConsumeAnimationTimingFunction,
-                                       range_);
-    case CSSPropertyGridColumnGap:
-    case CSSPropertyGridRowGap:
-      return ConsumeLengthOrPercent(range_, context_->Mode(),
-                                    kValueRangeNonNegative);
     case CSSPropertyTextDecoration:
       DCHECK(!RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
       return CSSPropertyTextDecorationLineUtils::ConsumeTextDecorationLine(
           range_);
-    case CSSPropertyWebkitTransformOriginX:
-    case CSSPropertyWebkitPerspectiveOriginX:
-      return CSSPropertyPositionUtils::ConsumePositionLonghand<CSSValueLeft,
-                                                               CSSValueRight>(
-          range_, context_->Mode());
-    case CSSPropertyWebkitTransformOriginY:
-    case CSSPropertyWebkitPerspectiveOriginY:
-      return CSSPropertyPositionUtils::ConsumePositionLonghand<CSSValueTop,
-                                                               CSSValueBottom>(
-          range_, context_->Mode());
-    case CSSPropertyBorderImageRepeat:
-    case CSSPropertyWebkitMaskBoxImageRepeat:
-      return CSSPropertyBorderImageUtils::ConsumeBorderImageRepeat(range_);
-    case CSSPropertyBorderImageSlice:
-    case CSSPropertyWebkitMaskBoxImageSlice:
-      return CSSPropertyBorderImageUtils::ConsumeBorderImageSlice(
-          range_, false /* default_fill */);
-    case CSSPropertyBorderImageOutset:
-    case CSSPropertyWebkitMaskBoxImageOutset:
-      return CSSPropertyBorderImageUtils::ConsumeBorderImageOutset(range_);
-    case CSSPropertyBorderImageWidth:
-    case CSSPropertyWebkitMaskBoxImageWidth:
-      return CSSPropertyBorderImageUtils::ConsumeBorderImageWidth(range_);
-    case CSSPropertyBackgroundClip:
-    case CSSPropertyBackgroundOrigin:
-      return ConsumeCommaSeparatedList(ConsumeBackgroundBox, range_);
-    case CSSPropertyBackgroundImage:
-    case CSSPropertyWebkitMaskImage:
-      return ConsumeCommaSeparatedList(ConsumeImageOrNone, range_, context_);
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyWebkitMaskPositionX:
       return ConsumeCommaSeparatedList(

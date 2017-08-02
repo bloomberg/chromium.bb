@@ -24,6 +24,7 @@ class CSSPropertyBackgroundUtils {
 
   static CSSValue* ConsumeBackgroundAttachment(CSSParserTokenRange&);
   static CSSValue* ConsumeBackgroundBlendMode(CSSParserTokenRange&);
+  static CSSValue* ConsumeBackgroundBox(CSSParserTokenRange&);
   static CSSValue* ConsumeBackgroundComposite(CSSParserTokenRange&);
   static CSSValue* ConsumeMaskSourceType(CSSParserTokenRange&);
 
