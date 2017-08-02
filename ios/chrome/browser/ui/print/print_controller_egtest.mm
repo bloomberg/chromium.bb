@@ -9,6 +9,7 @@
 #include "base/ios/ios_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -46,12 +47,6 @@ const char kHTMLURL[] = "http://test";
 // Tests that the AirPrint menu successfully loads when a normal web page is
 // loaded.
 - (void)testPrintNormalPage {
-  // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
-  // interact with the share menu.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
-  }
-
   GURL url = web::test::HttpServer::MakeUrl(kHTMLURL);
   std::map<GURL, std::string> responses;
   std::string response = "Test";
@@ -66,12 +61,6 @@ const char kHTMLURL[] = "http://test";
 
 // Tests that the AirPrint menu successfully loads when a PDF is loaded.
 - (void)testPrintPDF {
-  // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
-  // interact with the share menu.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
-  }
-
   web::test::SetUpFileBasedHttpServer();
   GURL url = web::test::HttpServer::MakeUrl(kPDFURL);
   chrome_test_util::LoadUrl(url);
@@ -80,15 +69,20 @@ const char kHTMLURL[] = "http://test";
 }
 
 - (void)printCurrentPage {
-  [ChromeEarlGreyUI openShareMenu];
-
-  id<GREYMatcher> printButton =
-      grey_allOf(grey_accessibilityLabel(@"Print"),
-                 grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
-  [[EarlGrey selectElementWithMatcher:printButton] performAction:grey_tap()];
+  // EarlGrey does not have the ability to interact with the share menu in
+  // iOS11, so use the dispatcher to trigger the print view controller instead.
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    [chrome_test_util::DispatcherForActiveViewController() printTab];
+  } else {
+    [ChromeEarlGreyUI openShareMenu];
+    id<GREYMatcher> printButton =
+        grey_allOf(grey_accessibilityLabel(@"Print"),
+                   grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
+    [[EarlGrey selectElementWithMatcher:printButton] performAction:grey_tap()];
+  }
 
   id<GREYMatcher> printerOptionButton = grey_allOf(
-      grey_accessibilityLabel(@"Printer Options"),
+      grey_accessibilityID(@"Printer Options"),
       grey_not(grey_accessibilityTrait(UIAccessibilityTraitHeader)), nil);
   [[EarlGrey selectElementWithMatcher:printerOptionButton]
       assertWithMatcher:grey_sufficientlyVisible()];
