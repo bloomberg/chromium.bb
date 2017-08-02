@@ -29,9 +29,39 @@ DEFINE_CERT_ERROR_ID(
     "Couldn't read Certificate.signatureAlgorithm as SEQUENCE");
 DEFINE_CERT_ERROR_ID(kSignatureValueNotBitString,
                      "Couldn't read Certificate.signatureValue as BIT STRING");
-
 DEFINE_CERT_ERROR_ID(kUnconsumedDataInsideTbsCertificateSequence,
                      "Unconsumed data inside TBSCertificate");
+DEFINE_CERT_ERROR_ID(kTbsNotSequence, "Failed parsing TBSCertificate SEQUENCE");
+DEFINE_CERT_ERROR_ID(kFailedReadingVersion, "Failed reading version");
+DEFINE_CERT_ERROR_ID(kFailedParsingVersion, "Failed parsing version");
+DEFINE_CERT_ERROR_ID(kVersionExplicitlyV1,
+                     "Version explicitly V1 (should be omitted)");
+DEFINE_CERT_ERROR_ID(kFailedReadingSerialNumber, "Failed reading serialNumber");
+DEFINE_CERT_ERROR_ID(kInvalidSerialNumber, "Invalid serial number");
+DEFINE_CERT_ERROR_ID(kFailedReadingSignatureValue, "Failed reading signature");
+DEFINE_CERT_ERROR_ID(kFailedReadingIssuer, "Failed reading issuer");
+DEFINE_CERT_ERROR_ID(kFailedReadingValidity, "Failed reading validity");
+DEFINE_CERT_ERROR_ID(kFailedParsingValidity, "Failed parsing validity");
+DEFINE_CERT_ERROR_ID(kFailedReadingSubject, "Failed reading subject");
+DEFINE_CERT_ERROR_ID(kFailedReadingSpki, "Failed reading subjectPublicKeyInfo");
+DEFINE_CERT_ERROR_ID(kFailedReadingIssuerUniqueId,
+                     "Failed reading issuerUniqueId");
+DEFINE_CERT_ERROR_ID(kFailedParsingIssuerUniqueId,
+                     "Failed parsing issuerUniqueId");
+DEFINE_CERT_ERROR_ID(
+    kIssuerUniqueIdNotExpected,
+    "Unexpected issuerUniqueId (must be V2 or V3 certificate)");
+DEFINE_CERT_ERROR_ID(kFailedReadingSubjectUniqueId,
+                     "Failed reading subjectUniqueId");
+DEFINE_CERT_ERROR_ID(kFailedParsingSubjectUniqueId,
+                     "Failed parsing subjectUniqueId");
+DEFINE_CERT_ERROR_ID(
+    kSubjectUniqueIdNotExpected,
+    "Unexpected subjectUniqueId (must be V2 or V3 certificate)");
+DEFINE_CERT_ERROR_ID(kFailedReadingExtensions,
+                     "Failed reading extensions SEQUENCE");
+DEFINE_CERT_ERROR_ID(kUnexpectedExtensions,
+                     "Unexpected extensions (must be V3 certificate)");
 
 // Returns true if |input| is a SEQUENCE and nothing else.
 WARN_UNUSED_RESULT bool IsSequenceTLV(const der::Input& input) {
@@ -399,22 +429,28 @@ bool ParseTbsCertificate(const der::Input& tbs_tlv,
 
   der::Parser parser(tbs_tlv);
 
-  //   Certificate  ::=  SEQUENCE  {
+  //   TBSCertificate  ::=  SEQUENCE  {
   der::Parser tbs_parser;
-  if (!parser.ReadSequence(&tbs_parser))
+  if (!parser.ReadSequence(&tbs_parser)) {
+    errors->AddError(kTbsNotSequence);
     return false;
+  }
 
   //        version         [0]  EXPLICIT Version DEFAULT v1,
   der::Input version;
   bool has_version;
   if (!tbs_parser.ReadOptionalTag(der::ContextSpecificConstructed(0), &version,
                                   &has_version)) {
+    errors->AddError(kFailedReadingVersion);
     return false;
   }
   if (has_version) {
-    if (!ParseVersion(version, &out->version))
+    if (!ParseVersion(version, &out->version)) {
+      errors->AddError(kFailedParsingVersion);
       return false;
+    }
     if (out->version == CertificateVersion::V1) {
+      errors->AddError(kVersionExplicitlyV1);
       // The correct way to specify v1 is to omit the version field since v1 is
       // the DEFAULT.
       return false;
@@ -424,37 +460,54 @@ bool ParseTbsCertificate(const der::Input& tbs_tlv,
   }
 
   //        serialNumber         CertificateSerialNumber,
-  if (!tbs_parser.ReadTag(der::kInteger, &out->serial_number))
+  if (!tbs_parser.ReadTag(der::kInteger, &out->serial_number)) {
+    errors->AddError(kFailedReadingSerialNumber);
     return false;
-  if (!options.allow_invalid_serial_numbers &&
-      !VerifySerialNumber(out->serial_number)) {
-    return false;
+  }
+  if (!VerifySerialNumber(out->serial_number)) {
+    if (options.allow_invalid_serial_numbers) {
+      errors->AddWarning(kInvalidSerialNumber);
+    } else {
+      errors->AddError(kInvalidSerialNumber);
+      return false;
+    }
   }
 
   //        signature            AlgorithmIdentifier,
-  if (!ReadSequenceTLV(&tbs_parser, &out->signature_algorithm_tlv))
+  if (!ReadSequenceTLV(&tbs_parser, &out->signature_algorithm_tlv)) {
+    errors->AddError(kFailedReadingSignatureValue);
     return false;
+  }
 
   //        issuer               Name,
-  if (!ReadSequenceTLV(&tbs_parser, &out->issuer_tlv))
+  if (!ReadSequenceTLV(&tbs_parser, &out->issuer_tlv)) {
+    errors->AddError(kFailedReadingIssuer);
     return false;
+  }
 
   //        validity             Validity,
   der::Input validity_tlv;
-  if (!tbs_parser.ReadRawTLV(&validity_tlv))
+  if (!tbs_parser.ReadRawTLV(&validity_tlv)) {
+    errors->AddError(kFailedReadingValidity);
     return false;
+  }
   if (!ParseValidity(validity_tlv, &out->validity_not_before,
                      &out->validity_not_after)) {
+    errors->AddError(kFailedParsingValidity);
     return false;
   }
 
   //        subject              Name,
-  if (!ReadSequenceTLV(&tbs_parser, &out->subject_tlv))
+  if (!ReadSequenceTLV(&tbs_parser, &out->subject_tlv)) {
+    errors->AddError(kFailedReadingSubject);
     return false;
+  }
 
   //        subjectPublicKeyInfo SubjectPublicKeyInfo,
-  if (!ReadSequenceTLV(&tbs_parser, &out->spki_tlv))
+  if (!ReadSequenceTLV(&tbs_parser, &out->spki_tlv)) {
+    errors->AddError(kFailedReadingSpki);
     return false;
+  }
 
   //        issuerUniqueID  [1]  IMPLICIT UniqueIdentifier OPTIONAL,
   //                             -- If present, version MUST be v2 or v3
@@ -462,13 +515,17 @@ bool ParseTbsCertificate(const der::Input& tbs_tlv,
   if (!tbs_parser.ReadOptionalTag(der::ContextSpecificPrimitive(1),
                                   &issuer_unique_id,
                                   &out->has_issuer_unique_id)) {
+    errors->AddError(kFailedReadingIssuerUniqueId);
     return false;
   }
   if (out->has_issuer_unique_id) {
-    if (!der::ParseBitString(issuer_unique_id, &out->issuer_unique_id))
+    if (!der::ParseBitString(issuer_unique_id, &out->issuer_unique_id)) {
+      errors->AddError(kFailedParsingIssuerUniqueId);
       return false;
+    }
     if (out->version != CertificateVersion::V2 &&
         out->version != CertificateVersion::V3) {
+      errors->AddError(kIssuerUniqueIdNotExpected);
       return false;
     }
   }
@@ -479,13 +536,17 @@ bool ParseTbsCertificate(const der::Input& tbs_tlv,
   if (!tbs_parser.ReadOptionalTag(der::ContextSpecificPrimitive(2),
                                   &subject_unique_id,
                                   &out->has_subject_unique_id)) {
+    errors->AddError(kFailedReadingSubjectUniqueId);
     return false;
   }
   if (out->has_subject_unique_id) {
-    if (!der::ParseBitString(subject_unique_id, &out->subject_unique_id))
+    if (!der::ParseBitString(subject_unique_id, &out->subject_unique_id)) {
+      errors->AddError(kFailedParsingSubjectUniqueId);
       return false;
+    }
     if (out->version != CertificateVersion::V2 &&
         out->version != CertificateVersion::V3) {
+      errors->AddError(kSubjectUniqueIdNotExpected);
       return false;
     }
   }
@@ -494,15 +555,20 @@ bool ParseTbsCertificate(const der::Input& tbs_tlv,
   //                             -- If present, version MUST be v3
   if (!tbs_parser.ReadOptionalTag(der::ContextSpecificConstructed(3),
                                   &out->extensions_tlv, &out->has_extensions)) {
+    errors->AddError(kFailedReadingExtensions);
     return false;
   }
   if (out->has_extensions) {
     // extensions_tlv must be a single element. Also check that it is a
     // SEQUENCE.
-    if (!IsSequenceTLV(out->extensions_tlv))
+    if (!IsSequenceTLV(out->extensions_tlv)) {
+      errors->AddError(kFailedReadingExtensions);
       return false;
-    if (out->version != CertificateVersion::V3)
+    }
+    if (out->version != CertificateVersion::V3) {
+      errors->AddError(kUnexpectedExtensions);
       return false;
+    }
   }
 
   // Note that there IS an extension point at the end of TBSCertificate
