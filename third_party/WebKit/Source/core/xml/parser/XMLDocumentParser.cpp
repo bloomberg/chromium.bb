@@ -440,11 +440,9 @@ void XMLDocumentParser::PendingScriptFinished(
 
   pending_script->StopWatchingForLoad();
 
-  Element* e = script_element_;
+  ScriptLoader* script_loader = script_element_->Loader();
   script_element_ = nullptr;
 
-  ScriptLoader* script_loader =
-      ScriptElementBase::FromElementIfPossible(e)->Loader();
   DCHECK(script_loader);
   CHECK_EQ(script_loader->GetScriptType(), ScriptType::kClassic);
 
@@ -1131,7 +1129,7 @@ void XMLDocumentParser::EndElementNs() {
       // https://html.spec.whatwg.org/#prepare-a-script
       pending_script_ = script_loader->CreatePendingScript();
       pending_script_->MarkParserBlockingLoadStartTime();
-      script_element_ = element;
+      script_element_ = script_element_base;
       pending_script_->WatchForLoad(this);
       // pending_script_ will be null if script was already ready.
       if (pending_script_)

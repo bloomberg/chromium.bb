@@ -49,6 +49,7 @@ class Document;
 class DocumentFragment;
 class Element;
 class LocalFrameView;
+class ScriptElementBase;
 class Text;
 
 class XMLParserContext : public RefCounted<XMLParserContext> {
@@ -209,7 +210,7 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
   XMLErrors xml_errors_;
 
   Member<PendingScript> pending_script_;
-  Member<Element> script_element_;
+  Member<ScriptElementBase> script_element_;
   TextPosition script_start_position_;
 
   bool parsing_fragment_;
