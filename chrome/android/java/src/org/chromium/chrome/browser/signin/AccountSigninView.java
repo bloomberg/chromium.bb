@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.signin.ConfirmImportSyncDataDialog.ImportSync
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerResult;
+import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.GmsAvailabilityException;
 import org.chromium.components.signin.GmsJustUpdatedException;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -120,6 +121,7 @@ public class AccountSigninView extends FrameLayout {
     /** "Undo" button calls {@link Listener#onAccountSelectionCanceled()}. */
     public static final int UNDO_ABORT = 2;
 
+    private final AccountsChangeObserver mAccountsChangedObserver;
     private final ProfileDataCache.Observer mProfileDataCacheObserver;
     private List<String> mAccountNames;
     private AccountSigninChooseView mSigninChooseView;
@@ -148,6 +150,12 @@ public class AccountSigninView extends FrameLayout {
 
     public AccountSigninView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mAccountsChangedObserver = new AccountsChangeObserver() {
+            @Override
+            public void onAccountsChanged() {
+                triggerUpdateAccounts();
+            }
+        };
         mProfileDataCacheObserver = new ProfileDataCache.Observer() {
             @Override
             public void onProfileDataUpdated(String accountId) {
@@ -243,6 +251,7 @@ public class AccountSigninView extends FrameLayout {
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         triggerUpdateAccounts();
+        AccountManagerFacade.get().addObserver(mAccountsChangedObserver);
         if (mProfileData != null) {
             mProfileData.addObserver(mProfileDataCacheObserver);
         }
@@ -253,6 +262,7 @@ public class AccountSigninView extends FrameLayout {
         if (mProfileData != null) {
             mProfileData.removeObserver(mProfileDataCacheObserver);
         }
+        AccountManagerFacade.get().removeObserver(mAccountsChangedObserver);
         super.onDetachedFromWindow();
     }
 
