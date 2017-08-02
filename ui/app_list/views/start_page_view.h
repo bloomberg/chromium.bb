@@ -63,12 +63,18 @@ class APP_LIST_EXPORT StartPageView : public AppListPage {
   // the selected index in suggestions container view.
   int GetSelectedIndexForTest() const;
 
+  // Updates the opacity of the items in start page during dragging.
+  void UpdateOpacity(float work_area_bottom, bool is_end_gesture);
+
  private:
   void InitInstantContainer();
 
   void MaybeOpenCustomLauncherPage();
 
   void SetCustomLauncherPageSelected(bool selected);
+
+  // Updates opacity of |view_item| in the start page based on |centroid_y|.
+  void UpdateOpacityOfItem(views::View* view_item, float centroid_y);
 
   TileItemView* GetTileItemView(size_t index);
 
@@ -93,6 +99,12 @@ class APP_LIST_EXPORT StartPageView : public AppListPage {
   ExpandArrowView* expand_arrow_view_ = nullptr;  // Owned by views hierarchy.
 
   const bool is_fullscreen_app_list_enabled_;
+
+  // The bottom of work area.
+  float work_area_bottom_ = 0.f;
+
+  // True if it is the end gesture of dragging.
+  bool is_end_gesture_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(StartPageView);
 };

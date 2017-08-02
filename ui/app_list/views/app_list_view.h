@@ -224,6 +224,12 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
+  // Updates opacity of both background and items in the app list.
+  void UpdateOpacity(float background_opacity, bool is_end_gesture);
+
+  // Gets app list background opacity during dragging.
+  float GetAppListBackgroundOpacityDuringDragging();
+
   AppListViewDelegate* delegate_;  // Weak. Owned by AppListService.
 
   AppListMainView* app_list_main_view_;

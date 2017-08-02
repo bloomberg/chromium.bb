@@ -479,8 +479,39 @@ int StartPageView::GetSelectedIndexForTest() const {
   return selected_index >= 0 ? selected_index : kNoSelection;
 }
 
+void StartPageView::UpdateOpacity(float work_area_bottom, bool is_end_gesture) {
+  work_area_bottom_ = work_area_bottom;
+  is_end_gesture_ = is_end_gesture;
+
+  // Updates opacity of suggested apps indicator.
+  gfx::Rect indicator_bounds = indicator_->GetLabelBoundsInScreen();
+  UpdateOpacityOfItem(indicator_, indicator_bounds.CenterPoint().y());
+
+  // Updates opacity of suggested apps.
+  const std::vector<SearchResultTileItemView*>& suggested_apps =
+      suggestions_container_->tile_views();
+  gfx::Rect suggested_app_bounds;
+  for (auto* suggested_app : suggested_apps) {
+    suggested_app_bounds = suggested_app->GetBoundsInScreen();
+    UpdateOpacityOfItem(suggested_app, suggested_app_bounds.CenterPoint().y());
+  }
+
+  // Updates opacity of expand arrow.
+  gfx::Rect expand_arrow_bounds = expand_arrow_view_->GetBoundsInScreen();
+  UpdateOpacityOfItem(expand_arrow_view_,
+                      expand_arrow_bounds.CenterPoint().y());
+}
+
 TileItemView* StartPageView::GetTileItemView(size_t index) {
   return suggestions_container_->GetTileItemView(index);
+}
+
+void StartPageView::UpdateOpacityOfItem(views::View* view_item,
+                                        float centroid_y) {
+  float delta_y = std::max(work_area_bottom_ - centroid_y, 0.f);
+  float opacity = std::min(
+      delta_y / (AppListView::kNumOfShelfSize * AppListView::kShelfSize), 1.0f);
+  view_item->layer()->SetOpacity(is_end_gesture_ ? 1.0f : opacity);
 }
 
 }  // namespace app_list
