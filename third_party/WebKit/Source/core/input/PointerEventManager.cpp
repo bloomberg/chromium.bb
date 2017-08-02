@@ -226,7 +226,7 @@ void PointerEventManager::SendMouseAndPointerBoundaryEvents(
   }
 
   ProcessCaptureAndPositionOfPointerEvent(dummy_pointer_event, entered_node,
-                                          canvas_region_id, mouse_event, true);
+                                          canvas_region_id, &mouse_event);
 }
 
 void PointerEventManager::SendBoundaryEvents(EventTarget* exited_target,
@@ -540,7 +540,7 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
   }
 
   EventTarget* pointer_event_target = ProcessCaptureAndPositionOfPointerEvent(
-      pointer_event, target, canvas_region_id, mouse_event, true);
+      pointer_event, target, canvas_region_id, &mouse_event);
 
   EventTarget* effective_target = GetEffectiveTargetForPointerEvent(
       pointer_event_target, pointer_event->pointerId());
@@ -631,8 +631,7 @@ EventTarget* PointerEventManager::ProcessCaptureAndPositionOfPointerEvent(
     PointerEvent* pointer_event,
     EventTarget* hit_test_target,
     const String& canvas_region_id,
-    const WebMouseEvent& mouse_event,
-    bool send_mouse_event) {
+    const WebMouseEvent* mouse_event) {
   ProcessPendingPointerCapture(pointer_event);
 
   PointerCapturingMap::const_iterator it =
@@ -642,10 +641,10 @@ EventTarget* PointerEventManager::ProcessCaptureAndPositionOfPointerEvent(
     hit_test_target = pointercapture_target;
 
   SetNodeUnderPointer(pointer_event, hit_test_target);
-  if (send_mouse_event) {
+  if (mouse_event) {
     mouse_event_manager_->SetNodeUnderMouse(
         hit_test_target ? hit_test_target->ToNode() : nullptr, canvas_region_id,
-        mouse_event);
+        *mouse_event);
   }
   return hit_test_target;
 }
