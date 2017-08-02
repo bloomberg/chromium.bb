@@ -78,7 +78,7 @@ std::vector<ui::SelectedFileInfo> FilePathListToSelectedFileInfoList(
   return selected_files;
 }
 
-void DeleteFiles(const std::vector<base::FilePath>& paths) {
+void DeleteFiles(std::vector<base::FilePath> paths) {
   for (auto& file_path : paths)
     base::DeleteFile(file_path, false);
 }
@@ -339,9 +339,11 @@ void FileSelectHelper::NotifyRenderFrameHostAndEndAfterConversion(
 }
 
 void FileSelectHelper::DeleteTemporaryFiles() {
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::BindOnce(&DeleteFiles, temporary_files_));
-  temporary_files_.clear();
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+      base::BindOnce(&DeleteFiles, std::move(temporary_files_)));
 }
 
 void FileSelectHelper::CleanUp() {
@@ -476,9 +478,9 @@ void FileSelectHelper::RunFileChooser(
       content::Source<RenderWidgetHost>(
           render_frame_host_->GetRenderViewHost()->GetWidget()));
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::BindOnce(&FileSelectHelper::GetFileTypesOnFileThread, this,
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&FileSelectHelper::GetFileTypesInThreadPool, this,
                      base::Passed(&params)));
 
   // Because this class returns notifications to the RenderViewHost, it is
@@ -489,7 +491,7 @@ void FileSelectHelper::RunFileChooser(
   AddRef();
 }
 
-void FileSelectHelper::GetFileTypesOnFileThread(
+void FileSelectHelper::GetFileTypesInThreadPool(
     std::unique_ptr<FileChooserParams> params) {
   select_file_types_ = GetFileTypesFromAcceptType(params->accept_types);
   select_file_types_->allowed_paths =
