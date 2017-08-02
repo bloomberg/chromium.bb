@@ -102,21 +102,33 @@ VideoFrameExternalResources::ResourceType ResourceTypeForVideoFrame(
 
 class SyncTokenClientImpl : public media::VideoFrame::SyncTokenClient {
  public:
-  explicit SyncTokenClientImpl(gpu::gles2::GLES2Interface* gl) : gl_(gl) {}
+  SyncTokenClientImpl(gpu::gles2::GLES2Interface* gl, gpu::SyncToken sync_token)
+      : gl_(gl), sync_token_(sync_token) {}
   ~SyncTokenClientImpl() override = default;
 
   void GenerateSyncToken(gpu::SyncToken* sync_token) override {
-    const uint64_t fence_sync = gl_->InsertFenceSyncCHROMIUM();
-    gl_->ShallowFlushCHROMIUM();
-    gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token->GetData());
+    if (sync_token_.HasData()) {
+      *sync_token = sync_token_;
+    } else {
+      const uint64_t fence_sync = gl_->InsertFenceSyncCHROMIUM();
+      gl_->ShallowFlushCHROMIUM();
+      gl_->GenSyncTokenCHROMIUM(fence_sync, sync_token->GetData());
+    }
   }
 
   void WaitSyncToken(const gpu::SyncToken& sync_token) override {
-    gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
+    if (sync_token.HasData()) {
+      gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
+      if (sync_token_.HasData() && sync_token_ != sync_token) {
+        gl_->WaitSyncTokenCHROMIUM(sync_token_.GetConstData());
+        sync_token_.Clear();
+      }
+    }
   }
 
  private:
   gpu::gles2::GLES2Interface* gl_;
+  gpu::SyncToken sync_token_;
   DISALLOW_COPY_AND_ASSIGN(SyncTokenClientImpl);
 };
 
@@ -567,12 +579,9 @@ void VideoResourceUpdater::ReturnTexture(
   // resource.
   if (lost_resource || !updater.get())
     return;
-  // First wait on the sync token returned by the browser so that the release
-  // sync token implicitly depends on it.
-  gpu::gles2::GLES2Interface* gl = updater->context_provider_->ContextGL();
-  gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   // The video frame will insert a wait on the previous release sync token.
-  SyncTokenClientImpl client(gl);
+  SyncTokenClientImpl client(updater->context_provider_->ContextGL(),
+                             sync_token);
   video_frame->UpdateReleaseSyncToken(&client);
 }
 
@@ -614,7 +623,8 @@ void VideoResourceUpdater::CopyPlaneTexture(
       false, false, false);
   gl->DeleteTextures(1, &src_texture_id);
 
-  SyncTokenClientImpl client(gl);
+  // Pass an empty sync token to force generation of a new sync token.
+  SyncTokenClientImpl client(gl, gpu::SyncToken());
   gpu::SyncToken sync_token = video_frame->UpdateReleaseSyncToken(&client);
 
   // Set sync token otherwise resource is assumed to be synchronized.
