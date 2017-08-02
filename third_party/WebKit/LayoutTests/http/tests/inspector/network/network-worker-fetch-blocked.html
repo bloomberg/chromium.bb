@@ -5,9 +5,6 @@
 <script>
 function test()
 {
-    // Need to enable networkInWorkers experiment for off-main-thread-fetch virtual test.
-    Runtime.experiments.enableForTest("networkInWorkers");
-
     InspectorTest.recordNetwork();
     SDK.multitargetNetworkManager.setBlockingEnabled(true);
     SDK.multitargetNetworkManager.setBlockedPatterns([{url: 'resources/resource.php', enabled: true}]);
