@@ -372,10 +372,6 @@ MediaFileSystemRegistry* TestingBrowserProcess::media_file_system_registry() {
 #endif
 }
 
-bool TestingBrowserProcess::created_local_state() const {
-  return (local_state_ != nullptr);
-}
-
 #if BUILDFLAG(ENABLE_WEBRTC)
 WebRtcLogUploader* TestingBrowserProcess::webrtc_log_uploader() {
   return nullptr;

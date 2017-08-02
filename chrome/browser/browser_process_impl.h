@@ -149,7 +149,6 @@ class BrowserProcessImpl : public BrowserProcess,
   component_updater::SupervisedUserWhitelistInstaller*
   supervised_user_whitelist_installer() override;
   MediaFileSystemRegistry* media_file_system_registry() override;
-  bool created_local_state() const override;
 #if BUILDFLAG(ENABLE_WEBRTC)
   WebRtcLogUploader* webrtc_log_uploader() override;
 #endif
@@ -215,7 +214,6 @@ class BrowserProcessImpl : public BrowserProcess,
   bool created_profile_manager_;
   std::unique_ptr<ProfileManager> profile_manager_;
 
-  bool created_local_state_;
   std::unique_ptr<PrefService> local_state_;
 
   bool created_icon_manager_;

@@ -91,7 +91,6 @@ class ApplicationContextImpl : public ApplicationContext {
   const scoped_refptr<base::SequencedTaskRunner> local_state_task_runner_;
 
   bool was_last_shutdown_clean_;
-  bool created_local_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationContextImpl);
 };
