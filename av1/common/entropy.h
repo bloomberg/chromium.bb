@@ -191,21 +191,15 @@ static INLINE int av1_get_cat6_extrabits_size(TX_SIZE tx_size,
 #define BAND_COEFF_CONTEXTS(band) \
   ((band) == 0 ? COEFF_CONTEXTS0 : COEFF_CONTEXTS)
 
-// #define ENTROPY_STATS
-
-typedef unsigned int av1_coeff_count[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS]
-                                    [ENTROPY_TOKENS];
-typedef unsigned int av1_coeff_stats[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS]
-                                    [ENTROPY_NODES][2];
-
 #define SUBEXP_PARAM 4   /* Subexponential code parameter */
 #define MODULUS_PARAM 13 /* Modulus parameter */
 
 struct AV1Common;
 struct frame_contexts;
 void av1_default_coef_probs(struct AV1Common *cm);
+#if CONFIG_LV_MAP
 void av1_adapt_coef_probs(struct AV1Common *cm);
-void av1_adapt_coef_cdfs(struct AV1Common *cm, struct frame_contexts *pre_fc);
+#endif  // CONFIG_LV_MAP
 
 // This is the index in the scan order beyond which all coefficients for
 // 8x8 transform and above are in the top band.
@@ -238,21 +232,10 @@ static INLINE const uint8_t *get_band_translate(TX_SIZE tx_size) {
 
 #define UNCONSTRAINED_NODES 3
 
-#define PIVOT_NODE 2  // which node is pivot
-
 #define MODEL_NODES (ENTROPY_NODES - UNCONSTRAINED_NODES)
 #define TAIL_NODES (MODEL_NODES + 1)
 extern const aom_tree_index av1_coef_con_tree[TREE_SIZE(ENTROPY_TOKENS)];
 extern const aom_prob av1_pareto8_full[COEFF_PROB_MODELS][MODEL_NODES];
-
-typedef aom_prob av1_coeff_probs_model[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS]
-                                      [UNCONSTRAINED_NODES];
-
-typedef unsigned int av1_coeff_count_model[REF_TYPES][COEF_BANDS]
-                                          [COEFF_CONTEXTS]
-                                          [UNCONSTRAINED_NODES + 1];
-
-void av1_model_to_full_probs(const aom_prob *model, aom_prob *full);
 
 typedef aom_cdf_prob coeff_cdf_model[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS]
                                     [CDF_SIZE(ENTROPY_TOKENS)];

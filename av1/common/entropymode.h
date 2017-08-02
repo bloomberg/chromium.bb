@@ -96,10 +96,8 @@ typedef struct frame_contexts {
 #else
   aom_prob partition_prob[PARTITION_CONTEXTS][PARTITION_TYPES - 1];
 #endif
-  av1_coeff_probs_model coef_probs[TX_SIZES][PLANE_TYPES];
   coeff_cdf_model coef_tail_cdfs[TX_SIZES][PLANE_TYPES];
   coeff_cdf_model coef_head_cdfs[TX_SIZES][PLANE_TYPES];
-  aom_prob blockzero_probs[TX_SIZES][PLANE_TYPES][REF_TYPES][BLOCKZ_CONTEXTS];
   aom_prob switchable_interp_prob[SWITCHABLE_FILTER_CONTEXTS]
                                  [SWITCHABLE_FILTERS - 1];
 #if CONFIG_ADAPT_SCAN
@@ -401,9 +399,6 @@ typedef struct FRAME_COUNTS {
 #else
   unsigned int partition[PARTITION_CONTEXTS][PARTITION_TYPES];
 #endif
-  av1_coeff_count_model coef[TX_SIZES][PLANE_TYPES];
-  unsigned int eob_branch[TX_SIZES][PLANE_TYPES][REF_TYPES][COEF_BANDS]
-                         [COEFF_CONTEXTS];
   unsigned int switchable_interp[SWITCHABLE_FILTER_CONTEXTS]
                                 [SWITCHABLE_FILTERS];
 #if CONFIG_ADAPT_SCAN

@@ -3767,28 +3767,6 @@ static void release_scaled_references(AV1_COMP *cpi) {
   }
 }
 
-static void full_to_model_count(unsigned int *model_count,
-                                unsigned int *full_count) {
-  int n;
-  model_count[ZERO_TOKEN] = full_count[ZERO_TOKEN];
-  model_count[ONE_TOKEN] = full_count[ONE_TOKEN];
-  model_count[TWO_TOKEN] = full_count[TWO_TOKEN];
-  for (n = THREE_TOKEN; n < EOB_TOKEN; ++n)
-    model_count[TWO_TOKEN] += full_count[n];
-  model_count[EOB_MODEL_TOKEN] = full_count[EOB_TOKEN];
-}
-
-void av1_full_to_model_counts(av1_coeff_count_model *model_count,
-                              av1_coeff_count *full_count) {
-  int i, j, k, l;
-
-  for (i = 0; i < PLANE_TYPES; ++i)
-    for (j = 0; j < REF_TYPES; ++j)
-      for (k = 0; k < COEF_BANDS; ++k)
-        for (l = 0; l < BAND_COEFF_CONTEXTS(k); ++l)
-          full_to_model_count(model_count[i][j][k][l], full_count[i][j][k][l]);
-}
-
 #if 0 && CONFIG_INTERNAL_STATS
 static void output_frame_level_debug_stats(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
@@ -4851,7 +4829,6 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   AV1_COMMON *const cm = &cpi->common;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   struct segmentation *const seg = &cm->seg;
-  TX_SIZE t;
   FRAME_CONTEXT **tile_ctxs = aom_malloc(cm->tile_rows * cm->tile_cols *
                                          sizeof(&cpi->tile_data[0].tctx));
   aom_cdf_prob **cdf_ptrs =
@@ -5158,9 +5135,6 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 
   av1_update_reference_frames(cpi);
 
-  for (t = 0; t < TX_SIZES; t++)
-    av1_full_to_model_counts(cpi->td.counts->coef[t],
-                             cpi->td.rd_counts.coef_counts[t]);
 #if CONFIG_ENTROPY_STATS
   av1_accumulate_frame_counts(&aggregate_fc, &cm->counts);
   assert(cm->frame_context_idx < FRAME_CONTEXTS);
@@ -5168,7 +5142,9 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
                               &cm->counts);
 #endif  // CONFIG_ENTROPY_STATS
   if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
+#if CONFIG_LV_MAP
     av1_adapt_coef_probs(cm);
+#endif  // CONFIG_LV_MAP
     av1_adapt_intra_frame_probs(cm);
     make_update_tile_list_enc(cpi, cm->tile_rows, cm->tile_cols, tile_ctxs);
     av1_average_tile_coef_cdfs(cpi->common.fc, tile_ctxs, cdf_ptrs,

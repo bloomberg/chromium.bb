@@ -498,8 +498,6 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
       av1_get_tx_type(type, xd, blk_row, blk_col, block, tx_size);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int ref = is_inter_block(mbmi);
-  unsigned int(*const counts)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
-      td->rd_counts.coef_counts[txsize_sqr_map[tx_size]][type][ref];
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   aom_cdf_prob(
       *const coef_head_cdfs)[COEFF_CONTEXTS][CDF_SIZE(ENTROPY_TOKENS)] =
@@ -512,8 +510,6 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   int eob_val;
   int first_val = 1;
   const int seg_eob = av1_get_tx_eob(&cpi->common.seg, segment_id, tx_size);
-  unsigned int(*const eob_branch)[COEFF_CONTEXTS] =
-      td->counts->eob_branch[txsize_sqr_map[tx_size]][type][ref];
   const uint8_t *const band = get_band_translate(tx_size);
   int16_t token;
   EXTRABIT extra;
@@ -537,23 +533,13 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
     if (!v) {
       add_token(&t, &coef_tail_cdfs[band[c]][pt], &coef_head_cdfs[band[c]][pt],
                 0, first_val, 0, ZERO_TOKEN);
-      ++counts[band[c]][pt][ZERO_TOKEN];
       token_cache[scan[c]] = 0;
     } else {
       eob_val =
           (c + 1 == eob) ? (c + 1 == seg_eob ? LAST_EOB : EARLY_EOB) : NO_EOB;
-
       av1_get_token_extra(v, &token, &extra);
-
       add_token(&t, &coef_tail_cdfs[band[c]][pt], &coef_head_cdfs[band[c]][pt],
                 eob_val, first_val, extra, (uint8_t)token);
-
-      if (eob_val != LAST_EOB) {
-        ++counts[band[c]][pt][token];
-        ++eob_branch[band[c]][pt];
-        counts[band[c]][pt][EOB_TOKEN] += eob_val != NO_EOB;
-      }
-
       token_cache[scan[c]] = av1_pt_energy_class[token];
     }
     ++c;

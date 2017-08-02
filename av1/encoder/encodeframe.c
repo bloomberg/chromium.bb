@@ -5078,7 +5078,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   xd->mi[0] = cm->mi;
 
   av1_zero(*td->counts);
-  av1_zero(rdc->coef_counts);
   av1_zero(rdc->comp_pred_diff);
 
   if (frame_is_intra_only(cm)) {

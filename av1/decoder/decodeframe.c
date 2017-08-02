@@ -5032,9 +5032,6 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
 #endif
   assert(!memcmp(cm->counts.partition, zero_counts.partition,
                  sizeof(cm->counts.partition)));
-  assert(!memcmp(cm->counts.coef, zero_counts.coef, sizeof(cm->counts.coef)));
-  assert(!memcmp(cm->counts.eob_branch, zero_counts.eob_branch,
-                 sizeof(cm->counts.eob_branch)));
   assert(!memcmp(cm->counts.blockz_count, zero_counts.blockz_count,
                  sizeof(cm->counts.blockz_count)));
   assert(!memcmp(cm->counts.switchable_interp, zero_counts.switchable_interp,
@@ -5409,7 +5406,9 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
           aom_malloc(cm->tile_rows * cm->tile_cols *
                      sizeof(&pbi->tile_data[0].tctx.partition_cdf[0][0]));
       make_update_tile_list_dec(pbi, cm->tile_rows, cm->tile_cols, tile_ctxs);
+#if CONFIG_LV_MAP
       av1_adapt_coef_probs(cm);
+#endif  // CONFIG_LV_MAP
       av1_adapt_intra_frame_probs(cm);
       av1_average_tile_coef_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,
                                  cm->tile_rows * cm->tile_cols);

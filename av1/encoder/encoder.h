@@ -326,7 +326,6 @@ typedef struct TileDataEnc {
 } TileDataEnc;
 
 typedef struct RD_COUNTS {
-  av1_coeff_count coef_counts[TX_SIZES][PLANE_TYPES];
   int64_t comp_pred_diff[REFERENCE_MODES];
 #if CONFIG_GLOBAL_MOTION
   // Stores number of 4x4 blocks using global motion per reference frame.
@@ -658,9 +657,6 @@ int av1_set_internal_size(AV1_COMP *cpi, AOM_SCALING horiz_mode,
 int av1_set_size_literal(AV1_COMP *cpi, int width, int height);
 
 int av1_get_quantizer(struct AV1_COMP *cpi);
-
-void av1_full_to_model_counts(av1_coeff_count_model *model_count,
-                              av1_coeff_count *full_count);
 
 static INLINE int frame_is_kf_gf_arf(const AV1_COMP *cpi) {
   return frame_is_intra_only(&cpi->common) || cpi->refresh_alt_ref_frame ||

@@ -15,13 +15,11 @@
 #include "aom_dsp/aom_dsp_common.h"
 
 static void accumulate_rd_opt(ThreadData *td, ThreadData *td_t) {
-  int i, j, k, l, m, n;
-
-  for (i = 0; i < REFERENCE_MODES; i++)
+  for (int i = 0; i < REFERENCE_MODES; i++)
     td->rd_counts.comp_pred_diff[i] += td_t->rd_counts.comp_pred_diff[i];
 
 #if CONFIG_GLOBAL_MOTION
-  for (i = 0; i < TOTAL_REFS_PER_FRAME; i++)
+  for (int i = 0; i < TOTAL_REFS_PER_FRAME; i++)
     td->rd_counts.global_motion_used[i] +=
         td_t->rd_counts.global_motion_used[i];
 #endif  // CONFIG_GLOBAL_MOTION
@@ -29,15 +27,6 @@ static void accumulate_rd_opt(ThreadData *td, ThreadData *td_t) {
   td->rd_counts.compound_ref_used_flag |=
       td_t->rd_counts.compound_ref_used_flag;
   td->rd_counts.single_ref_used_flag |= td_t->rd_counts.single_ref_used_flag;
-
-  for (i = 0; i < TX_SIZES; i++)
-    for (j = 0; j < PLANE_TYPES; j++)
-      for (k = 0; k < REF_TYPES; k++)
-        for (l = 0; l < COEF_BANDS; l++)
-          for (m = 0; m < COEFF_CONTEXTS; m++)
-            for (n = 0; n < ENTROPY_TOKENS; n++)
-              td->rd_counts.coef_counts[i][j][k][l][m][n] +=
-                  td_t->rd_counts.coef_counts[i][j][k][l][m][n];
 }
 
 static int enc_worker_hook(EncWorkerData *const thread_data, void *unused) {
