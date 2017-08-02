@@ -182,12 +182,11 @@ base::ListValue* ConstructFileSystemList(
       file_system_dict_value->SetStringWithoutPathExpansion(
           kDeviceIdKey, filesystems[i].transient_device_id);
     }
-    file_system_dict_value->SetBooleanWithoutPathExpansion(
-        kIsRemovableKey, filesystems[i].removable);
-    file_system_dict_value->SetBooleanWithoutPathExpansion(
-        kIsMediaDeviceKey, filesystems[i].media_device);
-    file_system_dict_value->SetBooleanWithoutPathExpansion(
-        kIsAvailableKey, true);
+    file_system_dict_value->SetKey(kIsRemovableKey,
+                                   base::Value(filesystems[i].removable));
+    file_system_dict_value->SetKey(kIsMediaDeviceKey,
+                                   base::Value(filesystems[i].media_device));
+    file_system_dict_value->SetKey(kIsAvailableKey, base::Value(true));
 
     list->Append(std::move(file_system_dict_value));
 

@@ -31,7 +31,7 @@ std::unique_ptr<base::DictionaryValue> CreateInfoDict(
 
   // Only writes non-default value.
   if (generated)
-    dict->SetBooleanWithoutPathExpansion(kKeyGenerated, true);
+    dict->SetKey(kKeyGenerated, base::Value(true));
   return dict;
 }
 

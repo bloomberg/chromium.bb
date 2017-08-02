@@ -56,10 +56,10 @@ void Registry::RememberFileSystem(
                                              file_system_info.file_system_id());
   file_system->SetStringWithoutPathExpansion(kPrefKeyDisplayName,
                                              file_system_info.display_name());
-  file_system->SetBooleanWithoutPathExpansion(kPrefKeyWritable,
-                                              file_system_info.writable());
-  file_system->SetBooleanWithoutPathExpansion(
-      kPrefKeySupportsNotifyTag, file_system_info.supports_notify_tag());
+  file_system->SetKey(kPrefKeyWritable,
+                      base::Value(file_system_info.writable()));
+  file_system->SetKey(kPrefKeySupportsNotifyTag,
+                      base::Value(file_system_info.supports_notify_tag()));
   file_system->SetIntegerWithoutPathExpansion(
       kPrefKeyOpenedFilesLimit, file_system_info.opened_files_limit());
 
@@ -69,8 +69,7 @@ void Registry::RememberFileSystem(
     auto watcher = base::MakeUnique<base::DictionaryValue>();
     watcher->SetStringWithoutPathExpansion(kPrefKeyWatcherEntryPath,
                                            it.second.entry_path.value());
-    watcher->SetBooleanWithoutPathExpansion(kPrefKeyWatcherRecursive,
-                                            it.second.recursive);
+    watcher->SetKey(kPrefKeyWatcherRecursive, base::Value(it.second.recursive));
     watcher->SetStringWithoutPathExpansion(kPrefKeyWatcherLastTag,
                                            it.second.last_tag);
     auto persistent_origins_value = base::MakeUnique<base::ListValue>();

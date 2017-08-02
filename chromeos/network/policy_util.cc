@@ -215,7 +215,7 @@ void ApplyGlobalAutoconnectPolicy(
   else
     NOTREACHED();
 
-  auto_connect_dictionary->SetBooleanWithoutPathExpansion(policy_source, false);
+  auto_connect_dictionary->SetKey(policy_source, base::Value(false));
   auto_connect_dictionary->SetStringWithoutPathExpansion(
       ::onc::kAugmentationEffectiveSetting, policy_source);
 }
@@ -296,8 +296,8 @@ void SetShillPropertiesForGlobalPolicy(
 
   // If autoconnect is not explicitly set yet, it might automatically be enabled
   // by Shill. To prevent that, disable it explicitly.
-  shill_properties_to_update->SetBooleanWithoutPathExpansion(
-      shill::kAutoConnectProperty, false);
+  shill_properties_to_update->SetKey(shill::kAutoConnectProperty,
+                                     base::Value(false));
 }
 
 std::unique_ptr<base::DictionaryValue> CreateShillConfiguration(
@@ -363,8 +363,8 @@ std::unique_ptr<base::DictionaryValue> CreateShillConfiguration(
   if (network_policy && IsAutoConnectEnabledInPolicy(*network_policy)) {
     VLOG(1) << "Enable ManagedCredentials for managed network with GUID "
             << guid;
-    shill_dictionary->SetBooleanWithoutPathExpansion(
-        shill::kManagedCredentialsProperty, true);
+    shill_dictionary->SetKey(shill::kManagedCredentialsProperty,
+                             base::Value(true));
   }
 
   if (!network_policy && global_policy) {

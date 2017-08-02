@@ -57,7 +57,7 @@ void MarkRecommendedFieldnames(const base::DictionaryValue& policy,
        it != recommended_value->end(); ++it) {
     std::string entry;
     if (it->GetAsString(&entry))
-      result->SetBooleanWithoutPathExpansion(entry, true);
+      result->SetKey(entry, base::Value(true));
   }
 }
 
@@ -451,12 +451,12 @@ class MergeToAugmented : public MergeToEffective {
           base::MakeUnique<base::Value>(*values.shared_setting));
     }
     if (HasUserPolicy() && values.user_editable) {
-      augmented_value->SetBooleanWithoutPathExpansion(
-          ::onc::kAugmentationUserEditable, true);
+      augmented_value->SetKey(::onc::kAugmentationUserEditable,
+                              base::Value(true));
     }
     if (HasDevicePolicy() && values.device_editable) {
-      augmented_value->SetBooleanWithoutPathExpansion(
-          ::onc::kAugmentationDeviceEditable, true);
+      augmented_value->SetKey(::onc::kAugmentationDeviceEditable,
+                              base::Value(true));
     }
     if (augmented_value->empty())
       augmented_value.reset();

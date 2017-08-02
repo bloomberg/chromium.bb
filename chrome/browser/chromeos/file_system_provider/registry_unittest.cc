@@ -61,9 +61,9 @@ void RememberFakeFileSystem(TestingProfile* profile,
   file_system->SetStringWithoutPathExpansion(kPrefKeyFileSystemId,
                                              kFileSystemId);
   file_system->SetStringWithoutPathExpansion(kPrefKeyDisplayName, kDisplayName);
-  file_system->SetBooleanWithoutPathExpansion(kPrefKeyWritable, writable);
-  file_system->SetBooleanWithoutPathExpansion(kPrefKeySupportsNotifyTag,
-                                              supports_notify_tag);
+  file_system->SetKey(kPrefKeyWritable, base::Value(writable));
+  file_system->SetKey(kPrefKeySupportsNotifyTag,
+                      base::Value(supports_notify_tag));
   file_system->SetIntegerWithoutPathExpansion(kPrefKeyOpenedFilesLimit,
                                               opened_files_limit);
 
@@ -71,8 +71,8 @@ void RememberFakeFileSystem(TestingProfile* profile,
   auto watcher_value = base::MakeUnique<base::DictionaryValue>();
   watcher_value->SetStringWithoutPathExpansion(kPrefKeyWatcherEntryPath,
                                                watcher.entry_path.value());
-  watcher_value->SetBooleanWithoutPathExpansion(kPrefKeyWatcherRecursive,
-                                                watcher.recursive);
+  watcher_value->SetKey(kPrefKeyWatcherRecursive,
+                        base::Value(watcher.recursive));
   watcher_value->SetStringWithoutPathExpansion(kPrefKeyWatcherLastTag,
                                                watcher.last_tag);
   auto persistent_origins_value = base::MakeUnique<base::ListValue>();

@@ -97,7 +97,7 @@ class SetNotificationsEnabledDeferred {
     DictionaryPrefUpdate update(prefs_,
                                 prefs::kArcSetNotificationsEnabledDeferred);
     base::DictionaryValue* const dict = update.Get();
-    dict->SetBooleanWithoutPathExpansion(app_id, enabled);
+    dict->SetKey(app_id, base::Value(enabled));
   }
 
   bool Get(const std::string& app_id, bool* enabled) {

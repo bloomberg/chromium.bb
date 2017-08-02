@@ -632,7 +632,7 @@ void PolicyUIHandler::OnPolicyUpdated(const policy::PolicyNamespace& ns,
 
 void PolicyUIHandler::AddPolicyName(const std::string& name,
                                     base::DictionaryValue* names) const {
-  names->SetBooleanWithoutPathExpansion(name, true);
+  names->SetKey(name, base::Value(true));
 }
 
 void PolicyUIHandler::SendPolicyNames() const {

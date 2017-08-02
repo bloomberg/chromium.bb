@@ -17,7 +17,7 @@ static std::unique_ptr<base::DictionaryValue> CreateTestTypeDictionary() {
   value->SetDoubleWithoutPathExpansion("number", 1.1);
   value->SetIntegerWithoutPathExpansion("integer", 4);
   value->SetStringWithoutPathExpansion("string", "bling");
-  value->SetBooleanWithoutPathExpansion("boolean", true);
+  value->SetKey("boolean", base::Value(true));
   return value;
 }
 

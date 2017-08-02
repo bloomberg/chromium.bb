@@ -398,8 +398,8 @@ void FakeShillDeviceClient::AddDevice(const std::string& device_path,
   properties->SetStringWithoutPathExpansion(
       shill::kDBusServiceProperty, modemmanager::kModemManager1ServiceName);
   if (type == shill::kTypeCellular) {
-    properties->SetBooleanWithoutPathExpansion(
-        shill::kCellularAllowRoamingProperty, false);
+    properties->SetKey(shill::kCellularAllowRoamingProperty,
+                       base::Value(false));
   }
 }
 
@@ -504,8 +504,8 @@ void FakeShillDeviceClient::SetSimLockStatus(const std::string& device_path,
                                               status.type);
   simlock_dict->SetIntegerWithoutPathExpansion(
       shill::kSIMLockRetriesLeftProperty, status.retries_left);
-  simlock_dict->SetBooleanWithoutPathExpansion(shill::kSIMLockEnabledProperty,
-                                               status.lock_enabled);
+  simlock_dict->SetKey(shill::kSIMLockEnabledProperty,
+                       base::Value(status.lock_enabled));
   NotifyObserversPropertyChanged(dbus::ObjectPath(device_path),
                                  shill::kSIMLockStatusProperty);
 }

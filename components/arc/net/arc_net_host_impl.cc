@@ -504,8 +504,7 @@ void ArcNetHostImpl::CreateNetwork(mojom::WifiConfigurationPtr cfg,
                                             onc::network_config::kWiFi);
   wifi_dict->SetStringWithoutPathExpansion(onc::wifi::kHexSSID,
                                            cfg->hexssid.value());
-  wifi_dict->SetBooleanWithoutPathExpansion(onc::wifi::kAutoConnect,
-                                            details->autoconnect);
+  wifi_dict->SetKey(onc::wifi::kAutoConnect, base::Value(details->autoconnect));
   if (cfg->security.empty()) {
     wifi_dict->SetStringWithoutPathExpansion(onc::wifi::kSecurity,
                                              onc::wifi::kSecurityNone);

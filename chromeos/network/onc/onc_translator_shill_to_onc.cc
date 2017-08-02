@@ -357,8 +357,8 @@ void ShillToONCTranslator::TranslateWiFiWithState() {
   bool link_monitor_disable;
   if (shill_dictionary_->GetBooleanWithoutPathExpansion(
           shill::kLinkMonitorDisableProperty, &link_monitor_disable)) {
-    onc_object_->SetBooleanWithoutPathExpansion(
-        ::onc::wifi::kAllowGatewayARPPolling, !link_monitor_disable);
+    onc_object_->SetKey(::onc::wifi::kAllowGatewayARPPolling,
+                        base::Value(!link_monitor_disable));
   }
 
   CopyPropertiesAccordingToSignature();
@@ -490,8 +490,8 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
         ::onc::network_config::kConnectionState, onc_state);
     // Only set 'RestrictedConnectivity' if captive portal state is true.
     if (NetworkState::NetworkStateIsCaptivePortal(*shill_dictionary_)) {
-      onc_object_->SetBooleanWithoutPathExpansion(
-          ::onc::network_config::kRestrictedConnectivity, true);
+      onc_object_->SetKey(::onc::network_config::kRestrictedConnectivity,
+                          base::Value(true));
     }
   }
 
