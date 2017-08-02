@@ -139,25 +139,37 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
     const bool is_parent_frame_secure = IsFrameSecure(frame->Parent());
 
     if (service_worker_provider_id == kInvalidServiceWorkerProviderId) {
-      network_provider = std::unique_ptr<ServiceWorkerNetworkProvider>(
-          new ServiceWorkerNetworkProvider(route_id,
-                                           SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-                                           is_parent_frame_secure));
+      network_provider = base::WrapUnique(new ServiceWorkerNetworkProvider(
+          route_id, SERVICE_WORKER_PROVIDER_FOR_WINDOW, GetNextProviderId(),
+          is_parent_frame_secure));
     } else {
       CHECK(browser_side_navigation);
       DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(
           service_worker_provider_id));
-      network_provider = std::unique_ptr<ServiceWorkerNetworkProvider>(
-          new ServiceWorkerNetworkProvider(
-              route_id, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-              service_worker_provider_id, is_parent_frame_secure));
+      network_provider = base::WrapUnique(new ServiceWorkerNetworkProvider(
+          route_id, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+          service_worker_provider_id, is_parent_frame_secure));
     }
   } else {
-    network_provider = std::unique_ptr<ServiceWorkerNetworkProvider>(
-        new ServiceWorkerNetworkProvider());
+    network_provider = base::WrapUnique(new ServiceWorkerNetworkProvider());
   }
   return base::MakeUnique<WebServiceWorkerNetworkProviderForFrame>(
       std::move(network_provider));
+}
+
+// static
+std::unique_ptr<ServiceWorkerNetworkProvider>
+ServiceWorkerNetworkProvider::CreateForSharedWorker(int route_id) {
+  return base::WrapUnique(new ServiceWorkerNetworkProvider(
+      route_id, SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER, GetNextProviderId(),
+      true /* is_parent_frame_secure */));
+}
+
+// static
+std::unique_ptr<ServiceWorkerNetworkProvider>
+ServiceWorkerNetworkProvider::CreateForController(
+    mojom::ServiceWorkerProviderInfoForStartWorkerPtr info) {
+  return base::WrapUnique(new ServiceWorkerNetworkProvider(std::move(info)));
 }
 
 // static
@@ -172,6 +184,26 @@ ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
       ->provider();
 }
 
+ServiceWorkerNetworkProvider::~ServiceWorkerNetworkProvider() {
+  if (provider_id_ == kInvalidServiceWorkerProviderId)
+    return;
+  if (!ChildThreadImpl::current())
+    return;  // May be null in some tests.
+  provider_host_.reset();
+}
+
+bool ServiceWorkerNetworkProvider::IsControlledByServiceWorker() const {
+  if (ServiceWorkerUtils::IsServicificationEnabled()) {
+    // Interception for subresource loading is not working (yet)
+    // when servicification is enabled.
+    return false;
+  }
+  return context() && context()->controller();
+}
+
+ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider()
+    : provider_id_(kInvalidServiceWorkerProviderId) {}
+
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     int route_id,
     ServiceWorkerProviderType provider_type,
@@ -182,6 +214,11 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     return;
   if (!ChildThreadImpl::current())
     return;  // May be null in some tests.
+
+  // We don't support dedicated worker (WORKER) as an independent service
+  // worker client yet.
+  DCHECK(provider_type == SERVICE_WORKER_PROVIDER_FOR_WINDOW ||
+         provider_type == SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER);
 
   ServiceWorkerProviderHostInfo host_info(provider_id_, route_id, provider_type,
                                           is_parent_frame_secure);
@@ -199,15 +236,6 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
       &dispatcher_host_);
   dispatcher_host_->OnProviderCreated(std::move(host_info));
 }
-
-ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
-    int route_id,
-    ServiceWorkerProviderType provider_type,
-    bool is_parent_frame_secure)
-    : ServiceWorkerNetworkProvider(route_id,
-                                   provider_type,
-                                   GetNextProviderId(),
-                                   is_parent_frame_secure) {}
 
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     mojom::ServiceWorkerProviderInfoForStartWorkerPtr info)
@@ -231,26 +259,6 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
                                       info->provider_id, info->registration,
                                       info->attributes);
   provider_host_.Bind(std::move(info->host_ptr_info));
-}
-
-ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider()
-    : provider_id_(kInvalidServiceWorkerProviderId) {}
-
-ServiceWorkerNetworkProvider::~ServiceWorkerNetworkProvider() {
-  if (provider_id_ == kInvalidServiceWorkerProviderId)
-    return;
-  if (!ChildThreadImpl::current())
-    return;  // May be null in some tests.
-  provider_host_.reset();
-}
-
-bool ServiceWorkerNetworkProvider::IsControlledByServiceWorker() const {
-  if (ServiceWorkerUtils::IsServicificationEnabled()) {
-    // Interception for subresource loading is not working (yet)
-    // when servicification is enabled.
-    return false;
-  }
-  return context() && context()->controller();
 }
 
 }  // namespace content

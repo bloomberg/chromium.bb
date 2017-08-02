@@ -47,26 +47,21 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
                       blink::WebLocalFrame* frame,
                       bool content_initiated);
 
+  // Creates a ServiceWorkerNetworkProvider for a shared worker (as a
+  // non-document service worker client).
+  static std::unique_ptr<ServiceWorkerNetworkProvider> CreateForSharedWorker(
+      int route_id);
+
+  // Creates a ServiceWorkerNetworkProvider for a "controller" (i.e.
+  // a service worker execution context).
+  static std::unique_ptr<ServiceWorkerNetworkProvider> CreateForController(
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr info);
+
   // Valid only for WebServiceWorkerNetworkProvider created by
   // CreateForNavigation.
   static ServiceWorkerNetworkProvider* FromWebServiceWorkerNetworkProvider(
       blink::WebServiceWorkerNetworkProvider*);
 
-  // PlzNavigate
-  // The |browser_provider_id| is initialized by the browser for navigations.
-  ServiceWorkerNetworkProvider(int route_id,
-                               ServiceWorkerProviderType type,
-                               int browser_provider_id,
-                               bool is_parent_frame_secure);
-  // This is for service worker clients.
-  ServiceWorkerNetworkProvider(int route_id,
-                               ServiceWorkerProviderType type,
-                               bool is_parent_frame_secure);
-  // This is for controllers.
-  explicit ServiceWorkerNetworkProvider(
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr info);
-
-  ServiceWorkerNetworkProvider();
   ~ServiceWorkerNetworkProvider();
 
   int provider_id() const { return provider_id_; }
@@ -79,6 +74,23 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   bool IsControlledByServiceWorker() const;
 
  private:
+  ServiceWorkerNetworkProvider();
+
+  // This is for service worker clients (used in CreateForNavigation and
+  // CreateForSharedWorker). |provider_id| is provided by the browser process
+  // for navigations (with PlzNavigate, which is default).
+  // |type| must be either one of SERVICE_WORKER_PROVIDER_FOR_{WINDOW,
+  // SHARED_WORKER,WORKER} (while currently we don't have code for WORKER).
+  // |is_parent_frame_secure| is only relevant when the |type| is WINDOW.
+  ServiceWorkerNetworkProvider(int route_id,
+                               ServiceWorkerProviderType type,
+                               int provider_id,
+                               bool is_parent_frame_secure);
+
+  // This is for controllers, used in CreateForController.
+  explicit ServiceWorkerNetworkProvider(
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr info);
+
   const int provider_id_;
   scoped_refptr<ServiceWorkerProviderContext> context_;
   mojom::ServiceWorkerDispatcherHostAssociatedPtr dispatcher_host_;
