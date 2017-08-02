@@ -28,7 +28,11 @@ def RunAndCheck(dry_run, args):
   if dry_run:
     print 'Run:', args
   else:
-    subprocess.check_call(args)
+    try:
+      subprocess.check_call(args)
+      return 0
+    except subprocess.CalledProcessError as e:
+      return e.returncode
 
 
 def DumpFile(dry_run, name, description):
@@ -179,7 +183,7 @@ def SymbolizeEntry(entry):
   # that to align it properly after the frame index.
   addr2line_filtered = addr2line_output.strip().replace(
       '(inlined', ' ' * len(prefix) + '(inlined')
-  return '#%s: %s' % (prefix, addr2line_filtered)
+  return '%s%s' % (prefix, addr2line_filtered)
 
 
 def ParallelSymbolizeBacktrace(backtrace):
@@ -283,78 +287,90 @@ def main():
     # currently. See https://crbug.com/749242.
     bootserver_path = os.path.join(SDK_ROOT, 'tools', 'bootserver')
     bootserver_command = [bootserver_path, '-1', kernel_path, bootfs]
-    RunAndCheck(args.dry_run, bootserver_command)
+    return RunAndCheck(args.dry_run, bootserver_command)
+
+  qemu_path = os.path.join(SDK_ROOT, 'qemu', 'bin', 'qemu-system-x86_64')
+  qemu_command = [qemu_path,
+      '-m', '2048',
+      '-nographic',
+      '-net', 'none',
+      '-smp', '4',
+      '-machine', 'q35',
+      '-kernel', kernel_path,
+      '-initrd', bootfs,
+
+      # Use stdio for the guest OS only; don't attach the QEMU interactive
+      # monitor.
+      '-serial', 'stdio',
+      '-monitor', 'none',
+
+      # TERM=dumb tells the guest OS to not emit ANSI commands that trigger
+      # noisy ANSI spew from the user's terminal emulator.
+      '-append', 'TERM=dumb kernel.halt_on_panic=true']
+
+  if int(os.environ.get('CHROME_HEADLESS', 0)) == 0:
+    qemu_command += ['-enable-kvm', '-cpu', 'host,migratable=no']
   else:
-    qemu_path = os.path.join(SDK_ROOT, 'qemu', 'bin', 'qemu-system-x86_64')
+    qemu_command += ['-cpu', 'Haswell,+smap,-check']
 
-    qemu_command = [qemu_path,
-        '-m', '2048',
-        '-nographic',
-        '-net', 'none',
-        '-smp', '4',
-        '-machine', 'q35',
-        '-kernel', kernel_path,
-        '-initrd', bootfs,
+  if args.dry_run:
+    print 'Run:', qemu_command
+    return 0
 
-        # Use stdio for the guest OS only; don't attach the QEMU interactive
-        # monitor.
-        '-serial', 'stdio',
-        '-monitor', 'none',
+  # Set up backtrace-parsing regexps.
+  prefix = r'^.*> '
+  bt_end_re = re.compile(prefix + '(bt)?#(\d+):? end')
+  bt_with_offset_re = re.compile(
+      prefix + 'bt#(\d+): pc 0x[0-9a-f]+ sp (0x[0-9a-f]+) ' +
+               '\((\S+),(0x[0-9a-f]+)\)$')
+  in_process_re = re.compile(prefix +
+                             '#(\d+) 0x[0-9a-f]+ \S+\+(0x[0-9a-f]+)$')
 
-        # TERM=dumb tells the guest OS to not emit ANSI commands that trigger
-        # noisy ANSI spew from the user's terminal emulator.
-        '-append', 'TERM=dumb kernel.halt_on_panic=true']
-    if int(os.environ.get('CHROME_HEADLESS', 0)) == 0:
-      qemu_command += ['-enable-kvm', '-cpu', 'host,migratable=no']
-    else:
-      qemu_command += ['-cpu', 'Haswell,+smap,-check']
+  # We pass a separate stdin stream to qemu. Sharing stdin across processes
+  # leads to flakiness due to the OS prematurely killing the stream and the
+  # Python script panicking and aborting.
+  # The precise root cause is still nebulous, but this fix works.
+  # See crbug.com/741194 .
+  qemu_popen = subprocess.Popen(
+      qemu_command, stdout=subprocess.PIPE, stdin=open(os.devnull))
 
-    if args.dry_run:
-      print 'Run:', qemu_command
-    else:
-      prefix = r'^.*> '
-      bt_with_offset_re = re.compile(prefix +
-          'bt#(\d+): pc 0x[0-9a-f]+ sp (0x[0-9a-f]+) \((\S+),(0x[0-9a-f]+)\)$')
-      bt_end_re = re.compile(prefix + 'bt#(\d+): end')
+  # A buffer of backtrace entries awaiting symbolization, stored as tuples.
+  # Element #0: backtrace frame number (starting at 0).
+  # Element #1: path to executable code corresponding to the current frame.
+  # Element #2: memory offset within the executable.
+  bt_entries = []
 
-      # We pass a separate stdin stream to qemu. Sharing stdin across processes
-      # leads to flakiness due to the OS prematurely killing the stream and the
-      # Python script panicking and aborting.
-      # The precise root cause is still nebulous, but this fix works.
-      # See crbug.com/741194 .
-      qemu_popen = subprocess.Popen(
-          qemu_command, stdout=subprocess.PIPE, stdin=open(os.devnull))
-
-      # A buffer of backtrace entries awaiting symbolization, stored as tuples.
-      # Element #0: backtrace frame number (starting at 0).
-      # Element #1: path to executable code corresponding to the current frame.
-      # Element #2: memory offset within the executable.
+  success = False
+  while True:
+    line = qemu_popen.stdout.readline().strip()
+    if not line:
+      break
+    print line
+    if 'SUCCESS: all tests passed.' in line:
+      success = True
+    if bt_end_re.match(line):
+      if bt_entries:
+        print '----- start symbolized stack'
+        for processed in ParallelSymbolizeBacktrace(bt_entries):
+          print processed
+        print '----- end symbolized stack'
       bt_entries = []
+    else:
+      # Try to parse this as a Fuchsia system backtrace.
+      m = bt_with_offset_re.match(line)
+      if m:
+        bt_entries.append((m.group(1), args.test_name, m.group(4)))
+        continue
 
-      success = False
-      while True:
-        line = qemu_popen.stdout.readline()
-        if not line:
-          break
-        print line,
-        if 'SUCCESS: all tests passed.' in line:
-          success = True
-        if bt_end_re.match(line.strip()):
-          if bt_entries:
-            print '----- start symbolized stack'
-            for processed in ParallelSymbolizeBacktrace(bt_entries):
-              print processed
-            print '----- end symbolized stack'
-          bt_entries = []
-        else:
-          m = bt_with_offset_re.match(line.strip())
-          if m:
-            bt_entries.append((m.group(1), args.test_name, m.group(4)))
-      qemu_popen.wait()
+      # Try to parse the line as an in-process backtrace entry.
+      m = in_process_re.match(line)
+      if m:
+        bt_entries.append((m.group(1), args.test_name, m.group(2)))
+        continue
 
-      return 0 if success else 1
+  qemu_popen.wait()
 
-  return 0
+  return 0 if success else 1
 
 
 if __name__ == '__main__':
