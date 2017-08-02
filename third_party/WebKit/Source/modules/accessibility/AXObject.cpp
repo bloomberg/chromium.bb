@@ -528,17 +528,16 @@ AccessibilityCheckedState AXObject::CheckedState() const {
                                               : AOMStringProperty::kChecked;
   const AtomicString& checked_attribute = GetAOMPropertyOrARIAAttribute(prop);
   if (checked_attribute) {
-    if (EqualIgnoringASCIICase(checked_attribute, "true"))
-      return kCheckedStateTrue;
-
     if (EqualIgnoringASCIICase(checked_attribute, "mixed")) {
       // Only checkable role that doesn't support mixed is the switch.
       if (role != kSwitchRole)
         return kCheckedStateMixed;
     }
 
-    if (EqualIgnoringASCIICase(checked_attribute, "false"))
-      return kCheckedStateFalse;
+    // Anything other than "false" should be treated as "true".
+    return EqualIgnoringASCIICase(checked_attribute, "false")
+               ? kCheckedStateFalse
+               : kCheckedStateTrue;
   }
 
   // Native checked state
@@ -1387,8 +1386,7 @@ int AXObject::IndexInParent() const {
 
 bool AXObject::IsLiveRegion() const {
   const AtomicString& live_region = LiveRegionStatus();
-  return EqualIgnoringASCIICase(live_region, "polite") ||
-         EqualIgnoringASCIICase(live_region, "assertive");
+  return !live_region.IsEmpty() && !EqualIgnoringASCIICase(live_region, "off");
 }
 
 AXObject* AXObject::LiveRegionRoot() const {
