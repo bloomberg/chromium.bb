@@ -372,21 +372,22 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
   // done in a single pass that must complete before the next step starts.
   // The first step moves win_attributes_ to old_win_attributes_ and then
   // recomputes all of win_attributes_ other than IAccessibleText.
-  for (size_t i = 0; i < changes.size(); ++i) {
-    const ui::AXNode* changed_node = changes[i].node;
+  for (const auto& change : changes) {
+    const ui::AXNode* changed_node = change.node;
     DCHECK(changed_node);
     BrowserAccessibility* obj = GetFromAXNode(changed_node);
-    if (obj && obj->IsNative() && !obj->PlatformIsChildOfLeaf())
+    if (obj && obj->IsNative() && !obj->PlatformIsChildOfLeaf()) {
       ToBrowserAccessibilityWin(obj)
           ->GetCOM()
           ->UpdateStep1ComputeWinAttributes();
+    }
   }
 
   // The next step updates the hypertext of each node, which is a
   // concatenation of all of its child text nodes, so it can't run until
   // the text of all of the nodes was computed in the previous step.
-  for (size_t i = 0; i < changes.size(); ++i) {
-    const ui::AXNode* changed_node = changes[i].node;
+  for (const auto& change : changes) {
+    const ui::AXNode* changed_node = change.node;
     DCHECK(changed_node);
     BrowserAccessibility* obj = GetFromAXNode(changed_node);
     if (obj && obj->IsNative() && !obj->PlatformIsChildOfLeaf())
@@ -401,13 +402,13 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
   // client may walk the tree when it receives any of these events.
   // At the end, it deletes old_win_attributes_ since they're not needed
   // anymore.
-  for (size_t i = 0; i < changes.size(); ++i) {
-    const ui::AXNode* changed_node = changes[i].node;
+  for (const auto& change : changes) {
+    const ui::AXNode* changed_node = change.node;
     DCHECK(changed_node);
     BrowserAccessibility* obj = GetFromAXNode(changed_node);
     if (obj && obj->IsNative() && !obj->PlatformIsChildOfLeaf()) {
       ToBrowserAccessibilityWin(obj)->GetCOM()->UpdateStep3FireEvents(
-          changes[i].type == AXTreeDelegate::SUBTREE_CREATED);
+          change.type == AXTreeDelegate::SUBTREE_CREATED);
     }
   }
 }
