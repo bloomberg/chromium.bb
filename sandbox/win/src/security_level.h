@@ -10,8 +10,8 @@
 namespace sandbox {
 
 // List of all the integrity levels supported in the sandbox. This is used
-// only on Windows Vista. You can't set the integrity level of the process
-// in the sandbox to a level higher than yours.
+// only on Windows Vista and newer. You can't set the integrity level of the
+// process in the sandbox to a level higher than yours.
 enum IntegrityLevel {
   INTEGRITY_LEVEL_SYSTEM,
   INTEGRITY_LEVEL_HIGH,
