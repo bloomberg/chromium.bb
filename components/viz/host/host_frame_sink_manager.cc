@@ -40,12 +40,23 @@ void HostFrameSinkManager::BindAndSetManager(
   frame_sink_manager_ = frame_sink_manager_ptr_.get();
 }
 
-void HostFrameSinkManager::AddObserver(FrameSinkObserver* observer) {
-  observers_.AddObserver(observer);
+void HostFrameSinkManager::RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
+                                               HostFrameSinkClient* client) {
+  DCHECK(frame_sink_id.is_valid());
+  DCHECK(client);
+  FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
+  DCHECK(!data.HasCompositorFrameSinkData());
+  data.client = client;
+  frame_sink_manager_->RegisterFrameSinkId(frame_sink_id);
 }
 
-void HostFrameSinkManager::RemoveObserver(FrameSinkObserver* observer) {
-  observers_.RemoveObserver(observer);
+void HostFrameSinkManager::InvalidateFrameSinkId(
+    const FrameSinkId& frame_sink_id) {
+  DCHECK(frame_sink_id.is_valid());
+  auto it = frame_sink_data_map_.find(frame_sink_id);
+  DCHECK(it != frame_sink_data_map_.end());
+  frame_sink_data_map_.erase(it);
+  frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id);
 }
 
 void HostFrameSinkManager::CreateCompositorFrameSink(
@@ -60,26 +71,6 @@ void HostFrameSinkManager::CreateCompositorFrameSink(
 
   frame_sink_manager_->CreateCompositorFrameSink(
       frame_sink_id, std::move(request), std::move(client));
-  frame_sink_manager_->RegisterFrameSinkId(frame_sink_id);
-}
-
-void HostFrameSinkManager::DestroyCompositorFrameSink(
-    const FrameSinkId& frame_sink_id) {
-  auto iter = frame_sink_data_map_.find(frame_sink_id);
-  DCHECK(iter != frame_sink_data_map_.end());
-
-  FrameSinkData& data = iter->second;
-  DCHECK(data.HasCompositorFrameSinkData());
-  if (data.has_created_compositor_frame_sink) {
-    // This will also destroy the CompositorFrameSink pipe to the client.
-    frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id);
-    data.has_created_compositor_frame_sink = false;
-  } else {
-    data.support = nullptr;
-  }
-
-  if (data.IsEmpty())
-    frame_sink_data_map_.erase(iter);
 }
 
 void HostFrameSinkManager::RegisterFrameSinkHierarchy(
@@ -135,6 +126,23 @@ HostFrameSinkManager::CreateCompositorFrameSinkSupport(
   return support;
 }
 
+void HostFrameSinkManager::DestroyCompositorFrameSink(
+    const FrameSinkId& frame_sink_id) {
+  auto iter = frame_sink_data_map_.find(frame_sink_id);
+  DCHECK(iter != frame_sink_data_map_.end());
+
+  FrameSinkData& data = iter->second;
+  DCHECK(data.HasCompositorFrameSinkData());
+  if (data.has_created_compositor_frame_sink) {
+    data.has_created_compositor_frame_sink = false;
+  } else {
+    data.support = nullptr;
+  }
+
+  if (data.IsEmpty())
+    frame_sink_data_map_.erase(iter);
+}
+
 void HostFrameSinkManager::PerformAssignTemporaryReference(
     const SurfaceId& surface_id) {
   // Find the expected embedder for the new surface and assign the temporary
@@ -160,8 +168,14 @@ void HostFrameSinkManager::PerformAssignTemporaryReference(
 }
 
 void HostFrameSinkManager::OnSurfaceCreated(const SurfaceInfo& surface_info) {
-  for (auto& observer : observers_)
-    observer.OnSurfaceCreated(surface_info);
+  auto it = frame_sink_data_map_.find(surface_info.id().frame_sink_id());
+  // If we've received a bogus or stale SurfaceId from Viz then just ignore it.
+  if (it == frame_sink_data_map_.end())
+    return;
+
+  FrameSinkData& frame_sink_data = it->second;
+  if (frame_sink_data.client)
+    frame_sink_data.client->OnSurfaceCreated(surface_info);
 
   if (frame_sink_manager_impl_ &&
       frame_sink_manager_impl_->surface_manager()->using_surface_references()) {

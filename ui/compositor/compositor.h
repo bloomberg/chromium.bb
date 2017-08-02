@@ -21,6 +21,7 @@
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/surfaces/surface_sequence.h"
+#include "components/viz/host/host_frame_sink_client.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/compositor_animation_observer.h"
 #include "ui/compositor/compositor_export.h"
@@ -185,7 +186,8 @@ class COMPOSITOR_EXPORT ContextFactory {
 class COMPOSITOR_EXPORT Compositor
     : NON_EXPORTED_BASE(public cc::LayerTreeHostClient),
       NON_EXPORTED_BASE(public cc::LayerTreeHostSingleThreadClient),
-      NON_EXPORTED_BASE(public CompositorLockDelegate) {
+      NON_EXPORTED_BASE(public CompositorLockDelegate),
+      NON_EXPORTED_BASE(public viz::HostFrameSinkClient) {
  public:
   Compositor(const viz::FrameSinkId& frame_sink_id,
              ui::ContextFactory* context_factory,
@@ -380,6 +382,9 @@ class COMPOSITOR_EXPORT Compositor
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
   void DidLoseLayerTreeFrameSink() override {}
+
+  // viz::HostFrameSinkClient implementation.
+  void OnSurfaceCreated(const viz::SurfaceInfo& surface_info) override;
 
   bool IsLocked() { return !active_locks_.empty(); }
 

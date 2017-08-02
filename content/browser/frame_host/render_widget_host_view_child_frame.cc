@@ -66,8 +66,7 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       background_color_(SK_ColorWHITE),
       weak_factory_(this) {
   if (!service_manager::ServiceManagerIsRemote()) {
-    GetFrameSinkManager()->surface_manager()->RegisterFrameSinkId(
-        frame_sink_id_);
+    GetHostFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_, this);
     CreateCompositorFrameSinkSupport();
   }
 }
@@ -75,10 +74,8 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
 RenderWidgetHostViewChildFrame::~RenderWidgetHostViewChildFrame() {
   if (!service_manager::ServiceManagerIsRemote()) {
     ResetCompositorFrameSinkSupport();
-    if (GetFrameSinkManager()) {
-      GetFrameSinkManager()->surface_manager()->InvalidateFrameSinkId(
-          frame_sink_id_);
-    }
+    if (GetHostFrameSinkManager())
+      GetHostFrameSinkManager()->InvalidateFrameSinkId(frame_sink_id_);
   }
 }
 
@@ -767,6 +764,12 @@ void RenderWidgetHostViewChildFrame::OnBeginFrame(
 
 void RenderWidgetHostViewChildFrame::OnBeginFramePausedChanged(bool paused) {
   renderer_compositor_frame_sink_->OnBeginFramePausedChanged(paused);
+}
+
+void RenderWidgetHostViewChildFrame::OnSurfaceCreated(
+    const viz::SurfaceInfo& surface_info) {
+  // TODO(fsamuel): Once surface synchronization is turned on, the fallback
+  // surface should be set here.
 }
 
 void RenderWidgetHostViewChildFrame::SetNeedsBeginFrames(

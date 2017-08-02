@@ -8,7 +8,7 @@ viz_component("host") {
   defines = [ "VIZ_HOST_IMPLEMENTATION" ]
 
   sources = [
-    "frame_sink_observer.h",
+    "host_frame_sink_client.h",
     "host_frame_sink_manager.cc",
     "host_frame_sink_manager.h",
     "server_gpu_memory_buffer_manager.cc",

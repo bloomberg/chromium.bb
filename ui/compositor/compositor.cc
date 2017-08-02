@@ -73,9 +73,9 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
       weak_ptr_factory_(this),
       lock_timeout_weak_ptr_factory_(this) {
   if (context_factory_private) {
-    context_factory_private->GetFrameSinkManager()
-        ->surface_manager()
-        ->RegisterFrameSinkId(frame_sink_id_);
+    auto* host_frame_sink_manager =
+        context_factory_private_->GetHostFrameSinkManager();
+    host_frame_sink_manager->RegisterFrameSinkId(frame_sink_id_, this);
   }
   root_web_layer_ = cc::Layer::Create();
 
@@ -227,9 +227,7 @@ Compositor::~Compositor() {
       host_frame_sink_manager->UnregisterFrameSinkHierarchy(frame_sink_id_,
                                                             client);
     }
-    context_factory_private_->GetFrameSinkManager()
-        ->surface_manager()
-        ->InvalidateFrameSinkId(frame_sink_id_);
+    host_frame_sink_manager->InvalidateFrameSinkId(frame_sink_id_);
   }
 }
 
@@ -550,6 +548,11 @@ void Compositor::DidSubmitCompositorFrame() {
   base::TimeTicks start_time = base::TimeTicks::Now();
   for (auto& observer : observer_list_)
     observer.OnCompositingStarted(this, start_time);
+}
+
+void Compositor::OnSurfaceCreated(const viz::SurfaceInfo& surface_info) {
+  // TODO(fsamuel): Once surface synchronization is turned on, the fallback
+  // surface should be set here.
 }
 
 void Compositor::SetOutputIsSecure(bool output_is_secure) {

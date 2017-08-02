@@ -13,6 +13,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/copy_output_result.h"
+#include "components/viz/host/host_frame_sink_client.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "components/viz/service/frame_sinks/frame_evictor.h"
 #include "content/browser/compositor/image_transport_factory.h"
@@ -81,6 +82,7 @@ class CONTENT_EXPORT DelegatedFrameHost
       public ui::ContextFactoryObserver,
       public viz::FrameEvictorClient,
       public NON_EXPORTED_BASE(viz::CompositorFrameSinkSupportClient),
+      public NON_EXPORTED_BASE(viz::HostFrameSinkClient),
       public base::SupportsWeakPtr<DelegatedFrameHost> {
  public:
   DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
@@ -114,6 +116,9 @@ class CONTENT_EXPORT DelegatedFrameHost
   void WillDrawSurface(const viz::LocalSurfaceId& id,
                        const gfx::Rect& damage_rect) override;
   void OnBeginFramePausedChanged(bool paused) override;
+
+  // viz::HostFrameSinkClient implementation.
+  void OnSurfaceCreated(const viz::SurfaceInfo& surface_info) override;
 
   // Public interface exposed to RenderWidgetHostView.
 

@@ -8,6 +8,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "content/browser/compositor/image_transport_factory.h"
@@ -69,13 +70,12 @@ TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
       background_color_(SK_ColorWHITE) {
 #if defined(OS_ANDROID)
   frame_sink_id_ = AllocateFrameSinkId();
-  GetFrameSinkManager()->surface_manager()->RegisterFrameSinkId(frame_sink_id_);
+  GetHostFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_, this);
 #else
   // Not all tests initialize or need an image transport factory.
   if (ImageTransportFactory::GetInstance()) {
     frame_sink_id_ = AllocateFrameSinkId();
-    GetFrameSinkManager()->surface_manager()->RegisterFrameSinkId(
-        frame_sink_id_);
+    GetHostFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_, this);
   }
 #endif
 
@@ -90,10 +90,9 @@ TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
 }
 
 TestRenderWidgetHostView::~TestRenderWidgetHostView() {
-  viz::FrameSinkManagerImpl* manager = GetFrameSinkManager();
-  if (manager) {
-    manager->surface_manager()->InvalidateFrameSinkId(frame_sink_id_);
-  }
+  viz::HostFrameSinkManager* manager = GetHostFrameSinkManager();
+  if (manager)
+    manager->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 RenderWidgetHost* TestRenderWidgetHostView::GetRenderWidgetHost() const {
@@ -219,6 +218,12 @@ void TestRenderWidgetHostView::UnlockMouse() {
 
 viz::FrameSinkId TestRenderWidgetHostView::GetFrameSinkId() {
   return frame_sink_id_;
+}
+
+void TestRenderWidgetHostView::OnSurfaceCreated(
+    const viz::SurfaceInfo& surface_info) {
+  // TODO(fsamuel): Once surface synchronization is turned on, the fallback
+  // surface should be set here.
 }
 
 TestRenderViewHost::TestRenderViewHost(
