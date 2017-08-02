@@ -9,6 +9,8 @@
            file="images/arrow_right.svg" type="BINDATA" />
   <include name="IDR_WEBUI_IMAGES_OPEN_IN_NEW"
            file="images/open_in_new.svg" type="BINDATA" />
+  <include name="IDR_WEBUI_IMAGES_ICON_ARROW_BACK"
+           file="images/icon_arrow_back.svg" type="BINDATA" />
   <include name="IDR_WEBUI_IMAGES_ICON_CANCEL"
            file="images/icon_cancel.svg" type="BINDATA" />
   <include name="IDR_WEBUI_IMAGES_ICON_CANCEL_TOOLBAR"
@@ -25,8 +27,12 @@
            file="images/icon_expand_more.svg" type="BINDATA" />
   <include name="IDR_WEBUI_IMAGES_ICON_EXTERNAL"
            file="images/open_in_new.svg" type="BINDATA" />
+  <include name="IDR_WEBUI_IMAGES_ICON_MENU_WHITE"
+           file="images/icon_menu_white.svg" type="BINDATA" />
   <include name="IDR_WEBUI_IMAGES_ICON_MORE_VERT"
            file="images/icon_more_vert.svg" type="BINDATA" />
+  <include name="IDR_WEBUI_IMAGES_ICON_REFRESH"
+           file="images/icon_refresh.svg" type="BINDATA" />
   <include name="IDR_WEBUI_IMAGES_ICON_SETTINGS"
            file="images/icon_settings.svg" type="BINDATA" />
   <include name="IDR_WEBUI_IMAGES_ICON_SEARCH"
