@@ -580,9 +580,11 @@ DrawingBuffer::CreateOrRecycleColorBuffer() {
 }
 
 DrawingBuffer::ScopedRGBEmulationForBlitFramebuffer::
-    ScopedRGBEmulationForBlitFramebuffer(DrawingBuffer* drawing_buffer)
+    ScopedRGBEmulationForBlitFramebuffer(DrawingBuffer* drawing_buffer,
+                                         bool is_user_draw_framebuffer_bound)
     : drawing_buffer_(drawing_buffer) {
-  doing_work_ = drawing_buffer->SetupRGBEmulationForBlitFramebuffer();
+  doing_work_ = drawing_buffer->SetupRGBEmulationForBlitFramebuffer(
+      is_user_draw_framebuffer_bound);
 }
 
 DrawingBuffer::ScopedRGBEmulationForBlitFramebuffer::
@@ -1295,14 +1297,21 @@ GLenum DrawingBuffer::GetMultisampledRenderbufferFormat() {
   return GL_RGB8_OES;
 }
 
-bool DrawingBuffer::SetupRGBEmulationForBlitFramebuffer() {
+bool DrawingBuffer::SetupRGBEmulationForBlitFramebuffer(
+    bool is_user_draw_framebuffer_bound) {
   // We only need to do this work if:
+  //  - We are blitting to the default framebuffer
   //  - The user has selected alpha:false and antialias:false
   //  - We are using CHROMIUM_image with RGB emulation
   // macOS is the only platform on which this is necessary.
 
-  if (want_alpha_channel_ || anti_aliasing_mode_ != kNone)
+  if (is_user_draw_framebuffer_bound) {
     return false;
+  }
+
+  if (want_alpha_channel_ || anti_aliasing_mode_ != kNone) {
+    return false;
+  }
 
   if (!(ShouldUseChromiumImage() &&
         ContextProvider()->GetCapabilities().chromium_image_rgb_emulation))

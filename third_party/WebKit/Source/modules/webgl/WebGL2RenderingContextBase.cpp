@@ -404,7 +404,7 @@ void WebGL2RenderingContextBase::blitFramebuffer(GLint src_x0,
     return;
 
   DrawingBuffer::ScopedRGBEmulationForBlitFramebuffer emulation(
-      GetDrawingBuffer());
+      GetDrawingBuffer(), !!GetFramebufferBinding(GL_DRAW_FRAMEBUFFER));
   ContextGL()->BlitFramebufferCHROMIUM(src_x0, src_y0, src_x1, src_y1, dst_x0,
                                        dst_y0, dst_x1, dst_y1, mask, filter);
 }
