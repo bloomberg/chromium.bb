@@ -37,7 +37,8 @@ class CSSPropertyFontUtils {
       CSSParserTokenRange&);
   static CSSValue* ConsumeFontStretch(CSSParserTokenRange&);
   static CSSValue* ConsumeFontStyle(CSSParserTokenRange&);
-  static CSSValue* ConsumeFontWeight(CSSParserTokenRange&);
+  static CSSValue* ConsumeFontWeight(CSSParserTokenRange&,
+                                     const CSSParserMode&);
 
   static CSSValue* ConsumeFontFeatureSettings(CSSParserTokenRange&);
   static CSSFontFeatureValue* ConsumeFontFeatureTag(CSSParserTokenRange&);

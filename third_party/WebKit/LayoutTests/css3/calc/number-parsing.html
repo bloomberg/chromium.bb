@@ -19,7 +19,7 @@ test(function() {
   assertParsedValue('transition-timing-function', 'steps(calc(1 + 2), start)', 'steps(3, start)');
   assertParsedValue('grid-row-start', 'calc(1 + 2) test', '3 test');
   assertParsedValue('grid-row-start', 'calc(1 / 2) test', '');
-  assertParsedValue('font-weight', 'calc(100 + 200)', '');
+  assertParsedValue('font-weight', 'calc(100 + 200)', '300');
   assertParsedValue('flex', 'calc(1 + 2) calc(3 + 4)', '3 7 0%');
   assertParsedValue('-webkit-filter', 'saturate(calc(4 / 2))', 'saturate(2)');
   assertParsedValue('-webkit-filter', 'invert(calc(4 / 2))', 'invert(1)');

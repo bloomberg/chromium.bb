@@ -831,7 +831,8 @@ bool CSSPropertyParser::ParseFontFaceDescriptor(CSSPropertyID prop_id) {
       parsed_value = ConsumeFontVariantList(range_);
       break;
     case CSSPropertyFontWeight:
-      parsed_value = CSSPropertyFontUtils::ConsumeFontWeight(range_);
+      parsed_value =
+          CSSPropertyFontUtils::ConsumeFontWeight(range_, kCSSFontFaceRuleMode);
       break;
     case CSSPropertyFontFeatureSettings:
       parsed_value = CSSPropertyFontUtils::ConsumeFontFeatureSettings(range_);
