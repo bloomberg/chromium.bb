@@ -13,10 +13,10 @@
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
-#include "base/lazy_instance.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task_scheduler/lazy_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/common/logging_chrome.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -33,15 +33,11 @@ typedef base::Callback<void(bool succeeded)> CommandCompletionCallback;
 const char kGzipCommand[] = "/bin/gzip";
 const char kTarCommand[] = "/bin/tar";
 
-struct DebugLogWriterTaskRunner {
-  const scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
-};
-
-base::LazyInstance<DebugLogWriterTaskRunner>::Leaky g_sequenced_task_runner =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazySequencedTaskRunner g_sequenced_task_runner =
+    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits(base::MayBlock(),
+                         base::TaskPriority::BACKGROUND,
+                         base::TaskShutdownBehavior::BLOCK_SHUTDOWN));
 
 // Called upon completion of |WriteDebugLogToFile|. Closes file
 // descriptor, deletes log file in the case of failure and calls
@@ -53,7 +49,7 @@ void WriteDebugLogToFileCompleted(
     bool succeeded) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!succeeded) {
-    bool posted = g_sequenced_task_runner.Get().task_runner->PostTaskAndReply(
+    bool posted = g_sequenced_task_runner.Get()->PostTaskAndReply(
         FROM_HERE,
         base::Bind(base::IgnoreResult(&base::DeleteFile), file_path, false),
         base::Bind(callback, file_path, false));
@@ -84,8 +80,7 @@ void WriteDebugLogToFile(std::unique_ptr<base::File> file,
                  callback));
 
   // Close the file on an IO-allowed thread.
-  g_sequenced_task_runner.Get().task_runner->DeleteSoon(FROM_HERE,
-                                                        file.release());
+  g_sequenced_task_runner.Get()->DeleteSoon(FROM_HERE, file.release());
 }
 
 // Runs command with its parameters as defined in |argv|.
@@ -229,7 +224,7 @@ void StartLogRetrieval(const base::FilePath& file_name_template,
   int flags = base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE;
   std::unique_ptr<base::File> file(new base::File);
   base::File* file_ptr = file.get();
-  g_sequenced_task_runner.Get().task_runner->PostTaskAndReply(
+  g_sequenced_task_runner.Get()->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&InitializeLogFile, base::Unretained(file_ptr), file_path,
                  flags),
