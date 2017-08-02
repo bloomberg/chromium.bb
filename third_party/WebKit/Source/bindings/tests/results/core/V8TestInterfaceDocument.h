@@ -43,7 +43,7 @@ class V8TestInterfaceDocument {
   static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
     visitor->TraceWrappersWithManualWriteBarrier(scriptWrappable->ToImpl<TestInterfaceDocument>());
   }
-  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 0;
+  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions
 

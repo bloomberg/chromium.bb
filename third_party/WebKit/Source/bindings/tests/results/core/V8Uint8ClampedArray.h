@@ -40,7 +40,7 @@ class V8Uint8ClampedArray {
   static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
     visitor->TraceWrappersWithManualWriteBarrier(scriptWrappable->ToImpl<TestUint8ClampedArray>());
   }
-  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 0;
+  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions
 };

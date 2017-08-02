@@ -111,18 +111,12 @@ class {{v8_class}} {
   static void legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   {% endif %}
   {# Custom internal fields #}
-  {% set custom_internal_field_counter = 0 %}
-  {% if is_event_target and not is_node %}
-  {# Event listeners on DOM nodes are explicitly supported in the GC controller. #}
-  static const int eventListenerCacheIndex = kV8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};
-  {% set custom_internal_field_counter = custom_internal_field_counter + 1 %}
-  {% endif %}
   {# persistentHandleIndex must be the last field, if it is present.
      Detailed explanation: https://codereview.chromium.org/139173012
      FIXME: Remove this internal field, and share one field for either:
      * a persistent handle (if the object is in oilpan) or
      * a C++ pointer to the DOM object (if the object is not in oilpan) #}
-  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + {{custom_internal_field_counter}};
+  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
   {# End custom internal fields #}
   {% if prepare_prototype_and_interface_object_func %}
   {{exported}}static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate);

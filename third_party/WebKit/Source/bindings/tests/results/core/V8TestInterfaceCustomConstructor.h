@@ -43,7 +43,7 @@ class V8TestInterfaceCustomConstructor {
     visitor->TraceWrappersWithManualWriteBarrier(scriptWrappable->ToImpl<TestInterfaceCustomConstructor>());
   }
   static void constructorCustom(const v8::FunctionCallbackInfo<v8::Value>&);
-  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 0;
+  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions
   CORE_EXPORT static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);

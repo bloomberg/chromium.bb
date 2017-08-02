@@ -363,17 +363,6 @@ static void IndexedPropertyEnumerator(
   V8SetReturnValue(info, properties);
 }
 
-// These methods store hidden values into an array that is stored in the
-// internal field of a DOM wrapper.
-PLATFORM_EXPORT bool AddHiddenValueToArray(v8::Isolate*,
-                                           v8::Local<v8::Object>,
-                                           v8::Local<v8::Value>,
-                                           int cache_index);
-PLATFORM_EXPORT void RemoveHiddenValueFromArray(v8::Isolate*,
-                                                v8::Local<v8::Object>,
-                                                v8::Local<v8::Value>,
-                                                int cache_index);
-
 // Freeze a V8 object. The type of the first parameter and the return value is
 // intentionally v8::Value so that this function can wrap ToV8().
 // If the argument isn't an object, this will crash.
