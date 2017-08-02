@@ -167,7 +167,7 @@ TEST_P(AV1HighbdTrans4x4HT, HighbdCoeffCheck) { RunBitexactCheck(); }
 
 using std::tr1::make_tuple;
 
-#if HAVE_SSE2
+#if HAVE_SSE2 && !CONFIG_DAALA_DCT4
 const Ht4x4Param kArrayHt4x4Param_sse2[] = {
   make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_sse2, 0, AOM_BITS_8, 16),
   make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_sse2, 1, AOM_BITS_8, 16),
@@ -192,7 +192,7 @@ INSTANTIATE_TEST_CASE_P(SSE2, AV1Trans4x4HT,
                         ::testing::ValuesIn(kArrayHt4x4Param_sse2));
 #endif  // HAVE_SSE2
 
-#if HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH
+#if HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH && !CONFIG_DAALA_DCT4
 const HighbdHt4x4Param kArrayHighbdHt4x4Param[] = {
   make_tuple(&av1_fwd_txfm2d_4x4_sse4_1, 0, 10),
   make_tuple(&av1_fwd_txfm2d_4x4_sse4_1, 0, 12),
@@ -219,6 +219,6 @@ const HighbdHt4x4Param kArrayHighbdHt4x4Param[] = {
 INSTANTIATE_TEST_CASE_P(SSE4_1, AV1HighbdTrans4x4HT,
                         ::testing::ValuesIn(kArrayHighbdHt4x4Param));
 
-#endif  // HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH
+#endif  // HAVE_SSE4_1 && CONFIG_HIGHBITDEPTH && !CONFIG_DAALA_DCT4
 
 }  // namespace

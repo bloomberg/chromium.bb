@@ -253,9 +253,6 @@ endif()
 
 if (CONFIG_DAALA_DCT4 OR CONFIG_DAALA_DCT8 OR CONFIG_DAALA_DCT16 OR
     CONFIG_DAALA_DCT32 OR CONFIG_DAALA_DCT64)
-  if (HAVE_MMX)
-    change_config_and_warn(HAVE_MMX 0 CONFIG_DAALA_DCTx)
-  endif()
   if (CONFIG_RECT_TX)
     change_config_and_warn(CONFIG_RECT_TX 0 CONFIG_DAALA_DCTx)
   endif()

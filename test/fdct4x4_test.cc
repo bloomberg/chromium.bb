@@ -274,7 +274,7 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&av1_fht4x4_c, &av1_iht4x4_16_add_neon, 3, AOM_BITS_8, 16)));
 #endif  // HAVE_NEON && !CONFIG_HIGHBITDEPTH
 
-#if HAVE_SSE2
+#if HAVE_SSE2 && !CONFIG_DAALA_DCT4
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans4x4WHT,
     ::testing::Values(make_tuple(&av1_fwht4x4_c, &aom_iwht4x4_16_add_c, 0,
@@ -288,6 +288,7 @@ INSTANTIATE_TEST_CASE_P(SSE2, Trans4x4DCT,
                         ::testing::Values(make_tuple(&aom_fdct4x4_sse2,
                                                      &aom_idct4x4_16_add_sse2,
                                                      0, AOM_BITS_8, 16)));
+#if !CONFIG_DAALA_DCT4
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans4x4HT,
     ::testing::Values(make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_sse2, 0,
@@ -298,9 +299,10 @@ INSTANTIATE_TEST_CASE_P(
                                  AOM_BITS_8, 16),
                       make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_sse2, 3,
                                  AOM_BITS_8, 16)));
+#endif  // !CONFIG_DAALA_DCT4
 #endif  // HAVE_SSE2 && !CONFIG_HIGHBITDEPTH
 
-#if HAVE_SSE2 && CONFIG_HIGHBITDEPTH
+#if HAVE_SSE2 && CONFIG_HIGHBITDEPTH && !CONFIG_DAALA_DCT4
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans4x4HT,
     ::testing::Values(
@@ -308,14 +310,14 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_c, 1, AOM_BITS_8, 16),
         make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_c, 2, AOM_BITS_8, 16),
         make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_c, 3, AOM_BITS_8, 16)));
-#endif  // HAVE_SSE2 && CONFIG_HIGHBITDEPTH
+#endif  // HAVE_SSE2 && CONFIG_HIGHBITDEPTH && !CONFIG_DAALA_DCT4
 
 #if HAVE_MSA && !CONFIG_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(MSA, Trans4x4DCT,
                         ::testing::Values(make_tuple(&aom_fdct4x4_msa,
                                                      &aom_idct4x4_16_add_msa, 0,
                                                      AOM_BITS_8, 16)));
-#if !CONFIG_EXT_TX
+#if !CONFIG_EXT_TX && !CONFIG_DAALA_DCT4
 INSTANTIATE_TEST_CASE_P(
     MSA, Trans4x4HT,
     ::testing::Values(
@@ -324,6 +326,6 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&av1_fht4x4_msa, &av1_iht4x4_16_add_msa, 2, AOM_BITS_8, 16),
         make_tuple(&av1_fht4x4_msa, &av1_iht4x4_16_add_msa, 3, AOM_BITS_8,
                    16)));
-#endif  // !CONFIG_EXT_TX
+#endif  // !CONFIG_EXT_TX && && !CONFIG_DAALA_DCT4
 #endif  // HAVE_MSA && !CONFIG_HIGHBITDEPTH
 }  // namespace
