@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/api/braille_display_private/brlapi_connection.h"
 #include "chrome/browser/extensions/api/braille_display_private/brlapi_keycode_map.h"
@@ -166,34 +167,41 @@ void BrailleControllerImpl::StartConnecting() {
   if (!libbrlapi_loader_.loaded()) {
     return;
   }
+
+  if (!sequenced_task_runner_) {
+    sequenced_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+        {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+  }
+
   // Only try to connect after we've started to watch the
   // socket directory.  This is necessary to avoid a race condition
   // and because we don't retry to connect after errors that will
   // persist until there's a change to the socket directory (i.e.
   // ENOENT).
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE, FROM_HERE,
-      base::BindOnce(&BrailleControllerImpl::StartWatchingSocketDirOnFileThread,
+  sequenced_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&BrailleControllerImpl::StartWatchingSocketDirOnTaskThread,
                      base::Unretained(this)),
       base::BindOnce(&BrailleControllerImpl::TryToConnect,
                      base::Unretained(this)));
   ResetRetryConnectHorizon();
 }
 
-void BrailleControllerImpl::StartWatchingSocketDirOnFileThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+void BrailleControllerImpl::StartWatchingSocketDirOnTaskThread() {
+  base::ThreadRestrictions::AssertIOAllowed();
   base::FilePath brlapi_dir(BRLAPI_SOCKETPATH);
   if (!file_path_watcher_.Watch(
-          brlapi_dir, false, base::Bind(
-              &BrailleControllerImpl::OnSocketDirChangedOnFileThread,
-              base::Unretained(this)))) {
+          brlapi_dir, false,
+          base::Bind(&BrailleControllerImpl::OnSocketDirChangedOnTaskThread,
+                     base::Unretained(this)))) {
     LOG(WARNING) << "Couldn't watch brlapi directory " << BRLAPI_SOCKETPATH;
   }
 }
 
-void BrailleControllerImpl::OnSocketDirChangedOnFileThread(
-    const base::FilePath& path, bool error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+void BrailleControllerImpl::OnSocketDirChangedOnTaskThread(
+    const base::FilePath& path,
+    bool error) {
+  base::ThreadRestrictions::AssertIOAllowed();
   if (error) {
     LOG(ERROR) << "Error watching brlapi directory: " << path.value();
     return;
