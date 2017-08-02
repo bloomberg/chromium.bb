@@ -1,18 +1,19 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable-behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="chrome://extensions/animation_helper.html">
 <link rel="import" href="chrome://extensions/code_section.html">
 
 <dom-module id="extensions-error-page">
   <template>
-    <style include="cr-hidden-style">
+    <style include="cr-icons cr-hidden-style">
       #main {
         background-color: white;
         height: 800px;
@@ -62,8 +63,9 @@
     </style>
     <div id="main">
       <div id="heading">
-        <paper-icon-button id="close-button" icon="arrow-back"
-            on-tap="onCloseButtonTap_"></paper-icon-button>
+        <button id="close-button" is="paper-icon-button-light"
+            class="icon-arrow-back no-overlap" on-tap="onCloseButtonTap_">
+        </button>
         <span>$i18n{errorsPageHeading}</span>
       </div>
       <iron-list id="errors-list" items="[[calculateShownItems_(data.*)]]">
@@ -74,9 +76,8 @@
               on-tap="onErrorItemTap_" on-keydown="onErrorItemKeydown_">
             <img class$="[[computeErrorIconClass_(item)]]">
             <div class="error-message">[[item.message]]</div>
-            <paper-icon-button class="delete-button"
-                on-tap="onDeleteErrorTap_"
-                icon="delete" tabindex$="[[tabIndex]]"></paper-icon-button>
+            <button is="paper-icon-button-light" class="icon-delete-gray"
+                on-tap="onDeleteErrorTap_" tabindex$="[[tabIndex]]"></button>
           </div>
         </template>
       </iron-list>

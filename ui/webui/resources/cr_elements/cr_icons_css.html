@@ -5,7 +5,7 @@
   <template>
     <style>
       :host-context([dir=rtl]) button[is='paper-icon-button-light'] {
-        transform: scaleX(-1);  /* Flip on the X axis (aka mirror). */
+        transform: scaleX(-1);  /* Invert X: flip on the Y axis (aka mirror). */
       }
 
       button[is='paper-icon-button-light'] {
@@ -16,6 +16,15 @@
         flex-shrink: 0;
         height: var(--cr-icon-ripple-size);
         width: var(--cr-icon-ripple-size);
+      }
+
+      button[is='paper-icon-button-light'].no-overlap {
+        margin-left: 0;
+        margin-right: 0;
+      }
+
+      button[is='paper-icon-button-light'].icon-arrow-back {
+        background-image: url(../images/icon_arrow_back.svg);
       }
 
       button[is='paper-icon-button-light'].icon-cancel {
@@ -50,8 +59,16 @@
         background-image: url(../images/open_in_new.svg);
       }
 
+      button[is='paper-icon-button-light'].icon-menu-white {
+        background-image: url(../images/icon_menu_white.svg);
+      }
+
       button[is='paper-icon-button-light'].icon-more-vert {
         background-image: url(../images/icon_more_vert.svg);
+      }
+
+      button[is='paper-icon-button-light'].icon-refresh {
+        background-image: url(../images/icon_refresh.svg);
       }
 
       button[is='paper-icon-button-light'].icon-settings {

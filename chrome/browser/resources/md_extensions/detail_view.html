@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_toggle_style_css.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
@@ -9,7 +10,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable-behavior.html">
 <link rel="import" href="chrome://extensions/animation_helper.html">
@@ -17,7 +17,8 @@
 
 <dom-module id="extensions-detail-view">
   <template>
-    <style include="iron-flex cr-hidden-style action-link paper-toggle-style">
+    <style include=
+        "iron-flex cr-hidden-style cr-icons action-link paper-toggle-style">
       :host {
         display: flex;
         justify-content: center;
@@ -44,10 +45,6 @@
         -webkit-margin-start: 20px;
         height: 24px;
         width: 24px;
-      }
-
-      a paper-icon-button {
-        color: var(--paper-grey-600);
       }
 
       #name {
@@ -110,22 +107,12 @@
         -webkit-padding-start: 20px;
         margin: 0;
       }
-
-      button[is='paper-icon-button-light'].action-arrow {
-        background-image: url(chrome://resources/images/arrow_right.svg);
-      }
-
-      button[is='paper-icon-button-light'].open-in-new {
-        background-image: url(chrome://resources/images/open_in_new.svg);
-        background-size: contain;
-        height: 20px;
-        width: 20px;
-      }
     </style>
     <div id="main">
       <div id="top-bar">
-        <paper-icon-button id="close-button" icon="arrow-back"
-            on-tap="onCloseButtonTap_"></paper-icon-button>
+        <button id="close-button" is="paper-icon-button-light"
+            class="icon-arrow-back no-overlap"
+            on-tap="onCloseButtonTap_"></button>
         <img alt="" id="icon" src="[[data.iconUrl]]">
         <span id="name">[[data.name]]</span>
       </div>
@@ -233,14 +220,14 @@
         <div class="control-line actionable" id="extensions-options"
             on-tap="onOptionsTap_">
           <span>$i18n{itemOptions}</span>
-          <button class="open-in-new" is="paper-icon-button-light"></button>
+          <button class="icon-external" is="paper-icon-button-light"></button>
         </div>
       </div>
       <div class="section">
         <div class="control-line actionable" id="remove-extension"
             on-tap="onRemoveTap_">
           <span>$i18n{itemRemoveExtension}</span>
-          <button class="action-arrow" is="paper-icon-button-light"></button>
+          <button class="subpage-arrow" is="paper-icon-button-light"></button>
         </div>
       </div>
       <div class="section">

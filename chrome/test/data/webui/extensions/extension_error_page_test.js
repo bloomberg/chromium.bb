@@ -93,9 +93,9 @@ cr.define('extension_error_page_tests', function() {
         expectTrue(testIsVisible('#heading'));
         expectTrue(testIsVisible('#errors-list'));
 
-        var errorElems = errorPage.querySelectorAll('* /deep/ .error-item');
-        expectEquals(1, errorElems.length);
-        var error = errorElems[0];
+        var errorElements = errorPage.querySelectorAll('* /deep/ .error-item');
+        expectEquals(1, errorElements.length);
+        var error = errorElements[0];
         expectEquals(
             'message',
             error.querySelector('.error-message').textContent.trim());
@@ -110,9 +110,9 @@ cr.define('extension_error_page_tests', function() {
         }, manifestErrorBase);
         errorPage.set('data.manifestErrors', [manifestError]);
         Polymer.dom.flush();
-        var errorElems = errorPage.querySelectorAll('* /deep/ .error-item');
-        expectEquals(2, errorElems.length);
-        var error = errorElems[0];
+        errorElements = errorPage.querySelectorAll('* /deep/ .error-item');
+        expectEquals(2, errorElements.length);
+        error = errorElements[0];
         expectEquals(
             'invalid key',
             error.querySelector('.error-message').textContent.trim());
@@ -120,7 +120,7 @@ cr.define('extension_error_page_tests', function() {
             'icon-severity-warning'));
 
         mockDelegate.testClickingCalls(
-            error.querySelector('.delete-button'), 'deleteErrors',
+            error.querySelector('.icon-delete-gray'), 'deleteErrors',
             [extensionId, [manifestError.id]]);
       });
 
@@ -159,8 +159,8 @@ cr.define('extension_error_page_tests', function() {
         errorPage.push('data.runtimeErrors', nextRuntimeError);
         Polymer.dom.flush();
 
-        var errorElems = errorPage.querySelectorAll('* /deep/ .error-item');
-        expectEquals(2, errorElems.length);
+        var errorElements = errorPage.querySelectorAll('* /deep/ .error-item');
+        expectEquals(2, errorElements.length);
 
         // The first error should be focused by default, and we should have
         // requested the source for it.
@@ -175,7 +175,7 @@ cr.define('extension_error_page_tests', function() {
 
         // Tap the second error. It should now be selected and we should request
         // the source for it.
-        MockInteractions.tap(errorElems[1]);
+        MockInteractions.tap(errorElements[1]);
         expectEquals(nextRuntimeError, errorPage.selectedError_);
         expectTrue(!!mockDelegate.requestFileSourceArgs);
         args = mockDelegate.requestFileSourceArgs

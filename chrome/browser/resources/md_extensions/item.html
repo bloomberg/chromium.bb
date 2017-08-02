@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_toggle_style_css.html">
@@ -15,13 +16,13 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/communication-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 
 <dom-module id="extensions-item">
   <template>
-    <style include="iron-flex cr-hidden-style action-link paper-button-style paper-toggle-style">
+    <style include="iron-flex cr-hidden-style cr-icons action-link paper-button-style paper-toggle-style">
       #icon-wrapper {
         align-self: flex-start;
         display: flex;
@@ -240,9 +241,9 @@
           </paper-button>
         </div>
         <template is="dom-if" if="[[!computeDevReloadButtonHidden_(data.*)]]">
-          <paper-icon-button id="dev-reload-button"
-              on-tap="onReloadTap_" icon="refresh">
-          </paper-icon-button>
+          <button id="dev-reload-button" is="paper-icon-button-light"
+              class="icon-refresh no-overlap" on-tap="onReloadTap_">
+          </button>
         </template>
         <paper-button id="repair-button" class="action-button"
             on-tap="onRepairTap_"
