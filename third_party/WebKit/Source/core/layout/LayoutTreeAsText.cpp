@@ -776,8 +776,8 @@ static void WriteSelection(TextStream& ts, const LayoutObject* o) {
   if (!frame)
     return;
 
-  VisibleSelection selection =
-      frame->Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
+  const VisibleSelection& selection =
+      frame->Selection().ComputeVisibleSelectionInDOMTree();
   if (selection.IsCaret()) {
     ts << "caret: position " << selection.Start().ComputeEditingOffset()
        << " of " << NodePosition(selection.Start().AnchorNode());
