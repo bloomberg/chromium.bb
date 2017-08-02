@@ -4,11 +4,20 @@
 
 module profiling.mojom;
 
+import "mojo/common/file.mojom";
+
+// The profiling process is still in prototype stage, and is behind a
+// compile-time flag. There will be a security review before removing the
+// compile-time flag. https://crbug.com/751759.
 interface Memlog {
   // Adds a new platform-specific pipe to read memlog trace data from.
   // In normal usage, each child process launch will have a corresponding call
   // to this.
   AddSender(handle sender_pipe, int32 sender_id);
 
-  DumpProcess(int32 sender_id);
+  // Dumps the memory log of the process with the given |sender_id| into
+  // |output_file|.  This currently dumps the memory log of an arbitrary
+  // process, since there does not yet a mechanism to identify specific
+  // processes. See https://crbug.com/751283.
+  DumpProcess(int32 sender_id, handle output_file);
 };

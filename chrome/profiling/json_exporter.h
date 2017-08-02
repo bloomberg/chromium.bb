@@ -11,10 +11,7 @@
 
 namespace profiling {
 
-class BacktraceStorage;
-
 void ExportAllocationEventSetToJSON(int pid,
-                                    const BacktraceStorage* backtrace_storage,
                                     const AllocationEventSet& set,
                                     std::ostream& out);
 

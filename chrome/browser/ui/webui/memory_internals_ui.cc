@@ -9,11 +9,16 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/path_service.h"
 #include "base/process/process_handle.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiling_host/profiling_process_host.h"
+#include "chrome/common/chrome_paths.h"
+#include "chrome/common/profiling/constants.mojom.h"
+#include "chrome/common/profiling/memlog.mojom.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
@@ -24,6 +29,9 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/process_type.h"
+#include "content/public/common/service_manager_connection.h"
+#include "mojo/public/cpp/system/platform_handle.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace {
 
@@ -71,6 +79,8 @@ class MemoryInternalsDOMHandler : public content::WebUIMessageHandler {
   static void GetChildProcessesOnIOThread(
       base::WeakPtr<MemoryInternalsDOMHandler> dom_handler);
   void ReturnProcessListOnUIThread(std::vector<base::Value> children);
+  static void GetOutputFileOnFileThread(int32_t sender_id);
+  static void HandleDumpProcessOnUIThread(int32_t sender_id, base::File file);
 
   base::WeakPtrFactory<MemoryInternalsDOMHandler> weak_factory_;
 
@@ -108,17 +118,18 @@ void MemoryInternalsDOMHandler::HandleRequestProcessList(
 }
 
 void MemoryInternalsDOMHandler::HandleDumpProcess(const base::ListValue* args) {
-  profiling::ProfilingProcessHost* pph = profiling::ProfilingProcessHost::Get();
-  if (!pph)
-    return;
-
   if (!args->is_list() || args->GetList().size() != 1)
     return;
   const base::Value& pid_value = args->GetList()[0];
   if (!pid_value.is_int())
     return;
 
-  pph->RequestProcessDump(pid_value.GetInt());
+  // TODO(ajwong): Convert from pid to sender_id. https://crbug.com/751283.
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+      base::BindOnce(&MemoryInternalsDOMHandler::GetOutputFileOnFileThread,
+                     pid_value.GetInt()));
 }
 
 void MemoryInternalsDOMHandler::GetChildProcessesOnIOThread(
@@ -178,6 +189,33 @@ void MemoryInternalsDOMHandler::ReturnProcessListOnUIThread(
   AllowJavascript();
   CallJavascriptFunction("returnProcessList", result);
   DisallowJavascript();
+}
+
+// static
+void MemoryInternalsDOMHandler::GetOutputFileOnFileThread(int32_t sender_id) {
+  base::FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  base::FilePath output_path = user_data_dir.Append("memlog_dump");
+  base::File f(output_path,
+               base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&MemoryInternalsDOMHandler::HandleDumpProcessOnUIThread,
+                     sender_id, std::move(f)));
+}
+
+// static
+void MemoryInternalsDOMHandler::HandleDumpProcessOnUIThread(int32_t sender_id,
+                                                            base::File file) {
+  profiling::mojom::MemlogPtr memlog;
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->BindInterface(profiling::mojom::kServiceName,
+                           mojo::MakeRequest(&memlog));
+
+  mojo::ScopedHandle sh = mojo::WrapPlatformFile(file.TakePlatformFile());
+  memlog->DumpProcess(sender_id, std::move(sh));
 }
 
 }  // namespace

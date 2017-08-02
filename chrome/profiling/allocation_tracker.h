@@ -31,6 +31,8 @@ class AllocationTracker : public MemlogReceiver {
   void OnFree(const FreePacket& free_packet) override;
   void OnComplete() override;
 
+  const AllocationEventSet& live_allocs() { return live_allocs_; }
+
  private:
   CompleteCallback complete_callback_;
 
