@@ -128,16 +128,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
   if ([defaults boolForKey:@"TabStripAutoScrollNewTabsDisabled"])
     command_line->AppendSwitch(switches::kDisableTabStripAutoScrollNewTabs);
 
-  // Populate command line flag for the SnapshotLRUCache experiment from the
-  // configuration plist.
-  NSString* enableLRUSnapshotCache =
-      [defaults stringForKey:@"SnapshotLRUCache"];
-  if ([enableLRUSnapshotCache isEqualToString:@"Enabled"]) {
-    command_line->AppendSwitch(switches::kEnableLRUSnapshotCache);
-  } else if ([enableLRUSnapshotCache isEqualToString:@"Disabled"]) {
-    command_line->AppendSwitch(switches::kDisableLRUSnapshotCache);
-  }
-
   // Populate command line flags from PasswordGenerationEnabled.
   NSString* enablePasswordGenerationValue =
       [defaults stringForKey:@"PasswordGenerationEnabled"];
