@@ -114,7 +114,8 @@ class WebRtcInternalsPerfBrowserTest : public WebRtcTestBase {
   }
 
   void RunsAudioVideoCall60SecsAndLogsInternalMetrics(
-      const std::string& video_codec) {
+      const std::string& video_codec,
+      bool prefer_hw_video_codec) {
     ASSERT_TRUE(test::HasReferenceFilesInCheckout());
     ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -131,8 +132,8 @@ class WebRtcInternalsPerfBrowserTest : public WebRtcTestBase {
     SetupPeerconnectionWithLocalStream(right_tab);
 
     if (!video_codec.empty()) {
-      SetDefaultVideoCodec(left_tab, video_codec);
-      SetDefaultVideoCodec(right_tab, video_codec);
+      SetDefaultVideoCodec(left_tab, video_codec, prefer_hw_video_codec);
+      SetDefaultVideoCodec(right_tab, video_codec, prefer_hw_video_codec);
     }
     NegotiateCall(left_tab, right_tab);
 
@@ -179,8 +180,8 @@ class WebRtcInternalsPerfBrowserTest : public WebRtcTestBase {
     SetupPeerconnectionWithoutLocalStream(right_tab);
 
     if (!video_codec.empty()) {
-      SetDefaultVideoCodec(left_tab, video_codec);
-      SetDefaultVideoCodec(right_tab, video_codec);
+      SetDefaultVideoCodec(left_tab, video_codec, false /* prefer_hw_codec */);
+      SetDefaultVideoCodec(right_tab, video_codec, false /* prefer_hw_codec */);
     }
     if (opus_dtx) {
       EnableOpusDtx(left_tab);
@@ -228,14 +229,16 @@ IN_PROC_BROWSER_TEST_F(
     WebRtcInternalsPerfBrowserTest,
     MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp8) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
-  RunsAudioVideoCall60SecsAndLogsInternalMetrics("VP8");
+  RunsAudioVideoCall60SecsAndLogsInternalMetrics(
+      "VP8", false /* prefer_hw_video_codec */);
 }
 
 IN_PROC_BROWSER_TEST_F(
     WebRtcInternalsPerfBrowserTest,
     MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp9) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
-  RunsAudioVideoCall60SecsAndLogsInternalMetrics("VP9");
+  RunsAudioVideoCall60SecsAndLogsInternalMetrics(
+      "VP9", false /* prefer_hw_video_codec */);
 }
 
 #if BUILDFLAG(RTC_USE_H264)
@@ -252,7 +255,8 @@ IN_PROC_BROWSER_TEST_F(
         "\"OK\")";
     return;
   }
-  RunsAudioVideoCall60SecsAndLogsInternalMetrics("H264");
+  RunsAudioVideoCall60SecsAndLogsInternalMetrics(
+      "H264", true /* prefer_hw_video_codec */);
 }
 
 #endif  // BUILDFLAG(RTC_USE_H264)

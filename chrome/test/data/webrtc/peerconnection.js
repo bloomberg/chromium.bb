@@ -41,6 +41,12 @@ var gDefaultAudioCodec = null;
 var gDefaultVideoCodec = null;
 
 /**
+ * Flag to indicate if HW or SW video codec is preferred.
+ * @private
+ */
+var gDefaultPreferHwVideoCodec = null;
+
+/**
  * Flag to indicate if Opus Dtx should be enabled.
  * @private
  */
@@ -122,9 +128,14 @@ function setDefaultAudioCodec(audioCodec) {
  *     video codec, e.g. the first one in the list on the 'm=video' SDP offer
  *     line. |videoCodec| is the case-sensitive codec name, e.g. 'VP8' or
  *     'H264'.
+ * @param {bool} preferHwVideoCodec specifies what codec to use from the
+ *     'm=video' line when there are multiple codecs with the name |videoCodec|.
+ *     If true, it will return the last codec with that name, and if false, it
+ *     will return the first codec with that name.
  */
-function setDefaultVideoCodec(videoCodec) {
+function setDefaultVideoCodec(videoCodec, preferHwVideoCodec) {
   gDefaultVideoCodec = videoCodec;
+  gDefaultPreferHwVideoCodec = preferHwVideoCodec;
   returnToTest('ok');
 }
 
@@ -156,7 +167,8 @@ function createLocalOffer(constraints) {
         }
         if (gDefaultVideoCodec !== null) {
           localOffer.sdp = setSdpDefaultVideoCodec(localOffer.sdp,
-                                                   gDefaultVideoCodec);
+                                                   gDefaultVideoCodec,
+                                                   gDefaultPreferHwVideoCodec);
         }
         if (gOpusDtx) {
           localOffer.sdp = setOpusDtxEnabled(localOffer.sdp);
