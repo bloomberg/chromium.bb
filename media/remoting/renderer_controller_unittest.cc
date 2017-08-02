@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/cdm_config.h"
 #include "media/base/limits.h"
@@ -56,6 +57,11 @@ mojom::RemotingSinkMetadata GetDefaultSinkMetadata(bool enable) {
   return metadata;
 }
 
+constexpr base::TimeDelta kDelayedStartDuration =
+    base::TimeDelta::FromSeconds(5);
+constexpr double kNormalSpeedBitsPerSecond = 5000000;
+constexpr double kHighSpeedBitsPerSecond = 15000000;
+
 }  // namespace
 
 class RendererControllerTest : public ::testing::Test,
@@ -72,11 +78,16 @@ class RendererControllerTest : public ::testing::Test,
   void SwitchRenderer(bool disable_pipeline_auto_suspend) override {
     is_rendering_remotely_ = disable_pipeline_auto_suspend;
     disable_pipeline_suspend_ = disable_pipeline_auto_suspend;
+    decoded_bytes_ = 0;
   }
 
   void ActivateViewportIntersectionMonitoring(bool activate) override {
     activate_viewport_intersection_monitoring_ = activate;
   }
+
+  size_t VideoDecodedByteCount() const override { return decoded_bytes_; }
+
+  size_t AudioDecodedByteCount() const override { return 0; }
 
   void UpdateRemotePlaybackCompatibility(bool is_compatibe) override {}
 
@@ -88,6 +99,9 @@ class RendererControllerTest : public ::testing::Test,
       const mojom::RemotingSinkMetadata& sink_metadata) {
     EXPECT_FALSE(is_rendering_remotely_);
     controller_ = base::MakeUnique<RendererController>(shared_session);
+    clock_ = new base::SimpleTestTickClock();
+    controller_->clock_.reset(clock_);
+    clock_->Advance(base::TimeDelta::FromSeconds(1));
     controller_->SetClient(this);
     RunUntilIdle();
     EXPECT_FALSE(is_rendering_remotely_);
@@ -117,8 +131,17 @@ class RendererControllerTest : public ::testing::Test,
     return controller_->delayed_start_stability_timer_.IsRunning();
   }
 
-  void DelayedStartEnds() {
+  void DelayedStartEnds(bool too_high_bitrate) {
     EXPECT_TRUE(IsInDelayedStart());
+    if (too_high_bitrate) {
+      decoded_bytes_ =
+          kHighSpeedBitsPerSecond * kDelayedStartDuration.InSeconds() / 8.0;
+    } else {
+      decoded_bytes_ =
+          kNormalSpeedBitsPerSecond * kDelayedStartDuration.InSeconds() / 8.0;
+    }
+    clock_->Advance(kDelayedStartDuration);
+    RunUntilIdle();
     const base::Closure callback =
         controller_->delayed_start_stability_timer_.user_task();
     callback.Run();
@@ -133,6 +156,8 @@ class RendererControllerTest : public ::testing::Test,
   bool is_remoting_cdm_ = false;
   bool activate_viewport_intersection_monitoring_ = false;
   bool disable_pipeline_suspend_ = false;
+  size_t decoded_bytes_ = 0;
+  base::SimpleTestTickClock* clock_;  // Own by |controller_|;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RendererControllerTest);
@@ -146,7 +171,7 @@ TEST_F(RendererControllerTest, ToggleRendererOnDominantChange) {
                                         GetDefaultSinkMetadata(true));
   EXPECT_FALSE(is_rendering_remotely_);
   EXPECT_TRUE(IsInDelayedStart());
-  DelayedStartEnds();
+  DelayedStartEnds(false);
   RunUntilIdle();
   EXPECT_TRUE(is_rendering_remotely_);  // All requirements now satisfied.
   EXPECT_TRUE(disable_pipeline_suspend_);
@@ -157,6 +182,21 @@ TEST_F(RendererControllerTest, ToggleRendererOnDominantChange) {
   EXPECT_FALSE(is_rendering_remotely_);
   EXPECT_FALSE(disable_pipeline_suspend_);
   EXPECT_FALSE(activate_viewport_intersection_monitoring_);
+}
+
+TEST_F(RendererControllerTest, StartFailedWithTooHighBitrate) {
+  const scoped_refptr<SharedSession> shared_session =
+      FakeRemoterFactory::CreateSharedSession(false);
+  InitializeControllerAndBecomeDominant(shared_session,
+                                        DefaultMetadata(VideoCodec::kCodecVP8),
+                                        GetDefaultSinkMetadata(true));
+  EXPECT_FALSE(is_rendering_remotely_);
+  EXPECT_TRUE(IsInDelayedStart());
+  DelayedStartEnds(true);
+  RunUntilIdle();
+  EXPECT_TRUE(activate_viewport_intersection_monitoring_);
+  EXPECT_FALSE(is_rendering_remotely_);
+  EXPECT_FALSE(disable_pipeline_suspend_);
 }
 
 TEST_F(RendererControllerTest, ToggleRendererOnSinkCapabilities) {
@@ -186,7 +226,7 @@ TEST_F(RendererControllerTest, ToggleRendererOnSinkCapabilities) {
   EXPECT_FALSE(is_rendering_remotely_);
   EXPECT_FALSE(disable_pipeline_suspend_);
   EXPECT_TRUE(IsInDelayedStart());
-  DelayedStartEnds();
+  DelayedStartEnds(false);
   RunUntilIdle();
   EXPECT_TRUE(is_rendering_remotely_);
   EXPECT_TRUE(disable_pipeline_suspend_);
@@ -201,7 +241,7 @@ TEST_F(RendererControllerTest, ToggleRendererOnDisableChange) {
                                         GetDefaultSinkMetadata(true));
   EXPECT_TRUE(activate_viewport_intersection_monitoring_);
   EXPECT_TRUE(IsInDelayedStart());
-  DelayedStartEnds();
+  DelayedStartEnds(false);
   RunUntilIdle();
   EXPECT_TRUE(is_rendering_remotely_);  // All requirements now satisfied.
   EXPECT_TRUE(disable_pipeline_suspend_);
@@ -236,7 +276,7 @@ TEST_F(RendererControllerTest, WithVP9VideoCodec) {
   shared_session->OnSinkAvailable(sink_metadata.Clone());
   RunUntilIdle();
   EXPECT_TRUE(IsInDelayedStart());
-  DelayedStartEnds();
+  DelayedStartEnds(false);
   RunUntilIdle();
   EXPECT_TRUE(is_rendering_remotely_);  // All requirements now satisfied.
   EXPECT_TRUE(activate_viewport_intersection_monitoring_);
@@ -268,7 +308,7 @@ TEST_F(RendererControllerTest, WithHEVCVideoCodec) {
   shared_session->OnSinkAvailable(sink_metadata.Clone());
   RunUntilIdle();
   EXPECT_TRUE(IsInDelayedStart());
-  DelayedStartEnds();
+  DelayedStartEnds(false);
   RunUntilIdle();
   EXPECT_TRUE(is_rendering_remotely_);  // All requirements now satisfied.
   EXPECT_TRUE(activate_viewport_intersection_monitoring_);
@@ -303,7 +343,7 @@ TEST_F(RendererControllerTest, WithAACAudioCodec) {
   shared_session->OnSinkAvailable(sink_metadata.Clone());
   RunUntilIdle();
   EXPECT_TRUE(IsInDelayedStart());
-  DelayedStartEnds();
+  DelayedStartEnds(false);
   RunUntilIdle();
   EXPECT_TRUE(is_rendering_remotely_);  // All requirements now satisfied.
   EXPECT_TRUE(activate_viewport_intersection_monitoring_);
@@ -336,7 +376,7 @@ TEST_F(RendererControllerTest, WithOpusAudioCodec) {
   shared_session->OnSinkAvailable(sink_metadata.Clone());
   RunUntilIdle();
   EXPECT_TRUE(IsInDelayedStart());
-  DelayedStartEnds();
+  DelayedStartEnds(false);
   RunUntilIdle();
   EXPECT_TRUE(is_rendering_remotely_);  // All requirements now satisfied.
   EXPECT_TRUE(activate_viewport_intersection_monitoring_);
@@ -351,7 +391,7 @@ TEST_F(RendererControllerTest, StartFailed) {
                                         GetDefaultSinkMetadata(true));
   RunUntilIdle();
   EXPECT_TRUE(IsInDelayedStart());
-  DelayedStartEnds();
+  DelayedStartEnds(false);
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
   EXPECT_FALSE(disable_pipeline_suspend_);

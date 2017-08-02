@@ -15,6 +15,10 @@
 #include "media/remoting/metrics.h"
 #include "media/remoting/shared_session.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace media {
 
 namespace remoting {
@@ -117,8 +121,12 @@ class RendererController final : public SharedSession::Client,
   void WaitForStabilityBeforeStart(StartTrigger start_trigger);
   // Cancel the start of remoting.
   void CancelDelayedStart();
-  // Called when |delayed_start_stability_timer_| is fired.
-  void OnDelayedStartTimerFired(StartTrigger start_trigger);
+  // Called when the delayed start ends. |decoded_bytes_before_delay| is the
+  // total number of audio and video bytes decoded before the delayed start
+  // began. |delayed_start_time| is the time that the delayed start began.
+  void OnDelayedStartTimerFired(StartTrigger start_trigger,
+                                size_t decoded_bytes_before_delay,
+                                base::TimeTicks delayed_start_time);
 
   // Helper to request the media pipeline switch to the remoting renderer.
   void StartRemoting(StartTrigger start_trigger);
@@ -179,6 +187,8 @@ class RendererController final : public SharedSession::Client,
   // TODO(xjz): Estimate whether the transmission bandwidth is sufficient to
   // remote the content while this timer is running.
   base::OneShotTimer delayed_start_stability_timer_;
+
+  std::unique_ptr<base::TickClock> clock_;
 
   base::WeakPtrFactory<RendererController> weak_factory_;
 

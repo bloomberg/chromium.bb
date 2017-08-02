@@ -31,8 +31,8 @@ class SessionMetricsRecorder {
   // These may be called before, during, or after a remoting session.
   void OnPipelineMetadataChanged(const PipelineMetadata& metadata);
   void OnRemotePlaybackDisabled(bool disabled);
-  void OnPosterImageDownloaded(const base::TimeDelta download_duration,
-                               bool success);
+  void RecordMediaBitrateVersusCapacity(double kilobits_per_second,
+                                        double capacity);
 
  private:
   // Whether audio only, video only, or both were played during the session.
