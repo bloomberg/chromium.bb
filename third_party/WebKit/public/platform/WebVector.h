@@ -54,9 +54,9 @@ namespace blink {
 // It is also possible to assign from any container that implements begin()
 // and end().
 //
-//   void Foo(const std::vector<std::string>& input)
+//   void Foo(const std::vector<WTF::String>& input)
 //   {
-//       WebVector<WebCString> cstrings = input;
+//       WebVector<WebString> strings = input;
 //       ...
 //   }
 //

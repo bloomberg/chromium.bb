@@ -565,7 +565,6 @@ component("platform") {
     "exported/WebAudioBus.cpp",
     "exported/WebAudioDevice.cpp",
     "exported/WebBlobData.cpp",
-    "exported/WebCString.cpp",
     "exported/WebCache.cpp",
     "exported/WebCanvasCaptureHandler.cpp",
     "exported/WebCoalescedInputEvent.cpp",
