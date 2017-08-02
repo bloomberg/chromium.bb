@@ -56,8 +56,10 @@ enum CastDeviceCapability {
 // Public interface of the CastSocket class.
 class CastSocket {
  public:
-  using OnOpenCallback =
-      base::OnceCallback<void(int channel_id, ChannelError error_state)>;
+  // Invoked when CastSocket opens.
+  // |socket|: raw pointer of opened socket (this pointer). Guaranteed to be
+  // valid in callback function. Do not pass |socket| around.
+  using OnOpenCallback = base::OnceCallback<void(CastSocket* socket)>;
 
   class Observer {
    public:

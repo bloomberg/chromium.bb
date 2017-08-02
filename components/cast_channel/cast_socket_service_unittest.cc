@@ -83,9 +83,9 @@ TEST_F(CastSocketServiceTest, TestOpenChannel) {
   EXPECT_CALL(*mock_socket, ConnectInternal(_))
       .WillOnce(WithArgs<0>(
           Invoke([&](const MockCastSocket::MockOnOpenCallback& callback) {
-            callback.Run(mock_socket->id(), ChannelError::NONE);
+            callback.Run(mock_socket);
           })));
-  EXPECT_CALL(mock_on_open_callback_, Run(_, ChannelError::NONE));
+  EXPECT_CALL(mock_on_open_callback_, Run(mock_socket));
   EXPECT_CALL(*mock_socket, AddObserver(_));
 
   cast_socket_service_->OpenSocket(ip_endpoint, nullptr /* net_log */,

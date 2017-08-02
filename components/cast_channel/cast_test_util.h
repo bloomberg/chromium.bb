@@ -84,15 +84,14 @@ class MockCastSocketService : public CastSocketService {
   MOCK_METHOD4(OpenSocketInternal,
                int(const net::IPEndPoint& ip_endpoint,
                    net::NetLog* net_log,
-                   const base::Callback<void(int, ChannelError)>& open_cb,
+                   const base::Callback<void(CastSocket*)>& open_cb,
                    CastSocket::Observer* observer));
   MOCK_CONST_METHOD1(GetSocket, CastSocket*(int channel_id));
 };
 
 class MockCastSocket : public CastSocket {
  public:
-  using MockOnOpenCallback =
-      base::Callback<void(int channel_id, ChannelError error_state)>;
+  using MockOnOpenCallback = base::Callback<void(CastSocket* socket)>;
 
   MockCastSocket();
   ~MockCastSocket() override;

@@ -300,19 +300,18 @@ void CastChannelOpenFunction::AsyncWorkStart() {
       observer);
 }
 
-void CastChannelOpenFunction::OnOpen(int channel_id, ChannelError result) {
+void CastChannelOpenFunction::OnOpen(CastSocket* socket) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   VLOG(1) << "Connect finished, OnOpen invoked.";
+  DCHECK(socket);
   // TODO: If we failed to open the CastSocket, we may want to clean up here,
   // rather than relying on the extension to call close(). This can be done by
   // calling RemoveSocket() and api_->GetLogger()->ClearLastError(channel_id).
-  if (result != ChannelError::UNKNOWN) {
-    CastSocket* socket = cast_socket_service_->GetSocket(channel_id);
-    CHECK(socket);
+  if (socket->error_state() != ChannelError::UNKNOWN) {
     SetResultFromSocket(*socket);
   } else {
     // The socket is being destroyed.
-    SetResultFromError(channel_id, api::cast_channel::CHANNEL_ERROR_UNKNOWN);
+    SetResultFromError(socket->id(), api::cast_channel::CHANNEL_ERROR_UNKNOWN);
   }
 
   AsyncWorkCompleted();
