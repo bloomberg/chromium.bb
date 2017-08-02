@@ -21,6 +21,7 @@ mojom("interfaces") {
     "renderer.mojom",
     "video_decoder.mojom",
     "video_encode_accelerator.mojom",
+    "watch_time_recorder.mojom",
   ]
 
   if (is_android) {
