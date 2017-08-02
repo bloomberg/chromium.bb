@@ -18,6 +18,19 @@ settings.ChromeCleanupIdleReason = {
 };
 
 /**
+ * The source of the dismiss action. Used when reporting metrics about how the
+ * card was dismissed. The numeric values must be kept in sync with the
+ * definition of ChromeCleanerDismissSource in
+ * src/chrome/browser/ui/webui/settings/chrome_cleanup_handler.cc.
+ * @enum {number}
+ */
+settings.ChromeCleanupDismissSource = {
+  OTHER: 0,
+  CLEANUP_SUCCESS_DONE_BUTTON: 1,
+  CLEANUP_FAILURE_DONE_BUTTON: 2,
+};
+
+/**
  * @fileoverview
  * 'settings-chrome-cleanup-page' is the settings page containing Chrome
  * Cleanup settings.
@@ -85,6 +98,7 @@ Polymer({
     showFilesToRemove_: {
       type: Boolean,
       value: false,
+      observer: 'showFilesToRemoveChanged_',
     },
 
     /** @private */
@@ -147,7 +161,6 @@ Polymer({
     this.addWebUIListener(
         'chrome-cleanup-upload-permission-change',
         this.onUploadPermissionChange_.bind(this));
-
     this.browserProxy_.registerChromeCleanerObserver();
   },
 
@@ -182,6 +195,24 @@ Polymer({
   },
 
   /**
+   * Notify Chrome that the details section was opened or closed.
+   * @private
+   */
+  showFilesToRemoveChanged_: function() {
+    if (this.browserProxy_)
+      this.browserProxy_.notifyShowDetails(this.showFilesToRemove_);
+  },
+
+
+  /**
+   * Notfies Chrome that the "learn more" link was clicked.
+   * @private
+   */
+  learnMore_: function() {
+    this.browserProxy_.notifyLearnMoreClicked();
+  },
+
+  /**
    * @return {boolean}
    * @private
    */
@@ -198,17 +229,23 @@ Polymer({
     if (idleReason == settings.ChromeCleanupIdleReason.CLEANING_SUCCEEDED) {
       this.title_ = this.i18n('chromeCleanupTitleRemoved');
       this.enableActionButton_(
-          this.i18n('chromeCleanupDoneButtonLabel'), this.dismiss_.bind(this));
+          this.i18n('chromeCleanupDoneButtonLabel'),
+          this.dismiss_.bind(
+              this,
+              settings.ChromeCleanupDismissSource.CLEANUP_SUCCESS_DONE_BUTTON));
       this.setIconDone_();
       this.showLearnMore_ = false;
     } else if (idleReason == settings.ChromeCleanupIdleReason.INITIAL) {
-      this.dismiss_();
+      this.dismiss_(settings.ChromeCleanupDismissSource.OTHER);
     } else {
       // Scanning-related idle reasons are unexpected. Show an error message for
       // all reasons other than |CLEANING_SUCCEEDED| and |INITIAL|.
       this.title_ = this.i18n('chromeCleanupTitleErrorCantRemove');
       this.enableActionButton_(
-          this.i18n('chromeCleanupDoneButtonLabel'), this.dismiss_.bind(this));
+          this.i18n('chromeCleanupDoneButtonLabel'),
+          this.dismiss_.bind(
+              this,
+              settings.ChromeCleanupDismissSource.CLEANUP_FAILURE_DONE_BUTTON));
       this.setIconWarning_();
       this.showLearnMore_ = true;
     }
@@ -311,10 +348,11 @@ Polymer({
 
   /**
    * Dismiss the card.
+   * @param {number} source
    * @private
    */
-  dismiss_: function() {
-    this.browserProxy_.dismissCleanupPage();
+  dismiss_: function(source) {
+    this.browserProxy_.dismissCleanupPage(source);
   },
 
   /**

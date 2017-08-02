@@ -9,6 +9,8 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
@@ -22,6 +24,15 @@ using safe_browsing::ChromeCleanerController;
 namespace settings {
 
 namespace {
+
+// These numeric values must be kept in sync with the definition of
+// settings.ChromeCleanupDismissSource in
+// chrome/browser/resources/settings/chrome_cleanup_page/chrome_cleanup_page.js.
+enum ChromeCleanerDismissSource {
+  kOther = 0,
+  kCleanupSuccessDoneButton = 1,
+  kCleanupFailureDoneButton = 2,
+};
 
 // Returns a ListValue containing a copy of the file paths stored in |files|.
 base::ListValue GetFilesAsListStorage(const std::set<base::FilePath>& files) {
@@ -82,6 +93,15 @@ void ChromeCleanupHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "startCleanup", base::Bind(&ChromeCleanupHandler::HandleStartCleanup,
                                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "notifyShowDetails",
+      base::Bind(&ChromeCleanupHandler::HandleNotifyShowDetails,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "notifyChromeCleanupLearnMoreClicked",
+      base::Bind(
+          &ChromeCleanupHandler::HandleNotifyChromeCleanupLearnMoreClicked,
+          base::Unretained(this)));
 }
 
 void ChromeCleanupHandler::OnJavascriptAllowed() {
@@ -128,7 +148,27 @@ void ChromeCleanupHandler::OnLogsEnabledChanged(bool logs_enabled) {
 }
 
 void ChromeCleanupHandler::HandleDismiss(const base::ListValue* args) {
-  DCHECK_EQ(0U, args->GetSize());
+  CHECK_EQ(1U, args->GetSize());
+  int dismiss_source_int = -1;
+  CHECK(args->GetInteger(0, &dismiss_source_int));
+
+  ChromeCleanerDismissSource dismiss_source =
+      static_cast<ChromeCleanerDismissSource>(dismiss_source_int);
+
+  switch (dismiss_source) {
+    case kCleanupSuccessDoneButton:
+      base::RecordAction(base::UserMetricsAction(
+          "SoftwareReporter.CleanupWebui_CleanupSuccessDone"));
+      break;
+    case kCleanupFailureDoneButton:
+      base::RecordAction(base::UserMetricsAction(
+          "SoftwareReporter.CleanupWebui_CleanupFailureDone"));
+      break;
+    case kOther:
+      break;
+    default:
+      NOTREACHED();
+  }
 
   controller_->RemoveObserver(this);
   controller_->ResetIdleState();
@@ -146,6 +186,8 @@ void ChromeCleanupHandler::HandleRegisterChromeCleanerObserver(
       base::FeatureList::IsEnabled(safe_browsing::kInBrowserCleanerUIFeature));
 
   UMA_HISTOGRAM_BOOLEAN("SoftwareReporter.CleanupCard", true);
+  base::RecordAction(
+      base::UserMetricsAction("SoftwareReporter.CleanupWebui_Shown"));
   AllowJavascript();
 
   // Send the current logs upload state.
@@ -154,6 +196,9 @@ void ChromeCleanupHandler::HandleRegisterChromeCleanerObserver(
 
 void ChromeCleanupHandler::HandleRestartComputer(const base::ListValue* args) {
   DCHECK_EQ(0U, args->GetSize());
+
+  base::RecordAction(
+      base::UserMetricsAction("SoftwareReporter.CleanupWebui_RestartComputer"));
 
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::Value("chrome-cleanup-on-dismiss"));
@@ -166,6 +211,14 @@ void ChromeCleanupHandler::HandleSetLogsUploadPermission(
   CHECK_EQ(1U, args->GetSize());
   bool allow_logs_upload = false;
   args->GetBoolean(0, &allow_logs_upload);
+
+  if (allow_logs_upload) {
+    base::RecordAction(base::UserMetricsAction(
+        "SoftwareReporter.CleanupWebui_LogsUploadEnabled"));
+  } else {
+    base::RecordAction(base::UserMetricsAction(
+        "SoftwareReporter.CleanupWebui_LogsUploadDisabled"));
+  }
 
   controller_->SetLogsEnabled(allow_logs_upload);
 }
@@ -180,11 +233,37 @@ void ChromeCleanupHandler::HandleStartCleanup(const base::ListValue* args) {
 
   safe_browsing::RecordCleanupStartedHistogram(
       safe_browsing::CLEANUP_STARTED_FROM_PROMPT_IN_SETTINGS);
+  base::RecordAction(
+      base::UserMetricsAction("SoftwareReporter.CleanupWebui_StartCleanup"));
+
   controller_->ReplyWithUserResponse(
       profile_,
       allow_logs_upload
           ? ChromeCleanerController::UserResponse::kAcceptedWithLogs
           : ChromeCleanerController::UserResponse::kAcceptedWithoutLogs);
+}
+
+void ChromeCleanupHandler::HandleNotifyShowDetails(
+    const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  bool details_section_visible = false;
+  args->GetBoolean(0, &details_section_visible);
+
+  if (details_section_visible) {
+    base::RecordAction(
+        base::UserMetricsAction("SoftwareReporter.CleanupWebui_ShowDetails"));
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("SoftwareReporter.CleanupWebui_HideDetails"));
+  }
+}
+
+void ChromeCleanupHandler::HandleNotifyChromeCleanupLearnMoreClicked(
+    const base::ListValue* args) {
+  CHECK_EQ(0U, args->GetSize());
+
+  base::RecordAction(
+      base::UserMetricsAction("SoftwareReporter.CleanupWebui_LearnMore"));
 }
 
 }  // namespace settings
