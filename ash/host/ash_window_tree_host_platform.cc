@@ -48,10 +48,6 @@ bool AshWindowTreeHostPlatform::ConfineCursorToRootWindow() {
   return true;
 }
 
-void AshWindowTreeHostPlatform::UnConfineCursor() {
-  NOTIMPLEMENTED();
-}
-
 #if defined(USE_OZONE)
 void AshWindowTreeHostPlatform::SetCursorConfig(
     const display::Display& display,
