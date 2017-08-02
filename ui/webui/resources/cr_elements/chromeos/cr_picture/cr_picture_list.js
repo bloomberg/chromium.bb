@@ -48,7 +48,7 @@ Polymer({
      */
     profileImageUrl_: {
       type: String,
-      value: 'chrome://theme/IDR_LOGIN_DEFAULT_USER',
+      value: CrPicture.kDefaultImageUrl,
     },
 
     /**
@@ -128,6 +128,12 @@ Polymer({
    * @param {number=} imageIndex
    */
   setOldImageUrl(imageUrl, imageIndex) {
+    if (imageUrl == CrPicture.kDefaultImageUrl || imageIndex === 0) {
+      // Treat the default image as empty so it does not show in the list.
+      this.oldImageUrl_ = '';
+      this.setSelectedImageUrl(CrPicture.kDefaultImageUrl);
+      return;
+    }
     this.oldImageUrl_ = imageUrl;
     this.oldImageIndex_ = imageIndex === undefined ? -1 : imageIndex;
     if (imageUrl) {
