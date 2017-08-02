@@ -363,7 +363,9 @@ static int gralloc0_lock_async_ycbcr(struct gralloc_module_t const *module, buff
 	return 0;
 }
 
-static struct hw_module_methods_t gralloc0_module_methods = {.open = gralloc0_open };
+// clang-format off
+static struct hw_module_methods_t gralloc0_module_methods = { .open = gralloc0_open };
+// clang-format on
 
 struct gralloc0_module HAL_MODULE_INFO_SYM = {
 	.base =
