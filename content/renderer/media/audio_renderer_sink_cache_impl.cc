@@ -201,7 +201,7 @@ void AudioRendererSinkCacheImpl::DeleteSink(
     // When |force_delete_used| is set, it's expected that we are deleting a
     // used sink.
     DCHECK((!force_delete_used) || (force_delete_used && cache_iter->used))
-        << "Attempt to delete a non-aquired sink.";
+        << "Attempt to delete a non-acquired sink.";
 
     if (!force_delete_used && cache_iter->used)
       return;
