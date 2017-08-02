@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string>
 #include <type_traits>
 
 #include "base/macros.h"
@@ -14,6 +15,8 @@
 
 namespace net {
 namespace ntlm {
+
+using Buffer = std::basic_string<uint8_t>;
 
 // A security buffer is a structure within an NTLM message that indicates
 // the offset from the beginning of the message and the length of a payload
