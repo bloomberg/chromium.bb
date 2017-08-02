@@ -1775,7 +1775,9 @@ class Flattener(object):
     self._deps[dep.name] = dep
 
     for key, value in dep.get_vars().iteritems():
-      assert key not in self._vars
+      # Make sure there are no conflicting variables. It is fine however
+      # to use same variable name, as long as the value is consistent.
+      assert key not in self._vars or self._vars[key][1] == value
       self._vars[key] = (dep, value)
 
     self._hooks.extend([(dep, hook) for hook in dep.deps_hooks])
@@ -1788,6 +1790,13 @@ class Flattener(object):
     self._add_deps_os(dep)
 
     deps_by_name = dict((d.name, d) for d in dep.dependencies)
+    # Allow recursedeps entries that refer to deps_os entries.
+    # In case there are multiple entries with the same name,
+    # we have to pick something - e.g. the first one.
+    for os_deps in dep.os_dependencies.itervalues():
+      for os_dep in os_deps:
+        if os_dep.name not in deps_by_name:
+          deps_by_name[os_dep.name] = os_dep
     for recurse_dep_name in (dep.recursedeps or []):
       self._flatten_recurse(deps_by_name[recurse_dep_name])
 
