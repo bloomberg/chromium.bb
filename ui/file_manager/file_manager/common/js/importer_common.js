@@ -874,13 +874,13 @@ importer.RuntimeLogger.prototype.writeLine_ = function(type, line, writer) {
        * @param {function()} reject
        * @this {importer.RuntimeLogger}
        */
-      function(resolve, reject) {
+      (function(resolve, reject) {
         writer.onwriteend = resolve;
         writer.onerror = reject;
 
         writer.seek(writer.length);
         writer.write(blob);
-      }.bind(this));
+      }).bind(this));
 };
 
 /** @private {importer.Logger} */

@@ -155,7 +155,6 @@ cr.define('print_preview.ticket_items', function() {
     /**
      * @return {?} Default value of the ticket item if no value was set by
      *     the user.
-     * @abstract
      * @protected
      */
     getDefaultValueInternal: function() {
@@ -165,7 +164,6 @@ cr.define('print_preview.ticket_items', function() {
     /**
      * @return {?} Default value of the ticket item if the capability is
      *     not available.
-     * @abstract
      * @protected
      */
     getCapabilityNotAvailableValueInternal: function() {

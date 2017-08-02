@@ -212,7 +212,7 @@ CWSContainerClient.prototype.postInitializeMessage_ = function() {
           fulfill(items);
     })
   }.bind(this)).then(
-      /**
+      (/**
        * @param {!Array<string>} preinstalledExtensionIDs
        */
       function(preinstalledExtensionIDs) {
@@ -232,7 +232,7 @@ CWSContainerClient.prototype.postInitializeMessage_ = function() {
         }
 
         this.postMessage_(message);
-      }.bind(this));
+      }).bind(this));
 };
 
 /**

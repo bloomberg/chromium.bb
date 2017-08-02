@@ -152,7 +152,7 @@ FileBrowserBackgroundImpl.prototype.handleViewEvent_ =
     function(event) {
   volumeManagerFactory.getInstance()
       .then(
-          /**
+          (/**
            * Retrieves the root file entry of the volume on the requested
            * device.
            * @param {!VolumeManager} volumeManager
@@ -171,7 +171,7 @@ FileBrowserBackgroundImpl.prototype.handleViewEvent_ =
             } else {
               console.error('Got view event with no actionable destination.');
             }
-          }.bind(this));
+          }).bind(this));
 };
 
 /**
@@ -185,7 +185,7 @@ FileBrowserBackgroundImpl.prototype.navigateToVolumeWhenReady_ =
     function(volumeId, opt_directoryPath) {
   volumeManagerFactory.getInstance()
       .then(
-          /**
+          (/**
            * Retrieves the root file entry of the volume on the requested
            * device.
            * @param {!VolumeManager} volumeManager
@@ -202,7 +202,7 @@ FileBrowserBackgroundImpl.prototype.navigateToVolumeWhenReady_ =
                           'Unable to find volume for id: ' + volumeId +
                           '. Error: ' + e.message);
                     });
-          }.bind(this));
+          }).bind(this));
 };
 
 /**

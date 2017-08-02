@@ -580,8 +580,8 @@ FileTransferController.prototype.isMissingFileContents_ =
  * Obtains entries that need to share with me.
  * The method also observers child entries of the given entries.
  * @param {Array<Entry>} entries Entries.
- * @return {Promise} Promise to be fulfilled with the entries that need to
- *     share.
+ * @return {!Promise<Array<Entry>>} Promise to be fulfilled with the entries
+ *    that need to share.
  * @private
  */
 FileTransferController.prototype.getMultiProfileShareEntries_ =
@@ -747,7 +747,7 @@ FileTransferController.prototype.executePaste = function(pastePlan) {
 
   FileTransferController.URLsToEntriesWithAccess(sourceURLs)
       .then(
-          /**
+          (/**
            * @param {Object} result
            * @this {FileTransferController}
            */
@@ -757,9 +757,9 @@ FileTransferController.prototype.executePaste = function(pastePlan) {
             // progress center item here.
             return this.fileOperationManager_.filterSameDirectoryEntry(
                 result.entries, destinationEntry, toMove);
-          }.bind(this))
+          }).bind(this))
       .then(
-          /**
+          (/**
            * @param {!Array<Entry>} filteredEntries
            * @this {FileTransferController}
            * @return {!Promise<Array<Entry>>}
@@ -794,12 +794,12 @@ FileTransferController.prototype.executePaste = function(pastePlan) {
             this.progressCenter_.updateItem(item);
             // Check if cross share is needed or not.
             return this.getMultiProfileShareEntries_(entries);
-          }.bind(this))
+          }).bind(this))
       .then(
-          /**
-           * @param {!Array<Entry>} inShareEntries
+          (/**
+           * @param {Array<Entry>} inShareEntries
            * @this {FileTransferController}
-           * @return {!Promise<Array<Entry>>}
+           * @return {!Promise<Array<Entry>>|!Promise<null>}
            */
           function(inShareEntries) {
             shareEntries = inShareEntries;
@@ -807,7 +807,7 @@ FileTransferController.prototype.executePaste = function(pastePlan) {
               return Promise.resolve(null);
             return this.multiProfileShareDialog_.
                 showMultiProfileShareDialog(shareEntries.length > 1);
-          }.bind(this))
+          }).bind(this))
       .then(
           /**
            * @param {?string} dialogResult
@@ -836,9 +836,7 @@ FileTransferController.prototype.executePaste = function(pastePlan) {
               return requestDriveShare(0);
             })
       .then(
-          /**
-           * @this {FileTransferController}
-           */
+          (/** @this {FileTransferController} */
           function() {
             // Start the pasting operation.
             this.fileOperationManager_.paste(
@@ -859,7 +857,7 @@ FileTransferController.prototype.executePaste = function(pastePlan) {
               this.progressCenter_.updateItem(item);
               this.sourceNotFoundErrorCount_++;
             }
-          }.bind(this))
+          }).bind(this))
       .catch(
           function(error) {
             if (error !== 'ABORT')

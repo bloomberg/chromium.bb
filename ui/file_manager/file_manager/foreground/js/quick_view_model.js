@@ -23,10 +23,7 @@ function QuickViewModel() {
  */
 QuickViewModel.prototype.__proto__ = cr.EventTarget.prototype;
 
-/**
- * @return {FileEntry}
- * @nosideeffects
- */
+/** @return {FileEntry} */
 QuickViewModel.prototype.getSelectedEntry = function() {
   return this.selectedEntry_;
 };

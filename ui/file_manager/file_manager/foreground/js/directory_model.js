@@ -1003,7 +1003,7 @@ DirectoryModel.prototype.onVolumeChanged_ = function(volumeInfo) {
   // removable device.
   return Promise.resolve(undefined)
       .then(
-          /** @this {DirectoryModel} */
+          (/** @this {DirectoryModel} */
           function() {
             switch (volumeInfo.volumeType) {
               case VolumeManagerCommon.VolumeType.REMOVABLE:
@@ -1034,7 +1034,7 @@ DirectoryModel.prototype.onVolumeChanged_ = function(volumeInfo) {
               default:
                 return volumeInfo.volumeType;
             }
-          }.bind(this))
+          }).bind(this))
       .then(this.tracker_.sendAppView.bind(this.tracker_));
 };
 

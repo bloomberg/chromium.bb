@@ -33,9 +33,8 @@ var CrSearchFieldBehavior = {
   },
 
   /**
-   * @abstract
    * @return {!HTMLInputElement} The input field element the behavior should
-   * use.
+   *     use.
    */
   getSearchInput: function() {},
 

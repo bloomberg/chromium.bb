@@ -70,13 +70,13 @@ importer.DriveDuplicateFinder.prototype.computeHash_ = function(entry) {
     }
 
     var hashPromise = new Promise(
-        /** @this {importer.DriveDuplicateFinder} */
+        (/** @this {importer.DriveDuplicateFinder} */
         function(resolve, reject) {
           var startTime = new Date().getTime();
           chrome.fileManagerPrivate.computeChecksum(
               entry,
-              /**
-               * @param {string} result The content hash.
+              (/**
+               * @param {string|undefined} result The content hash.
                * @this {importer.DriveDuplicateFinder}
                */
               function(result) {
@@ -97,8 +97,8 @@ importer.DriveDuplicateFinder.prototype.computeHash_ = function(entry) {
                 } else {
                   resolve(result);
                 }
-              }.bind(this));
-        }.bind(this));
+              }).bind(this));
+        }).bind(this));
 
     this.hashCache_.put(cacheKey, hashPromise);
     return hashPromise;
@@ -148,14 +148,14 @@ importer.DriveDuplicateFinder.prototype.getDriveId_ = function() {
 importer.DriveDuplicateFinder.prototype.searchFilesByHash_ =
     function(hash, volumeId) {
   return new Promise(
-      /** @this {importer.DriveDuplicateFinder} */
+      (/** @this {importer.DriveDuplicateFinder} */
       function(resolve, reject) {
         var startTime = new Date().getTime();
         chrome.fileManagerPrivate.searchFilesByHashes(
             volumeId,
             [hash],
-            /**
-             * @param {!Object<!Array<string>>} urls
+            (/**
+             * @param {!Object<string, !Array<string>>|undefined} urls
              * @this {importer.DriveDuplicateFinder}
              */
             function(urls) {
@@ -173,8 +173,8 @@ importer.DriveDuplicateFinder.prototype.searchFilesByHash_ =
               } else {
                 resolve(urls[hash]);
               }
-            }.bind(this));
-      }.bind(this));
+            }).bind(this));
+      }).bind(this));
 };
 
 /**
@@ -216,11 +216,11 @@ importer.DispositionChecker.prototype.getDisposition =
   }
 
   return new Promise(
-      /** @this {importer.DispositionChecker} */
+      (/** @this {importer.DispositionChecker} */
       function(resolve, reject) {
         this.hasHistoryDuplicate_(entry, destination)
             .then(
-                /**
+                (/**
                  * @param {boolean} duplicate
                  * @this {importer.DispositionChecker}
                  */
@@ -244,8 +244,8 @@ importer.DispositionChecker.prototype.getDisposition =
                               resolve(importer.Disposition.ORIGINAL);
                             }
                           });
-                }.bind(this));
-            }.bind(this));
+                }).bind(this));
+            }).bind(this));
 };
 
 /**
@@ -259,10 +259,10 @@ importer.DispositionChecker.prototype.hasHistoryDuplicate_ =
     function(entry, destination) {
   return this.historyLoader_.getHistory()
       .then(
-          /**
+          (/**
            * @param {!importer.ImportHistory} history
            * @return {!Promise}
-           * @this {importer.DefaultMediaScanner}
+           * @this {importer.DispositionChecker}
            */
           function(history) {
             return Promise.all([
@@ -276,7 +276,7 @@ importer.DispositionChecker.prototype.hasHistoryDuplicate_ =
                 function(results) {
                   return results[0] || results[1];
                 });
-          }.bind(this));
+          }).bind(this));
 };
 
 /**

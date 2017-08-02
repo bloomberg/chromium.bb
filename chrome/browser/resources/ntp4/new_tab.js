@@ -180,7 +180,6 @@ cr.define('ntp', function() {
 
   /**
    * Fired as each section of pages becomes ready.
-   * @param {Event} e Each page's synthetic DOM event.
    */
   document.addEventListener('sectionready', function(e) {
     if (--sectionsToWaitFor <= 0) {

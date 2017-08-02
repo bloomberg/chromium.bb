@@ -531,10 +531,10 @@ FileManager.prototype = /** @struct */ {
 
     this.directoryModel_.addEventListener(
         'directory-changed',
-        /** @param {!Event} event */
+        (/** @param {!Event} event */
         function(event) {
           this.navigationUma_.onDirectoryChanged(event.newDirEntry);
-        }.bind(this));
+        }).bind(this));
 
     this.initCommands_();
 
@@ -984,14 +984,14 @@ FileManager.prototype = /** @struct */ {
     // If, and only if history is ever fully loaded (it may not be),
     // we want to update grid/list view when it changes.
     this.historyLoader_.addHistoryLoadedListener(
-        /**
+        (/**
          * @param {!importer.ImportHistory} history
          * @this {FileManager}
          */
         function(history) {
           this.importHistory_ = history;
           history.addObserver(this.onHistoryChangedBound_);
-        }.bind(this));
+        }).bind(this));
 
   };
 
@@ -1006,7 +1006,7 @@ FileManager.prototype = /** @struct */ {
     // current directory.
     util.isChildEntry(event.entry, this.getCurrentDirectoryEntry())
         .then(
-            /**
+            (/**
              * @param {boolean} isChild
              * @this {FileManager}
              */
@@ -1019,7 +1019,7 @@ FileManager.prototype = /** @struct */ {
                     'import-history',
                     [event.entry]);
               }
-            }.bind(this));
+            }).bind(this));
   };
 
   /**
