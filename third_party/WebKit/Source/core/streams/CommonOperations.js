@@ -35,6 +35,23 @@
   }
 
   //
+  // Assert is not normally enabled, to avoid the space and time overhead. To
+  // enable, uncomment this definition and then in the file you wish to enable
+  // asserts for, uncomment the assert statements and add this definition:
+  // const assert = pred => binding.SimpleAssert(pred);
+  //
+  // binding.SimpleAssert = pred => {
+  //   if (pred) {
+  //     return;
+  //   }
+  //   v8.log('\n\n\n  *** ASSERTION FAILURE ***\n\n');
+  //   v8.logStackTrace();
+  //   v8.log('**************************************************\n\n');
+  //   class StreamsAssertionError extends Error {}
+  //   throw new StreamsAssertionError('Streams Assertion Failure');
+  // }
+
+  //
   // Promise-manipulation functions
   //
 
