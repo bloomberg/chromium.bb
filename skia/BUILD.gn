@@ -34,6 +34,7 @@ config("skia_config") {
     "//third_party/skia/include/core",
     "//third_party/skia/include/effects",
     "//third_party/skia/include/encode",
+    "//third_party/skia/include/gpu",
     "//third_party/skia/include/images",
     "//third_party/skia/include/lazy",
     "//third_party/skia/include/pathops",
@@ -63,7 +64,6 @@ config("skia_config") {
 
   if (skia_support_gpu) {
     include_dirs += [
-      "//third_party/skia/include/gpu",
       "//third_party/skia/src/gpu",
       "//third_party/skia/src/sksl",
     ]
