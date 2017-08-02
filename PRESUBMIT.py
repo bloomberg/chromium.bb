@@ -2134,6 +2134,64 @@ def _CheckForRelativeIncludes(input_api, output_api):
 
   return results
 
+
+def _CheckEntriesInWATCHLISTSAreSorted(contents, input_api, output_api):
+  watchlists_start_re = input_api.re.compile(r"^  'WATCHLISTS'")
+  entry_re = input_api.re.compile(r"^    '([\dA-Za-z_]+)'")
+
+  watchlist_definitions = []
+  watchlists = []
+
+  in_watchlists = False
+  for line in contents.split('\n'):
+    if not in_watchlists and watchlists_start_re.match(line) is not None:
+      in_watchlists = True
+      continue
+
+    m = entry_re.match(line)
+    if m is not None:
+      name = m.group(1)
+      if not in_watchlists:
+        watchlist_definitions.append(name)
+      else:
+        watchlists.append(name)
+
+  results = []
+
+  sorted_watchlist_definitions = sorted(watchlist_definitions)
+  if sorted_watchlist_definitions != watchlist_definitions:
+    results.append(output_api.PresubmitError(
+        'WATCHLIST_DEFINITIONS entries are not sorted'))
+
+  sorted_watchlists = sorted(watchlists)
+  if sorted_watchlists != watchlists:
+    results.append(output_api.PresubmitError(
+        'WATCHLISTS entries are not sorted'))
+
+  if watchlist_definitions != watchlists:
+    results.append(output_api.PresubmitError(
+        'WATCHLIST_DEFINITIONS doesn\'t match WATCHLISTS'))
+
+  return results
+
+
+def _CheckWATCHLISTS(input_api, output_api):
+  for f in input_api.AffectedFiles(include_deletes=False):
+    if f.LocalPath() == 'WATCHLISTS':
+      contents = input_api.ReadFile(f, 'r')
+
+      try:
+        input_api.ast.literal_eval(contents)
+      except ValueError:
+        return [output_api.PresubmitError('Cannot parse WATCHLISTS' + e)]
+      except TypeError:
+        return [output_api.PresubmitError('Cannot parse WATCHLISTS' + e)]
+
+      return _CheckEntriesInWATCHLISTSAreSorted(contents, input_api, output_api)
+
+  return []
+
+
 def _AndroidSpecificOnUploadChecks(input_api, output_api):
   """Groups checks that target android code."""
   results = []
@@ -2195,6 +2253,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckUselessForwardDeclarations(input_api, output_api))
   results.extend(_CheckForRiskyJsFeatures(input_api, output_api))
   results.extend(_CheckForRelativeIncludes(input_api, output_api))
+  results.extend(_CheckWATCHLISTS(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
@@ -2470,19 +2529,6 @@ def GetTryServerMasterForBot(bot):
     elif 'mac' in bot or 'ios' in bot:
       master = 'master.tryserver.chromium.mac'
   return master
-
-
-def GetDefaultTryConfigs(bots):
-  """Returns a list of ('bot', set(['tests']), filtered by [bots].
-  """
-
-  builders_and_tests = dict((bot, set(['defaulttests'])) for bot in bots)
-
-  # Build up the mapping from tryserver master to bot/test.
-  out = dict()
-  for bot, tests in builders_and_tests.iteritems():
-    out.setdefault(GetTryServerMasterForBot(bot), {})[bot] = tests
-  return out
 
 
 def CheckChangeOnCommit(input_api, output_api):
