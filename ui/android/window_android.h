@@ -44,8 +44,6 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
-  static bool RegisterWindowAndroid(JNIEnv* env);
-
   // Compositor callback relay.
   void OnCompositingDidCommit();
 

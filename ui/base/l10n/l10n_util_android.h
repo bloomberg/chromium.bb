@@ -20,8 +20,6 @@ UI_BASE_EXPORT base::string16 GetDisplayNameForLocale(
 
 UI_BASE_EXPORT bool IsLayoutRtl();
 
-UI_BASE_EXPORT bool RegisterLocalizationUtil(JNIEnv* env);
-
 }  // namespace l10n_util
 
 #endif  // UI_BASE_L10N_L10N_UTIL_ANDROID_H_

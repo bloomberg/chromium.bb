@@ -13,11 +13,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#include "ui/gfx/android/gfx_jni_registrar.h"
-#endif
-
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/test/mock_chrome_application_mac.h"
 #endif
@@ -45,10 +40,6 @@ class GfxTestSuite : public base::TestSuite {
  protected:
   void Initialize() override {
     base::TestSuite::Initialize();
-
-#if defined(OS_ANDROID)
-    gfx::android::RegisterJni(base::android::AttachCurrentThread());
-#endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     mock_cr_app::RegisterMockCrApp();

@@ -131,10 +131,6 @@ ScopedJavaLocalRef<jobject> WindowAndroid::GetJavaObject() {
   return base::android::ScopedJavaLocalRef<jobject>(java_window_);
 }
 
-bool WindowAndroid::RegisterWindowAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 WindowAndroid::~WindowAndroid() {
   DCHECK(parent_ == nullptr) << "WindowAndroid must be a root view.";
   DCHECK(!compositor_);

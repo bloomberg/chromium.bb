@@ -30,8 +30,6 @@ class GL_EXPORT SurfaceTextureListener {
   void FrameAvailable(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj);
 
-  static bool RegisterSurfaceTextureListener(JNIEnv* env);
-
  private:
   friend class base::DeleteHelper<SurfaceTextureListener>;
 

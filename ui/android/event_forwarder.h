@@ -93,8 +93,6 @@ class EventForwarder {
   DISALLOW_COPY_AND_ASSIGN(EventForwarder);
 };
 
-bool RegisterEventForwarder(JNIEnv* env);
-
 }  // namespace ui
 
 #endif  // UI_ANDROID_EVENT_FORWARDER_H_

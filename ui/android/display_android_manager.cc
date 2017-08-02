@@ -32,10 +32,6 @@ void SetScreenAndroid() {
   Java_DisplayAndroidManager_onNativeSideCreated(env, (jlong)manager);
 }
 
-bool RegisterScreenAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 DisplayAndroidManager::DisplayAndroidManager() {}
 
 DisplayAndroidManager::~DisplayAndroidManager() {}

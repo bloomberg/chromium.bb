@@ -11,12 +11,10 @@
 #include "net/android/net_jni_registrar.h"
 #include "remoting/client/jni/remoting_jni_registrar.h"
 #include "remoting/client/remoting_jni_registration.h"
-#include "ui/gfx/android/gfx_jni_registrar.h"
 
 namespace {
 
 base::android::RegistrationMethod kRemotingRegisteredMethods[] = {
-  {"gfx", gfx::android::RegisterJni},
   {"net", net::android::RegisterJni},
   {"remoting", remoting::RegisterJni},
 };

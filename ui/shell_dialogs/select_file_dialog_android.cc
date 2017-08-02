@@ -125,10 +125,6 @@ void SelectFileDialogImpl::SelectFileImpl(
                                    owning_window->GetJavaObject());
 }
 
-bool SelectFileDialogImpl::RegisterSelectFileDialog(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 SelectFileDialogImpl::~SelectFileDialogImpl() {
 }
 

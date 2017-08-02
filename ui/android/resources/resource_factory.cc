@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/android/resources/resource_factory.h"
-
 #include "jni/ResourceFactory_jni.h"
 #include "ui/android/resources/nine_patch_resource.h"
 #include "ui/gfx/geometry/rect.h"
@@ -11,10 +9,6 @@
 using base::android::JavaParamRef;
 
 namespace ui {
-
-bool RegisterResourceFactory(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 
 jlong CreateBitmapResource(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   return reinterpret_cast<intptr_t>(new Resource());

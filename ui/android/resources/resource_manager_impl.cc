@@ -233,11 +233,6 @@ bool ResourceManagerImpl::OnMemoryDump(
   return true;
 }
 
-// static
-bool ResourceManagerImpl::RegisterResourceManager(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 void ResourceManagerImpl::PreloadResourceFromJava(AndroidResourceType res_type,
                                                   int res_id) {
   TRACE_EVENT2("ui", "ResourceManagerImpl::PreloadResourceFromJava",

@@ -17,7 +17,6 @@
 #include "base/android/jni_android.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/android/media_jni_registrar.h"
-#include "ui/gl/android/gl_jni_registrar.h"
 #endif
 
 class TestSuiteNoAtExit : public base::TestSuite {
@@ -42,8 +41,6 @@ void TestSuiteNoAtExit::Initialize() {
 #if defined(OS_ANDROID)
   // Register JNI bindings for android.
   JNIEnv* env = base::android::AttachCurrentThread();
-  // Needed for surface texture support.
-  ui::gl::android::RegisterJni(env);
 
   media::RegisterJni(env);
 

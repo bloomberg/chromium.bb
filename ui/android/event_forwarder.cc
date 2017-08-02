@@ -161,8 +161,4 @@ void EventForwarder::OnDragEvent(JNIEnv* env,
   view_->OnDragEvent(event);
 }
 
-bool RegisterEventForwarder(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace ui
