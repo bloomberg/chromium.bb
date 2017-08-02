@@ -24,10 +24,10 @@ using ServiceWorkerStartCallback =
 
 // Note that one and only one of the callbacks from this class must/should be
 // called.
-class InvocationCallbacks
+class RespondWithCallbacks
     : public payments::mojom::PaymentHandlerResponseCallback {
  public:
-  InvocationCallbacks(
+  RespondWithCallbacks(
       ServiceWorkerMetrics::EventType event_type,
       scoped_refptr<ServiceWorkerVersion> service_worker_version,
       PaymentAppProvider::InvokePaymentAppCallback callback)
@@ -36,7 +36,20 @@ class InvocationCallbacks
         binding_(this),
         weak_ptr_factory_(this) {
     request_id_ = service_worker_version->StartRequest(
-        event_type, base::Bind(&InvocationCallbacks::OnErrorStatus,
+        event_type, base::Bind(&RespondWithCallbacks::OnErrorStatus,
+                               weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  RespondWithCallbacks(
+      ServiceWorkerMetrics::EventType event_type,
+      scoped_refptr<ServiceWorkerVersion> service_worker_version,
+      PaymentAppProvider::CanMakePaymentCallback callback)
+      : service_worker_version_(service_worker_version),
+        can_make_payment_callback_(std::move(callback)),
+        binding_(this),
+        weak_ptr_factory_(this) {
+    request_id_ = service_worker_version->StartRequest(
+        event_type, base::Bind(&RespondWithCallbacks::OnErrorStatus,
                                weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -47,7 +60,7 @@ class InvocationCallbacks
     return callback_proxy;
   }
 
-  void OnPaymentHandlerResponse(
+  void OnResponseForPaymentRequest(
       payments::mojom::PaymentHandlerResponsePtr response,
       base::Time dispatch_event_time) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -60,6 +73,18 @@ class InvocationCallbacks
     delete this;
   }
 
+  void OnResponseForCanMakePayment(bool can_make_payment,
+                                   base::Time dispatch_event_time) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    service_worker_version_->FinishRequest(request_id_, false,
+                                           std::move(dispatch_event_time));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(std::move(can_make_payment_callback_),
+                       can_make_payment));
+    delete this;
+  }
+
   void OnErrorStatus(ServiceWorkerStatusCode service_worker_status) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(service_worker_status != SERVICE_WORKER_OK);
@@ -69,6 +94,11 @@ class InvocationCallbacks
           BrowserThread::UI, FROM_HERE,
           base::BindOnce(std::move(invoke_payment_app_callback_),
                          payments::mojom::PaymentHandlerResponse::New()));
+    } else if (event_type_ ==
+               ServiceWorkerMetrics::EventType::CAN_MAKE_PAYMENT) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(std::move(can_make_payment_callback_), false));
     }
 
     delete this;
@@ -77,17 +107,18 @@ class InvocationCallbacks
   int request_id() { return request_id_; }
 
  private:
-  ~InvocationCallbacks() override {}
+  ~RespondWithCallbacks() override {}
 
   int request_id_;
   ServiceWorkerMetrics::EventType event_type_;
   scoped_refptr<ServiceWorkerVersion> service_worker_version_;
   PaymentAppProvider::InvokePaymentAppCallback invoke_payment_app_callback_;
+  PaymentAppProvider::CanMakePaymentCallback can_make_payment_callback_;
   mojo::Binding<payments::mojom::PaymentHandlerResponseCallback> binding_;
 
-  base::WeakPtrFactory<InvocationCallbacks> weak_ptr_factory_;
+  base::WeakPtrFactory<RespondWithCallbacks> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(InvocationCallbacks);
+  DISALLOW_COPY_AND_ASSIGN(RespondWithCallbacks);
 };
 
 void DidGetAllPaymentAppsOnIO(
@@ -105,6 +136,35 @@ void GetAllPaymentAppsOnIO(
 
   payment_app_context->payment_app_database()->ReadAllPaymentApps(
       base::BindOnce(&DidGetAllPaymentAppsOnIO, std::move(callback)));
+}
+
+void DispatchCanMakePaymentEvent(
+    payments::mojom::CanMakePaymentEventDataPtr event_data,
+    PaymentAppProvider::CanMakePaymentCallback callback,
+    scoped_refptr<ServiceWorkerVersion> active_version,
+    ServiceWorkerStatusCode service_worker_status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (service_worker_status != SERVICE_WORKER_OK) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  DCHECK(active_version);
+
+  int event_finish_id = active_version->StartRequest(
+      ServiceWorkerMetrics::EventType::CAN_MAKE_PAYMENT,
+      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+
+  // This object self-deletes after either success or error callback is invoked.
+  RespondWithCallbacks* invocation_callbacks = new RespondWithCallbacks(
+      ServiceWorkerMetrics::EventType::CAN_MAKE_PAYMENT, active_version,
+      std::move(callback));
+
+  active_version->event_dispatcher()->DispatchCanMakePaymentEvent(
+      invocation_callbacks->request_id(), std::move(event_data),
+      invocation_callbacks->CreateInterfacePtrAndBind(),
+      active_version->CreateSimpleEventCallback(event_finish_id));
 }
 
 void DispatchPaymentRequestEvent(
@@ -129,9 +189,9 @@ void DispatchPaymentRequestEvent(
       base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
 
   // This object self-deletes after either success or error callback is invoked.
-  InvocationCallbacks* invocation_callbacks =
-      new InvocationCallbacks(ServiceWorkerMetrics::EventType::PAYMENT_REQUEST,
-                              active_version, std::move(callback));
+  RespondWithCallbacks* invocation_callbacks =
+      new RespondWithCallbacks(ServiceWorkerMetrics::EventType::PAYMENT_REQUEST,
+                               active_version, std::move(callback));
 
   active_version->event_dispatcher()->DispatchPaymentRequestEvent(
       invocation_callbacks->request_id(), std::move(event_data),
@@ -230,6 +290,20 @@ void PaymentAppProviderImpl::InvokePaymentApp(
       ServiceWorkerMetrics::EventType::PAYMENT_REQUEST, browser_context,
       registration_id,
       base::BindOnce(&DispatchPaymentRequestEvent, std::move(event_data),
+                     std::move(callback)));
+}
+
+void PaymentAppProviderImpl::CanMakePayment(
+    BrowserContext* browser_context,
+    int64_t registration_id,
+    payments::mojom::CanMakePaymentEventDataPtr event_data,
+    CanMakePaymentCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  StartServiceWorkerForDispatch(
+      ServiceWorkerMetrics::EventType::CAN_MAKE_PAYMENT, browser_context,
+      registration_id,
+      base::BindOnce(&DispatchCanMakePaymentEvent, std::move(event_data),
                      std::move(callback)));
 }
 

@@ -2,6 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+self.addEventListener('canmakepayment', e => {
+  // Note that the following postMessage operations are not normal usage
+  // in CanMakePaymentEvent. They are only used for testing purpose.
+  // Please see content/browser/payments/payment_app_browsertest.cc
+  // (PaymentAppBrowserTest.CanMakePayment)
+  e.waitUntil(clients.matchAll({includeUncontrolled: true}).then(clients => {
+    clients.forEach(client => {
+      if (client.url.indexOf('payment_app_invocation.html') != -1) {
+        client.postMessage(e.topLevelOrigin);
+        client.postMessage(e.paymentRequestOrigin);
+        client.postMessage(JSON.stringify(e.methodData));
+        client.postMessage(JSON.stringify(e.modifiers));
+      }
+    });
+  }));
+
+  e.respondWith(new Promise(resolve => {
+    e.methodData.forEach(methodData => {
+      methodData.supportedMethods.forEach(method => {
+        if (method == 'basic-card') {
+          resolve(true);
+          return;
+        }
+      });
+    });
+  }));
+});
+
 self.addEventListener('paymentrequest', e => {
   e.waitUntil(clients.matchAll({includeUncontrolled: true}).then(clients => {
     clients.forEach(client => {

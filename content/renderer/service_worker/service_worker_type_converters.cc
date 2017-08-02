@@ -29,6 +29,34 @@ TypeConverter<content::ServiceWorkerStatusCode,
   return status_code;
 }
 
+blink::WebCanMakePaymentEventData
+TypeConverter<blink::WebCanMakePaymentEventData,
+              payments::mojom::CanMakePaymentEventDataPtr>::
+    Convert(const payments::mojom::CanMakePaymentEventDataPtr& input) {
+  blink::WebCanMakePaymentEventData output;
+
+  output.top_level_origin =
+      blink::WebString::FromUTF8(input->top_level_origin.spec());
+  output.payment_request_origin =
+      blink::WebString::FromUTF8(input->payment_request_origin.spec());
+
+  output.method_data =
+      blink::WebVector<blink::WebPaymentMethodData>(input->method_data.size());
+  for (size_t i = 0; i < input->method_data.size(); i++) {
+    output.method_data[i] = mojo::ConvertTo<blink::WebPaymentMethodData>(
+        std::move(input->method_data[i]));
+  }
+
+  output.modifiers = blink::WebVector<blink::WebPaymentDetailsModifier>(
+      input->modifiers.size());
+  for (size_t i = 0; i < input->modifiers.size(); i++) {
+    output.modifiers[i] =
+        mojo::ConvertTo<blink::WebPaymentDetailsModifier>(input->modifiers[i]);
+  }
+
+  return output;
+}
+
 blink::WebPaymentRequestEventData
 TypeConverter<blink::WebPaymentRequestEventData,
               payments::mojom::PaymentRequestEventDataPtr>::

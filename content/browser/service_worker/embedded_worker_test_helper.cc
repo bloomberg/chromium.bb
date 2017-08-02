@@ -257,6 +257,18 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
     NOTIMPLEMENTED();
   }
 
+  void DispatchCanMakePaymentEvent(
+      int payment_request_id,
+      payments::mojom::CanMakePaymentEventDataPtr event_data,
+      payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
+      DispatchCanMakePaymentEventCallback callback) override {
+    if (!helper_)
+      return;
+    helper_->OnCanMakePaymentEventStub(std::move(event_data),
+                                       std::move(response_callback),
+                                       std::move(callback));
+  }
+
   void DispatchPaymentRequestEvent(
       int payment_request_id,
       payments::mojom::PaymentRequestEventDataPtr event_data,
@@ -530,12 +542,31 @@ void EmbeddedWorkerTestHelper::OnNotificationCloseEvent(
   std::move(callback).Run(SERVICE_WORKER_OK, base::Time::Now());
 }
 
+void EmbeddedWorkerTestHelper::OnCanMakePaymentEvent(
+    payments::mojom::CanMakePaymentEventDataPtr event_data,
+    payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
+    mojom::ServiceWorkerEventDispatcher::DispatchCanMakePaymentEventCallback
+        callback) {
+  bool can_make_payment = false;
+  for (const auto& method_data : event_data->method_data) {
+    for (const auto& method : method_data->supported_methods) {
+      if (method == "test-method") {
+        can_make_payment = true;
+        break;
+      }
+    }
+  }
+  response_callback->OnResponseForCanMakePayment(can_make_payment,
+                                                 base::Time::Now());
+  std::move(callback).Run(SERVICE_WORKER_OK, base::Time::Now());
+}
+
 void EmbeddedWorkerTestHelper::OnPaymentRequestEvent(
     payments::mojom::PaymentRequestEventDataPtr event_data,
     payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
     mojom::ServiceWorkerEventDispatcher::DispatchPaymentRequestEventCallback
         callback) {
-  response_callback->OnPaymentHandlerResponse(
+  response_callback->OnResponseForPaymentRequest(
       payments::mojom::PaymentHandlerResponse::New(), base::Time::Now());
   std::move(callback).Run(SERVICE_WORKER_OK, base::Time::Now());
 }
@@ -784,6 +815,18 @@ void EmbeddedWorkerTestHelper::OnPushEventStub(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&EmbeddedWorkerTestHelper::OnPushEvent, AsWeakPtr(),
                             payload, base::Passed(&callback)));
+}
+
+void EmbeddedWorkerTestHelper::OnCanMakePaymentEventStub(
+    payments::mojom::CanMakePaymentEventDataPtr event_data,
+    payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
+    mojom::ServiceWorkerEventDispatcher::DispatchCanMakePaymentEventCallback
+        callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&EmbeddedWorkerTestHelper::OnCanMakePaymentEvent, AsWeakPtr(),
+                 base::Passed(&event_data), base::Passed(&response_callback),
+                 base::Passed(&callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnPaymentRequestEventStub(

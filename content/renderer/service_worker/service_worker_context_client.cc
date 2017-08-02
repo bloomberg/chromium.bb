@@ -383,6 +383,16 @@ struct ServiceWorkerContextClient::WorkerContextData {
   // Pending callbacks for Background Sync Events.
   SyncEventCallbacksMap sync_event_callbacks;
 
+  // Pending callbacks for result of CanMakePayment.
+  std::map<int /* can_make_payment_event_id */,
+           payments::mojom::PaymentHandlerResponseCallbackPtr>
+      can_make_payment_result_callbacks;
+
+  // Pending callbacks for CanMakePayment Events.
+  std::map<int /* can_make_payment_event_id */,
+           DispatchCanMakePaymentEventCallback>
+      can_make_payment_event_callbacks;
+
   // Pending callbacks for Payment App Response.
   std::map<int /* payment_request_id */,
            payments::mojom::PaymentHandlerResponseCallbackPtr>
@@ -1121,6 +1131,28 @@ void ServiceWorkerContextClient::DidHandleSyncEvent(
   context_->sync_event_callbacks.Remove(request_id);
 }
 
+void ServiceWorkerContextClient::RespondToCanMakePaymentEvent(
+    int event_id,
+    bool can_make_payment,
+    double dispatch_event_time) {
+  const payments::mojom::PaymentHandlerResponseCallbackPtr& result_callback =
+      context_->can_make_payment_result_callbacks[event_id];
+  result_callback->OnResponseForCanMakePayment(
+      can_make_payment, base::Time::FromDoubleT(dispatch_event_time));
+  context_->can_make_payment_result_callbacks.erase(event_id);
+}
+
+void ServiceWorkerContextClient::DidHandleCanMakePaymentEvent(
+    int event_id,
+    blink::WebServiceWorkerEventResult result,
+    double dispatch_event_time) {
+  DispatchCanMakePaymentEventCallback callback =
+      std::move(context_->can_make_payment_event_callbacks[event_id]);
+  std::move(callback).Run(EventResultToStatus(result),
+                          base::Time::FromDoubleT(dispatch_event_time));
+  context_->can_make_payment_event_callbacks.erase(event_id);
+}
+
 void ServiceWorkerContextClient::RespondToPaymentRequestEvent(
     int payment_request_id,
     const blink::WebPaymentHandlerResponse& web_response,
@@ -1131,7 +1163,7 @@ void ServiceWorkerContextClient::RespondToPaymentRequestEvent(
       payments::mojom::PaymentHandlerResponse::New();
   response->method_name = web_response.method_name.Utf8();
   response->stringified_details = web_response.stringified_details.Utf8();
-  response_callback->OnPaymentHandlerResponse(
+  response_callback->OnResponseForPaymentRequest(
       std::move(response), base::Time::FromDoubleT(dispatch_event_time));
   context_->payment_response_callbacks.erase(payment_request_id);
 }
@@ -1251,6 +1283,23 @@ void ServiceWorkerContextClient::DispatchSyncEvent(
   // https://crrev.com/1768063002/ lands.
   proxy_->DispatchSyncEvent(request_id, blink::WebString::FromUTF8(tag),
                             web_last_chance);
+}
+
+void ServiceWorkerContextClient::DispatchCanMakePaymentEvent(
+    int event_id,
+    payments::mojom::CanMakePaymentEventDataPtr eventData,
+    payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
+    DispatchCanMakePaymentEventCallback callback) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerContextClient::DispatchCanMakePaymentEvent");
+  context_->can_make_payment_result_callbacks.insert(
+      std::make_pair(event_id, std::move(response_callback)));
+  context_->can_make_payment_event_callbacks.insert(
+      std::make_pair(event_id, std::move(callback)));
+
+  blink::WebCanMakePaymentEventData webEventData =
+      mojo::ConvertTo<blink::WebCanMakePaymentEventData>(std::move(eventData));
+  proxy_->DispatchCanMakePaymentEvent(event_id, webEventData);
 }
 
 void ServiceWorkerContextClient::DispatchPaymentRequestEvent(

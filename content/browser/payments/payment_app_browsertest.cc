@@ -21,6 +21,8 @@
 namespace content {
 namespace {
 
+using ::payments::mojom::CanMakePaymentEventData;
+using ::payments::mojom::CanMakePaymentEventDataPtr;
 using ::payments::mojom::PaymentRequestEventData;
 using ::payments::mojom::PaymentRequestEventDataPtr;
 using ::payments::mojom::PaymentHandlerResponsePtr;
@@ -34,6 +36,13 @@ void GetAllPaymentAppsCallback(const base::Closure& done_callback,
                                PaymentAppProvider::PaymentApps* out_apps,
                                PaymentAppProvider::PaymentApps apps) {
   *out_apps = std::move(apps);
+  done_callback.Run();
+}
+
+void CanMakePaymentCallback(const base::Closure& done_callback,
+                            bool* out_can_make_payment,
+                            bool can_make_payment) {
+  *out_can_make_payment = can_make_payment;
   done_callback.Run();
 }
 
@@ -101,6 +110,23 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
     return registrationIds;
   }
 
+  bool CanMakePaymentWithTestData(int64_t registration_id,
+                                  const std::string& supported_method) {
+    CanMakePaymentEventDataPtr event_data =
+        CreateCanMakePaymentEventData(supported_method);
+
+    base::RunLoop run_loop;
+    bool can_make_payment;
+    PaymentAppProvider::GetInstance()->CanMakePayment(
+        shell()->web_contents()->GetBrowserContext(), registration_id,
+        std::move(event_data),
+        base::Bind(&CanMakePaymentCallback, run_loop.QuitClosure(),
+                   &can_make_payment));
+    run_loop.Run();
+
+    return can_make_payment;
+  }
+
   PaymentHandlerResponsePtr InvokePaymentAppWithTestData(
       int64_t registration_id,
       const std::string& supported_method,
@@ -134,6 +160,29 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
   }
 
  private:
+  CanMakePaymentEventDataPtr CreateCanMakePaymentEventData(
+      const std::string& supported_method) {
+    CanMakePaymentEventDataPtr event_data = CanMakePaymentEventData::New();
+
+    event_data->top_level_origin = GURL("https://example.com");
+
+    event_data->payment_request_origin = GURL("https://example.com");
+
+    event_data->method_data.push_back(PaymentMethodData::New());
+    event_data->method_data[0]->supported_methods = {supported_method};
+
+    PaymentDetailsModifierPtr modifier = PaymentDetailsModifier::New();
+    modifier->total = PaymentItem::New();
+    modifier->total->amount = PaymentCurrencyAmount::New();
+    modifier->total->amount->currency = "USD";
+    modifier->total->amount->value = "55";
+    modifier->method_data = PaymentMethodData::New();
+    modifier->method_data->supported_methods = {supported_method};
+    event_data->modifiers.push_back(std::move(modifier));
+
+    return event_data;
+  }
+
   PaymentRequestEventDataPtr CreatePaymentRequestEventData(
       const std::string& supported_method,
       const std::string& instrument_key) {
@@ -170,6 +219,31 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
 
   DISALLOW_COPY_AND_ASSIGN(PaymentAppBrowserTest);
 };
+
+IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, CanMakePayment) {
+  RegisterPaymentApp();
+
+  std::vector<int64_t> registrationIds = GetAllPaymentAppRegistrationIDs();
+  ASSERT_EQ(1U, registrationIds.size());
+
+  bool can_make_payment =
+      CanMakePaymentWithTestData(registrationIds[0], "basic-card");
+  ASSERT_TRUE(can_make_payment);
+
+  ClearStoragePartitionData();
+
+  EXPECT_EQ("https://example.com/", PopConsoleString() /* topLevelOrigin */);
+  EXPECT_EQ("https://example.com/",
+            PopConsoleString() /* paymentRequestOrigin */);
+  EXPECT_EQ("[{\"supportedMethods\":[\"basic-card\"]}]",
+            PopConsoleString() /* methodData */);
+  EXPECT_EQ(
+      "[{\"additionalDisplayItems\":[],\"supportedMethods\":[\"basic-card\"],"
+      "\"total\":{\"amount\":{\"currency\":\"USD\",\"currencySystem\":\"urn:"
+      "iso:std:iso:4217\",\"value\":\"55\"},\"label\":\"\",\"pending\":false}}"
+      "]",
+      PopConsoleString() /* modifiers */);
+}
 
 IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, PaymentAppInvocationAndFailed) {
   RegisterPaymentApp();
