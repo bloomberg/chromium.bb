@@ -47,6 +47,9 @@ class ProfileShortcutManager {
                                      base::string16* name,
                                      base::FilePath* icon_path) = 0;
 
+  // Any time a profile is created this class might do a lot of work in the
+  // background that's rarely important to unit tests.
+  static void DisableForUnitTests();
   static bool IsFeatureEnabled();
   static ProfileShortcutManager* Create(ProfileManager* manager);
 
