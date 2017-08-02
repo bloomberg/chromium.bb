@@ -360,16 +360,6 @@ static int i915_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t h
 		drv_bo_from_format(bo, stride, height, format);
 	}
 
-	/*
-	 * Quoting Mesa ISL library:
-	 *
-	 *    - For linear surfaces, additional padding of 64 bytes is required at
-	 *      the bottom of the surface. This is in addition to the padding
-	 *      required above.
-	 */
-	if (bo->tiling == I915_TILING_NONE)
-		bo->total_size += 64;
-
 	memset(&gem_create, 0, sizeof(gem_create));
 	gem_create.size = bo->total_size;
 
