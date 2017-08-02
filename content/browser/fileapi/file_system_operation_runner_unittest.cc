@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_restrictions.h"
@@ -238,13 +239,8 @@ TEST_F(MultiThreadFileSystemOperationRunnerTest, OpenAndShutdown) {
       base::Bind(&DidOpenFile));
   operation_runner()->Shutdown();
 
-  // Wait until the task posted on FILE thread is done.
-  base::RunLoop run_loop;
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&base::DoNothing),
-      run_loop.QuitClosure());
-  run_loop.Run();
+  // Wait until the task posted on the blocking thread is done.
+  base::TaskScheduler::GetInstance()->FlushForTesting();
   // This should finish without thread assertion failure on debug build.
 }
 
