@@ -143,6 +143,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // Extended sRGB matches sRGB for values in [0, 1], and extends the transfer
   // function to all real values.
   static ColorSpace CreateExtendedSRGB();
+
   // scRGB uses the same primaries as sRGB but has a linear transfer function
   // for all real values.
   static ColorSpace CreateSCRGBLinear();
@@ -160,18 +161,28 @@ class COLOR_SPACE_EXPORT ColorSpace {
 
   // Returns true if the decoded values can be outside of the 0.0-1.0 range.
   bool IsHDR() const;
+
   // Returns true if the encoded values can be outside of the 0.0-1.0 range.
   bool FullRangeEncodedValues() const;
 
   // Returns true if this color space can be represented parametrically.
   bool IsParametric() const;
+
   // Return a parametric approximation of this color space (if it is not already
   // parametric).
-  gfx::ColorSpace GetParametricApproximation() const;
+  ColorSpace GetParametricApproximation() const;
 
   // Return this color space with any range adjust or YUV to RGB conversion
   // stripped off.
-  gfx::ColorSpace GetAsFullRangeRGB() const;
+  ColorSpace GetAsFullRangeRGB() const;
+
+  // If |this| is the final output color space, return the color space that
+  // would be appropriate for rasterization.
+  ColorSpace GetRasterColorSpace() const;
+
+  // If |this| is the final output color space, return the color space that
+  // would be appropriate for blending.
+  ColorSpace GetBlendingColorSpace() const;
 
   // This will return nullptr for non-RGB spaces, spaces with non-FULL
   // range, and unspecified spaces.
@@ -216,7 +227,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
   friend class ColorTransform;
   friend class ColorTransformInternal;
   friend class ColorSpaceWin;
-  friend struct IPC::ParamTraits<gfx::ColorSpace>;
+  friend struct IPC::ParamTraits<ColorSpace>;
   FRIEND_TEST_ALL_PREFIXES(SimpleColorSpace, GetColorSpace);
 };
 

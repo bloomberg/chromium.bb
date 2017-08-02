@@ -172,6 +172,23 @@ TEST(ColorSpace, ApproximateTransferFnBadMatch) {
   }
 }
 
+TEST(ColorSpace, RasterAndBlend) {
+  ColorSpace display_color_space;
+
+  // A linear transfer function being used for HDR should be blended using an
+  // sRGB-like transfer function.
+  display_color_space = ColorSpace::CreateSCRGBLinear();
+  EXPECT_EQ(ColorSpace::CreateExtendedSRGB(),
+            display_color_space.GetBlendingColorSpace());
+  EXPECT_EQ(ColorSpace::CreateDisplayP3D65(),
+            display_color_space.GetRasterColorSpace());
+
+  // If not used for HDR, a linear transfer function should be left unchanged.
+  display_color_space = ColorSpace::CreateXYZD50();
+  EXPECT_EQ(display_color_space, display_color_space.GetBlendingColorSpace());
+  EXPECT_EQ(display_color_space, display_color_space.GetRasterColorSpace());
+}
+
 TEST(ColorSpace, ToSkColorSpace) {
   const size_t kNumTests = 4;
   ColorSpace color_spaces[kNumTests] = {
