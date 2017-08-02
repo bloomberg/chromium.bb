@@ -32,9 +32,7 @@ function buy() {  // eslint-disable-line no-unused-vars
         .then(function(resp) {
           resp.complete('success')
               .then(function() {
-                print(
-                    resp.methodName + '<br>' +
-                    JSON.stringify(resp.details, undefined, 2));
+                print(JSON.stringify(resp, undefined, 2));
               })
               .catch(function(error) {
                 print(error.message);
@@ -75,9 +73,7 @@ function buyWithBobPayDiscount() {  // eslint-disable-line no-unused-vars
         .then(function(resp) {
           resp.complete('success')
               .then(function() {
-                print(
-                    resp.methodName + '<br>' +
-                    JSON.stringify(resp.details, undefined, 2));
+                print(JSON.stringify(resp, undefined, 2));
               })
               .catch(function(error) {
                 print(error.message);
@@ -120,9 +116,7 @@ function creditSupportedType() {  // eslint-disable-line no-unused-vars
         .then(function(resp) {
           resp.complete('success')
               .then(function() {
-                print(
-                    resp.methodName + '<br>' +
-                    JSON.stringify(resp.details, undefined, 2));
+                print(JSON.stringify(resp, undefined, 2));
               })
               .catch(function(error) {
                 print(error.message);
@@ -165,9 +159,7 @@ function debitSupportedType() {  // eslint-disable-line no-unused-vars
         .then(function(resp) {
           resp.complete('success')
               .then(function() {
-                print(
-                    resp.methodName + '<br>' +
-                    JSON.stringify(resp.details, undefined, 2));
+                print(JSON.stringify(resp, undefined, 2));
               })
               .catch(function(error) {
                 print(error.message);
@@ -211,9 +203,7 @@ function visaSupportedNetwork() {  // eslint-disable-line no-unused-vars
         .then(function(resp) {
           resp.complete('success')
               .then(function() {
-                print(
-                    resp.methodName + '<br>' +
-                    JSON.stringify(resp.details, undefined, 2));
+                print(JSON.stringify(resp, undefined, 2));
               })
               .catch(function(error) {
                 print(error.message);
@@ -258,9 +248,50 @@ function mastercardSupportedNetwork() {  // eslint-disable-line no-unused-vars
         .then(function(resp) {
           resp.complete('success')
               .then(function() {
-                print(
-                    resp.methodName + '<br>' +
-                    JSON.stringify(resp.details, undefined, 2));
+                print(JSON.stringify(resp, undefined, 2));
+              })
+              .catch(function(error) {
+                print(error.message);
+              });
+        })
+        .catch(function(error) {
+          print(error.message);
+        });
+  } catch (error) {
+    print(error.message);
+  }
+}
+
+/**
+ * Launches the PaymentRequest UI with Bob Pay and basic-card as payment
+ * methods and a modifier for basic-card with "mastercard" network.
+ */
+function mastercardAnySupportedType() { // eslint-disable-line no-unused-vars
+  try {
+    new PaymentRequest(
+        [{supportedMethods: ['https://bobpay.com', 'basic-card']}], {
+          total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
+          modifiers: [{
+            supportedMethods: ['basic-card'],
+            total: {
+              label: 'Total',
+              amount: {currency: 'USD', value: '4.00'},
+            },
+            additionalDisplayItems: [{
+              label: 'basic-card discount',
+              amount: {currency: 'USD', value: '-1.00'},
+            }],
+            data: {
+              discountProgramParticipantId: '86328764873265',
+              supportedNetworks: ['mastercard'],
+            },
+          }],
+        })
+        .show()
+        .then(function(resp) {
+          resp.complete('success')
+              .then(function() {
+                print(JSON.stringify(resp, undefined, 2));
               })
               .catch(function(error) {
                 print(error.message);
