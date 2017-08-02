@@ -168,15 +168,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     command_line->AppendSwitch(switches::kDisableOfflineAutoReload);
   }
 
-  // Populate command line flags from EnableFastWebScrollViewInsets.
-  NSString* enableFastWebScrollViewInsets =
-      [defaults stringForKey:@"EnableFastWebScrollViewInsets"];
-  if ([enableFastWebScrollViewInsets isEqualToString:@"Enabled"]) {
-    command_line->AppendSwitch(switches::kEnableIOSFastWebScrollViewInsets);
-  } else if ([enableFastWebScrollViewInsets isEqualToString:@"Disabled"]) {
-    command_line->AppendSwitch(switches::kDisableIOSFastWebScrollViewInsets);
-  }
-
   // Populate command line flags from ReaderModeEnabled.
   if ([defaults boolForKey:@"ReaderModeEnabled"]) {
     command_line->AppendSwitch(switches::kEnableReaderModeToolbarIcon);
