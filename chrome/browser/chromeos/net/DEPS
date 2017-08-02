@@ -17,4 +17,7 @@ specific_include_rules = {
     "+ash/system/system_notifier.h",
     "+ash/resources/grit/ash_resources.h",
   ],
+  "tether_notification_presenter\.cc": [
+    "+ash/system/system_notifier.h",
+  ],
 }
