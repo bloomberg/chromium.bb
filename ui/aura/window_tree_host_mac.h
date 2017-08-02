@@ -36,7 +36,6 @@ class AURA_EXPORT WindowTreeHostMac : public WindowTreeHost {
   void SetCapture() override;
   void ReleaseCapture() override;
   bool ConfineCursorToRootWindow() override;
-  void UnConfineCursor() override;
   void SetCursorNative(gfx::NativeCursor cursor_type) override;
   void MoveCursorToNative(const gfx::Point& location) override;
   void OnCursorVisibilityChangedNative(bool show) override;

@@ -36,10 +36,6 @@ bool AshWindowTreeHostMus::ConfineCursorToRootWindow() {
   return true;
 }
 
-void AshWindowTreeHostMus::UnConfineCursor() {
-  NOTIMPLEMENTED();
-}
-
 void AshWindowTreeHostMus::SetRootWindowTransformer(
     std::unique_ptr<RootWindowTransformer> transformer) {
   transformer_helper_->SetRootWindowTransformer(std::move(transformer));

@@ -77,10 +77,6 @@ bool WindowTreeHostMac::ConfineCursorToRootWindow() {
   return false;
 }
 
-void WindowTreeHostMac::UnConfineCursor() {
-  NOTIMPLEMENTED();
-}
-
 void WindowTreeHostMac::SetCursorNative(gfx::NativeCursor cursor_type) {
   NOTIMPLEMENTED();
 }
