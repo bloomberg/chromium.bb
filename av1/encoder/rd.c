@@ -66,18 +66,9 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
   int i, j;
 
   if (cm->frame_type == KEY_FRAME) {
-#if CONFIG_EXT_PARTITION_TYPES
-    for (i = 0; i < PARTITION_PLOFFSET; ++i)
-      av1_cost_tokens(x->partition_cost[i], fc->partition_prob[i],
-                      av1_partition_tree);
-    for (; i < PARTITION_CONTEXTS_PRIMARY; ++i)
-      av1_cost_tokens(x->partition_cost[i], fc->partition_prob[i],
-                      av1_ext_partition_tree);
-#else
     for (i = 0; i < PARTITION_CONTEXTS_PRIMARY; ++i)
-      av1_cost_tokens(x->partition_cost[i], fc->partition_prob[i],
-                      av1_partition_tree);
-#endif  // CONFIG_EXT_PARTITION_TYPES
+      av1_cost_tokens_from_cdf(x->partition_cost[i], fc->partition_cdf[i],
+                               NULL);
 #if CONFIG_UNPOISON_PARTITION_CTX
     for (; i < PARTITION_CONTEXTS_PRIMARY + PARTITION_BLOCK_SIZES; ++i) {
       aom_prob p = fc->partition_prob[i][PARTITION_VERT];
@@ -122,8 +113,9 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
                              uv_mode_inv_map);
 
   for (i = 0; i < SWITCHABLE_FILTER_CONTEXTS; ++i)
-    av1_cost_tokens(x->switchable_interp_costs[i],
-                    fc->switchable_interp_prob[i], av1_switchable_interp_tree);
+    av1_cost_tokens_from_cdf(x->switchable_interp_costs[i],
+                             fc->switchable_interp_cdf[i],
+                             av1_switchable_interp_inv);
 
 #if CONFIG_PALETTE
   for (i = 0; i < PALETTE_BLOCK_SIZES; ++i) {
@@ -145,43 +137,44 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
 
   for (i = 0; i < MAX_TX_DEPTH; ++i)
     for (j = 0; j < TX_SIZE_CONTEXTS; ++j)
-      av1_cost_tokens(x->tx_size_cost[i][j], fc->tx_size_probs[i][j],
-                      av1_tx_size_tree[i]);
+      av1_cost_tokens_from_cdf(x->tx_size_cost[i][j], fc->tx_size_cdf[i][j],
+                               NULL);
 
 #if CONFIG_EXT_TX
   for (i = TX_4X4; i < EXT_TX_SIZES; ++i) {
     int s;
     for (s = 1; s < EXT_TX_SETS_INTER; ++s) {
       if (use_inter_ext_tx_for_txsize[s][i]) {
-        av1_cost_tokens(x->inter_tx_type_costs[s][i],
-                        fc->inter_ext_tx_prob[s][i], av1_ext_tx_inter_tree[s]);
+        av1_cost_tokens_from_cdf(x->inter_tx_type_costs[s][i],
+                                 fc->inter_ext_tx_cdf[s][i],
+                                 av1_ext_tx_inter_inv[s]);
       }
     }
     for (s = 1; s < EXT_TX_SETS_INTRA; ++s) {
       if (use_intra_ext_tx_for_txsize[s][i]) {
         for (j = 0; j < INTRA_MODES; ++j)
-          av1_cost_tokens(x->intra_tx_type_costs[s][i][j],
-                          fc->intra_ext_tx_prob[s][i][j],
-                          av1_ext_tx_intra_tree[s]);
+          av1_cost_tokens_from_cdf(x->intra_tx_type_costs[s][i][j],
+                                   fc->intra_ext_tx_cdf[s][i][j],
+                                   av1_ext_tx_intra_inv[s]);
       }
     }
   }
 #else
   for (i = TX_4X4; i < EXT_TX_SIZES; ++i) {
     for (j = 0; j < TX_TYPES; ++j)
-      av1_cost_tokens(x->intra_tx_type_costs[i][j], fc->intra_ext_tx_prob[i][j],
-                      av1_ext_tx_tree);
+      av1_cost_tokens_from_cdf(x->intra_tx_type_costs[i][j],
+                               fc->intra_ext_tx_cdf[i][j], av1_ext_tx_inv);
   }
   for (i = TX_4X4; i < EXT_TX_SIZES; ++i) {
-    av1_cost_tokens(x->inter_tx_type_costs[i], fc->inter_ext_tx_prob[i],
-                    av1_ext_tx_tree);
+    av1_cost_tokens_from_cdf(x->inter_tx_type_costs[i], fc->inter_ext_tx_cdf[i],
+                             av1_ext_tx_inv);
   }
 #endif  // CONFIG_EXT_TX
 #if CONFIG_EXT_INTRA
 #if CONFIG_INTRA_INTERP
   for (i = 0; i < INTRA_FILTERS + 1; ++i)
-    av1_cost_tokens(x->intra_filter_cost[i], fc->intra_filter_probs[i],
-                    av1_intra_filter_tree);
+    av1_cost_tokens_from_cdf(x->intra_filter_cost[i], fc->intra_filter_cdf[i],
+                             NULL);
 #endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_LOOP_RESTORATION
@@ -191,39 +184,53 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
 
   if (!frame_is_intra_only(cm)) {
     for (i = 0; i < NEWMV_MODE_CONTEXTS; ++i) {
+#if CONFIG_NEW_MULTISYMBOL
+      av1_cost_tokens_from_cdf(x->newmv_mode_cost[i], fc->newmv_cdf[i], NULL);
+#else
       x->newmv_mode_cost[i][0] = av1_cost_bit(fc->newmv_prob[i], 0);
       x->newmv_mode_cost[i][1] = av1_cost_bit(fc->newmv_prob[i], 1);
+#endif
     }
 
     for (i = 0; i < ZEROMV_MODE_CONTEXTS; ++i) {
+#if CONFIG_NEW_MULTISYMBOL
+      av1_cost_tokens_from_cdf(x->zeromv_mode_cost[i], fc->zeromv_cdf[i], NULL);
+#else
       x->zeromv_mode_cost[i][0] = av1_cost_bit(fc->zeromv_prob[i], 0);
       x->zeromv_mode_cost[i][1] = av1_cost_bit(fc->zeromv_prob[i], 1);
+#endif
     }
 
     for (i = 0; i < REFMV_MODE_CONTEXTS; ++i) {
+#if CONFIG_NEW_MULTISYMBOL
+      av1_cost_tokens_from_cdf(x->refmv_mode_cost[i], fc->refmv_cdf[i], NULL);
+#else
       x->refmv_mode_cost[i][0] = av1_cost_bit(fc->refmv_prob[i], 0);
       x->refmv_mode_cost[i][1] = av1_cost_bit(fc->refmv_prob[i], 1);
+#endif
     }
 
     for (i = 0; i < DRL_MODE_CONTEXTS; ++i) {
+#if CONFIG_NEW_MULTISYMBOL
+      av1_cost_tokens_from_cdf(x->drl_mode_cost0[i], fc->drl_cdf[i], NULL);
+#else
       x->drl_mode_cost0[i][0] = av1_cost_bit(fc->drl_prob[i], 0);
       x->drl_mode_cost0[i][1] = av1_cost_bit(fc->drl_prob[i], 1);
+#endif
     }
 #if CONFIG_EXT_INTER
     for (i = 0; i < INTER_MODE_CONTEXTS; ++i)
-      av1_cost_tokens(x->inter_compound_mode_cost[i],
-                      fc->inter_compound_mode_probs[i],
-                      av1_inter_compound_mode_tree);
+      av1_cost_tokens_from_cdf(x->inter_compound_mode_cost[i],
+                               fc->inter_compound_mode_cdf[i], NULL);
 #if CONFIG_COMPOUND_SINGLEREF
     for (i = 0; i < INTER_MODE_CONTEXTS; ++i)
-      av1_cost_tokens(x->inter_singleref_comp_mode_cost[i],
-                      fc->inter_singleref_comp_mode_probs[i],
-                      av1_inter_singleref_comp_mode_tree);
+      av1_cost_tokens_from_cdf(x->inter_singleref_comp_mode_cost[i],
+                               fc->inter_singleref_comp_mode_cdf[i], NULL);
 #endif  // CONFIG_COMPOUND_SINGLEREF
 #if CONFIG_INTERINTRA
     for (i = 0; i < BLOCK_SIZE_GROUPS; ++i)
-      av1_cost_tokens(x->interintra_mode_cost[i], fc->interintra_mode_prob[i],
-                      av1_interintra_mode_tree);
+      av1_cost_tokens_from_cdf(x->interintra_mode_cost[i],
+                               fc->interintra_mode_cdf[i], NULL);
 #endif  // CONFIG_INTERINTRA
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
@@ -233,8 +240,12 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
     }
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
     for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; i++) {
+#if CONFIG_NEW_MULTISYMBOL
+      av1_cost_tokens_from_cdf(x->motion_mode_cost1[i], fc->obmc_cdf[i], NULL);
+#else
       x->motion_mode_cost1[i][0] = av1_cost_bit(fc->obmc_prob[i], 0);
       x->motion_mode_cost1[i][1] = av1_cost_bit(fc->obmc_prob[i], 1);
+#endif
     }
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 #if CONFIG_MOTION_VAR && CONFIG_NCOBMC_ADAPT_WEIGHT
