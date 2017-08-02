@@ -8,16 +8,14 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/profiling/constants.mojom.h"
+#include "chrome/common/profiling/memlog.mojom.h"
 #include "chrome/common/profiling/memlog_allocator_shim.h"
 #include "chrome/common/profiling/memlog_sender_pipe.h"
 #include "chrome/common/profiling/memlog_stream.h"
-
-#if defined(OS_POSIX)
-#include "base/posix/global_descriptors.h"
-#include "base/strings/string_number_conversions.h"
-#include "chrome/common/profiling/profiling_constants.h"
-#include "content/public/common/content_switches.h"
-#endif
+#include "content/public/common/service_manager_connection.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace profiling {
 
@@ -29,41 +27,34 @@ MemlogSenderPipe* memlog_sender_pipe = nullptr;
 
 }  // namespace
 
-void InitMemlogSenderIfNecessary() {
+void InitMemlogSenderIfNecessary(
+    content::ServiceManagerConnection* connection) {
   const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
+  // TODO(ajwong): Rename to kMemlogId.
   std::string pipe_id_str = cmdline.GetSwitchValueASCII(switches::kMemlogPipe);
-  if (!pipe_id_str.empty()) {
-    int pipe_id = 0;
-    if (!base::StringToInt(pipe_id_str, &pipe_id))
-      return;
-
-#if defined(OS_WIN)
-    StartMemlogSender(mojo::edk::ScopedPlatformHandle(
-        mojo::edk::PlatformHandle(reinterpret_cast<HANDLE>(pipe_id))));
-#else
-    // TODO(ajwong): The posix value of the kMemlogPipe is bogus. Fix? This
-    // might be true for windows too if everything is done via the launch
-    // handles as opposed to the original code's use of a shared pipe name.
-    //
-    // TODO(ajwong): This still does not work on Mac because the hook to insert
-    // the file mapping is linux only.
-
-    // TODO(ajwong): In posix, the startup sequence does not correctly pass the
-    // file handle down to the gpu process still. Abort if it's a gpu process
-    // for now.
-    if (cmdline.GetSwitchValueASCII(switches::kProcessType) ==
-        switches::kGpuProcess) {
-      return;
-    }
-
-    StartMemlogSender(mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(
-        base::GlobalDescriptors::GetInstance()->Get(kProfilingDataPipe))));
-#endif
+  if (pipe_id_str.empty()) {
+    return;
   }
+  int sender_id;
+  CHECK(base::StringToInt(pipe_id_str, &sender_id));
+
+  // The |memlog| interface is used for a one-shot, no-response, publication
+  // of the filehandle for the data channel. As such, there is no need to have
+  // the MemlogPtr live beyond the AddSender() call.
+  mojom::MemlogPtr memlog;
+  connection->GetConnector()->BindInterface(profiling::mojom::kServiceName,
+                                            &memlog);
+
+  mojo::edk::PlatformChannelPair data_channel;
+  memlog->AddSender(
+      mojo::WrapPlatformFile(data_channel.PassServerHandle().release().handle),
+      sender_id);
+  StartMemlogSender(base::ScopedPlatformFile(
+      data_channel.PassClientHandle().release().handle));
 }
 
-void StartMemlogSender(mojo::edk::ScopedPlatformHandle fd) {
-  static MemlogSenderPipe pipe(std::move(fd));
+void StartMemlogSender(base::ScopedPlatformFile file) {
+  static MemlogSenderPipe pipe(std::move(file));
   memlog_sender_pipe = &pipe;
 
   StreamHeader header;

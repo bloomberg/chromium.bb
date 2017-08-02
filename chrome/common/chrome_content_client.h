@@ -106,6 +106,9 @@ class ChromeContentClient : public content::ContentClient {
   media::MediaDrmBridgeClient* GetMediaDrmBridgeClient() override;
 #endif  // OS_ANDROID
 
+  void OnServiceManagerConnected(
+      content::ServiceManagerConnection* connection) override;
+
  private:
   // Used to lock when |origin_trial_policy_| is initialized.
   base::Lock origin_trial_policy_lock_;

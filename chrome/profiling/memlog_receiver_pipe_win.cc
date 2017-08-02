@@ -24,14 +24,13 @@ const int kReadBufferSize = 1024 * 64;
 
 }  // namespace
 
-MemlogReceiverPipe::MemlogReceiverPipe(HANDLE handle)
-    : handle_(handle), read_buffer_(new char[kReadBufferSize]) {
+MemlogReceiverPipe::MemlogReceiverPipe(base::ScopedPlatformFile handle)
+    : handle_(std::move(handle)), read_buffer_(new char[kReadBufferSize]) {
   ZeroOverlapped();
-  base::MessageLoopForIO::current()->RegisterIOHandler(handle_, this);
+  base::MessageLoopForIO::current()->RegisterIOHandler(handle_.get(), this);
 }
 
 MemlogReceiverPipe::~MemlogReceiverPipe() {
-  ::CloseHandle(handle_);
 }
 
 void MemlogReceiverPipe::StartReadingOnIOThread() {
@@ -56,8 +55,8 @@ void MemlogReceiverPipe::ReadUntilBlocking() {
 
   DCHECK(!read_outstanding_);
   read_outstanding_ = true;
-  if (!::ReadFile(handle_, read_buffer_.get(), kReadBufferSize, &bytes_read,
-                  &context_.overlapped)) {
+  if (!::ReadFile(handle_.get(), read_buffer_.get(), kReadBufferSize,
+                  &bytes_read, &context_.overlapped)) {
     if (GetLastError() == ERROR_IO_PENDING) {
       return;
     } else {

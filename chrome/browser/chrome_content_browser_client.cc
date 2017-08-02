@@ -388,6 +388,7 @@
 
 #if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
 #include "chrome/browser/profiling_host/profiling_process_host.h"
+#include "chrome/common/profiling/constants.mojom.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -2739,12 +2740,6 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
     int child_process_id,
     PosixFileDescriptorInfo* mappings) {
-#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
-  std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
-  profiling::ProfilingProcessHost::GetAdditionalMappedFilesForChildProcess(
-      command_line, child_process_id, mappings);
-#endif
 
 #if defined(OS_ANDROID)
   base::MemoryMappedFile::Region region;
@@ -3009,6 +3004,11 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
   (*services)[printing::mojom::kServiceName] = {
       base::ASCIIToUTF16("PDF Compositor Service"),
       content::SANDBOX_TYPE_UTILITY};
+#endif
+
+#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
+  (*services)[profiling::mojom::kServiceName] = {
+      base::ASCIIToUTF16("Profiling Service"), content::SANDBOX_TYPE_UTILITY};
 #endif
 }
 

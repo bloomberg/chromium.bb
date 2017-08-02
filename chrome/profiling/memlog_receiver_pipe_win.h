@@ -27,7 +27,7 @@ class MemlogReceiverPipe
     : public base::RefCountedThreadSafe<MemlogReceiverPipe>,
       public base::MessagePumpForIO::IOHandler {
  public:
-  explicit MemlogReceiverPipe(HANDLE handle);
+  explicit MemlogReceiverPipe(base::ScopedPlatformFile handle);
 
   // Must be called on the IO thread.
   void StartReadingOnIOThread();
@@ -52,7 +52,7 @@ class MemlogReceiverPipe
   scoped_refptr<base::TaskRunner> receiver_task_runner_;
   scoped_refptr<MemlogStreamReceiver> receiver_;
 
-  HANDLE handle_;
+  base::win::ScopedHandle handle_;
   base::MessagePumpForIO::IOContext context_;
 
   bool read_outstanding_ = false;

@@ -141,4 +141,7 @@ media::MediaDrmBridgeClient* ContentClient::GetMediaDrmBridgeClient() {
 }
 #endif  // OS_ANDROID
 
+void ContentClient::OnServiceManagerConnected(
+    ServiceManagerConnection* connection) {}
+
 }  // namespace content

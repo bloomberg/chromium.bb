@@ -4,11 +4,11 @@
 
 module profiling.mojom;
 
-interface ProfilingControl {
+interface Memlog {
   // Adds a new platform-specific pipe to read memlog trace data from.
   // In normal usage, each child process launch will have a corresponding call
   // to this.
-  AddNewSender(handle sender_pipe, int32 sender_pid);
+  AddSender(handle sender_pipe, int32 sender_id);
 
-  DumpProcess(int32 pid);
+  DumpProcess(int32 sender_id);
 };

@@ -10,7 +10,6 @@
 
 #include "base/hash.h"
 #include "chrome/profiling/backtrace_storage.h"
-#include "chrome/profiling/profiling_globals.h"
 
 namespace profiling {
 

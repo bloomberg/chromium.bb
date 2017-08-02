@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "chrome/common/features.h"
 #include "chrome/common/file_patcher.mojom.h"
 #include "chrome/utility/utility_message_handler.h"
 #include "components/payments/content/utility/payment_manifest_parser.h"
@@ -40,6 +41,11 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/common/zip_file_creator.mojom.h"
+#endif
+
+#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
+#include "chrome/common/profiling/constants.mojom.h"
+#include "chrome/profiling/profiling_service.h"
 #endif
 
 #if defined(OS_WIN)
@@ -323,6 +329,13 @@ void ChromeContentUtilityClient::RegisterServices(
   pdf_compositor_info.factory =
       base::Bind(&printing::CreatePdfCompositorService, GetUserAgent());
   services->emplace(printing::mojom::kServiceName, pdf_compositor_info);
+#endif
+
+#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
+  service_manager::EmbeddedServiceInfo profiling_info;
+  profiling_info.factory =
+      base::Bind(&profiling::ProfilingService::CreateService);
+  services->emplace(profiling::mojom::kServiceName, profiling_info);
 #endif
 }
 

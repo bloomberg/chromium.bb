@@ -6,13 +6,13 @@
 
 #include "base/callback.h"
 #include "chrome/profiling/backtrace_storage.h"
-#include "chrome/profiling/profiling_globals.h"
 
 namespace profiling {
 
-AllocationTracker::AllocationTracker(CompleteCallback complete_cb)
+AllocationTracker::AllocationTracker(CompleteCallback complete_cb,
+                                     BacktraceStorage* backtrace_storage)
     : complete_callback_(std::move(complete_cb)),
-      backtrace_storage_(ProfilingGlobals::Get()->GetBacktraceStorage()) {}
+      backtrace_storage_(backtrace_storage) {}
 
 AllocationTracker::~AllocationTracker() {
   std::vector<const Backtrace*> to_free;

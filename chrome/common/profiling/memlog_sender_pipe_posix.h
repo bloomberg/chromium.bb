@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/platform_file.h"
 #include "base/macros.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 
@@ -15,7 +16,7 @@ namespace profiling {
 
 class MemlogSenderPipe {
  public:
-  explicit MemlogSenderPipe(mojo::edk::ScopedPlatformHandle fd);
+  explicit MemlogSenderPipe(base::ScopedPlatformFile file);
   ~MemlogSenderPipe();
 
   bool Connect();

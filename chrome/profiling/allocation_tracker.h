@@ -21,7 +21,8 @@ class AllocationTracker : public MemlogReceiver {
  public:
   using CompleteCallback = base::OnceClosure;
 
-  explicit AllocationTracker(CompleteCallback complete_cb);
+  AllocationTracker(CompleteCallback complete_cb,
+                    BacktraceStorage* backtrace_storage);
   ~AllocationTracker() override;
 
   void OnHeader(const StreamHeader& header) override;
@@ -33,7 +34,6 @@ class AllocationTracker : public MemlogReceiver {
  private:
   CompleteCallback complete_callback_;
 
-  // Cached pointer to the global singleton.
   BacktraceStorage* backtrace_storage_;
 
   AllocationEventSet live_allocs_;

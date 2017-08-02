@@ -45,6 +45,7 @@ class ContentGpuClient;
 class ContentRendererClient;
 class ContentUtilityClient;
 class OriginTrialPolicy;
+class ServiceManagerConnection;
 struct CdmHostFilePath;
 struct CdmInfo;
 struct PepperPluginInfo;
@@ -196,6 +197,8 @@ class CONTENT_EXPORT ContentClient {
   // Returns the MediaDrmBridgeClient to be used by media code on Android.
   virtual media::MediaDrmBridgeClient* GetMediaDrmBridgeClient();
 #endif  // OS_ANDROID
+
+  virtual void OnServiceManagerConnected(ServiceManagerConnection* connection);
 
  private:
   friend class ContentClientInitializer;  // To set these pointers.

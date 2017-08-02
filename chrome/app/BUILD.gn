@@ -392,6 +392,10 @@ if (enable_basic_printing || enable_print_preview) {
       [ "//components/printing/service:pdf_compositor_manifest" ]
 }
 
+if (enable_oop_heap_profiling) {
+  chrome_packaged_services += [ "//chrome/profiling:manifest" ]
+}
+
 if (is_chromeos) {
   chrome_packaged_services +=
       [ "//chrome/browser:preferences_forwarder_manifest" ]
