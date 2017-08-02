@@ -748,13 +748,13 @@ code_generator("make_core_generated_css_property_metadata") {
   ]
 }
 
-process_in_files("make_core_generated_css_value_keywords") {
-  script = "../build/scripts/make_css_value_keywords.py"
-
-  in_files = [
+code_generator("make_core_generated_css_value_keywords") {
+  script = "../build/scripts/core/css/make_css_value_keywords.py"
+  json_inputs = [
     "css/CSSValueKeywords.json5",
     "css/SVGCSSValueKeywords.json5",
   ]
+  templates = []
   outputs = [
     "$blink_core_output_dir/CSSValueKeywords.cpp",
     "$blink_core_output_dir/CSSValueKeywords.h",

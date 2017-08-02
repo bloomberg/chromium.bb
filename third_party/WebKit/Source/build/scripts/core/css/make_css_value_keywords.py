@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
-import os.path
-import re
-import subprocess
+import os
 import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
+import os.path
+import subprocess
 from name_utilities import enum_for_css_keyword
-from name_utilities import upper_first_letter
 import json5_generator
-import license
+from license import license_for_generated_cpp
 
 
 HEADER_TEMPLATE = """
@@ -120,8 +120,7 @@ class CSSValueKeywordsWriter(json5_generator.Writer):
     def __init__(self, file_paths):
         json5_generator.Writer.__init__(self, file_paths)
         self._outputs = {(self.class_name + ".h"): self.generate_header,
-                         (self.class_name + ".cpp"): self.generate_implementation,
-                        }
+                         (self.class_name + ".cpp"): self.generate_implementation}
 
         self._value_keywords = self.json5_file.name_dictionaries
         first_keyword_id = 1
@@ -144,7 +143,7 @@ class CSSValueKeywordsWriter(json5_generator.Writer):
     def generate_header(self):
         enum_enties = map(self._enum_declaration, [{'enum_name': 'CSSValueInvalid', 'enum_value': 0}] + self._value_keywords)
         return HEADER_TEMPLATE % {
-            'license': license.license_for_generated_cpp(),
+            'license': license_for_generated_cpp(),
             'class_name': self.class_name,
             'value_keyword_enums': "\n".join(enum_enties),
             'value_keywords_count': len(enum_enties),
@@ -152,7 +151,7 @@ class CSSValueKeywordsWriter(json5_generator.Writer):
         }
 
     def _value_keywords_with_mode(self, mode):
-        return filter(lambda keyword: keyword['mode'] == mode, self._value_keywords)
+        return [keyword for keyword in self._value_keywords if keyword['mode'] == mode]
 
     def generate_implementation(self):
         keyword_offsets = []
@@ -162,13 +161,17 @@ class CSSValueKeywordsWriter(json5_generator.Writer):
             current_offset += len(keyword["name"]) + 1
 
         gperf_input = GPERF_TEMPLATE % {
-            'license': license.license_for_generated_cpp(),
+            'license': license_for_generated_cpp(),
             'class_name': self.class_name,
             'value_keyword_strings': '\n'.join('    "%(name)s\\0"' % keyword for keyword in self._value_keywords),
             'value_keyword_offsets': '\n'.join('  %d,' % offset for offset in keyword_offsets),
             'value_keyword_to_enum_map': '\n'.join('%(lower_name)s, %(enum_name)s' % keyword for keyword in self._value_keywords),
-            'ua_sheet_mode_values_keywords': '\n        '.join(map(self._case_value_keyword, self._value_keywords_with_mode('UASheet'))),
-            'quirks_mode_or_ua_sheet_mode_values_keywords': '\n    '.join(map(self._case_value_keyword, self._value_keywords_with_mode('QuirksOrUASheet'))),
+            'ua_sheet_mode_values_keywords': '\n        '.join(
+                map(self._case_value_keyword, self._value_keywords_with_mode('UASheet'))
+            ),
+            'quirks_mode_or_ua_sheet_mode_values_keywords': '\n    '.join(
+                map(self._case_value_keyword, self._value_keywords_with_mode('QuirksOrUASheet'))
+            ),
         }
         # FIXME: If we could depend on Python 2.7, we would use subprocess.check_output
         gperf_args = [self.gperf_path, '--key-positions=*', '-P', '-n']
