@@ -291,6 +291,11 @@ if (CONFIG_DAALA_DCT4 OR CONFIG_DAALA_DCT8 OR CONFIG_DAALA_DCT16)
    endif()
 endif()
 
+if (CONFIG_GCOV)
+  message("--- Testing for CONFIG_GCOV support.")
+  require_flag("-fprofile-arcs -ftest-coverage" YES)
+endif ()
+
 if (NOT MSVC)
   aom_push_var(CMAKE_REQUIRED_LIBRARIES "m")
   aom_check_c_compiles("fenv_check"
