@@ -262,6 +262,8 @@ const DefaultCommandLineSwitch kDefaultSwitches[] = {
     {switches::kEnableNetworkInformationDownlinkMax, ""},
     // TODO(halliwell): Remove after fixing b/35422666.
     {switches::kEnableUseZoomForDSF, "false"},
+    // TODO(halliwell): Revert after fix for b/63101386.
+    {cc::switches::kDisallowNonExactResourceReuse, ""},
 };
 
 void AddDefaultCommandLineSwitches(base::CommandLine* command_line) {
