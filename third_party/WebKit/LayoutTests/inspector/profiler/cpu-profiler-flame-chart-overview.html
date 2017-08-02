@@ -937,6 +937,7 @@ function test()
     profileAndExpectations._debuggerModel = null;
     profileAndExpectations.debuggerModel = () => null;
     profileAndExpectations.weakTarget = () => new WeakReference(null);
+    profileAndExpectations.profileModel = () => new SDK.CPUProfileDataModel(profile);
     var cpuProfileView = new Profiler.CPUProfileView(profileAndExpectations);
     cpuProfileView.viewSelectComboBox.setSelectedIndex(0);
     cpuProfileView._changeView();

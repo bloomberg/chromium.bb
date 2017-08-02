@@ -33,7 +33,7 @@ function test()
         "target": function() {
             return SDK.targetManager.targets()[0];
         },
-        "_profile": {
+        "profileModel": () => new SDK.CPUProfileDataModel({
             "nodes": [
                 {
                     "id": 0,
@@ -62,7 +62,7 @@ function test()
             ].concat(buildTree(2, nodesCount)),
             "startTime": 0,
             "endTime": nodesCount * 10e3 + 3e3
-        }
+        })
     };
     var view = new Profiler.CPUProfileView(profileAndExpectations);
     view.viewSelectComboBox.setSelectedIndex(1);
