@@ -60,8 +60,10 @@ class InputHandlerProxyClient {
   virtual void GenerateScrollBeginAndSendToMainThread(
       const blink::WebGestureEvent& update_event) = 0;
 
-  virtual void SetWhiteListedTouchAction(cc::TouchAction touch_action,
-                                         uint32_t unique_touch_event_id) = 0;
+  virtual void SetWhiteListedTouchAction(
+      cc::TouchAction touch_action,
+      uint32_t unique_touch_event_id,
+      InputHandlerProxy::EventDisposition event_disposition) = 0;
 
  protected:
   virtual ~InputHandlerProxyClient() {}

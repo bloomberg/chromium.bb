@@ -285,9 +285,12 @@ void InputHandlerManager::DispatchNonBlockingEventToMainThread(
 void InputHandlerManager::SetWhiteListedTouchAction(
     int routing_id,
     cc::TouchAction touch_action,
-    uint32_t unique_touch_event_id) {
-  client_->SetWhiteListedTouchAction(routing_id, touch_action,
-                                     unique_touch_event_id);
+    uint32_t unique_touch_event_id,
+    InputHandlerProxy::EventDisposition event_disposition) {
+  InputEventAckState input_event_ack_state =
+      InputEventDispositionToAck(event_disposition);
+  client_->SetWhiteListedTouchAction(
+      routing_id, touch_action, unique_touch_event_id, input_event_ack_state);
 }
 
 }  // namespace content

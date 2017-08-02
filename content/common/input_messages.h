@@ -330,10 +330,13 @@ IPC_MESSAGE_ROUTED1(InputHostMsg_SetTouchAction,
 // The whitelisted touch action and the associated unique touch event id
 // for a new touch point sent by the compositor. The unique touch event id is
 // only needed to verify that the whitelisted touch action is being associated
-// with the correct touch event.
-IPC_MESSAGE_ROUTED2(InputHostMsg_SetWhiteListedTouchAction,
+// with the correct touch event. The input event ack state is needed when
+// the touchstart message was not sent to the renderer and the touch
+// actions need to be reset and the touch ack timeout needs to be started.
+IPC_MESSAGE_ROUTED3(InputHostMsg_SetWhiteListedTouchAction,
                     cc::TouchAction /* white_listed_touch_action */,
-                    uint32_t /* unique_touch_event_id */)
+                    uint32_t /* unique_touch_event_id */,
+                    content::InputEventAckState /* ack_result */)
 
 // Sent by the compositor when input scroll events are dropped due to bounds
 // restrictions on the root scroll offset.
