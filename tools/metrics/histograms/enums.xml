@@ -877,6 +877,12 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="Undos Dismissed (Action) (Deprecated)"/>
 </enum>
 
+<enum name="ANGLEProgramCacheResult">
+  <int value="0" label="Cache Miss"/>
+  <int value="1" label="Cache Hit From Memory"/>
+  <int value="2" label="Cache Hit From Disk"/>
+</enum>
+
 <enum name="AntiVirusMetricsProviderResult">
   <int value="0" label="RESULT_SUCCESS"/>
   <int value="1" label="RESULT_GENERIC_FAILURE"/>
