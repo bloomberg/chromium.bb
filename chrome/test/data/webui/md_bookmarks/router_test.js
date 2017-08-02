@@ -12,8 +12,10 @@ suite('<bookmarks-router>', function() {
   }
 
   setup(function() {
+    var nodes = testTree(createFolder('1', [createFolder('2', [])]));
     store = new bookmarks.TestStore({
-      nodes: testTree(createFolder('1', [createFolder('2', [])])),
+      nodes: nodes,
+      folderOpenState: getAllFoldersOpenState(nodes),
       selectedFolder: '1',
       search: {
         term: '',

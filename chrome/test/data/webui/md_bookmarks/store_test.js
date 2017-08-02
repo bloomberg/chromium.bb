@@ -6,14 +6,14 @@ suite('bookmarks.Store', function() {
   var store;
 
   setup(function() {
+    var nodes = testTree(createFolder('1', [
+      createItem('11'),
+      createItem('12'),
+      createItem('13'),
+    ]));
     store = new bookmarks.TestStore({
-      nodes: testTree(createFolder(
-          '1',
-          [
-            createItem('11'),
-            createItem('12'),
-            createItem('13'),
-          ])),
+      nodes: nodes,
+      folderOpenState: getAllFoldersOpenState(nodes),
     });
     store.setReducersEnabled(true);
     store.replaceSingleton();

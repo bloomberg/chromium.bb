@@ -20,11 +20,16 @@ Polymer({
       observer: 'depthChanged_',
     },
 
+    isOpen: {
+      type: Boolean,
+      computed: 'computeIsOpen_(openState_, depth)',
+    },
+
     /** @type {BookmarkNode} */
     item_: Object,
 
-    /** @private */
-    isClosed_: Boolean,
+    /** @private {?boolean} */
+    openState_: Boolean,
 
     /** @private */
     selectedFolder_: String,
@@ -52,13 +57,17 @@ Polymer({
   },
 
   observers: [
-    'updateAriaExpanded_(hasChildFolder_, isClosed_)',
+    'updateAriaExpanded_(hasChildFolder_, isOpen)',
   ],
 
   /** @override */
   attached: function() {
     this.watch('item_', (state) => state.nodes[this.itemId]);
-    this.watch('isClosed_', (state) => state.closedFolders.has(this.itemId));
+    this.watch('openState_', (state) => {
+      return state.folderOpenState.has(this.itemId) ?
+          state.folderOpenState.get(this.itemId) :
+          null;
+    });
     this.watch('selectedFolder_', function(state) {
       return state.selectedFolder;
     });
@@ -141,7 +150,7 @@ Polymer({
       // The right arrow opens a folder if closed and goes to the first child
       // otherwise.
       if (this.hasChildFolder_) {
-        if (this.isClosed_) {
+        if (!this.isOpen) {
           this.dispatch(
               bookmarks.actions.changeFolderOpen(this.item_.id, true));
         } else {
@@ -151,7 +160,7 @@ Polymer({
     } else if (xDirection == -1) {
       // The left arrow closes a folder if open and goes to the parent
       // otherwise.
-      if (this.hasChildFolder_ && !this.isClosed_) {
+      if (this.hasChildFolder_ && this.isOpen) {
         this.dispatch(bookmarks.actions.changeFolderOpen(this.item_.id, false));
       } else {
         var parentFolderNode = this.getParentFolderNode_();
@@ -166,7 +175,7 @@ Polymer({
       return;
 
     // The current node's successor is its first child when open.
-    if (!isChildFolderNodeFocused && yDirection == 1 && !this.isClosed_) {
+    if (!isChildFolderNodeFocused && yDirection == 1 && this.isOpen) {
       var children = this.getChildFolderNodes_();
       if (children.length)
         newFocusFolderNode = children[0];
@@ -248,7 +257,7 @@ Polymer({
    */
   getLastVisibleDescendant_: function() {
     var children = this.getChildFolderNodes_();
-    if (this.isClosed_ || children.length == 0)
+    if (!this.isOpen || children.length == 0)
       return this;
 
     return children.pop().getLastVisibleDescendant_();
@@ -288,7 +297,7 @@ Polymer({
    */
   toggleFolder_: function(e) {
     this.dispatch(
-        bookmarks.actions.changeFolderOpen(this.itemId, this.isClosed_));
+        bookmarks.actions.changeFolderOpen(this.itemId, !this.isOpen));
     e.stopPropagation();
   },
 
@@ -362,13 +371,23 @@ Polymer({
    * Sets the 'aria-expanded' accessibility on nodes which need it. Note that
    * aria-expanded="false" is different to having the attribute be undefined.
    * @param {boolean} hasChildFolder
-   * @param {boolean} isClosed
+   * @param {boolean} isOpen
    * @private
    */
-  updateAriaExpanded_: function(hasChildFolder, isClosed) {
+  updateAriaExpanded_: function(hasChildFolder, isOpen) {
     if (hasChildFolder)
-      this.getFocusTarget().setAttribute('aria-expanded', String(!isClosed));
+      this.getFocusTarget().setAttribute('aria-expanded', String(isOpen));
     else
       this.getFocusTarget().removeAttribute('aria-expanded');
+  },
+
+  /**
+   * @param {?boolean} openState
+   * @param {number} depth
+   * @return {boolean}
+   */
+  computeIsOpen_: function(openState, depth) {
+    return openState != null ? openState :
+                               depth <= FOLDER_OPEN_BY_DEFAULT_DEPTH;
   },
 });

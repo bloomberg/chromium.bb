@@ -26,14 +26,14 @@ function TestCommandManager() {
   commandManager.assertLastCommand = function(command, ids) {
     assertEquals(command, lastCommand);
     if (ids)
-      assertDeepEquals(ids, normalizeSet(lastCommandIds));
+      assertDeepEquals(ids, normalizeIterable(lastCommandIds));
     lastCommand = null;
     lastCommandIds = null;
   };
 
   /** @param {!Array<string>} ids */
   commandManager.assertMenuOpenForIds = function(ids) {
-    assertDeepEquals(ids, normalizeSet(commandManager.menuIds_));
+    assertDeepEquals(ids, normalizeIterable(commandManager.menuIds_));
   };
 
   return commandManager;

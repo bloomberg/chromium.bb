@@ -7,15 +7,15 @@ suite('<bookmarks-list>', function() {
   var store;
 
   setup(function() {
+    var nodes = testTree(createFolder('10', [
+      createItem('1'),
+      createFolder('3', []),
+      createItem('5'),
+      createItem('7'),
+    ]));
     store = new bookmarks.TestStore({
-      nodes: testTree(createFolder(
-          '10',
-          [
-            createItem('1'),
-            createFolder('3', []),
-            createItem('5'),
-            createItem('7'),
-          ])),
+      nodes: nodes,
+      folderOpenState: getAllFoldersOpenState(nodes),
       selectedFolder: '10',
     });
     store.replaceSingleton();
@@ -113,49 +113,51 @@ suite('<bookmarks-list> integration test', function() {
 
   test('shift-selects multiple items', function() {
     customClick(items[1]);
-    assertDeepEquals(['3'], normalizeSet(store.data.selection.items));
+    assertDeepEquals(['3'], normalizeIterable(store.data.selection.items));
     assertDeepEquals('3', store.data.selection.anchor);
 
     customClick(items[3], {shiftKey: true});
-    assertDeepEquals(['3', '5', '7'], normalizeSet(store.data.selection.items));
+    assertDeepEquals(
+        ['3', '5', '7'], normalizeIterable(store.data.selection.items));
     assertDeepEquals('3', store.data.selection.anchor);
 
     customClick(items[0], {shiftKey: true});
-    assertDeepEquals(['1', '3'], normalizeSet(store.data.selection.items));
+    assertDeepEquals(['1', '3'], normalizeIterable(store.data.selection.items));
     assertDeepEquals('3', store.data.selection.anchor);
   });
 
   test('ctrl toggles multiple items', function() {
     customClick(items[1]);
-    assertDeepEquals(['3'], normalizeSet(store.data.selection.items));
+    assertDeepEquals(['3'], normalizeIterable(store.data.selection.items));
     assertDeepEquals('3', store.data.selection.anchor);
 
     customClick(items[3], {ctrlKey: true});
-    assertDeepEquals(['3', '7'], normalizeSet(store.data.selection.items));
+    assertDeepEquals(['3', '7'], normalizeIterable(store.data.selection.items));
     assertDeepEquals('7', store.data.selection.anchor);
 
     customClick(items[1], {ctrlKey: true});
-    assertDeepEquals(['7'], normalizeSet(store.data.selection.items));
+    assertDeepEquals(['7'], normalizeIterable(store.data.selection.items));
     assertDeepEquals('3', store.data.selection.anchor);
   });
 
   test('ctrl+shift adds ranges to selection', function() {
     customClick(items[0]);
-    assertDeepEquals(['1'], normalizeSet(store.data.selection.items));
+    assertDeepEquals(['1'], normalizeIterable(store.data.selection.items));
     assertDeepEquals('1', store.data.selection.anchor);
 
     customClick(items[2], {ctrlKey: true});
-    assertDeepEquals(['1', '5'], normalizeSet(store.data.selection.items));
+    assertDeepEquals(['1', '5'], normalizeIterable(store.data.selection.items));
     assertDeepEquals('5', store.data.selection.anchor);
 
     customClick(items[4], {ctrlKey: true, shiftKey: true});
     assertDeepEquals(
-        ['1', '5', '7', '9'], normalizeSet(store.data.selection.items));
+        ['1', '5', '7', '9'], normalizeIterable(store.data.selection.items));
     assertDeepEquals('5', store.data.selection.anchor);
 
     customClick(items[0], {ctrlKey: true, shiftKey: true});
     assertDeepEquals(
-        ['1', '3', '5', '7', '9'], normalizeSet(store.data.selection.items));
+        ['1', '3', '5', '7', '9'],
+        normalizeIterable(store.data.selection.items));
     assertDeepEquals('5', store.data.selection.anchor);
   });
 });

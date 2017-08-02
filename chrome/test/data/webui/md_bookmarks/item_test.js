@@ -8,13 +8,13 @@ suite('<bookmarks-item>', function() {
   var TEST_ITEM = createItem('0');
 
   setup(function() {
+    var nodes = testTree(createFolder('1', [
+      createItem('2', {url: 'http://example.com/'}),
+      createItem('3'),
+    ]));
     store = new bookmarks.TestStore({
-      nodes: testTree(createFolder(
-          '1',
-          [
-            createItem('2', {url: 'http://example.com/'}),
-            createItem('3'),
-          ])),
+      nodes: nodes,
+      folderOpenState: getAllFoldersOpenState(nodes),
     });
     store.replaceSingleton();
 

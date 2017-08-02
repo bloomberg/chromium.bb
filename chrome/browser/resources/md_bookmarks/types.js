@@ -55,8 +55,8 @@ var SelectionState;
  */
 var SearchState;
 
-/** @typedef {!Set<string>} */
-var ClosedFolderState;
+/** @typedef {!Map<string, boolean>} */
+var FolderOpenState;
 
 /**
  * @typedef {{
@@ -70,7 +70,7 @@ var PreferencesState;
  * @typedef {{
  *   nodes: NodeMap,
  *   selectedFolder: string,
- *   closedFolders: ClosedFolderState,
+ *   folderOpenState: FolderOpenState,
  *   prefs: PreferencesState,
  *   search: SearchState,
  *   selection: SelectionState,

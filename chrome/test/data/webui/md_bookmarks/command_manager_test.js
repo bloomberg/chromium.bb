@@ -459,14 +459,14 @@ suite('<bookmarks-item> CommandManager integration', function() {
 
     // Only the middle-clicked item is opened.
     simulateMiddleClick(items[2]);
-    assertDeepEquals(['13'], normalizeSet(store.data.selection.items));
+    assertDeepEquals(['13'], normalizeIterable(store.data.selection.items));
     assertOpenedTabs(['http://13/']);
     assertFalse(openedTabs[0].active);
   });
 
   test('middle-click does not open folders', function() {
     simulateMiddleClick(items[0]);
-    assertDeepEquals(['11'], normalizeSet(store.data.selection.items));
+    assertDeepEquals(['11'], normalizeIterable(store.data.selection.items));
     assertOpenedTabs([]);
   });
 

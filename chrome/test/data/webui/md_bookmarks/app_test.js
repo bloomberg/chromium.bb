@@ -35,22 +35,23 @@ suite('<bookmarks-app>', function() {
   });
 
   test('write and load closed folder state', function() {
-    var closedFoldersList = ['1'];
-    var closedFolders = new Set(closedFoldersList);
-    store.data.closedFolders = closedFolders;
+    var folderOpenStateList = [['1', true]];
+    var folderOpenState = new Map(folderOpenStateList);
+    store.data.folderOpenState = folderOpenState;
     store.notifyObservers();
 
     // Ensure closed folders are written to local storage.
     assertDeepEquals(
-        JSON.stringify(Array.from(closedFolders)),
-        window.localStorage[LOCAL_STORAGE_CLOSED_FOLDERS_KEY]);
+        JSON.stringify(Array.from(folderOpenState)),
+        window.localStorage[LOCAL_STORAGE_FOLDER_STATE_KEY]);
 
     resetStore();
     app = document.createElement('bookmarks-app');
     replaceBody(app);
 
     // Ensure closed folders are read from local storage.
-    assertDeepEquals(closedFoldersList, normalizeSet(store.data.closedFolders));
+    assertDeepEquals(
+        folderOpenStateList, normalizeIterable(store.data.folderOpenState));
   });
 
   test('write and load sidebar width', function() {

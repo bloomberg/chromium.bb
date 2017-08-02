@@ -88,7 +88,7 @@
       <template is="dom-if" if="[[hasChildFolder_]]">
         <button is="paper-icon-button-light" id="arrow"
             on-tap="toggleFolder_" on-mousedown="preventDefault_" tabindex="-1">
-          <iron-icon icon="cr:arrow-drop-down" is-open$="[[!isClosed_]]">
+          <iron-icon icon="cr:arrow-drop-down" is-open$="[[isOpen]]">
           </iron-icon>
         </button>
       </template>
@@ -101,7 +101,7 @@
       </div>
     </div>
     <div id="descendants" role="group">
-      <template is="dom-if" if="[[!isClosed_]]">
+      <template is="dom-if" if="[[isOpen]]">
         <template is="dom-repeat"
             items="[[item_.children]]"
             as="child"

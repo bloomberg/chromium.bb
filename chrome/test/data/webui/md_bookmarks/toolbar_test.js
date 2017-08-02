@@ -12,20 +12,20 @@ suite('<bookmarks-toolbar>', function() {
   });
 
   setup(function() {
-    store = new bookmarks.TestStore({
-      nodes: testTree(createFolder(
-          '1',
+    var nodes = testTree(createFolder('1', [
+      createItem('2'),
+      createItem('3'),
+      createFolder('4', [], {unmodifiable: 'managed'}),
+      createFolder('5', []),
+      createFolder(
+          '6',
           [
-            createItem('2'),
-            createItem('3'),
-            createFolder('4', [], {unmodifiable: 'managed'}),
-            createFolder('5', []),
-            createFolder(
-                '6',
-                [
-                  createItem('61'),
-                ]),
-          ])),
+            createItem('61'),
+          ]),
+    ]));
+    store = new bookmarks.TestStore({
+      nodes: nodes,
+      folderOpenState: getAllFoldersOpenState(nodes),
       selection: {
         items: new Set(),
         anchor: null,

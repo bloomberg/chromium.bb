@@ -17,10 +17,10 @@ Polymer({
       observer: 'searchTermChanged_',
     },
 
-    /** @type {ClosedFolderState} */
-    closedFoldersState_: {
+    /** @type {FolderOpenState} */
+    folderOpenState_: {
       type: Object,
-      observer: 'closedFoldersStateChanged_',
+      observer: 'folderOpenStateChanged_',
     },
 
     /** @private */
@@ -35,12 +35,12 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.watch('searchTerm_', function(store) {
-      return store.search.term;
+    this.watch('searchTerm_', function(state) {
+      return state.search.term;
     });
 
-    this.watch('closedFoldersState_', function(store) {
-      return store.closedFolders;
+    this.watch('folderOpenState_', function(state) {
+      return state.folderOpenState;
     });
 
     chrome.bookmarks.getTree((results) => {
@@ -48,12 +48,13 @@ Polymer({
       var initialState = bookmarks.util.createEmptyState();
       initialState.nodes = nodeMap;
       initialState.selectedFolder = nodeMap[ROOT_NODE_ID].children[0];
-      var closedFoldersString =
-          window.localStorage[LOCAL_STORAGE_CLOSED_FOLDERS_KEY];
-      initialState.closedFolders = closedFoldersString ?
-          new Set(
-              /** @type Array<string> */ (JSON.parse(closedFoldersString))) :
-          new Set();
+      var folderStateString =
+          window.localStorage[LOCAL_STORAGE_FOLDER_STATE_KEY];
+      initialState.folderOpenState = folderStateString ?
+          new Map(
+              /** @type Array<Array<boolean|string>> */ (
+                  JSON.parse(folderStateString))) :
+          new Map();
 
       bookmarks.Store.getInstance().init(initialState);
       bookmarks.ApiListener.init();
@@ -132,8 +133,8 @@ Polymer({
   },
 
   /** @private */
-  closedFoldersStateChanged_: function() {
-    window.localStorage[LOCAL_STORAGE_CLOSED_FOLDERS_KEY] =
-        JSON.stringify(Array.from(this.closedFoldersState_));
+  folderOpenStateChanged_: function() {
+    window.localStorage[LOCAL_STORAGE_FOLDER_STATE_KEY] =
+        JSON.stringify(Array.from(this.folderOpenState_));
   },
 });
