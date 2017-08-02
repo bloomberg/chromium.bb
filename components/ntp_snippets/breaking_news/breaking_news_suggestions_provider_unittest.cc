@@ -16,7 +16,7 @@
 #include "components/ntp_snippets/breaking_news/breaking_news_listener.h"
 #include "components/ntp_snippets/breaking_news/breaking_news_suggestions_provider.h"
 #include "components/ntp_snippets/mock_content_suggestions_provider_observer.h"
-#include "components/ntp_snippets/remote/test_utils.h"
+#include "components/ntp_snippets/remote/remote_suggestion_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ntp_snippets::test::RemoteSuggestionBuilder;

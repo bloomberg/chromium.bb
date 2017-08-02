@@ -46,6 +46,7 @@
 #include "components/ntp_snippets/remote/persistent_scheduler.h"
 #include "components/ntp_snippets/remote/proto/ntp_snippets.pb.h"
 #include "components/ntp_snippets/remote/remote_suggestion.h"
+#include "components/ntp_snippets/remote/remote_suggestion_builder.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/ntp_snippets/remote/remote_suggestions_fetcher_impl.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
