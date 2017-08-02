@@ -34,6 +34,9 @@
 namespace blink {
 
 using cssvalue::ToCSSCrossfadeValue;
+using cssvalue::ToCSSConicGradientValue;
+using cssvalue::ToCSSLinearGradientValue;
+using cssvalue::ToCSSRadialGradientValue;
 
 CSSImageGeneratorValue::CSSImageGeneratorValue(ClassType class_type)
     : CSSValue(class_type) {}

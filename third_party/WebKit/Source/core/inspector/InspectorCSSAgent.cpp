@@ -156,7 +156,7 @@ HeapVector<Member<Element>> ElementsFromRect(LayoutRect rect,
 }
 
 // Blends the colors from the given gradient with the existing colors.
-void BlendWithColorsFromGradient(CSSGradientValue* gradient,
+void BlendWithColorsFromGradient(cssvalue::CSSGradientValue* gradient,
                                  Vector<Color>& colors,
                                  bool& found_non_transparent_color,
                                  bool& found_opaque_color,
@@ -211,7 +211,8 @@ void AddColorsFromImageStyle(const ComputedStyle& style,
   StyleGeneratedImage* gen_image = ToStyleGeneratedImage(style_image);
   CSSValue* image_css = gen_image->CssValue();
   if (image_css->IsGradientValue()) {
-    CSSGradientValue* gradient = ToCSSGradientValue(image_css);
+    cssvalue::CSSGradientValue* gradient =
+        cssvalue::ToCSSGradientValue(image_css);
     BlendWithColorsFromGradient(gradient, colors, found_non_transparent_color,
                                 found_opaque_color, layout_object);
   }
