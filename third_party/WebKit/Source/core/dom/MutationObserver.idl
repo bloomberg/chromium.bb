@@ -30,8 +30,12 @@
 
 // https://dom.spec.whatwg.org/#interface-mutationobserver
 
+callback MutationCallback = void (sequence<MutationRecord> mutations,
+                                  MutationObserver observer);
+
 [
-    CustomConstructor(MutationCallback callback),
+    ConstructorCallWith=ScriptState,
+    Constructor(MutationCallback callback),
     ActiveScriptWrappable,
     DependentLifetime
 ] interface MutationObserver {

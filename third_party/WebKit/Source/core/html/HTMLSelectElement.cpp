@@ -38,7 +38,6 @@
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/MutationCallback.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/MutationObserverInit.h"
 #include "core/dom/MutationRecord.h"
@@ -2003,17 +2002,29 @@ void HTMLSelectElement::ResetTypeAheadSessionForTesting() {
 
 // PopupUpdater notifies updates of the specified SELECT element subtree to
 // a PopupMenu object.
-class HTMLSelectElement::PopupUpdater : public MutationCallback {
+class HTMLSelectElement::PopupUpdater : public MutationObserver::Delegate {
  public:
-  explicit PopupUpdater(HTMLSelectElement&);
-  DECLARE_VIRTUAL_TRACE();
+  explicit PopupUpdater(HTMLSelectElement& select)
+      : select_(select), observer_(MutationObserver::Create(this)) {
+    MutationObserverInit init;
+    init.setAttributeOldValue(true);
+    init.setAttributes(true);
+    // Observe only attributes which affect popup content.
+    init.setAttributeFilter({"disabled", "label", "selected", "value"});
+    init.setCharacterData(true);
+    init.setCharacterDataOldValue(true);
+    init.setChildList(true);
+    init.setSubtree(true);
+    observer_->observe(select_, init, ASSERT_NO_EXCEPTION);
+  }
 
-  void Dispose() { observer_->disconnect(); }
+  ExecutionContext* GetExecutionContext() const override {
+    return &select_->GetDocument();
+  }
 
- private:
-  void Call(const HeapVector<Member<MutationRecord>>& records,
-            MutationObserver*) override {
-    // We disconnect the MutationObserver when a popuup is closed.  However
+  void Deliver(const MutationRecordVector& records,
+               MutationObserver&) override {
+    // We disconnect the MutationObserver when a popup is closed.  However
     // MutationObserver can call back after disconnection.
     if (!select_->PopupIsVisible())
       return;
@@ -2031,40 +2042,18 @@ class HTMLSelectElement::PopupUpdater : public MutationCallback {
     }
   }
 
-  ExecutionContext* GetExecutionContext() const override {
-    return &select_->GetDocument();
+  void Dispose() { observer_->disconnect(); }
+
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->Trace(select_);
+    visitor->Trace(observer_);
+    MutationObserver::Delegate::Trace(visitor);
   }
 
+ private:
   Member<HTMLSelectElement> select_;
   Member<MutationObserver> observer_;
 };
-
-HTMLSelectElement::PopupUpdater::PopupUpdater(HTMLSelectElement& select)
-    : select_(select) {
-  observer_ = MutationObserver::Create(this);
-  Vector<String> filter;
-  filter.ReserveCapacity(4);
-  // Observe only attributes which affect popup content.
-  filter.push_back(String("disabled"));
-  filter.push_back(String("label"));
-  filter.push_back(String("selected"));
-  filter.push_back(String("value"));
-  MutationObserverInit init;
-  init.setAttributeOldValue(true);
-  init.setAttributes(true);
-  init.setAttributeFilter(filter);
-  init.setCharacterData(true);
-  init.setCharacterDataOldValue(true);
-  init.setChildList(true);
-  init.setSubtree(true);
-  observer_->observe(&select, init, ASSERT_NO_EXCEPTION);
-}
-
-DEFINE_TRACE(HTMLSelectElement::PopupUpdater) {
-  visitor->Trace(select_);
-  visitor->Trace(observer_);
-  MutationCallback::Trace(visitor);
-}
 
 void HTMLSelectElement::ObserveTreeMutation() {
   DCHECK(!popup_updater_);
