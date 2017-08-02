@@ -528,32 +528,14 @@ void ResourceLoader::DidReceiveResponse(
   } else if (options.cors_handling_by_resource_fetcher ==
                  kEnableCORSHandlingByResourceFetcher &&
              fetch_request_mode == WebURLRequest::kFetchRequestModeCORS) {
-    bool unused_preload = resource_->IsUnusedPreload();
-
-    // Redirects can change the response URL different from one of request.
-    const KURL& response_url = response.Url();
-
-    ResourceRequestBlockedReason blocked_reason = Context().CanRequest(
-        resource_type, initial_request, response_url, options,
-        /* Don't send security violation reports for unused preloads */
-        (unused_preload ? SecurityViolationReportingPolicy::kSuppressReporting
-                        : SecurityViolationReportingPolicy::kReport),
-        FetchParameters::kUseDefaultOriginRestrictionForType,
-        initial_request.GetRedirectStatus());
-    if (blocked_reason != ResourceRequestBlockedReason::kNone) {
-      HandleError(ResourceError::CancelledDueToAccessCheckError(
-          response_url, blocked_reason));
-      return;
-    }
-
     if (!resource_->IsSameOriginOrCORSSuccessful()) {
-      if (!unused_preload) {
+      if (!resource_->IsUnusedPreload())
         Context().AddErrorConsoleMessage(cors_error_msg.ToString(),
                                          FetchContext::kJSSource);
-      }
 
+      // Redirects can change the response URL different from one of request.
       HandleError(ResourceError::CancelledDueToAccessCheckError(
-          response_url, ResourceRequestBlockedReason::kOther));
+          response.Url(), ResourceRequestBlockedReason::kOther));
       return;
     }
   }
