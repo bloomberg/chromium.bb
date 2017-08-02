@@ -44,7 +44,6 @@ Advanced options:
   ${toggle_multithread}           multithreaded encoding and decoding
   ${toggle_spatial_resampling}    spatial sampling (scaling) support
   ${toggle_realtime_only}         enable this option while building for real-time encoding
-  ${toggle_error_concealment}     enable this option to get a decoder which is able to conceal losses
   ${toggle_coefficient_range_checking}
                                   enable decoder to check if intermediate
                                   transform coefficients are in valid range
@@ -370,7 +369,6 @@ CONFIG_LIST="
     static_msvcrt
     spatial_resampling
     realtime_only
-    error_concealment
     shared
     static
     small
@@ -429,7 +427,6 @@ CMDLINE_SELECT="
     static_msvcrt
     spatial_resampling
     realtime_only
-    error_concealment
     shared
     static
     small
