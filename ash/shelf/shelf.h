@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_locking_manager.h"
@@ -40,7 +41,8 @@ class ShelfObserver;
 // Controller for the shelf state. One per display, because each display might
 // have different shelf alignment, autohide, etc. Exists for the lifetime of the
 // root window controller.
-class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
+class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver,
+                         public WindowTreeHostManager::Observer {
  public:
   Shelf();
   ~Shelf() override;
@@ -145,6 +147,13 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
   void OnBackgroundUpdated(ShelfBackgroundType background_type,
                            AnimationChangeType change_type) override;
+
+  // WindowTreeHostManager::Observer:
+  void OnWindowTreeHostReusedForDisplay(
+      AshWindowTreeHost* window_tree_host,
+      const display::Display& display) override;
+  void OnWindowTreeHostsSwappedDisplays(AshWindowTreeHost* host1,
+                                        AshWindowTreeHost* host2) override;
 
  private:
   class AutoHideEventHandler;
