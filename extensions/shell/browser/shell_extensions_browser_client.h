@@ -98,6 +98,7 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
       net::URLRequest* request) override;
   KioskDelegate* GetKioskDelegate() override;
   bool IsLockScreenContext(content::BrowserContext* context) override;
+  std::string GetApplicationLocale() override;
 
   // Sets the API client.
   void SetAPIClientForTest(ExtensionsAPIClient* api_client);

@@ -270,6 +270,9 @@ class ExtensionsBrowserClient {
   // Whether the browser context is associated with Chrome OS lock screen.
   virtual bool IsLockScreenContext(content::BrowserContext* context) = 0;
 
+  // Returns the locale used by the application.
+  virtual std::string GetApplicationLocale() = 0;
+
   // Returns the single instance of |this|.
   static ExtensionsBrowserClient* Get();
 
