@@ -4,10 +4,12 @@
 
 #include "content/gpu/in_process_gpu_thread.h"
 
+#include "base/command_line.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"
+#include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_util.h"
 #include "ui/gl/init/gl_factory.h"
@@ -53,10 +55,13 @@ void InProcessGpuThread::Init() {
 #endif
 
   gpu::GPUInfo gpu_info;
-  if (!gl::init::InitializeGLOneOff())
+  if (!gl::init::InitializeGLOneOff()) {
     VLOG(1) << "gl::init::InitializeGLOneOff failed";
-  else
-    gpu::CollectContextGraphicsInfo(&gpu_info);
+  } else {
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kSkipGpuDataLoading))
+      gpu::CollectContextGraphicsInfo(&gpu_info);
+  }
 
   gpu::GpuFeatureInfo gpu_feature_info =
       gpu::GetGpuFeatureInfo(gpu_info, *base::CommandLine::ForCurrentProcess());
