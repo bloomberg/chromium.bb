@@ -2922,9 +2922,9 @@ void av1_rc_get_second_pass_params(AV1_COMP *cpi) {
   // If this is an arf frame then we dont want to read the stats file or
   // advance the input pointer as we already have what we need.
   if (gf_group->update_type[gf_group->index] == ARF_UPDATE
-#if CONFIG_EXT_REFS && CONFIG_ALTREF2
+#if CONFIG_ALTREF2
       || gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE
-#endif  // CONFIG_EXT_REFS && CONFIG_ALTREF2
+#endif  // CONFIG_ALTREF2
       ) {
     configure_buffer_updates(cpi);
     target_rate = gf_group->bit_allocation[gf_group->index];

@@ -559,6 +559,7 @@ post_process_cmdline() {
     enabled ext_comp_refs && enable_feature var_refs
     enabled ext_comp_refs && disable_feature one_sided_compound
     enabled altref2 && enable_feature ext_refs
+    enabled altref2 && enable_feature flex_refs
     enabled rect_tx_ext && enable_feature rect_tx
     enabled cfl && enable_feature smooth_hv
 

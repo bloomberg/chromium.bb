@@ -1491,9 +1491,9 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   if ((rd_cost->rate != INT_MAX) && (aq_mode == COMPLEXITY_AQ) &&
       (bsize >= BLOCK_16X16) &&
       (cm->frame_type == KEY_FRAME || cpi->refresh_alt_ref_frame ||
-#if CONFIG_EXT_REFS && CONFIG_ALTREF2
+#if CONFIG_ALTREF2
        cpi->refresh_alt2_ref_frame ||
-#endif  // CONFIG_EXT_REFS && CONFIG_ALTREF2
+#endif  // CONFIG_ALTREF2
        (cpi->refresh_golden_frame && !cpi->rc.is_src_frame_alt_ref))) {
     av1_caq_select_segment(cpi, x, bsize, mi_row, mi_col, rd_cost->rate);
   }
@@ -4717,9 +4717,9 @@ static MV_REFERENCE_FRAME get_frame_type(const AV1_COMP *cpi) {
 #endif
     return ALTREF_FRAME;
   else if (cpi->refresh_golden_frame ||
-#if CONFIG_EXT_REFS && CONFIG_ALTREF2
+#if CONFIG_ALTREF2
            cpi->refresh_alt2_ref_frame ||
-#endif  // CONFIG_EXT_REFS && CONFIG_ALTREF2
+#endif  // CONFIG_ALTREF2
            cpi->refresh_alt_ref_frame)
     return GOLDEN_FRAME;
   else

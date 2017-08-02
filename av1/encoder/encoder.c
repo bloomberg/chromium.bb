@@ -5450,10 +5450,10 @@ static void check_src_altref(AV1_COMP *cpi,
         (gf_group->update_type[gf_group->index] == INTNL_OVERLAY_UPDATE) ||
 #endif  // CONFIG_EXT_REFS
         (gf_group->update_type[gf_group->index] == OVERLAY_UPDATE);
-#if CONFIG_EXT_REFS && CONFIG_ALTREF2
+#if CONFIG_ALTREF2
     rc->is_src_frame_ext_arf =
         gf_group->update_type[gf_group->index] == INTNL_OVERLAY_UPDATE;
-#endif  // CONFIG_EXT_REFS && CONFIG_ALTREF2
+#endif  // CONFIG_ALTREF2
   } else {
     rc->is_src_frame_alt_ref =
         cpi->alt_ref_source && (source == cpi->alt_ref_source);
@@ -5463,20 +5463,20 @@ static void check_src_altref(AV1_COMP *cpi,
     // Current frame is an ARF overlay frame.
     cpi->alt_ref_source = NULL;
 
-#if CONFIG_EXT_REFS && CONFIG_ALTREF2
+#if CONFIG_ALTREF2
     if (rc->is_src_frame_ext_arf && !cpi->common.show_existing_frame) {
       // For INTNL_OVERLAY, when show_existing_frame == 0, they do need to
       // refresh the LAST_FRAME, i.e. LAST3 gets retired, LAST2 becomes LAST3,
       // LAST becomes LAST2, and INTNL_OVERLAY becomes LAST.
       cpi->refresh_last_frame = 1;
     } else {
-#endif  // CONFIG_EXT_REFS && CONFIG_ALTREF2
+#endif  // CONFIG_ALTREF2
       // Don't refresh the last buffer for an ARF overlay frame. It will
       // become the GF so preserve last as an alternative prediction option.
       cpi->refresh_last_frame = 0;
-#if CONFIG_EXT_REFS && CONFIG_ALTREF2
+#if CONFIG_ALTREF2
     }
-#endif  // CONFIG_EXT_REFS && CONFIG_ALTREF2
+#endif  // CONFIG_ALTREF2
   }
 }
 
