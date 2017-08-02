@@ -97,6 +97,14 @@ var SettingsSectionElement = Polymer({
   },
 
   /**
+   * Calling this method fires the 'settings-section-expanded event'.
+   */
+  setExpanded_: function() {
+    this.classList.add('expanded');
+    this.fire('settings-section-expanded');
+  },
+
+  /**
    * @return {boolean} True if the section is currently rendered and not
    *     already expanded or transitioning.
    */
@@ -113,7 +121,7 @@ var SettingsSectionElement = Polymer({
     this.$.card.top = containerTop + 'px';
     this.$.card.height = 'calc(100% - ' + containerTop + 'px)';
 
-    this.classList.add('expanded');
+    this.setExpanded_();
   },
 
   /**
@@ -146,17 +154,13 @@ var SettingsSectionElement = Polymer({
 
     var animation =
         this.animateCard_('fixed', startTop, endTop, startHeight, endHeight);
-    animation.finished
-        .then(
-            () => {
-              this.classList.add('expanded');
-            },
-            function() {})
-        .then(() => {
-          // Unset these changes whether the animation finished or canceled.
-          this.classList.remove('expanding');
-          this.style.height = '';
-        });
+    // The empty onRejected function prevents the promise from skipping forward
+    // to the next then() with a rejection callback.
+    animation.finished.then(this.setExpanded_.bind(this), () => {}).then(() => {
+      // Unset these changes whether the animation finished or canceled.
+      this.classList.remove('expanding');
+      this.style.height = '';
+    });
     return animation;
   },
 
