@@ -795,29 +795,9 @@ PendingScript* ScriptLoader::CreatePendingScript() {
   return nullptr;
 }
 
-ScriptLoader::ExecuteScriptResult ScriptLoader::ExecuteScript(
-    const Script* script) {
-  double script_exec_start_time = MonotonicallyIncreasingTime();
-  ExecuteScriptResult result = DoExecuteScript(script);
-
-  // NOTE: we do not check m_willBeParserExecuted here, since
-  // m_willBeParserExecuted is false for inline scripts, and we want to
-  // include inline script execution time as part of parser blocked script
-  // execution time.
-  if (async_exec_type_ == ScriptRunner::kNone)
-    DocumentParserTiming::From(element_->GetDocument())
-        .RecordParserBlockedOnScriptExecutionDuration(
-            MonotonicallyIncreasingTime() - script_exec_start_time,
-            WasCreatedDuringDocumentWrite());
-  return result;
-}
-
-// https://html.spec.whatwg.org/#execute-the-script-block
+// Steps 3--7 of https://html.spec.whatwg.org/#execute-the-script-block
 // with additional support for HTML imports.
-// Note that Steps 2 and 8 must be handled by the caller of doExecuteScript(),
-// i.e. load/error events are dispatched by the caller.
-// Steps 3--7 are implemented here in doExecuteScript().
-// TODO(hiroshige): Move event dispatching code to doExecuteScript().
+// Steps 2 and 8 are handled in ExecuteScriptBlock().
 ScriptLoader::ExecuteScriptResult ScriptLoader::DoExecuteScript(
     const Script* script) {
   DCHECK(already_started_);
@@ -941,8 +921,23 @@ bool ScriptLoader::ExecuteScriptBlock(PendingScript* pending_script,
   if (was_canceled)
     return false;
 
-  // Steps 3--7 are in ExecuteScript().
-  switch (ExecuteScript(script)) {
+  double script_exec_start_time = MonotonicallyIncreasingTime();
+
+  // Steps 3--7 are in DoExecuteScript().
+  ExecuteScriptResult result = DoExecuteScript(script);
+
+  // NOTE: we do not check m_willBeParserExecuted here, since
+  // m_willBeParserExecuted is false for inline scripts, and we want to
+  // include inline script execution time as part of parser blocked script
+  // execution time.
+  if (async_exec_type_ == ScriptRunner::kNone) {
+    DocumentParserTiming::From(element_->GetDocument())
+        .RecordParserBlockedOnScriptExecutionDuration(
+            MonotonicallyIncreasingTime() - script_exec_start_time,
+            WasCreatedDuringDocumentWrite());
+  }
+
+  switch (result) {
     case ExecuteScriptResult::kShouldFireLoadEvent:
       // 8. "If the script is from an external file, then fire an event named
       //     load at the script element."
