@@ -418,8 +418,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
     provider->FetchSuggestions(
         interactive_request, RemoteSuggestionsProvider::FetchStatusCallback());
     std::move(snippets_callback)
-        .Run(Status(StatusCode::SUCCESS, "message"),
-             std::move(fetched_categories));
+        .Run(Status::Success(), std::move(fetched_categories));
   }
 
   void FetchMoreTheseSuggestions(
@@ -438,8 +437,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         .RetiresOnSaturation();
     provider->Fetch(category, known_suggestion_ids, fetch_done_callback);
     std::move(snippets_callback)
-        .Run(Status(StatusCode::SUCCESS, "message"),
-             std::move(fetched_categories));
+        .Run(Status::Success(), std::move(fetched_categories));
   }
 
   void SetOrderNewRemoteCategoriesBasedOnArticlesCategoryParam(bool value) {
@@ -508,8 +506,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, Full) {
                                        .SetPublisher(kSuggestionPublisherName))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
               SizeIs(1));
@@ -551,8 +548,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, CategoryTitle) {
           .AddSuggestionViaBuilder(RemoteSuggestionBuilder())
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
               SizeIs(1));
@@ -595,8 +591,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, MultipleCategories) {
                   .SetPublisher(kSuggestionPublisherName))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   ASSERT_THAT(observer().statuses(),
               Eq(std::map<Category, CategoryStatus, Category::CompareByID>{
@@ -662,8 +657,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ExperimentalCategoryInfo) {
   // Load data with multiple categories so that a new experimental category gets
   // registered.
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   CategoryInfo info = provider->GetCategoryInfo(unknown_category());
   EXPECT_THAT(info.additional_action(),
@@ -704,8 +698,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, AddRemoteCategoriesToCategoryRanker) {
   }
   auto provider = MakeSuggestionsProvider();
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
@@ -757,8 +750,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   }
   auto provider = MakeSuggestionsProvider();
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 }
 
 TEST_F(
@@ -780,8 +772,7 @@ TEST_F(
               AppendCategoryIfNecessary(Category::FromRemoteCategory(11)));
   auto provider = MakeSuggestionsProvider();
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, PersistCategoryInfos) {
@@ -798,8 +789,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, PersistCategoryInfos) {
           .AddSuggestionViaBuilder(RemoteSuggestionBuilder().AddId("2"))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   ASSERT_EQ(observer().StatusForCategory(articles_category()),
             CategoryStatus::AVAILABLE);
@@ -857,8 +847,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, PersistRemoteCategoryOrder) {
           .AddSuggestionViaBuilder(RemoteSuggestionBuilder().AddId("12"))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   // We manually recreate the provider to simulate Chrome restart and enforce a
   // mock ranker.
@@ -901,8 +890,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, PersistSuggestions) {
               RemoteSuggestionBuilder().AddId("2").SetRemoteCategoryId(2))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
               SizeIs(1));
@@ -932,8 +920,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, DontNotifyIfNotAvailable) {
           .AddSuggestionViaBuilder(RemoteSuggestionBuilder().AddId("2"))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
               SizeIs(1));
@@ -966,8 +953,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, Clear) {
           .AddSuggestionViaBuilder(RemoteSuggestionBuilder().AddId("1"))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   EXPECT_THAT(provider->GetSuggestionsForTesting(articles_category()),
               SizeIs(1));
@@ -988,8 +974,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ReplaceSuggestions) {
           .AddSuggestionViaBuilder(RemoteSuggestionBuilder().AddId(first))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   EXPECT_THAT(provider->GetSuggestionsForTesting(articles_category()),
               ElementsAre(Pointee(Property(&RemoteSuggestion::id, first))));
 
@@ -1001,8 +986,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ReplaceSuggestions) {
           .AddSuggestionViaBuilder(RemoteSuggestionBuilder().AddId(second))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   // The suggestions loaded last replace all that was loaded previously.
   EXPECT_THAT(provider->GetSuggestionsForTesting(articles_category()),
               ElementsAre(Pointee(Property(&RemoteSuggestion::id, second))));
@@ -1019,8 +1003,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
           .AddSuggestionViaBuilder(RemoteSuggestionBuilder().AddId("id"))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   ASSERT_THAT(provider->GetSuggestionsForTesting(articles_category()),
               ElementsAre(Pointee(Property(&RemoteSuggestion::id, "id"))));
 
@@ -1046,8 +1029,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ShouldFetchMore) {
           .AddSuggestionViaBuilder(RemoteSuggestionBuilder().AddId("first"))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   ASSERT_THAT(provider->GetSuggestionsForTesting(articles_category()),
               ElementsAre(Pointee(Property(&RemoteSuggestion::id, "first"))));
 
@@ -1066,7 +1048,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ShouldFetchMore) {
       provider.get(), articles_category(),
       /*known_suggestion_ids=*/std::set<std::string>(),
       /*fetch_done_callback=*/expect_only_second_suggestion_received,
-      Status(StatusCode::SUCCESS, "message"), std::move(fetched_categories));
+      Status::Success(), std::move(fetched_categories));
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
@@ -1089,7 +1071,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
       provider.get(), articles_category(),
       /*known_suggestion_ids=*/std::set<std::string>(),
       /*fetch_done_callback=*/assert_only_first_suggestion_received,
-      Status(StatusCode::SUCCESS, "message"), std::move(fetched_categories));
+      Status::Success(), std::move(fetched_categories));
 
   image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
   ServeImageCallback serve_one_by_one_image_callback =
@@ -1120,8 +1102,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
               RemoteSuggestionBuilder().AddId("http://old.com/"))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
               ElementsAre(Property(&ContentSuggestion::id,
@@ -1147,7 +1128,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
       provider.get(), articles_category(),
       /*known_suggestion_ids=*/{"http://old.com/"},
       /*fetch_done_callback=*/assert_receiving_one_new_suggestion,
-      Status(StatusCode::SUCCESS, "message"), std::move(fetched_categories));
+      Status::Success(), std::move(fetched_categories));
 
   // Other surfaces should remain the same.
   EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
@@ -1191,8 +1172,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
                   /*known_suggestion_ids=*/std::set<std::string>(),
                   assert_receiving_one_new_suggestion);
   std::move(snippets_callback)
-      .Run(Status(StatusCode::SUCCESS, "message"),
-           std::move(fetched_categories));
+      .Run(Status::Success(), std::move(fetched_categories));
 
   // Now fetch more on the surface B. The response is the same as before.
   fetched_categories.clear();
@@ -1225,8 +1205,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
                   /*known_suggestion_ids=*/std::set<std::string>(),
                   expect_receiving_same_suggestion);
   std::move(snippets_callback)
-      .Run(Status(StatusCode::SUCCESS, "message"),
-           std::move(fetched_categories));
+      .Run(Status::Success(), std::move(fetched_categories));
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
@@ -1246,8 +1225,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
               RemoteSuggestionBuilder().AddId("http://id-2"))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   fetched_categories.clear();
   fetched_categories.push_back(
       FetchedCategoryBuilder()
@@ -1258,8 +1236,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
               RemoteSuggestionBuilder().AddId("http://new-id-2"))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   // Make sure images of both batches are available. This is to sanity check our
   // assumptions for the test are right.
   ServeImageCallback cb =
@@ -1359,8 +1336,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   fetched_categories[0].suggestions.push_back(
       CreateTestRemoteSuggestion(base::StringPrintf("http://abc.com/")));
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/false,
-                        Status(StatusCode::SUCCESS, "success message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   ASSERT_THAT(
       provider->GetSuggestionsForTesting(articles_category()),
@@ -1387,8 +1363,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, Dismiss) {
               RemoteSuggestionBuilder().AddId("http://site.com"));
   fetched_categories.push_back(category_builder.Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   ASSERT_THAT(provider->GetSuggestionsForTesting(articles_category()),
               SizeIs(1));
@@ -1425,8 +1400,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, Dismiss) {
   fetched_categories.clear();
   fetched_categories.push_back(category_builder.Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   EXPECT_THAT(provider->GetSuggestionsForTesting(articles_category()),
               IsEmpty());
 
@@ -1435,8 +1409,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, Dismiss) {
   fetched_categories.clear();
   fetched_categories.push_back(category_builder.Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   EXPECT_THAT(provider->GetSuggestionsForTesting(articles_category()),
               IsEmpty());
 
@@ -1447,8 +1420,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, Dismiss) {
   fetched_categories.clear();
   fetched_categories.push_back(category_builder.Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   EXPECT_THAT(provider->GetSuggestionsForTesting(articles_category()),
               SizeIs(1));
 }
@@ -1464,8 +1436,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, GetDismissed) {
               RemoteSuggestionBuilder().AddId("http://site.com"))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   provider->DismissSuggestion(MakeArticleID("http://site.com"));
 
@@ -1510,8 +1481,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, RemoveExpiredDismissedContent) {
                                        .SetExpiryDate(base::Time::Now()))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   // Load the image to store it in the database.
   // TODO(tschumann): Introduce some abstraction to nicely work with image
   // fetching expectations.
@@ -1537,8 +1507,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, RemoveExpiredDismissedContent) {
               RemoteSuggestionBuilder().AddId("http://second/"))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   EXPECT_THAT(provider->GetDismissedSuggestionsForTesting(articles_category()),
               IsEmpty());
@@ -1559,8 +1528,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ExpiredContentNotRemoved) {
               RemoteSuggestionBuilder().SetExpiryDate(base::Time::Now()))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   EXPECT_THAT(provider->GetSuggestionsForTesting(articles_category()),
               SizeIs(1));
@@ -1580,8 +1548,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, TestSingleSource) {
                                        .SetAmpUrl("http://source1.amp.com"))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   ASSERT_THAT(provider->GetSuggestionsForTesting(articles_category()),
               SizeIs(1));
@@ -1604,8 +1571,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, TestSingleSourceWithMissingData) {
               RemoteSuggestionBuilder().SetPublisher("").SetAmpUrl(""))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   EXPECT_THAT(provider->GetSuggestionsForTesting(articles_category()),
               IsEmpty());
@@ -1627,8 +1593,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, LogNumArticlesHistogram) {
 
   // Emptry categories list.
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::vector<FetchedCategory>());
+                        Status::Success(), std::vector<FetchedCategory>());
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/2)));
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticlesFetched"),
@@ -1639,8 +1604,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, LogNumArticlesHistogram) {
   fetched_categories.push_back(
       FetchedCategoryBuilder().SetCategory(articles_category()).Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/3)));
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticlesFetched"),
@@ -1655,8 +1619,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, LogNumArticlesHistogram) {
   fetched_categories.clear();
   fetched_categories.push_back(category_builder.Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/3),
                           base::Bucket(/*min=*/1, /*count=*/1)));
@@ -1668,8 +1631,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, LogNumArticlesHistogram) {
   fetched_categories.clear();
   fetched_categories.push_back(category_builder.Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/3),
                           base::Bucket(/*min=*/1, /*count=*/2)));
@@ -1686,8 +1648,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, LogNumArticlesHistogram) {
   fetched_categories.clear();
   fetched_categories.push_back(category_builder.Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/4),
                           base::Bucket(/*min=*/1, /*count=*/2)));
@@ -1724,8 +1685,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, DismissShouldRespectAllKnownUrls) {
                                        .SetPublisher(publishers[0]))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   ASSERT_THAT(provider->GetSuggestionsForTesting(articles_category()),
               SizeIs(1));
   // Dismiss the suggestion via the mashable source corpus ID.
@@ -1746,8 +1706,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, DismissShouldRespectAllKnownUrls) {
                                        .SetPublisher(publishers[1]))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   EXPECT_THAT(provider->GetSuggestionsForTesting(articles_category()),
               IsEmpty());
 }
@@ -1763,8 +1722,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ImageReturnedWithTheSameId) {
               RemoteSuggestionBuilder().AddId(kSuggestionUrl))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   gfx::Image image;
   MockFunction<void(const gfx::Image&)> image_fetched;
@@ -1842,8 +1800,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ClearHistoryRemovesAllSuggestions) {
               RemoteSuggestionBuilder().AddId("http://second/"))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   ASSERT_THAT(provider->GetSuggestionsForTesting(articles_category()),
               SizeIs(2));
 
@@ -1891,8 +1848,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ShouldClearOrphanedImagesOnRestart) {
               RemoteSuggestionBuilder().AddId(kSuggestionUrl))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   ServeImageCallback cb =
       base::Bind(&ServeOneByOneImage, &provider->GetImageFetcherForTesting());
 
@@ -1914,8 +1870,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ShouldClearOrphanedImagesOnRestart) {
               "http://something.com/pletely/unrelated"))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   // The image should still be available until a restart happens.
   EXPECT_FALSE(
       FetchImage(provider.get(), MakeArticleID(kSuggestionUrl)).IsEmpty());
@@ -1938,8 +1893,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   }
   fetched_categories.push_back(category_builder.Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   // TODO(tschumann): We should probably trim out any additional results and
   // only serve the MaxSuggestionCount items.
   EXPECT_THAT(provider->GetSuggestionsForTesting(articles_category()),
@@ -1978,8 +1932,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   provider->RefetchInTheBackground(
       RemoteSuggestionsProvider::FetchStatusCallback());
   base::RunLoop().RunUntilIdle();
-  std::move(snippets_callback)
-      .Run(Status(StatusCode::SUCCESS, "message"), base::nullopt);
+  std::move(snippets_callback).Run(Status::Success(), base::nullopt);
   // TODO(jkrcal): Move together with the pref storage into the scheduler.
   EXPECT_EQ(
       simple_test_clock_ptr->Now().ToInternalValue(),
@@ -2098,8 +2051,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   ASSERT_TRUE(fetched_categories[0].suggestions[0]->is_complete());
 
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   provider->DismissSuggestion(MakeArticleID("http://abc.com/"));
 
   std::set<std::string> expected_excluded_ids({"http://abc.com/"});
@@ -2133,8 +2085,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   fetched_categories.push_back(category_builder.Build());
 
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   // Dismiss them.
   for (int i = 0; i < kSuggestionsCount; ++i) {
     provider->DismissSuggestion(
@@ -2171,8 +2122,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   fetched_categories.push_back(category_builder.Build());
 
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   // Dismiss them in reverse order.
   std::string first_dismissed_suggestion_id;
@@ -2227,8 +2177,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   fetched_categories.push_back(second_category_builder.Build());
 
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   // Dismiss all suggestions.
   std::set<std::string> expected_excluded_ids;
@@ -2282,8 +2231,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
       CreateTestRemoteSuggestion("http://other.com/"));
 
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   // Dismiss article suggestions first.
   for (int i = 0; i < kMaxExcludedDismissedIds; ++i) {
@@ -2324,8 +2272,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
           .AddSuggestionViaBuilder(RemoteSuggestionBuilder())
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
               SizeIs(1));
 }
@@ -2352,8 +2299,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
                                        .SetAmpUrl("http://amp.prefetched.com"))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
               SizeIs(1));
@@ -2372,8 +2318,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
                                        .SetAmpUrl("http://amp.other.com"))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   EXPECT_THAT(
       observer().SuggestionsForCategory(articles_category()),
@@ -2406,8 +2351,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
                   .SetAmpUrl("http://amp.not_prefetched.com"))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
               SizeIs(1));
@@ -2426,8 +2370,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
                                        .SetAmpUrl("http://amp.other.com"))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
               UnorderedElementsAre(Property(
@@ -2461,8 +2404,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 
   EXPECT_CALL(*mock_tracker, IsInitialized()).WillRepeatedly(Return(true));
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
               SizeIs(prefetched_suggestions_count));
 
@@ -2484,8 +2426,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
                   .SetAmpUrl("http://amp.not_prefetched.com"))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
               SizeIs(kMaxAdditionalPrefetchedSuggestions + 1));
@@ -2520,8 +2461,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
           .Build());
   EXPECT_CALL(*mock_tracker, IsInitialized()).WillRepeatedly(Return(true));
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
               SizeIs(2));
 
@@ -2549,8 +2489,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
       .WillOnce(Return(true));
   EXPECT_CALL(*mock_tracker, IsInitialized()).WillRepeatedly(Return(true));
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   EXPECT_THAT(
       observer().SuggestionsForCategory(articles_category()),
@@ -2597,8 +2536,7 @@ TEST_F(
     }
 
     FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                          Status(StatusCode::SUCCESS, "message"),
-                          std::move(fetched_categories));
+                          Status::Success(), std::move(fetched_categories));
   }
 
   const std::vector<ContentSuggestion>& actual_suggestions =
@@ -2653,8 +2591,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
           .Build());
   EXPECT_CALL(*mock_tracker, IsInitialized()).WillRepeatedly(Return(true));
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
               SizeIs(1));
 
@@ -2678,8 +2615,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
               PrefetchedOfflinePageExists(GURL("http://amp.prefetched.com")))
       .WillOnce(Return(true));
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
 
   ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
               SizeIs(2));
@@ -2703,8 +2639,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
               PrefetchedOfflinePageExists(GURL("http://amp.prefetched.com")))
       .WillOnce(Return(true));
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
               ElementsAre(Property(&ContentSuggestion::id,
                                    MakeArticleID("http://other.com"))));
@@ -2736,8 +2671,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
                                        .SetAmpUrl("http://amp.prefetched.com"))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
               SizeIs(0));
 
@@ -2769,8 +2703,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
                                        .SetScore(2))
           .Build());
   FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
-                        Status(StatusCode::SUCCESS, "message"),
-                        std::move(fetched_categories));
+                        Status::Success(), std::move(fetched_categories));
   ASSERT_THAT(
       observer().SuggestionsForCategory(articles_category()),
       ElementsAre(
