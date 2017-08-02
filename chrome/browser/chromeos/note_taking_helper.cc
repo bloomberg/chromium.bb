@@ -549,6 +549,10 @@ void NoteTakingHelper::Observe(int type,
     for (Observer& observer : observers_)
       observer.OnAvailableNoteTakingAppsUpdated();
   }
+
+  auto* bridge = arc::ArcIntentHelperBridge::GetForBrowserContext(profile);
+  if (bridge)
+    bridge->AddObserver(this);
 }
 
 void NoteTakingHelper::OnExtensionLoaded(

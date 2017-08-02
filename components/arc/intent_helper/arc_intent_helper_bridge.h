@@ -56,6 +56,7 @@ class ArcIntentHelperBridge
 
   void AddObserver(ArcIntentHelperObserver* observer);
   void RemoveObserver(ArcIntentHelperObserver* observer);
+  bool HasObserver(ArcIntentHelperObserver* observer) const;
 
   // InstanceHolder<mojom::IntentHelperInstance>::Observer
   void OnInstanceReady() override;
