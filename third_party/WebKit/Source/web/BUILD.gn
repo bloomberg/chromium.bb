@@ -69,11 +69,8 @@ test("webkit_unit_tests") {
     # FIXME: Move the tests from web/tests/ to appropriate places.
     # crbug.com/353585
 
-    "tests/LayoutGeometryMapTest.cpp",
     "tests/RunAllTests.cpp",
     "tests/VirtualTimeTest.cpp",
-    "tests/WebFrameSerializerSanitizationTest.cpp",
-    "tests/WebFrameTest.cpp",
   ]
   sources += bindings_unittest_files
 

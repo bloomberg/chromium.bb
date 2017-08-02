@@ -198,7 +198,7 @@ def _CheckForForbiddenNamespace(input_api, output_api):
     # This list is not exhaustive, but covers likely ones.
     chromium_namespaces = ["base", "cc", "content", "gfx", "net", "ui"]
     chromium_forbidden_classes = ["scoped_refptr"]
-    chromium_allowed_classes = ["gfx::ColorSpace", "gfx::CubicBezier", "gfx::ICCProfile"]
+    chromium_allowed_classes = ["gfx::ColorSpace", "gfx::CubicBezier", "gfx::ICCProfile", "gfx::ScrollOffset"]
 
     def source_file_filter(path):
         return input_api.FilterSourceFile(path,
