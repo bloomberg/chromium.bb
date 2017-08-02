@@ -3998,6 +3998,24 @@ TEST_F(DiskCacheBackendTest, SimpleCacheLateDoom) {
             simple_cache_impl_->index()->init_method());
 }
 
+TEST_F(DiskCacheBackendTest, SimpleCacheNegMaxSize) {
+  SetMaxSize(-1);
+  SetSimpleCacheMode();
+  InitCache();
+  // We don't know what it will pick, but it's limited to what
+  // disk_cache::PreferredCacheSize would return, scaled by the size experiment,
+  // which only goes as much as 2x. It definitely should not be MAX_UINT64.
+  EXPECT_NE(simple_cache_impl_->index()->max_size(),
+            std::numeric_limits<uint64_t>::max());
+
+  int max_default_size =
+      2 * disk_cache::PreferredCacheSize(std::numeric_limits<int32_t>::max());
+
+  ASSERT_GE(max_default_size, 0);
+  EXPECT_LT(simple_cache_impl_->index()->max_size(),
+            static_cast<unsigned>(max_default_size));
+}
+
 TEST_F(DiskCacheBackendTest, SimpleLastModified) {
   // Simple cache used to incorrectly set LastModified on entries based on
   // timestamp of the cache directory, and not the entries' file

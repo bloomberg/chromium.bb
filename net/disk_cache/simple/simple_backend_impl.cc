@@ -263,6 +263,10 @@ SimpleBackendImpl::SimpleBackendImpl(
                                  ? SimpleEntryImpl::OPTIMISTIC_OPERATIONS
                                  : SimpleEntryImpl::NON_OPTIMISTIC_OPERATIONS),
       net_log_(net_log) {
+  // Treat negative passed-in sizes same as SetMaxSize would here and in other
+  // backends, as default (if first call).
+  if (orig_max_size_ < 0)
+    orig_max_size_ = 0;
   MaybeHistogramFdLimit(cache_type_);
 }
 
