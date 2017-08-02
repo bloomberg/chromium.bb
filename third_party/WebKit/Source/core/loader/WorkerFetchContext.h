@@ -26,9 +26,7 @@ CORE_EXPORT void ProvideWorkerFetchContextToWorker(
 
 // The WorkerFetchContext is a FetchContext for workers (dedicated, shared and
 // service workers) and threaded worklets (animation and audio worklets). This
-// class is used only when off-main-thread-fetch is enabled, and is still under
-// development.
-// TODO(horo): Implement all methods of FetchContext. crbug.com/443374
+// class is used only when off-main-thread-fetch is enabled.
 class WorkerFetchContext final : public BaseFetchContext {
  public:
   static WorkerFetchContext* Create(WorkerOrWorkletGlobalScope&);
