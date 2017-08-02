@@ -37,10 +37,6 @@
 #include "public/platform/WebURL.h"
 #include "WebFrame.h"
 
-#if BLINK_IMPLEMENTATION
-#include "platform/heap/Handle.h"
-#endif
-
 namespace v8 {
 class Isolate;
 class Object;
