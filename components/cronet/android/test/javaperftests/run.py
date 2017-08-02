@@ -54,8 +54,8 @@ REPOSITORY_ROOT = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', '..', '..', '..'))
 
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'tools', 'perf'))
-from chrome_telemetry_build import chromium_config
-sys.path.append(chromium_config.GetTelemetryDir())
+from core import path_util
+sys.path.append(path_util.GetTelemetryDir())
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'build', 'android'))
 sys.path.append(os.path.join(
     REPOSITORY_ROOT, 'third_party', 'catapult', 'devil'))
