@@ -11149,6 +11149,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="375" label="SafeBrowsingForTrustedSourcesEnabled"/>
   <int value="376" label="EcryptfsMigrationStrategy"/>
   <int value="377" label="NoteTakingAppsLockScreenWhitelist"/>
+  <int value="378" label="CastReceiverEnabled"/>
+  <int value="379" label="CastReceiverName"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

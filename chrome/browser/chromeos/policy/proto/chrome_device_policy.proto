@@ -813,6 +813,13 @@ message DeviceSecondFactorAuthenticationProto {
   optional U2fMode mode = 1;
 }
 
+message CastReceiverNameProto {
+  // The name advertised as a Google Cast destination by the device,
+  // up to 24 characters. If the name is empty, the device name will
+  // be used.
+  optional string name = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -875,4 +882,5 @@ message ChromeDeviceSettingsProto {
       device_ecryptfs_migration_strategy = 51;
   optional DeviceSecondFactorAuthenticationProto
       device_second_factor_authentication = 52;
+  optional CastReceiverNameProto cast_receiver_name = 53;
 }
