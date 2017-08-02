@@ -32,6 +32,10 @@ bool ExtensionsClient::ExtensionAPIEnabledInExtensionServiceWorkers() const {
   return false;
 }
 
+std::string ExtensionsClient::GetUserAgent() const {
+  return std::string();
+}
+
 void ExtensionsClient::Set(ExtensionsClient* client) {
   // This can happen in unit tests, where the utility thread runs in-process.
   if (g_client)

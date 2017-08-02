@@ -44,6 +44,7 @@ class ShellExtensionsClient : public ExtensionsClient {
   const GURL& GetWebstoreBaseURL() const override;
   const GURL& GetWebstoreUpdateURL() const override;
   bool IsBlacklistUpdateURL(const GURL& url) const override;
+  std::string GetUserAgent() const override;
 
  private:
   const ExtensionsAPIPermissions extensions_api_permissions_;
