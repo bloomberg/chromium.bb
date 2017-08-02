@@ -24,6 +24,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_contents.h"
@@ -32,8 +33,14 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_utils.h"
+#include "ui/native_theme/native_theme.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/radio_button.h"
@@ -172,7 +179,7 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
       custom_link_(nullptr),
       manage_link_(nullptr),
       manage_checkbox_(nullptr),
-      learn_more_link_(nullptr) {
+      learn_more_button_(nullptr) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(
       GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
@@ -200,6 +207,13 @@ gfx::Size ContentSettingBubbleContents::CalculatePreferredSize() const {
     preferred_size.set_width(std::min(preferred_width, kMaxContentsWidth));
   }
   return preferred_size;
+}
+
+void ContentSettingBubbleContents::OnNativeThemeChanged(
+    const ui::NativeTheme* theme) {
+  views::BubbleDialogDelegateView::OnNativeThemeChanged(theme);
+  if (learn_more_button_)
+    StyleLearnMoreButton(theme);
 }
 
 void ContentSettingBubbleContents::Init() {
@@ -253,14 +267,6 @@ void ContentSettingBubbleContents::Init() {
     bubble_content_empty = false;
   }
 
-  if (!bubble_content.learn_more_link.empty()) {
-    learn_more_link_ = new views::Link(bubble_content.learn_more_link);
-    learn_more_link_->set_listener(this);
-    learn_more_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    layout->AddView(learn_more_link_);
-    bubble_content_empty = false;
-  }
-
   // Layout for the item list (blocked plugins and popups).
   if (!bubble_content.list_items.empty()) {
     const int kItemListColumnSetId = 2;
@@ -297,10 +303,10 @@ void ContentSettingBubbleContents::Init() {
     }
   }
 
-  const int indented_kSingleColumnSetId = 3;
+  const int kIndentedSingleColumnSetId = 3;
   // Insert a column set with greater indent.
   views::ColumnSet* indented_single_column_set =
-      layout->AddColumnSet(indented_kSingleColumnSetId);
+      layout->AddColumnSet(kIndentedSingleColumnSetId);
   indented_single_column_set->AddPaddingColumn(
       0, provider->GetDistanceMetric(DISTANCE_SUBSECTION_HORIZONTAL_INDENT));
   indented_single_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL,
@@ -318,7 +324,7 @@ void ContentSettingBubbleContents::Init() {
       radio->SetEnabled(bubble_content.radio_group_enabled);
       radio->set_listener(this);
       radio_group_.push_back(radio);
-      layout->StartRow(0, indented_kSingleColumnSetId);
+      layout->StartRow(0, kIndentedSingleColumnSetId);
       layout->AddView(radio);
       bubble_content_empty = false;
     }
@@ -380,7 +386,7 @@ void ContentSettingBubbleContents::Init() {
     layout->AddView(section_title, 1, 1, GridLayout::FILL, GridLayout::LEADING);
     for (std::set<std::string>::const_iterator j = i->hosts.begin();
          j != i->hosts.end(); ++j) {
-      layout->StartRow(0, indented_kSingleColumnSetId);
+      layout->StartRow(0, kIndentedSingleColumnSetId);
       // TODO(tapted): Verify this when we have a mock. http://crbug.com/700196.
       layout->AddView(new views::Label(
           base::UTF8ToUTF16(*j), CONTEXT_BODY_TEXT_LARGE, STYLE_EMPHASIZED));
@@ -399,12 +405,17 @@ void ContentSettingBubbleContents::Init() {
     bubble_content_empty = false;
   }
 
+  layout->AddPaddingRow(0, related_control_vertical_spacing);
   if (bubble_content.show_manage_text_as_checkbox) {
+    layout->StartRow(0, kIndentedSingleColumnSetId);
     manage_checkbox_ = new views::Checkbox(bubble_content.manage_text);
     manage_checkbox_->set_listener(this);
-    layout->AddPaddingRow(0, related_control_vertical_spacing);
-    layout->StartRow(0, indented_kSingleColumnSetId);
     layout->AddView(manage_checkbox_);
+  } else {
+    layout->StartRow(0, kSingleColumnSetId);
+    manage_link_ = new views::Link(bubble_content.manage_text);
+    manage_link_->set_listener(this);
+    layout->AddView(manage_link_);
   }
 
   if (!bubble_content_empty) {
@@ -419,15 +430,15 @@ void ContentSettingBubbleContents::Init() {
 }
 
 views::View* ContentSettingBubbleContents::CreateExtraView() {
-  const ContentSettingBubbleModel::BubbleContent& bubble_content =
-      content_setting_bubble_model_->bubble_content();
-  // Added as part of the primary view.
-  if (bubble_content.show_manage_text_as_checkbox)
+  // Optionally add a help icon if the view wants to link to a help page.
+  if (!content_setting_bubble_model_->bubble_content().show_learn_more)
     return nullptr;
 
-  manage_link_ = new views::Link(bubble_content.manage_text);
-  manage_link_->set_listener(this);
-  return manage_link_;
+  learn_more_button_ = views::CreateVectorImageButton(this);
+  learn_more_button_->SetFocusForPlatform();
+  learn_more_button_->SetTooltipText(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  StyleLearnMoreButton(GetNativeTheme());
+  return learn_more_button_;
 }
 
 bool ContentSettingBubbleContents::Accept() {
@@ -452,6 +463,18 @@ base::string16 ContentSettingBubbleContents::GetDialogButtonLabel(
   return l10n_util::GetStringUTF16(IDS_DONE);
 }
 
+void ContentSettingBubbleContents::StyleLearnMoreButton(
+    const ui::NativeTheme* theme) {
+  DCHECK(learn_more_button_);
+  SkColor text_color =
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor);
+  learn_more_button_->SetImage(
+      views::CustomButton::STATE_NORMAL,
+      gfx::CreateVectorIcon(vector_icons::kHelpOutlineIcon, 16,
+                            color_utils::DeriveDefaultIconColor(text_color)));
+  learn_more_button_->set_ink_drop_base_color(text_color);
+}
+
 void ContentSettingBubbleContents::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
@@ -464,13 +487,16 @@ void ContentSettingBubbleContents::DidFinishNavigation(
 
 void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
-  if (manage_checkbox_ == sender) {
+  if (sender == manage_checkbox_) {
     content_setting_bubble_model_->OnManageCheckboxChecked(
         manage_checkbox_->checked());
 
     // Toggling the check state may change the dialog button text.
     GetDialogClientView()->UpdateDialogButtons();
     GetDialogClientView()->Layout();
+  } else if (sender == learn_more_button_) {
+    content_setting_bubble_model_->OnLearnMoreClicked();
+    GetWidget()->Close();
   } else {
     RadioGroup::const_iterator i(
         std::find(radio_group_.begin(), radio_group_.end(), sender));
@@ -481,11 +507,6 @@ void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
 
 void ContentSettingBubbleContents::LinkClicked(views::Link* source,
                                                int event_flags) {
-  if (source == learn_more_link_) {
-    content_setting_bubble_model_->OnLearnMoreLinkClicked();
-    GetWidget()->Close();
-    return;
-  }
   if (source == custom_link_) {
     content_setting_bubble_model_->OnCustomLinkClicked();
     GetWidget()->Close();

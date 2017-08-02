@@ -1018,7 +1018,7 @@ const ContentTypeToNibPath kNibPaths[] = {
 }
 
 - (IBAction)learnMoreLinkClicked:(id)sender {
-  contentSettingBubbleModel_->OnLearnMoreLinkClicked();
+  contentSettingBubbleModel_->OnLearnMoreClicked();
 }
 
 - (IBAction)manageBlocking:(id)sender {

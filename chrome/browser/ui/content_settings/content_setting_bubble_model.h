@@ -126,7 +126,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
     base::string16 manage_text;
     bool show_manage_text_as_checkbox = false;
     MediaMenuMap media_menus;
-    base::string16 learn_more_link;
+    bool show_learn_more = false;
     base::string16 done_button_text;
 
    private:
@@ -157,7 +157,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   virtual void OnCustomLinkClicked() {}
   virtual void OnManageLinkClicked() {}
   virtual void OnManageCheckboxChecked(bool is_checked) {}
-  virtual void OnLearnMoreLinkClicked() {}
+  virtual void OnLearnMoreClicked() {}
   virtual void OnMediaMenuClicked(content::MediaStreamType type,
                                   const std::string& selected_device_id) {}
 
@@ -235,8 +235,8 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   void set_selected_device(const content::MediaStreamDevice& device) {
     bubble_content_.media_menus[device.type].selected_device = device;
   }
-  void set_learn_more_link(const base::string16& link) {
-    bubble_content_.learn_more_link = link;
+  void set_show_learn_more(bool show_learn_more) {
+    bubble_content_.show_learn_more = show_learn_more;
   }
   void set_done_button_text(const base::string16& done_button_text) {
     bubble_content_.done_button_text = done_button_text;
@@ -333,7 +333,7 @@ class ContentSettingSubresourceFilterBubbleModel
   void OnManageCheckboxChecked(bool is_checked) override;
   ContentSettingSubresourceFilterBubbleModel* AsSubresourceFilterBubbleModel()
       override;
-  void OnLearnMoreLinkClicked() override;
+  void OnLearnMoreClicked() override;
   void OnDoneClicked() override;
 
   bool is_checked_ = false;

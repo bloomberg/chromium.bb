@@ -443,7 +443,7 @@ class ContentSettingPluginBubbleModel : public ContentSettingSimpleBubbleModel {
                                   Profile* profile);
 
  private:
-  void OnLearnMoreLinkClicked() override;
+  void OnLearnMoreClicked() override;
   void OnCustomLinkClicked() override;
 
   void RunPluginsOnPage();
@@ -505,13 +505,13 @@ ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
     }
   }
 
-  set_learn_more_link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  set_show_learn_more(true);
 
   content_settings::RecordPluginsAction(
       content_settings::PLUGINS_ACTION_DISPLAYED_BUBBLE);
 }
 
-void ContentSettingPluginBubbleModel::OnLearnMoreLinkClicked() {
+void ContentSettingPluginBubbleModel::OnLearnMoreClicked() {
   if (delegate())
     delegate()->ShowLearnMorePage(CONTENT_SETTINGS_TYPE_PLUGINS);
 
@@ -1240,7 +1240,7 @@ ContentSettingSubresourceFilterBubbleModel::
   // TODO(csharrison): The learn more link UI layout is non ideal. Make it align
   // with the future Harmony UI version with a link icon in the bottom left of
   // the bubble.
-  set_learn_more_link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  set_show_learn_more(true);
   ChromeSubresourceFilterClient::LogAction(kActionDetailsShown);
 }
 
@@ -1273,7 +1273,7 @@ void ContentSettingSubresourceFilterBubbleModel::OnManageCheckboxChecked(
   is_checked_ = is_checked;
 }
 
-void ContentSettingSubresourceFilterBubbleModel::OnLearnMoreLinkClicked() {
+void ContentSettingSubresourceFilterBubbleModel::OnLearnMoreClicked() {
   DCHECK(delegate());
   ChromeSubresourceFilterClient::LogAction(kActionClickedLearnMore);
   delegate()->ShowLearnMorePage(CONTENT_SETTINGS_TYPE_ADS);
