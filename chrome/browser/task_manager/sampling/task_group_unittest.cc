@@ -342,7 +342,7 @@ TEST_F(TaskGroupTest, NetworkBytesReadAsGroup) {
 }
 
 // Tests that the network usage rate does not get affected until a refresh is
-// called and that the cumulative is as up to date as possible
+// called and that the cumulative is as up to date as possible.
 TEST_F(TaskGroupTest, NetworkBytesTransferredRefreshOutOfOrder) {
   const int read_bytes = 1024;
   const int sent_bytes = 1;
@@ -429,7 +429,7 @@ TEST_F(TaskGroupTest, NetworkBytesTransferredAsGroup) {
 
 // Tests that after two tasks in a task group read bytes that a refresh will
 // zero out network usage rate while maintaining the correct cumulative network
-// usage
+// usage.
 TEST_F(TaskGroupTest, NetworkBytesReadAsGroupThenNone) {
   const int read_bytes1 = 1013;
   const int read_bytes2 = 679;
@@ -459,7 +459,7 @@ TEST_F(TaskGroupTest, NetworkBytesReadAsGroupThenNone) {
 
 // Tests that after two tasks in a task group send bytes that a refresh will
 // zero out network usage rate while maintaining the correct cumulative network
-// usage
+// usage.
 TEST_F(TaskGroupTest, NetworkBytesSentAsGroupThenNone) {
   const int sent_bytes1 = 1023;
   const int sent_bytes2 = 678;
@@ -489,7 +489,7 @@ TEST_F(TaskGroupTest, NetworkBytesSentAsGroupThenNone) {
 
 // Tests that after two tasks in a task group transferred bytes that a refresh
 // will zero out network usage rate while maintaining the correct cumulative
-// network usage
+// network usage.
 TEST_F(TaskGroupTest, NetworkBytesTransferredAsGroupThenNone) {
   const int read_bytes = 321;
   const int sent_bytes = 987;
@@ -515,6 +515,12 @@ TEST_F(TaskGroupTest, NetworkBytesTransferredAsGroupThenNone) {
   EXPECT_EQ(0, task_group_.per_process_network_usage_rate());
   EXPECT_EQ((read_bytes + sent_bytes) * number_of_cycles,
             task_group_.cumulative_per_process_network_usage());
+}
+
+// Test the task can't be killed with a PID of base::kNullProcessId.
+TEST_F(TaskGroupTest, TaskWithPidZero) {
+  FakeTask fake_task(base::kNullProcessId, Task::RENDERER);
+  EXPECT_FALSE(fake_task.IsKillable());
 }
 
 }  // namespace task_manager
