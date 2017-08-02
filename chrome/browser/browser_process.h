@@ -276,8 +276,6 @@ class BrowserProcess {
 
   virtual MediaFileSystemRegistry* media_file_system_registry() = 0;
 
-  virtual bool created_local_state() const = 0;
-
 #if BUILDFLAG(ENABLE_WEBRTC)
   virtual WebRtcLogUploader* webrtc_log_uploader() = 0;
 #endif

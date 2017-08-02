@@ -121,7 +121,6 @@ class TestingBrowserProcess : public BrowserProcess {
   component_updater::SupervisedUserWhitelistInstaller*
   supervised_user_whitelist_installer() override;
   MediaFileSystemRegistry* media_file_system_registry() override;
-  bool created_local_state() const override;
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   WebRtcLogUploader* webrtc_log_uploader() override;

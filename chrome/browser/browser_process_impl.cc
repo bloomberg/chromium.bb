@@ -217,7 +217,6 @@ BrowserProcessImpl::BrowserProcessImpl(
     : created_watchdog_thread_(false),
       created_browser_policy_connector_(false),
       created_profile_manager_(false),
-      created_local_state_(false),
       created_icon_manager_(false),
       created_notification_ui_manager_(false),
       created_notification_bridge_(false),
@@ -583,7 +582,7 @@ ProfileManager* BrowserProcessImpl::profile_manager() {
 
 PrefService* BrowserProcessImpl::local_state() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!created_local_state_)
+  if (!local_state_)
     CreateLocalState();
   return local_state_.get();
 }
@@ -769,10 +768,6 @@ MediaFileSystemRegistry* BrowserProcessImpl::media_file_system_registry() {
 #else
   return NULL;
 #endif
-}
-
-bool BrowserProcessImpl::created_local_state() const {
-  return created_local_state_;
 }
 
 #if BUILDFLAG(ENABLE_WEBRTC)
@@ -1034,8 +1029,7 @@ void BrowserProcessImpl::CreateProfileManager() {
 }
 
 void BrowserProcessImpl::CreateLocalState() {
-  DCHECK(!created_local_state_ && !local_state_);
-  created_local_state_ = true;
+  DCHECK(!local_state_);
 
   base::FilePath local_state_path;
   CHECK(PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path));
@@ -1049,6 +1043,7 @@ void BrowserProcessImpl::CreateLocalState() {
   local_state_ = chrome_prefs::CreateLocalState(
       local_state_path, local_state_task_runner_.get(), policy_service(),
       pref_registry, false, std::move(delegate));
+  DCHECK(local_state_);
 
   pref_change_registrar_.Init(local_state_.get());
 
