@@ -4,8 +4,6 @@
 
 #include "cc/paint/paint_flags.h"
 
-#include "cc/paint/paint_op_buffer.h"
-
 namespace {
 
 static bool affects_alpha(const SkColorFilter* cf) {
@@ -122,10 +120,6 @@ SkPaint PaintFlags::ToSkPaint() const {
   paint.setHinting(static_cast<SkPaint::Hinting>(getHinting()));
   paint.setFilterQuality(getFilterQuality());
   return paint;
-}
-
-bool PaintFlags::IsValid() const {
-  return PaintOp::IsValidPaintFlagsSkBlendMode(getBlendMode());
 }
 
 }  // namespace cc
