@@ -12,6 +12,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/associated_interface_provider.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/WebKit/public/platform/media_engagement.mojom.h"
@@ -43,24 +44,6 @@ const gfx::Size MediaEngagementContentsObserver::kSignificantSize =
 const char* const
     MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName =
         "Media.Engagement.ScoreAtPlayback";
-
-const char* const MediaEngagementContentsObserver::kUkmEntryName =
-    "Media.Engagement.SessionFinished";
-
-const char* const
-    MediaEngagementContentsObserver::kUkmMetricPlaybacksTotalName =
-        "Playbacks.Total";
-
-const char* const MediaEngagementContentsObserver::kUkmMetricVisitsTotalName =
-    "Visits.Total";
-
-const char* const
-    MediaEngagementContentsObserver::kUkmMetricEngagementScoreName =
-        "Engagement.Score";
-
-const char* const
-    MediaEngagementContentsObserver::kUkmMetricPlaybacksDeltaName =
-        "Playbacks.Delta";
 
 const char* const MediaEngagementContentsObserver::
     kHistogramSignificantNotAddedFirstTimeName =
@@ -116,21 +99,13 @@ void MediaEngagementContentsObserver::RecordUkmMetrics() {
   ukm::SourceId source_id = ukm_recorder->GetNewSourceID();
   ukm_recorder->UpdateSourceURL(source_id, url);
 
-  std::unique_ptr<ukm::UkmEntryBuilder> builder = ukm_recorder->GetEntryBuilder(
-      source_id, MediaEngagementContentsObserver::kUkmEntryName);
-
   MediaEngagementScore score = service_->CreateEngagementScore(url);
-  builder->AddMetric(
-      MediaEngagementContentsObserver::kUkmMetricPlaybacksTotalName,
-      score.media_playbacks());
-  builder->AddMetric(MediaEngagementContentsObserver::kUkmMetricVisitsTotalName,
-                     score.visits());
-  builder->AddMetric(
-      MediaEngagementContentsObserver::kUkmMetricEngagementScoreName,
-      ConvertScoreToPercentage(score.GetTotalScore()));
-  builder->AddMetric(
-      MediaEngagementContentsObserver::kUkmMetricPlaybacksDeltaName,
-      significant_playback_recorded_);
+  ukm::builders::Media_Engagement_SessionFinished(source_id)
+      .SetPlaybacks_Total(score.media_playbacks())
+      .SetVisits_Total(score.visits())
+      .SetEngagement_Score(ConvertScoreToPercentage(score.GetTotalScore()))
+      .SetPlaybacks_Delta(significant_playback_recorded_)
+      .Record(ukm_recorder);
 }
 
 void MediaEngagementContentsObserver::DidFinishNavigation(
