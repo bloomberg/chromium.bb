@@ -69,10 +69,17 @@ void Task::Activate() {
 }
 
 bool Task::IsKillable() {
+  // Protects from trying to kill a task that doesn't have an accurate process
+  // Id yet. This can result in calling "kill 0" which kills all processes in
+  // the process group.
+  if (process_id() == base::kNullProcessId)
+    return false;
   return true;
 }
 
 void Task::Kill() {
+  if (!IsKillable())
+    return;
   DCHECK_NE(process_id(), base::GetCurrentProcId());
   base::Process process = base::Process::Open(process_id());
   process.Terminate(content::RESULT_CODE_KILLED, false);
