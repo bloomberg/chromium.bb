@@ -2825,6 +2825,8 @@ split_static_library("browser") {
       "android/logo_bridge.h",
       "android/logo_service.cc",
       "android/logo_service.h",
+      "android/logo_service_factory.cc",
+      "android/logo_service_factory.h",
       "android/metrics/launch_metrics.cc",
       "android/metrics/uma_session_stats.cc",
       "android/metrics/uma_session_stats.h",

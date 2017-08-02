@@ -8,7 +8,6 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -18,11 +17,10 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/search_provider_logos/fixed_logo_api.h"
 #include "components/search_provider_logos/google_logo_api.h"
+#include "components/search_provider_logos/logo_tracker.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 
-using content::BrowserThread;
-using search_provider_logos::Logo;
 using search_provider_logos::LogoDelegate;
 using search_provider_logos::LogoTracker;
 
@@ -88,13 +86,10 @@ class ChromeLogoDelegate : public search_provider_logos::LogoDelegate {
 
 }  // namespace
 
-// LogoService ----------------------------------------------------------------
+LogoService::LogoService(Profile* profile, bool use_gray_background)
+    : profile_(profile), use_gray_background_(use_gray_background) {}
 
-LogoService::LogoService(Profile* profile) : profile_(profile) {
-}
-
-LogoService::~LogoService() {
-}
+LogoService::~LogoService() = default;
 
 void LogoService::GetLogo(search_provider_logos::LogoObserver* observer) {
   TemplateURLService* template_url_service =
@@ -137,44 +132,13 @@ void LogoService::GetLogo(search_provider_logos::LogoObserver* observer) {
     GURL google_base_url =
         GURL(UIThreadSearchTermsData(profile_).GoogleBaseURLValue());
 
-    bool use_gray_background =
-        !base::FeatureList::IsEnabled(chrome::android::kChromeHomeFeature);
-
     logo_tracker_->SetServerAPI(
         search_provider_logos::GetGoogleDoodleURL(google_base_url),
         search_provider_logos::GetGoogleParseLogoResponseCallback(
             google_base_url),
         search_provider_logos::GetGoogleAppendQueryparamsCallback(
-            use_gray_background));
+            use_gray_background_));
   }
 
   logo_tracker_->GetLogo(observer);
-}
-
-// LogoServiceFactory ---------------------------------------------------------
-
-// static
-LogoService* LogoServiceFactory::GetForProfile(Profile* profile) {
-  return static_cast<LogoService*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
-}
-
-// static
-LogoServiceFactory* LogoServiceFactory::GetInstance() {
-  return base::Singleton<LogoServiceFactory>::get();
-}
-
-LogoServiceFactory::LogoServiceFactory()
-    : BrowserContextKeyedServiceFactory(
-          "LogoService",
-          BrowserContextDependencyManager::GetInstance()) {
-}
-
-LogoServiceFactory::~LogoServiceFactory() {}
-
-KeyedService* LogoServiceFactory::BuildServiceInstanceFor(
-    content::BrowserContext* context) const {
-  Profile* profile = static_cast<Profile*>(context);
-  DCHECK(!profile->IsOffTheRecord());
-  return new LogoService(profile);
 }
