@@ -5,6 +5,8 @@
 #ifndef REMOTING_HOST_SWITCHES_H_
 #define REMOTING_HOST_SWITCHES_H_
 
+#include "build/build_config.h"
+
 namespace remoting {
 
 // "--elevate=<binary>" requests |binary| to be launched elevated (possibly
@@ -41,6 +43,11 @@ extern const char kEvaluateTest[];
 extern const char kEvaluateCrash[];
 // Executes EvaluateForward() function, this is for test purpose only.
 extern const char kEvaluateForward[];
+
+#if defined(OS_WIN)
+// Executes EvaluateD3D() function.
+extern const char kEvaluateD3D[];
+#endif
 
 // Used to pass the HWND for the parent process to a child process.
 extern const char kParentWindowSwitchName[];
