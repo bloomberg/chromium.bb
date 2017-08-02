@@ -575,9 +575,6 @@ post_process_cmdline() {
       log_echo "ec_smallmul requires not ans, so disabling ec_smallmul"
       disable_feature ec_smallmul
     fi
-    if enabled daala_dct4; then
-      enable_feature dct_only
-    fi
     if enabled daala_dct64; then
       enable_feature tx64x64
     fi

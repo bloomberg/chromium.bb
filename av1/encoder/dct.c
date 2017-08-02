@@ -793,6 +793,18 @@ static void fdct64(const tran_low_t *input, tran_low_t *output) {
 }
 #endif
 
+#if CONFIG_DAALA_DCT4
+static void fadst4(const tran_low_t *input, tran_low_t *output) {
+  int i;
+  od_coeff x[4];
+  od_coeff y[4];
+  for (i = 0; i < 4; i++) x[i] = (od_coeff)input[i];
+  od_bin_fdst4(y, x, 1);
+  for (i = 0; i < 4; i++) output[i] = (tran_low_t)y[i];
+}
+
+#else
+
 static void fadst4(const tran_low_t *input, tran_low_t *output) {
   tran_high_t x0, x1, x2, x3;
   tran_high_t s0, s1, s2, s3, s4, s5, s6, s7;
@@ -832,6 +844,7 @@ static void fadst4(const tran_low_t *input, tran_low_t *output) {
   output[2] = (tran_low_t)fdct_round_shift(s2);
   output[3] = (tran_low_t)fdct_round_shift(s3);
 }
+#endif
 
 #if CONFIG_DAALA_DCT8
 static void fadst8(const tran_low_t *input, tran_low_t *output) {
