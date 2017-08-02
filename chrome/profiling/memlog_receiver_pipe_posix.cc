@@ -25,8 +25,8 @@ const int kReadBufferSize = 1024 * 64;
 
 }  // namespace
 
-MemlogReceiverPipe::MemlogReceiverPipe(int fd)
-    : handle_(mojo::edk::PlatformHandle(fd)),
+MemlogReceiverPipe::MemlogReceiverPipe(base::ScopedPlatformFile file)
+    : handle_(mojo::edk::PlatformHandle(file.release())),
       controller_(FROM_HERE),
       read_buffer_(new char[kReadBufferSize]) {
   base::MessageLoopForIO::current()->WatchFileDescriptor(

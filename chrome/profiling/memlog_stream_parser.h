@@ -8,7 +8,6 @@
 #include <deque>
 
 #include "base/macros.h"
-#include "chrome/profiling/memlog_control_receiver.h"
 #include "chrome/profiling/memlog_receiver.h"
 #include "chrome/profiling/memlog_stream_receiver.h"
 
@@ -19,8 +18,7 @@ class MemlogStreamParser : public MemlogStreamReceiver {
  public:
   // Both receivers must either outlive this class or live until
   // DisconnectReceivers is called.
-  explicit MemlogStreamParser(MemlogControlReceiver* control_receiver,
-                              MemlogReceiver* receiver);
+  explicit MemlogStreamParser(MemlogReceiver* receiver);
 
   // For tear-down, resets both receivers so they will not be called.
   void DisconnectReceivers();
@@ -60,7 +58,6 @@ class MemlogStreamParser : public MemlogStreamReceiver {
   ReadStatus ParseFree();
 
   // Not owned by this class.
-  MemlogControlReceiver* control_receiver_;
   MemlogReceiver* receiver_;
 
   std::deque<Block> blocks_;

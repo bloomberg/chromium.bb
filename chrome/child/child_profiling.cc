@@ -10,10 +10,6 @@
 #include "gin/public/debug.h"
 #include "v8/include/v8.h"
 
-#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
-#include "chrome/common/profiling/memlog_sender.h"
-#endif
-
 namespace {
 
 base::debug::AddDynamicSymbol add_dynamic_symbol_func = NULL;
@@ -44,10 +40,6 @@ void JitCodeEventHandler(const v8::JitCodeEvent* event) {
 
 // static
 void ChildProfiling::ProcessStarted() {
-#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
-  profiling::InitMemlogSenderIfNecessary();
-#endif  // ENABLE_OOP_HEAP_PROFILING
-
   // Establish the V8 profiling hooks if we're an instrumented binary.
   if (base::debug::IsBinaryInstrumented()) {
     base::debug::ReturnAddressLocationResolver resolve_func =

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/files/scoped_file.h"
+#include "base/files/platform_file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -26,7 +26,7 @@ class MemlogReceiverPipe
     : public base::RefCountedThreadSafe<MemlogReceiverPipe>,
       public base::MessageLoopForIO::Watcher {
  public:
-  explicit MemlogReceiverPipe(int fd);
+  explicit MemlogReceiverPipe(base::ScopedPlatformFile fd);
 
   // Must be called on the IO thread.
   void StartReadingOnIOThread();

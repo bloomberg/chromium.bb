@@ -11,7 +11,6 @@
 #include "chrome/common/profiling/memlog_stream.h"
 #include "chrome/profiling/address.h"
 #include "chrome/profiling/backtrace.h"
-#include "chrome/profiling/profiling_globals.h"
 
 namespace profiling {
 
@@ -26,15 +25,13 @@ MemlogStreamParser::Block::Block(std::unique_ptr<char[]> d, size_t s)
 
 MemlogStreamParser::Block::~Block() {}
 
-MemlogStreamParser::MemlogStreamParser(MemlogControlReceiver* control_receiver,
-                                       MemlogReceiver* receiver)
-    : control_receiver_(control_receiver), receiver_(receiver) {}
+MemlogStreamParser::MemlogStreamParser(MemlogReceiver* receiver)
+    : receiver_(receiver) {}
 
 MemlogStreamParser::~MemlogStreamParser() {}
 
 void MemlogStreamParser::DisconnectReceivers() {
   receiver_ = nullptr;
-  control_receiver_ = nullptr;
 }
 
 void MemlogStreamParser::OnStreamData(std::unique_ptr<char[]> data, size_t sz) {
@@ -64,12 +61,6 @@ void MemlogStreamParser::OnStreamData(std::unique_ptr<char[]> data, size_t sz) {
         break;
       case kFreePacketType:
         status = ParseFree();
-        break;
-      case kStartMojoControlPacketType:
-        ConsumeBytes(sizeof(StartMojoControlPacket));
-        if (control_receiver_)
-          control_receiver_->OnStartMojoControl();
-        status = READ_OK;
         break;
       default:
         LOG(ERROR) << "Error reading memlog message stream" << msg_type;

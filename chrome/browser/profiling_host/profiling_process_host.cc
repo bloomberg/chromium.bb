@@ -5,27 +5,20 @@
 #include "chrome/browser/profiling_host/profiling_process_host.h"
 
 #include "base/command_line.h"
-#include "base/path_service.h"
-#include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/profiling/constants.mojom.h"
+#include "chrome/common/profiling/memlog.mojom.h"
 #include "chrome/common/profiling/memlog_sender.h"
 #include "chrome/common/profiling/profiling_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
-#include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
+#include "content/public/common/service_manager_connection.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-
-#if defined(OS_POSIX)
-#include "base/files/scoped_file.h"
-#include "base/process/process_metrics.h"
-#include "base/third_party/valgrind/valgrind.h"
-#include "chrome/common/profiling/profiling_constants.h"
-#include "content/public/browser/posix_file_descriptor_info.h"
-#endif
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace profiling {
 
@@ -33,44 +26,23 @@ namespace {
 
 ProfilingProcessHost* pph_singleton = nullptr;
 
-#if defined(OS_LINUX)
-bool IsRunningOnValgrind() {
-  return RUNNING_ON_VALGRIND;
-}
-#endif
-
-base::CommandLine MakeProfilingCommandLine(const std::string& pipe_id) {
-  // Program name.
-  base::FilePath child_path;
-#if defined(OS_LINUX)
-  // Use /proc/self/exe rather than our known binary path so updates
-  // can't swap out the binary from underneath us.
-  // When running under Valgrind, forking /proc/self/exe ends up forking the
-  // Valgrind executable, which then crashes. However, it's almost safe to
-  // assume that the updates won't happen while testing with Valgrind tools.
-  if (!IsRunningOnValgrind())
-    child_path = base::FilePath(base::kProcSelfExe);
-#endif
-  if (child_path.empty())
-    base::PathService::Get(base::FILE_EXE, &child_path);
-  base::CommandLine result(child_path);
-
-  result.AppendSwitchASCII(switches::kProcessType, switches::kProfiling);
-  result.AppendSwitchASCII(switches::kMemlogPipe, pipe_id);
-
-#if defined(OS_WIN)
-  // Windows needs prefetch arguments.
-  result.AppendArg(switches::kPrefetchArgumentOther);
-#endif
-
-  return result;
+void BindToBrowserConnector(service_manager::mojom::ConnectorRequest request) {
+  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&BindToBrowserConnector, std::move(request)));
+    return;
+  }
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindConnectorRequest(std::move(request));
 }
 
 }  // namespace
 
 ProfilingProcessHost::ProfilingProcessHost() {
   pph_singleton = this;
-  Launch();
+  LaunchAsService();
 }
 
 ProfilingProcessHost::~ProfilingProcessHost() {
@@ -97,131 +69,53 @@ void ProfilingProcessHost::AddSwitchesToChildCmdLine(
     return;
   }
 
-  // Watch out: will be called on different threads.
-  ProfilingProcessHost* pph = ProfilingProcessHost::Get();
-  if (!pph)
-    return;
-  pph->EnsureControlChannelExists();
-
-  /* TODO(brettw) this currently doesn't work. Fix it.
-
-  // Create the socketpair for the low level memlog pipe.
-  mojo::edk::PlatformChannelPair data_channel;
-  pipe_id_ = data_channel.PrepareToPassClientHandleToChildProcessAsString(
-      &handle_passing_info);
-
-  // TODO(brettw) this isn't correct for Posix. Redo when we can shave over
-  // Mojo
-  child_cmd_line->AppendSwitchASCII(switches::kMemlogPipe, pph->pipe_id_);
-  */
+  // TODO(ajwong): Change this to just reuse the --memlog flag. There is no
+  // need for a separate pipe flag.
+  //
+  // Zero is browser which is specified in LaunchAsService.
+  static int sender_id = 1;
+  child_cmd_line->AppendSwitchASCII(switches::kMemlogPipe,
+                                    base::IntToString(sender_id++));
 }
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-void ProfilingProcessHost::GetAdditionalMappedFilesForChildProcess(
-    const base::CommandLine& command_line,
-    int child_process_id,
-    content::PosixFileDescriptorInfo* mappings) {
-  // TODO(ajwong): Figure out how to trace the zygote process.
-  if (command_line.GetSwitchValueASCII(switches::kProcessType) ==
-      switches::kZygoteProcess) {
-    return;
-  }
-
-  ProfilingProcessHost* pph = ProfilingProcessHost::Get();
-  if (!pph)
-    return;
-
-  pph->EnsureControlChannelExists();
-
-  mojo::edk::PlatformChannelPair data_channel;
-  mappings->Transfer(
-      kProfilingDataPipe,
-      base::ScopedFD(data_channel.PassClientHandle().release().handle));
-
-  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
-      ->PostTask(
-          FROM_HERE,
-          base::BindOnce(&ProfilingProcessHost::AddNewSenderOnIO,
-                         base::Unretained(pph), data_channel.PassServerHandle(),
-                         child_process_id));
-}
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
 void ProfilingProcessHost::RequestProcessDump(base::ProcessId pid) {
   // TODO(brettw) implement process dumping.
 }
 
-void ProfilingProcessHost::Launch() {
-  mojo::edk::PlatformChannelPair control_channel;
-  base::LaunchOptions options;
-  mojo::edk::HandlePassingInformation* handle_passing_info =
-#if defined(OS_WIN)
-      &options.handles_to_inherit;
-#else
-      &options.fds_to_remap;
-#endif
-
-  // Create the socketpair for the low level memlog pipe.
-  mojo::edk::PlatformChannelPair data_channel;
-  pipe_id_ = data_channel.PrepareToPassClientHandleToChildProcessAsString(
-      handle_passing_info);
-
-  mojo::edk::ScopedPlatformHandle child_end = data_channel.PassClientHandle();
-
-  base::CommandLine profiling_cmd = MakeProfilingCommandLine(pipe_id_);
-
-  // Keep the server handle, pass the client handle to the child.
-  pending_control_connection_ = control_channel.PassServerHandle();
-  control_channel.PrepareToPassClientHandleToChildProcess(&profiling_cmd,
-                                                          handle_passing_info);
-
-  mojo::edk::ScopedPlatformHandle local_pipe = data_channel.PassServerHandle();
-#if defined(OS_LINUX)
-  options.kill_on_parent_death = true;
-#endif
-
-  process_ = base::LaunchProcess(profiling_cmd, options);
-  StartMemlogSender(std::move(local_pipe));
-}
-
-void ProfilingProcessHost::EnsureControlChannelExists() {
+void ProfilingProcessHost::LaunchAsService() {
   // May get called on different threads, we need to be on the IO thread to
   // work.
+  //
+  // TODO(ajwong): This thread bouncing logic is dumb. The
+  // BindToBrowserConnector() ends up jumping to the UI thread also so this is
+  // at least 2 bounces. Simplify.
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
     content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
-        ->PostTask(
-            FROM_HERE,
-            base::BindOnce(&ProfilingProcessHost::EnsureControlChannelExists,
-                           base::Unretained(this)));
+        ->PostTask(FROM_HERE,
+                   base::BindOnce(&ProfilingProcessHost::LaunchAsService,
+                                  base::Unretained(this)));
     return;
   }
 
-  if (pending_control_connection_.is_valid())
-    ConnectControlChannelOnIO();
-}
+  // TODO(ajwong): There's likely a cleaner preexisting connector sitting
+  // around. See if there's a way to reuse that rather than creating our own?
+  //
+  // TODO(ajwong): Dedupe with InitMemlogSenderIfNecessary().
+  service_manager::mojom::ConnectorRequest connector_request;
+  std::unique_ptr<service_manager::Connector> connector =
+      service_manager::Connector::Create(&connector_request);
 
-// This must be called before the client attempts to connect to the control
-// pipe.
-void ProfilingProcessHost::ConnectControlChannelOnIO() {
-  mojo::edk::OutgoingBrokerClientInvitation invitation;
-  mojo::ScopedMessagePipeHandle control_pipe =
-      invitation.AttachMessagePipe(kProfilingControlPipeName);
+  BindToBrowserConnector(std::move(connector_request));
 
-  invitation.Send(
-      process_.Handle(),
-      mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
-                                  std::move(pending_control_connection_)));
-  profiling_control_.Bind(
-      mojom::ProfilingControlPtrInfo(std::move(control_pipe), 0));
+  mojom::MemlogPtr memlog;
+  connector->BindInterface(mojom::kServiceName, &memlog);
 
-  StartProfilingMojo();
-}
-
-void ProfilingProcessHost::AddNewSenderOnIO(
-    mojo::edk::ScopedPlatformHandle handle,
-    int child_process_id) {
-  profiling_control_->AddNewSender(
-      mojo::WrapPlatformFile(handle.release().handle), child_process_id);
+  mojo::edk::PlatformChannelPair data_channel;
+  memlog->AddSender(
+      mojo::WrapPlatformFile(data_channel.PassServerHandle().release().handle),
+      0);  // 0 is the browser.
+  StartMemlogSender(base::ScopedPlatformFile(
+      data_channel.PassClientHandle().release().handle));
 }
 
 }  // namespace profiling

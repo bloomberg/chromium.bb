@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/files/platform_file.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace base {
 
@@ -16,14 +16,20 @@ class CommandLine;
 
 }  // namespace base
 
+namespace content {
+
+class ServiceManagerConnection;
+
+}  // namespace content
+
 namespace profiling {
 
 // Starts the memlog sender pipe if the command line has requested it. The pipe
 // ID will be extracted from the CommandLine for the process.
-void InitMemlogSenderIfNecessary();
+void InitMemlogSenderIfNecessary(content::ServiceManagerConnection* connection);
 
 // Starts the memlog sender pipe with the given ID.
-void StartMemlogSender(mojo::edk::ScopedPlatformHandle fd);
+void StartMemlogSender(base::ScopedPlatformFile file);
 
 // Tells the profiling process to try to connect to the profiling control
 // channel. This must be done after the browser is ready to accept such a

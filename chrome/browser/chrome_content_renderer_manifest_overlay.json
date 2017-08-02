@@ -7,6 +7,11 @@
           "chrome::mojom::ResourceUsageReporter",
           "spellcheck::mojom::SpellChecker"
         ]
+      },
+      "requires": {
+        "profiling": [
+          "memlog"
+        ]
       }
     },
     "navigation:frame": {

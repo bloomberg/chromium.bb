@@ -55,6 +55,10 @@
 #include "url/url_constants.h"
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
+#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
+#include "chrome/common/profiling/memlog_sender.h"
+#endif
+
 #if defined(OS_LINUX)
 #include <fcntl.h>
 #include "chrome/common/component_flash_hint_file_linux.h"
@@ -710,3 +714,12 @@ media::MediaDrmBridgeClient* ChromeContentClient::GetMediaDrmBridgeClient() {
   return new ChromeMediaDrmBridgeClient();
 }
 #endif  // OS_ANDROID
+
+void ChromeContentClient::OnServiceManagerConnected(
+    content::ServiceManagerConnection* connection) {
+#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
+  // MemlogSender depends on ServiceManager to spawn the utility process that
+  // receives the memory log.
+  profiling::InitMemlogSenderIfNecessary(connection);
+#endif  // ENABLE_OOP_HEAP_PROFILING
+}
