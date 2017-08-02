@@ -4,6 +4,7 @@
 
 #include "core/layout/compositing/CompositedLayerMapping.h"
 
+#include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutTestHelper.h"
@@ -62,15 +63,6 @@ class CompositedLayerMappingTest
 
   void TearDown() override { RenderingTest::TearDown(); }
 };
-
-#define EXPECT_RECT_EQ(expected, actual)                \
-  do {                                                  \
-    const IntRect& actual_rect = actual;                \
-    EXPECT_EQ(expected.X(), actual_rect.X());           \
-    EXPECT_EQ(expected.Y(), actual_rect.Y());           \
-    EXPECT_EQ(expected.Width(), actual_rect.Width());   \
-    EXPECT_EQ(expected.Height(), actual_rect.Height()); \
-  } while (false)
 
 INSTANTIATE_TEST_CASE_P(All, CompositedLayerMappingTest, ::testing::Bool());
 

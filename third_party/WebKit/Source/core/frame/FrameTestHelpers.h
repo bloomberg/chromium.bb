@@ -97,6 +97,15 @@
     EXPECT_FLOAT_EQ((expected).Height(), (actual).Height()); \
   } while (false)
 
+#define EXPECT_RECT_EQ(expected, actual)                \
+  do {                                                  \
+    const IntRect& actual_rect = actual;                \
+    EXPECT_EQ(expected.X(), actual_rect.X());           \
+    EXPECT_EQ(expected.Y(), actual_rect.Y());           \
+    EXPECT_EQ(expected.Width(), actual_rect.Width());   \
+    EXPECT_EQ(expected.Height(), actual_rect.Height()); \
+  } while (false)
+
 namespace blink {
 
 class WebFrame;

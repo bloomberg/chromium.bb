@@ -915,15 +915,6 @@ TEST_F(WebPluginContainerTest, IsRectTopmostTest) {
   EXPECT_FALSE(plugin_container_impl->IsRectTopmost(rect));
 }
 
-#define EXPECT_RECT_EQ(expected, actual)                \
-  do {                                                  \
-    const IntRect& actual_rect = actual;                \
-    EXPECT_EQ(expected.X(), actual_rect.X());           \
-    EXPECT_EQ(expected.Y(), actual_rect.Y());           \
-    EXPECT_EQ(expected.Width(), actual_rect.Width());   \
-    EXPECT_EQ(expected.Height(), actual_rect.Height()); \
-  } while (false)
-
 TEST_F(WebPluginContainerTest, ClippedRectsForIframedElement) {
   RegisterMockedURL("plugin_container.html");
   RegisterMockedURL("plugin_containing_page.html");
