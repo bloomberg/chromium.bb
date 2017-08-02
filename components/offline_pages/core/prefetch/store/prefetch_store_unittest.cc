@@ -6,6 +6,10 @@
 
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/offline_pages/core/offline_time_utils.h"
+#include "components/offline_pages/core/prefetch/mock_prefetch_item_generator.h"
+#include "components/offline_pages/core/prefetch/prefetch_item.h"
+#include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -13,23 +17,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
-namespace {
-
-int CountPrefetchItems(sql::Connection* db) {
-  // Not starting transaction as this is a single read.
-  static const char kSql[] = "SELECT COUNT(offline_id) FROM prefetch_items";
-  sql::Statement statement(db->GetUniqueStatement(kSql));
-  if (statement.Step())
-    return statement.ColumnInt(0);
-
-  return -1;
-}
-
-void CountPrefetchItemsResult(int expected_count, int actual_count) {
-  EXPECT_EQ(expected_count, actual_count);
-}
-
-}  // namespace
 
 class PrefetchStoreTest : public testing::Test {
  public:
@@ -40,17 +27,20 @@ class PrefetchStoreTest : public testing::Test {
 
   void TearDown() override {
     store_test_util_.DeleteStore();
-    PumpLoop();
+    task_runner_->RunUntilIdle();
   }
 
   PrefetchStore* store() { return store_test_util_.store(); }
 
-  void PumpLoop() { task_runner_->RunUntilIdle(); }
+  PrefetchStoreTestUtil* store_util() { return &store_test_util_; }
+
+  MockPrefetchItemGenerator* item_generator() { return &item_generator_; }
 
  private:
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   PrefetchStoreTestUtil store_test_util_;
+  MockPrefetchItemGenerator item_generator_;
 };
 
 PrefetchStoreTest::PrefetchStoreTest()
@@ -59,9 +49,38 @@ PrefetchStoreTest::PrefetchStoreTest()
       store_test_util_(task_runner_) {}
 
 TEST_F(PrefetchStoreTest, InitializeStore) {
-  store()->Execute<int>(base::BindOnce(&CountPrefetchItems),
-                        base::BindOnce(&CountPrefetchItemsResult, 0));
-  PumpLoop();
+  EXPECT_EQ(0, store_util()->CountPrefetchItems());
+}
+
+TEST_F(PrefetchStoreTest, WriteAndLoadOneItem) {
+  // Create an item populated with unique, non-default values.
+  PrefetchItem item1(
+      item_generator()->CreateItem(PrefetchItemState::AWAITING_GCM));
+  item1.generate_bundle_attempts = 10;
+  item1.get_operation_attempts = 11;
+  item1.download_initiation_attempts = 12;
+  item1.creation_time = FromDatabaseTime(1000L);
+  item1.freshness_time = FromDatabaseTime(2000L);
+  item1.error_code = PrefetchItemErrorCode::EXPIRED;
+
+  EXPECT_TRUE(store_util()->InsertPrefetchItem(item1));
+  std::set<PrefetchItem> all_items;
+  EXPECT_EQ(1U, store_util()->GetAllItems(&all_items));
+  EXPECT_EQ(1U, all_items.count(item1));
+}
+
+TEST_F(PrefetchStoreTest, ZombifyTestUtilWorks) {
+  PrefetchItem item1(
+      item_generator()->CreateItem(PrefetchItemState::NEW_REQUEST));
+  EXPECT_EQ(0, store_util()->ZombifyPrefetchItems(item1.client_id.name_space,
+                                                  item1.url));
+  store_util()->InsertPrefetchItem(item1);
+  EXPECT_EQ(1, store_util()->ZombifyPrefetchItems(item1.client_id.name_space,
+                                                  item1.url));
+  EXPECT_EQ(PrefetchItemState::ZOMBIE,
+            store_util()->GetPrefetchItem(item1.offline_id)->state);
+  EXPECT_EQ(1, store_util()->ZombifyPrefetchItems(item1.client_id.name_space,
+                                                  item1.url));
 }
 
 }  // namespace offline_pages

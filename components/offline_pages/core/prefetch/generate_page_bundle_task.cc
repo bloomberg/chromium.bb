@@ -24,14 +24,14 @@ struct FetchedUrl {
   FetchedUrl() = default;
   FetchedUrl(int64_t offline_id,
              const std::string& requested_url,
-             int request_archive_attempt_count)
+             int generate_bundle_attempts)
       : offline_id(offline_id),
         requested_url(requested_url),
-        request_archive_attempt_count(request_archive_attempt_count) {}
+        generate_bundle_attempts(generate_bundle_attempts) {}
 
   int64_t offline_id;
   std::string requested_url;
-  int request_archive_attempt_count;
+  int generate_bundle_attempts;
 };
 
 // This is maximum URLs that Offline Page Service can take in one request.
@@ -39,19 +39,19 @@ const int kMaxUrlsToSend = 100;
 
 bool UpdateStateSync(sql::Connection* db, const FetchedUrl& url) {
   static const char kSql[] =
-      "UPDATE prefetch_items SET state = ?, request_archive_attempt_count = ?"
+      "UPDATE prefetch_items SET state = ?, generate_bundle_attempts = ?"
       " WHERE offline_id = ?";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(
       0, static_cast<int>(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE));
-  statement.BindInt(1, url.request_archive_attempt_count + 1);
+  statement.BindInt(1, url.generate_bundle_attempts + 1);
   statement.BindInt64(2, url.offline_id);
   return statement.Run();
 }
 
 std::unique_ptr<std::vector<FetchedUrl>> FetchUrlsSync(sql::Connection* db) {
   static const char kSql[] =
-      "SELECT offline_id, requested_url, request_archive_attempt_count"
+      "SELECT offline_id, requested_url, generate_bundle_attempts"
       " FROM prefetch_items"
       " WHERE state = ?"
       " ORDER BY creation_time DESC";
@@ -63,7 +63,7 @@ std::unique_ptr<std::vector<FetchedUrl>> FetchUrlsSync(sql::Connection* db) {
     urls->push_back(
         FetchedUrl(statement.ColumnInt64(0),   // offline_id
                    statement.ColumnString(1),  // requested_url
-                   statement.ColumnInt(2)));   // request_archive_attempt_count
+                   statement.ColumnInt(2)));   // generate_bundle_attempts
   }
 
   return urls;

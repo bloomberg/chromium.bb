@@ -46,7 +46,17 @@ TEST(PrefetchItemTest, OperatorEqualsAndCopyConstructor) {
   EXPECT_EQ(item1, PrefetchItem(item1));
   item1 = PrefetchItem();
 
-  item1.request_archive_attempt_count = 10;
+  item1.generate_bundle_attempts = 10;
+  EXPECT_NE(item1, PrefetchItem());
+  EXPECT_EQ(item1, PrefetchItem(item1));
+  item1 = PrefetchItem();
+
+  item1.get_operation_attempts = 11;
+  EXPECT_NE(item1, PrefetchItem());
+  EXPECT_EQ(item1, PrefetchItem(item1));
+  item1 = PrefetchItem();
+
+  item1.download_initiation_attempts = 12;
   EXPECT_NE(item1, PrefetchItem());
   EXPECT_EQ(item1, PrefetchItem(item1));
   item1 = PrefetchItem();

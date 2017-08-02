@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "components/offline_pages/core/offline_time_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_utils.h"
@@ -55,14 +56,14 @@ bool CreatePrefetchItemSync(sql::Connection* db,
       " VALUES"
       " (?, ?, ?, ?, ?, ?)";
 
-  int64_t now_internal = base::Time::Now().ToInternalValue();
+  int64_t now_db_time = ToDatabaseTime(base::Time::Now());
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, PrefetchStoreUtils::GenerateOfflineId());
   statement.BindString(1, prefetch_url.url.spec());
   statement.BindString(2, name_space);
   statement.BindString(3, prefetch_url.id);
-  statement.BindInt64(4, now_internal);
-  statement.BindInt64(5, now_internal);
+  statement.BindInt64(4, now_db_time);
+  statement.BindInt64(5, now_db_time);
 
   return statement.Run();
 }
