@@ -591,6 +591,9 @@ FcPrivate FcBool
 FcDirCacheCreateUUID (const FcChar8 *dir,
 		      FcBool         force);
 
+FcPrivate const FcChar8 *
+FcDirCacheFindAliasPath (const FcChar8 *dir);
+
 FcPrivate FcCache *
 FcDirCacheScan (const FcChar8 *dir, FcConfig *config);
 

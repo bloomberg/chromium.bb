@@ -221,6 +221,115 @@ FcDirCacheReadUUID (const FcChar8 *dir)
     }
 }
 
+#define FC_ALIAS_HASH_SIZE 4099
+
+typedef struct _FcAliasBucket {
+    struct _FcAliasBucket *next;
+    FcChar8               *orig;
+    FcChar8               *alias;
+} FcAliasBucket;
+
+typedef struct _FcAliasHashTable {
+    FcAliasBucket *buckets[FC_ALIAS_HASH_SIZE];
+} FcAliasHashTable;
+
+static FcAliasHashTable alias_table;
+
+static FcBool
+FcCacheAliasAdd (FcAliasHashTable *table,
+		 const FcChar8    *orig,
+		 const FcChar8    *alias)
+{
+    FcAliasBucket **prev, *bucket;
+    FcChar32 hash = FcStrHashIgnoreCase (orig);
+
+    for (prev = &table->buckets[hash % FC_ALIAS_HASH_SIZE];
+	 (bucket = *prev); prev = &(bucket->next))
+    {
+	if (FcStrCmp (bucket->orig, orig) == 0)
+	    return FcTrue;
+    }
+    bucket = (FcAliasBucket *) malloc (sizeof (FcAliasBucket));
+    if (!bucket)
+	return FcFalse;
+    bucket->next = NULL;
+    bucket->orig = FcStrdup (orig);
+    bucket->alias = FcStrdup (alias);
+    if (!bucket->orig || !bucket->alias)
+    {
+	if (bucket->orig)
+	    FcStrFree (bucket->orig);
+	if (bucket->alias)
+	    FcStrFree (bucket->alias);
+	free (bucket);
+	return FcFalse;
+    }
+    *prev = bucket;
+
+    return FcTrue;
+}
+
+static FcBool
+FcCacheAliasRemove (FcAliasHashTable *table,
+		    const FcChar8    *orig)
+{
+    FcAliasBucket **prev, *bucket;
+    FcChar32 hash = FcStrHashIgnoreCase (orig);
+
+    for (prev = &table->buckets[hash % FC_ALIAS_HASH_SIZE];
+	 (bucket = *prev); )
+    {
+	if (FcStrCmp (bucket->orig, orig) == 0)
+	{
+	    *prev = bucket->next;
+	    FcStrFree (bucket->orig);
+	    FcStrFree (bucket->alias);
+	    free (bucket);
+
+	    return FcTrue;
+	}
+	else
+	    prev = &(bucket->next);
+    }
+    return FcFalse;
+}
+
+static FcBool
+FcCacheAliasFind (FcAliasHashTable *table,
+		  const FcChar8    *orig,
+		  const FcChar8    **ret)
+{
+    FcAliasBucket *bucket;
+    FcChar32 hash = FcStrHashIgnoreCase (orig);
+
+    for (bucket = table->buckets[hash % FC_ALIAS_HASH_SIZE]; bucket; bucket = bucket->next)
+    {
+	if (FcStrCmp (bucket->orig, orig) == 0)
+	{
+	    *ret = bucket->alias;
+	    return FcTrue;
+	}
+    }
+    return FcFalse;
+}
+
+static void
+FcDirCacheAddAliasPath (const FcChar8 *orig,
+			const FcChar8 *alias)
+{
+    FcCacheAliasAdd (&alias_table, orig, alias);
+}
+
+const FcChar8 *
+FcDirCacheFindAliasPath (const FcChar8 *dir)
+{
+    const FcChar8 *ret = NULL;
+
+    if (FcCacheAliasFind (&alias_table, dir, &ret))
+	return ret;
+    return NULL;
+}
+
 struct MD5Context {
         FcChar32 buf[4];
         FcChar32 bits[2];
@@ -300,8 +409,12 @@ static FcChar8 *
 FcDirCacheBasenameUUID (const FcChar8 *dir, FcChar8 cache_base[CACHEBASE_LEN])
 {
     uuid_t uuid;
+    const FcChar8 *alias;
 
-    if (FcCacheUuidFind (&uuid_table, dir, uuid))
+    alias = FcDirCacheFindAliasPath (dir);
+    if (!alias)
+	alias = dir;
+    if (FcCacheUuidFind (&uuid_table, alias, uuid))
     {
 	uuid_unparse (uuid, (char *) cache_base);
 	strcat ((char *) cache_base, "-" FC_ARCHITECTURE FC_CACHE_SUFFIX);
@@ -728,7 +841,12 @@ FcCacheObjectDereference (void *object)
     {
 	if (FcRefDec (&skip->ref) == 1)
 	{
+	    const FcChar8 *d = FcDirCacheFindAliasPath (FcCacheDir (skip->cache));
+
 	    FcCacheUuidRemove (&uuid_table, FcCacheDir (skip->cache));
+	    if (d)
+		FcCacheUuidRemove (&uuid_table, d);
+	    FcCacheAliasRemove (&alias_table, FcCacheDir (skip->cache));
 	    FcDirCacheDisposeUnlocked (skip->cache);
 	}
     }
@@ -988,12 +1106,17 @@ FcCache *
 FcDirCacheLoad (const FcChar8 *dir, FcConfig *config, FcChar8 **cache_file)
 {
     FcCache *cache = NULL;
+    const FcChar8 *d;
 
+    FcDirCacheReadUUID (dir);
     if (!FcDirCacheProcess (config, dir,
 			    FcDirCacheMapHelper,
 			    &cache, cache_file))
 	return NULL;
-    FcDirCacheReadUUID (FcCacheDir (cache));
+
+    d = FcCacheDir (cache);
+    if (FcStrCmp (dir, d))
+	FcDirCacheAddAliasPath (d, dir);
 
     return cache;
 }

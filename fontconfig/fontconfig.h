@@ -931,6 +931,9 @@ FcPatternGetLangSet (const FcPattern *p, const char *object, int n, FcLangSet **
 FcPublic FcResult
 FcPatternGetRange (const FcPattern *p, const char *object, int id, FcRange **r);
 
+FcPublic FcResult
+FcPatternFindFont (const FcPattern *p, FcChar8 **s);
+
 FcPublic FcPattern *
 FcPatternVaBuild (FcPattern *p, va_list va);
     

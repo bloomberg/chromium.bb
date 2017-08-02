@@ -1105,6 +1105,36 @@ FcPatternGetRange (const FcPattern *p, const char *object, int id, FcRange **r)
     return FcPatternObjectGetRange (p, FcObjectFromName (object), id, r);
 }
 
+FcResult
+FcPatternFindFont (const FcPattern *p, FcChar8 **s)
+{
+    FcChar8 *file;
+    FcResult ret = FcResultNoMatch;
+
+    if (FcPatternObjectGetString (p, FC_FILE_OBJECT, 0, &file) == FcResultMatch)
+    {
+	FcChar8 *dir = FcStrDirname (file);
+	const FcChar8 *alias;
+
+	if ((alias = FcDirCacheFindAliasPath (dir)))
+	{
+	    FcChar8 *font = FcStrBasename (file);
+
+	    if (s)
+		*s = FcStrBuildFilename (alias, font, NULL);
+	    FcStrFree (font);
+	}
+	else
+	{
+	    if (s)
+		*s = FcStrdup (file);
+	}
+	ret = FcResultMatch;
+	FcStrFree (dir);
+    }
+    return ret;
+}
+
 FcPattern *
 FcPatternDuplicate (const FcPattern *orig)
 {
