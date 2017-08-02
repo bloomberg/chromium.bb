@@ -192,8 +192,10 @@ A `*` indicates that all committers are owners:
 ```
 
 The text `set noparent` will stop owner propagation from parent directories.
-This is used for specialized code. In this example, only the two listed people
-are owners:
+This should be rarely used. If you want to use `set noparent` except for IPC
+related files, please first reach out to chrome-eng-review@google.com.
+
+In this example, only the two listed people are owners:
 ```
 set noparent
 a@chromium.org
