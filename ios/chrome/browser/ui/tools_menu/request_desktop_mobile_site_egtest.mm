@@ -155,10 +155,6 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 // Tests that requesting mobile site of a page works and the user agent
 // propagates to the next navigations in the same tab.
 - (void)testRequestMobileSitePropagatesToNextNavigations {
-  if (!experimental_flags::IsRequestMobileSiteEnabled()) {
-    EARL_GREY_TEST_SKIPPED(@"Only enabled Request Mobile Site.");
-  }
-
   std::unique_ptr<web::DataResponseProvider> provider(
       new UserAgentResponseProvider());
   web::test::SetUpHttpServer(std::move(provider));
@@ -187,10 +183,6 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 // Tests that requesting mobile site of a page works and going back re-opens
 // desktop version of the page.
 - (void)testRequestMobileSiteGoBackToDesktop {
-  if (!experimental_flags::IsRequestMobileSiteEnabled()) {
-    EARL_GREY_TEST_SKIPPED(@"Only enabled Request Mobile Site.");
-  }
-
   std::unique_ptr<web::DataResponseProvider> provider(
       new UserAgentResponseProvider());
   web::test::SetUpHttpServer(std::move(provider));
@@ -257,10 +249,6 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 // Tests that navigator.appVersion JavaScript API returns correct string for
 // mobile User Agent.
 - (void)testAppVersionJSAPIWithMobileUserAgent {
-  if (!experimental_flags::IsRequestMobileSiteEnabled()) {
-    EARL_GREY_TEST_SKIPPED(@"Only enabled Request Mobile Site.");
-  }
-
   web::test::SetUpFileBasedHttpServer();
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUserAgentTestURL)];
   // Verify initial reception of the mobile site.

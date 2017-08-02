@@ -113,15 +113,9 @@ bool ToolsMenuItemShouldBeVisible(const MenuItemInfo& item,
           ->GetUserFeedbackProvider()
           ->IsUserFeedbackEnabled();
     case IDS_IOS_TOOLS_MENU_REQUEST_DESKTOP_SITE:
-      if (experimental_flags::IsRequestMobileSiteEnabled())
-        return (configuration.userAgentType != web::UserAgentType::DESKTOP);
-      else
-        return true;
+      return (configuration.userAgentType != web::UserAgentType::DESKTOP);
     case IDS_IOS_TOOLS_MENU_REQUEST_MOBILE_SITE:
-      if (experimental_flags::IsRequestMobileSiteEnabled())
-        return (configuration.userAgentType == web::UserAgentType::DESKTOP);
-      else
-        return false;
+      return (configuration.userAgentType == web::UserAgentType::DESKTOP);
     default:
       return true;
   }

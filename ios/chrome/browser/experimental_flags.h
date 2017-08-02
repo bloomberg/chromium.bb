@@ -69,9 +69,6 @@ bool IsPhysicalWebEnabled();
 // Whether reader mode is enabled.
 bool IsReaderModeEnabled();
 
-// Whether request mobile site is enabled.
-bool IsRequestMobileSiteEnabled();
-
 // Whether the Sign In Flow via SFSafariViewController is enabled.
 bool IsSafariVCSignInEnabled();
 

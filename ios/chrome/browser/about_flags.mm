@@ -292,11 +292,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     command_line->AppendSwitch(switches::kDisableBookmarkReordering);
   }
 
-  // Populate command line flag for the request mobile site experiment from the
-  // configuration plist.
-  if ([defaults boolForKey:@"RequestMobileSiteDisabled"])
-    command_line->AppendSwitch(switches::kDisableRequestMobileSite);
-
   // Populate command line flag for 3rd party keyboard omnibox workaround.
   NSString* enableThirdPartyKeyboardWorkaround =
       [defaults stringForKey:@"EnableThirdPartyKeyboardWorkaround"];
