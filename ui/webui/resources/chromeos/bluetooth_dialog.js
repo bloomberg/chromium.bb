@@ -2,16 +2,43 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('settings');
+/**
+ * @fileoverview
+ * Dialog used for pairing a provided |pairing-device|. Set |show-error| to
+ * show the error results from a pairing event instead of the pairing UI.
+ * NOTE: This module depends on I18nBehavior which depends on loadTimeData.
+ */
 
 var PairingEventType = chrome.bluetoothPrivate.PairingEventType;
 
-// NOTE(dbeam): even though this behavior is only used privately, it must
-// be globally accessible for Closure's --polymer_pass to compile happily.
+Polymer({
+  is: 'bluetooth-dialog',
 
-/** @polymerBehavior */
-settings.BluetoothPairDeviceBehavior = {
+  behaviors: [I18nBehavior],
+
   properties: {
+    /**
+     * Interface for bluetooth calls. Set in bluetooth-page.
+     * @type {Bluetooth}
+     * @private
+     */
+    bluetooth: {
+      type: Object,
+      value: chrome.bluetooth,
+    },
+
+    /**
+     * Interface for bluetoothPrivate calls.
+     * @type {BluetoothPrivate}
+     */
+    bluetoothPrivate: {
+      type: Object,
+      value: chrome.bluetoothPrivate,
+    },
+
+    /** Dialog title */
+    title: String,
+
     /**
      * Current Pairing device.
      * @type {!chrome.bluetooth.Device|undefined}
@@ -20,31 +47,31 @@ settings.BluetoothPairDeviceBehavior = {
 
     /**
      * Current Pairing event.
-     * @type {?chrome.bluetoothPrivate.PairingEvent}
+     * @private {?chrome.bluetoothPrivate.PairingEvent}
      */
     pairingEvent_: {
       type: Object,
       value: null,
     },
 
-    /** Pincode or passkey value, used to trigger connect enabled changes. */
-    pinOrPass: String,
-
     /**
-     * Interface for bluetoothPrivate calls. Set in bluetooth-page.
-     * @type {BluetoothPrivate}
+     * May be set by the host to show a pairing error result, or may be
+     * set by the dialog if a pairing or connect error occured.
      * @private
      */
-    bluetoothPrivate: {
-      type: Object,
-      value: chrome.bluetoothPrivate,
-    },
+    errorMessage_: String,
 
     /**
-     * @const
-     * @type {!Array<number>}
+     * Pincode or passkey value, used to trigger connect enabled changes.
+     * @private
      */
-    digits: {
+    pinOrPass_: String,
+
+    /**
+     * @const {!Array<number>}
+     * @private
+     */
+    digits_: {
       type: Array,
       readOnly: true,
       value: [0, 1, 2, 3, 4, 5],
@@ -52,15 +79,99 @@ settings.BluetoothPairDeviceBehavior = {
   },
 
   observers: [
+    'dialogUpdated_(errorMessage_, pairingEvent_)',
     'pairingChanged_(pairingDevice, pairingEvent_)',
   ],
 
   /**
    * Listener for chrome.bluetoothPrivate.onPairing events.
-   * @type {?function(!chrome.bluetoothPrivate.PairingEvent)}
-   * @private
+   * @private {?function(!chrome.bluetoothPrivate.PairingEvent)}
    */
   bluetoothPrivateOnPairingListener_: null,
+
+  /**
+   * Listener for chrome.bluetooth.onBluetoothDeviceChanged events.
+   * @private {?function(!chrome.bluetooth.Device)}
+   */
+  bluetoothDeviceChangedListener_: null,
+
+  open: function() {
+    this.startPairing();
+    this.pinOrPass_ = '';
+    this.getDialog_().showModal();
+    this.itemWasFocused_ = false;
+  },
+
+  close: function() {
+    this.endPairing();
+    var dialog = this.getDialog_();
+    if (dialog.open)
+      dialog.close();
+  },
+
+  /**
+   * Updates the dialog after a connect attempt.
+   * @param {!chrome.bluetooth.Device} device The device connected to
+   * @param {!{message: string}} lastError chrome.runtime.lastError
+   * @param {chrome.bluetoothPrivate.ConnectResultType} result The connect
+   *     result
+   * @return {boolean}
+   */
+  handleError: function(device, lastError, result) {
+    var error;
+    if (lastError) {
+      error = lastError.message;
+    } else {
+      switch (result) {
+        case chrome.bluetoothPrivate.ConnectResultType.IN_PROGRESS:
+        case chrome.bluetoothPrivate.ConnectResultType.ALREADY_CONNECTED:
+        case chrome.bluetoothPrivate.ConnectResultType.AUTH_CANCELED:
+        case chrome.bluetoothPrivate.ConnectResultType.SUCCESS:
+          this.errorMessage_ = '';
+          return false;
+        default:
+          error = result;
+      }
+    }
+
+    var name = device.name || device.address;
+    var id = 'bluetooth_connect_' + error;
+    if (this.i18nExists(id)) {
+      this.errorMessage_ = this.i18n(id, name);
+    } else {
+      this.errorMessage_ = error;
+      console.error('Unexpected error connecting to: ' + name + ': ' + error);
+    }
+    return true;
+  },
+
+  /** @private */
+  dialogUpdated_: function() {
+    if (this.showEnterPincode_())
+      this.$$('#pincode').focus();
+    else if (this.showEnterPasskey_())
+      this.$$('#passkey').focus();
+  },
+
+  /**
+   * @return {!CrDialogElement}
+   * @private
+   */
+  getDialog_: function() {
+    return /** @type {!CrDialogElement} */ (this.$.dialog);
+  },
+
+  /** @private */
+  onCancelTap_: function() {
+    this.getDialog_().cancel();
+  },
+
+  /** @private */
+  onDialogCanceled_: function() {
+    if (!this.errorMessage_)
+      this.sendResponse_(chrome.bluetoothPrivate.PairingResponse.CANCEL);
+    this.endPairing();
+  },
 
   /** Called when the dialog is opened. Starts listening for pairing events. */
   startPairing: function() {
@@ -70,6 +181,12 @@ settings.BluetoothPairDeviceBehavior = {
       this.bluetoothPrivate.onPairing.addListener(
           this.bluetoothPrivateOnPairingListener_);
     }
+    if (!this.bluetoothDeviceChangedListener_) {
+      this.bluetoothDeviceChangedListener_ =
+          this.onBluetoothDeviceChanged_.bind(this);
+      this.bluetooth.onDeviceChanged.addListener(
+          this.bluetoothDeviceChangedListener_);
+    }
   },
 
   /** Called when the dialog is closed. */
@@ -78,6 +195,11 @@ settings.BluetoothPairDeviceBehavior = {
       this.bluetoothPrivate.onPairing.removeListener(
           this.bluetoothPrivateOnPairingListener_);
       this.bluetoothPrivateOnPairingListener_ = null;
+    }
+    if (this.bluetoothDeviceChangedListener_) {
+      this.bluetooth.onDeviceChanged.removeListener(
+          this.bluetoothDeviceChangedListener_);
+      this.bluetoothDeviceChangedListener_ = null;
     }
     this.pairingEvent_ = null;
   },
@@ -101,6 +223,18 @@ settings.BluetoothPairDeviceBehavior = {
     this.pairingEvent_ = event;
   },
 
+  /**
+   * Process bluetooth.onDeviceChanged events. This ensures that the dialog
+   * updates when the connection state changes.
+   * @param {!chrome.bluetooth.Device} device
+   * @private
+   */
+  onBluetoothDeviceChanged_: function(device) {
+    if (!this.pairingDevice || device.address != this.pairingDevice.address)
+      return;
+    this.pairingDevice = device;
+  },
+
   /** @private */
   pairingChanged_: function() {
     // Auto-close the dialog when pairing completes.
@@ -109,7 +243,8 @@ settings.BluetoothPairDeviceBehavior = {
       this.close();
       return;
     }
-    this.pinOrPass = '';
+    this.errorMessage_ = '';
+    this.pinOrPass_ = '';
   },
 
   /**
@@ -313,81 +448,12 @@ settings.BluetoothPairDeviceBehavior = {
         this.pairingEvent_.pairing == PairingEventType.KEYS_ENTERED &&
         this.pairingEvent_.enteredKey) {
       var enteredKey = this.pairingEvent_.enteredKey;  // 1-7
-      var lastKey = this.digits.length;                // 6
+      var lastKey = this.digits_.length;               // 6
       if ((index == -1 && enteredKey > lastKey) || (index + 1 == enteredKey))
         cssClass += ' next';
       else if (index > enteredKey)
         cssClass += ' untyped';
     }
     return cssClass;
-  },
-};
-
-Polymer({
-  is: 'bluetooth-device-dialog',
-
-  behaviors: [I18nBehavior, settings.BluetoothPairDeviceBehavior],
-
-  properties: {
-    /**
-     * The version of this dialog to show: 'pairDevice', or 'connectError'.
-     * Must be set before the dialog is opened.
-     */
-    dialogId: String,
-  },
-
-  observers: [
-    'dialogUpdated_(dialogId, pairingEvent_)',
-  ],
-
-  open: function() {
-    this.startPairing();
-    this.pinOrPass = '';
-    this.getDialog_().showModal();
-    this.itemWasFocused_ = false;
-  },
-
-  close: function() {
-    this.endPairing();
-    var dialog = this.getDialog_();
-    if (dialog.open)
-      dialog.close();
-  },
-
-  /** @private */
-  dialogUpdated_: function() {
-    if (this.showEnterPincode_())
-      this.$$('#pincode').focus();
-    else if (this.showEnterPasskey_())
-      this.$$('#passkey').focus();
-  },
-
-  /**
-   * @return {!CrDialogElement}
-   * @private
-   */
-  getDialog_: function() {
-    return /** @type {!CrDialogElement} */ (this.$.dialog);
-  },
-
-  /**
-   * @param {string} desiredDialogType
-   * @return {boolean}
-   * @private
-   */
-  isDialogType_: function(desiredDialogType, currentDialogType) {
-    return currentDialogType == desiredDialogType;
-  },
-
-  /** @private */
-  onCancelTap_: function() {
-    this.getDialog_().cancel();
-  },
-
-  /** @private */
-  onDialogCanceled_: function() {
-    if (this.dialogId == 'pairDevice')
-      this.sendResponse_(chrome.bluetoothPrivate.PairingResponse.CANCEL);
-    this.endPairing();
   },
 });

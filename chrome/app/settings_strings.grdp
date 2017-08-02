@@ -555,6 +555,21 @@
     <message name="IDS_SETTINGS_BLUETOOTH_TOGGLE_ACCESSIBILITY_LABEL" desc="Accessibility only label for Bluetooth enable/disable toggle.">
       Bluetooth enable
     </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_ENTER_KEY" desc="Bluetooth pairing dialog: Text for enter key when pairing keyboard devices." >
+      enter
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_ACCEPT_PASSKEY" desc="Bluetooth pairing dialog: Text for button to accept pairing code.">
+      Accept
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_CONNECT" desc="Bluetooth pairing dialog: Text for dropdown meny item to connect to a device.">
+      Connect
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_DISCONNECT" desc="Bluetooth pairing dialog: dropdown meny item to disconnect from a device.">
+      Disconnect
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_REJECT_PASSKEY" desc="Bluetooth pairing dialog: Text for button to reject pairing a device.">
+      Reject
+    </message>
     <message name="IDS_SETTINGS_BLUETOOTH_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing available Bluetooth devices. Only visible by screen reader software.">
       Show available Bluetooth devices
     </message>

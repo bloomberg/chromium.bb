@@ -37,7 +37,11 @@ const char* const kPathAliases[][2] = {
      "polymer/v1_0/web-animations-js/"},
     {"../../views/resources/default_100_percent/common/", "images/apps/"},
     {"../../views/resources/default_200_percent/common/", "images/2x/apps/"},
-    {"../../webui/resources/cr_elements/", "cr_elements/"}};
+#if defined(OS_CHROMEOS)
+    {"../../webui/resources/chromeos/", "chromeos/"},
+#endif
+    {"../../webui/resources/cr_elements/", "cr_elements/"},
+};
 
 const struct {
   const char* const path;

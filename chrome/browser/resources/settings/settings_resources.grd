@@ -1126,12 +1126,6 @@
         <structure name="IDR_SETTINGS_ANDROID_SETTINGS_ELEMENT_JS"
                    file="android_apps_page/android_settings_element.js"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_BLUETOOTH_DEVICE_DIALOG_HTML"
-                   file="bluetooth_page/bluetooth_device_dialog.html"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_BLUETOOTH_DEVICE_DIALOG_JS"
-                   file="bluetooth_page/bluetooth_device_dialog.js"
-                   type="chrome_html" />
         <structure name="IDR_SETTINGS_BLUETOOTH_DEVICE_LIST_ITEM_HTML"
                    file="bluetooth_page/bluetooth_device_list_item.html"
                    type="chrome_html" />

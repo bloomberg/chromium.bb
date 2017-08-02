@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+  <!-- Chrome OS Custom Elements -->
+  <structure name="IDR_WEBUI_CHROMEOS_BLUETOOTH_DIALOG_HTML"
+             file="chromeos/bluetooth_dialog.html"
+             type="chrome_html" />
+  <structure name="IDR_WEBUI_CHROMEOS_BLUETOOTH_DIALOG_JS"
+             file="chromeos/bluetooth_dialog.js"
+             type="chrome_html" />
+</grit-part>
