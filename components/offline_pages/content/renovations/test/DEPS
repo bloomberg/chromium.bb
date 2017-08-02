@@ -1,0 +1,5 @@
+include_rules = [
+  "+content/public/test",
+  "+content/shell/browser",
+  "+net/test/embedded_test_server",
+]
