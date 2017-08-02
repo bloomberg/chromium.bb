@@ -350,6 +350,9 @@ class TestWebGraphicsContext3D {
   void set_gpu_rasterization(bool gpu_rasterization) {
     test_capabilities_.gpu_rasterization = gpu_rasterization;
   }
+  void set_avoid_stencil_buffers(bool avoid_stencil_buffers) {
+    test_capabilities_.avoid_stencil_buffers = avoid_stencil_buffers;
+  }
   void set_enable_dc_layers(bool support) {
     test_capabilities_.dc_layers = support;
   }

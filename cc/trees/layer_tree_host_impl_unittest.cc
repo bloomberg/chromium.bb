@@ -12105,13 +12105,15 @@ TEST_F(GpuRasterizationDisabledLayerTreeHostImplTest,
 
 class MsaaIsSlowLayerTreeHostImplTest : public LayerTreeHostImplTest {
  public:
-  void CreateHostImplWithMsaaIsSlow(bool msaa_is_slow) {
+  void CreateHostImplWithCaps(bool msaa_is_slow, bool avoid_stencil_buffers) {
     LayerTreeSettings settings = DefaultSettings();
     settings.gpu_rasterization_msaa_sample_count = 4;
     auto context_provider = TestContextProvider::Create();
     context_provider->UnboundTestContext3d()->SetMaxSamples(4);
     context_provider->UnboundTestContext3d()->set_msaa_is_slow(msaa_is_slow);
     context_provider->UnboundTestContext3d()->set_gpu_rasterization(true);
+    context_provider->UnboundTestContext3d()->set_avoid_stencil_buffers(
+        avoid_stencil_buffers);
     auto msaa_is_normal_layer_tree_frame_sink =
         FakeLayerTreeFrameSink::Create3d(context_provider);
     EXPECT_TRUE(CreateHostImpl(
@@ -12120,9 +12122,9 @@ class MsaaIsSlowLayerTreeHostImplTest : public LayerTreeHostImplTest {
 };
 
 TEST_F(MsaaIsSlowLayerTreeHostImplTest, GpuRasterizationStatusMsaaIsSlow) {
-  // Ensure that without the msaa_is_slow cap we raster slow paths with
-  // msaa.
-  CreateHostImplWithMsaaIsSlow(false);
+  // Ensure that without the msaa_is_slow or avoid_stencil_buffers caps
+  // we raster slow paths with msaa.
+  CreateHostImplWithCaps(false, false);
   host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentHasSlowPaths(true);
   host_impl_->CommitComplete();
@@ -12130,9 +12132,28 @@ TEST_F(MsaaIsSlowLayerTreeHostImplTest, GpuRasterizationStatusMsaaIsSlow) {
             host_impl_->gpu_rasterization_status());
   EXPECT_TRUE(host_impl_->use_gpu_rasterization());
 
-  // Ensure that with the msaa_is_slow cap we don't raster slow paths
-  // with msaa (we'll still use GPU raster, though).
-  CreateHostImplWithMsaaIsSlow(true);
+  // Ensure that with either msaa_is_slow or avoid_stencil_buffers caps
+  // we don't raster slow paths with msaa (we'll still use GPU raster, though).
+  // msaa_is_slow = true, avoid_stencil_buffers = false
+  CreateHostImplWithCaps(true, false);
+  host_impl_->SetHasGpuRasterizationTrigger(true);
+  host_impl_->SetContentHasSlowPaths(true);
+  host_impl_->CommitComplete();
+  EXPECT_EQ(GpuRasterizationStatus::ON, host_impl_->gpu_rasterization_status());
+  EXPECT_TRUE(host_impl_->use_gpu_rasterization());
+  EXPECT_FALSE(host_impl_->use_msaa());
+
+  // msaa_is_slow = false, avoid_stencil_buffers = true
+  CreateHostImplWithCaps(false, true);
+  host_impl_->SetHasGpuRasterizationTrigger(true);
+  host_impl_->SetContentHasSlowPaths(true);
+  host_impl_->CommitComplete();
+  EXPECT_EQ(GpuRasterizationStatus::ON, host_impl_->gpu_rasterization_status());
+  EXPECT_TRUE(host_impl_->use_gpu_rasterization());
+  EXPECT_FALSE(host_impl_->use_msaa());
+
+  // msaa_is_slow = true, avoid_stencil_buffers = true
+  CreateHostImplWithCaps(true, true);
   host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentHasSlowPaths(true);
   host_impl_->CommitComplete();
