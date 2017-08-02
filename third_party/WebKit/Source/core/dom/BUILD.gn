@@ -172,6 +172,7 @@ blink_core_sources("dom") {
     "ModulePendingScript.h",
     "ModuleScript.cpp",
     "ModuleScript.h",
+    "MutationCallback.h",
     "MutationObserver.cpp",
     "MutationObserver.h",
     "MutationObserverInterestGroup.cpp",

@@ -28,14 +28,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://dom.spec.whatwg.org/#interface-mutationobserver
+#ifndef MutationCallback_h
+#define MutationCallback_h
 
-[
-    CustomConstructor(MutationCallback callback),
-    ActiveScriptWrappable,
-    DependentLifetime
-] interface MutationObserver {
-    [RaisesException] void observe(Node target, optional MutationObserverInit options);
-    void disconnect();
-    sequence<MutationRecord> takeRecords();
+#include "platform/bindings/ScriptWrappable.h"
+#include "platform/heap/Handle.h"
+#include "platform/wtf/Vector.h"
+
+namespace blink {
+
+class ExecutionContext;
+class MutationRecord;
+class MutationObserver;
+
+class MutationCallback : public GarbageCollectedFinalized<MutationCallback>,
+                         public TraceWrapperBase {
+ public:
+  virtual ~MutationCallback() {}
+
+  virtual void Call(const HeapVector<Member<MutationRecord>>&,
+                    MutationObserver*) = 0;
+  virtual ExecutionContext* GetExecutionContext() const = 0;
+
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
+
+}  // namespace blink
+
+#endif  // MutationCallback_h
