@@ -21,6 +21,7 @@
 #include "modules/permissions/PermissionDescriptor.h"
 #include "modules/permissions/PermissionStatus.h"
 #include "modules/permissions/PermissionUtils.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/NotFound.h"
 #include "platform/wtf/PtrUtil.h"
@@ -91,6 +92,16 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
   }
   if (name == "background-sync")
     return CreatePermissionDescriptor(PermissionName::BACKGROUND_SYNC);
+  // TODO(riju): Remove runtime flag check when Generic Sensor feature is
+  // stable.
+  if (name == "ambient-light-sensor" || name == "accelerometer" ||
+      name == "gyroscope" || name == "magnetometer") {
+    if (!RuntimeEnabledFeatures::SensorEnabled()) {
+      exception_state.ThrowTypeError("GenericSensor flag is not enabled.");
+      return nullptr;
+    }
+    return CreatePermissionDescriptor(PermissionName::SENSORS);
+  }
 
   return nullptr;
 }

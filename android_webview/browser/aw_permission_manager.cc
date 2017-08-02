@@ -324,6 +324,7 @@ int AwPermissionManager::RequestPermissions(
       case PermissionType::PUSH_MESSAGING:
       case PermissionType::DURABLE_STORAGE:
       case PermissionType::BACKGROUND_SYNC:
+      case PermissionType::SENSORS:
       case PermissionType::FLASH:
         NOTIMPLEMENTED() << "RequestPermissions is not implemented for "
                          << static_cast<int>(permissions[i]);
@@ -462,6 +463,7 @@ void AwPermissionManager::CancelPermissionRequest(int request_id) {
       case PermissionType::AUDIO_CAPTURE:
       case PermissionType::VIDEO_CAPTURE:
       case PermissionType::BACKGROUND_SYNC:
+      case PermissionType::SENSORS:
       case PermissionType::FLASH:
         NOTIMPLEMENTED() << "CancelPermission not implemented for "
                          << static_cast<int>(permission);
