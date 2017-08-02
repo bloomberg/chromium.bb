@@ -379,6 +379,7 @@ component("base") {
     sources += [
       "clipboard/clipboard_fuchsia.cc",
       "clipboard/clipboard_fuchsia.h",
+      "idle/idle_fuchsia.cc",
       "resource/resource_bundle_fuchsia.cc",
     ]
   }
