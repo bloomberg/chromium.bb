@@ -284,6 +284,7 @@ group("gn_all") {
   if (is_android) {
     deps += [
       "//base:base_junit_tests",
+      "//base/android/jni_generator:jni_generator_tests",
       "//base/android/linker:chromium_android_linker",
       "//build/android/gyp/test:hello_world",
       "//build/android/gyp/test:hello_world",
