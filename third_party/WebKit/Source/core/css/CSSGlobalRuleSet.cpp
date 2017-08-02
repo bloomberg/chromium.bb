@@ -29,20 +29,6 @@ void CSSGlobalRuleSet::InitWatchedSelectorsRuleSet(Document& document) {
   }
 }
 
-static RuleSet* MakeRuleSet(const HeapVector<RuleFeature>& rules) {
-  size_t size = rules.size();
-  if (!size)
-    return nullptr;
-  RuleSet* rule_set = RuleSet::Create();
-  for (size_t i = 0; i < size; ++i) {
-    rule_set->AddRule(rules[i].rule, rules[i].selector_index,
-                      rules[i].has_document_security_origin
-                          ? kRuleHasDocumentSecurityOrigin
-                          : kRuleHasNoSpecialState);
-  }
-  return rule_set;
-}
-
 void CSSGlobalRuleSet::Update(Document& document) {
   if (!is_dirty_)
     return;
@@ -65,25 +51,16 @@ void CSSGlobalRuleSet::Update(Document& document) {
     features_.Add(watched_selectors_rule_set_->Features());
 
   document.GetStyleEngine().CollectScopedStyleFeaturesTo(features_);
-
-  sibling_rule_set_ = MakeRuleSet(features_.SiblingRules());
-  uncommon_attribute_rule_set_ =
-      MakeRuleSet(features_.UncommonAttributeRules());
 }
 
 void CSSGlobalRuleSet::Dispose() {
   features_.Clear();
-  sibling_rule_set_ = nullptr;
-  uncommon_attribute_rule_set_ = nullptr;
   watched_selectors_rule_set_ = nullptr;
   has_fullscreen_ua_style_ = false;
   is_dirty_ = true;
 }
 
 DEFINE_TRACE(CSSGlobalRuleSet) {
-  visitor->Trace(features_);
-  visitor->Trace(sibling_rule_set_);
-  visitor->Trace(uncommon_attribute_rule_set_);
   visitor->Trace(watched_selectors_rule_set_);
 }
 

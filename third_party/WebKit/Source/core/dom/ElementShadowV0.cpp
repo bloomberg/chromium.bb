@@ -260,7 +260,6 @@ void ElementShadowV0::ClearDistribution() {
 DEFINE_TRACE(ElementShadowV0) {
   visitor->Trace(element_shadow_);
   visitor->Trace(node_to_insertion_points_);
-  visitor->Trace(select_features_);
 }
 
 DEFINE_TRACE_WRAPPERS(ElementShadowV0) {}
