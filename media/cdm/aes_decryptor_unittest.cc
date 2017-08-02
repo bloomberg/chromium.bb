@@ -26,6 +26,7 @@
 #include "media/base/decryptor.h"
 #include "media/base/media_switches.h"
 #include "media/base/mock_filters.h"
+#include "media/cdm/cdm_module.h"
 #include "media/media_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
@@ -278,11 +279,13 @@ class AesDecryptorTest : public testing::TestWithParam<TestType> {
           {});
 
       helper_.reset(new ExternalClearKeyTestHelper());
+      CdmModule::GetInstance()->SetCdmPathForTesting(helper_->LibraryPath());
+
       std::unique_ptr<CdmAllocator> allocator(new SimpleCdmAllocator());
       CdmAdapter::Create(
-          helper_->KeySystemName(), helper_->LibraryPath(), cdm_config,
-          std::move(allocator), base::Bind(&AesDecryptorTest::CreateCdmFileIO,
-                                           base::Unretained(this)),
+          helper_->KeySystemName(), cdm_config, std::move(allocator),
+          base::Bind(&AesDecryptorTest::CreateCdmFileIO,
+                     base::Unretained(this)),
           base::Bind(&MockCdmClient::OnSessionMessage,
                      base::Unretained(&cdm_client_)),
           base::Bind(&MockCdmClient::OnSessionClosed,
@@ -305,8 +308,11 @@ class AesDecryptorTest : public testing::TestWithParam<TestType> {
 
   void TearDown() override {
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-    if (GetParam() == TestType::kCdmAdapter)
-      helper_.reset();
+    if (GetParam() == TestType::kCdmAdapter) {
+      // CDM must be destroyed before the module is reset.
+      cdm_ = nullptr;
+      CdmModule::ResetInstanceForTesting();
+    }
 #endif
   }
 
@@ -493,6 +499,9 @@ class AesDecryptorTest : public testing::TestWithParam<TestType> {
   }
 #endif
 
+  // Must be the first member to be initialized first and destroyed last.
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   StrictMock<MockCdmClient> cdm_client_;
   scoped_refptr<ContentDecryptionModule> cdm_;
   Decryptor* decryptor_;
@@ -505,8 +514,6 @@ class AesDecryptorTest : public testing::TestWithParam<TestType> {
   // Helper class to load/unload External Clear Key Library, if necessary.
   std::unique_ptr<ExternalClearKeyTestHelper> helper_;
 #endif
-
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // Constants for testing.
   const std::vector<uint8_t> original_data_;

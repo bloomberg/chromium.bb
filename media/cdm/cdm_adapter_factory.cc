@@ -4,23 +4,10 @@
 
 #include "media/cdm/cdm_adapter_factory.h"
 
-#include "base/base_paths.h"
 #include "base/bind.h"
-#include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
-#include "base/path_service.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/cdm_factory.h"
-#include "media/base/key_system_names.h"
-#include "media/base/key_systems.h"
 #include "media/cdm/cdm_adapter.h"
-#include "media/cdm/cdm_paths.h"
-
-#if defined(OS_MACOSX)
-#include "base/mac/bundle_locations.h"
-#endif
-
-#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 namespace media {
 
@@ -50,53 +37,6 @@ void CdmAdapterFactory::Create(
     return;
   }
 
-  // TODO(xhwang): We should have the CDM path forwarded from the browser
-  // already. See http://crbug.com/510604
-  base::FilePath cdm_path;
-
-// TODO(xhwang): Remove key-system-specific logic. We should have the
-// CDM path forwarded from the browser already. See http://crbug.com/510604
-
-#if defined(WIDEVINE_CDM_AVAILABLE)
-  if (key_system == kWidevineKeySystem) {
-    // Build the library path for Widevine CDM.
-    base::FilePath cdm_base_path;
-
-#if defined(OS_MACOSX)
-    base::FilePath framework_bundle_path = base::mac::FrameworkBundlePath();
-    cdm_base_path = framework_bundle_path.Append("Libraries");
-#else
-    base::PathService::Get(base::DIR_MODULE, &cdm_base_path);
-#endif
-
-    cdm_base_path = cdm_base_path.Append(
-        GetPlatformSpecificDirectory(kWidevineCdmBaseDirectory));
-    cdm_path = cdm_base_path.AppendASCII(
-        base::GetNativeLibraryName(kWidevineCdmLibraryName));
-    DVLOG(1) << "CDM path: " << cdm_path.value();
-  }
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
-
-// The hardcoded path for ClearKeyCdm does not work on Mac due to bundling.
-// See http://crbug.com/736106
-#if !defined(OS_MACOSX)
-  if (cdm_path.empty() && IsExternalClearKey(key_system)) {
-    base::FilePath cdm_base_path;
-    base::PathService::Get(base::DIR_MODULE, &cdm_base_path);
-    cdm_base_path = cdm_base_path.Append(
-        GetPlatformSpecificDirectory(kClearKeyCdmBaseDirectory));
-    cdm_path = cdm_base_path.AppendASCII(
-        base::GetNativeLibraryName(kClearKeyCdmLibraryName));
-  }
-#endif  // !defined(OS_MACOSX)
-
-  if (cdm_path.empty()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(cdm_created_cb, nullptr, "Unsupported key system."));
-    return;
-  }
-
   std::unique_ptr<CdmAllocator> cdm_allocator = allocator_creation_cb_.Run();
   if (!cdm_allocator) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -107,7 +47,7 @@ void CdmAdapterFactory::Create(
 
   // TODO(xhwang): Hook up auxiliary services, e.g. File IO, output protection,
   // and platform verification.
-  CdmAdapter::Create(key_system, cdm_path, cdm_config, std::move(cdm_allocator),
+  CdmAdapter::Create(key_system, cdm_config, std::move(cdm_allocator),
                      CreateCdmFileIOCB(), session_message_cb, session_closed_cb,
                      session_keys_change_cb, session_expiration_update_cb,
                      cdm_created_cb);

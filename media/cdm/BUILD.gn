@@ -74,6 +74,8 @@ source_set("cdm") {
       "cdm_file_io.h",
       "cdm_helpers.cc",
       "cdm_helpers.h",
+      "cdm_module.cc",
+      "cdm_module.h",
       "cdm_wrapper.h",
       "supported_cdm_versions.cc",
       "supported_cdm_versions.h",
