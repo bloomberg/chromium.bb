@@ -1894,7 +1894,7 @@ bool LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
     const auto& caps = compositor_context_provider->ContextCapabilities();
     gpu_rasterization_enabled = caps.gpu_rasterization;
     supports_disable_msaa = caps.multisample_compatibility;
-    if (!caps.msaa_is_slow)
+    if (!caps.msaa_is_slow && !caps.avoid_stencil_buffers)
       max_msaa_samples = caps.max_samples;
   }
 
