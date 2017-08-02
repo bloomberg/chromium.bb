@@ -42,8 +42,11 @@ namespace blink {
 class WebServiceWorker;
 class WebString;
 
-// This class is the interface for embedders to talk to
-// ServiceWorkerContainer.
+// See WebServiceWorkerProvider for full documentation.
+//
+// WebServiceWorkerProviderClient is implemented by ServiceWorkerContainer.
+// We probably wouldn't need this abstract class, except we also make a
+// MockServiceWorkerProviderClient for unit tests.
 class WebServiceWorkerProviderClient {
  public:
   virtual ~WebServiceWorkerProviderClient() {}
