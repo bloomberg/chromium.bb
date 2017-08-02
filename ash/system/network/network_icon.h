@@ -77,13 +77,13 @@ ASH_EXPORT gfx::ImageSkia GetImageForNetwork(
 
 // Gets an image for a Wi-Fi network, either full strength or strike-through
 // based on |enabled|.
-// TODO(estade): Expose SignalStrengthImageSource and use that instead.
 ASH_EXPORT gfx::ImageSkia GetImageForWiFiEnabledState(
     bool enabled,
     IconType = ICON_TYPE_DEFAULT_VIEW);
 
 // Gets the disconnected image for a cell network.
-// TODO(estade): Expose SignalStrengthImageSource and use that instead.
+// TODO(estade): this is only used by the pre-MD OOBE, which should be removed:
+// crbug.com/728805.
 ASH_EXPORT gfx::ImageSkia GetImageForDisconnectedCellNetwork();
 
 // Gets the full strength image for a Wi-Fi network using |icon_color| for the
