@@ -7,6 +7,7 @@
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/lock_debug_view.h"
 #include "ash/login/ui/lock_window.h"
+#include "ash/login/ui/login_constants.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "ash/root_window_controller.h"
@@ -99,15 +100,12 @@ void LockScreen::Destroy() {
 }
 
 void LockScreen::ToggleBlur() {
-  // TODO(jdufault): Use correct blur amount.
-  float target_blur = 20.0f;
-
   for (aura::Window* window : Shell::GetAllRootWindows()) {
     ui::Layer* layer = GetWallpaperLayerForWindow(window);
-    if (layer->layer_blur() == target_blur) {
+    if (layer->layer_blur() > 0.0f) {
       layer->SetLayerBlur(0.0f);
     } else {
-      layer->SetLayerBlur(target_blur);
+      layer->SetLayerBlur(login_constants::kBlurSigma);
     }
   }
 }

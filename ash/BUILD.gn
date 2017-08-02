@@ -217,6 +217,7 @@ component("ash") {
     "login/ui/lock_window.h",
     "login/ui/login_auth_user_view.cc",
     "login/ui/login_auth_user_view.h",
+    "login/ui/login_constants.h",
     "login/ui/login_data_dispatcher.cc",
     "login/ui/login_data_dispatcher.h",
     "login/ui/login_password_view.cc",
