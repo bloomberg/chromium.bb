@@ -38,7 +38,7 @@ static base::LazyInstance<BluetoothAdapterFactory>::Leaky g_singleton =
 base::LazyInstance<base::WeakPtr<BluetoothAdapter>>::Leaky default_adapter =
     LAZY_INSTANCE_INITIALIZER;
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_LINUX)
 typedef std::vector<BluetoothAdapterFactory::AdapterCallback>
     AdapterCallbackList;
 
@@ -59,7 +59,7 @@ void RunAdapterCallbacks() {
   }
   adapter_callbacks.Get().clear();
 }
-#endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#endif  // defined(OS_WIN) || defined(OS_LINUX)
 
 }  // namespace
 
@@ -76,8 +76,8 @@ bool BluetoothAdapterFactory::IsBluetoothSupported() {
   // instance even on platforms that would otherwise not support it.
   if (default_adapter.Get())
     return true;
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
-    defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_LINUX) || \
+    defined(OS_MACOSX)
   return true;
 #else
   return false;
@@ -99,7 +99,7 @@ bool BluetoothAdapterFactory::IsLowEnergySupported() {
   return base::win::GetVersion() >= base::win::VERSION_WIN10;
 #elif defined(OS_MACOSX)
   return base::mac::IsAtLeastOS10_10();
-#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
+#elif defined(OS_LINUX)
   return true;
 #else
   return false;
@@ -110,7 +110,7 @@ bool BluetoothAdapterFactory::IsLowEnergySupported() {
 void BluetoothAdapterFactory::GetAdapter(const AdapterCallback& callback) {
   DCHECK(IsBluetoothSupported());
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_LINUX)
   if (!default_adapter.Get()) {
     default_adapter.Get() =
         BluetoothAdapter::CreateAdapter(base::Bind(&RunAdapterCallbacks));
@@ -119,20 +119,20 @@ void BluetoothAdapterFactory::GetAdapter(const AdapterCallback& callback) {
 
   if (!default_adapter.Get()->IsInitialized())
     adapter_callbacks.Get().push_back(callback);
-#else   // !defined(OS_WIN) && !defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#else   // !defined(OS_WIN) && !defined(OS_LINUX)
   if (!default_adapter.Get()) {
     default_adapter.Get() =
         BluetoothAdapter::CreateAdapter(BluetoothAdapter::InitCallback());
   }
 
   DCHECK(default_adapter.Get()->IsInitialized());
-#endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#endif  // defined(OS_WIN) || defined(OS_LINUX)
 
   if (default_adapter.Get()->IsInitialized())
     callback.Run(scoped_refptr<BluetoothAdapter>(default_adapter.Get().get()));
 }
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if defined(OS_LINUX)
 // static
 void BluetoothAdapterFactory::Shutdown() {
   if (default_adapter.Get())

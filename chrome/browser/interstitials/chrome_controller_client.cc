@@ -129,8 +129,8 @@ ChromeControllerClient::ChromeControllerClient(
 ChromeControllerClient::~ChromeControllerClient() {}
 
 bool ChromeControllerClient::CanLaunchDateAndTimeSettings() {
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_LINUX) || \
-    defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_MACOSX) || \
+    defined(OS_WIN)
   return true;
 #else
   return false;

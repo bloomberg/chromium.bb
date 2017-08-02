@@ -86,7 +86,7 @@ class WebContentsMainFrameHelper : public content::WebContentsObserver {
   bool loaded_distiller_page_;
 };
 
-#if (defined(OS_LINUX) && defined(OS_CHROMEOS))
+#if defined(OS_CHROMEOS)
 #define MAYBE_TestSwapWebContents DISABLED_TestSwapWebContents
 #else
 #define MAYBE_TestSwapWebContents TestSwapWebContents

@@ -666,7 +666,7 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
   }
 #endif  // BUILDFLAG(ENABLE_APP_LIST)
 
-#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_LINUX) || defined(OS_WIN)
   // Dictionary sync is enabled by default.
   if (!disabled_types.Has(syncer::DICTIONARY)) {
     sync_service->RegisterDataTypeController(
@@ -674,7 +674,7 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
             syncer::DICTIONARY, error_callback, this, syncer::GROUP_UI,
             BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
   }
-#endif  // defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX) || defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   sync_service->RegisterDataTypeController(

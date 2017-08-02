@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "build/build_config.h"
 #include "device/bluetooth/bluetooth_export.h"
 
 namespace device {
@@ -37,7 +38,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisement
                                          // is not registered.
     ERROR_ADVERTISEMENT_INVALID_LENGTH,  // Advertisement is not of a valid
                                          // length.
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if defined(OS_LINUX)
     ERROR_INVALID_ADVERTISEMENT_INTERVAL,  // Advertisement interval specified
                                            // is out of valid range.
     ERROR_RESET_ADVERTISING,               // Error while resetting advertising.
