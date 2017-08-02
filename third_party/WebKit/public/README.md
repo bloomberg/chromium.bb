@@ -2,7 +2,7 @@ Blink Public API
 ================
 
 This directory contains the public API for Blink. The API consists of a number
-of C++ header files, scripts, and GYP build files. We consider all other files
+of C++ header files, scripts, and GN build files. We consider all other files
 in Blink to be implementation details, which are subject to change at any time
 without notice.
 
@@ -47,7 +47,7 @@ The API does not use STL types, except for a small number of STL types that are
 used internally by Blink (e.g., std::pair). Instead, we use WTF containers to
 implement the API.
 
-The API uses some internal types (e.g., WebCore::Node). Typically, these types
+The API uses some internal types (e.g., blink::Node). Typically, these types
 are forward declared and are opaque to consumers of the API. In other cases,
 the full definitions are available behind the BLINK_IMPLEMENTATION
 preprocessor macro. In both cases, we continue to regard these internal types
