@@ -159,6 +159,14 @@ public class SnippetsBridge implements SuggestionsSource {
     }
 
     @Override
+    public void fetchContextualSuggestionImage(
+            SnippetArticle suggestion, Callback<Bitmap> callback) {
+        assert mNativeSnippetsBridge != 0;
+        nativeFetchContextualSuggestionImage(mNativeSnippetsBridge, suggestion.mCategory,
+                suggestion.mIdWithinCategory, callback);
+    }
+
+    @Override
     public void dismissSuggestion(SnippetArticle suggestion) {
         assert mNativeSnippetsBridge != 0;
         nativeDismissSuggestion(mNativeSnippetsBridge, suggestion.mUrl, suggestion.getGlobalRank(),
@@ -287,6 +295,8 @@ public class SnippetsBridge implements SuggestionsSource {
             String[] knownSuggestions, Callback<List<SnippetArticle>> callback);
     private native void nativeFetchContextualSuggestions(
             long nativeNTPSnippetsBridge, String url, Callback<List<SnippetArticle>> callback);
+    private native void nativeFetchContextualSuggestionImage(long nativeNTPSnippetsBridge,
+            int category, String idWithinCategory, Callback<Bitmap> callback);
     private native void nativeDismissSuggestion(long nativeNTPSnippetsBridge, String url,
             int globalPosition, int category, int positionInCategory, String idWithinCategory);
     private native void nativeDismissCategory(long nativeNTPSnippetsBridge, int category);

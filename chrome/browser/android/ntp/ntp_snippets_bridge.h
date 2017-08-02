@@ -84,6 +84,13 @@ class NTPSnippetsBridge
       const base::android::JavaParamRef<jstring>& j_url,
       const base::android::JavaParamRef<jobject>& j_callback);
 
+  void FetchContextualSuggestionImage(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint j_category_id,
+      const base::android::JavaParamRef<jstring>& id_within_category,
+      const base::android::JavaParamRef<jobject>& j_callback);
+
   void ReloadSuggestions(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
 
@@ -123,6 +130,12 @@ class NTPSnippetsBridge
       const base::android::ScopedJavaGlobalRef<jobject>& callback,
       ntp_snippets::Category category,
       ntp_snippets::Status status,
+      std::vector<ntp_snippets::ContentSuggestion> suggestions);
+
+  void OnContextualSuggestionsFetched(
+      base::android::ScopedJavaGlobalRef<jobject> j_callback,
+      ntp_snippets::Status status,
+      const GURL& url,
       std::vector<ntp_snippets::ContentSuggestion> suggestions);
 
   ntp_snippets::ContentSuggestionsService* content_suggestions_service_;
