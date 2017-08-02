@@ -59,6 +59,7 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
 
  private:
   friend class SiteSettingsHandlerTest;
+  friend class SiteSettingsHandlerInfobarTest;
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, DefaultSettingSource);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ExceptionHelpers);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ExtensionDisplayName);
@@ -68,6 +69,8 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Origins);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Patterns);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ZoomLevels);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerInfobarTest,
+                           SettingPermissionsTriggersInfobar);
 
   // Asynchronously fetches the usage for a given origin. Replies back with
   // OnGetUsageInfo above.
