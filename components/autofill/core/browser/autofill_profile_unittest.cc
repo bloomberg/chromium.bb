@@ -1105,15 +1105,35 @@ TEST(AutofillProfileTest, ValidityStates) {
 
   // The default validity state should be UNVALIDATED.
   EXPECT_EQ(AutofillProfile::UNVALIDATED,
-            profile.GetValidityState(ADDRESS_HOME_LINE1));
+            profile.GetValidityState(ADDRESS_HOME_COUNTRY));
 
   // Make sure setting the validity state works.
-  profile.SetValidityState(ADDRESS_HOME_LINE1, AutofillProfile::VALID);
+  profile.SetValidityState(ADDRESS_HOME_COUNTRY, AutofillProfile::VALID);
   profile.SetValidityState(ADDRESS_HOME_CITY, AutofillProfile::INVALID);
   EXPECT_EQ(AutofillProfile::VALID,
-            profile.GetValidityState(ADDRESS_HOME_LINE1));
+            profile.GetValidityState(ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(AutofillProfile::INVALID,
             profile.GetValidityState(ADDRESS_HOME_CITY));
+}
+
+TEST(AutofillProfileTest, ValidityStates_UnsupportedTypes) {
+  AutofillProfile profile;
+
+  // The validity state of unsupported types should be UNSUPPORTED.
+  EXPECT_EQ(AutofillProfile::UNSUPPORTED,
+            profile.GetValidityState(ADDRESS_HOME_LINE1));
+
+  // Make sure setting the validity state of an unsupported type does nothing.
+  profile.SetValidityState(ADDRESS_HOME_LINE1, AutofillProfile::VALID);
+  profile.SetValidityState(ADDRESS_HOME_LINE2, AutofillProfile::INVALID);
+  profile.SetValidityState(PHONE_HOME_CITY_AND_NUMBER,
+                           AutofillProfile::UNVALIDATED);
+  EXPECT_EQ(AutofillProfile::UNSUPPORTED,
+            profile.GetValidityState(ADDRESS_HOME_LINE1));
+  EXPECT_EQ(AutofillProfile::UNSUPPORTED,
+            profile.GetValidityState(ADDRESS_HOME_LINE2));
+  EXPECT_EQ(AutofillProfile::UNSUPPORTED,
+            profile.GetValidityState(PHONE_HOME_CITY_AND_NUMBER));
 }
 
 }  // namespace autofill
