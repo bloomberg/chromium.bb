@@ -256,10 +256,7 @@ Polymer({
     }
 
     this.hideProblem_();
-    if (this.canSubmit_()) {
-      this.enableSubmit_ = true;
-      return;
-    }
+    this.enableSubmit_ = this.pinKeyboardValue_.length > 0;
   },
 
   /** @private */
@@ -277,6 +274,9 @@ Polymer({
     // The PIN is not guaranteed to be valid in that case.
     if (!this.canSubmit_()) {
       this.showProblem_(MessageType.MISMATCH, ProblemType.ERROR);
+      this.enableSubmit_ = false;
+      // Focus the PIN keyboard and highlight the entire PIN.
+      this.$.pinKeyboard.focus(0, this.pinKeyboardValue_.length + 1);
       return;
     }
 

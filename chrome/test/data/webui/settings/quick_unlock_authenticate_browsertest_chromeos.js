@@ -500,6 +500,28 @@ cr.define('settings_people_page_quick_unlock', function() {
         assertDeepEquals(['PIN'], quickUnlockPrivateApi.activeModes);
         assertDeepEquals(['1111'], quickUnlockPrivateApi.credentials);
       });
+
+      test('TestContinueButtonState', function() {
+        pinKeyboard.value = '1111';
+        MockInteractions.tap(continueButton);
+
+        // Verify the button is disabled when we first enter the confirm step,
+        // since the PIN value is empty.
+        assertEquals('', pinKeyboard.value);
+        assertTrue(continueButton.disabled);
+
+        // Verify the button is enabled after we enter one digit.
+        pinKeyboard.value = '1';
+        assertFalse(continueButton.disabled);
+
+        // Verify the button is disabled after we try to submit a wrong PIN.
+        MockInteractions.tap(continueButton);
+        assertTrue(continueButton.disabled);
+
+        // Verify the button is enabled after we enter one digit again.
+        pinKeyboard.value = '11';
+        assertFalse(continueButton.disabled);
+      });
     });
   }
 
