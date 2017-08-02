@@ -615,8 +615,8 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
           std::move(instance_host), main_thread_task_runner_);
   // Create a content::ServiceWorkerNetworkProvider for this data source so
   // we can observe its requests.
-  pending_network_provider_ =
-      base::MakeUnique<ServiceWorkerNetworkProvider>(std::move(provider_info));
+  pending_network_provider_ = ServiceWorkerNetworkProvider::CreateForController(
+      std::move(provider_info));
   provider_context_ = pending_network_provider_->context();
 
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("ServiceWorker",
