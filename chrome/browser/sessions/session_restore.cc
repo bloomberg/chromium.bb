@@ -225,6 +225,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
       web_contents = chrome::ReplaceRestoredTab(
           browser, tab.navigations, selected_index, true, tab.extension_app_id,
           nullptr, tab.user_agent_override);
+      SessionRestore::OnWillRestoreTab(web_contents);
     } else {
       int tab_index =
           use_new_window ? 0 : browser->tab_strip_model()->active_index() + 1;
@@ -233,6 +234,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
           tab.extension_app_id,
           disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB,  // selected
           tab.pinned, true, nullptr, tab.user_agent_override);
+      SessionRestore::OnWillRestoreTab(web_contents);
       // Start loading the tab immediately.
       web_contents->GetController().LoadIfNecessary();
     }
@@ -604,6 +606,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
     if (!web_contents)
       return;
 
+    SessionRestore::OnWillRestoreTab(web_contents);
+
     // Sanitize the last active time.
     base::TimeDelta delta = highest_time - tab.last_active_time;
     web_contents->SetLastActiveTime(now - delta);
@@ -872,6 +876,12 @@ void SessionRestore::NotifySessionRestoreStartedLoadingTabs() {
   session_restore_started_ = true;
   for (auto& observer : *observers())
     observer.OnSessionRestoreStartedLoadingTabs();
+}
+
+// static
+void SessionRestore::OnWillRestoreTab(content::WebContents* web_contents) {
+  for (auto& observer : *observers())
+    observer.OnWillRestoreTab(web_contents);
 }
 
 // static

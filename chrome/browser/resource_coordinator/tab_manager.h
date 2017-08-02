@@ -218,6 +218,10 @@ class TabManager : public TabStripModelObserver,
     return is_session_restore_loading_tabs_;
   }
 
+  // Returns true if the tab was created by session restore and has not finished
+  // the first navigation.
+  bool IsTabInSessionRestore(content::WebContents* web_contents) const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, PurgeBackgroundRenderer);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ActivateTabResetPurgeState);
@@ -412,6 +416,7 @@ class TabManager : public TabStripModelObserver,
 
   void OnSessionRestoreStartedLoadingTabs();
   void OnSessionRestoreFinishedLoadingTabs();
+  void OnWillRestoreTab(content::WebContents* web_contents);
 
   // Returns true if TabManager can start loading next tab.
   bool CanLoadNextTab() const;

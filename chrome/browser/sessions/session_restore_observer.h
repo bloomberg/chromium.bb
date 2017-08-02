@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_SESSIONS_SESSION_RESTORE_OBSERVER_H_
 #define CHROME_BROWSER_SESSIONS_SESSION_RESTORE_OBSERVER_H_
 
+namespace content {
+class WebContents;
+}
+
 // Observer of events during session restore. This observer does not cover
 // SessionRestoreImpl::RestoreForeignTab() which restores a single foreign tab.
 class SessionRestoreObserver {
@@ -22,6 +26,10 @@ class SessionRestoreObserver {
   // of memory pressure). This is called on the last session restore when
   // multiple concurrent session restores (on all profiles) occur.
   virtual void OnSessionRestoreFinishedLoadingTabs() {}
+
+  // OnWillRestoreTab() is called right after a tab is created by session
+  // restore.
+  virtual void OnWillRestoreTab(content::WebContents* web_contents) {}
 };
 
 #endif  // CHROME_BROWSER_SESSIONS_SESSION_RESTORE_OBSERVER_H_
