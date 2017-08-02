@@ -208,7 +208,8 @@ void ChromeExpectCTReporter::OnResponseStarted(net::URLRequest* request,
   DCHECK(inflight_preflights_.end() != inflight_preflights_.find(request));
   PreflightInProgress* preflight = preflight_it->second.get();
 
-  const int response_code = request->GetResponseCode();
+  const int response_code =
+      request->status().is_success() ? request->GetResponseCode() : -1;
 
   // Check that the preflight succeeded: it must have an HTTP OK status code,
   // with the following headers:
@@ -216,10 +217,9 @@ void ChromeExpectCTReporter::OnResponseStarted(net::URLRequest* request,
   // - Access-Control-Allow-Methods: POST
   // - Access-Control-Allow-Headers: Content-Type
 
-  if (!request->status().is_success() || response_code < 200 ||
-      response_code > 299) {
+  if (response_code == -1 || response_code < 200 || response_code > 299) {
     RecordUMAOnFailure(preflight->report_uri, request->status().error(),
-                       request->status().is_success() ? response_code : -1);
+                       response_code);
     inflight_preflights_.erase(request);
     // Do not use |preflight| after this point, since it has been erased above.
     return;
