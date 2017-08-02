@@ -60,7 +60,10 @@ class ServiceTest : public testing::Test {
   // Once set via this constructor, it cannot be changed later by calling
   // InitTestName(). The test executable must provide a manifest in the
   // appropriate location that specifies this name also.
-  explicit ServiceTest(const std::string& test_name, bool init_edk = false);
+  ServiceTest(const std::string& test_name,
+              bool init_edk = false,
+              base::test::ScopedTaskEnvironment::MainThreadType type =
+                  base::test::ScopedTaskEnvironment::MainThreadType::UI);
   ~ServiceTest() override;
 
  protected:

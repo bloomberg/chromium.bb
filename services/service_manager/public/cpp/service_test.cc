@@ -34,9 +34,10 @@ void ServiceTestClient::OnBindInterface(
 
 ServiceTest::ServiceTest() : ServiceTest(std::string(), true) {}
 
-ServiceTest::ServiceTest(const std::string& test_name, bool init_edk)
-    : scoped_task_environment_(
-          base::test::ScopedTaskEnvironment::MainThreadType::UI),
+ServiceTest::ServiceTest(const std::string& test_name,
+                         bool init_edk,
+                         base::test::ScopedTaskEnvironment::MainThreadType type)
+    : scoped_task_environment_(type),
       test_name_(test_name),
       init_edk_(init_edk) {}
 
