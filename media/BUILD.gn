@@ -498,6 +498,10 @@ component("shared_memory_support") {
     ":media_config",
     ":media_implementation",
   ]
+  if (!is_debug) {
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_max" ]
+  }
   deps = [
     "//base",
     "//ui/gfx/geometry",
