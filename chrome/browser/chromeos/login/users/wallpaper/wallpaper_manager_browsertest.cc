@@ -641,7 +641,9 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, MAYBE_DisplayChange) {
   // display configuration changes.
   gfx::ImageSkia image = wallpaper_manager_test_utils::CreateTestImage(
       640, 480, wallpaper_manager_test_utils::kCustomWallpaperColor);
-  controller_->SetWallpaperImage(image, WALLPAPER_LAYOUT_STRETCH);
+  WallpaperInfo info("", WALLPAPER_LAYOUT_STRETCH, user_manager::User::DEFAULT,
+                     base::Time::Now().LocalMidnight());
+  controller_->SetWallpaperImage(image, info);
 
   // Small wallpaper images should be used for configurations less than or
   // equal to kSmallWallpaperMaxWidth by kSmallWallpaperMaxHeight, even if

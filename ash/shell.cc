@@ -328,6 +328,11 @@ bool Shell::ShouldUseIMEService() {
 }
 
 // static
+void Shell::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
+  WallpaperController::RegisterLocalStatePrefs(registry);
+}
+
+// static
 void Shell::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   LogoutButtonTray::RegisterProfilePrefs(registry);
   NightLightController::RegisterProfilePrefs(registry);
@@ -849,6 +854,7 @@ void Shell::Init(const ShellInitParams& init_params) {
     // connecting to the profile pref service. The login screen has a temporary
     // user profile that is not associated with a real user.
     auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
+    RegisterLocalStatePrefs(pref_registry.get());
     prefs::ConnectToPrefService(
         shell_delegate_->GetShellConnector(), std::move(pref_registry),
         base::Bind(&Shell::OnLocalStatePrefServiceInitialized,

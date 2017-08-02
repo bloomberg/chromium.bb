@@ -21,7 +21,6 @@
 #include "components/user_manager/user_manager.h"
 #include "components/wallpaper/wallpaper_color_calculator.h"
 #include "components/wallpaper/wallpaper_color_calculator_observer.h"
-#include "components/wallpaper/wallpaper_layout.h"
 #include "components/wallpaper/wallpaper_manager_base.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -192,7 +191,7 @@ class WallpaperManager
   base::FilePath GetDeviceWallpaperFilePath() override;
   void OnWallpaperDecoded(
       const AccountId& account_id,
-      wallpaper::WallpaperLayout layout,
+      const wallpaper::WallpaperInfo& info,
       bool update_wallpaper,
       wallpaper::MovableOnDestroyCallbackHolder on_finish,
       std::unique_ptr<user_manager::UserImage> user_image) override;

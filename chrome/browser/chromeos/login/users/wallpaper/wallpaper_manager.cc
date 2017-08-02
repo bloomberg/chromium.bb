@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/ash_constants.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -55,7 +56,6 @@
 #include "components/user_manager/user_names.h"
 #include "components/user_manager/user_type.h"
 #include "components/wallpaper/wallpaper_files_id.h"
-#include "components/wallpaper/wallpaper_layout.h"
 #include "components/wallpaper/wallpaper_resizer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -83,8 +83,7 @@ const int kMoveCustomWallpaperDelaySeconds = 30;
 
 const int kCacheWallpaperDelayMs = 500;
 
-// Names of nodes with info about wallpaper in |kUserWallpapersProperties|
-// dictionary.
+// Names of nodes with wallpaper info in |kUserWallpapersInfo| dictionary.
 const char kNewWallpaperDateNodeName[] = "date";
 const char kNewWallpaperLayoutNodeName[] = "layout";
 const char kNewWallpaperLocationNodeName[] = "file";
@@ -203,8 +202,7 @@ void SetKnownUserWallpaperFilesId(
 }
 
 // A helper to set the wallpaper image for Classic Ash and Mash.
-void SetWallpaper(const gfx::ImageSkia& image,
-                  wallpaper::WallpaperLayout layout) {
+void SetWallpaper(const gfx::ImageSkia& image, wallpaper::WallpaperInfo info) {
   WallpaperManager::Get()->CalculateProminentColor(image);
   if (ash_util::IsRunningInMash()) {
     // In mash, connect to the WallpaperController interface via mojo.
@@ -217,11 +215,11 @@ void SetWallpaper(const gfx::ImageSkia& image,
     connector->BindInterface(ash::mojom::kServiceName, &wallpaper_controller);
     // TODO(crbug.com/655875): Optimize ash wallpaper transport; avoid sending
     // large bitmaps over Mojo; use shared memory like BitmapUploader, etc.
-    wallpaper_controller->SetWallpaper(*image.bitmap(), layout);
+    wallpaper_controller->SetWallpaper(*image.bitmap(), info);
   } else if (ash::Shell::HasInstance()) {
     // Note: Wallpaper setting is skipped in unit tests without shell instances.
     // In classic ash, interact with the WallpaperController class directly.
-    ash::Shell::Get()->wallpaper_controller()->SetWallpaperImage(image, layout);
+    ash::Shell::Get()->wallpaper_controller()->SetWallpaperImage(image, info);
   }
 }
 
@@ -328,7 +326,7 @@ class WallpaperManager::PendingWallpaper :
     if (default_) {
       manager->DoSetDefaultWallpaper(account_id_, std::move(on_finish_));
     } else if (!user_wallpaper_.isNull()) {
-      SetWallpaper(user_wallpaper_, info_.layout);
+      SetWallpaper(user_wallpaper_, info_);
     } else if (!wallpaper_path_.empty()) {
       manager->task_runner_->PostTask(
           FROM_HERE,
@@ -446,7 +444,8 @@ void WallpaperManager::CalculateProminentColor(const gfx::ImageSkia& image) {
     color_calculator_.reset();
   }
 
-  // TODO(warx): this color fetching should go through ash::WallpaperController.
+  // TODO(wzang): the color fetching should go through ash::WallpaperController.
+  // See crbug.com/733709.
   std::vector<color_utils::ColorProfile> color_profiles;
   color_profiles.emplace_back(color_utils::LumaRange::DARK,
                               color_utils::SaturationRange::MUTED);
@@ -612,6 +611,10 @@ void WallpaperManager::RemoveUserWallpaperInfo(const AccountId& account_id) {
       prefs, wallpaper::kUsersWallpaperInfo);
   prefs_wallpapers_info_update->RemoveWithoutPathExpansion(
       account_id.GetUserEmail(), NULL);
+  // Remove the color cache of the previous wallpaper if it exists.
+  DictionaryPrefUpdate wallpaper_colors_update(prefs,
+                                               ash::prefs::kWallpaperColors);
+  wallpaper_colors_update->RemoveWithoutPathExpansion(info.location, nullptr);
   DeleteUserWallpapers(account_id, info.location);
 }
 
@@ -763,7 +766,10 @@ void WallpaperManager::DoSetDefaultWallpaper(
       default_wallpaper_image_->image().height() == 1)
     layout = wallpaper::WALLPAPER_LAYOUT_STRETCH;
 
-  SetWallpaper(default_wallpaper_image_->image(), layout);
+  WallpaperInfo info(default_wallpaper_image_->file_path().value(), layout,
+                     user_manager::User::DEFAULT,
+                     base::Time::Now().LocalMidnight());
+  SetWallpaper(default_wallpaper_image_->image(), info);
 }
 
 void WallpaperManager::SetUserWallpaperInfo(const AccountId& account_id,
@@ -775,6 +781,14 @@ void WallpaperManager::SetUserWallpaperInfo(const AccountId& account_id,
     return;
 
   PrefService* local_state = g_browser_process->local_state();
+  // Remove the color cache of the previous wallpaper if it exists.
+  WallpaperInfo old_info;
+  if (GetUserWallpaperInfo(account_id, &old_info)) {
+    DictionaryPrefUpdate wallpaper_colors_update(local_state,
+                                                 ash::prefs::kWallpaperColors);
+    wallpaper_colors_update->RemoveWithoutPathExpansion(old_info.location,
+                                                        nullptr);
+  }
   DictionaryPrefUpdate wallpaper_update(local_state,
                                         wallpaper::kUsersWallpaperInfo);
 
@@ -1268,7 +1282,7 @@ base::FilePath WallpaperManager::GetDeviceWallpaperFilePath() {
 
 void WallpaperManager::OnWallpaperDecoded(
     const AccountId& account_id,
-    wallpaper::WallpaperLayout layout,
+    const wallpaper::WallpaperInfo& info,
     bool update_wallpaper,
     MovableOnDestroyCallbackHolder on_finish,
     std::unique_ptr<user_manager::UserImage> user_image) {
@@ -1279,11 +1293,10 @@ void WallpaperManager::OnWallpaperDecoded(
   // Use default wallpaper in this case.
   if (user_image->image().isNull()) {
     // Updates user pref to default wallpaper.
-    WallpaperInfo info = {"",
-                          wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
-                          user_manager::User::DEFAULT,
-                          base::Time::Now().LocalMidnight()};
-    SetUserWallpaperInfo(account_id, info, true);
+    wallpaper::WallpaperInfo default_info(
+        "", wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
+        user_manager::User::DEFAULT, base::Time::Now().LocalMidnight());
+    SetUserWallpaperInfo(account_id, default_info, true);
 
     if (update_wallpaper)
       DoSetDefaultWallpaper(account_id, std::move(on_finish));
@@ -1294,7 +1307,7 @@ void WallpaperManager::OnWallpaperDecoded(
   wallpaper_cache_[account_id].second = user_image->image();
 
   if (update_wallpaper)
-    SetWallpaper(user_image->image(), layout);
+    SetWallpaper(user_image->image(), info);
 }
 
 void WallpaperManager::StartLoad(const AccountId& account_id,
@@ -1314,8 +1327,8 @@ void WallpaperManager::StartLoad(const AccountId& account_id,
       task_runner_, wallpaper_path, ImageDecoder::ROBUST_JPEG_CODEC,
       0,  // Do not crop.
       base::Bind(&WallpaperManager::OnWallpaperDecoded,
-                 weak_factory_.GetWeakPtr(), account_id, info.layout,
-                 update_wallpaper, base::Passed(std::move(on_finish))));
+                 weak_factory_.GetWeakPtr(), account_id, info, update_wallpaper,
+                 base::Passed(std::move(on_finish))));
 }
 
 void WallpaperManager::SetCustomizedDefaultWallpaperAfterCheck(
@@ -1434,7 +1447,9 @@ void WallpaperManager::OnDefaultWallpaperDecoded(
   }
 
   *result_out = std::move(user_image);
-  SetWallpaper((*result_out)->image(), layout);
+  WallpaperInfo info(path.value(), layout, user_manager::User::DEFAULT,
+                     base::Time::Now().LocalMidnight());
+  SetWallpaper((*result_out)->image(), info);
 }
 
 void WallpaperManager::StartLoadAndSetDefaultWallpaper(
