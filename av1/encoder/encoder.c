@@ -4002,7 +4002,7 @@ static void setup_frame_size(AV1_COMP *cpi) {
   cm->superres_upscaled_width = encode_width;
   cm->superres_upscaled_height = encode_height;
   cm->superres_scale_numerator =
-      av1_calculate_next_superres_scale(cpi, encode_width, encode_width);
+      av1_calculate_next_superres_scale(cpi, encode_width, encode_height);
   av1_calculate_scaled_size(&encode_width, &encode_height,
                             cm->superres_scale_numerator);
 #endif  // CONFIG_FRAME_SUPERRES
