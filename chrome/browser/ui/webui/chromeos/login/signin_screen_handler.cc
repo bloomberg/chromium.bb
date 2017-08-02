@@ -9,9 +9,9 @@
 #include <algorithm>
 #include <vector>
 
+#include "ash/login/ui/login_constants.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/shutdown_reason.h"
 #include "ash/system/devicetype_utils.h"
@@ -131,11 +131,6 @@ const char kForegroundLockScreenApps[] = "LOCK_SCREEN_APPS_STATE.FOREGROUND";
 const char kAvailableLockScreenApps[] = "LOCK_SCREEN_APPS_STATE.AVAILABLE";
 const char kLaunchRequestedLockScreenApps[] =
     "LOCK_SCREEN_APPS_STATE.LAUNCH_REQUESTED";
-
-// The alpha value for the signin screen background.
-// TODO(crbug.com/732566): Move all constants related to views-based signin
-// screen to a separate file.
-constexpr int kLoginTranslucentAlpha = 76;
 
 class CallOnReturn {
  public:
@@ -874,12 +869,13 @@ void SigninScreenHandler::SetSigninScreenColors(SkColor dark_muted_color) {
   // The dark muted color should have 100% opacity.
   dark_muted_color = SkColorSetA(dark_muted_color, 0xFF);
   SkColor base_color = color_utils::GetResultingPaintColor(
-      SkColorSetA(ash::kShelfDefaultBaseColor,
-                  ash::kShelfTranslucentColorDarkenAlpha),
+      SkColorSetA(ash::login_constants::kDefaultBaseColor,
+                  ash::login_constants::kTranslucentColorDarkenAlpha),
       dark_muted_color);
   SkColor background_color =
-      SkColorSetA(base_color, ash::kShelfTranslucentAlpha);
-  SkColor scroll_color = SkColorSetA(base_color, kLoginTranslucentAlpha);
+      SkColorSetA(base_color, ash::login_constants::kTranslucentAlpha);
+  SkColor scroll_color =
+      SkColorSetA(base_color, ash::login_constants::kScrollTranslucentAlpha);
   CallJS("login.AccountPickerScreen.setOverlayColors",
          color_utils::SkColorToRgbaString(dark_muted_color),
          color_utils::SkColorToRgbaString(scroll_color),
