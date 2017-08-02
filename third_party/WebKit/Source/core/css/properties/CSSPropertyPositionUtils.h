@@ -6,6 +6,8 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/css/parser/CSSParserMode.h"
+#include "core/css/parser/CSSParserTokenRange.h"
+#include "core/css/parser/CSSPropertyParserHelpers.h"
 
 #include "platform/wtf/Allocator.h"
 
