@@ -356,6 +356,11 @@ void BrowserGpuMemoryBufferManager::CreateGpuMemoryBufferOnIO(
   }
 
   GpuProcessHost* host = GpuProcessHost::Get();
+  if (!host) {
+    DLOG(ERROR) << "Cannot allocate GpuMemoryBuffer with no GpuProcessHost.";
+    callback.Run(gfx::GpuMemoryBufferHandle());
+    return;
+  }
   // Note: Unretained is safe as IO thread is stopped before manager is
   // destroyed.
   host->CreateGpuMemoryBuffer(
