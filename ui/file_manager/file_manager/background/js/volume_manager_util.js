@@ -52,7 +52,7 @@ volumeManagerUtil.validateError = function(error) {
 /**
  * Builds the VolumeInfo data from VolumeMetadata.
  * @param {VolumeMetadata} volumeMetadata Metadata instance for the volume.
- * @return {!Promise.<VolumeInfo>} Promise settled with the VolumeInfo instance.
+ * @return {!Promise<!VolumeInfo>} Promise settled with the VolumeInfo instance.
  */
 volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
   var localizedLabel;

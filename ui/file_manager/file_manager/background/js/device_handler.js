@@ -487,14 +487,14 @@ DeviceHandler.prototype.onMount_ = function(event) {
             return importer.getMediaDirectory(root);
           })
       .then(
-          /**
+          (/**
            * @param {!DirectoryEntry} directory
            * @this {DeviceHandler}
            */
           function(directory) {
             return importer.isPhotosAppImportEnabled()
                 .then(
-                    /**
+                    (/**
                      * @param {boolean} appEnabled
                      * @this {DeviceHandler}
                      */
@@ -506,8 +506,8 @@ DeviceHandler.prototype.onMount_ = function(event) {
                         this.openMediaDirectory_(
                             metadata.volumeId, null, directory.fullPath);
                       }
-                    }.bind(this));
-          }.bind(this))
+                    }).bind(this));
+          }).bind(this))
       .catch(
         function(error) {
           if (metadata.deviceType && metadata.devicePath) {

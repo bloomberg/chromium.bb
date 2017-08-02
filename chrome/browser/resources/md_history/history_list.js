@@ -314,7 +314,7 @@ Polymer({
 
     var target = e.detail.target;
     this.actionMenuModel_ = e.detail;
-    var menu = /** @type {CrSharedMenuElement} */ this.$.sharedMenu.get();
+    var menu = /** @type {CrActionMenuElement} */ (this.$.sharedMenu.get());
     menu.showAt(target);
   },
 

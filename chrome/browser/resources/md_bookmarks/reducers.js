@@ -56,12 +56,12 @@ cr.define('bookmarks', function() {
    * @return SelectionState
    */
   SelectionState.deselectItems = function(selectionState, deleted) {
-    return /** @type {SelectionState} */ Object.assign({}, selectionState, {
+    return /** @type {SelectionState} */ (Object.assign({}, selectionState, {
       items: bookmarks.util.removeIdsFromSet(selectionState.items, deleted),
       anchor: !selectionState.anchor || deleted.has(selectionState.anchor) ?
           null :
           selectionState.anchor,
-    });
+    }));
   };
 
   /**

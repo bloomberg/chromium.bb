@@ -321,7 +321,6 @@ importer.MediaImportHandler.ImportTask.prototype.importScanEntries_ =
     function() {
   var resolver = new importer.Resolver();
   this.directoryPromise_.then(
-      /** @this {importer.MediaImportHandler.ImportTask} */
       function(destinationDirectory) {
         AsyncUtil.forEach(
             this.scanResult_.getFileEntries(),
@@ -340,20 +339,20 @@ importer.MediaImportHandler.ImportTask.prototype.importScanEntries_ =
 importer.MediaImportHandler.ImportTask.prototype.markDuplicatesImported_ =
     function() {
   this.historyLoader_.getHistory().then(
-      /**
+      (/**
        * @param {!importer.ImportHistory} history
        * @this {importer.MediaImportHandler.ImportTask}
        */
       function(history) {
         this.scanResult_.getDuplicateFileEntries().forEach(
-            /**
+            (/**
              * @param {!FileEntry} entry
              * @this {importer.MediaImportHandler.ImportTask}
              */
             function(entry) {
               history.markImported(entry, this.destination_);
-            }.bind(this));
-      }.bind(this))
+            }).bind(this));
+      }).bind(this))
       .catch(importer.getLogger().catcher('import-task-mark-dupes-imported'));
 };
 
@@ -378,11 +377,10 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ =
   this.getDisposition_(entry, importer.Destination.GOOGLE_DRIVE,
                        importer.ScanMode.CONTENT)
       .then(
-          /**
+          (/**
            * @param {!importer.Disposition} disposition The disposition
            *     of the entry. Either some sort of dupe, or an original.
-           * @return {!Promise}
-           * @this {importer.DefaultMediaScanner}
+           * @this {importer.MediaImportHandler.ImportTask}
            */
           function(disposition) {
             if (disposition === importer.Disposition.ORIGINAL) {
@@ -390,7 +388,7 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ =
             }
             this.duplicateFilesCount_++;
             this.markAsImported_(entry);
-          }.bind(this))
+          }).bind(this))
       // Regardless of the result of this copy, push on to the next file.
       .then(completionCallback)
       .catch(
@@ -481,7 +479,7 @@ importer.MediaImportHandler.ImportTask.prototype.copy_ =
 
   fileOperationUtil.deduplicatePath(destinationDirectory, entry.name)
       .then(
-          /**
+          (/**
            * Performs the copy using the given deduped filename.
            * @param {string} destinationFilename
            * @this {importer.MediaImportHandler.ImportTask}
@@ -495,7 +493,7 @@ importer.MediaImportHandler.ImportTask.prototype.copy_ =
                 onProgress.bind(this),
                 onComplete.bind(this),
                 onError.bind(this));
-          }.bind(this),
+          }).bind(this),
           resolver.reject)
       .catch(importer.getLogger().catcher('import-task-copy'));
 
@@ -510,7 +508,7 @@ importer.MediaImportHandler.ImportTask.prototype.markAsCopied_ =
     function(entry, destinationEntry) {
   this.remainingFilesCount_--;
   this.historyLoader_.getHistory().then(
-      /**
+      (/**
        * @param {!importer.ImportHistory} history
        * @this {importer.MediaImportHandler.ImportTask}
        */
@@ -519,7 +517,7 @@ importer.MediaImportHandler.ImportTask.prototype.markAsCopied_ =
             entry,
             this.destination_,
             destinationEntry.toURL());
-      }.bind(this))
+      }).bind(this))
       .catch(importer.getLogger().catcher('import-task-mark-as-copied'));
 };
 
@@ -531,10 +529,10 @@ importer.MediaImportHandler.ImportTask.prototype.markAsImported_ =
     function(entry) {
   this.remainingFilesCount_--;
   this.historyLoader_.getHistory().then(
-      /** @param {!importer.ImportHistory} history */
+      (/** @param {!importer.ImportHistory} history */
       function(history) {
         history.markImported(entry, this.destination_);
-      }.bind(this))
+      }).bind(this))
       .catch(importer.getLogger().catcher('import-task-mark-as-imported'));
 };
 
@@ -575,18 +573,15 @@ importer.MediaImportHandler.ImportTask.prototype.sendImportStats_ =
   scanStats.duplicates[importer.Disposition.CONTENT_DUPLICATE] =
       this.duplicateFilesCount_;
   Object.keys(scanStats.duplicates).forEach(
-      /**
-       * @param {!importer.Disposition} disposition
-       * @this {importer.MediaImportHandler.ImportTask}
-       */
       function(disposition) {
-        var count = scanStats.duplicates[disposition];
+        var count = scanStats.duplicates[
+            /** @type {!importer.Disposition} */ (disposition)];
         totalDeduped += count;
         this.tracker_.send(
             metrics.ImportEvents.FILES_DEDUPLICATED
                 .label(disposition)
                 .value(count));
-      }.bind(this));
+      }, this);
 
   this.tracker_.send(
       metrics.ImportEvents.FILES_DEDUPLICATED

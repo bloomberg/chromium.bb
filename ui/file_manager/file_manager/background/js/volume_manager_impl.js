@@ -76,7 +76,7 @@ VolumeManagerImpl.prototype.__proto__ = cr.EventTarget.prototype;
  */
 VolumeManagerImpl.prototype.addVolumeMetadata_ = function(volumeMetadata) {
   return volumeManagerUtil.createVolumeInfo(volumeMetadata).then(
-      /**
+      (/**
        * @param {!VolumeInfo} volumeInfo
        * @return {!VolumeInfo}
        */
@@ -115,7 +115,7 @@ VolumeManagerImpl.prototype.addVolumeMetadata_ = function(volumeMetadata) {
           this.volumeInfoList.add(volumeInfo);
         }
         return volumeInfo;
-      }.bind(this));
+      }).bind(this));
 };
 
 /**

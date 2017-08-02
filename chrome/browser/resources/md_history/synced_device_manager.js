@@ -152,7 +152,7 @@ Polymer({
 
   /** @private */
   onOpenMenu_: function(e) {
-    var menu = /** @type {CrActionMenuElement} */ this.$.menu.get();
+    var menu = /** @type {CrActionMenuElement} */ (this.$.menu.get());
     this.actionMenuModel_ = e.detail.tag;
     menu.showAt(e.detail.target);
     md_history.BrowserService.getInstance().recordHistogram(

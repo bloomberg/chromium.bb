@@ -49,7 +49,6 @@ function lookupInitialZoom(streamInfo) {
  */
 class BrowserApi {
   /**
-   * @constructor
    * @param {!Object} streamInfo The stream object which points to the data
    *     contained in the PDF.
    * @param {number} defaultZoom The default browser zoom.

@@ -69,7 +69,7 @@ MultiProfileShareDialog.prototype = {
 /**
  * Shows the dialog.
  * @param {boolean} plural Whether to use message of plural or not.
- * @return {Promise} Promise fulfilled with the result of dialog. If the dialog
+ * @return {!Promise} Promise fulfilled with the result of dialog. If the dialog
  *     is already opened, it returns null.
  */
 MultiProfileShareDialog.prototype.showMultiProfileShareDialog =

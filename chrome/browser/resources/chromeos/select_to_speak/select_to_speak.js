@@ -70,7 +70,6 @@ var SelectToSpeak = function() {
   /** @private {{x: number, y: number}} */
   this.mouseEnd_ = {x: 0, y: 0};
 
-  /** @private {AutomationRootNode} */
   chrome.automation.getDesktop(function(desktop) {
     this.desktop_ = desktop;
 

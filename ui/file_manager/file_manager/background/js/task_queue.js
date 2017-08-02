@@ -218,7 +218,6 @@ importer.TaskQueue.BaseTask.prototype.notify = function(updateType, opt_data) {
   }
 
   this.observers_.forEach(
-      /** @param {!importer.TaskQueue.Task.Observer} callback */
       function(callback) {
         callback.call(null, updateType, opt_data);
       }.bind(this));

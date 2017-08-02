@@ -229,10 +229,8 @@ settings.BluetoothPairDeviceBehavior = {
     if (!this.pairingDevice)
       return;
     var options =
-        /** @type {!chrome.bluetoothPrivate.SetPairingResponseOptions} */ {
-          device: this.pairingDevice,
-          response: response
-        };
+        /** @type {!chrome.bluetoothPrivate.SetPairingResponseOptions} */ (
+            {device: this.pairingDevice, response: response});
     if (response == chrome.bluetoothPrivate.PairingResponse.CONFIRM) {
       var pairing = this.pairingEvent_.pairing;
       if (pairing == PairingEventType.REQUEST_PINCODE)

@@ -104,13 +104,13 @@ importer.ImportController =
 
   this.storage_.get(importer.Setting.HAS_COMPLETED_IMPORT, false)
       .then(
-          /**
+          (/**
            * @param {boolean} importCompleted If so, we hide the banner
            * @this {importer.ImportController}
            */
           function(importCompleted) {
             this.commandWidget_.setDetailsBannerVisible(!importCompleted);
-          }.bind(this));
+          }).bind(this));
 };
 
 /**
@@ -399,7 +399,7 @@ importer.ImportController.prototype.checkState_ = function(opt_scan) {
 
   // We have a final scan that is either too big, or juuuussttt right.
   this.fitsInAvailableSpace_(opt_scan).then(
-      /** @param {boolean} fits */
+      (/** @param {boolean} fits */
       function(fits) {
           if (!fits) {
             this.updateUi_(
@@ -415,7 +415,7 @@ importer.ImportController.prototype.checkState_ = function(opt_scan) {
           this.isRightAfterPluggingMedia_ = false;
           this.commandWidget_.setDetailsVisible(true);
         }
-      }.bind(this))
+      }).bind(this))
       .catch(importer.getLogger().catcher('import-controller-check-state'));
 };
 

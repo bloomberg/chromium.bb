@@ -168,14 +168,14 @@ Polymer({
       extensionAllowString, extensionBlockString, extensionAskString,
       policyAllowString, policyBlockString, policyAskString) {
 
-    var extensionStrings =
-        /** @type {Object<!settings.ContentSetting, string>} */ {};
+    /** @type {Object<!settings.ContentSetting, string>} */
+    var extensionStrings = {};
     extensionStrings[settings.ContentSetting.ALLOW] = extensionAllowString;
     extensionStrings[settings.ContentSetting.BLOCK] = extensionBlockString;
     extensionStrings[settings.ContentSetting.ASK] = extensionAskString;
 
-    var policyStrings =
-        /** @type {Object<!settings.ContentSetting, string>} */ {};
+    /** @type {Object<!settings.ContentSetting, string>} */
+    var policyStrings = {};
     policyStrings[settings.ContentSetting.ALLOW] = policyAllowString;
     policyStrings[settings.ContentSetting.BLOCK] = policyBlockString;
     policyStrings[settings.ContentSetting.ASK] = policyAskString;

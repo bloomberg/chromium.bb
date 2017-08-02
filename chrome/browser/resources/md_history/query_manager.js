@@ -103,7 +103,7 @@ Polymer({
    * @private
    */
   onQueryHistory_: function(e) {
-    this.queryHistory_(/** @type {boolean} */ e.detail);
+    this.queryHistory_(/** @type {boolean} */ (e.detail));
     return false;
   },
 
