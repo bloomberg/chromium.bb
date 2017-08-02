@@ -108,7 +108,7 @@ void HighlighterView::AddNewPoint(const gfx::PointF& point,
   RequestRedraw();
 }
 
-void HighlighterView::Animate(const gfx::Point& pivot,
+void HighlighterView::Animate(const gfx::PointF& pivot,
                               AnimationMode animation_mode) {
   animation_timer_.reset(new base::Timer(
       FROM_HERE, base::TimeDelta::FromMilliseconds(kStrokeFadeoutDelayMs),
@@ -118,7 +118,7 @@ void HighlighterView::Animate(const gfx::Point& pivot,
   animation_timer_->Reset();
 }
 
-void HighlighterView::FadeOut(const gfx::Point& pivot,
+void HighlighterView::FadeOut(const gfx::PointF& pivot,
                               AnimationMode animation_mode) {
   ui::Layer* layer = GetWidget()->GetLayer();
 

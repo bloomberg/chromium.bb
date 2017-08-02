@@ -6,34 +6,19 @@
 
 #include "ash/fast_ink/fast_ink_points.h"
 #include "ash/highlighter/highlighter_controller.h"
-#include "ash/highlighter/highlighter_selection_observer.h"
 #include "ash/highlighter/highlighter_view.h"
 
 namespace ash {
 
-namespace {
-
-class DummyHighlighterObserver : public HighlighterSelectionObserver {
- public:
-  DummyHighlighterObserver() {}
-  ~DummyHighlighterObserver() override {}
-
- private:
-  void HandleSelection(const gfx::Rect& rect) override {}
-};
-
-}  // namespace
-
 HighlighterControllerTestApi::HighlighterControllerTestApi(
     HighlighterController* instance)
-    : instance_(instance),
-      observer_(base::MakeUnique<DummyHighlighterObserver>()) {}
+    : instance_(instance) {}
 
 HighlighterControllerTestApi::~HighlighterControllerTestApi() {}
 
 void HighlighterControllerTestApi::SetEnabled(bool enabled) {
   if (enabled)
-    instance_->EnableHighlighter(observer_.get());
+    instance_->EnableHighlighter(this);
   else
     instance_->DisableHighlighter();
 }
@@ -57,6 +42,11 @@ const FastInkPoints& HighlighterControllerTestApi::points() const {
 
 const FastInkPoints& HighlighterControllerTestApi::predicted_points() const {
   return instance_->highlighter_view_->predicted_points_;
+}
+
+void HighlighterControllerTestApi::HandleSelection(const gfx::Rect& rect) {
+  handle_selection_called_ = true;
+  selection_ = rect;
 }
 
 }  // namespace ash

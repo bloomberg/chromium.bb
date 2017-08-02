@@ -11,8 +11,8 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace ash {
 
@@ -38,8 +38,10 @@ class ASH_EXPORT FastInkPoints {
   void MoveForwardToTime(const base::TimeTicks& latest_time);
   // Removes all points.
   void Clear();
-  // Gets the bounding box of the points.
+  // Gets the bounding box of the points, int coordinates.
   gfx::Rect GetBoundingBox() const;
+  // Gets the bounding box of the points, float coordinates.
+  gfx::RectF GetBoundingBoxF() const;
   // Returns the oldest point in the collection.
   FastInkPoint GetOldest() const;
   // Returns the newest point in the collection.

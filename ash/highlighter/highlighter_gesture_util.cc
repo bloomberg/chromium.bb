@@ -17,7 +17,7 @@ constexpr float kHorizontalStrokeFlatnessThreshold = 0.1;
 constexpr double kClosedShapeSweepThreshold = M_PI * 2 * 0.8;
 constexpr double kClosedShapeJiggleThreshold = 0.1;
 
-bool DetectHorizontalStroke(const gfx::Rect& box,
+bool DetectHorizontalStroke(const gfx::RectF& box,
                             const gfx::SizeF& pen_tip_size) {
   return box.width() > kHorizontalStrokeLengthThreshold &&
          box.height() <
@@ -25,11 +25,11 @@ bool DetectHorizontalStroke(const gfx::Rect& box,
          box.height() < box.width() * kHorizontalStrokeFlatnessThreshold;
 }
 
-bool DetectClosedShape(const gfx::Rect& box, const FastInkPoints& points) {
+bool DetectClosedShape(const gfx::RectF& box, const FastInkPoints& points) {
   if (points.GetNumberOfPoints() < 3)
     return false;
 
-  const gfx::Point center = box.CenterPoint();
+  const gfx::PointF center = box.CenterPoint();
 
   // Analyze vectors pointing from the center to each point.
   // Compute the cumulative swept angle and count positive

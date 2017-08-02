@@ -43,20 +43,18 @@ class HighlighterView : public FastInkView {
                            aura::Window* root_window);
   ~HighlighterView() override;
 
-  gfx::Rect GetBoundingBox() const;
-
   const FastInkPoints& points() const { return points_; }
 
   void AddNewPoint(const gfx::PointF& new_point, const base::TimeTicks& time);
 
-  void Animate(const gfx::Point& pivot, AnimationMode animation_mode);
+  void Animate(const gfx::PointF& pivot, AnimationMode animation_mode);
 
  private:
   friend class HighlighterControllerTestApi;
 
   void OnRedraw(gfx::Canvas& canvas, const gfx::Vector2d& offset) override;
 
-  void FadeOut(const gfx::Point& pivot, AnimationMode animation_mode);
+  void FadeOut(const gfx::PointF& pivot, AnimationMode animation_mode);
 
   FastInkPoints points_;
   FastInkPoints predicted_points_;
