@@ -124,7 +124,7 @@ class MockPlatformSensorClient : public PlatformSensor::Client {
   }
 
   // PlatformSensor::Client interface.
-  MOCK_METHOD0(OnSensorReadingChanged, void());
+  MOCK_METHOD1(OnSensorReadingChanged, void(mojom::SensorType type));
   MOCK_METHOD0(OnSensorError, void());
   MOCK_METHOD0(IsSuspended, bool());
 
@@ -251,11 +251,12 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
   }
 
   // Waits before OnSensorReadingChanged is called.
-  void WaitOnSensorReadingChangedEvent(MockPlatformSensorClient* client) {
+  void WaitOnSensorReadingChangedEvent(MockPlatformSensorClient* client,
+                                       mojom::SensorType type) {
     run_loop_ = base::MakeUnique<base::RunLoop>();
-    EXPECT_CALL(*client, OnSensorReadingChanged()).WillOnce(Invoke([this]() {
-      run_loop_->Quit();
-    }));
+    EXPECT_CALL(*client, OnSensorReadingChanged(type))
+        .WillOnce(
+            Invoke([this](mojom::SensorType type) { run_loop_->Quit(); }));
     run_loop_->Run();
     run_loop_ = nullptr;
   }
@@ -354,7 +355,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest, SensorStarted) {
   auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
   PlatformSensorConfiguration configuration(5);
   EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
-  WaitOnSensorReadingChangedEvent(client.get());
+  WaitOnSensorReadingChangedEvent(client.get(), sensor->GetType());
   EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 }
 
@@ -497,7 +498,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckAmbientLightReadings) {
   PlatformSensorConfiguration configuration(
       sensor->GetMaximumSupportedFrequency());
   EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
-  WaitOnSensorReadingChangedEvent(client.get());
+  WaitOnSensorReadingChangedEvent(client.get(), sensor->GetType());
   EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 
   SensorReadingSharedBuffer* buffer =
@@ -537,7 +538,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
   auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
   PlatformSensorConfiguration configuration(10);
   EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
-  WaitOnSensorReadingChangedEvent(client.get());
+  WaitOnSensorReadingChangedEvent(client.get(), sensor->GetType());
   EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 
   SensorReadingSharedBuffer* buffer =
@@ -588,7 +589,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckGyroscopeReadingConversion) {
   auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
   PlatformSensorConfiguration configuration(10);
   EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
-  WaitOnSensorReadingChangedEvent(client.get());
+  WaitOnSensorReadingChangedEvent(client.get(), sensor->GetType());
   EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 
   SensorReadingSharedBuffer* buffer =
@@ -640,7 +641,7 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckMagnetometerReadingConversion) {
   auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
   PlatformSensorConfiguration configuration(10);
   EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
-  WaitOnSensorReadingChangedEvent(client.get());
+  WaitOnSensorReadingChangedEvent(client.get(), sensor->GetType());
   EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 
   SensorReadingSharedBuffer* buffer =

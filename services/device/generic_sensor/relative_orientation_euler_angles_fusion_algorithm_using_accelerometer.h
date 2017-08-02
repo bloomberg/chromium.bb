@@ -18,7 +18,7 @@ class RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer
   RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer();
   ~RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer() override;
 
-  void GetFusedData(const std::vector<SensorReading>& readings,
+  bool GetFusedData(mojom::SensorType which_sensor_changed,
                     SensorReading* fused_reading) override;
 
  private:

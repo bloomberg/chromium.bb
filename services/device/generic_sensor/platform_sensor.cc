@@ -121,7 +121,7 @@ void PlatformSensor::UpdateSensorReading(const SensorReading& reading,
 void PlatformSensor::NotifySensorReadingChanged() {
   for (auto& client : clients_) {
     if (!client.IsSuspended())
-      client.OnSensorReadingChanged();
+      client.OnSensorReadingChanged(type_);
   }
 }
 
