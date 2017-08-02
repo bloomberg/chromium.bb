@@ -431,7 +431,6 @@ void SurfaceAggregator::CopyQuadsToPass(
     cc::RenderPass* dest_pass,
     const SurfaceId& surface_id) {
   const cc::SharedQuadState* last_copied_source_shared_quad_state = nullptr;
-  const cc::SharedQuadState* dest_shared_quad_state = nullptr;
   // If the current frame has copy requests or cached render passes, then
   // aggregate the entire thing, as otherwise parts of the copy requests may be
   // ignored and we could cache partially drawn render pass.
@@ -475,7 +474,7 @@ void SurfaceAggregator::CopyQuadsToPass(
                         &damage_rect_in_quad_space_valid);
     } else {
       if (quad->shared_quad_state != last_copied_source_shared_quad_state) {
-        dest_shared_quad_state = CopySharedQuadState(
+        const cc::SharedQuadState* dest_shared_quad_state = CopySharedQuadState(
             quad->shared_quad_state, target_transform, clip_rect, dest_pass);
         last_copied_source_shared_quad_state = quad->shared_quad_state;
         if (aggregate_only_damaged_ && !has_copy_requests_ &&
@@ -507,23 +506,22 @@ void SurfaceAggregator::CopyQuadsToPass(
           dest_pass->has_damage_from_contributing_content = true;
 
         dest_quad = dest_pass->CopyFromAndAppendRenderPassDrawQuad(
-            pass_quad, dest_shared_quad_state, remapped_pass_id);
+            pass_quad, remapped_pass_id);
       } else if (quad->material == cc::DrawQuad::TEXTURE_CONTENT) {
         const auto* texture_quad = cc::TextureDrawQuad::MaterialCast(quad);
         if (texture_quad->secure_output_only &&
             (!output_is_secure_ || copy_request_passes_.count(dest_pass->id))) {
           auto* solid_color_quad =
               dest_pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
-          solid_color_quad->SetNew(dest_shared_quad_state, quad->rect,
-                                   quad->visible_rect, SK_ColorBLACK, false);
+          solid_color_quad->SetNew(dest_pass->shared_quad_state_list.back(),
+                                   quad->rect, quad->visible_rect,
+                                   SK_ColorBLACK, false);
           dest_quad = solid_color_quad;
         } else {
-          dest_quad = dest_pass->CopyFromAndAppendDrawQuad(
-              quad, dest_shared_quad_state);
+          dest_quad = dest_pass->CopyFromAndAppendDrawQuad(quad);
         }
       } else {
-        dest_quad =
-            dest_pass->CopyFromAndAppendDrawQuad(quad, dest_shared_quad_state);
+        dest_quad = dest_pass->CopyFromAndAppendDrawQuad(quad);
       }
       if (!child_to_parent_map.empty()) {
         for (ResourceId& resource_id : dest_quad->resources) {

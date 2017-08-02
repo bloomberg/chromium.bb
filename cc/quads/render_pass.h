@@ -109,10 +109,8 @@ class CC_EXPORT RenderPass {
 
   RenderPassDrawQuad* CopyFromAndAppendRenderPassDrawQuad(
       const RenderPassDrawQuad* quad,
-      const SharedQuadState* shared_quad_state,
       RenderPassId render_pass_id);
-  DrawQuad* CopyFromAndAppendDrawQuad(const DrawQuad* quad,
-                                      const SharedQuadState* shared_quad_state);
+  DrawQuad* CopyFromAndAppendDrawQuad(const DrawQuad* quad);
 
   // Uniquely identifies the render pass in the compositor's current frame.
   RenderPassId id = 0;
