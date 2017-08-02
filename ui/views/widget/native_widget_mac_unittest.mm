@@ -915,11 +915,17 @@ class ModalDialogDelegate : public DialogDelegateView {
   explicit ModalDialogDelegate(ui::ModalType modal_type)
       : modal_type_(modal_type) {}
 
+  void set_can_close(bool value) { can_close_ = value; }
+
   // WidgetDelegate:
   ui::ModalType GetModalType() const override { return modal_type_; }
 
+  // DialogDelegate:
+  bool Close() override { return can_close_; }
+
  private:
   const ui::ModalType modal_type_;
+  bool can_close_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(ModalDialogDelegate);
 };
@@ -1875,6 +1881,19 @@ TEST_F(NativeWidgetMacViewsOrderTest, UnassociatedViewsIsAbove) {
     compositor_view_, hosts_[0]->view(), hosts_[2]->view(),
     hosts_[1]->view(), child_view
   ]]));
+}
+
+// Test -[NSWindowDelegate windowShouldClose:].
+TEST_F(NativeWidgetMacTest, CanClose) {
+  ModalDialogDelegate* delegate = new ModalDialogDelegate(ui::MODAL_TYPE_NONE);
+  Widget* widget =
+      views::DialogDelegate::CreateDialogWidget(delegate, nullptr, nullptr);
+  NSWindow* window = widget->GetNativeWindow();
+  delegate->set_can_close(false);
+  EXPECT_FALSE([[window delegate] windowShouldClose:window]);
+  delegate->set_can_close(true);
+  EXPECT_TRUE([[window delegate] windowShouldClose:window]);
+  widget->CloseNow();
 }
 
 }  // namespace test
