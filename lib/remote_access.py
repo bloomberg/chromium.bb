@@ -623,8 +623,24 @@ class RemoteDevice(object):
     Returns:
       True if the device responded to the ping before |timeout|.
     """
+    try:
+      addrlist = socket.getaddrinfo(self.hostname, 22)
+    except socket.gaierror:
+      # If the hostname is the name of a "Host" entry in ~/.ssh/config,
+      # it might be ssh-able but not pingable.
+      # If the hostname is truly bogus, ssh will fail immediately, so
+      # we can safely skip the ping step.
+      logging.info('Hostname "%s" not found, falling through to ssh',
+                   self.hostname)
+      return True
+
+    if addrlist[0][0] == socket.AF_INET6:
+      ping_command = 'ping6'
+    else:
+      ping_command = 'ping'
+
     result = cros_build_lib.RunCommand(
-        ['ping', '-c', '1', '-w', str(timeout), self.hostname],
+        [ping_command, '-c', '1', '-w', str(timeout), self.hostname],
         error_code_ok=True,
         capture_output=True)
     return result.returncode == 0
