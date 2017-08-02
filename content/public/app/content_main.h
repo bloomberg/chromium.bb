@@ -57,6 +57,9 @@ struct ContentMainParams {
   aura::Env::Mode env_mode = aura::Env::Mode::LOCAL;
 #endif
 
+  // If true a DiscardableSharedMemoryManager is created.
+  bool create_discardable_memory = true;
+
 #if defined(OS_MACOSX)
   // The outermost autorelease pool to pass to main entry points.
   base::mac::ScopedNSAutoreleasePool* autorelease_pool = nullptr;

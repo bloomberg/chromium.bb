@@ -99,6 +99,7 @@ source_set("browser_sources") {
     "devtools_manager_delegate.cc",
     "devtools_manager_delegate.h",
     "devtools_socket_factory.h",
+    "discardable_shared_memory_manager.h",
     "dom_storage_context.h",
     "download_danger_type.h",
     "download_interrupt_reason_values.h",

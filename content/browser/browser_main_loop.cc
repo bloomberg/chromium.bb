@@ -686,9 +686,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
         BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
   }
 
-  // Only use discardable_memory::DiscardableSharedMemoryManager when Chrome is
-  // not running in mus+ash.
-  if (!service_manager::ServiceManagerIsRemote()) {
+  if (parameters_.create_discardable_memory) {
     discardable_shared_memory_manager_ =
         base::MakeUnique<discardable_memory::DiscardableSharedMemoryManager>();
     // TODO(boliu): kSingleProcess check is a temporary workaround for

@@ -99,6 +99,8 @@ class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
   int RunTestSuite(int argc, char** argv) override {
     test_suite_.reset(new MashTestSuite(argc, argv));
     content::GetContentMainParams()->env_mode = aura::Env::Mode::MUS;
+    content::GetContentMainParams()->create_discardable_memory =
+        (config_ == MojoTestConnector::Config::MUS);
     const int result = test_suite_->Run();
     test_suite_.reset();
     return result;
