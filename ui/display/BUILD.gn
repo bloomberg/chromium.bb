@@ -76,6 +76,10 @@ component("display") {
       "CoreGraphics.framework",
     ]
   }
+
+  if (is_fuchsia) {
+    sources += [ "screen_fuchsia.cc" ]
+  }
 }
 
 component("display_manager_test_api") {
