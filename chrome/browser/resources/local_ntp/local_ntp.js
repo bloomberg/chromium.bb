@@ -615,15 +615,13 @@ function init() {
     // Update the fakebox style to match the current key capturing state.
     setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
 
-    // Inject the OneGoogleBar loader script. It'll create a global variable
-    // named "og" with the following fields:
-    //  .html - the main bar HTML.
-    //  .end_of_body_html - HTML to be inserted at the end of the body.
+    // Load the OneGoogleBar script. It'll create a global variable name "og"
+    // which is a dict corresponding to the native OneGoogleBarData type.
     var ogScript = document.createElement('script');
     ogScript.src = 'chrome-search://local-ntp/one-google.js';
     document.body.appendChild(ogScript);
     ogScript.onload = function() {
-      injectOneGoogleBar(og.html, og.end_of_body_html);
+      injectOneGoogleBar(og);
     };
   } else {
     document.body.classList.add(CLASSES.NON_GOOGLE_PAGE);
@@ -676,37 +674,32 @@ function listen() {
  * Injects the One Google Bar into the page. Called asynchronously, so that it
  * doesn't block the main page load.
  */
-function injectOneGoogleBar(barHtml, endOfBodyHtml) {
-  var inHeadStyle = document.createElement('link');
-  inHeadStyle.rel = "stylesheet";
-  inHeadStyle.href = 'chrome-search://local-ntp/one-google/in-head.css';
+function injectOneGoogleBar(ogb) {
+  var inHeadStyle = document.createElement('style');
+  inHeadStyle.type = 'text/css';
+  inHeadStyle.appendChild(document.createTextNode(ogb.inHeadStyle));
   document.head.appendChild(inHeadStyle);
 
-  inHeadStyle.onload = function() {
-    var inHeadScript = document.createElement('script');
-    inHeadScript.src = 'chrome-search://local-ntp/one-google/in-head.js';
-    document.head.appendChild(inHeadScript);
+  var inHeadScript = document.createElement('script');
+  inHeadScript.type = 'text/javascript';
+  inHeadScript.appendChild(document.createTextNode(ogb.inHeadScript));
+  document.head.appendChild(inHeadScript);
 
-    inHeadScript.onload = function() {
-      var ogElem = $('one-google');
-      ogElem.innerHTML = barHtml;
-      ogElem.classList.remove('hidden');
+  var ogElem = $('one-google');
+  ogElem.innerHTML = ogb.barHtml;
+  ogElem.classList.remove('hidden');
 
-      var afterBarScript = document.createElement('script');
-      afterBarScript.src =
-          'chrome-search://local-ntp/one-google/after-bar.js';
-      ogElem.parentNode.insertBefore(afterBarScript, ogElem.nextSibling);
+  var afterBarScript = document.createElement('script');
+  afterBarScript.type = 'text/javascript';
+  afterBarScript.appendChild(document.createTextNode(ogb.afterBarScript));
+  ogElem.parentNode.insertBefore(afterBarScript, ogElem.nextSibling);
 
-      afterBarScript.onload = function() {
-        $('one-google-end-of-body').innerHTML = endOfBodyHtml;
+  $('one-google-end-of-body').innerHTML = ogb.endOfBodyHtml;
 
-        var endOfBodyScript = document.createElement('script');
-        endOfBodyScript.src =
-            'chrome-search://local-ntp/one-google/end-of-body.js';
-        document.body.appendChild(endOfBodyScript);
-      };
-    };
-  };
+  var endOfBodyScript = document.createElement('script');
+  endOfBodyScript.type = 'text/javascript';
+  endOfBodyScript.appendChild(document.createTextNode(ogb.endOfBodyScript));
+  document.body.appendChild(endOfBodyScript);
 }
 
 

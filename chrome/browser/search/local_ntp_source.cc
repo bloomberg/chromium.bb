@@ -57,10 +57,6 @@ const char kConfigDataFilename[] = "config.js";
 const char kThemeCSSFilename[] = "theme.css";
 const char kMainHtmlFilename[] = "local-ntp.html";
 const char kOneGoogleBarScriptFilename[] = "one-google.js";
-const char kOneGoogleBarInHeadStyleFilename[] = "one-google/in-head.css";
-const char kOneGoogleBarInHeadScriptFilename[] = "one-google/in-head.js";
-const char kOneGoogleBarAfterBarScriptFilename[] = "one-google/after-bar.js";
-const char kOneGoogleBarEndOfBodyScriptFilename[] = "one-google/end-of-body.js";
 
 const char kIntegrityFormat[] = "integrity=\"sha256-%s\"";
 
@@ -77,10 +73,6 @@ const struct Resource{
     {"images/close_3_mask.png", IDR_CLOSE_3_MASK, "image/png"},
     {"images/ntp_default_favicon.png", IDR_NTP_DEFAULT_FAVICON, "image/png"},
     {kOneGoogleBarScriptFilename, kLocalResource, "text/javascript"},
-    {kOneGoogleBarInHeadStyleFilename, kLocalResource, "text/css"},
-    {kOneGoogleBarInHeadScriptFilename, kLocalResource, "text/javascript"},
-    {kOneGoogleBarAfterBarScriptFilename, kLocalResource, "text/javascript"},
-    {kOneGoogleBarEndOfBodyScriptFilename, kLocalResource, "text/javascript"},
 };
 
 // Strips any query parameters from the specified path.
@@ -172,10 +164,12 @@ std::string GetLocalNtpPath() {
 std::unique_ptr<base::DictionaryValue> ConvertOGBDataToDict(
     const OneGoogleBarData& og) {
   auto result = base::MakeUnique<base::DictionaryValue>();
-  // Only provide the html parts here. The js and css are injected separately
-  // via <script src=...> and <link rel="stylesheet" href=...>.
-  result->SetString("html", og.bar_html);
-  result->SetString("end_of_body_html", og.end_of_body_html);
+  result->SetString("barHtml", og.bar_html);
+  result->SetString("inHeadScript", og.in_head_script);
+  result->SetString("inHeadStyle", og.in_head_style);
+  result->SetString("afterBarScript", og.after_bar_script);
+  result->SetString("endOfBodyHtml", og.end_of_body_html);
+  result->SetString("endOfBodyScript", og.end_of_body_script);
   return result;
 }
 
@@ -278,37 +272,16 @@ void LocalNtpSource::StartDataRequest(
     return;
   }
 
-  if (base::StartsWith(stripped_path, "one-google",
-                       base::CompareCase::SENSITIVE)) {
+  if (stripped_path == kOneGoogleBarScriptFilename) {
     if (!one_google_bar_service_) {
       callback.Run(nullptr);
       return;
     }
 
-    // The OneGoogleBar injector helper.
-    if (stripped_path == kOneGoogleBarScriptFilename) {
-      one_google_bar_requests_.emplace_back(base::TimeTicks::Now(), callback);
-      // TODO(treib): Figure out if there are cases where we can safely serve
-      // cached data. crbug.com/742937
-      one_google_bar_service_->Refresh();
-    } else {
-      // The actual OneGoogleBar sources.
-      const base::Optional<OneGoogleBarData>& data =
-          one_google_bar_service_->one_google_bar_data();
-      std::string result;
-      if (data.has_value()) {
-        if (stripped_path == kOneGoogleBarInHeadStyleFilename) {
-          result = data->in_head_style;
-        } else if (stripped_path == kOneGoogleBarInHeadScriptFilename) {
-          result = data->in_head_script;
-        } else if (stripped_path == kOneGoogleBarAfterBarScriptFilename) {
-          result = data->after_bar_script;
-        } else if (stripped_path == kOneGoogleBarEndOfBodyScriptFilename) {
-          result = data->end_of_body_script;
-        }
-      }
-      callback.Run(base::RefCountedString::TakeString(&result));
-    }
+    one_google_bar_requests_.emplace_back(base::TimeTicks::Now(), callback);
+    // TODO(treib): Figure out if there are cases where we can safely serve
+    // cached data. crbug.com/742937
+    one_google_bar_service_->Refresh();
 
     return;
   }
