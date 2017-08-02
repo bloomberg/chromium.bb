@@ -559,11 +559,13 @@ void WebRtcTestBase::SetDefaultAudioCodec(
       "setDefaultAudioCodec('" + audio_codec + "')", tab));
 }
 
-void WebRtcTestBase::SetDefaultVideoCodec(
-    content::WebContents* tab,
-    const std::string& video_codec) const {
-  EXPECT_EQ("ok", ExecuteJavascript(
-      "setDefaultVideoCodec('" + video_codec + "')", tab));
+void WebRtcTestBase::SetDefaultVideoCodec(content::WebContents* tab,
+                                          const std::string& video_codec,
+                                          bool prefer_hw_codec) const {
+  EXPECT_EQ("ok",
+            ExecuteJavascript("setDefaultVideoCodec('" + video_codec + "'," +
+                                  (prefer_hw_codec ? "true" : "false") + ")",
+                              tab));
 }
 
 void WebRtcTestBase::EnableOpusDtx(content::WebContents* tab) const {

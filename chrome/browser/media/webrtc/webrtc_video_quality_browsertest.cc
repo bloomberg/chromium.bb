@@ -259,7 +259,8 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
     return true;
   }
 
-  void TestVideoQuality(const std::string& video_codec) {
+  void TestVideoQuality(const std::string& video_codec,
+                        bool prefer_hw_video_codec) {
     ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 150)
         << "This is a long-running test; you must specify "
            "--ui-test-action-max-timeout to have a value of at least 150000.";
@@ -279,8 +280,8 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
     SetupPeerconnectionWithLocalStream(right_tab);
 
     if (!video_codec.empty()) {
-      SetDefaultVideoCodec(left_tab, video_codec);
-      SetDefaultVideoCodec(right_tab, video_codec);
+      SetDefaultVideoCodec(left_tab, video_codec, prefer_hw_video_codec);
+      SetDefaultVideoCodec(right_tab, video_codec, prefer_hw_video_codec);
     }
     NegotiateCall(left_tab, right_tab);
 
@@ -346,13 +347,13 @@ INSTANTIATE_TEST_CASE_P(
 IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
                        MANUAL_TestVideoQualityVp8) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
-  TestVideoQuality("VP8");
+  TestVideoQuality("VP8", false /* prefer_hw_video_codec */);
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
                        MANUAL_TestVideoQualityVp9) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
-  TestVideoQuality("VP9");
+  TestVideoQuality("VP9", false /* prefer_hw_video_codec */);
 }
 
 #if BUILDFLAG(RTC_USE_H264)
@@ -367,7 +368,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
         "(test \"OK\")";
     return;
   }
-  TestVideoQuality("H264");
+  TestVideoQuality("H264", true /* prefer_hw_video_codec */);
 }
 
 #endif  // BUILDFLAG(RTC_USE_H264)
