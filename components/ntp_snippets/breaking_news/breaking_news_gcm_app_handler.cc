@@ -170,11 +170,23 @@ void BreakingNewsGCMAppHandler::OnJsonSuccess(
                         /*fetch_time=*/base::Time::Now())) {
     std::string content_json;
     base::JSONWriter::Write(*content, &content_json);
-    LOG(WARNING) << "Received invalid breaking news: " << content_json;
+    LOG(WARNING)
+        << "Received invalid breaking news: can't interpret value, json is "
+        << content_json;
     return;
   }
-  DCHECK_EQ(1u, fetched_categories.size());
-  DCHECK_EQ(1u, fetched_categories[0].suggestions.size());
+  if (fetched_categories.size() != 1) {
+    LOG(WARNING)
+        << "Received invalid breaking news: expected 1 category, but got "
+        << fetched_categories.size();
+    return;
+  }
+  if (fetched_categories[0].suggestions.size() != 1) {
+    LOG(WARNING)
+        << "Received invalid breaking news: expected 1 suggestion, but got "
+        << fetched_categories[0].suggestions.size();
+    return;
+  }
 
   on_new_remote_suggestion_callback_.Run(
       std::move(fetched_categories[0].suggestions[0]));
