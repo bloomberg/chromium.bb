@@ -3592,11 +3592,16 @@ void Document::UpdateBaseURL() {
 }
 
 KURL Document::FallbackBaseURL() const {
-  if (IsSrcdocDocument())
-    return ParentDocument()->BaseURL();
-  if (urlForBinding().IsAboutBlankURL()) {
+  if (IsSrcdocDocument()) {
+    // TODO(tkent): Referring to ParentDocument() is not correct.  See
+    // crbug.com/751329.
+    if (Document* parent = ParentDocument())
+      return parent->BaseURL();
+  } else if (urlForBinding().IsAboutBlankURL()) {
     if (context_document_)
       return context_document_->BaseURL();
+    // TODO(tkent): Referring to ParentDocument() is not correct.  See
+    // crbug.com/751329.
     if (Document* parent = ParentDocument())
       return parent->BaseURL();
   }

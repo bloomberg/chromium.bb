@@ -42,6 +42,10 @@ Some areas have their own directories not under html/.
     P, HR, PRE, BLOCKQUOTE, OL, UL, LI, DL, DT, DD, FIGURE, FIGCAPTION, MAIN,
     and DIV.
 
+*   infrastructure/
+
+    [Common infrastructure](https://html.spec.whatwg.org/multipage/infrastructure.html#infrastructure)
+
 *   marquee/
 
     MARQUEE element.
