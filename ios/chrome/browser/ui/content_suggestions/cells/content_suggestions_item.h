@@ -16,6 +16,8 @@ class Time;
 @class FaviconAttributes;
 class GURL;
 
+@protocol ContentSuggestionsGestureCommands;
+
 // Delegate for SuggestedContent.
 @protocol ContentSuggestionsItemDelegate
 
@@ -48,6 +50,10 @@ class GURL;
 @property(nonatomic, strong) FaviconAttributes* attributes;
 // URL for the favicon, if different of |URL|.
 @property(nonatomic, assign) GURL faviconURL;
+// Whether this item should have an option to be read later.
+@property(nonatomic, assign) BOOL readLaterAction;
+// Command handler for the accessibility custom actions.
+@property(nonatomic, weak) id<ContentSuggestionsGestureCommands> commandHandler;
 
 @end
 

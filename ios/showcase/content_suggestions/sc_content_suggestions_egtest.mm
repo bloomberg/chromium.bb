@@ -133,9 +133,10 @@ NSString* ReadingListEmptySection() {
       performAction:grey_longPress()];
 
   [[EarlGrey
-      selectElementWithMatcher:grey_allOf(TextBeginsWith(
-                                              @"displayContextMenuForArticle:"),
-                                          grey_sufficientlyVisible(), nil)]
+      selectElementWithMatcher:grey_allOf(
+                                   TextBeginsWith(
+                                       @"displayContextMenuForSuggestion:"),
+                                   grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
                                           @"protocol_alerter_done")]
