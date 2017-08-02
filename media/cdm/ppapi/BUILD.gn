@@ -55,7 +55,7 @@ shared_library("clearkeycdm") {
 process_version_rc_template("clearkeycdmadapter_resources") {
   visibility = [ ":*" ]
   sources = [
-    "//media/clearkeycdmadapter.ver",
+    "clearkeycdmadapter.ver",
     "external_clear_key/BRANDING",
   ]
   output = "$target_gen_dir/clearkeycdmadapter_version.rc"
