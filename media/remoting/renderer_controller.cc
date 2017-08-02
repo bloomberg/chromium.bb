@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/default_tick_clock.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/remoting/remoting_cdm.h"
@@ -20,13 +22,21 @@ namespace media {
 namespace remoting {
 
 namespace {
+
 // The duration to delay the start of media remoting to ensure all preconditions
 // are held stable before switching to media remoting.
 constexpr base::TimeDelta kDelayedStart = base::TimeDelta::FromSeconds(5);
+
+// The maximum fraction of the transmission capacity that can safely be used by
+// Media Remoting to deliver the media contents.
+constexpr double kMaxMediaBitrateCapacityFraction = 0.9;
+
 }  // namespace
 
 RendererController::RendererController(scoped_refptr<SharedSession> session)
-    : session_(std::move(session)), weak_factory_(this) {
+    : session_(std::move(session)),
+      clock_(new base::DefaultTickClock()),
+      weak_factory_(this) {
   session_->AddClient(this);
 }
 
@@ -401,27 +411,44 @@ void RendererController::WaitForStabilityBeforeStart(
   DCHECK(!is_encrypted_);
   delayed_start_stability_timer_.Start(
       FROM_HERE, kDelayedStart,
-      base::Bind(&RendererController::OnDelayedStartTimerFired,
-                 base::Unretained(this), start_trigger));
-
-  // TODO(xjz): Start content bitrate estimation.
+      base::Bind(
+          &RendererController::OnDelayedStartTimerFired, base::Unretained(this),
+          start_trigger,
+          client_->AudioDecodedByteCount() + client_->VideoDecodedByteCount(),
+          clock_->NowTicks()));
 }
 
 void RendererController::CancelDelayedStart() {
   delayed_start_stability_timer_.Stop();
-
-  // TODO(xjz): Stop content bitrate estimation.
 }
 
-void RendererController::OnDelayedStartTimerFired(StartTrigger start_trigger) {
+void RendererController::OnDelayedStartTimerFired(
+    StartTrigger start_trigger,
+    size_t decoded_bytes_before_delay,
+    base::TimeTicks delayed_start_time) {
   DCHECK(is_dominant_content_);
   DCHECK(!remote_rendering_started_);
   DCHECK(!is_encrypted_);
 
-  // TODO(xjz): Stop content bitrate estimation and evaluate whether the
-  // estimated bitrate is supported by remoting.
-
-  StartRemoting(start_trigger);
+  base::TimeDelta elapsed = clock_->NowTicks() - delayed_start_time;
+  DCHECK(!elapsed.is_zero());
+  double kilobits_per_second =
+      (client_->AudioDecodedByteCount() + client_->VideoDecodedByteCount() -
+       decoded_bytes_before_delay) *
+      8.0 / elapsed.InSecondsF() / 1000.0;
+  DCHECK_GE(kilobits_per_second, 0);
+  // TODO(xjz): Gets the estimated transmission capacity (kbps) from Remoter.
+  const double capacity = 10000.0;
+  metrics_recorder_.RecordMediaBitrateVersusCapacity(kilobits_per_second,
+                                                     capacity);
+  if (kilobits_per_second <= kMaxMediaBitrateCapacityFraction * capacity) {
+    StartRemoting(start_trigger);
+  } else {
+    VLOG(1) << "Media remoting is not supported: bitrate(kbps)="
+            << kilobits_per_second
+            << " transmission_capacity(kbps)=" << capacity;
+    encountered_renderer_fatal_error_ = true;
+  }
 }
 
 void RendererController::StartRemoting(StartTrigger start_trigger) {
