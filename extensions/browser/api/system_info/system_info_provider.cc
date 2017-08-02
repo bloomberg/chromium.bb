@@ -5,16 +5,19 @@
 #include "extensions/browser/api/system_info/system_info_provider.h"
 
 #include "base/bind.h"
+#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace extensions {
 
-SystemInfoProvider::SystemInfoProvider() : is_waiting_for_completion_(false) {
-  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
-  worker_pool_ = pool->GetSequencedTaskRunnerWithShutdownBehavior(
-      pool->GetSequenceToken(),
-      base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
-}
+SystemInfoProvider::SystemInfoProvider()
+    : is_waiting_for_completion_(false),
+      task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(),
+           /* default priority, */
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 
 SystemInfoProvider::~SystemInfoProvider() {
 }
@@ -60,8 +63,7 @@ void SystemInfoProvider::StartQueryInfoPostInitialization() {
   // Post the custom query info task to blocking pool for information querying
   // and reply with OnQueryCompleted.
   base::PostTaskAndReplyWithResult(
-      worker_pool_.get(),
-      FROM_HERE,
+      task_runner_.get(), FROM_HERE,
       base::Bind(&SystemInfoProvider::QueryInfo, this),
       base::Bind(&SystemInfoProvider::OnQueryCompleted, this));
 }
