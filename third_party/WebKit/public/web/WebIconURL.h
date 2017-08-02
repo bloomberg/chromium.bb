@@ -31,7 +31,7 @@
 #ifndef WebIconURL_h
 #define WebIconURL_h
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
 #include "core/dom/IconURL.h"
 #endif
 #include "public/platform/WebSize.h"
@@ -59,7 +59,7 @@ class WebIconURL {
 
   const WebVector<WebSize>& Sizes() const { return sizes_; }
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
   WebIconURL(const IconURL& icon_url)
       : icon_type_(static_cast<Type>(icon_url.icon_type_)),
         icon_url_(icon_url.icon_url_),

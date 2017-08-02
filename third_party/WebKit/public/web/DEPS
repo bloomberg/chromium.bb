@@ -3,7 +3,7 @@ include_rules = [
     "+public/platform",
     "+public/web",
 
-    # Allowed only inside BLINK_IMPLEMENTATION
+    # Allowed only inside INSIDE_BLINK
     "+core",
     "+platform",
 ]

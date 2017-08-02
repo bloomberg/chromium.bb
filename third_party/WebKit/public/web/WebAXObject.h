@@ -353,7 +353,7 @@ class WebAXObject {
   // window.
   BLINK_EXPORT void ScrollToGlobalPoint(const WebPoint&) const;
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
   BLINK_EXPORT WebAXObject(AXObject*);
   WebAXObject& operator=(AXObject*);
   operator AXObject*() const;

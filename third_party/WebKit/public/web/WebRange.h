@@ -32,7 +32,7 @@
 #define WebRange_h
 
 #include "public/platform/WebCommon.h"
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
 #include "core/editing/EphemeralRange.h"
 #endif
 
@@ -54,7 +54,7 @@ class WebRange final {
   bool IsNull() const { return start_ == -1 && end_ == -1; }
   bool IsEmpty() const { return start_ == end_; }
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
   BLINK_EXPORT WebRange(const EphemeralRange&);
   BLINK_EXPORT WebRange(const PlainTextRange&);
 

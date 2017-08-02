@@ -77,7 +77,7 @@ class WebRTCSessionDescription {
   BLINK_PLATFORM_EXPORT WebString Sdp() const;
   BLINK_PLATFORM_EXPORT void SetSDP(const WebString&);
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
   WebRTCSessionDescription(WebString type, WebString sdp) {
     this->Initialize(type, sdp);
   }

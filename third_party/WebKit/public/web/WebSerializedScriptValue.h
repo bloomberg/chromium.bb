@@ -78,7 +78,7 @@ class WebSerializedScriptValue {
   // Convert the serialized value to a parsed v8 value.
   BLINK_EXPORT v8::Local<v8::Value> Deserialize(v8::Isolate*);
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
   BLINK_EXPORT WebSerializedScriptValue(WTF::PassRefPtr<SerializedScriptValue>);
   BLINK_EXPORT WebSerializedScriptValue& operator=(
       WTF::PassRefPtr<SerializedScriptValue>);

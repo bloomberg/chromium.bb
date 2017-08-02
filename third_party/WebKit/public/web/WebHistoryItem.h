@@ -119,7 +119,7 @@ class WebHistoryItem {
 
   BLINK_EXPORT bool DidSaveScrollOrScaleState() const;
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
   BLINK_EXPORT WebHistoryItem(HistoryItem*);
   BLINK_EXPORT WebHistoryItem& operator=(HistoryItem*);
   BLINK_EXPORT operator HistoryItem*() const;

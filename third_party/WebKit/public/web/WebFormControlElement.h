@@ -115,7 +115,7 @@ class BLINK_EXPORT WebFormControlElement : public WebElement {
 
   WebFormElement Form() const;
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
   WebFormControlElement(HTMLFormControlElement*);
   WebFormControlElement& operator=(HTMLFormControlElement*);
   operator HTMLFormControlElement*() const;

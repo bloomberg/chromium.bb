@@ -84,12 +84,11 @@ source_set("loader") {
   sources += get_target_outputs(
           ":make_platform_loader_generated_fetch_initiator_type_names")
 
-  defines = [ "BLINK_PLATFORM_IMPLEMENTATION=1" ]
-
   configs += [
     "//third_party/WebKit/Source:config",
     "//third_party/WebKit/Source:non_test_config",
     "//third_party/WebKit/Source:inside_blink",
+    "//third_party/WebKit/Source/platform:blink_platform_implementation",
 
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",

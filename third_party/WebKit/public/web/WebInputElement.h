@@ -93,7 +93,7 @@ class BLINK_EXPORT WebInputElement final : public WebFormControlElement {
   // Returns true if the text of the element should be visible.
   bool ShouldRevealPassword() const;
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
   WebInputElement(HTMLInputElement*);
   WebInputElement& operator=(HTMLInputElement*);
   operator HTMLInputElement*() const;

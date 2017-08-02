@@ -85,7 +85,7 @@ class BLINK_EXPORT WebUserMediaRequest {
   static WebUserMediaRequest CreateForTesting(const WebMediaConstraints& audio,
                                               const WebMediaConstraints& video);
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
   WebUserMediaRequest(UserMediaRequest*);
   operator UserMediaRequest*() const;
 #endif

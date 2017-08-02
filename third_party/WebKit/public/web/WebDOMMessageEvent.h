@@ -36,7 +36,7 @@
 #include "public/web/WebDocument.h"
 #include "public/web/WebSerializedScriptValue.h"
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
 #include "core/events/MessageEvent.h"
 #endif
 
@@ -62,7 +62,7 @@ class WebDOMMessageEvent : public WebDOMEvent {
 
   BLINK_EXPORT WebMessagePortChannelArray ReleaseChannels();
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
   explicit WebDOMMessageEvent(MessageEvent* e) : WebDOMEvent(e) {}
 #endif
 };

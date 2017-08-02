@@ -132,7 +132,7 @@ class WebDocument : public WebNode {
   BLINK_EXPORT bool ManifestUseCredentials() const;
   BLINK_EXPORT WebDistillabilityFeatures DistillabilityFeatures();
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
   BLINK_EXPORT WebDocument(Document*);
   BLINK_EXPORT WebDocument& operator=(Document*);
   BLINK_EXPORT operator Document*() const;

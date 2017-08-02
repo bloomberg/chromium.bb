@@ -209,7 +209,7 @@ class BLINK_EXPORT WebFrame {
   // the given element is not a frame, iframe or if the frame is empty.
   static WebFrame* FromFrameOwnerElement(const WebElement&);
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
   // TODO(mustaq): Should be named FromCoreFrame instead.
   static WebFrame* FromFrame(Frame*);
   static Frame* ToCoreFrame(const WebFrame&);
@@ -240,7 +240,7 @@ class BLINK_EXPORT WebFrame {
   void AppendChild(WebFrame*);
 
  private:
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
   friend class OpenedFrameTracker;
   friend class WebFrameTest;
 
