@@ -172,7 +172,6 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
   }
 
   DCHECK(!default_style_->Features().HasIdsInSelectors());
-  DCHECK(!default_style_->Features().UsesSiblingRules());
   return changed_default_style;
 }
 

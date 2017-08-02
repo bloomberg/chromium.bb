@@ -266,17 +266,6 @@ void ExtractInvalidationSets(InvalidationSet* invalidation_set,
 
 }  // anonymous namespace
 
-RuleFeature::RuleFeature(StyleRule* rule,
-                         unsigned selector_index,
-                         bool has_document_security_origin)
-    : rule(rule),
-      selector_index(selector_index),
-      has_document_security_origin(has_document_security_origin) {}
-
-DEFINE_TRACE(RuleFeature) {
-  visitor->Trace(rule);
-}
-
 RuleFeatureSet::RuleFeatureSet() : is_alive_(true) {}
 
 RuleFeatureSet::~RuleFeatureSet() {
@@ -820,17 +809,6 @@ RuleFeatureSet::SelectorPreMatch RuleFeatureSet::CollectFeaturesFromRuleData(
 
   metadata_.Add(metadata);
 
-  if (metadata.found_sibling_selector) {
-    sibling_rules_.push_back(
-        RuleFeature(rule_data.Rule(), rule_data.SelectorIndex(),
-                    rule_data.HasDocumentSecurityOrigin()));
-  }
-  if (rule_data.ContainsUncommonAttributeSelector()) {
-    uncommon_attribute_rules_.push_back(
-        RuleFeature(rule_data.Rule(), rule_data.SelectorIndex(),
-                    rule_data.HasDocumentSecurityOrigin()));
-  }
-
   UpdateInvalidationSets(rule_data);
   return kSelectorMayMatch;
 }
@@ -850,20 +828,6 @@ RuleFeatureSet::SelectorPreMatch RuleFeatureSet::CollectFeaturesFromSelector(
         break;
       case CSSSelector::kPseudoWindowInactive:
         metadata.uses_window_inactive_selector = true;
-        break;
-      case CSSSelector::kPseudoEmpty:
-      case CSSSelector::kPseudoFirstChild:
-      case CSSSelector::kPseudoFirstOfType:
-      case CSSSelector::kPseudoLastChild:
-      case CSSSelector::kPseudoLastOfType:
-      case CSSSelector::kPseudoOnlyChild:
-      case CSSSelector::kPseudoOnlyOfType:
-      case CSSSelector::kPseudoNthChild:
-      case CSSSelector::kPseudoNthOfType:
-      case CSSSelector::kPseudoNthLastChild:
-      case CSSSelector::kPseudoNthLastOfType:
-        if (!metadata.found_insertion_point_crossing)
-          metadata.found_sibling_selector = true;
         break;
       case CSSSelector::kPseudoHost:
       case CSSSelector::kPseudoHostContext:
@@ -905,10 +869,6 @@ RuleFeatureSet::SelectorPreMatch RuleFeatureSet::CollectFeaturesFromSelector(
         metadata.max_direct_adjacent_selectors = max_direct_adjacent_selectors;
       max_direct_adjacent_selectors = 0;
     }
-
-    if (!metadata.found_insertion_point_crossing &&
-        current->IsAdjacentSelector())
-      metadata.found_sibling_selector = true;
   }
 
   DCHECK(!max_direct_adjacent_selectors);
@@ -925,7 +885,6 @@ void RuleFeatureSet::FeatureMetadata::Add(const FeatureMetadata& other) {
 void RuleFeatureSet::FeatureMetadata::Clear() {
   uses_first_line_rules = false;
   uses_window_inactive_selector = false;
-  found_sibling_selector = false;
   found_insertion_point_crossing = false;
   needs_full_recalc_for_rule_set_invalidation = false;
   max_direct_adjacent_selectors = 0;
@@ -960,8 +919,6 @@ void RuleFeatureSet::Add(const RuleFeatureSet& other) {
 
   metadata_.Add(other.metadata_);
 
-  sibling_rules_.AppendVector(other.sibling_rules_);
-  uncommon_attribute_rules_.AppendVector(other.uncommon_attribute_rules_);
   viewport_dependent_media_query_results_.AppendVector(
       other.viewport_dependent_media_query_results_);
   device_dependent_media_query_results_.AppendVector(
@@ -970,8 +927,6 @@ void RuleFeatureSet::Add(const RuleFeatureSet& other) {
 
 void RuleFeatureSet::Clear() {
   CHECK(is_alive_);
-  sibling_rules_.clear();
-  uncommon_attribute_rules_.clear();
   metadata_.Clear();
   class_invalidation_sets_.clear();
   attribute_invalidation_sets_.clear();
@@ -1212,11 +1167,6 @@ void RuleFeatureSet::AddFeaturesToUniversalSiblingInvalidationSet(
   else
     AddFeaturesToInvalidationSet(universal_set.EnsureSiblingDescendants(),
                                  descendant_features);
-}
-
-DEFINE_TRACE(RuleFeatureSet) {
-  visitor->Trace(sibling_rules_);
-  visitor->Trace(uncommon_attribute_rules_);
 }
 
 void RuleFeatureSet::InvalidationSetFeatures::Add(

@@ -38,30 +38,6 @@ class ContainerNode;
 struct InvalidationLists;
 class QualifiedName;
 class RuleData;
-class StyleRule;
-
-struct RuleFeature {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-
- public:
-  RuleFeature(StyleRule*,
-              unsigned selector_index,
-              bool has_document_security_origin);
-
-  DECLARE_TRACE();
-
-  Member<StyleRule> rule;
-  unsigned selector_index;
-  bool has_document_security_origin;
-};
-
-}  // namespace blink
-
-// Declare the VectorTraits specialization before RuleFeatureSet
-// declares its vector members below.
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::RuleFeature);
-
-namespace blink {
 
 class CORE_EXPORT RuleFeatureSet {
   DISALLOW_NEW();
@@ -78,7 +54,6 @@ class CORE_EXPORT RuleFeatureSet {
 
   SelectorPreMatch CollectFeaturesFromRuleData(const RuleData&);
 
-  bool UsesSiblingRules() const { return !sibling_rules_.IsEmpty(); }
   bool UsesFirstLineRules() const { return metadata_.uses_first_line_rules; }
   bool UsesWindowInactiveSelector() const {
     return metadata_.uses_window_inactive_selector;
@@ -103,11 +78,6 @@ class CORE_EXPORT RuleFeatureSet {
 
   bool HasSelectorForId(const AtomicString& id_value) const {
     return id_invalidation_sets_.Contains(id_value);
-  }
-
-  const HeapVector<RuleFeature>& SiblingRules() const { return sibling_rules_; }
-  const HeapVector<RuleFeature>& UncommonAttributeRules() const {
-    return uncommon_attribute_rules_;
   }
 
   const MediaQueryResultList& ViewportDependentMediaQueryResults() const {
@@ -160,8 +130,6 @@ class CORE_EXPORT RuleFeatureSet {
 
   bool HasIdsInSelectors() const { return id_invalidation_sets_.size() > 0; }
 
-  DECLARE_TRACE();
-
   bool IsAlive() const { return is_alive_; }
 
  protected:
@@ -187,7 +155,6 @@ class CORE_EXPORT RuleFeatureSet {
 
     bool uses_first_line_rules = false;
     bool uses_window_inactive_selector = false;
-    bool found_sibling_selector = false;
     bool found_insertion_point_crossing = false;
     bool needs_full_recalc_for_rule_set_invalidation = false;
     unsigned max_direct_adjacent_selectors = 0;
@@ -295,8 +262,6 @@ class CORE_EXPORT RuleFeatureSet {
   RefPtr<SiblingInvalidationSet> universal_sibling_invalidation_set_;
   RefPtr<DescendantInvalidationSet> nth_invalidation_set_;
   RefPtr<DescendantInvalidationSet> type_rule_invalidation_set_;
-  HeapVector<RuleFeature> sibling_rules_;
-  HeapVector<RuleFeature> uncommon_attribute_rules_;
   MediaQueryResultList viewport_dependent_media_query_results_;
   MediaQueryResultList device_dependent_media_query_results_;
 

@@ -168,9 +168,6 @@ class CORE_EXPORT StyleEngine final
   unsigned MaxDirectAdjacentSelectors() const {
     return GetRuleFeatureSet().MaxDirectAdjacentSelectors();
   }
-  bool UsesSiblingRules() const {
-    return GetRuleFeatureSet().UsesSiblingRules();
-  }
   bool UsesFirstLineRules() const {
     return GetRuleFeatureSet().UsesFirstLineRules();
   }
