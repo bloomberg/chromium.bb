@@ -80,6 +80,19 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
   };
 
   /**
+   * Returns a canonical action for |formElement|. It works the same as upstream
+   * function GetCanonicalActionForForm.
+   * @param {Form} formElement.
+   * @return {string} Canonical action.
+   */
+  var getCanonicalActionForForm_ = function(formElement) {
+    var raw_action = formElement.getAttribute('action') || "";
+    var absolute_url = __gCrWeb.common.absoluteURL(
+          formElement.ownerDocument, raw_action);
+    return __gCrWeb.common.removeQueryAndReferenceFromURL(absolute_url);
+  };
+
+  /**
    * Returns the password form with the given |name| as a JSON string.
    * @param {string} name The name of the form to extract.
    * @return {string} The password form.
@@ -111,8 +124,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
     for (var i = 0; i < forms.length; i++) {
       var form = forms[i];
       var normalizedFormAction = opt_normalizedAction ||
-          __gCrWeb.common.removeQueryAndReferenceFromURL(
-              __gCrWeb.common.absoluteURL(doc, form.action));
+          getCanonicalActionForForm_(form);
       if (formData.action != normalizedFormAction) {
         continue;
       }
@@ -455,7 +467,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
         formElement.ownerDocument.location.href);
 
     return {
-      'action': formElement.getAttribute('action'),
+      'action': getCanonicalActionForForm_(formElement),
       'method': formElement.getAttribute('method'),
       'name': __gCrWeb.common.getFormIdentifier(formElement),
       'origin': origin,
