@@ -63334,6 +63334,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="RendererScheduler.RendererMainThreadLoad3" units="%">
+  <obsolete>
+    This metric still used 1-minute reporting chunks. Replaced with
+    RendererMainThreadLoad4 as of July 2017.
+  </obsolete>
+  <owner>altimin@chromium.org</owner>
+  <summary>
+    Renderer main thread load (percentage of time spent in tasks), reported in
+    one minute chunks.
+
+    See http://bit.ly/chromium-renderer-main-thread-load-metric for details.
+
+    This metric is emitted when the renderer main thread task is completed or
+    renderer is backgrounded or foregrounded, at most once per second per
+    renderer amortized.
+  </summary>
+</histogram>
+
+<histogram name="RendererScheduler.RendererMainThreadLoad4" units="%">
   <owner>altimin@chromium.org</owner>
   <summary>
     Renderer main thread load (percentage of time spent in tasks), reported in
@@ -98065,7 +98083,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Main thread load when the renderer is foregrounded for longer
              than one minute. Most of loading tasks are expected to complete
              by then."/>
-  <affected-histogram name="RendererScheduler.RendererMainThreadLoad3"/>
+  <affected-histogram name="RendererScheduler.RendererMainThreadLoad4"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="RendererScheduler.TaskCountPerTaskLength"
