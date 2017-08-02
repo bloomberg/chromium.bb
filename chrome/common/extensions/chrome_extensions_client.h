@@ -53,6 +53,7 @@ class ChromeExtensionsClient : public ExtensionsClient {
   std::set<base::FilePath> GetBrowserImagePaths(
       const Extension* extension) override;
   bool ExtensionAPIEnabledInExtensionServiceWorkers() const override;
+  std::string GetUserAgent() const override;
 
   // Get the LazyInstance for ChromeExtensionsClient.
   static ChromeExtensionsClient* GetInstance();

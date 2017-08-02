@@ -10,11 +10,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/feedback/system_logs/chrome_system_logs_fetcher.h"
-#include "chrome/common/chrome_content_client.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/blob_reader.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/common/extensions_client.h"
 #include "net/base/network_change_notifier.h"
 
 using content::BrowserThread;
@@ -33,7 +33,7 @@ void FeedbackService::SendFeedback(content::BrowserContext* browser_context,
                                    const SendFeedbackCallback& callback) {
   feedback_data->set_locale(
       ExtensionsBrowserClient::Get()->GetApplicationLocale());
-  feedback_data->set_user_agent(GetUserAgent());
+  feedback_data->set_user_agent(ExtensionsClient::Get()->GetUserAgent());
 
   if (!feedback_data->attached_file_uuid().empty()) {
     // Self-deleting object.
