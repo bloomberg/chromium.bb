@@ -94,17 +94,6 @@ mojo_test(mojo => {
 }, 'Test code can receive response messages from mock interfaces.');
 
 mojo_test(() => {
-  return loadMojoModules(
-      'module loading test',
-      ['services/service_manager/public/interfaces/interface_provider.mojom']).then(mojo => {
-    let interfaceProvider = mojo.modules[0];
-    assert_equals(interfaceProvider.InterfaceProvider.name,
-                  'service_manager::mojom::InterfaceProvider');
-
-  });
-}, 'Generated mojo bindings can be loaded in tests');
-
-mojo_test(() => {
   return new Promise(resolve => {
     let iframe = document.createElement('iframe');
     let listener = result => {
