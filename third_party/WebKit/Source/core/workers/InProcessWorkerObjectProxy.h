@@ -36,7 +36,6 @@
 #include "core/dom/MessagePort.h"
 #include "core/workers/ThreadedObjectProxyBase.h"
 #include "core/workers/WorkerReportingProxy.h"
-#include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/WeakPtr.h"
@@ -77,7 +76,6 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public ThreadedObjectProxyBase {
                        std::unique_ptr<SourceLocation>,
                        int exception_id) override;
   void DidCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override;
-  void DidEvaluateWorkerScript(bool success) override;
   void WillDestroyWorkerGlobalScope() override;
 
  protected:
@@ -90,31 +88,11 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public ThreadedObjectProxyBase {
  private:
   friend class InProcessWorkerObjectProxyForTest;
 
-  void StartPendingActivityTimer();
-  void CheckPendingActivity(TimerBase*);
-
   // No guarantees about the lifetimes of tasks posted by this proxy wrt the
   // InProcessWorkerMessagingProxy so a weak pointer must be used when posting
   // the tasks.
   CrossThreadWeakPersistent<InProcessWorkerMessagingProxy>
       messaging_proxy_weak_ptr_;
-
-  // Used for checking pending activities on the worker global scope. This is
-  // cancelled when the worker global scope is destroyed.
-  std::unique_ptr<TaskRunnerTimer<InProcessWorkerObjectProxy>> timer_;
-
-  // The default interval duration of the timer. This is usually
-  // kDefaultIntervalInSec but made as a member variable for testing.
-  double default_interval_in_sec_;
-
-  // The next interval duration of the timer. This is initially set to
-  // |m_defaultIntervalInSec| and exponentially increased up to
-  // |m_maxIntervalInSec|.
-  double next_interval_in_sec_;
-
-  // The max interval duration of the timer. This is usually kMaxIntervalInSec
-  // but made as a member variable for testing.
-  double max_interval_in_sec_;
 
   CrossThreadPersistent<WorkerGlobalScope> worker_global_scope_;
 };

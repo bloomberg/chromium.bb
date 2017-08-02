@@ -32,7 +32,6 @@
 
 #include <memory>
 #include "bindings/core/v8/SourceLocation.h"
-#include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
@@ -50,9 +49,6 @@
 #include "public/platform/Platform.h"
 
 namespace blink {
-
-const double kDefaultIntervalInSec = 1;
-const double kMaxIntervalInSec = 30;
 
 std::unique_ptr<InProcessWorkerObjectProxy> InProcessWorkerObjectProxy::Create(
     InProcessWorkerMessagingProxy* messaging_proxy_weak_ptr,
@@ -85,16 +81,6 @@ void InProcessWorkerObjectProxy::ProcessMessageFromWorkerObject(
   MessagePortArray* ports =
       MessagePort::EntanglePorts(*global_scope, std::move(channels));
   global_scope->DispatchEvent(MessageEvent::Create(ports, std::move(message)));
-
-  GetParentFrameTaskRunners()
-      ->Get(TaskType::kUnspecedTimer)
-      ->PostTask(
-          BLINK_FROM_HERE,
-          CrossThreadBind(
-              &InProcessWorkerMessagingProxy::ConfirmMessageFromWorkerObject,
-              messaging_proxy_weak_ptr_));
-
-  StartPendingActivityTimer();
 }
 
 void InProcessWorkerObjectProxy::ProcessUnhandledException(
@@ -122,21 +108,9 @@ void InProcessWorkerObjectProxy::DidCreateWorkerGlobalScope(
     WorkerOrWorkletGlobalScope* global_scope) {
   DCHECK(!worker_global_scope_);
   worker_global_scope_ = ToWorkerGlobalScope(global_scope);
-  // This timer task should be unthrottled in order to prevent GC timing from
-  // being delayed.
-  // TODO(nhiroki): Consider making a special task type for GC.
-  // (https://crbug.com/712504)
-  timer_ = WTF::MakeUnique<TaskRunnerTimer<InProcessWorkerObjectProxy>>(
-      TaskRunnerHelper::Get(TaskType::kUnthrottled, global_scope), this,
-      &InProcessWorkerObjectProxy::CheckPendingActivity);
-}
-
-void InProcessWorkerObjectProxy::DidEvaluateWorkerScript(bool) {
-  StartPendingActivityTimer();
 }
 
 void InProcessWorkerObjectProxy::WillDestroyWorkerGlobalScope() {
-  timer_.reset();
   worker_global_scope_ = nullptr;
 }
 
@@ -144,45 +118,7 @@ InProcessWorkerObjectProxy::InProcessWorkerObjectProxy(
     InProcessWorkerMessagingProxy* messaging_proxy_weak_ptr,
     ParentFrameTaskRunners* parent_frame_task_runners)
     : ThreadedObjectProxyBase(parent_frame_task_runners),
-      messaging_proxy_weak_ptr_(messaging_proxy_weak_ptr),
-      default_interval_in_sec_(kDefaultIntervalInSec),
-      next_interval_in_sec_(kDefaultIntervalInSec),
-      max_interval_in_sec_(kMaxIntervalInSec) {}
-
-void InProcessWorkerObjectProxy::StartPendingActivityTimer() {
-  if (timer_->IsActive()) {
-    // Reset the next interval duration to check new activity state timely.
-    // For example, a long-running activity can be cancelled by a message
-    // event.
-    next_interval_in_sec_ = kDefaultIntervalInSec;
-    return;
-  }
-  timer_->StartOneShot(next_interval_in_sec_, BLINK_FROM_HERE);
-  next_interval_in_sec_ =
-      std::min(next_interval_in_sec_ * 1.5, max_interval_in_sec_);
-}
-
-void InProcessWorkerObjectProxy::CheckPendingActivity(TimerBase*) {
-  bool has_pending_activity = V8GCController::HasPendingActivity(
-      worker_global_scope_->GetThread()->GetIsolate(), worker_global_scope_);
-  if (!has_pending_activity) {
-    // Report all activities are done.
-    GetParentFrameTaskRunners()
-        ->Get(TaskType::kUnspecedTimer)
-        ->PostTask(BLINK_FROM_HERE,
-                   CrossThreadBind(
-                       &InProcessWorkerMessagingProxy::PendingActivityFinished,
-                       messaging_proxy_weak_ptr_));
-
-    // Don't schedule a timer. It will be started again when a message event
-    // is dispatched.
-    next_interval_in_sec_ = default_interval_in_sec_;
-    return;
-  }
-
-  // There is still a pending activity. Check it later.
-  StartPendingActivityTimer();
-}
+      messaging_proxy_weak_ptr_(messaging_proxy_weak_ptr) {}
 
 CrossThreadWeakPersistent<ThreadedMessagingProxyBase>
 InProcessWorkerObjectProxy::MessagingProxyWeakPtr() {

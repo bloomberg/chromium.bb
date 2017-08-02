@@ -40,10 +40,6 @@ DOMTimer* DOMTimerCoordinator::RemoveTimeoutByID(int timeout_id) {
   return removed_timer;
 }
 
-bool DOMTimerCoordinator::HasInstalledTimeout() const {
-  return !timers_.IsEmpty();
-}
-
 DEFINE_TRACE(DOMTimerCoordinator) {
   visitor->Trace(timers_);
 }
