@@ -892,10 +892,13 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         for (String methodName : methodNames) {
             PaymentDetailsModifier modifier = mModifiers.get(methodName);
 
-            Set<Integer> targetCardTypes =
-                    AutofillPaymentApp.convertBasicCardToTypes(modifier.methodData);
-            targetCardTypes.remove(CardType.UNKNOWN);
-            if (targetCardTypes.size() > 0 && !targetCardTypes.contains(cardType)) continue;
+            if (AutofillPaymentApp.isBasicCardTypeSpecified(modifier.methodData)) {
+                Set<Integer> targetCardTypes =
+                        AutofillPaymentApp.convertBasicCardToTypes(modifier.methodData);
+                targetCardTypes.remove(CardType.UNKNOWN);
+                assert targetCardTypes.size() > 0;
+                if (!targetCardTypes.contains(cardType)) continue;
+            }
 
             Set<String> targetCardNetworks =
                     AutofillPaymentApp.convertBasicCardToNetworks(modifier.methodData);
