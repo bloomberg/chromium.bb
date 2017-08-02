@@ -60,8 +60,8 @@ struct CodecInfo {
     HISTOGRAM_HEVC,
     HISTOGRAM_AC3,
     HISTOGRAM_DOLBYVISION,
-    HISTOGRAM_MAX =
-        HISTOGRAM_DOLBYVISION  // Must be equal to largest logged entry.
+    HISTOGRAM_FLAC,
+    HISTOGRAM_MAX = HISTOGRAM_FLAC  // Must be equal to largest logged entry.
   };
 
   const char* pattern;
@@ -104,6 +104,10 @@ static StreamParser* BuildWebMParser(const std::vector<std::string>& codecs,
 }
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
+bool CheckIfMseFlacInIsobmffEnabled(const std::string& codec_id,
+                                    MediaLog* media_log) {
+  return base::FeatureList::IsEnabled(kMseFlacInIsobmff);
+}
 
 // AAC Object Type IDs that Chrome supports.
 static const int kAACLCObjectType = 2;
@@ -178,6 +182,10 @@ static const CodecInfo kMPEG4AACCodecInfo = { "mp4a.40.*", CodecInfo::AUDIO,
 static const CodecInfo kMPEG2AACLCCodecInfo = { "mp4a.67", CodecInfo::AUDIO,
                                                 NULL,
                                                 CodecInfo::HISTOGRAM_MPEG2AAC };
+static const CodecInfo kMPEG4FLACCodecInfo = {"flac", CodecInfo::AUDIO,
+                                              &CheckIfMseFlacInIsobmffEnabled,
+                                              CodecInfo::HISTOGRAM_FLAC};
+
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
 // The 'ac-3' and 'ec-3' are mime codec ids for AC3 and EAC3 according to
 // http://www.mp4ra.org/codecs.html
@@ -199,22 +207,29 @@ static const CodecInfo kEAC3CodecInfo3 = {"mp4a.A6", CodecInfo::AUDIO, NULL,
                                           CodecInfo::HISTOGRAM_EAC3};
 #endif
 
-static const CodecInfo* const kVideoMP4Codecs[] = {
-    &kH264AVC1CodecInfo,         &kH264AVC3CodecInfo,
+static const CodecInfo* const kVideoMP4Codecs[] = {&kH264AVC1CodecInfo,
+                                                   &kH264AVC3CodecInfo,
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-    &kHEVCHEV1CodecInfo,         &kHEVCHVC1CodecInfo,
+                                                   &kHEVCHEV1CodecInfo,
+                                                   &kHEVCHVC1CodecInfo,
 #endif
 #if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
-    &kDolbyVisionAVCCodecInfo1,  &kDolbyVisionAVCCodecInfo2,
+                                                   &kDolbyVisionAVCCodecInfo1,
+                                                   &kDolbyVisionAVCCodecInfo2,
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-    &kDolbyVisionHEVCCodecInfo1, &kDolbyVisionHEVCCodecInfo2,
+                                                   &kDolbyVisionHEVCCodecInfo1,
+                                                   &kDolbyVisionHEVCCodecInfo2,
 #endif
 #endif
-    &kMPEG4VP09CodecInfo,        &kMPEG4AACCodecInfo,
-    &kMPEG2AACLCCodecInfo,       NULL};
+                                                   &kMPEG4VP09CodecInfo,
+                                                   &kMPEG4AACCodecInfo,
+                                                   &kMPEG2AACLCCodecInfo,
+                                                   &kMPEG4FLACCodecInfo,
+                                                   NULL};
 
 static const CodecInfo* const kAudioMP4Codecs[] = {&kMPEG4AACCodecInfo,
                                                    &kMPEG2AACLCCodecInfo,
+                                                   &kMPEG4FLACCodecInfo,
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
                                                    &kAC3CodecInfo1,
                                                    &kAC3CodecInfo2,
@@ -228,8 +243,16 @@ static const CodecInfo* const kAudioMP4Codecs[] = {&kMPEG4AACCodecInfo,
 static StreamParser* BuildMP4Parser(const std::vector<std::string>& codecs,
                                     MediaLog* media_log) {
   std::set<int> audio_object_types;
-
   bool has_sbr = false;
+
+  // The draft version 0.0.4 FLAC-in-ISO spec
+  // (https://github.com/xiph/flac/blob/master/doc/isoflac.txt) does not define
+  // any encapsulation using MP4AudioSampleEntry with objectTypeIndication.
+  // Rather, it uses a FLAC-specific "fLaC" codingname in the sample entry along
+  // with a "dfLa" FLACSpecificBox. We still need to tell our parser to
+  // conditionally expect a FLAC stream, hence |has_flac|.
+  bool has_flac = false;
+
   for (size_t i = 0; i < codecs.size(); ++i) {
     std::string codec_id = codecs[i];
     if (base::MatchPattern(codec_id, kMPEG2AACLCCodecInfo.pattern)) {
@@ -245,6 +268,8 @@ static StreamParser* BuildMP4Parser(const std::vector<std::string>& codecs,
         has_sbr = true;
         break;
       }
+    } else if (base::MatchPattern(codec_id, kMPEG4FLACCodecInfo.pattern)) {
+      has_flac = true;
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
     } else if (base::MatchPattern(codec_id, kAC3CodecInfo1.pattern) ||
                base::MatchPattern(codec_id, kAC3CodecInfo2.pattern) ||
@@ -258,7 +283,7 @@ static StreamParser* BuildMP4Parser(const std::vector<std::string>& codecs,
     }
   }
 
-  return new mp4::MP4StreamParser(audio_object_types, has_sbr);
+  return new mp4::MP4StreamParser(audio_object_types, has_sbr, has_flac);
 }
 
 static const CodecInfo kMP3CodecInfo = { NULL, CodecInfo::AUDIO, NULL,

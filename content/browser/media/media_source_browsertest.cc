@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/media/media_browsertest.h"
 #include "media/base/media_switches.h"
@@ -24,6 +25,8 @@ const char kWebMVideoOnly[] = "video/webm; codecs=\"vp8\"";
 const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
+const char kMp4FlacAudioOnly[] = "audio/mp4; codecs=\"flac\"";
+
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 const char kMp2tAudioVideo[] = "video/mp2t; codecs=\"mp4a.40.2, avc1.42E01E\"";
 #endif
@@ -45,7 +48,11 @@ class MediaSourceTest : public content::MediaBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kIgnoreAutoplayRestrictionsForTests);
+    scoped_feature_list_.InitAndDisableFeature(media::kMseFlacInIsobmff);
   }
+
+ protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_VideoAudio_WebM) {
@@ -105,6 +112,12 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Video_WEBM_Audio_MP4) {
   query_params.push_back(std::make_pair("audioFormat", "CLEAR_MP4"));
   RunMediaTestPage("mse_different_containers.html", query_params, kEnded, true);
 }
+
+IN_PROC_BROWSER_TEST_F(MediaSourceTest,
+                       Playback_AudioOnly_FLAC_MP4_Unsupported) {
+  // The feature is disabled by test setup, so verify playback failure.
+  TestSimplePlayback("bear-flac_frag.mp4", kMp4FlacAudioOnly, kFailed);
+}
 #endif
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -114,4 +127,23 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_AudioVideo_Mp2t) {
 }
 #endif
 #endif
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+class MediaSourceFlacInIsobmffTest : public content::MediaSourceTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kIgnoreAutoplayRestrictionsForTests);
+
+    // Enable MSE FLAC-in-MP4 feature.
+    scoped_feature_list_.InitAndEnableFeature(media::kMseFlacInIsobmff);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(MediaSourceFlacInIsobmffTest,
+                       Playback_AudioOnly_FLAC_MP4_Supported) {
+  // The feature is enabled by test setup, so verify playback success.
+  TestSimplePlayback("bear-flac_frag.mp4", kMp4FlacAudioOnly, kEnded);
+}
+#endif
+
 }  // namespace content

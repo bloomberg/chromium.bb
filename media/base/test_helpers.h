@@ -224,6 +224,17 @@ MATCHER_P2(CodecName, stream_type_string, codec_string, "") {
          CONTAINS_STRING(arg, std::string(codec_string));
 }
 
+MATCHER_P2(FlacAudioSampleRateOverriddenByStreaminfo,
+           original_rate_string,
+           streaminfo_rate_string,
+           "") {
+  return CONTAINS_STRING(
+      arg, "FLAC AudioSampleEntry sample rate " +
+               std::string(original_rate_string) + " overridden by rate " +
+               std::string(streaminfo_rate_string) +
+               " from FLACSpecificBox's STREAMINFO metadata");
+}
+
 MATCHER_P2(InitSegmentMismatchesMimeType, stream_type, codec_name, "") {
   return CONTAINS_STRING(arg, std::string(stream_type) + " stream codec " +
                                   std::string(codec_name) +

@@ -34,6 +34,7 @@ namespace mp4 {
 namespace {
 
 const size_t kKeyIdSize = 16;
+const size_t kFlacMetadataBlockStreaminfoSize = 34;
 
 }  // namespace
 
@@ -878,6 +879,73 @@ bool ElementaryStreamDescriptor::Parse(BoxReader* reader) {
   return true;
 }
 
+FlacSpecificBox::FlacSpecificBox()
+    : sample_rate(0), channel_count(0), bits_per_sample(0) {}
+
+FlacSpecificBox::FlacSpecificBox(const FlacSpecificBox& other) = default;
+
+FlacSpecificBox::~FlacSpecificBox() {}
+
+FourCC FlacSpecificBox::BoxType() const {
+  return FOURCC_DFLA;
+}
+
+bool FlacSpecificBox::Parse(BoxReader* reader) {
+  RCHECK(reader->ReadFullBoxHeader());
+  RCHECK_MEDIA_LOGGED(reader->version() == 0, reader->media_log(),
+                      "Only version 0 FLACSpecificBox (dfLa) is supported.");
+  RCHECK_MEDIA_LOGGED(reader->flags() == 0, reader->media_log(),
+                      "Only 0 flags in FLACSpecificBox (dfLa) is supported.");
+
+  // From https://github.com/xiph/flac/blob/master/doc/isoflac.txt, a
+  // FLACMetadataBlock is formatted as:
+  //   unsigned int(1) LastMetadataBlockFlag;
+  //   unsigned int(7) BlockType;
+  //   unsigned int(24) Length;
+  //   unsigned int(8)  BlockData[Length];
+  // We only care about the first block, which must exist, and must be
+  // STREAMINFO.
+  uint32_t metadata_framing;
+  RCHECK_MEDIA_LOGGED(reader->Read4(&metadata_framing), reader->media_log(),
+                      "Missing STREAMINFO block in FLACSpecificBox (dfLa).");
+  uint8_t block_type = (metadata_framing >> 24) & 0x7f;
+  RCHECK_MEDIA_LOGGED(block_type == 0, reader->media_log(),
+                      "FLACSpecificBox metadata must begin with STREAMINFO.");
+  uint32_t block_length = metadata_framing & 0x00ffffff;
+  RCHECK_MEDIA_LOGGED(
+      block_length == kFlacMetadataBlockStreaminfoSize, reader->media_log(),
+      "STREAMINFO block in FLACSpecificBox (dfLa) has incorrect size.");
+
+  // See https://xiph.org/flac/format.html#metadata_block_streaminfo for
+  // STREAMINFO structure format and semantics. We only care about
+  // |sample_rate|, |channel_count|,  and |bits_per_sample|,
+  // though we also copy the STREAMINFO block for use later in audio decoder
+  // configuration. See also the FLAC AudioSampleEntry logic: the |sample_rate|
+  // here is used instead of that in the AudioSampleEntry per
+  // https://github.com/xiph/flac/blob/master/doc/isoflac.txt.
+  RCHECK(reader->ReadVec(&stream_info, kFlacMetadataBlockStreaminfoSize));
+  // Bytes 0-9 (min/max block and frame sizes) are ignored here.
+  sample_rate = stream_info[10] << 12;
+  sample_rate += stream_info[11] << 4;
+  sample_rate += (stream_info[12] >> 4) & 0xf;
+  RCHECK_MEDIA_LOGGED(sample_rate > 0, reader->media_log(),
+                      "STREAMINFO block in FLACSpecificBox (dfLa) must have "
+                      "nonzero sample rate.");
+
+  channel_count = (stream_info[12] >> 1) & 0x7;
+  channel_count++;
+
+  bits_per_sample = (stream_info[12] & 1) << 4;
+  bits_per_sample += (stream_info[13] >> 4) & 0xf;
+  bits_per_sample++;
+
+  // The lower 4 bits of byte 13 and all of bytes 14-17 (number of samples in
+  // stream) are ignored here.
+  // Bytes 18-33 (hash of the unencoded audio data) are ignored here.
+
+  return true;
+}
+
 AudioSampleEntry::AudioSampleEntry()
     : format(FOURCC_NULL),
       data_reference_index(0),
@@ -915,6 +983,41 @@ bool AudioSampleEntry::Parse(BoxReader* reader) {
       if (!reader->ReadChild(&sinf))
         return false;
     }
+  }
+
+  // Read the FLACSpecificBox, even if CENC is signalled.
+  if (format == FOURCC_FLAC ||
+      (format == FOURCC_ENCA && sinf.format.format == FOURCC_FLAC)) {
+    RCHECK_MEDIA_LOGGED(base::FeatureList::IsEnabled(kMseFlacInIsobmff),
+                        reader->media_log(),
+                        "MSE support for FLAC in MP4 is not enabled.");
+
+    RCHECK_MEDIA_LOGGED(reader->ReadChild(&dfla), reader->media_log(),
+                        "Failure parsing FLACSpecificBox (dfLa)");
+
+    // AudioSampleEntry is constrained to max 65535Hz. Instead, use the sample
+    // rate from the FlacSpecificBox per
+    // https://github.com/xiph/flac/blob/master/doc/isoflac.txt
+    if (samplerate != dfla.sample_rate) {
+      MEDIA_LOG(INFO, reader->media_log())
+          << "FLAC AudioSampleEntry sample rate " << samplerate
+          << " overridden by rate " << dfla.sample_rate
+          << " from FLACSpecificBox's STREAMINFO metadata";
+      samplerate = dfla.sample_rate;
+    }
+
+    RCHECK_MEDIA_LOGGED(channelcount == dfla.channel_count, reader->media_log(),
+                        "FLAC AudioSampleEntry channel count mismatches "
+                        "FLACSpecificBox STREAMINFO channel count");
+
+    RCHECK_MEDIA_LOGGED(samplesize == dfla.bits_per_sample, reader->media_log(),
+                        "FLAC AudioSampleEntry sample size mismatches "
+                        "FLACSpecificBox STREAMINFO sample size");
+  } else {
+    RCHECK_MEDIA_LOGGED(!reader->HasChild(&dfla), reader->media_log(),
+                        "FLACSpecificBox (dfLa) must only be used with FLAC "
+                        "AudioSampleEntry or CENC AudioSampleEntry wrapping "
+                        "FLAC");
   }
 
   // ESDS is not valid in case of EAC3.
