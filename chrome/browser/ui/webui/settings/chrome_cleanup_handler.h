@@ -60,6 +60,14 @@ class ChromeCleanupHandler
   // software from the user's computer.
   void HandleStartCleanup(const base::ListValue* args);
 
+  // Callback for the "showDetails" message that notifies Chrome about whether
+  // the user expanded or closed the details section of the page.
+  void HandleNotifyShowDetails(const base::ListValue* args);
+
+  // Callback for the "chromeCleanupLearnMore" message that notifies Chrome that
+  // the "learn more" link was clicked.
+  void HandleNotifyChromeCleanupLearnMoreClicked(const base::ListValue* args);
+
   // Raw pointer to a singleton. Must outlive this object.
   safe_browsing::ChromeCleanerController* controller_;
 

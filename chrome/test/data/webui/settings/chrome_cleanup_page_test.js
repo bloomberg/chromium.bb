@@ -11,12 +11,14 @@ class TestChromeCleanupProxy extends TestBrowserProxy {
       'restartComputer',
       'setLogsUploadPermission',
       'startCleanup',
+      'notifyShowDetails',
+      'notifyLearnMoreClicked',
     ]);
   }
 
   /** @override */
-  dismissCleanupPage() {
-    this.methodCalled('dismissCleanupPage');
+  dismissCleanupPage(source) {
+    this.methodCalled('dismissCleanupPage', source);
   }
 
   /** @override */
@@ -37,6 +39,16 @@ class TestChromeCleanupProxy extends TestBrowserProxy {
   /** @override */
   startCleanup(logsUploadEnabled) {
     this.methodCalled('startCleanup', logsUploadEnabled);
+  }
+
+  /** @override */
+  notifyShowDetails(enabled) {
+    this.methodCalled('notifyShowDetails', enabled);
+  }
+
+  /** @override */
+  notifyLearnMoreClicked() {
+    this.methodCalled('notifyLearnMoreClicked');
   }
 }
 
