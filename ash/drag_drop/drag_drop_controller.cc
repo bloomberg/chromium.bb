@@ -438,6 +438,7 @@ void DragDropController::DragUpdate(aura::Window* target,
       e.set_location_f(event.location_f());
       e.set_root_location_f(event.root_location_f());
       e.set_flags(event.flags());
+      ui::Event::DispatcherApi(&e).set_target(target);
       delegate->OnDragEntered(e);
     }
   } else {
@@ -449,6 +450,7 @@ void DragDropController::DragUpdate(aura::Window* target,
       e.set_location_f(event.location_f());
       e.set_root_location_f(event.root_location_f());
       e.set_flags(event.flags());
+      ui::Event::DispatcherApi(&e).set_target(target);
       op = delegate->OnDragUpdated(e);
       gfx::NativeCursor cursor = ui::CursorType::kNoDrop;
       if (op & ui::DragDropTypes::DRAG_COPY)
@@ -491,6 +493,7 @@ void DragDropController::Drop(aura::Window* target,
     e.set_location_f(event.location_f());
     e.set_root_location_f(event.root_location_f());
     e.set_flags(event.flags());
+    ui::Event::DispatcherApi(&e).set_target(target);
     drag_operation_ = delegate->OnPerformDrop(e);
     if (drag_operation_ == 0)
       StartCanceledAnimation(kCancelAnimationDuration);
