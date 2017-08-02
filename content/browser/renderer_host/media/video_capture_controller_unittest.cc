@@ -266,17 +266,17 @@ TEST_F(VideoCaptureControllerTest, AddAndRemoveClients) {
   controller_->StopSession(200);  // Session 200 does not exist anymore
   // Clients in controller: [B/2]
   ASSERT_EQ(1, controller_->GetClientCount())
-      << "Stopping non-existant session 200 should be a no-op.";
+      << "Stopping non-existent session 200 should be a no-op.";
   controller_->StopSession(256);  // Session 256 never existed.
   // Clients in controller: [B/2]
   ASSERT_EQ(1, controller_->GetClientCount())
-      << "Stopping non-existant session 256 should be a no-op.";
+      << "Stopping non-existent session 256 should be a no-op.";
   ASSERT_EQ(static_cast<int>(kInvalidMediaCaptureSessionId),
             controller_->RemoveClient(client_a_route_1, client_a_.get()))
       << "Removing already-removed client A/1 should fail.";
   // Clients in controller: [B/2]
   ASSERT_EQ(1, controller_->GetClientCount())
-      << "Removing non-existant session 200 should be a no-op.";
+      << "Removing non-existent session 200 should be a no-op.";
   ASSERT_EQ(400, controller_->RemoveClient(client_b_route_2, client_b_.get()))
       << "Removing client B/2 should return its session_id.";
   // Clients in controller: []

@@ -79,7 +79,7 @@ void MediaPlayerRenderer::CreateMediaPlayer(
   // Force the initialization of |media_resource_getter_| first. If it fails,
   // the RenderFrameHost may have been destroyed already.
   if (!GetMediaResourceGetter()) {
-    DLOG(ERROR) << "Unable to retreive MediaResourceGetter";
+    DLOG(ERROR) << "Unable to retrieve MediaResourceGetter";
     init_cb.Run(media::PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
   }
