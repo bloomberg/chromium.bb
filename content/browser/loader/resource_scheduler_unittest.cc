@@ -777,7 +777,8 @@ TEST_F(ResourceSchedulerTest, LimitedNumberOfDelayableRequestsInFlight) {
       NewRequest("http://host/high", net::HIGHEST));
   EXPECT_TRUE(high->started());
 
-  const int kMaxNumDelayableRequestsPerClient = 10;  // Should match the .cc.
+  const int kDefaultMaxNumDelayableRequestsPerClient =
+      10;  // Should match the .cc.
   const int kMaxNumDelayableRequestsPerHost = 6;
   std::vector<std::unique_ptr<TestRequest>> lows_singlehost;
   // Queue up to the per-host limit (we subtract the current high-pri request).
@@ -804,8 +805,8 @@ TEST_F(ResourceSchedulerTest, LimitedNumberOfDelayableRequestsInFlight) {
   EXPECT_TRUE(last_singlehost->started());
 
   // Queue more requests from different hosts until we reach the total limit.
-  int expected_slots_left =
-      kMaxNumDelayableRequestsPerClient - kMaxNumDelayableRequestsPerHost;
+  int expected_slots_left = kDefaultMaxNumDelayableRequestsPerClient -
+                            kMaxNumDelayableRequestsPerHost;
   EXPECT_GT(expected_slots_left, 0);
   std::vector<std::unique_ptr<TestRequest>> lows_different_host;
   base::RunLoop().RunUntilIdle();
@@ -852,9 +853,10 @@ TEST_F(ResourceSchedulerTest, RaisePriorityInQueue) {
   EXPECT_FALSE(request->started());
   EXPECT_FALSE(idle->started());
 
-  const int kMaxNumDelayableRequestsPerClient = 10;  // Should match the .cc.
+  const int kDefaultMaxNumDelayableRequestsPerClient =
+      10;  // Should match the .cc.
   std::vector<std::unique_ptr<TestRequest>> lows;
-  for (int i = 0; i < kMaxNumDelayableRequestsPerClient - 1; ++i) {
+  for (int i = 0; i < kDefaultMaxNumDelayableRequestsPerClient - 1; ++i) {
     string url = "http://host/low" + base::IntToString(i);
     lows.push_back(NewRequest(url.c_str(), net::LOWEST));
   }
@@ -884,10 +886,11 @@ TEST_F(ResourceSchedulerTest, LowerPriority) {
   EXPECT_FALSE(request->started());
   EXPECT_FALSE(idle->started());
 
-  const int kMaxNumDelayableRequestsPerClient = 10;  // Should match the .cc.
+  const int kDefaultMaxNumDelayableRequestsPerClient =
+      10;  // Should match the .cc.
   // 2 fewer filler requests: 1 for the "low" dummy at the start, and 1 for the
   // one at the end, which will be tested.
-  const int kNumFillerRequests = kMaxNumDelayableRequestsPerClient - 2;
+  const int kNumFillerRequests = kDefaultMaxNumDelayableRequestsPerClient - 2;
   std::vector<std::unique_ptr<TestRequest>> lows;
   for (int i = 0; i < kNumFillerRequests; ++i) {
     string url = "http://host" + base::IntToString(i) + "/low";
@@ -914,9 +917,10 @@ TEST_F(ResourceSchedulerTest, ReprioritizedRequestGoesToBackOfQueue) {
   EXPECT_FALSE(request->started());
   EXPECT_FALSE(idle->started());
 
-  const int kMaxNumDelayableRequestsPerClient = 10;  // Should match the .cc.
+  const int kDefaultMaxNumDelayableRequestsPerClient =
+      10;  // Should match the .cc.
   std::vector<std::unique_ptr<TestRequest>> lows;
-  for (int i = 0; i < kMaxNumDelayableRequestsPerClient; ++i) {
+  for (int i = 0; i < kDefaultMaxNumDelayableRequestsPerClient; ++i) {
     string url = "http://host/low" + base::IntToString(i);
     lows.push_back(NewRequest(url.c_str(), net::LOWEST));
   }
@@ -943,9 +947,10 @@ TEST_F(ResourceSchedulerTest, HigherIntraPriorityGoesToFrontOfQueue) {
       NewRequest("http://host/high", net::HIGHEST));
   std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
 
-  const int kMaxNumDelayableRequestsPerClient = 10;  // Should match the .cc.
+  const int kDefaultMaxNumDelayableRequestsPerClient =
+      10;  // Should match the .cc.
   std::vector<std::unique_ptr<TestRequest>> lows;
-  for (int i = 0; i < kMaxNumDelayableRequestsPerClient; ++i) {
+  for (int i = 0; i < kDefaultMaxNumDelayableRequestsPerClient; ++i) {
     string url = "http://host/low" + base::IntToString(i);
     lows.push_back(NewRequest(url.c_str(), net::IDLE));
   }
@@ -1028,13 +1033,14 @@ TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
   InitializeScheduler();
 
   scheduler()->OnWillInsertBody(kChildId, kRouteId);
-  const int kMaxNumDelayableRequestsPerClient = 10;  // Should match the .cc.
+  const int kDefaultMaxNumDelayableRequestsPerClient =
+      10;  // Should match the .cc.
 
   std::unique_ptr<TestRequest> low1_spdy(
       NewRequest("http://spdyhost1:8080/low", net::LOWEST));
   // Cancel a request after we learn the server supports SPDY.
   std::vector<std::unique_ptr<TestRequest>> lows;
-  for (int i = 0; i < kMaxNumDelayableRequestsPerClient - 1; ++i) {
+  for (int i = 0; i < kDefaultMaxNumDelayableRequestsPerClient - 1; ++i) {
     string url = "http://host" + base::IntToString(i) + "/low";
     lows.push_back(NewRequest(url.c_str(), net::LOWEST));
   }
@@ -1067,13 +1073,14 @@ TEST_F(ResourceSchedulerTest, NewDelayableSpdyHostInDelayableRequests) {
   InitializeScheduler();
 
   scheduler()->OnWillInsertBody(kChildId, kRouteId);
-  const int kMaxNumDelayableRequestsPerClient = 10;  // Should match the .cc.
+  const int kDefaultMaxNumDelayableRequestsPerClient =
+      10;  // Should match the .cc.
 
   std::unique_ptr<TestRequest> low1_spdy(
       NewRequest("http://spdyhost1:8080/low", net::LOWEST));
   // Cancel a request after we learn the server supports SPDY.
   std::vector<std::unique_ptr<TestRequest>> lows;
-  for (int i = 0; i < kMaxNumDelayableRequestsPerClient - 1; ++i) {
+  for (int i = 0; i < kDefaultMaxNumDelayableRequestsPerClient - 1; ++i) {
     string url = "http://host" + base::IntToString(i) + "/low";
     lows.push_back(NewRequest(url.c_str(), net::LOWEST));
   }
@@ -1129,9 +1136,9 @@ TEST_F(ResourceSchedulerTest, RequestStartedAfterClientDeletedManyDelayable) {
                               &network_quality_estimator_);
   std::unique_ptr<TestRequest> high(NewRequestWithChildAndRoute(
       "http://host/high", net::HIGHEST, kChildId2, kRouteId2));
-  const int kMaxNumDelayableRequestsPerClient = 10;
+  const int kDefaultMaxNumDelayableRequestsPerClient = 10;
   std::vector<std::unique_ptr<TestRequest>> delayable_requests;
-  for (int i = 0; i < kMaxNumDelayableRequestsPerClient + 1; ++i) {
+  for (int i = 0; i < kDefaultMaxNumDelayableRequestsPerClient + 1; ++i) {
     delayable_requests.push_back(NewRequestWithChildAndRoute(
         "http://host/lowest", net::LOWEST, kChildId2, kRouteId2));
   }
@@ -1187,12 +1194,12 @@ TEST_F(ResourceSchedulerTest, RequestLimitOverrideOutsideECTRange) {
     EXPECT_TRUE(high->started());
 
     // Should be in sync with resource_scheduler.cc.
-    const int kMaxNumDelayableRequestsPerClient = 10;
+    const int kDefaultMaxNumDelayableRequestsPerClient = 10;
 
     std::vector<std::unique_ptr<TestRequest>> lows_singlehost;
     // Queue up to the maximum limit. Use different host names to prevent the
     // per host limit from kicking in.
-    for (int i = 0; i < kMaxNumDelayableRequestsPerClient; ++i) {
+    for (int i = 0; i < kDefaultMaxNumDelayableRequestsPerClient; ++i) {
       // Keep unique hostnames to prevent the per host limit from kicking in.
       std::string url = "http://host" + base::IntToString(i) + "/low";
       lows_singlehost.push_back(NewRequest(url.c_str(), net::LOWEST));
@@ -1234,12 +1241,12 @@ TEST_F(ResourceSchedulerTest, RequestLimitOverrideConfigOutsideBDPRange) {
   EXPECT_TRUE(high->started());
 
   // Should be in sync with resource_scheduler.cc.
-  const int kMaxNumDelayableRequestsPerClient = 10;
+  const int kDefaultMaxNumDelayableRequestsPerClient = 10;
 
   std::vector<std::unique_ptr<TestRequest>> lows_singlehost;
   // Queue up to the maximum limit. Use different host names to prevent the
   // per host limit from kicking in.
-  for (int i = 0; i < kMaxNumDelayableRequestsPerClient; ++i) {
+  for (int i = 0; i < kDefaultMaxNumDelayableRequestsPerClient; ++i) {
     // Keep unique hostnames to prevent the per host limit from kicking in.
     std::string url = "http://host" + base::IntToString(i) + "/low";
     lows_singlehost.push_back(NewRequest(url.c_str(), net::LOWEST));
