@@ -11,9 +11,6 @@ function test()
 {
     let scope = "http://127.0.0.1:8000/inspector/service-workers/resources/network-fetch-worker-blocked-scope";
 
-    // Need to enable networkInWorkers experiment for off-main-thread-fetch virtual test.
-    Runtime.experiments.enableForTest("networkInWorkers");
-
     InspectorTest.recordNetwork();
     SDK.multitargetNetworkManager.setBlockingEnabled(true);
     SDK.multitargetNetworkManager.setBlockedPatterns([{url: 'resources/resource.php', enabled: true}]);

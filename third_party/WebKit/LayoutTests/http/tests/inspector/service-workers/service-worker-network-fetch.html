@@ -11,9 +11,6 @@ function test()
 {
     let scope = "http://127.0.0.1:8000/inspector/service-workers/resources/network-fetch-worker-scope";
 
-    // Need to enable networkInWorkers experiment for off-main-thread-fetch virtual test.
-    Runtime.experiments.enableForTest("networkInWorkers");
-
     InspectorTest.recordNetwork();
 
     InspectorTest.makeFetchInServiceWorker(scope, '../../network/resources/resource.php', {}, fetchCallback);
