@@ -50,9 +50,10 @@ bool IsHandledCriticalExtension(const ParsedExtension& extension) {
     //   be able to interpret this extension (including the optional
     //   qualifier), or MUST reject the certificate.
     std::vector<der::Input> unused_policies;
+    CertErrors unused_errors;
     return ParseCertificatePoliciesExtension(
         extension.value, true /*fail_parsing_unknown_qualifier_oids*/,
-        &unused_policies);
+        &unused_policies, &unused_errors);
 
     // TODO(eroman): Give a better error message.
   }
