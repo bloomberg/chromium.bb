@@ -28,11 +28,11 @@ typedef struct txfm_param {
   int lossless;
   int bd;
 #if CONFIG_MRC_TX || CONFIG_LGT
+  int is_inter;
   int stride;
   uint8_t *dst;
 #endif  // CONFIG_MRC_TX || CONFIG_LGT
 #if CONFIG_LGT
-  int is_inter;
   int mode;
 #endif
 // for inverse transforms only

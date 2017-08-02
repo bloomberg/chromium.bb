@@ -2451,7 +2451,10 @@ static int skip_txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs,
 #if CONFIG_MRC_TX
   // MRC_DCT only implemented for TX_32X32 so only include this tx in
   // the search for TX_32X32
-  if (tx_type == MRC_DCT && tx_size != TX_32X32) return 1;
+  if (tx_type == MRC_DCT &&
+      ((is_inter && !USE_MRC_INTER) || (!is_inter && !USE_MRC_INTRA) ||
+       tx_size != TX_32X32))
+    return 1;
 #endif  // CONFIG_MRC_TX
   if (mbmi->ref_mv_idx > 0 && tx_type != DCT_DCT) return 1;
   if (FIXED_TX_TYPE && tx_type != get_default_tx_type(0, xd, 0, tx_size))
@@ -5224,7 +5227,10 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
 #if CONFIG_MRC_TX
     // MRC_DCT only implemented for TX_32X32 so only include this tx in
     // the search for TX_32X32
-    if (tx_type == MRC_DCT && max_tx_size != TX_32X32) continue;
+    if (tx_type == MRC_DCT &&
+        (max_tx_size != TX_32X32 || (is_inter && !USE_MRC_INTER) ||
+         (!is_inter && !USE_MRC_INTRA)))
+      continue;
 #endif  // CONFIG_MRC_TX
 #if CONFIG_EXT_TX
     if (is_inter) {

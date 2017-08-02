@@ -818,6 +818,11 @@ static INLINE int supertx_enabled(const MB_MODE_INFO *mbmi) {
 static INLINE int is_rect_tx(TX_SIZE tx_size) { return tx_size >= TX_SIZES; }
 #endif  // CONFIG_RECT_TX
 
+#if CONFIG_MRC_TX
+#define USE_MRC_INTRA 0
+#define USE_MRC_INTER 1
+#endif  // CONFIG_MRC_TX
+
 #if CONFIG_EXT_TX
 #define ALLOW_INTRA_EXT_TX 1
 
@@ -906,8 +911,12 @@ static INLINE TxSetType get_ext_tx_set_type(TX_SIZE tx_size, BLOCK_SIZE bs,
   if (use_reduced_set)
     return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DTT4_IDTX;
 #if CONFIG_MRC_TX
-  if (tx_size == TX_32X32)
-    return is_inter ? EXT_TX_SET_MRC_DCT_IDTX : EXT_TX_SET_MRC_DCT;
+  if (tx_size == TX_32X32) {
+    if (is_inter && USE_MRC_INTER)
+      return EXT_TX_SET_MRC_DCT_IDTX;
+    else if (!is_inter && USE_MRC_INTRA)
+      return EXT_TX_SET_MRC_DCT;
+  }
 #endif  // CONFIG_MRC_TX
   if (tx_size_sqr_up == TX_32X32)
     return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DCTONLY;
@@ -1275,6 +1284,9 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
 #if CONFIG_EXT_TX
 #if CONFIG_MRC_TX
   if (mbmi->tx_type == MRC_DCT) {
+    assert(((is_inter_block(mbmi) && USE_MRC_INTER) ||
+            (!is_inter_block(mbmi) && USE_MRC_INTRA)) &&
+           "INVALID BLOCK TYPE FOR MRC_DCT");
     if (plane_type == PLANE_TYPE_Y) {
       assert(tx_size == TX_32X32);
       return mbmi->tx_type;

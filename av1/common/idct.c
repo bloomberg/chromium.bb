@@ -2237,6 +2237,7 @@ void av1_inverse_transform_block(const MACROBLOCKD *xd,
 #if CONFIG_LGT || CONFIG_MRC_TX
   txfm_param.dst = dst;
   txfm_param.stride = stride;
+  txfm_param.is_inter = is_inter_block(&xd->mi[0]->mbmi);
 #endif  // CONFIG_LGT || CONFIG_MRC_TX
 #if CONFIG_LGT
   txfm_param.mode = mode;
