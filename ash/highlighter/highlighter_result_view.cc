@@ -38,12 +38,12 @@ const SkColor kCornerCircleColorRT = SkColorSetRGB(0xEA, 0x43, 0x35);
 const SkColor kCornerCircleColorLB = SkColorSetRGB(0x34, 0xA8, 0x53);
 const SkColor kCornerCircleColorRB = SkColorSetRGB(0xFB, 0xBC, 0x05);
 
-constexpr int kResultFadeinDelayMs = 600;
+constexpr int kResultFadeinDelayMs = 200;
 constexpr int kResultFadeinDurationMs = 400;
 constexpr int kResultFadeoutDelayMs = 500;
 constexpr int kResultFadeoutDurationMs = 200;
 
-constexpr int kResultInPlaceFadeinDelayMs = 500;
+constexpr int kResultInPlaceFadeinDelayMs = 100;
 constexpr int kResultInPlaceFadeinDurationMs = 500;
 
 constexpr float kInitialScale = 1.2;
@@ -225,11 +225,11 @@ void HighlighterResultView::ScheduleFadeIn(const base::TimeDelta& delay,
 
   layer->SetOpacity(0);
 
-  animation_timer_.reset(
-      new base::Timer(FROM_HERE, delay,
-                      base::Bind(&HighlighterResultView::FadeIn,
-                                 base::Unretained(this), duration),
-                      false));
+  animation_timer_ = base::MakeUnique<base::Timer>(
+      FROM_HERE, delay,
+      base::Bind(&HighlighterResultView::FadeIn, base::Unretained(this),
+                 duration),
+      false);
   animation_timer_->Reset();
 }
 
@@ -248,12 +248,11 @@ void HighlighterResultView::FadeIn(const base::TimeDelta& duration) {
     layer->SetTransform(transform);
   }
 
-  animation_timer_.reset(new base::Timer(
+  animation_timer_ = base::MakeUnique<base::Timer>(
       FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kResultFadeinDurationMs +
-                                        kResultFadeoutDelayMs),
+      duration + base::TimeDelta::FromMilliseconds(kResultFadeoutDelayMs),
       base::Bind(&HighlighterResultView::FadeOut, base::Unretained(this)),
-      false));
+      false);
   animation_timer_->Reset();
 }
 

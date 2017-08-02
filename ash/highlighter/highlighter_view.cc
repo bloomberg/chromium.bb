@@ -24,7 +24,7 @@ constexpr int kOutsetForAntialiasing = 1;
 
 constexpr float kStrokeScale = 1.2;
 
-constexpr int kStrokeFadeoutDelayMs = 500;
+constexpr int kStrokeFadeoutDelayMs = 100;
 constexpr int kStrokeFadeoutDurationMs = 500;
 constexpr int kStrokeScaleDurationMs = 300;
 
