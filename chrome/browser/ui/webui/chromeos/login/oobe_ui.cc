@@ -62,7 +62,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/voice_interaction_value_prop_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/wait_for_container_ready_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/wrong_hwid_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/user_image_source.h"
 #include "chrome/browser/ui/webui/test_files_request_filter.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -358,7 +357,6 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   content::WebUIDataSource* html_source =
       CreateOobeUIDataSource(localized_strings, display_type_);
   content::WebUIDataSource::Add(profile, html_source);
-  network_element::AddLocalizedStrings(html_source);
 
   // Set up the chrome://userimage/ source.
   UserImageSource* user_image_source = new UserImageSource();

@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
@@ -204,6 +205,7 @@ void NetworkScreenHandler::DeclareLocalizedValues(
 
   builder->Add("timezoneDropdownTitle", IDS_TIMEZONE_DROPDOWN_TITLE);
   builder->Add("timezoneButtonText", IDS_TIMEZONE_BUTTON_TEXT);
+  network_element::AddLocalizedValuesToBuilder(builder);
 }
 
 void NetworkScreenHandler::GetAdditionalParameters(
