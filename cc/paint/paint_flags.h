@@ -217,6 +217,8 @@ class CC_PAINT_EXPORT PaintFlags {
 
   SkPaint ToSkPaint() const;
 
+  bool IsValid() const;
+
  private:
   friend class PaintOpReader;
   friend class PaintOpWriter;
