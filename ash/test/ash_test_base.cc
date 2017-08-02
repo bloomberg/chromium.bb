@@ -49,10 +49,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
-#if defined(USE_X11)
-#include "ui/gfx/x/x11_connection.h"  // nogncheck
-#endif
-
 namespace ash {
 namespace {
 
@@ -121,13 +117,6 @@ ui::mojom::WindowType MusWindowTypeFromWindowType(
 
 AshTestBase::AshTestBase()
     : setup_called_(false), teardown_called_(false), start_session_(true) {
-#if defined(USE_X11)
-  // This is needed for tests which use this base class but are run in browser
-  // test binaries so don't get the default initialization in the unit test
-  // suite.
-  gfx::InitializeThreadedX11();
-#endif
-
   ash_test_environment_ = AshTestEnvironment::Create();
 
   // Must initialize |ash_test_helper_| here because some tests rely on

@@ -6,14 +6,6 @@
 
 #include <utility>
 
-#if defined(USE_X11)
-#include <X11/extensions/XInput2.h>
-#include <X11/Xlib.h>
-
-// Xlib.h defines RootWindow.
-#undef RootWindow
-#endif
-
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/root_window_transformers.h"
 #include "ash/display/screen_position_controller.h"
@@ -38,11 +30,6 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/native_widget_types.h"
-
-#if defined(USE_X11)
-#include "ui/aura/window_tree_host_x11.h"
-#include "ui/gfx/x/x11_types.h"  // nogncheck
-#endif
 
 namespace ash {
 namespace {
@@ -198,12 +185,6 @@ void MirrorWindowController::UpdateWindow(
       InitRootWindowSettings(host->window())->display_id = display_info.id();
       host->InitHost();
       host->window()->Show();
-#if defined(USE_X11)
-      if (!display_manager->IsInUnifiedMode()) {
-        // Mirror window shouldn't handle input events.
-        static_cast<aura::WindowTreeHostX11*>(host)->DisableInput();
-      }
-#endif
 
       if (display_manager->IsInUnifiedMode()) {
         host_info->ash_host->ConfineCursorToRootWindow();

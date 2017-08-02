@@ -18,11 +18,6 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_X11)
-#include <X11/extensions/XInput2.h>
-#include <X11/Xlib.h>
-#endif
-
 namespace {
 
 struct WindowTouchDetails {

@@ -13,10 +13,6 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 
-#if defined(USE_X11)
-#include "ui/base/x/x11_util.h"  // nogncheck
-#endif
-
 namespace ash {
 
 // ui::LayerDelegate that copies the aura host window's content to a ui::Layer.
@@ -24,9 +20,6 @@ class BootSplashScreen::CopyHostContentLayerDelegate
     : public ui::LayerDelegate {
  public:
   explicit CopyHostContentLayerDelegate(aura::WindowTreeHost* host)
-#if defined(USE_X11)
-      : host_(host)
-#endif
   {
   }
 
@@ -41,15 +34,8 @@ class BootSplashScreen::CopyHostContentLayerDelegate
 // TODO(derat): Instead of copying the data, use GLX_EXT_texture_from_pixmap
 // to create a zero-copy texture (when possible):
 // https://codereview.chromium.org/10543125
-#if defined(USE_X11)
-    ui::PaintRecorder recorder(context, host_->GetBoundsInPixels().size());
-    ui::CopyAreaToCanvas(host_->GetAcceleratedWidget(),
-                         host_->GetBoundsInPixels(), gfx::Point(),
-                         recorder.canvas());
-#else
     // TODO(spang): Figure out what to do here.
     NOTIMPLEMENTED();
-#endif
   }
 
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
@@ -57,10 +43,6 @@ class BootSplashScreen::CopyHostContentLayerDelegate
   void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
 
  private:
-#if defined(USE_X11)
-  aura::WindowTreeHost* host_;  // not owned
-#endif
-
   DISALLOW_COPY_AND_ASSIGN(CopyHostContentLayerDelegate);
 };
 

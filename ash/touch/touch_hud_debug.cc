@@ -30,13 +30,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_X11)
-#include <X11/extensions/XInput2.h>
-#include <X11/Xlib.h>
-
-#include "ui/events/devices/x11/device_data_manager_x11.h"  // nogncheck
-#endif
-
 namespace ash {
 
 const int kPointRadius = 20;
@@ -77,17 +70,6 @@ const char* GetTouchEventLabel(ui::EventType type) {
 }
 
 int GetTrackingId(const ui::TouchEvent& event) {
-  if (!event.HasNativeEvent())
-    return 0;
-#if defined(USE_X11)
-  ui::DeviceDataManagerX11* manager = ui::DeviceDataManagerX11::GetInstance();
-  double tracking_id;
-  if (manager->GetEventData(*event.native_event(),
-                            ui::DeviceDataManagerX11::DT_TOUCH_TRACKING_ID,
-                            &tracking_id)) {
-    return static_cast<int>(tracking_id);
-  }
-#endif
   return 0;
 }
 

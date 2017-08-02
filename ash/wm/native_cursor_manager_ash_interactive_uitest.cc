@@ -14,12 +14,6 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 
-#if defined(USE_X11)
-#include <X11/Xlib.h>
-
-#include "ui/gfx/x/x11_types.h"
-#endif
-
 namespace ash {
 
 using NativeCursorManagerAshTest = AshInteractiveUITestBase;
@@ -36,10 +30,6 @@ display::ManagedDisplayInfo CreateDisplayInfo(int64_t id,
 }
 
 void MoveMouseSync(aura::Window* window, int x, int y) {
-#if defined(USE_X11)
-  XWarpPointer(gfx::GetXDisplay(), None,
-               window->GetHost()->GetAcceleratedWidget(), 0, 0, 0, 0, x, y);
-#endif
   // Send and wait for a key event to make sure that mouse
   // events are fully processed.
   base::RunLoop loop;
@@ -50,13 +40,8 @@ void MoveMouseSync(aura::Window* window, int x, int y) {
 
 }  // namespace
 
-#if defined(USE_X11)
-#define MAYBE_CursorChangeOnEnterNotify CursorChangeOnEnterNotify
-#else
-#define MAYBE_CursorChangeOnEnterNotify DISABLED_CursorChangeOnEnterNotify
-#endif
-
-TEST_F(NativeCursorManagerAshTest, MAYBE_CursorChangeOnEnterNotify) {
+// Disabled on non-X11 before X11 was deprecated.
+TEST_F(NativeCursorManagerAshTest, DISABLED_CursorChangeOnEnterNotify) {
   ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
   CursorManagerTestApi test_api(cursor_manager);
 

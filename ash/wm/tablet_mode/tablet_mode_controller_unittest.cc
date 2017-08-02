@@ -30,10 +30,6 @@
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/message_center/message_center.h"
 
-#if defined(USE_X11)
-#include "ui/events/test/events_test_utils_x11.h"
-#endif
-
 namespace ash {
 
 namespace {
