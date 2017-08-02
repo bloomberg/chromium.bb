@@ -180,7 +180,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
     kShouldFireLoadEvent,
     kShouldFireNone
   };
-  WARN_UNUSED_RESULT ExecuteScriptResult ExecuteScript(const Script*);
   ExecuteScriptResult DoExecuteScript(const Script*);
   void DispatchLoadEvent();
   void DispatchErrorEvent();
