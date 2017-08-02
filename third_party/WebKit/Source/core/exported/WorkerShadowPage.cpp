@@ -57,17 +57,13 @@ void WorkerShadowPage::Initialize(const KURL& script_url) {
 }
 
 void WorkerShadowPage::SetContentSecurityPolicyAndReferrerPolicy(
-    ContentSecurityPolicyResponseHeaders csp_headers,
+    ContentSecurityPolicy* content_security_policy,
     String referrer_policy) {
   DCHECK(IsMainThread());
-  Document* document = main_frame_->GetFrame()->GetDocument();
-  ContentSecurityPolicy* content_security_policy =
-      ContentSecurityPolicy::Create();
-  content_security_policy->SetOverrideURLForSelf(document->Url());
-  content_security_policy->DidReceiveHeaders(csp_headers);
-  document->InitContentSecurityPolicy(content_security_policy);
+  content_security_policy->SetOverrideURLForSelf(GetDocument()->Url());
+  GetDocument()->InitContentSecurityPolicy(content_security_policy);
   if (!referrer_policy.IsNull())
-    document->ParseAndSetReferrerPolicy(referrer_policy);
+    GetDocument()->ParseAndSetReferrerPolicy(referrer_policy);
 }
 
 void WorkerShadowPage::DidFinishDocumentLoad() {

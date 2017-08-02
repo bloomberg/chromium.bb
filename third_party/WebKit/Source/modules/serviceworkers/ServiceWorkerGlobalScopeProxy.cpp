@@ -79,6 +79,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WaitableEvent.h"
 #include "platform/loader/fetch/ResourceResponse.h"
+#include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/PtrUtil.h"
@@ -89,6 +90,24 @@
 #include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
 
 namespace blink {
+
+namespace {
+
+void SetContentSecurityPolicyAndReferrerPolicyOnMainThread(
+    WebEmbeddedWorkerImpl* embedded_worker,
+    ContentSecurityPolicyResponseHeaders csp_headers,
+    String referrer_policy,
+    WaitableEvent* waitable_event) {
+  DCHECK(IsMainThread());
+  ContentSecurityPolicy* content_security_policy =
+      ContentSecurityPolicy::Create();
+  content_security_policy->DidReceiveHeaders(csp_headers);
+  embedded_worker->SetContentSecurityPolicyAndReferrerPolicy(
+      content_security_policy, std::move(referrer_policy));
+  waitable_event->Signal();
+}
+
+}  // namespace
 
 ServiceWorkerGlobalScopeProxy* ServiceWorkerGlobalScopeProxy::Create(
     WebEmbeddedWorkerImpl& embedded_worker,
@@ -576,7 +595,7 @@ void ServiceWorkerGlobalScopeProxy::DidLoadInstalledScript(
       ->PostTask(
           BLINK_FROM_HERE,
           CrossThreadBind(
-              &WebEmbeddedWorkerImpl::SetContentSecurityPolicyAndReferrerPolicy,
+              &SetContentSecurityPolicyAndReferrerPolicyOnMainThread,
               CrossThreadUnretained(embedded_worker_),
               csp_headers_on_worker_thread, referrer_policy_on_worker_thread,
               CrossThreadUnretained(&waitable_event)));

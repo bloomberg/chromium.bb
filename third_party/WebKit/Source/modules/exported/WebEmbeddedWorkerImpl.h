@@ -38,7 +38,6 @@
 #include "modules/ModulesExport.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebContentSecurityPolicy.h"
 #include "public/web/WebDevToolsAgentClient.h"
 #include "public/web/WebEmbeddedWorker.h"
 #include "public/web/WebEmbeddedWorkerStartData.h"
@@ -46,9 +45,9 @@
 
 namespace blink {
 
+class ContentSecurityPolicy;
 class ServiceWorkerGlobalScopeProxy;
 class ServiceWorkerInstalledScriptsManager;
-class WaitableEvent;
 class WorkerInspectorProxy;
 class WorkerScriptLoader;
 class WorkerThread;
@@ -84,13 +83,10 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
 
   // Applies the specified CSP and referrer policy to the worker, so that
   // fetches initiated by the worker (other than for the main worker script
-  // itself) are affected by these policies. The WaitableEvent is signaled when
-  // the policies are set. This enables the caller to ensure that policies are
-  // set before starting script execution on the worker thread.
-  void SetContentSecurityPolicyAndReferrerPolicy(
-      ContentSecurityPolicyResponseHeaders,
-      WTF::String referrer_policy,
-      WaitableEvent*);
+  // itself) are affected by these policies. This must be called before starting
+  // script execution on the worker thread.
+  void SetContentSecurityPolicyAndReferrerPolicy(ContentSecurityPolicy*,
+                                                 String referrer_policy);
 
   // WorkerShadowPage::Client overrides.
   std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
