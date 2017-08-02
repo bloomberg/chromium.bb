@@ -31,9 +31,6 @@ class GURL;
 // URL scheme plus some operator prefix. Subclasses should override this method.
 - (NSString*)beginningScheme;
 
-// Returns a set of NSString for mailto: parameters supported by this handler.
-- (NSSet<NSString*>*)supportedHeaders;
-
 // Rewrites |gURL| into a URL with a different URL scheme that will cause a
 // native iOS app to be launched to handle the mailto: URL. Returns nil if
 // |gURL| is not a mailto: URL. Base class implementation provides the typical
