@@ -236,12 +236,11 @@ if (CONFIG_CDEF)
       ${AOM_AV1_COMMON_SOURCES}
       "${AOM_ROOT}/av1/common/clpf.c"
       "${AOM_ROOT}/av1/common/clpf_simd.h"
-      "${AOM_ROOT}/av1/common/cdef_simd.h"
       "${AOM_ROOT}/av1/common/cdef.c"
       "${AOM_ROOT}/av1/common/cdef.h"
-      "${AOM_ROOT}/av1/common/od_dering.c"
-      "${AOM_ROOT}/av1/common/od_dering.h"
-      "${AOM_ROOT}/av1/common/od_dering_simd.h")
+      "${AOM_ROOT}/av1/common/cdef_block.c"
+      "${AOM_ROOT}/av1/common/cdef_block.h"
+      "${AOM_ROOT}/av1/common/cdef_block_simd.h")
 
   set(AOM_AV1_ENCODER_SOURCES
       ${AOM_AV1_ENCODER_SOURCES}
@@ -250,22 +249,22 @@ if (CONFIG_CDEF)
   set(AOM_AV1_COMMON_INTRIN_SSE2
       ${AOM_AV1_COMMON_INTRIN_SSE2}
       "${AOM_ROOT}/av1/common/clpf_sse2.c"
-      "${AOM_ROOT}/av1/common/od_dering_sse2.c")
+      "${AOM_ROOT}/av1/common/cdef_block_sse2.c")
 
   set(AOM_AV1_COMMON_INTRIN_SSSE3
       ${AOM_AV1_COMMON_INTRIN_SSSE3}
       "${AOM_ROOT}/av1/common/clpf_ssse3.c"
-      "${AOM_ROOT}/av1/common/od_dering_ssse3.c")
+      "${AOM_ROOT}/av1/common/cdef_block_ssse3.c")
 
   set(AOM_AV1_COMMON_INTRIN_SSE4_1
       ${AOM_AV1_COMMON_INTRIN_SSE4_1}
       "${AOM_ROOT}/av1/common/clpf_sse4.c"
-      "${AOM_ROOT}/av1/common/od_dering_sse4.c")
+      "${AOM_ROOT}/av1/common/cdef_block_sse4.c")
 
   set(AOM_AV1_COMMON_INTRIN_NEON
       ${AOM_AV1_COMMON_INTRIN_NEON}
       "${AOM_ROOT}/av1/common/clpf_neon.c"
-      "${AOM_ROOT}/av1/common/od_dering_neon.c")
+      "${AOM_ROOT}/av1/common/cdef_block_neon.c")
 endif ()
 
 if (CONFIG_CONVOLVE_ROUND)

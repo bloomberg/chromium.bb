@@ -21,17 +21,15 @@
 #include "./cdef.h"
 
 /* Generated from gen_filter_tables.c. */
-const int OD_DIRECTION_OFFSETS_TABLE[8][3] = {
-  { -1 * OD_FILT_BSTRIDE + 1, -2 * OD_FILT_BSTRIDE + 2,
-    -3 * OD_FILT_BSTRIDE + 3 },
-  { 0 * OD_FILT_BSTRIDE + 1, -1 * OD_FILT_BSTRIDE + 2,
-    -1 * OD_FILT_BSTRIDE + 3 },
-  { 0 * OD_FILT_BSTRIDE + 1, 0 * OD_FILT_BSTRIDE + 2, 0 * OD_FILT_BSTRIDE + 3 },
-  { 0 * OD_FILT_BSTRIDE + 1, 1 * OD_FILT_BSTRIDE + 2, 1 * OD_FILT_BSTRIDE + 3 },
-  { 1 * OD_FILT_BSTRIDE + 1, 2 * OD_FILT_BSTRIDE + 2, 3 * OD_FILT_BSTRIDE + 3 },
-  { 1 * OD_FILT_BSTRIDE + 0, 2 * OD_FILT_BSTRIDE + 1, 3 * OD_FILT_BSTRIDE + 1 },
-  { 1 * OD_FILT_BSTRIDE + 0, 2 * OD_FILT_BSTRIDE + 0, 3 * OD_FILT_BSTRIDE + 0 },
-  { 1 * OD_FILT_BSTRIDE + 0, 2 * OD_FILT_BSTRIDE - 1, 3 * OD_FILT_BSTRIDE - 1 },
+const int cdef_directions[8][3] = {
+  { -1 * CDEF_BSTRIDE + 1, -2 * CDEF_BSTRIDE + 2, -3 * CDEF_BSTRIDE + 3 },
+  { 0 * CDEF_BSTRIDE + 1, -1 * CDEF_BSTRIDE + 2, -1 * CDEF_BSTRIDE + 3 },
+  { 0 * CDEF_BSTRIDE + 1, 0 * CDEF_BSTRIDE + 2, 0 * CDEF_BSTRIDE + 3 },
+  { 0 * CDEF_BSTRIDE + 1, 1 * CDEF_BSTRIDE + 2, 1 * CDEF_BSTRIDE + 3 },
+  { 1 * CDEF_BSTRIDE + 1, 2 * CDEF_BSTRIDE + 2, 3 * CDEF_BSTRIDE + 3 },
+  { 1 * CDEF_BSTRIDE + 0, 2 * CDEF_BSTRIDE + 1, 3 * CDEF_BSTRIDE + 1 },
+  { 1 * CDEF_BSTRIDE + 0, 2 * CDEF_BSTRIDE + 0, 3 * CDEF_BSTRIDE + 0 },
+  { 1 * CDEF_BSTRIDE + 0, 2 * CDEF_BSTRIDE - 1, 3 * CDEF_BSTRIDE - 1 }
 };
 
 /* Detect direction. 0 means 45-degree up-right, 2 is horizontal, and so on.
@@ -41,8 +39,8 @@ const int OD_DIRECTION_OFFSETS_TABLE[8][3] = {
    in a particular direction. Since each direction have the same sum(x^2) term,
    that term is never computed. See Section 2, step 2, of:
    http://jmvalin.ca/notes/intra_paint.pdf */
-int od_dir_find8_c(const uint16_t *img, int stride, int32_t *var,
-                   int coeff_shift) {
+int cdef_find_dir_c(const uint16_t *img, int stride, int32_t *var,
+                    int coeff_shift) {
   int i;
   int32_t cost[8] = { 0 };
   int partial[8][15] = { { 0 } };
@@ -113,9 +111,8 @@ int od_dir_find8_c(const uint16_t *img, int stride, int32_t *var,
 }
 
 /* Smooth in the direction detected. */
-void od_filter_dering_direction_8x8_c(uint16_t *y, int ystride,
-                                      const uint16_t *in, int threshold,
-                                      int dir, int damping) {
+void cdef_direction_8x8_c(uint16_t *y, int ystride, const uint16_t *in,
+                          int threshold, int dir, int damping) {
   int i;
   int j;
   int k;
@@ -125,15 +122,13 @@ void od_filter_dering_direction_8x8_c(uint16_t *y, int ystride,
       int16_t sum;
       int16_t xx;
       int16_t yy;
-      xx = in[i * OD_FILT_BSTRIDE + j];
+      xx = in[i * CDEF_BSTRIDE + j];
       sum = 0;
       for (k = 0; k < 3; k++) {
         int16_t p0;
         int16_t p1;
-        p0 = in[i * OD_FILT_BSTRIDE + j + OD_DIRECTION_OFFSETS_TABLE[dir][k]] -
-             xx;
-        p1 = in[i * OD_FILT_BSTRIDE + j - OD_DIRECTION_OFFSETS_TABLE[dir][k]] -
-             xx;
+        p0 = in[i * CDEF_BSTRIDE + j + cdef_directions[dir][k]] - xx;
+        p1 = in[i * CDEF_BSTRIDE + j - cdef_directions[dir][k]] - xx;
         sum += taps[k] * constrain(p0, threshold, damping);
         sum += taps[k] * constrain(p1, threshold, damping);
       }
@@ -145,9 +140,8 @@ void od_filter_dering_direction_8x8_c(uint16_t *y, int ystride,
 }
 
 /* Smooth in the direction detected. */
-void od_filter_dering_direction_4x4_c(uint16_t *y, int ystride,
-                                      const uint16_t *in, int threshold,
-                                      int dir, int damping) {
+void cdef_direction_4x4_c(uint16_t *y, int ystride, const uint16_t *in,
+                          int threshold, int dir, int damping) {
   int i;
   int j;
   int k;
@@ -157,15 +151,13 @@ void od_filter_dering_direction_4x4_c(uint16_t *y, int ystride,
       int16_t sum;
       int16_t xx;
       int16_t yy;
-      xx = in[i * OD_FILT_BSTRIDE + j];
+      xx = in[i * CDEF_BSTRIDE + j];
       sum = 0;
       for (k = 0; k < 2; k++) {
         int16_t p0;
         int16_t p1;
-        p0 = in[i * OD_FILT_BSTRIDE + j + OD_DIRECTION_OFFSETS_TABLE[dir][k]] -
-             xx;
-        p1 = in[i * OD_FILT_BSTRIDE + j - OD_DIRECTION_OFFSETS_TABLE[dir][k]] -
-             xx;
+        p0 = in[i * CDEF_BSTRIDE + j + cdef_directions[dir][k]] - xx;
+        p1 = in[i * CDEF_BSTRIDE + j - cdef_directions[dir][k]] - xx;
         sum += taps[k] * constrain(p0, threshold, damping);
         sum += taps[k] * constrain(p1, threshold, damping);
       }
@@ -176,16 +168,16 @@ void od_filter_dering_direction_4x4_c(uint16_t *y, int ystride,
   }
 }
 
-/* Compute deringing filter threshold for an 8x8 block based on the
-   directional variance difference. A high variance difference means that we
-   have a highly directional pattern (e.g. a high contrast edge), so we can
-   apply more deringing. A low variance means that we either have a low
-   contrast edge, or a non-directional texture, so we want to be careful not
-   to blur. */
-static INLINE int od_adjust_thresh(int threshold, int32_t var) {
+/* Compute the primary filter strength for an 8x8 block based on the
+   directional variance difference. A high variance difference means
+   that we have a highly directional pattern (e.g. a high contrast
+   edge), so we can apply more deringing. A low variance means that we
+   either have a low contrast edge, or a non-directional texture, so
+   we want to be careful not to blur. */
+static INLINE int adjust_strength(int strength, int32_t var) {
   const int i = var >> 6 ? AOMMIN(get_msb(var >> 6), 12) : 0;
-  /* We use the variance of 8x8 blocks to adjust the threshold. */
-  return var ? (threshold * (4 + i) + 8) >> 4 : 0;
+  /* We use the variance of 8x8 blocks to adjust the strength. */
+  return var ? (strength * (4 + i) + 8) >> 4 : 0;
 }
 
 void copy_8x8_16bit_to_16bit_c(uint16_t *dst, int dstride, const uint16_t *src,
@@ -202,20 +194,20 @@ void copy_4x4_16bit_to_16bit_c(uint16_t *dst, int dstride, const uint16_t *src,
     for (j = 0; j < 4; j++) dst[i * dstride + j] = src[i * sstride + j];
 }
 
-static void copy_dering_16bit_to_16bit(uint16_t *dst, int dstride,
-                                       uint16_t *src, dering_list *dlist,
-                                       int dering_count, int bsize) {
+static void copy_block_16bit_to_16bit(uint16_t *dst, int dstride, uint16_t *src,
+                                      cdef_list *dlist, int cdef_count,
+                                      int bsize) {
   int bi, bx, by;
 
   if (bsize == BLOCK_8X8) {
-    for (bi = 0; bi < dering_count; bi++) {
+    for (bi = 0; bi < cdef_count; bi++) {
       by = dlist[bi].by;
       bx = dlist[bi].bx;
       copy_8x8_16bit_to_16bit(&dst[(by << 3) * dstride + (bx << 3)], dstride,
                               &src[bi << (3 + 3)], 8);
     }
   } else if (bsize == BLOCK_4X8) {
-    for (bi = 0; bi < dering_count; bi++) {
+    for (bi = 0; bi < cdef_count; bi++) {
       by = dlist[bi].by;
       bx = dlist[bi].bx;
       copy_4x4_16bit_to_16bit(&dst[(by << 3) * dstride + (bx << 2)], dstride,
@@ -224,7 +216,7 @@ static void copy_dering_16bit_to_16bit(uint16_t *dst, int dstride,
                               dstride, &src[(bi << (3 + 2)) + 4 * 4], 4);
     }
   } else if (bsize == BLOCK_8X4) {
-    for (bi = 0; bi < dering_count; bi++) {
+    for (bi = 0; bi < cdef_count; bi++) {
       by = dlist[bi].by;
       bx = dlist[bi].bx;
       copy_4x4_16bit_to_16bit(&dst[(by << 2) * dstride + (bx << 3)], dstride,
@@ -234,7 +226,7 @@ static void copy_dering_16bit_to_16bit(uint16_t *dst, int dstride,
     }
   } else {
     assert(bsize == BLOCK_4X4);
-    for (bi = 0; bi < dering_count; bi++) {
+    for (bi = 0; bi < cdef_count; bi++) {
       by = dlist[bi].by;
       bx = dlist[bi].bx;
       copy_4x4_16bit_to_16bit(&dst[(by << 2) * dstride + (bx << 2)], dstride,
@@ -259,19 +251,19 @@ void copy_4x4_16bit_to_8bit_c(uint8_t *dst, int dstride, const uint16_t *src,
       dst[i * dstride + j] = (uint8_t)src[i * sstride + j];
 }
 
-static void copy_dering_16bit_to_8bit(uint8_t *dst, int dstride,
-                                      const uint16_t *src, dering_list *dlist,
-                                      int dering_count, int bsize) {
+static void copy_block_16bit_to_8bit(uint8_t *dst, int dstride,
+                                     const uint16_t *src, cdef_list *dlist,
+                                     int cdef_count, int bsize) {
   int bi, bx, by;
   if (bsize == BLOCK_8X8) {
-    for (bi = 0; bi < dering_count; bi++) {
+    for (bi = 0; bi < cdef_count; bi++) {
       by = dlist[bi].by;
       bx = dlist[bi].bx;
       copy_8x8_16bit_to_8bit(&dst[(by << 3) * dstride + (bx << 3)], dstride,
                              &src[bi << (3 + 3)], 8);
     }
   } else if (bsize == BLOCK_4X8) {
-    for (bi = 0; bi < dering_count; bi++) {
+    for (bi = 0; bi < cdef_count; bi++) {
       by = dlist[bi].by;
       bx = dlist[bi].bx;
       copy_4x4_16bit_to_8bit(&dst[(by << 3) * dstride + (bx << 2)], dstride,
@@ -280,7 +272,7 @@ static void copy_dering_16bit_to_8bit(uint8_t *dst, int dstride,
                              dstride, &src[(bi << (3 + 2)) + 4 * 4], 4);
     }
   } else if (bsize == BLOCK_8X4) {
-    for (bi = 0; bi < dering_count; bi++) {
+    for (bi = 0; bi < cdef_count; bi++) {
       by = dlist[bi].by;
       bx = dlist[bi].bx;
       copy_4x4_16bit_to_8bit(&dst[(by << 2) * dstride + (bx << 3)], dstride,
@@ -290,7 +282,7 @@ static void copy_dering_16bit_to_8bit(uint8_t *dst, int dstride,
     }
   } else {
     assert(bsize == BLOCK_4X4);
-    for (bi = 0; bi < dering_count; bi++) {
+    for (bi = 0; bi < cdef_count; bi++) {
       by = dlist[bi].by;
       bx = dlist[bi].bx;
       copy_4x4_16bit_to_8bit(&dst[(by << 2) * dstride + (bx << 2)], dstride,
@@ -305,12 +297,12 @@ int get_filter_skip(int level) {
   return filter_skip;
 }
 
-void od_dering(uint8_t *dst, int dstride, uint16_t *y, uint16_t *in, int xdec,
-               int ydec, int dir[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS],
-               int *dirinit, int var[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS],
-               int pli, dering_list *dlist, int dering_count, int level,
-               int clpf_strength, int clpf_damping, int dering_damping,
-               int coeff_shift, int skip_dering, int hbd) {
+void cdef_filter_fb(uint8_t *dst, int dstride, uint16_t *y, uint16_t *in,
+                    int xdec, int ydec, int dir[CDEF_NBLOCKS][CDEF_NBLOCKS],
+                    int *dirinit, int var[CDEF_NBLOCKS][CDEF_NBLOCKS], int pli,
+                    cdef_list *dlist, int cdef_count, int level,
+                    int sec_strength, int sec_damping, int pri_damping,
+                    int coeff_shift, int skip_dering, int hbd) {
   int bi;
   int bx;
   int by;
@@ -320,11 +312,10 @@ void od_dering(uint8_t *dst, int dstride, uint16_t *y, uint16_t *in, int xdec,
   int filter_skip = get_filter_skip(level);
   if (level == 1) threshold = 31 << coeff_shift;
 
-  od_filter_dering_direction_func filter_dering_direction[] = {
-    od_filter_dering_direction_4x4, od_filter_dering_direction_8x8
-  };
-  clpf_damping += coeff_shift - (pli != AOM_PLANE_Y);
-  dering_damping += coeff_shift - (pli != AOM_PLANE_Y);
+  cdef_direction_func cdef_direction[] = { cdef_direction_4x4,
+                                           cdef_direction_8x8 };
+  sec_damping += coeff_shift - (pli != AOM_PLANE_Y);
+  pri_damping += coeff_shift - (pli != AOM_PLANE_Y);
   bsize =
       ydec ? (xdec ? BLOCK_4X4 : BLOCK_8X4) : (xdec ? BLOCK_4X8 : BLOCK_8X8);
   bsizex = 3 - xdec;
@@ -333,12 +324,11 @@ void od_dering(uint8_t *dst, int dstride, uint16_t *y, uint16_t *in, int xdec,
   if (!skip_dering) {
     if (pli == 0) {
       if (!dirinit || !*dirinit) {
-        for (bi = 0; bi < dering_count; bi++) {
+        for (bi = 0; bi < cdef_count; bi++) {
           by = dlist[bi].by;
           bx = dlist[bi].bx;
-          dir[by][bx] =
-              od_dir_find8(&in[8 * by * OD_FILT_BSTRIDE + 8 * bx],
-                           OD_FILT_BSTRIDE, &var[by][bx], coeff_shift);
+          dir[by][bx] = cdef_find_dir(&in[8 * by * CDEF_BSTRIDE + 8 * bx],
+                                      CDEF_BSTRIDE, &var[by][bx], coeff_shift);
         }
         if (dirinit) *dirinit = 1;
       }
@@ -348,24 +338,23 @@ void od_dering(uint8_t *dst, int dstride, uint16_t *y, uint16_t *in, int xdec,
     // something out in y[] later.
     if (threshold != 0) {
       assert(bsize == BLOCK_8X8 || bsize == BLOCK_4X4);
-      for (bi = 0; bi < dering_count; bi++) {
+      for (bi = 0; bi < cdef_count; bi++) {
         int t = !filter_skip && dlist[bi].skip ? 0 : threshold;
         by = dlist[bi].by;
         bx = dlist[bi].bx;
-        (filter_dering_direction[bsize == BLOCK_8X8])(
+        (cdef_direction[bsize == BLOCK_8X8])(
             &y[bi << (bsizex + bsizey)], 1 << bsizex,
-            &in[(by * OD_FILT_BSTRIDE << bsizey) + (bx << bsizex)],
-            pli ? t : od_adjust_thresh(t, var[by][bx]), dir[by][bx],
-            dering_damping);
+            &in[(by * CDEF_BSTRIDE << bsizey) + (bx << bsizex)],
+            pli ? t : adjust_strength(t, var[by][bx]), dir[by][bx],
+            pri_damping);
       }
     }
   }
 
-  if (clpf_strength) {
+  if (sec_strength) {
     if (threshold && !skip_dering)
-      copy_dering_16bit_to_16bit(in, OD_FILT_BSTRIDE, y, dlist, dering_count,
-                                 bsize);
-    for (bi = 0; bi < dering_count; bi++) {
+      copy_block_16bit_to_16bit(in, CDEF_BSTRIDE, y, dlist, cdef_count, bsize);
+    for (bi = 0; bi < cdef_count; bi++) {
       by = dlist[bi].by;
       bx = dlist[bi].bx;
       int py = by << bsizey;
@@ -378,31 +367,31 @@ void od_dering(uint8_t *dst, int dstride, uint16_t *y, uint16_t *in, int xdec,
                                                         : aom_clpf_hblock_hbd)(
             dst ? (uint16_t *)dst + py * dstride + px
                 : &y[bi << (bsizex + bsizey)],
-            in + py * OD_FILT_BSTRIDE + px, dst && hbd ? dstride : 1 << bsizex,
-            OD_FILT_BSTRIDE, 1 << bsizex, 1 << bsizey,
-            clpf_strength << coeff_shift, clpf_damping);
+            in + py * CDEF_BSTRIDE + px, dst && hbd ? dstride : 1 << bsizex,
+            CDEF_BSTRIDE, 1 << bsizex, 1 << bsizey, sec_strength << coeff_shift,
+            sec_damping);
       } else {
         // Do clpf and write the result to an 8 bit destination
         (!threshold || (dir[by][bx] < 4 && dir[by][bx]) ? aom_clpf_block
                                                         : aom_clpf_hblock)(
-            dst + py * dstride + px, in + py * OD_FILT_BSTRIDE + px, dstride,
-            OD_FILT_BSTRIDE, 1 << bsizex, 1 << bsizey,
-            clpf_strength << coeff_shift, clpf_damping);
+            dst + py * dstride + px, in + py * CDEF_BSTRIDE + px, dstride,
+            CDEF_BSTRIDE, 1 << bsizex, 1 << bsizey, sec_strength << coeff_shift,
+            sec_damping);
       }
     }
   } else if (threshold != 0) {
     // No clpf, so copy instead
     if (hbd) {
-      copy_dering_16bit_to_16bit((uint16_t *)dst, dstride, y, dlist,
-                                 dering_count, bsize);
+      copy_block_16bit_to_16bit((uint16_t *)dst, dstride, y, dlist, cdef_count,
+                                bsize);
     } else {
-      copy_dering_16bit_to_8bit(dst, dstride, y, dlist, dering_count, bsize);
+      copy_block_16bit_to_8bit(dst, dstride, y, dlist, cdef_count, bsize);
     }
   } else if (dirinit) {
     // If we're here, both dering and clpf are off, and we still haven't written
     // anything to y[] yet, so we just copy the input to y[]. This is necessary
     // only for av1_cdef_search() and only av1_cdef_search() sets dirinit.
-    for (bi = 0; bi < dering_count; bi++) {
+    for (bi = 0; bi < cdef_count; bi++) {
       by = dlist[bi].by;
       bx = dlist[bi].bx;
       int iy, ix;
@@ -410,7 +399,7 @@ void od_dering(uint8_t *dst, int dstride, uint16_t *y, uint16_t *in, int xdec,
       for (iy = 0; iy < 1 << bsizey; iy++)
         for (ix = 0; ix < 1 << bsizex; ix++)
           y[(bi << (bsizex + bsizey)) + (iy << bsizex) + ix] =
-              in[((by << bsizey) + iy) * OD_FILT_BSTRIDE + (bx << bsizex) + ix];
+              in[((by << bsizey) + iy) * CDEF_BSTRIDE + (bx << bsizex) + ix];
     }
   }
 }

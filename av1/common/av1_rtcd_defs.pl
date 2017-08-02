@@ -24,7 +24,6 @@ struct search_site_config;
 struct mv;
 union int_mv;
 struct yv12_buffer_config;
-typedef uint16_t od_dering_in;
 EOF
 }
 forward_decls qw/av1_common_forward_decls/;
@@ -561,9 +560,9 @@ if (aom_config("CONFIG_CDEF") eq "yes") {
   add_proto qw/void aom_clpf_hblock_hbd/, "uint16_t *dst, const uint16_t *src, int dstride, int sstride, int sizex, int sizey, unsigned int strength, unsigned int bd";
   add_proto qw/void aom_clpf_block/, "uint8_t *dst, const uint16_t *src, int dstride, int sstride, int sizex, int sizey, unsigned int strength, unsigned int bd";
   add_proto qw/void aom_clpf_hblock/, "uint8_t *dst, const uint16_t *src, int dstride, int sstride, int sizex, int sizey, unsigned int strength, unsigned int bd";
-  add_proto qw/int od_dir_find8/, "const od_dering_in *img, int stride, int32_t *var, int coeff_shift";
-  add_proto qw/void od_filter_dering_direction_4x4/, "uint16_t *y, int ystride, const uint16_t *in, int threshold, int dir, int damping";
-  add_proto qw/void od_filter_dering_direction_8x8/, "uint16_t *y, int ystride, const uint16_t *in, int threshold, int dir, int damping";
+  add_proto qw/int cdef_find_dir/, "const uint16_t *img, int stride, int32_t *var, int coeff_shift";
+  add_proto qw/void cdef_direction_4x4/, "uint16_t *y, int ystride, const uint16_t *in, int threshold, int dir, int damping";
+  add_proto qw/void cdef_direction_8x8/, "uint16_t *y, int ystride, const uint16_t *in, int threshold, int dir, int damping";
 
   add_proto qw/void copy_8x8_16bit_to_8bit/, "uint8_t *dst, int dstride, const uint16_t *src, int sstride";
   add_proto qw/void copy_4x4_16bit_to_8bit/, "uint8_t *dst, int dstride, const uint16_t *src, int sstride";
@@ -580,9 +579,9 @@ if (aom_config("CONFIG_CDEF") eq "yes") {
     specialize qw/aom_clpf_hblock_hbd sse2 ssse3 sse4_1 neon/;
     specialize qw/aom_clpf_block sse2 ssse3 sse4_1 neon/;
     specialize qw/aom_clpf_hblock sse2 ssse3 sse4_1 neon/;
-    specialize qw/od_dir_find8 sse2 ssse3 sse4_1 neon/;
-    specialize qw/od_filter_dering_direction_4x4 sse2 ssse3 sse4_1 neon/;
-    specialize qw/od_filter_dering_direction_8x8 sse2 ssse3 sse4_1 neon/;
+    specialize qw/cdef_find_dir sse2 ssse3 sse4_1 neon/;
+    specialize qw/cdef_direction_4x4 sse2 ssse3 sse4_1 neon/;
+    specialize qw/cdef_direction_8x8 sse2 ssse3 sse4_1 neon/;
 
     specialize qw/copy_8x8_16bit_to_8bit sse2 ssse3 sse4_1 neon/;
     specialize qw/copy_4x4_16bit_to_8bit sse2 ssse3 sse4_1 neon/;

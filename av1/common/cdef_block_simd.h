@@ -10,8 +10,7 @@
  */
 
 #include "./av1_rtcd.h"
-#include "./cdef_simd.h"
-#include "./od_dering.h"
+#include "./cdef_block.h"
 
 /* partial A is a 16-bit vector of the form:
    [x8 x7 x6 x5 x4 x3 x2 x1] and partial B has the form:
@@ -155,8 +154,8 @@ static INLINE void array_reverse_transpose_8x8(v128 *in, v128 *res) {
   res[0] = v128_ziphi_64(tr1_7, tr1_6);
 }
 
-int SIMD_FUNC(od_dir_find8)(const od_dering_in *img, int stride, int32_t *var,
-                            int coeff_shift) {
+int SIMD_FUNC(cdef_find_dir)(const uint16_t *img, int stride, int32_t *var,
+                             int coeff_shift) {
   int i;
   int32_t cost[8];
   int32_t best_cost = 0;
@@ -211,42 +210,51 @@ int SIMD_FUNC(od_dir_find8)(const od_dering_in *img, int stride, int32_t *var,
   return best_dir;
 }
 
-void SIMD_FUNC(od_filter_dering_direction_4x4)(uint16_t *y, int ystride,
-                                               const uint16_t *in,
-                                               int threshold, int dir,
-                                               int damping) {
+// sign(a-b) * min(abs(a-b), max(0, threshold - (abs(a-b) >> adjdamp)))
+SIMD_INLINE v128 constrain16(v128 a, v128 b, unsigned int threshold,
+                             unsigned int adjdamp) {
+  v128 diff = v128_sub_16(a, b);
+  const v128 sign = v128_shr_n_s16(diff, 15);
+  diff = v128_abs_s16(diff);
+  const v128 s =
+      v128_ssub_u16(v128_dup_16(threshold), v128_shr_u16(diff, adjdamp));
+  return v128_xor(v128_add_16(sign, v128_min_s16(diff, s)), sign);
+}
+
+void SIMD_FUNC(cdef_direction_4x4)(uint16_t *y, int ystride, const uint16_t *in,
+                                   int threshold, int dir, int damping) {
   int i;
   v128 p0, p1, sum, row, res;
-  int o1 = OD_DIRECTION_OFFSETS_TABLE[dir][0];
-  int o2 = OD_DIRECTION_OFFSETS_TABLE[dir][1];
+  int o1 = cdef_directions[dir][0];
+  int o2 = cdef_directions[dir][1];
 
   if (threshold) damping -= get_msb(threshold);
   for (i = 0; i < 4; i += 2) {
     sum = v128_zero();
-    row = v128_from_v64(v64_load_aligned(&in[i * OD_FILT_BSTRIDE]),
-                        v64_load_aligned(&in[(i + 1) * OD_FILT_BSTRIDE]));
+    row = v128_from_v64(v64_load_aligned(&in[i * CDEF_BSTRIDE]),
+                        v64_load_aligned(&in[(i + 1) * CDEF_BSTRIDE]));
 
-    // p0 = constrain16(in[i*OD_FILT_BSTRIDE + offset], row, threshold, damping)
-    p0 = v128_from_v64(v64_load_unaligned(&in[i * OD_FILT_BSTRIDE + o1]),
-                       v64_load_unaligned(&in[(i + 1) * OD_FILT_BSTRIDE + o1]));
+    // p0 = constrain16(in[i*CDEF_BSTRIDE + offset], row, threshold, damping)
+    p0 = v128_from_v64(v64_load_unaligned(&in[i * CDEF_BSTRIDE + o1]),
+                       v64_load_unaligned(&in[(i + 1) * CDEF_BSTRIDE + o1]));
     p0 = constrain16(p0, row, threshold, damping);
 
-    // p1 = constrain16(in[i*OD_FILT_BSTRIDE - offset], row, threshold, damping)
-    p1 = v128_from_v64(v64_load_unaligned(&in[i * OD_FILT_BSTRIDE - o1]),
-                       v64_load_unaligned(&in[(i + 1) * OD_FILT_BSTRIDE - o1]));
+    // p1 = constrain16(in[i*CDEF_BSTRIDE - offset], row, threshold, damping)
+    p1 = v128_from_v64(v64_load_unaligned(&in[i * CDEF_BSTRIDE - o1]),
+                       v64_load_unaligned(&in[(i + 1) * CDEF_BSTRIDE - o1]));
     p1 = constrain16(p1, row, threshold, damping);
 
     // sum += 4 * (p0 + p1)
     sum = v128_add_16(sum, v128_shl_n_16(v128_add_16(p0, p1), 2));
 
-    // p0 = constrain16(in[i*OD_FILT_BSTRIDE + offset], row, threshold, damping)
-    p0 = v128_from_v64(v64_load_unaligned(&in[i * OD_FILT_BSTRIDE + o2]),
-                       v64_load_unaligned(&in[(i + 1) * OD_FILT_BSTRIDE + o2]));
+    // p0 = constrain16(in[i*CDEF_BSTRIDE + offset], row, threshold, damping)
+    p0 = v128_from_v64(v64_load_unaligned(&in[i * CDEF_BSTRIDE + o2]),
+                       v64_load_unaligned(&in[(i + 1) * CDEF_BSTRIDE + o2]));
     p0 = constrain16(p0, row, threshold, damping);
 
-    // p1 = constrain16(in[i*OD_FILT_BSTRIDE - offset], row, threshold, damping)
-    p1 = v128_from_v64(v64_load_unaligned(&in[i * OD_FILT_BSTRIDE - o2]),
-                       v64_load_unaligned(&in[(i + 1) * OD_FILT_BSTRIDE - o2]));
+    // p1 = constrain16(in[i*CDEF_BSTRIDE - offset], row, threshold, damping)
+    p1 = v128_from_v64(v64_load_unaligned(&in[i * CDEF_BSTRIDE - o2]),
+                       v64_load_unaligned(&in[(i + 1) * CDEF_BSTRIDE - o2]));
     p1 = constrain16(p1, row, threshold, damping);
 
     // sum += 1 * (p0 + p1)
@@ -261,27 +269,25 @@ void SIMD_FUNC(od_filter_dering_direction_4x4)(uint16_t *y, int ystride,
   }
 }
 
-void SIMD_FUNC(od_filter_dering_direction_8x8)(uint16_t *y, int ystride,
-                                               const uint16_t *in,
-                                               int threshold, int dir,
-                                               int damping) {
+void SIMD_FUNC(cdef_direction_8x8)(uint16_t *y, int ystride, const uint16_t *in,
+                                   int threshold, int dir, int damping) {
   int i;
   v128 sum, p0, p1, row, res;
-  int o1 = OD_DIRECTION_OFFSETS_TABLE[dir][0];
-  int o2 = OD_DIRECTION_OFFSETS_TABLE[dir][1];
-  int o3 = OD_DIRECTION_OFFSETS_TABLE[dir][2];
+  int o1 = cdef_directions[dir][0];
+  int o2 = cdef_directions[dir][1];
+  int o3 = cdef_directions[dir][2];
 
   if (threshold) damping -= get_msb(threshold);
   for (i = 0; i < 8; i++) {
     sum = v128_zero();
-    row = v128_load_aligned(&in[i * OD_FILT_BSTRIDE]);
+    row = v128_load_aligned(&in[i * CDEF_BSTRIDE]);
 
-    // p0 = constrain16(in[i*OD_FILT_BSTRIDE + offset], row, threshold, damping)
-    p0 = v128_load_unaligned(&in[i * OD_FILT_BSTRIDE + o1]);
+    // p0 = constrain16(in[i*CDEF_BSTRIDE + offset], row, threshold, damping)
+    p0 = v128_load_unaligned(&in[i * CDEF_BSTRIDE + o1]);
     p0 = constrain16(p0, row, threshold, damping);
 
-    // p1 = constrain16(in[i*OD_FILT_BSTRIDE - offset], row, threshold, damping)
-    p1 = v128_load_unaligned(&in[i * OD_FILT_BSTRIDE - o1]);
+    // p1 = constrain16(in[i*CDEF_BSTRIDE - offset], row, threshold, damping)
+    p1 = v128_load_unaligned(&in[i * CDEF_BSTRIDE - o1]);
     p1 = constrain16(p1, row, threshold, damping);
 
     // sum += 3 * (p0 + p1)
@@ -289,24 +295,24 @@ void SIMD_FUNC(od_filter_dering_direction_8x8)(uint16_t *y, int ystride,
     p0 = v128_add_16(p0, v128_shl_n_16(p0, 1));
     sum = v128_add_16(sum, p0);
 
-    // p0 = constrain16(in[i*OD_FILT_BSTRIDE + offset], row, threshold, damping)
-    p0 = v128_load_unaligned(&in[i * OD_FILT_BSTRIDE + o2]);
+    // p0 = constrain16(in[i*CDEF_BSTRIDE + offset], row, threshold, damping)
+    p0 = v128_load_unaligned(&in[i * CDEF_BSTRIDE + o2]);
     p0 = constrain16(p0, row, threshold, damping);
 
-    // p1 = constrain16(in[i*OD_FILT_BSTRIDE - offset], row, threshold, damping)
-    p1 = v128_load_unaligned(&in[i * OD_FILT_BSTRIDE - o2]);
+    // p1 = constrain16(in[i*CDEF_BSTRIDE - offset], row, threshold, damping)
+    p1 = v128_load_unaligned(&in[i * CDEF_BSTRIDE - o2]);
     p1 = constrain16(p1, row, threshold, damping);
 
     // sum += 2 * (p0 + p1)
     p0 = v128_shl_n_16(v128_add_16(p0, p1), 1);
     sum = v128_add_16(sum, p0);
 
-    // p0 = constrain16(in[i*OD_FILT_BSTRIDE + offset], row, threshold, damping)
-    p0 = v128_load_unaligned(&in[i * OD_FILT_BSTRIDE + o3]);
+    // p0 = constrain16(in[i*CDEF_BSTRIDE + offset], row, threshold, damping)
+    p0 = v128_load_unaligned(&in[i * CDEF_BSTRIDE + o3]);
     p0 = constrain16(p0, row, threshold, damping);
 
-    // p1 = constrain16(in[i*OD_FILT_BSTRIDE - offset], row, threshold, damping)
-    p1 = v128_load_unaligned(&in[i * OD_FILT_BSTRIDE - o3]);
+    // p1 = constrain16(in[i*CDEF_BSTRIDE - offset], row, threshold, damping)
+    p1 = v128_load_unaligned(&in[i * CDEF_BSTRIDE - o3]);
     p1 = constrain16(p1, row, threshold, damping);
 
     // sum += (p0 + p1)
