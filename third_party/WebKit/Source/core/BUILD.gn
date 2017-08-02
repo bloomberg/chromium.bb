@@ -1596,6 +1596,7 @@ jumbo_source_set("unit_tests") {
     "style/SVGComputedStyleTest.cpp",
     "style/StyleDifferenceTest.cpp",
     "svg/SVGPathParserTest.cpp",
+    "svg/SVGTextContentElementTest.cpp",
     "svg/UnsafeSVGAttributeSanitizationTest.cpp",
     "svg/graphics/SVGImageTest.cpp",
     "testing/sim/SimCanvas.cpp",
