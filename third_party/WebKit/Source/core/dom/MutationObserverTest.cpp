@@ -4,7 +4,6 @@
 
 #include "core/dom/MutationObserver.h"
 
-#include "core/dom/MutationCallback.h"
 #include "core/dom/MutationObserverInit.h"
 #include "core/dom/MutationObserverRegistration.h"
 #include "core/html/HTMLDocument.h"
@@ -15,22 +14,24 @@ namespace blink {
 
 namespace {
 
-class EmptyMutationCallback : public MutationCallback {
+class EmptyMutationCallback : public MutationObserver::Delegate {
  public:
   explicit EmptyMutationCallback(Document& document) : document_(document) {}
+
+  ExecutionContext* GetExecutionContext() const override { return document_; }
+
+  void Deliver(const MutationRecordVector&, MutationObserver&) override {}
+
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->Trace(document_);
-    MutationCallback::Trace(visitor);
+    MutationObserver::Delegate::Trace(visitor);
   }
 
  private:
-  void Call(const HeapVector<Member<MutationRecord>>&,
-            MutationObserver*) override {}
-  ExecutionContext* GetExecutionContext() const override { return document_; }
-
   Member<Document> document_;
 };
-}
+
+}  // namespace
 
 TEST(MutationObserverTest, DisconnectCrash) {
   Persistent<Document> document = HTMLDocument::CreateForTest();

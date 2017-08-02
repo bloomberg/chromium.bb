@@ -31,8 +31,11 @@
 #include "core/dom/MutationObserver.h"
 
 #include <algorithm>
+
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/MutationCallback.h"
+#include "bindings/core/v8/MutationCallback.h"
+#include "bindings/core/v8/V8BindingForCore.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/dom/MutationObserverInit.h"
 #include "core/dom/MutationObserverRegistration.h"
 #include "core/dom/MutationRecord.h"
@@ -43,6 +46,47 @@
 
 namespace blink {
 
+class MutationObserver::V8DelegateImpl final
+    : public MutationObserver::Delegate,
+      public ContextClient {
+  USING_GARBAGE_COLLECTED_MIXIN(V8DelegateImpl);
+
+ public:
+  static V8DelegateImpl* Create(v8::Isolate* isolate,
+                                MutationCallback* callback) {
+    ExecutionContext* execution_context =
+        ToExecutionContext(callback->v8Value(isolate)->CreationContext());
+
+    return new V8DelegateImpl(callback, execution_context);
+  }
+
+  ExecutionContext* GetExecutionContext() const override {
+    return ContextClient::GetExecutionContext();
+  }
+
+  void Deliver(const MutationRecordVector& records,
+               MutationObserver& observer) override {
+    // https://dom.spec.whatwg.org/#notify-mutation-observers
+    // step 5-4. specifies that the callback this value is a MutationObserver.
+    callback_->call(&observer, records, &observer);
+  }
+
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->Trace(callback_);
+    MutationObserver::Delegate::Trace(visitor);
+    ContextClient::Trace(visitor);
+  }
+
+  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() { visitor->TraceWrappers(callback_); }
+
+ private:
+  V8DelegateImpl(MutationCallback* callback,
+                 ExecutionContext* execution_context)
+      : ContextClient(execution_context), callback_(this, callback) {}
+
+  TraceWrapperMember<MutationCallback> callback_;
+};
+
 static unsigned g_observer_priority = 0;
 
 struct MutationObserver::ObserverLessThan {
@@ -52,13 +96,24 @@ struct MutationObserver::ObserverLessThan {
   }
 };
 
-MutationObserver* MutationObserver::Create(MutationCallback* callback) {
+MutationObserver* MutationObserver::Create(Delegate* delegate) {
   DCHECK(IsMainThread());
-  return new MutationObserver(callback);
+  return new MutationObserver(delegate->GetExecutionContext(), delegate);
 }
 
-MutationObserver::MutationObserver(MutationCallback* callback)
-    : callback_(this, callback), priority_(g_observer_priority++) {}
+MutationObserver* MutationObserver::Create(ScriptState* script_state,
+                                           MutationCallback* callback) {
+  DCHECK(IsMainThread());
+  return new MutationObserver(
+      ExecutionContext::From(script_state),
+      V8DelegateImpl::Create(script_state->GetIsolate(), callback));
+}
+
+MutationObserver::MutationObserver(ExecutionContext* execution_context,
+                                   Delegate* delegate)
+    : ContextClient(execution_context),
+      delegate_(this, delegate),
+      priority_(g_observer_priority++) {}
 
 MutationObserver::~MutationObserver() {
   CancelInspectorAsyncTasks();
@@ -218,7 +273,7 @@ void MutationObserver::EnqueueMutationRecord(MutationRecord* mutation) {
   DCHECK(IsMainThread());
   records_.push_back(TraceWrapperMember<MutationRecord>(this, mutation));
   ActivateObserver(this);
-  probe::AsyncTaskScheduled(callback_->GetExecutionContext(), mutation->type(),
+  probe::AsyncTaskScheduled(delegate_->GetExecutionContext(), mutation->type(),
                             mutation);
 }
 
@@ -235,13 +290,13 @@ HeapHashSet<Member<Node>> MutationObserver::GetObservedNodes() const {
 }
 
 bool MutationObserver::ShouldBeSuspended() const {
-  return callback_->GetExecutionContext() &&
-         callback_->GetExecutionContext()->IsContextSuspended();
+  const ExecutionContext* execution_context = delegate_->GetExecutionContext();
+  return execution_context && execution_context->IsContextSuspended();
 }
 
 void MutationObserver::CancelInspectorAsyncTasks() {
   for (auto& record : records_)
-    probe::AsyncTaskCanceled(callback_->GetExecutionContext(), record);
+    probe::AsyncTaskCanceled(delegate_->GetExecutionContext(), record);
 }
 
 void MutationObserver::Deliver() {
@@ -265,9 +320,9 @@ void MutationObserver::Deliver() {
   swap(records_, records, this);
 
   // Report the first (earliest) stack as the async cause.
-  probe::AsyncTask async_task(callback_->GetExecutionContext(),
+  probe::AsyncTask async_task(delegate_->GetExecutionContext(),
                               records.front());
-  callback_->Call(records, this);
+  delegate_->Deliver(records, *this);
 }
 
 void MutationObserver::ResumeSuspendedObservers() {
@@ -310,19 +365,15 @@ void MutationObserver::DeliverMutations() {
     slot->DispatchSlotChangeEvent();
 }
 
-ExecutionContext* MutationObserver::GetExecutionContext() const {
-  return callback_->GetExecutionContext();
-}
-
 DEFINE_TRACE(MutationObserver) {
-  visitor->Trace(callback_);
+  visitor->Trace(delegate_);
   visitor->Trace(records_);
   visitor->Trace(registrations_);
-  visitor->Trace(callback_);
+  ContextClient::Trace(visitor);
 }
 
 DEFINE_TRACE_WRAPPERS(MutationObserver) {
-  visitor->TraceWrappers(callback_);
+  visitor->TraceWrappers(delegate_);
   for (auto record : records_)
     visitor->TraceWrappers(record);
 }
