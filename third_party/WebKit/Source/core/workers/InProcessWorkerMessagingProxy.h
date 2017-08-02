@@ -72,13 +72,6 @@ class CORE_EXPORT InProcessWorkerMessagingProxy
                           std::unique_ptr<SourceLocation>,
                           int exception_id);
 
-  // 'virtual' for testing.
-  virtual void ConfirmMessageFromWorkerObject();
-
-  // Called from InProcessWorkerObjectProxy when all pending activities on the
-  // worker context are finished. See InProcessWorkerObjectProxy.h for details.
-  virtual void PendingActivityFinished();
-
   DECLARE_VIRTUAL_TRACE();
 
  protected:
@@ -116,15 +109,6 @@ class CORE_EXPORT InProcessWorkerMessagingProxy
   // Tasks are queued here until there's a thread object created.
   struct QueuedTask;
   Vector<QueuedTask> queued_early_tasks_;
-
-  // Unconfirmed messages from the parent context thread to the worker thread.
-  // When this is greater than 0, |m_workerGlobalScopeHasPendingActivity| should
-  // be true.
-  unsigned unconfirmed_message_count_ = 0;
-
-  // Indicates whether there are pending activities (e.g, MessageEvent,
-  // setTimeout) on the worker context.
-  bool worker_global_scope_has_pending_activity_ = false;
 };
 
 }  // namespace blink

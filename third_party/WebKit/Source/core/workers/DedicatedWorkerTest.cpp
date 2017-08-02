@@ -24,19 +24,6 @@
 
 namespace blink {
 
-namespace {
-
-// These are chosen by trial-and-error. Making these intervals smaller causes
-// test flakiness. The main thread needs to wait until message confirmation and
-// activity report separately. If the intervals are very short, they are
-// notified to the main thread almost at the same time and the thread may miss
-// the second notification.
-constexpr double kDefaultIntervalInSec = 0.01;
-constexpr double kNextIntervalInSec = 0.01;
-constexpr double kMaxIntervalInSec = 0.02;
-
-}  // namespace
-
 class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
  public:
   DedicatedWorkerThreadForTest(InProcessWorkerObjectProxy& worker_object_proxy)
@@ -96,9 +83,6 @@ class InProcessWorkerObjectProxyForTest final
       ParentFrameTaskRunners* parent_frame_task_runners)
       : InProcessWorkerObjectProxy(messaging_proxy, parent_frame_task_runners),
         reported_features_(static_cast<int>(WebFeature::kNumberOfFeatures)) {
-    default_interval_in_sec_ = kDefaultIntervalInSec;
-    next_interval_in_sec_ = kNextIntervalInSec;
-    max_interval_in_sec_ = kMaxIntervalInSec;
   }
 
   void CountFeature(WebFeature feature) override {
@@ -131,7 +115,6 @@ class InProcessWorkerMessagingProxyForTest
   }
 
   ~InProcessWorkerMessagingProxyForTest() override {
-    EXPECT_FALSE(blocking_);
   }
 
   void StartWithSourceCode(const String& source) {
@@ -153,47 +136,8 @@ class InProcessWorkerMessagingProxyForTest
         CreateBackingThreadStartupData(nullptr /* isolate */), script_url);
   }
 
-  enum class Notification {
-    kMessageConfirmed,
-    kPendingActivityReported,
-  };
-
-  // Blocks the main thread until some event is notified.
-  Notification WaitForNotification() {
-    EXPECT_TRUE(IsMainThread());
-    DCHECK(!blocking_);
-    if (events_.IsEmpty()) {
-      blocking_ = true;
-      testing::EnterRunLoop();
-      DCHECK(!blocking_);
-    }
-    return events_.TakeFirst();
-  }
-
-  void ConfirmMessageFromWorkerObject() override {
-    EXPECT_TRUE(IsMainThread());
-    InProcessWorkerMessagingProxy::ConfirmMessageFromWorkerObject();
-    events_.push_back(Notification::kMessageConfirmed);
-    if (blocking_)
-      testing::ExitRunLoop();
-    blocking_ = false;
-  }
-
-  void PendingActivityFinished() override {
-    EXPECT_TRUE(IsMainThread());
-    InProcessWorkerMessagingProxy::PendingActivityFinished();
-    events_.push_back(Notification::kPendingActivityReported);
-    if (blocking_)
-      testing::ExitRunLoop();
-    blocking_ = false;
-  }
-
   DedicatedWorkerThreadForTest* GetDedicatedWorkerThread() {
     return static_cast<DedicatedWorkerThreadForTest*>(GetWorkerThread());
-  }
-
-  unsigned UnconfirmedMessageCount() const {
-    return unconfirmed_message_count_;
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
@@ -224,12 +168,7 @@ class InProcessWorkerMessagingProxyForTest
   Member<MockWorkerThreadLifecycleObserver>
       mock_worker_thread_lifecycle_observer_;
   RefPtr<SecurityOrigin> security_origin_;
-
-  WTF::Deque<Notification> events_;
-  bool blocking_ = false;
 };
-
-using Notification = InProcessWorkerMessagingProxyForTest::Notification;
 
 class DedicatedWorkerTest : public ::testing::Test {
  public:
@@ -266,142 +205,14 @@ class DedicatedWorkerTest : public ::testing::Test {
   Persistent<InProcessWorkerMessagingProxyForTest> worker_messaging_proxy_;
 };
 
-TEST_F(DedicatedWorkerTest, PendingActivity_NoActivity) {
+TEST_F(DedicatedWorkerTest, PendingActivity_NoActivityAfterContextDestroyed) {
   const String source_code = "// Do nothing";
   WorkerMessagingProxy()->StartWithSourceCode(source_code);
 
-  // Worker initialization should be counted as a pending activity.
   EXPECT_TRUE(WorkerMessagingProxy()->HasPendingActivity());
 
-  // There should be no pending activities after the initialization.
-  EXPECT_EQ(Notification::kPendingActivityReported,
-            WorkerMessagingProxy()->WaitForNotification());
-  EXPECT_FALSE(WorkerMessagingProxy()->HasPendingActivity());
-}
-
-TEST_F(DedicatedWorkerTest, PendingActivity_SetTimeout) {
-  // Start an oneshot timer on initial script evaluation.
-  const String source_code = "setTimeout(function() {}, 0);";
-  WorkerMessagingProxy()->StartWithSourceCode(source_code);
-
-  // Worker initialization should be counted as a pending activity.
-  EXPECT_TRUE(WorkerMessagingProxy()->HasPendingActivity());
-
-  // The timer is fired soon and there should be no pending activities after
-  // that.
-  EXPECT_EQ(Notification::kPendingActivityReported,
-            WorkerMessagingProxy()->WaitForNotification());
-  EXPECT_FALSE(WorkerMessagingProxy()->HasPendingActivity());
-}
-
-TEST_F(DedicatedWorkerTest, PendingActivity_SetInterval) {
-  // Start a repeated timer on initial script evaluation, and stop it when a
-  // message is received. The timer needs a non-zero delay or else worker
-  // activities would not run.
-  const String source_code =
-      "var id = setInterval(function() {}, 50);"
-      "addEventListener('message', function(event) { clearInterval(id); });";
-  WorkerMessagingProxy()->StartWithSourceCode(source_code);
-
-  // Worker initialization should be counted as a pending activity.
-  EXPECT_TRUE(WorkerMessagingProxy()->HasPendingActivity());
-
-  // Stop the timer.
-  DispatchMessageEvent();
-  EXPECT_EQ(1u, WorkerMessagingProxy()->UnconfirmedMessageCount());
-  EXPECT_TRUE(WorkerMessagingProxy()->HasPendingActivity());
-  EXPECT_EQ(Notification::kMessageConfirmed,
-            WorkerMessagingProxy()->WaitForNotification());
-  EXPECT_EQ(0u, WorkerMessagingProxy()->UnconfirmedMessageCount());
-  EXPECT_TRUE(WorkerMessagingProxy()->HasPendingActivity());
-
-  // There should be no pending activities after the timer is stopped.
-  EXPECT_EQ(Notification::kPendingActivityReported,
-            WorkerMessagingProxy()->WaitForNotification());
-  EXPECT_FALSE(WorkerMessagingProxy()->HasPendingActivity());
-}
-
-TEST_F(DedicatedWorkerTest, PendingActivity_SetTimeoutOnMessageEvent) {
-  // Start an oneshot timer on a message event.
-  const String source_code =
-      "addEventListener('message', function(event) {"
-      "  setTimeout(function() {}, 0);"
-      "});";
-  WorkerMessagingProxy()->StartWithSourceCode(source_code);
-
-  // Worker initialization should be counted as a pending activity.
-  EXPECT_TRUE(WorkerMessagingProxy()->HasPendingActivity());
-  EXPECT_EQ(Notification::kPendingActivityReported,
-            WorkerMessagingProxy()->WaitForNotification());
-  EXPECT_FALSE(WorkerMessagingProxy()->HasPendingActivity());
-
-  // A message starts the oneshot timer that is counted as a pending activity.
-  DispatchMessageEvent();
-  EXPECT_EQ(1u, WorkerMessagingProxy()->UnconfirmedMessageCount());
-  EXPECT_TRUE(WorkerMessagingProxy()->HasPendingActivity());
-  EXPECT_EQ(Notification::kMessageConfirmed,
-            WorkerMessagingProxy()->WaitForNotification());
-  EXPECT_EQ(0u, WorkerMessagingProxy()->UnconfirmedMessageCount());
-  EXPECT_TRUE(WorkerMessagingProxy()->HasPendingActivity());
-
-  // The timer is fired soon and there should be no pending activities after
-  // that.
-  EXPECT_EQ(Notification::kPendingActivityReported,
-            WorkerMessagingProxy()->WaitForNotification());
-  EXPECT_FALSE(WorkerMessagingProxy()->HasPendingActivity());
-}
-
-TEST_F(DedicatedWorkerTest, PendingActivity_SetIntervalOnMessageEvent) {
-  // Start a repeated timer on a message event, and stop it when another
-  // message is received. The timer needs a non-zero delay or else worker
-  // activities would not run.
-  const String source_code =
-      "var count = 0;"
-      "var id;"
-      "addEventListener('message', function(event) {"
-      "  if (count++ == 0) {"
-      "    id = setInterval(function() {}, 50);"
-      "  } else {"
-      "    clearInterval(id);"
-      "  }"
-      "});";
-  WorkerMessagingProxy()->StartWithSourceCode(source_code);
-
-  // Worker initialization should be counted as a pending activity.
-  EXPECT_TRUE(WorkerMessagingProxy()->HasPendingActivity());
-  EXPECT_EQ(Notification::kPendingActivityReported,
-            WorkerMessagingProxy()->WaitForNotification());
-  EXPECT_FALSE(WorkerMessagingProxy()->HasPendingActivity());
-
-  // The first message event sets the active timer that is counted as a
-  // pending activity.
-  DispatchMessageEvent();
-  EXPECT_EQ(1u, WorkerMessagingProxy()->UnconfirmedMessageCount());
-  EXPECT_TRUE(WorkerMessagingProxy()->HasPendingActivity());
-  EXPECT_EQ(Notification::kMessageConfirmed,
-            WorkerMessagingProxy()->WaitForNotification());
-  EXPECT_EQ(0u, WorkerMessagingProxy()->UnconfirmedMessageCount());
-  EXPECT_TRUE(WorkerMessagingProxy()->HasPendingActivity());
-
-  // Run the message loop for a while to make sure the timer is counted as a
-  // pending activity until it's stopped. The delay is equal to the max
-  // interval so that the pending activity timer may be able to have a chance
-  // to run before the next expectation check.
-  constexpr TimeDelta kDelay = TimeDelta::FromSecondsD(kMaxIntervalInSec);
-  testing::RunDelayedTasks(kDelay);
-  EXPECT_TRUE(WorkerMessagingProxy()->HasPendingActivity());
-
-  // Stop the timer.
-  DispatchMessageEvent();
-  EXPECT_EQ(1u, WorkerMessagingProxy()->UnconfirmedMessageCount());
-  EXPECT_TRUE(WorkerMessagingProxy()->HasPendingActivity());
-  EXPECT_EQ(Notification::kMessageConfirmed,
-            WorkerMessagingProxy()->WaitForNotification());
-  EXPECT_EQ(0u, WorkerMessagingProxy()->UnconfirmedMessageCount());
-
-  // There should be no pending activities after the timer is stopped.
-  EXPECT_EQ(Notification::kPendingActivityReported,
-            WorkerMessagingProxy()->WaitForNotification());
+  // Destroying the context should result in no pending activities.
+  WorkerMessagingProxy()->TerminateGlobalScope();
   EXPECT_FALSE(WorkerMessagingProxy()->HasPendingActivity());
 }
 

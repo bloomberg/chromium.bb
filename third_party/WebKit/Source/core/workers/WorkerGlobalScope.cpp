@@ -249,7 +249,9 @@ v8::Local<v8::Object> WorkerGlobalScope::AssociateWithWrapper(
 }
 
 bool WorkerGlobalScope::HasPendingActivity() const {
-  return timers_.HasInstalledTimeout();
+  // The worker global scope wrapper is kept alive as long as its execution
+  // context is alive.
+  return !ExecutionContext::IsContextDestroyed();
 }
 
 bool WorkerGlobalScope::IsContextThread() const {
