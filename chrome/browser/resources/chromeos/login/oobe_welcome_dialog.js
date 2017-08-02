@@ -59,6 +59,9 @@
 
   Polymer({
     is: 'oobe-welcome-dialog',
+
+    behaviors: [I18nBehavior],
+
     properties: {
       /**
        * Currently selected system language (display name).
