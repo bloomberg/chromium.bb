@@ -18,6 +18,7 @@
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/service_manager/common_browser_interfaces.h"
@@ -293,6 +294,14 @@ ServiceManagerContext::ServiceManagerContext() {
   pid_receiver->SetPID(base::GetCurrentProcId());
 
   service_manager::EmbeddedServiceInfo device_info;
+
+  // This task runner may be used by some device service implementation bits to
+  // interface with dbus client code, which in turn imposes some subtle thread
+  // affinity on the clients. We therefore require a single-thread runner.
+  scoped_refptr<base::SingleThreadTaskRunner> device_blocking_task_runner =
+      base::CreateSingleThreadTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND});
+
 #if defined(OS_ANDROID)
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaGlobalRef<jobject> java_nfc_delegate;
@@ -302,15 +311,13 @@ ServiceManagerContext::ServiceManagerContext() {
   // See the comments on wake_lock_context_host.h and ContentNfcDelegate.java
   // respectively for comments on those parameters.
   device_info.factory =
-      base::Bind(&device::CreateDeviceService,
-                 BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
+      base::Bind(&device::CreateDeviceService, device_blocking_task_runner,
                  BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
                  base::Bind(&WakeLockContextHost::GetNativeViewForContext),
                  std::move(java_nfc_delegate));
 #else
   device_info.factory =
-      base::Bind(&device::CreateDeviceService,
-                 BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
+      base::Bind(&device::CreateDeviceService, device_blocking_task_runner,
                  BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 #endif
   device_info.task_runner = base::ThreadTaskRunnerHandle::Get();
