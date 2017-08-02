@@ -14,8 +14,6 @@ async_test(function (t) {
             assert_equals(longtask.entryType, "longtask");
             assert_equals(longtask.name, "self");
             assert_greater_than(longtask.duration, 50);
-            assert_equals(longtask.startTime, Math.floor(longtask.startTime),
-                "startTime expected to have 1 miillisecond granularity");
 
             // Assert the TaskAttributionTiming entry in attribution.
             assert_equals(longtask.attribution.length, 1,
