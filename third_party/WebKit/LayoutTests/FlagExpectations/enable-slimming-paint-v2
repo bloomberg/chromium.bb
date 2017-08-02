@@ -1574,6 +1574,7 @@ crbug.com/589265 paint/invalidation/svg/repaint-paintorder.svg [ Failure ]
 crbug.com/589265 paint/invalidation/svg/tabgroup.svg [ Failure ]
 crbug.com/589265 svg/W3C-SVG-1.1/animate-elem-33-t.svg [ Failure ]
 crbug.com/589265 svg/as-background-image/background-image-preserveaspectRatio-support.html [ Failure ]
+crbug.com/589265 svg/as-background-image/svg-as-background-6.html [ Failure ]
 crbug.com/589265 svg/custom/small-rect-scale.svg [ Failure ]
 crbug.com/589265 svg/dynamic-updates/SVGFEBlendElement-dom-in-attr.html [ Failure ]
 crbug.com/589265 svg/dynamic-updates/SVGFEBlendElement-dom-in2-attr.html [ Failure ]
@@ -1759,5 +1760,3 @@ Bug(none) fast/block/float/float-change-composited-scrolling.html [ Failure ]
 # reasons, in particular that the composited layerization algorithm provides
 # different results.
 Bug(none) paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ Failure ]
-
-crbug.com/737275 svg/as-background-image/svg-as-background-6.html [ Crash Failure ]
