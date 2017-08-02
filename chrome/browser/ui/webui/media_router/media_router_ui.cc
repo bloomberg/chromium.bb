@@ -134,16 +134,17 @@ Browser* MediaRouterUI::GetBrowser() {
   return chrome::FindBrowserWithWebContents(initiator());
 }
 
-void MediaRouterUI::OpenTabWithUrl(const GURL url) {
+content::WebContents* MediaRouterUI::OpenTabWithUrl(const GURL url) {
   // Check if the current page is a new tab. If so open file in current page.
   // If not then open a new page.
   if (initiator_->GetVisibleURL() == chrome::kChromeUINewTabURL) {
     content::NavigationController::LoadURLParams load_params(url);
     load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
     initiator_->GetController().LoadURLWithParams(load_params);
+    return initiator_;
   } else {
-    initiator_ = chrome::AddSelectedTabWithURL(GetBrowser(), url,
-                                               ui::PAGE_TRANSITION_LINK);
+    return chrome::AddSelectedTabWithURL(GetBrowser(), url,
+                                         ui::PAGE_TRANSITION_LINK);
   }
 }
 
@@ -488,18 +489,27 @@ bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
   base::TimeDelta timeout;
   bool incognito;
 
+  // Default the tab casting the content to the initiator, and change if
+  // necessary.
+  content::WebContents* tab_contents = initiator_;
+
   if (cast_mode == MediaCastMode::LOCAL_FILE) {
     GURL url = media_router_file_dialog_->GetLastSelectedFileUrl();
-    OpenTabWithUrl(url);
-  }
+    tab_contents = OpenTabWithUrl(url);
 
-  if (!SetRouteParameters(sink_id, cast_mode, &source_id, &origin,
-                          &route_response_callbacks, &timeout, &incognito)) {
+    SessionID::id_type tab_id = SessionTabHelper::IdForTab(tab_contents);
+    source_id = MediaSourceForTab(tab_id).id();
+
+    SetLocalFileRouteParameters(sink_id, &origin, &route_response_callbacks,
+                                &timeout, &incognito);
+  } else if (!SetRouteParameters(sink_id, cast_mode, &source_id, &origin,
+                                 &route_response_callbacks, &timeout,
+                                 &incognito)) {
     SendIssueForUnableToCast(cast_mode);
     return false;
   }
 
-  router_->CreateRoute(source_id, sink_id, origin, initiator_,
+  router_->CreateRoute(source_id, sink_id, origin, tab_contents,
                        std::move(route_response_callbacks), timeout, incognito);
   return true;
 }
@@ -583,13 +593,38 @@ bool MediaRouterUI::SetRouteParameters(
       base::BindOnce(&MediaRouterUI::MaybeReportCastingSource,
                      weak_factory_.GetWeakPtr(), cast_mode));
 
-  if (cast_mode == MediaCastMode::LOCAL_FILE) {
-    route_response_callbacks->push_back(
-        base::BindOnce(&MediaRouterUI::MaybeReportFileInformation,
-                       weak_factory_.GetWeakPtr()));
-  }
-
   *timeout = GetRouteRequestTimeout(cast_mode);
+  *incognito = Profile::FromWebUI(web_ui())->IsOffTheRecord();
+
+  return true;
+}
+
+// TODO(Issue 751317) This function and the above function are messy, this code
+// would be much neater if the route params were combined in a single struct,
+// which will require mojo changes as well.
+bool MediaRouterUI::SetLocalFileRouteParameters(
+    const MediaSink::Id& sink_id,
+    url::Origin* origin,
+    std::vector<MediaRouteResponseCallback>* route_response_callbacks,
+    base::TimeDelta* timeout,
+    bool* incognito) {
+  // Use a placeholder URL as origin for local file casting, which is
+  // essentially mirroring.
+  *origin = url::Origin(GURL(chrome::kChromeUIMediaRouterURL));
+
+  route_response_callbacks->push_back(base::BindOnce(
+      &MediaRouterUI::OnRouteResponseReceived, weak_factory_.GetWeakPtr(),
+      current_route_request_id_, sink_id, MediaCastMode::LOCAL_FILE,
+      base::UTF8ToUTF16(GetTruncatedPresentationRequestSourceName())));
+
+  route_response_callbacks->push_back(
+      base::BindOnce(&MediaRouterUI::MaybeReportCastingSource,
+                     weak_factory_.GetWeakPtr(), MediaCastMode::LOCAL_FILE));
+
+  route_response_callbacks->push_back(base::BindOnce(
+      &MediaRouterUI::MaybeReportFileInformation, weak_factory_.GetWeakPtr()));
+
+  *timeout = GetRouteRequestTimeout(MediaCastMode::LOCAL_FILE);
   *incognito = Profile::FromWebUI(web_ui())->IsOffTheRecord();
 
   return true;
