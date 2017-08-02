@@ -15,7 +15,9 @@
 #include "components/feedback/feedback_data.h"
 #include "components/feedback/system_logs/system_logs_fetcher.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 
@@ -34,7 +36,7 @@ class FeedbackService : public base::SupportsWeakPtr<FeedbackService> {
   virtual ~FeedbackService();
 
   // Sends a feedback report.
-  void SendFeedback(Profile* profile,
+  void SendFeedback(content::BrowserContext* browser_context,
                     scoped_refptr<feedback::FeedbackData> feedback_data,
                     const SendFeedbackCallback& callback);
 
