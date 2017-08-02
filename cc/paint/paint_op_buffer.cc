@@ -223,6 +223,7 @@ struct Rasterizer {
     static_assert(
         !T::kHasPaintFlags,
         "This function should not be used for a PaintOp that has PaintFlags");
+    DCHECK(op->IsValid());
     NOTREACHED();
   }
   static void Raster(const T* op,
@@ -231,6 +232,7 @@ struct Rasterizer {
     static_assert(
         !T::kHasPaintFlags,
         "This function should not be used for a PaintOp that has PaintFlags");
+    DCHECK(op->IsValid());
     T::Raster(op, canvas, params);
   }
 };
@@ -243,6 +245,7 @@ struct Rasterizer<T, true> {
                               const PlaybackParams& params) {
     static_assert(T::kHasPaintFlags,
                   "This function expects the PaintOp to have PaintFlags");
+    DCHECK(op->IsValid());
     T::RasterWithFlags(op, flags, canvas, params);
   }
 
@@ -251,6 +254,7 @@ struct Rasterizer<T, true> {
                      const PlaybackParams& params) {
     static_assert(T::kHasPaintFlags,
                   "This function expects the PaintOp to have PaintFlags");
+    DCHECK(op->IsValid());
     T::RasterWithFlags(op, &op->flags, canvas, params);
   }
 };
@@ -742,6 +746,8 @@ T* SimpleDeserialize(const void* input,
   memcpy(output, input, sizeof(T));
 
   T* op = reinterpret_cast<T*>(output);
+  if (!op->IsValid())
+    return nullptr;
   // Type and skip were already read once, so could have been changed.
   // Don't trust them and clobber them with something valid.
   UpdateTypeAndSkip(op);
@@ -759,7 +765,7 @@ PaintOp* AnnotateOp::Deserialize(const void* input,
   helper.Read(&op->annotation_type);
   helper.Read(&op->rect);
   helper.Read(&op->data);
-  if (!helper.valid()) {
+  if (!helper.valid() || !op->IsValid()) {
     op->~AnnotateOp();
     return nullptr;
   }
@@ -787,7 +793,7 @@ PaintOp* ClipPathOp::Deserialize(const void* input,
   helper.Read(&op->path);
   helper.Read(&op->op);
   helper.Read(&op->antialias);
-  if (!helper.valid() || !IsValidSkClipOp(op->op)) {
+  if (!helper.valid() || !op->IsValid()) {
     op->~ClipPathOp();
     return nullptr;
   }
@@ -800,18 +806,14 @@ PaintOp* ClipRectOp::Deserialize(const void* input,
                                  size_t input_size,
                                  void* output,
                                  size_t output_size) {
-  ClipRectOp* op =
-      SimpleDeserialize<ClipRectOp>(input, input_size, output, output_size);
-  return op && IsValidSkClipOp(op->op) ? op : nullptr;
+  return SimpleDeserialize<ClipRectOp>(input, input_size, output, output_size);
 }
 
 PaintOp* ClipRRectOp::Deserialize(const void* input,
                                   size_t input_size,
                                   void* output,
                                   size_t output_size) {
-  ClipRRectOp* op =
-      SimpleDeserialize<ClipRRectOp>(input, input_size, output, output_size);
-  return op && IsValidSkClipOp(op->op) ? op : nullptr;
+  return SimpleDeserialize<ClipRRectOp>(input, input_size, output, output_size);
 }
 
 PaintOp* ConcatOp::Deserialize(const void* input,
@@ -834,7 +836,7 @@ PaintOp* DrawArcOp::Deserialize(const void* input,
   helper.Read(&op->start_angle);
   helper.Read(&op->sweep_angle);
   helper.Read(&op->use_center);
-  if (!helper.valid()) {
+  if (!helper.valid() || !op->IsValid()) {
     op->~DrawArcOp();
     return nullptr;
   }
@@ -854,7 +856,7 @@ PaintOp* DrawCircleOp::Deserialize(const void* input,
   helper.Read(&op->cx);
   helper.Read(&op->cy);
   helper.Read(&op->radius);
-  if (!helper.valid()) {
+  if (!helper.valid() || !op->IsValid()) {
     op->~DrawCircleOp();
     return nullptr;
   }
@@ -866,9 +868,7 @@ PaintOp* DrawColorOp::Deserialize(const void* input,
                                   size_t input_size,
                                   void* output,
                                   size_t output_size) {
-  DrawColorOp* op =
-      SimpleDeserialize<DrawColorOp>(input, input_size, output, output_size);
-  return op && IsValidDrawColorSkBlendMode(op->mode) ? op : nullptr;
+  return SimpleDeserialize<DrawColorOp>(input, input_size, output, output_size);
 }
 
 PaintOp* DrawDRRectOp::Deserialize(const void* input,
@@ -882,7 +882,7 @@ PaintOp* DrawDRRectOp::Deserialize(const void* input,
   helper.Read(&op->flags);
   helper.Read(&op->outer);
   helper.Read(&op->inner);
-  if (!helper.valid()) {
+  if (!helper.valid() || !op->IsValid()) {
     op->~DrawDRRectOp();
     return nullptr;
   }
@@ -902,7 +902,7 @@ PaintOp* DrawImageOp::Deserialize(const void* input,
   helper.Read(&op->image);
   helper.Read(&op->left);
   helper.Read(&op->top);
-  if (!helper.valid()) {
+  if (!helper.valid() || !op->IsValid()) {
     op->~DrawImageOp();
     return nullptr;
   }
@@ -923,7 +923,7 @@ PaintOp* DrawImageRectOp::Deserialize(const void* input,
   helper.Read(&op->src);
   helper.Read(&op->dst);
   helper.Read(&op->constraint);
-  if (!helper.valid()) {
+  if (!helper.valid() || !op->IsValid()) {
     op->~DrawImageRectOp();
     return nullptr;
   }
@@ -941,7 +941,7 @@ PaintOp* DrawIRectOp::Deserialize(const void* input,
   PaintOpReader helper(input, input_size);
   helper.Read(&op->flags);
   helper.Read(&op->rect);
-  if (!helper.valid()) {
+  if (!helper.valid() || !op->IsValid()) {
     op->~DrawIRectOp();
     return nullptr;
   }
@@ -962,7 +962,7 @@ PaintOp* DrawLineOp::Deserialize(const void* input,
   helper.Read(&op->y0);
   helper.Read(&op->x1);
   helper.Read(&op->y1);
-  if (!helper.valid()) {
+  if (!helper.valid() || !op->IsValid()) {
     op->~DrawLineOp();
     return nullptr;
   }
@@ -980,7 +980,7 @@ PaintOp* DrawOvalOp::Deserialize(const void* input,
   PaintOpReader helper(input, input_size);
   helper.Read(&op->flags);
   helper.Read(&op->oval);
-  if (!helper.valid()) {
+  if (!helper.valid() || !op->IsValid()) {
     op->~DrawOvalOp();
     return nullptr;
   }
@@ -998,7 +998,7 @@ PaintOp* DrawPathOp::Deserialize(const void* input,
   PaintOpReader helper(input, input_size);
   helper.Read(&op->flags);
   helper.Read(&op->path);
-  if (!helper.valid()) {
+  if (!helper.valid() || !op->IsValid()) {
     op->~DrawPathOp();
     return nullptr;
   }
@@ -1027,7 +1027,7 @@ PaintOp* DrawPosTextOp::Deserialize(const void* input,
     helper.ReadArray(op->count, op->GetArray());
     helper.ReadData(op->bytes, op->GetData());
   }
-  if (!helper.valid()) {
+  if (!helper.valid() || !op->IsValid()) {
     op->~DrawPosTextOp();
     return nullptr;
   }
@@ -1059,7 +1059,7 @@ PaintOp* DrawRectOp::Deserialize(const void* input,
   PaintOpReader helper(input, input_size);
   helper.Read(&op->flags);
   helper.Read(&op->rect);
-  if (!helper.valid()) {
+  if (!helper.valid() || !op->IsValid()) {
     op->~DrawRectOp();
     return nullptr;
   }
@@ -1077,7 +1077,7 @@ PaintOp* DrawRRectOp::Deserialize(const void* input,
   PaintOpReader helper(input, input_size);
   helper.Read(&op->flags);
   helper.Read(&op->rrect);
-  if (!helper.valid()) {
+  if (!helper.valid() || !op->IsValid()) {
     op->~DrawRRectOp();
     return nullptr;
   }
@@ -1099,7 +1099,7 @@ PaintOp* DrawTextOp::Deserialize(const void* input,
   helper.Read(&op->bytes);
   if (helper.valid())
     helper.ReadData(op->bytes, op->GetData());
-  if (!helper.valid()) {
+  if (!helper.valid() || !op->IsValid()) {
     op->~DrawTextOp();
     return nullptr;
   }
@@ -1122,7 +1122,7 @@ PaintOp* DrawTextBlobOp::Deserialize(const void* input,
   helper.Read(&op->x);
   helper.Read(&op->y);
   helper.Read(&op->blob);
-  if (!helper.valid()) {
+  if (!helper.valid() || !op->IsValid()) {
     op->~DrawTextBlobOp();
     return nullptr;
   }
@@ -1168,7 +1168,7 @@ PaintOp* SaveLayerOp::Deserialize(const void* input,
   PaintOpReader helper(input, input_size);
   helper.Read(&op->flags);
   helper.Read(&op->bounds);
-  if (!helper.valid()) {
+  if (!helper.valid() || !op->IsValid()) {
     op->~SaveLayerOp();
     return nullptr;
   }
