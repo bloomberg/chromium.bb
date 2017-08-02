@@ -106,6 +106,9 @@ void GlRenderer::OnCursorShapeChanged(const protocol::CursorShapeInfo& shape) {
 void GlRenderer::OnSurfaceCreated(std::unique_ptr<Canvas> canvas) {
   DCHECK(thread_checker_.CalledOnValidThread());
   canvas_ = std::move(canvas);
+  if (view_width_ > 0 && view_height_ > 0) {
+    canvas_->SetViewSize(view_width_, view_height_);
+  }
   for (auto& drawable : drawables_) {
     drawable->SetCanvas(canvas_->GetWeakPtr());
   }
@@ -113,10 +116,13 @@ void GlRenderer::OnSurfaceCreated(std::unique_ptr<Canvas> canvas) {
 
 void GlRenderer::OnSurfaceChanged(int view_width, int view_height) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  view_width_ = view_width;
+  view_height_ = view_height;
+
   if (!canvas_) {
-    LOG(WARNING) << "Trying to set the view size when the canvas is not ready.";
     return;
   }
+
   canvas_->SetViewSize(view_width, view_height);
   RequestRender();
 }
