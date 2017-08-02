@@ -141,7 +141,8 @@ TEST(ParsedCertificateTest, BadKeyUsage) {
   ASSERT_FALSE(ParseCertificateFromFile("bad_key_usage.pem", {}));
 }
 
-// TODO(eroman): What is wrong with policy qualifiers?
+// Parses a certificate that has a PolicyQualifierInfo that is missing the
+// qualifier field.
 TEST(ParsedCertificateTest, BadPolicyQualifiers) {
   ASSERT_FALSE(ParseCertificateFromFile("bad_policy_qualifiers.pem", {}));
 }
@@ -151,7 +152,8 @@ TEST(ParsedCertificateTest, BadSignatureAlgorithmOid) {
   ASSERT_FALSE(ParseCertificateFromFile("bad_signature_algorithm_oid.pem", {}));
 }
 
-// TODO(eroman): What is wrong with the validity?
+//  The validity encodes time as UTCTime but following the BER rules rather than
+//  DER rules (i.e. YYMMDDHHMMZ instead of YYMMDDHHMMSSZ).
 TEST(ParsedCertificateTest, BadValidity) {
   ASSERT_FALSE(ParseCertificateFromFile("bad_validity.pem", {}));
 }
