@@ -114,11 +114,9 @@ SubresourceFilter* WorkerFetchContext::GetSubresourceFilter() const {
   return subresource_filter_.Get();
 }
 
-bool WorkerFetchContext::ShouldBlockRequestByInspector(
-    const ResourceRequest& resource_request) const {
+bool WorkerFetchContext::ShouldBlockRequestByInspector(const KURL& url) const {
   bool should_block_request = false;
-  probe::shouldBlockRequest(global_scope_, resource_request,
-                            &should_block_request);
+  probe::shouldBlockRequest(global_scope_, url, &should_block_request);
   return should_block_request;
 }
 

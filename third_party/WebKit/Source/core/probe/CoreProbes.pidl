@@ -29,8 +29,8 @@
  */
 
 /*
- * CodeGeneratorInstrumentation.py uses this file as a source to generate
- * InspectorInstrumentationInl.h and InspectorInstrumentationImpl.cpp
+ * make_instrumenting_probes.py uses this file as a source to generate
+ * CoreProbesInl.h, CoreProbesImpl.cpp and CoreProbeSink.h.
  *
  * The code below is not a correct IDL but a mix of IDL and C++.
  *
@@ -159,5 +159,5 @@ interface CoreProbes {
   void forcePseudoState([Keep] Element* element, CSSSelector::PseudoType pseudoState, bool* result);
   void shouldWaitForDebuggerOnWorkerStart(ExecutionContext* context, bool* result);
   void shouldForceCORSPreflight(Document*, bool* result);
-  void shouldBlockRequest(ExecutionContext*, const ResourceRequest&, bool* result);
+  void shouldBlockRequest(ExecutionContext*, const KURL&, bool* result);
 }

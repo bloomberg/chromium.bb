@@ -47,7 +47,7 @@ class MockBaseFetchContext final : public BaseFetchContext {
   KURL GetFirstPartyForCookies() const override { return KURL(); }
   bool AllowScriptFromSource(const KURL&) const { return false; }
   SubresourceFilter* GetSubresourceFilter() const override { return nullptr; }
-  bool ShouldBlockRequestByInspector(const ResourceRequest&) const override {
+  bool ShouldBlockRequestByInspector(const KURL&) const override {
     return false;
   }
   void DispatchDidBlockRequest(const ResourceRequest&,

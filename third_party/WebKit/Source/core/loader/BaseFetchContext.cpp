@@ -154,7 +154,7 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequestInternal(
   if (IsDetached() && !resource_request.GetKeepalive())
     return ResourceRequestBlockedReason::kOther;
 
-  if (ShouldBlockRequestByInspector(resource_request))
+  if (ShouldBlockRequestByInspector(resource_request.Url()))
     return ResourceRequestBlockedReason::kInspector;
 
   SecurityOrigin* security_origin = options.security_origin.Get();
