@@ -624,6 +624,11 @@ ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
   DCHECK(stream_track_);
   DCHECK(!service_.is_bound());
 
+  // This object may be constructed over an ExecutionContext that has already
+  // been detached. In this case the ImageCapture service will not be available.
+  if (!GetFrame())
+    return;
+
   GetFrame()->GetInterfaceProvider().GetInterface(mojo::MakeRequest(&service_));
 
   service_.set_connection_error_handler(ConvertToBaseCallback(WTF::Bind(
