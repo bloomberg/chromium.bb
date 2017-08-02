@@ -105,8 +105,7 @@ MessageLoop::~MessageLoop() {
   // There should be no active RunLoops on this thread, unless this MessageLoop
   // isn't bound to the current thread (see other condition at the top of this
   // method).
-  DCHECK((!pump_ && current() != this) ||
-         !run_loop_client_->GetTopMostRunLoop());
+  DCHECK((!pump_ && current() != this) || !RunLoop::IsRunningOnCurrentThread());
 #endif
 
 #if defined(OS_WIN)
@@ -566,7 +565,7 @@ bool MessageLoop::DoIdleWork() {
   if (ProcessNextDelayedNonNestableTask())
     return true;
 
-  if (run_loop_client_->GetTopMostRunLoop()->quit_when_idle_received_)
+  if (run_loop_client_->ShouldQuitWhenIdle())
     pump_->Quit();
 
   // When we return we will do a kernel wait for more tasks.
