@@ -53,6 +53,10 @@ class BrowserPluginDelegate;
 struct WebPluginInfo;
 }
 
+namespace error_page {
+class Error;
+}
+
 namespace network_hints {
 class PrescientNetworkingDispatcher;
 }
@@ -125,6 +129,14 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                                  const blink::WebURLError& error,
                                  std::string* error_html,
                                  base::string16* error_description) override;
+  void GetNavigationErrorStringsForHttpStatusError(
+      content::RenderFrame* render_frame,
+      const blink::WebURLRequest& failed_request,
+      const GURL& unreachable_url,
+      int http_status,
+      std::string* error_html,
+      base::string16* error_description) override;
+
   void DeferMediaLoad(content::RenderFrame* render_frame,
                       bool has_played_media_before,
                       const base::Closure& closure) override;
@@ -227,6 +239,13 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 
   // Initialises |safe_browsing_| if it is not already initialised.
   void InitSafeBrowsingIfNecessary();
+
+  void GetNavigationErrorStringsInternal(
+      content::RenderFrame* render_frame,
+      const blink::WebURLRequest& failed_request,
+      const error_page::Error& error,
+      std::string* error_html,
+      base::string16* error_description);
 
   // Time at which this object was created. This is very close to the time at
   // which the RendererMain function was entered.

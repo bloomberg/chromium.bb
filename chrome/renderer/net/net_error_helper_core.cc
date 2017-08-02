@@ -34,7 +34,6 @@
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURLError.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -123,9 +122,8 @@ base::TimeDelta GetAutoReloadTime(size_t reload_count) {
 
 // Returns whether |error| is a DNS-related error (and therefore whether
 // the tab helper should start a DNS probe after receiving it).
-bool IsBlinkDnsError(const blink::WebURLError& error) {
-  return error.domain == blink::WebURLError::Domain::kNet &&
-         net::IsDnsError(error.reason);
+bool IsNetDnsError(const error_page::Error& error) {
+  return error.domain() == net::kErrorDomain && net::IsDnsError(error.reason());
 }
 
 GURL SanitizeURL(const GURL& url) {
@@ -150,32 +148,32 @@ std::string PrepareUrlForUpload(const GURL& url) {
   return spec_to_send;
 }
 
-// Given a WebURLError, returns true if the FixURL service should be used
+// Given an Error, returns true if the FixURL service should be used
 // for that error.  Also sets |error_param| to the string that should be sent to
 // the FixURL service to identify the error type.
-bool ShouldUseFixUrlServiceForError(const blink::WebURLError& error,
+bool ShouldUseFixUrlServiceForError(const error_page::Error& error,
                                     std::string* error_param) {
   error_param->clear();
 
   // Don't use the correction service for HTTPS (for privacy reasons).
-  GURL unreachable_url(error.unreachable_url);
+  GURL unreachable_url(error.url());
   if (GURL(unreachable_url).SchemeIsCryptographic())
     return false;
 
-  const auto& domain = error.domain;
-  if (domain == blink::WebURLError::Domain::kHttp && error.reason == 404) {
+  const auto& domain = error.domain();
+  if (domain == error_page::Error::kHttpErrorDomain && error.reason() == 404) {
     *error_param = "http404";
     return true;
   }
-  if (IsBlinkDnsError(error)) {
+  if (IsNetDnsError(error)) {
     *error_param = "dnserror";
     return true;
   }
-  if (domain == blink::WebURLError::Domain::kNet &&
-      (error.reason == net::ERR_CONNECTION_FAILED ||
-       error.reason == net::ERR_CONNECTION_REFUSED ||
-       error.reason == net::ERR_ADDRESS_UNREACHABLE ||
-       error.reason == net::ERR_CONNECTION_TIMED_OUT)) {
+  if (domain == net::kErrorDomain &&
+      (error.reason() == net::ERR_CONNECTION_FAILED ||
+       error.reason() == net::ERR_CONNECTION_REFUSED ||
+       error.reason() == net::ERR_ADDRESS_UNREACHABLE ||
+       error.reason() == net::ERR_CONNECTION_TIMED_OUT)) {
     *error_param = "connectionFailure";
     return true;
   }
@@ -216,7 +214,7 @@ std::string CreateRequestBody(
 // load that failed with |error|, returns true and sets
 // |correction_request_body| to be the body for the correction request.
 std::string CreateFixUrlRequestBody(
-    const blink::WebURLError& error,
+    const error_page::Error& error,
     const NetErrorHelperCore::NavigationCorrectionParams& correction_params) {
   std::string error_param;
   bool result = ShouldUseFixUrlServiceForError(error, &error_param);
@@ -225,13 +223,13 @@ std::string CreateFixUrlRequestBody(
   // TODO(mmenke):  Investigate open sourcing the relevant protocol buffers and
   //                using those directly instead.
   std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
-  params->SetString("urlQuery", PrepareUrlForUpload(error.unreachable_url));
+  params->SetString("urlQuery", PrepareUrlForUpload(error.url()));
   return CreateRequestBody("linkdoctor.fixurl.fixurl", error_param,
                            correction_params, std::move(params));
 }
 
 std::string CreateClickTrackingUrlRequestBody(
-    const blink::WebURLError& error,
+    const error_page::Error& error,
     const NetErrorHelperCore::NavigationCorrectionParams& correction_params,
     const NavigationCorrectionResponse& response,
     const NavigationCorrection& correction) {
@@ -241,8 +239,7 @@ std::string CreateClickTrackingUrlRequestBody(
 
   std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
 
-  params->SetString("originalUrlQuery",
-                    PrepareUrlForUpload(error.unreachable_url));
+  params->SetString("originalUrlQuery", PrepareUrlForUpload(error.url()));
 
   params->SetString("clickedUrlCorrection", correction.url_correction);
   params->SetString("clickType", correction.click_type);
@@ -286,13 +283,13 @@ void LogCorrectionTypeShown(int type_id) {
 
 std::unique_ptr<error_page::ErrorPageParams> CreateErrorPageParams(
     const NavigationCorrectionResponse& response,
-    const blink::WebURLError& error,
+    const error_page::Error& error,
     const NetErrorHelperCore::NavigationCorrectionParams& correction_params,
     bool is_rtl) {
   // Version of URL for display in suggestions.  It has to be sanitized first
   // because any received suggestions will be relative to the sanitized URL.
   base::string16 original_url_for_display =
-      FormatURLForDisplay(SanitizeURL(GURL(error.unreachable_url)), is_rtl);
+      FormatURLForDisplay(SanitizeURL(GURL(error.url())), is_rtl);
 
   std::unique_ptr<error_page::ErrorPageParams> params(
       new error_page::ErrorPageParams());
@@ -364,22 +361,22 @@ std::unique_ptr<error_page::ErrorPageParams> CreateErrorPageParams(
   return params;
 }
 
-void ReportAutoReloadSuccess(const blink::WebURLError& error, size_t count) {
-  if (error.domain != blink::WebURLError::Domain::kNet)
+void ReportAutoReloadSuccess(const error_page::Error& error, size_t count) {
+  if (error.domain() != net::kErrorDomain)
     return;
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.AutoReload.ErrorAtSuccess", -error.reason);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.AutoReload.ErrorAtSuccess", -error.reason());
   UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtSuccess",
                        static_cast<base::HistogramBase::Sample>(count));
   if (count == 1) {
     UMA_HISTOGRAM_SPARSE_SLOWLY("Net.AutoReload.ErrorAtFirstSuccess",
-                                -error.reason);
+                                -error.reason());
   }
 }
 
-void ReportAutoReloadFailure(const blink::WebURLError& error, size_t count) {
-  if (error.domain != blink::WebURLError::Domain::kNet)
+void ReportAutoReloadFailure(const error_page::Error& error, size_t count) {
+  if (error.domain() != net::kErrorDomain)
     return;
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.AutoReload.ErrorAtStop", -error.reason);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.AutoReload.ErrorAtStop", -error.reason());
   UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtStop",
                        static_cast<base::HistogramBase::Sample>(count));
 }
@@ -411,7 +408,7 @@ void TrackClickUMA(std::string type_id) {
 }  // namespace
 
 struct NetErrorHelperCore::ErrorPageInfo {
-  ErrorPageInfo(blink::WebURLError error,
+  ErrorPageInfo(error_page::Error error,
                 bool was_failed_post,
                 bool was_ignoring_cache)
       : error(error),
@@ -427,7 +424,7 @@ struct NetErrorHelperCore::ErrorPageInfo {
         auto_reload_triggered(false) {}
 
   // Information about the failed page load.
-  blink::WebURLError error;
+  error_page::Error error;
   bool was_failed_post;
   bool was_ignoring_cache;
 
@@ -477,21 +474,21 @@ NetErrorHelperCore::NavigationCorrectionParams::~NavigationCorrectionParams() {}
 
 bool NetErrorHelperCore::IsReloadableError(
     const NetErrorHelperCore::ErrorPageInfo& info) {
-  GURL url = info.error.unreachable_url;
-  return info.error.domain == blink::WebURLError::Domain::kNet &&
-         info.error.reason != net::ERR_ABORTED &&
+  GURL url = info.error.url();
+  return info.error.domain() == net::kErrorDomain &&
+         info.error.reason() != net::ERR_ABORTED &&
          // For now, net::ERR_UNKNOWN_URL_SCHEME is only being displayed on
          // Chrome for Android.
-         info.error.reason != net::ERR_UNKNOWN_URL_SCHEME &&
+         info.error.reason() != net::ERR_UNKNOWN_URL_SCHEME &&
          // Do not trigger if the server rejects a client certificate.
          // https://crbug.com/431387
-         !net::IsClientCertificateError(info.error.reason) &&
+         !net::IsClientCertificateError(info.error.reason()) &&
          // Some servers reject client certificates with a generic
          // handshake_failure alert.
          // https://crbug.com/431387
-         info.error.reason != net::ERR_SSL_PROTOCOL_ERROR &&
+         info.error.reason() != net::ERR_SSL_PROTOCOL_ERROR &&
          // Do not trigger for XSS Auditor violations.
-         info.error.reason != net::ERR_BLOCKED_BY_XSS_AUDITOR &&
+         info.error.reason() != net::ERR_BLOCKED_BY_XSS_AUDITOR &&
          !info.was_failed_post &&
          // Don't auto-reload non-http/https schemas.
          // https://crbug.com/471713
@@ -598,8 +595,8 @@ void NetErrorHelperCore::OnCommitLoad(FrameType frame_type, const GURL& url) {
   // result is from the page reload button.
   if (committed_error_page_info_ && pending_error_page_info_ &&
       navigation_from_button_ != NO_BUTTON &&
-      committed_error_page_info_->error.unreachable_url ==
-          pending_error_page_info_->error.unreachable_url) {
+      committed_error_page_info_->error.url() ==
+          pending_error_page_info_->error.url()) {
     DCHECK(navigation_from_button_ == RELOAD_BUTTON ||
            navigation_from_button_ == SHOW_SAVED_COPY_BUTTON);
     RecordEvent(
@@ -611,8 +608,8 @@ void NetErrorHelperCore::OnCommitLoad(FrameType frame_type, const GURL& url) {
 
   if (committed_error_page_info_ && !pending_error_page_info_ &&
       committed_error_page_info_->auto_reload_triggered) {
-    const blink::WebURLError& error = committed_error_page_info_->error;
-    const GURL& error_url = error.unreachable_url;
+    const error_page::Error& error = committed_error_page_info_->error;
+    const GURL& error_url = error.url();
     if (url == error_url)
       ReportAutoReloadSuccess(error, auto_reload_count_);
     else if (url != content::kUnreachableWebDataURL)
@@ -680,7 +677,7 @@ void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
 }
 
 void NetErrorHelperCore::GetErrorHTML(FrameType frame_type,
-                                      const blink::WebURLError& error,
+                                      const error_page::Error& error,
                                       bool is_failed_post,
                                       bool is_ignoring_cache,
                                       std::string* error_html) {
@@ -746,7 +743,7 @@ void NetErrorHelperCore::GetErrorHtmlForMainFrame(
     ErrorPageInfo* pending_error_page_info,
     std::string* error_html) {
   std::string error_param;
-  blink::WebURLError error = pending_error_page_info->error;
+  error_page::Error error = pending_error_page_info->error;
 
   if (pending_error_page_info->navigation_correction_params &&
       pending_error_page_info->navigation_correction_params->url.is_valid() &&
@@ -755,7 +752,7 @@ void NetErrorHelperCore::GetErrorHtmlForMainFrame(
     return;
   }
 
-  if (IsBlinkDnsError(pending_error_page_info->error)) {
+  if (IsNetDnsError(pending_error_page_info->error)) {
     // The last probe status needs to be reset if this is a DNS error.  This
     // means that if a DNS error page is committed but has not yet finished
     // loading, a DNS probe status scheduled to be sent to it may be thrown
@@ -842,25 +839,19 @@ void NetErrorHelperCore::OnNavigationCorrectionsFetched(
   // TODO(mmenke):  Once the new API is in place, look into replacing this
   //                double page load by just updating the error page, like DNS
   //                probes do.
-  delegate_->LoadErrorPage(error_html,
-                           pending_error_page_info_->error.unreachable_url);
+  delegate_->LoadErrorPage(error_html, pending_error_page_info_->error.url());
 }
 
-blink::WebURLError NetErrorHelperCore::GetUpdatedError(
-    const blink::WebURLError& error) const {
+error_page::Error NetErrorHelperCore::GetUpdatedError(
+    const error_page::Error& error) const {
   // If a probe didn't run or wasn't conclusive, restore the original error.
   if (last_probe_status_ == error_page::DNS_PROBE_NOT_RUN ||
       last_probe_status_ == error_page::DNS_PROBE_FINISHED_INCONCLUSIVE) {
     return error;
   }
 
-  blink::WebURLError updated_error;
-  updated_error.domain = blink::WebURLError::Domain::kDnsProbe;
-  updated_error.reason = last_probe_status_;
-  updated_error.unreachable_url = error.unreachable_url;
-  updated_error.stale_copy_in_cache = error.stale_copy_in_cache;
-
-  return updated_error;
+  return error_page::Error::DnsProbeError(error.url(), last_probe_status_,
+                                          error.stale_copy_in_cache());
 }
 
 void NetErrorHelperCore::Reload(bool bypass_cache) {
@@ -981,8 +972,7 @@ void NetErrorHelperCore::ExecuteButtonPress(Button button) {
             error_page::
                 NETWORK_ERROR_PAGE_BOTH_BUTTONS_SHOWN_SAVED_COPY_CLICKED);
       }
-      delegate_->LoadPageFromCache(
-          committed_error_page_info_->error.unreachable_url);
+      delegate_->LoadPageFromCache(committed_error_page_info_->error.url());
       return;
     case MORE_BUTTON:
       // Visual effects on page are handled in Javascript code.
@@ -996,8 +986,7 @@ void NetErrorHelperCore::ExecuteButtonPress(Button button) {
       return;
     case DIAGNOSE_ERROR:
       RecordEvent(error_page::NETWORK_ERROR_DIAGNOSE_BUTTON_CLICKED);
-      delegate_->DiagnoseError(
-          committed_error_page_info_->error.unreachable_url);
+      delegate_->DiagnoseError(committed_error_page_info_->error.url());
       return;
     case DOWNLOAD_BUTTON:
       RecordEvent(error_page::NETWORK_ERROR_PAGE_DOWNLOAD_BUTTON_CLICKED);

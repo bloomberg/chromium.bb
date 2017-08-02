@@ -73,6 +73,7 @@
 #include "components/dom_distiller/content/renderer/distiller_js_render_frame_observer.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/url_constants.h"
+#include "components/error_page/common/error.h"
 #include "components/error_page/common/localized_error.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
 #include "components/password_manager/content/renderer/credential_manager_client.h"
@@ -1109,8 +1110,7 @@ bool ChromeContentRendererClient::IsNaClAllowed(
 bool ChromeContentRendererClient::HasErrorPage(int http_status_code) {
   // Use an internal error page, if we have one for the status code.
   return error_page::LocalizedError::HasStrings(
-      NetErrorHelper::GetDomainString(blink::WebURLError::Domain::kHttp),
-      http_status_code);
+      error_page::Error::kHttpErrorDomain, http_status_code);
 }
 
 bool ChromeContentRendererClient::ShouldSuppressErrorPage(
@@ -1130,11 +1130,36 @@ bool ChromeContentRendererClient::ShouldSuppressErrorPage(
 void ChromeContentRendererClient::GetNavigationErrorStrings(
     content::RenderFrame* render_frame,
     const WebURLRequest& failed_request,
-    const WebURLError& error,
+    const blink::WebURLError& web_error,
     std::string* error_html,
     base::string16* error_description) {
-  const GURL failed_url = error.unreachable_url;
+  DCHECK_EQ(WebURLError::Domain::kNet, web_error.domain);
+  GetNavigationErrorStringsInternal(
+      render_frame, failed_request,
+      error_page::Error::NetError(web_error.unreachable_url, web_error.reason,
+                                  web_error.stale_copy_in_cache),
+      error_html, error_description);
+}
 
+void ChromeContentRendererClient::GetNavigationErrorStringsForHttpStatusError(
+    content::RenderFrame* render_frame,
+    const WebURLRequest& failed_request,
+    const GURL& unreachable_url,
+    int http_status,
+    std::string* error_html,
+    base::string16* error_description) {
+  GetNavigationErrorStringsInternal(
+      render_frame, failed_request,
+      error_page::Error::HttpError(unreachable_url, http_status), error_html,
+      error_description);
+}
+
+void ChromeContentRendererClient::GetNavigationErrorStringsInternal(
+    content::RenderFrame* render_frame,
+    const WebURLRequest& failed_request,
+    const error_page::Error& error,
+    std::string* error_html,
+    base::string16* error_description) {
   bool is_post = failed_request.HttpMethod().Ascii() == "POST";
   bool is_ignoring_cache =
       failed_request.GetCachePolicy() == WebCachePolicy::kBypassingCache;
@@ -1145,7 +1170,7 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
 
   if (error_description) {
     *error_description = error_page::LocalizedError::GetErrorDetails(
-        NetErrorHelper::GetDomainString(error.domain), error.reason, is_post);
+        error.domain(), error.reason(), is_post);
   }
 }
 

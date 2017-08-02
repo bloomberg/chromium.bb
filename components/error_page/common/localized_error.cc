@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/error_page/common/error.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/error_page_switches.h"
 #include "components/error_page/common/net_error_info.h"
@@ -450,11 +451,11 @@ const LocalizedErrorMap* LookupErrorMap(const std::string& error_domain,
     return FindErrorMapInArray(net_error_options,
                                arraysize(net_error_options),
                                error_code);
-  } else if (error_domain == kHttpErrorDomain) {
+  } else if (error_domain == Error::kHttpErrorDomain) {
     return FindErrorMapInArray(http_error_options,
                                arraysize(http_error_options),
                                error_code);
-  } else if (error_domain == error_page::kDnsProbeErrorDomain) {
+  } else if (error_domain == Error::kDnsProbeErrorDomain) {
     const LocalizedErrorMap* map =
         FindErrorMapInArray(dns_probe_error_options,
                             arraysize(dns_probe_error_options),
@@ -484,7 +485,7 @@ const char* GetIconClassForError(const std::string& error_domain,
   if ((error_code == net::ERR_INTERNET_DISCONNECTED &&
        error_domain == net::kErrorDomain) ||
       (error_code == error_page::DNS_PROBE_FINISHED_NO_INTERNET &&
-       error_domain == error_page::kDnsProbeErrorDomain))
+       error_domain == Error::kDnsProbeErrorDomain))
     return "icon-offline";
 
   return "icon-generic";
@@ -943,12 +944,12 @@ void LocalizedError::GetStrings(
   if (error_domain == net::kErrorDomain) {
     // Non-internationalized error string, for debugging Chrome itself.
     error_string = base::ASCIIToUTF16(net::ErrorToShortString(error_code));
-  } else if (error_domain == error_page::kDnsProbeErrorDomain) {
+  } else if (error_domain == Error::kDnsProbeErrorDomain) {
     std::string ascii_error_string =
         error_page::DnsProbeStatusToString(error_code);
     error_string = base::ASCIIToUTF16(ascii_error_string);
   } else {
-    DCHECK_EQ(kHttpErrorDomain, error_domain);
+    DCHECK_EQ(Error::kHttpErrorDomain, error_domain);
     error_string = base::ASCIIToUTF16(HttpErrorCodeToString(error_code));
   }
   error_strings->SetString("errorCode", error_string);

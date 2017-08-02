@@ -1803,6 +1803,16 @@ class RendererErrorPageTest : public RenderViewImplTest {
       if (error_html)
         *error_html = "A suffusion of yellow.";
     }
+    void GetNavigationErrorStringsForHttpStatusError(
+        content::RenderFrame* render_frame,
+        const blink::WebURLRequest& failed_request,
+        const GURL& url,
+        int http_status_code,
+        std::string* error_html,
+        base::string16* error_description) override {
+      if (error_html)
+        *error_html = "A suffusion of yellow.";
+    }
 
     bool HasErrorPage(int http_status_code) override { return true; }
   };

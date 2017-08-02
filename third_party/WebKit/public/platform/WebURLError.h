@@ -51,12 +51,6 @@ struct WebURLError {
     // net/base/net_error_list.h.
     kNet,
 
-    // |reason| is an HTTP status code.
-    kHttp,
-
-    // |reason| is a DNS probe status.
-    kDnsProbe,
-
     // Used for testing.
     kTest,
   };

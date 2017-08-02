@@ -1069,6 +1069,19 @@ class CONTENT_EXPORT RenderFrameImpl
                                const blink::WebURLError& error,
                                bool replace,
                                HistoryEntry* entry);
+  void LoadNavigationErrorPageForHttpStatusError(
+      const blink::WebURLRequest& failed_request,
+      const GURL& unreachable_url,
+      int http_status,
+      bool replace,
+      HistoryEntry* entry);
+  void LoadNavigationErrorPageInternal(
+      const std::string& error_html,
+      const GURL& error_page_url,
+      const GURL& error_url,
+      bool replace,
+      blink::WebFrameLoadType frame_load_type,
+      const blink::WebHistoryItem& history_item);
 
   void HandleJavascriptExecutionResult(const base::string16& javascript,
                                        int id,
