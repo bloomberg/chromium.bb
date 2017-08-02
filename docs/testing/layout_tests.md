@@ -220,7 +220,7 @@ There are two ways to run layout tests with additional command-line arguments:
   ```
 
   This will create new "virtual" tests of the form
-  `virtual/blocking_repaint/fast/repaint/...`` which correspond to the files
+  `virtual/blocking_repaint/fast/repaint/...` which correspond to the files
   under `LayoutTests/fast/repaint` and pass `--blocking-repaint` to
   content_shell when they are run.
 

@@ -236,7 +236,7 @@ Bug(darin) [ Mac10.9 Debug ] fast/html/keygen.html [ Skip ]
 * `WontFix` implies `Skip` and also indicates that we don't have any plans to
   make the test pass.
 * `WontFix` lines always go in the
-  [NeverFixTests file]((../../third_party/WebKit/LayoutTests/NeverFixTests) as
+  [NeverFixTests file](../../third_party/WebKit/LayoutTests/NeverFixTests) as
   we never intend to fix them. These are just for tests that only apply to some
   subset of the platforms we support.
 * `WontFix` and `Skip` must be used by themselves and cannot be specified
