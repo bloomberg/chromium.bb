@@ -7,12 +7,12 @@ suite('Bookmarks policies', function() {
   var app;
 
   setup(function() {
+    var nodes = testTree(createFolder('1', [
+      createItem('11'),
+    ]));
     store = new bookmarks.TestStore({
-      nodes: testTree(createFolder(
-          '1',
-          [
-            createItem('11'),
-          ])),
+      nodes: nodes,
+      folderOpenState: getAllFoldersOpenState(nodes),
       selectedFolder: '1',
     });
     store.setReducersEnabled(true);

@@ -86,6 +86,7 @@
         '<(EXTERNS_GYP):metrics_private',
         'api_listener',
         'dnd_chip',
+        'folder_node',
         'store',
         'timer_proxy',
         'types',

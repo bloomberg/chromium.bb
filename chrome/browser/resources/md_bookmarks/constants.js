@@ -65,7 +65,7 @@ var IncognitoAvailability = {
 };
 
 /** @const */
-var LOCAL_STORAGE_CLOSED_FOLDERS_KEY = 'closedState';
+var LOCAL_STORAGE_FOLDER_STATE_KEY = 'folderOpenState';
 
 /** @const */
 var LOCAL_STORAGE_TREE_WIDTH_KEY = 'treeWidth';
@@ -78,3 +78,10 @@ var BOOKMARKS_BAR_ID = '1';
 
 /** @const {number} */
 var OPEN_CONFIRMATION_LIMIT = 15;
+
+/**
+ * Folders that are beneath this depth will be closed by default in the folder
+ * tree (where the Bookmarks Bar folder is at depth 0).
+ * @const {number}
+ */
+var FOLDER_OPEN_BY_DEFAULT_DEPTH = 1;

@@ -21,20 +21,21 @@ suite('util', function() {
     ]));
 
     var descendants = bookmarks.util.getDescendants(nodes, '1');
-    assertDeepEquals(['1'], normalizeSet(descendants));
+    assertDeepEquals(['1'], normalizeIterable(descendants));
 
     descendants = bookmarks.util.getDescendants(nodes, '4');
-    assertDeepEquals(['4', '6', '7'], normalizeSet(descendants));
+    assertDeepEquals(['4', '6', '7'], normalizeIterable(descendants));
 
     descendants = bookmarks.util.getDescendants(nodes, '2');
-    assertDeepEquals(['2', '3', '4', '5', '6', '7'], normalizeSet(descendants));
+    assertDeepEquals(
+        ['2', '3', '4', '5', '6', '7'], normalizeIterable(descendants));
 
     descendants = bookmarks.util.getDescendants(nodes, '42');
-    assertDeepEquals([], normalizeSet(descendants));
+    assertDeepEquals([], normalizeIterable(descendants));
   });
 
-  test('removeIdsFromMap', function() {
-    var map = {
+  test('removeIdsFromObject', function() {
+    var obj = {
       '1': true,
       '2': false,
       '4': true,
@@ -42,14 +43,14 @@ suite('util', function() {
 
     var nodes = new Set([2, 3, 4]);
 
-    var newMap = bookmarks.util.removeIdsFromMap(map, nodes);
+    var newMap = bookmarks.util.removeIdsFromObject(obj, nodes);
 
     assertEquals(undefined, newMap['2']);
     assertEquals(undefined, newMap['4']);
     assertTrue(newMap['1']);
 
-    // Should not have changed the input map.
-    assertFalse(map['2']);
+    // Should not have changed the input object.
+    assertFalse(obj['2']);
   });
 
   test('removeIdsFromSet', function() {
@@ -57,7 +58,7 @@ suite('util', function() {
     var toRemove = new Set(['1', '2', '3']);
 
     var newSet = bookmarks.util.removeIdsFromSet(set, toRemove);
-    assertDeepEquals(['5'], normalizeSet(newSet));
+    assertDeepEquals(['5'], normalizeIterable(newSet));
   });
 
   test('canEditNode and canReorderChildren', function() {
