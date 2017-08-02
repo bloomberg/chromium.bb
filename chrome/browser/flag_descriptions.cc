@@ -1935,13 +1935,6 @@ const char kCloudPrintXpsDescription[] =
 
 #endif  // defined(OS_WIN)
 
-const char kDelayReloadStopButtonChangeName[] =
-    "Reduce stop/reload button flicker";
-
-const char kDelayReloadStopButtonChangeDescription[] =
-    "Delays display of stop button when page is loading such that short "
-    "loads won't show the stop button at all.";
-
 #if BUILDFLAG(ENABLE_WEBRTC)
 
 const char kWebrtcH264WithOpenh264FfmpegName[] =

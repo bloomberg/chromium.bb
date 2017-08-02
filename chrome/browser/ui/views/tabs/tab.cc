@@ -8,7 +8,6 @@
 #include <limits>
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
@@ -31,7 +30,6 @@
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -1297,27 +1295,6 @@ void Tab::UpdateThrobber(const TabRendererData& old) {
   const bool should_show = ShouldShowThrobber(data_.network_state);
   const bool is_showing = throbber_->visible();
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDelayReloadStopButtonChange)) {
-    // Minimize flip-flops between showing the throbber and the favicon. Delay
-    // the switch from favicon to throbber if the switch would occur just after
-    // the a throbbing session finishes. The heuristic for "throbbing session
-    // finishing" is that the old and new URLs match and that the throbber has
-    // been shown recently. See crbug.com/734104
-    constexpr auto kSuppressChangeDuration = base::TimeDelta::FromSeconds(3);
-    if (!is_showing && should_show && old.url == data_.url &&
-        (base::TimeTicks::Now() - last_throbber_show_time_) <
-            kSuppressChangeDuration) {
-      if (!delayed_throbber_show_timer_.IsRunning()) {
-        delayed_throbber_show_timer_.Start(FROM_HERE, kSuppressChangeDuration,
-                                           this, &Tab::RefreshThrobber);
-      }
-      return;
-    }
-
-    delayed_throbber_show_timer_.Stop();
-  }
-
   if (!is_showing && !should_show)
     return;
 
@@ -1331,8 +1308,6 @@ void Tab::RefreshThrobber() {
     ScheduleIconPaint();
     return;
   }
-
-  last_throbber_show_time_ = base::TimeTicks::Now();
 
   // Since the throbber can animate for a long time, paint to a separate layer
   // when possible to reduce repaint overhead.
