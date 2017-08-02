@@ -187,6 +187,7 @@ void PaymentRequestItemList::AddItem(
 
 void PaymentRequestItemList::Clear() {
   items_.clear();
+  selected_item_ = nullptr;
 }
 
 std::unique_ptr<views::View> PaymentRequestItemList::CreateListView() {
