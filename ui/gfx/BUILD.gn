@@ -254,7 +254,7 @@ component("gfx") {
   ]
 
   # Text rendering conditions (complicated so separated out).
-  if (use_aura || is_mac || (is_android && enable_vr)) {
+  if (use_aura || is_mac || (is_android && enable_vr) || is_fuchsia) {
     # Mac doesn't use RenderTextHarfBuzz by default yet.
     sources += [
       "harfbuzz_font_skia.cc",
@@ -385,6 +385,14 @@ component("gfx") {
 
   if (use_cairo) {
     configs += [ "//build/config/linux/pangocairo" ]
+  }
+
+  if (is_fuchsia) {
+    sources += [
+      "font_fallback_fuchsia.cc",
+      "font_render_params_fuchsia.cc",
+      "platform_font_fuchsia.cc",
+    ]
   }
 }
 
