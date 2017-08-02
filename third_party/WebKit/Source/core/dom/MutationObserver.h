@@ -33,6 +33,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExecutionContext.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
@@ -51,6 +52,7 @@ class MutationObserverInit;
 class MutationObserverRegistration;
 class MutationRecord;
 class Node;
+class ScriptState;
 
 typedef unsigned char MutationObserverOptions;
 typedef unsigned char MutationRecordDeliveryOptions;
@@ -64,7 +66,8 @@ using MutationRecordVector = HeapVector<Member<MutationRecord>>;
 class CORE_EXPORT MutationObserver final
     : public GarbageCollectedFinalized<MutationObserver>,
       public ActiveScriptWrappable<MutationObserver>,
-      public ScriptWrappable {
+      public ScriptWrappable,
+      public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MutationObserver);
 
@@ -84,7 +87,21 @@ class CORE_EXPORT MutationObserver final
     kCharacterDataOldValue = 1 << 6,
   };
 
-  static MutationObserver* Create(MutationCallback*);
+  class CORE_EXPORT Delegate : public GarbageCollectedFinalized<Delegate>,
+                               public TraceWrapperBase {
+   public:
+    virtual ~Delegate() = default;
+    virtual ExecutionContext* GetExecutionContext() const = 0;
+    virtual void Deliver(const MutationRecordVector& records,
+                         MutationObserver&) = 0;
+    DEFINE_INLINE_VIRTUAL_TRACE() {}
+    DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {}
+  };
+
+  class CORE_EXPORT V8DelegateImpl;
+
+  static MutationObserver* Create(Delegate*);
+  static MutationObserver* Create(ScriptState*, MutationCallback*);
   static void ResumeSuspendedObservers();
   static void DeliverMutations();
   static void EnqueueSlotChange(HTMLSlotElement&);
@@ -103,7 +120,6 @@ class CORE_EXPORT MutationObserver final
   HeapHashSet<Member<Node>> GetObservedNodes() const;
 
   bool HasPendingActivity() const override { return !records_.IsEmpty(); }
-  ExecutionContext* GetExecutionContext() const;
 
   // Eagerly finalized as destructor accesses heap object members.
   EAGERLY_FINALIZE();
@@ -114,12 +130,12 @@ class CORE_EXPORT MutationObserver final
  private:
   struct ObserverLessThan;
 
-  explicit MutationObserver(MutationCallback*);
+  MutationObserver(ExecutionContext*, Delegate*);
   void Deliver();
   bool ShouldBeSuspended() const;
   void CancelInspectorAsyncTasks();
 
-  TraceWrapperMember<MutationCallback> callback_;
+  TraceWrapperMember<Delegate> delegate_;
   HeapVector<TraceWrapperMember<MutationRecord>> records_;
   MutationObserverRegistrationSet registrations_;
   unsigned priority_;

@@ -27,7 +27,6 @@
 #include "modules/media_controls/MediaControlsImpl.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/MutationCallback.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/MutationObserverInit.h"
 #include "core/dom/MutationRecord.h"
@@ -152,7 +151,7 @@ bool PreferHiddenVolumeControls(const Document& document) {
          document.GetSettings()->GetPreferHiddenVolumeControls();
 }
 
-}  // anonymous namespace
+}  // namespace
 
 class MediaControlsImpl::BatchedControlUpdate {
   WTF_MAKE_NONCOPYABLE(BatchedControlUpdate);
@@ -208,31 +207,23 @@ class MediaControlsImpl::MediaControlsResizeObserverDelegate final
 // Observes changes to the HTMLMediaElement attributes that affect controls.
 // Currently only observes the disableRemotePlayback attribute.
 class MediaControlsImpl::MediaElementMutationCallback
-    : public MutationCallback {
+    : public MutationObserver::Delegate {
  public:
   explicit MediaElementMutationCallback(MediaControlsImpl* controls)
-      : controls_(controls) {
-    observer_ = MutationObserver::Create(this);
-    Vector<String> filter;
-    filter.push_back(HTMLNames::disableremoteplaybackAttr.ToString());
+      : controls_(controls), observer_(MutationObserver::Create(this)) {
     MutationObserverInit init;
     init.setAttributeOldValue(true);
     init.setAttributes(true);
-    init.setAttributeFilter(filter);
+    init.setAttributeFilter({HTMLNames::disableremoteplaybackAttr.ToString()});
     observer_->observe(&controls_->MediaElement(), init, ASSERT_NO_EXCEPTION);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->Trace(controls_);
-    visitor->Trace(observer_);
-    MutationCallback::Trace(visitor);
+  ExecutionContext* GetExecutionContext() const override {
+    return &controls_->GetDocument();
   }
 
-  void Disconnect() { observer_->disconnect(); }
-
- private:
-  void Call(const HeapVector<Member<MutationRecord>>& records,
-            MutationObserver*) override {
+  void Deliver(const MutationRecordVector& records,
+               MutationObserver&) override {
     for (const auto& record : records) {
       if (record->type() != "attributes")
         continue;
@@ -248,10 +239,15 @@ class MediaControlsImpl::MediaElementMutationCallback
     }
   }
 
-  ExecutionContext* GetExecutionContext() const override {
-    return &controls_->GetDocument();
+  void Disconnect() { observer_->disconnect(); }
+
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->Trace(controls_);
+    visitor->Trace(observer_);
+    MutationObserver::Delegate::Trace(visitor);
   }
 
+ private:
   Member<MediaControlsImpl> controls_;
   Member<MutationObserver> observer_;
 };
