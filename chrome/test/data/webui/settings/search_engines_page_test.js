@@ -20,10 +20,10 @@ cr.define('settings_search_engines_page', function() {
       displayName: name + " displayName",
       iconURL: "http://www.google.com/favicon.ico",
       isOmniboxExtension: false,
-      keyword: "google.com",
+      keyword: name,
       modelIndex: 0,
       name: name,
-      url: "https://search.foo.com/search?p=%s",
+      url: "https://" + name + ".com/search?p=%s",
       urlLocked: false,
     };
   }
@@ -283,10 +283,11 @@ cr.define('settings_search_engines_page', function() {
 
       /** @type {!SearchEnginesInfo} */
       var searchEnginesInfo = {
-        defaults: [createSampleSearchEngine('G', false, false, false)],
+        defaults: [createSampleSearchEngine(
+            'search_engine_G', false, false, false)],
         others: [
-          createSampleSearchEngine('B', false, false, false),
-          createSampleSearchEngine('A', false, false, false),
+          createSampleSearchEngine('search_engine_B', false, false, false),
+          createSampleSearchEngine('search_engine_A', false, false, false),
         ],
         extensions: [createSampleOmniboxExtension()],
       };
@@ -376,6 +377,70 @@ cr.define('settings_search_engines_page', function() {
         MockInteractions.tap(addSearchEngineButton);
         Polymer.dom.flush();
         assertTrue(!!page.$$('settings-search-engine-dialog'));
+      });
+
+      // Tests that filtering the three search engines lists works, and that the
+      // "no search results" message is shown as expected.
+      test('FilterSearchEngines', function() {
+        Polymer.dom.flush();
+
+        function getListItems(listIndex) {
+          var ironList = listIndex == 2 /* extensions */ ?
+              page.shadowRoot.querySelector('iron-list') :
+              page.shadowRoot.querySelectorAll(
+                  'settings-search-engines-list')[listIndex].shadowRoot.
+                  querySelector('iron-list');
+
+          return ironList.items;
+        }
+
+        function getDefaultEntries() { return getListItems(0); }
+        function getOtherEntries() { return getListItems(1); }
+
+        function assertSearchResults(
+            defaultsCount, othersCount, extensionsCount) {
+          assertEquals(defaultsCount, getListItems(0).length);
+          assertEquals(othersCount, getListItems(1).length);
+          assertEquals(extensionsCount, getListItems(2).length);
+
+          var noResultsElements = Array.from(
+              page.shadowRoot.querySelectorAll('.no-search-results'));
+          assertEquals(defaultsCount > 0, noResultsElements[0].hidden);
+          assertEquals(othersCount > 0, noResultsElements[1].hidden);
+          assertEquals(extensionsCount > 0, noResultsElements[2].hidden);
+        }
+
+        assertSearchResults(1, 2, 1);
+
+        // Search by name
+        page.filter = searchEnginesInfo.defaults[0].name;
+        Polymer.dom.flush();
+        assertSearchResults(1, 0, 0);
+
+        // Search by displayName
+        page.filter = searchEnginesInfo.others[0].displayName;
+        Polymer.dom.flush();
+        assertSearchResults(0, 1, 0);
+
+        // Search by keyword
+        page.filter = searchEnginesInfo.others[1].keyword;
+        Polymer.dom.flush();
+        assertSearchResults(0, 1, 0);
+
+        // Search by URL
+        page.filter = 'search?';
+        Polymer.dom.flush();
+        assertSearchResults(1, 2, 0);
+
+        // Test case where none of the sublists have results.
+        page.filter = 'does not exist';
+        Polymer.dom.flush();
+        assertSearchResults(0, 0, 0);
+
+        // Test case where an 'extension' search engine matches.
+        page.filter = 'extension';
+        Polymer.dom.flush();
+        assertSearchResults(0, 0, 1);
       });
     });
   }

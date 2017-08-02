@@ -171,8 +171,10 @@
       <template is="dom-if" route-path="/searchEngines">
         <settings-subpage
             associated-control="[[$$('#engines-subpage-trigger')]]"
-            page-title="$i18n{searchEnginesManage}">
-          <settings-search-engines-page></settings-search-engines-page>
+            page-title="$i18n{searchEnginesManage}"
+            search-label="$i18n{searchEnginesSearch}"
+            search-term="{{searchEnginesFilter_}}">
+          <settings-search-engines-page filter="[[searchEnginesFilter_]]">
         </settings-subpage>
       </template>
 <if expr="chromeos">
