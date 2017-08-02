@@ -903,6 +903,8 @@ void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
       {"easyUnlockTurnOffErrorMessage",
        IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_ERROR_MESSAGE},
       {"easyUnlockTurnOffRetryButton", IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_RETRY},
+      {"easyUnlockAllowSignInLabel",
+       IDS_SETTINGS_EASY_UNLOCK_ALLOW_SIGN_IN_LABEL},
       {"easyUnlockProximityThresholdLabel",
        IDS_SETTINGS_EASY_UNLOCK_PROXIMITY_THRESHOLD_LABEL},
       {"easyUnlockProximityThresholdVeryClose",
