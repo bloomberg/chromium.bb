@@ -79,12 +79,6 @@ std::ostream& operator<<(std::ostream& out, const WebURLError::Domain domain) {
     case WebURLError::Domain::kNet:
       out << "net";
       break;
-    case WebURLError::Domain::kHttp:
-      out << "http";
-      break;
-    case WebURLError::Domain::kDnsProbe:
-      out << "dns probe";
-      break;
     case WebURLError::Domain::kTest:
       out << "testing";
       break;

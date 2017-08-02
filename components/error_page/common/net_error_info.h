@@ -112,14 +112,6 @@ bool DnsProbeStatusIsFinished(DnsProbeStatus status);
 // Record specific error page events.
 void RecordEvent(NetworkErrorPageEvent event);
 
-// For dns probe errors.
-extern const char kDnsProbeErrorDomain[];
-// For http errors.
-extern const char kHttpErrorDomain[];
-// Use net::kErroDomain for network errors.
-// For other errors.
-extern const char kUnknownErrorDomain[];
-
 }  // namespace error_page
 
 #endif  // COMPONENTS_ERROR_PAGE_COMMON_NET_ERROR_INFO_H_

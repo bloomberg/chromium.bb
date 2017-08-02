@@ -2495,33 +2495,62 @@ void RenderFrameImpl::LoadNavigationErrorPage(
     const WebURLError& error,
     bool replace,
     HistoryEntry* entry) {
-  std::string error_html;
-  GetContentClient()->renderer()->GetNavigationErrorStrings(
-      this, failed_request, error, &error_html, nullptr);
-
   blink::WebFrameLoadType frame_load_type =
       entry ? blink::WebFrameLoadType::kBackForward
             : blink::WebFrameLoadType::kStandard;
   const blink::WebHistoryItem& history_item =
       entry ? entry->root() : blink::WebHistoryItem();
+  DCHECK_EQ(WebURLError::Domain::kNet, error.domain);
 
   // Requests blocked by the X-Frame-Options HTTP response header don't display
   // error pages but a blank page instead.
   // TODO(alexmos, mkwst, arthursonzogni): This block can be removed once error
   // pages are refactored. See crbug.com/588314 and crbug.com/622385.
   if (error.reason == net::ERR_BLOCKED_BY_RESPONSE) {
-    frame_->LoadData("", WebString::FromUTF8("text/html"),
-                     WebString::FromUTF8("UTF-8"), GURL("data:,"), WebURL(),
-                     replace, frame_load_type, history_item,
-                     blink::kWebHistoryDifferentDocumentLoad, false);
+    LoadNavigationErrorPageInternal("", GURL("data:,"), WebURL(), replace,
+                                    frame_load_type, history_item);
     return;
   }
 
+  std::string error_html;
+  GetContentClient()->renderer()->GetNavigationErrorStrings(
+      this, failed_request, error, &error_html, nullptr);
+  LoadNavigationErrorPageInternal(error_html, GURL(kUnreachableWebDataURL),
+                                  error.unreachable_url, replace,
+                                  frame_load_type, history_item);
+}
+
+void RenderFrameImpl::LoadNavigationErrorPageForHttpStatusError(
+    const WebURLRequest& failed_request,
+    const GURL& unreachable_url,
+    int http_status,
+    bool replace,
+    HistoryEntry* entry) {
+  blink::WebFrameLoadType frame_load_type =
+      entry ? blink::WebFrameLoadType::kBackForward
+            : blink::WebFrameLoadType::kStandard;
+  const blink::WebHistoryItem& history_item =
+      entry ? entry->root() : blink::WebHistoryItem();
+
+  std::string error_html;
+  GetContentClient()->renderer()->GetNavigationErrorStringsForHttpStatusError(
+      this, failed_request, unreachable_url, http_status, &error_html, nullptr);
+  LoadNavigationErrorPageInternal(error_html, GURL(kUnreachableWebDataURL),
+                                  unreachable_url, replace, frame_load_type,
+                                  history_item);
+}
+
+void RenderFrameImpl::LoadNavigationErrorPageInternal(
+    const std::string& error_html,
+    const GURL& error_page_url,
+    const GURL& error_url,
+    bool replace,
+    blink::WebFrameLoadType frame_load_type,
+    const blink::WebHistoryItem& history_item) {
   frame_->LoadData(error_html, WebString::FromUTF8("text/html"),
-                   WebString::FromUTF8("UTF-8"), GURL(kUnreachableWebDataURL),
-                   error.unreachable_url, replace, frame_load_type,
-                   history_item, blink::kWebHistoryDifferentDocumentLoad,
-                   false);
+                   WebString::FromUTF8("UTF-8"), error_page_url, error_url,
+                   replace, frame_load_type, history_item,
+                   blink::kWebHistoryDifferentDocumentLoad, false);
 }
 
 void RenderFrameImpl::DidMeaningfulLayout(
@@ -3953,13 +3982,10 @@ void RenderFrameImpl::RunScriptsAtDocumentReady(bool document_is_empty) {
           frame_->GetDocumentLoader());
   int http_status_code = internal_data->http_status_code();
   if (GetContentClient()->renderer()->HasErrorPage(http_status_code)) {
-    WebURLError error;
-    error.unreachable_url = frame_->GetDocument().Url();
-    error.domain = WebURLError::Domain::kHttp;
-    error.reason = http_status_code;
     // This call may run scripts, e.g. via the beforeunload event.
-    LoadNavigationErrorPage(frame_->GetDocumentLoader()->GetRequest(), error,
-                            true, nullptr);
+    LoadNavigationErrorPageForHttpStatusError(
+        frame_->GetDocumentLoader()->GetRequest(), frame_->GetDocument().Url(),
+        http_status_code, true, nullptr);
   }
   // Do not use |this| or |frame_| here without checking |weak_self|.
 }
