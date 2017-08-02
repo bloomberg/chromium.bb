@@ -62,6 +62,9 @@ void IpcNetworkManager::StartUpdating() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&IpcNetworkManager::SendNetworksChangedSignal,
                               weak_factory_.GetWeakPtr()));
+  } else {
+    VLOG(1) << "IpcNetworkManager::StartUpdating called; still waiting for "
+               "network list from browser process.";
   }
   ++start_count_;
 }
@@ -76,8 +79,11 @@ void IpcNetworkManager::OnNetworkListChanged(
     const net::IPAddress& default_ipv4_local_address,
     const net::IPAddress& default_ipv6_local_address) {
   // Update flag if network list received for the first time.
-  if (!network_list_received_)
+  if (!network_list_received_) {
+    VLOG(1) << "IpcNetworkManager received network list from browser process "
+               "for the first time.";
     network_list_received_ = true;
+  }
 
   // Default addresses should be set only when they are in the filtered list of
   // network addresses.
