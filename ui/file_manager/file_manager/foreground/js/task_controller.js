@@ -74,6 +74,11 @@ function TaskController(
   /**
    * @private {boolean}
    */
+  this.canExecuteOpenActions_ = false;
+
+  /**
+   * @private {boolean}
+   */
   this.canExecuteMoreActions_ = false;
 
   /**
@@ -89,8 +94,17 @@ function TaskController(
    * @private {!cr.ui.Command}
    * @const
    */
-  this.moreActionsCommand_ =
+  this.openWithCommand_ =
       assertInstanceof(document.querySelector('#open-with'), cr.ui.Command);
+
+  /**
+   * More actions command that uses #open-with as selector due to the open-with
+   * command used previously for the same task.
+   * @private {!cr.ui.Command}
+   * @const
+   */
+  this.moreActionsCommand_ =
+      assertInstanceof(document.querySelector('#more-actions'), cr.ui.Command);
 
   /**
    * @private {Promise<!FileTasks>}
@@ -200,7 +214,8 @@ TaskController.prototype.onTaskItemClicked_ = function(event) {
                 this.ui_.defaultTaskPicker,
                 loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM'),
                 strf('CHANGE_DEFAULT_CAPTION', format),
-                this.changeDefaultTask_.bind(this, selection), true);
+                this.changeDefaultTask_.bind(this, selection),
+                FileTasks.TaskPickerType.ChangeDefault);
             break;
           default:
             assertNotReached('Unknown task.');
@@ -303,11 +318,12 @@ TaskController.prototype.onSelectionChanged_ = function() {
       // Show disabled items for position calculation of the menu. They will be
       // overridden in this.updateTasks_().
       this.updateContextMenuTaskItems_(
+          [TaskController.createTemporaryDisabledTaskItem_()],
           [TaskController.createTemporaryDisabledTaskItem_()]);
     }
   } else {
     // Update context menu.
-    this.updateContextMenuTaskItems_([]);
+    this.updateContextMenuTaskItems_([], []);
   }
   this.lastSelectedEntries_ = selection.entries;
 };
@@ -323,7 +339,8 @@ TaskController.prototype.updateTasks_ = function() {
     this.getFileTasks()
         .then(function(tasks) {
           tasks.display(this.ui_.taskMenuButton, this.ui_.shareMenuButton);
-          this.updateContextMenuTaskItems_(tasks.getTaskItems());
+          this.updateContextMenuTaskItems_(
+              tasks.getOpenTaskItems(), tasks.getNonOpenTaskItems());
         }.bind(this))
         .catch(function(error) {
           if (error)
@@ -380,6 +397,14 @@ TaskController.prototype.canExecuteDefaultTask = function() {
  * Returns whether open with command can be executed or not.
  * @return {boolean} True if open with command is executable.
  */
+TaskController.prototype.canExecuteOpenActions = function() {
+  return this.canExecuteOpenActions_;
+};
+
+/**
+ * Returns whether open with command can be executed or not.
+ * @return {boolean} True if open with command is executable.
+ */
 TaskController.prototype.canExecuteMoreActions = function() {
   return this.canExecuteMoreActions_;
 };
@@ -387,16 +412,18 @@ TaskController.prototype.canExecuteMoreActions = function() {
 /**
  * Updates tasks menu item to match passed task items.
  *
- * @param {!Array<!Object>} items List of items.
+ * @param {!Array<!Object>} openTasks List of OPEN tasks.
+ * @param {!Array<!Object>} nonOpenTasks List of non-OPEN tasks.
  * @private
  */
-TaskController.prototype.updateContextMenuTaskItems_ = function(items) {
+TaskController.prototype.updateContextMenuTaskItems_ = function(
+    openTasks, nonOpenTasks) {
   // Always show a default item in case at least one task is available, even
   // if there is no corresponding default task (i.e. the available task is
   // a generic handler).
-  if (items.length >= 1) {
+  if (openTasks.length >= 1) {
     var defaultTask = FileTasks.getDefaultTask(
-        items, items[0] /* task to use in case of no default */);
+        openTasks, openTasks[0] /* task to use in case of no default */);
 
     if (defaultTask.iconType) {
       this.ui_.fileContextMenu.defaultTaskMenuItem.style.backgroundImage = '';
@@ -417,13 +444,17 @@ TaskController.prototype.updateContextMenuTaskItems_ = function(items) {
     this.ui_.fileContextMenu.defaultTaskMenuItem.taskId = defaultTask.taskId;
   }
 
-  this.canExecuteDefaultTask_ = items.length >= 1;
+  this.canExecuteDefaultTask_ = openTasks.length >= 1;
   this.defaultTaskCommand_.canExecuteChange(this.ui_.listContainer.element);
 
-  this.canExecuteMoreActions_ = items.length > 1;
+  this.canExecuteOpenActions_ = openTasks.length > 1;
+  this.openWithCommand_.canExecuteChange(this.ui_.listContainer.element);
+
+  this.canExecuteMoreActions_ = nonOpenTasks.length >= 1;
   this.moreActionsCommand_.canExecuteChange(this.ui_.listContainer.element);
 
-  this.ui_.fileContextMenu.tasksSeparator.hidden = items.length === 0;
+  this.ui_.fileContextMenu.tasksSeparator.hidden =
+      openTasks.length === 0 && nonOpenTasks.length == 0;
 };
 
 /**

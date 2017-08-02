@@ -141,7 +141,8 @@
                shortcut=".|Ctrl" hide-shortcut-text>
 
       <command id="default-task">
-      <command id="open-with" i18n-values="label:MORE_ACTIONS_BUTTON_LABEL">
+      <command id="open-with" i18n-values="label:OPEN_WITH_BUTTON_LABEL">
+      <command id="more-actions" i18n-values="label:MORE_ACTIONS_BUTTON_LABEL">
       <command id="zip-selection"
                i18n-values="label:ZIP_SELECTION_BUTTON_LABEL">
       <command id="set-wallpaper"
@@ -175,6 +176,8 @@
       <cr-menu-item id="default-task-menu-item" command="#default-task"
                 visibleif="full-page" class="hide-on-toolbar" hidden></cr-menu-item>
       <cr-menu-item command="#open-with"
+                visibleif="full-page" class="hide-on-toolbar" hidden></cr-menu-item>
+      <cr-menu-item command="#more-actions"
                 visibleif="full-page" class="hide-on-toolbar" hidden></cr-menu-item>
       <hr id="tasks-separator" visibleif="full-page" class="hide-on-toolbar" hidden>
       <hr id="actions-separator" hidden>

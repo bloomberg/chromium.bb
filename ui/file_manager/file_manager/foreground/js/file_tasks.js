@@ -110,6 +110,16 @@ FileTasks.TaskMenuButtonItemType = {
 };
 
 /**
+ * Dialog types to show a task picker.
+ * @enum {string}
+ */
+FileTasks.TaskPickerType = {
+  ChangeDefault: 'ChangeDefault',
+  OpenWith: 'OpenWith',
+  MoreActions: 'MoreActions'
+};
+
+/**
  * Creates an instance of FileTasks for the specified list of entries with mime
  * types.
  *
@@ -154,10 +164,26 @@ FileTasks.create = function(
 
 /**
  * Obtains the task items.
- * @return {Array<!Object>}
+ * @return {!Array<!Object>}
  */
 FileTasks.prototype.getTaskItems = function() {
   return this.tasks_;
+};
+
+/**
+ * Obtain tasks which are categorized as OPEN tasks.
+ * @return {!Array<!Object>}
+ */
+FileTasks.prototype.getOpenTaskItems = function() {
+  return this.tasks_.filter(FileTasks.isOpenTask);
+};
+
+/**
+ * Obtain tasks which are not categorized as OPEN tasks.
+ * @return {!Array<!Object>}
+ */
+FileTasks.prototype.getNonOpenTaskItems = function() {
+  return this.tasks_.filter(task => !FileTasks.isOpenTask(task));
 };
 
 /**
@@ -873,17 +899,16 @@ FileTasks.prototype.createCombobuttonItem_ = function(task, opt_title,
  * @param {string} title Title to use.
  * @param {string} message Message to use.
  * @param {function(Object)} onSuccess Callback to pass selected task.
- * @param {boolean=} opt_forChangeDefault Whether to return items which are for
- *     change-default dialog.
+ * @param {FileTasks.TaskPickerType} pickerType Task picker type.
  */
 FileTasks.prototype.showTaskPicker = function(
-    taskDialog, title, message, onSuccess, opt_forChangeDefault) {
-  var items = !opt_forChangeDefault ?
-      this.createItems_(this.tasks_) :
-      this.createItems_(this.tasks_.filter(FileTasks.isOpenTask))
-          .filter(function(item) {
-            return !item.isGenericFileHandler;
-          });
+    taskDialog, title, message, onSuccess, pickerType) {
+  var tasks = pickerType == FileTasks.TaskPickerType.MoreActions ?
+      this.getNonOpenTaskItems() :
+      this.getOpenTaskItems();
+  var items = this.createItems_(tasks);
+  if (pickerType == FileTasks.TaskPickerType.ChangeDefault)
+    items = items.filter(item => !item.isGenericFileHandler);
 
   var defaultIdx = 0;
   for (var j = 0; j < items.length; j++) {
