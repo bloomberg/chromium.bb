@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/testing/sim/SimRequest.h"
@@ -54,19 +53,16 @@ class VirtualTimeTest : public SimTest {
 };
 
 namespace {
-void QuitRunLoop() {
-  base::RunLoop::QuitCurrentDeprecated();
-}
 
 // Some task queues may have repeating v8 tasks that run forever so we impose a
 // hard time limit.
 void RunTasksForPeriod(double delay_ms) {
   Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostDelayedTask(
-      BLINK_FROM_HERE, WTF::Bind(&QuitRunLoop),
+      BLINK_FROM_HERE, WTF::Bind(&testing::ExitRunLoop),
       TimeDelta::FromMillisecondsD(delay_ms));
   testing::EnterRunLoop();
 }
-}
+}  // namespace
 
 // http://crbug.com/633321
 #if defined(OS_ANDROID)
