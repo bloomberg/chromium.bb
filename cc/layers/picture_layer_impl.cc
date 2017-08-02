@@ -224,10 +224,13 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
   float max_contents_scale = MaximumTilingContentsScale();
   PopulateScaledSharedQuadState(shared_quad_state, max_contents_scale,
                                 max_contents_scale);
-  Occlusion scaled_occlusion =
-      draw_properties()
-          .occlusion_in_content_space.GetOcclusionWithGivenDrawTransform(
-              shared_quad_state->quad_to_target_transform);
+  Occlusion scaled_occlusion;
+  if (mask_type_ == Layer::LayerMaskType::NOT_MASK) {
+    scaled_occlusion =
+        draw_properties()
+            .occlusion_in_content_space.GetOcclusionWithGivenDrawTransform(
+                shared_quad_state->quad_to_target_transform);
+  }
 
   if (current_draw_mode_ == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     AppendDebugBorderQuad(
