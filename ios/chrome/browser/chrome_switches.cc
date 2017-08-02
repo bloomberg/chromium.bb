@@ -44,9 +44,6 @@ const char kDisableTabStripAutoScrollNewTabs[] =
 // Disables Physical Web scanning for nearby URLs.
 const char kDisableIOSPhysicalWeb[] = "disable-ios-physical-web";
 
-// Disables Request Mobile Site.
-const char kDisableRequestMobileSite[] = "disable-request-mobile-site";
-
 // Disables the Suggestions UI
 const char kDisableSuggestionsUI[] = "disable-suggestions-ui";
 

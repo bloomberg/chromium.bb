@@ -189,11 +189,6 @@ bool IsReaderModeEnabled() {
       switches::kEnableReaderModeToolbarIcon);
 }
 
-bool IsRequestMobileSiteEnabled() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return !command_line->HasSwitch(switches::kDisableRequestMobileSite);
-}
-
 bool IsSafariVCSignInEnabled() {
   return ![[NSUserDefaults standardUserDefaults]
       boolForKey:kSafariVCSignInDisabled];
