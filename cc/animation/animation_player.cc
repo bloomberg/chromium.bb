@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"
@@ -1200,6 +1201,23 @@ void AnimationPlayer::PushPropertiesToImplThread(
   animation_player_impl->scroll_offset_animation_was_interrupted_ =
       scroll_offset_animation_was_interrupted_;
   scroll_offset_animation_was_interrupted_ = false;
+}
+
+std::string AnimationPlayer::ToString() const {
+  return base::StringPrintf(
+      "AnimationPlayer{id=%d, element_id=(%lu), animations=[%s]}", id_,
+      static_cast<unsigned long>(element_id_.id_),
+      AnimationsToString().c_str());
+}
+
+std::string AnimationPlayer::AnimationsToString() const {
+  std::string str;
+  for (size_t i = 0; i < animations_.size(); i++) {
+    if (i > 0)
+      str.append(", ");
+    str.append(animations_[i]->ToString());
+  }
+  return str;
 }
 
 }  // namespace cc

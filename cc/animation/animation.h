@@ -145,6 +145,8 @@ class CC_ANIMATION_EXPORT Animation {
 
   void PushPropertiesTo(Animation* other) const;
 
+  std::string ToString() const;
+
   void set_is_impl_only(bool is_impl_only) { is_impl_only_ = is_impl_only; }
   bool is_impl_only() const { return is_impl_only_; }
 

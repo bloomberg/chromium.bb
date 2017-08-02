@@ -1002,5 +1002,14 @@ TEST(AnimationTest, InEffectFillModePlayback) {
   EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(1.0)));
 }
 
+TEST(AnimationTest, ToString) {
+  EXPECT_EQ(
+      "Animation{id=42, group=73, target_property_id=1, "
+      "run_state=WAITING_FOR_TARGET_AVAILABILITY}",
+      Animation::Create(base::MakeUnique<FakeFloatAnimationCurve>(15), 42, 73,
+                        TargetProperty::OPACITY)
+          ->ToString());
+}
+
 }  // namespace
 }  // namespace cc

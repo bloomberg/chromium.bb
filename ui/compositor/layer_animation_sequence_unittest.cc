@@ -268,6 +268,36 @@ TEST(LayerAnimationSequenceTest, AddObserver) {
   }
 }
 
+TEST(LayerAnimationSequenceTest, ToString) {
+  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
+  LayerAnimationSequence sequence;
+  EXPECT_EQ(
+      "LayerAnimationSequence{size=0, properties=, elements=[], is_cyclic=0, "
+      "group_id=0}",
+      sequence.ToString());
+
+  sequence.AddElement(
+      LayerAnimationElement::CreateBrightnessElement(1.0f, delta));
+  EXPECT_EQ(
+      "LayerAnimationSequence{size=1, properties=BRIGHTNESS, "
+      "elements=[LayerAnimationElement{name=BrightnessTransition, id=1, "
+      "group=0, last_progressed_fraction=0.00, start_frame_number=0}], "
+      "is_cyclic=0, group_id=0}",
+      sequence.ToString());
+
+  sequence.AddElement(LayerAnimationElement::CreateOpacityElement(1.0f, delta));
+  sequence.set_is_cyclic(true);
+  sequence.set_animation_group_id(1973);
+  EXPECT_EQ(
+      "LayerAnimationSequence{size=2, properties=OPACITY|BRIGHTNESS, "
+      "elements=[LayerAnimationElement{name=BrightnessTransition, id=1, "
+      "group=0, last_progressed_fraction=0.00, start_frame_number=0}, "
+      "LayerAnimationElement{name=ThreadedOpacityTransition, id=2, group=0, "
+      "last_progressed_fraction=0.00, start_frame_number=0}], is_cyclic=1, "
+      "group_id=1973}",
+      sequence.ToString());
+}
+
 } // namespace
 
 } // namespace ui
