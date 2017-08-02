@@ -77,6 +77,12 @@ constexpr char kEndSuffix[] = "end";
 constexpr char kIntentPrefix[] = "#Intent";
 constexpr char kLaunchFlags[] = "launchFlags";
 
+constexpr char kAndroidClockAppId[] = "ddmmnabaeomoacfpfjgghfpocfolhjlg";
+
+constexpr char const* kAppIdsHiddenInLauncher[] = {
+    kAndroidClockAppId, kSettingsAppId,
+};
+
 // Find a proper size and position for a given rectangle on the screen.
 // TODO(skuhne): This needs more consideration, but it is lacking
 // WindowPositioner functionality since we do not have an Aura::Window yet.
@@ -246,7 +252,11 @@ const char kSettingsAppId[] = "mconboelelhjpkbdhhiijkgcimoangdj";
 const char kInitialStartParam[] = "S.org.chromium.arc.start_type=initialStart";
 
 bool ShouldShowInLauncher(const std::string& app_id) {
-  return app_id != kSettingsAppId;
+  for (auto* const id : kAppIdsHiddenInLauncher) {
+    if (id == app_id)
+      return false;
+  }
+  return true;
 }
 
 bool LaunchAndroidSettingsApp(content::BrowserContext* context,
