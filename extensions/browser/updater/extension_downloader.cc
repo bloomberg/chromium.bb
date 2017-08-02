@@ -22,9 +22,9 @@
 #include "base/time/time.h"
 #include "base/version.h"
 #include "components/update_client/update_query_params.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/updater/extension_cache.h"
@@ -46,7 +46,6 @@
 
 using base::Time;
 using base::TimeDelta;
-using content::BrowserThread;
 using update_client::UpdateQueryParams;
 
 namespace extensions {
@@ -858,7 +857,7 @@ void ExtensionDownloader::CreateExtensionFetcher() {
   // processed in memory, so it is fetched into a string.
   if (fetch->id != kBlacklistAppID) {
     extension_fetcher_->SaveResponseToTemporaryFile(
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
+        GetExtensionFileTaskRunner());
   }
 
   if (fetch->credentials == ExtensionFetch::CREDENTIALS_OAUTH2_TOKEN &&
