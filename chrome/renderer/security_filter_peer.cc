@@ -138,7 +138,6 @@ void ReplaceContentPeer::OnReceivedData(std::unique_ptr<ReceivedData> data) {
 
 void ReplaceContentPeer::OnCompletedRequest(
     int error_code,
-    bool was_ignored_by_handler,
     bool stale_copy_in_cache,
     const base::TimeTicks& completion_time,
     int64_t total_transfer_size,
@@ -152,7 +151,7 @@ void ReplaceContentPeer::OnCompletedRequest(
     original_peer_->OnReceivedData(base::MakeUnique<content::FixedReceivedData>(
         data_.data(), data_.size()));
   }
-  original_peer_->OnCompletedRequest(net::OK, false, stale_copy_in_cache,
+  original_peer_->OnCompletedRequest(net::OK, stale_copy_in_cache,
                                      completion_time, total_transfer_size,
                                      encoded_body_size, decoded_body_size);
 }

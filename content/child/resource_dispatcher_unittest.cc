@@ -194,7 +194,6 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
   void NotifyRequestComplete(int request_id, size_t total_size) {
     ResourceRequestCompletionStatus request_complete_data;
     request_complete_data.error_code = net::OK;
-    request_complete_data.was_ignored_by_handler = false;
     request_complete_data.exists_in_cache = false;
     request_complete_data.encoded_data_length = total_size;
     EXPECT_TRUE(dispatcher_->OnMessageReceived(
@@ -426,7 +425,6 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
     void OnTransferSizeUpdated(int transfer_size_diff) override {}
 
     void OnCompletedRequest(int error_code,
-                            bool was_ignored_by_handler,
                             bool stale_copy_in_cache,
                             const base::TimeTicks& completion_time,
                             int64_t total_transfer_size,
@@ -437,10 +435,9 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
         original_peer_->OnReceivedData(
             base::MakeUnique<FixedReceivedData>(data_.data(), data_.size()));
       }
-      original_peer_->OnCompletedRequest(error_code, was_ignored_by_handler,
-                                         stale_copy_in_cache, completion_time,
-                                         total_transfer_size, encoded_body_size,
-                                         decoded_body_size);
+      original_peer_->OnCompletedRequest(error_code, stale_copy_in_cache,
+                                         completion_time, total_transfer_size,
+                                         encoded_body_size, decoded_body_size);
     }
 
    private:
