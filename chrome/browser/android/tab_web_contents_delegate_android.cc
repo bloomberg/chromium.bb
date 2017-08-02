@@ -290,6 +290,15 @@ bool TabWebContentsDelegateAndroid::CheckMediaAccessPermission(
       ->CheckMediaAccessPermission(web_contents, security_origin, type);
 }
 
+void TabWebContentsDelegateAndroid::SetOverlayMode(bool use_overlay_mode) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return;
+
+  Java_TabWebContentsDelegateAndroid_setOverlayMode(env, obj, use_overlay_mode);
+}
+
 bool TabWebContentsDelegateAndroid::RequestPpapiBrokerPermission(
     WebContents* web_contents,
     const GURL& url,

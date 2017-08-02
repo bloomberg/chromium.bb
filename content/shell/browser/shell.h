@@ -132,6 +132,7 @@ class Shell : public WebContentsDelegate,
   void LoadProgressChanged(WebContents* source, double progress) override;
   base::android::ScopedJavaLocalRef<jobject>
       GetContentVideoViewEmbedder() override;
+  void SetOverlayMode(bool use_overlay_mode) override;
 #endif
   void EnterFullscreenModeForTab(WebContents* web_contents,
                                  const GURL& origin) override;

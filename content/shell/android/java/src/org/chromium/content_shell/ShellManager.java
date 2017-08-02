@@ -88,15 +88,6 @@ public class ShellManager extends FrameLayout {
         if (previousShell != null) previousShell.close();
     }
 
-    /**
-     * Enter or leave overlay video mode.
-     * @param enabled Whether overlay mode is enabled.
-     */
-    public void setOverlayVideoMode(boolean enabled) {
-        if (mContentViewRenderView == null) return;
-        mContentViewRenderView.setOverlayVideoMode(enabled);
-    }
-
     @SuppressWarnings("unused")
     @CalledByNative
     private Object createShell(long nativeShellPtr) {

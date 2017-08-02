@@ -26,12 +26,18 @@ public class DialogOverlayImplTest extends DialogOverlayImplTestBase {
     @SmallTest
     @Feature({"AndroidOverlay"})
     public void testCreateDestroyOverlay() {
+        Assert.assertFalse(getClient().hasReceivedOverlayModeChange());
+        Assert.assertFalse(getClient().isUsingOverlayMode());
+
         final DialogOverlayImpl overlay = createOverlay(0, 0, 10, 10);
 
         // We should get a new overlay with a valid surface key.
         Client.Event event = getClient().nextEvent();
         Assert.assertEquals(Client.SURFACE_READY, event.which);
         Assert.assertTrue(event.surfaceKey > 0);
+
+        Assert.assertTrue(getClient().hasReceivedOverlayModeChange());
+        Assert.assertTrue(getClient().isUsingOverlayMode());
 
         // Close the overlay, and make sure that the provider is notified.
         // Note that we should not get a 'destroyed' message when we close it.
@@ -42,6 +48,7 @@ public class DialogOverlayImplTest extends DialogOverlayImplTestBase {
             }
         });
         Assert.assertEquals(Client.RELEASED, getClient().nextEvent().which);
+        Assert.assertFalse(getClient().isUsingOverlayMode());
     }
 
     @SmallTest

@@ -491,6 +491,12 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Returns true if the given media should be blocked to load.
   virtual bool ShouldBlockMediaRequest(const GURL& url);
+
+  // Tells the delegate to enter overlay mode.
+  // Overlay mode means that we are currently using AndroidOverlays to display
+  // video, and that the compositor's surface should support alpha and not be
+  // marked as opaque. See media/base/android/android_overlay.h.
+  virtual void SetOverlayMode(bool use_overlay_mode);
 #endif
 
   // Requests permission to access the PPAPI broker. The delegate should return
