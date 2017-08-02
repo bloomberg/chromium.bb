@@ -148,7 +148,7 @@ v8::Local<v8::Object> V8PerContextData::PrototypeForType(
   if (constructor.IsEmpty())
     return v8::Local<v8::Object>();
   v8::Local<v8::Value> prototype_value;
-  if (!constructor->Get(GetContext(), V8String(isolate_, "prototype"))
+  if (!constructor->Get(GetContext(), V8AtomicString(isolate_, "prototype"))
            .ToLocal(&prototype_value) ||
       !prototype_value->IsObject())
     return v8::Local<v8::Object>();

@@ -164,7 +164,7 @@ V0CustomElementConstructorBuilder::RetrieveCallback(const char* name) {
   v8::Local<v8::Value> value;
   if (!prototype_
            ->Get(script_state_->GetContext(),
-                 V8String(script_state_->GetIsolate(), name))
+                 V8AtomicString(script_state_->GetIsolate(), name))
            .ToLocal(&value) ||
       !value->IsFunction())
     return v8::MaybeLocal<v8::Function>();
@@ -215,7 +215,7 @@ bool V0CustomElementConstructorBuilder::CreateConstructor(
   constructor_->SetName(v8_type->IsNull() ? v8_tag_name
                                           : v8_type.As<v8::String>());
 
-  v8::Local<v8::String> prototype_key = V8String(isolate, "prototype");
+  v8::Local<v8::String> prototype_key = V8AtomicString(isolate, "prototype");
   if (!V8CallBoolean(constructor_->HasOwnProperty(context, prototype_key)))
     return false;
   // This sets the property *value*; calling Set is safe because
@@ -231,7 +231,8 @@ bool V0CustomElementConstructorBuilder::CreateConstructor(
           v8::PropertyAttribute(v8::ReadOnly | v8::DontEnum | v8::DontDelete))))
     return false;
 
-  v8::Local<v8::String> constructor_key = V8String(isolate, "constructor");
+  v8::Local<v8::String> constructor_key =
+      V8AtomicString(isolate, "constructor");
   v8::Local<v8::Value> constructor_prototype;
   if (!prototype_->Get(context, constructor_key)
            .ToLocal(&constructor_prototype))
@@ -244,7 +245,7 @@ bool V0CustomElementConstructorBuilder::CreateConstructor(
   V8PrivateProperty::GetCustomElementIsInterfacePrototypeObject(isolate).Set(
       prototype_, v8::True(isolate));
   if (!V8CallBoolean(prototype_->DefineOwnProperty(
-          context, V8String(isolate, "constructor"), constructor_,
+          context, V8AtomicString(isolate, "constructor"), constructor_,
           v8::DontEnum)))
     return false;
 
@@ -267,7 +268,8 @@ bool V0CustomElementConstructorBuilder::PrototypeIsValid(
 
   v8::PropertyAttribute property_attribute;
   if (!prototype_
-           ->GetPropertyAttributes(context, V8String(isolate, "constructor"))
+           ->GetPropertyAttributes(context,
+                                   V8AtomicString(isolate, "constructor"))
            .To(&property_attribute) ||
       (property_attribute & v8::DontDelete)) {
     V0CustomElementException::ThrowException(

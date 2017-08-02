@@ -17,9 +17,9 @@ DictionaryIterator::DictionaryIterator(v8::Local<v8::Object> iterator,
                                        v8::Isolate* isolate)
     : isolate_(isolate),
       iterator_(iterator),
-      next_key_(V8String(isolate, "next")),
-      done_key_(V8String(isolate, "done")),
-      value_key_(V8String(isolate, "value")),
+      next_key_(V8AtomicString(isolate, "next")),
+      done_key_(V8AtomicString(isolate, "done")),
+      value_key_(V8AtomicString(isolate, "value")),
       done_(false) {
   DCHECK(!iterator.IsEmpty());
 }

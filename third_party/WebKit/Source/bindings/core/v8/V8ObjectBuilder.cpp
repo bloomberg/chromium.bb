@@ -62,9 +62,9 @@ void V8ObjectBuilder::AddInternal(const StringView& name,
     return;
   if (value.IsEmpty() ||
       object_
-          ->CreateDataProperty(script_state_->GetContext(),
-                               V8String(script_state_->GetIsolate(), name),
-                               value)
+          ->CreateDataProperty(
+              script_state_->GetContext(),
+              V8AtomicString(script_state_->GetIsolate(), name), value)
           .IsNothing())
     object_.Clear();
 }

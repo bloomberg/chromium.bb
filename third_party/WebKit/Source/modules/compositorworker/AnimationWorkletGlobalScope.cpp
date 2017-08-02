@@ -110,7 +110,7 @@ void AnimationWorkletGlobalScope::registerAnimator(
       v8::Local<v8::Function>::Cast(ctorValue.V8Value());
 
   v8::Local<v8::Value> prototypeValue;
-  if (!constructor->Get(context, V8String(isolate, "prototype"))
+  if (!constructor->Get(context, V8AtomicString(isolate, "prototype"))
            .ToLocal(&prototypeValue))
     return;
 
@@ -129,7 +129,7 @@ void AnimationWorkletGlobalScope::registerAnimator(
   v8::Local<v8::Object> prototype = v8::Local<v8::Object>::Cast(prototypeValue);
 
   v8::Local<v8::Value> animateValue;
-  if (!prototype->Get(context, V8String(isolate, "animate"))
+  if (!prototype->Get(context, V8AtomicString(isolate, "animate"))
            .ToLocal(&animateValue))
     return;
 

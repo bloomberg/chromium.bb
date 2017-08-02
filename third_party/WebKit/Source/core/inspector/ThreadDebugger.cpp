@@ -219,7 +219,7 @@ static void CreateFunctionPropertyWithData(v8::Local<v8::Context> context,
                         v8::ConstructorBehavior::kThrow)
           .ToLocal(&to_string_function))
     CreateDataProperty(context, func,
-                       V8String(context->GetIsolate(), "toString"),
+                       V8AtomicString(context->GetIsolate(), "toString"),
                        to_string_function);
   CreateDataProperty(context, object, func_name, func);
 }
@@ -405,21 +405,25 @@ void ThreadDebugger::GetEventListenersCallback(
       current_event_type = info.event_type;
       listeners = v8::Array::New(isolate);
       output_index = 0;
-      CreateDataProperty(context, result, V8String(isolate, current_event_type),
+      CreateDataProperty(context, result,
+                         V8AtomicString(isolate, current_event_type),
                          listeners);
     }
 
     v8::Local<v8::Object> listener_object = v8::Object::New(isolate);
-    CreateDataProperty(context, listener_object, V8String(isolate, "listener"),
-                       info.handler);
     CreateDataProperty(context, listener_object,
-                       V8String(isolate, "useCapture"),
+                       V8AtomicString(isolate, "listener"), info.handler);
+    CreateDataProperty(context, listener_object,
+                       V8AtomicString(isolate, "useCapture"),
                        v8::Boolean::New(isolate, info.use_capture));
-    CreateDataProperty(context, listener_object, V8String(isolate, "passive"),
+    CreateDataProperty(context, listener_object,
+                       V8AtomicString(isolate, "passive"),
                        v8::Boolean::New(isolate, info.passive));
-    CreateDataProperty(context, listener_object, V8String(isolate, "once"),
+    CreateDataProperty(context, listener_object,
+                       V8AtomicString(isolate, "once"),
                        v8::Boolean::New(isolate, info.once));
-    CreateDataProperty(context, listener_object, V8String(isolate, "type"),
+    CreateDataProperty(context, listener_object,
+                       V8AtomicString(isolate, "type"),
                        V8String(isolate, current_event_type));
     CreateDataPropertyInArray(context, listeners, output_index++,
                               listener_object);

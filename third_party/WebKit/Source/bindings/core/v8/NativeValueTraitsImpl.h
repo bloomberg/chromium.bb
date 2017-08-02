@@ -351,9 +351,9 @@ struct NativeValueTraits<IDLSequence<T>>
     if (exception_state.HadException())
       return;
 
-    v8::Local<v8::String> next_key = V8String(isolate, "next");
-    v8::Local<v8::String> value_key = V8String(isolate, "value");
-    v8::Local<v8::String> done_key = V8String(isolate, "done");
+    v8::Local<v8::String> next_key = V8AtomicString(isolate, "next");
+    v8::Local<v8::String> value_key = V8AtomicString(isolate, "value");
+    v8::Local<v8::String> done_key = V8AtomicString(isolate, "done");
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
     while (true) {
       v8::Local<v8::Value> next;

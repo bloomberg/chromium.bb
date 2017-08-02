@@ -13,10 +13,11 @@ v8::Local<v8::Object> V8IteratorResultValue(v8::Isolate* isolate,
   if (value.IsEmpty())
     value = v8::Undefined(isolate);
   if (!V8CallBoolean(result->CreateDataProperty(
-          isolate->GetCurrentContext(), V8String(isolate, "done"),
+          isolate->GetCurrentContext(), V8AtomicString(isolate, "done"),
           v8::Boolean::New(isolate, done))) ||
-      !V8CallBoolean(result->CreateDataProperty(
-          isolate->GetCurrentContext(), V8String(isolate, "value"), value)))
+      !V8CallBoolean(
+          result->CreateDataProperty(isolate->GetCurrentContext(),
+                                     V8AtomicString(isolate, "value"), value)))
     return v8::Local<v8::Object>();
   return result;
 }
@@ -26,13 +27,13 @@ v8::MaybeLocal<v8::Value> V8UnpackIteratorResult(ScriptState* script_state,
                                                  bool* done) {
   v8::MaybeLocal<v8::Value> maybe_value =
       result->Get(script_state->GetContext(),
-                  V8String(script_state->GetIsolate(), "value"));
+                  V8AtomicString(script_state->GetIsolate(), "value"));
   if (maybe_value.IsEmpty())
     return maybe_value;
   v8::Local<v8::Value> done_value;
   if (!result
            ->Get(script_state->GetContext(),
-                 V8String(script_state->GetIsolate(), "done"))
+                 V8AtomicString(script_state->GetIsolate(), "done"))
            .ToLocal(&done_value) ||
       !done_value->BooleanValue(script_state->GetContext()).To(done)) {
     return v8::MaybeLocal<v8::Value>();
