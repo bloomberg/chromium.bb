@@ -45,7 +45,7 @@ const double kShortIdlePeriodDurationPercentile = 50;
 // which main thread compositing can be considered fast.
 const double kFastCompositingIdleTimeThreshold = .2;
 constexpr base::TimeDelta kThreadLoadTrackerReportingInterval =
-    base::TimeDelta::FromMinutes(1);
+    base::TimeDelta::FromSeconds(1);
 // We do not throttle anything while audio is played and shortly after that.
 constexpr base::TimeDelta kThrottlingDelayAfterAudioIsPlayed =
     base::TimeDelta::FromSeconds(5);
@@ -165,6 +165,7 @@ RendererSchedulerImpl::~RendererSchedulerImpl() {
 
 #define TASK_DURATION_METRIC_NAME "RendererScheduler.TaskDurationPerQueueType2"
 #define TASK_COUNT_METRIC_NAME "RendererScheduler.TaskCountPerQueueType"
+#define MAIN_THREAD_LOAD_METRIC_NAME "RendererScheduler.RendererMainThreadLoad4"
 
 RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
     RendererSchedulerImpl* renderer_scheduler_impl,
@@ -2150,8 +2151,7 @@ void RendererSchedulerImpl::RecordMainThreadTaskLoad(base::TimeTicks time,
   int load_percentage = static_cast<int>(load * 100);
   DCHECK_LE(load_percentage, 100);
 
-  UMA_HISTOGRAM_PERCENTAGE("RendererScheduler.RendererMainThreadLoad3",
-                           load_percentage);
+  UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME, load_percentage);
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "RendererScheduler.RendererMainThreadLoad", load_percentage);
 }
@@ -2162,14 +2162,14 @@ void RendererSchedulerImpl::RecordForegroundMainThreadTaskLoad(
   int load_percentage = static_cast<int>(load * 100);
   DCHECK_LE(load_percentage, 100);
 
-  UMA_HISTOGRAM_PERCENTAGE(
-      "RendererScheduler.RendererMainThreadLoad3.Foreground", load_percentage);
+  UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME ".Foreground",
+                           load_percentage);
 
   if (time - main_thread_only().background_status_changed_at >
       base::TimeDelta::FromMinutes(1)) {
-    UMA_HISTOGRAM_PERCENTAGE(
-        "RendererScheduler.RendererMainThreadLoad3.Foreground.AfterFirstMinute",
-        load_percentage);
+    UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME
+                             ".Foreground.AfterFirstMinute",
+                             load_percentage);
   }
 
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
@@ -2183,14 +2183,14 @@ void RendererSchedulerImpl::RecordBackgroundMainThreadTaskLoad(
   int load_percentage = static_cast<int>(load * 100);
   DCHECK_LE(load_percentage, 100);
 
-  UMA_HISTOGRAM_PERCENTAGE(
-      "RendererScheduler.RendererMainThreadLoad3.Background", load_percentage);
+  UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME ".Background",
+                           load_percentage);
 
   if (time - main_thread_only().background_status_changed_at >
       base::TimeDelta::FromMinutes(1)) {
-    UMA_HISTOGRAM_PERCENTAGE(
-        "RendererScheduler.RendererMainThreadLoad3.Background.AfterFirstMinute",
-        load_percentage);
+    UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME
+                             ".Background.AfterFirstMinute",
+                             load_percentage);
   }
 
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
