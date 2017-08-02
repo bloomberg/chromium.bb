@@ -208,6 +208,12 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   void DidHandleSyncEvent(int request_id,
                           blink::WebServiceWorkerEventResult result,
                           double dispatch_event_time) override;
+  void RespondToCanMakePaymentEvent(int event_id,
+                                    bool can_make_payment,
+                                    double dispatch_event_time) override;
+  void DidHandleCanMakePaymentEvent(int event_id,
+                                    blink::WebServiceWorkerEventResult result,
+                                    double dispatch_event_time) override;
   void RespondToPaymentRequestEvent(
       int payment_request_id,
       const blink::WebPaymentHandlerResponse& response,
@@ -298,6 +304,11 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       const std::string& tag,
       blink::mojom::BackgroundSyncEventLastChance last_chance,
       DispatchSyncEventCallback callback) override;
+  void DispatchCanMakePaymentEvent(
+      int payment_request_id,
+      payments::mojom::CanMakePaymentEventDataPtr event_data,
+      payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
+      DispatchCanMakePaymentEventCallback callback) override;
   void DispatchPaymentRequestEvent(
       int payment_request_id,
       payments::mojom::PaymentRequestEventDataPtr event_data,

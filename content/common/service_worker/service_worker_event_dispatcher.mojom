@@ -131,11 +131,18 @@ interface ServiceWorkerEventDispatcher {
                     blink.mojom.BackgroundSyncEventLastChance last_chance)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
-  DispatchPaymentRequestEvent(int32 payment_request_id,
-                              payments.mojom.PaymentRequestEventData request_data,
-                              payments.mojom.PaymentHandlerResponseCallback response_callback)
-      => (blink.mojom.ServiceWorkerEventStatus status,
-          mojo.common.mojom.Time dispatch_event_time);
+  DispatchCanMakePaymentEvent(
+      int32 event_id,
+      payments.mojom.CanMakePaymentEventData event_data,
+      payments.mojom.PaymentHandlerResponseCallback result_of_can_make_payment)
+          => (blink.mojom.ServiceWorkerEventStatus status,
+              mojo.common.mojom.Time dispatch_event_time);
+  DispatchPaymentRequestEvent(
+      int32 payment_request_id,
+      payments.mojom.PaymentRequestEventData request_data,
+      payments.mojom.PaymentHandlerResponseCallback response_callback)
+          => (blink.mojom.ServiceWorkerEventStatus status,
+              mojo.common.mojom.Time dispatch_event_time);
   DispatchExtendableMessageEvent(ExtendableMessageEvent event)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);

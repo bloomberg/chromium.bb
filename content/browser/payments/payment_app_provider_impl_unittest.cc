@@ -40,6 +40,10 @@ void InvokePaymentAppCallback(
   *called = true;
 }
 
+void CanMakePaymentCallback(bool* out_can_make_payment, bool can_make_payment) {
+  *out_can_make_payment = can_make_payment;
+}
+
 }  // namespace
 
 class PaymentAppProviderTest : public PaymentAppContentUnitTestBase {
@@ -74,9 +78,45 @@ class PaymentAppProviderTest : public PaymentAppContentUnitTestBase {
     base::RunLoop().RunUntilIdle();
   }
 
+  void CanMakePayment(int64_t registration_id,
+                      payments::mojom::CanMakePaymentEventDataPtr event_data,
+                      PaymentAppProvider::CanMakePaymentCallback callback) {
+    PaymentAppProviderImpl::GetInstance()->CanMakePayment(
+        browser_context(), registration_id, std::move(event_data),
+        std::move(callback));
+    base::RunLoop().RunUntilIdle();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentAppProviderTest);
 };
+
+TEST_F(PaymentAppProviderTest, CanMakePaymentTest) {
+  PaymentManager* manager = CreatePaymentManager(
+      GURL("https://example.com"), GURL("https://example.com/script.js"));
+
+  PaymentHandlerStatus status;
+  SetPaymentInstrument(manager, "payment_instrument_key",
+                       payments::mojom::PaymentInstrument::New(),
+                       base::Bind(&SetPaymentInstrumentCallback, &status));
+
+  PaymentAppProvider::PaymentApps apps;
+  GetAllPaymentApps(base::Bind(&GetAllPaymentAppsCallback, &apps));
+  ASSERT_EQ(1U, apps.size());
+
+  payments::mojom::CanMakePaymentEventDataPtr event_data =
+      payments::mojom::CanMakePaymentEventData::New();
+  payments::mojom::PaymentMethodDataPtr methodData =
+      payments::mojom::PaymentMethodData::New();
+  methodData->supported_methods.push_back("test-method");
+  event_data->method_data.push_back(std::move(methodData));
+
+  bool can_make_payment = false;
+  CanMakePayment(apps[GURL("https://example.com/")]->registration_id,
+                 std::move(event_data),
+                 base::BindOnce(&CanMakePaymentCallback, &can_make_payment));
+  ASSERT_TRUE(can_make_payment);
+}
 
 TEST_F(PaymentAppProviderTest, InvokePaymentAppTest) {
   PaymentManager* manager1 = CreatePaymentManager(

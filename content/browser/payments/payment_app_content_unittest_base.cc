@@ -87,6 +87,16 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
         std::move(callback));
   }
 
+  void OnCanMakePaymentEvent(
+      payments::mojom::CanMakePaymentEventDataPtr event_data,
+      payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
+      mojom::ServiceWorkerEventDispatcher::DispatchCanMakePaymentEventCallback
+          callback) override {
+    EmbeddedWorkerTestHelper::OnCanMakePaymentEvent(
+        std::move(event_data), std::move(response_callback),
+        std::move(callback));
+  }
+
   int64_t last_sw_registration_id_;
   GURL last_sw_scope_;
 

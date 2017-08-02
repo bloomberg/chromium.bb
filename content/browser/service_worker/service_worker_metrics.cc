@@ -89,6 +89,8 @@ std::string EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
       return "_BACKGROUND_FETCHED";
     case ServiceWorkerMetrics::EventType::NAVIGATION_HINT:
       return "_NAVIGATION_HINT";
+    case ServiceWorkerMetrics::EventType::CAN_MAKE_PAYMENT:
+      return "_CAN_MAKE_PAYMENT";
     case ServiceWorkerMetrics::EventType::NUM_TYPES:
       NOTREACHED() << static_cast<int>(event_type);
   }
@@ -332,6 +334,8 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Background Fetched";
     case EventType::NAVIGATION_HINT:
       return "Navigation Hint";
+    case EventType::CAN_MAKE_PAYMENT:
+      return "Can Make Payment";
     case EventType::NUM_TYPES:
       break;
   }
@@ -721,6 +725,10 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
       break;
     case EventType::BACKGROUND_FETCHED:
       UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.BackgroundFetchedEvent.Time",
+                                 time);
+      break;
+    case EventType::CAN_MAKE_PAYMENT:
+      UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.CanMakePaymentEvent.Time",
                                  time);
       break;
 
