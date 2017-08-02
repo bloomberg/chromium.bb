@@ -232,7 +232,8 @@
           <paper-button id="details-button" on-tap="onDetailsTap_">
             $i18n{itemDetails}
           </paper-button>
-          <paper-button id="remove-button" on-tap="onRemoveTap_">
+          <paper-button id="remove-button" on-tap="onRemoveTap_"
+              hidden="[[isControlled_(data.controlledInfo)]]">
             $i18n{itemRemove}
           </paper-button>
           <paper-button id="errors-button" on-tap="onErrorsTap_"

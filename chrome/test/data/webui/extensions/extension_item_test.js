@@ -72,6 +72,7 @@ cr.define('extension_item_tests', function() {
     Warnings: 'warnings',
     SourceIndicator: 'source indicator',
     EnableToggle: 'toggle is disabled when necessary',
+    RemoveButton: 'remove button hidden when necessary',
   };
 
   function registerTests() {
@@ -241,6 +242,13 @@ cr.define('extension_item_tests', function() {
         item.set('data.userMayModify', false);
         Polymer.dom.flush();
         expectTrue(item.$['enable-toggle'].disabled);
+      });
+
+      test(assert(TestNames.RemoveButton), function() {
+        expectFalse(item.$['remove-button'].hidden);
+        item.set('data.controlledInfo', {type: 'POLICY', text: 'policy'});
+        Polymer.dom.flush();
+        expectTrue(item.$['remove-button'].hidden);
       });
     });
   }
