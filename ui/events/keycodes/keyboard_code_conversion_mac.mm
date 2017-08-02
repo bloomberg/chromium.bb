@@ -18,6 +18,12 @@ namespace ui {
 
 namespace {
 
+bool IsUnicodeControl(unichar c) {
+  // C0 control characters: http://unicode.org/charts/PDF/U0000.pdf
+  // C1 control characters: http://unicode.org/charts/PDF/U0080.pdf
+  return c <= 0x1F || (c >= 0x7F && c <= 0x9F);
+}
+
 // This value is not defined but shows up as 0x36.
 const int kVK_RightCommand = 0x36;
 // Context menu is not defined but shows up as 0x6E.
@@ -850,18 +856,10 @@ DomKey DomKeyFromNSEvent(NSEvent* event) {
       // e.g. On French keyboard [+a will produce "^q", DomKey should be 'q'.
       unichar dom_key_char =
           [characters characterAtIndex:[characters length] - 1];
-      const bool is_ctrl_down = ([event modifierFlags] & NSControlKeyMask) &&
-                                !([event modifierFlags] & NSAlternateKeyMask);
-      const bool is_command_down = [event modifierFlags] & NSCommandKeyMask;
-      // On Mac Blink won't insert ASCII character if either Ctrl or Command, or
-      // both, are down.
-      // See EditingBehavior::shouldInsertCharacter()
-      if (std::iscntrl(dom_key_char) ||
-          (dom_key_char < 0x80 && (is_ctrl_down || is_command_down))) {
-        // According to spec if the key combination produces a non-printable
-        // character, the key value should be the character without modifiers
-        // except Shift and AltGr.
-        // See https://w3c.github.io/uievents/#keys-guidelines
+      if (IsUnicodeControl(dom_key_char)) {
+        // Filter non-glyph modifiers if the generated characters are part of
+        // Unicode 'Other, Control' General Category.
+        // https://w3c.github.io/uievents-key/#selecting-key-attribute-values
         bool unused_is_dead_key;
         const int kAllowedModifiersMask =
             NSShiftKeyMask | NSAlphaShiftKeyMask | NSAlternateKeyMask;
@@ -870,7 +868,10 @@ DomKey DomKeyFromNSEvent(NSEvent* event) {
             [event keyCode], [event modifierFlags] & kAllowedModifiersMask,
             &unused_is_dead_key);
       }
-      if (!std::iscntrl(dom_key_char))
+
+      // We need to check again because keys like ESC will produce control
+      // characters even without any modifiers.
+      if (!IsUnicodeControl(dom_key_char))
         return DomKeyFromCharCode(dom_key_char);
     }
   }
