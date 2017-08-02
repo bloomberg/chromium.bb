@@ -779,10 +779,12 @@ void ScrollingCoordinator::SetTouchEventTargetRects(
   layers_with_touch_rects_.clear();
   for (const auto& layer_rect : layer_rects) {
     if (!layer_rect.value.IsEmpty()) {
+      DCHECK(layer_rect.key->IsRootLayer() || layer_rect.key->Parent());
       const PaintLayer* composited_layer =
           layer_rect.key
               ->EnclosingLayerForPaintInvalidationCrossingFrameBoundaries();
-      DCHECK(composited_layer);
+      if (!composited_layer)
+        continue;
       layers_with_touch_rects_.insert(composited_layer);
       GraphicsLayer* main_graphics_layer =
           composited_layer->GraphicsLayerBacking(
