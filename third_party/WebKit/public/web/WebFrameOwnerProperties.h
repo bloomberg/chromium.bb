@@ -6,6 +6,7 @@
 #define WebFrameOwnerProperties_h
 
 #include "public/platform/WebFeaturePolicy.h"
+#include "public/platform/WebScrollbar.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 
@@ -14,7 +15,7 @@
 namespace blink {
 
 struct WebFrameOwnerProperties {
-  enum class ScrollingMode { kAuto, kAlwaysOff, kAlwaysOn, kLast = kAlwaysOn };
+  using ScrollingMode = WebScrollbar::ScrollingMode;
 
   WebString name;  // browsing context container's name
   ScrollingMode scrolling_mode;

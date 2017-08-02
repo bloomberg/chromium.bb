@@ -71,4 +71,8 @@ KURL FilePathToURL(const String& path) {
   return Platform::Current()->GetFileUtilities()->FilePathToURL(path);
 }
 
+STATIC_ASSERT_ENUM(WebFileInfo::kTypeUnknown, FileMetadata::kTypeUnknown);
+STATIC_ASSERT_ENUM(WebFileInfo::kTypeFile, FileMetadata::kTypeFile);
+STATIC_ASSERT_ENUM(WebFileInfo::kTypeDirectory, FileMetadata::kTypeDirectory);
+
 }  // namespace blink

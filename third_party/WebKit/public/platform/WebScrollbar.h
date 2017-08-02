@@ -63,6 +63,8 @@ class BLINK_PLATFORM_EXPORT WebScrollbar {
     kAllParts = 0xffffffff
   };
 
+  enum class ScrollingMode { kAuto, kAlwaysOff, kAlwaysOn, kLast = kAlwaysOn };
+
   virtual ~WebScrollbar() {}
 
   // Return true if this is an overlay scrollbar.

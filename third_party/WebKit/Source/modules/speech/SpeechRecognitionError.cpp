@@ -24,6 +24,8 @@
  */
 
 #include "modules/speech/SpeechRecognitionError.h"
+#include "platform/wtf/Assertions.h"
+#include "public/web/WebSpeechRecognizerClient.h"
 
 namespace blink {
 
@@ -83,5 +85,24 @@ SpeechRecognitionError::SpeechRecognitionError(
 const AtomicString& SpeechRecognitionError::InterfaceName() const {
   return EventNames::SpeechRecognitionError;
 }
+
+STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kOtherError,
+                   SpeechRecognitionError::kErrorCodeOther);
+STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kNoSpeechError,
+                   SpeechRecognitionError::kErrorCodeNoSpeech);
+STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kAbortedError,
+                   SpeechRecognitionError::kErrorCodeAborted);
+STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kAudioCaptureError,
+                   SpeechRecognitionError::kErrorCodeAudioCapture);
+STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kNetworkError,
+                   SpeechRecognitionError::kErrorCodeNetwork);
+STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kNotAllowedError,
+                   SpeechRecognitionError::kErrorCodeNotAllowed);
+STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kServiceNotAllowedError,
+                   SpeechRecognitionError::kErrorCodeServiceNotAllowed);
+STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kBadGrammarError,
+                   SpeechRecognitionError::kErrorCodeBadGrammar);
+STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kLanguageNotSupportedError,
+                   SpeechRecognitionError::kErrorCodeLanguageNotSupported);
 
 }  // namespace blink

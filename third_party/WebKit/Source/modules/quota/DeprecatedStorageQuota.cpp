@@ -114,4 +114,9 @@ void DeprecatedStorageQuota::requestQuota(
                        success_callback, error_callback);
 }
 
+STATIC_ASSERT_ENUM(kWebStorageQuotaTypeTemporary,
+                   DeprecatedStorageQuota::kTemporary);
+STATIC_ASSERT_ENUM(kWebStorageQuotaTypePersistent,
+                   DeprecatedStorageQuota::kPersistent);
+
 }  // namespace blink

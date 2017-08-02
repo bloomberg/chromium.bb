@@ -29,6 +29,8 @@
  */
 
 #include "core/dom/IconURL.h"
+#include "platform/wtf/Assertions.h"
+#include "public/web/WebIconURL.h"
 
 namespace blink {
 
@@ -53,5 +55,10 @@ bool operator==(const IconURL& lhs, const IconURL& rhs) {
          lhs.icon_url_ == rhs.icon_url_ && lhs.sizes_ == rhs.sizes_ &&
          lhs.mime_type_ == rhs.mime_type_;
 }
+
+STATIC_ASSERT_ENUM(WebIconURL::kTypeInvalid, kInvalidIcon);
+STATIC_ASSERT_ENUM(WebIconURL::kTypeFavicon, kFavicon);
+STATIC_ASSERT_ENUM(WebIconURL::kTypeTouch, kTouchIcon);
+STATIC_ASSERT_ENUM(WebIconURL::kTypeTouchPrecomposed, kTouchPrecomposedIcon);
 
 }  // namespace blink

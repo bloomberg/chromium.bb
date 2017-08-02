@@ -52,10 +52,12 @@
 #include "core/probe/CoreProbes.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/Histogram.h"
+#include "platform/wtf/Assertions.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/Vector.h"
+#include "public/web/WebSettings.h"
 
 namespace blink {
 namespace {
@@ -833,5 +835,12 @@ void EventTarget::RemoveAllEventListeners() {
     }
   }
 }
+
+STATIC_ASSERT_ENUM(WebSettings::PassiveEventListenerDefault::kFalse,
+                   PassiveListenerDefault::kFalse);
+STATIC_ASSERT_ENUM(WebSettings::PassiveEventListenerDefault::kTrue,
+                   PassiveListenerDefault::kTrue);
+STATIC_ASSERT_ENUM(WebSettings::PassiveEventListenerDefault::kForceAllTrue,
+                   PassiveListenerDefault::kForceAllTrue);
 
 }  // namespace blink

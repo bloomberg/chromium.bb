@@ -34,11 +34,13 @@
 #include "platform/weborigin/OriginAccessEntry.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/text/StringHash.h"
+#include "public/platform/WebReferrerPolicy.h"
 
 namespace blink {
 
@@ -343,5 +345,19 @@ bool SecurityPolicy::ReferrerPolicyFromHeaderValue(
   *result = referrer_policy;
   return true;
 }
+
+STATIC_ASSERT_ENUM(kWebReferrerPolicyAlways, kReferrerPolicyAlways);
+STATIC_ASSERT_ENUM(kWebReferrerPolicyDefault, kReferrerPolicyDefault);
+STATIC_ASSERT_ENUM(kWebReferrerPolicyNoReferrerWhenDowngrade,
+                   kReferrerPolicyNoReferrerWhenDowngrade);
+STATIC_ASSERT_ENUM(kWebReferrerPolicyNever, kReferrerPolicyNever);
+STATIC_ASSERT_ENUM(kWebReferrerPolicyOrigin, kReferrerPolicyOrigin);
+STATIC_ASSERT_ENUM(kWebReferrerPolicyOriginWhenCrossOrigin,
+                   kReferrerPolicyOriginWhenCrossOrigin);
+STATIC_ASSERT_ENUM(kWebReferrerPolicySameOrigin, kReferrerPolicySameOrigin);
+STATIC_ASSERT_ENUM(kWebReferrerPolicyStrictOrigin, kReferrerPolicyStrictOrigin);
+STATIC_ASSERT_ENUM(
+    kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+    kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin);
 
 }  // namespace blink
