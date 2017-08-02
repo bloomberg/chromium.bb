@@ -283,12 +283,11 @@ KeyPermissions::PermissionsForExtension::KeyEntriesToState() {
     new_entry->SetStringWithoutPathExpansion(kStateStoreSPKI, entry.spki_b64);
     // Omit writing default values, namely |false|.
     if (entry.sign_once) {
-      new_entry->SetBooleanWithoutPathExpansion(kStateStoreSignOnce,
-                                                entry.sign_once);
+      new_entry->SetKey(kStateStoreSignOnce, base::Value(entry.sign_once));
     }
     if (entry.sign_unlimited) {
-      new_entry->SetBooleanWithoutPathExpansion(kStateStoreSignUnlimited,
-                                                entry.sign_unlimited);
+      new_entry->SetKey(kStateStoreSignUnlimited,
+                        base::Value(entry.sign_unlimited));
     }
     new_state->Append(std::move(new_entry));
   }

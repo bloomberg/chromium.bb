@@ -167,7 +167,7 @@ TEST_F(ShillProfileClientTest, DeleteEntry) {
 
   // Create the expected value.
   base::DictionaryValue value;
-  value.SetBooleanWithoutPathExpansion(shill::kOfflineModeProperty, true);
+  value.SetKey(shill::kOfflineModeProperty, base::Value(true));
   // Set expectations.
   PrepareForMethodCall(shill::kDeleteEntryFunction,
                        base::Bind(&ExpectStringArgument, kExampleEntryPath),

@@ -79,12 +79,12 @@ void ProximityAuthProfilePrefManager::SyncPrefsToLocalState() {
   std::unique_ptr<base::DictionaryValue> user_prefs_dict(
       new base::DictionaryValue());
 
-  user_prefs_dict->SetBooleanWithoutPathExpansion(prefs::kEasyUnlockAllowed,
-                                                  IsEasyUnlockAllowed());
+  user_prefs_dict->SetKey(prefs::kEasyUnlockAllowed,
+                          base::Value(IsEasyUnlockAllowed()));
   user_prefs_dict->SetIntegerWithoutPathExpansion(
       prefs::kEasyUnlockProximityThreshold, GetProximityThreshold());
-  user_prefs_dict->SetBooleanWithoutPathExpansion(
-      prefs::kProximityAuthIsChromeOSLoginEnabled, IsChromeOSLoginEnabled());
+  user_prefs_dict->SetKey(prefs::kProximityAuthIsChromeOSLoginEnabled,
+                          base::Value(IsChromeOSLoginEnabled()));
 
   DictionaryPrefUpdate update(local_state_,
                               prefs::kEasyUnlockLocalStateUserPrefs);

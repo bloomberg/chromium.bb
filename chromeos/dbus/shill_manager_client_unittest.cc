@@ -139,7 +139,7 @@ TEST_F(ShillManagerClientTest, GetProperties) {
 
   // Create the expected value.
   base::DictionaryValue value;
-  value.SetBooleanWithoutPathExpansion(shill::kOfflineModeProperty, true);
+  value.SetKey(shill::kOfflineModeProperty, base::Value(true));
   // Set expectations.
   PrepareForMethodCall(shill::kGetPropertiesFunction,
                        base::Bind(&ExpectNoArgument),

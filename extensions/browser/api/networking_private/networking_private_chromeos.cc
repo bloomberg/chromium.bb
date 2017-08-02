@@ -266,7 +266,7 @@ void SetProxyEffectiveValue(base::DictionaryValue* dict,
   }
   dict->SetWithoutPathExpansion(::onc::kAugmentationActiveSetting,
                                 std::move(value));
-  dict->SetBooleanWithoutPathExpansion(::onc::kAugmentationUserEditable, false);
+  dict->SetKey(::onc::kAugmentationUserEditable, base::Value(false));
 }
 
 std::string GetProxySettingsType(const UIProxyConfig::Mode& mode) {

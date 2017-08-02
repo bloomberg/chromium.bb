@@ -86,6 +86,15 @@ std::unique_ptr<DictionaryValueUpdate> DictionaryValueUpdate::SetDictionary(
       report_update_, dictionary_value, ConcatPath(path_, path));
 }
 
+void DictionaryValueUpdate::SetKey(base::StringPiece key, base::Value value) {
+  auto found = value_->FindKey(key);
+  if (found != value_->DictEnd() && found->second == value)
+    return;
+
+  RecordKey(key);
+  value_->SetKey(key, std::move(value));
+}
+
 void DictionaryValueUpdate::SetWithoutPathExpansion(
     base::StringPiece key,
     std::unique_ptr<base::Value> in_value) {
@@ -96,12 +105,6 @@ void DictionaryValueUpdate::SetWithoutPathExpansion(
   }
   RecordKey(key);
   value_->SetWithoutPathExpansion(key, std::move(in_value));
-}
-
-void DictionaryValueUpdate::SetBooleanWithoutPathExpansion(
-    base::StringPiece path,
-    bool in_value) {
-  SetWithoutPathExpansion(path, base::MakeUnique<base::Value>(in_value));
 }
 
 void DictionaryValueUpdate::SetIntegerWithoutPathExpansion(

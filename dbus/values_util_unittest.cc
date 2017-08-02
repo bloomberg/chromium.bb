@@ -339,7 +339,7 @@ TEST(ValuesUtilTest, PopDictionaryWithDottedStringKey) {
 
   // Create the expected value.
   base::DictionaryValue dictionary_value;
-  dictionary_value.SetBooleanWithoutPathExpansion(kKey1, kBoolValue);
+  dictionary_value.SetKey(kKey1, base::Value(kBoolValue));
   dictionary_value.SetIntegerWithoutPathExpansion(kKey2, kInt32Value);
   dictionary_value.SetDoubleWithoutPathExpansion(kKey3, kDoubleValue);
 

@@ -237,8 +237,8 @@ void LocalTranslator::TranslateWiFi() {
   bool allow_gateway_arp_polling;
   if (onc_object_->GetBooleanWithoutPathExpansion(
           ::onc::wifi::kAllowGatewayARPPolling, &allow_gateway_arp_polling)) {
-    shill_dictionary_->SetBooleanWithoutPathExpansion(
-        shill::kLinkMonitorDisableProperty, !allow_gateway_arp_polling);
+    shill_dictionary_->SetKey(shill::kLinkMonitorDisableProperty,
+                              base::Value(!allow_gateway_arp_polling));
   }
 
   CopyFieldsAccordingToSignature();

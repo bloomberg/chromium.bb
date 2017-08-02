@@ -378,8 +378,7 @@ bool VPNConfigView::Login() {
     bool only_policy_autoconnect =
         onc::PolicyAllowsOnlyPolicyNetworksToAutoconnect(!shared);
     if (only_policy_autoconnect) {
-      properties.SetBooleanWithoutPathExpansion(shill::kAutoConnectProperty,
-                                                false);
+      properties.SetKey(shill::kAutoConnectProperty, base::Value(false));
     }
 
     NetworkConnect::Get()->CreateConfigurationAndConnect(&properties, shared);
@@ -906,8 +905,8 @@ void VPNConfigView::SetConfigProperties(
       NOTREACHED();
       break;
   }
-  properties->SetBooleanWithoutPathExpansion(
-      shill::kSaveCredentialsProperty, GetSaveCredentials());
+  properties->SetKey(shill::kSaveCredentialsProperty,
+                     base::Value(GetSaveCredentials()));
 }
 
 void VPNConfigView::Refresh() {

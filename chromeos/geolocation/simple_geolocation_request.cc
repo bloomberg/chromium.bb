@@ -389,7 +389,7 @@ std::string SimpleGeolocationRequest::FormatRequestBody() const {
     return std::string(kSimpleGeolocationRequestBody);
 
   std::unique_ptr<base::DictionaryValue> request(new base::DictionaryValue);
-  request->SetBooleanWithoutPathExpansion(kConsiderIp, true);
+  request->SetKey(kConsiderIp, base::Value(true));
 
   if (wifi_data_) {
     auto wifi_access_points = base::MakeUnique<base::ListValue>();

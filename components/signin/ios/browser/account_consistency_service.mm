@@ -373,7 +373,7 @@ void AccountConsistencyService::FinishedApplyingCookieRequest(bool success) {
       case ADD_CHROME_CONNECTED_COOKIE:
         // Add request.domain to prefs, use |true| as a dummy value (that is
         // never used), as the dictionary is used as a set.
-        update->SetBooleanWithoutPathExpansion(request.domain, true);
+        update->SetKey(request.domain, base::Value(true));
         break;
       case REMOVE_CHROME_CONNECTED_COOKIE:
         // Remove request.domain from prefs.

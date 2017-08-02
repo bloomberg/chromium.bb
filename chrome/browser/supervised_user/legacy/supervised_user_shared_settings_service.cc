@@ -115,7 +115,7 @@ void SupervisedUserSharedSettingsService::SetValueInternal(
         key, base::MakeUnique<base::DictionaryValue>());
   }
   dict->SetWithoutPathExpansion(kValue, base::MakeUnique<base::Value>(value));
-  dict->SetBooleanWithoutPathExpansion(kAcknowledged, acknowledged);
+  dict->SetKey(kAcknowledged, base::Value(acknowledged));
 
   if (!sync_processor_)
     return;
@@ -236,8 +236,8 @@ SupervisedUserSharedSettingsService::MergeDataAndStartSyncing(
     // Every setting we get from the server should have the acknowledged flag
     // set.
     DCHECK(supervised_user_shared_setting.acknowledged());
-    dict->SetBooleanWithoutPathExpansion(
-        kAcknowledged, supervised_user_shared_setting.acknowledged());
+    dict->SetKey(kAcknowledged,
+                 base::Value(supervised_user_shared_setting.acknowledged()));
     callbacks_.Notify(su_id, key);
 
     if (pref_seen_keys.find(su_id) == pref_seen_keys.end())
@@ -348,8 +348,9 @@ syncer::SyncError SupervisedUserSharedSettingsService::ProcessSyncChanges(
         std::unique_ptr<Value> value =
             base::JSONReader::Read(supervised_user_shared_setting.value());
         dict->SetWithoutPathExpansion(kValue, std::move(value));
-        dict->SetBooleanWithoutPathExpansion(
-            kAcknowledged, supervised_user_shared_setting.acknowledged());
+        dict->SetKey(
+            kAcknowledged,
+            base::Value(supervised_user_shared_setting.acknowledged()));
         break;
       }
       case SyncChange::ACTION_DELETE: {

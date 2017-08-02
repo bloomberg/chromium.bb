@@ -306,19 +306,25 @@ class BASE_EXPORT DictionaryValue : public Value {
 
   // Like Set(), but without special treatment of '.'.  This allows e.g. URLs to
   // be used as paths.
+  // DEPRECATED, use Value::SetKey(path, value) instead.
   Value* SetWithoutPathExpansion(StringPiece key,
                                  std::unique_ptr<Value> in_value);
 
   // Convenience forms of SetWithoutPathExpansion().
-  Value* SetBooleanWithoutPathExpansion(StringPiece path, bool in_value);
+  // DEPRECATED, use Value::SetKey(path, Value(int)) instead.
   Value* SetIntegerWithoutPathExpansion(StringPiece path, int in_value);
+  // DEPRECATED, use Value::SetKey(path, Value(double)) instead.
   Value* SetDoubleWithoutPathExpansion(StringPiece path, double in_value);
+  // DEPRECATED, use Value::SetKey(path, Value(string)) instead.
   Value* SetStringWithoutPathExpansion(StringPiece path, StringPiece in_value);
+  // DEPRECATED, use Value::SetKey(path, Value(string16)) instead.
   Value* SetStringWithoutPathExpansion(StringPiece path,
                                        const string16& in_value);
+  // DEPRECATED, use Value::SetKey(path, Value(Type::DICTIONARY)) instead.
   DictionaryValue* SetDictionaryWithoutPathExpansion(
       StringPiece path,
       std::unique_ptr<DictionaryValue> in_value);
+  // DEPRECATED, use Value::SetKey(path, Value(Type::LIST)) instead.
   ListValue* SetListWithoutPathExpansion(StringPiece path,
                                          std::unique_ptr<ListValue> in_value);
 
@@ -355,22 +361,33 @@ class BASE_EXPORT DictionaryValue : public Value {
 
   // Like Get(), but without special treatment of '.'.  This allows e.g. URLs to
   // be used as paths.
+  // DEPRECATED, use Value::FindKey(key) instead.
   bool GetWithoutPathExpansion(StringPiece key, const Value** out_value) const;
+  // DEPRECATED, use Value::FindKey(key) instead.
   bool GetWithoutPathExpansion(StringPiece key, Value** out_value);
+  // DEPRECATED, use Value::FindKey(key) and Value::GetBool() instead.
   bool GetBooleanWithoutPathExpansion(StringPiece key, bool* out_value) const;
+  // DEPRECATED, use Value::FindKey(key) and Value::GetInt() instead.
   bool GetIntegerWithoutPathExpansion(StringPiece key, int* out_value) const;
+  // DEPRECATED, use Value::FindKey(key) and Value::GetDouble() instead.
   bool GetDoubleWithoutPathExpansion(StringPiece key, double* out_value) const;
+  // DEPRECATED, use Value::FindKey(key) and Value::GetString() instead.
   bool GetStringWithoutPathExpansion(StringPiece key,
                                      std::string* out_value) const;
+  // DEPRECATED, use Value::FindKey(key) and Value::GetString() instead.
   bool GetStringWithoutPathExpansion(StringPiece key,
                                      string16* out_value) const;
+  // DEPRECATED, use Value::FindKey(key) and Value's Dictionary API instead.
   bool GetDictionaryWithoutPathExpansion(
       StringPiece key,
       const DictionaryValue** out_value) const;
+  // DEPRECATED, use Value::FindKey(key) and Value's Dictionary API instead.
   bool GetDictionaryWithoutPathExpansion(StringPiece key,
                                          DictionaryValue** out_value);
+  // DEPRECATED, use Value::FindKey(key) and Value::GetList() instead.
   bool GetListWithoutPathExpansion(StringPiece key,
                                    const ListValue** out_value) const;
+  // DEPRECATED, use Value::FindKey(key) and Value::GetList() instead.
   bool GetListWithoutPathExpansion(StringPiece key, ListValue** out_value);
 
   // Removes the Value with the specified path from this dictionary (or one

@@ -176,9 +176,8 @@ std::unique_ptr<base::DictionaryValue> TranslateNetworkStateToONC(
     if (device) {
       std::unique_ptr<base::DictionaryValue> device_dict(
           new base::DictionaryValue);
-      device_dict->SetBooleanWithoutPathExpansion(
-          shill::kProviderRequiresRoamingProperty,
-          device->provider_requires_roaming());
+      device_dict->SetKey(shill::kProviderRequiresRoamingProperty,
+                          base::Value(device->provider_requires_roaming()));
       shill_dictionary->SetWithoutPathExpansion(shill::kDeviceProperty,
                                                 std::move(device_dict));
     }

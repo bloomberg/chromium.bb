@@ -66,11 +66,11 @@ class DictionaryValueUpdate {
 
   // Like Set(), but without special treatment of '.'.  This allows e.g. URLs to
   // be used as paths.
+  void SetKey(base::StringPiece key, base::Value value);
   void SetWithoutPathExpansion(base::StringPiece key,
                                std::unique_ptr<base::Value> in_value);
 
   // Convenience forms of SetWithoutPathExpansion().
-  void SetBooleanWithoutPathExpansion(base::StringPiece path, bool in_value);
   void SetIntegerWithoutPathExpansion(base::StringPiece path, int in_value);
   void SetDoubleWithoutPathExpansion(base::StringPiece path, double in_value);
   void SetStringWithoutPathExpansion(base::StringPiece path,

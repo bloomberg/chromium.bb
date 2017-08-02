@@ -396,8 +396,8 @@ void UserManagerBase::SaveForceOnlineSignin(const AccountId& account_id,
   {
     DictionaryPrefUpdate force_online_update(GetLocalState(),
                                              kUserForceOnlineSignin);
-    force_online_update->SetBooleanWithoutPathExpansion(
-        account_id.GetUserEmail(), force_online_signin);
+    force_online_update->SetKey(account_id.GetUserEmail(),
+                                base::Value(force_online_signin));
   }
   GetLocalState()->CommitPendingWrite();
 }

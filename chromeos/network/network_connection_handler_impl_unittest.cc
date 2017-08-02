@@ -360,8 +360,9 @@ TEST_F(NetworkConnectionHandlerImplTest,
        NetworkConnectionHandlerConnectProhibited) {
   EXPECT_FALSE(ConfigureService(kConfigConnectable).empty());
   base::DictionaryValue global_config;
-  global_config.SetBooleanWithoutPathExpansion(
-      ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect, true);
+  global_config.SetKey(
+      ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect,
+      base::Value(true));
   SetupPolicy("[]", global_config, false /* load as device policy */);
   LoginToRegularUser();
   Connect(kWifi0);

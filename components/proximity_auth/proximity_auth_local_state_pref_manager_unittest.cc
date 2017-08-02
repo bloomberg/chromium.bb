@@ -58,11 +58,11 @@ class ProximityAuthLocalStatePrefManagerTest : public testing::Test {
     user1_prefs->SetIntegerWithoutPathExpansion(
         proximity_auth::prefs::kEasyUnlockProximityThreshold,
         kProximityThreshold1);
-    user1_prefs->SetBooleanWithoutPathExpansion(
+    user1_prefs->SetKey(
         proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
-        kIsChromeOSLoginEnabled1);
-    user1_prefs->SetBooleanWithoutPathExpansion(
-        proximity_auth::prefs::kEasyUnlockAllowed, kIsEasyUnlockAllowed1);
+        base::Value(kIsChromeOSLoginEnabled1));
+    user1_prefs->SetKey(proximity_auth::prefs::kEasyUnlockAllowed,
+                        base::Value(kIsEasyUnlockAllowed1));
     DictionaryPrefUpdate update1(&local_state_,
                                  prefs::kEasyUnlockLocalStateUserPrefs);
     update1->SetWithoutPathExpansion(user1_.GetUserEmail(),
@@ -73,11 +73,11 @@ class ProximityAuthLocalStatePrefManagerTest : public testing::Test {
     user2_prefs->SetIntegerWithoutPathExpansion(
         proximity_auth::prefs::kEasyUnlockProximityThreshold,
         kProximityThreshold2);
-    user2_prefs->SetBooleanWithoutPathExpansion(
+    user2_prefs->SetKey(
         proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
-        kIsChromeOSLoginEnabled2);
-    user2_prefs->SetBooleanWithoutPathExpansion(
-        proximity_auth::prefs::kEasyUnlockAllowed, kIsEasyUnlockAllowed2);
+        base::Value(kIsChromeOSLoginEnabled2));
+    user2_prefs->SetKey(proximity_auth::prefs::kEasyUnlockAllowed,
+                        base::Value(kIsEasyUnlockAllowed2));
 
     DictionaryPrefUpdate update2(&local_state_,
                                  prefs::kEasyUnlockLocalStateUserPrefs);
