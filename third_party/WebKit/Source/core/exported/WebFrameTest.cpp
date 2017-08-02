@@ -189,14 +189,6 @@ namespace blink {
 
 const int kTouchPointPadding = 32;
 
-#define EXPECT_RECT_EQ(expected, actual)           \
-  do {                                             \
-    EXPECT_EQ(expected.X(), actual.X());           \
-    EXPECT_EQ(expected.Y(), actual.Y());           \
-    EXPECT_EQ(expected.Width(), actual.Width());   \
-    EXPECT_EQ(expected.Height(), actual.Height()); \
-  } while (false)
-
 class WebFrameTest : public ::testing::Test {
  protected:
   WebFrameTest()
