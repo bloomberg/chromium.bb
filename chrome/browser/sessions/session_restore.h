@@ -152,6 +152,9 @@ class SessionRestore {
   // the first session restore.
   static void NotifySessionRestoreStartedLoadingTabs();
 
+  // Is called when session restore is going to restore a tab.
+  static void OnWillRestoreTab(content::WebContents* web_contents);
+
   // Contains all registered observers for session restore events.
   static SessionRestoreObserverList* observers_;
 
