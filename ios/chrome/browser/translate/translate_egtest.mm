@@ -19,7 +19,6 @@
 #import "components/translate/ios/browser/js_translate_manager.h"
 #import "components/translate/ios/browser/language_detection_controller.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/translate/before_translate_infobar_controller.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
@@ -106,6 +105,20 @@ std::string GetFrenchPageHtml(const std::string& html_tag,
 NSString* GetTranslateInfobarSwitchLabel(const std::string& language) {
   return base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
       IDS_TRANSLATE_INFOBAR_ALWAYS_TRANSLATE, base::UTF8ToUTF16(language)));
+}
+
+// Returns a matcher for the button with label "Cancel" in the language picker.
+// TODO(crbug.com/750344): Change the matcher to use accessibility ID.
+id<GREYMatcher> LanguagePickerCancelButton() {
+  return grey_allOf(chrome_test_util::ButtonWithAccessibilityLabel(@"Cancel"),
+                    grey_userInteractionEnabled(), nil);
+}
+
+// Returns a matcher for the button with label "Done" in the language picker.
+// TODO(crbug.com/750344): Change the matcher to use accessibility ID.
+id<GREYMatcher> LanguagePickerDoneButton() {
+  return grey_allOf(chrome_test_util::ButtonWithAccessibilityLabel(@"Done"),
+                    grey_userInteractionEnabled(), nil);
 }
 
 #pragma mark - TestResponseProvider
@@ -602,8 +615,9 @@ using translate::LanguageDetectionController;
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
                                    kFrench)] performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kLanguagePickerCancelButtonId)]
+  // The language picker uses the system accessibility labels (thus no
+  // IDS_CANCEL here).
+  [[EarlGrey selectElementWithMatcher:LanguagePickerCancelButton()]
       assertWithMatcher:grey_notNil()];
 
   // Change the language using the picker.
@@ -614,8 +628,7 @@ using translate::LanguageDetectionController;
   [[EarlGrey selectElementWithMatcher:languageMatcher]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kLanguagePickerDoneButtonId)]
+  [[EarlGrey selectElementWithMatcher:LanguagePickerDoneButton()]
       performAction:grey_tap()];
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
