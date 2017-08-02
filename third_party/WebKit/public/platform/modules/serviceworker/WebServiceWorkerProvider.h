@@ -43,13 +43,46 @@ class WebURL;
 class WebServiceWorkerProviderClient;
 struct WebServiceWorkerError;
 
-// Created on the main thread, and may be passed to another script context
-// thread (e.g. worker thread) later. All methods of this class must be called
-// on the single script context thread.
+// WebServiceWorkerProvider essentially attaches to a document or worker
+// execution context, and "provides" it with service worker functionality. This
+// functionality is mostly the functions on ServiceWorkerContainer.idl.
+//
+// It is currently implemented by the Blink embedder (for Chromium it is
+// content::WebServiceWorkerProviderImpl).
+//
+// Once an execution context has an attached WebServiceWorkerProvider, it's able
+// to request the browser process to do things like register/update/get service
+// worker registrations, since it'll have a |provider_id| needed to request the
+// browser process to do these things. The |provider_id| actually comes from
+// WebServiceWorkerNetworkProvider, but content::WebServiceWorkerProviderImpl
+// has access to the same id. (This id should hopefully go away once everything
+// is mojofied/servicified.)
+//
+// WebServiceWorkerProvider is created in two places:
+// 1) It is created in ServiceWorkerContainerClient::From(), which is used to
+// instantiate navigator.serviceWorker for documents.
+// 2) It is created for service worker execution contexts during startup.
+// The instance should eventually be used for WorkerNavigator.serviceWorker but
+// it is not really wired up yet (https://crbug.com/371690). Instead, the
+// instance is used to implement ServiceWorkerRegistration#update() and
+// ServiceWorkerRegistration#unregister(), just because
+// WebServiceWorkerRegistration's corresponding methods need |provider_id| to
+// send the requests to the browser process, and this class is used as the
+// wrapper object that hides the ID details from Blink.
+//
+// WebServiceWorkerProvider is owned by ServiceWorkerContainerClient, which is a
+// garbage collected Supplement for Document (in case (1) above) or
+// WorkerClients (in case (2) above).
+//
+// Each ServiceWorkerContainer instance has a WebServiceWorkerProvider.
+// ServiceWorkerContainer is called the "client" of the
+// WebServiceWorkerProvider, and it implements WebServiceWorkerProviderClient.
 class WebServiceWorkerProvider {
  public:
-  // Called when a client wants to start listening to the service worker
-  // events. Must be cleared before the client becomes invalid.
+  // Sets the "client" for this provider. The client will be notified of
+  // controller changes, message events, and feature usages apropos of the
+  // document this WebServiceWorkerProvider is for. It's not used when this
+  // WebServiceWorkerProvider is for a service worker context.
   virtual void SetClient(WebServiceWorkerProviderClient*) {}
 
   using WebServiceWorkerRegistrationCallbacks =
@@ -67,17 +100,28 @@ class WebServiceWorkerProvider {
   using WebServiceWorkerGetRegistrationForReadyCallbacks =
       WebCallbacks<std::unique_ptr<WebServiceWorkerRegistration::Handle>, void>;
 
+  // For ServiceWorkerContainer#register(). Requests the embedder to register a
+  // service worker.
   virtual void RegisterServiceWorker(
       const WebURL& pattern,
       const WebURL& script_url,
       std::unique_ptr<WebServiceWorkerRegistrationCallbacks>) {}
+  // For ServiceWorkerContainer#getRegistration(). Requests the embedder to
+  // return a registration.
   virtual void GetRegistration(
       const WebURL& document_url,
       std::unique_ptr<WebServiceWorkerGetRegistrationCallbacks>) {}
+  // For ServiceWorkerContainer#getRegistrations(). Requests the embedder to
+  // return matching registrations.
   virtual void GetRegistrations(
       std::unique_ptr<WebServiceWorkerGetRegistrationsCallbacks>) {}
+  // For ServiceWorkerContainer#ready. Requests the embedder to return the
+  // ready registration.
   virtual void GetRegistrationForReady(
       std::unique_ptr<WebServiceWorkerGetRegistrationForReadyCallbacks>) {}
+  // Helper function for checking URLs. The |scope| and |script_url| cannot
+  // include escape sequences for "/" or "\" as per spec, as they would break
+  // would the path restriction.
   virtual bool ValidateScopeAndScriptURL(const WebURL& scope,
                                          const WebURL& script_url,
                                          WebString* error_message) {
