@@ -469,18 +469,22 @@ TEST(PaintOpBufferTest, SaveDrawRestore_SingleOpRecordWithSingleNonDrawOp) {
   EXPECT_EQ(1, canvas.restore_count_);
 }
 
-TEST(PaintOpBufferTest, SaveLayerRestore_NoFlagsDraw) {
+TEST(PaintOpBufferTest, SaveLayerRestore_DrawColor) {
   PaintOpBuffer buffer;
   uint8_t alpha = 100;
+  SkColor original = SkColorSetA(50, SK_ColorRED);
+
   buffer.push<SaveLayerAlphaOp>(nullptr, alpha, false);
-  buffer.push<DrawColorOp>(SK_ColorRED, SkBlendMode::kSrc);
+  buffer.push<DrawColorOp>(original, SkBlendMode::kSrcOver);
   buffer.push<RestoreOp>();
 
-  testing::StrictMock<MockCanvas> canvas;
-  EXPECT_CALL(canvas, OnSaveLayer());
-  EXPECT_CALL(canvas, OnDrawPaintWithColor(SK_ColorRED));
-  EXPECT_CALL(canvas, willRestore());
+  SaveCountingCanvas canvas;
   buffer.Playback(&canvas);
+  EXPECT_EQ(canvas.save_count_, 0);
+  EXPECT_EQ(canvas.restore_count_, 0);
+
+  uint8_t expected_alpha = SkMulDiv255Round(alpha, SkColorGetA(original));
+  EXPECT_EQ(canvas.paint_.getColor(), SkColorSetA(original, expected_alpha));
 }
 
 TEST(PaintOpBufferTest, DiscardableImagesTracking_EmptyBuffer) {
