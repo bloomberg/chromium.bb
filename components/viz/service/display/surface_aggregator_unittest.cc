@@ -47,7 +47,6 @@ constexpr FrameSinkId kArbitraryFrameSinkId3(6, 6);
 const base::UnguessableToken kArbitraryToken = base::UnguessableToken::Create();
 constexpr bool kRootIsRoot = true;
 constexpr bool kChildIsRoot = false;
-constexpr bool kHandlesFrameSinkIdInvalidation = true;
 constexpr bool kNeedsSyncPoints = false;
 
 SurfaceId InvalidSurfaceId() {
@@ -70,7 +69,6 @@ class SurfaceAggregatorTest : public testing::Test {
                                                &manager_,
                                                kArbitraryRootFrameSinkId,
                                                kRootIsRoot,
-                                               kHandlesFrameSinkIdInvalidation,
                                                kNeedsSyncPoints)),
         aggregator_(manager_.surface_manager(), NULL, use_damage_rect) {
     manager_.surface_manager()->AddObserver(&observer_);
@@ -286,7 +284,7 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
                                                &manager_,
                                                kArbitraryReservedFrameSinkId,
                                                kChildIsRoot,
-                                               kHandlesFrameSinkIdInvalidation,
+
                                                kNeedsSyncPoints)) {}
   SurfaceAggregatorValidSurfaceTest()
       : SurfaceAggregatorValidSurfaceTest(false) {}
@@ -389,7 +387,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SimpleFrame) {
 TEST_F(SurfaceAggregatorValidSurfaceTest, OpacityCopied) {
   auto embedded_support = CompositorFrameSinkSupport::Create(
       nullptr, &manager_, kArbitraryFrameSinkId1, kRootIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   LocalSurfaceId embedded_local_surface_id = allocator_.GenerateId();
   SurfaceId embedded_surface_id(embedded_support->frame_sink_id(),
                                 embedded_local_surface_id);
@@ -500,7 +498,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassDeallocation) {
 TEST_F(SurfaceAggregatorValidSurfaceTest, SimpleSurfaceReference) {
   auto embedded_support = CompositorFrameSinkSupport::Create(
       nullptr, &manager_, kArbitraryFrameSinkId1, kRootIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   LocalSurfaceId embedded_local_surface_id = allocator_.GenerateId();
   SurfaceId embedded_surface_id(embedded_support->frame_sink_id(),
                                 embedded_local_surface_id);
@@ -538,14 +536,14 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SimpleSurfaceReference) {
 TEST_F(SurfaceAggregatorValidSurfaceTest, FallbackSurfaceReference) {
   auto primary_child_support = CompositorFrameSinkSupport::Create(
       nullptr, &manager_, kArbitraryFrameSinkId1, kChildIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   LocalSurfaceId primary_child_local_surface_id = allocator_.GenerateId();
   SurfaceId primary_child_surface_id(primary_child_support->frame_sink_id(),
                                      primary_child_local_surface_id);
 
   auto fallback_child_support = CompositorFrameSinkSupport::Create(
       nullptr, &manager_, kArbitraryFrameSinkId2, kChildIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   LocalSurfaceId fallback_child_local_surface_id = allocator_.GenerateId();
   SurfaceId fallback_child_surface_id(fallback_child_support->frame_sink_id(),
                                       fallback_child_local_surface_id);
@@ -620,7 +618,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, FallbackSurfaceReference) {
 TEST_F(SurfaceAggregatorValidSurfaceTest, FallbackSurfaceReferenceWithPrimary) {
   auto primary_child_support = CompositorFrameSinkSupport::Create(
       nullptr, &manager_, kArbitraryFrameSinkId1, kChildIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   LocalSurfaceId primary_child_local_surface_id = allocator_.GenerateId();
   SurfaceId primary_child_surface_id(primary_child_support->frame_sink_id(),
                                      primary_child_local_surface_id);
@@ -636,7 +634,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, FallbackSurfaceReferenceWithPrimary) {
 
   auto fallback_child_support = CompositorFrameSinkSupport::Create(
       nullptr, &manager_, kArbitraryFrameSinkId2, kChildIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   LocalSurfaceId fallback_child_local_surface_id = allocator_.GenerateId();
   SurfaceId fallback_child_surface_id(fallback_child_support->frame_sink_id(),
                                       fallback_child_local_surface_id);
@@ -679,7 +677,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, FallbackSurfaceReferenceWithPrimary) {
 TEST_F(SurfaceAggregatorValidSurfaceTest, CopyRequest) {
   auto embedded_support = CompositorFrameSinkSupport::Create(
       nullptr, &manager_, kArbitraryFrameSinkId1, kChildIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   LocalSurfaceId embedded_local_surface_id = allocator_.GenerateId();
   SurfaceId embedded_surface_id(embedded_support->frame_sink_id(),
                                 embedded_local_surface_id);
@@ -734,7 +732,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, CopyRequest) {
 TEST_F(SurfaceAggregatorValidSurfaceTest, RootCopyRequest) {
   auto embedded_support = CompositorFrameSinkSupport::Create(
       nullptr, &manager_, kArbitraryFrameSinkId2, kChildIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   LocalSurfaceId embedded_local_surface_id = allocator_.GenerateId();
   SurfaceId embedded_surface_id(embedded_support->frame_sink_id(),
                                 embedded_local_surface_id);
@@ -810,10 +808,10 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RootCopyRequest) {
 TEST_F(SurfaceAggregatorValidSurfaceTest, UnreferencedSurface) {
   auto embedded_support = CompositorFrameSinkSupport::Create(
       nullptr, &manager_, kArbitraryFrameSinkId1, kChildIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   auto parent_support = CompositorFrameSinkSupport::Create(
       nullptr, &manager_, kArbitraryFrameSinkId2, kRootIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   LocalSurfaceId embedded_local_surface_id = allocator_.GenerateId();
   SurfaceId embedded_surface_id(embedded_support->frame_sink_id(),
                                 embedded_local_surface_id);
@@ -1264,13 +1262,13 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
   };
   auto grandchild_support = CompositorFrameSinkSupport::Create(
       nullptr, &manager_, kArbitraryFrameSinkId1, kChildIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   auto child_one_support = CompositorFrameSinkSupport::Create(
       nullptr, &manager_, kArbitraryFrameSinkId2, kChildIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   auto child_two_support = CompositorFrameSinkSupport::Create(
       nullptr, &manager_, kArbitraryFrameSinkId3, kChildIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   int pass_id = 1;
   LocalSurfaceId grandchild_local_surface_id = allocator_.GenerateId();
   SurfaceId grandchild_surface_id(grandchild_support->frame_sink_id(),
@@ -1388,7 +1386,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
 TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
   auto middle_support = CompositorFrameSinkSupport::Create(
       nullptr, &manager_, kArbitraryMiddleFrameSinkId, kChildIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   // Innermost child surface.
   LocalSurfaceId child_local_surface_id = allocator_.GenerateId();
   SurfaceId child_surface_id(child_support_->frame_sink_id(),
@@ -1553,7 +1551,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
 TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
   auto parent_support = CompositorFrameSinkSupport::Create(
       nullptr, &manager_, kArbitraryMiddleFrameSinkId, kChildIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   Quad child_quads[] = {Quad::RenderPassQuad(1)};
   Pass child_passes[] = {Pass(child_quads, arraysize(child_quads), 1)};
 
@@ -2196,7 +2194,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {
   cc::FakeCompositorFrameSinkSupportClient client;
   auto support = CompositorFrameSinkSupport::Create(
       &client, &manager_, kArbitraryRootFrameSinkId, kRootIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   LocalSurfaceId local_surface_id(7u, base::UnguessableToken::Create());
   SurfaceId surface_id(support->frame_sink_id(), local_surface_id);
 
@@ -2232,7 +2230,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, ReturnResourcesAsSurfacesChange) {
   cc::FakeCompositorFrameSinkSupportClient client;
   auto support = CompositorFrameSinkSupport::Create(
       &client, &manager_, kArbitraryRootFrameSinkId, kRootIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   LocalSurfaceId local_surface_id1(7u, base::UnguessableToken::Create());
   LocalSurfaceId local_surface_id2(8u, base::UnguessableToken::Create());
   SurfaceId surface_id1(support->frame_sink_id(), local_surface_id1);
@@ -2269,7 +2267,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeInvalidResources) {
   cc::FakeCompositorFrameSinkSupportClient client;
   auto support = CompositorFrameSinkSupport::Create(
       &client, &manager_, kArbitraryRootFrameSinkId, kRootIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   LocalSurfaceId local_surface_id(7u, base::UnguessableToken::Create());
   SurfaceId surface_id(support->frame_sink_id(), local_surface_id);
 
@@ -2298,11 +2296,9 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeInvalidResources) {
 TEST_F(SurfaceAggregatorWithResourcesTest, TwoSurfaces) {
   cc::FakeCompositorFrameSinkSupportClient client;
   auto support1 = CompositorFrameSinkSupport::Create(
-      &client, &manager_, FrameSinkId(1, 1), kChildIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      &client, &manager_, FrameSinkId(1, 1), kChildIsRoot, kNeedsSyncPoints);
   auto support2 = CompositorFrameSinkSupport::Create(
-      &client, &manager_, FrameSinkId(2, 2), kChildIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      &client, &manager_, FrameSinkId(2, 2), kChildIsRoot, kNeedsSyncPoints);
   LocalSurfaceId local_frame1_id(7u, base::UnguessableToken::Create());
   SurfaceId surface1_id(support1->frame_sink_id(), local_frame1_id);
 
@@ -2345,13 +2341,13 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TwoSurfaces) {
 TEST_F(SurfaceAggregatorWithResourcesTest, InvalidChildSurface) {
   auto root_support = CompositorFrameSinkSupport::Create(
       nullptr, &manager_, kArbitraryRootFrameSinkId, kRootIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   auto middle_support = CompositorFrameSinkSupport::Create(
       nullptr, &manager_, kArbitraryMiddleFrameSinkId, kChildIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   auto child_support = CompositorFrameSinkSupport::Create(
       nullptr, &manager_, kArbitraryFrameSinkId1, kChildIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   LocalSurfaceId root_local_surface_id(7u, kArbitraryToken);
   SurfaceId root_surface_id(root_support->frame_sink_id(),
                             root_local_surface_id);
@@ -2401,11 +2397,9 @@ TEST_F(SurfaceAggregatorWithResourcesTest, InvalidChildSurface) {
 
 TEST_F(SurfaceAggregatorWithResourcesTest, SecureOutputTexture) {
   auto support1 = CompositorFrameSinkSupport::Create(
-      nullptr, &manager_, FrameSinkId(1, 1), kChildIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      nullptr, &manager_, FrameSinkId(1, 1), kChildIsRoot, kNeedsSyncPoints);
   auto support2 = CompositorFrameSinkSupport::Create(
-      nullptr, &manager_, FrameSinkId(2, 2), kChildIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      nullptr, &manager_, FrameSinkId(2, 2), kChildIsRoot, kNeedsSyncPoints);
   LocalSurfaceId local_frame1_id(7u, base::UnguessableToken::Create());
   SurfaceId surface1_id(support1->frame_sink_id(), local_frame1_id);
 
@@ -2586,7 +2580,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
        HasDamageByChangingGrandChildSurface) {
   auto grand_child_support = CompositorFrameSinkSupport::Create(
       nullptr, &manager_, kArbitraryMiddleFrameSinkId, kChildIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
 
   Quad child_surface_quads[] = {Quad::RenderPassQuad(1)};
   Pass child_surface_passes[] = {

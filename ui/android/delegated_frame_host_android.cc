@@ -210,12 +210,10 @@ void DelegatedFrameHostAndroid::OnSurfaceCreated(
 
 void DelegatedFrameHostAndroid::CreateNewCompositorFrameSinkSupport() {
   constexpr bool is_root = false;
-  constexpr bool handles_frame_sink_id_invalidation = false;
   constexpr bool needs_sync_points = true;
   support_.reset();
   support_ = host_frame_sink_manager_->CreateCompositorFrameSinkSupport(
-      this, frame_sink_id_, is_root, handles_frame_sink_id_invalidation,
-      needs_sync_points);
+      this, frame_sink_id_, is_root, needs_sync_points);
 }
 
 viz::SurfaceId DelegatedFrameHostAndroid::SurfaceId() const {

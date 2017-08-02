@@ -106,7 +106,6 @@ HostFrameSinkManager::CreateCompositorFrameSinkSupport(
     CompositorFrameSinkSupportClient* client,
     const FrameSinkId& frame_sink_id,
     bool is_root,
-    bool handles_frame_sink_id_invalidation,
     bool needs_sync_points) {
   DCHECK(frame_sink_manager_impl_);
 
@@ -115,7 +114,7 @@ HostFrameSinkManager::CreateCompositorFrameSinkSupport(
 
   auto support = CompositorFrameSinkSupport::Create(
       client, frame_sink_manager_impl_, frame_sink_id, is_root,
-      handles_frame_sink_id_invalidation, needs_sync_points);
+      needs_sync_points);
   support->SetDestructionCallback(
       base::BindOnce(&HostFrameSinkManager::DestroyCompositorFrameSink,
                      weak_ptr_factory_.GetWeakPtr(), frame_sink_id));

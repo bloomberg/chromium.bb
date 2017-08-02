@@ -848,11 +848,9 @@ void RenderWidgetHostViewChildFrame::CreateCompositorFrameSinkSupport() {
 
   DCHECK(!support_);
   constexpr bool is_root = false;
-  constexpr bool handles_frame_sink_id_invalidation = false;
   constexpr bool needs_sync_points = true;
   support_ = GetHostFrameSinkManager()->CreateCompositorFrameSinkSupport(
-      this, frame_sink_id_, is_root, handles_frame_sink_id_invalidation,
-      needs_sync_points);
+      this, frame_sink_id_, is_root, needs_sync_points);
   if (parent_frame_sink_id_.is_valid()) {
     GetHostFrameSinkManager()->RegisterFrameSinkHierarchy(parent_frame_sink_id_,
                                                           frame_sink_id_);

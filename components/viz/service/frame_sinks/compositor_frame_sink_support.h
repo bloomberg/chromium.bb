@@ -46,7 +46,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
       FrameSinkManagerImpl* frame_sink_manager,
       const FrameSinkId& frame_sink_id,
       bool is_root,
-      bool handles_frame_sink_id_invalidation,
       bool needs_sync_tokens);
 
   ~CompositorFrameSinkSupport() override;
@@ -83,7 +82,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   CompositorFrameSinkSupport(CompositorFrameSinkSupportClient* client,
                              const FrameSinkId& frame_sink_id,
                              bool is_root,
-                             bool handles_frame_sink_id_invalidation,
                              bool needs_sync_tokens);
 
   void Init(FrameSinkManagerImpl* frame_sink_manager);
@@ -147,18 +145,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   const bool is_root_;
   const bool needs_sync_tokens_;
   bool seen_first_frame_activation_ = false;
-
-  // TODO(staraz): Remove this flag once ui::Compositor no longer needs to call
-  // RegisterFrameSinkId().
-  // A surfaceSequence's validity is bound to the lifetime of the parent
-  // FrameSink that created it. We track the lifetime of FrameSinks through
-  // RegisterFrameSinkId and InvalidateFrameSinkId. During startup and GPU
-  // restart, a SurfaceSequence created by the top most layer compositor may be
-  // used prior to the creation of the associated CompositorFrameSinkSupport.
-  // CompositorFrameSinkSupport is created asynchronously when a new GPU channel
-  // is established. Once we switch to SurfaceReferences, this ordering concern
-  // goes away and we can remove this bool.
-  const bool handles_frame_sink_id_invalidation_;
 
   // A callback that will be run at the start of the destructor if set.
   base::OnceCallback<void()> destruction_callback_;

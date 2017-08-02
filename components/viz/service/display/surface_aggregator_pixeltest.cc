@@ -29,7 +29,6 @@ constexpr FrameSinkId kArbitraryLeftFrameSinkId(3, 3);
 constexpr FrameSinkId kArbitraryRightFrameSinkId(4, 4);
 constexpr bool kIsRoot = true;
 constexpr bool kIsChildRoot = false;
-constexpr bool kHandlesFrameSinkIdInvalidation = true;
 constexpr bool kNeedsSyncPoints = true;
 
 class SurfaceAggregatorPixelTest : public cc::RendererPixelTest<GLRenderer> {
@@ -40,7 +39,6 @@ class SurfaceAggregatorPixelTest : public cc::RendererPixelTest<GLRenderer> {
                                                &manager_,
                                                kArbitraryRootFrameSinkId,
                                                kIsRoot,
-                                               kHandlesFrameSinkIdInvalidation,
                                                kNeedsSyncPoints)) {}
   ~SurfaceAggregatorPixelTest() override { support_->EvictCurrentSurface(); }
 
@@ -104,9 +102,9 @@ TEST_F(SurfaceAggregatorPixelTest, DrawSimpleFrame) {
 TEST_F(SurfaceAggregatorPixelTest, DrawSimpleAggregatedFrame) {
   gfx::Size child_size(200, 100);
   std::unique_ptr<CompositorFrameSinkSupport> child_support =
-      CompositorFrameSinkSupport::Create(
-          nullptr, &manager_, kArbitraryChildFrameSinkId, kIsChildRoot,
-          kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      CompositorFrameSinkSupport::Create(nullptr, &manager_,
+                                         kArbitraryChildFrameSinkId,
+                                         kIsChildRoot, kNeedsSyncPoints);
 
   LocalSurfaceId child_local_surface_id = allocator_.GenerateId();
   SurfaceId child_surface_id(child_support->frame_sink_id(),
@@ -188,13 +186,13 @@ TEST_F(SurfaceAggregatorPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
   //   right_child -> top_blue_quad (100x100 @ 0x0),
   //                  bottom_green_quad (100x100 @ 0x100)
   std::unique_ptr<CompositorFrameSinkSupport> left_support =
-      CompositorFrameSinkSupport::Create(
-          nullptr, &manager_, kArbitraryLeftFrameSinkId, kIsChildRoot,
-          kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      CompositorFrameSinkSupport::Create(nullptr, &manager_,
+                                         kArbitraryLeftFrameSinkId,
+                                         kIsChildRoot, kNeedsSyncPoints);
   std::unique_ptr<CompositorFrameSinkSupport> right_support =
-      CompositorFrameSinkSupport::Create(
-          nullptr, &manager_, kArbitraryRightFrameSinkId, kIsChildRoot,
-          kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      CompositorFrameSinkSupport::Create(nullptr, &manager_,
+                                         kArbitraryRightFrameSinkId,
+                                         kIsChildRoot, kNeedsSyncPoints);
   LocalSurfaceId left_child_local_id = allocator_.GenerateId();
   SurfaceId left_child_id(left_support->frame_sink_id(), left_child_local_id);
   LocalSurfaceId right_child_local_id = allocator_.GenerateId();

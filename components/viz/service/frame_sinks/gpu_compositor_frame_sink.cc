@@ -20,7 +20,6 @@ GpuCompositorFrameSink::GpuCompositorFrameSink(
           frame_sink_manager,
           frame_sink_id,
           false /* is_root */,
-          false /* handles_frame_sink_id_invalidation */,
           true /* needs_sync_points */)),
       client_(std::move(client)),
       compositor_frame_sink_binding_(this, std::move(request)) {

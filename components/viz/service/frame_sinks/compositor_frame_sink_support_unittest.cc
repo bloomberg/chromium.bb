@@ -34,7 +34,6 @@ namespace {
 
 constexpr bool kIsRoot = true;
 constexpr bool kIsChildRoot = false;
-constexpr bool kHandlesFrameSinkIdInvalidation = true;
 constexpr bool kNeedsSyncPoints = true;
 
 constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
@@ -96,21 +95,19 @@ class FakeCompositorFrameSinkSupportClient
 class CompositorFrameSinkSupportTest : public testing::Test {
  public:
   CompositorFrameSinkSupportTest()
-      : support_(
-            CompositorFrameSinkSupport::Create(&fake_support_client_,
-                                               &manager_,
-                                               kArbitraryFrameSinkId,
-                                               kIsRoot,
-                                               kHandlesFrameSinkIdInvalidation,
-                                               kNeedsSyncPoints)),
-        begin_frame_source_(0.f, false),
+      : begin_frame_source_(0.f, false),
         local_surface_id_(3, kArbitraryToken),
         frame_sync_token_(GenTestSyncToken(4)),
         consumer_sync_token_(GenTestSyncToken(5)) {
     manager_.surface_manager()->AddObserver(&surface_observer_);
+    manager_.RegisterFrameSinkId(kArbitraryFrameSinkId);
+    support_ = CompositorFrameSinkSupport::Create(
+        &fake_support_client_, &manager_, kArbitraryFrameSinkId, kIsRoot,
+        kNeedsSyncPoints);
     support_->SetBeginFrameSource(&begin_frame_source_);
   }
   ~CompositorFrameSinkSupportTest() override {
+    manager_.InvalidateFrameSinkId(kArbitraryFrameSinkId);
     manager_.surface_manager()->RemoveObserver(&surface_observer_);
     support_->EvictCurrentSurface();
   }
@@ -488,10 +485,11 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceLifetime) {
 }
 
 TEST_F(CompositorFrameSinkSupportTest, AddDuringEviction) {
+  manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
   test::MockCompositorFrameSinkSupportClient mock_client;
   auto support = CompositorFrameSinkSupport::Create(
       &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   LocalSurfaceId local_surface_id(6, kArbitraryToken);
   support->SubmitCompositorFrame(local_surface_id, test::MakeCompositorFrame());
 
@@ -502,14 +500,16 @@ TEST_F(CompositorFrameSinkSupportTest, AddDuringEviction) {
       }))
       .WillRepeatedly(testing::Return());
   support->EvictCurrentSurface();
+  manager_.InvalidateFrameSinkId(kAnotherArbitraryFrameSinkId);
 }
 
 // Tests doing an EvictCurrentSurface before shutting down the factory.
 TEST_F(CompositorFrameSinkSupportTest, EvictCurrentSurface) {
+  manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
   test::MockCompositorFrameSinkSupportClient mock_client;
   auto support = CompositorFrameSinkSupport::Create(
       &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   LocalSurfaceId local_surface_id(7, kArbitraryToken);
   SurfaceId id(kAnotherArbitraryFrameSinkId, local_surface_id);
 
@@ -530,15 +530,17 @@ TEST_F(CompositorFrameSinkSupportTest, EvictCurrentSurface) {
       .Times(1);
   support->EvictCurrentSurface();
   EXPECT_FALSE(GetSurfaceForId(id));
+  manager_.InvalidateFrameSinkId(kAnotherArbitraryFrameSinkId);
 }
 
 // Tests doing an EvictCurrentSurface which has unregistered dependency.
 TEST_F(CompositorFrameSinkSupportTest,
        EvictCurrentSurfaceDependencyUnRegistered) {
+  manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
   test::MockCompositorFrameSinkSupportClient mock_client;
   auto support = CompositorFrameSinkSupport::Create(
       &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   LocalSurfaceId local_surface_id(7, kArbitraryToken);
 
   TransferableResource resource;
@@ -564,15 +566,17 @@ TEST_F(CompositorFrameSinkSupportTest,
       .Times(1);
   support->EvictCurrentSurface();
   EXPECT_FALSE(GetSurfaceForId(surface_id));
+  manager_.InvalidateFrameSinkId(kAnotherArbitraryFrameSinkId);
 }
 
 // Tests doing an EvictCurrentSurface which has registered dependency.
 TEST_F(CompositorFrameSinkSupportTest,
        EvictCurrentSurfaceDependencyRegistered) {
+  manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
   test::MockCompositorFrameSinkSupportClient mock_client;
   auto support = CompositorFrameSinkSupport::Create(
       &mock_client, &manager_, kAnotherArbitraryFrameSinkId, kIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
   LocalSurfaceId local_surface_id(7, kArbitraryToken);
 
   TransferableResource resource;
@@ -606,13 +610,15 @@ TEST_F(CompositorFrameSinkSupportTest,
   manager_.surface_manager()->SatisfySequence(
       SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
   EXPECT_FALSE(GetSurfaceForId(surface_id));
+  manager_.InvalidateFrameSinkId(kAnotherArbitraryFrameSinkId);
 }
 
 TEST_F(CompositorFrameSinkSupportTest, DestroySequence) {
+  manager_.RegisterFrameSinkId(kYetAnotherArbitraryFrameSinkId);
   LocalSurfaceId local_surface_id2(5, kArbitraryToken);
   auto support2 = CompositorFrameSinkSupport::Create(
       &fake_support_client_, &manager_, kYetAnotherArbitraryFrameSinkId,
-      kIsChildRoot, kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kIsChildRoot, kNeedsSyncPoints);
   SurfaceId id2(kYetAnotherArbitraryFrameSinkId, local_surface_id2);
   support2->SubmitCompositorFrame(local_surface_id2,
                                   test::MakeCompositorFrame());
@@ -637,6 +643,7 @@ TEST_F(CompositorFrameSinkSupportTest, DestroySequence) {
       SurfaceSequence(kAnotherArbitraryFrameSinkId, 6));
   support2->EvictCurrentSurface();
   DCHECK(!GetSurfaceForId(id2));
+  manager_.InvalidateFrameSinkId(kYetAnotherArbitraryFrameSinkId);
 }
 
 // Tests that SurfaceId namespace invalidation correctly allows
@@ -658,7 +665,7 @@ TEST_F(CompositorFrameSinkSupportTest, InvalidFrameSinkId) {
   // Verify the dependency has prevented the surface from getting destroyed.
   EXPECT_TRUE(GetSurfaceForId(id));
 
-  manager_.surface_manager()->InvalidateFrameSinkId(frame_sink_id);
+  manager_.InvalidateFrameSinkId(frame_sink_id);
 
   // Verify that the invalidated namespace caused the unsatisfied sequence
   // to be ignored.
@@ -666,12 +673,12 @@ TEST_F(CompositorFrameSinkSupportTest, InvalidFrameSinkId) {
 }
 
 TEST_F(CompositorFrameSinkSupportTest, DestroyCycle) {
+  manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
   LocalSurfaceId local_surface_id2(5, kArbitraryToken);
   SurfaceId id2(kYetAnotherArbitraryFrameSinkId, local_surface_id2);
   auto support2 = CompositorFrameSinkSupport::Create(
       &fake_support_client_, &manager_, kYetAnotherArbitraryFrameSinkId,
-      kIsChildRoot, kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
-  manager_.surface_manager()->RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
+      kIsChildRoot, kNeedsSyncPoints);
   // Give local_surface_id_ an initial frame so another client can refer to
   // that surface.
   {
@@ -713,6 +720,7 @@ TEST_F(CompositorFrameSinkSupportTest, DestroyCycle) {
       SurfaceId(support_->frame_sink_id(), local_surface_id_)));
 
   local_surface_id_ = LocalSurfaceId();
+  manager_.InvalidateFrameSinkId(kAnotherArbitraryFrameSinkId);
 }
 
 void CopyRequestTestCallback(bool* called,

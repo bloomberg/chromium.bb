@@ -59,12 +59,11 @@ class SurfaceReferencesTest : public testing::Test {
       const FrameSinkId& frame_sink_id) {
     auto& support_ptr = supports_[frame_sink_id];
     if (!support_ptr) {
+      manager_->RegisterFrameSinkId(frame_sink_id);
       constexpr bool is_root = false;
-      constexpr bool handles_frame_sink_id_invalidation = true;
       constexpr bool needs_sync_points = true;
       support_ptr = CompositorFrameSinkSupport::Create(
-          nullptr, manager_.get(), frame_sink_id, is_root,
-          handles_frame_sink_id_invalidation, needs_sync_points);
+          nullptr, manager_.get(), frame_sink_id, is_root, needs_sync_points);
     }
     return *support_ptr;
   }
@@ -73,6 +72,7 @@ class SurfaceReferencesTest : public testing::Test {
     auto support_ptr = supports_.find(frame_sink_id);
     ASSERT_NE(support_ptr, supports_.end());
     supports_.erase(support_ptr);
+    manager_->InvalidateFrameSinkId(frame_sink_id);
   }
 
   void RemoveSurfaceReference(const SurfaceId& parent_id,

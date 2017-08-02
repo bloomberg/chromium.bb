@@ -24,7 +24,6 @@ namespace {
 
 constexpr bool kIsRoot = true;
 constexpr bool kIsChildRoot = false;
-constexpr bool kHandlesFrameSinkIdInvalidation = true;
 constexpr bool kNeedsSyncPoints = true;
 constexpr FrameSinkId kRootFrameSink(2, 0);
 constexpr FrameSinkId kChildFrameSink(65563, 0);
@@ -88,10 +87,10 @@ class SurfaceHittestTest : public testing::Test {
 
     supports_.push_back(CompositorFrameSinkSupport::Create(
         &support_client_, &frame_sink_manager_, kRootFrameSink, kIsRoot,
-        kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints));
+        kNeedsSyncPoints));
     supports_.push_back(CompositorFrameSinkSupport::Create(
         &support_client_, &frame_sink_manager_, kChildFrameSink, kIsChildRoot,
-        kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints));
+        kNeedsSyncPoints));
   }
 
   void TearDown() override { supports_.clear(); }
