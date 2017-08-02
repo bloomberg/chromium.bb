@@ -271,7 +271,7 @@ TEST_F(PaintLayerClipperTest, ContainPaintClip) {
   EXPECT_EQ(background_rect.Rect(), foreground_rect.Rect());
   EXPECT_EQ(LayoutRect(0, 0, 200, 200), layer_bounds);
 
-  ClipRectsContext context_clip(layer, kPaintingClipRects);
+  ClipRectsContext context_clip(layer, kUncachedClipRects);
 
   layer->Clipper(PaintLayer::kUseGeometryMapper)
       .CalculateRects(context_clip, infinite_rect, layer_bounds,
@@ -304,7 +304,7 @@ TEST_F(PaintLayerClipperTest, NestedContainPaintClip) {
   EXPECT_EQ(LayoutRect(0, 0, 200, 400), foreground_rect.Rect());
   EXPECT_EQ(LayoutRect(0, 0, 200, 400), layer_bounds);
 
-  ClipRectsContext context_clip(layer->Parent(), kPaintingClipRects);
+  ClipRectsContext context_clip(layer->Parent(), kUncachedClipRects);
 
   layer->Clipper(PaintLayer::kUseGeometryMapper)
       .CalculateRects(context_clip, infinite_rect, layer_bounds,

@@ -59,7 +59,6 @@ struct PaintLayerFragment {
     layer_bounds.MoveBy(offset);
     background_rect.MoveBy(offset);
     foreground_rect.MoveBy(offset);
-    pagination_clip.MoveBy(offset);
   }
 
   void Intersect(const LayoutRect& rect) {
@@ -108,15 +107,6 @@ struct PaintLayerFragment {
   // The physical translation to apply to shift the layer when
   // painting/hit-testing.
   LayoutPoint pagination_offset;
-
-  // Only set on paginated fragments.
-  //
-  // This is the additional clip from the fragmentainer (i.e. column or
-  // page) that applies to the layer. |backgroundRect| and |foregroundRect|
-  // are intersected with it (see collectFragments).
-  //
-  // It is in layer-local (physical) coordinates.
-  LayoutRect pagination_clip;
 };
 
 typedef Vector<PaintLayerFragment, 1> PaintLayerFragments;

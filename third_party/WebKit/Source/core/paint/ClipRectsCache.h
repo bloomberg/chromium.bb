@@ -24,7 +24,7 @@ enum ClipRectsCacheSlot {
   // Relative to the LayoutView's layer. Used for compositing overlap testing.
   kAbsoluteClipRects,
 
-  // Relative to painting ancestor. Used for painting.
+  // Relative to painting ancestor. Used for SPv1 compositing.
   kPaintingClipRects,
   kPaintingClipRectsIgnoringOverflowClip,
 

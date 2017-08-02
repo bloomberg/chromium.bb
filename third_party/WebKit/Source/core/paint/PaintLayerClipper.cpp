@@ -585,17 +585,4 @@ bool PaintLayerClipper::ShouldClipOverflow(
   return HasOverflowClip(layer_);
 }
 
-ClipRects& PaintLayerClipper::PaintingClipRects(
-    const PaintLayer* root_layer,
-    ShouldRespectOverflowClipType respect_overflow_clip,
-    const LayoutSize& subpixel_accumulation) const {
-  DCHECK(!use_geometry_mapper_);
-  ClipRectsContext context(root_layer, kPaintingClipRects,
-                           kIgnorePlatformOverlayScrollbarSize,
-                           subpixel_accumulation);
-  if (respect_overflow_clip == kIgnoreOverflowClip)
-    context.SetIgnoreOverflowClip();
-  return GetClipRects(context);
-}
-
 }  // namespace blink
