@@ -511,6 +511,9 @@ without changes to the corresponding grd file. -->
         <part file="cr_elements_resources.grdp" />
         <part file="polymer_resources.grdp" />
       </if>
+      <if expr="chromeos">
+        <part file="chromeos_elements_resources.grdp" />
+      </if>
     </structures>
   </release>
 </grit>

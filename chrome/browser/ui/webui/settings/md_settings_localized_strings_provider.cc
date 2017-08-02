@@ -368,15 +368,14 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
 #if defined(OS_CHROMEOS)
 void AddBluetoothStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
-      {"bluetoothAccept", IDS_OPTIONS_SETTINGS_BLUETOOTH_ACCEPT_PASSKEY},
+      {"bluetoothAccept", IDS_SETTINGS_BLUETOOTH_ACCEPT_PASSKEY},
       {"bluetoothConnected", IDS_SETTINGS_BLUETOOTH_CONNECTED},
       {"bluetoothConnecting", IDS_SETTINGS_BLUETOOTH_CONNECTING},
       {"bluetoothDeviceListPaired", IDS_SETTINGS_BLUETOOTH_DEVICE_LIST_PAIRED},
       {"bluetoothDeviceListUnpaired",
        IDS_SETTINGS_BLUETOOTH_DEVICE_LIST_UNPAIRED},
-      {"bluetoothConnect", IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT},
-      {"bluetoothDisconnect", IDS_OPTIONS_SETTINGS_BLUETOOTH_DISCONNECT},
-      {"bluetoothDismiss", IDS_OPTIONS_SETTINGS_BLUETOOTH_DISMISS_ERROR},
+      {"bluetoothConnect", IDS_SETTINGS_BLUETOOTH_CONNECT},
+      {"bluetoothDisconnect", IDS_SETTINGS_BLUETOOTH_DISCONNECT},
       {"bluetoothToggleA11yLabel",
        IDS_SETTINGS_BLUETOOTH_TOGGLE_ACCESSIBILITY_LABEL},
       {"bluetoothExpandA11yLabel",
@@ -388,11 +387,11 @@ void AddBluetoothStrings(content::WebUIDataSource* html_source) {
       {"bluetoothPair", IDS_SETTINGS_BLUETOOTH_PAIR},
       {"bluetoothPairDevicePageTitle",
        IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE_TITLE},
-      {"bluetoothReject", IDS_OPTIONS_SETTINGS_BLUETOOTH_REJECT_PASSKEY},
+      {"bluetoothReject", IDS_SETTINGS_BLUETOOTH_REJECT_PASSKEY},
       {"bluetoothRemove", IDS_SETTINGS_BLUETOOTH_REMOVE},
       // Device connecting and pairing.
       {"bluetoothStartConnecting", IDS_SETTINGS_BLUETOOTH_START_CONNECTING},
-      {"bluetoothEnterKey", IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_KEY},
+      {"bluetoothEnterKey", IDS_SETTINGS_BLUETOOTH_ENTER_KEY},
       // These ids are generated in JS using 'bluetooth_' + a value from
       // bluetoothPrivate.PairingEventType (see bluetooth_private.idl).
       // 'keysEntered', and 'requestAuthorization' have no associated message.

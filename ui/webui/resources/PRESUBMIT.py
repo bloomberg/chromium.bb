@@ -28,9 +28,11 @@ def _CheckForTranslations(input_api, output_api):
 
   for f in input_api.AffectedFiles():
     local_path = f.LocalPath()
+    # Allow translation in i18n_behavior.js and the chromeos/ directory.
     if local_path.endswith('i18n_behavior.js'):
       continue
-
+    if 'chromeos' in local_path:
+      continue
     keywords = None
     if local_path.endswith('.js'):
       keywords = js_keywords

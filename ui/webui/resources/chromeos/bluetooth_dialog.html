@@ -1,17 +1,17 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
-<link rel="import" href="../bluetooth_page/bluetooth_device_list_item.html">
-<link rel="import" href="../settings_shared_css.html">
 
-<dom-module id="bluetooth-device-dialog">
+<dom-module id="bluetooth-dialog">
   <template>
-    <style include="settings-shared iron-flex">
+    <style include="cr-hidden-style iron-flex">
       #pairing {
         margin-bottom: 10px;
       }
@@ -68,73 +68,70 @@
         margin: 0 20px;
       }
     </style>
+    <!-- TODO(stevenjb/dschuyler): Find a solution to support i18n{} here -->
     <dialog is="cr-dialog" id="dialog" on-cancel="onDialogCanceled_"
-        close-text="$i18n{close}" on-closed="onDialogCanceled_">
-      <div slot="title">$i18n{bluetoothPairDevicePageTitle}</div>
+        close-text="[[i18n('close')]]" on-closed="onDialogCanceled_">
+      <div slot="title">[[title]]</div>
       <div slot="body">
         <div class="contents layout vertical center center-justified">
-          <template is="dom-if" if="[[isDialogType_(dialogId, 'pairDevice')]]">
-            <div id="pairing" class="settings-box first layout vertical center
-                center-justified">
+          <template is="dom-if" if="[[!errorMessage_]]">
+            <div id="pairing" class="layout vertical center center-justified">
               <div class="dialog-message">
                 [[getMessage_(pairingDevice, pairingEvent_)]]
               </div>
               <div hidden$="[[!showEnterPincode_(pairingEvent_)]]">
                 <paper-input id="pincode" minlength="1" maxlength="16"
-                    type="text" auto-validate value="{{pinOrPass}}">
+                    type="text" auto-validate value="{{pinOrPass_}}">
                 </paper-input>
               </div>
               <div hidden$="[[!showEnterPasskey_(pairingEvent_)]]">
                 <paper-input id="passkey" minlength="6" maxlength="6"
-                    type="text" auto-validate value="{{pinOrPass}}">
+                    type="text" auto-validate value="{{pinOrPass_}}">
                 </paper-input>
               </div>
               <div id="pinDiv" class="layout horizontal center center-justified"
                   hidden="[[!showDisplayPassOrPin_(pairingEvent_)]]">
-                <template is="dom-repeat" items="[[digits]]">
+                <template is="dom-repeat" items="[[digits_]]">
                   <span class$="[[getPinClass_(index, pairingEvent_)]]">
                     [[getPinDigit_(index, pairingEvent_)]]
                   </span>
                 </template>
                 <span class$="[[getPinClass_(-1, pairingEvent_)]]"
                     hidden="[[showAcceptReject_(pairingEvent_)]]">
-                  $i18n{bluetoothEnterKey}
+                  [[i18n('bluetoothEnterKey')]]
                 </span>
               </div>
             </div>
           </template>
-          <template is="dom-if"
-              if="[[isDialogType_('connectError', dialogId)]]">
-            <div class="settings-box first layout vertical center
-                center-justified">
-              <div class="dialog-message">[[errorMessage]]</div>
+          <template is="dom-if" if="[[errorMessage_]]">
+            <div class="layout vertical center center-justified">
+              <div class="dialog-message">[[errorMessage_]]</div>
             </div>
           </template>
         </div>
       </div>
       <div slot="button-container">
-        <template is="dom-if" if="[[isDialogType_('pairDevice', dialogId)]]">
+        <template is="dom-if" if="[[!errorMessage_]]">
           <paper-button hidden$="[[!showAcceptReject_(pairingEvent_)]]"
-              on-tap="onAcceptTap_">$i18n{bluetoothAccept}</paper-button>
+              on-tap="onAcceptTap_">[[i18n('bluetoothAccept')]]</paper-button>
           <paper-button hidden$="[[!showAcceptReject_(pairingEvent_)]]"
-              on-tap="onRejectTap_">$i18n{bluetoothReject}</paper-button>
+              on-tap="onRejectTap_">[[i18n('bluetoothReject')]]</paper-button>
           <paper-button hidden$="[[!showConnect_(pairingEvent_)]]"
-              disabled="[[!enableConnect_(pairingEvent_, pinOrPass)]]"
-              on-tap="onConnectTap_">$i18n{bluetoothPair}</paper-button>
+              disabled="[[!enableConnect_(pairingEvent_, pinOrPass_)]]"
+              on-tap="onConnectTap_">[[i18n('bluetoothPair')]]</paper-button>
           <paper-button
               hidden$="[[!showDismiss_(pairingDevice, pairingEvent_)]]"
-              on-tap="close">$i18n{bluetoothDismiss}</paper-button>
+              on-tap="close">[[i18n('ok')]]</paper-button>
           <paper-button hidden$="[[showDismiss_(pairingDevice, pairingEvent_)]]"
               on-tap="onCancelTap_">
-            $i18n{cancel}
+           [[i18n('cancel')]]
           </paper-button>
         </template>
-        <template is="dom-if" if="[[isDialogType_('connectError', dialogId)]]">
-          <paper-button  on-tap="close">$i18n{bluetoothDismiss}
-          </paper-button>
+        <template is="dom-if" if="[[errorMessage_]]">
+          <paper-button  on-tap="close">[[i18n('ok')]]</paper-button>
         </template>
       </div>
     </dialog>
   </template>
-  <script src="bluetooth_device_dialog.js"></script>
+  <script src="bluetooth_dialog.js"></script>
 </dom-module>

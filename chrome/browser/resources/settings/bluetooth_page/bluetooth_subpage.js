@@ -8,9 +8,6 @@
  *  properties and devices.
  */
 
-// NOTE(dbeam): even though this behavior is only used privately, it must
-// be globally accessible for Closure's --polymer_pass to compile happily.
-
 Polymer({
   is: 'settings-bluetooth-subpage',
 
@@ -40,7 +37,7 @@ Polymer({
     showSpinner_: {
       type: Boolean,
       notify: true,
-      computed: 'computeShowSpinner_(adapterState.*, dialogId_)',
+      computed: 'computeShowSpinner_(adapterState.*, dialogShown_)',
     },
 
     /**
@@ -97,16 +94,12 @@ Polymer({
     },
 
     /**
-     * Set to the name of the dialog to show. This page uses a single
-     * dialog to host one of two dialog elements: 'pairDevice' or
-     * 'connectError'. This allows a seamless transition between dialogs.
-     * Note: This property should be set before opening the dialog and setting
-     * the property will not itself cause the dialog to open.
+     * Whether or not the dialog is shown.
      * @private
      */
-    dialogId_: {
-      type: String,
-      value: '',
+    dialogShown_: {
+      type: Boolean,
+      value: false,
     },
 
     /**
@@ -115,12 +108,6 @@ Polymer({
      * @private
      */
     pairingDevice_: Object,
-
-    /**
-     * The translated error message to show when a connect error occurs.
-     * @private
-     */
-    errorMessage_: String,
 
     /**
      * Interface for bluetooth calls. Set in bluetooth-page.
@@ -200,7 +187,7 @@ Polymer({
 
   /** @private */
   computeShowSpinner_: function() {
-    return !this.dialogId_ && this.get('adapterState.discovering');
+    return !this.dialogShown_ && this.get('adapterState.discovering');
   },
 
   /** @private */
@@ -268,7 +255,7 @@ Polymer({
    */
   onBluetoothDeviceUpdated_: function(device) {
     var address = device.address;
-    if (this.dialogId_ && this.pairingDevice_ &&
+    if (this.dialogShown_ && this.pairingDevice_ &&
         this.pairingDevice_.address == address) {
       this.pairingDevice_ = device;
     }
@@ -382,40 +369,22 @@ Polymer({
     // If the device is not paired, show the pairing dialog before connecting.
     if (!device.paired) {
       this.pairingDevice_ = device;
-      this.openDialog_('pairDevice');
+      this.openDialog_();
     }
 
-    this.bluetoothPrivate.connect(device.address, result => {
-      var error;
-      if (chrome.runtime.lastError) {
-        error = chrome.runtime.lastError.message;
-      } else {
-        switch (result) {
-          case chrome.bluetoothPrivate.ConnectResultType.IN_PROGRESS:
-            return;  // Do not close the dialog
-          case chrome.bluetoothPrivate.ConnectResultType.ALREADY_CONNECTED:
-          case chrome.bluetoothPrivate.ConnectResultType.AUTH_CANCELED:
-          case chrome.bluetoothPrivate.ConnectResultType.SUCCESS:
-            break;
-          default:
-            error = result;
-        }
-      }
-
-      if (!error) {
-        this.$.deviceDialog.close();
+    var address = device.address;
+    this.bluetoothPrivate.connect(address, result => {
+      // If |pairingDevice_| has changed, ignore the connect result.
+      if (this.pairingDevice_ && address != this.pairingDevice_.address)
         return;
+      // Let the dialog handle any errors, otherwise close the dialog.
+      var dialog = this.$.deviceDialog;
+      if (dialog.handleError(device, chrome.runtime.lastError, result)) {
+        this.openDialog_();
+      } else if (
+          result != chrome.bluetoothPrivate.ConnectResultType.IN_PROGRESS) {
+        this.$.deviceDialog.close();
       }
-
-      var name = device.name || device.address;
-      var id = 'bluetooth_connect_' + error;
-      if (this.i18nExists(id)) {
-        this.errorMessage_ = this.i18n(id, name);
-      } else {
-        this.errorMessage_ = error;
-        console.error('Unexpected error connecting to: ' + name + ': ' + error);
-      }
-      this.openDialog_('connectError');
     });
   },
 
@@ -448,25 +417,19 @@ Polymer({
     });
   },
 
-  /**
-   * @param {string} dialogId
-   * @private
-   */
-  openDialog_: function(dialogId) {
-    if (this.dialogId_) {
-      // Dialog already opened, just update the contents.
-      this.dialogId_ = dialogId;
+  /** @private */
+  openDialog_: function() {
+    if (this.dialogShown_)
       return;
-    }
-    this.dialogId_ = dialogId;
     // Call flush so that the dialog gets sized correctly before it is opened.
     Polymer.dom.flush();
     this.$.deviceDialog.open();
+    this.dialogShown_ = true;
   },
 
   /** @private */
   onDialogClose_: function() {
-    this.dialogId_ = '';
+    this.dialogShown_ = false;
     this.pairingDevice_ = undefined;
     // The list is dynamic so focus the first item.
     var device = this.$$('#unpairedContainer bluetooth-device-list-item');
