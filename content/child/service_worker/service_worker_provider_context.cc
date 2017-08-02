@@ -190,10 +190,13 @@ void ServiceWorkerProviderContext::OnDisassociateRegistration() {
 
 void ServiceWorkerProviderContext::OnSetControllerServiceWorker(
     std::unique_ptr<ServiceWorkerHandleReference> controller,
-    const std::set<uint32_t>& used_features) {
+    const std::set<uint32_t>& used_features,
+    mojom::ServiceWorkerEventDispatcherPtrInfo event_dispatcher_ptr_info) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   delegate_->SetController(std::move(controller));
   used_features_ = used_features;
+  if (event_dispatcher_ptr_info.is_valid())
+    event_dispatcher_.Bind(std::move(event_dispatcher_ptr_info));
 }
 
 void ServiceWorkerProviderContext::GetAssociatedRegistration(

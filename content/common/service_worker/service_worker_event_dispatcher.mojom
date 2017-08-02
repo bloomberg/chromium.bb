@@ -72,8 +72,15 @@ interface ServiceWorkerFetchResponseCallback {
   OnFallback(mojo.common.mojom.Time dispatch_event_time);
 };
 
-// Renderer-side interface bound to ServiceWorkerContextClient for dispatching
-// events.
+// An interface for dispatching events to a ServiceWorker. This interface is
+// implemented both in the renderer-side and browser-side for the time being.
+// - This is implemented by ServiceWorkerContextClient that lives in the
+//   renderer-side to dispatch events from the browser-side.
+// - This is also implemented by BrowserSideServiceWorkerEventDispatcher that
+//   lives in the browser-side, which is used to dispatch events directly from
+//   the controllees that live in renderer(s). This code is only used when
+//   IsServicificationEnabled() is true.
+//
 // Those events expecting such response
 // (blink.mojom.ServiceWorkerEventStatus, mojo.common.mojom.Time) are considered
 // 'simple events'. ServiceWorkerVersion::CreateSimpleEventCallback can be used

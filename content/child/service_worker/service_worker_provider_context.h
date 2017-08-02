@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/common/content_export.h"
+#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_provider_interfaces.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -77,7 +78,8 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   void OnDisassociateRegistration();
   void OnSetControllerServiceWorker(
       std::unique_ptr<ServiceWorkerHandleReference> controller,
-      const std::set<uint32_t>& used_features);
+      const std::set<uint32_t>& used_features,
+      mojom::ServiceWorkerEventDispatcherPtrInfo event_dispatcher_ptr_info);
 
   // Called on the worker thread. Used for initializing
   // ServiceWorkerGlobalScope.
@@ -88,6 +90,10 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   bool HasAssociatedRegistration();
 
   int provider_id() const { return provider_id_; }
+
+  mojom::ServiceWorkerEventDispatcher* event_dispatcher() {
+    return event_dispatcher_.get();
+  }
 
   ServiceWorkerHandleReference* controller();
   void CountFeature(uint32_t feature);
@@ -113,6 +119,9 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // connection to the content::ServiceWorkerProviderHost in the browser process
   // alive.
   mojo::AssociatedBinding<mojom::ServiceWorkerProvider> binding_;
+
+  // To dispatch events to the controller ServiceWorker.
+  mojom::ServiceWorkerEventDispatcherPtr event_dispatcher_;
 
   std::unique_ptr<Delegate> delegate_;
 

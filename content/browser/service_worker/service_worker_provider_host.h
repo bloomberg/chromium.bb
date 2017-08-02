@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
+#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_provider_host_info.h"
 #include "content/common/service_worker/service_worker_provider_interfaces.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -44,6 +45,7 @@ class ServiceWorkerContextCore;
 class ServiceWorkerDispatcherHost;
 class ServiceWorkerRequestHandler;
 class ServiceWorkerVersion;
+class BrowserSideServiceWorkerEventDispatcher;
 class WebContents;
 
 // This class is the browser-process representation of a service worker
@@ -440,6 +442,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   std::unique_ptr<OneShotGetReadyCallback> get_ready_callback_;
   scoped_refptr<ServiceWorkerVersion> controlling_version_;
+  std::unique_ptr<BrowserSideServiceWorkerEventDispatcher>
+      controlling_version_event_dispatcher_;
   scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ServiceWorkerDispatcherHost* dispatcher_host_;

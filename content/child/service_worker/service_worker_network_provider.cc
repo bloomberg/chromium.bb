@@ -92,6 +92,18 @@ class WebServiceWorkerNetworkProviderForFrame
 
   ServiceWorkerNetworkProvider* provider() { return provider_.get(); }
 
+  std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
+      const blink::WebURLRequest& request,
+      base::SingleThreadTaskRunner* task_runner) override {
+    if (!ServiceWorkerUtils::IsServicificationEnabled() ||
+        !provider_->context() || !provider_->context()->event_dispatcher())
+      return nullptr;
+
+    // TODO(kinuko): Set up URLLoaderFactory with NetworkProvider's
+    // event_dispatcher_ for fetch event handling.
+    return nullptr;
+  }
+
  private:
   std::unique_ptr<ServiceWorkerNetworkProvider> provider_;
 };
@@ -231,7 +243,6 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
   context_ = new ServiceWorkerProviderContext(
       provider_id_, provider_type, std::move(client_request),
       ChildThreadImpl::current()->thread_safe_sender());
-
   ChildThreadImpl::current()->channel()->GetRemoteAssociatedInterface(
       &dispatcher_host_);
   dispatcher_host_->OnProviderCreated(std::move(host_info));

@@ -89,9 +89,13 @@ class ServiceWorkerDispatcherTest : public testing::Test {
                                     const ServiceWorkerObjectInfo& info,
                                     bool should_notify_controllerchange,
                                     const std::set<uint32_t>& used_features) {
-    dispatcher_->OnSetControllerServiceWorker(thread_id, provider_id, info,
-                                              should_notify_controllerchange,
-                                              used_features);
+    ServiceWorkerMsg_SetControllerServiceWorker_Params params;
+    params.thread_id = thread_id;
+    params.provider_id = provider_id;
+    params.object_info = info;
+    params.should_notify_controllerchange = should_notify_controllerchange;
+    params.used_features = used_features;
+    dispatcher_->OnSetControllerServiceWorker(params);
   }
 
   void OnPostMessage(const ServiceWorkerMsg_MessageToDocument_Params& params) {
