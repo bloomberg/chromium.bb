@@ -6,7 +6,7 @@ description("This page tests what happens when a getter / setter on the window o
 var x = 1;
 try {
     window.__defineGetter__("x", function() { return "window.x __getter__"; });
-} catch(e) { debug(e); }
+} catch(e) { }
 
 shouldBe("window.x", "1");
 shouldBe("typeof window.__lookupGetter__('x')", "'undefined'");
@@ -16,7 +16,7 @@ debug("");
 
 try {
 window.__defineSetter__("x", function() { debug("window.x __setter__ called"); });
-} catch(e) { debug(e); }
+} catch(e) { }
 x = 2;
 
 shouldBe("window.x", "2");
