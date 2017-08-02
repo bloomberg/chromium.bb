@@ -19,6 +19,8 @@ class HTMLOptGroupElement;
 class HTMLOptionElement;
 class HTMLSelectElement;
 
+// InternalPopupMenu is a PopupMenu implementation for platforms other than
+// macOS and Android. The UI is built with an HTML page inside a PagePopup.
 class CORE_EXPORT InternalPopupMenu final : NON_EXPORTED_BASE(public PopupMenu),
                                             public PagePopupClient {
  public:
