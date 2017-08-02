@@ -70,6 +70,7 @@ rietveld_instances = [
     'supports_owner_modified_query': True,
     'requires_auth': False,
     'email_domain': 'chromium.org',
+    'short_url_protocol': 'https',
   },
   {
     'url': 'chromereviews.googleplex.com',
@@ -96,10 +97,12 @@ gerrit_instances = [
   {
     'url': 'chromium-review.googlesource.com',
     'shorturl': 'crrev.com/c',
+    'short_url_protocol': 'https',
   },
   {
     'url': 'chrome-internal-review.googlesource.com',
     'shorturl': 'crrev.com/i',
+    'short_url_protocol': 'https',
   },
   {
     'url': 'android-review.googlesource.com',
@@ -110,6 +113,7 @@ google_code_projects = [
   {
     'name': 'chromium',
     'shorturl': 'crbug.com',
+    'short_url_protocol': 'https',
   },
   {
     'name': 'google-breakpad',
@@ -299,11 +303,14 @@ class MyActivity(object):
 
     ret['reviewers'] = set(issue['reviewers'])
 
-    shorturl = instance['url']
     if 'shorturl' in instance:
-      shorturl = instance['shorturl']
+      url = instance['shorturl']
+      protocol = instance.get('short_url_protocol', 'http')
+    else:
+      url = instance['url']
+      protocol = 'https'
 
-    ret['review_url'] = 'http://%s/%d' % (shorturl, issue['issue'])
+    ret['review_url'] = '%s://%s/%d' % (protocol, url, issue['issue'])
 
     # Rietveld sometimes has '\r\n' instead of '\n'.
     ret['header'] = issue['description'].replace('\r', '').split('\n')[0]
@@ -388,10 +395,13 @@ class MyActivity(object):
           '+{insertions},-{deletions}',
           **issue)
     ret['status'] = issue['status']
-    ret['review_url'] = issue['url']
     if 'shorturl' in instance:
-      ret['review_url'] = 'http://%s/%s' % (instance['shorturl'],
-                                            issue['number'])
+      protocol = instance.get('short_url_protocol', 'http')
+      ret['review_url'] = '%s://%s/%s' % (protocol, instance['shorturl'],
+                                          issue['number'])
+    else:
+      ret['review_url'] = issue['url']
+
     ret['header'] = issue['subject']
     ret['owner'] = issue['owner']['email']
     ret['author'] = ret['owner']
@@ -425,12 +435,14 @@ class MyActivity(object):
           '+{insertions},-{deletions}',
           **issue)
     ret['status'] = issue['status']
-    ret['review_url'] = 'https://%s/%s' % (instance['url'], issue['_number'])
     if 'shorturl' in instance:
-      # TODO(deymo): Move this short link to https once crosreview.com supports
-      # it.
-      ret['review_url'] = 'http://%s/%s' % (instance['shorturl'],
-                                            issue['_number'])
+      protocol = instance.get('short_url_protocol', 'http')
+      url = instance['shorturl']
+    else:
+      protocol = 'https'
+      url = instance['url']
+    ret['review_url'] = '%s://%s/%s' % (protocol, url, issue['_number'])
+
     ret['header'] = issue['subject']
     ret['owner'] = issue['owner']['email']
     ret['author'] = ret['owner']
@@ -487,7 +499,8 @@ class MyActivity(object):
       items = content['items']
       for item in items:
         if instance.get('shorturl'):
-          item_url = 'https://%s/%d' % (instance['shorturl'], item['id'])
+          protocol = instance.get('short_url_protocol', 'http')
+          item_url = '%s://%s/%d' % (protocol, instance['shorturl'], item['id'])
         else:
           item_url = 'https://bugs.chromium.org/p/%s/issues/detail?id=%d' % (
               instance['name'], item['id'])
@@ -502,9 +515,6 @@ class MyActivity(object):
           'labels': [],
           'components': []
         }
-        if 'shorturl' in instance:
-          issue['url'] = 'http://%s/%d' % (instance['shorturl'], item['id'])
-
         if 'owner' in item:
           issue['owner'] = item['owner']['name']
         else:
@@ -902,7 +912,7 @@ def main():
       logging.info('Printing output to "%s"', options.output)
       sys.stdout = output_file
   except (IOError, OSError) as e:
-     logging.error('Unable to write output: %s', e)
+    logging.error('Unable to write output: %s', e)
   else:
     if options.json:
       my_activity.dump_json()
