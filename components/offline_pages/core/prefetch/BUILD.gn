@@ -81,6 +81,8 @@ static_library("prefetch") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "mock_prefetch_item_generator.cc",
+    "mock_prefetch_item_generator.h",
     "prefetch_request_test_base.cc",
     "prefetch_request_test_base.h",
     "prefetch_service_test_taco.cc",

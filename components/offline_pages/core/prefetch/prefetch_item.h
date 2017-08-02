@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_ITEM_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_ITEM_H_
 
+#include <stdint.h>
 #include <string>
 
 #include "base/time/time.h"
@@ -21,12 +22,17 @@ namespace offline_pages {
 // inserted into) the persistent prefetching data store.
 struct PrefetchItem {
   PrefetchItem();
-  explicit PrefetchItem(const PrefetchItem& other);
+  PrefetchItem(const PrefetchItem& other);
+  PrefetchItem(PrefetchItem&& other);
 
   ~PrefetchItem();
 
+  PrefetchItem& operator=(const PrefetchItem& other);
+  PrefetchItem& operator=(PrefetchItem&& other);
+
   bool operator==(const PrefetchItem& other) const;
   bool operator!=(const PrefetchItem& other) const;
+  bool operator<(const PrefetchItem& other) const;
 
   // Primary key that stays consistent between prefetch item, request and
   // offline page.
@@ -52,8 +58,16 @@ struct PrefetchItem {
   // left empty if they are the same.
   GURL final_archived_url;
 
-  // Number of times an attempt was made to generate an archive for this item.
-  int request_archive_attempt_count = 0;
+  // Number of attempts to request OPS to generate an archive for this item.
+  int generate_bundle_attempts = 0;
+
+  // Number of attempts to obtain from OPS information about the archive
+  // generation operation for this item.
+  int get_operation_attempts = 0;
+
+  // Number of attempts to request the downloads system to start downloading the
+  // archive for this item.
+  int download_initiation_attempts = 0;
 
   // Name used to identify the archiving operation being executed by the
   // prefetching service for processing this item's URL. It is used as the

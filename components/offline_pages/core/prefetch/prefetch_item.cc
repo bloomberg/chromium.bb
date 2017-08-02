@@ -10,13 +10,21 @@ PrefetchItem::PrefetchItem() = default;
 
 PrefetchItem::PrefetchItem(const PrefetchItem& other) = default;
 
-PrefetchItem::~PrefetchItem(){};
+PrefetchItem::PrefetchItem(PrefetchItem&& other) = default;
+
+PrefetchItem::~PrefetchItem() = default;
+
+PrefetchItem& PrefetchItem::operator=(const PrefetchItem& other) = default;
+
+PrefetchItem& PrefetchItem::operator=(PrefetchItem&& other) = default;
 
 bool PrefetchItem::operator==(const PrefetchItem& other) const {
   return offline_id == other.offline_id && guid == other.guid &&
          client_id == other.client_id && state == other.state &&
          url == other.url && final_archived_url == other.final_archived_url &&
-         request_archive_attempt_count == other.request_archive_attempt_count &&
+         generate_bundle_attempts == other.generate_bundle_attempts &&
+         get_operation_attempts == other.get_operation_attempts &&
+         download_initiation_attempts == other.download_initiation_attempts &&
          operation_name == other.operation_name &&
          archive_body_name == other.archive_body_name &&
          archive_body_length == other.archive_body_length &&
@@ -27,6 +35,10 @@ bool PrefetchItem::operator==(const PrefetchItem& other) const {
 
 bool PrefetchItem::operator!=(const PrefetchItem& other) const {
   return !(*this == other);
+}
+
+bool PrefetchItem::operator<(const PrefetchItem& other) const {
+  return offline_id < other.offline_id;
 }
 
 }  // namespace offline_pages
