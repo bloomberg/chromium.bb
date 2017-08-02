@@ -296,6 +296,11 @@ if (CONFIG_GCOV)
   require_flag("-fprofile-arcs -ftest-coverage" YES)
 endif ()
 
+if (CONFIG_GPROF)
+  message("--- Testing for CONFIG_GPROF support.")
+  require_flag("-pg" YES)
+endif ()
+
 if (NOT MSVC)
   aom_push_var(CMAKE_REQUIRED_LIBRARIES "m")
   aom_check_c_compiles("fenv_check"
