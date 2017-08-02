@@ -61,6 +61,8 @@ class Core : public protocol::CursorShapeStub, public GlRendererDelegate {
   void SurfaceChanged(int width, int height);
 
   std::unique_ptr<protocol::FrameConsumer> GrabFrameConsumer();
+
+  // Returns a weak pointer to be used on the display thread.
   base::WeakPtr<Core> GetWeakPtr();
 
  private:
@@ -93,9 +95,6 @@ Core::Core() : weak_factory_(this) {
 
   weak_ptr_ = weak_factory_.GetWeakPtr();
 
-  runtime_->display_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&Core::Initialize, base::Unretained(this)));
-
   // Do not bind GlRenderer::OnFrameReceived. |renderer_| is not ready yet.
   owned_frame_consumer_.reset(new remoting::DualBufferFrameConsumer(
       base::Bind(&Core::OnFrameReceived, weak_ptr_),
@@ -106,6 +105,9 @@ Core::Core() : weak_factory_(this) {
   owned_renderer_proxy_.reset(
       new RendererProxy(runtime_->display_task_runner()));
   renderer_proxy_ = owned_renderer_proxy_->GetWeakPtr();
+
+  runtime_->display_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&Core::Initialize, GetWeakPtr()));
 }
 
 Core::~Core() {
