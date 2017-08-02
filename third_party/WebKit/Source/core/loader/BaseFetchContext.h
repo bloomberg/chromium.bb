@@ -60,7 +60,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   // Note: subclasses are expected to override following methods.
   // Used in the default implementation for CanRequest, CanFollowRedirect
   // and AllowResponse.
-  virtual bool ShouldBlockRequestByInspector(const ResourceRequest&) const = 0;
+  virtual bool ShouldBlockRequestByInspector(const KURL&) const = 0;
   virtual void DispatchDidBlockRequest(const ResourceRequest&,
                                        const FetchInitiatorInfo&,
                                        ResourceRequestBlockedReason) const = 0;

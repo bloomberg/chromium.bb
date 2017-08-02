@@ -40,7 +40,7 @@ class WorkerFetchContext final : public BaseFetchContext {
   KURL GetFirstPartyForCookies() const override;
   bool AllowScriptFromSource(const KURL&) const override;
   SubresourceFilter* GetSubresourceFilter() const override;
-  bool ShouldBlockRequestByInspector(const ResourceRequest&) const override;
+  bool ShouldBlockRequestByInspector(const KURL&) const override;
   void DispatchDidBlockRequest(const ResourceRequest&,
                                const FetchInitiatorInfo&,
                                ResourceRequestBlockedReason) const override;

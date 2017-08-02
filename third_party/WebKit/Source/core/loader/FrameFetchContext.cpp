@@ -893,12 +893,11 @@ SubresourceFilter* FrameFetchContext::GetSubresourceFilter() const {
   return document_loader ? document_loader->GetSubresourceFilter() : nullptr;
 }
 
-bool FrameFetchContext::ShouldBlockRequestByInspector(
-    const ResourceRequest& resource_request) const {
+bool FrameFetchContext::ShouldBlockRequestByInspector(const KURL& url) const {
   if (IsDetached())
     return false;
   bool should_block_request = false;
-  probe::shouldBlockRequest(GetFrame()->GetDocument(), resource_request,
+  probe::shouldBlockRequest(GetFrame()->GetDocument(), url,
                             &should_block_request);
   return should_block_request;
 }
