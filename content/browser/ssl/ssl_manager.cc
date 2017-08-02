@@ -191,7 +191,8 @@ SSLManager::~SSLManager() {
 
 void SSLManager::DidCommitProvisionalLoad(const LoadCommittedDetails& details) {
   NavigationEntryImpl* entry = controller_->GetLastCommittedEntry();
-  int content_status_flags = 0;
+  int add_content_status_flags = 0;
+  int remove_content_status_flags = 0;
   if (!details.is_main_frame) {
     // If it wasn't a main-frame navigation, then carry over content
     // status flags. (For example, the mixed content flag shouldn't
@@ -199,10 +200,16 @@ void SSLManager::DidCommitProvisionalLoad(const LoadCommittedDetails& details) {
     NavigationEntryImpl* previous_entry =
         controller_->GetEntryAtIndex(details.previous_entry_index);
     if (previous_entry) {
-      content_status_flags = previous_entry->GetSSL().content_status;
+      add_content_status_flags = previous_entry->GetSSL().content_status;
     }
+  } else if (!details.is_same_document) {
+    // For main-frame non-same-page navigations, clear content status
+    // flags. These flags are set based on the content on the page, and thus
+    // should reflect the current content, even if the navigation was to an
+    // existing entry that already had content status flags set.
+    remove_content_status_flags = ~0;
   }
-  UpdateEntry(entry, content_status_flags, 0);
+  UpdateEntry(entry, add_content_status_flags, remove_content_status_flags);
   // Always notify the WebContents that the SSL state changed when a
   // load is committed, in case the active navigation entry has changed.
   NotifyDidChangeVisibleSSLState();
@@ -411,8 +418,8 @@ void SSLManager::UpdateEntry(NavigationEntryImpl* entry,
 
   SSLStatus original_ssl_status = entry->GetSSL();  // Copy!
   entry->GetSSL().initialized = true;
-  entry->GetSSL().content_status |= add_content_status_flags;
   entry->GetSSL().content_status &= ~remove_content_status_flags;
+  entry->GetSSL().content_status |= add_content_status_flags;
 
   SiteInstance* site_instance = entry->site_instance();
   // Note that |site_instance| can be NULL here because NavigationEntries don't
