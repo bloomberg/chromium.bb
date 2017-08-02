@@ -267,8 +267,8 @@ class MediaRouterUI
   // Retrieves the browser associated with this UI.
   Browser* GetBrowser();
 
-  // Opens the URL in a tab which is then |initator_|.
-  void OpenTabWithUrl(const GURL url);
+  // Opens the URL in a tab, returns the tab it was opened in.
+  content::WebContents* OpenTabWithUrl(const GURL url);
 
   // Methods for MediaRouterFileDialogDelegate
   void FileDialogFileSelected(const ui::SelectedFileInfo& file_info) override;
@@ -336,6 +336,15 @@ class MediaRouterUI
       const MediaSink::Id& sink_id,
       MediaCastMode cast_mode,
       MediaSource::Id* source_id,
+      url::Origin* origin,
+      std::vector<MediaRouteResponseCallback>* route_response_callbacks,
+      base::TimeDelta* timeout,
+      bool* incognito);
+
+  // Populates route-related parameters for CreateRoute() when doing file
+  // casting.
+  bool SetLocalFileRouteParameters(
+      const MediaSink::Id& sink_id,
       url::Origin* origin,
       std::vector<MediaRouteResponseCallback>* route_response_callbacks,
       base::TimeDelta* timeout,
