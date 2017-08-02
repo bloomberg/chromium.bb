@@ -143,7 +143,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 377
+#   For your editing convenience: highest ID currently used: 379
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -9157,8 +9157,8 @@
     {
       'name': 'GoogleCast',
       'type': 'group',
-      'caption': '''Google Cast''',
-      'desc': '''Configure policies for Google Cast, a feature that allows users to send the contents of tabs, sites or the desktop from the browser to remote displays and sound systems.''',
+      'caption': '''<ph name="PRODUCT_NAME">Google Cast</ph>''',
+      'desc': '''Configure policies for <ph name="PRODUCT_NAME">Google Cast</ph>, a feature that allows users to send the contents of tabs, sites or the desktop from the browser to remote displays and sound systems.''',
       'policies': [
         {
           'name': 'EnableMediaRouter',
@@ -9171,11 +9171,11 @@
           },
           'example_value': True,
           'id': 333,
-          'caption': '''Enables Google Cast''',
+          'caption': '''Enables <ph name="PRODUCT_NAME">Google Cast</ph>''',
           'tags': [],
-          'desc': '''If this policy is set to true or is not set, Google Cast will be enabled, and users will be able to launch it from the app menu, page context menus, media controls on Cast-enabled websites, and (if shown) the Cast toolbar icon.
+          'desc': '''If this policy is set to true or is not set, <ph name="PRODUCT_NAME">Google Cast</ph> will be enabled, and users will be able to launch it from the app menu, page context menus, media controls on Cast-enabled websites, and (if shown) the Cast toolbar icon.
 
-          If this policy set to false, Google Cast will be disabled.'''
+          If this policy set to false, <ph name="PRODUCT_NAME">Google Cast</ph> will be disabled.'''
         },
         {
           'name': 'ShowCastIconInToolbar',
@@ -9188,7 +9188,7 @@
           },
           'example_value': False,
           'id': 362,
-          'caption': '''Shows the Google Cast toolbar icon''',
+          'caption': '''Shows the <ph name="PRODUCT_NAME">Google Cast</ph> toolbar icon''',
           'tags': [],
           'desc': '''If this policy is set to true, the Cast toolbar icon will always be shown on the toolbar or the overflow menu, and users will not be able to remove it.
 
@@ -9811,6 +9811,52 @@
 
       If the policy is left unset, there will be no restrictions on the set of apps the user can enable on the lock screen imposed by the policy.'''
     },
+    {
+      'name': 'CastReceiver',
+      'type': 'group',
+      'caption': '''Cast Receiver''',
+      'desc': '''Configure the Cast Receiver in <ph name="PRODUCT_NAME">$2<ex>Google Chrome OS</ex></ph>.''',
+      'policies': [
+        {
+          'name': 'CastReceiverEnabled',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome_os:62-'],
+          'future': True,
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': False,
+          'id': 378,
+          'default_for_enterprise_users': False,
+          'caption': '''Enable casting content to the device''',
+          'tags': [],
+          'desc': '''Allow content to be cast to the device using <ph name="PRODUCT_NAME">Google Cast</ph>.
+
+          If this policy is set to False, users will not be able to cast content to their device. If this policy is set to True, users are allowed to cast content. If this policy is not set, users are not allowed to cast content to enrolled Chrome OS devices, but are allowed to do so otherwise.''',
+        },
+        {
+          'name': 'CastReceiverName',
+          'type': 'string',
+          'schema': { 'type': 'string' },
+          'supported_on': ['chrome_os:62-'],
+          'device_only': True,
+          'future': True,
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': 'My Chromebook',
+          'id': 379,
+          'caption': '''Name of the <ph name="PRODUCT_NAME">Google Cast</ph> destination''',
+          'tags': [],
+          'desc': '''Determine the name advertised as a <ph name="PRODUCT_NAME">Google Cast</ph> destination.
+
+          If this policy is set to a non empty string, that string will be used as the name of the <ph name="PRODUCT_NAME">Google Cast</ph> destination. Otherwise, the destination name will be the device name. If this policy is not set, the destination name will be the device name and the device owner will be allowed to change it. The name is limited to 24 characters.'''
+        },
+      ]
+    }
   ],
   'messages': {
     # Messages that are not associated to any policies.

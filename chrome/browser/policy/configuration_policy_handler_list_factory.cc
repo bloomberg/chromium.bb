@@ -676,6 +676,13 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kPinUnlockWeakPinsAllowed,
     prefs::kPinUnlockWeakPinsAllowed,
     base::Value::Type::BOOLEAN },
+
+  { key::kCastReceiverEnabled,
+    prefs::kCastReceiverEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kCastReceiverName,
+    prefs::kCastReceiverName,
+    base::Value::Type::STRING },
 #endif
 
   { key::kRoamingProfileSupportEnabled,
