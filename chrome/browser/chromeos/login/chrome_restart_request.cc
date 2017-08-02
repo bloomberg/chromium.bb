@@ -40,6 +40,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/ipc/host/gpu_switches.h"
 #include "gpu/ipc/service/switches.h"
 #include "media/base/media_switches.h"
 #include "media/media_features.h"
@@ -112,6 +113,7 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kEnableGpuRasterization,
     ::switches::kEnableLogging,
     ::switches::kEnableLowResTiling,
+    ::switches::kEnableNativeGpuMemoryBuffers,
     ::switches::kDisablePartialRaster,
     ::switches::kEnablePartialRaster,
     ::switches::kEnablePinch,
