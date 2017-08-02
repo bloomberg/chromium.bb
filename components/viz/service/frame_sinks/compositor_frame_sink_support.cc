@@ -209,8 +209,8 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
 
   bool result = current_surface->QueueFrame(
       std::move(frame), frame_index,
-      base::Bind(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
+                     weak_factory_.GetWeakPtr()),
       base::BindRepeating(&CompositorFrameSinkSupport::WillDrawSurface,
                           weak_factory_.GetWeakPtr()));
 
