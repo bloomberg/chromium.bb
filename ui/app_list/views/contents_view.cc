@@ -441,6 +441,7 @@ bool ContentsView::Back() {
       break;
     case AppListModel::STATE_SEARCH_RESULTS:
       GetSearchBoxView()->ClearSearch();
+      GetSearchBoxView()->SetSearchBoxActive(false);
       ShowSearchResults(false);
       break;
     case AppListModel::INVALID_STATE:  // Falls through.
