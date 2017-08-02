@@ -645,6 +645,10 @@ component("base") {
   if (is_android || is_ios) {
     sources -= [ "device_form_factor_desktop.cc" ]
   }
+
+  if (is_fuchsia) {
+    sources += [ "cursor/cursor_loader_fuchsia.cc" ]
+  }
 }
 
 static_library("test_support") {
