@@ -739,7 +739,7 @@ TEST_F(ContentSettingBubbleModelTest, Plugins) {
   EXPECT_FALSE(bubble_content.custom_link.empty());
   EXPECT_TRUE(bubble_content.custom_link_enabled);
   EXPECT_FALSE(bubble_content.manage_text.empty());
-  EXPECT_FALSE(bubble_content.learn_more_link.empty());
+  EXPECT_TRUE(bubble_content.show_learn_more);
 }
 
 TEST_F(ContentSettingBubbleModelTest, PepperBroker) {
@@ -943,8 +943,7 @@ TEST_F(ContentSettingBubbleModelTest, SubresourceFilter) {
             l10n_util::GetStringUTF16(IDS_BLOCKED_ADS_PROMPT_EXPLANATION));
   EXPECT_EQ(0U, bubble_content.radio_group.radio_items.size());
   EXPECT_EQ(0, bubble_content.radio_group.default_item);
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_LEARN_MORE),
-            bubble_content.learn_more_link);
+  EXPECT_TRUE(bubble_content.show_learn_more);
   EXPECT_TRUE(bubble_content.custom_link.empty());
   EXPECT_FALSE(bubble_content.custom_link_enabled);
   EXPECT_EQ(bubble_content.manage_text,

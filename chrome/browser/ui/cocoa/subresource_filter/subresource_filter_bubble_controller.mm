@@ -64,8 +64,9 @@
   [messageLabel_ release];
 
   // Set up the "Learn more" link.
-  NSString* linkText = base::SysUTF16ToNSString(
-      contentSettingBubbleModel_->bubble_content().learn_more_link);
+  // TODO(csharrison): Migrate this to use the help icon to align with
+  // Windows/Linux.
+  NSString* linkText = l10n_util::GetNSString(IDS_LEARN_MORE);
   learnMoreLink_ = [[NSButton alloc] initWithFrame:NSMakeRect(18, 76, 282, 28)];
   base::scoped_nsobject<HyperlinkButtonCell> cell(
       [[HyperlinkButtonCell alloc] initTextCell:linkText]);
