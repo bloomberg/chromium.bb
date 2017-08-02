@@ -147,14 +147,7 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(SyncFileSystemTest);
 };
 
-#if defined(OS_CHROMEOS)
-// Flaky on ChromiumOS, http://crbug.com/750800.
-#define MAYBE_AuthorizationTest DISABLED_AuthorizationTest
-#else
-#define MAYBE_AuthorizationTest AuthorizationTest
-#endif
-
-IN_PROC_BROWSER_TEST_F(SyncFileSystemTest, MAYBE_AuthorizationTest) {
+IN_PROC_BROWSER_TEST_F(SyncFileSystemTest, AuthorizationTest) {
   ExtensionTestMessageListener open_failure(
       "checkpoint: Failed to get syncfs", true);
   ExtensionTestMessageListener bar_created(
