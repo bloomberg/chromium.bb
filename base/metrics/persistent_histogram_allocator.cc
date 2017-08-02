@@ -478,8 +478,16 @@ void PersistentHistogramAllocator::MergeHistogramDeltaToStatisticsRecorder(
     return;
   }
 
+  // TODO(bcwhite): Remove this when crbug/744734 is fixed.
+  histogram->ValidateHistogramContents(true, -1);
+  existing->ValidateHistogramContents(true, -2);
+
   // Merge the delta from the passed object to the one in the SR.
   existing->AddSamples(*histogram->SnapshotDelta());
+
+  // TODO(bcwhite): Remove this when crbug/744734 is fixed.
+  histogram->ValidateHistogramContents(true, -3);
+  existing->ValidateHistogramContents(true, -4);
 }
 
 void PersistentHistogramAllocator::MergeHistogramFinalDeltaToStatisticsRecorder(
