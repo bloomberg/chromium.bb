@@ -457,12 +457,12 @@ void build_compound_seg_mask_highbd(uint8_t *mask, SEG_MASK_TYPE mask_type,
                                     BLOCK_SIZE sb_type, int h, int w, int bd) {
   switch (mask_type) {
     case DIFFWTD_38:
-      diffwtd_mask_highbd(mask, 0, 42, CONVERT_TO_SHORTPTR(src0), src0_stride,
+      diffwtd_mask_highbd(mask, 0, 38, CONVERT_TO_SHORTPTR(src0), src0_stride,
                           CONVERT_TO_SHORTPTR(src1), src1_stride, sb_type, h, w,
                           bd);
       break;
     case DIFFWTD_38_INV:
-      diffwtd_mask_highbd(mask, 1, 42, CONVERT_TO_SHORTPTR(src0), src0_stride,
+      diffwtd_mask_highbd(mask, 1, 38, CONVERT_TO_SHORTPTR(src0), src0_stride,
                           CONVERT_TO_SHORTPTR(src1), src1_stride, sb_type, h, w,
                           bd);
       break;
