@@ -717,6 +717,11 @@ const char kSupervisedUserSyncToken[]       = "managed-user-sync-token";
 // testing purposes.
 const char kSystemLogUploadFrequency[] = "system-log-upload-frequency";
 
+// Sets the task manager to track extra renderer processes that might not
+// normally be displayed in the task manager.
+const char kTaskManagerShowExtraRenderers[] =
+    "task-manager-show-extra-renderers";
+
 // Passes the name of the current running automated test to Chrome.
 const char kTestName[]                      = "test-name";
 

@@ -177,7 +177,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // Returns whether the process is ready. The process is ready once both
   // conditions (which can happen in arbitrary order) are true:
-  // 1- the launcher reported a succesful launch
+  // 1- the launcher reported a successful launch
   // 2- the channel is connected.
   //
   // After that point, GetHandle() is valid, and deferred messages have been
