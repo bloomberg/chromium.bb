@@ -31,7 +31,7 @@ class PlatformSensor : public base::RefCountedThreadSafe<PlatformSensor> {
   // The interface that must be implemented by PlatformSensor clients.
   class Client {
    public:
-    virtual void OnSensorReadingChanged() = 0;
+    virtual void OnSensorReadingChanged(mojom::SensorType type) = 0;
     virtual void OnSensorError() = 0;
     virtual bool IsSuspended() = 0;
 

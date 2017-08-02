@@ -402,7 +402,7 @@ class MockPlatformSensorClient : public PlatformSensor::Client {
   }
 
   // PlatformSensor::Client interface.
-  MOCK_METHOD0(OnSensorReadingChanged, void());
+  MOCK_METHOD1(OnSensorReadingChanged, void(mojom::SensorType type));
   MOCK_METHOD0(OnSensorError, void());
   MOCK_METHOD0(IsSuspended, bool());
 
@@ -480,7 +480,7 @@ TEST_F(PlatformSensorAndProviderTestWin, SensorStarted) {
   PlatformSensorConfiguration configuration(10);
   EXPECT_TRUE(StartListening(sensor, client.get(), configuration));
 
-  EXPECT_CALL(*client, OnSensorReadingChanged()).Times(1);
+  EXPECT_CALL(*client, OnSensorReadingChanged(sensor->GetType())).Times(1);
   base::win::ScopedPropVariant pvLux;
   InitPropVariantFromDouble(3.14, pvLux.Receive());
   GenerateDataUpdatedEvent({{SENSOR_DATA_TYPE_LIGHT_LEVEL_LUX, pvLux.ptr()}});
@@ -566,7 +566,7 @@ TEST_F(PlatformSensorAndProviderTestWin, CheckAccelerometerReadingConversion) {
   auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
   PlatformSensorConfiguration configuration(10);
   EXPECT_TRUE(StartListening(sensor, client.get(), configuration));
-  EXPECT_CALL(*client, OnSensorReadingChanged()).Times(1);
+  EXPECT_CALL(*client, OnSensorReadingChanged(sensor->GetType())).Times(1);
 
   double x_accel = 0.25;
   double y_accel = -0.25;
@@ -605,7 +605,7 @@ TEST_F(PlatformSensorAndProviderTestWin, CheckGyroscopeReadingConversion) {
   auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
   PlatformSensorConfiguration configuration(10);
   EXPECT_TRUE(StartListening(sensor, client.get(), configuration));
-  EXPECT_CALL(*client, OnSensorReadingChanged()).Times(1);
+  EXPECT_CALL(*client, OnSensorReadingChanged(sensor->GetType())).Times(1);
 
   double x_ang_accel = 0.0;
   double y_ang_accel = -1.8;
@@ -645,7 +645,7 @@ TEST_F(PlatformSensorAndProviderTestWin, CheckMagnetometerReadingConversion) {
   auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
   PlatformSensorConfiguration configuration(10);
   EXPECT_TRUE(StartListening(sensor, client.get(), configuration));
-  EXPECT_CALL(*client, OnSensorReadingChanged()).Times(1);
+  EXPECT_CALL(*client, OnSensorReadingChanged(sensor->GetType())).Times(1);
 
   double x_magn_field = 112.0;
   double y_magn_field = -162.0;
@@ -691,7 +691,7 @@ TEST_F(PlatformSensorAndProviderTestWin,
   auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
   PlatformSensorConfiguration configuration(10);
   EXPECT_TRUE(StartListening(sensor, client.get(), configuration));
-  EXPECT_CALL(*client, OnSensorReadingChanged()).Times(1);
+  EXPECT_CALL(*client, OnSensorReadingChanged(sensor->GetType())).Times(1);
 
   double x = 10;
   double y = 20;
@@ -734,7 +734,7 @@ TEST_F(PlatformSensorAndProviderTestWin,
   auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
   PlatformSensorConfiguration configuration(10);
   EXPECT_TRUE(StartListening(sensor, client.get(), configuration));
-  EXPECT_CALL(*client, OnSensorReadingChanged()).Times(1);
+  EXPECT_CALL(*client, OnSensorReadingChanged(sensor->GetType())).Times(1);
 
   double x = -0.5;
   double y = -0.5;

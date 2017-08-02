@@ -4,6 +4,9 @@
 
 #include "services/device/generic_sensor/linear_acceleration_fusion_algorithm_using_accelerometer.h"
 
+#include "base/logging.h"
+#include "services/device/generic_sensor/platform_sensor_fusion.h"
+
 namespace device {
 
 LinearAccelerationFusionAlgorithmUsingAccelerometer::
@@ -32,26 +35,30 @@ void LinearAccelerationFusionAlgorithmUsingAccelerometer::Reset() {
   gravity_z_ = 0.0;
 }
 
-void LinearAccelerationFusionAlgorithmUsingAccelerometer::GetFusedData(
-    const std::vector<SensorReading>& readings,
+bool LinearAccelerationFusionAlgorithmUsingAccelerometer::GetFusedData(
+    mojom::SensorType which_sensor_changed,
     SensorReading* fused_reading) {
-  DCHECK(readings.size() == 1);
+  DCHECK(fusion_sensor_);
 
   ++reading_updates_count_;
 
+  SensorReading reading;
+  if (!fusion_sensor_->GetLatestReading(0, &reading))
+    return false;
+
   // First reading.
   if (initial_timestamp_ == 0.0) {
-    initial_timestamp_ = readings[0].timestamp;
-    return;
+    initial_timestamp_ = reading.timestamp;
+    return false;
   }
 
   double delivery_rate =
-      (readings[0].timestamp - initial_timestamp_) / reading_updates_count_;
+      (reading.timestamp - initial_timestamp_) / reading_updates_count_;
   double alpha = time_constant_ / (time_constant_ + delivery_rate);
 
-  double acceleration_x = readings[0].values[0].value();
-  double acceleration_y = readings[0].values[1].value();
-  double acceleration_z = readings[0].values[2].value();
+  double acceleration_x = reading.values[0].value();
+  double acceleration_y = reading.values[1].value();
+  double acceleration_z = reading.values[2].value();
 
   // Isolate gravity.
   gravity_x_ = alpha * gravity_x_ + (1 - alpha) * acceleration_x;
@@ -62,6 +69,8 @@ void LinearAccelerationFusionAlgorithmUsingAccelerometer::GetFusedData(
   fused_reading->values[0].value() = acceleration_x - gravity_x_;
   fused_reading->values[1].value() = acceleration_y - gravity_y_;
   fused_reading->values[2].value() = acceleration_z - gravity_z_;
+
+  return true;
 }
 
 }  // namespace device
