@@ -5,6 +5,7 @@
 #include "content/browser/android/dialog_overlay_impl.h"
 
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "gpu/ipc/common/gpu_surface_tracker.h"
 #include "jni/DialogOverlayImpl_jni.h"
 #include "ui/android/window_android.h"
@@ -67,6 +68,12 @@ DialogOverlayImpl::DialogOverlayImpl(const JavaParamRef<jobject>& obj,
 void DialogOverlayImpl::CompleteInit(JNIEnv* env,
                                      const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Note: It's ok to call SetOverlayMode() directly here, because there can be
+  // at most one overlay alive at the time. This logic needs to be updated if
+  // ever AndroidOverlayProviderImpl.MAX_OVERLAYS > 1.
+  web_contents()->GetDelegate()->SetOverlayMode(true);
+
   // Send the initial token, if there is one.  The observer will notify us about
   // changes only.
   if (ui::WindowAndroid* window = cvc_->GetWindowAndroid()) {
@@ -119,6 +126,11 @@ void DialogOverlayImpl::UnregisterForTokensIfNeeded() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!cvc_)
     return;
+
+  // We clear overlay mode here rather than in Destroy(), because we may have
+  // been called via a WebContentsDestroyed() event, and this might be the last
+  // opportunity we have to access web_contents().
+  web_contents()->GetDelegate()->SetOverlayMode(false);
 
   cvc_->RemoveObserver(this);
   cvc_ = nullptr;

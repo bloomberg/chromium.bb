@@ -506,6 +506,11 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
         if (tab != null) nativeNotifyStopped(tab.getWebContents());
     }
 
+    @CalledByNative
+    private void setOverlayMode(boolean useOverlayMode) {
+        mTab.getActivity().setOverlayMode(useOverlayMode);
+    }
+
     @Override
     public ContentVideoViewEmbedder getContentVideoViewEmbedder() {
         return new ActivityContentVideoViewEmbedder(mTab.getActivity()) {

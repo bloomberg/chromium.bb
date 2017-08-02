@@ -9,6 +9,7 @@ import android.os.HandlerThread;
 
 import org.junit.Assert;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.framehost.RenderFrameHostImpl;
 import org.chromium.content_shell_apk.ContentShellTestBase;
@@ -75,6 +76,9 @@ public abstract class DialogOverlayImplTestBase extends ContentShellTestBase {
             public long surfaceKey;
         }
 
+        private boolean mHasReceivedOverlayModeChange = false;
+        private boolean mUseOverlayMode = false;
+
         private ArrayBlockingQueue<Event> mPending;
 
         public Client() {
@@ -99,6 +103,19 @@ public abstract class DialogOverlayImplTestBase extends ContentShellTestBase {
         @Override
         public void onConnectionError(MojoException exception) {
             mPending.add(new Event(CONNECTION_ERROR, exception));
+        }
+
+        public void onOverlayModeChanged(boolean useOverlayMode) {
+            mHasReceivedOverlayModeChange = true;
+            mUseOverlayMode = useOverlayMode;
+        }
+
+        public boolean hasReceivedOverlayModeChange() {
+            return mHasReceivedOverlayModeChange;
+        }
+
+        public boolean isUsingOverlayMode() {
+            return mUseOverlayMode;
         }
 
         // This isn't part of the overlay client.  It's called by the overlay to indicate that it
@@ -176,6 +193,16 @@ public abstract class DialogOverlayImplTestBase extends ContentShellTestBase {
                 mClient.notifyReleased();
             }
         };
+
+        Callback<Boolean> overlayModeChanged = new Callback<Boolean>() {
+            @Override
+            public void onResult(Boolean useOverlayMode) {
+                mClient.onOverlayModeChanged(useOverlayMode);
+            }
+        };
+
+        getActivityForTestCommon().getActiveShell().setOverayModeChangedCallbackForTesting(
+                overlayModeChanged);
     }
 
     // Create an overlay with the given parameters and return it.
