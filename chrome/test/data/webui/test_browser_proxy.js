@@ -10,15 +10,14 @@
  * called, which will trigger callers of |whenCalled| to get notified.
  * For example:
  * --------------------------------------------------------------------------
- * var MyTestBrowserProxy = function() {
- *   TestBrowserProxy.call(this, ['myMethod']);
- * };
- * MyTestBrowserProxy.prototype = function() {
- *   __proto__: TestBrowserProxy.prototype,
+ * class MyTestBrowserProxy extends TestBrowserProxy {
+ *   constructor() {
+ *     super(['myMethod']);
+ *   }
  *
- *   myMethod: function(someId) {
+ *   myMethod(someId) {
  *     this.methodCalled('myMethod', someId);
- *   },
+ *   }
  * };
  *
  * // Test code sample
@@ -30,18 +29,18 @@
  *   assertEquals(EXPECTED_ID, id);
  * });
  * --------------------------------------------------------------------------
- *
- * @constructor
- * @param {!Array<string>} methodNames Names of all methods whose calls
- *     need to be tracked.
  */
-var TestBrowserProxy = function(methodNames) {
-  /** @private {!Map<string, !PromiseResolver>} */
-  this.resolverMap_ = new Map();
-  methodNames.forEach(this.resetResolver, this);
-};
+class TestBrowserProxy {
+  /**
+   * @param {!Array<string>} methodNames Names of all methods whose calls
+   *     need to be tracked.
+   */
+  constructor(methodNames) {
+    /** @private {!Map<string, !PromiseResolver>} */
+    this.resolverMap_ = new Map();
+    methodNames.forEach(this.resetResolver, this);
+  }
 
-TestBrowserProxy.prototype = {
   /**
    * Called by subclasses when a tracked method is called from the code that
    * is being tested.
@@ -51,33 +50,33 @@ TestBrowserProxy.prototype = {
    *     the expected arguments.
    * @protected
    */
-  methodCalled: function(methodName, opt_arg) {
+  methodCalled(methodName, opt_arg) {
     this.resolverMap_.get(methodName).resolve(opt_arg);
-  },
+  }
 
   /**
    * @param {string} methodName
    * @return {!Promise} A promise that is resolved when the given method
    *     is called.
    */
-  whenCalled: function(methodName) {
+  whenCalled(methodName) {
     return this.resolverMap_.get(methodName).promise;
-  },
+  }
 
   /**
    * Resets the PromiseResolver associated with the given method.
    * @param {string} methodName
    */
-  resetResolver: function(methodName) {
+  resetResolver(methodName) {
     this.resolverMap_.set(methodName, new PromiseResolver());
-  },
+  }
 
   /**
    * Resets all PromiseResolvers.
    */
-  reset: function() {
+  reset() {
     this.resolverMap_.forEach(function(value, methodName) {
       this.resolverMap_.set(methodName, new PromiseResolver());
     }.bind(this));
-  },
-};
+  }
+}
