@@ -90,7 +90,7 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
       v8::Local<v8::Function>::Cast(ctor_value.V8Value());
 
   v8::Local<v8::Value> input_properties_value;
-  if (!constructor->Get(context, V8String(isolate, "inputProperties"))
+  if (!constructor->Get(context, V8AtomicString(isolate, "inputProperties"))
            .ToLocal(&input_properties_value))
     return;
 
@@ -120,7 +120,7 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
   Vector<CSSSyntaxDescriptor> input_argument_types;
   if (RuntimeEnabledFeatures::CSSPaintAPIArgumentsEnabled()) {
     v8::Local<v8::Value> input_argument_type_values;
-    if (!constructor->Get(context, V8String(isolate, "inputArguments"))
+    if (!constructor->Get(context, V8AtomicString(isolate, "inputArguments"))
              .ToLocal(&input_argument_type_values))
       return;
 
@@ -145,7 +145,7 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
 
   // Parse 'alpha' AKA hasAlpha property.
   v8::Local<v8::Value> alpha_value;
-  if (!constructor->Get(context, V8String(isolate, "alpha"))
+  if (!constructor->Get(context, V8AtomicString(isolate, "alpha"))
            .ToLocal(&alpha_value))
     return;
   if (!IsUndefinedOrNull(alpha_value) && !alpha_value->IsBoolean()) {
@@ -158,7 +158,7 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
                        : true;
 
   v8::Local<v8::Value> prototype_value;
-  if (!constructor->Get(context, V8String(isolate, "prototype"))
+  if (!constructor->Get(context, V8AtomicString(isolate, "prototype"))
            .ToLocal(&prototype_value))
     return;
 
@@ -178,7 +178,7 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
       v8::Local<v8::Object>::Cast(prototype_value);
 
   v8::Local<v8::Value> paint_value;
-  if (!prototype->Get(context, V8String(isolate, "paint"))
+  if (!prototype->Get(context, V8AtomicString(isolate, "paint"))
            .ToLocal(&paint_value))
     return;
 
