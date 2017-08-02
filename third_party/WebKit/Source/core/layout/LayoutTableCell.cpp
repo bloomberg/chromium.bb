@@ -60,6 +60,7 @@ LayoutTableCell::LayoutTableCell(Element* element)
     : LayoutBlockFlow(element),
       absolute_column_index_(kUnsetColumnIndex),
       cell_width_changed_(false),
+      is_spanning_collapsed_row_(false),
       collapsed_border_values_valid_(false),
       intrinsic_padding_before_(0),
       intrinsic_padding_after_(0) {
