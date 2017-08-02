@@ -39,7 +39,7 @@ else
   fi
 fi
 
-if [ -e $base_dir/.disable_auto_update ]; then
+if [ -e "$base_dir/.disable_auto_update" ]; then
   exit
 fi
 
