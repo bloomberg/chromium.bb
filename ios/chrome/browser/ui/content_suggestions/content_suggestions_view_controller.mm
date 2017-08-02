@@ -30,7 +30,7 @@
 
 namespace {
 using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
-const CGFloat kMaxCardWidth = 432;
+const CGFloat kMaxCardWidth = 416;
 
 // Returns whether the cells should be displayed using the full width.
 BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
@@ -213,6 +213,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
       ^(id<UIViewControllerTransitionCoordinatorContext> context) {
         [self.headerCommandHandler
             updateFakeOmniboxForScrollView:self.collectionView];
+        [self.collectionView.collectionViewLayout invalidateLayout];
       };
   [coordinator animateAlongsideTransition:alongsideBlock completion:nil];
 }
@@ -423,6 +424,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   [super scrollViewDidScroll:scrollView];
   [self.audience contentSuggestionsDidScroll];
   [self.overscrollActionsController scrollViewDidScroll:scrollView];
+  [self.headerCommandHandler unfocusOmniboxOnCollectionScroll];
   [self.headerCommandHandler updateFakeOmniboxForScrollView:scrollView];
   self.scrolledToTop =
       scrollView.contentOffset.y >= [self.suggestionsDelegate pinnedOffsetY];
