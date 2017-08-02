@@ -462,6 +462,10 @@ bool ChromeExtensionsBrowserClient::IsLockScreenContext(
 #endif
 }
 
+std::string ChromeExtensionsBrowserClient::GetApplicationLocale() {
+  return g_browser_process->GetApplicationLocale();
+}
+
 // static
 void ChromeExtensionsBrowserClient::set_did_chrome_update_for_testing(
     bool did_update) {

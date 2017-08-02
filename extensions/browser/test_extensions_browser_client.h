@@ -121,6 +121,7 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
   scoped_refptr<update_client::UpdateClient> CreateUpdateClient(
       content::BrowserContext* context) override;
   bool IsLockScreenContext(content::BrowserContext* context) override;
+  std::string GetApplicationLocale() override;
 
   ExtensionSystemProvider* extension_system_factory() {
     return extension_system_factory_;

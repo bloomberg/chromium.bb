@@ -10,6 +10,7 @@
 #include "extensions/browser/extension_host_delegate.h"
 #include "extensions/browser/test_runtime_api_delegate.h"
 #include "extensions/browser/updater/null_extension_cache.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/login/login_state.h"
@@ -228,6 +229,10 @@ TestExtensionsBrowserClient::CreateUpdateClient(
 bool TestExtensionsBrowserClient::IsLockScreenContext(
     content::BrowserContext* context) {
   return lock_screen_context_ && context == lock_screen_context_;
+}
+
+std::string TestExtensionsBrowserClient::GetApplicationLocale() {
+  return l10n_util::GetApplicationLocale(std::string());
 }
 
 }  // namespace extensions
