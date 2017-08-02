@@ -84,12 +84,7 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   // https://html.spec.whatwg.org/#execute-the-script-block
   // The single entry point of script execution.
   // PendingScript::Dispose() is called in ExecuteScriptBlock().
-  //
-  // TODO(hiroshige): Replace ExecuteScript() calls with ExecuteScriptBlock().
-  //
-  // TODO(hiroshige): Currently this returns bool (true if success) only to
-  // preserve existing code structure around PrepareScript(). Clean up this.
-  bool ExecuteScriptBlock(PendingScript*, const KURL&);
+  void ExecuteScriptBlock(PendingScript*, const KURL&);
 
   // Creates a PendingScript for external script whose fetch is started in
   // FetchClassicScript()/FetchModuleScriptTree().
