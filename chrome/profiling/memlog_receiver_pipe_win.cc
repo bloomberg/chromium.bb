@@ -27,7 +27,7 @@ const int kReadBufferSize = 1024 * 64;
 MemlogReceiverPipe::MemlogReceiverPipe(base::ScopedPlatformFile handle)
     : handle_(std::move(handle)), read_buffer_(new char[kReadBufferSize]) {
   ZeroOverlapped();
-  base::MessageLoopForIO::current()->RegisterIOHandler(handle_.get(), this);
+  base::MessageLoopForIO::current()->RegisterIOHandler(handle_.Get(), this);
 }
 
 MemlogReceiverPipe::~MemlogReceiverPipe() {
@@ -55,7 +55,7 @@ void MemlogReceiverPipe::ReadUntilBlocking() {
 
   DCHECK(!read_outstanding_);
   read_outstanding_ = true;
-  if (!::ReadFile(handle_.get(), read_buffer_.get(), kReadBufferSize,
+  if (!::ReadFile(handle_.Get(), read_buffer_.get(), kReadBufferSize,
                   &bytes_read, &context_.overlapped)) {
     if (GetLastError() == ERROR_IO_PENDING) {
       return;

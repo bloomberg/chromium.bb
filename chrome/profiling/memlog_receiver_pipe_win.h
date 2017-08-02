@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/files/platform_file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_pump_win.h"
