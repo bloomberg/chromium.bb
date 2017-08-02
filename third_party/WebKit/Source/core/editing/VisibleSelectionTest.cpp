@@ -259,7 +259,7 @@ TEST_F(VisibleSelectionTest, Initialisation) {
 
   const VisibleSelection no_selection =
       CreateVisibleSelection(SelectionInDOMTree::Builder().Build());
-  EXPECT_EQ(kNoSelection, no_selection.GetSelectionType());
+  EXPECT_TRUE(no_selection.IsNone());
 }
 
 // For http://crbug.com/695317
