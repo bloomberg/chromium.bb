@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/test_app_window_contents.h"
@@ -37,10 +36,6 @@ class ShellNativeAppWindowAuraTest : public ExtensionsTest {
 };
 
 TEST_F(ShellNativeAppWindowAuraTest, Bounds) {
-  // The BrowserContext used here must be destroyed before the thread bundle,
-  // because of destructors of things spawned from creating a WebContents.
-  std::unique_ptr<content::BrowserContext> browser_context(
-      new content::TestBrowserContext);
   scoped_refptr<Extension> extension =
       ExtensionBuilder()
           .SetManifest(DictionaryBuilder()
@@ -50,10 +45,10 @@ TEST_F(ShellNativeAppWindowAuraTest, Bounds) {
                            .Build())
           .Build();
 
-  AppWindow* app_window = new AppWindow(
-      browser_context.get(), new ShellAppDelegate, extension.get());
+  AppWindow* app_window =
+      new AppWindow(browser_context(), new ShellAppDelegate, extension.get());
   content::WebContents* web_contents = content::WebContents::Create(
-      content::WebContents::CreateParams(browser_context.get()));
+      content::WebContents::CreateParams(browser_context()));
   app_window->SetAppWindowContentsForTesting(
       base::MakeUnique<TestAppWindowContents>(web_contents));
 
