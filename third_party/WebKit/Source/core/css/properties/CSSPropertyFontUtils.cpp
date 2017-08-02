@@ -114,6 +114,18 @@ CSSIdentifierValue* CSSPropertyFontUtils::ConsumeFontStretchKeywordOnly(
   return nullptr;
 }
 
+static CSSValue* CombineToRangeListOrNull(const CSSPrimitiveValue* range_start,
+                                          const CSSPrimitiveValue* range_end) {
+  DCHECK(range_start);
+  DCHECK(range_end);
+  if (range_end->GetFloatValue() < range_start->GetFloatValue())
+    return nullptr;
+  CSSValueList* value_list = CSSValueList::CreateSpaceSeparated();
+  value_list->Append(*range_start);
+  value_list->Append(*range_end);
+  return value_list;
+}
+
 CSSValue* CSSPropertyFontUtils::ConsumeFontStretch(CSSParserTokenRange& range) {
   CSSIdentifierValue* parsed_keyword = ConsumeFontStretchKeywordOnly(range);
   if (parsed_keyword)
@@ -125,18 +137,44 @@ CSSValue* CSSPropertyFontUtils::ConsumeFontStretch(CSSParserTokenRange& range) {
   return percent;
 }
 
-CSSValue* CSSPropertyFontUtils::ConsumeFontWeight(CSSParserTokenRange& range) {
+CSSValue* CSSPropertyFontUtils::ConsumeFontWeight(
+    CSSParserTokenRange& range,
+    const CSSParserMode& parser_mode) {
   const CSSParserToken& token = range.Peek();
   if (token.Id() >= CSSValueNormal && token.Id() <= CSSValueLighter)
     return CSSPropertyParserHelpers::ConsumeIdent(range);
-  if (token.GetType() != kNumberToken)
+
+  // Avoid consuming the first zero of font: 0/0; e.g. in the Acid3 test.
+  if (token.GetType() == kNumberToken &&
+      (token.NumericValue() < 1 || token.NumericValue() > 1000))
     return nullptr;
-  float weight = token.NumericValue();
-  if (weight < 1 || weight > 1000)
+
+  CSSPrimitiveValue* start_weight = nullptr;
+  start_weight =
+      CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeNonNegative);
+  if (!start_weight || start_weight->GetFloatValue() < 1 ||
+      start_weight->GetFloatValue() > 1000)
     return nullptr;
-  range.ConsumeIncludingWhitespace();
-  return CSSPrimitiveValue::Create(weight,
-                                   CSSPrimitiveValue::UnitType::kNumber);
+
+  // In a non-font-face context, more than one number is not allowed. Return
+  // what we have. If there is trailing garbage, the AtEnd() check in
+  // CSSPropertyParser::ParseValueStart will catch that.
+  if (parser_mode != kCSSFontFaceRuleMode)
+    return start_weight;
+
+  CSSPrimitiveValue* end_weight = nullptr;
+  if (!range.AtEnd()) {
+    end_weight =
+        CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeNonNegative);
+    if (!end_weight || end_weight->GetFloatValue() < 1 ||
+        end_weight->GetFloatValue() > 1000)
+      return nullptr;
+  }
+
+  if (end_weight)
+    return CombineToRangeListOrNull(start_weight, end_weight);
+
+  return start_weight;
 }
 
 // TODO(bugsnash): move this to the FontFeatureSettings API when it is no longer
