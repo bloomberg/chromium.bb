@@ -565,6 +565,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'random_separate_triangles.html',
         ['mac', 'amd'], bug=483282)
 
+    self.Flaky('deqp/functional/gles3/shaderindexing/mat_00.html',
+        ['mac', 'amd'], bug=751254)
     self.Flaky('deqp/functional/gles3/shaderindexing/mat_01.html',
         ['mac', 'amd'], bug=636648)
     self.Flaky('deqp/functional/gles3/shaderindexing/mat_02.html',
