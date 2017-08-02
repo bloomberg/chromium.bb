@@ -158,7 +158,6 @@
 /pywebsocket/src
 /re2/src
 /requests/src
-/retrolambda/*.jar
 /robolectric/lib/android-all-4.3_r2-robolectric-0.jar
 /robolectric/lib/android-all-5.0.0_r2-robolectric-1.jar
 /robolectric/lib/android-all-7.1.0_r7-robolectric-0.jar
