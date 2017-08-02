@@ -490,16 +490,14 @@ void AppListView::UpdateDrag(const gfx::Point& location) {
   // Update the bounds of the widget while maintaining the
   // relative position of the top of the widget and the mouse/gesture.
   // Block drags north of 0 and recalculate the initial_drag_point_.
-  int const new_y_position = location.y() - initial_drag_point_.y() +
-                             fullscreen_widget_->GetWindowBoundsInScreen().y();
-  gfx::Rect new_widget_bounds = fullscreen_widget_->GetWindowBoundsInScreen();
-  if (new_y_position < 0) {
-    new_widget_bounds.set_y(0);
+  int new_y_position = location.y() - initial_drag_point_.y() +
+                       fullscreen_widget_->GetWindowBoundsInScreen().y();
+  if (new_y_position < 0)
     initial_drag_point_ = location;
-  } else {
-    new_widget_bounds.set_y(new_y_position);
-  }
-  fullscreen_widget_->SetBounds(new_widget_bounds);
+
+  UpdateYPositionAndOpacity(new_y_position,
+                            GetAppListBackgroundOpacityDuringDragging(),
+                            false /* is_end_gesture */);
 }
 
 void AppListView::EndDrag(const gfx::Point& location) {
@@ -507,6 +505,8 @@ void AppListView::EndDrag(const gfx::Point& location) {
   if (app_list_state_ == CLOSED)
     return;
 
+  // Restores opacity of all the items in app list if dragging ends.
+  UpdateOpacity(kAppListOpacity, true /* is_end_gesture */);
   // Change the app list state based on where the drag ended. If fling velocity
   // was over the threshold, snap to the next state in the direction of the
   // fling.
@@ -972,13 +972,7 @@ void AppListView::UpdateYPositionAndOpacity(int y_position_in_screen,
   new_widget_bounds.set_y(std::max(y_position_in_screen, 0));
   fullscreen_widget_->SetBounds(new_widget_bounds);
 
-  app_list_background_shield_->layer()->SetOpacity(background_opacity);
-  gfx::Rect work_area_bounds = fullscreen_widget_->GetWorkAreaBoundsInScreen();
-  search_box_view_->UpdateOpacity(work_area_bounds.bottom(), is_end_gesture);
-  app_list_main_view_->contents_view()
-      ->apps_container_view()
-      ->apps_grid_view()
-      ->UpdateOpacity(work_area_bounds.bottom(), is_end_gesture);
+  UpdateOpacity(background_opacity, is_end_gesture);
 }
 
 PaginationModel* AppListView::GetAppsPaginationModel() {
@@ -1070,6 +1064,32 @@ void AppListView::OnDisplayMetricsChanged(const display::Display& display,
   // Update the |fullscreen_widget_| bounds to accomodate the new work
   // area.
   SetState(app_list_state_);
+}
+
+void AppListView::UpdateOpacity(float background_opacity, bool is_end_gesture) {
+  app_list_background_shield_->layer()->SetOpacity(background_opacity);
+  gfx::Rect work_area_bounds = fullscreen_widget_->GetWorkAreaBoundsInScreen();
+  search_box_view_->UpdateOpacity(work_area_bounds.bottom(), is_end_gesture);
+  app_list_main_view_->contents_view()
+      ->apps_container_view()
+      ->apps_grid_view()
+      ->UpdateOpacity(work_area_bounds.bottom(), is_end_gesture);
+
+  if (app_list_state_ == PEEKING) {
+    app_list_main_view_->contents_view()->start_page_view()->UpdateOpacity(
+        work_area_bounds.bottom(), is_end_gesture);
+  }
+}
+
+float AppListView::GetAppListBackgroundOpacityDuringDragging() {
+  float top_of_applist = fullscreen_widget_->GetWindowBoundsInScreen().y();
+  float work_area_bottom =
+      fullscreen_widget_->GetWorkAreaBoundsInScreen().bottom();
+
+  float dragging_height = std::max((work_area_bottom - top_of_applist), 0.f);
+  float coefficient =
+      std::min(dragging_height / (kNumOfShelfSize * kShelfSize), 1.0f);
+  return coefficient * kAppListOpacity;
 }
 
 }  // namespace app_list

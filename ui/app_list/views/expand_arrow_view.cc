@@ -40,6 +40,9 @@ ExpandArrowView::ExpandArrowView(ContentsView* contents_view,
     : views::CustomButton(this),
       contents_view_(contents_view),
       app_list_view_(app_list_view) {
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
+
   icon_ = new views::ImageView;
   icon_->SetVerticalAlignment(views::ImageView::CENTER);
   icon_->SetImage(gfx::CreateVectorIcon(kIcArrowUpIcon, kExpandArrowIconSize,
