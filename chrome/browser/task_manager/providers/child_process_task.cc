@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/process_resource_usage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager_observer.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/nacl/common/nacl_process_type.h"
@@ -98,9 +100,16 @@ base::string16 GetLocalizedTitle(const base::string16& title,
       return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_NACL_PREFIX,
                                         result_title);
     }
+    case content::PROCESS_TYPE_RENDERER: {
+      // TODO: (cburn) Start the UI Localization process for this. Currently the
+      // best name for this is "Renderer".
+      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kTaskManagerShowExtraRenderers)) {
+        return base::ASCIIToUTF16("Renderer");
+      }
+    }
     // These types don't need display names or get them from elsewhere.
     case content::PROCESS_TYPE_BROWSER:
-    case content::PROCESS_TYPE_RENDERER:
     case content::PROCESS_TYPE_ZYGOTE:
     case content::PROCESS_TYPE_SANDBOX_HELPER:
     case content::PROCESS_TYPE_MAX:
@@ -210,6 +219,8 @@ Task::Type ChildProcessTask::GetType() const {
     case PROCESS_TYPE_NACL_LOADER:
     case PROCESS_TYPE_NACL_BROKER:
       return Task::NACL;
+    case content::PROCESS_TYPE_RENDERER:
+      return Task::RENDERER;
     default:
       return Task::UNKNOWN;
   }

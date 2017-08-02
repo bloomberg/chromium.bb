@@ -74,8 +74,6 @@ RendererTask::RendererTask(const base::string16& title,
       profile_name_(GetRendererProfileName(render_process_host_)),
       termination_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       termination_error_code_(0) {
-  // All renderer tasks are capable of reporting network usage, so the default
-  // invalid value of -1 doesn't apply here.
   OnNetworkBytesRead(0);
 
   // Tag the web_contents with a |ContentFaviconDriver| (if needed) so that

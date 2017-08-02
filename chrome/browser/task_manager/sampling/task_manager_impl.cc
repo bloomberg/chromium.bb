@@ -10,13 +10,16 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/task_manager/providers/browser_process_task_provider.h"
 #include "chrome/browser/task_manager/providers/child_process_task_provider.h"
+#include "chrome/browser/task_manager/providers/render_process_host_task_provider.h"
 #include "chrome/browser/task_manager/providers/web_contents/web_contents_task_provider.h"
 #include "chrome/browser/task_manager/sampling/shared_sampler.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/render_frame_host.h"
@@ -52,6 +55,11 @@ TaskManagerImpl::TaskManagerImpl()
   task_providers_.emplace_back(new BrowserProcessTaskProvider());
   task_providers_.emplace_back(new ChildProcessTaskProvider());
   task_providers_.emplace_back(new WebContentsTaskProvider());
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTaskManagerShowExtraRenderers)) {
+    task_providers_.emplace_back(new RenderProcessHostTaskProvider());
+  }
+
 #if defined(OS_CHROMEOS)
   if (arc::IsArcAvailable())
     task_providers_.emplace_back(new ArcProcessTaskProvider());
