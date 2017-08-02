@@ -12,6 +12,7 @@
 #include "base/android/jni_string.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/android/logo_service.h"
+#include "chrome/browser/android/logo_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "components/search_provider_logos/logo_tracker.h"

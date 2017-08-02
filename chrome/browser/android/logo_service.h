@@ -5,13 +5,17 @@
 #ifndef CHROME_BROWSER_ANDROID_LOGO_SERVICE_H_
 #define CHROME_BROWSER_ANDROID_LOGO_SERVICE_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/singleton.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/search_provider_logos/logo_tracker.h"
 
 class Profile;
+
+namespace search_provider_logos {
+class LogoTracker;
+class LogoObserver;
+}  // namespace search_provider_logos
 
 // Provides the logo for a profile's default search provider.
 //
@@ -21,7 +25,7 @@ class Profile;
 //
 class LogoService : public KeyedService {
  public:
-  explicit LogoService(Profile* profile);
+  LogoService(Profile* profile, bool use_gray_background);
   ~LogoService() override;
 
   // Gets the logo for the default search provider and notifies |observer|
@@ -30,27 +34,10 @@ class LogoService : public KeyedService {
 
  private:
   Profile* profile_;
+  const bool use_gray_background_;
   std::unique_ptr<search_provider_logos::LogoTracker> logo_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(LogoService);
-};
-
-// Singleton that owns all LogoServices and associates them with Profiles.
-class LogoServiceFactory : public BrowserContextKeyedServiceFactory {
- public:
-  static LogoService* GetForProfile(Profile* profile);
-
-  static LogoServiceFactory* GetInstance();
-
- private:
-  friend struct base::DefaultSingletonTraits<LogoServiceFactory>;
-
-  LogoServiceFactory();
-  ~LogoServiceFactory() override;
-
-  // BrowserContextKeyedServiceFactory:
-  KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const override;
 };
 
 #endif  // CHROME_BROWSER_ANDROID_LOGO_SERVICE_H_
