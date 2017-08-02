@@ -229,5 +229,4 @@ STATIC_ASSERT_ENUM(WebAXObjectAttribute::kAriaDetails,
                    AXObjectAttribute::kAriaDetails);
 STATIC_ASSERT_ENUM(WebAXObjectVectorAttribute::kAriaFlowTo,
                    AXObjectVectorAttribute::kAriaFlowTo);
-#undef STATIC_ASSERT_ENUM
 }  // namespace blink
