@@ -26,10 +26,6 @@
         @apply(--settings-list-frame-padding);
       }
 
-      /* TODO(dbeam): this rule results in incorrectly showing a top border for
-       * "Other Search Engines", which hides the headers while still adding a
-       * dividing line (even though there's no content above the other engines
-       * to actually divide). */
       settings-search-engine-entry {
         border-top: var(--settings-separator-line);
       }
@@ -48,7 +44,7 @@
       }
     </style>
     <div id="outer">
-      <div id="headers" class="column-header" hidden$="[[hideHeaders]]">
+      <div id="headers" class="column-header">
         <div class="name">$i18n{searchEnginesSearchEngine}</div>
         <div class="keyword">$i18n{searchEnginesKeyword}</div>
         <div class="url">$i18n{searchEnginesQueryURL}</div>

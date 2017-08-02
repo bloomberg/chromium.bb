@@ -25,6 +25,9 @@ Polymer({
       }
     },
 
+    /** @private Filter applied to search engines. */
+    searchEnginesFilter_: String,
+
     /** @private {!SearchPageHotwordInfo|undefined} */
     hotwordInfo_: Object,
 

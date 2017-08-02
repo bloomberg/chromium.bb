@@ -1946,6 +1946,9 @@
   <message name="IDS_SETTINGS_SEARCH_ENGINES" desc="Name of the settings page which manages search engines.">
     Search Engines
   </message>
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_SEARCH" desc="Label for a text input placeholder allowing the user to search/filter the displayed search engines">
+    Search
+  </message>
   <message name="IDS_SETTINGS_SEARCH_ENGINES_ADD_SEARCH_ENGINE" desc="Title for a dialog that allows adding a new search engine.">
     Add search engine
   </message>

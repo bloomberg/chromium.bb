@@ -17,7 +17,8 @@
   <template>
     <style include="settings-shared action-link">
       .extension-engines,
-      #noOtherEngines {
+      #noOtherEngines,
+      .no-search-results {
         @apply(--settings-list-frame-padding);
       }
 
@@ -28,7 +29,12 @@
     <div class="settings-box first">
       <h2>$i18n{searchEnginesDefault}</h2>
     </div>
-    <settings-search-engines-list engines="[[defaultEngines]]">
+    <div class="no-search-results" hidden="[[matchingDefaultEngines_.length]]">
+      $i18n{searchNoResults}
+    </div>
+    <settings-search-engines-list
+        hidden="[[!matchingDefaultEngines_.length]]"
+        engines="[[matchingDefaultEngines_]]">
     </settings-search-engines-list>
     <template is="dom-if" if="[[showAddSearchEngineDialog_]]" restamp>
       <settings-search-engine-dialog></settings-search-engine-dialog>
@@ -44,15 +50,25 @@
     <div id="noOtherEngines" hidden="[[otherEngines.length]]">
       $i18n{searchEnginesNoOtherEngines}
     </div>
-    <settings-search-engines-list id="otherEngines" engines="[[otherEngines]]"
-          hide-headers scroll-target="[[subpageScrollTarget]]">
+    <div class="no-search-results"
+        hidden="[[!showNoResultsMessage_(
+            otherEngines, matchingOtherEngines_)]]">
+      $i18n{searchNoResults}
+    </div>
+    <settings-search-engines-list id="otherEngines"
+        hidden="[[!matchingOtherEngines_.length]]"
+        engines="[[matchingOtherEngines_]]"
+        scroll-target="[[subpageScrollTarget]]">
     </settings-search-engines-list>
     <template is="dom-if" if="[[showExtensionsList_]]">
       <div class="settings-box first">
         <h2>$i18n{searchEnginesExtension}</h2>
       </div>
+      <div class="no-search-results" hidden="[[matchingExtensions_.length]]">
+        $i18n{searchNoResults}
+      </div>
       <iron-list id="extensions" class="extension-engines fixed-height-list"
-          items="[[extensions]]" preserve-focus>
+          items="[[matchingExtensions_]]" preserve-focus>
         <template>
           <settings-omnibox-extension-entry engine="[[item]]"
               tabindex$="[[tabIndex]]" iron-list-tab-index="[[tabIndex]]"

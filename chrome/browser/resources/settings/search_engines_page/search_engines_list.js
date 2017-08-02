@@ -13,9 +13,6 @@ Polymer({
     /** @type {!Array<!SearchEngine>} */
     engines: Array,
 
-    /** Whether column headers should be displayed */
-    hideHeaders: Boolean,
-
     /**
      * The scroll target that this list should use.
      * @type {?HTMLElement}
