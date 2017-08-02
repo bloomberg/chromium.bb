@@ -54,6 +54,14 @@ cr.define('login', function() {
   var POD_ROW_IMAGES_LOAD_TIMEOUT_MS = 3000;
 
   /**
+   * The duration of the animation for switching between main pod and small
+   * pod. It should be synced with CSS.
+   * @type {number}
+   * @const
+   */
+  var POD_SWITCH_ANIMATION_DURATION_MS = 180;
+
+  /**
    * Public session help topic identifier.
    * @type {number}
    * @const
@@ -996,6 +1004,14 @@ cr.define('login', function() {
     },
 
     /**
+     * Gets animated image element.
+     * @type {!HTMLImageElement}
+     */
+    get smallPodAnimatedImageElement() {
+      return this.querySelector('.user-image.small-pod-image.animated-image');
+    },
+
+    /**
      * Gets name element of the small pod.
      * @type {!HTMLDivElement}
      */
@@ -1250,6 +1266,7 @@ cr.define('login', function() {
       this.imageElement.src = imageSrc;
       this.animatedImageElement.src = animatedImageSrc;
       this.smallPodImageElement.src = imageSrc;
+      this.smallPodAnimatedImageElement.src = animatedImageSrc;
 
       this.nameElement.textContent = this.user_.displayName;
       this.smallPodNameElement.textContent = this.user_.displayName;
@@ -4025,7 +4042,6 @@ cr.define('login', function() {
         // to make sure that the styles of all the elements in the pod row are
         // updated before being shown.
         this.handleAfterPodPlacement_();
-        this.clearPodsAnimation_();
       }
     },
 
@@ -4048,16 +4064,19 @@ cr.define('login', function() {
     },
 
     /**
-     * Clears animation classes that may be added earlier to ensure a clean
-     * state.
+     * Toggles the animation for switching between main pod and small pod.
+     * @param {UserPod} pod Pod that needs to toggle the animation.
+     * @param {boolean} enabled Whether the switch animation is needed.
      * @private
      */
-    clearPodsAnimation_: function() {
-      var pods = this.pods;
-      for (var pod of pods) {
-        pod.imageElement.classList.remove('switch-image-animation');
-        pod.smallPodImageElement.classList.remove('switch-image-animation');
-      }
+    toggleSwitchAnimation_: function(pod, enabled) {
+      pod.imageElement.classList.toggle('switch-image-animation', enabled);
+      pod.animatedImageElement.classList.toggle(
+          'switch-image-animation', enabled);
+      pod.smallPodImageElement.classList.toggle(
+          'switch-image-animation', enabled);
+      pod.smallPodAnimatedImageElement.classList.toggle(
+          'switch-image-animation', enabled);
     },
 
     /**
@@ -4087,9 +4106,13 @@ cr.define('login', function() {
       this.mainPod_.setPodStyle(pod.getPodStyle());
       pod.setPodStyle(UserPod.Style.LARGE);
       // Add switch animation.
-      this.mainPod_.smallPodImageElement.classList.add(
-          'switch-image-animation');
-      pod.imageElement.classList.add('switch-image-animation');
+      this.toggleSwitchAnimation_(this.mainPod_, true);
+      this.toggleSwitchAnimation_(pod, true);
+      setTimeout(function() {
+        var pods = this.pods;
+        for (var pod of pods)
+          this.toggleSwitchAnimation_(pod, false);
+      }.bind(this), POD_SWITCH_ANIMATION_DURATION_MS);
 
       // Switch parent and position of the two pods.
       var left = pod.left;
@@ -4676,7 +4699,6 @@ cr.define('login', function() {
       }
 
       this.handleAfterPodPlacement_();
-      this.clearPodsAnimation_();
     },
 
     /**
