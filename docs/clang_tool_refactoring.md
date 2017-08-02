@@ -208,11 +208,16 @@ that is to `return 1` from the `main()` function of the clang tool.
 Synposis:
 
 ```shell
-tools/clang/scripts/test_tool.py <tool name>
+tools/clang/scripts/test_tool.py <tool name> [--apply-edits]
 ```
 
 The name of the tool binary and the subdirectory for the tool in
 `//tools/clang` must match. The test runner finds all files that match the
-pattern `//tools/clang/<tool name>/tests/*-original.cc`, runs the tool across
-those files, and compared it to the `*-expected.cc` version. If there is a
-mismatch, the result is saved in `*-actual.cc`.
+pattern `//tools/clang/<tool name>/tests/*-original.cc`, and runs the tool
+across those files.
+If `--apply-edits` switch is presented, tool outputs are applied to respective
+files and compared to the `*-expected.cc` version. If there is a mismatch, the
+result is saved in `*-actual.cc`.
+When `--apply-edits` switch is not presented, tool outputs are compared to
+`*-expected.txt` and if different, the result is saved in `*-actual.txt`. Note
+that in this case, only one test file is expected.
