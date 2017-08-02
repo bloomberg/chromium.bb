@@ -17,10 +17,8 @@
       let source;
       let compressor;
 
-      // Use a low sample rate to reduce complexity because we need to run for
-      // quite a few seconds to get the reduction to converge.
-      let sampleRate = 8192;
-      let testDurationSamples = 10 * 8192;
+      let sampleRate = 44100;
+      let testDurationSamples = 44100;
 
       audit.define(
           {
@@ -48,12 +46,8 @@
 
             // Render it!
             context.startRendering().then(() => {
-              // Check that the reduction value sufficiently close to 0.
-              // Threshold experimentally determined.
-              should(
-                  Math.abs(compressor.reduction),
-                  'Math.abs(compressor.reduction)')
-                  .beLessThanOrEqualTo(4.8223e-2);
+              // Check that the reduction value is 0.0.
+              should(compressor.reduction, 'compressor.reduction').beEqualTo(0);
               task.done();
             });
           });

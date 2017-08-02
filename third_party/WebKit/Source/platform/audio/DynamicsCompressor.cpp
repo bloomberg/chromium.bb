@@ -193,8 +193,4 @@ void DynamicsCompressor::SetNumberOfChannels(unsigned number_of_channels) {
   number_of_channels_ = number_of_channels;
 }
 
-double DynamicsCompressor::TailTime() const {
-  return compressor_.TailTime();
-}
-
 }  // namespace blink

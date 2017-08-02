@@ -70,7 +70,6 @@ class PLATFORM_EXPORT AudioDSPKernel {
 
   virtual double TailTime() const = 0;
   virtual double LatencyTime() const = 0;
-  virtual bool RequiresTailProcessing() const = 0;
 
  protected:
   // This raw pointer is safe because the AudioDSPKernelProcessor object is

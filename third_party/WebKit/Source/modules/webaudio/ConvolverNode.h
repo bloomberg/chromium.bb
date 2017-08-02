@@ -64,7 +64,6 @@ class MODULES_EXPORT ConvolverHandler final : public AudioHandler {
   ConvolverHandler(AudioNode&, float sample_rate);
   double TailTime() const override;
   double LatencyTime() const override;
-  bool RequiresTailProcessing() const final;
 
   // Determine how many output channels to use from the number of
   // input channels and the number of channels in the impulse response

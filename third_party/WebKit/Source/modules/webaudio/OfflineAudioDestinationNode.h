@@ -88,8 +88,6 @@ class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
 
   unsigned NumberOfChannels() const { return number_of_channels_; }
 
-  bool RequiresTailProcessing() const final { return false; }
-
  private:
   OfflineAudioDestinationHandler(AudioNode&,
                                  unsigned number_of_channels,

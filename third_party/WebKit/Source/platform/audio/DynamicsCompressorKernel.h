@@ -74,8 +74,6 @@ class PLATFORM_EXPORT DynamicsCompressorKernel {
 
   float MeteringGain() const { return metering_gain_; }
 
-  double TailTime() const;
-
  protected:
   float sample_rate_;
 

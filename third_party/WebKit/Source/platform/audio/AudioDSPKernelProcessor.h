@@ -71,7 +71,6 @@ class PLATFORM_EXPORT AudioDSPKernelProcessor : public AudioProcessor {
 
   double TailTime() const override;
   double LatencyTime() const override;
-  bool RequiresTailProcessing() const override;
 
  protected:
   Vector<std::unique_ptr<AudioDSPKernel>> kernels_;

@@ -169,48 +169,6 @@ void DeferredTaskHandler::ProcessAutomaticPullNodes(size_t frames_to_process) {
     rendering_automatic_pull_nodes_[i]->ProcessIfNecessary(frames_to_process);
 }
 
-void DeferredTaskHandler::AddTailProcessingHandler(
-    RefPtr<AudioHandler> handler) {
-  DCHECK(IsGraphOwner());
-
-  if (!tail_processing_handlers_.Contains(handler)) {
-#if DEBUG_AUDIONODE_REFERENCES > 1
-    handler->AddTailProcessingDebug();
-#endif
-    tail_processing_handlers_.push_back(std::move(handler));
-  }
-}
-
-void DeferredTaskHandler::RemoveTailProcessingHandler(
-    RefPtr<AudioHandler> handler) {
-  DCHECK(IsGraphOwner());
-
-  size_t index = tail_processing_handlers_.Find(handler);
-  if (index != kNotFound) {
-#if DEBUG_AUDIONODE_REFERENCES > 1
-    handler->RemoveTailProcessingDebug();
-#endif
-    handler->DisableOutputs();
-    tail_processing_handlers_.erase(index);
-  }
-}
-
-void DeferredTaskHandler::UpdateTailProcessingHandlers() {
-  DCHECK(IsAudioThread());
-
-  for (unsigned k = tail_processing_handlers_.size(); k > 0; --k) {
-    RefPtr<AudioHandler> handler = tail_processing_handlers_[k - 1];
-    if (handler->PropagatesSilence()) {
-#if DEBUG_AUDIONODE_REFERENCES
-      fprintf(stderr, "[%16p]: %16p: %2d: updateTail @%.15g\n",
-              handler->Context(), handler.Get(), handler->GetNodeType(),
-              handler->Context()->currentTime());
-#endif
-      RemoveTailProcessingHandler(handler);
-    }
-  }
-}
-
 void DeferredTaskHandler::AddChangedChannelCountMode(AudioHandler* node) {
   DCHECK(IsGraphOwner());
   DCHECK(IsMainThread());
@@ -272,7 +230,6 @@ void DeferredTaskHandler::HandleDeferredTasks() {
   HandleDirtyAudioSummingJunctions();
   HandleDirtyAudioNodeOutputs();
   UpdateAutomaticPullNodes();
-  UpdateTailProcessingHandlers();
 }
 
 void DeferredTaskHandler::ContextWillBeDestroyed() {

@@ -51,7 +51,6 @@ class WaveShaperDSPKernel final : public AudioDSPKernel {
   void Reset() override;
   double TailTime() const override { return 0; }
   double LatencyTime() const override;
-  bool RequiresTailProcessing() const final;
 
   // Oversampling requires more resources, so let's only allocate them if
   // needed.

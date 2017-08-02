@@ -57,8 +57,6 @@ class MediaStreamAudioSourceHandler final : public AudioHandler {
   // MediaStreamAudioSourceNode.
   void SetFormat(size_t number_of_channels, float sample_rate);
 
-  bool RequiresTailProcessing() const final { return false; }
-
  private:
   MediaStreamAudioSourceHandler(AudioNode&,
                                 std::unique_ptr<AudioSourceProvider>);
