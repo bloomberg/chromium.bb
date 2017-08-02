@@ -28,14 +28,46 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://dom.spec.whatwg.org/#interface-mutationobserver
+#include "bindings/core/v8/V8MutationObserver.h"
 
-[
-    CustomConstructor(MutationCallback callback),
-    ActiveScriptWrappable,
-    DependentLifetime
-] interface MutationObserver {
-    [RaisesException] void observe(Node target, optional MutationObserverInit options);
-    void disconnect();
-    sequence<MutationRecord> takeRecords();
-};
+#include "bindings/core/v8/ExceptionMessages.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8BindingForCore.h"
+#include "bindings/core/v8/V8GCController.h"
+#include "bindings/core/v8/V8MutationCallback.h"
+#include "core/dom/MutationObserver.h"
+#include "core/dom/Node.h"
+#include "platform/bindings/V8DOMWrapper.h"
+
+namespace blink {
+
+void V8MutationObserver::constructorCustom(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exception_state(info.GetIsolate(),
+                                 ExceptionState::kConstructionContext,
+                                 "MutationObserver");
+  if (info.Length() < 1) {
+    exception_state.ThrowTypeError(
+        ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    return;
+  }
+
+  v8::Local<v8::Value> arg = info[0];
+  if (!arg->IsFunction()) {
+    exception_state.ThrowTypeError("Callback argument must be a function");
+    return;
+  }
+
+  v8::Local<v8::Object> wrapper = info.Holder();
+
+  MutationCallback* callback =
+      V8MutationCallback::Create(v8::Local<v8::Function>::Cast(arg), wrapper,
+                                 ScriptState::Current(info.GetIsolate()));
+  MutationObserver* observer = MutationObserver::Create(callback);
+
+  V8SetReturnValue(info,
+                   V8DOMWrapper::AssociateObjectWithWrapper(
+                       info.GetIsolate(), observer, &wrapperTypeInfo, wrapper));
+}
+
+}  // namespace blink
