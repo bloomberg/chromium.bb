@@ -43,7 +43,6 @@ namespace blink {
 template <typename Strategy>
 VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate()
     : affinity_(TextAffinity::kDownstream),
-      selection_type_(kNoSelection),
       base_is_first_(true),
       is_directional_(false) {}
 
@@ -52,7 +51,6 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(
     const SelectionTemplate<Strategy>& selection,
     TextGranularity granularity)
     : affinity_(selection.Affinity()),
-      selection_type_(kNoSelection),
       is_directional_(selection.IsDirectional()) {
   Validate(selection, granularity);
 }
@@ -115,7 +113,6 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(
     : base_(other.base_),
       extent_(other.extent_),
       affinity_(other.affinity_),
-      selection_type_(other.selection_type_),
       base_is_first_(other.base_is_first_),
       is_directional_(other.is_directional_) {}
 
@@ -125,7 +122,6 @@ operator=(const VisibleSelectionTemplate<Strategy>& other) {
   base_ = other.base_;
   extent_ = other.extent_;
   affinity_ = other.affinity_;
-  selection_type_ = other.selection_type_;
   base_is_first_ = other.base_is_first_;
   is_directional_ = other.is_directional_;
   return *this;
@@ -144,6 +140,21 @@ SelectionTemplate<Strategy> VisibleSelectionTemplate<Strategy>::AsSelection()
       .SetAffinity(affinity_)
       .SetIsDirectional(is_directional_)
       .Build();
+}
+
+template <typename Strategy>
+bool VisibleSelectionTemplate<Strategy>::IsCaret() const {
+  return base_.IsNotNull() && base_ == extent_;
+}
+
+template <typename Strategy>
+bool VisibleSelectionTemplate<Strategy>::IsNone() const {
+  return base_.IsNull();
+}
+
+template <typename Strategy>
+bool VisibleSelectionTemplate<Strategy>::IsRange() const {
+  return base_ != extent_;
 }
 
 template <typename Strategy>
@@ -474,7 +485,6 @@ void VisibleSelectionTemplate<Strategy>::Validate(
   if (canonicalized_selection.IsNone()) {
     base_ = extent_ = PositionTemplate<Strategy>();
     base_is_first_ = true;
-    selection_type_ = kNoSelection;
     affinity_ = TextAffinity::kDownstream;
     return;
   }
@@ -517,8 +527,9 @@ void VisibleSelectionTemplate<Strategy>::Validate(
   const EphemeralRangeTemplate<Strategy> editing_adjusted_range =
       AdjustSelectionToAvoidCrossingEditingBoundaries(shadow_adjusted_range,
                                                       base_);
-  selection_type_ = ComputeSelectionType(editing_adjusted_range.StartPosition(),
-                                         editing_adjusted_range.EndPosition());
+  const SelectionType selection_type =
+      ComputeSelectionType(editing_adjusted_range.StartPosition(),
+                           editing_adjusted_range.EndPosition());
 
   // "Constrain" the selection to be the smallest equivalent range of
   // nodes. This is a somewhat arbitrary choice, but experience shows that
@@ -530,13 +541,13 @@ void VisibleSelectionTemplate<Strategy>::Validate(
   // (when we set these two positions to |VisiblePosition|
   // |DeepEquivalent()|s above)?
   const EphemeralRangeTemplate<Strategy> range =
-      selection_type_ == kRangeSelection
+      selection_type == kRangeSelection
           ? EphemeralRangeTemplate<Strategy>(
                 MostForwardCaretPosition(
                     editing_adjusted_range.StartPosition()),
                 MostBackwardCaretPosition(editing_adjusted_range.EndPosition()))
           : editing_adjusted_range;
-  if (selection_type_ == kCaretSelection) {
+  if (selection_type == kCaretSelection) {
     base_ = extent_ = range.StartPosition();
     base_is_first_ = true;
     return;
@@ -578,14 +589,12 @@ VisibleSelectionTemplate<Strategy>::CreateWithoutValidationDeprecated(
   visible_selection.extent_ = extent;
   visible_selection.base_is_first_ = base.CompareTo(extent) <= 0;
   if (base == extent) {
-    visible_selection.selection_type_ = kCaretSelection;
     visible_selection.affinity_ = affinity;
     return visible_selection;
   }
   // Since |affinity_| for non-|CaretSelection| is always |kDownstream|,
   // we should keep this invariant. Note: This function can be called with
   // |affinity_| is |kUpstream|.
-  visible_selection.selection_type_ = kRangeSelection;
   visible_selection.affinity_ = TextAffinity::kDownstream;
   return visible_selection;
 }

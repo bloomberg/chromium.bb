@@ -61,8 +61,6 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
       const SelectionTemplate<Strategy>&,
       TextGranularity);
 
-  SelectionType GetSelectionType() const { return selection_type_; }
-
   TextAffinity Affinity() const { return affinity_; }
 
   SelectionTemplate<Strategy> AsSelection() const;
@@ -97,9 +95,9 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
     return !operator==(other);
   }
 
-  bool IsNone() const { return GetSelectionType() == kNoSelection; }
-  bool IsCaret() const { return GetSelectionType() == kCaretSelection; }
-  bool IsRange() const { return GetSelectionType() == kRangeSelection; }
+  bool IsNone() const;
+  bool IsCaret() const;
+  bool IsRange() const;
   bool IsNonOrphanedCaretOrRange() const {
     return !IsNone() && !Start().IsOrphan() && !End().IsOrphan();
   }
@@ -157,7 +155,6 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
   TextAffinity affinity_;  // the upstream/downstream affinity of the caret
 
   // these are cached, can be recalculated by validate()
-  SelectionType selection_type_;  // None, Caret, Range
   bool base_is_first_ : 1;        // True if base is before the extent
   // Non-directional ignores m_baseIsFirst and selection always extends on shift
   // + arrow key.
