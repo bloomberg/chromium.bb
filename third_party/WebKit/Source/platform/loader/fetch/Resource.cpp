@@ -324,6 +324,42 @@ void Resource::SetLoader(ResourceLoader* loader) {
   status_ = ResourceStatus::kPending;
 }
 
+void Resource::CheckResourceIntegrity() {
+  // Loading error occurred? Then result is uncheckable.
+  integrity_report_info_.Clear();
+  if (ErrorOccurred()) {
+    CHECK(!Data());
+    integrity_disposition_ = ResourceIntegrityDisposition::kFailed;
+    return;
+  }
+
+  // No integrity attributes to check? Then we're passing.
+  if (IntegrityMetadata().IsEmpty()) {
+    integrity_disposition_ = ResourceIntegrityDisposition::kPassed;
+    return;
+  }
+
+  const char* data = nullptr;
+  size_t data_length = 0;
+
+  // Edge case: If a resource actually has zero bytes then it will not
+  // typically have a resource buffer, but we still need to check integrity
+  // because people might want to assert a zero-length resource.
+  CHECK(EncodedSize() + DecodedSize() == 0 || Data());
+  if (Data()) {
+    data = Data()->Data();
+    data_length = Data()->size();
+  }
+
+  if (SubresourceIntegrity::CheckSubresourceIntegrity(IntegrityMetadata(), data,
+                                                      data_length, Url(), *this,
+                                                      integrity_report_info_))
+    integrity_disposition_ = ResourceIntegrityDisposition::kPassed;
+  else
+    integrity_disposition_ = ResourceIntegrityDisposition::kFailed;
+  DCHECK_NE(IntegrityDisposition(), ResourceIntegrityDisposition::kNotChecked);
+}
+
 void Resource::CheckNotify() {
   if (IsLoading())
     return;
@@ -408,6 +444,7 @@ void Resource::FinishAsError(const ResourceError& error) {
   DCHECK(ErrorOccurred());
   ClearData();
   loader_ = nullptr;
+  CheckResourceIntegrity();
   CheckNotify();
 }
 
@@ -417,18 +454,12 @@ void Resource::Finish(double load_finish_time) {
   if (!ErrorOccurred())
     status_ = ResourceStatus::kCached;
   loader_ = nullptr;
+  CheckResourceIntegrity();
   CheckNotify();
 }
 
 AtomicString Resource::HttpContentType() const {
   return GetResponse().HttpContentType();
-}
-
-void Resource::SetIntegrityDisposition(
-    ResourceIntegrityDisposition disposition) {
-  DCHECK_NE(disposition, ResourceIntegrityDisposition::kNotChecked);
-  DCHECK(type_ == Resource::kScript || type_ == Resource::kCSSStyleSheet);
-  integrity_disposition_ = disposition;
 }
 
 bool Resource::MustRefetchDueToIntegrityMetadata(

@@ -60,6 +60,11 @@ void SubresourceIntegrity::ReportInfo::AddConsoleErrorMessage(
   console_error_messages_.push_back(message);
 }
 
+void SubresourceIntegrity::ReportInfo::Clear() {
+  use_counts_.clear();
+  console_error_messages_.clear();
+}
+
 HashAlgorithm SubresourceIntegrity::GetPrioritizedHashFunction(
     HashAlgorithm algorithm1,
     HashAlgorithm algorithm2) {

@@ -120,46 +120,4 @@ AccessControlStatus ScriptResource::CalculateAccessControlStatus() const {
   return kNotSharableCrossOrigin;
 }
 
-void ScriptResource::CheckResourceIntegrity(Document& document) {
-  // Already checked? Retain existing result.
-  //
-  // TODO(vogelheim): If IntegrityDisposition() is kFailed, this should
-  // probably also generate a console message identical to the one produced
-  // by the CheckSubresourceIntegrity call below. See crbug.com/585267.
-  if (IntegrityDisposition() != ResourceIntegrityDisposition::kNotChecked)
-    return;
-
-  CHECK(source_text_.IsNull());
-
-  // Loading error occurred? Then result is uncheckable.
-  if (ErrorOccurred())
-    return;
-
-  // No integrity attributes to check? Then we're passing.
-  if (IntegrityMetadata().IsEmpty()) {
-    SetIntegrityDisposition(ResourceIntegrityDisposition::kPassed);
-    return;
-  }
-
-  const char* data = nullptr;
-  size_t data_length = 0;
-
-  // Edge case: If a resource actually has zero bytes then it will not
-  // typically have a resource buffer, but we still need to check integrity
-  // because people might want to assert a zero-length resource.
-  CHECK(EncodedSize() + DecodedSize() == 0 || ResourceBuffer());
-  if (ResourceBuffer()) {
-    data = ResourceBuffer()->Data();
-    data_length = ResourceBuffer()->size();
-  }
-
-  SubresourceIntegrity::ReportInfo report_info;
-  bool passed = SubresourceIntegrity::CheckSubresourceIntegrity(
-      IntegrityMetadata(), data, data_length, Url(), *this, report_info);
-  SubresourceIntegrityHelper::DoReport(document, report_info);
-  SetIntegrityDisposition(passed ? ResourceIntegrityDisposition::kPassed
-                                 : ResourceIntegrityDisposition::kFailed);
-  DCHECK_NE(IntegrityDisposition(), ResourceIntegrityDisposition::kNotChecked);
-}
-
 }  // namespace blink

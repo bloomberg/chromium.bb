@@ -33,6 +33,7 @@ class PLATFORM_EXPORT SubresourceIntegrity final {
 
     void AddUseCount(UseCounterFeature);
     void AddConsoleErrorMessage(const String&);
+    void Clear();
 
     const Vector<UseCounterFeature>& UseCounts() const { return use_counts_; }
     const Vector<String>& ConsoleErrorMessages() const {
