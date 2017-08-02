@@ -323,7 +323,7 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
       if (isRTL)
         normalIcon = cocoa_l10n_util::FlippedImage(normalIcon);
       // The home button has no icon for its disabled state.
-      if (icon != &kNavigateReloadIcon) {
+      if (icon != &vector_icons::kReloadIcon) {
         disabledIcon = NSImageFromImageSkia(
             gfx::CreateVectorIcon(*icon,
                                   kMDButtonIconSize.width,

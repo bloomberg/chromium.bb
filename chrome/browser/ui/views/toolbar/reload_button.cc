@@ -13,6 +13,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/theme_provider.h"
@@ -230,7 +231,7 @@ void ReloadButton::ChangeModeInternal(Mode mode) {
   // |tp| can be NULL in unit tests.
   if (tp) {
     const gfx::VectorIcon& icon =
-        (mode == MODE_RELOAD) ? kNavigateReloadIcon : kNavigateStopIcon;
+        (mode == MODE_RELOAD) ? vector_icons::kReloadIcon : kNavigateStopIcon;
     const SkColor normal_color =
         tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
     const SkColor disabled_color =

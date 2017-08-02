@@ -246,7 +246,7 @@ class HomePrefNotificationBridge {
                           IDS_TOUCH_BAR_BACK_FORWARD_CUSTOMIZATION_LABEL)];
   } else if ([identifier hasSuffix:kReloadOrStopTouchId]) {
     const gfx::VectorIcon& icon =
-        isPageLoading_ ? kNavigateStopIcon : kNavigateReloadIcon;
+        isPageLoading_ ? kNavigateStopIcon : vector_icons::kReloadIcon;
     int commandId = isPageLoading_ ? IDC_STOP : IDC_RELOAD;
     int tooltipId = isPageLoading_ ? IDS_TOOLTIP_STOP : IDS_TOOLTIP_RELOAD;
     [touchBarItem
