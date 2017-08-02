@@ -146,7 +146,7 @@ if (UNLIKELY(numArgsPassed <= {{argument.index}})) {
 {% if argument.is_callback_interface %}
 {# FIXME: remove EventListener/NodeFilter special case. crbug.com/630986 #}
 {% if argument.idl_type == 'EventListener' %}
-{% if method.name == 'RemoveEventListener' or method.name == 'RemoveListener' %}
+{% if method.name == 'removeEventListener' or method.name == 'removeListener' %}
 {{argument.name}} = V8EventListenerHelper::GetEventListener(ScriptState::Current(info.GetIsolate()), info[{{argument.index}}], false, kListenerFindOnly);
 {% else %}{# method.name == 'AddEventListener' #}
 {{argument.name}} = V8EventListenerHelper::GetEventListener(ScriptState::Current(info.GetIsolate()), info[{{argument.index}}], false, kListenerFindOrCreate);
