@@ -1182,6 +1182,16 @@
       'filepath': 'chrome/browser/media/.*webrtc.*browsertest|'\
                   'content/browser/media/.*webrtc.*browsertest',
     },
+    'web_share': {
+      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/webshare/'\
+                  '|chrome/android/javatests/src/org/chromium/chrome/browser/WebShare.*'\
+                  '|chrome/browser/ui/views/webshare/'\
+                  '|chrome/browser/webshare/'\
+                  '|third_party/WebKit/LayoutTests/webshare/'\
+                  '|third_party/WebKit/LayoutTests/external/wpt/web-share/'\
+                  '|third_party/WebKit/public/platform/modules/webshare/'\
+                  '|third_party/WebKit/Source/modules/webshare/',
+    },
     'website_settings': {
       'filepath': 'chrome/browser/content_settings/'\
                   '|chrome/browser/ui/views/website_settings/'\
@@ -1635,10 +1645,9 @@
                              'gayane+watch@chromium.org'],
     'android_webapk': ['dominickn+watch@chromium.org'],
     'android_webview': ['android-webview-reviews@chromium.org'],
-    'app_list': ['mgiuca@chromium.org',
-                 'tfarina@chromium.org'],
-    'app_shortcuts': ['mgiuca@chromium.org',
-                      'tapted@chromium.org'],
+    'app_list': ['tfarina@chromium.org'],
+    'app_shortcuts': ['mgiuca+watch@chromium.org',
+                      'tapted+watch@chromium.org'],
     'appcache': ['michaeln@chromium.org'],
     'apps': ['chromium-apps-reviews@chromium.org',
              'tfarina@chromium.org'],
@@ -2272,6 +2281,7 @@
                          'yhanada+watchvk@chromium.org'],
     'virtual_reality': ['feature-vr-reviews@chromium.org'],
     'webrtc_browser_tests': ['phoglund+watch@chromium.org'],
+    'web_share': ['mgiuca+watch@chromium.org'],
     'website_settings': ['markusheintz@chromium.org',
                          'msramek+watch@chromium.org',
                          'raymes+watch@chromium.org'],
