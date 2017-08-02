@@ -24071,6 +24071,44 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GPU.ANGLE.ProgramCache.BinaryCacheHitTimeUS"
+    units="microseconds">
+  <owner>jmadill@chromium.org</owner>
+  <summary>The time to load a gpu program from the program cache.</summary>
+</histogram>
+
+<histogram name="GPU.ANGLE.ProgramCache.BinaryCacheMissTimeUS"
+    units="microseconds">
+  <owner>jmadill@chromium.org</owner>
+  <summary>The time to link a gpu program.</summary>
+</histogram>
+
+<histogram name="GPU.ANGLE.ProgramCache.CacheResult"
+    enum="ANGLEProgramCacheResult">
+  <owner>jmadill@chromium.org</owner>
+  <summary>
+    If a successfully linked program was found in the GPU program cache during a
+    program link call, and if the hit was originally loaded from disk.
+  </summary>
+</histogram>
+
+<histogram name="GPU.ANGLE.ProgramCache.LoadBinarySuccess"
+    enum="BooleanSuccess">
+  <owner>jmadill@chromium.org</owner>
+  <summary>
+    Records if the call to load a cached binary was successful. This can
+    legitimately fail if the driver wants chrome to re-link and re-cache the gpu
+    program.
+  </summary>
+</histogram>
+
+<histogram name="GPU.ANGLE.ProgramCache.ProgramBinarySizeBytes" units="bytes">
+  <owner>jmadill@chromium.org</owner>
+  <summary>
+    The size of program binaries loaded into the gpu program cache.
+  </summary>
+</histogram>
+
 <histogram name="GPU.ANGLE.Renderer11InitializeDeviceMS" units="ms">
   <owner>jmadill@chromium.org</owner>
   <summary>
