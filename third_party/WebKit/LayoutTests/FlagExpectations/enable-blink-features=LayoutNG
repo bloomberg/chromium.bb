@@ -11354,7 +11354,6 @@ crbug.com/591099 geolocation-api/permission-denied-already-error.html [ Failure 
 crbug.com/591099 geolocation-api/permission-denied-already-success.html [ Failure ]
 crbug.com/591099 geolocation-api/permission-denied-stops-watches.html [ Failure ]
 crbug.com/591099 geolocation-api/permission-denied.html [ Failure ]
-crbug.com/591099 geolocation-api/permission-service-connection-error.html [ Failure ]
 crbug.com/591099 geolocation-api/position-string.html [ Failure ]
 crbug.com/591099 geolocation-api/reentrant-error.html [ Failure ]
 crbug.com/591099 geolocation-api/reentrant-permission-denied.html [ Failure ]

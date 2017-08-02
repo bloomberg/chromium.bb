@@ -130,10 +130,11 @@ void GeolocationImpl::QueryNextPosition(QueryNextPositionCallback callback) {
 }
 
 void GeolocationImpl::SetOverride(const Geoposition& position) {
+  if (!position_callback_.is_null())
+    ReportCurrentPosition();
   position_override_ = position;
-  if (!position_override_.Validate()) {
+  if (!position_override_.Validate())
     ResumeUpdates();
-  }
 
   geolocation_subscription_.reset();
 
