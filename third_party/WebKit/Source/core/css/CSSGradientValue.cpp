@@ -47,6 +47,7 @@
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
+namespace cssvalue {
 
 namespace {
 
@@ -1547,4 +1548,5 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSConicGradientValue) {
   CSSGradientValue::TraceAfterDispatch(visitor);
 }
 
+}  // namespace cssvalue
 }  // namespace blink

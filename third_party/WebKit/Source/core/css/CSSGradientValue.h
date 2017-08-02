@@ -39,6 +39,8 @@ class Gradient;
 class Document;
 class LayoutObject;
 
+namespace cssvalue {
+
 enum CSSGradientType {
   kCSSDeprecatedLinearGradient,
   kCSSDeprecatedRadialGradient,
@@ -78,13 +80,16 @@ struct CSSGradientColorStop {
   Member<const CSSValue> color_;
 };
 
+}  // namespace cssvalue
 }  // namespace blink
 
 // We have to declare the VectorTraits specialization before CSSGradientValue
 // declares its inline capacity vector below.
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::CSSGradientColorStop);
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(
+    blink::cssvalue::CSSGradientColorStop);
 
 namespace blink {
+namespace cssvalue {
 
 class CSSGradientValue : public CSSImageGeneratorValue {
  public:
@@ -329,6 +334,7 @@ class CSSConicGradientValue final : public CSSGradientValue {
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSConicGradientValue, IsConicGradientValue());
 
+}  // namespace cssvalue
 }  // namespace blink
 
 #endif  // CSSGradientValue_h
