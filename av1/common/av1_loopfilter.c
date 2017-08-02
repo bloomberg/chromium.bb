@@ -2909,6 +2909,108 @@ static void av1_filter_block_plane_vert(
       set_lpf_parameters(&params, ((ptrdiff_t)1 << scale_horz), cm, VERT_EDGE,
                          curr_x, curr_y, plane, plane_ptr);
 
+#if CONFIG_LPF_DIRECT
+      uint8_t *const src = plane_ptr->dst.buf0;
+      const int width = cm->width >> scale_horz;
+      const int height = cm->height >> scale_vert;
+      const int pivot = 8;
+      const int line_length = 16;
+      uint8_t block[128];
+      int orig_pos[128];
+      const int vert_or_horz = 0;  // 0: vertical
+      const int unit = 1;
+      int i;
+      for (i = 0; i < 128; ++i) {
+        block[i] = 0;
+        orig_pos[i] = -1;
+      }
+
+      if (params.filter_length) {
+        const int filt_len = params.filter_length == 16 ? 8 : 4;
+        int direct =
+            pick_min_grad_direct(src, filt_len, curr_y, curr_x, width, height,
+                                 dst_stride, unit, vert_or_horz);
+
+        pick_filter_block_vert(src, block, orig_pos, filt_len, curr_y, curr_x,
+                               width, height, dst_stride, pivot, line_length,
+                               unit, direct);
+        uint8_t *const filt_start = block + pivot;
+        switch (params.filter_length) {
+          // apply 4-tap filtering
+          case 4:
+#if CONFIG_HIGHBITDEPTH
+            if (cm->use_highbitdepth)
+              aom_highbd_lpf_vertical_4_c(CONVERT_TO_SHORTPTR(filt_start),
+                                          line_length, params.mblim, params.lim,
+                                          params.hev_thr, cm->bit_depth);
+            else
+#endif  // CONFIG_HIGHBITDEPTH
+              aom_lpf_vertical_4_c(filt_start, line_length, params.mblim,
+                                   params.lim, params.hev_thr);
+            break;
+          // apply 8-tap filtering
+          case 8:
+#if CONFIG_HIGHBITDEPTH
+            if (cm->use_highbitdepth)
+              aom_highbd_lpf_vertical_8_c(CONVERT_TO_SHORTPTR(filt_start),
+                                          line_length, params.mblim, params.lim,
+                                          params.hev_thr, cm->bit_depth);
+            else
+#endif  // CONFIG_HIGHBITDEPTH
+              aom_lpf_vertical_8_c(filt_start, line_length, params.mblim,
+                                   params.lim, params.hev_thr);
+            break;
+          // apply 16-tap filtering
+          case 16:
+#if CONFIG_HIGHBITDEPTH
+            if (cm->use_highbitdepth)
+              aom_highbd_lpf_vertical_16_c(
+                  CONVERT_TO_SHORTPTR(filt_start), line_length, params.mblim,
+                  params.lim, params.hev_thr, cm->bit_depth);
+            else
+#endif  // CONFIG_HIGHBITDEPTH
+              aom_lpf_vertical_16_c(filt_start, line_length, params.mblim,
+                                    params.lim, params.hev_thr);
+            break;
+          // no filtering
+          default: break;
+        }
+
+        for (i = 0; i < 128; ++i) {
+          if (orig_pos[i] >= 0) src[orig_pos[i]] = block[i];
+        }
+      }
+
+      if (params.filter_length_internal) {
+        for (i = 0; i < 128; ++i) {
+          block[i] = 0;
+          orig_pos[i] = -1;
+        }
+
+        int direct =
+            pick_min_grad_direct(src, 4, curr_y, curr_x + 4, width, height,
+                                 dst_stride, unit, vert_or_horz);
+
+        pick_filter_block_vert(src, block, orig_pos, 4, curr_y, curr_x + 4,
+                               width, height, dst_stride, pivot, line_length,
+                               unit, direct);
+
+        uint8_t *const filt_start = block + pivot;
+#if CONFIG_HIGHBITDEPTH
+        if (cm->use_highbitdepth)
+          aom_highbd_lpf_vertical_4_c(CONVERT_TO_SHORTPTR(filt_start),
+                                      line_length, params.mblim, params.lim,
+                                      params.hev_thr, cm->bit_depth);
+        else
+#endif  // CONFIG_HIGHBITDEPTH
+          aom_lpf_vertical_4_c(filt_start, line_length, params.mblim,
+                               params.lim, params.hev_thr);
+
+        for (i = 0; i < 128; ++i) {
+          if (orig_pos[i] >= 0) src[orig_pos[i]] = block[i];
+        }
+      }
+#else  // CONFIG_LPF_DIRECT
       switch (params.filter_length) {
         // apply 4-tap filtering
         case 4:
@@ -2961,6 +3063,7 @@ static void av1_filter_block_plane_vert(
           aom_lpf_vertical_4_c(p + 4, dst_stride, params.mblim, params.lim,
                                params.hev_thr);
       }
+#endif  // CONFIG_LPF_DIRECT
       // advance the destination pointer
       p += MI_SIZE;
     }
@@ -2992,6 +3095,108 @@ static void av1_filter_block_plane_horz(
       set_lpf_parameters(&params, (cm->mi_stride << scale_vert), cm, HORZ_EDGE,
                          curr_x, curr_y, plane, plane_ptr);
 
+#if CONFIG_LPF_DIRECT
+      uint8_t *const src = plane_ptr->dst.buf0;
+      const int width = cm->width >> scale_horz;
+      const int height = cm->height >> scale_vert;
+      const int pivot = 8;
+      const int line_length = 16;
+      uint8_t block[256];
+      int orig_pos[256];
+      const int vert_or_horz = 1;  // 1: horizontal
+      const int unit = 1;
+      int i;
+      for (i = 0; i < 256; ++i) {
+        block[i] = 0;
+        orig_pos[i] = -1;
+      }
+
+      if (params.filter_length) {
+        const int filt_len = params.filter_length == 16 ? 8 : 4;
+        int direct =
+            pick_min_grad_direct(src, filt_len, curr_y, curr_x, width, height,
+                                 dst_stride, unit, vert_or_horz);
+
+        pick_filter_block_horz(src, block, orig_pos, filt_len, curr_y, curr_x,
+                               width, height, dst_stride, pivot, line_length,
+                               unit, direct);
+        uint8_t *const filt_start = block + pivot * line_length;
+        switch (params.filter_length) {
+          // apply 4-tap filtering
+          case 4:
+#if CONFIG_HIGHBITDEPTH
+            if (cm->use_highbitdepth)
+              aom_highbd_lpf_horizontal_4_c(
+                  CONVERT_TO_SHORTPTR(filt_start), line_length, params.mblim,
+                  params.lim, params.hev_thr, cm->bit_depth);
+            else
+#endif  // CONFIG_HIGHBITDEPTH
+              aom_lpf_horizontal_4_c(filt_start, line_length, params.mblim,
+                                     params.lim, params.hev_thr);
+            break;
+          // apply 8-tap filtering
+          case 8:
+#if CONFIG_HIGHBITDEPTH
+            if (cm->use_highbitdepth)
+              aom_highbd_lpf_horizontal_8_c(
+                  CONVERT_TO_SHORTPTR(filt_start), line_length, params.mblim,
+                  params.lim, params.hev_thr, cm->bit_depth);
+            else
+#endif  // CONFIG_HIGHBITDEPTH
+              aom_lpf_horizontal_8_c(filt_start, line_length, params.mblim,
+                                     params.lim, params.hev_thr);
+            break;
+          // apply 16-tap filtering
+          case 16:
+#if CONFIG_HIGHBITDEPTH
+            if (cm->use_highbitdepth)
+              aom_highbd_lpf_horizontal_edge_16_c(
+                  CONVERT_TO_SHORTPTR(filt_start), line_length, params.mblim,
+                  params.lim, params.hev_thr, cm->bit_depth);
+            else
+#endif  // CONFIG_HIGHBITDEPTH
+              aom_lpf_horizontal_edge_16_c(filt_start, line_length,
+                                           params.mblim, params.lim,
+                                           params.hev_thr);
+            break;
+          // no filtering
+          default: break;
+        }
+
+        for (i = 0; i < 256; ++i) {
+          if (orig_pos[i] >= 0) src[orig_pos[i]] = block[i];
+        }
+      }
+      if (params.filter_length_internal) {
+        for (i = 0; i < 256; ++i) {
+          block[i] = 0;
+          orig_pos[i] = -1;
+        }
+
+        int direct =
+            pick_min_grad_direct(src, 4, curr_y + 4, curr_x, width, height,
+                                 dst_stride, unit, vert_or_horz);
+
+        pick_filter_block_horz(src, block, orig_pos, 4, curr_y + 4, curr_x,
+                               width, height, dst_stride, pivot, line_length,
+                               unit, direct);
+
+        uint8_t *const filt_start = block + pivot * line_length;
+#if CONFIG_HIGHBITDEPTH
+        if (cm->use_highbitdepth)
+          aom_highbd_lpf_horizontal_4_c(CONVERT_TO_SHORTPTR(filt_start),
+                                        line_length, params.mblim, params.lim,
+                                        params.hev_thr, cm->bit_depth);
+        else
+#endif  // CONFIG_HIGHBITDEPTH
+          aom_lpf_horizontal_4_c(filt_start, line_length, params.mblim,
+                                 params.lim, params.hev_thr);
+
+        for (i = 0; i < 256; ++i) {
+          if (orig_pos[i] >= 0) src[orig_pos[i]] = block[i];
+        }
+      }
+#else  // CONFIG_LPF_DIRECT
       switch (params.filter_length) {
         // apply 4-tap filtering
         case 4:
@@ -3044,6 +3249,7 @@ static void av1_filter_block_plane_horz(
           aom_lpf_horizontal_4_c(p + 4 * dst_stride, dst_stride, params.mblim,
                                  params.lim, params.hev_thr);
       }
+#endif  // CONFIG_LPF_DIRECT
       // advance the destination pointer
       p += MI_SIZE;
     }
