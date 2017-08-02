@@ -236,6 +236,7 @@ DragDropControllerMus::CreateDropTargetEvent(Window* window,
                               : *(os_exchange_data_.get()),
           location, root_location, effect_bitmask);
   event->set_flags(event_flags);
+  ui::Event::DispatcherApi(event.get()).set_target(window);
   return event;
 }
 
