@@ -49,13 +49,12 @@ implement the API.
 
 The API uses some internal types (e.g., blink::Node). Typically, these types
 are forward declared and are opaque to consumers of the API. In other cases,
-the full definitions are available behind the BLINK_IMPLEMENTATION
-preprocessor macro. In both cases, we continue to regard these internal types
-as implementation details of Blink, and consumers of the API should not rely
-upon these types.
+the full definitions are available behind the INSIDE_BLINK preprocessor macro.
+In both cases, we continue to regard these internal types as implementation
+details of Blink, and consumers of the API should not rely upon these types.
 
-Similarly, the API uses STL types outside of the BLINK_IMPLEMENTATION
-preprocessor macro, which is for the convenience of the consumer.
+Similarly, the API uses STL types outside of the INSIDE_BLINK preprocessor
+macro, which is for the convenience of the consumer.
 
 Contact Information
 -------------------

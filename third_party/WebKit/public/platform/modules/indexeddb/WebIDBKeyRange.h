@@ -65,7 +65,7 @@ class WebIDBKeyRange {
 
   BLINK_EXPORT void Reset();
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
   WebIDBKeyRange(IDBKeyRange* value) : private_(value) {}
   WebIDBKeyRange& operator=(IDBKeyRange* value) {
     private_ = value;

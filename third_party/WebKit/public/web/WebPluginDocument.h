@@ -52,7 +52,7 @@ class WebPluginDocument final : public WebDocument {
 
   BLINK_EXPORT WebPlugin* Plugin();
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
   WebPluginDocument(PluginDocument*);
   WebPluginDocument& operator=(PluginDocument*);
   operator PluginDocument*() const;

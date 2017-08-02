@@ -24,7 +24,7 @@ class WebMetaElement final : public WebElement {
 
   BLINK_EXPORT WebString ComputeEncoding() const;
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
   WebMetaElement(HTMLMetaElement*);
   WebMetaElement& operator=(HTMLMetaElement*);
   operator HTMLMetaElement*() const;

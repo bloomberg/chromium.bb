@@ -52,7 +52,7 @@ class WebLabelElement final : public WebElement {
 
   BLINK_EXPORT WebElement CorrespondingControl();
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
   WebLabelElement(HTMLLabelElement*);
   WebLabelElement& operator=(HTMLLabelElement*);
   operator HTMLLabelElement*() const;

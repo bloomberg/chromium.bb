@@ -61,7 +61,7 @@ class BLINK_EXPORT WebFormElement final : public WebElement {
 
   void GetFormControlElements(WebVector<WebFormControlElement>&) const;
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
   WebFormElement(HTMLFormElement*);
   WebFormElement& operator=(HTMLFormElement*);
   operator HTMLFormElement*() const;

@@ -81,7 +81,7 @@ class BLINK_EXPORT WebElement : public WebNode {
   // if there isn't any.
   WebImage ImageContents();
 
-#if BLINK_IMPLEMENTATION
+#if INSIDE_BLINK
   WebElement(Element*);
   WebElement& operator=(Element*);
   operator Element*() const;
