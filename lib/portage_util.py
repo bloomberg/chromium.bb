@@ -879,10 +879,24 @@ class EBuild(object):
     variables = dict(CROS_WORKON_COMMIT=self.FormatBashArray(commit_ids),
                      CROS_WORKON_TREE=self.FormatBashArray(tree_ids))
 
-    subdirs_to_rev = self.GetAutotestSubdirsToRev(self.ebuild_path, srcdirs[0])
+    # We use |self._unstable_ebuild_path| because that will contain the newest
+    # changes to the ebuild (and potentially changes to test subdirs
+    # themselves).
+    subdirs_to_rev = self.GetAutotestSubdirsToRev(self._unstable_ebuild_path,
+                                                  srcdirs[0])
+    old_subdirs_to_rev = self.GetAutotestSubdirsToRev(self.ebuild_path,
+                                                      srcdirs[0])
+    test_dirs_changed = False
+    if sorted(subdirs_to_rev) != sorted(old_subdirs_to_rev):
+      logging.info(
+          'The list of subdirs in the ebuild %s has changed, upreving.',
+          self.pkgname)
+      test_dirs_changed = True
 
-    if enforce_subdir_rev and not self._ShouldRevEBuild(commit_ids, srcdirs,
-                                                        subdirs_to_rev):
+    # If there has been any change in the tests list, choose to uprev.
+    if not test_dirs_changed and (enforce_subdir_rev and not
+                                  self._ShouldRevEBuild(commit_ids, srcdirs,
+                                                        subdirs_to_rev)):
       self._Print('Skipping uprev of ebuild %s, none of the rev_subdirs have '
                   'been modified.')
       return
