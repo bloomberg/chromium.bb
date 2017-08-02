@@ -205,10 +205,6 @@ class CORE_EXPORT PaintLayerClipper {
                       ClipRect& foreground_rect,
                       const LayoutPoint* offset_from_root = 0) const;
 
-  ClipRects& PaintingClipRects(const PaintLayer* root_layer,
-                               ShouldRespectOverflowClipType,
-                               const LayoutSize& subpixel_accumulation) const;
-
  private:
   void ClearCache(ClipRectsCacheSlot);
   ClipRects& GetClipRects(const ClipRectsContext&) const;

@@ -1078,7 +1078,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const LayoutPoint& translation_offset = LayoutPoint()) const;
 
   bool HitTestContents(HitTestResult&,
-                       const LayoutRect& layer_bounds,
+                       const LayoutPoint& fragment_offset,
                        const HitTestLocation&,
                        HitTestFilter) const;
   bool HitTestContentsForFragments(const PaintLayerFragments&,
