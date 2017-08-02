@@ -133,6 +133,11 @@ public class SnippetArticle implements OfflinableSuggestion {
         return mCategory == KnownCategories.ARTICLES;
     }
 
+    /** @return whether a snippet is a contextual suggestion. */
+    public boolean isContextual() {
+        return mCategory == KnownCategories.CONTEXTUAL;
+    }
+
     /** @return whether a snippet is either offline page or asset download. */
     public boolean isDownload() {
         return mCategory == KnownCategories.DOWNLOADS;

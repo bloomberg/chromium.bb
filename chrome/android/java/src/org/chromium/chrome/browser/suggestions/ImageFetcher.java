@@ -98,7 +98,11 @@ public class ImageFetcher {
     public void makeArticleThumbnailRequest(SnippetArticle suggestion, Callback<Bitmap> callback) {
         assert !mIsDestroyed;
 
-        mSuggestionsSource.fetchSuggestionImage(suggestion, callback);
+        if (suggestion.isContextual()) {
+            mSuggestionsSource.fetchContextualSuggestionImage(suggestion, callback);
+        } else {
+            mSuggestionsSource.fetchSuggestionImage(suggestion, callback);
+        }
     }
 
     /**

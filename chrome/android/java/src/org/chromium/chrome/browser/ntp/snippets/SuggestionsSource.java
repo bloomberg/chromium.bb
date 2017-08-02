@@ -113,6 +113,12 @@ public interface SuggestionsSource {
     void fetchContextualSuggestions(String url, Callback<List<SnippetArticle>> callback);
 
     /**
+     * Fetches the thumbnail image for a contextual suggestion. A {@code null} Bitmap is returned if
+     * no image is available.
+     */
+    void fetchContextualSuggestionImage(SnippetArticle suggestion, Callback<Bitmap> callback);
+
+    /**
      * Tells the source to dismiss the content suggestion.
      */
     void dismissSuggestion(SnippetArticle suggestion);

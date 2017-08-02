@@ -244,6 +244,12 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     }
 
     @Override
+    public void fetchContextualSuggestionImage(
+            SnippetArticle suggestion, Callback<Bitmap> callback) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void addObserver(Observer observer) {
         mObserverList.addObserver(observer);
     }
