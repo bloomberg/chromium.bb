@@ -2301,7 +2301,6 @@ test("base_unittests") {
     deps += [
       ":base_java",
       ":base_java_unittest_support",
-      "//base/android/jni_generator:jni_generator_tests",
       "//base/test:test_support_java",
     ]
   }
