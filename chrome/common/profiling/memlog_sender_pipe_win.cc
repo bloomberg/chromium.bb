@@ -10,8 +10,8 @@
 
 namespace profiling {
 
-MemlogSenderPipe::MemlogSenderPipe(mojo::edk::ScopedPlatformHandle handle)
-    : handle_(std::move(handle)) {}
+MemlogSenderPipe::MemlogSenderPipe(base::ScopedPlatformFile file)
+    : file_(std::move(file)) {}
 
 MemlogSenderPipe::~MemlogSenderPipe() {
 }
@@ -23,8 +23,8 @@ bool MemlogSenderPipe::Send(const void* data, size_t sz) {
   // Note: don't use logging here (CHECK, DCHECK) because they will allocate,
   // and this function is called from within a malloc hook.
   DWORD bytes_written = 0;
-  if (!::WriteFile(handle_.get().handle, data, static_cast<DWORD>(sz),
-                   &bytes_written, NULL))
+  if (!::WriteFile(file_.Get(), data, static_cast<DWORD>(sz), &bytes_written,
+                   NULL))
     return false;
   return true;
 }

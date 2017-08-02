@@ -195,7 +195,7 @@ void MemoryInternalsDOMHandler::ReturnProcessListOnUIThread(
 void MemoryInternalsDOMHandler::GetOutputFileOnFileThread(int32_t sender_id) {
   base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  base::FilePath output_path = user_data_dir.Append("memlog_dump");
+  base::FilePath output_path = user_data_dir.AppendASCII("memlog_dump");
   base::File f(output_path,
                base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
 
