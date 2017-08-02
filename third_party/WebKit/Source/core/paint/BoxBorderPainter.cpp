@@ -943,11 +943,11 @@ void BoxBorderPainter::PaintOneBorderSide(
       ClipBorderSidePolygon(graphics_context, side, miter1, miter2);
     else
       ClipBorderSideForComplexInnerPath(graphics_context, side);
-    float thickness =
+    float stroke_thickness =
         std::max(std::max(edge_to_render.Width(), adjacent_edge1.Width()),
                  adjacent_edge2.Width());
     DrawBoxSideFromPath(graphics_context, LayoutRect(outer_.Rect()), *path,
-                        edge_to_render.Width(), thickness, side, color,
+                        edge_to_render.Width(), stroke_thickness, side, color,
                         edge_to_render.BorderStyle());
   } else {
     MiterType miter1 =
@@ -977,15 +977,15 @@ void BoxBorderPainter::PaintOneBorderSide(
 void BoxBorderPainter::DrawBoxSideFromPath(GraphicsContext& graphics_context,
                                            const LayoutRect& border_rect,
                                            const Path& border_path,
-                                           float thickness,
-                                           float draw_thickness,
+                                           float border_thickness,
+                                           float stroke_thickness,
                                            BoxSide side,
                                            Color color,
                                            EBorderStyle border_style) const {
-  if (thickness <= 0)
+  if (border_thickness <= 0)
     return;
 
-  if (border_style == EBorderStyle::kDouble && thickness < 3)
+  if (border_style == EBorderStyle::kDouble && border_thickness < 3)
     border_style = EBorderStyle::kSolid;
 
   switch (border_style) {
@@ -994,20 +994,22 @@ void BoxBorderPainter::DrawBoxSideFromPath(GraphicsContext& graphics_context,
       return;
     case EBorderStyle::kDotted:
     case EBorderStyle::kDashed: {
-      DrawDashedDottedBoxSideFromPath(graphics_context, border_rect, thickness,
-                                      draw_thickness, color, border_style);
+      DrawDashedDottedBoxSideFromPath(graphics_context, border_rect,
+                                      border_thickness, stroke_thickness, color,
+                                      border_style);
       return;
     }
     case EBorderStyle::kDouble: {
       DrawDoubleBoxSideFromPath(graphics_context, border_rect, border_path,
-                                thickness, draw_thickness, side, color);
+                                border_thickness, stroke_thickness, side,
+                                color);
       return;
     }
     case EBorderStyle::kRidge:
     case EBorderStyle::kGroove: {
       DrawRidgeGrooveBoxSideFromPath(graphics_context, border_rect, border_path,
-                                     thickness, draw_thickness, side, color,
-                                     border_style);
+                                     border_thickness, stroke_thickness, side,
+                                     color, border_style);
       return;
     }
     case EBorderStyle::kInset:
@@ -1030,8 +1032,8 @@ void BoxBorderPainter::DrawBoxSideFromPath(GraphicsContext& graphics_context,
 void BoxBorderPainter::DrawDashedDottedBoxSideFromPath(
     GraphicsContext& graphics_context,
     const LayoutRect& border_rect,
-    float thickness,
-    float draw_thickness,
+    float border_thickness,
+    float stroke_thickness,
     Color color,
     EBorderStyle border_style) const {
   // Convert the path to be down the middle of the dots or dashes.
@@ -1045,16 +1047,18 @@ void BoxBorderPainter::DrawDashedDottedBoxSideFromPath(
 
   graphics_context.SetStrokeColor(color);
 
-  if (!StrokeData::StrokeIsDashed(
-          thickness, border_style == EBorderStyle::kDashed ? kDashedStroke
-                                                           : kDottedStroke)) {
-    DrawWideDottedBoxSideFromPath(graphics_context, centerline_path, thickness);
+  if (!StrokeData::StrokeIsDashed(border_thickness,
+                                  border_style == EBorderStyle::kDashed
+                                      ? kDashedStroke
+                                      : kDottedStroke)) {
+    DrawWideDottedBoxSideFromPath(graphics_context, centerline_path,
+                                  border_thickness);
     return;
   }
 
   // The extra multiplier is so that the clipping mask can antialias
   // the edges to prevent jaggies.
-  graphics_context.SetStrokeThickness(draw_thickness * 1.1f);
+  graphics_context.SetStrokeThickness(stroke_thickness * 1.1f);
   graphics_context.SetStrokeStyle(
       border_style == EBorderStyle::kDashed ? kDashedStroke : kDottedStroke);
 
@@ -1062,11 +1066,11 @@ void BoxBorderPainter::DrawDashedDottedBoxSideFromPath(
   // do the same thing as StrokeData::setupPaintDashPathEffect and should be
   // refactored to re-use that code. It would require
   // GraphicsContext::strokePath to take a length parameter.
-  float dash_length = thickness;
+  float dash_length = border_thickness;
   float gap_length = dash_length;
   if (border_style == EBorderStyle::kDashed) {
-    dash_length *= StrokeData::DashLengthRatio(thickness);
-    gap_length *= StrokeData::DashGapRatio(thickness);
+    dash_length *= StrokeData::DashLengthRatio(border_thickness);
+    gap_length *= StrokeData::DashGapRatio(border_thickness);
   }
   float path_length = centerline_path.length();
   // Don't try to show dashes if we have less than 2 dashes + 2 gaps.
@@ -1096,8 +1100,8 @@ void BoxBorderPainter::DrawDashedDottedBoxSideFromPath(
 void BoxBorderPainter::DrawWideDottedBoxSideFromPath(
     GraphicsContext& graphics_context,
     const Path& border_path,
-    float thickness) const {
-  graphics_context.SetStrokeThickness(thickness);
+    float border_thickness) const {
+  graphics_context.SetStrokeThickness(border_thickness);
   graphics_context.SetStrokeStyle(kDottedStroke);
 
   // TODO(schenney): This code for setting up the dash effect is largely
@@ -1107,7 +1111,7 @@ void BoxBorderPainter::DrawWideDottedBoxSideFromPath(
   graphics_context.SetLineCap(kRoundCap);
 
   // Adjust the width to get equal dot spacing as much as possible.
-  float per_dot_length = thickness * 2;
+  float per_dot_length = border_thickness * 2;
   float path_length = border_path.length();
 
   if (path_length < per_dot_length) {
@@ -1118,12 +1122,12 @@ void BoxBorderPainter::DrawWideDottedBoxSideFromPath(
     line_dash.push_back(per_dot_length);
     graphics_context.SetLineDash(line_dash, 0);
   } else {
-    float gap =
-        StrokeData::SelectBestDashGap(path_length, thickness, thickness);
+    float gap = StrokeData::SelectBestDashGap(path_length, border_thickness,
+                                              border_thickness);
     static const float kEpsilon = 1.0e-2f;
     DashArray line_dash;
     line_dash.push_back(0);
-    line_dash.push_back(gap + thickness - kEpsilon);
+    line_dash.push_back(gap + border_thickness - kEpsilon);
     graphics_context.SetLineDash(line_dash, 0);
   }
 
@@ -1136,8 +1140,8 @@ void BoxBorderPainter::DrawDoubleBoxSideFromPath(
     GraphicsContext& graphics_context,
     const LayoutRect& border_rect,
     const Path& border_path,
-    float thickness,
-    float draw_thickness,
+    float border_thickness,
+    float stroke_thickness,
     BoxSide side,
     Color color) const {
   // Draw inner border line
@@ -1150,8 +1154,9 @@ void BoxBorderPainter::DrawDoubleBoxSideFromPath(
         include_logical_right_edge_);
 
     graphics_context.ClipRoundedRect(inner_clip);
-    DrawBoxSideFromPath(graphics_context, border_rect, border_path, thickness,
-                        draw_thickness, side, color, EBorderStyle::kSolid);
+    DrawBoxSideFromPath(graphics_context, border_rect, border_path,
+                        border_thickness, stroke_thickness, side, color,
+                        EBorderStyle::kSolid);
   }
 
   // Draw outer border line
@@ -1173,8 +1178,9 @@ void BoxBorderPainter::DrawDoubleBoxSideFromPath(
         outer_rect, outer_insets, include_logical_left_edge_,
         include_logical_right_edge_);
     graphics_context.ClipOutRoundedRect(outer_clip);
-    DrawBoxSideFromPath(graphics_context, border_rect, border_path, thickness,
-                        draw_thickness, side, color, EBorderStyle::kSolid);
+    DrawBoxSideFromPath(graphics_context, border_rect, border_path,
+                        border_thickness, stroke_thickness, side, color,
+                        EBorderStyle::kSolid);
   }
 }
 
@@ -1182,8 +1188,8 @@ void BoxBorderPainter::DrawRidgeGrooveBoxSideFromPath(
     GraphicsContext& graphics_context,
     const LayoutRect& border_rect,
     const Path& border_path,
-    float thickness,
-    float draw_thickness,
+    float border_thickness,
+    float stroke_thickness,
     BoxSide side,
     Color color,
     EBorderStyle border_style) const {
@@ -1198,8 +1204,8 @@ void BoxBorderPainter::DrawRidgeGrooveBoxSideFromPath(
   }
 
   // Paint full border
-  DrawBoxSideFromPath(graphics_context, border_rect, border_path, thickness,
-                      draw_thickness, side, color, s1);
+  DrawBoxSideFromPath(graphics_context, border_rect, border_path,
+                      border_thickness, stroke_thickness, side, color, s1);
 
   // Paint inner only
   GraphicsContextStateSaver state_saver(graphics_context);
@@ -1214,8 +1220,8 @@ void BoxBorderPainter::DrawRidgeGrooveBoxSideFromPath(
       include_logical_left_edge_, include_logical_right_edge_);
 
   graphics_context.ClipRoundedRect(clip_rect);
-  DrawBoxSideFromPath(graphics_context, border_rect, border_path, thickness,
-                      draw_thickness, side, color, s2);
+  DrawBoxSideFromPath(graphics_context, border_rect, border_path,
+                      border_thickness, stroke_thickness, side, color, s2);
 }
 
 void BoxBorderPainter::ClipBorderSideForComplexInnerPath(
