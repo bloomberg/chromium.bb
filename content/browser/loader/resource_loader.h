@@ -95,7 +95,6 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   // otherwise.
   void Resume(bool called_from_resource_controller);
   void Cancel();
-  void CancelAndIgnore();
   void CancelWithError(int error_code);
 
   void StartRequestInternal();

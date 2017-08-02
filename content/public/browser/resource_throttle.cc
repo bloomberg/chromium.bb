@@ -14,10 +14,6 @@ void ResourceThrottle::Cancel() {
   delegate_->Cancel();
 }
 
-void ResourceThrottle::CancelAndIgnore() {
-  delegate_->CancelAndIgnore();
-}
-
 void ResourceThrottle::CancelWithError(int error_code) {
   delegate_->CancelWithError(error_code);
 }

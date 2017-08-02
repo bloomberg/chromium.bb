@@ -102,7 +102,6 @@ class TestRequest : public ResourceThrottle::Delegate {
 
  protected:
   // ResourceThrottle::Delegate interface:
-  void CancelAndIgnore() override {}
   void CancelWithError(int error_code) override {}
   void Resume() override { started_ = true; }
 

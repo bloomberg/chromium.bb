@@ -19,10 +19,6 @@ void NullResourceController::Cancel() {
   DCHECK(!*was_resumed_);
 }
 
-void NullResourceController::CancelAndIgnore() {
-  DCHECK(!*was_resumed_);
-}
-
 void NullResourceController::CancelWithError(int error_code) {
   DCHECK(!*was_resumed_);
 }

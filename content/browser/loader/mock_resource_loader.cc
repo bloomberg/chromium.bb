@@ -27,11 +27,6 @@ class MockResourceLoader::TestResourceController : public ResourceController {
 
   void Cancel() override { CancelWithError(net::ERR_ABORTED); }
 
-  void CancelAndIgnore() override {
-    ADD_FAILURE() << "Unexpected CancelAndIgnore call.";
-    Cancel();
-  }
-
   void CancelWithError(int error_code) override {
     mock_loader_->OnCancel(error_code);
   }

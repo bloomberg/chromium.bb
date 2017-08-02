@@ -45,11 +45,6 @@ class DetachableResourceHandler::Controller : public ResourceController {
     detachable_handler_->Cancel();
   }
 
-  void CancelAndIgnore() override {
-    MarkAsUsed();
-    detachable_handler_->CancelAndIgnore();
-  }
-
   void CancelWithError(int error_code) override {
     MarkAsUsed();
     detachable_handler_->CancelWithError(error_code);

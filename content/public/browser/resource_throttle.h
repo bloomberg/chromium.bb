@@ -31,9 +31,6 @@ class CONTENT_EXPORT ResourceThrottle {
    public:
     // Cancels the resource load.
     virtual void Cancel() = 0;
-    // Marks the resource load as ignored by the resource handler, and then
-    // cancels the resource load.
-    virtual void CancelAndIgnore() = 0;
     // Cancels the resource load with the specified error code.
     virtual void CancelWithError(int error_code) = 0;
     // Tells the delegate to resume the deferred resource load.
@@ -78,7 +75,6 @@ class CONTENT_EXPORT ResourceThrottle {
   // Helper methods for subclasses. When these methods are called, methods with
   // the same name on |delegate_| are called.
   void Cancel();
-  void CancelAndIgnore();
   void CancelWithError(int error_code);
   void Resume();
 
