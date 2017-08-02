@@ -329,6 +329,28 @@ TEST_F('CrExtensionsBrowserTest', 'ExtensionPackDialogInteractionTest',
   mocha.grep(assert(extension_pack_dialog_tests.TestNames.Interaction)).run();
 });
 
+TEST_F(
+    'CrExtensionsBrowserTest', 'ExtensionPackDialogPackSuccessTest',
+    function() {
+      extension_pack_dialog_tests.registerTests();
+      mocha.grep(assert(extension_pack_dialog_tests.TestNames.PackSuccess))
+          .run();
+    });
+
+TEST_F(
+    'CrExtensionsBrowserTest', 'ExtensionPackDialogPackErrorTest', function() {
+      extension_pack_dialog_tests.registerTests();
+      mocha.grep(assert(extension_pack_dialog_tests.TestNames.PackError)).run();
+    });
+
+TEST_F(
+    'CrExtensionsBrowserTest', 'ExtensionPackDialogPackWarningTest',
+    function() {
+      extension_pack_dialog_tests.registerTests();
+      mocha.grep(assert(extension_pack_dialog_tests.TestNames.PackWarning))
+          .run();
+    });
+
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Options Dialog Tests
 

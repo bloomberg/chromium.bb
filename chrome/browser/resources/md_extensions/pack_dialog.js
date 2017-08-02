@@ -27,6 +27,8 @@ cr.define('extensions', function() {
      * Packs the extension into a .crx.
      * @param {string} rootPath
      * @param {string} keyPath
+     * @param {number=} flag
+     * @param {function(chrome.developerPrivate.PackDirectoryResponse)=} callback
      */
     packExtension: assertNotReached,
   };
@@ -38,18 +40,20 @@ cr.define('extensions', function() {
       delegate: Object,
 
       /** @private */
-      packDirectory_: String,
+      packDirectory_: {
+        type: String,
+        value: '',  // Initialized to trigger binding when attached.
+      },
 
       /** @private */
       keyFile_: String,
+
+      /** @private {?chrome.developerPrivate.PackDirectoryResponse} */
+      lastResponse_: Object,
     },
 
     show: function() {
-      this.$$('dialog').showModal();
-    },
-
-    close: function() {
-      this.$$('dialog').close();
+      this.$.dialog.showModal();
     },
 
     /** @private */
@@ -69,9 +73,43 @@ cr.define('extensions', function() {
     },
 
     /** @private */
+    onCancelTap_: function() {
+      this.$.dialog.cancel();
+    },
+
+    /** @private */
     onConfirmTap_: function() {
-      this.delegate.packExtension(this.packDirectory_, this.keyFile_);
-      this.close();
+      this.delegate.packExtension(
+          this.packDirectory_, this.keyFile_, 0,
+          this.onPackResponse_.bind(this));
+    },
+
+    /**
+     * @param {chrome.developerPrivate.PackDirectoryResponse} response the
+     *    response from request to pack an extension.
+     * @private
+     */
+    onPackResponse_: function(response) {
+      if (response.status === chrome.developerPrivate.PackStatus.SUCCESS) {
+        this.$.dialog.close();
+      } else {
+        this.set('lastResponse_', response);
+      }
+    },
+
+    /**
+     * The handler function when user chooses to 'Proceed Anyway' upon
+     * receiving a waring.
+     * @private
+     */
+    onWarningConfirmed_: function() {
+      this.delegate.packExtension(
+          this.lastResponse_.item_path, this.lastResponse_.pem_path,
+          this.lastResponse_.override_flags, this.onPackResponse_.bind(this));
+    },
+
+    resetResponse_: function() {
+      this.lastResponse_ = null;
     },
   });
 
