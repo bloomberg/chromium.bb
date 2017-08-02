@@ -742,11 +742,6 @@ crbug.com/498539 [ Win7 ] inspector/sources/debugger-pause/debugger-eval-on-call
 
 crbug.com/498539 [ Win7 ] inspector/elements/styles-4/styles-update-from-js.html [ Crash Pass ]
 
-crbug.com/596968 [ Win ] inspector-protocol/input/eventTimestamp.js [ Failure Pass ]
-
-crbug.com/734762 [ Linux ] inspector-protocol/stylesheet-tracking-restart.js [ Failure Pass ]
-crbug.com/734762 inspector-protocol/accessibility/accessibility-nameSources-input.js [ Failure Pass ]
-
 crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure ]
 
 crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Failure ]
@@ -2820,7 +2815,6 @@ crbug.com/696407 [ Linux ] external/wpt/html/browsers/history/the-location-inter
 crbug.com/698520 external/wpt/preload/fetch-destination.https.html [ Failure Pass ]
 
 # Sheriff failures 2017-03-10
-crbug.com/402805 inspector-protocol/input/emulateTouchFromMouseEvent.js [ Timeout ]
 crbug.com/741210 [ Mac ] inspector-protocol/emulation/device-emulation-restore.js [ Failure ]
 crbug.com/700374 [ Win ] virtual/mojo-loading/http/tests/inspector/workers-on-navigation.html [ Failure Pass ]
 crbug.com/700374 [ Win ] http/tests/inspector/workers-on-navigation.html [ Failure Pass ]
