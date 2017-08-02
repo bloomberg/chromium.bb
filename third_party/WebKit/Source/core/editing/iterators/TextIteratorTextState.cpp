@@ -33,13 +33,13 @@
 namespace blink {
 
 UChar TextIteratorTextState::CharacterAt(unsigned index) const {
-  SECURITY_DCHECK(index < static_cast<unsigned>(length()));
-  if (!(index < static_cast<unsigned>(length())))
+  SECURITY_DCHECK(index < length());
+  if (!(index < length()))
     return 0;
 
   if (single_character_buffer_) {
     DCHECK_EQ(index, 0u);
-    DCHECK_EQ(length(), 1);
+    DCHECK_EQ(length(), 1u);
     return single_character_buffer_;
   }
 
@@ -48,8 +48,8 @@ UChar TextIteratorTextState::CharacterAt(unsigned index) const {
 
 String TextIteratorTextState::Substring(unsigned position,
                                         unsigned length) const {
-  SECURITY_DCHECK(position <= static_cast<unsigned>(this->length()));
-  SECURITY_DCHECK(position + length <= static_cast<unsigned>(this->length()));
+  SECURITY_DCHECK(position <= this->length());
+  SECURITY_DCHECK(position + length <= this->length());
   if (!length)
     return g_empty_string;
   if (single_character_buffer_) {
@@ -64,8 +64,8 @@ void TextIteratorTextState::AppendTextToStringBuilder(
     StringBuilder& builder,
     unsigned position,
     unsigned max_length) const {
-  unsigned length_to_append =
-      std::min(static_cast<unsigned>(length()) - position, max_length);
+  SECURITY_DCHECK(position <= this->length());
+  unsigned length_to_append = std::min(length() - position, max_length);
   if (!length_to_append)
     return;
   if (single_character_buffer_) {
@@ -99,7 +99,7 @@ void TextIteratorTextState::EmitAltText(Node* node) {
 void TextIteratorTextState::FlushPositionOffsets() const {
   if (!position_offset_base_node_)
     return;
-  int index = position_offset_base_node_->NodeIndex();
+  unsigned index = position_offset_base_node_->NodeIndex();
   position_start_offset_ += index;
   position_end_offset_ += index;
   position_offset_base_node_ = nullptr;
@@ -108,8 +108,8 @@ void TextIteratorTextState::FlushPositionOffsets() const {
 void TextIteratorTextState::SpliceBuffer(UChar c,
                                          Node* text_node,
                                          Node* offset_base_node,
-                                         int text_start_offset,
-                                         int text_end_offset) {
+                                         unsigned text_start_offset,
+                                         unsigned text_end_offset) {
   DCHECK(text_node);
   has_emitted_ = true;
 
@@ -133,19 +133,17 @@ void TextIteratorTextState::SpliceBuffer(UChar c,
 }
 
 void TextIteratorTextState::EmitText(Node* text_node,
-                                     int position_start_offset,
-                                     int position_end_offset,
+                                     unsigned position_start_offset,
+                                     unsigned position_end_offset,
                                      const String& string,
-                                     int text_start_offset,
-                                     int text_end_offset) {
+                                     unsigned text_start_offset,
+                                     unsigned text_end_offset) {
   DCHECK(text_node);
   text_ = string;
 
   DCHECK(!text_.IsEmpty());
-  DCHECK_LE(0, text_start_offset);
-  DCHECK_LT(text_start_offset, static_cast<int>(text_.length()));
-  DCHECK_LE(0, text_end_offset);
-  DCHECK_LE(text_end_offset, static_cast<int>(text_.length()));
+  DCHECK_LT(text_start_offset, text_.length());
+  DCHECK_LE(text_end_offset, text_.length());
   DCHECK_LE(text_start_offset, text_end_offset);
 
   position_node_ = text_node;
@@ -163,8 +161,7 @@ void TextIteratorTextState::EmitText(Node* text_node,
 void TextIteratorTextState::AppendTextTo(ForwardsTextBuffer* output,
                                          unsigned position,
                                          unsigned length_to_append) const {
-  SECURITY_DCHECK(position + length_to_append <=
-                  static_cast<unsigned>(length()));
+  SECURITY_DCHECK(position + length_to_append <= length());
   // Make sure there's no integer overflow.
   SECURITY_DCHECK(position + length_to_append >= position);
   if (!length_to_append)
@@ -172,7 +169,7 @@ void TextIteratorTextState::AppendTextTo(ForwardsTextBuffer* output,
   DCHECK(output);
   if (single_character_buffer_) {
     DCHECK_EQ(position, 0u);
-    DCHECK_EQ(length(), 1);
+    DCHECK_EQ(length(), 1u);
     output->PushCharacters(single_character_buffer_, 1);
     return;
   }

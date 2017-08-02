@@ -40,7 +40,7 @@ bool TextIteratorTextNodeHandler::ShouldHandleFirstLetter(
   if (!layout_text.IsTextFragment())
     return false;
   const LayoutTextFragment& text_fragment = ToLayoutTextFragment(layout_text);
-  return offset_ < static_cast<int>(text_fragment.TextStartOffset());
+  return offset_ < text_fragment.TextStartOffset();
 }
 
 static bool HasVisibleTextNode(LayoutText* layout_object) {
@@ -83,8 +83,7 @@ void TextIteratorTextNodeHandler::HandlePreFormattedTextNode() {
     if (first_letter_text_) {
       const String first_letter = first_letter_text_->GetText();
       const unsigned run_start = offset_;
-      const bool stops_in_first_letter =
-          end_offset_ <= static_cast<int>(first_letter.length());
+      const bool stops_in_first_letter = end_offset_ <= first_letter.length();
       const unsigned run_end =
           stops_in_first_letter ? end_offset_ : first_letter.length();
       EmitText(text_node_, first_letter_text_, run_start, run_end);
@@ -103,7 +102,7 @@ void TextIteratorTextNodeHandler::HandlePreFormattedTextNode() {
   if (layout_object->Style()->Visibility() != EVisibility::kVisible &&
       !IgnoresStyleVisibility())
     return;
-  DCHECK_GE(static_cast<unsigned>(offset_), layout_object->TextStartOffset());
+  DCHECK_GE(offset_, layout_object->TextStartOffset());
   const unsigned run_start = offset_ - layout_object->TextStartOffset();
   const unsigned str_length = str.length();
   const unsigned end = end_offset_ - layout_object->TextStartOffset();
@@ -116,17 +115,16 @@ void TextIteratorTextNodeHandler::HandlePreFormattedTextNode() {
 }
 
 void TextIteratorTextNodeHandler::HandleTextNodeInRange(Text* node,
-                                                        int start_offset,
-                                                        int end_offset) {
+                                                        unsigned start_offset,
+                                                        unsigned end_offset) {
   DCHECK(node);
-  DCHECK_GE(start_offset, 0);
 
   // TODO(editing-dev): Add the following DCHECK once we stop assuming equal
   // number of code units in DOM string and LayoutText::GetText(). Currently
   // violated by
   // - external/wpt/innerText/getter.html
   // - fast/css/case-transform.html
-  // DCHECK_LE(end_offset, static_cast<int>(node->data().length()));
+  // DCHECK_LE(end_offset, node->data().length());
 
   // TODO(editing-dev): Stop passing in |start_offset == end_offset|.
   DCHECK_LE(start_offset, end_offset);
@@ -182,15 +180,16 @@ void TextIteratorTextNodeHandler::HandleTextNodeInRange(Text* node,
   HandleTextBox();
 }
 
-void TextIteratorTextNodeHandler::HandleTextNodeStartFrom(Text* node,
-                                                          int start_offset) {
+void TextIteratorTextNodeHandler::HandleTextNodeStartFrom(
+    Text* node,
+    unsigned start_offset) {
   HandleTextNodeInRange(node, start_offset,
                         node->GetLayoutObject()->TextStartOffset() +
                             node->GetLayoutObject()->GetText().length());
 }
 
 void TextIteratorTextNodeHandler::HandleTextNodeEndAt(Text* node,
-                                                      int end_offset) {
+                                                      unsigned end_offset) {
   HandleTextNodeInRange(node, 0, end_offset);
 }
 
@@ -240,7 +239,7 @@ void TextIteratorTextNodeHandler::HandleTextBox() {
     // Start and end offsets in |str|, i.e., str[start..end - 1] should be
     // emitted (after handling whitespace collapsing).
     const unsigned start = offset_ - layout_object->TextStartOffset();
-    const unsigned end = static_cast<unsigned>(end_offset_) - text_start_offset;
+    const unsigned end = end_offset_ - text_start_offset;
     while (text_box_) {
       const unsigned text_box_start = text_box_->Start();
       const unsigned run_start = std::max(text_box_start, start);
@@ -323,8 +322,7 @@ void TextIteratorTextNodeHandler::HandleTextBox() {
         // If we are doing a subrun that doesn't go to the end of the text box,
         // come back again to finish handling this text box; don't advance to
         // the next one.
-        if (static_cast<unsigned>(text_state_.PositionEndOffset()) <
-            text_box_end + text_start_offset)
+        if (text_state_.PositionEndOffset() < text_box_end + text_start_offset)
           return;
 
         if (behavior_.DoesNotEmitSpaceBeyondRangeEnd()) {
@@ -433,8 +431,8 @@ void TextIteratorTextNodeHandler::ResetCollapsedWhiteSpaceFixup() {
 void TextIteratorTextNodeHandler::SpliceBuffer(UChar c,
                                                Node* text_node,
                                                Node* offset_base_node,
-                                               int text_start_offset,
-                                               int text_end_offset) {
+                                               unsigned text_start_offset,
+                                               unsigned text_end_offset) {
   text_state_.SpliceBuffer(c, text_node, offset_base_node, text_start_offset,
                            text_end_offset);
   ResetCollapsedWhiteSpaceFixup();
@@ -442,8 +440,8 @@ void TextIteratorTextNodeHandler::SpliceBuffer(UChar c,
 
 void TextIteratorTextNodeHandler::EmitText(Node* text_node,
                                            LayoutText* layout_object,
-                                           int text_start_offset,
-                                           int text_end_offset) {
+                                           unsigned text_start_offset,
+                                           unsigned text_end_offset) {
   String string = behavior_.EmitsOriginalText() ? layout_object->OriginalText()
                                                 : layout_object->GetText();
   if (behavior_.EmitsSpaceForNbsp())

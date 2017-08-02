@@ -40,9 +40,9 @@ class TextIteratorTextNodeHandler {
   void HandleTextNodeWhole(Text*);
 
   // Variants that emit plain text within the given DOM offset range.
-  void HandleTextNodeStartFrom(Text*, int start_offset);
-  void HandleTextNodeEndAt(Text*, int end_offset);
-  void HandleTextNodeInRange(Text*, int start_offset, int end_offset);
+  void HandleTextNodeStartFrom(Text*, unsigned start_offset);
+  void HandleTextNodeEndAt(Text*, unsigned end_offset);
+  void HandleTextNodeInRange(Text*, unsigned start_offset, unsigned end_offset);
 
  private:
   void HandlePreFormattedTextNode();
@@ -62,17 +62,17 @@ class TextIteratorTextNodeHandler {
   void SpliceBuffer(UChar,
                     Node* text_node,
                     Node* offset_base_node,
-                    int text_start_offset,
-                    int text_end_offset);
+                    unsigned text_start_offset,
+                    unsigned text_end_offset);
   void EmitText(Node* text_node,
                 LayoutText* layout_object,
-                int text_start_offset,
-                int text_end_offset);
+                unsigned text_start_offset,
+                unsigned text_end_offset);
 
   // The current text node and offset range, from which text should be emitted.
   Member<Text> text_node_;
-  int offset_ = 0;
-  int end_offset_ = 0;
+  unsigned offset_ = 0;
+  unsigned end_offset_ = 0;
 
   InlineTextBox* text_box_ = nullptr;
 

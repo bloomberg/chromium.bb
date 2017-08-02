@@ -90,7 +90,7 @@ static bool NotSkipping(const Node& node) {
 }
 
 template <typename Strategy>
-Node* StartNode(Node* start_container, int start_offset) {
+Node* StartNode(Node* start_container, unsigned start_offset) {
   if (start_container->IsCharacterDataNode())
     return start_container;
   if (Node* child = Strategy::ChildAt(*start_container, start_offset))
@@ -101,18 +101,18 @@ Node* StartNode(Node* start_container, int start_offset) {
 }
 
 template <typename Strategy>
-Node* EndNode(const Node& end_container, int end_offset) {
-  if (!end_container.IsCharacterDataNode() && end_offset > 0)
+Node* EndNode(const Node& end_container, unsigned end_offset) {
+  if (!end_container.IsCharacterDataNode() && end_offset)
     return Strategy::ChildAt(end_container, end_offset - 1);
   return nullptr;
 }
 
-// This function is like Range::pastLastNode, except for the fact that it can
+// This function is like Range::PastLastNode, except for the fact that it can
 // climb up out of shadow trees and ignores all nodes that will be skipped in
 // |advance()|.
 template <typename Strategy>
-Node* PastLastNode(const Node& range_end_container, int range_end_offset) {
-  if (range_end_offset >= 0 && !range_end_container.IsCharacterDataNode() &&
+Node* PastLastNode(const Node& range_end_container, unsigned range_end_offset) {
+  if (!range_end_container.IsCharacterDataNode() &&
       NotSkipping(range_end_container)) {
     for (Node* next = Strategy::ChildAt(range_end_container, range_end_offset);
          next; next = Strategy::NextSibling(*next)) {
@@ -134,16 +134,16 @@ Node* PastLastNode(const Node& range_end_container, int range_end_offset) {
 // Figure out the initial value of m_shadowDepth: the depth of startContainer's
 // tree scope from the common ancestor tree scope.
 template <typename Strategy>
-int ShadowDepthOf(const Node& start_container, const Node& end_container);
+unsigned ShadowDepthOf(const Node& start_container, const Node& end_container);
 
 template <>
-int ShadowDepthOf<EditingStrategy>(const Node& start_container,
-                                   const Node& end_container) {
+unsigned ShadowDepthOf<EditingStrategy>(const Node& start_container,
+                                        const Node& end_container) {
   const TreeScope* common_ancestor_tree_scope =
       start_container.GetTreeScope().CommonAncestorTreeScope(
           end_container.GetTreeScope());
   DCHECK(common_ancestor_tree_scope);
-  int shadow_depth = 0;
+  unsigned shadow_depth = 0;
   for (const TreeScope* tree_scope = &start_container.GetTreeScope();
        tree_scope != common_ancestor_tree_scope;
        tree_scope = tree_scope->ParentTreeScope())
@@ -152,8 +152,8 @@ int ShadowDepthOf<EditingStrategy>(const Node& start_container,
 }
 
 template <>
-int ShadowDepthOf<EditingInFlatTreeStrategy>(const Node& start_container,
-                                             const Node& end_container) {
+unsigned ShadowDepthOf<EditingInFlatTreeStrategy>(const Node& start_container,
+                                                  const Node& end_container) {
   return 0;
 }
 
@@ -277,7 +277,7 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
   if (HandleRememberedProgress())
     return;
 
-  while (node_ && (node_ != past_end_node_ || shadow_depth_ > 0)) {
+  while (node_ && (node_ != past_end_node_ || shadow_depth_)) {
     if (!should_stop_ && StopsOnFormControls() &&
         HTMLFormControlElement::EnclosingFormControlElement(node_))
       should_stop_ = true;
@@ -399,7 +399,7 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
           next = Strategy::NextSibling(*node_);
         }
 
-        if (!next && !parent_node && shadow_depth_ > 0) {
+        if (!next && !parent_node && shadow_depth_) {
           // 4. Reached the top of a shadow root. If it's created by author,
           // then try to visit the next
           // sibling shadow root, if any.
@@ -829,8 +829,8 @@ template <typename Strategy>
 void TextIteratorAlgorithm<Strategy>::SpliceBuffer(UChar c,
                                                    Node* text_node,
                                                    Node* offset_base_node,
-                                                   int text_start_offset,
-                                                   int text_end_offset) {
+                                                   unsigned text_start_offset,
+                                                   unsigned text_end_offset) {
   text_state_.SpliceBuffer(c, text_node, offset_base_node, text_start_offset,
                            text_end_offset);
   text_node_handler_.ResetCollapsedWhiteSpaceFixup();
@@ -947,9 +947,8 @@ bool TextIteratorAlgorithm<Strategy>::IsInTextSecurityMode() const {
 
 template <typename Strategy>
 bool TextIteratorAlgorithm<Strategy>::IsBetweenSurrogatePair(
-    int position) const {
-  DCHECK_GE(position, 0);
-  return position > 0 && position < length() &&
+    unsigned position) const {
+  return position > 0 && position < static_cast<unsigned>(length()) &&
          U16_IS_LEAD(CharacterAt(position - 1)) &&
          U16_IS_TRAIL(CharacterAt(position));
 }
@@ -958,10 +957,10 @@ template <typename Strategy>
 int TextIteratorAlgorithm<Strategy>::CopyTextTo(ForwardsTextBuffer* output,
                                                 int position,
                                                 int min_length) const {
-  int end = std::min(length(), position + min_length);
+  unsigned end = std::min(length(), position + min_length);
   if (IsBetweenSurrogatePair(end))
     ++end;
-  int copied_length = end - position;
+  unsigned copied_length = end - position;
   CopyCodeUnitsTo(output, position, copied_length);
   return copied_length;
 }
@@ -975,8 +974,8 @@ int TextIteratorAlgorithm<Strategy>::CopyTextTo(ForwardsTextBuffer* output,
 template <typename Strategy>
 void TextIteratorAlgorithm<Strategy>::CopyCodeUnitsTo(
     ForwardsTextBuffer* output,
-    int position,
-    int copy_length) const {
+    unsigned position,
+    unsigned copy_length) const {
   text_state_.AppendTextTo(output, position, copy_length);
 }
 
