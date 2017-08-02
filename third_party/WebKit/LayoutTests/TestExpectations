@@ -1635,9 +1635,6 @@ crbug.com/705125 virtual/mojo-loading/http/tests/security/cors-rfc1918/addresssp
 crbug.com/705125 virtual/mojo-loading/http/tests/security/cors-rfc1918/addressspace-document-csp-appcache.html [ Failure ]
 crbug.com/705125 virtual/mojo-loading/http/tests/security/suborigins/crossorigin/suborigin-cors-xhr-failure-output.php [ Failure Pass ]
 
-# This test fails with the stable release mode.
-crbug.com/694958 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
-
 # This test has a failure console message with specific performance
 # numbers so a consistent baseline cannot be added. This test could be
 # imported if the test passed or if the results for testharness tests
