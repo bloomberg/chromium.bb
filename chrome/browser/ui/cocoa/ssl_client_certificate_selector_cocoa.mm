@@ -115,12 +115,13 @@ namespace {
 // an NSTableView. Future events may make cause the table view to query its
 // dataSource, which will have been deallocated.
 //
-// Linking against the 10.12 SDK does not "fix" this issue, since
-// NSTableView.dataSource is a "weak" reference, which in non-ARC land still
-// translates to "raw pointer".
+// NSTableView.dataSource becomes a zeroing weak reference starting in 10.11,
+// so this workaround can be removed once we're on the 10.11 SDK.
 //
-// See https://crbug.com/653093, https://crbug.com/750242 and rdar://29409207
-// for more information.
+// See https://crbug.com/653093 and rdar://29409207 for more information.
+
+#if !defined(MAC_OS_X_VERSION_10_11) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_11
 
 void ClearTableViewDataSources(NSView* view) {
   if (auto table_view = base::mac::ObjCCast<NSTableView>(view)) {
@@ -149,6 +150,12 @@ void ClearTableViewDataSourcesIfNeeded(NSWindow* leaked_window) {
       FROM_HERE, base::Bind(ClearTableViewDataSourcesIfWindowStillExists,
                             base::Unretained(leaked_window)));
 }
+
+#else
+
+void ClearTableViewDataSourcesIfNeeded(NSWindow*) {}
+
+#endif  // MAC_OS_X_VERSION_10_11
 
 }  // namespace
 
