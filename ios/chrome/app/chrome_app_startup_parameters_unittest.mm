@@ -161,7 +161,37 @@ TEST_F(AppStartupParametersTest, ParseURLWithAppGroupVoiceSearch) {
       base::StringPrintf("%s://%s/", kChromeUIScheme, kChromeUINewTabHost);
 
   EXPECT_EQ(expectedUrlString, [params externalURL].spec());
-  EXPECT_TRUE([params launchVoiceSearch]);
+  EXPECT_EQ([params postOpeningAction], START_VOICE_SEARCH);
+}
+
+TEST_F(AppStartupParametersTest, ParseURLWithAppGroupQRCode) {
+  ChromeAppStartupParameters* params =
+      [ChromeAppStartupParameters newAppStartupParametersForCommand:@"qrscanner"
+                                                      withParameter:nil
+                                                            withURL:nil
+                                              fromSourceApplication:nil
+                                        fromSecureSourceApplication:nil];
+
+  std::string expectedUrlString =
+      base::StringPrintf("%s://%s/", kChromeUIScheme, kChromeUINewTabHost);
+
+  EXPECT_EQ(expectedUrlString, [params externalURL].spec());
+  EXPECT_EQ([params postOpeningAction], START_QR_CODE_SCANNER);
+}
+
+TEST_F(AppStartupParametersTest, ParseURLWithAppGroupFocusOmbnibox) {
+  ChromeAppStartupParameters* params = [ChromeAppStartupParameters
+      newAppStartupParametersForCommand:@"focusomnibox"
+                          withParameter:nil
+                                withURL:nil
+                  fromSourceApplication:nil
+            fromSecureSourceApplication:nil];
+
+  std::string expectedUrlString =
+      base::StringPrintf("%s://%s/", kChromeUIScheme, kChromeUINewTabHost);
+
+  EXPECT_EQ(expectedUrlString, [params externalURL].spec());
+  EXPECT_EQ([params postOpeningAction], FOCUS_OMNIBOX);
 }
 
 TEST_F(AppStartupParametersTest, ParseURLWithAppGroupNewTab) {
@@ -175,7 +205,7 @@ TEST_F(AppStartupParametersTest, ParseURLWithAppGroupNewTab) {
       base::StringPrintf("%s://%s/", kChromeUIScheme, kChromeUINewTabHost);
 
   EXPECT_EQ(expectedUrlString, [params externalURL].spec());
-  EXPECT_FALSE([params launchVoiceSearch]);
+  EXPECT_EQ([params postOpeningAction], NO_ACTION);
 }
 
 TEST_F(AppStartupParametersTest, ParseURLWithAppGroupOpenURL) {

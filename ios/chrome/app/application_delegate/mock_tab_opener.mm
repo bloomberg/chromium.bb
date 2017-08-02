@@ -44,4 +44,10 @@
   return YES;
 }
 
+- (ProceduralBlock)completionBlockForTriggeringAction:
+    (NTPTabOpeningPostOpeningAction)action {
+  // Stub
+  return nil;
+}
+
 @end

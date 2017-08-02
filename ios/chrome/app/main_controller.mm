@@ -217,11 +217,6 @@ void RegisterComponentsForUpdate() {
   GetApplicationContext()->GetCRLSetFetcher()->StartInitialLoad(cus, path);
 }
 
-// Returns YES if |url| matches chrome://newtab.
-BOOL IsURLNtp(const GURL& url) {
-  return UrlHasChromeScheme(url) && url.host() == kChromeUINewTabHost;
-}
-
 // Used to update the current BVC mode if a new tab is added while the stack
 // view is being dimissed.  This is different than ApplicationMode in that it
 // can be set to |NONE| when not in use.
@@ -349,11 +344,8 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 // A property to track whether the QR Scanner should be started upon tab
 // switcher dismissal. It can only be YES if the QR Scanner experiment is
 // enabled.
-@property(nonatomic, readwrite) BOOL startQRScannerAfterTabSwitcherDismissal;
-// Whether the QR Scanner should be started upon tab switcher dismissal.
-@property(nonatomic, readwrite) BOOL startVoiceSearchAfterTabSwitcherDismissal;
-// Whether the omnibox should be focused upon tab switcher dismissal.
-@property(nonatomic, readwrite) BOOL startFocusOmniboxAfterTabSwitcherDismissal;
+@property(nonatomic, readwrite)
+    NTPTabOpeningPostOpeningAction NTPActionAfterTabSwitcherDismissal;
 
 // Activates browsing and enables web views if |enabled| is YES.
 // Disables browsing and purges web views if |enabled| is NO.
@@ -524,12 +516,8 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 @synthesize window = _window;
 @synthesize isPresentingFirstRunUI = _isPresentingFirstRunUI;
 @synthesize isColdStart = _isColdStart;
-@synthesize startVoiceSearchAfterTabSwitcherDismissal =
-    _startVoiceSearchAfterTabSwitcherDismissal;
-@synthesize startQRScannerAfterTabSwitcherDismissal =
-    _startQRScannerAfterTabSwitcherDismissal;
-@synthesize startFocusOmniboxAfterTabSwitcherDismissal =
-    _startFocusOmniboxAfterTabSwitcherDismissal;
+@synthesize NTPActionAfterTabSwitcherDismissal =
+    _NTPActionAfterTabSwitcherDismissal;
 @synthesize launchOptions = _launchOptions;
 @synthesize startupParameters = _startupParameters;
 @synthesize metricsMediator = _metricsMediator;
@@ -1832,17 +1820,11 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   // Displaying the current BVC dismisses the stack view.
   [self displayCurrentBVC];
 
-  // Start Voice Search or QR Scanner now that they can be presented from the
-  // current BVC.
-  if (self.startVoiceSearchAfterTabSwitcherDismissal) {
-    self.startVoiceSearchAfterTabSwitcherDismissal = NO;
-    [self.currentBVC startVoiceSearchWithOriginView:nil];
-  } else if (self.startQRScannerAfterTabSwitcherDismissal) {
-    self.startQRScannerAfterTabSwitcherDismissal = NO;
-    [self.currentBVC.dispatcher showQRScanner];
-  } else if (self.startFocusOmniboxAfterTabSwitcherDismissal) {
-    self.startFocusOmniboxAfterTabSwitcherDismissal = NO;
-    [self.currentBVC focusOmnibox];
+  ProceduralBlock action = [self completionBlockForTriggeringAction:
+                                     self.NTPActionAfterTabSwitcherDismissal];
+  self.NTPActionAfterTabSwitcherDismissal = NO_ACTION;
+  if (action) {
+    action();
   }
 
   [_tabSwitcherController setDelegate:nil];
@@ -2176,6 +2158,26 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   return newTab;
 }
 
+- (ProceduralBlock)completionBlockForTriggeringAction:
+    (NTPTabOpeningPostOpeningAction)action {
+  switch (action) {
+    case START_VOICE_SEARCH:
+      return ^{
+        [self startVoiceSearchInCurrentBVCWithOriginView:nil];
+      };
+    case START_QR_CODE_SCANNER:
+      return ^{
+        [self.currentBVC.dispatcher showQRScanner];
+      };
+    case FOCUS_OMNIBOX:
+      return ^{
+        [self.currentBVC focusOmnibox];
+      };
+    default:
+      return nil;
+  }
+}
+
 - (Tab*)openSelectedTabInMode:(ApplicationMode)targetMode
                       withURL:(const GURL&)url
                    transition:(ui::PageTransition)transition {
@@ -2183,33 +2185,11 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
       targetMode == ApplicationMode::NORMAL ? self.mainBVC : self.otrBVC;
   NSUInteger tabIndex = NSNotFound;
 
-  // Commands are only allowed on NTP and there must be at most one command.
-  DCHECK_GE(
-      1,
-      (IsURLNtp(url) ? 0 : 1) +  // Not NTP URL
-          ([_startupParameters launchVoiceSearch] ? 1
-                                                  : 0) +  // Open Voice Search
-          ([_startupParameters launchQRScanner] ? 1
-                                                : 0) +  // Launch QR Code search
-          ([_startupParameters launchFocusOmnibox] ? 1 : 0)  // Focus Omnibox
-      );
-
-  ProceduralBlock tabOpenedCompletion;
-  if ([_startupParameters launchVoiceSearch]) {
-    tabOpenedCompletion = ^{
-      [self startVoiceSearchInCurrentBVCWithOriginView:nil];
-    };
-  }
-  if ([_startupParameters launchQRScanner]) {
-    tabOpenedCompletion = ^{
-      [targetBVC.dispatcher showQRScanner];
-    };
-  }
-  if ([_startupParameters launchFocusOmnibox]) {
-    tabOpenedCompletion = ^{
-      [targetBVC focusOmnibox];
-    };
-  }
+  ProceduralBlock tabOpenedCompletion =
+      [self completionBlockForTriggeringAction:[_startupParameters
+                                                   postOpeningAction]];
+  // Commands are only allowed on NTP.
+  DCHECK(IsURLNtp(url) || !tabOpenedCompletion);
 
   Tab* tab = nil;
   if (_tabSwitcherIsActive) {
@@ -2228,12 +2208,8 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     } else {
       // Voice search, QRScanner and the omnibox are presented by the BVC.
       // They must be started after the BVC view is added in the hierarchy.
-      self.startVoiceSearchAfterTabSwitcherDismissal =
-          [_startupParameters launchVoiceSearch];
-      self.startQRScannerAfterTabSwitcherDismissal =
-          [_startupParameters launchQRScanner];
-      self.startFocusOmniboxAfterTabSwitcherDismissal =
-          [_startupParameters launchFocusOmnibox];
+      self.NTPActionAfterTabSwitcherDismissal =
+          [_startupParameters postOpeningAction];
       tab = [_tabSwitcherController
           dismissWithNewTabAnimationToModel:targetBVC.tabModel
                                     withURL:url

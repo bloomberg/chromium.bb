@@ -11,6 +11,7 @@
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #import "ios/chrome/app/application_delegate/tab_opening.h"
 #include "ios/chrome/app/chrome_app_startup_parameters.h"
+#import "ios/chrome/browser/chrome_url_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -57,10 +58,17 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
     // never be called. Open the requested URL immediately and return YES if
     // the parsed URL was valid.
     if (params) {
-      [tabOpener dismissModalsAndOpenSelectedTabInMode:ApplicationMode::NORMAL
-                                               withURL:[params externalURL]
-                                            transition:ui::PAGE_TRANSITION_LINK
-                                            completion:nil];
+      ProceduralBlock tabOpenedCompletion = [tabOpener
+          completionBlockForTriggeringAction:[params postOpeningAction]];
+      DCHECK(IsURLNtp([params externalURL]) || !tabOpenedCompletion);
+
+      [tabOpener
+          dismissModalsAndOpenSelectedTabInMode:[params launchInIncognito]
+                                                    ? ApplicationMode::INCOGNITO
+                                                    : ApplicationMode::NORMAL
+                                        withURL:[params externalURL]
+                                     transition:ui::PAGE_TRANSITION_LINK
+                                     completion:tabOpenedCompletion];
       return YES;
     }
     return NO;

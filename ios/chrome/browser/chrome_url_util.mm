@@ -34,6 +34,10 @@ bool UrlHasChromeScheme(NSURL* url) {
   return net::UrlSchemeIs(url, base::SysUTF8ToNSString(kChromeUIScheme));
 }
 
+bool IsURLNtp(const GURL& url) {
+  return UrlHasChromeScheme(url) && url.host() == kChromeUINewTabHost;
+}
+
 bool IsHandledProtocol(const std::string& scheme) {
   DCHECK_EQ(scheme, base::ToLowerASCII(scheme));
   if (scheme == url::kAboutScheme)

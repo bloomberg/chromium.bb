@@ -271,14 +271,14 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
   } else if ([shortcutItem.type isEqualToString:kShortcutVoiceSearch]) {
     base::RecordAction(
         UserMetricsAction("ApplicationShortcut.VoiceSearchPressed"));
-    [startupParams setLaunchVoiceSearch:YES];
+    [startupParams setPostOpeningAction:START_VOICE_SEARCH];
     [startupInformation setStartupParameters:startupParams];
     return YES;
 
   } else if ([shortcutItem.type isEqualToString:kShortcutQRScanner]) {
     base::RecordAction(
         UserMetricsAction("ApplicationShortcut.ScanQRCodePressed"));
-    [startupParams setLaunchQRScanner:YES];
+    [startupParams setPostOpeningAction:START_QR_CODE_SCANNER];
     [startupInformation setStartupParameters:startupParams];
     return YES;
   }

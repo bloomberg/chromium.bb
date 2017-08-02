@@ -22,6 +22,9 @@ class GURL;
 
 // Clear the URL.
 - (void)resetURL;
+
+- (ProceduralBlock)completionBlockForTriggeringAction:
+    (NTPTabOpeningPostOpeningAction)action;
 @end
 
 #endif  // IOS_CHROME_APP_APPLICATION_DELEGATE_MOCK_TAB_OPENER_H_

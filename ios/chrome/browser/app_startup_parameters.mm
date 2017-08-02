@@ -14,10 +14,8 @@
   GURL _externalURL;
 }
 
-@synthesize launchVoiceSearch = _launchVoiceSearch;
+@synthesize postOpeningAction = _postOpeningAction;
 @synthesize launchInIncognito = _launchInIncognito;
-@synthesize launchFocusOmnibox = _launchFocusOmnibox;
-@synthesize launchQRScanner = _launchQRScanner;
 
 - (const GURL&)externalURL {
   return _externalURL;
@@ -35,21 +33,22 @@
   NSMutableString* description =
       [NSMutableString stringWithFormat:@"AppStartupParameters: %s",
                                         _externalURL.spec().c_str()];
-
-  if (self.launchQRScanner) {
-    [description appendString:@", should launch QR scanner"];
-  }
-
   if (self.launchInIncognito) {
     [description appendString:@", should launch in incognito"];
   }
 
-  if (self.launchFocusOmnibox) {
-    [description appendString:@", should focus omnibox"];
-  }
-
-  if (self.launchVoiceSearch) {
-    [description appendString:@", should launch voice search"];
+  switch (self.postOpeningAction) {
+    case START_QR_CODE_SCANNER:
+      [description appendString:@", should launch QR scanner"];
+      break;
+    case START_VOICE_SEARCH:
+      [description appendString:@", should launch voice search"];
+      break;
+    case FOCUS_OMNIBOX:
+      [description appendString:@", should focus omnibox"];
+      break;
+    default:
+      break;
   }
 
   return description;
