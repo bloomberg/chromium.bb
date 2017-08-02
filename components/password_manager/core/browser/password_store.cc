@@ -778,9 +778,9 @@ void PasswordStore::InitOnBackgroundThread(
   syncable_service_->InjectStartSyncFlare(flare);
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  reuse_detector_ = base::MakeUnique<PasswordReuseDetector>();
+  reuse_detector_ = new PasswordReuseDetector;
   GetAutofillableLoginsImpl(
-      base::MakeUnique<GetLoginsRequest>(reuse_detector_.get()));
+      base::MakeUnique<GetLoginsRequest>(reuse_detector_));
 #endif
 }
 
@@ -789,7 +789,8 @@ void PasswordStore::DestroyOnBackgroundThread() {
   syncable_service_.reset();
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  reuse_detector_.reset();
+  delete reuse_detector_;
+  reuse_detector_ = nullptr;
 #endif
 }
 
