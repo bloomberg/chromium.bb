@@ -353,14 +353,14 @@ void OfflineAudioContext::FireCompletionEvent() {
   // that the context has been closed.
   SetContextState(kClosed);
 
-  AudioBuffer* rendered_buffer = DestinationHandler().RenderTarget();
-
-  DCHECK(rendered_buffer);
-  if (!rendered_buffer)
-    return;
-
   // Avoid firing the event if the document has already gone away.
   if (GetExecutionContext()) {
+    AudioBuffer* rendered_buffer = DestinationHandler().RenderTarget();
+
+    DCHECK(rendered_buffer);
+    if (!rendered_buffer)
+      return;
+
     // Call the offline rendering completion event listener and resolve the
     // promise too.
     DispatchEvent(OfflineAudioCompletionEvent::Create(rendered_buffer));
