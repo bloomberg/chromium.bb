@@ -36,9 +36,8 @@ interface Gamepad {
     readonly attribute boolean connected;
     readonly attribute unsigned long long timestamp;
     readonly attribute DOMString mapping;
-    // https://github.com/w3c/gamepad/issues/28
-    [MeasureAs=GamepadAxes] readonly attribute double[] axes;
-    [MeasureAs=GamepadButtons] readonly attribute GamepadButton[] buttons;
+    [CachedAttribute=isAxisDataDirty, MeasureAs=GamepadAxes] readonly attribute FrozenArray<double> axes;
+    [CachedAttribute=isButtonDataDirty, MeasureAs=GamepadButtons] readonly attribute FrozenArray<GamepadButton> buttons;
 
     [OriginTrialEnabled=GamepadExtensions, MeasureAs=GamepadPose] readonly attribute GamepadPose? pose;
     [OriginTrialEnabled=GamepadExtensions, MeasureAs=GamepadHand] readonly attribute GamepadHand hand;

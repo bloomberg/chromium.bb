@@ -22,6 +22,8 @@ PASS gamepad.buttons.__proto__ is Array.prototype
 PASS gamepad.buttons[0].pressed.__proto__ is Boolean.prototype
 PASS gamepad.buttons[0].value.__proto__ is Number.prototype
 PASS gamepad.mapping.__proto__ is String.prototype
+PASS Object.isFrozen(gamepad.axes) is true
+PASS Object.isFrozen(gamepad.buttons) is true
 PASS successfullyParsed is true
 
 TEST COMPLETE
