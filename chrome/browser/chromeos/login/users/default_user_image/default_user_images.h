@@ -24,7 +24,9 @@ class ImageSkia;
 namespace chromeos {
 namespace default_user_image {
 
-// Returns URL to default user image with specified index.
+// Returns the URL to a default user image with the specified index. If the
+// index is invalid, returns the default user image for index 0 (anonymous
+// avatar image).
 CHROMEOS_EXPORT std::string GetDefaultImageUrl(int index);
 
 // Checks if the given URL points to one of the default images. If it is,
