@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/background_sync/background_sync_permission_context.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/generic_sensor/sensor_permission_context.h"
 #include "chrome/browser/media/midi_permission_context.h"
 #include "chrome/browser/media/midi_sysex_permission_context.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permission_context.h"
@@ -104,6 +105,8 @@ ContentSettingsType PermissionTypeToContentSetting(PermissionType permission) {
       return CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC;
     case PermissionType::FLASH:
       return CONTENT_SETTINGS_TYPE_PLUGINS;
+    case PermissionType::SENSORS:
+      return CONTENT_SETTINGS_TYPE_SENSORS;
     case PermissionType::NUM:
       // This will hit the NOTREACHED below.
       break;
@@ -284,6 +287,8 @@ PermissionManager::PermissionManager(Profile* profile)
   permission_contexts_[CONTENT_SETTINGS_TYPE_PLUGINS] =
       base::MakeUnique<FlashPermissionContext>(profile);
 #endif
+  permission_contexts_[CONTENT_SETTINGS_TYPE_SENSORS] =
+      base::MakeUnique<SensorPermissionContext>(profile);
 }
 
 PermissionManager::~PermissionManager() {

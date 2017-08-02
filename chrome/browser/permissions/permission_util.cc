@@ -43,6 +43,8 @@ std::string PermissionUtil::GetPermissionString(
       return "BackgroundSync";
     case CONTENT_SETTINGS_TYPE_PLUGINS:
       return "Flash";
+    case CONTENT_SETTINGS_TYPE_SENSORS:
+      return "Sensors";
     default:
       break;
   }
@@ -73,6 +75,8 @@ std::string PermissionUtil::ConvertContentSettingsTypeToSafeBrowsingName(
       return "BACKGROUND_SYNC";
     case CONTENT_SETTINGS_TYPE_PLUGINS:
       return "FLASH";
+    case CONTENT_SETTINGS_TYPE_SENSORS:
+      return "SENSORS";
     default:
       break;
   }
@@ -135,6 +139,8 @@ bool PermissionUtil::GetPermissionType(ContentSettingsType type,
   } else if (type == CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER) {
     *out = PermissionType::PROTECTED_MEDIA_IDENTIFIER;
 #endif
+  } else if (type == CONTENT_SETTINGS_TYPE_SENSORS) {
+    *out = PermissionType::SENSORS;
   } else {
     return false;
   }
@@ -162,6 +168,7 @@ bool PermissionUtil::IsPermission(ContentSettingsType type) {
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
 #endif
+    case CONTENT_SETTINGS_TYPE_SENSORS:
       return true;
     default:
       return false;

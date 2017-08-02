@@ -85,6 +85,13 @@ enum ContentSettingsType {
   // the HTTP request headers for every resource requested from that origin.
   CONTENT_SETTINGS_TYPE_CLIENT_HINTS,
 
+  // Generic Sensor API covering ambient-light-sensor, accelerometer, gyroscope
+  // and magnetometer are all mapped to a single content_settings_type.
+  // Setting for the Generic Sensor API covering ambient-light-sensor,
+  // accelerometer, gyroscope and magnetometer. These are all mapped to a single
+  // ContentSettingsType.
+  CONTENT_SETTINGS_TYPE_SENSORS,
+
   CONTENT_SETTINGS_NUM_TYPES,
 };
 

@@ -443,6 +443,8 @@ split_static_library("browser") {
     "gcm/instance_id/instance_id_profile_service.h",
     "gcm/instance_id/instance_id_profile_service_factory.cc",
     "gcm/instance_id/instance_id_profile_service_factory.h",
+    "generic_sensor/sensor_permission_context.cc",
+    "generic_sensor/sensor_permission_context.h",
     "geolocation/chrome_access_token_store.cc",
     "geolocation/chrome_access_token_store.h",
     "geolocation/geolocation_permission_context.cc",
