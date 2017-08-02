@@ -170,8 +170,6 @@ class ExtensionServiceInterface
   // Whether the extension service is ready.
   virtual bool is_ready() = 0;
 
-  // Returns task runner for crx installation file I/O operations.
-  virtual base::SequencedTaskRunner* GetFileTaskRunner() = 0;
 };
 
 // Manages installed and running Chromium extensions. An instance is shared
@@ -227,7 +225,6 @@ class ExtensionService
   void CheckManagementPolicy() override;
   void CheckForUpdatesSoon() override;
   bool is_ready() override;
-  base::SequencedTaskRunner* GetFileTaskRunner() override;
 
   // ExternalProvider::VisitorInterface implementation.
   // Exposed for testing.
@@ -366,6 +363,9 @@ class ExtensionService
   void RegisterInstallGate(extensions::ExtensionPrefs::DelayReason reason,
                            extensions::InstallGate* install_delayer);
   void UnregisterInstallGate(extensions::InstallGate* install_delayer);
+
+  // Returns task runner for crx installation file I/O operations.
+  base::SequencedTaskRunner* GetFileTaskRunner();
 
   //////////////////////////////////////////////////////////////////////////////
   // Simple Accessors
@@ -715,9 +715,6 @@ class ExtensionService
   // The manager for extensions that were externally installed that is
   // responsible for prompting the user about suspicious extensions.
   std::unique_ptr<extensions::ExternalInstallManager> external_install_manager_;
-
-  // Sequenced task runner for extension related file operations.
-  const scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   std::unique_ptr<extensions::ExtensionActionStorageManager>
       extension_action_storage_manager_;

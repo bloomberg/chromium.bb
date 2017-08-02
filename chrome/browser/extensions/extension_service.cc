@@ -74,6 +74,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -329,13 +330,6 @@ ExtensionService::ExtensionService(Profile* profile,
       install_directory_(install_directory),
       extensions_enabled_(extensions_enabled),
       ready_(ready),
-      // We should be able to interrupt any part of extension install process
-      // during shutdown. SKIP_ON_SHUTDOWN ensures that not extension install
-      // task will be stopped while it is running but that tasks that have not
-      // started running will be skipped on shutdown.
-      file_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       shared_module_service_(new extensions::SharedModuleService(profile_)),
       renderer_helper_(
           extensions::RendererStartupHelperFactory::GetForBrowserContext(
@@ -1206,10 +1200,6 @@ content::BrowserContext* ExtensionService::GetBrowserContext() const {
 
 bool ExtensionService::is_ready() {
   return ready_->is_signaled();
-}
-
-base::SequencedTaskRunner* ExtensionService::GetFileTaskRunner() {
-  return file_task_runner_.get();
 }
 
 void ExtensionService::CheckManagementPolicy() {
@@ -2516,6 +2506,12 @@ void ExtensionService::UnregisterInstallGate(
       return;
     }
   }
+}
+
+base::SequencedTaskRunner* ExtensionService::GetFileTaskRunner() {
+  // TODO(devlin): Update callers to use GetExtensionFileTaskRunner()
+  // directly.
+  return extensions::GetExtensionFileTaskRunner().get();
 }
 
 // Used only by test code.

@@ -112,6 +112,8 @@ source_set("browser_sources") {
     "extension_dialog_auto_confirm.h",
     "extension_error.cc",
     "extension_error.h",
+    "extension_file_task_runner.cc",
+    "extension_file_task_runner.h",
     "extension_function.cc",
     "extension_function.h",
     "extension_function_dispatcher.cc",
