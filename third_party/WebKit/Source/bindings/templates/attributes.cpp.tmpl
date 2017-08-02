@@ -368,11 +368,7 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   {% endif %}
 
   // Prepare the value to be set.
-  {% if attribute.idl_type == 'EventHandler' %}
-  {% if not is_node %}
-  MoveEventListenerToNewWrapper(isolate, holder, {{attribute.event_handler_getter_expression}}, v8Value, {{v8_class}}::eventListenerCacheIndex);
-  {% endif %}
-  {% else %}{# not EventHandler #}
+  {% if attribute.idl_type != 'EventHandler' %}
   {{v8_value_to_local_cpp_value(attribute) | indent(2)}}
   {% endif %}
 

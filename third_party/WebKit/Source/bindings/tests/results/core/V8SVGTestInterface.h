@@ -42,7 +42,7 @@ class V8SVGTestInterface {
   static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
     visitor->TraceWrappersWithManualWriteBarrier(scriptWrappable->ToImpl<SVGTestInterface>());
   }
-  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 0;
+  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions
 

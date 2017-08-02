@@ -1702,7 +1702,6 @@ static void eventHandlerAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
   TestObject* impl = V8TestObject::toImpl(holder);
 
   // Prepare the value to be set.
-  MoveEventListenerToNewWrapper(isolate, holder, impl->eventHandlerAttribute(), v8Value, V8TestObject::eventListenerCacheIndex);
 
   impl->setEventHandlerAttribute(V8EventListenerHelper::GetEventListener(ScriptState::ForReceiverObject(info), v8Value, true, kListenerFindOrCreate));
 }

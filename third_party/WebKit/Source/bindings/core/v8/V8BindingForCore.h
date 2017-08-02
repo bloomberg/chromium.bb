@@ -64,7 +64,6 @@ namespace blink {
 // dependencies to core/.
 
 class DOMWindow;
-class EventListener;
 class EventTarget;
 class ExceptionState;
 class ExecutionContext;
@@ -605,12 +604,6 @@ CORE_EXPORT bool IsValidEnum(const Vector<String>& values,
                              size_t length,
                              const String& enum_name,
                              ExceptionState&);
-
-CORE_EXPORT void MoveEventListenerToNewWrapper(v8::Isolate*,
-                                               v8::Local<v8::Object>,
-                                               EventListener* old_value,
-                                               v8::Local<v8::Value> new_value,
-                                               int cache_index);
 
 // Result values for platform object 'deleter' methods,
 // http://www.w3.org/TR/WebIDL/#delete

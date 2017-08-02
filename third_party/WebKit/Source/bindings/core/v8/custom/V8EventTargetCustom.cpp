@@ -49,14 +49,6 @@ void V8EventTarget::addEventListenerMethodPrologueCustom(
   }
 }
 
-void V8EventTarget::addEventListenerMethodEpilogueCustom(
-    const v8::FunctionCallbackInfo<v8::Value>& info,
-    EventTarget* impl) {
-  if (info.Length() >= 2 && info[1]->IsObject() && !impl->ToNode())
-    AddHiddenValueToArray(info.GetIsolate(), info.Holder(), info[1],
-                          V8EventTarget::eventListenerCacheIndex);
-}
-
 void V8EventTarget::removeEventListenerMethodPrologueCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info,
     EventTarget*) {
@@ -68,14 +60,6 @@ void V8EventTarget::removeEventListenerMethodPrologueCustom(
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
                       WebFeature::kRemoveEventListenerFourArguments);
   }
-}
-
-void V8EventTarget::removeEventListenerMethodEpilogueCustom(
-    const v8::FunctionCallbackInfo<v8::Value>& info,
-    EventTarget* impl) {
-  if (info.Length() >= 2 && info[1]->IsObject() && !impl->ToNode())
-    RemoveHiddenValueFromArray(info.GetIsolate(), info.Holder(), info[1],
-                               V8EventTarget::eventListenerCacheIndex);
 }
 
 }  // namespace blink

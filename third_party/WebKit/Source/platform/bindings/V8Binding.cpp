@@ -41,41 +41,6 @@ v8::Local<v8::Function> GetBoundFunction(v8::Local<v8::Function> function) {
              : function;
 }
 
-bool AddHiddenValueToArray(v8::Isolate* isolate,
-                           v8::Local<v8::Object> object,
-                           v8::Local<v8::Value> value,
-                           int array_index) {
-  DCHECK(!value.IsEmpty());
-  v8::Local<v8::Value> array_value = object->GetInternalField(array_index);
-  if (array_value->IsNull() || array_value->IsUndefined()) {
-    array_value = v8::Array::New(isolate);
-    object->SetInternalField(array_index, array_value);
-  }
-
-  v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(array_value);
-  return V8CallBoolean(array->CreateDataProperty(isolate->GetCurrentContext(),
-                                                 array->Length(), value));
-}
-
-void RemoveHiddenValueFromArray(v8::Isolate* isolate,
-                                v8::Local<v8::Object> object,
-                                v8::Local<v8::Value> value,
-                                int array_index) {
-  v8::Local<v8::Value> array_value = object->GetInternalField(array_index);
-  if (!array_value->IsArray())
-    return;
-  v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(array_value);
-  for (int i = array->Length() - 1; i >= 0; --i) {
-    v8::Local<v8::Value> item;
-    if (!array->Get(isolate->GetCurrentContext(), i).ToLocal(&item))
-      return;
-    if (item->StrictEquals(value)) {
-      array->Delete(isolate->GetCurrentContext(), i).ToChecked();
-      return;
-    }
-  }
-}
-
 v8::Local<v8::Value> FreezeV8Object(v8::Local<v8::Value> value,
                                     v8::Isolate* isolate) {
   value.As<v8::Object>()

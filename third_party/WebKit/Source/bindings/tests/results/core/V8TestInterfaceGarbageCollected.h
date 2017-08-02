@@ -43,8 +43,7 @@ class V8TestInterfaceGarbageCollected {
   static void TraceWrappers(WrapperVisitor* visitor, ScriptWrappable* scriptWrappable) {
     visitor->TraceWrappersWithManualWriteBarrier(scriptWrappable->ToImpl<TestInterfaceGarbageCollected>());
   }
-  static const int eventListenerCacheIndex = kV8DefaultWrapperInternalFieldCount + 0;
-  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount + 1;
+  static const int internalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions
   CORE_EXPORT static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);

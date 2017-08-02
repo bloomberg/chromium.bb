@@ -898,28 +898,6 @@ bool HasCallableIteratorSymbol(v8::Isolate* isolate,
   return iterator_getter->IsFunction();
 }
 
-void MoveEventListenerToNewWrapper(v8::Isolate* isolate,
-                                   v8::Local<v8::Object> object,
-                                   EventListener* old_value,
-                                   v8::Local<v8::Value> new_value,
-                                   int array_index) {
-  if (old_value) {
-    V8AbstractEventListener* old_listener =
-        V8AbstractEventListener::Cast(old_value);
-    if (old_listener) {
-      v8::Local<v8::Object> old_listener_object =
-          old_listener->GetExistingListenerObject();
-      if (!old_listener_object.IsEmpty()) {
-        RemoveHiddenValueFromArray(isolate, object, old_listener_object,
-                                   array_index);
-      }
-    }
-  }
-  // Non-callable input is treated as null and ignored
-  if (new_value->IsFunction())
-    AddHiddenValueToArray(isolate, object, new_value, array_index);
-}
-
 v8::Isolate* ToIsolate(ExecutionContext* context) {
   if (context && context->IsDocument())
     return V8PerIsolateData::MainThreadIsolate();
