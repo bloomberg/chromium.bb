@@ -1,29 +1,22 @@
-<html>
-<head>
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/console-test.js"></script>
-<script>
-var foo = 'fooValue';
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-Function.prototype.bind = function () { throw ":P"; };
+(async function() {
+  TestRunner.addResult(`Tests that overriding Function.prototype.bind does not break inspector.\n`);
 
-function test()
-{
-    InspectorTest.evaluateInConsole("foo", step1);
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.showPanel('console');
 
-    function step1()
-    {
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
-    }
-}
-</script>
-</head>
+  await TestRunner.evaluateInPagePromise(`
+     var foo = 'fooValue';
+    Function.prototype.bind = function () { throw ":P"; };
+  `);
 
-<body onload="runTest()">
-<p>
-Tests that overriding Function.prototype.bind does not break inspector.
-</p>
+  ConsoleTestRunner.evaluateInConsole('foo', step1);
 
-</body>
-</html>
+  function step1() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
+})();
