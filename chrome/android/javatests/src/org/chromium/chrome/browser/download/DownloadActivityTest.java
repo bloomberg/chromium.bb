@@ -151,6 +151,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
     }
 
     @MediumTest
+    @RetryOnFailure
     public void testSpaceDisplay() throws Exception {
         // This first check is a Criteria because initialization of the Adapter is asynchronous.
         CriteriaHelper.pollUiThread(new Criteria() {
