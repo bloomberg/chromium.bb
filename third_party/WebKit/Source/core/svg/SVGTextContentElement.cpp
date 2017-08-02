@@ -218,11 +218,15 @@ void SVGTextContentElement::selectSubString(unsigned charnum,
       *const_cast<SVGTextContentElement*>(this));
   for (unsigned i = 0; i < charnum; ++i)
     start = NextPositionOf(start);
+  if (start.IsNull())
+    return;
 
   // Find selection end
   VisiblePosition end(start);
   for (unsigned i = 0; i < nchars; ++i)
     end = NextPositionOf(end);
+  if (end.IsNull())
+    return;
 
   // TODO(editing-dev): We assume |start| and |end| are not null and we don't
   // known when |start| and |end| are null. Once we get a such case, we check

@@ -41,7 +41,7 @@ template <>
 const SVGEnumerationStringEntries&
 GetStaticStringEntries<SVGLengthAdjustType>();
 
-class SVGTextContentElement : public SVGGraphicsElement {
+class CORE_EXPORT SVGTextContentElement : public SVGGraphicsElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
