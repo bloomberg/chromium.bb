@@ -2827,8 +2827,8 @@ static const BLOCK_SIZE min_partition_size[BLOCK_SIZES_ALL] = {
 #if CONFIG_EXT_PARTITION
   BLOCK_16X16, BLOCK_16X16, BLOCK_16X16,  // 64x128, 128x64, 128x128
 #endif  // CONFIG_EXT_PARTITION
-  BLOCK_4X4,   BLOCK_4X4,   BLOCK_8X8,      //   4x16,   16x4,    8x32
-  BLOCK_8X8                                 //   32x8
+  BLOCK_4X4,   BLOCK_4X4,   BLOCK_8X8,    //   4x16,   16x4,    8x32
+  BLOCK_8X8,   BLOCK_16X16, BLOCK_16X16   //   32x8,   16x64,  64x16
 };
 
 static const BLOCK_SIZE max_partition_size[BLOCK_SIZES_ALL] = {
@@ -2844,7 +2844,7 @@ static const BLOCK_SIZE max_partition_size[BLOCK_SIZES_ALL] = {
   BLOCK_LARGEST, BLOCK_LARGEST, BLOCK_LARGEST,  // 64x128, 128x64, 128x128
 #endif  // CONFIG_EXT_PARTITION
   BLOCK_16X16,   BLOCK_16X16,   BLOCK_32X32,    //   4x16,   16x4,    8x32
-  BLOCK_32X32                                   //   32x8
+  BLOCK_32X32,   BLOCK_LARGEST, BLOCK_LARGEST   //   32x8,  16x64,   64x16
 };
 
 // Next square block size less or equal than current block size.
@@ -2861,7 +2861,7 @@ static const BLOCK_SIZE next_square_size[BLOCK_SIZES_ALL] = {
   BLOCK_64X64, BLOCK_64X64, BLOCK_128X128,  // 64x128, 128x64, 128x128
 #endif  // CONFIG_EXT_PARTITION
   BLOCK_4X4,   BLOCK_4X4,   BLOCK_8X8,      //   4x16,   16x4,    8x32
-  BLOCK_8X8                                 //   32x8
+  BLOCK_8X8,   BLOCK_16X16, BLOCK_16X16     //   32x8,  16x64,   64x16
 };
 /* clang-format on */
 
@@ -4298,7 +4298,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   // * Add support for BLOCK_16X16 once we support 2x8 and 8x2 blocks for the
   //   chroma plane
   // * Add support for supertx
-  if (bsize == BLOCK_32X32 && partition_horz_allowed && !force_horz_split &&
+  if ((bsize == BLOCK_32X32 || bsize == BLOCK_64X64) &&
+      partition_horz_allowed && !force_horz_split &&
       (do_rectangular_split || av1_active_h_edge(cpi, mi_row, mi_step))) {
     int i;
     const int quarter_step = mi_size_high[bsize] / 4;
@@ -4353,7 +4354,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif
   }
   // PARTITION_VERT_4
-  if (bsize == BLOCK_32X32 && partition_vert_allowed && !force_vert_split &&
+  if ((bsize == BLOCK_32X32 || bsize == BLOCK_64X64) &&
+      partition_vert_allowed && !force_vert_split &&
       (do_rectangular_split || av1_active_v_edge(cpi, mi_row, mi_step))) {
     int i;
     const int quarter_step = mi_size_wide[bsize] / 4;

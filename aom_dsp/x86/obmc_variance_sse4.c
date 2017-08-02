@@ -151,6 +151,8 @@ OBMCVARWXH(4, 16)
 OBMCVARWXH(16, 4)
 OBMCVARWXH(8, 32)
 OBMCVARWXH(32, 8)
+OBMCVARWXH(16, 64)
+OBMCVARWXH(64, 16)
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -364,5 +366,7 @@ HBD_OBMCVARWXH(4, 16)
 HBD_OBMCVARWXH(16, 4)
 HBD_OBMCVARWXH(8, 32)
 HBD_OBMCVARWXH(32, 8)
+HBD_OBMCVARWXH(16, 64)
+HBD_OBMCVARWXH(64, 16)
 #endif
 #endif  // CONFIG_HIGHBITDEPTH

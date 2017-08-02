@@ -112,6 +112,12 @@ static const uint16_t orders_8x32[64] = {
   32, 33, 34, 35, 36, 37, 38, 39, 48, 49, 50, 51, 52, 53, 54, 55,
   40, 41, 42, 43, 44, 45, 46, 47, 56, 57, 58, 59, 60, 61, 62, 63,
 };
+static const uint16_t orders_32x128[4] = {
+  0, 1, 2, 3,
+};
+static const uint16_t orders_128x32[4] = {
+  0, 1, 2, 3,
+};
 
 #if CONFIG_EXT_PARTITION
 static const uint16_t orders_16x4[256] = {
@@ -387,8 +393,8 @@ static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
   orders_64x128,  orders_128x64,  orders_128x128,
   // 4x16,        16x4,           8x32
   orders_4x16,    orders_16x4,    orders_8x32,
-  // 32x8
-  orders_32x8
+  // 32x8,        16x64,          64x16
+  orders_32x8,    orders_16x64,   orders_64x16
 };
 /* clang-format on */
 #else
@@ -417,8 +423,8 @@ static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
   orders_64x128,  orders_128x64,  orders_128x128,
   // 4x16,        16x4,           8x32
   orders_8x32,    orders_32x8,    orders_16x64,
-  // 32x8
-  orders_64x16
+  // 32x8,        16x64,          64x16
+  orders_64x16,   orders_32x128,  orders_128x32
 };
 /* clang-format on */
 #endif  // CONFIG_EXT_PARTITION

@@ -224,6 +224,10 @@ const wedge_params_type wedge_params_lookup[BLOCK_SIZES_ALL] = {
     wedge_masks[BLOCK_8X32] },
   { 4, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_32X8], 0,
     wedge_masks[BLOCK_32X8] },
+  { 0, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_16X64], 0,
+    wedge_masks[BLOCK_8X32] },
+  { 0, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_64X16], 0,
+    wedge_masks[BLOCK_32X8] },
 };
 
 static const uint8_t *get_wedge_mask_inplace(int wedge_index, int neg,
@@ -2823,7 +2827,7 @@ static int ii_size_scales[BLOCK_SIZES_ALL] = {
 #endif
     32, 16, 16, 16, 8, 8, 8, 4,
     4,  4,  2,  2,  2, 1, 1, 1,
-    16, 16, 8, 8,
+    16, 16, 8, 8, 4, 4,
 };
 #else
 static const int ii_weights1d[MAX_SB_SIZE] = {
@@ -2838,7 +2842,7 @@ static int ii_size_scales[BLOCK_SIZES_ALL] = {
 #endif
     16, 8, 8, 8, 4, 4, 4,
     2,  2, 2, 1, 1, 1,
-    8, 8, 4, 4,
+    8, 8, 4, 4, 2, 2,
 };
 /* clang-format on */
 #endif  // CONFIG_EXT_PARTITION

@@ -598,6 +598,11 @@ post_process_cmdline() {
         log_echo "disabling supertx"
         disable_feature supertx
       fi
+      if ! enabled rect_tx; then
+        log_echo "ext_partition_types requires rect_tx;"
+        log_echo "enabling rect_tx;"
+        enable_feature rect_tx
+      fi
     fi
     # Enable accounting and inspection when building the analyzer
     if enabled analyzer; then

@@ -45,6 +45,8 @@ if (aom_config("CONFIG_EXT_PARTITION_TYPES")) {
   push @block_sizes, [16, 4];
   push @block_sizes, [8, 32];
   push @block_sizes, [32, 8];
+  push @block_sizes, [16, 64];
+  push @block_sizes, [64, 16];
 }
 
 @tx_dims = (2, 4, 8, 16, 32);
@@ -994,14 +996,20 @@ if (aom_config("CONFIG_EXT_PARTITION_TYPES")) {
   specialize qw/aom_variance16x4 sse2/;
   specialize qw/aom_variance8x32 sse2/;
   specialize qw/aom_variance32x8 sse2/;
+  specialize qw/aom_variance16x64 sse2/;
+  specialize qw/aom_variance64x16 sse2/;
   specialize qw/aom_sub_pixel_variance4x16 sse2 ssse3/;
   specialize qw/aom_sub_pixel_variance16x4 sse2 ssse3/;
   specialize qw/aom_sub_pixel_variance8x32 sse2 ssse3/;
   specialize qw/aom_sub_pixel_variance32x8 sse2 ssse3/;
+  specialize qw/aom_sub_pixel_variance16x64 sse2 ssse3/;
+  specialize qw/aom_sub_pixel_variance64x16 sse2 ssse3/;
   specialize qw/aom_sub_pixel_avg_variance4x16 sse2 ssse3/;
   specialize qw/aom_sub_pixel_avg_variance16x4 sse2 ssse3/;
   specialize qw/aom_sub_pixel_avg_variance8x32 sse2 ssse3/;
   specialize qw/aom_sub_pixel_avg_variance32x8 sse2 ssse3/;
+  specialize qw/aom_sub_pixel_avg_variance16x64 sse2 ssse3/;
+  specialize qw/aom_sub_pixel_avg_variance64x16 sse2 ssse3/;
 }
 
 if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
@@ -1020,7 +1028,7 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
       if ($w != 128 && $h != 128 && $w != 4 && $h != 4) {
         specialize "aom_highbd_${bd}_variance${w}x${h}", "sse2";
       }
-      # TODO(david.barker): When ext-partition-types is enabled, we currenly
+      # TODO(david.barker): When ext-partition-types is enabled, we currently
       # don't have vectorized 4x16 highbd variance functions
       if ($w == 4 && $h == 4) {
         specialize "aom_highbd_${bd}_variance${w}x${h}", "sse4_1";

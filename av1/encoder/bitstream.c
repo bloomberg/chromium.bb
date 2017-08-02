@@ -2461,7 +2461,7 @@ static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
   m = xd->mi[0];
 
   assert(m->mbmi.sb_type <= cm->sb_size ||
-         (m->mbmi.sb_type >= BLOCK_4X16 && m->mbmi.sb_type <= BLOCK_32X8));
+         (m->mbmi.sb_type >= BLOCK_SIZES && m->mbmi.sb_type < BLOCK_SIZES_ALL));
 
   bh = mi_size_high[m->mbmi.sb_type];
   bw = mi_size_wide[m->mbmi.sb_type];
@@ -2530,7 +2530,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
   xd->mi = cm->mi_grid_visible + mi_offset;
 
   assert(mbmi->sb_type <= cm->sb_size ||
-         (mbmi->sb_type >= BLOCK_4X16 && mbmi->sb_type <= BLOCK_32X8));
+         (mbmi->sb_type >= BLOCK_SIZES && mbmi->sb_type < BLOCK_SIZES_ALL));
 
   bh = mi_size_high[mbmi->sb_type];
   bw = mi_size_wide[mbmi->sb_type];
