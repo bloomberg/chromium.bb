@@ -1361,6 +1361,15 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   }
 }
 
+- (void)showHistory {
+  _historyPanelViewController = [HistoryPanelViewController
+      controllerToPresentForBrowserState:_mainBrowserState
+                                  loader:self.currentBVC];
+  [self.currentBVC presentViewController:_historyPanelViewController
+                                animated:YES
+                              completion:nil];
+}
+
 #pragma mark - chromeExecuteCommand
 
 - (IBAction)chromeExecuteCommand:(id)sender {
@@ -1397,9 +1406,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
       break;
     case IDC_SHOW_SAVE_PASSWORDS_SETTINGS:
       [self showSavePasswordsSettings];
-      break;
-    case IDC_SHOW_HISTORY:
-      [self showHistory];
       break;
     case IDC_TOGGLE_TAB_SWITCHER: {
       DCHECK(!_tabSwitcherIsActive);
@@ -2059,15 +2065,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
         _signinInteractionController = nil;
       }
                 viewController:self.mainViewController];
-}
-
-- (void)showHistory {
-  _historyPanelViewController = [HistoryPanelViewController
-      controllerToPresentForBrowserState:_mainBrowserState
-                                  loader:self.currentBVC];
-  [self.currentBVC presentViewController:_historyPanelViewController
-                                animated:YES
-                              completion:nil];
 }
 
 - (void)dismissSigninInteractionController {

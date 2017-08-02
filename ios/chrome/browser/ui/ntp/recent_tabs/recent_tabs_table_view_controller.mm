@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#include "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
@@ -156,11 +157,16 @@ enum CellType {
 - (void)removeSessionAtIndexPath:(NSIndexPath*)indexPath;
 // Handles long presses on the UITableView, possibly opening context menus.
 - (void)handleLongPress:(UILongPressGestureRecognizer*)longPressGesture;
+
+// The dispatcher used by this ViewController.
+@property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
+
 @end
 
 @implementation RecentTabsTableViewController
 
 @synthesize delegate = delegate_;
+@synthesize dispatcher = _dispatcher;
 
 - (instancetype)init {
   NOTREACHED();
@@ -168,7 +174,8 @@ enum CellType {
 }
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                              loader:(id<UrlLoader>)loader {
+                              loader:(id<UrlLoader>)loader
+                          dispatcher:(id<ApplicationCommands>)dispatcher {
   self = [super initWithStyle:UITableViewStylePlain];
   if (self) {
     DCHECK(browserState);
@@ -177,6 +184,7 @@ enum CellType {
     _loader = loader;
     _sessionState = SessionsSyncUserState::USER_SIGNED_OUT;
     _syncedSessions.reset(new synced_sessions::SyncedSessions());
+    _dispatcher = dispatcher;
   }
   return self;
 }
@@ -412,12 +420,9 @@ enum CellType {
 }
 
 - (void)showFullHistory {
-  UIViewController* rootViewController =
-      self.tableView.window.rootViewController;
+  __weak RecentTabsTableViewController* weakSelf = self;
   ProceduralBlock openHistory = ^{
-    GenericChromeCommand* openHistory =
-        [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_HISTORY];
-    [rootViewController chromeExecuteCommand:openHistory];
+    [weakSelf.dispatcher showHistory];
   };
   // Dismiss modal, if shown, and open history.
   if (IsIPadIdiom()) {

@@ -605,7 +605,8 @@ enum {
     if (!_openTabsController)
       _openTabsController =
           [[RecentTabsPanelController alloc] initWithLoader:_loader
-                                               browserState:_browserState];
+                                               browserState:_browserState
+                                                 dispatcher:self.dispatcher];
     // TODO(crbug.com/708319): Also set panelController for opentabs here.
     view = [_openTabsController view];
     [_openTabsController setDelegate:self];

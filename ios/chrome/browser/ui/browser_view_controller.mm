@@ -4184,7 +4184,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       } else {
         UIViewController* controller = [RecentTabsPanelViewController
             controllerToPresentForBrowserState:_browserState
-                                        loader:self];
+                                        loader:self
+                                    dispatcher:self.dispatcher];
         controller.modalPresentationStyle = UIModalPresentationFormSheet;
         controller.modalPresentationCapturesStatusBarAppearance = YES;
         [self presentViewController:controller animated:YES completion:nil];

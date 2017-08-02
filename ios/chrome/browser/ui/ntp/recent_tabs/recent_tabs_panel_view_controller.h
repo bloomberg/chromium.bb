@@ -12,21 +12,24 @@ class ChromeBrowserState;
 }
 
 @protocol UrlLoader;
+@protocol ApplicationCommands;
 
 // UIViewController wrapper for RecentTabsPanelController for modal display.
 @interface RecentTabsPanelViewController : UIViewController
 
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
                   browserState:(ios::ChromeBrowserState*)browserState
+                    dispatcher:(id<ApplicationCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithNibName:(NSString*)nibNameOrNil
                          bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
-+ (UIViewController*)controllerToPresentForBrowserState:
-                         (ios::ChromeBrowserState*)browserState
-                                                 loader:(id<UrlLoader>)loader;
++ (UIViewController*)
+controllerToPresentForBrowserState:(ios::ChromeBrowserState*)browserState
+                            loader:(id<UrlLoader>)loader
+                        dispatcher:(id<ApplicationCommands>)dispatcher;
 
 @end
 
