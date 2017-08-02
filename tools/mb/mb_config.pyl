@@ -178,6 +178,7 @@
       'EarlGreyiOS': 'ios',
       'Fuchsia': 'release_bot_fuchsia',
       'Fuchsia (dbg)': 'debug_bot_fuchsia',
+      'Fuchsia Compile': 'release_bot_fuchsia',
       'GomaCanaryiOS': 'ios',
       'ios-simulator': 'ios',
       'Headless Linux (dbg)': 'headless_linux_debug_bot',
@@ -521,6 +522,7 @@
       'chromeos_daisy_chromium_compile_only_ng': 'cros_chrome_sdk',
       'closure_compilation': 'closure_compilation',
       'fuchsia': 'release_trybot_fuchsia',
+      'fuchsia_compile': 'release_trybot_fuchsia',
       # TODO(kjellander): Remove linux_arm after tryserver restart.
       'linux_arm': 'release_trybot_arm',
       'linux_arm_dbg': 'debug_trybot_arm',
