@@ -3,14 +3,25 @@
 # found in the LICENSE file.
 
 import base64
+import json
 import unittest
 
 from webkitpy.common.host_mock import MockHost
 from webkitpy.w3c.chromium_commit_mock import MockChromiumCommit
+from webkitpy.w3c.common import EXPORT_PR_LABEL
 from webkitpy.w3c.wpt_github import GitHubError, MergeError, PullRequest, WPTGitHub
 
 
 class WPTGitHubTest(unittest.TestCase):
+
+    def generate_pr_item(self, pr_number, state='closed'):
+        return {
+            'title': 'Foobar',
+            'number': pr_number,
+            'body': 'description',
+            'state': state,
+            'labels': [{'name': EXPORT_PR_LABEL}]
+        }
 
     def setUp(self):
         self.wpt_github = WPTGitHub(MockHost(), user='rutabaga', token='decafbad')
@@ -23,6 +34,62 @@ class WPTGitHubTest(unittest.TestCase):
         self.assertEqual(
             self.wpt_github.auth_token(),
             base64.encodestring('rutabaga:decafbad').strip())
+
+    def test_extract_link_next(self):
+        link_header = ('<https://api.github.com/user/repos?page=1&per_page=100>; rel="first", '
+                       '<https://api.github.com/user/repos?page=2&per_page=100>; rel="prev", '
+                       '<https://api.github.com/user/repos?page=4&per_page=100>; rel="next", '
+                       '<https://api.github.com/user/repos?page=50&per_page=100>; rel="last"')
+        self.assertEqual(self.wpt_github.extract_link_next(link_header), '/user/repos?page=4&per_page=100')
+
+    def test_extract_link_next_not_found(self):
+        self.assertIsNone(self.wpt_github.extract_link_next(''))
+
+    def test_all_pull_requests_single_page(self):
+        self.wpt_github.host.web.responses = [
+            {'status_code': 200,
+             'headers': {'Link': ''},
+             'body': json.dumps({'incomplete_results': False, 'items': [self.generate_pr_item(1)]})},
+        ]
+        self.assertEqual(len(self.wpt_github.all_pull_requests()), 1)
+
+    def test_all_pull_requests_all_pages(self):
+        self.wpt_github.host.web.responses = [
+            {'status_code': 200,
+             'headers': {'Link': '<https://api.github.com/resources?page=2>; rel="next"'},
+             'body': json.dumps({'incomplete_results': False, 'items': [self.generate_pr_item(1)]})},
+            {'status_code': 200,
+             'headers': {'Link': ''},
+             'body': json.dumps({'incomplete_results': False, 'items': [self.generate_pr_item(2)]})},
+        ]
+        self.assertEqual(len(self.wpt_github.all_pull_requests()), 2)
+
+    def test_all_pull_requests_reaches_pr_history_window(self):
+        self.wpt_github = WPTGitHub(MockHost(), user='rutabaga', token='decafbad', pr_history_window=2)
+        self.wpt_github.host.web.responses = [
+            {'status_code': 200,
+             'headers': {'Link': '<https://api.github.com/resources?page=2>; rel="next"'},
+             'body': json.dumps({'incomplete_results': False, 'items': [self.generate_pr_item(1)]})},
+            {'status_code': 200,
+             'headers': {'Link': ''},
+             'body': json.dumps({'incomplete_results': False, 'items': [self.generate_pr_item(2), self.generate_pr_item(3)]})},
+        ]
+        self.assertEqual(len(self.wpt_github.all_pull_requests()), 2)
+
+    def test_all_pull_requests_throws_github_error_on_non_200(self):
+        self.wpt_github.host.web.responses = [
+            {'status_code': 204},
+        ]
+        with self.assertRaises(GitHubError):
+            self.wpt_github.all_pull_requests()
+
+    def test_all_pull_requests_throws_github_error_when_incomplete(self):
+        self.wpt_github.host.web.responses = [
+            {'status_code': 200,
+             'body': json.dumps({'incomplete_results': True, 'items': [self.generate_pr_item(1)]})},
+        ]
+        with self.assertRaises(GitHubError):
+            self.wpt_github.all_pull_requests()
 
     def test_merge_pull_request_throws_merge_error_on_405(self):
         self.wpt_github.host.web.responses = [

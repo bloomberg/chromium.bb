@@ -5,6 +5,7 @@
 import base64
 import json
 import logging
+import re
 import urllib2
 from collections import namedtuple
 
@@ -13,6 +14,7 @@ from webkitpy.w3c.common import WPT_GH_ORG, WPT_GH_REPO_NAME, EXPORT_PR_LABEL
 
 _log = logging.getLogger(__name__)
 API_BASE = 'https://api.github.com'
+MAX_PER_PAGE = 100
 
 
 class WPTGitHub(object):
@@ -21,7 +23,7 @@ class WPTGitHub(object):
     This class contains methods for sending requests to the GitHub API.
     """
 
-    def __init__(self, host, user=None, token=None, pr_history_window=100):
+    def __init__(self, host, user=None, token=None, pr_history_window=5000):
         self.host = host
         self.user = user
         self.token = token
@@ -36,6 +38,16 @@ class WPTGitHub(object):
         return base64.b64encode('{}:{}'.format(self.user, self.token))
 
     def request(self, path, method, body=None):
+        """Sends a request to GitHub API and deserializes the response.
+
+        Args:
+            path: API endpoint without base URL (starting with '/').
+            method: HTTP method to be used for this request.
+            body: Optional payload in the request body (default=None).
+
+        Returns:
+            A JSONResponse instance.
+        """
         assert path.startswith('/')
 
         if body:
@@ -52,12 +64,36 @@ class WPTGitHub(object):
             data=body,
             headers=headers
         )
+        return JSONResponse(response)
 
-        status_code = response.getcode()
-        try:
-            return json.load(response), status_code
-        except ValueError:
-            return None, status_code
+    def extract_link_next(self, link_header):
+        """Extracts the URI to the next page of results from a response.
+
+        As per GitHub API specs, the link to the next page of results is
+        extracted from the Link header -- the link with relation type "next".
+        Docs: https://developer.github.com/v3/#pagination (and RFC 5988)
+
+        Args:
+            link_header: The value of the Link header in responses from GitHub.
+
+        Returns:
+            Path to the next page (without base URL), or None if not found.
+        """
+        # TODO(robertma): Investigate "may require expansion as URI templates" mentioned in docs.
+        # Example Link header:
+        # <https://api.github.com/resources?page=3>; rel="next", <https://api.github.com/resources?page=50>; rel="last"
+        if link_header is None:
+            return None
+        link_re = re.compile(r'<(.+?)>; *rel="(.+?)"')
+        match = link_re.search(link_header)
+        while match:
+            link, rel = match.groups()
+            if rel.lower() == 'next':
+                # Strip API_BASE so that the return value is useful for request().
+                assert link.startswith(API_BASE)
+                return link[len(API_BASE):]
+            match = link_re.search(link_header, match.end())
+        return None
 
     def create_pr(self, remote_branch_name, desc_title, body):
         """Creates a PR on GitHub.
@@ -78,12 +114,12 @@ class WPTGitHub(object):
             'head': remote_branch_name,
             'base': 'master',
         }
-        data, status_code = self.request(path, method='POST', body=body)
+        response = self.request(path, method='POST', body=body)
 
-        if status_code != 201:
+        if response.status_code != 201:
             return None
 
-        return data
+        return response.data
 
     def update_pr(self, pr_number, desc_title, body):
         """Updates a PR on GitHub.
@@ -102,12 +138,12 @@ class WPTGitHub(object):
             'title': desc_title,
             'body': body,
         }
-        data, status_code = self.request(path, method='PATCH', body=body)
+        response = self.request(path, method='PATCH', body=body)
 
-        if status_code != 201:
+        if response.status_code != 201:
             return None
 
-        return data
+        return response.data
 
     def add_label(self, number, label):
         path = '/repos/%s/%s/issues/%d/labels' % (
@@ -116,7 +152,8 @@ class WPTGitHub(object):
             number
         )
         body = [label]
-        return self.request(path, method='POST', body=body)
+        response = self.request(path, method='POST', body=body)
+        return response.data, response.status_code
 
     def remove_label(self, number, label):
         path = '/repos/%s/%s/issues/%d/labels/%s' % (
@@ -126,12 +163,12 @@ class WPTGitHub(object):
             urllib2.quote(label),
         )
 
-        _, status_code = self.request(path, method='DELETE')
+        response = self.request(path, method='DELETE')
         # The GitHub API documentation claims that this endpoint returns a 204
         # on success. However in reality it returns a 200.
         # https://developer.github.com/v3/issues/labels/#remove-a-label-from-an-issue
-        if status_code not in (200, 204):
-            raise GitHubError('Received non-200 status code attempting to delete label: {}'.format(status_code))
+        if response.status_code not in (200, 204):
+            raise GitHubError('Received non-200 status code attempting to delete label: {}'.format(response.status_code))
 
     def make_pr_from_item(self, item):
         labels = [label['name'] for label in item['labels']]
@@ -144,8 +181,6 @@ class WPTGitHub(object):
 
     @memoized
     def all_pull_requests(self):
-        # TODO(jeffcarp): Add pagination to fetch >99 PRs
-        assert self._pr_history_window <= 100, 'Maximum GitHub page size exceeded.'
         path = (
             '/search/issues'
             '?q=repo:{}/{}%20type:pr%20label:{}'
@@ -155,14 +190,22 @@ class WPTGitHub(object):
             WPT_GH_ORG,
             WPT_GH_REPO_NAME,
             EXPORT_PR_LABEL,
-            self._pr_history_window
+            min(MAX_PER_PAGE, self._pr_history_window)
         )
-
-        data, status_code = self.request(path, method='GET')
-        if status_code == 200:
-            return [self.make_pr_from_item(item) for item in data['items']]
-        else:
-            raise Exception('Non-200 status code (%s): %s' % (status_code, data))
+        all_prs = []
+        while path is not None and len(all_prs) < self._pr_history_window:
+            response = self.request(path, method='GET')
+            if response.status_code == 200:
+                if response.data['incomplete_results']:
+                    raise GitHubError('Received incomplete results when fetching all pull requests. Data received:\n%s'
+                                      % response.data)
+                prs = [self.make_pr_from_item(item) for item in response.data['items']]
+                all_prs += prs[:self._pr_history_window - len(all_prs)]
+            else:
+                raise GitHubError('Received non-200 status code (%d) when fetching all pull requests: %s'
+                                  % (response.status_code, path))
+            path = self.extract_link_next(response.getheader('Link'))
+        return all_prs
 
     def get_pr_branch(self, pr_number):
         path = '/repos/{}/{}/pulls/{}'.format(
@@ -170,11 +213,11 @@ class WPTGitHub(object):
             WPT_GH_REPO_NAME,
             pr_number
         )
-        data, status_code = self.request(path, method='GET')
-        if status_code == 200:
-            return data['head']['ref']
+        response = self.request(path, method='GET')
+        if response.status_code == 200:
+            return response.data['head']['ref']
         else:
-            raise Exception('Non-200 status code (%s): %s' % (status_code, data))
+            raise Exception('Non-200 status code (%s): %s' % (response.status_code, response.data))
 
     def merge_pull_request(self, pull_request_number):
         path = '/repos/%s/%s/pulls/%d/merge' % (
@@ -189,17 +232,17 @@ class WPTGitHub(object):
         }
 
         try:
-            data, status_code = self.request(path, method='PUT', body=body)
+            response = self.request(path, method='PUT', body=body)
         except urllib2.HTTPError as e:
             if e.code == 405:
                 raise MergeError()
             else:
                 raise
 
-        if status_code != 200:
-            raise Exception('Received non-200 status code (%d) while merging PR #%d' % (status_code, pull_request_number))
+        if response.status_code != 200:
+            raise Exception('Received non-200 status code (%d) while merging PR #%d' % (response.status_code, pull_request_number))
 
-        return data
+        return response.data
 
     def delete_remote_branch(self, remote_branch_name):
         # TODO(jeffcarp): Unit test this method
@@ -208,12 +251,12 @@ class WPTGitHub(object):
             WPT_GH_REPO_NAME,
             remote_branch_name
         )
-        data, status_code = self.request(path, method='DELETE')
+        response = self.request(path, method='DELETE')
 
-        if status_code != 204:
-            raise GitHubError('Received non-204 status code attempting to delete remote branch: {}'.format(status_code))
+        if response.status_code != 204:
+            raise GitHubError('Received non-204 status code attempting to delete remote branch: {}'.format(response.status_code))
 
-        return data
+        return response.data
 
     def pr_for_chromium_commit(self, chromium_commit):
         """Returns a PR corresponding to the given ChromiumCommit, or None."""
@@ -245,6 +288,29 @@ class WPTGitHub(object):
             if line.startswith(tag):
                 return line[len(tag):]
         return None
+
+
+class JSONResponse(object):
+    """An HTTP response containing JSON data."""
+
+    def __init__(self, raw_response):
+        """Initializes a JSONResponse instance.
+
+        Args:
+            raw_response: a response object returned by open methods in urllib2.
+        """
+        self._raw_response = raw_response
+        self.status_code = raw_response.getcode()
+        try:
+            self.data = json.load(raw_response)
+        except ValueError:
+            self.data = None
+
+    def getheader(self, header):
+        """Gets the value of the header with the given name.
+
+        Delegates to HTTPMessage.getheader(), which is case-insensitive."""
+        return self._raw_response.info().getheader(header)
 
 
 class MergeError(Exception):
