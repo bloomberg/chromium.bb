@@ -328,7 +328,7 @@ bool FeedbackPrivateSendFeedbackFunction::RunAsync() {
 
   // Populate feedback data.
   scoped_refptr<FeedbackData> feedback_data(new FeedbackData());
-  feedback_data->set_context(GetProfile());
+  feedback_data->set_context(browser_context());
   feedback_data->set_description(feedback_info.description);
 
   if (feedback_info.product_id)
@@ -365,8 +365,9 @@ bool FeedbackPrivateSendFeedbackFunction::RunAsync() {
 
   feedback_data->SetAndCompressSystemInfo(std::move(sys_logs));
 
-  FeedbackService* service =
-      FeedbackPrivateAPI::GetFactoryInstance()->Get(GetProfile())->GetService();
+  FeedbackService* service = FeedbackPrivateAPI::GetFactoryInstance()
+                                 ->Get(browser_context())
+                                 ->GetService();
   DCHECK(service);
 
   if (feedback_info.send_histograms) {
@@ -377,8 +378,7 @@ bool FeedbackPrivateSendFeedbackFunction::RunAsync() {
   }
 
   service->SendFeedback(
-      GetProfile(),
-      feedback_data,
+      browser_context(), feedback_data,
       base::Bind(&FeedbackPrivateSendFeedbackFunction::OnCompleted, this));
 
   return true;
