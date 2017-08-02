@@ -15,6 +15,7 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_empty_collection_background.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -37,6 +38,7 @@
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "net/base/network_change_notifier.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -237,8 +239,20 @@ id<GREYMatcher> EmptyBackground() {
 // Adds the current page to the Reading List.
 void AddCurrentPageToReadingList() {
   // Add the page to the reading list.
-  [ChromeEarlGreyUI openShareMenu];
-  TapButtonWithID(IDS_IOS_SHARE_MENU_READING_LIST_ACTION);
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    // On iOS 11, it is not possible to interact with the share menu in EG.
+    // Send directly the command instead. This is the closest behavior we can
+    // have from the normal behavior.
+    web::WebState* web_state = chrome_test_util::GetCurrentWebState();
+    ReadingListAddCommand* command = [[ReadingListAddCommand alloc]
+        initWithURL:web_state->GetVisibleURL()
+              title:base::SysUTF16ToNSString(web_state->GetTitle())];
+    [chrome_test_util::DispatcherForActiveViewController()
+        addToReadingList:command];
+  } else {
+    [ChromeEarlGreyUI openShareMenu];
+    TapButtonWithID(IDS_IOS_SHARE_MENU_READING_LIST_ACTION);
+  }
 
   // Wait for the snackbar to appear.
   id<GREYMatcher> snackbar_matcher =
@@ -398,12 +412,6 @@ void AssertIsShowingDistillablePage(bool online) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version via context menu.
 - (void)testSavingToReadingListAndLoadDistilled {
-  // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
-  // interact with the share menu.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
-  }
-
   auto network_change_disabler =
       base::MakeUnique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = base::MakeUnique<WifiNetworkChangeNotifier>();
@@ -452,12 +460,6 @@ void AssertIsShowingDistillablePage(bool online) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads online version by tapping on entry.
 - (void)testSavingToReadingListAndLoadNormal {
-  // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
-  // interact with the share menu.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
-  }
-
   auto network_change_disabler =
       base::MakeUnique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = base::MakeUnique<WifiNetworkChangeNotifier>();
@@ -497,12 +499,6 @@ void AssertIsShowingDistillablePage(bool online) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry without web server.
 - (void)testSavingToReadingListAndLoadNoNetwork {
-  // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
-  // interact with the share menu.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
-  }
-
   auto network_change_disabler =
       base::MakeUnique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = base::MakeUnique<WifiNetworkChangeNotifier>();
@@ -547,12 +543,6 @@ void AssertIsShowingDistillablePage(bool online) {
 // appearing, and that the Reading List entry is present in the Reading List.
 // Loads offline version by tapping on entry with delayed web server.
 - (void)testSavingToReadingListAndLoadBadNetwork {
-  // TODO(crbug.com/747622): re-enable this test on iOS 11 once earl grey can
-  // interact with the share menu.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
-  }
-
   auto network_change_disabler =
       base::MakeUnique<net::NetworkChangeNotifier::DisableForTest>();
   auto wifi_network = base::MakeUnique<WifiNetworkChangeNotifier>();
