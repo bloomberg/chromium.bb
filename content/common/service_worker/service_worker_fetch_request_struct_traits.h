@@ -73,10 +73,6 @@ struct EnumTraits<blink::mojom::ServiceWorkerFetchType,
 template <>
 struct StructTraits<blink::mojom::FetchAPIRequestDataView,
                     content::ServiceWorkerFetchRequest> {
-  static void* SetUpContext(const content::ServiceWorkerFetchRequest& request);
-  static void TearDownContext(const content::ServiceWorkerFetchRequest& request,
-                              void* context);
-
   static content::FetchRequestMode mode(
       const content::ServiceWorkerFetchRequest& request) {
     return request.mode;
@@ -106,9 +102,8 @@ struct StructTraits<blink::mojom::FetchAPIRequestDataView,
     return request.method;
   }
 
-  static const std::map<std::string, std::string>& headers(
-      const content::ServiceWorkerFetchRequest& request,
-      void* context);
+  static std::map<std::string, std::string> headers(
+      const content::ServiceWorkerFetchRequest& request);
 
   static const std::string& blob_uuid(
       const content::ServiceWorkerFetchRequest& request) {

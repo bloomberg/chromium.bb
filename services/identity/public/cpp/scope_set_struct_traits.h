@@ -11,22 +11,11 @@ namespace mojo {
 
 template <>
 struct StructTraits<identity::mojom::ScopeSet::DataView, identity::ScopeSet> {
-  static void* SetUpContext(const identity::ScopeSet& scope_set) {
-    std::vector<std::string>* scopes = new std::vector<std::string>();
+  static std::vector<std::string> scopes(const identity::ScopeSet& scope_set) {
+    std::vector<std::string> entries;
     for (const auto& scope : scope_set)
-      scopes->push_back(scope);
-    return scopes;
-  }
-
-  static void TearDownContext(const identity::ScopeSet& scope_set,
-                              void* context) {
-    delete static_cast<std::vector<std::string>*>(context);
-  }
-
-  static const std::vector<std::string>& scopes(
-      const identity::ScopeSet& scope_set,
-      void* context) {
-    return *(static_cast<std::vector<std::string>*>(context));
+      entries.push_back(scope);
+    return entries;
   }
 
   static bool Read(identity::mojom::ScopeSetDataView data,
