@@ -73,11 +73,13 @@ using testing::_;
 using testing::Contains;
 using testing::CreateFunctor;
 using testing::ElementsAre;
+using testing::ElementsAreArray;
 using testing::Eq;
 using testing::Field;
 using testing::InSequence;
 using testing::Invoke;
 using testing::IsEmpty;
+using testing::Matcher;
 using testing::Mock;
 using testing::MockFunction;
 using testing::NiceMock;
@@ -2756,6 +2758,121 @@ TEST_F(RemoteSuggestionsProviderImplTest,
           Property(&ContentSuggestion::id, MakeArticleID("http://3.com")),
           Property(&ContentSuggestion::id, MakeArticleID("http://2.com")),
           Property(&ContentSuggestion::id, MakeArticleID("http://1.com"))));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       PrependingShouldNotAffectOtherSuggestions) {
+  // Set up the provider with some article suggestions.
+  auto provider = MakeSuggestionsProvider();
+  std::vector<FetchedCategory> fetched_categories;
+  FetchedCategoryBuilder category_builder =
+      FetchedCategoryBuilder().SetCategory(articles_category());
+  for (int i = 0; i < 10; ++i) {
+    const std::string url = "http://other.com/" + base::IntToString(i);
+    category_builder.AddSuggestionViaBuilder(
+        RemoteSuggestionBuilder().AddId(url).SetUrl(url));
+  }
+  fetched_categories.push_back(category_builder.Build());
+  FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
+                        Status::Success(), std::move(fetched_categories));
+
+  // Prepend an article suggestion.
+  const std::string prepended_url = "http://prepended.com/";
+  std::unique_ptr<RemoteSuggestion> prepended_suggestion =
+      RemoteSuggestionBuilder()
+          .AddId(prepended_url)
+          .SetUrl(prepended_url)
+          .Build();
+
+  // TODO(vitaliii): Once the provider sets a callback in BreakingNewsListener,
+  // capture it instead of using this function here and below.
+  provider->PushArticleSuggestionToTheFrontForDebugging(
+      std::move(prepended_suggestion));
+
+  // Check that the prepended suggestion is in the front, and all the others are
+  // still there in the same order.
+  std::vector<Matcher<const ContentSuggestion&>> expected;
+  expected.push_back(
+      Property(&ContentSuggestion::id, MakeArticleID(prepended_url)));
+  for (int i = 0; i < 10; ++i) {
+    expected.push_back(
+        Property(&ContentSuggestion::id,
+                 MakeArticleID("http://other.com/" + base::IntToString(i))));
+  }
+
+  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
+              ElementsAreArray(expected));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest, ShouldNotPrependDismissedSuggestion) {
+  auto provider = MakeSuggestionsProvider();
+
+  // Prepend an article suggestion.
+  const RemoteSuggestionBuilder suggestion_builder =
+      RemoteSuggestionBuilder()
+          .AddId("http://prepended.com")
+          .SetUrl("http://prepended.com");
+
+  provider->PushArticleSuggestionToTheFrontForDebugging(
+      suggestion_builder.Build());
+  ASSERT_THAT(provider->GetSuggestionsForTesting(articles_category()),
+              SizeIs(1));
+
+  // Dismiss it.
+  provider->DismissSuggestion(MakeArticleID("http://prepended.com"));
+  ASSERT_THAT(provider->GetSuggestionsForTesting(articles_category()),
+              IsEmpty());
+
+  // Prepend it again and verify that it is ignored.
+  provider->PushArticleSuggestionToTheFrontForDebugging(
+      suggestion_builder.Build());
+  EXPECT_THAT(provider->GetSuggestionsForTesting(articles_category()),
+              IsEmpty());
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldRestorePrependedSuggestionOnTopAfterRestart) {
+  // Set up the provider with some article suggestions.
+  auto provider = MakeSuggestionsProvider();
+  std::vector<FetchedCategory> fetched_categories;
+  FetchedCategoryBuilder category_builder =
+      FetchedCategoryBuilder().SetCategory(articles_category());
+  for (int i = 0; i < 10; ++i) {
+    const std::string url = "http://other.com/" + base::IntToString(i);
+    category_builder.AddSuggestionViaBuilder(
+        RemoteSuggestionBuilder().AddId(url).SetUrl(url));
+  }
+  fetched_categories.push_back(category_builder.Build());
+  FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
+                        Status::Success(), std::move(fetched_categories));
+
+  // Prepend an article suggestion.
+  const std::string prepended_url = "http://prepended.com";
+  std::unique_ptr<RemoteSuggestion> prepended_suggestion =
+      RemoteSuggestionBuilder()
+          .AddId(prepended_url)
+          .SetUrl(prepended_url)
+          .Build();
+
+  provider->PushArticleSuggestionToTheFrontForDebugging(
+      std::move(prepended_suggestion));
+
+  // Reset the provider to imitate browser restart.
+  ResetSuggestionsProvider(&provider);
+
+  // Check that prepended suggestion is in the front of the restored list and
+  // all other suggestions are present in the same order.
+  std::vector<Matcher<const ContentSuggestion&>> expected;
+  expected.push_back(
+      Property(&ContentSuggestion::id, MakeArticleID(prepended_url)));
+  for (int i = 0; i < 10; ++i) {
+    expected.push_back(
+        Property(&ContentSuggestion::id,
+                 MakeArticleID("http://other.com/" + base::IntToString(i))));
+  }
+
+  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
+              ElementsAreArray(expected));
 }
 
 }  // namespace ntp_snippets

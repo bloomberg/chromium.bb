@@ -142,6 +142,9 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   // the constructor.
   CachedImageFetcher& GetImageFetcherForTesting() { return image_fetcher_; }
 
+  void PushArticleSuggestionToTheFrontForDebugging(
+      std::unique_ptr<RemoteSuggestion> suggestion);
+
  private:
   friend class RemoteSuggestionsProviderImplTest;
 
@@ -285,6 +288,10 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   void IntegrateSuggestions(Category category,
                             CategoryContent* content,
                             RemoteSuggestion::PtrVector new_suggestions);
+
+  // Adds newly available suggestion at the top of Articles category.
+  void PrependArticleSuggestion(
+      std::unique_ptr<RemoteSuggestion> remote_suggestion);
 
   // Dismisses a suggestion within a given category content.
   // Note that this modifies the suggestion datastructures of |content|

@@ -13,7 +13,6 @@
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 class AccountTrackerService;
 class FakeProfileOAuth2TokenService;
