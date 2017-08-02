@@ -143,12 +143,13 @@ void TetherService::Shutdown() {
   if (adapter_)
     adapter_->RemoveObserver(this);
   registrar_.RemoveAll();
-  notification_presenter_.reset();
 
   // Shut down the feature. Note that this does not change Tether's technology
   // state in NetworkStateHandler because doing so could cause visual jank just
   // as the user logs out.
   StopTetherIfNecessary();
+
+  notification_presenter_.reset();
 }
 
 void TetherService::SuspendImminent() {
