@@ -667,18 +667,17 @@ void SelectionController::SelectClosestWordOrLinkFromMouseEvent(
   Element* url_element = result.GetHitTestResult().URLElement();
   const VisiblePositionInFlatTree pos =
       VisiblePositionOfHitTestResult(result.GetHitTestResult());
-  const VisibleSelectionInFlatTree& new_selection =
+  const SelectionInFlatTree& new_selection =
       pos.IsNotNull() &&
               pos.DeepEquivalent().AnchorNode()->IsDescendantOf(url_element)
-          ? CreateVisibleSelection(SelectionInFlatTree::Builder()
-                                       .SelectAllChildren(*url_element)
-                                       .Build())
-          : VisibleSelectionInFlatTree();
+          ? SelectionInFlatTree::Builder()
+                .SelectAllChildren(*url_element)
+                .Build()
+          : SelectionInFlatTree();
 
   UpdateSelectionForMouseDownDispatchingSelectStart(
       inner_node,
-      ExpandSelectionToRespectUserSelectAll(inner_node,
-                                            new_selection.AsSelection()),
+      ExpandSelectionToRespectUserSelectAll(inner_node, new_selection),
       TextGranularity::kWord, HandleVisibility::kNotVisible);
 }
 
