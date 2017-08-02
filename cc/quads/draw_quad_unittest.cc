@@ -73,15 +73,27 @@ SharedQuadState* CreateSharedQuadState(RenderPass* render_pass) {
   return state;
 }
 
-void CompareDrawQuad(DrawQuad* quad,
-                     DrawQuad* copy,
-                     SharedQuadState* copy_shared_state) {
+void CompareSharedQuadState(const SharedQuadState* source_sqs,
+                            const SharedQuadState* copy_sqs) {
+  EXPECT_EQ(source_sqs->quad_to_target_transform,
+            copy_sqs->quad_to_target_transform);
+  EXPECT_EQ(source_sqs->quad_layer_rect, copy_sqs->quad_layer_rect);
+  EXPECT_EQ(source_sqs->visible_quad_layer_rect,
+            copy_sqs->visible_quad_layer_rect);
+  EXPECT_EQ(source_sqs->clip_rect, copy_sqs->clip_rect);
+  EXPECT_EQ(source_sqs->is_clipped, copy_sqs->is_clipped);
+  EXPECT_EQ(source_sqs->opacity, copy_sqs->opacity);
+  EXPECT_EQ(source_sqs->blend_mode, copy_sqs->blend_mode);
+  EXPECT_EQ(source_sqs->sorting_context_id, copy_sqs->sorting_context_id);
+}
+
+void CompareDrawQuad(DrawQuad* quad, DrawQuad* copy) {
   EXPECT_EQ(quad->material, copy->material);
   EXPECT_EQ(quad->rect, copy->rect);
   EXPECT_EQ(quad->visible_rect, copy->visible_rect);
   EXPECT_EQ(quad->opaque_rect, copy->opaque_rect);
   EXPECT_EQ(quad->needs_blending, copy->needs_blending);
-  EXPECT_EQ(copy_shared_state, copy->shared_quad_state);
+  CompareSharedQuadState(quad->shared_quad_state, copy->shared_quad_state);
 }
 
 #define CREATE_SHARED_STATE()                                              \
@@ -99,30 +111,28 @@ void CompareDrawQuad(DrawQuad* quad,
   bool needs_blending = true;                  \
   ALLOW_UNUSED_LOCAL(needs_blending);
 
-#define SETUP_AND_COPY_QUAD_NEW(Type, quad)                                \
-  DrawQuad* copy_new =                                                     \
-      render_pass->CopyFromAndAppendDrawQuad(quad_new, copy_shared_state); \
-  CompareDrawQuad(quad_new, copy_new, copy_shared_state);                  \
-  const Type* copy_quad = Type::MaterialCast(copy_new);                    \
-  ALLOW_UNUSED_LOCAL(copy_quad);
-
-#define SETUP_AND_COPY_QUAD_ALL(Type, quad)                                \
-  DrawQuad* copy_all =                                                     \
-      render_pass->CopyFromAndAppendDrawQuad(quad_all, copy_shared_state); \
-  CompareDrawQuad(quad_all, copy_all, copy_shared_state);                  \
-  copy_quad = Type::MaterialCast(copy_all);
-
-#define SETUP_AND_COPY_QUAD_NEW_RP(Type, quad, a)                        \
-  DrawQuad* copy_new = render_pass->CopyFromAndAppendRenderPassDrawQuad( \
-      quad_new, copy_shared_state, a);                                   \
-  CompareDrawQuad(quad_new, copy_new, copy_shared_state);                \
+#define SETUP_AND_COPY_QUAD_NEW(Type, quad)                              \
+  DrawQuad* copy_new = render_pass->CopyFromAndAppendDrawQuad(quad_new); \
+  CompareDrawQuad(quad_new, copy_new);                                   \
   const Type* copy_quad = Type::MaterialCast(copy_new);                  \
   ALLOW_UNUSED_LOCAL(copy_quad);
 
-#define SETUP_AND_COPY_QUAD_ALL_RP(Type, quad, a)                        \
-  DrawQuad* copy_all = render_pass->CopyFromAndAppendRenderPassDrawQuad( \
-      quad_all, copy_shared_state, a);                                   \
-  CompareDrawQuad(quad_all, copy_all, copy_shared_state);                \
+#define SETUP_AND_COPY_QUAD_ALL(Type, quad)                              \
+  DrawQuad* copy_all = render_pass->CopyFromAndAppendDrawQuad(quad_all); \
+  CompareDrawQuad(quad_all, copy_all);                                   \
+  copy_quad = Type::MaterialCast(copy_all);
+
+#define SETUP_AND_COPY_QUAD_NEW_RP(Type, quad, a)                    \
+  DrawQuad* copy_new =                                               \
+      render_pass->CopyFromAndAppendRenderPassDrawQuad(quad_new, a); \
+  CompareDrawQuad(quad_new, copy_new);                               \
+  const Type* copy_quad = Type::MaterialCast(copy_new);              \
+  ALLOW_UNUSED_LOCAL(copy_quad);
+
+#define SETUP_AND_COPY_QUAD_ALL_RP(Type, quad, a)                    \
+  DrawQuad* copy_all =                                               \
+      render_pass->CopyFromAndAppendRenderPassDrawQuad(quad_all, a); \
+  CompareDrawQuad(quad_all, copy_all);                               \
   copy_quad = Type::MaterialCast(copy_all);
 
 #define CREATE_QUAD_ALL(Type, ...)                                        \
