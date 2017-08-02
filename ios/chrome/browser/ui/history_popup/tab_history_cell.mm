@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/history/tab_history_cell.h"
+#import "ios/chrome/browser/ui/history_popup/tab_history_cell.h"
 
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/ui/ui_util.h"

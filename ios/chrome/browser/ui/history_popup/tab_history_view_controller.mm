@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/history/tab_history_view_controller.h"
+#import "ios/chrome/browser/ui/history_popup/tab_history_view_controller.h"
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/chrome/browser/ui/history/tab_history_cell.h"
+#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#import "ios/chrome/browser/ui/history_popup/tab_history_cell.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/third_party/material_components_ios/src/components/Ink/src/MaterialInk.h"
 #include "ios/web/public/favicon_status.h"
