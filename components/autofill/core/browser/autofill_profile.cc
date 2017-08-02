@@ -720,6 +720,10 @@ void AutofillProfile::RecordAndLogUse() {
 
 AutofillProfile::ValidityState AutofillProfile::GetValidityState(
     ServerFieldType type) {
+  // Return valid for types that autofill does not validate.
+  if (!IsValidationSupportedForType(type))
+    return UNSUPPORTED;
+
   if (!base::ContainsKey(validity_states_, type))
     return UNVALIDATED;
 
@@ -728,6 +732,10 @@ AutofillProfile::ValidityState AutofillProfile::GetValidityState(
 
 void AutofillProfile::SetValidityState(ServerFieldType type,
                                        ValidityState validity) {
+  // Do not save validity of unsupported types.
+  if (!IsValidationSupportedForType(type))
+    return;
+
   std::map<ServerFieldType, ValidityState>::iterator it =
       validity_states_.find(type);
 
@@ -735,6 +743,21 @@ void AutofillProfile::SetValidityState(ServerFieldType type,
     it->second = validity;
   } else {
     validity_states_.insert(std::make_pair(type, validity));
+  }
+}
+
+bool AutofillProfile::IsValidationSupportedForType(ServerFieldType type) {
+  switch (type) {
+    case ADDRESS_HOME_STATE:
+    case ADDRESS_HOME_ZIP:
+    case ADDRESS_HOME_COUNTRY:
+    case ADDRESS_HOME_CITY:
+    case ADDRESS_HOME_DEPENDENT_LOCALITY:
+    case EMAIL_ADDRESS:
+    case PHONE_HOME_WHOLE_NUMBER:
+      return true;
+    default:
+      return false;
   }
 }
 
