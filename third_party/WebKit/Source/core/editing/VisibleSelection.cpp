@@ -134,10 +134,14 @@ operator=(const VisibleSelectionTemplate<Strategy>& other) {
 template <typename Strategy>
 SelectionTemplate<Strategy> VisibleSelectionTemplate<Strategy>::AsSelection()
     const {
-  typename SelectionTemplate<Strategy>::Builder builder;
-  if (base_.IsNotNull())
-    builder.SetBaseAndExtent(base_, extent_);
-  return builder.SetAffinity(affinity_)
+  if (base_.IsNull()) {
+    return typename SelectionTemplate<Strategy>::Builder()
+        .SetIsDirectional(is_directional_)
+        .Build();
+  }
+  return typename SelectionTemplate<Strategy>::Builder()
+      .SetBaseAndExtent(base_, extent_)
+      .SetAffinity(affinity_)
       .SetIsDirectional(is_directional_)
       .Build();
 }
