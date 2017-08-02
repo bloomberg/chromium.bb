@@ -102,6 +102,7 @@ class Crossdev(object):
   # Packages that needs separate handling, in addition to what we have from
   # crossdev.
   MANUAL_PKGS = {
+      'clang': 'sys-devel',
       'llvm': 'sys-devel',
       'libcxxabi': 'sys-libs',
       'libcxx': 'sys-libs',
