@@ -193,8 +193,8 @@ TEST_F(RendererWebAudioDeviceImplTest, TestLatencyHintValues) {
 
   blink::WebAudioLatencyHint playbackLatencyHint(
       blink::WebAudioLatencyHint::kCategoryPlayback);
-  int playbackBufferSize =
-      media::AudioLatency::GetHighLatencyBufferSize(kHardwareSampleRate, 0);
+  int playbackBufferSize = media::AudioLatency::GetHighLatencyBufferSize(
+      kHardwareSampleRate, kHardwareBufferSize);
   SetupDevice(playbackLatencyHint);
 
   EXPECT_EQ(webaudio_device_->SampleRate(), kHardwareSampleRate);

@@ -61,7 +61,7 @@ int GetOutputBufferSize(const blink::WebAudioLatencyHint& latency_hint,
       break;
     case media::AudioLatency::LATENCY_PLAYBACK:
       return media::AudioLatency::GetHighLatencyBufferSize(
-          hardware_params.sample_rate(), 0);
+          hardware_params.sample_rate(), hardware_params.frames_per_buffer());
       break;
     case media::AudioLatency::LATENCY_EXACT_MS:
       return media::AudioLatency::GetExactBufferSize(

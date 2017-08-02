@@ -213,8 +213,8 @@ LayoutTestContentRendererClient::OverrideCreateAudioDevice(
           media::AudioLatency::GetRtcBufferSize(hw_sample_rate, hw_buffer_size);
       break;
     case blink::WebAudioLatencyHint::kCategoryPlayback:
-      buffer_size =
-          media::AudioLatency::GetHighLatencyBufferSize(hw_sample_rate, 0);
+      buffer_size = media::AudioLatency::GetHighLatencyBufferSize(
+          hw_sample_rate, hw_buffer_size);
       break;
     case blink::WebAudioLatencyHint::kCategoryExact:
       buffer_size = media::AudioLatency::GetExactBufferSize(
