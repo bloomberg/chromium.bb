@@ -546,6 +546,11 @@ int RemoteSuggestionsProviderImpl::GetMaxSuggestionCountForTesting() {
   return kMaxSuggestionCount;
 }
 
+void RemoteSuggestionsProviderImpl::PushArticleSuggestionToTheFrontForDebugging(
+    std::unique_ptr<RemoteSuggestion> suggestion) {
+  PrependArticleSuggestion(std::move(suggestion));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Private methods
 
@@ -880,6 +885,41 @@ void RemoteSuggestionsProviderImpl::IntegrateSuggestions(
   database_->SaveSnippets(new_suggestions);
 
   content->suggestions = std::move(new_suggestions);
+}
+
+void RemoteSuggestionsProviderImpl::PrependArticleSuggestion(
+    std::unique_ptr<RemoteSuggestion> remote_suggestion) {
+  if (!ready()) {
+    return;
+  }
+
+  ClearExpiredDismissedSuggestions();
+
+  DCHECK_EQ(articles_category_, Category::FromRemoteCategory(
+                                    remote_suggestion->remote_category_id()));
+
+  auto content_it = category_contents_.find(articles_category_);
+  if (content_it == category_contents_.end()) {
+    return;
+  }
+  CategoryContent* content = &content_it->second;
+
+  std::vector<std::unique_ptr<RemoteSuggestion>> suggestions;
+  suggestions.push_back(std::move(remote_suggestion));
+
+  SanitizeReceivedSuggestions(content->dismissed, &suggestions);
+
+  if (!suggestions.empty()) {
+    content->suggestions.insert(content->suggestions.begin(),
+                                std::move(suggestions[0]));
+
+    for (size_t i = 0; i < content->suggestions.size(); ++i) {
+      content->suggestions[i]->set_rank(i);
+    }
+    database_->SaveSnippets(content->suggestions);
+
+    NotifyNewSuggestions(articles_category_, *content);
+  }
 }
 
 void RemoteSuggestionsProviderImpl::DismissSuggestionFromCategoryContent(

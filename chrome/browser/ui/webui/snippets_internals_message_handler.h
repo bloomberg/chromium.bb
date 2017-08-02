@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "base/timer/timer.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
@@ -61,6 +62,7 @@ class SnippetsInternalsMessageHandler
   void HandleToggleDismissedSuggestions(const base::ListValue* args);
   void ClearClassification(const base::ListValue* args);
   void FetchRemoteSuggestionsInTheBackground(const base::ListValue* args);
+  void HandlePushDummySuggestionIn10Seconds(const base::ListValue* args);
 
   void SendAllContent();
   void SendClassification();
@@ -69,6 +71,8 @@ class SnippetsInternalsMessageHandler
   void SendContentSuggestions();
   void SendBoolean(const std::string& name, bool value);
   void SendString(const std::string& name, const std::string& value);
+
+  void PushDummySuggestion();
 
   void OnDismissedSuggestionsLoaded(
       ntp_snippets::Category category,
@@ -93,6 +97,8 @@ class SnippetsInternalsMessageHandler
            std::vector<ntp_snippets::ContentSuggestion>,
            ntp_snippets::Category::CompareByID>
       dismissed_suggestions_;
+
+  base::OneShotTimer suggestion_push_timer_;
 
   base::WeakPtrFactory<SnippetsInternalsMessageHandler> weak_ptr_factory_;
 

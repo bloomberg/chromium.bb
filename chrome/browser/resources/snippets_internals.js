@@ -38,6 +38,12 @@ cr.define('chrome.SnippetsInternals', function() {
       event.preventDefault();
     });
 
+    $('push-dummy-suggestion-10-seconds-button')
+        .addEventListener('click', function(event) {
+          chrome.send('pushDummySuggestionIn10Seconds');
+          event.preventDefault();
+        });
+
     window.addEventListener('focus', refreshContent);
     window.setInterval(refreshContent, 1000);
 
