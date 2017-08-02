@@ -616,7 +616,7 @@ typedef struct aom_codec_enc_cfg {
  *
  * \param[in]    ctx     Pointer to this instance's context.
  * \param[in]    iface   Pointer to the algorithm interface to use.
- * \param[in]    cfg     Configuration to use, if known. May be NULL.
+ * \param[in]    cfg     Configuration to use, if known.
  * \param[in]    flags   Bitfield of AOM_CODEC_USE_* flags
  * \param[in]    ver     ABI version number. Must be set to
  *                       AOM_ENCODER_ABI_VERSION
@@ -646,7 +646,7 @@ aom_codec_err_t aom_codec_enc_init_ver(aom_codec_ctx_t *ctx,
  *
  * \param[in]    ctx     Pointer to this instance's context.
  * \param[in]    iface   Pointer to the algorithm interface to use.
- * \param[in]    cfg     Configuration to use, if known. May be NULL.
+ * \param[in]    cfg     Configuration to use, if known.
  * \param[in]    num_enc Total number of encoders.
  * \param[in]    flags   Bitfield of AOM_CODEC_USE_* flags
  * \param[in]    dsf     Pointer to down-sampling factors.
