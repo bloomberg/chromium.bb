@@ -29,10 +29,6 @@ namespace media {
 struct MediaLogEvent;
 }
 
-namespace ukm {
-class UkmEntryBuilder;
-}
-
 namespace content {
 
 // This class stores information about currently active media.
@@ -125,10 +121,6 @@ class CONTENT_EXPORT MediaInternals
                       const std::string& cache_key,
                       const std::string& function,
                       const base::DictionaryValue* value);
-
-  std::unique_ptr<ukm::UkmEntryBuilder> CreateUkmBuilder(
-      const GURL& url,
-      const char* event_name);
 
   // Must only be accessed on the UI thread.
   std::vector<UpdateCallback> update_callbacks_;

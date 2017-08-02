@@ -29,8 +29,7 @@ void Log(media::MediaLogEvent* event) {
       event->type == media::MediaLogEvent::MEDIA_ERROR_LOG_ENTRY) {
     LOG(ERROR) << "MediaEvent: "
                << media::MediaLog::MediaEventToLogString(*event);
-  } else if (event->type != media::MediaLogEvent::PROPERTY_CHANGE &&
-             event->type != media::MediaLogEvent::WATCH_TIME_UPDATE) {
+  } else if (event->type != media::MediaLogEvent::PROPERTY_CHANGE) {
     MEDIA_EVENT_LOG_UTILITY << "MediaEvent: "
                             << media::MediaLog::MediaEventToLogString(*event);
   }

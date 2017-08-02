@@ -11,6 +11,8 @@
 #include "media/base/mock_media_log.h"
 #include "media/base/watch_time_keys.h"
 #include "media/blink/watch_time_reporter.h"
+#include "media/mojo/interfaces/watch_time_recorder.mojom.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,97 +22,140 @@ constexpr gfx::Size kSizeJustRight = gfx::Size(201, 201);
 
 using blink::WebMediaPlayer;
 
-#define EXPECT_WATCH_TIME(key, value)                                    \
-  do {                                                                   \
-    EXPECT_CALL(media_log_,                                              \
-                OnWatchTimeUpdate(has_video_ ? kWatchTimeAudioVideo##key \
-                                             : kWatchTimeAudio##key,     \
-                                  value))                                \
-        .RetiresOnSaturation();                                          \
+#define EXPECT_WATCH_TIME(key, value)                                         \
+  do {                                                                        \
+    EXPECT_CALL(*this,                                                        \
+                OnWatchTimeUpdate(has_video_ ? WatchTimeKey::kAudioVideo##key \
+                                             : WatchTimeKey::kAudio##key,     \
+                                  value))                                     \
+        .RetiresOnSaturation();                                               \
   } while (0)
 
-#define EXPECT_WATCH_TIME_IF_VIDEO(key, value) \
-  do {                                         \
-    if (!has_video_)                           \
-      break;                                   \
-    EXPECT_WATCH_TIME(key, value);             \
+#define EXPECT_WATCH_TIME_IF_VIDEO(key, value)                            \
+  do {                                                                    \
+    if (!has_video_)                                                      \
+      break;                                                              \
+    EXPECT_CALL(*this,                                                    \
+                OnWatchTimeUpdate(WatchTimeKey::kAudioVideo##key, value)) \
+        .RetiresOnSaturation();                                           \
   } while (0)
 
-#define EXPECT_BACKGROUND_WATCH_TIME(key, value)                               \
-  do {                                                                         \
-    DCHECK(has_video_);                                                        \
-    EXPECT_CALL(media_log_,                                                    \
-                OnWatchTimeUpdate(kWatchTimeAudioVideoBackground##key, value)) \
-        .RetiresOnSaturation();                                                \
+#define EXPECT_BACKGROUND_WATCH_TIME(key, value)                             \
+  do {                                                                       \
+    DCHECK(has_video_);                                                      \
+    EXPECT_CALL(*this, OnWatchTimeUpdate(                                    \
+                           WatchTimeKey::kAudioVideoBackground##key, value)) \
+        .RetiresOnSaturation();                                              \
   } while (0)
 
 #define EXPECT_WATCH_TIME_FINALIZED() \
-  EXPECT_CALL(media_log_, OnWatchTimeFinalized()).RetiresOnSaturation();
+  EXPECT_CALL(*this, OnWatchTimeFinalized()).RetiresOnSaturation();
 
-#define EXPECT_POWER_WATCH_TIME_FINALIZED() \
-  EXPECT_CALL(media_log_, OnPowerWatchTimeFinalized()).RetiresOnSaturation();
+// The following macros have .Times() values equal to the number of keys that a
+// finalize event is expected to generate.
 
-#define EXPECT_CONTROLS_WATCH_TIME_FINALIZED() \
-  EXPECT_CALL(media_log_, OnControlsWatchTimeFinalized()).RetiresOnSaturation();
+#define EXPECT_POWER_WATCH_TIME_FINALIZED()       \
+  EXPECT_CALL(*this, OnPowerWatchTimeFinalized()) \
+      .Times(6)                                   \
+      .RetiresOnSaturation();
 
-#define EXPECT_DISPLAY_WATCH_TIME_FINALIZED() \
-  EXPECT_CALL(media_log_, OnDisplayWatchTimeFinalized()).RetiresOnSaturation();
+#define EXPECT_CONTROLS_WATCH_TIME_FINALIZED()       \
+  EXPECT_CALL(*this, OnControlsWatchTimeFinalized()) \
+      .Times(4)                                      \
+      .RetiresOnSaturation();
 
-class WatchTimeReporterTest : public testing::TestWithParam<bool> {
+#define EXPECT_DISPLAY_WATCH_TIME_FINALIZED()       \
+  EXPECT_CALL(*this, OnDisplayWatchTimeFinalized()) \
+      .Times(3)                                     \
+      .RetiresOnSaturation();
+
+class WatchTimeReporterTest : public testing::TestWithParam<bool>,
+                              public mojom::WatchTimeRecorderProvider {
  public:
   WatchTimeReporterTest() : has_video_(GetParam()) {}
   ~WatchTimeReporterTest() override {}
 
  protected:
-  class WatchTimeLogMonitor : public MediaLog {
+  class WatchTimeInterceptor : public mojom::WatchTimeRecorder {
    public:
-    WatchTimeLogMonitor() = default;
+    WatchTimeInterceptor(WatchTimeReporterTest* parent) : parent_(parent) {}
 
-    void AddEvent(std::unique_ptr<MediaLogEvent> event) override {
-      ASSERT_EQ(event->type, MediaLogEvent::Type::WATCH_TIME_UPDATE);
+    ~WatchTimeInterceptor() override {}
 
-      for (base::DictionaryValue::Iterator it(event->params); !it.IsAtEnd();
-           it.Advance()) {
-        bool finalize;
-        if (it.value().GetAsBoolean(&finalize)) {
-          if (it.key() == kWatchTimeFinalize)
-            OnWatchTimeFinalized();
-          else if (it.key() == kWatchTimeFinalizePower)
-            OnPowerWatchTimeFinalized();
-          else if (it.key() == kWatchTimeFinalizeControls)
-            OnControlsWatchTimeFinalized();
-          else if (it.key() == kWatchTimeFinalizeDisplay)
-            OnDisplayWatchTimeFinalized();
-          else
-            NOTREACHED();
-          continue;
+    // mojom::WatchTimeRecorder implementation:
+    void RecordWatchTime(WatchTimeKey key, base::TimeDelta value) override {
+      parent_->OnWatchTimeUpdate(key, value);
+    }
+
+    void FinalizeWatchTime(
+        const std::vector<WatchTimeKey>& watch_time_keys) override {
+      if (watch_time_keys.empty()) {
+        parent_->OnWatchTimeFinalized();
+      } else {
+        for (auto key : watch_time_keys) {
+          switch (key) {
+            case WatchTimeKey::kAudioBattery:
+            case WatchTimeKey::kAudioAc:
+            case WatchTimeKey::kAudioVideoBattery:
+            case WatchTimeKey::kAudioVideoAc:
+            case WatchTimeKey::kAudioVideoBackgroundBattery:
+            case WatchTimeKey::kAudioVideoBackgroundAc:
+              parent_->OnPowerWatchTimeFinalized();
+              break;
+
+            case WatchTimeKey::kAudioNativeControlsOn:
+            case WatchTimeKey::kAudioNativeControlsOff:
+            case WatchTimeKey::kAudioVideoNativeControlsOn:
+            case WatchTimeKey::kAudioVideoNativeControlsOff:
+              parent_->OnControlsWatchTimeFinalized();
+              break;
+
+            case WatchTimeKey::kAudioVideoDisplayFullscreen:
+            case WatchTimeKey::kAudioVideoDisplayInline:
+            case WatchTimeKey::kAudioVideoDisplayPictureInPicture:
+              parent_->OnDisplayWatchTimeFinalized();
+              break;
+
+            case WatchTimeKey::kAudioAll:
+            case WatchTimeKey::kAudioMse:
+            case WatchTimeKey::kAudioEme:
+            case WatchTimeKey::kAudioSrc:
+            case WatchTimeKey::kAudioEmbeddedExperience:
+            case WatchTimeKey::kAudioVideoAll:
+            case WatchTimeKey::kAudioVideoMse:
+            case WatchTimeKey::kAudioVideoEme:
+            case WatchTimeKey::kAudioVideoSrc:
+            case WatchTimeKey::kAudioVideoEmbeddedExperience:
+            case WatchTimeKey::kAudioVideoBackgroundAll:
+            case WatchTimeKey::kAudioVideoBackgroundMse:
+            case WatchTimeKey::kAudioVideoBackgroundEme:
+            case WatchTimeKey::kAudioVideoBackgroundSrc:
+            case WatchTimeKey::kAudioVideoBackgroundEmbeddedExperience:
+              // These keys do not support partial finalization.
+              FAIL();
+              break;
+          };
         }
-
-        int underflow_count;
-        if (it.value().GetAsInteger(&underflow_count)) {
-          OnUnderflowUpdate(underflow_count);
-          continue;
-        }
-
-        double in_seconds;
-        ASSERT_TRUE(it.value().GetAsDouble(&in_seconds));
-        OnWatchTimeUpdate(it.key(), base::TimeDelta::FromSecondsD(in_seconds));
       }
     }
 
-    MOCK_METHOD0(OnWatchTimeFinalized, void(void));
-    MOCK_METHOD0(OnPowerWatchTimeFinalized, void(void));
-    MOCK_METHOD0(OnControlsWatchTimeFinalized, void(void));
-    MOCK_METHOD0(OnDisplayWatchTimeFinalized, void(void));
-    MOCK_METHOD2(OnWatchTimeUpdate, void(const std::string&, base::TimeDelta));
-    MOCK_METHOD1(OnUnderflowUpdate, void(int));
-
-   protected:
-    ~WatchTimeLogMonitor() override = default;
+    void UpdateUnderflowCount(int32_t count) override {
+      parent_->OnUnderflowUpdate(count);
+    }
 
    private:
-    DISALLOW_COPY_AND_ASSIGN(WatchTimeLogMonitor);
+    WatchTimeReporterTest* parent_;
+
+    DISALLOW_COPY_AND_ASSIGN(WatchTimeInterceptor);
   };
+
+  // mojom::WatchTimeRecorderProvider implementation:
+  void AcquireWatchTimeRecorder(
+      mojom::PlaybackPropertiesPtr properties,
+      mojom::WatchTimeRecorderRequest request) override {
+    mojo::MakeStrongBinding(base::MakeUnique<WatchTimeInterceptor>(this),
+                            std::move(request));
+  }
 
   void Initialize(bool has_audio,
                   bool is_mse,
@@ -120,10 +165,12 @@ class WatchTimeReporterTest : public testing::TestWithParam<bool> {
       EXPECT_WATCH_TIME_FINALIZED();
 
     wtr_.reset(new WatchTimeReporter(
-        has_audio, has_video_, is_mse, is_encrypted, false, &media_log_,
-        initial_video_size,
+        mojom::PlaybackProperties::New(
+            kUnknownAudioCodec, kUnknownVideoCodec, has_audio, has_video_,
+            is_mse, is_encrypted, false, initial_video_size, url::Origin()),
         base::Bind(&WatchTimeReporterTest::GetCurrentMediaTime,
-                   base::Unretained(this))));
+                   base::Unretained(this)),
+        this));
 
     // Setup the reporting interval to be immediate to avoid spinning real time
     // within the unit test.
@@ -409,8 +456,14 @@ class WatchTimeReporterTest : public testing::TestWithParam<bool> {
 
   MOCK_METHOD0(GetCurrentMediaTime, base::TimeDelta());
 
+  MOCK_METHOD0(OnWatchTimeFinalized, void(void));
+  MOCK_METHOD0(OnPowerWatchTimeFinalized, void(void));
+  MOCK_METHOD0(OnControlsWatchTimeFinalized, void(void));
+  MOCK_METHOD0(OnDisplayWatchTimeFinalized, void(void));
+  MOCK_METHOD2(OnWatchTimeUpdate, void(WatchTimeKey, base::TimeDelta));
+  MOCK_METHOD1(OnUnderflowUpdate, void(int));
+
   const bool has_video_;
-  testing::StrictMock<WatchTimeLogMonitor> media_log_;
   base::TestMessageLoop message_loop_;
   std::unique_ptr<WatchTimeReporter> wtr_;
 
@@ -497,7 +550,7 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporterBasic) {
   EXPECT_WATCH_TIME(Mse, kWatchTimeLate);
   EXPECT_WATCH_TIME(NativeControlsOff, kWatchTimeLate);
   EXPECT_WATCH_TIME_IF_VIDEO(DisplayInline, kWatchTimeLate);
-  EXPECT_CALL(media_log_, OnUnderflowUpdate(2));
+  EXPECT_CALL(*this, OnUnderflowUpdate(2));
   CycleReportingTimer();
 
   EXPECT_WATCH_TIME_FINALIZED();
@@ -536,7 +589,7 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporterUnderflow) {
   EXPECT_WATCH_TIME(Mse, kWatchTimeEarly);
   EXPECT_WATCH_TIME(NativeControlsOff, kWatchTimeEarly);
   EXPECT_WATCH_TIME_IF_VIDEO(DisplayInline, kWatchTimeEarly);
-  EXPECT_CALL(media_log_, OnUnderflowUpdate(1));
+  EXPECT_CALL(*this, OnUnderflowUpdate(1));
   EXPECT_WATCH_TIME_FINALIZED();
   CycleReportingTimer();
   wtr_.reset();
