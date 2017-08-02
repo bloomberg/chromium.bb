@@ -336,6 +336,25 @@ CryptAuthDeviceManager::~CryptAuthDeviceManager() {
   }
 }
 
+void CryptAuthDeviceManager::SetSyncSchedulerForTest(
+    std::unique_ptr<SyncScheduler> sync_scheduler) {
+  scheduler_ = std::move(sync_scheduler);
+}
+
+void CryptAuthDeviceManager::NotifySyncStarted() {
+  for (auto& observer : observers_) {
+    observer.OnSyncStarted();
+  }
+}
+
+void CryptAuthDeviceManager::NotifySyncFinished(
+    SyncResult sync_result,
+    DeviceChangeResult device_change_result) {
+  for (auto& observer : observers_) {
+    observer.OnSyncFinished(sync_result, device_change_result);
+  }
+}
+
 // static
 void CryptAuthDeviceManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDoublePref(prefs::kCryptAuthDeviceSyncLastSyncTimeSeconds,
@@ -464,12 +483,9 @@ void CryptAuthDeviceManager::OnGetMyDevicesSuccess(
   sync_request_->OnDidComplete(true);
   cryptauth_client_.reset();
   sync_request_.reset();
-  for (auto& observer : observers_) {
-    observer.OnSyncFinished(SyncResult::SUCCESS,
-                            unlock_keys_changed
-                                ? DeviceChangeResult::CHANGED
-                                : DeviceChangeResult::UNCHANGED);
-  }
+  NotifySyncFinished(SyncResult::SUCCESS, unlock_keys_changed
+                                              ? DeviceChangeResult::CHANGED
+                                              : DeviceChangeResult::UNCHANGED);
 }
 
 void CryptAuthDeviceManager::OnGetMyDevicesFailure(const std::string& error) {
@@ -479,8 +495,7 @@ void CryptAuthDeviceManager::OnGetMyDevicesFailure(const std::string& error) {
   sync_request_->OnDidComplete(false);
   cryptauth_client_.reset();
   sync_request_.reset();
-  for (auto& observer : observers_)
-    observer.OnSyncFinished(SyncResult::FAILURE, DeviceChangeResult::UNCHANGED);
+  NotifySyncFinished(SyncResult::FAILURE, DeviceChangeResult::UNCHANGED);
 }
 
 void CryptAuthDeviceManager::OnResyncMessage() {
@@ -510,8 +525,7 @@ void CryptAuthDeviceManager::UpdateUnlockKeysFromPrefs() {
 
 void CryptAuthDeviceManager::OnSyncRequested(
     std::unique_ptr<SyncScheduler::SyncRequest> sync_request) {
-  for (auto& observer : observers_)
-    observer.OnSyncStarted();
+  NotifySyncStarted();
 
   sync_request_ = std::move(sync_request);
   cryptauth_client_ = client_factory_->CreateInstance();
