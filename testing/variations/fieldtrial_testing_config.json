@@ -816,6 +816,24 @@
             ]
         }
     ],
+    "EnableDialLocalDiscovery": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableDialLocalDiscovery"
+                    ]
+                }
+            ]
+        }
+    ],
     "EnableGoogleCachedCopyTextExperiment": [
         {
             "platforms": [
