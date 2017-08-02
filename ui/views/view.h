@@ -1235,11 +1235,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Widget::ThemeChanged().
   virtual void OnThemeChanged() {}
 
-  // Called when the locale has changed, overriding allows individual Views to
-  // update locale-dependent strings.
-  // To dispatch a locale changed notification, call Widget::LocaleChanged().
-  virtual void OnLocaleChanged() {}
-
   // Tooltips ------------------------------------------------------------------
 
   // Views must invoke this when the tooltip text they are to display changes.
@@ -1524,10 +1519,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Used to propagate theme changed notifications from the root view to all
   // views in the hierarchy.
   void PropagateThemeChanged();
-
-  // Used to propagate locale changed notifications from the root view to all
-  // views in the hierarchy.
-  void PropagateLocaleChanged();
 
   // Used to propagate device scale factor changed notifications from the root
   // view to all views in the hierarchy.
