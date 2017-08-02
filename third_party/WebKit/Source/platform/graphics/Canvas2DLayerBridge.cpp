@@ -65,11 +65,18 @@ enum {
                                   // two animation frames behind.
 };
 
-static void ReleaseMailboxImageResource(gpu::gles2::GLES2Interface* gl,
-                                        const gpu::SyncToken& sync_token,
-                                        sk_sp<SkImage> skImage,
-                                        const gpu::Mailbox& mailbox,
-                                        bool lost_resource) {
+static void ReleaseMailboxImageResource(
+    WeakPtr<blink::WebGraphicsContext3DProviderWrapper>
+        context_provider_wrapper,
+    const gpu::SyncToken& sync_token,
+    sk_sp<SkImage> skImage,
+    const gpu::Mailbox& mailbox,
+    bool lost_resource) {
+  if (!context_provider_wrapper)
+    return;
+  gpu::gles2::GLES2Interface* gl =
+      context_provider_wrapper->ContextProvider()->ContextGL();
+
   if (sync_token.HasData() && gl)
     gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   GrTexture* texture = skImage->getTexture();
@@ -106,7 +113,7 @@ static void DeleteCHROMIUMImage(
     std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
     const GLuint& image_id,
     const GLuint& texture_id) {
-  if (!context_provider_wrapper->ContextProvider())
+  if (!context_provider_wrapper)
     return;
   gpu::gles2::GLES2Interface* gl =
       context_provider_wrapper->ContextProvider()->ContextGL();
@@ -1042,10 +1049,10 @@ void Canvas2DLayerBridge::ReleaseFrameResources(
     bool layer_bridge_with_valid_context =
         layer_bridge && !context_or_layer_bridge_lost;
     if (layer_bridge_with_valid_context || !layer_bridge) {
-      ReleaseMailboxImageResource(
-          context_provider_wrapper->ContextProvider()->ContextGL(), sync_token,
-          std::move(released_mailbox_info->image_),
-          released_mailbox_info->mailbox_, lost_resource);
+      ReleaseMailboxImageResource(context_provider_wrapper, sync_token,
+                                  std::move(released_mailbox_info->image_),
+                                  released_mailbox_info->mailbox_,
+                                  lost_resource);
     }
   }
 
