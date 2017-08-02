@@ -31,9 +31,6 @@ const char kDisableIOSPasswordGeneration[] = "disable-ios-password-generation";
 const char kDisableIOSPasswordSuggestions[] =
     "disable-ios-password-suggestions";
 
-// Disable the snapshots lru cache.
-const char kDisableLRUSnapshotCache[] = "disable-lru-snapshot-cache";
-
 // Disable auto-reload of error pages if offline.
 const char kDisableOfflineAutoReload[] = "disable-offline-auto-reload";
 
@@ -75,9 +72,6 @@ const char kEnableIOSHandoffToOtherDevices[] =
 
 // Enable password generation for iOS.
 const char kEnableIOSPasswordGeneration[] = "enable-ios-password-generation";
-
-// Enables the snapshot lru cache.
-const char kEnableLRUSnapshotCache[] = "enable-lru-snapshot-cache";
 
 // Enable auto-reload of error pages if offline.
 const char kEnableOfflineAutoReload[] = "enable-offline-auto-reload";
