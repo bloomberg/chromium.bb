@@ -21,6 +21,8 @@ class Profile;
 
 namespace task_manager {
 
+class TaskProviderObserver;
+
 // Defines a task that corresponds to a tab, an app, an extension, ... etc. It
 // represents one row in the task manager table. Multiple tasks can share the
 // same process, in which case they're grouped together in the task manager
@@ -82,6 +84,13 @@ class Task {
   // refresh.
   virtual void Refresh(const base::TimeDelta& update_interval,
                        int64_t refresh_flags);
+
+  // Modifies the value of process_id(). To mutate the process ID, this Task is
+  // temporarily unregistered from |observer|, and then re-registered before
+  // returning.
+  void UpdateProcessInfo(base::ProcessHandle handle,
+                         base::ProcessId process_id,
+                         TaskProviderObserver* observer);
 
   // Will receive this notification through the task manager from
   // |ChromeNetworkDelegate::OnNetworkBytesReceived()|. The task will add to the
@@ -213,10 +222,10 @@ class Task {
   gfx::ImageSkia icon_;
 
   // The handle of the process on which this task is running.
-  const base::ProcessHandle process_handle_;
+  base::ProcessHandle process_handle_;
 
   // The PID of the process on which this task is running.
-  const base::ProcessId process_id_;
+  base::ProcessId process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(Task);
 };

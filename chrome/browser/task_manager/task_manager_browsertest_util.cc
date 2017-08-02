@@ -106,6 +106,10 @@ class ResourceChangeObserver {
     switch (column_specifier_) {
       case ColumnSpecifier::COLUMN_NONE:
         return "N/A";
+      case ColumnSpecifier::PROCESS_ID:
+        return "Process ID";
+      case ColumnSpecifier::PHYSICAL_MEMORY:
+        return "Physical Memory";
       case ColumnSpecifier::V8_MEMORY:
         return "V8 Memory";
       case ColumnSpecifier::V8_MEMORY_USED:
