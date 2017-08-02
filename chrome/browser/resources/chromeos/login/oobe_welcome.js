@@ -134,6 +134,7 @@ Polymer({
       proxySettingsMenuName: loadTimeData.getString('proxySettingsMenuName'),
     };
 
+    this.$.welcomeScreen.i18nUpdateLocale();
     this.i18nUpdateLocale();
   },
 
