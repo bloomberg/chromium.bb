@@ -16,14 +16,19 @@ bear-1280x720_av_frag-initsegment-mvhd_version_0-mvhd_duration_bits_all_set.mp4:
   Just the first initialization segment of bear-1280x720_av_frag.mp4, modified to
   have the mvhd version 0 32-bit duration field set to all 1's.
 bear-flac.mp4 - Unfragmented audio-only 44.1kHz FLAC in MP4 file, created using:
-  ffmpeg -i bear-720x1280.mp4 -map 0:0 -acodec flac -strict -2 bear-flac.mp4
+  ffmpeg -i bear-1280x720.mp4 -map 0:0 -acodec flac -strict -2 bear-flac.mp4
   Note, "-strict -2" was required because current ffmpeg libavformat version
   57.75.100 indicates that flac in MP4 support is experimental.
-bear-flac-192kHz.mp4 - Unfragmented audio-only high-sample-rate FLAC in MP4
-  file, created using:
-  ffmpeg -i bear-720x1280.mp4 -map 0:0 -acodec flac -strict -2 -ar 192000 bear-flac-192kHz.mp4
+bear-flac_frag.mp4 - Fragmented audio-only 44.1kHz FLAC in MP4 file, created using:
+  ffmpeg -i bear-flac.mp4 -acodec copy -strict -2 -movflags frag_keyframe+empty_moov+default_base_moof bear-flac_frag.mp4
+bear-flac-192kHz.mp4 - Unfragmented audio-only high-sample-rate FLAC in MP4 file, created using:
+  ffmpeg -i bear-1280x720.mp4 -map 0:0 -acodec flac -strict -2 -ar 192000 bear-flac-192kHz.mp4
+bear-flac-192kHz_frag.mp4 - Fragmented audio-only high-sample-rate FLAC in MP4 file, created using:
+  ffmpeg -i bear-flac-192kHz.mp4 -acodec copy -strict -2 -movflags frag_keyframe+empty_moov+default_base_moof bear-flac-192kHz_frag.mp4
 sfx-flac.mp4 - Unfragmented audio-only 44.1kHz FLAC in MP4 file, created using:
   ffmpeg -i sfx.flac -map 0:0 -acodec copy -strict -2 sfx-flac.mp4
+sfx-flac_frag.mp4 - Fragmented audio-only 44.1kHz FLAC in MP4 file, created using:
+  ffmpeg -i sfx.flac -map 0:0 -acodec copy -strict -2 -movflags frag_keyframe+empty_moov+default_base_moof sfx-flac_frag.mp4
 bear-vp8a.webm - WebM VP8 video with alpha channel.
 bear-vp8a-odd-dimensions.webm - WebM VP8 video with alpha channel and odd dimensions.
 bear-opus.webm - Opus Audio only WebM file.

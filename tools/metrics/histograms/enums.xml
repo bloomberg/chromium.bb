@@ -25805,6 +25805,7 @@ from previous Chrome versions.
   <int value="10" label="HEVC"/>
   <int value="11" label="AC3"/>
   <int value="12" label="DOLBYVISION"/>
+  <int value="13" label="FLAC"/>
 </enum>
 
 <enum name="MultiAccountUpdateBubbleUserAction">

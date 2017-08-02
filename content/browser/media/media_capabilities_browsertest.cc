@@ -136,6 +136,11 @@ IN_PROC_BROWSER_TEST_F(MediaCapabilitiesTest, AudioDecodeTypes) {
             CanDecodeAudio("'audio/mp4; codecs=\"mp4a.40.02\"'"));
   EXPECT_EQ(kPropSupported, CanDecodeAudio("'audio/aac'"));
 
+  // TODO(chcunningham): Differentiate kFile vs kMediaSource support for
+  // FLAC-in-MP4, making MSE support for this contingent upon at least
+  // base::FeatureList::IsEnabled(kMseFlacInIsobmff) and kPropSupported.
+  EXPECT_EQ(kPropSupported, CanDecodeAudio("'audio/mp4; codecs=\"flac\"'"));
+
   // Test a handful of invalid strings.
   EXPECT_EQ(kUnsupported, CanDecodeAudio("'audio/wav; codecs=\"mp3\"'"));
   EXPECT_EQ(kUnsupported, CanDecodeAudio("'audio/webm; codecs=\"vp8\"'"));

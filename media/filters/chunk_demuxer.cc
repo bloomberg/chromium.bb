@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/media_switches.h"
 #include "media/base/media_tracks.h"
 #include "media/base/mime_util.h"
 #include "media/base/stream_parser_buffer.h"
@@ -209,11 +210,17 @@ bool ChunkDemuxerStream::UpdateAudioConfig(const AudioDecoderConfig& config,
   if (!stream_) {
     DCHECK_EQ(state_, UNINITIALIZED);
 
+    // FLAC in MSE here is only supported if in ISOBMFF, which has feature flag.
+    // Though the MP4StreamParser shouldn't produce FLAC decoder configs if the
+    // feature is disabled, double-check feature support here in debug builds.
+    DCHECK(config.codec() != kCodecFLAC ||
+           base::FeatureList::IsEnabled(kMseFlacInIsobmff));
+
     // Enable partial append window support for most audio codecs (notably: not
     // opus).
-    partial_append_window_trimming_enabled_ = config.codec() == kCodecMP3 ||
-                                              config.codec() == kCodecAAC ||
-                                              config.codec() == kCodecVorbis;
+    partial_append_window_trimming_enabled_ =
+        config.codec() == kCodecMP3 || config.codec() == kCodecAAC ||
+        config.codec() == kCodecVorbis || config.codec() == kCodecFLAC;
 
     stream_.reset(new SourceBufferStream(config, media_log));
     return true;

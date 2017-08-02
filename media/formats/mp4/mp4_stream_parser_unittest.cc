@@ -15,15 +15,18 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_switches.h"
 #include "media/base/media_track.h"
 #include "media/base/media_tracks.h"
 #include "media/base/mock_media_log.h"
 #include "media/base/stream_parser.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/test_data_util.h"
+#include "media/base/test_helpers.h"
 #include "media/base/text_track_config.h"
 #include "media/base/video_decoder_config.h"
 #include "media/formats/mp4/es_descriptor.h"
@@ -56,7 +59,7 @@ class MP4StreamParserTest : public testing::Test {
             DecodeTimestamp::FromPresentationTime(base::TimeDelta::Max())) {
     std::set<int> audio_object_types;
     audio_object_types.insert(kISO_14496_3);
-    parser_.reset(new MP4StreamParser(audio_object_types, false));
+    parser_.reset(new MP4StreamParser(audio_object_types, false, false));
   }
 
  protected:
@@ -284,7 +287,7 @@ TEST_F(MP4StreamParserTest, MPEG2_AAC_LC) {
   InSequence s;
   std::set<int> audio_object_types;
   audio_object_types.insert(kISO_13818_7_AAC_LC);
-  parser_.reset(new MP4StreamParser(audio_object_types, false));
+  parser_.reset(new MP4StreamParser(audio_object_types, false, false));
   auto params = GetDefaultInitParametersExpectations();
   params.detected_video_track_count = 0;
   InitializeParserWithInitParametersExpectations(params);
@@ -421,7 +424,7 @@ TEST_F(MP4StreamParserTest, NaturalSizeWithPASP) {
 TEST_F(MP4StreamParserTest, DemuxingAC3) {
   std::set<int> audio_object_types;
   audio_object_types.insert(kAC3);
-  parser_.reset(new MP4StreamParser(audio_object_types, false));
+  parser_.reset(new MP4StreamParser(audio_object_types, false, false));
 
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
   bool expect_success = true;
@@ -445,7 +448,7 @@ TEST_F(MP4StreamParserTest, DemuxingAC3) {
 TEST_F(MP4StreamParserTest, DemuxingEAC3) {
   std::set<int> audio_object_types;
   audio_object_types.insert(kEAC3);
-  parser_.reset(new MP4StreamParser(audio_object_types, false));
+  parser_.reset(new MP4StreamParser(audio_object_types, false, false));
 
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
   bool expect_success = true;
@@ -464,6 +467,41 @@ TEST_F(MP4StreamParserTest, DemuxingEAC3) {
       ReadTestDataFile("bear-eac3-only-frag.mp4");
   EXPECT_EQ(expect_success,
             AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
+}
+
+TEST_F(MP4StreamParserTest, Flac) {
+  // The feature is disabled by default. Enable it.
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(kMseFlacInIsobmff);
+
+  parser_.reset(new MP4StreamParser(std::set<int>(), false, true));
+
+  auto params = GetDefaultInitParametersExpectations();
+  params.detected_video_track_count = 0;
+  InitializeParserWithInitParametersExpectations(params);
+
+  scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("bear-flac_frag.mp4");
+  EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
+}
+
+TEST_F(MP4StreamParserTest, Flac192kHz) {
+  // The feature is disabled by default. Enable it.
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(kMseFlacInIsobmff);
+
+  parser_.reset(new MP4StreamParser(std::set<int>(), false, true));
+
+  auto params = GetDefaultInitParametersExpectations();
+  params.detected_video_track_count = 0;
+
+  // 192kHz exceeds the range of AudioSampleEntry samplerate. The correct
+  // samplerate should be applied from the dfLa STREAMINFO metadata block.
+  EXPECT_MEDIA_LOG(FlacAudioSampleRateOverriddenByStreaminfo("0", "192000"));
+  InitializeParserWithInitParametersExpectations(params);
+
+  scoped_refptr<DecoderBuffer> buffer =
+      ReadTestDataFile("bear-flac-192kHz_frag.mp4");
+  EXPECT_TRUE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
 }
 
 TEST_F(MP4StreamParserTest, FourCCToString) {
