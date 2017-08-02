@@ -68,6 +68,10 @@ declare_args() {
 
   # If true, use cast CMA backend instead of default chromium media pipeline.
   is_cast_using_cma_backend = is_cast_audio_only || !is_android
+
+  # A temporary arg for enabling MCVD while it's being implemented.
+  # See http://crbug.com/660942
+  enable_media_codec_video_decoder = false
 }
 
 # enable_hls_sample_aes can only be true if enable_mse_mpeg2ts_stream_parser is.
@@ -183,6 +187,9 @@ declare_args() {
         "cdm",
         "audio_decoder",
       ]
+      if (enable_media_codec_video_decoder) {
+        mojo_media_services += [ "video_decoder" ]
+      }
       mojo_media_host = "gpu"
     } else if (enable_library_cdms) {
       mojo_media_services = [ "cdm" ]

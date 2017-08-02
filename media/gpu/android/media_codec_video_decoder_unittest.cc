@@ -22,17 +22,20 @@
 #include "media/gpu/mock_surface_texture_gl_owner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
 using testing::InvokeWithoutArgs;
 using testing::NiceMock;
 using testing::NotNull;
 using testing::Return;
 using testing::SaveArg;
+using testing::_;
 
 namespace media {
 namespace {
 
 void OutputCb(const scoped_refptr<VideoFrame>& frame) {}
+
+void OutputWithReleaseMailboxCb(VideoFrameFactory::ReleaseMailboxCB release_cb,
+                                const scoped_refptr<VideoFrame>& frame) {}
 
 gpu::GpuCommandBufferStub* GetStubCb() {
   return nullptr;
@@ -51,15 +54,15 @@ class MockVideoFrameFactory : public VideoFrameFactory {
                     scoped_refptr<SurfaceTextureGLOwner> surface_texture,
                     base::TimeDelta timestamp,
                     gfx::Size natural_size,
-                    FrameCreatedCb frame_created_cb));
+                    OutputWithReleaseMailboxCB output_cb));
 
   void CreateVideoFrame(std::unique_ptr<CodecOutputBuffer> output_buffer,
                         scoped_refptr<SurfaceTextureGLOwner> surface_texture,
                         base::TimeDelta timestamp,
                         gfx::Size natural_size,
-                        FrameCreatedCb frame_created_cb) override {
+                        OutputWithReleaseMailboxCB output_cb) override {
     MockCreateVideoFrame(output_buffer.get(), surface_texture, timestamp,
-                         natural_size, frame_created_cb);
+                         natural_size, output_cb);
   }
 };
 
@@ -89,7 +92,8 @@ class MediaCodecVideoDecoderTest : public testing::Test {
 
     mcvd_ = base::MakeUnique<MediaCodecVideoDecoder>(
         base::ThreadTaskRunnerHandle::Get(), base::Bind(&GetStubCb),
-        device_info_.get(), codec_allocator_.get(), std::move(surface_chooser),
+        base::Bind(&OutputWithReleaseMailboxCb), device_info_.get(),
+        codec_allocator_.get(), std::move(surface_chooser),
         std::move(video_frame_factory));
   }
 

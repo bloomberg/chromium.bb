@@ -111,7 +111,7 @@ class MEDIA_GPU_EXPORT CodecWrapper {
       base::TimeDelta* presentation_time,
       bool* end_of_stream,
       std::unique_ptr<CodecOutputBuffer>* codec_buffer);
-  bool SetSurface(jobject surface);
+  bool SetSurface(const base::android::JavaRef<jobject>& surface);
 
  private:
   scoped_refptr<CodecWrapperImpl> impl_;

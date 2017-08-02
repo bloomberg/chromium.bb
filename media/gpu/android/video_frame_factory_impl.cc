@@ -98,11 +98,11 @@ scoped_refptr<gpu::gles2::TextureRef> CreateTexture(
 
 }  // namespace
 
-VideoFrameFactoryImpl::VideoFrameFactoryImpl()
-    : gpu_video_frame_factory_(base::MakeUnique<GpuVideoFrameFactory>()) {}
+VideoFrameFactoryImpl::VideoFrameFactoryImpl() = default;
 
 VideoFrameFactoryImpl::~VideoFrameFactoryImpl() {
-  gpu_task_runner_->DeleteSoon(FROM_HERE, gpu_video_frame_factory_.release());
+  if (gpu_video_frame_factory_)
+    gpu_task_runner_->DeleteSoon(FROM_HERE, gpu_video_frame_factory_.release());
 }
 
 void VideoFrameFactoryImpl::Initialize(
@@ -110,6 +110,7 @@ void VideoFrameFactoryImpl::Initialize(
     GetStubCb get_stub_cb,
     InitCb init_cb) {
   gpu_task_runner_ = std::move(gpu_task_runner);
+  gpu_video_frame_factory_ = base::MakeUnique<GpuVideoFrameFactory>();
   base::PostTaskAndReplyWithResult(
       gpu_task_runner_.get(), FROM_HERE,
       base::Bind(&GpuVideoFrameFactory::Initialize,

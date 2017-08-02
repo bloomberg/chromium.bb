@@ -12,13 +12,10 @@ import("//testing/test.gni")
 buildflag_header("features") {
   header = "features.h"
 
-  flags = [ "USE_VAAPI=$use_vaapi" ]
-}
-
-declare_args() {
-  # A temporary arg for building MCVD while it's being implemented.
-  # See http://crbug.com/660942
-  enable_media_codec_video_decoder = false
+  flags = [
+    "USE_VAAPI=$use_vaapi",
+    "ENABLE_MEDIA_CODEC_VIDEO_DECODER=$enable_media_codec_video_decoder",
+  ]
 }
 
 if (is_mac) {

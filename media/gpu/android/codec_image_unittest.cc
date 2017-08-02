@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_task_environment.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/mock_media_codec_bridge.h"
@@ -22,11 +23,11 @@
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/init/gl_factory.h"
 
-using testing::_;
 using testing::InSequence;
 using testing::Invoke;
 using testing::NiceMock;
 using testing::Return;
+using testing::_;
 
 namespace media {
 
@@ -79,6 +80,7 @@ class CodecImageTest : public testing::Test {
                           std::move(destruction_cb));
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   NiceMock<MockMediaCodecBridge>* codec_;
   std::unique_ptr<CodecWrapper> wrapper_;
   scoped_refptr<NiceMock<MockSurfaceTextureGLOwner>> surface_texture_;
