@@ -47,12 +47,13 @@
 // REAL_IO_THREAD.
 //
 // For some tests it is important to emulate real browser startup. During real
-// browser startup, the main MessageLoop is created before other threads.
-// Passing DONT_CREATE_THREADS to constructor will delay creating other threads
-// until the test explicitly calls CreateThreads().
+// browser startup, the main MessageLoop and the TaskScheduler are created
+// before browser threads. Passing DONT_CREATE_BROWSER_THREADS to constructor
+// will delay creating browser threads until the test explicitly calls
+// CreateBrowserThreads().
 //
-// DONT_CREATE_THREADS should only be used when the options specify at least
-// one real thread other than the main thread.
+// DONT_CREATE_BROWSER_THREADS should only be used when the options specify at
+// least one real thread other than the main thread.
 //
 // TestBrowserThreadBundle may be instantiated in a scope where there is already
 // a base::test::ScopedTaskEnvironment. In that case, it will use the
@@ -90,9 +91,8 @@
 #include "build/build_config.h"
 
 namespace base {
-class MessageLoop;
 namespace test {
-class ScopedAsyncTaskScheduler;
+class ScopedTaskEnvironment;
 }  // namespace test
 #if defined(OS_WIN)
 namespace win {
@@ -116,24 +116,22 @@ class TestBrowserThreadBundle {
     REAL_DB_THREAD = 1 << 1,
     REAL_FILE_THREAD = 1 << 2,
     REAL_IO_THREAD = 1 << 3,
-    DONT_CREATE_THREADS = 1 << 4,
+    DONT_CREATE_BROWSER_THREADS = 1 << 4,
   };
 
   TestBrowserThreadBundle();
   explicit TestBrowserThreadBundle(int options);
 
-  // Creates threads; should only be called from other classes if the
-  // DONT_CREATE_THREADS option was used when the bundle was created.
-  void CreateThreads();
+  // Creates browser threads; should only be called from other classes if the
+  // DONT_CREATE_BROWSER_THREADS option was used when the bundle was created.
+  void CreateBrowserThreads();
 
   ~TestBrowserThreadBundle();
 
  private:
   void Init();
 
-  std::unique_ptr<base::MessageLoop> message_loop_;
-  std::unique_ptr<base::test::ScopedAsyncTaskScheduler>
-      scoped_async_task_scheduler_;
+  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
   std::unique_ptr<TestBrowserThread> ui_thread_;
   std::unique_ptr<TestBrowserThread> db_thread_;
   std::unique_ptr<TestBrowserThread> file_thread_;

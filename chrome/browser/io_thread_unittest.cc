@@ -117,8 +117,9 @@ class IOThreadTestWithIOThreadObject : public testing::Test {
 
  protected:
   IOThreadTestWithIOThreadObject()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD |
-                       content::TestBrowserThreadBundle::DONT_CREATE_THREADS) {
+      : thread_bundle_(
+            content::TestBrowserThreadBundle::REAL_IO_THREAD |
+            content::TestBrowserThreadBundle::DONT_CREATE_BROWSER_THREADS) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     event_router_forwarder_ = new extensions::EventRouterForwarder;
 #endif
@@ -153,7 +154,7 @@ class IOThreadTestWithIOThreadObject : public testing::Test {
     // Now that IOThread object is registered starting the threads will
     // call the IOThread::Init(). This sets up the environment needed for
     // these tests.
-    thread_bundle_.CreateThreads();
+    thread_bundle_.CreateBrowserThreads();
   }
 
   ~IOThreadTestWithIOThreadObject() override {

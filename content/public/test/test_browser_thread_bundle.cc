@@ -8,8 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/task_scheduler/task_scheduler.h"
-#include "base/test/scoped_async_task_scheduler.h"
+#include "base/test/scoped_task_environment.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
@@ -66,30 +65,25 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
   // Skip the following step when TaskScheduler isn't managed by this
   // TestBrowserThreadBundle, otherwise it can hang (e.g.
   // RunAllBlockingPoolTasksUntilIdle() hangs when the TaskScheduler is managed
-  // by a ScopedTaskEnvironment with ExecutionMode::QUEUED). This is fine as (1)
-  // it's rare and (2) it mimics production where BrowserThreads are shutdown
-  // before TaskScheduler.
-  if (scoped_async_task_scheduler_) {
-    // This is required to ensure we run all remaining tasks in an atomic step
-    // (instead of ~ScopedAsyncTaskScheduler() followed by another
-    // RunLoop().RunUntilIdle()). Otherwise If a pending task in
-    // |scoped_async_task_scheduler_| posts to |message_loop_|, that task can
-    // then post back to |scoped_async_task_scheduler_| after the former was
-    // destroyed. This is a bit different than production where the main thread
-    // is not flushed after it's done running but this approach is preferred in
-    // unit tests as running more tasks can merely uncover more issues (e.g. if
-    // a bad tasks is posted but never blocked upon it could make a test flaky
-    // whereas by flushing we guarantee it will blow up).
+  // by an external ScopedTaskEnvironment with ExecutionMode::QUEUED). This is
+  // fine as (1) it's rare and (2) it mimics production where BrowserThreads are
+  // shutdown before TaskScheduler.
+  if (scoped_task_environment_) {
+    // This is required to ensure we run all remaining MessageLoop and
+    // TaskScheduler tasks in an atomic step. This is a bit different than
+    // production where the main thread is not flushed after it's done running
+    // but this approach is preferred in unit tests as running more tasks can
+    // merely uncover more issues (e.g. if a bad tasks is posted but never
+    // blocked upon it could make a test flaky whereas by flushing we guarantee
+    // it will blow up).
     RunAllBlockingPoolTasksUntilIdle();
-
-    scoped_async_task_scheduler_.reset();
     CHECK(base::MessageLoop::current()->IsIdleForTesting());
   }
 
-  // |message_loop_| needs to explicitly go away before fake threads in order
-  // for DestructionObservers hooked to |message_loop_| to be able to invoke
-  // BrowserThread::CurrentlyOn() -- ref. ~TestBrowserThread().
-  message_loop_.reset();
+  // |scoped_task_environment_| needs to explicitly go away before fake threads
+  // in order for DestructionObservers hooked to the main MessageLoop to be able
+  // to invoke BrowserThread::CurrentlyOn() -- ref. ~TestBrowserThread().
+  scoped_task_environment_.reset();
 
 #if defined(OS_WIN)
   com_initializer_.reset();
@@ -103,8 +97,8 @@ void TestBrowserThreadBundle::Init() {
 
   // Check for conflicting options can't have two IO threads.
   CHECK(!(options_ & IO_MAINLOOP) || !(options_ & REAL_IO_THREAD));
-  // There must be a thread to start to use DONT_CREATE_THREADS
-  CHECK((options_ & ~IO_MAINLOOP) != DONT_CREATE_THREADS);
+  // There must be a thread to start to use DONT_CREATE_BROWSER_THREADS
+  CHECK((options_ & ~IO_MAINLOOP) != DONT_CREATE_BROWSER_THREADS);
 
 #if defined(OS_WIN)
   // Similar to Chrome's UI thread, we need to initialize COM separately for
@@ -114,38 +108,31 @@ void TestBrowserThreadBundle::Init() {
   CHECK(com_initializer_->succeeded());
 #endif
 
-  // Create the main MessageLoop, if it doesn't already exist, and set the
-  // current thread as the UI thread. In production, this work is done in
-  // BrowserMainLoop::MainMessageLoopStart(). The main MessageLoop may already
-  // exist if this TestBrowserThreadBundle is instantiated in a test whose
-  // parent fixture provides a base::test::ScopedTaskEnvironment.
-  const base::MessageLoop::Type message_loop_type =
-      options_ & IO_MAINLOOP ? base::MessageLoop::TYPE_IO
-                             : base::MessageLoop::TYPE_UI;
-  if (!base::MessageLoop::current())
-    message_loop_ = base::MakeUnique<base::MessageLoop>(message_loop_type);
-  CHECK(base::MessageLoop::current()->IsType(message_loop_type));
+  // Create the ScopedTaskEnvironment if it doesn't already exist. A
+  // ScopedTaskEnvironment may already exist if this TestBrowserThreadBundle is
+  // instantiated in a test whose parent fixture provides a
+  // ScopedTaskEnvironment.
+  if (!base::MessageLoop::current()) {
+    scoped_task_environment_ =
+        base::MakeUnique<base::test::ScopedTaskEnvironment>(
+            options_ & IO_MAINLOOP
+                ? base::test::ScopedTaskEnvironment::MainThreadType::IO
+                : base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  }
+  CHECK(base::MessageLoop::current()->IsType(options_ & IO_MAINLOOP
+                                                 ? base::MessageLoop::TYPE_IO
+                                                 : base::MessageLoop::TYPE_UI));
 
+  // Set the current thread as the UI thread.
   ui_thread_ = base::MakeUnique<TestBrowserThread>(
       BrowserThread::UI, base::MessageLoop::current());
 
-  if (!(options_ & DONT_CREATE_THREADS))
-    CreateThreads();
+  if (!(options_ & DONT_CREATE_BROWSER_THREADS))
+    CreateBrowserThreads();
 }
 
-// This method mimics the work done in BrowserMainLoop::CreateThreads().
-void TestBrowserThreadBundle::CreateThreads() {
+void TestBrowserThreadBundle::CreateBrowserThreads() {
   CHECK(!threads_created_);
-
-  // TaskScheduler can sometimes be externally provided by a
-  // base::test::ScopedTaskEnvironment in a parent fixture. In that case it's
-  // expected to have provided the MessageLoop as well (in which case
-  // |message_loop_| remains null in Init()).
-  CHECK(!base::TaskScheduler::GetInstance() || !message_loop_);
-  if (!base::TaskScheduler::GetInstance()) {
-    scoped_async_task_scheduler_ =
-        base::MakeUnique<base::test::ScopedAsyncTaskScheduler>();
-  }
 
   if (options_ & REAL_DB_THREAD) {
     db_thread_ = base::MakeUnique<TestBrowserThread>(BrowserThread::DB);
