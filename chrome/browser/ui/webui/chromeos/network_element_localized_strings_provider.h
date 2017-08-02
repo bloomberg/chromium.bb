@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_NETWORK_ELEMENT_LOCALIZED_STRINGS_PROVIDER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_NETWORK_ELEMENT_LOCALIZED_STRINGS_PROVIDER_H_
 
+namespace login {
+class LocalizedValuesBuilder;
+}
+
 namespace content {
 class WebUIDataSource;
 }
@@ -15,6 +19,9 @@ namespace network_element {
 // Adds the strings needed for network elements to |html_source|. String ids
 // correspond to ids in ui/webui/resources/cr_elements/chromeos/network/.
 void AddLocalizedStrings(content::WebUIDataSource* html_source);
+
+// Same as AddLocalizedStrings but for a LocalizedValuesBuilder.
+void AddLocalizedValuesToBuilder(::login::LocalizedValuesBuilder* builder);
 
 }  // namespace network_element
 }  // namespace chromeos
