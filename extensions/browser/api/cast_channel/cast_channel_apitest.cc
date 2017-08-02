@@ -111,7 +111,7 @@ class CastChannelAPITest : public ExtensionApiTest {
       EXPECT_CALL(*mock_cast_socket_, ConnectInternal(_))
           .WillOnce(WithArgs<0>(
               Invoke([&](const MockCastSocket::MockOnOpenCallback& callback) {
-                callback.Run(mock_cast_socket_->id(), ChannelError::NONE);
+                callback.Run(mock_cast_socket_);
               })));
       EXPECT_CALL(*mock_cast_socket_, ready_state())
           .WillOnce(Return(ReadyState::OPEN));
@@ -138,7 +138,7 @@ class CastChannelAPITest : public ExtensionApiTest {
       EXPECT_CALL(*mock_cast_socket_, ConnectInternal(_))
           .WillOnce(WithArgs<0>(
               Invoke([&](const MockCastSocket::MockOnOpenCallback& callback) {
-                callback.Run(mock_cast_socket_->id(), ChannelError::NONE);
+                callback.Run(mock_cast_socket_);
               })));
       EXPECT_CALL(*mock_cast_socket_, ready_state())
           .WillOnce(Return(ReadyState::OPEN))
@@ -306,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenReceiveClose) {
     EXPECT_CALL(*mock_cast_socket_, ConnectInternal(_))
         .WillOnce(WithArgs<0>(
             Invoke([&](const MockCastSocket::MockOnOpenCallback& callback) {
-              callback.Run(mock_cast_socket_->id(), ChannelError::NONE);
+              callback.Run(mock_cast_socket_);
             })));
     EXPECT_CALL(*mock_cast_socket_, ready_state())
         .Times(3)
@@ -343,7 +343,7 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenError) {
   EXPECT_CALL(*mock_cast_socket_, ConnectInternal(_))
       .WillOnce(WithArgs<0>(
           Invoke([&](const MockCastSocket::MockOnOpenCallback& callback) {
-            callback.Run(mock_cast_socket_->id(), ChannelError::CONNECT_ERROR);
+            callback.Run(mock_cast_socket_);
           })));
   mock_cast_socket_->SetErrorState(ChannelError::CONNECT_ERROR);
   EXPECT_CALL(*mock_cast_socket_, ready_state())

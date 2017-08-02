@@ -99,11 +99,10 @@ class CastMediaSinkService
 
   // Invoked when opening cast channel on IO thread completes.
   // |service|: mDNS service description.
-  // |channel_id|: channel id of newly created cast channel.
-  // |channel_error|: error encounted when opending cast channel.
+  // |socket|: raw pointer of newly created cast channel. Does not take
+  // ownership of |socket|.
   void OnChannelOpenedOnIOThread(const DnsSdService& service,
-                                 int channel_id,
-                                 cast_channel::ChannelError channel_error);
+                                 cast_channel::CastSocket* socket);
 
   // Invoked by |OnChannelOpenedOnIOThread| to post task on UI thread.
   // |service|: mDNS service description.

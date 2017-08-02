@@ -137,12 +137,10 @@ TEST_F(CastMediaSinkServiceTest, TestMultipleStartAndStop) {
 TEST_F(CastMediaSinkServiceTest, TestOnChannelOpenedOnIOThread) {
   DnsSdService service = CreateDnsService(1);
   cast_channel::MockCastSocket socket;
-  EXPECT_CALL(*mock_cast_socket_service_, GetSocket(1))
-      .WillOnce(Return(&socket));
+  socket.set_id(1);
 
   media_sink_service_->current_services_.push_back(service);
-  media_sink_service_->OnChannelOpenedOnIOThread(
-      service, 1, cast_channel::ChannelError::NONE);
+  media_sink_service_->OnChannelOpenedOnIOThread(service, &socket);
   // Invoke CastMediaSinkService::OnChannelOpenedOnUIThread on the UI thread.
   base::RunLoop().RunUntilIdle();
 
@@ -158,24 +156,16 @@ TEST_F(CastMediaSinkServiceTest, TestMultipleOnChannelOpenedOnIOThread) {
   DnsSdService service3 = CreateDnsService(3);
 
   cast_channel::MockCastSocket socket2;
+  socket2.set_id(2);
   cast_channel::MockCastSocket socket3;
-  // Fail to open channel 1.
-  EXPECT_CALL(*mock_cast_socket_service_, GetSocket(1))
-      .WillOnce(Return(nullptr));
-  EXPECT_CALL(*mock_cast_socket_service_, GetSocket(2))
-      .WillOnce(Return(&socket2));
-  EXPECT_CALL(*mock_cast_socket_service_, GetSocket(3))
-      .WillOnce(Return(&socket2));
+  socket3.set_id(3);
 
   // Current round of Dns discovery finds service1 and service 2.
   media_sink_service_->current_services_.push_back(service1);
   media_sink_service_->current_services_.push_back(service2);
-  media_sink_service_->OnChannelOpenedOnIOThread(
-      service1, 1, cast_channel::ChannelError::NONE);
-  media_sink_service_->OnChannelOpenedOnIOThread(
-      service2, 2, cast_channel::ChannelError::NONE);
-  media_sink_service_->OnChannelOpenedOnIOThread(
-      service3, 3, cast_channel::ChannelError::NONE);
+  // Fail to open channel 1.
+  media_sink_service_->OnChannelOpenedOnIOThread(service2, &socket2);
+  media_sink_service_->OnChannelOpenedOnIOThread(service3, &socket3);
   // Invoke CastMediaSinkService::OnChannelOpenedOnUIThread on the UI thread.
   base::RunLoop().RunUntilIdle();
 
@@ -209,15 +199,12 @@ TEST_F(CastMediaSinkServiceTest, TestOnDnsSdEvent) {
   base::RunLoop().RunUntilIdle();
 
   cast_channel::MockCastSocket socket1;
+  socket1.set_id(1);
   cast_channel::MockCastSocket socket2;
+  socket2.set_id(2);
 
-  EXPECT_CALL(*mock_cast_socket_service_, GetSocket(1))
-      .WillOnce(Return(&socket1));
-  EXPECT_CALL(*mock_cast_socket_service_, GetSocket(2))
-      .WillOnce(Return(&socket2));
-
-  callback1.Run(1, cast_channel::ChannelError::NONE);
-  callback2.Run(2, cast_channel::ChannelError::NONE);
+  callback1.Run(&socket1);
+  callback2.Run(&socket2);
 
   // Invoke CastMediaSinkService::OnChannelOpenedOnUIThread on the UI thread.
   base::RunLoop().RunUntilIdle();
