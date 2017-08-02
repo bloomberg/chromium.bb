@@ -788,6 +788,9 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   const BLOCK_SIZE bsize = mbmi->sb_type;
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
 
+  assert(bsize >= BLOCK_8X8 && bsize <= BLOCK_LARGEST);
+  const int block_palette_idx = bsize - BLOCK_8X8;
+
   if (mbmi->mode == DC_PRED) {
     int palette_y_mode_ctx = 0;
     if (above_mi) {
@@ -798,12 +801,12 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       palette_y_mode_ctx +=
           (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
     }
-    if (aom_read(r, av1_default_palette_y_mode_prob[bsize - BLOCK_8X8]
+    if (aom_read(r, av1_default_palette_y_mode_prob[block_palette_idx]
                                                    [palette_y_mode_ctx],
                  ACCT_STR)) {
       pmi->palette_size[0] =
           aom_read_symbol(r,
-                          xd->tile_ctx->palette_y_size_cdf[bsize - BLOCK_8X8],
+                          xd->tile_ctx->palette_y_size_cdf[block_palette_idx],
                           PALETTE_SIZES, ACCT_STR) +
           2;
 #if CONFIG_PALETTE_DELTA_ENCODING
@@ -821,7 +824,7 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                  ACCT_STR)) {
       pmi->palette_size[1] =
           aom_read_symbol(r,
-                          xd->tile_ctx->palette_uv_size_cdf[bsize - BLOCK_8X8],
+                          xd->tile_ctx->palette_uv_size_cdf[block_palette_idx],
                           PALETTE_SIZES, ACCT_STR) +
           2;
 #if CONFIG_PALETTE_DELTA_ENCODING
@@ -1210,7 +1213,8 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #if CONFIG_PALETTE
   mbmi->palette_mode_info.palette_size[0] = 0;
   mbmi->palette_mode_info.palette_size[1] = 0;
-  if (bsize >= BLOCK_8X8 && cm->allow_screen_content_tools)
+  if (bsize >= BLOCK_8X8 && bsize <= BLOCK_LARGEST &&
+      cm->allow_screen_content_tools)
     read_palette_mode_info(cm, xd, r);
 #endif  // CONFIG_PALETTE
 #if CONFIG_FILTER_INTRA

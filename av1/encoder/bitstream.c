@@ -1533,6 +1533,9 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const BLOCK_SIZE bsize = mbmi->sb_type;
   const PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
 
+  assert(bsize >= BLOCK_8X8 && bsize <= BLOCK_LARGEST);
+  const int block_palette_idx = bsize - BLOCK_8X8;
+
   if (mbmi->mode == DC_PRED) {
     const int n = pmi->palette_size[0];
     int palette_y_mode_ctx = 0;
@@ -1546,10 +1549,10 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     }
     aom_write(
         w, n > 0,
-        av1_default_palette_y_mode_prob[bsize - BLOCK_8X8][palette_y_mode_ctx]);
+        av1_default_palette_y_mode_prob[block_palette_idx][palette_y_mode_ctx]);
     if (n > 0) {
       aom_write_symbol(w, n - PALETTE_MIN_SIZE,
-                       xd->tile_ctx->palette_y_size_cdf[bsize - BLOCK_8X8],
+                       xd->tile_ctx->palette_y_size_cdf[block_palette_idx],
                        PALETTE_SIZES);
 #if CONFIG_PALETTE_DELTA_ENCODING
       write_palette_colors_y(xd, pmi, cm->bit_depth, w);
@@ -1568,7 +1571,7 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     aom_write(w, n > 0, av1_default_palette_uv_mode_prob[palette_uv_mode_ctx]);
     if (n > 0) {
       aom_write_symbol(w, n - PALETTE_MIN_SIZE,
-                       xd->tile_ctx->palette_uv_size_cdf[bsize - BLOCK_8X8],
+                       xd->tile_ctx->palette_uv_size_cdf[block_palette_idx],
                        PALETTE_SIZES);
 #if CONFIG_PALETTE_DELTA_ENCODING
       write_palette_colors_uv(xd, pmi, cm->bit_depth, w);
@@ -2284,7 +2287,8 @@ static void write_mb_modes_kf(AV1_COMMON *cm,
   write_intra_angle_info(xd, ec_ctx, w);
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_PALETTE
-  if (bsize >= BLOCK_8X8 && cm->allow_screen_content_tools)
+  if (bsize >= BLOCK_8X8 && bsize <= BLOCK_LARGEST &&
+      cm->allow_screen_content_tools)
     write_palette_mode_info(cm, xd, mi, w);
 #endif  // CONFIG_PALETTE
 #if CONFIG_FILTER_INTRA
