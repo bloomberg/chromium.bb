@@ -180,12 +180,6 @@ void WaveShaperDSPKernel::Reset() {
   }
 }
 
-bool WaveShaperDSPKernel::RequiresTailProcessing() const {
-  // Always return true even if the tail time and latency might both
-  // be zero.
-  return true;
-}
-
 double WaveShaperDSPKernel::LatencyTime() const {
   size_t latency_frames = 0;
   WaveShaperDSPKernel* kernel = const_cast<WaveShaperDSPKernel*>(this);

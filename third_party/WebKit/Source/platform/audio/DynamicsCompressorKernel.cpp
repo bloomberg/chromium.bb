@@ -495,16 +495,4 @@ void DynamicsCompressorKernel::Reset() {
   max_attack_compression_diff_db_ = -1;  // uninitialized state
 }
 
-double DynamicsCompressorKernel::TailTime() const {
-  // The reduction value of the compressor is computed from the gain
-  // using an exponential filter with a time constant of
-  // |kMeteringReleaseTimeConstant|.  We need to keep he compressor
-  // running for some time after the inputs go away so that the
-  // reduction value approaches 0.  This is a tradeoff between how
-  // long we keep the node alive and how close we approach the final
-  // value.  A value of 5 to 10 times the time constant is a
-  // reasonable trade-off.
-  return 5 * kMeteringReleaseTimeConstant;
-}
-
 }  // namespace blink

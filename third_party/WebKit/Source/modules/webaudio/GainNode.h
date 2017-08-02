@@ -57,7 +57,6 @@ class GainHandler final : public AudioHandler {
   // AudioNode
   double TailTime() const override { return 0; }
   double LatencyTime() const override { return 0; }
-  bool RequiresTailProcessing() const final { return false; }
 
  private:
   GainHandler(AudioNode&, float sample_rate, AudioParamHandler& gain);

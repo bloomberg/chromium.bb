@@ -53,7 +53,6 @@ class PLATFORM_EXPORT EqualPowerPanner final : public Panner {
 
   double TailTime() const override { return 0; }
   double LatencyTime() const override { return 0; }
-  bool RequiresTailProcessing() const override { return false; }
 
  private:
   void CalculateDesiredGain(double& desired_gain_l,

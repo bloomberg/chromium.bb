@@ -51,8 +51,6 @@ class MediaStreamAudioDestinationHandler final
 
   unsigned long MaxChannelCount() const;
 
-  bool RequiresTailProcessing() const final { return false; }
-
  private:
   MediaStreamAudioDestinationHandler(AudioNode&, size_t number_of_channels);
   // As an audio source, we will never propagate silence.

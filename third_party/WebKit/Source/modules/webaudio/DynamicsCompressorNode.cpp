@@ -121,10 +121,8 @@ void DynamicsCompressorHandler::Initialize() {
       Context()->sampleRate(), defaultNumberOfOutputChannels));
 }
 
-bool DynamicsCompressorHandler::RequiresTailProcessing() const {
-  // Always return true even if the tail time and latency might both
-  // be zero.
-  return true;
+void DynamicsCompressorHandler::ClearInternalStateWhenDisabled() {
+  reduction_ = 0;
 }
 
 double DynamicsCompressorHandler::TailTime() const {

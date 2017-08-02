@@ -103,7 +103,7 @@ PannerHandler::~PannerHandler() {
 void PannerHandler::Process(size_t frames_to_process) {
   AudioBus* destination = Output(0).Bus();
 
-  if (!IsInitialized() || !panner_.get()) {
+  if (!IsInitialized() || !Input(0).IsConnected() || !panner_.get()) {
     destination->Zero();
     return;
   }
@@ -643,14 +643,6 @@ void PannerHandler::UpdateDirtyState() {
                       PannerHandler::kDistanceConeGainDirty);
   }
 }
-
-bool PannerHandler::RequiresTailProcessing() const {
-  // If there's no panner set up yet, assume we require tail
-  // processing in case the HRTF panner is set later, which does
-  // require tail processing.
-  return panner_ ? panner_->RequiresTailProcessing() : true;
-}
-
 // ----------------------------------------------------------------
 
 PannerNode::PannerNode(BaseAudioContext& context)

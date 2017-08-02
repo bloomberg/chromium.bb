@@ -350,11 +350,6 @@ void HRTFPanner::PanWithSampleAccurateValues(
       frames_to_process, channel_interpretation);
 }
 
-bool HRTFPanner::RequiresTailProcessing() const {
-  // Always return true since the tail and latency are never zero.
-  return true;
-}
-
 double HRTFPanner::TailTime() const {
   // Because HRTFPanner is implemented with a DelayKernel and a FFTConvolver,
   // the tailTime of the HRTFPanner is the sum of the tailTime of the

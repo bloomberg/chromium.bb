@@ -81,10 +81,6 @@ class AudioScheduledSourceHandler : public AudioHandler {
 
   bool HasFinished() const { return GetPlaybackState() == FINISHED_STATE; }
 
-  // Source nodes don't have tail or latency times so no tail
-  // processing needed.
-  bool RequiresTailProcessing() const final { return false; }
-
  protected:
   // Get frame information for the current time quantum.
   // We handle the transition into PLAYING_STATE and FINISHED_STATE here,

@@ -21,7 +21,6 @@ class MockAudioProcessor final : public AudioProcessor {
   void Reset() override {}
   void SetNumberOfChannels(unsigned) override {}
   unsigned NumberOfChannels() const override { return number_of_channels_; }
-  bool RequiresTailProcessing() const override { return true; }
   double TailTime() const override { return 0; }
   double LatencyTime() const override { return 0; }
 };

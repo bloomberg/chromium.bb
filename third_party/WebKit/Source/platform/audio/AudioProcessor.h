@@ -82,7 +82,6 @@ class PLATFORM_EXPORT AudioProcessor {
 
   virtual double TailTime() const = 0;
   virtual double LatencyTime() const = 0;
-  virtual bool RequiresTailProcessing() const = 0;
 
  protected:
   bool initialized_;
