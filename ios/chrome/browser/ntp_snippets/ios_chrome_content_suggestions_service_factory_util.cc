@@ -43,6 +43,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
+#include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
@@ -185,6 +186,7 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
       base::Bind(&ParseJson), GetFetchEndpoint(GetChannel()), api_key,
       service->user_classifier());
 
+  std::string pref_name = prefs::kContentSuggestionsRemoteEnabled;
   auto provider = base::MakeUnique<RemoteSuggestionsProviderImpl>(
       service, prefs, GetApplicationContext()->GetApplicationLocale(),
       service->category_ranker(), service->remote_suggestions_scheduler(),
@@ -193,7 +195,7 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
                                          request_context.get()),
       base::MakeUnique<RemoteSuggestionsDatabase>(database_dir, task_runner),
       base::MakeUnique<RemoteSuggestionsStatusService>(signin_manager, prefs,
-                                                       std::string()),
+                                                       pref_name),
       /*prefetched_pages_tracker=*/nullptr);
 
   service->remote_suggestions_scheduler()->SetProvider(provider.get());

@@ -246,8 +246,13 @@ const CGFloat kNumberOfMostVisitedLines = 2;
 
 - (void)clearSection:(ContentSuggestionsSectionInformation*)sectionInfo {
   SectionIdentifier sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
-  NSInteger section = [self.collectionViewController.collectionViewModel
-      sectionIdentifierForSection:sectionIdentifier];
+  CSCollectionViewModel* model =
+      self.collectionViewController.collectionViewModel;
+
+  if (![model hasSectionForSectionIdentifier:sectionIdentifier])
+    return;
+
+  NSInteger section = [model sectionForSectionIdentifier:sectionIdentifier];
 
   [self.collectionViewController dismissSection:section];
 }
