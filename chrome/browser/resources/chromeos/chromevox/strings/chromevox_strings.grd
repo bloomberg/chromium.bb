@@ -770,10 +770,16 @@
         Row <ph name="rowIndex">$1</ph> of <ph name="rowTotal">$2</ph>, Column <ph name="colIndex">$3</ph> of <ph name="colTotal">$4</ph>
       </message>
       <message desc="summarizes a table." name="IDS_CHROMEVOX_TABLE_SUMMARY">
-        Table $1, $2 by $3
+        Table <ph name="tableName">$1</ph>, <ph name="tableRows">$2</ph> by <ph name="tableCols">$3</ph>
+      </message>
+      <message desc="summarizes a html data table for braille. If the description for the table (and not the substitutions after the initial description) is longer than 5 characters, try to abbreviate it according to local conventions, and when doing so, if reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_TABLE_SUMMARY_BRL">
+        tbl <ph name="tableName">$1</ph> <ph name="tableRows">$2</ph>x<ph name="tableCols">$3</ph>
       </message>
       <message desc="summarizes a table cell." name="IDS_CHROMEVOX_CELL_SUMMARY">
         row $1 column $2
+      </message>
+      <message desc="summarizes a table cell for braille; for example, r1c2 means row 1, column 2. Try to localize the 'r' and 'c' to the first letter of something that would be recognizable." name="IDS_CHROMEVOX_CELL_SUMMARY_BRL">
+        r$1c$2
       </message>
       <message desc="Spoken if the user attempts to jump to the next checkbox when none exists." name="IDS_CHROMEVOX_NO_NEXT_CHECKBOX">
         No next checkbox.

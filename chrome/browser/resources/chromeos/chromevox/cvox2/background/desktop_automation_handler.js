@@ -519,6 +519,11 @@ DesktopAutomationHandler.prototype = {
     if (!node.state.editable)
       return false;
 
+    if (!ChromeVoxState.instance.currentRange ||
+        !ChromeVoxState.instance.currentRange.start ||
+        !ChromeVoxState.instance.currentRange.start.node)
+      return false;
+
     var topRoot = AutomationUtil.getTopLevelRoot(node);
     if (!node.state.focused ||
         (topRoot && topRoot.parent && !topRoot.parent.state.focused))

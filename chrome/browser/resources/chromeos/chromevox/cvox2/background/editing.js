@@ -537,6 +537,25 @@ AutomationRichEditableText.prototype = {
       var end = value.getSpanEnd(span);
       value.setSpan(new cvox.BrailleTextStyleSpan(formType), start, end);
     });
+
+    // Provide context for the current selection.
+    var context = cur.startContainer_;
+    var output = new Output().suppress('name').withBraille(
+        Range.fromNode(context), Range.fromNode(this.node_),
+        Output.EventType.NAVIGATE);
+    if (output.braille.length) {
+      var end = cur.containerEndOffset + 1;
+      var prefix = value.substring(0, end);
+      var suffix = value.substring(end, value.length);
+      value = prefix;
+      value.append(Output.SPACE);
+      value.append(output.braille);
+      if (suffix.length) {
+        if (suffix.toString()[0] != Output.SPACE)
+          value.append(Output.SPACE);
+        value.append(suffix);
+      }
+    }
     value.setSpan(new cvox.ValueSpan(0), 0, cur.value_.length);
     value.setSpan(
         new cvox.ValueSelectionSpan(), cur.startOffset, cur.endOffset);
