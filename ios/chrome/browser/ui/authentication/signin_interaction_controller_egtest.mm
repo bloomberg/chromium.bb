@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/import_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
@@ -625,7 +626,14 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 
   // Close sign-in screen and Bookmarks.
   TapButtonWithLabelId(IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON);
-  if (!IsIPadIdiom()) {
+  if (IsIPadIdiom()) {
+    // Switch back to the Home Panel.  This is to prevent Bookmarks Panel, which
+    // has an infinite spinner, from appearing in the coming tests and causing
+    // timeouts.
+    [chrome_test_util::GetCurrentNewTabPageController()
+        selectPanel:NewTabPage::kHomePanel];
+    [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  } else {
     [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
         performAction:grey_tap()];
   }
