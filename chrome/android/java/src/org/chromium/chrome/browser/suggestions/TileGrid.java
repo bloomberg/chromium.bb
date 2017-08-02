@@ -68,7 +68,7 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
 
     @Override
     public void onTileDataChanged() {
-        setVisibilityInternal(mTileGroup.getTiles().length != 0);
+        setVisibilityInternal(!mTileGroup.getAllTiles().isEmpty());
         if (isVisible()) notifyItemChanged(0, new ViewHolder.UpdateTilesCallback(mTileGroup));
     }
 
@@ -118,7 +118,7 @@ public class TileGrid extends OptionalLeaf implements TileGroup.Observer {
         }
 
         public void updateTiles(TileGroup tileGroup) {
-            tileGroup.renderTileViews(mLayout);
+            tileGroup.renderTiles(mLayout);
         }
 
         public void updateIconView(Tile tile) {

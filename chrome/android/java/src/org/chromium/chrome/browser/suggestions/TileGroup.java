@@ -5,45 +5,31 @@
 package org.chromium.chrome.browser.suggestions;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.os.AsyncTask;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
+import android.util.SparseArray;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnCreateContextMenuListener;
 import android.view.ViewGroup;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
+import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * The model and controller for a group of site suggestion tiles.
@@ -112,6 +98,23 @@ public class TileGroup implements MostVisitedSites.Observer {
     }
 
     /**
+     * A delegate to allow {@link TileRenderer} to setup behaviours for the newly created views
+     * associated to a Tile.
+     */
+    public interface TileSetupDelegate {
+        /**
+         * Returns a delegate that will handle user interactions with the view created for the tile.
+         */
+        TileInteractionDelegate createInteractionDelegate(Tile tile);
+
+        /**
+         * Returns a callback to be invoked when the icon for the provided tile is loaded. It will
+         * be responsible for updating the tile data and triggering the visual refresh.
+         */
+        LargeIconBridge.LargeIconCallback createIconLoadCallback(Tile tile);
+    }
+
+    /**
      * Constants used to track the current operations on the group and notify the {@link Delegate}
      * when the expected sequence of potentially asynchronous operations is complete.
      */
@@ -139,17 +142,18 @@ public class TileGroup implements MostVisitedSites.Observer {
         int FETCH_ICON = 3;
     }
 
-    private static final String TAG = "TileGroup";
+    // TODO(dgn) should be generated from C++ enum. Remove when https://crrev.com/c/593651 lands.
+    @IntDef({TileSectionType.PERSONALIZED})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface TileSectionType {
+        int PERSONALIZED = 0;
+    }
 
-    private static final int ICON_CORNER_RADIUS_DP = 4;
-    private static final int ICON_TEXT_SIZE_DP = 20;
-    private static final int ICON_MIN_SIZE_PX = 48;
-
-    private final Context mContext;
     private final SuggestionsUiDelegate mUiDelegate;
     private final ContextMenuManager mContextMenuManager;
     private final Delegate mTileGroupDelegate;
     private final Observer mObserver;
+    private final TileRenderer mTileRenderer;
 
     /**
      * Tracks the tasks currently in flight.
@@ -158,13 +162,6 @@ public class TileGroup implements MostVisitedSites.Observer {
      * pending of the same type. Hence exposing the type as Collection rather than List or Set.
      */
     private final Collection<Integer> mPendingTasks = new ArrayList<>();
-
-    @TileView.Style
-    private final int mTileStyle;
-    private final int mTitleLinesCount;
-    private final int mMinIconSize;
-    private final int mDesiredIconSize;
-    private final RoundedIconGenerator mIconGenerator;
 
     /**
      * Access point to offline related features. Will be {@code null} when the badges are disabled.
@@ -177,9 +174,12 @@ public class TileGroup implements MostVisitedSites.Observer {
      * Source of truth for the tile data. Since the objects can change when the data is updated,
      * other objects should not hold references to them but keep track of the URL instead, and use
      * it to retrieve a {@link Tile}.
-     * @see #getTile(String)
+     * TODO(dgn): If we don't recreate them when loading native data we could keep them around and
+     * simplify a few things.
+     * @see #findTile(String, int)
+     * @see #findTiles(String)
      */
-    private Tile[] mTiles = new Tile[0];
+    private SparseArray<List<Tile>> mTileSections = createEmptyTileData();
 
     /** Most recently received tile data that has not been displayed yet. */
     @Nullable
@@ -206,9 +206,27 @@ public class TileGroup implements MostVisitedSites.Observer {
      * The number of columns tiles get rendered in. Precalculated upon calling
      * {@link #startObserving(int, int)} and constant from then on. Used for pinning the home page
      * tile to the first tile row.
-     * @see #renderTileViews(ViewGroup)
+     * @see #renderTiles(ViewGroup)
      */
     private int mNumColumns;
+
+    // TODO(dgn): Attempt to avoid cycling dependencies with TileRenderer. Is there a better way?
+    private final TileSetupDelegate mTileSetupDelegate = new TileSetupDelegate() {
+        @Override
+        public TileInteractionDelegate createInteractionDelegate(Tile tile) {
+            return new TileInteractionDelegate(tile.getUrl(), tile.getSectionType());
+        }
+
+        @Override
+        public LargeIconBridge.LargeIconCallback createIconLoadCallback(Tile tile) {
+            // TODO(dgn): We could save on fetches by avoiding a new one when there is one pending
+            // for the same URL, and applying the result to all matched URLs.
+            boolean trackLoad =
+                    isLoadTracked() && tile.getSectionType() == TileSectionType.PERSONALIZED;
+            if (trackLoad) addTask(TileTask.FETCH_ICON);
+            return new LargeIconCallbackImpl(tile, trackLoad);
+        }
+    };
 
     /**
      * @param context Used for initialisation and resolving resources.
@@ -222,32 +240,12 @@ public class TileGroup implements MostVisitedSites.Observer {
     public TileGroup(Context context, SuggestionsUiDelegate uiDelegate,
             ContextMenuManager contextMenuManager, Delegate tileGroupDelegate, Observer observer,
             OfflinePageBridge offlinePageBridge, int titleLines, @TileView.Style int tileStyle) {
-        mContext = context;
         mUiDelegate = uiDelegate;
         mContextMenuManager = contextMenuManager;
         mTileGroupDelegate = tileGroupDelegate;
         mObserver = observer;
-        mTitleLinesCount = titleLines;
-        mTileStyle = tileStyle;
-
-        Resources resources = mContext.getResources();
-        mDesiredIconSize = resources.getDimensionPixelSize(R.dimen.tile_view_icon_size);
-        // On ldpi devices, mDesiredIconSize could be even smaller than ICON_MIN_SIZE_PX.
-        mMinIconSize = Math.min(mDesiredIconSize, ICON_MIN_SIZE_PX);
-        int desiredIconSizeDp =
-                Math.round(mDesiredIconSize / resources.getDisplayMetrics().density);
-
-        int cornerRadiusDp;
-        if (SuggestionsConfig.useModern()) {
-            cornerRadiusDp = desiredIconSizeDp / 2;
-        } else {
-            cornerRadiusDp = ICON_CORNER_RADIUS_DP;
-        }
-
-        int iconColor =
-                ApiCompatibilityUtils.getColor(resources, R.color.default_favicon_background_color);
-        mIconGenerator = new RoundedIconGenerator(mContext, desiredIconSizeDp, desiredIconSizeDp,
-                cornerRadiusDp, iconColor, ICON_TEXT_SIZE_DP);
+        mTileRenderer =
+                new TileRenderer(context, tileStyle, titleLines, uiDelegate.getImageFetcher());
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME)) {
             mOfflineModelObserver = new OfflineModelObserver(offlinePageBridge);
@@ -259,16 +257,14 @@ public class TileGroup implements MostVisitedSites.Observer {
 
     @Override
     public void onSiteSuggestionsAvailable(List<SiteSuggestion> siteSuggestions) {
+        // Only transforms the incoming tiles and stores them in a buffer for when we decide to
+        // refresh the tiles in the UI.
+
         boolean removalCompleted = mPendingRemovalUrl != null;
         boolean insertionCompleted = mPendingInsertionUrl == null;
 
-        Set<String> addedUrls = new HashSet<>();
         mPendingTiles = new ArrayList<>();
         for (SiteSuggestion suggestion : siteSuggestions) {
-            // TODO(dgn): Checking this should not even be necessary as the backend is supposed to
-            // send non dupes URLs. Remove once https://crbug.com/703628 is fixed.
-            if (addedUrls.contains(suggestion.url)) continue;
-
             // The home page tile is pinned to the first row of tiles. It will appear on
             // the position corresponding to its ranking among all tiles (obtained from the
             // ntp_tiles C++ component). If its position is larger than the number of tiles
@@ -282,8 +278,9 @@ public class TileGroup implements MostVisitedSites.Observer {
                 mPendingTiles.add(new Tile(suggestion, mPendingTiles.size()));
             }
 
-            addedUrls.add(suggestion.url);
-
+            // TODO(dgn): Rebase and enable code.
+            // Only tiles in the personal section can be modified.
+            // if (suggestion.section != TileSectionType.PERSONALIZED) continue;
             if (suggestion.url.equals(mPendingRemovalUrl)) removalCompleted = false;
             if (suggestion.url.equals(mPendingInsertionUrl)) insertionCompleted = true;
         }
@@ -303,12 +300,10 @@ public class TileGroup implements MostVisitedSites.Observer {
 
     @Override
     public void onIconMadeAvailable(String siteUrl) {
-        Tile tile = getTile(siteUrl);
-        if (tile == null) return; // The tile might have been removed.
-
-        LargeIconCallback iconCallback =
-                new LargeIconCallbackImpl(siteUrl, /* trackLoadTask = */ false);
-        mUiDelegate.getImageFetcher().makeLargeIconRequest(siteUrl, mMinIconSize, iconCallback);
+        for (Tile tile : findTiles(siteUrl)) {
+            mTileRenderer.updateIcon(
+                    tile, new LargeIconCallbackImpl(tile, /* trackLoadTask = */ false));
+        }
     }
 
     /**
@@ -324,40 +319,42 @@ public class TileGroup implements MostVisitedSites.Observer {
     }
 
     /**
-     * Renders tile views in the given {@link TileGridLayout}, reusing existing tile views where
-     * possible because view inflation and icon loading are slow.
+     * Renders tile views in the given {@link TileGridLayout}.
      * @param parent The layout to render the tile views into.
      */
-    public void renderTileViews(ViewGroup parent) {
-        // Map the old tile views by url so they can be reused later.
-        Map<String, TileView> oldTileViews = new HashMap<>();
-        int childCount = parent.getChildCount();
-        for (int i = 0; i < childCount; i++) {
-            TileView tileView = (TileView) parent.getChildAt(i);
-            oldTileViews.put(tileView.getUrl(), tileView);
+    public void renderTiles(ViewGroup parent) {
+        // TODO(dgn, galinap): Support extra sections in the UI.
+        assert mTileSections.size() == 1;
+        assert mTileSections.keyAt(0) == TileSectionType.PERSONALIZED;
+
+        for (int i = 0; i < mTileSections.size(); ++i) {
+            mTileRenderer.renderTileSection(mTileSections.valueAt(i), parent, mTileSetupDelegate);
         }
-
-        // Remove all views from the layout because even if they are reused later they'll have to be
-        // added back in the correct order.
-        parent.removeAllViews();
-
-        for (Tile tile : mTiles) {
-            TileView tileView = oldTileViews.get(tile.getUrl());
-            if (tileView == null) {
-                tileView = buildTileView(tile, parent);
-            } else {
-                tileView.updateIfDataChanged(tile);
-            }
-
-            parent.addView(tileView);
-        }
-
         // Icon fetch scheduling was done when building the tile views.
         if (isLoadTracked()) removeTask(TileTask.SCHEDULE_ICON_FETCH);
     }
 
+    /** @deprecated use {@link #getTiles(int)} or {@link #getAllTiles()} instead. */
+    @Deprecated
     public Tile[] getTiles() {
-        return Arrays.copyOf(mTiles, mTiles.length);
+        return getTiles(TileSectionType.PERSONALIZED);
+    }
+
+    /** @return The tiles currently loaded in the group for the provided section. */
+    public Tile[] getTiles(@TileSectionType int section) {
+        List<Tile> sectionTiles = mTileSections.get(section);
+        if (sectionTiles == null) return new Tile[0];
+        return sectionTiles.toArray(new Tile[sectionTiles.size()]);
+    }
+
+    /**
+     * @return All the tiles currently loaded in the group. Multiple tiles might be returned for
+     * the same URL, but they would be in different sections.
+     */
+    public List<Tile> getAllTiles() {
+        List<Tile> tiles = new ArrayList<>();
+        for (int i = 0; i < mTileSections.size(); ++i) tiles.addAll(mTileSections.valueAt(i));
+        return tiles;
     }
 
     public boolean hasReceivedData() {
@@ -375,62 +372,6 @@ public class TileGroup implements MostVisitedSites.Observer {
         if (trackLoadTask) removeTask(TileTask.FETCH_DATA);
     }
 
-    /**
-     * Inflates a new tile view, initializes it, and loads an icon for it.
-     * @param tile The tile that holds the data to populate the new tile view.
-     * @param parentView The parent of the new tile view.
-     * @return The new tile view.
-     */
-    @VisibleForTesting
-    TileView buildTileView(Tile tile, ViewGroup parentView) {
-        TileView tileView = (TileView) LayoutInflater.from(parentView.getContext())
-                                    .inflate(R.layout.tile_view, parentView, false);
-        tileView.initialize(tile, mTitleLinesCount, mTileStyle);
-
-        if (isLoadTracked()) addTask(TileTask.FETCH_ICON);
-
-        // Note: It is important that the callbacks below don't keep a reference to the tile or
-        // modify them as there is no guarantee that the same tile would be used to update the view.
-        LargeIconCallback iconCallback = new LargeIconCallbackImpl(tile.getUrl(), isLoadTracked());
-        loadWhitelistIcon(tile, iconCallback);
-
-        TileInteractionDelegate delegate = new TileInteractionDelegate(tile.getUrl());
-        tileView.setOnClickListener(delegate);
-        tileView.setOnCreateContextMenuListener(delegate);
-
-        return tileView;
-    }
-
-    private void loadWhitelistIcon(final Tile tile, final LargeIconCallback iconCallback) {
-        if (tile.getWhitelistIconPath().isEmpty()) {
-            mUiDelegate.getImageFetcher().makeLargeIconRequest(
-                    tile.getUrl(), mMinIconSize, iconCallback);
-            return;
-        }
-
-        AsyncTask<Void, Void, Bitmap> task = new AsyncTask<Void, Void, Bitmap>() {
-            @Override
-            protected Bitmap doInBackground(Void... params) {
-                Bitmap bitmap = BitmapFactory.decodeFile(tile.getWhitelistIconPath());
-                if (bitmap == null) {
-                    Log.d(TAG, "Image decoding failed: %s", tile.getWhitelistIconPath());
-                }
-                return bitmap;
-            }
-
-            @Override
-            protected void onPostExecute(Bitmap icon) {
-                if (icon == null) {
-                    mUiDelegate.getImageFetcher().makeLargeIconRequest(
-                            tile.getUrl(), mMinIconSize, iconCallback);
-                } else {
-                    iconCallback.onLargeIconAvailable(icon, Color.BLACK, false);
-                }
-            }
-        };
-        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-    }
-
     /** Loads tile data from {@link #mPendingTiles} and clears it afterwards. */
     private void loadTiles() {
         assert mPendingTiles != null;
@@ -438,14 +379,39 @@ public class TileGroup implements MostVisitedSites.Observer {
         boolean isInitialLoad = !mHasReceivedData;
         mHasReceivedData = true;
 
-        boolean countChanged = isInitialLoad || mTiles.length != mPendingTiles.size();
-        boolean dataChanged = countChanged;
+        boolean dataChanged = isInitialLoad;
+        List<Tile> personalisedTiles = mTileSections.get(TileSectionType.PERSONALIZED);
+        int oldPersonalisedTilesCount = personalisedTiles == null ? 0 : personalisedTiles.size();
+
+        SparseArray<List<Tile>> newSites = createEmptyTileData();
         for (Tile newTile : mPendingTiles) {
-            if (newTile.importData(getTile(newTile.getUrl()))) dataChanged = true;
+            @TileSectionType
+            int category = newTile.getSectionType();
+            Tile matchingTile = findTile(newTile.getUrl(), category);
+            if (matchingTile == null || newTile.importData(matchingTile)) dataChanged = true;
+
+            List<Tile> sectionTiles = newSites.get(category);
+            if (sectionTiles == null) {
+                sectionTiles = new ArrayList<>(category);
+                newSites.append(category, sectionTiles);
+            }
+
+            // TODO(dgn): Do we know if it still ever happens? Remove or replace with an assert if
+            // it never gets hit. See https://crbug.com/703628
+            if (findTile(newTile.getUrl(), sectionTiles) != null) throw new IllegalStateException();
+
+            sectionTiles.add(newTile);
         }
 
-        mTiles = mPendingTiles.toArray(new Tile[mPendingTiles.size()]);
+        mTileSections = newSites;
         mPendingTiles = null;
+
+        // TODO(dgn): change these events, maybe introduce new ones or just change semantics? This
+        // will depend on the UI to be implemented and the desired refresh behaviour.
+        boolean countChanged = isInitialLoad
+                || mTileSections.get(TileSectionType.PERSONALIZED).size()
+                        != oldPersonalisedTilesCount;
+        dataChanged = dataChanged || countChanged;
 
         if (!dataChanged) return;
 
@@ -461,13 +427,34 @@ public class TileGroup implements MostVisitedSites.Observer {
         if (isInitialLoad) removeTask(TileTask.FETCH_DATA);
     }
 
-    /** @return A tile matching the provided URL, or {@code null} if none is found. */
+    /** @return A tile matching the provided URL and section, or {@code null} if none is found. */
     @Nullable
-    private Tile getTile(String url) {
-        for (Tile tile : mTiles) {
+    private Tile findTile(String url, @TileSectionType int section) {
+        if (mTileSections.get(section) == null) return null;
+        for (Tile tile : mTileSections.get(section)) {
+            if (tile.getUrl().equals(url)) return tile;
+        }
+        return findTile(url, mTileSections.get(section));
+    }
+
+    /** @return A tile matching the provided URL and section, or {@code null} if none is found. */
+    private Tile findTile(String url, @Nullable List<Tile> tiles) {
+        if (tiles == null) return null;
+        for (Tile tile : tiles) {
             if (tile.getUrl().equals(url)) return tile;
         }
         return null;
+    }
+
+    /** @return All tiles matching the provided URL, or an empty list if none is found. */
+    private List<Tile> findTiles(String url) {
+        List<Tile> tiles = new ArrayList<>();
+        for (int i = 0; i < mTileSections.size(); ++i) {
+            for (Tile tile : mTileSections.valueAt(i)) {
+                if (tile.getUrl().equals(url)) tiles.add(tile);
+            }
+        }
+        return tiles;
     }
 
     private void addTask(@TileTask int task) {
@@ -478,7 +465,13 @@ public class TileGroup implements MostVisitedSites.Observer {
         boolean removedTask = mPendingTasks.remove(Integer.valueOf(task));
         assert removedTask;
 
-        if (mPendingTasks.isEmpty()) mTileGroupDelegate.onLoadingComplete(getTiles());
+        if (mPendingTasks.isEmpty()) {
+            // TODO(dgn): We only notify about the personal tiles because that's the only ones we
+            // wait for to be loaded. We also currently rely on the tile order in the returned
+            // array as the reported position in UMA, but this is not accurate and would be broken
+            // if we returned all the tiles regardless of sections.
+            mTileGroupDelegate.onLoadingComplete(getTiles(TileSectionType.PERSONALIZED));
+        }
     }
 
     /**
@@ -496,38 +489,51 @@ public class TileGroup implements MostVisitedSites.Observer {
         return mPendingTasks.contains(task);
     }
 
-    private class LargeIconCallbackImpl implements LargeIconCallback {
+    @VisibleForTesting
+    TileRenderer getTileRenderer() {
+        return mTileRenderer;
+    }
+
+    @VisibleForTesting
+    TileSetupDelegate getTileSetupDelegate() {
+        return mTileSetupDelegate;
+    }
+
+    private static SparseArray<List<Tile>> createEmptyTileData() {
+        SparseArray<List<Tile>> newTileData = new SparseArray<>();
+
+        // TODO(dgn): How do we want to handle empty states and sections that have no tiles?
+        // Have an empty list for now that can be rendered as-is without causing issues or too much
+        // state checking. We will have to decide if we want empty lists or no section at all for
+        // the others.
+        newTileData.put(TileSectionType.PERSONALIZED, new ArrayList<Tile>());
+
+        return newTileData;
+    }
+
+    // TODO(dgn): I would like to move that to TileRenderer, but setting the data on the tile,
+    // notifying the observer and updating the tasks make it awkward.
+    private class LargeIconCallbackImpl implements LargeIconBridge.LargeIconCallback {
+        @TileSectionType
+        private final int mSection;
         private final String mUrl;
         private final boolean mTrackLoadTask;
 
-        private LargeIconCallbackImpl(String url, boolean trackLoadTask) {
-            mUrl = url;
+        private LargeIconCallbackImpl(Tile tile, boolean trackLoadTask) {
+            mUrl = tile.getUrl();
+            mSection = tile.getSectionType();
             mTrackLoadTask = trackLoadTask;
         }
 
         @Override
         public void onLargeIconAvailable(
                 @Nullable Bitmap icon, int fallbackColor, boolean isFallbackColorDefault) {
-            Tile tile = getTile(mUrl);
-            if (tile != null) { // The tile might have been removed.
+            Tile tile = findTile(mUrl, mSection);
+            if (tile != null) { // Do nothing if the tile was removed.
                 if (icon == null) {
-                    mIconGenerator.setBackgroundColor(fallbackColor);
-                    icon = mIconGenerator.generateIconForUrl(mUrl);
-                    tile.setIcon(new BitmapDrawable(mContext.getResources(), icon));
-                    tile.setType(isFallbackColorDefault ? TileVisualType.ICON_DEFAULT
-                                                        : TileVisualType.ICON_COLOR);
+                    mTileRenderer.setTileIconFromColor(tile, fallbackColor, isFallbackColorDefault);
                 } else {
-                    RoundedBitmapDrawable roundedIcon =
-                            RoundedBitmapDrawableFactory.create(mContext.getResources(), icon);
-                    int cornerRadius = Math.round(ICON_CORNER_RADIUS_DP
-                            * mContext.getResources().getDisplayMetrics().density * icon.getWidth()
-                            / mDesiredIconSize);
-                    roundedIcon.setCornerRadius(cornerRadius);
-                    roundedIcon.setAntiAlias(true);
-                    roundedIcon.setFilterBitmap(true);
-
-                    tile.setIcon(roundedIcon);
-                    tile.setType(TileVisualType.ICON_REAL);
+                    mTileRenderer.setTileIconFromBitmap(tile, icon);
                 }
 
                 mObserver.onTileIconChanged(tile);
@@ -538,17 +544,23 @@ public class TileGroup implements MostVisitedSites.Observer {
         }
     }
 
-    private class TileInteractionDelegate
+    /**
+     * Implements various listener and delegate interfaces to handle user interactions with tiles.
+     */
+    public class TileInteractionDelegate
             implements ContextMenuManager.Delegate, OnClickListener, OnCreateContextMenuListener {
+        @TileSectionType
+        private final int mSection;
         private final String mUrl;
 
-        public TileInteractionDelegate(String url) {
+        public TileInteractionDelegate(String url, int section) {
             mUrl = url;
+            mSection = section;
         }
 
         @Override
         public void onClick(View view) {
-            Tile tile = getTile(mUrl);
+            Tile tile = findTile(mUrl, mSection);
             if (tile == null) return;
 
             SuggestionsMetrics.recordTileTapped();
@@ -557,7 +569,7 @@ public class TileGroup implements MostVisitedSites.Observer {
 
         @Override
         public void openItem(int windowDisposition) {
-            Tile tile = getTile(mUrl);
+            Tile tile = findTile(mUrl, mSection);
             if (tile == null) return;
 
             mTileGroupDelegate.openMostVisitedItem(windowDisposition, tile);
@@ -565,7 +577,7 @@ public class TileGroup implements MostVisitedSites.Observer {
 
         @Override
         public void removeItem() {
-            Tile tile = getTile(mUrl);
+            Tile tile = findTile(mUrl, mSection);
             if (tile == null) return;
 
             // Note: This does not track all the removals, but will track the most recent one. If
@@ -607,11 +619,7 @@ public class TileGroup implements MostVisitedSites.Observer {
         }
 
         @Override
-        public void onSuggestionOfflineIdChanged(Tile suggestion, @Nullable Long id) {
-            // Retrieve a tile from the internal data, to make sure we don't update a stale object.
-            Tile tile = getTile(suggestion.getUrl());
-            if (tile == null) return;
-
+        public void onSuggestionOfflineIdChanged(Tile tile, @Nullable Long id) {
             boolean oldOfflineAvailable = tile.isOfflineAvailable();
             tile.setOfflinePageOfflineId(id);
 
@@ -622,7 +630,7 @@ public class TileGroup implements MostVisitedSites.Observer {
 
         @Override
         public Iterable<Tile> getOfflinableSuggestions() {
-            return Arrays.asList(mTiles);
+            return getAllTiles();
         }
     }
 }
