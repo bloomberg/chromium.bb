@@ -70,7 +70,6 @@ test("webkit_unit_tests") {
     # crbug.com/353585
 
     "tests/RunAllTests.cpp",
-    "tests/VirtualTimeTest.cpp",
   ]
   sources += bindings_unittest_files
 
