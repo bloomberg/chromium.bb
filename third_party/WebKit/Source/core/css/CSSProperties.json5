@@ -319,8 +319,6 @@
     // Animation Priority properties
     {
       name: "animation-delay",
-      api_class: "CSSPropertyAPIDelay",
-      api_methods: ["parseSingleValue"],
       custom_all: true,
       priority: "Animation",
     },
@@ -335,8 +333,6 @@
     },
     {
       name: "animation-duration",
-      api_class: "CSSPropertyAPIDuration",
-      api_methods: ["parseSingleValue"],
       custom_all: true,
       priority: "Animation",
     },
@@ -372,22 +368,16 @@
     },
     {
       name: "animation-timing-function",
-      api_class: "CSSPropertyAPITimingFunction",
-      api_methods: ["parseSingleValue"],
       custom_all: true,
       priority: "Animation",
     },
     {
       name: "transition-delay",
-      api_class: "CSSPropertyAPIDelay",
-      api_methods: ["parseSingleValue"],
       custom_all: true,
       priority: "Animation",
     },
     {
       name: "transition-duration",
-      api_class: "CSSPropertyAPIDuration",
-      api_methods: ["parseSingleValue"],
       custom_all: true,
       priority: "Animation",
     },
@@ -400,8 +390,6 @@
     },
     {
       name: "transition-timing-function",
-      api_class: "CSSPropertyAPITimingFunction",
-      api_methods: ["parseSingleValue"],
       custom_all: true,
       priority: "Animation",
     },
@@ -710,8 +698,6 @@
     },
     {
       name: "background-clip",
-      api_class: "CSSPropertyAPIBackgroundBox",
-      api_methods: ["parseSingleValue"],
       custom_all: true,
     },
     {
@@ -729,8 +715,6 @@
     },
     {
       name: "background-image",
-      api_class: "CSSPropertyAPIBackgroundOrMaskImage",
-      api_methods: ["parseSingleValue"],
       custom_all: true,
       interpolable: true,
       keywords: ["auto", "none"],
@@ -738,8 +722,6 @@
     },
     {
       name: "background-origin",
-      api_class: "CSSPropertyAPIBackgroundBox",
-      api_methods: ["parseSingleValue"],
       custom_all: true,
     },
     {
@@ -844,20 +826,17 @@
     {
       name: "border-image-outset",
       api_class: "CSSPropertyAPIBorderImageOutset",
-      api_methods: ["parseSingleValue"],
       custom_all: true,
       interpolable: true,
     },
     {
       name: "border-image-repeat",
       api_class: "CSSPropertyAPIBorderImageRepeat",
-      api_methods: ["parseSingleValue"],
       custom_all: true,
     },
     {
       name: "border-image-slice",
       api_class: "CSSPropertyAPIBorderImageSlice",
-      api_methods: ["parseSingleValue"],
       custom_all: true,
       interpolable: true,
     },
@@ -873,7 +852,6 @@
     {
       name: "border-image-width",
       api_class: "CSSPropertyAPIBorderImageWidth",
-      api_methods: ["parseSingleValue"],
       custom_all: true,
       interpolable: true,
     },
@@ -1412,8 +1390,6 @@
     },
     {
       name: "grid-column-gap",
-      api_class: "CSSPropertyAPIGridGap",
-      api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       runtime_flag: "CSSGridLayout",
       field_template: "<length>",
@@ -1444,8 +1420,6 @@
     },
     {
       name: "grid-row-gap",
-      api_class: "CSSPropertyAPIGridGap",
-      api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       runtime_flag: "CSSGridLayout",
       field_template: "<length>",
@@ -3162,20 +3136,17 @@
     {
       name: "-webkit-mask-box-image-outset",
       api_class: "CSSPropertyAPIBorderImageOutset",
-      api_methods: ["parseSingleValue"],
       custom_all: true,
       interpolable: true,
     },
     {
       name: "-webkit-mask-box-image-repeat",
       api_class: "CSSPropertyAPIBorderImageRepeat",
-      api_methods: ["parseSingleValue"],
       custom_all: true,
     },
     {
       name: "-webkit-mask-box-image-slice",
       api_class: "CSSPropertyAPIBorderImageSlice",
-      api_methods: ["parseSingleValue"],
       custom_all: true,
       interpolable: true,
     },
@@ -3189,7 +3160,6 @@
     {
       name: "-webkit-mask-box-image-width",
       api_class: "CSSPropertyAPIBorderImageWidth",
-      api_methods: ["parseSingleValue"],
       custom_all: true,
       interpolable: true,
     },
@@ -3205,8 +3175,6 @@
     },
     {
       name: "-webkit-mask-image",
-      api_class: "CSSPropertyAPIBackgroundOrMaskImage",
-      api_methods: ["parseSingleValue"],
       custom_all: true,
       interpolable: true,
     },
@@ -3242,14 +3210,12 @@
     {
       name: "-webkit-perspective-origin-x",
       api_class: "CSSPropertyAPIWebkitOriginX",
-      api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       interpolable: true,
     },
     {
       name: "-webkit-perspective-origin-y",
       api_class: "CSSPropertyAPIWebkitOriginY",
-      api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       interpolable: true,
     },
@@ -3373,14 +3339,12 @@
     {
       name: "-webkit-transform-origin-x",
       api_class: "CSSPropertyAPIWebkitOriginX",
-      api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       interpolable: true,
     },
     {
       name: "-webkit-transform-origin-y",
       api_class: "CSSPropertyAPIWebkitOriginY",
-      api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       interpolable: true,
     },

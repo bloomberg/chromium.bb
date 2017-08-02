@@ -43,12 +43,6 @@ CSSValue* CSSPropertyBackgroundUtils::ConsumeBackgroundBlendMode(
   return nullptr;
 }
 
-CSSValue* CSSPropertyBackgroundUtils::ConsumeBackgroundBox(
-    CSSParserTokenRange& range) {
-  return CSSPropertyParserHelpers::ConsumeIdent<
-      CSSValueBorderBox, CSSValuePaddingBox, CSSValueContentBox>(range);
-}
-
 CSSValue* CSSPropertyBackgroundUtils::ConsumeBackgroundComposite(
     CSSParserTokenRange& range) {
   return CSSPropertyParserHelpers::ConsumeIdentRange(range, CSSValueClear,
