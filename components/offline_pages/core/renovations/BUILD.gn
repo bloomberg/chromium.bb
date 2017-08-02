@@ -11,10 +11,14 @@ static_library("renovations") {
     "page_renovation.h",
     "page_renovation_loader.cc",
     "page_renovation_loader.h",
+    "page_renovator.cc",
+    "page_renovator.h",
+    "script_injector.h",
   ]
 
   deps = [
     "//base",
+    "//components/offline_pages/core",
     "//url",
   ]
 }
@@ -23,11 +27,15 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "page_renovation_loader_unittest.cc",
+    "page_renovator_unittest.cc",
   ]
 
   deps = [
     ":renovations",
     "//base",
+    "//base/test:test_support",
+    "//testing/gmock",
     "//testing/gtest",
+    "//url",
   ]
 }

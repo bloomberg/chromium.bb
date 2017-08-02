@@ -34,16 +34,14 @@ class PageRenovationLoader {
     return renovations_;
   }
 
+  // Methods for testing.
+  void SetSourceForTest(base::string16 combined_source);
+  void SetRenovationsForTest(
+      std::vector<std::unique_ptr<PageRenovation>> renovations);
+
  private:
   // Called to load JavaScript source from storage.
   bool LoadSource();
-
-  // Set combined_source_ for unit tests.
-  void SetSourceForTest(base::string16 combined_source);
-
-  // Set renovations_ for unit tests.
-  void SetRenovationsForTest(
-      std::vector<std::unique_ptr<PageRenovation>> renovations);
 
   // List of registered page renovations
   std::vector<std::unique_ptr<PageRenovation>> renovations_;
@@ -52,9 +50,6 @@ class PageRenovationLoader {
   bool is_loaded_;
   // Contains JavaScript source.
   base::string16 combined_source_;
-
-  // Friend class for unit tests.
-  friend class PageRenovationLoaderTest;
 
   DISALLOW_COPY_AND_ASSIGN(PageRenovationLoader);
 };
