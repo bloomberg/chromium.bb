@@ -4,4 +4,19 @@
 
 #include "core/css/properties/CSSPropertyAPIWebkitOriginY.h"
 
-namespace blink {}  // namespace blink
+#include "core/CSSValueKeywords.h"
+#include "core/css/parser/CSSParserContext.h"
+#include "core/css/properties/CSSPropertyPositionUtils.h"
+
+namespace blink {
+
+const CSSValue* CSSPropertyAPIWebkitOriginY::parseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) {
+  return CSSPropertyPositionUtils::ConsumePositionLonghand<CSSValueTop,
+                                                           CSSValueBottom>(
+      range, context.Mode());
+}
+
+}  // namespace blink

@@ -13,6 +13,8 @@ class CSSParserContext;
 class CSSParserTokenRange;
 class CSSValue;
 
+enum class DefaultFill { kFill, kNoFill };
+
 class CSSPropertyBorderImageUtils {
   STATIC_ONLY(CSSPropertyBorderImageUtils);
 
@@ -26,10 +28,9 @@ class CSSPropertyBorderImageUtils {
                                            CSSValue*& width,
                                            CSSValue*& outset,
                                            CSSValue*& repeat,
-                                           bool default_fill);
+                                           DefaultFill);
   static CSSValue* ConsumeBorderImageRepeat(CSSParserTokenRange&);
-  static CSSValue* ConsumeBorderImageSlice(CSSParserTokenRange&,
-                                           bool default_fill);
+  static CSSValue* ConsumeBorderImageSlice(CSSParserTokenRange&, DefaultFill);
   static CSSValue* ConsumeBorderImageWidth(CSSParserTokenRange&);
   static CSSValue* ConsumeBorderImageOutset(CSSParserTokenRange&);
 };
