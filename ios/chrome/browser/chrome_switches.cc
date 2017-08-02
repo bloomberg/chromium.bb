@@ -15,10 +15,6 @@ namespace switches {
 // Disables Contextual Search.
 const char kDisableContextualSearch[] = "disable-contextual-search";
 
-// Disables a workaround for fast inset updates for UIWebView.scrollView.
-const char kDisableIOSFastWebScrollViewInsets[] =
-    "disable-fast-web-scroll-view-insets";
-
 // Lists separated by commas the name of features to disable.
 // See base::FeatureList::InitializeFromCommandLine for details.
 const char kDisableIOSFeatures[] = "disable-features";
@@ -56,10 +52,6 @@ const char kDisableThirdPartyKeyboardWorkaround[] =
 
 // Enables Contextual Search.
 const char kEnableContextualSearch[] = "enable-contextual-search";
-
-// Enables a workaround for fast inset updates for UIWebView.scrollView.
-const char kEnableIOSFastWebScrollViewInsets[] =
-    "enable-fast-web-scroll-view-insets";
 
 // Lists separated by commas the name of features to disable.
 // See base::FeatureList::InitializeFromCommandLine for details.
