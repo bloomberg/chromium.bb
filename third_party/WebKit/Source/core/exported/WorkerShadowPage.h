@@ -6,7 +6,6 @@
 #define WorkerShadowPage_h
 
 #include "core/frame/WebLocalFrameImpl.h"
-#include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "public/web/WebDevToolsAgentClient.h"
 #include "public/web/WebDocumentLoader.h"
 #include "public/web/WebFrameClient.h"
@@ -15,6 +14,7 @@
 
 namespace blink {
 
+class ContentSecurityPolicy;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebSettings;
@@ -53,9 +53,8 @@ class CORE_EXPORT WorkerShadowPage : public WebFrameClient {
   // Calls Client::OnShadowPageInitialized() when complete.
   void Initialize(const KURL& script_url);
 
-  void SetContentSecurityPolicyAndReferrerPolicy(
-      ContentSecurityPolicyResponseHeaders csp_headers,
-      String referrer_policy);
+  void SetContentSecurityPolicyAndReferrerPolicy(ContentSecurityPolicy*,
+                                                 String referrer_policy);
 
   // WebFrameClient overrides.
   std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(

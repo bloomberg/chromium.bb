@@ -56,12 +56,9 @@
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
-#include "platform/WaitableEvent.h"
 #include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/SubstituteData.h"
-#include "platform/network/ContentSecurityPolicyParsers.h"
-#include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "platform/network/NetworkUtils.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Functional.h"
@@ -267,12 +264,11 @@ void WebEmbeddedWorkerImpl::PostMessageToPageInspector(int session_id,
 }
 
 void WebEmbeddedWorkerImpl::SetContentSecurityPolicyAndReferrerPolicy(
-    ContentSecurityPolicyResponseHeaders csp_headers,
-    String referrer_policy,
-    WaitableEvent* event) {
+    ContentSecurityPolicy* content_security_policy,
+    String referrer_policy) {
+  DCHECK(IsMainThread());
   shadow_page_->SetContentSecurityPolicyAndReferrerPolicy(
-      std::move(csp_headers), std::move(referrer_policy));
-  event->Signal();
+      content_security_policy, std::move(referrer_policy));
 }
 
 std::unique_ptr<WebApplicationCacheHost>
@@ -413,12 +409,9 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   if (main_script_loader_) {
     // We need to set the CSP to both the shadow page's document and the
     // ServiceWorkerGlobalScope.
-    document->InitContentSecurityPolicy(
-        main_script_loader_->ReleaseContentSecurityPolicy());
-    if (!main_script_loader_->GetReferrerPolicy().IsNull()) {
-      document->ParseAndSetReferrerPolicy(
-          main_script_loader_->GetReferrerPolicy());
-    }
+    SetContentSecurityPolicyAndReferrerPolicy(
+        main_script_loader_->ReleaseContentSecurityPolicy(),
+        main_script_loader_->GetReferrerPolicy());
     global_scope_creation_params = WTF::MakeUnique<GlobalScopeCreationParams>(
         worker_start_data_.script_url, worker_start_data_.user_agent,
         main_script_loader_->SourceText(),
