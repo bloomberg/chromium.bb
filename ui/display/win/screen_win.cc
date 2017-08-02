@@ -17,6 +17,7 @@
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/display_layout_builder.h"
+#include "ui/display/display_switches.h"
 #include "ui/display/win/display_info.h"
 #include "ui/display/win/dpi.h"
 #include "ui/display/win/scaling_util.h"
@@ -81,7 +82,8 @@ std::vector<DisplayInfo> FindAndRemoveTouchingDisplayInfos(
 }
 
 Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
-                                     ColorProfileReader* color_profile_reader) {
+                                     ColorProfileReader* color_profile_reader,
+                                     bool hdr_enabled) {
   Display display(display_info.id());
   float scale_factor = display_info.device_scale_factor();
   display.set_device_scale_factor(scale_factor);
@@ -92,8 +94,12 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
                      1.0f / scale_factor));
   display.set_rotation(display_info.rotation());
   if (!Display::HasForceColorProfile()) {
-    display.set_color_space(
-        color_profile_reader->GetDisplayColorSpace(display_info.id()));
+    if (hdr_enabled) {
+      display.SetColorSpaceAndDepth(gfx::ColorSpace::CreateSCRGBLinear());
+    } else {
+      display.SetColorSpaceAndDepth(
+          color_profile_reader->GetDisplayColorSpace(display_info.id()));
+    }
   }
   return display;
 }
@@ -117,7 +123,8 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
 // will take precedence.
 std::vector<ScreenWinDisplay> DisplayInfosToScreenWinDisplays(
     const std::vector<DisplayInfo>& display_infos,
-    ColorProfileReader* color_profile_reader) {
+    ColorProfileReader* color_profile_reader,
+    bool hdr_enabled) {
   // Find and extract the primary display.
   std::vector<DisplayInfo> display_infos_remaining = display_infos;
   auto primary_display_iter = std::find_if(
@@ -145,9 +152,10 @@ std::vector<ScreenWinDisplay> DisplayInfosToScreenWinDisplays(
 
   // Layout and create the ScreenWinDisplays.
   std::vector<Display> displays;
-  for (const auto& display_info : display_infos)
-    displays.push_back(
-        CreateDisplayFromDisplayInfo(display_info, color_profile_reader));
+  for (const auto& display_info : display_infos) {
+    displays.push_back(CreateDisplayFromDisplayInfo(
+        display_info, color_profile_reader, hdr_enabled));
+  }
 
   std::unique_ptr<DisplayLayout> layout(builder.Build());
   layout->ApplyToDisplayList(&displays, nullptr, 0);
@@ -215,7 +223,8 @@ gfx::Point ScalePointRelative(const gfx::Point& from_origin,
 ScreenWin::ScreenWin() : ScreenWin(true) {}
 
 ScreenWin::ScreenWin(bool initialize)
-    : color_profile_reader_(new ColorProfileReader(this)) {
+    : color_profile_reader_(new ColorProfileReader(this)),
+      hdr_enabled_(base::FeatureList::IsEnabled(features::kHighDynamicRange)) {
   DCHECK(!g_screen_win_instance);
   g_screen_win_instance = this;
   if (initialize)
@@ -458,7 +467,7 @@ gfx::Rect ScreenWin::DIPToScreenRectInWindow(gfx::NativeView view,
 void ScreenWin::UpdateFromDisplayInfos(
     const std::vector<DisplayInfo>& display_infos) {
   screen_win_displays_ = DisplayInfosToScreenWinDisplays(
-      display_infos, color_profile_reader_.get());
+      display_infos, color_profile_reader_.get(), hdr_enabled_);
   displays_ = ScreenWinDisplaysToDisplays(screen_win_displays_);
 }
 

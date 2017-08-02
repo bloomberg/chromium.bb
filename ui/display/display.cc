@@ -109,6 +109,8 @@ gfx::ColorSpace Display::GetForcedColorProfile() {
           switches::kForceColorProfile);
   if (value == "srgb") {
     return gfx::ColorSpace::CreateSRGB();
+  } else if (value == "scrgb-linear") {
+    return gfx::ColorSpace::CreateSCRGBLinear();
   } else if (value == "generic-rgb") {
     return gfx::ColorSpace(gfx::ColorSpace::PrimaryID::APPLE_GENERIC_RGB,
                            gfx::ColorSpace::TransferID::GAMMA18);
@@ -144,14 +146,11 @@ Display::Display(int64_t id, const gfx::Rect& bounds)
       bounds_(bounds),
       work_area_(bounds),
       device_scale_factor_(GetForcedDeviceScaleFactor()),
-      color_space_(HasForceColorProfile() ? GetForcedColorProfile()
-                                          : gfx::ColorSpace::CreateSRGB()),
+      color_space_(gfx::ColorSpace::CreateSRGB()),
       color_depth_(DEFAULT_BITS_PER_PIXEL),
       depth_per_component_(DEFAULT_BITS_PER_COMPONENT) {
-  if (base::FeatureList::IsEnabled(features::kHighDynamicRange)) {
-    color_depth_ = HDR_BITS_PER_PIXEL;
-    depth_per_component_ = HDR_BITS_PER_COMPONENT;
-  }
+  if (HasForceColorProfile())
+    SetColorSpaceAndDepth(GetForcedColorProfile());
 #if defined(USE_AURA)
   SetScaleAndBounds(device_scale_factor_, bounds);
 #endif
@@ -230,6 +229,17 @@ void Display::SetSize(const gfx::Size& size_in_pixel) {
   origin = gfx::ScaleToFlooredPoint(origin, device_scale_factor_);
 #endif
   SetScaleAndBounds(device_scale_factor_, gfx::Rect(origin, size_in_pixel));
+}
+
+void Display::SetColorSpaceAndDepth(const gfx::ColorSpace& color_space) {
+  color_space_ = color_space;
+  if (color_space_.IsHDR()) {
+    color_depth_ = HDR_BITS_PER_PIXEL;
+    depth_per_component_ = HDR_BITS_PER_COMPONENT;
+  } else {
+    color_depth_ = DEFAULT_BITS_PER_PIXEL;
+    depth_per_component_ = DEFAULT_BITS_PER_COMPONENT;
+  }
 }
 
 void Display::UpdateWorkAreaFromInsets(const gfx::Insets& insets) {

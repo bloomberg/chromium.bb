@@ -198,6 +198,10 @@ class DISPLAY_EXPORT Display final {
     color_space_ = color_space;
   }
 
+  // Set the color space of the display and reset the color depth and depth per
+  // component based on whether or not the color space is HDR.
+  void SetColorSpaceAndDepth(const gfx::ColorSpace& color_space);
+
   // The number of bits per pixel. Used by media query APIs.
   int color_depth() const { return color_depth_; }
   void set_color_depth(int color_depth) {

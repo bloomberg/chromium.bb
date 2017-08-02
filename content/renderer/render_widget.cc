@@ -1242,7 +1242,7 @@ void RenderWidget::Resize(const ResizeParams& params) {
         params.top_controls_height, params.bottom_controls_height,
         params.browser_controls_shrink_blink_size);
     compositor_->SetRasterColorSpace(
-        screen_info_.color_space.GetParametricApproximation());
+        screen_info_.color_space.GetRasterColorSpace());
     // If surface synchronization is enable, then this will use the provided
     // |local_surface_id_| to submit the next generated CompositorFrame.
     // If the ID is not valid, then the compositor will defer commits until
@@ -1340,7 +1340,7 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
   compositor_->SetViewportSize(physical_backing_size_);
   OnDeviceScaleFactorChanged();
   compositor_->SetRasterColorSpace(
-      screen_info_.color_space.GetParametricApproximation());
+      screen_info_.color_space.GetRasterColorSpace());
   compositor_->SetContentSourceId(current_content_source_id_);
   compositor_->SetLocalSurfaceId(local_surface_id_);
   // For background pages and certain tests, we don't want to trigger

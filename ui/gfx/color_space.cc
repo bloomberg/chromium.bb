@@ -303,6 +303,26 @@ ColorSpace ColorSpace::GetAsFullRangeRGB() const {
   return result;
 }
 
+ColorSpace ColorSpace::GetRasterColorSpace() const {
+  // Rasterization can only be done into parametric color spaces.
+  if (!IsParametric())
+    return GetParametricApproximation();
+  // Rasterization doesn't support more than 8 bit unorm values. If the output
+  // space has an extended range, use Display P3 for the rasterization space,
+  // to get a somewhat wider color gamut.
+  if (HasExtendedSkTransferFn())
+    return CreateDisplayP3D65();
+  return *this;
+}
+
+ColorSpace ColorSpace::GetBlendingColorSpace() const {
+  // HDR output on windows requires output have a linear transfer function.
+  // Linear blending breaks the web, so use extended-sRGB for blending.
+  if (transfer_ == TransferID::LINEAR_HDR)
+    return CreateExtendedSRGB();
+  return *this;
+}
+
 sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
   // If we got a specific SkColorSpace from the ICCProfile that this color space
   // was created from, use that.

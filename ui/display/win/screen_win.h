@@ -203,6 +203,11 @@ class DISPLAY_EXPORT ScreenWin : public Screen,
   // A helper to read color profiles from the filesystem.
   std::unique_ptr<ColorProfileReader> color_profile_reader_;
 
+  // Whether or not HDR mode is enabled.
+  // TODO(ccameron): Set this via the GPU process when the system "HDR and
+  // advanced color" setting is enabled.
+  bool hdr_enabled_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(ScreenWin);
 };
 
