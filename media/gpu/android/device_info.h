@@ -6,13 +6,14 @@
 #define MEDIA_GPU_ANDROID_DEVICE_INFO_H_
 
 #include "media/base/video_codecs.h"
+#include "media/gpu/media_gpu_export.h"
 
 namespace media {
 class MediaCodecBridge;
 
 // Info about the current platform and device with caching of the results that
 // don't change. Virtual for testing.
-struct DeviceInfo {
+struct MEDIA_GPU_EXPORT DeviceInfo {
   static DeviceInfo* GetInstance();
 
   virtual int SdkVersion();

@@ -53,7 +53,6 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                   const OutputCB& output_cb) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(!cdm_context);
 
   if (!weak_this_)
     weak_this_ = weak_factory_.GetWeakPtr();

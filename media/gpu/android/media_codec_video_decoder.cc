@@ -277,7 +277,7 @@ void MediaCodecVideoDecoder::TransitionToIncomingSurface() {
   DCHECK(codec_);
   auto surface_bundle = std::move(*incoming_surface_);
   incoming_surface_.reset();
-  if (codec_->SetSurface(surface_bundle->GetJavaSurface().obj())) {
+  if (codec_->SetSurface(surface_bundle->GetJavaSurface())) {
     codec_config_->surface_bundle = std::move(surface_bundle);
   } else {
     ReleaseCodecAndBundle();

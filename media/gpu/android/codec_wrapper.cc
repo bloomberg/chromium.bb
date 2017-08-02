@@ -48,7 +48,7 @@ class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
       base::TimeDelta* presentation_time,
       bool* end_of_stream,
       std::unique_ptr<CodecOutputBuffer>* codec_buffer);
-  bool SetSurface(jobject surface);
+  bool SetSurface(const base::android::JavaRef<jobject>& surface);
 
   // Releases the codec buffer and optionally renders it. This is a noop if
   // the codec buffer is not valid (i.e., there's no race between checking its
@@ -245,7 +245,8 @@ MediaCodecStatus CodecWrapperImpl::DequeueOutputBuffer(
   return MEDIA_CODEC_ERROR;
 }
 
-bool CodecWrapperImpl::SetSurface(jobject surface) {
+bool CodecWrapperImpl::SetSurface(
+    const base::android::JavaRef<jobject>& surface) {
   base::AutoLock l(lock_);
   DCHECK(codec_ && !in_error_state_);
 
@@ -343,7 +344,7 @@ MediaCodecStatus CodecWrapper::DequeueOutputBuffer(
                                     codec_buffer);
 }
 
-bool CodecWrapper::SetSurface(jobject surface) {
+bool CodecWrapper::SetSurface(const base::android::JavaRef<jobject>& surface) {
   return impl_->SetSurface(surface);
 }
 
