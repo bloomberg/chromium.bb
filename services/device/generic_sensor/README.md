@@ -59,7 +59,10 @@ value that can be read from the RELATIVE_ORIENTATION_EULER_ANGLES.
 Sensors are implemented by passing through values provided by the
 [Sensor API](https://msdn.microsoft.com/en-us/library/windows/desktop/dd318953(v=vs.85).aspx).
 The values in the "Windows" column of the table above correspond to the names of
-the sensor type GUIDs used to provide data for a SensorType.
+the sensor type GUIDs used to provide data for a SensorType. The
+LINEAR_ACCELEROMETER sensor type is provided by implementing a low-pass-filter
+over the values returned by the ACCELEROMETER in order to remove the
+contribution of the gravitational force.
 
 ## Testing
 
