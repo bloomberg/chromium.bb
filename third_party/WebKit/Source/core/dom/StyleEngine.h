@@ -34,7 +34,6 @@
 #include <utility>
 #include "core/CoreExport.h"
 #include "core/css/ActiveStyleSheets.h"
-#include "core/css/CSSFontSelectorClient.h"
 #include "core/css/CSSGlobalRuleSet.h"
 #include "core/css/invalidation/StyleInvalidator.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -45,6 +44,7 @@
 #include "core/dom/TreeOrderedList.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
+#include "platform/fonts/FontSelectorClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/AutoReset.h"
@@ -57,6 +57,7 @@ namespace blink {
 
 class CSSFontSelector;
 class CSSStyleSheet;
+class FontSelector;
 class MediaQueryEvaluator;
 class Node;
 class RuleFeatureSet;
@@ -68,7 +69,7 @@ class ViewportStyleResolver;
 
 class CORE_EXPORT StyleEngine final
     : public GarbageCollectedFinalized<StyleEngine>,
-      public CSSFontSelectorClient,
+      public FontSelectorClient,
       public TraceWrapperBase {
   USING_GARBAGE_COLLECTED_MIXIN(StyleEngine);
 
@@ -211,7 +212,7 @@ class CORE_EXPORT StyleEngine final
                 .IsEmpty();
   }
 
-  CSSFontSelector* FontSelector() { return font_selector_; }
+  CSSFontSelector* GetFontSelector() { return font_selector_; }
   void SetFontSelector(CSSFontSelector*);
 
   void RemoveFontFaceRules(const HeapVector<Member<const StyleRuleFontFace>>&);
@@ -274,8 +275,8 @@ class CORE_EXPORT StyleEngine final
   DECLARE_TRACE_WRAPPERS();
 
  private:
-  // CSSFontSelectorClient implementation.
-  void FontsNeedUpdate(CSSFontSelector*) override;
+  // FontSelectorClient implementation.
+  void FontsNeedUpdate(FontSelector*) override;
 
  private:
   StyleEngine(Document&);

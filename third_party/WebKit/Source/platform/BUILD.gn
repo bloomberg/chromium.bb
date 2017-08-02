@@ -706,6 +706,8 @@ component("platform") {
     "fonts/FontSelectionAlgorithm.h",
     "fonts/FontSelectionTypes.cpp",
     "fonts/FontSelectionTypes.h",
+    "fonts/FontSelector.h",
+    "fonts/FontSelectorClient.h",
     "fonts/FontSmoothingMode.h",
     "fonts/FontVariantNumeric.h",
     "fonts/FontWidthVariant.h",

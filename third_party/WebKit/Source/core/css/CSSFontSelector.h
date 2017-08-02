@@ -37,7 +37,6 @@
 
 namespace blink {
 
-class CSSFontSelectorClient;
 class Document;
 class FontDescription;
 
@@ -68,8 +67,8 @@ class CORE_EXPORT CSSFontSelector : public FontSelector {
   // FontCacheClient implementation
   void FontCacheInvalidated() override;
 
-  void RegisterForInvalidationCallbacks(CSSFontSelectorClient*);
-  void UnregisterForInvalidationCallbacks(CSSFontSelectorClient*);
+  void RegisterForInvalidationCallbacks(FontSelectorClient*) override;
+  void UnregisterForInvalidationCallbacks(FontSelectorClient*) override;
 
   Document* GetDocument() const { return document_; }
   FontFaceCache* GetFontFaceCache() { return &font_face_cache_; }
@@ -93,7 +92,7 @@ class CORE_EXPORT CSSFontSelector : public FontSelector {
   WeakMember<Document> document_;
   // FIXME: Move to Document or StyleEngine.
   FontFaceCache font_face_cache_;
-  HeapHashSet<WeakMember<CSSFontSelectorClient>> clients_;
+  HeapHashSet<WeakMember<FontSelectorClient>> clients_;
   GenericFontFamilySettings generic_font_family_settings_;
 };
 

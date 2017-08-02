@@ -27,7 +27,6 @@
 #include "core/css/CSSFontSelector.h"
 
 #include "build/build_config.h"
-#include "core/css/CSSFontSelectorClient.h"
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/FontFaceSet.h"
@@ -39,6 +38,7 @@
 #include "core/loader/FrameLoader.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontCache.h"
+#include "platform/fonts/FontSelectorClient.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/wtf/text/AtomicString.h"
 
@@ -60,20 +60,20 @@ CSSFontSelector::CSSFontSelector(Document* document)
 CSSFontSelector::~CSSFontSelector() {}
 
 void CSSFontSelector::RegisterForInvalidationCallbacks(
-    CSSFontSelectorClient* client) {
+    FontSelectorClient* client) {
   CHECK(client);
   clients_.insert(client);
 }
 
 void CSSFontSelector::UnregisterForInvalidationCallbacks(
-    CSSFontSelectorClient* client) {
+    FontSelectorClient* client) {
   clients_.erase(client);
 }
 
 void CSSFontSelector::DispatchInvalidationCallbacks() {
   font_face_cache_.IncrementVersion();
 
-  HeapVector<Member<CSSFontSelectorClient>> clients;
+  HeapVector<Member<FontSelectorClient>> clients;
   CopyToVector(clients_, clients);
   for (auto& client : clients)
     client->FontsNeedUpdate(this);

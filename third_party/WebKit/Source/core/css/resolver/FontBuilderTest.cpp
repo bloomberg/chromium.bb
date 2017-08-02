@@ -49,7 +49,8 @@ TEST_F(FontBuilderInitTest, InitialFontSizeNotScaled) {
 
   FontBuilder builder(&GetDocument());
   builder.SetInitial(1.0f);  // FIXME: Remove unused param.
-  builder.CreateFont(GetDocument().GetStyleEngine().FontSelector(), *initial);
+  builder.CreateFont(GetDocument().GetStyleEngine().GetFontSelector(),
+                     *initial);
 
   EXPECT_EQ(16.0f, initial->GetFontDescription().ComputedSize());
 }
@@ -73,7 +74,7 @@ TEST_P(FontBuilderAdditiveTest, OnlySetValueIsModified) {
 
   FontBuilder font_builder(&GetDocument());
   funcs.set_value(font_builder);
-  font_builder.CreateFont(GetDocument().GetStyleEngine().FontSelector(),
+  font_builder.CreateFont(GetDocument().GetStyleEngine().GetFontSelector(),
                           *style);
 
   FontDescription output_description = style->GetFontDescription();

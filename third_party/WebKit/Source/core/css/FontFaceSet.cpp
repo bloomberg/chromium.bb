@@ -265,7 +265,7 @@ FontFaceSet* FontFaceSet::addForBinding(ScriptState*,
   if (IsCSSConnectedFontFace(font_face))
     return this;
   CSSFontSelector* font_selector =
-      GetDocument()->GetStyleEngine().FontSelector();
+      GetDocument()->GetStyleEngine().GetFontSelector();
   non_css_connected_faces_.insert(font_face);
   font_selector->GetFontFaceCache()->AddFontFace(font_face, false);
   if (font_face->LoadStatus() == FontFace::kLoading)
@@ -278,7 +278,7 @@ void FontFaceSet::clearForBinding(ScriptState*, ExceptionState&) {
   if (!InActiveDocumentContext() || non_css_connected_faces_.IsEmpty())
     return;
   CSSFontSelector* font_selector =
-      GetDocument()->GetStyleEngine().FontSelector();
+      GetDocument()->GetStyleEngine().GetFontSelector();
   FontFaceCache* font_face_cache = font_selector->GetFontFaceCache();
   for (const auto& font_face : non_css_connected_faces_) {
     font_face_cache->RemoveFontFace(font_face.Get(), false);
@@ -300,7 +300,7 @@ bool FontFaceSet::deleteForBinding(ScriptState*,
   if (it != non_css_connected_faces_.end()) {
     non_css_connected_faces_.erase(it);
     CSSFontSelector* font_selector =
-        GetDocument()->GetStyleEngine().FontSelector();
+        GetDocument()->GetStyleEngine().GetFontSelector();
     font_selector->GetFontFaceCache()->RemoveFontFace(font_face, false);
     if (font_face->LoadStatus() == FontFace::kLoading)
       RemoveFromLoadingFonts(font_face);
@@ -325,7 +325,7 @@ const HeapListHashSet<Member<FontFace>>& FontFaceSet::CssConnectedFontFaceList()
   Document* document = this->GetDocument();
   document->UpdateActiveStyle();
   return document->GetStyleEngine()
-      .FontSelector()
+      .GetFontSelector()
       ->GetFontFaceCache()
       ->CssConnectedFontFaces();
 }
@@ -393,7 +393,7 @@ ScriptPromise FontFaceSet::load(ScriptState* script_state,
   }
 
   FontFaceCache* font_face_cache =
-      GetDocument()->GetStyleEngine().FontSelector()->GetFontFaceCache();
+      GetDocument()->GetStyleEngine().GetFontSelector()->GetFontFaceCache();
   FontFaceArray faces;
   for (const FontFamily* f = &font.GetFontDescription().Family(); f;
        f = f->Next()) {
@@ -425,7 +425,7 @@ bool FontFaceSet::check(const String& font_string,
   }
 
   CSSFontSelector* font_selector =
-      GetDocument()->GetStyleEngine().FontSelector();
+      GetDocument()->GetStyleEngine().GetFontSelector();
   FontFaceCache* font_face_cache = font_selector->GetFontFaceCache();
 
   bool has_loaded_faces = false;
@@ -484,7 +484,7 @@ bool FontFaceSet::ResolveFontStyle(const String& font_string, Font& font) {
   GetDocument()->EnsureStyleResolver().ComputeFont(style.Get(), *parsed_style);
 
   font = style->GetFont();
-  font.Update(GetDocument()->GetStyleEngine().FontSelector());
+  font.Update(GetDocument()->GetStyleEngine().GetFontSelector());
   return true;
 }
 
