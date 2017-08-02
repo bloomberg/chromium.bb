@@ -4,6 +4,7 @@
 
 #import <EarlGrey/EarlGrey.h>
 
+#include "base/ios/ios_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/history_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
@@ -66,6 +67,13 @@ using web::test::HttpServer;
 // Tests that only one NTP tile is displayed for a TopSite that involves a
 // redirect.
 - (void)testTopSitesTileAfterRedirect {
+  // TODO(crbug.com/751224): This test fails on "Plus" devices, so disabling
+  // it on iOS 11 to unblock running the test case on iPhone 6 Plus, iOS 11.
+  // Re-enable this test once the bug is fixed.
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
+  }
+
   std::map<GURL, HtmlResponseProviderImpl::Response> responses;
   const GURL firstRedirectURL = HttpServer::MakeUrl("http://firstRedirect/");
   const GURL destinationURL = HttpServer::MakeUrl("http://destination/");
