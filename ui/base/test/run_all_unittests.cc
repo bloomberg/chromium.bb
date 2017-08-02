@@ -13,12 +13,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#include "ui/base/android/ui_base_jni_registrar.h"
-#include "ui/gfx/android/gfx_jni_registrar.h"
-#endif
-
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/bundle_locations.h"
 #include "base/test/mock_chrome_application_mac.h"
@@ -51,12 +45,6 @@ void UIBaseTestSuite::Initialize() {
 
 #if defined(OS_WIN)
   display::win::SetDefaultDeviceScaleFactor(1.0);
-#endif
-
-#if defined(OS_ANDROID)
-  // Register JNI bindings for android.
-  gfx::android::RegisterJni(base::android::AttachCurrentThread());
-  ui::android::RegisterJni(base::android::AttachCurrentThread());
 #endif
 
   ui::RegisterPathProvider();

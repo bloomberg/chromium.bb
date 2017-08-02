@@ -58,8 +58,6 @@ class UI_ANDROID_EXPORT ResourceManagerImpl
   void ClearTintedResourceCache(JNIEnv* env,
       const base::android::JavaRef<jobject>& jobj);
 
-  static bool RegisterResourceManager(JNIEnv* env);
-
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;

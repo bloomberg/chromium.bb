@@ -14,7 +14,6 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/l10n/l10n_util_android.h"
 
 using autofill::AutofillWebDataService;
 using autofill::FormFieldData;
@@ -32,7 +31,6 @@ class AwFormDatabaseServiceTest : public Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     env_ = AttachCurrentThread();
     ASSERT_TRUE(env_ != NULL);
-    ASSERT_TRUE(l10n_util::RegisterLocalizationUtil(env_));
 
     service_.reset(new AwFormDatabaseService(temp_dir_.GetPath()));
   }

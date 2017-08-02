@@ -87,9 +87,6 @@ class ClipboardAndroid : public Clipboard {
   DISALLOW_COPY_AND_ASSIGN(ClipboardAndroid);
 };
 
-// Registers the ClipboardAndroid native method.
-bool RegisterClipboardAndroid(JNIEnv* env);
-
 }  // namespace ui
 
 #endif  // UI_BASE_CLIPBOARD_CLIPBOARD_ANDROID_H_

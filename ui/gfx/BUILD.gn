@@ -44,8 +44,6 @@ component("geometry_skia") {
 
 component("gfx") {
   sources = [
-    "android/gfx_jni_registrar.cc",
-    "android/gfx_jni_registrar.h",
     "android/java_bitmap.cc",
     "android/java_bitmap.h",
     "android/view_configuration.cc",

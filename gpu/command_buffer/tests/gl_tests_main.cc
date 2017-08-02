@@ -18,11 +18,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gl/init/gl_factory.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#include "ui/gl/android/gl_jni_registrar.h"
-#endif
-
 namespace {
 
 int RunHelper(base::TestSuite* testSuite) {
@@ -44,9 +39,6 @@ int RunHelper(base::TestSuite* testSuite) {
 }  // namespace
 
 int main(int argc, char** argv) {
-#if defined(OS_ANDROID)
-  ui::gl::android::RegisterJni(base::android::AttachCurrentThread());
-#endif
   base::TestSuite test_suite(argc, argv);
   base::CommandLine::Init(argc, argv);
 #if defined(OS_MACOSX)

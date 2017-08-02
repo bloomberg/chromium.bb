@@ -51,8 +51,6 @@ component("shell_dialogs") {
 
   if (is_android && !use_aura) {
     sources += [
-      "android/shell_dialogs_jni_registrar.cc",
-      "android/shell_dialogs_jni_registrar.h",
       "select_file_dialog_android.cc",
       "select_file_dialog_android.h",
     ]

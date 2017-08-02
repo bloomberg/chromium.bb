@@ -550,10 +550,6 @@ void ClipboardAndroid::WriteData(const Clipboard::FormatType& format,
   g_map.Get().Set(format.ToString(), std::string(data_data, data_len));
 }
 
-bool RegisterClipboardAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 // Returns a pointer to the current ClipboardAndroid object.
 static jlong Init(JNIEnv* env,
                   const base::android::JavaParamRef<jobject>& obj) {

@@ -67,8 +67,6 @@ component("base") {
     "accelerators/platform_accelerator.h",
     "accelerators/platform_accelerator_cocoa.h",
     "accelerators/platform_accelerator_cocoa.mm",
-    "android/ui_base_jni_registrar.cc",
-    "android/ui_base_jni_registrar.h",
     "class_property.cc",
     "class_property.h",
     "clipboard/clipboard_android.cc",

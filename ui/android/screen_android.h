@@ -10,8 +10,6 @@
 
 namespace ui {
 
-bool RegisterScreenAndroid(JNIEnv* env);
-
 UI_ANDROID_EXPORT void SetScreenAndroid();
 
 }  // namespace display
