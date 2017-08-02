@@ -409,9 +409,6 @@ void WebUILoginView::Layout() {
     observer.OnPositionRequiresUpdate();
 }
 
-void WebUILoginView::OnLocaleChanged() {
-}
-
 void WebUILoginView::ChildPreferredSizeChanged(View* child) {
   Layout();
   SchedulePaint();

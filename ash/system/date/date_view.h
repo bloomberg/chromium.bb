@@ -52,7 +52,6 @@ class ASH_EXPORT BaseDateTimeView : public ActionableView {
 
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override;
-  void OnLocaleChanged() override;
 
   // Invokes UpdateText() when the displayed time should change.
   base::OneShotTimer timer_;

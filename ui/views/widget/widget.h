@@ -641,10 +641,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // changed.
   void ThemeChanged();
 
-  // Notifies the view hierarchy contained in this widget that locale resources
-  // changed.
-  void LocaleChanged();
-
   // Notifies the view hierarchy contained in this widget that the device scale
   // factor changed.
   void DeviceScaleFactorChanged(float device_scale_factor);

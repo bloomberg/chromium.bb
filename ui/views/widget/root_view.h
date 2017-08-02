@@ -83,10 +83,6 @@ class VIEWS_EXPORT RootView : public View,
   // hierarchy.
   void ThemeChanged();
 
-  // Public API for broadcasting locale change notifications to this View
-  // hierarchy.
-  void LocaleChanged();
-
   // Public API for broadcasting device scale factor change notifications to
   // this View hierarchy.
   void DeviceScaleFactorChanged(float device_scale_factor);

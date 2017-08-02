@@ -126,7 +126,6 @@ class WebUILoginView : public views::View,
 
   // Overridden from views::View:
   void Layout() override;
-  void OnLocaleChanged() override;
   void ChildPreferredSizeChanged(View* child) override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
 

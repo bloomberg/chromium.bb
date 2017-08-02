@@ -857,10 +857,6 @@ void Widget::ThemeChanged() {
   root_view_->ThemeChanged();
 }
 
-void Widget::LocaleChanged() {
-  root_view_->LocaleChanged();
-}
-
 void Widget::DeviceScaleFactorChanged(float device_scale_factor) {
   root_view_->DeviceScaleFactorChanged(device_scale_factor);
 }

@@ -2620,15 +2620,6 @@ void View::PropagateThemeChanged() {
   OnThemeChanged();
 }
 
-void View::PropagateLocaleChanged() {
-  {
-    internal::ScopedChildrenLock lock(this);
-    for (auto* child : base::Reversed(children_))
-      child->PropagateLocaleChanged();
-  }
-  OnLocaleChanged();
-}
-
 void View::PropagateDeviceScaleFactorChanged(float device_scale_factor) {
   {
     internal::ScopedChildrenLock lock(this);
