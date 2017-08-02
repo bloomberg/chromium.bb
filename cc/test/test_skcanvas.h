@@ -20,6 +20,7 @@ class SaveCountingCanvas : public SkNoDrawCanvas {
   SaveLayerStrategy getSaveLayerStrategy(const SaveLayerRec& rec) override;
   void willRestore() override;
   void onDrawRect(const SkRect& rect, const SkPaint& paint) override;
+  void onDrawPaint(const SkPaint& paint) override;
 
   int save_count_ = 0;
   int restore_count_ = 0;
