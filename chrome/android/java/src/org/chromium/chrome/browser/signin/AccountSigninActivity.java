@@ -35,17 +35,26 @@ public class AccountSigninActivity extends AppCompatActivity
     private static final String TAG = "AccountSigninActivity";
     private static final String INTENT_SIGNIN_ACCESS_POINT =
             "AccountSigninActivity.SigninAccessPoint";
-    private static final String INTENT_SELECT_ACCOUNT = "AccountSigninActivity.SelectAccount";
+    private static final String INTENT_SIGNIN_FLOW_TYPE = "AccountSigninActivity.SigninFlowType";
+    private static final String INTENT_ACCOUNT_NAME = "AccountSigninActivity.AccountName";
     private static final String INTENT_IS_DEFAULT_ACCOUNT =
             "AccountSigninActivity.IsDefaultAccount";
 
-    private AccountSigninView mView;
+    @IntDef({SIGNIN_FLOW_DEFAULT, SIGNIN_FLOW_CONFIRMATION_ONLY, SIGNIN_FLOW_ADD_NEW_ACCOUNT})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface SigninFlowType {}
+
+    private static final int SIGNIN_FLOW_DEFAULT = 0;
+    private static final int SIGNIN_FLOW_CONFIRMATION_ONLY = 1;
+    private static final int SIGNIN_FLOW_ADD_NEW_ACCOUNT = 2;
 
     @IntDef({SigninAccessPoint.SETTINGS, SigninAccessPoint.BOOKMARK_MANAGER,
             SigninAccessPoint.RECENT_TABS, SigninAccessPoint.SIGNIN_PROMO,
             SigninAccessPoint.NTP_CONTENT_SUGGESTIONS, SigninAccessPoint.AUTOFILL_DROPDOWN})
     @Retention(RetentionPolicy.SOURCE)
     public @interface AccessPoint {}
+
+    private AccountSigninView mView;
     @AccessPoint private int mAccessPoint;
 
     /**
@@ -56,6 +65,7 @@ public class AccountSigninActivity extends AppCompatActivity
     public static void startAccountSigninActivity(Context context, @AccessPoint int accessPoint) {
         Intent intent = new Intent(context, AccountSigninActivity.class);
         intent.putExtra(INTENT_SIGNIN_ACCESS_POINT, accessPoint);
+        intent.putExtra(INTENT_SIGNIN_FLOW_TYPE, SIGNIN_FLOW_DEFAULT);
         context.startActivity(intent);
     }
 
@@ -88,8 +98,20 @@ public class AccountSigninActivity extends AppCompatActivity
             String selectAccount, boolean isDefaultAccount) {
         Intent intent = new Intent(context, AccountSigninActivity.class);
         intent.putExtra(INTENT_SIGNIN_ACCESS_POINT, accessPoint);
-        intent.putExtra(INTENT_SELECT_ACCOUNT, selectAccount);
+        intent.putExtra(INTENT_SIGNIN_FLOW_TYPE, SIGNIN_FLOW_CONFIRMATION_ONLY);
+        intent.putExtra(INTENT_ACCOUNT_NAME, selectAccount);
         intent.putExtra(INTENT_IS_DEFAULT_ACCOUNT, isDefaultAccount);
+        context.startActivity(intent);
+    }
+
+    /**
+     * Starts AccountSigninActivity from "Add account" page.
+     * @param accessPoint {@link AccessPoint} for starting signin flow. Used in metrics.
+     */
+    public static void startFromAddAccountPage(Context context, @AccessPoint int accessPoint) {
+        Intent intent = new Intent(context, AccountSigninActivity.class);
+        intent.putExtra(INTENT_SIGNIN_ACCESS_POINT, accessPoint);
+        intent.putExtra(INTENT_SIGNIN_FLOW_TYPE, SIGNIN_FLOW_ADD_NEW_ACCOUNT);
         context.startActivity(intent);
     }
 
@@ -125,14 +147,28 @@ public class AccountSigninActivity extends AppCompatActivity
         int imageSize = getResources().getDimensionPixelSize(R.dimen.signin_account_image_size);
         ProfileDataCache profileDataCache =
                 new ProfileDataCache(this, Profile.getLastUsedProfile(), imageSize);
-        String selectAccount = getIntent().getStringExtra(INTENT_SELECT_ACCOUNT);
-        if (selectAccount == null) {
-            mView.initFromSelectionPage(profileDataCache, false, this, this);
-        } else {
-            boolean isDefaultAccount =
-                    getIntent().getBooleanExtra(INTENT_IS_DEFAULT_ACCOUNT, false);
-            mView.initFromConfirmationPage(profileDataCache, false, selectAccount, isDefaultAccount,
-                    AccountSigninView.UNDO_ABORT, this, this);
+
+        int flowType = getIntent().getIntExtra(INTENT_SIGNIN_FLOW_TYPE, -1);
+        switch (flowType) {
+            case SIGNIN_FLOW_DEFAULT:
+                mView.initFromSelectionPage(profileDataCache, false, this, this);
+                break;
+            case SIGNIN_FLOW_CONFIRMATION_ONLY: {
+                String accountName = getIntent().getStringExtra(INTENT_ACCOUNT_NAME);
+                if (accountName == null) {
+                    throw new IllegalArgumentException("Account name can't be null!");
+                }
+                boolean isDefaultAccount =
+                        getIntent().getBooleanExtra(INTENT_IS_DEFAULT_ACCOUNT, false);
+                mView.initFromConfirmationPage(profileDataCache, false, accountName,
+                        isDefaultAccount, AccountSigninView.UNDO_ABORT, this, this);
+                break;
+            }
+            case SIGNIN_FLOW_ADD_NEW_ACCOUNT:
+                mView.initFromAddAccountPage(profileDataCache, this, this);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown signin flow type: " + flowType);
         }
 
         if (getAccessPoint() == SigninAccessPoint.BOOKMARK_MANAGER

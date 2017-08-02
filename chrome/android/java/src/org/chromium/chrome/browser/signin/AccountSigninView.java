@@ -168,10 +168,10 @@ public class AccountSigninView extends FrameLayout {
      * Initializes the view from account selection page. After selecting the account, signin
      * confirmation page will be opened.
      *
-     * @param profileData    ProfileDataCache that will be used to retrieve user account info.
+     * @param profileData ProfileDataCache that will be used to retrieve user account info.
      * @param isChildAccount Whether this view is for a child account.
-     * @param delegate       The UI object creation delegate.
-     * @param listener       The account selection event listener.
+     * @param delegate The UI object creation delegate.
+     * @param listener The account selection event listener.
      */
     public void initFromSelectionPage(ProfileDataCache profileData, boolean isChildAccount,
             Delegate delegate, Listener listener) {
@@ -184,16 +184,37 @@ public class AccountSigninView extends FrameLayout {
     }
 
     /**
+     * Initializes the view from account selection page. After selecting the account, signin
+     * confirmation page will be opened.
+     *
+     * @param profileData ProfileDataCache that will be used to retrieve user account info.
+     * @param delegate The UI object creation delegate.
+     * @param listener The account selection event listener.
+     */
+    public void initFromAddAccountPage(
+            ProfileDataCache profileData, Delegate delegate, Listener listener) {
+        setProfileDataCache(profileData);
+        mIsChildAccount = false; // Children profiles can't add accounts.
+        mUndoBehavior = UNDO_ABORT;
+        mDelegate = delegate;
+        mListener = listener;
+        showSigninPage();
+
+        RecordUserAction.record("Signin_AddAccountToDevice");
+        mListener.onNewAccount();
+    }
+
+    /**
      * Initializes the view from signin confirmation page. The account name should be provided by
      * the caller.
      *
-     * @param profileData      ProfileDataCache that will be used to retrieve user account info.
-     * @param isChildAccount   Whether this view is for a child account.
-     * @param accountName      An account that should be used for confirmation page and signin.
+     * @param profileData ProfileDataCache that will be used to retrieve user account info.
+     * @param isChildAccount Whether this view is for a child account.
+     * @param accountName An account that should be used for confirmation page and signin.
      * @param isDefaultAccount Whether {@param accountName} is a default account, used for metrics.
-     * @param undoBehavior     "Undo" button behavior (see {@link UndoBehavior}).
-     * @param delegate         The UI object creation delegate.
-     * @param listener         The account selection event listener.
+     * @param undoBehavior "Undo" button behavior (see {@link UndoBehavior}).
+     * @param delegate The UI object creation delegate.
+     * @param listener The account selection event listener.
      */
     public void initFromConfirmationPage(ProfileDataCache profileData, boolean isChildAccount,
             String accountName, boolean isDefaultAccount, @UndoBehavior int undoBehavior,
