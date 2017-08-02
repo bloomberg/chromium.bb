@@ -138,6 +138,8 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
 
   LayerAnimationElement* FirstElement() const;
 
+  std::string ToString() const;
+
  private:
   friend class LayerAnimatorTestController;
 
@@ -145,6 +147,8 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
 
   FRIEND_TEST_ALL_PREFIXES(LayerAnimatorTest,
                            ObserverReleasedBeforeAnimationSequenceEnds);
+
+  std::string ElementsToString() const;
 
   // Notifies the observers that this sequence has been scheduled.
   void NotifyScheduled();

@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/animation/animation_curve.h"
 
@@ -265,6 +266,14 @@ void Animation::PushPropertiesTo(Animation* other) const {
     other->pause_time_ = pause_time_;
     other->total_paused_time_ = total_paused_time_;
   }
+}
+
+std::string Animation::ToString() const {
+  return base::StringPrintf(
+      "Animation{id=%d, group=%d, target_property_id=%d, "
+      "run_state=%s}",
+      id_, group_, target_property_id_,
+      s_runStateNames[static_cast<int>(run_state_)]);
 }
 
 }  // namespace cc

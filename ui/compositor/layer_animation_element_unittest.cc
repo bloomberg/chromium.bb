@@ -400,6 +400,20 @@ TEST(LayerAnimationElementTest, AbortTransformElement) {
                           delegate.GetTransformForAnimation());
 }
 
+TEST(LayerAnimationElementTest, ToString) {
+  float target = 1.0;
+  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
+  std::unique_ptr<LayerAnimationElement> element =
+      LayerAnimationElement::CreateOpacityElement(target, delta);
+  element->set_animation_group_id(42);
+  // TODO(wkorman): Test varying last_progressed_fraction and
+  // start_frame_number.
+  EXPECT_EQ(
+      "LayerAnimationElement{name=ThreadedOpacityTransition, id=1, group=42, "
+      "last_progressed_fraction=0.00, start_frame_number=0}",
+      element->ToString());
+}
+
 } // namespace
 
 } // namespace ui

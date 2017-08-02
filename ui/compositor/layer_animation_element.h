@@ -78,6 +78,9 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
 
   virtual ~LayerAnimationElement();
 
+  static std::string AnimatablePropertiesToString(
+      AnimatableProperties properties);
+
   // Creates an element that transitions to the given transform. The caller owns
   // the return value.
   static std::unique_ptr<LayerAnimationElement> CreateTransformElement(
@@ -214,7 +217,11 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   // call made to {Progress, ProgressToEnd}.
   double last_progressed_fraction() const { return last_progressed_fraction_; }
 
+  std::string ToString() const;
+
  protected:
+  virtual std::string DebugName() const;
+
   // Called once each time the animation element is run before any call to
   // OnProgress.
   virtual void OnStart(LayerAnimationDelegate* delegate) = 0;
