@@ -148,12 +148,14 @@ void WorkerFetchContext::CountDeprecation(WebFeature feature) const {
 }
 
 bool WorkerFetchContext::ShouldBlockFetchByMixedContentCheck(
-    const ResourceRequest& resource_request,
+    WebURLRequest::RequestContext request_context,
+    WebURLRequest::FrameType frame_type,
+    ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
     SecurityViolationReportingPolicy reporting_policy) const {
   return MixedContentChecker::ShouldBlockFetchOnWorker(
-      global_scope_, web_context_.get(), resource_request, url,
-      reporting_policy);
+      global_scope_, web_context_.get(), request_context, frame_type,
+      redirect_status, url, reporting_policy);
 }
 
 bool WorkerFetchContext::ShouldBlockFetchAsCredentialedSubresource(

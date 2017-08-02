@@ -72,20 +72,12 @@ class CORE_EXPORT MixedContentChecker final {
                                const KURL&,
                                SecurityViolationReportingPolicy =
                                    SecurityViolationReportingPolicy::kReport);
-  static bool ShouldBlockFetch(
-      LocalFrame* frame,
-      const ResourceRequest& request,
-      const KURL& url,
-      SecurityViolationReportingPolicy reporting_policy =
-          SecurityViolationReportingPolicy::kReport) {
-    return ShouldBlockFetch(frame, request.GetRequestContext(),
-                            request.GetFrameType(), request.GetRedirectStatus(),
-                            url, reporting_policy);
-  }
 
   static bool ShouldBlockFetchOnWorker(WorkerOrWorkletGlobalScope*,
                                        WebWorkerFetchContext*,
-                                       const ResourceRequest&,
+                                       WebURLRequest::RequestContext,
+                                       WebURLRequest::FrameType,
+                                       ResourceRequest::RedirectStatus,
                                        const KURL&,
                                        SecurityViolationReportingPolicy);
 

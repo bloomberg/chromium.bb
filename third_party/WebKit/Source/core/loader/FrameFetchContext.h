@@ -193,7 +193,9 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   void CountUsage(WebFeature) const override;
   void CountDeprecation(WebFeature) const override;
   bool ShouldBlockFetchByMixedContentCheck(
-      const ResourceRequest&,
+      WebURLRequest::RequestContext,
+      WebURLRequest::FrameType,
+      ResourceRequest::RedirectStatus,
       const KURL&,
       SecurityViolationReportingPolicy) const override;
   bool ShouldBlockFetchAsCredentialedSubresource(const ResourceRequest&,

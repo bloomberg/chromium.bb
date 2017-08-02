@@ -206,12 +206,14 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequestInternal(
       break;
   }
 
+  WebURLRequest::RequestContext request_context =
+      resource_request.GetRequestContext();
+
   // We check the 'report-only' headers before upgrading the request (in
   // populateResourceRequest). We check the enforced headers here to ensure we
   // block things we ought to block.
   if (CheckCSPForRequestInternal(
-          resource_request.GetRequestContext(), url, options, reporting_policy,
-          redirect_status,
+          request_context, url, options, reporting_policy, redirect_status,
           ContentSecurityPolicy::CheckHeaderType::kCheckEnforce) ==
       ResourceRequestBlockedReason::kCSP) {
     return ResourceRequestBlockedReason::kCSP;
@@ -231,10 +233,11 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequestInternal(
       !url.ProtocolIsData())
     return ResourceRequestBlockedReason::kOrigin;
 
+  WebURLRequest::FrameType frame_type = resource_request.GetFrameType();
+
   // Measure the number of legacy URL schemes ('ftp://') and the number of
   // embedded-credential ('http://user:password@...') resources embedded as
   // subresources.
-  WebURLRequest::FrameType frame_type = resource_request.GetFrameType();
   if (frame_type != WebURLRequest::kFrameTypeTopLevel) {
     bool is_subresource = frame_type == WebURLRequest::kFrameTypeNone;
     const SecurityOrigin* embedding_origin =
@@ -258,8 +261,9 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequestInternal(
   // Check for mixed content. We do this second-to-last so that when folks block
   // mixed content via CSP, they don't get a mixed content warning, but a CSP
   // warning instead.
-  if (ShouldBlockFetchByMixedContentCheck(resource_request, url,
-                                          reporting_policy))
+  if (ShouldBlockFetchByMixedContentCheck(request_context, frame_type,
+                                          resource_request.GetRedirectStatus(),
+                                          url, reporting_policy))
     return ResourceRequestBlockedReason::kMixedContent;
 
   if (url.PotentiallyDanglingMarkup() && url.ProtocolIsInHTTPFamily()) {
@@ -272,8 +276,8 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequestInternal(
   // proceed.
   if (GetSubresourceFilter() && type != Resource::kMainResource &&
       type != Resource::kImportResource) {
-    if (!GetSubresourceFilter()->AllowLoad(
-            url, resource_request.GetRequestContext(), reporting_policy)) {
+    if (!GetSubresourceFilter()->AllowLoad(url, request_context,
+                                           reporting_policy)) {
       return ResourceRequestBlockedReason::kSubresourceFilter;
     }
   }

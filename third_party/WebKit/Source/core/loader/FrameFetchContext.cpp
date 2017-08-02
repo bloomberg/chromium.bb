@@ -940,15 +940,18 @@ void FrameFetchContext::CountDeprecation(WebFeature feature) const {
 }
 
 bool FrameFetchContext::ShouldBlockFetchByMixedContentCheck(
-    const ResourceRequest& resource_request,
+    WebURLRequest::RequestContext request_context,
+    WebURLRequest::FrameType frame_type,
+    ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
     SecurityViolationReportingPolicy reporting_policy) const {
   if (IsDetached()) {
     // TODO(yhirano): Implement the detached case.
     return false;
   }
-  return MixedContentChecker::ShouldBlockFetch(GetFrame(), resource_request,
-                                               url, reporting_policy);
+  return MixedContentChecker::ShouldBlockFetch(GetFrame(), request_context,
+                                               frame_type, redirect_status, url,
+                                               reporting_policy);
 }
 
 bool FrameFetchContext::ShouldBlockFetchAsCredentialedSubresource(

@@ -14,6 +14,7 @@
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "platform/wtf/Optional.h"
 #include "public/platform/WebAddressSpace.h"
+#include "public/platform/WebURLRequest.h"
 
 namespace blink {
 
@@ -67,7 +68,9 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   virtual bool ShouldBypassMainWorldCSP() const = 0;
   virtual bool IsSVGImageChromeClient() const = 0;
   virtual bool ShouldBlockFetchByMixedContentCheck(
-      const ResourceRequest&,
+      WebURLRequest::RequestContext,
+      WebURLRequest::FrameType,
+      ResourceRequest::RedirectStatus,
       const KURL&,
       SecurityViolationReportingPolicy) const = 0;
   virtual bool ShouldBlockFetchAsCredentialedSubresource(const ResourceRequest&,
@@ -85,6 +88,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   void PrintAccessDeniedMessage(const KURL&) const;
   void AddCSPHeaderIfNecessary(Resource::Type, ResourceRequest&);
 
+ private:
   // Utility methods that are used in default implement for CanRequest,
   // CanFollowRedirect and AllowResponse.
   ResourceRequestBlockedReason CanRequestInternal(
@@ -96,7 +100,6 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       FetchParameters::OriginRestriction,
       ResourceRequest::RedirectStatus) const;
 
- private:
   ResourceRequestBlockedReason CheckCSPForRequestInternal(
       WebURLRequest::RequestContext,
       const KURL&,
