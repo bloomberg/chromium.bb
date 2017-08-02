@@ -95,22 +95,14 @@ DispatchEventResult DispatchSelectStart(Node* node) {
 
 SelectionInFlatTree ExpandSelectionToRespectUserSelectAll(
     Node* target_node,
-    const VisibleSelectionInFlatTree& selection) {
+    const SelectionInFlatTree& selection) {
   if (selection.IsNone())
     return SelectionInFlatTree();
   Node* const root_user_select_all =
       EditingInFlatTreeStrategy::RootUserSelectAllForNode(target_node);
-  if (!root_user_select_all) {
-    SelectionInFlatTree::Builder builder;
-    if (selection.IsBaseFirst())
-      builder.SetBaseAndExtent(selection.Start(), selection.End());
-    else
-      builder.SetBaseAndExtent(selection.End(), selection.Start());
-    builder.SetAffinity(selection.Affinity());
-    return builder.Build();
-  }
-
-  return SelectionInFlatTree::Builder(selection.AsSelection())
+  if (!root_user_select_all)
+    return selection;
+  return SelectionInFlatTree::Builder(selection)
       .Collapse(MostBackwardCaretPosition(
           PositionInFlatTree::BeforeNode(*root_user_select_all),
           kCanCrossEditingBoundary))
@@ -164,11 +156,10 @@ static PositionInFlatTree AdjustPositionRespectUserSelectAll(
     const PositionInFlatTree& position) {
   const VisibleSelectionInFlatTree& selection_in_user_select_all =
       CreateVisibleSelection(ExpandSelectionToRespectUserSelectAll(
-          inner_node, position.IsNull() ? VisibleSelectionInFlatTree()
-                                        : CreateVisibleSelection(
-                                              SelectionInFlatTree::Builder()
-                                                  .Collapse(position)
-                                                  .Build())));
+          inner_node,
+          position.IsNull()
+              ? SelectionInFlatTree()
+              : SelectionInFlatTree::Builder().Collapse(position).Build()));
   if (!selection_in_user_select_all.IsRange())
     return position;
   if (selection_in_user_select_all.Start().CompareTo(selection_start) < 0)
@@ -374,10 +365,9 @@ bool SelectionController::HandleSingleClick(
   UpdateSelectionForMouseDownDispatchingSelectStart(
       inner_node,
       ExpandSelectionToRespectUserSelectAll(
-          inner_node, CreateVisibleSelection(
-                          SelectionInFlatTree::Builder()
-                              .Collapse(visible_pos.ToPositionWithAffinity())
-                              .Build())),
+          inner_node, SelectionInFlatTree::Builder()
+                          .Collapse(visible_pos.ToPositionWithAffinity())
+                          .Build()),
       TextGranularity::kCharacter,
       is_handle_visible ? HandleVisibility::kVisible
                         : HandleVisibility::kNotVisible);
@@ -579,7 +569,8 @@ bool SelectionController::SelectClosestWordFromHitTestResult(
 
   return UpdateSelectionForMouseDownDispatchingSelectStart(
       inner_node,
-      ExpandSelectionToRespectUserSelectAll(inner_node, adjusted_selection),
+      ExpandSelectionToRespectUserSelectAll(inner_node,
+                                            adjusted_selection.AsSelection()),
       TextGranularity::kWord, visibility);
 }
 
@@ -623,7 +614,8 @@ void SelectionController::SelectClosestMisspellingFromHitTestResult(
           : new_selection;
   UpdateSelectionForMouseDownDispatchingSelectStart(
       inner_node,
-      ExpandSelectionToRespectUserSelectAll(inner_node, adjusted_selection),
+      ExpandSelectionToRespectUserSelectAll(inner_node,
+                                            adjusted_selection.AsSelection()),
       TextGranularity::kWord, HandleVisibility::kNotVisible);
 }
 
@@ -685,7 +677,8 @@ void SelectionController::SelectClosestWordOrLinkFromMouseEvent(
 
   UpdateSelectionForMouseDownDispatchingSelectStart(
       inner_node,
-      ExpandSelectionToRespectUserSelectAll(inner_node, new_selection),
+      ExpandSelectionToRespectUserSelectAll(inner_node,
+                                            new_selection.AsSelection()),
       TextGranularity::kWord, HandleVisibility::kNotVisible);
 }
 
@@ -854,10 +847,9 @@ void SelectionController::SetCaretAtHitTestResult(
   UpdateSelectionForMouseDownDispatchingSelectStart(
       inner_node,
       ExpandSelectionToRespectUserSelectAll(
-          inner_node, CreateVisibleSelection(
-                          SelectionInFlatTree::Builder()
-                              .Collapse(visible_pos.ToPositionWithAffinity())
-                              .Build())),
+          inner_node, SelectionInFlatTree::Builder()
+                          .Collapse(visible_pos.ToPositionWithAffinity())
+                          .Build()),
       TextGranularity::kCharacter, HandleVisibility::kVisible);
 }
 
@@ -929,7 +921,8 @@ bool SelectionController::HandleTripleClick(
 
   const bool did_select = UpdateSelectionForMouseDownDispatchingSelectStart(
       inner_node,
-      ExpandSelectionToRespectUserSelectAll(inner_node, new_selection),
+      ExpandSelectionToRespectUserSelectAll(inner_node,
+                                            new_selection.AsSelection()),
       TextGranularity::kParagraph,
       is_handle_visible ? HandleVisibility::kVisible
                         : HandleVisibility::kNotVisible);
