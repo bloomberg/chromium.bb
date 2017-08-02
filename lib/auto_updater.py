@@ -76,6 +76,7 @@ import time
 
 from chromite.lib import auto_update_util
 from chromite.cli import command
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import dev_server_wrapper as ds_wrapper
@@ -119,6 +120,10 @@ THIRD_PARTY_PKG_DIR = '/usr/lib/python2.7/dist-packages/'
 
 # Third-party package list
 THIRD_PARTY_PKG_LIST = ['cherrypy', 'google/protobuf']
+
+# update_payload path from update_engine.
+UPDATE_PAYLOAD_DIR = os.path.join(
+    constants.UPDATE_ENGINE_SCRIPTS_PATH, 'update_payload')
 
 
 class ChromiumOSUpdateError(Exception):
@@ -522,6 +527,9 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     osutils.RmDir(src_dir, ignore_missing=True)
     # Filter python files from (binary) garbage.
     self._CopyPythonFilesToTemp(ds_wrapper.DEVSERVER_PKG_DIR, src_dir)
+    # Copy update_payload from update_engine repository.
+    update_payload_dir = os.path.join(src_dir, 'update_payload')
+    self._CopyPythonFilesToTemp(UPDATE_PAYLOAD_DIR, update_payload_dir)
     # Make sure the device.work_dir exist after any installation and reboot.
     self._EnsureDeviceDirectory(self.device.work_dir)
     # Python packages are plain text files so we chose rsync --compress.

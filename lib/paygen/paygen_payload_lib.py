@@ -28,8 +28,8 @@ from chromite.lib.paygen import urilib
 from chromite.lib.paygen import utils
 
 
-# Needed for the dev.host.lib import below.
-sys.path.insert(0, os.path.join(constants.SOURCE_ROOT, 'src', 'platform'))
+# Needed for the update_payload import below.
+sys.path.insert(0, constants.UPDATE_ENGINE_SCRIPTS_PATH)
 
 
 DESCRIPTION_FILE_VERSION = 2
@@ -99,7 +99,7 @@ class _PaygenPayload(object):
 
     # If we are a bootstrap environment, this import will fail, so don't
     # perform it until we need it.
-    from dev.host.lib import update_payload
+    import update_payload
 
     self._update_payload = update_payload
 

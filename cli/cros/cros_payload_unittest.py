@@ -7,20 +7,19 @@
 from __future__ import print_function
 
 import collections
-import os
 import sys
 
 from chromite.lib import constants
 from chromite.cli.cros import cros_payload
 from chromite.lib import cros_test_lib
 
-# Needed for the dev.host.lib import below.
-sys.path.insert(0, os.path.join(constants.SOURCE_ROOT, 'src', 'platform'))
+# Needed for the update_payload import below.
+sys.path.insert(0, constants.UPDATE_ENGINE_SCRIPTS_PATH)
 
 # TODO(alliewood)(chromium:454629) update once update_payload is moved
 # into chromite
-from dev.host.lib import update_payload
-from dev.host.lib.update_payload import update_metadata_pb2
+import update_payload
+from update_payload import update_metadata_pb2
 
 class FakePayloadError(Exception):
   """A generic error when using the FakePayload."""
