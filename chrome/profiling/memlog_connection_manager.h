@@ -8,8 +8,10 @@
 #include <string>
 
 #include "base/containers/flat_map.h"
+#include "base/files/file.h"
 #include "base/files/platform_file.h"
 #include "base/macros.h"
+#include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "chrome/profiling/backtrace_storage.h"
 
@@ -33,6 +35,9 @@ class MemlogConnectionManager {
                           BacktraceStorage* backtrace_storage);
   ~MemlogConnectionManager();
 
+  // Dumps the memory log for the given process into |output_file|.
+  void DumpProcess(int32_t sender_id, base::File output_file);
+
   void OnNewConnection(base::ScopedPlatformFile file, int sender_id);
 
  private:
@@ -53,6 +58,7 @@ class MemlogConnectionManager {
 
   // Maps process ID to the connection information for it.
   base::flat_map<int, std::unique_ptr<Connection>> connections_;
+  base::Lock connections_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(MemlogConnectionManager);
 };

@@ -35,6 +35,7 @@ void MemlogStreamParser::DisconnectReceivers() {
 }
 
 void MemlogStreamParser::OnStreamData(std::unique_ptr<char[]> data, size_t sz) {
+  base::AutoLock l(lock_);
   if (!receiver_)
     return;  // When no receiver is connected, do nothing with incoming data.
 
@@ -74,6 +75,7 @@ void MemlogStreamParser::OnStreamData(std::unique_ptr<char[]> data, size_t sz) {
 }
 
 void MemlogStreamParser::OnStreamComplete() {
+  base::AutoLock l(lock_);
   if (receiver_)
     receiver_->OnComplete();
 }

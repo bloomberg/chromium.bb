@@ -32,8 +32,20 @@ void MemlogImpl::AddSender(mojo::ScopedHandle sender_pipe, int32_t sender_id) {
                      base::ScopedPlatformFile(platform_file), sender_id));
 }
 
-void MemlogImpl::DumpProcess(int32_t sender_id) {
-  LOG(ERROR) << "DumpProcess called for " << sender_id;
+void MemlogImpl::DumpProcess(int32_t sender_id,
+                             mojo::ScopedHandle output_file) {
+  base::PlatformFile platform_file;
+  MojoResult result =
+      UnwrapPlatformFile(std::move(output_file), &platform_file);
+  if (result != MOJO_RESULT_OK) {
+    LOG(ERROR) << "Failed to unwrap output file " << result;
+    return;
+  }
+  base::File file(platform_file);
+  io_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&MemlogConnectionManager::DumpProcess,
+                                base::Unretained(connection_manager_.get()),
+                                sender_id, std::move(file)));
 }
 
 }  // namespace profiling

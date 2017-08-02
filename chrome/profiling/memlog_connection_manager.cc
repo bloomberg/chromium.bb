@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "chrome/profiling/allocation_tracker.h"
+#include "chrome/profiling/json_exporter.h"
 #include "chrome/profiling/memlog_receiver_pipe.h"
 #include "chrome/profiling/memlog_stream_parser.h"
 
@@ -45,6 +46,7 @@ MemlogConnectionManager::~MemlogConnectionManager() {}
 
 void MemlogConnectionManager::OnNewConnection(base::ScopedPlatformFile file,
                                               int sender_id) {
+  base::AutoLock l(connections_lock_);
   DCHECK(connections_.find(sender_id) == connections_.end());
 
   scoped_refptr<MemlogReceiverPipe> new_pipe =
@@ -71,6 +73,7 @@ void MemlogConnectionManager::OnNewConnection(base::ScopedPlatformFile file,
 }
 
 void MemlogConnectionManager::OnConnectionComplete(int sender_id) {
+  base::AutoLock l(connections_lock_);
   auto found = connections_.find(sender_id);
   CHECK(found != connections_.end());
   found->second.release();
@@ -87,6 +90,36 @@ void MemlogConnectionManager::OnConnectionCompleteThunk(
   main_loop->PostTask(FROM_HERE,
                       base::Bind(&MemlogConnectionManager::OnConnectionComplete,
                                  base::Unretained(this), sender_id));
+}
+
+void MemlogConnectionManager::DumpProcess(int32_t sender_id,
+                                          base::File output_file) {
+  base::AutoLock l(connections_lock_);
+
+  if (connections_.empty()) {
+    LOG(ERROR) << "No connections found for memory dump.";
+    return;
+  }
+
+  // Lock all connections to prevent deallocations of atoms from
+  // BacktraceStorage. This only works if no new connections are made, which
+  // connections_lock_ guarantees.
+  std::vector<std::unique_ptr<base::AutoLock>> locks;
+  for (auto& it : connections_) {
+    Connection* connection = it.second.get();
+    locks.push_back(
+        base::MakeUnique<base::AutoLock>(*connection->parser->GetLock()));
+  }
+
+  // Pick the first connection, since there's no way to identify connections
+  // right now. https://crbug.com/751283.
+  Connection* connection = connections_.begin()->second.get();
+
+  std::ostringstream oss;
+  ExportAllocationEventSetToJSON(sender_id, connection->tracker.live_allocs(),
+                                 oss);
+  std::string reply = oss.str();
+  output_file.WriteAtCurrentPos(reply.c_str(), reply.size());
 }
 
 }  // namespace profiling
