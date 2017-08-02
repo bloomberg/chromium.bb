@@ -144,7 +144,9 @@ Service::Service(const InProcessConfig* config)
       threaded_image_cursors_factory_(
           base::MakeUnique<ThreadedImageCursorsFactoryImpl>(config)),
       test_config_(false),
-      ime_registrar_(&ime_driver_) {}
+      ime_registrar_(&ime_driver_),
+      discardable_shared_memory_manager_(config ? config->memory_manager
+                                                : nullptr) {}
 
 Service::~Service() {
   // Destroy |window_server_| first, since it depends on |event_source_|.
@@ -279,9 +281,12 @@ void Service::OnStart() {
 
   ime_driver_.Init(context()->connector(), test_config_);
 
-  discardable_shared_memory_manager_ =
-      base::MakeUnique<discardable_memory::DiscardableSharedMemoryManager>();
-
+  if (!discardable_shared_memory_manager_) {
+    owned_discardable_shared_memory_manager_ =
+        base::MakeUnique<discardable_memory::DiscardableSharedMemoryManager>();
+    discardable_shared_memory_manager_ =
+        owned_discardable_shared_memory_manager_.get();
+  }
   registry_.AddInterface<mojom::AccessibilityManager>(base::Bind(
       &Service::BindAccessibilityManagerRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::Clipboard>(

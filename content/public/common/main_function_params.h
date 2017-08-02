@@ -58,6 +58,9 @@ struct MainFunctionParams {
   aura::Env::Mode env_mode = aura::Env::Mode::LOCAL;
 #endif
 
+  // Whether DiscardableSharedMemoryManager should be created.
+  bool create_discardable_memory = true;
+
   // Used by InProcessBrowserTest. If non-null BrowserMain schedules this
   // task to run on the MessageLoop and BrowserInit is not invoked.
   base::Closure* ui_task;

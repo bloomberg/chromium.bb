@@ -445,6 +445,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
   int Initialize(const ContentMainParams& params) override {
     ui_task_ = params.ui_task;
 
+    create_discardable_memory_ = params.create_discardable_memory;
+
 #if defined(USE_AURA)
     env_mode_ = params.env_mode;
 #endif
@@ -683,6 +685,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #if defined(USE_AURA)
     main_params.env_mode = env_mode_;
 #endif
+    main_params.create_discardable_memory = create_discardable_memory_;
 
     return RunNamedProcessTypeMain(process_type, main_params, delegate_);
   }
@@ -740,6 +743,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #if defined(USE_AURA)
   aura::Env::Mode env_mode_ = aura::Env::Mode::LOCAL;
 #endif
+
+  bool create_discardable_memory_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(ContentMainRunnerImpl);
 };

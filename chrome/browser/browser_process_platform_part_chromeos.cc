@@ -38,6 +38,7 @@
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/discardable_shared_memory_manager.h"
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -134,10 +135,12 @@ class ChromeServiceChromeOS : public service_manager::Service,
 
 std::unique_ptr<service_manager::Service> CreateEmbeddedUIService(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    base::WeakPtr<ui::ImageCursorsSet> image_cursors_set_weak_ptr) {
+    base::WeakPtr<ui::ImageCursorsSet> image_cursors_set_weak_ptr,
+    discardable_memory::DiscardableSharedMemoryManager* memory_manager) {
   ui::Service::InProcessConfig config;
   config.resource_runner = task_runner;
   config.image_cursors_set_weak_ptr = image_cursors_set_weak_ptr;
+  config.memory_manager = memory_manager;
   return base::MakeUnique<ui::Service>(&config);
 }
 
@@ -291,7 +294,8 @@ void BrowserProcessPlatformPart::RegisterInProcessServices(
     service_manager::EmbeddedServiceInfo info;
     info.factory = base::Bind(&CreateEmbeddedUIService,
                               base::ThreadTaskRunnerHandle::Get(),
-                              image_cursors_set_.GetWeakPtr());
+                              image_cursors_set_.GetWeakPtr(),
+                              content::GetDiscardableSharedMemoryManager());
     info.use_own_thread = true;
     info.message_loop_type = base::MessageLoop::TYPE_UI;
     info.thread_priority = base::ThreadPriority::DISPLAY;
