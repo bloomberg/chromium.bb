@@ -323,7 +323,7 @@ class WebURLLoaderImplTest : public testing::Test {
 
   void DoCompleteRequest() {
     EXPECT_FALSE(client()->did_finish());
-    peer()->OnCompletedRequest(net::OK, false, false, base::TimeTicks(),
+    peer()->OnCompletedRequest(net::OK, false, base::TimeTicks(),
                                strlen(kTestData), strlen(kTestData),
                                strlen(kTestData));
     EXPECT_TRUE(client()->did_finish());
@@ -334,7 +334,7 @@ class WebURLLoaderImplTest : public testing::Test {
 
   void DoFailRequest() {
     EXPECT_FALSE(client()->did_finish());
-    peer()->OnCompletedRequest(net::ERR_FAILED, false, false, base::TimeTicks(),
+    peer()->OnCompletedRequest(net::ERR_FAILED, false, base::TimeTicks(),
                                strlen(kTestData), strlen(kTestData),
                                strlen(kTestData));
     EXPECT_FALSE(client()->did_finish());
@@ -562,7 +562,7 @@ TEST_F(WebURLLoaderImplTest, FtpDeleteOnReceiveMoreData) {
   // Directory listings are only parsed once the request completes, so this will
   // cancel in DoReceiveDataFtp, before the request finishes.
   client()->set_delete_on_receive_data();
-  peer()->OnCompletedRequest(net::OK, false, false, base::TimeTicks(),
+  peer()->OnCompletedRequest(net::OK, false, base::TimeTicks(),
                              strlen(kTestData), strlen(kTestData),
                              strlen(kTestData));
   EXPECT_FALSE(client()->did_finish());

@@ -223,7 +223,6 @@ void AbortRequestBeforeItStarts(
     // Tell the renderer that this request was disallowed.
     ResourceRequestCompletionStatus request_complete_data;
     request_complete_data.error_code = net::ERR_ABORTED;
-    request_complete_data.was_ignored_by_handler = false;
     request_complete_data.exists_in_cache = false;
     // No security info needed, connection not established.
     request_complete_data.completion_time = base::TimeTicks();

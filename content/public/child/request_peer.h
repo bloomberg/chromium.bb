@@ -94,7 +94,6 @@ class CONTENT_EXPORT RequestPeer {
   // Called when the response is complete.  This method signals completion of
   // the resource load.
   virtual void OnCompletedRequest(int error_code,
-                                  bool was_ignored_by_handler,
                                   bool stale_copy_in_cache,
                                   const base::TimeTicks& completion_time,
                                   int64_t total_transfer_size,

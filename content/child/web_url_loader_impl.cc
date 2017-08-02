@@ -391,7 +391,6 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   void OnTransferSizeUpdated(int transfer_size_diff);
   void OnReceivedCachedMetadata(const char* data, int len);
   void OnCompletedRequest(int error_code,
-                          bool was_ignored_by_handler,
                           bool stale_copy_in_cache,
                           const base::TimeTicks& completion_time,
                           int64_t total_transfer_size,
@@ -451,7 +450,6 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
   void OnTransferSizeUpdated(int transfer_size_diff) override;
   void OnReceivedCachedMetadata(const char* data, int len) override;
   void OnCompletedRequest(int error_code,
-                          bool was_ignored_by_handler,
                           bool stale_copy_in_cache,
                           const base::TimeTicks& completion_time,
                           int64_t total_transfer_size,
@@ -864,7 +862,6 @@ void WebURLLoaderImpl::Context::OnReceivedCachedMetadata(
 
 void WebURLLoaderImpl::Context::OnCompletedRequest(
     int error_code,
-    bool was_ignored_by_handler,
     bool stale_copy_in_cache,
     const base::TimeTicks& completion_time,
     int64_t total_transfer_size,
@@ -1001,8 +998,8 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
       OnReceivedData(base::MakeUnique<FixedReceivedData>(data.data(), size));
   }
 
-  OnCompletedRequest(error_code, false, false, base::TimeTicks::Now(), 0,
-                     data.size(), data.size());
+  OnCompletedRequest(error_code, false, base::TimeTicks::Now(), 0, data.size(),
+                     data.size());
 }
 
 // WebURLLoaderImpl::RequestPeerImpl ------------------------------------------
@@ -1050,15 +1047,14 @@ void WebURLLoaderImpl::RequestPeerImpl::OnReceivedCachedMetadata(
 
 void WebURLLoaderImpl::RequestPeerImpl::OnCompletedRequest(
     int error_code,
-    bool was_ignored_by_handler,
     bool stale_copy_in_cache,
     const base::TimeTicks& completion_time,
     int64_t total_transfer_size,
     int64_t encoded_body_size,
     int64_t decoded_body_size) {
-  context_->OnCompletedRequest(
-      error_code, was_ignored_by_handler, stale_copy_in_cache, completion_time,
-      total_transfer_size, encoded_body_size, decoded_body_size);
+  context_->OnCompletedRequest(error_code, stale_copy_in_cache, completion_time,
+                               total_transfer_size, encoded_body_size,
+                               decoded_body_size);
 }
 
 // WebURLLoaderImpl -----------------------------------------------------------

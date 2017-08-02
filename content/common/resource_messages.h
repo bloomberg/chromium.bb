@@ -299,7 +299,6 @@ IPC_STRUCT_TRAITS_END()
 // Parameters for a ResourceMsg_RequestComplete
 IPC_STRUCT_TRAITS_BEGIN(content::ResourceRequestCompletionStatus)
   IPC_STRUCT_TRAITS_MEMBER(error_code)
-  IPC_STRUCT_TRAITS_MEMBER(was_ignored_by_handler)
   IPC_STRUCT_TRAITS_MEMBER(exists_in_cache)
   IPC_STRUCT_TRAITS_MEMBER(completion_time)
   IPC_STRUCT_TRAITS_MEMBER(encoded_data_length)

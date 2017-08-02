@@ -25,9 +25,6 @@ struct CONTENT_EXPORT ResourceRequestCompletionStatus {
   // The error code.
   int error_code = 0;
 
-  // Was ignored by the request handler.
-  bool was_ignored_by_handler = false;
-
   // A copy of the data requested exists in the cache.
   bool exists_in_cache = false;
 

@@ -372,7 +372,6 @@ void ResourceDispatcher::OnRequestComplete(
   // but the past attempt to change it seems to have caused crashes.
   // (crbug.com/547047)
   peer->OnCompletedRequest(request_complete_data.error_code,
-                           request_complete_data.was_ignored_by_handler,
                            request_complete_data.exists_in_cache,
                            renderer_completion_time,
                            request_complete_data.encoded_data_length,
@@ -828,7 +827,6 @@ void ResourceDispatcher::ContinueForNavigation(
   // TODO(kinuko): Fill this properly.
   ResourceRequestCompletionStatus completion_status;
   completion_status.error_code = net::OK;
-  completion_status.was_ignored_by_handler = false;
   completion_status.exists_in_cache = false;
   completion_status.completion_time = base::TimeTicks::Now();
   completion_status.encoded_data_length = -1;

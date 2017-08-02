@@ -627,7 +627,6 @@ TEST_F(MojoAsyncResourceHandlerTest, OnResponseCompleted) {
   url_loader_client_.RunUntilComplete();
   EXPECT_TRUE(url_loader_client_.has_received_completion());
   EXPECT_EQ(net::OK, url_loader_client_.completion_status().error_code);
-  EXPECT_FALSE(url_loader_client_.completion_status().was_ignored_by_handler);
   EXPECT_LE(now1, url_loader_client_.completion_status().completion_time);
   EXPECT_LE(url_loader_client_.completion_status().completion_time, now2);
   EXPECT_EQ(request_->GetTotalReceivedBytes(),
@@ -661,7 +660,6 @@ TEST_F(MojoAsyncResourceHandlerTest, OnResponseCompleted2) {
   EXPECT_TRUE(url_loader_client_.has_received_completion());
   EXPECT_EQ(net::ERR_ABORTED,
             url_loader_client_.completion_status().error_code);
-  EXPECT_TRUE(url_loader_client_.completion_status().was_ignored_by_handler);
   EXPECT_LE(now1, url_loader_client_.completion_status().completion_time);
   EXPECT_LE(url_loader_client_.completion_status().completion_time, now2);
   EXPECT_EQ(request_->GetTotalReceivedBytes(),
