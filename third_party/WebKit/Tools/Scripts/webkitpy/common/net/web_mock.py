@@ -52,6 +52,7 @@ class MockResponse(object):
         self.status_code = values['status_code']
         self.url = ''
         self.body = values.get('body', '')
+        self._info = MockInfo(values.get('headers', {}))
 
         if int(self.status_code) >= 400:
             raise urllib2.HTTPError(
@@ -66,3 +67,16 @@ class MockResponse(object):
 
     def read(self):
         return self.body
+
+    def info(self):
+        return self._info
+
+
+class MockInfo(object):
+
+    def __init__(self, headers):
+        # The name of the headers (keys) are case-insensitive, and values are stripped.
+        self._headers = {key.lower(): value.strip() for key, value in headers.iteritems()}
+
+    def getheader(self, header):
+        return self._headers.get(header.lower(), None)
