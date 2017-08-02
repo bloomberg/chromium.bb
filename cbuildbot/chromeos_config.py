@@ -1688,7 +1688,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
 
   site_config.AddTemplate(
       'toolchain',
-      # Make sure that we are doing a full build and that we are using AFDO.
+      # Full build, AFDO, latest-toolchain, -cros-debug, and simple-chrome.
       site_config.templates.full,
       site_config.templates.internal,
       site_config.templates.official_chrome,
@@ -1716,6 +1716,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
                                 '-tests_security_SMMLocked',
                                 '-tests_cheets_SELinuxTest']),
       afdo_use=True,
+      latest_toolchain=True,
       manifest=constants.OFFICIAL_MANIFEST,
       manifest_version=True,
       git_sync=False,
@@ -1727,7 +1728,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.toolchain,
       description='Full release build with next minor GCC toolchain revision',
       useflags=append_useflags(['next_gcc']),
-      latest_toolchain=True,
       hw_tests=hw_test_list.ToolchainTestFull(constants.HWTEST_SUITES_POOL),
       hw_tests_override=hw_test_list.ToolchainTestFull(
           constants.HWTEST_SUITES_POOL),
@@ -1744,7 +1744,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       'llvm_next_toolchain',
       site_config.templates.llvm_toolchain,
       description='Full release build with LLVM (next) toolchain',
-      latest_toolchain=True,
       useflags=append_useflags(['llvm-next']),
   )
 
