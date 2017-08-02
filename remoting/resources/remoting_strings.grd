@@ -717,6 +717,12 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message desc="Title for the button that brings up a settings menu." name="IDS_SETTINGS_BUTTON">
         Settings
       </message>
+      <message desc="Title for the button that moves the floating action button to the other left side of the screen." name="IDS_MOVE_FAB_LEFT_BUTTON">
+        Dock Left
+      </message>
+      <message desc="Title for the button that moves the floating action button to the right side of the screen." name="IDS_MOVE_FAB_RIGHT_BUTTON">
+        Dock Right
+      </message>
       <message desc="Short placeholder text on a text box to prompt the user to enter the PIN." name="IDS_ENTER_PIN">
         Enter PIN
       </message>

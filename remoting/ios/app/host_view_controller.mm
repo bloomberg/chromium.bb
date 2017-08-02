@@ -32,6 +32,7 @@
 
 static const CGFloat kFabInset = 15.f;
 static const CGFloat kKeyboardAnimationTime = 0.3;
+static const CGFloat kMoveFABAnimationTime = 0.3;
 
 @interface HostViewController ()<ClientKeyboardDelegate,
                                  ClientGesturesDelegate,
@@ -44,7 +45,9 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   CGSize _keyboardSize;
   BOOL _surfaceCreated;
   HostSettings* _settings;
-
+  BOOL _fabIsRight;
+  NSArray<NSLayoutConstraint*>* _fabLeftConstraints;
+  NSArray<NSLayoutConstraint*>* _fabRightConstraints;
   // When set to true, ClientKeyboard will immediately resign first responder
   // after it becomes first responder.
   BOOL _blocksKeyboard;
@@ -62,6 +65,14 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
     _blocksKeyboard = NO;
     _settings =
         [[RemotingPreferences instance] settingsForHost:client.hostInfo.hostId];
+
+    if ([UIView userInterfaceLayoutDirectionForSemanticContentAttribute:
+                    self.view.semanticContentAttribute] ==
+        UIUserInterfaceLayoutDirectionRightToLeft) {
+      _fabIsRight = NO;
+    } else {
+      _fabIsRight = YES;
+    }
   }
   return self;
 }
@@ -89,6 +100,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
                       action:@selector(didTap:)
             forControlEvents:UIControlEventTouchUpInside];
   [_floatingButton sizeToFit];
+  _floatingButton.translatesAutoresizingMaskIntoConstraints = NO;
 
   _actionImageView =
       [[MDCActionImageView alloc] initWithFrame:_floatingButton.bounds
@@ -102,7 +114,28 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   _clientKeyboard = [[ClientKeyboard alloc] init];
   _clientKeyboard.delegate = self;
   [self.view addSubview:_clientKeyboard];
-  // TODO(nicholss): need to pass some keyboard injection interface here.
+
+  NSDictionary* views = @{@"fab" : _floatingButton};
+  NSDictionary* metrics = @{ @"inset" : @(kFabInset) };
+
+  _fabLeftConstraints = [NSLayoutConstraint
+      constraintsWithVisualFormat:@"H:|-(inset)-[fab]"
+                          options:NSLayoutFormatDirectionLeftToRight
+                          metrics:metrics
+                            views:views];
+
+  _fabRightConstraints = [NSLayoutConstraint
+      constraintsWithVisualFormat:@"H:[fab]-(inset)-|"
+                          options:NSLayoutFormatDirectionLeftToRight
+                          metrics:metrics
+                            views:views];
+
+  [NSLayoutConstraint
+      activateConstraints:[NSLayoutConstraint
+                              constraintsWithVisualFormat:@"V:[fab]-(inset)-|"
+                                                  options:0
+                                                  metrics:metrics
+                                                    views:views]];
 }
 
 - (void)viewDidUnload {
@@ -184,11 +217,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
     [self resizeHostToFitIfNeeded];
   }
 
-  CGSize btnSize = _floatingButton.frame.size;
-  _floatingButton.frame =
-      CGRectMake(self.view.frame.size.width - btnSize.width - kFabInset,
-                 self.view.frame.size.height - btnSize.height - kFabInset,
-                 btnSize.width, btnSize.height);
+  [self updateFABConstraintsAnimated:NO];
 }
 
 #pragma mark - Keyboard
@@ -296,7 +325,31 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   _client.keyboardInterpreter->HandlePrintScreenEvent();
 }
 
+- (void)moveFAB {
+  _fabIsRight = !_fabIsRight;
+  [self updateFABConstraintsAnimated:YES];
+}
+
 #pragma mark - Private
+
+- (void)updateFABConstraintsAnimated:(BOOL)animated {
+  [NSLayoutConstraint deactivateConstraints:_fabRightConstraints];
+  [NSLayoutConstraint deactivateConstraints:_fabLeftConstraints];
+  if (_fabIsRight) {
+    [NSLayoutConstraint activateConstraints:_fabRightConstraints];
+  } else {
+    [NSLayoutConstraint activateConstraints:_fabLeftConstraints];
+  }
+
+  if (animated) {
+    [UIView animateWithDuration:kMoveFABAnimationTime
+                     animations:^{
+                       [self.view layoutIfNeeded];
+                     }];
+  } else {
+    [self.view layoutIfNeeded];
+  }
+}
 
 - (void)resizeHostToFitIfNeeded {
   // Don't adjust the host resolution if the keyboard is active. That would end
@@ -413,6 +466,18 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
                    style:UIAlertActionStyleDefault
         restoresKeyboard:NO
                  handler:settingsHandler];
+
+  void (^moveFABHandler)(UIAlertAction*) = ^(UIAlertAction*) {
+    [weakSelf moveFAB];
+    [_actionImageView setActive:NO animated:YES];
+  };
+  [alert addAction:[UIAlertAction
+                       actionWithTitle:l10n_util::GetNSString(
+                                           (_fabIsRight)
+                                               ? IDS_MOVE_FAB_LEFT_BUTTON
+                                               : IDS_MOVE_FAB_RIGHT_BUTTON)
+                                 style:UIAlertActionStyleDefault
+                               handler:moveFABHandler]];
 
   __weak UIAlertController* weakAlert = alert;
   void (^cancelHandler)() = ^() {
