@@ -49,6 +49,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
+#include "platform/wtf/Assertions.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
@@ -1669,5 +1670,15 @@ DEFINE_TRACE(ResourceFetcher) {
   visitor->Trace(matched_preloads_);
   visitor->Trace(resource_timing_info_map_);
 }
+
+STATIC_ASSERT_ENUM(WebURLRequest::kPriorityUnresolved,
+                   kResourceLoadPriorityUnresolved);
+STATIC_ASSERT_ENUM(WebURLRequest::kPriorityVeryLow,
+                   kResourceLoadPriorityVeryLow);
+STATIC_ASSERT_ENUM(WebURLRequest::kPriorityLow, kResourceLoadPriorityLow);
+STATIC_ASSERT_ENUM(WebURLRequest::kPriorityMedium, kResourceLoadPriorityMedium);
+STATIC_ASSERT_ENUM(WebURLRequest::kPriorityHigh, kResourceLoadPriorityHigh);
+STATIC_ASSERT_ENUM(WebURLRequest::kPriorityVeryHigh,
+                   kResourceLoadPriorityVeryHigh);
 
 }  // namespace blink

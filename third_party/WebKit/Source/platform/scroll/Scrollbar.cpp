@@ -34,6 +34,7 @@
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/WebGestureEvent.h"
 #include "public/platform/WebMouseEvent.h"
+#include "public/platform/WebScrollbar.h"
 
 namespace blink {
 
@@ -644,5 +645,37 @@ void Scrollbar::SetNeedsPaintInvalidation(ScrollbarPart invalid_parts) {
   if (scrollable_area_)
     scrollable_area_->SetScrollbarNeedsPaintInvalidation(Orientation());
 }
+
+STATIC_ASSERT_ENUM(WebScrollbar::ScrollingMode::kAuto, kScrollbarAuto);
+STATIC_ASSERT_ENUM(WebScrollbar::ScrollingMode::kAlwaysOff,
+                   kScrollbarAlwaysOff);
+STATIC_ASSERT_ENUM(WebScrollbar::ScrollingMode::kAlwaysOn, kScrollbarAlwaysOn);
+
+STATIC_ASSERT_ENUM(WebScrollbar::kHorizontal, kHorizontalScrollbar);
+STATIC_ASSERT_ENUM(WebScrollbar::kVertical, kVerticalScrollbar);
+
+STATIC_ASSERT_ENUM(WebScrollbar::kScrollByLine, kScrollByLine);
+STATIC_ASSERT_ENUM(WebScrollbar::kScrollByPage, kScrollByPage);
+STATIC_ASSERT_ENUM(WebScrollbar::kScrollByDocument, kScrollByDocument);
+STATIC_ASSERT_ENUM(WebScrollbar::kScrollByPixel, kScrollByPixel);
+
+STATIC_ASSERT_ENUM(WebScrollbar::kRegularScrollbar, kRegularScrollbar);
+STATIC_ASSERT_ENUM(WebScrollbar::kSmallScrollbar, kSmallScrollbar);
+STATIC_ASSERT_ENUM(WebScrollbar::kNoPart, kNoPart);
+STATIC_ASSERT_ENUM(WebScrollbar::kBackButtonStartPart, kBackButtonStartPart);
+STATIC_ASSERT_ENUM(WebScrollbar::kForwardButtonStartPart,
+                   kForwardButtonStartPart);
+STATIC_ASSERT_ENUM(WebScrollbar::kBackTrackPart, kBackTrackPart);
+STATIC_ASSERT_ENUM(WebScrollbar::kThumbPart, kThumbPart);
+STATIC_ASSERT_ENUM(WebScrollbar::kForwardTrackPart, kForwardTrackPart);
+STATIC_ASSERT_ENUM(WebScrollbar::kBackButtonEndPart, kBackButtonEndPart);
+STATIC_ASSERT_ENUM(WebScrollbar::kForwardButtonEndPart, kForwardButtonEndPart);
+STATIC_ASSERT_ENUM(WebScrollbar::kScrollbarBGPart, kScrollbarBGPart);
+STATIC_ASSERT_ENUM(WebScrollbar::kTrackBGPart, kTrackBGPart);
+STATIC_ASSERT_ENUM(WebScrollbar::kAllParts, kAllParts);
+STATIC_ASSERT_ENUM(kWebScrollbarOverlayColorThemeDark,
+                   kScrollbarOverlayColorThemeDark);
+STATIC_ASSERT_ENUM(kWebScrollbarOverlayColorThemeLight,
+                   kScrollbarOverlayColorThemeLight);
 
 }  // namespace blink

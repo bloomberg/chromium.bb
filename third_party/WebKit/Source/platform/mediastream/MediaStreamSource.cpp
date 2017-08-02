@@ -29,6 +29,8 @@
  */
 
 #include "platform/mediastream/MediaStreamSource.h"
+#include "platform/wtf/Assertions.h"
+#include "public/platform/WebMediaStreamSource.h"
 
 namespace blink {
 
@@ -131,5 +133,16 @@ void MediaStreamSource::ConsumeAudio(AudioBus* bus, size_t number_of_frames) {
 DEFINE_TRACE(MediaStreamSource) {
   visitor->Trace(observers_);
 }
+
+STATIC_ASSERT_ENUM(WebMediaStreamSource::kTypeAudio,
+                   MediaStreamSource::kTypeAudio);
+STATIC_ASSERT_ENUM(WebMediaStreamSource::kTypeVideo,
+                   MediaStreamSource::kTypeVideo);
+STATIC_ASSERT_ENUM(WebMediaStreamSource::kReadyStateLive,
+                   MediaStreamSource::kReadyStateLive);
+STATIC_ASSERT_ENUM(WebMediaStreamSource::kReadyStateMuted,
+                   MediaStreamSource::kReadyStateMuted);
+STATIC_ASSERT_ENUM(WebMediaStreamSource::kReadyStateEnded,
+                   MediaStreamSource::kReadyStateEnded);
 
 }  // namespace blink

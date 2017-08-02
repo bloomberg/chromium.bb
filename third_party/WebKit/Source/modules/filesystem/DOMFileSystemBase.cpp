@@ -45,11 +45,13 @@
 #include "modules/filesystem/FileSystemCallbacks.h"
 #include "modules/filesystem/MetadataCallback.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/Assertions.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/TextEncoding.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemCallbacks.h"
+#include "public/platform/WebSecurityOrigin.h"
 
 namespace blink {
 
@@ -466,5 +468,10 @@ bool DOMFileSystemBase::WaitForAdditionalResult(int callbacks_id) {
     return false;
   return FileSystem()->WaitForAdditionalResult(callbacks_id);
 }
+
+STATIC_ASSERT_ENUM(WebFileSystem::kTypeTemporary, kFileSystemTypeTemporary);
+STATIC_ASSERT_ENUM(WebFileSystem::kTypePersistent, kFileSystemTypePersistent);
+STATIC_ASSERT_ENUM(WebFileSystem::kTypeExternal, kFileSystemTypeExternal);
+STATIC_ASSERT_ENUM(WebFileSystem::kTypeIsolated, kFileSystemTypeIsolated);
 
 }  // namespace blink

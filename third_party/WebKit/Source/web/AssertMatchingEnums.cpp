@@ -77,28 +77,17 @@
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/text/StringImpl.h"
 #include "public/platform/WebClipboard.h"
-#include "public/platform/WebContentSecurityPolicy.h"
-#include "public/platform/WebContentSecurityPolicyStruct.h"
-#include "public/platform/WebFileError.h"
 #include "public/platform/WebFileInfo.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebHistoryScrollRestorationType.h"
 #include "public/platform/WebInputEvent.h"
-#include "public/platform/WebMediaPlayer.h"
 #include "public/platform/WebMediaPlayerClient.h"
 #include "public/platform/WebMediaSource.h"
-#include "public/platform/WebMediaStreamSource.h"
 #include "public/platform/WebMouseWheelEvent.h"
-#include "public/platform/WebPageVisibilityState.h"
-#include "public/platform/WebReferrerPolicy.h"
 #include "public/platform/WebScrollBoundaryBehavior.h"
 #include "public/platform/WebScrollbar.h"
 #include "public/platform/WebScrollbarBehavior.h"
 #include "public/platform/WebSelectionBound.h"
-#include "public/platform/WebStorageQuotaError.h"
-#include "public/platform/WebStorageQuotaType.h"
-#include "public/platform/WebURLRequest.h"
-#include "public/platform/WebURLResponse.h"
 #include "public/platform/modules/indexeddb/WebIDBCursor.h"
 #include "public/platform/modules/indexeddb/WebIDBDatabase.h"
 #include "public/platform/modules/indexeddb/WebIDBDatabaseException.h"
@@ -112,9 +101,7 @@
 #include "public/web/WebFrameLoadType.h"
 #include "public/web/WebHistoryCommitType.h"
 #include "public/web/WebHistoryItem.h"
-#include "public/web/WebIconURL.h"
 #include "public/web/WebInputElement.h"
-#include "public/web/WebNavigationPolicy.h"
 #include "public/web/WebNavigatorContentUtilsClient.h"
 #include "public/web/WebRemoteFrameClient.h"
 #include "public/web/WebSandboxFlags.h"
@@ -122,75 +109,11 @@
 #include "public/web/WebSelection.h"
 #include "public/web/WebSerializedScriptValueVersion.h"
 #include "public/web/WebSettings.h"
-#include "public/web/WebSpeechRecognizerClient.h"
 #include "public/web/WebTextCheckingResult.h"
 #include "public/web/WebTextDecorationType.h"
 #include "public/web/WebView.h"
 
 namespace blink {
-
-STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::kAuto,
-                   kScrollbarAuto);
-STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::kAlwaysOff,
-                   kScrollbarAlwaysOff);
-STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::kAlwaysOn,
-                   kScrollbarAlwaysOn);
-
-STATIC_ASSERT_ENUM(WebIconURL::kTypeInvalid, kInvalidIcon);
-STATIC_ASSERT_ENUM(WebIconURL::kTypeFavicon, kFavicon);
-STATIC_ASSERT_ENUM(WebIconURL::kTypeTouch, kTouchIcon);
-STATIC_ASSERT_ENUM(WebIconURL::kTypeTouchPrecomposed, kTouchPrecomposedIcon);
-
-STATIC_ASSERT_ENUM(WebMediaPlayer::kReadyStateHaveNothing,
-                   HTMLMediaElement::kHaveNothing);
-STATIC_ASSERT_ENUM(WebMediaPlayer::kReadyStateHaveMetadata,
-                   HTMLMediaElement::kHaveMetadata);
-STATIC_ASSERT_ENUM(WebMediaPlayer::kReadyStateHaveCurrentData,
-                   HTMLMediaElement::kHaveCurrentData);
-STATIC_ASSERT_ENUM(WebMediaPlayer::kReadyStateHaveFutureData,
-                   HTMLMediaElement::kHaveFutureData);
-STATIC_ASSERT_ENUM(WebMediaPlayer::kReadyStateHaveEnoughData,
-                   HTMLMediaElement::kHaveEnoughData);
-
-STATIC_ASSERT_ENUM(WebScrollbar::kHorizontal, kHorizontalScrollbar);
-STATIC_ASSERT_ENUM(WebScrollbar::kVertical, kVerticalScrollbar);
-
-STATIC_ASSERT_ENUM(WebScrollbar::kScrollByLine, kScrollByLine);
-STATIC_ASSERT_ENUM(WebScrollbar::kScrollByPage, kScrollByPage);
-STATIC_ASSERT_ENUM(WebScrollbar::kScrollByDocument, kScrollByDocument);
-STATIC_ASSERT_ENUM(WebScrollbar::kScrollByPixel, kScrollByPixel);
-
-STATIC_ASSERT_ENUM(WebScrollbar::kRegularScrollbar, kRegularScrollbar);
-STATIC_ASSERT_ENUM(WebScrollbar::kSmallScrollbar, kSmallScrollbar);
-STATIC_ASSERT_ENUM(WebScrollbar::kNoPart, kNoPart);
-STATIC_ASSERT_ENUM(WebScrollbar::kBackButtonStartPart, kBackButtonStartPart);
-STATIC_ASSERT_ENUM(WebScrollbar::kForwardButtonStartPart,
-                   kForwardButtonStartPart);
-STATIC_ASSERT_ENUM(WebScrollbar::kBackTrackPart, kBackTrackPart);
-STATIC_ASSERT_ENUM(WebScrollbar::kThumbPart, kThumbPart);
-STATIC_ASSERT_ENUM(WebScrollbar::kForwardTrackPart, kForwardTrackPart);
-STATIC_ASSERT_ENUM(WebScrollbar::kBackButtonEndPart, kBackButtonEndPart);
-STATIC_ASSERT_ENUM(WebScrollbar::kForwardButtonEndPart, kForwardButtonEndPart);
-STATIC_ASSERT_ENUM(WebScrollbar::kScrollbarBGPart, kScrollbarBGPart);
-STATIC_ASSERT_ENUM(WebScrollbar::kTrackBGPart, kTrackBGPart);
-STATIC_ASSERT_ENUM(WebScrollbar::kAllParts, kAllParts);
-STATIC_ASSERT_ENUM(kWebScrollbarOverlayColorThemeDark,
-                   kScrollbarOverlayColorThemeDark);
-STATIC_ASSERT_ENUM(kWebScrollbarOverlayColorThemeLight,
-                   kScrollbarOverlayColorThemeLight);
-
-STATIC_ASSERT_ENUM(WebSettings::kEditingBehaviorMac, kEditingMacBehavior);
-STATIC_ASSERT_ENUM(WebSettings::kEditingBehaviorWin, kEditingWindowsBehavior);
-STATIC_ASSERT_ENUM(WebSettings::kEditingBehaviorUnix, kEditingUnixBehavior);
-STATIC_ASSERT_ENUM(WebSettings::kEditingBehaviorAndroid,
-                   kEditingAndroidBehavior);
-
-STATIC_ASSERT_ENUM(WebSettings::PassiveEventListenerDefault::kFalse,
-                   PassiveListenerDefault::kFalse);
-STATIC_ASSERT_ENUM(WebSettings::PassiveEventListenerDefault::kTrue,
-                   PassiveListenerDefault::kTrue);
-STATIC_ASSERT_ENUM(WebSettings::PassiveEventListenerDefault::kForceAllTrue,
-                   PassiveListenerDefault::kForceAllTrue);
 
 STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionUnknownError, kUnknownError);
 STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionConstraintError, kConstraintError);
@@ -213,135 +136,9 @@ STATIC_ASSERT_ENUM(kWebIDBKeyPathTypeArray, IDBKeyPath::kArrayType);
 
 STATIC_ASSERT_ENUM(WebIDBMetadata::kNoVersion, IDBDatabaseMetadata::kNoVersion);
 
-STATIC_ASSERT_ENUM(WebFileSystem::kTypeTemporary, kFileSystemTypeTemporary);
-STATIC_ASSERT_ENUM(WebFileSystem::kTypePersistent, kFileSystemTypePersistent);
-STATIC_ASSERT_ENUM(WebFileSystem::kTypeExternal, kFileSystemTypeExternal);
-STATIC_ASSERT_ENUM(WebFileSystem::kTypeIsolated, kFileSystemTypeIsolated);
-STATIC_ASSERT_ENUM(WebFileInfo::kTypeUnknown, FileMetadata::kTypeUnknown);
-STATIC_ASSERT_ENUM(WebFileInfo::kTypeFile, FileMetadata::kTypeFile);
-STATIC_ASSERT_ENUM(WebFileInfo::kTypeDirectory, FileMetadata::kTypeDirectory);
-
-STATIC_ASSERT_ENUM(kWebFileErrorNotFound, FileError::kNotFoundErr);
-STATIC_ASSERT_ENUM(kWebFileErrorSecurity, FileError::kSecurityErr);
-STATIC_ASSERT_ENUM(kWebFileErrorAbort, FileError::kAbortErr);
-STATIC_ASSERT_ENUM(kWebFileErrorNotReadable, FileError::kNotReadableErr);
-STATIC_ASSERT_ENUM(kWebFileErrorEncoding, FileError::kEncodingErr);
-STATIC_ASSERT_ENUM(kWebFileErrorNoModificationAllowed,
-                   FileError::kNoModificationAllowedErr);
-STATIC_ASSERT_ENUM(kWebFileErrorInvalidState, FileError::kInvalidStateErr);
-STATIC_ASSERT_ENUM(kWebFileErrorSyntax, FileError::kSyntaxErr);
-STATIC_ASSERT_ENUM(kWebFileErrorInvalidModification,
-                   FileError::kInvalidModificationErr);
-STATIC_ASSERT_ENUM(kWebFileErrorQuotaExceeded, FileError::kQuotaExceededErr);
-STATIC_ASSERT_ENUM(kWebFileErrorTypeMismatch, FileError::kTypeMismatchErr);
-STATIC_ASSERT_ENUM(kWebFileErrorPathExists, FileError::kPathExistsErr);
 
 STATIC_ASSERT_ENUM(kWebTextDecorationTypeSpelling, kTextDecorationTypeSpelling);
 STATIC_ASSERT_ENUM(kWebTextDecorationTypeGrammar, kTextDecorationTypeGrammar);
-
-STATIC_ASSERT_ENUM(kWebStorageQuotaErrorNotSupported, kNotSupportedError);
-STATIC_ASSERT_ENUM(kWebStorageQuotaErrorInvalidModification,
-                   kInvalidModificationError);
-STATIC_ASSERT_ENUM(kWebStorageQuotaErrorInvalidAccess, kInvalidAccessError);
-STATIC_ASSERT_ENUM(kWebStorageQuotaErrorAbort, kAbortError);
-
-STATIC_ASSERT_ENUM(kWebStorageQuotaTypeTemporary,
-                   DeprecatedStorageQuota::kTemporary);
-STATIC_ASSERT_ENUM(kWebStorageQuotaTypePersistent,
-                   DeprecatedStorageQuota::kPersistent);
-
-STATIC_ASSERT_ENUM(kWebPageVisibilityStateVisible, kPageVisibilityStateVisible);
-STATIC_ASSERT_ENUM(kWebPageVisibilityStateHidden, kPageVisibilityStateHidden);
-STATIC_ASSERT_ENUM(kWebPageVisibilityStatePrerender,
-                   kPageVisibilityStatePrerender);
-
-STATIC_ASSERT_ENUM(WebMediaStreamSource::kTypeAudio,
-                   MediaStreamSource::kTypeAudio);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::kTypeVideo,
-                   MediaStreamSource::kTypeVideo);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::kReadyStateLive,
-                   MediaStreamSource::kReadyStateLive);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::kReadyStateMuted,
-                   MediaStreamSource::kReadyStateMuted);
-STATIC_ASSERT_ENUM(WebMediaStreamSource::kReadyStateEnded,
-                   MediaStreamSource::kReadyStateEnded);
-
-STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kOtherError,
-                   SpeechRecognitionError::kErrorCodeOther);
-STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kNoSpeechError,
-                   SpeechRecognitionError::kErrorCodeNoSpeech);
-STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kAbortedError,
-                   SpeechRecognitionError::kErrorCodeAborted);
-STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kAudioCaptureError,
-                   SpeechRecognitionError::kErrorCodeAudioCapture);
-STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kNetworkError,
-                   SpeechRecognitionError::kErrorCodeNetwork);
-STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kNotAllowedError,
-                   SpeechRecognitionError::kErrorCodeNotAllowed);
-STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kServiceNotAllowedError,
-                   SpeechRecognitionError::kErrorCodeServiceNotAllowed);
-STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kBadGrammarError,
-                   SpeechRecognitionError::kErrorCodeBadGrammar);
-STATIC_ASSERT_ENUM(WebSpeechRecognizerClient::kLanguageNotSupportedError,
-                   SpeechRecognitionError::kErrorCodeLanguageNotSupported);
-
-STATIC_ASSERT_ENUM(kWebReferrerPolicyAlways, kReferrerPolicyAlways);
-STATIC_ASSERT_ENUM(kWebReferrerPolicyDefault, kReferrerPolicyDefault);
-STATIC_ASSERT_ENUM(kWebReferrerPolicyNoReferrerWhenDowngrade,
-                   kReferrerPolicyNoReferrerWhenDowngrade);
-STATIC_ASSERT_ENUM(kWebReferrerPolicyNever, kReferrerPolicyNever);
-STATIC_ASSERT_ENUM(kWebReferrerPolicyOrigin, kReferrerPolicyOrigin);
-STATIC_ASSERT_ENUM(kWebReferrerPolicyOriginWhenCrossOrigin,
-                   kReferrerPolicyOriginWhenCrossOrigin);
-STATIC_ASSERT_ENUM(kWebReferrerPolicySameOrigin, kReferrerPolicySameOrigin);
-STATIC_ASSERT_ENUM(kWebReferrerPolicyStrictOrigin, kReferrerPolicyStrictOrigin);
-STATIC_ASSERT_ENUM(
-    kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
-    kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin);
-
-STATIC_ASSERT_ENUM(kWebContentSecurityPolicyTypeReport,
-                   kContentSecurityPolicyHeaderTypeReport);
-STATIC_ASSERT_ENUM(kWebContentSecurityPolicyTypeEnforce,
-                   kContentSecurityPolicyHeaderTypeEnforce);
-
-STATIC_ASSERT_ENUM(kWebContentSecurityPolicySourceHTTP,
-                   kContentSecurityPolicyHeaderSourceHTTP);
-STATIC_ASSERT_ENUM(kWebContentSecurityPolicySourceMeta,
-                   kContentSecurityPolicyHeaderSourceMeta);
-
-STATIC_ASSERT_ENUM(kWebWildcardDispositionNoWildcard, CSPSource::kNoWildcard);
-STATIC_ASSERT_ENUM(kWebWildcardDispositionHasWildcard, CSPSource::kHasWildcard);
-
-STATIC_ASSERT_ENUM(WebURLResponse::kHTTPVersionUnknown,
-                   ResourceResponse::kHTTPVersionUnknown);
-STATIC_ASSERT_ENUM(WebURLResponse::kHTTPVersion_0_9,
-                   ResourceResponse::kHTTPVersion_0_9);
-STATIC_ASSERT_ENUM(WebURLResponse::kHTTPVersion_1_0,
-                   ResourceResponse::kHTTPVersion_1_0);
-STATIC_ASSERT_ENUM(WebURLResponse::kHTTPVersion_1_1,
-                   ResourceResponse::kHTTPVersion_1_1);
-STATIC_ASSERT_ENUM(WebURLResponse::kHTTPVersion_2_0,
-                   ResourceResponse::kHTTPVersion_2_0);
-
-STATIC_ASSERT_ENUM(WebURLRequest::kPriorityUnresolved,
-                   kResourceLoadPriorityUnresolved);
-STATIC_ASSERT_ENUM(WebURLRequest::kPriorityVeryLow,
-                   kResourceLoadPriorityVeryLow);
-STATIC_ASSERT_ENUM(WebURLRequest::kPriorityLow, kResourceLoadPriorityLow);
-STATIC_ASSERT_ENUM(WebURLRequest::kPriorityMedium, kResourceLoadPriorityMedium);
-STATIC_ASSERT_ENUM(WebURLRequest::kPriorityHigh, kResourceLoadPriorityHigh);
-STATIC_ASSERT_ENUM(WebURLRequest::kPriorityVeryHigh,
-                   kResourceLoadPriorityVeryHigh);
-
-STATIC_ASSERT_ENUM(kWebNavigationPolicyIgnore, kNavigationPolicyIgnore);
-STATIC_ASSERT_ENUM(kWebNavigationPolicyDownload, kNavigationPolicyDownload);
-STATIC_ASSERT_ENUM(kWebNavigationPolicyCurrentTab, kNavigationPolicyCurrentTab);
-STATIC_ASSERT_ENUM(kWebNavigationPolicyNewBackgroundTab,
-                   kNavigationPolicyNewBackgroundTab);
-STATIC_ASSERT_ENUM(kWebNavigationPolicyNewForegroundTab,
-                   kNavigationPolicyNewForegroundTab);
-STATIC_ASSERT_ENUM(kWebNavigationPolicyNewWindow, kNavigationPolicyNewWindow);
-STATIC_ASSERT_ENUM(kWebNavigationPolicyNewPopup, kNavigationPolicyNewPopup);
 
 STATIC_ASSERT_ENUM(kWebStandardCommit, kStandardCommit);
 STATIC_ASSERT_ENUM(kWebBackForwardCommit, kBackForwardCommit);

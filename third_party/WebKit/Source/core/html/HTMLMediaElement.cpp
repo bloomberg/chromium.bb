@@ -93,6 +93,7 @@
 #include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebInbandTextTrack.h"
+#include "public/platform/WebMediaPlayer.h"
 #include "public/platform/WebMediaPlayerSource.h"
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
@@ -4118,5 +4119,16 @@ void HTMLMediaElement::CheckViewportIntersectionTimerFired(TimerBase*) {
   if (web_media_player_)
     web_media_player_->BecameDominantVisibleContent(mostly_filling_viewport_);
 }
+
+STATIC_ASSERT_ENUM(WebMediaPlayer::kReadyStateHaveNothing,
+                   HTMLMediaElement::kHaveNothing);
+STATIC_ASSERT_ENUM(WebMediaPlayer::kReadyStateHaveMetadata,
+                   HTMLMediaElement::kHaveMetadata);
+STATIC_ASSERT_ENUM(WebMediaPlayer::kReadyStateHaveCurrentData,
+                   HTMLMediaElement::kHaveCurrentData);
+STATIC_ASSERT_ENUM(WebMediaPlayer::kReadyStateHaveFutureData,
+                   HTMLMediaElement::kHaveFutureData);
+STATIC_ASSERT_ENUM(WebMediaPlayer::kReadyStateHaveEnoughData,
+                   HTMLMediaElement::kHaveEnoughData);
 
 }  // namespace blink

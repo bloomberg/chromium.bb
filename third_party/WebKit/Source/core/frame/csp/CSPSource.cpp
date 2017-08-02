@@ -9,7 +9,9 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/Assertions.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/WebContentSecurityPolicyStruct.h"
 
 namespace blink {
 
@@ -272,5 +274,8 @@ CSPSource::ExposeForNavigationalChecks() const {
 DEFINE_TRACE(CSPSource) {
   visitor->Trace(policy_);
 }
+
+STATIC_ASSERT_ENUM(kWebWildcardDispositionNoWildcard, CSPSource::kNoWildcard);
+STATIC_ASSERT_ENUM(kWebWildcardDispositionHasWildcard, CSPSource::kHasWildcard);
 
 }  // namespace blink

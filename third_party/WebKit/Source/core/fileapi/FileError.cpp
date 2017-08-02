@@ -33,6 +33,8 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "platform/wtf/Assertions.h"
+#include "public/platform/WebFileError.h"
 
 namespace blink {
 
@@ -164,6 +166,20 @@ DOMException* CreateDOMException(ErrorCode code) {
   return DOMException::Create(ErrorCodeToExceptionCode(code),
                               ErrorCodeToMessage(code));
 }
+
+STATIC_ASSERT_ENUM(kWebFileErrorNotFound, kNotFoundErr);
+STATIC_ASSERT_ENUM(kWebFileErrorSecurity, kSecurityErr);
+STATIC_ASSERT_ENUM(kWebFileErrorAbort, kAbortErr);
+STATIC_ASSERT_ENUM(kWebFileErrorNotReadable, kNotReadableErr);
+STATIC_ASSERT_ENUM(kWebFileErrorEncoding, kEncodingErr);
+STATIC_ASSERT_ENUM(kWebFileErrorNoModificationAllowed,
+                   kNoModificationAllowedErr);
+STATIC_ASSERT_ENUM(kWebFileErrorInvalidState, kInvalidStateErr);
+STATIC_ASSERT_ENUM(kWebFileErrorSyntax, kSyntaxErr);
+STATIC_ASSERT_ENUM(kWebFileErrorInvalidModification, kInvalidModificationErr);
+STATIC_ASSERT_ENUM(kWebFileErrorQuotaExceeded, kQuotaExceededErr);
+STATIC_ASSERT_ENUM(kWebFileErrorTypeMismatch, kTypeMismatchErr);
+STATIC_ASSERT_ENUM(kWebFileErrorPathExists, kPathExistsErr);
 
 }  // namespace FileError
 
