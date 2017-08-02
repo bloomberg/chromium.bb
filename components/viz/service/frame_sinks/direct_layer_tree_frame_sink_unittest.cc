@@ -51,11 +51,9 @@ class TestCompositorFrameSinkSupportManager
       CompositorFrameSinkSupportClient* client,
       const FrameSinkId& frame_sink_id,
       bool is_root,
-      bool handles_frame_sink_id_invalidation,
       bool needs_sync_points) override {
     return CompositorFrameSinkSupport::Create(
-        client, frame_sink_manager_, frame_sink_id, is_root,
-        handles_frame_sink_id_invalidation, needs_sync_points);
+        client, frame_sink_manager_, frame_sink_id, is_root, needs_sync_points);
   }
 
  private:

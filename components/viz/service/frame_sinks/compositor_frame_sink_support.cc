@@ -24,12 +24,10 @@ std::unique_ptr<CompositorFrameSinkSupport> CompositorFrameSinkSupport::Create(
     FrameSinkManagerImpl* frame_sink_manager,
     const FrameSinkId& frame_sink_id,
     bool is_root,
-    bool handles_frame_sink_id_invalidation,
     bool needs_sync_tokens) {
   std::unique_ptr<CompositorFrameSinkSupport> support =
       base::WrapUnique(new CompositorFrameSinkSupport(
-          client, frame_sink_id, is_root, handles_frame_sink_id_invalidation,
-          needs_sync_tokens));
+          client, frame_sink_id, is_root, needs_sync_tokens));
   support->Init(frame_sink_manager);
   return support;
 }
@@ -52,8 +50,6 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
 
   EvictCurrentSurface();
   frame_sink_manager_->UnregisterFrameSinkManagerClient(frame_sink_id_);
-  if (handles_frame_sink_id_invalidation_)
-    surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 void CompositorFrameSinkSupport::SetDestructionCallback(
@@ -299,30 +295,25 @@ CompositorFrameSinkSupport::CompositorFrameSinkSupport(
     CompositorFrameSinkSupportClient* client,
     const FrameSinkId& frame_sink_id,
     bool is_root,
-    bool handles_frame_sink_id_invalidation,
     bool needs_sync_tokens)
     : client_(client),
       frame_sink_id_(frame_sink_id),
       surface_resource_holder_(this),
       is_root_(is_root),
       needs_sync_tokens_(needs_sync_tokens),
-      handles_frame_sink_id_invalidation_(handles_frame_sink_id_invalidation),
       weak_factory_(this) {}
 
 void CompositorFrameSinkSupport::Init(
     FrameSinkManagerImpl* frame_sink_manager) {
   frame_sink_manager_ = frame_sink_manager;
   surface_manager_ = frame_sink_manager->surface_manager();
-  if (handles_frame_sink_id_invalidation_)
-    surface_manager_->RegisterFrameSinkId(frame_sink_id_);
   frame_sink_manager_->RegisterFrameSinkManagerClient(frame_sink_id_, this);
 }
 
 void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
   UpdateNeedsBeginFramesInternal();
-  if (current_surface_id_.is_valid()) {
+  if (current_surface_id_.is_valid())
     surface_manager_->SurfaceDamageExpected(current_surface_id_, args);
-  }
   last_begin_frame_args_ = args;
   if (client_)
     client_->OnBeginFrame(args);

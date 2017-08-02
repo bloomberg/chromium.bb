@@ -175,14 +175,13 @@ bool SynchronousLayerTreeFrameSink::BindToClient(
 
   constexpr bool root_support_is_root = true;
   constexpr bool child_support_is_root = false;
-  constexpr bool handles_frame_sink_id_invalidation = true;
   constexpr bool needs_sync_points = true;
   root_support_ = viz::CompositorFrameSinkSupport::Create(
       this, frame_sink_manager_.get(), kRootFrameSinkId, root_support_is_root,
-      handles_frame_sink_id_invalidation, needs_sync_points);
+      needs_sync_points);
   child_support_ = viz::CompositorFrameSinkSupport::Create(
       this, frame_sink_manager_.get(), kChildFrameSinkId, child_support_is_root,
-      handles_frame_sink_id_invalidation, needs_sync_points);
+      needs_sync_points);
 
   viz::RendererSettings software_renderer_settings;
 

@@ -100,7 +100,6 @@ class HostFrameSinkManagerTest : public testing::Test {
       bool is_root) {
     return host_manager_->CreateCompositorFrameSinkSupport(
         nullptr /* client */, frame_sink_id, is_root,
-        true /* handles_frame_sink_id_invalidation */,
         false /* needs_sync_points */);
   }
 

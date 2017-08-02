@@ -27,7 +27,6 @@ namespace {
 
 constexpr bool kIsRoot = true;
 constexpr bool kIsChildRoot = false;
-constexpr bool kHandlesFrameSinkIdInvalidation = true;
 constexpr bool kNeedsSyncPoints = true;
 constexpr FrameSinkId kDisplayFrameSink(2, 0);
 constexpr FrameSinkId kParentFrameSink(3, 0);
@@ -154,19 +153,19 @@ class SurfaceSynchronizationTest : public testing::Test {
     frame_sink_manager_.surface_manager()->AddObserver(&surface_observer_);
     supports_[kDisplayFrameSink] = CompositorFrameSinkSupport::Create(
         &support_client_, &frame_sink_manager_, kDisplayFrameSink, kIsRoot,
-        kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+        kNeedsSyncPoints);
 
     supports_[kParentFrameSink] = CompositorFrameSinkSupport::Create(
         &support_client_, &frame_sink_manager_, kParentFrameSink, kIsChildRoot,
-        kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+        kNeedsSyncPoints);
 
     supports_[kChildFrameSink1] = CompositorFrameSinkSupport::Create(
         &support_client_, &frame_sink_manager_, kChildFrameSink1, kIsChildRoot,
-        kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+        kNeedsSyncPoints);
 
     supports_[kChildFrameSink2] = CompositorFrameSinkSupport::Create(
         &support_client_, &frame_sink_manager_, kChildFrameSink2, kIsChildRoot,
-        kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+        kNeedsSyncPoints);
 
     // Normally, the BeginFrameSource would be registered by the Display. We
     // register it here so that BeginFrames are received by the display support,

@@ -21,7 +21,6 @@ namespace {
 
 constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
 constexpr bool kIsRoot = true;
-constexpr bool kHandlesFrameSinkIdInvalidation = true;
 constexpr bool kNeedsSyncPoints = true;
 
 TEST(SurfaceTest, SurfaceLifetime) {
@@ -30,7 +29,7 @@ TEST(SurfaceTest, SurfaceLifetime) {
   SurfaceManager* surface_manager = frame_sink_manager.surface_manager();
   auto support = CompositorFrameSinkSupport::Create(
       nullptr, &frame_sink_manager, kArbitraryFrameSinkId, kIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
 
   LocalSurfaceId local_surface_id(6, base::UnguessableToken::Create());
   SurfaceId surface_id(kArbitraryFrameSinkId, local_surface_id);
@@ -62,7 +61,7 @@ TEST(SurfaceTest, CopyRequestLifetime) {
   SurfaceManager* surface_manager = frame_sink_manager.surface_manager();
   auto support = CompositorFrameSinkSupport::Create(
       nullptr, &frame_sink_manager, kArbitraryFrameSinkId, kIsRoot,
-      kHandlesFrameSinkIdInvalidation, kNeedsSyncPoints);
+      kNeedsSyncPoints);
 
   LocalSurfaceId local_surface_id(6, base::UnguessableToken::Create());
   SurfaceId surface_id(kArbitraryFrameSinkId, local_surface_id);

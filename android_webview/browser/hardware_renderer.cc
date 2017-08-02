@@ -263,12 +263,11 @@ void HardwareRenderer::ReturnResourcesToCompositor(
 
 void HardwareRenderer::CreateNewCompositorFrameSinkSupport() {
   constexpr bool is_root = false;
-  constexpr bool handles_frame_sink_id_invalidation = false;
   constexpr bool needs_sync_points = true;
   support_.reset();
   support_ = viz::CompositorFrameSinkSupport::Create(
       this, surfaces_->GetFrameSinkManager(), frame_sink_id_, is_root,
-      handles_frame_sink_id_invalidation, needs_sync_points);
+      needs_sync_points);
 }
 
 }  // namespace android_webview
