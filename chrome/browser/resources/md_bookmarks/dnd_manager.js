@@ -635,13 +635,16 @@ cr.define('bookmarks', function() {
      */
     startNativeDrag_: function() {
       var state = bookmarks.Store.getInstance().data;
-      this.dndChip.hide();
 
       if (!this.dragInfo_.isDragValid())
         return false;
 
       var draggedNodes =
           this.dragInfo_.dragData.elements.map((item) => item.id);
+
+      // Clear the drag data here so that the chip is hidden. The native drag
+      // will return after the clearing and set up its data.
+      this.clearDragData_();
 
       // TODO(calamity): account for touch.
       chrome.bookmarkManagerPrivate.startDrag(draggedNodes, false);

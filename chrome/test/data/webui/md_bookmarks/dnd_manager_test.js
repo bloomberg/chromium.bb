@@ -383,6 +383,7 @@ suite('drag and drop', function() {
     assertDeepEquals(['13'], getDragIds());
 
     dispatchDragEvent('dragstart', dragElement);
+    assertEquals(null, dndManager.internalDragElement_);
     assertDeepEquals(['13'], draggedIds);
     dndManager.handleChromeDragEnter_(createDragData(draggedIds));
 
