@@ -31,6 +31,7 @@
 #include "platform/Timer.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/instrumentation/tracing/web_process_memory_dump.h"
+#include "platform/loader/SubresourceIntegrity.h"
 #include "platform/loader/fetch/CachedMetadataHandler.h"
 #include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/loader/fetch/ResourceError.h"
@@ -248,10 +249,11 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   const IntegrityMetadataSet& IntegrityMetadata() const {
     return integrity_metadata_;
   }
-  // The argument must never be |NotChecked|.
-  void SetIntegrityDisposition(ResourceIntegrityDisposition);
   ResourceIntegrityDisposition IntegrityDisposition() const {
     return integrity_disposition_;
+  }
+  const SubresourceIntegrity::ReportInfo& IntegrityReportInfo() const {
+    return integrity_report_info_;
   }
   bool MustRefetchDueToIntegrityMetadata(const FetchParameters&) const;
 
@@ -421,6 +423,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   // MemoryCoordinatorClient overrides:
   void OnPurgeMemory() override;
 
+  void CheckResourceIntegrity();
+
   Type type_;
   ResourceStatus status_;
   CORSStatus cors_status_;
@@ -458,6 +462,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   ResourceIntegrityDisposition integrity_disposition_;
   IntegrityMetadataSet integrity_metadata_;
+  SubresourceIntegrity::ReportInfo integrity_report_info_;
 
   // Ordered list of all redirects followed while fetching this resource.
   Vector<RedirectPair> redirect_chain_;

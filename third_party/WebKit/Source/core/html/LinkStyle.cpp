@@ -83,30 +83,8 @@ void LinkStyle::SetCSSStyleSheet(
     ResourceIntegrityDisposition disposition =
         cached_style_sheet->IntegrityDisposition();
 
-    if (disposition == ResourceIntegrityDisposition::kNotChecked &&
-        !cached_style_sheet->LoadFailedOrCanceled()) {
-      bool check_result;
-
-      // cachedStyleSheet->resourceBuffer() can be nullptr on load success.
-      // If response size == 0.
-      const char* data = nullptr;
-      size_t size = 0;
-      if (cached_style_sheet->ResourceBuffer()) {
-        data = cached_style_sheet->ResourceBuffer()->Data();
-        size = cached_style_sheet->ResourceBuffer()->size();
-      }
-      SubresourceIntegrity::ReportInfo report_info;
-      check_result = SubresourceIntegrity::CheckSubresourceIntegrity(
-          cached_style_sheet->IntegrityMetadata(), data, size,
-          cached_style_sheet->Url(), *cached_style_sheet, report_info);
-      SubresourceIntegrityHelper::DoReport(GetDocument(), report_info);
-      disposition = check_result ? ResourceIntegrityDisposition::kPassed
-                                 : ResourceIntegrityDisposition::kFailed;
-
-      // TODO(kouhei): Remove this const_cast crbug.com/653502
-      const_cast<CSSStyleSheetResource*>(cached_style_sheet)
-          ->SetIntegrityDisposition(disposition);
-    }
+    SubresourceIntegrityHelper::DoReport(
+        GetDocument(), cached_style_sheet->IntegrityReportInfo());
 
     if (disposition == ResourceIntegrityDisposition::kFailed) {
       loading_ = false;
