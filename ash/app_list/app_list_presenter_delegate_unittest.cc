@@ -520,7 +520,7 @@ TEST_P(FullscreenAppListPresenterDelegateTest,
 }
 
 // Tests that a keypress activates the searchbox and that clearing the
-// searchbox deactivates the searchbox.
+// searchbox, the searchbox remains active.
 TEST_F(FullscreenAppListPresenterDelegateTest, KeyPressEnablesSearchBox) {
   app_list_presenter_impl()->Show(GetPrimaryDisplayId());
   ui::test::EventGenerator& generator = GetEventGenerator();
@@ -534,7 +534,7 @@ TEST_F(FullscreenAppListPresenterDelegateTest, KeyPressEnablesSearchBox) {
 
   // Delete the text, the search box should be inactive.
   search_box_view->ClearSearch();
-  EXPECT_FALSE(search_box_view->is_search_box_active());
+  EXPECT_TRUE(search_box_view->is_search_box_active());
 }
 
 // Tests that a tap/click on the AppListView from half launcher returns the

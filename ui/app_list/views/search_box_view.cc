@@ -261,10 +261,8 @@ void SearchBoxView::ClearSearch() {
   // does not generate ContentsChanged() notification.
   UpdateModel();
   NotifyQueryChanged();
-  if (is_fullscreen_app_list_enabled_) {
-    SetSearchBoxActive(false);
+  if (is_fullscreen_app_list_enabled_)
     app_list_view_->SetStateFromSearchBoxView(search_box_->text().empty());
-  }
 }
 
 void SearchBoxView::SetShadow(const gfx::ShadowValue& shadow) {
@@ -641,7 +639,7 @@ void SearchBoxView::ContentsChanged(views::Textfield* sender,
   view_delegate_->AutoLaunchCanceled();
   NotifyQueryChanged();
   if (is_fullscreen_app_list_enabled_) {
-    SetSearchBoxActive(!search_box_->text().empty());
+    SetSearchBoxActive(true);
     // If the query is only whitespace, don't transition the AppListView state.
     base::string16 trimmed_query = search_box_->text();
     base::TrimWhitespace(search_box_->text(), base::TrimPositions::TRIM_ALL,

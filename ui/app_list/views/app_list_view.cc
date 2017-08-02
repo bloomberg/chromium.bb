@@ -479,6 +479,7 @@ void AppListView::HandleClickOrTap() {
   }
 
   search_box_view_->ClearSearch();
+  search_box_view_->SetSearchBoxActive(false);
 }
 
 void AppListView::StartDrag(const gfx::Point& location) {
