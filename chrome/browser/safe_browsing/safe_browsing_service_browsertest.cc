@@ -1490,7 +1490,7 @@ class SafeBrowsingServiceWebSocketTest
       public SafeBrowsingServiceTest {};
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceWebSocketTest,
-                       MalwareWebSocketBlocked) {
+                       DISABLED_MalwareWebSocketBlocked) {
   GURL main_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
   // This constructs the URL with the same logic as malware_websocket.html.
   GURL resolved = main_url.Resolve("/safe_browsing/malware-ws");
@@ -2269,7 +2269,7 @@ class V4SafeBrowsingServiceWebSocketTest
 // SafeBrowsingServiceWebSocketTest.MalwareWebSocketBlocked. That test will be
 // deleted when the old database backend is removed.
 IN_PROC_BROWSER_TEST_P(V4SafeBrowsingServiceWebSocketTest,
-                       MalwareWebSocketBlocked) {
+                       DISABLED_MalwareWebSocketBlocked) {
   GURL main_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
   // This constructs the URL with the same logic as malware_websocket.html.
   GURL resolved = main_url.Resolve("/safe_browsing/malware-ws");
