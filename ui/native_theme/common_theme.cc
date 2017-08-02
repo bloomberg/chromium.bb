@@ -53,6 +53,9 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     }
   }
 
+  // Shared constant for disabled text.
+  static const SkColor kDisabledTextColor = SkColorSetRGB(0xA1, 0xA1, 0x92);
+
   // Dialogs:
   static const SkColor kDialogBackgroundColor = SK_ColorWHITE;
   // Buttons:
@@ -66,8 +69,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   static const SkColor kMenuHighlightBackgroundColor =
       SkColorSetA(SK_ColorBLACK, 0x14);
   static const SkColor kSelectedMenuItemForegroundColor = SK_ColorBLACK;
-  static const SkColor kDisabledMenuItemForegroundColor =
-      SkColorSetRGB(0xA1, 0xA1, 0x92);
   static const SkColor kMenuBorderColor = SkColorSetRGB(0xBA, 0xBA, 0xBA);
   static const SkColor kMenuSeparatorColor = SkColorSetRGB(0xE9, 0xE9, 0xE9);
   static const SkColor kEnabledMenuItemForegroundColor = SK_ColorBLACK;
@@ -83,7 +84,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   // Textfield:
   static const SkColor kTextfieldDefaultColor = SK_ColorBLACK;
   static const SkColor kTextfieldDefaultBackground = SK_ColorWHITE;
-  static const SkColor kTextfieldReadOnlyColor = SK_ColorDKGRAY;
+  static const SkColor kTextfieldReadOnlyColor = kDisabledTextColor;
   static const SkColor kTextfieldReadOnlyBackground = SK_ColorWHITE;
   // Results tables:
   static const SkColor kResultsTableText = SK_ColorBLACK;
@@ -157,7 +158,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_ButtonPressedShade:
       return SK_ColorTRANSPARENT;
     case NativeTheme::kColorId_ButtonDisabledColor:
-      return kDisabledMenuItemForegroundColor;
+      return kDisabledTextColor;
 
     // MenuItem
     case NativeTheme::kColorId_SelectedMenuItemForegroundColor:
@@ -173,7 +174,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_EnabledMenuItemForegroundColor:
       return kEnabledMenuItemForegroundColor;
     case NativeTheme::kColorId_DisabledMenuItemForegroundColor:
-      return kDisabledMenuItemForegroundColor;
+      return kDisabledTextColor;
     case NativeTheme::kColorId_MenuItemSubtitleColor:
       return base_theme->GetSystemColor(
           NativeTheme::kColorId_DisabledMenuItemForegroundColor);
