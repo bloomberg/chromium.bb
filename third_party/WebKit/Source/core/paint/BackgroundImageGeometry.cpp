@@ -518,7 +518,6 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
     }
   } else {
     SetHasNonLocalGeometry();
-    offset_in_background_ = LayoutPoint();
     positioning_area = FixedAttachmentPositioningArea(box_, container, flags);
     SetDestRect(positioning_area);
   }
