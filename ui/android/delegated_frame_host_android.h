@@ -10,6 +10,7 @@
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "components/viz/host/host_frame_sink_client.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "ui/android/ui_android_export.h"
@@ -33,7 +34,8 @@ class WindowAndroidCompositor;
 
 class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
     : public viz::CompositorFrameSinkSupportClient,
-      public viz::ExternalBeginFrameSourceClient {
+      public viz::ExternalBeginFrameSourceClient,
+      public viz::HostFrameSinkClient {
  public:
   class Client {
    public:
@@ -91,6 +93,9 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   // viz::ExternalBeginFrameSourceClient implementation.
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
+
+  // viz::HostFrameSinkClient implementation.
+  void OnSurfaceCreated(const viz::SurfaceInfo& surface_info) override;
 
   void CreateNewCompositorFrameSinkSupport();
 

@@ -6,6 +6,7 @@ include_rules = [
   "+components/scheduler/renderer",
   "+components/scheduler/test",
   "+components/viz/common",
+  "+components/viz/host",
   "+components/viz/service",
   "+services/viz/public/interfaces/compositing",
 

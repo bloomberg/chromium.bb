@@ -39,6 +39,19 @@ SurfaceInfo MakeSurfaceInfo(const SurfaceId& surface_id) {
   return SurfaceInfo(surface_id, 1.f, gfx::Size(1, 1));
 }
 
+// A fake (do-nothing) implementation of HostFrameSinkClient.
+class FakeHostFrameSinkClient : public HostFrameSinkClient {
+ public:
+  FakeHostFrameSinkClient() = default;
+  ~FakeHostFrameSinkClient() override = default;
+
+  // HostFrameSinkClient implementation.
+  void OnSurfaceCreated(const SurfaceInfo& surface_info) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FakeHostFrameSinkClient);
+};
+
 // A mock implementation of mojom::FrameSinkManager.
 class MockFrameSinkManagerImpl : public FrameSinkManagerImpl {
  public:
@@ -101,16 +114,22 @@ class HostFrameSinkManagerTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    manager_impl_ = base::MakeUnique<MockFrameSinkManagerImpl>();
+    manager_impl_ =
+        base::MakeUnique<testing::NiceMock<MockFrameSinkManagerImpl>>();
     host_manager_ = base::MakeUnique<HostFrameSinkManager>();
 
     manager_impl_->SetLocalClient(host_manager_.get());
     host_manager_->SetLocalManager(manager_impl_.get());
   }
 
+  void TearDown() override {
+    host_manager_.reset();
+    manager_impl_.reset();
+  }
+
  private:
   std::unique_ptr<HostFrameSinkManager> host_manager_;
-  std::unique_ptr<MockFrameSinkManagerImpl> manager_impl_;
+  std::unique_ptr<testing::NiceMock<MockFrameSinkManagerImpl>> manager_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(HostFrameSinkManagerTest);
 };
@@ -121,10 +140,15 @@ TEST_F(HostFrameSinkManagerTest, CreateMojomCompositorFrameSink) {
   // Calling CreateCompositorFrameSink() should first register the frame sink
   // and then request to create it.
   EXPECT_CALL(manager_impl(), RegisterFrameSinkId(kClientFrameSinkId));
+
+  FakeHostFrameSinkClient client;
+  host_manager().RegisterFrameSinkId(kClientFrameSinkId, &client);
+
   EXPECT_CALL(manager_impl(),
               MockCreateCompositorFrameSink(kClientFrameSinkId));
   host_manager().CreateCompositorFrameSink(
       kClientFrameSinkId, nullptr /* request */, nullptr /* client */);
+
   EXPECT_TRUE(FrameSinkDataExists(kClientFrameSinkId));
 
   // Register should call through to FrameSinkManagerImpl and should work even
@@ -136,7 +160,6 @@ TEST_F(HostFrameSinkManagerTest, CreateMojomCompositorFrameSink) {
 
   // Destroying the CompositorFrameSink should invalidate it in viz.
   EXPECT_CALL(manager_impl(), InvalidateFrameSinkId(kClientFrameSinkId));
-  host_manager().DestroyCompositorFrameSink(kClientFrameSinkId);
 
   // We should still have the hierarchy data for |kClientFrameSinkId|.
   EXPECT_TRUE(FrameSinkDataExists(kClientFrameSinkId));
@@ -146,6 +169,7 @@ TEST_F(HostFrameSinkManagerTest, CreateMojomCompositorFrameSink) {
                                                            kClientFrameSinkId));
   host_manager().UnregisterFrameSinkHierarchy(kParentFrameSinkId,
                                               kClientFrameSinkId);
+  host_manager().InvalidateFrameSinkId(kClientFrameSinkId);
 
   // Data for |kClientFrameSinkId| should be deleted now.
   EXPECT_FALSE(FrameSinkDataExists(kClientFrameSinkId));

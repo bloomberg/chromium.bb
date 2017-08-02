@@ -20,6 +20,7 @@
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/common/surfaces/surface_sequence.h"
+#include "components/viz/host/host_frame_sink_client.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_client.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
@@ -54,7 +55,8 @@ class TouchSelectionControllerClientChildFrame;
 class CONTENT_EXPORT RenderWidgetHostViewChildFrame
     : public RenderWidgetHostViewBase,
       public TouchSelectionControllerClientManager::Observer,
-      public NON_EXPORTED_BASE(viz::CompositorFrameSinkSupportClient) {
+      public NON_EXPORTED_BASE(viz::CompositorFrameSinkSupportClient),
+      public NON_EXPORTED_BASE(viz::HostFrameSinkClient) {
  public:
   static RenderWidgetHostViewChildFrame* Create(RenderWidgetHost* widget);
   ~RenderWidgetHostViewChildFrame() override;
@@ -180,6 +182,9 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void WillDrawSurface(const viz::LocalSurfaceId& id,
                        const gfx::Rect& damage_rect) override {}
   void OnBeginFramePausedChanged(bool paused) override;
+
+  // viz::HostFrameSinkClient implementation.
+  void OnSurfaceCreated(const viz::SurfaceInfo& surface_info) override;
 
   // Exposed for tests.
   bool IsChildFrameForTesting() const override;

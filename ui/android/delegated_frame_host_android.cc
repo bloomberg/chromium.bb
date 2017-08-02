@@ -65,7 +65,7 @@ DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
   DCHECK(view_);
   DCHECK(client_);
 
-  frame_sink_manager_->surface_manager()->RegisterFrameSinkId(frame_sink_id_);
+  host_frame_sink_manager_->RegisterFrameSinkId(frame_sink_id_, this);
   CreateNewCompositorFrameSinkSupport();
 }
 
@@ -73,7 +73,7 @@ DelegatedFrameHostAndroid::~DelegatedFrameHostAndroid() {
   DestroyDelegatedContent();
   DetachFromCompositor();
   support_.reset();
-  frame_sink_manager_->surface_manager()->InvalidateFrameSinkId(frame_sink_id_);
+  host_frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 void DelegatedFrameHostAndroid::SubmitCompositorFrame(
@@ -200,6 +200,12 @@ void DelegatedFrameHostAndroid::OnBeginFramePausedChanged(bool paused) {
 
 void DelegatedFrameHostAndroid::OnNeedsBeginFrames(bool needs_begin_frames) {
   support_->SetNeedsBeginFrame(needs_begin_frames);
+}
+
+void DelegatedFrameHostAndroid::OnSurfaceCreated(
+    const viz::SurfaceInfo& surface_info) {
+  // TODO(fsamuel): Once surface synchronization is turned on, the fallback
+  // surface should be set here.
 }
 
 void DelegatedFrameHostAndroid::CreateNewCompositorFrameSinkSupport() {

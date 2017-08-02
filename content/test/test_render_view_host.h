@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/host/host_frame_sink_client.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/public/common/web_preferences.h"
@@ -60,7 +61,9 @@ void InitNavigateParams(FrameHostMsg_DidCommitProvisionalLoad_Params* params,
 
 // Subclass the RenderViewHost's view so that we can call Show(), etc.,
 // without having side-effects.
-class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
+class TestRenderWidgetHostView
+    : public RenderWidgetHostViewBase,
+      public NON_EXPORTED_BASE(viz::HostFrameSinkClient) {
  public:
   explicit TestRenderWidgetHostView(RenderWidgetHost* rwh);
   ~TestRenderWidgetHostView() override;
@@ -127,6 +130,9 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   void reset_did_change_compositor_frame_sink() {
     did_change_compositor_frame_sink_ = false;
   }
+
+  // viz::HostFrameSinkClient implementation.
+  void OnSurfaceCreated(const viz::SurfaceInfo& surface_info) override;
 
  protected:
   RenderWidgetHostImpl* rwh_;

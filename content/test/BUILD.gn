@@ -257,6 +257,7 @@ static_library("test_support") {
     "//cc/ipc",
     "//cc/ipc:interfaces",
     "//components/leveldb/public/interfaces",
+    "//components/viz/host",
     "//components/viz/service",
     "//content/app:both_for_content_tests",
     "//content/browser:for_content_tests",

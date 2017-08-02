@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
-#include "components/viz/host/frame_sink_observer.h"
+#include "components/viz/host/host_frame_sink_client.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -21,7 +21,7 @@ namespace content {
 // connections to both the renderer and frame sink manager.
 class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
     : public blink::mojom::OffscreenCanvasSurface,
-      public NON_EXPORTED_BASE(viz::FrameSinkObserver) {
+      public NON_EXPORTED_BASE(viz::HostFrameSinkClient) {
  public:
   using DestroyCallback = base::OnceCallback<void()>;
 
@@ -52,7 +52,7 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
       viz::mojom::CompositorFrameSinkClientPtr client,
       viz::mojom::CompositorFrameSinkRequest request);
 
-  // FrameSinkObserver implementation.
+  // viz::HostFrameSinkClient implementation.
   void OnSurfaceCreated(const viz::SurfaceInfo& surface_info) override;
 
   // blink::mojom::OffscreenCanvasSurface implementation.
