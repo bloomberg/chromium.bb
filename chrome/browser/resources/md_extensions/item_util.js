@@ -30,6 +30,14 @@ cr.define('extensions', function() {
   }
 
   /**
+   * @param {!chrome.developerPrivate.ExtensionInfo} extensionInfo
+   * @return {boolean} Whether the extension is controlled.
+   */
+  function isControlled(extensionInfo) {
+    return !!extensionInfo.controlledInfo;
+  }
+
+  /**
    * Returns true if the user can change whether or not the extension is
    * enabled.
    * @param {!chrome.developerPrivate.ExtensionInfo} item
@@ -116,6 +124,7 @@ cr.define('extensions', function() {
   }
 
   return {
+    isControlled: isControlled,
     isEnabled: isEnabled,
     userCanChangeEnablement: userCanChangeEnablement,
     getItemSource: getItemSource,

@@ -39,6 +39,14 @@ cr.define('extensions', function() {
      * @return {boolean}
      * @private
      */
+    isControlled_: function() {
+      return extensions.isControlled(this.data);
+    },
+
+    /**
+     * @return {boolean}
+     * @private
+     */
     isEnabled_: function() {
       return extensions.isEnabled(this.data.state);
     },

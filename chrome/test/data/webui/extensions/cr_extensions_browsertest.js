@@ -174,6 +174,11 @@ TEST_F('CrExtensionsBrowserTest', 'ExtensionItemEnableToggleTest', function() {
   mocha.grep(assert(extension_item_tests.TestNames.EnableToggle)).run();
 });
 
+TEST_F('CrExtensionsBrowserTest', 'ExtensionItemRemoveButtonTest', function() {
+  extension_item_tests.registerTests();
+  mocha.grep(assert(extension_item_tests.TestNames.RemoveButton)).run();
+});
+
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Detail View Tests
 
