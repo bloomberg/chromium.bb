@@ -158,10 +158,6 @@ class ResourceRequestInfo {
   // DO NOT BASE SECURITY DECISIONS ON THIS FLAG!
   virtual bool HasUserGesture() const = 0;
 
-  // True if ResourceController::CancelAndIgnore() was called.  For example,
-  // the requested URL may be being loaded by an external program.
-  virtual bool WasIgnoredByHandler() const = 0;
-
   // Returns false if there is NOT an associated render frame.
   virtual bool GetAssociatedRenderFrame(int* render_process_id,
                                         int* render_frame_id) const = 0;

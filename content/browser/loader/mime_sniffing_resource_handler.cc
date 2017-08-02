@@ -82,11 +82,6 @@ class MimeSniffingResourceHandler::Controller : public ResourceController {
     mime_handler_->Cancel();
   }
 
-  void CancelAndIgnore() override {
-    MarkAsUsed();
-    mime_handler_->CancelAndIgnore();
-  }
-
   void CancelWithError(int error_code) override {
     MarkAsUsed();
     mime_handler_->CancelWithError(error_code);

@@ -27,7 +27,6 @@ class TestResourceThrottleDelegate
         quit_closure_(quit_closure) {}
 
   void Cancel() override {}
-  void CancelAndIgnore() override {}
   void CancelWithError(int error_code) override {
     cancel_with_error_called_ = true;
     error_code_ = error_code;

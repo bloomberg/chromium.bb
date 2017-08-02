@@ -21,7 +21,6 @@ class NullResourceController : public ResourceController {
 
   // ResourceController implementation:
   void Cancel() override;
-  void CancelAndIgnore() override;
   void CancelWithError(int error_code) override;
   void Resume() override;
 

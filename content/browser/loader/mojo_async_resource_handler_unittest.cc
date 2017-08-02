@@ -615,8 +615,6 @@ TEST_F(MojoAsyncResourceHandlerTest,
 TEST_F(MojoAsyncResourceHandlerTest, OnResponseCompleted) {
   ASSERT_TRUE(CallOnWillStartAndOnResponseStarted());
 
-  ResourceRequestInfoImpl::ForRequest(request_.get())
-      ->set_was_ignored_by_handler(false);
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, net::OK);
 
   base::TimeTicks now1 = base::TimeTicks::Now();
@@ -646,8 +644,6 @@ TEST_F(MojoAsyncResourceHandlerTest, OnResponseCompleted2) {
   ASSERT_FALSE(url_loader_client_.has_received_response());
   url_loader_client_.RunUntilResponseReceived();
 
-  ResourceRequestInfoImpl::ForRequest(request_.get())
-      ->set_was_ignored_by_handler(true);
   net::URLRequestStatus status(net::URLRequestStatus::CANCELED,
                                net::ERR_ABORTED);
 

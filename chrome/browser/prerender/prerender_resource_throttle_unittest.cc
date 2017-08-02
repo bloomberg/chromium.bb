@@ -138,7 +138,6 @@ class DeferredRedirectDelegate : public net::URLRequest::Delegate,
     cancel_called_ = true;
     run_loop_->Quit();
   }
-  void CancelAndIgnore() override { Cancel(); }
   void CancelWithError(int error_code) override { Cancel(); }
   void Resume() override {
     EXPECT_TRUE(was_deferred_);

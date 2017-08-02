@@ -60,7 +60,6 @@ class ThrottleDelegate : public base::SupportsUserData::Data,
   // ResourceThrottle::Delegate implementation:
   void Resume() override { request_->Start(); }
   void Cancel() override { NOTREACHED(); }
-  void CancelAndIgnore() override { NOTREACHED(); }
   void CancelWithError(int error_code) override { NOTREACHED(); }
 
  private:

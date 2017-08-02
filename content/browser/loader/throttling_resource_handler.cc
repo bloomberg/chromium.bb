@@ -126,15 +126,6 @@ void ThrottlingResourceHandler::Cancel() {
   ResourceHandler::Cancel();
 }
 
-void ThrottlingResourceHandler::CancelAndIgnore() {
-  if (!has_controller()) {
-    OutOfBandCancel(net::ERR_ABORTED, false /* tell_renderer */);
-    return;
-  }
-  cancelled_by_resource_throttle_ = true;
-  ResourceHandler::CancelAndIgnore();
-}
-
 void ThrottlingResourceHandler::CancelWithError(int error_code) {
   if (!has_controller()) {
     OutOfBandCancel(error_code, false /* tell_renderer */);

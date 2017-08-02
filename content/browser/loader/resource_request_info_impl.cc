@@ -169,7 +169,6 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       enable_load_timing_(enable_load_timing),
       enable_upload_progress_(enable_upload_progress),
       do_not_prompt_for_login_(do_not_prompt_for_login),
-      was_ignored_by_handler_(false),
       counted_as_in_flight_request_(false),
       resource_type_(resource_type),
       transition_type_(transition_type),
@@ -287,10 +286,6 @@ ui::PageTransition ResourceRequestInfoImpl::GetPageTransition() const {
 
 bool ResourceRequestInfoImpl::HasUserGesture() const {
   return has_user_gesture_;
-}
-
-bool ResourceRequestInfoImpl::WasIgnoredByHandler() const {
-  return was_ignored_by_handler_;
 }
 
 bool ResourceRequestInfoImpl::GetAssociatedRenderFrame(
