@@ -10,6 +10,7 @@
 #include "base/lazy_instance.h"
 #include "cc/base/switches.h"
 #include "components/viz/client/client_layer_tree_frame_sink.h"
+#include "components/viz/client/hit_test_data_provider.h"
 #include "components/viz/client/local_surface_id_provider.h"
 
 namespace content {
@@ -88,7 +89,7 @@ void RendererWindowTreeClient::RequestLayerTreeFrameSinkInternal(
       std::move(context_provider), nullptr /* worker_context_provider */,
       gpu_memory_buffer_manager, nullptr /* shared_bitmap_manager */,
       nullptr /* synthetic_begin_frame_source */, std::move(sink_info),
-      std::move(client_request),
+      std::move(client_request), nullptr /* hit_test_data_provider_ */,
       base::MakeUnique<viz::DefaultLocalSurfaceIdProvider>(),
       enable_surface_synchronization);
   tree_->AttachCompositorFrameSink(root_window_id_, std::move(sink_request),

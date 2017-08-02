@@ -10,6 +10,7 @@
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/client_surface_embedder.h"
+#include "ui/aura/mus/hit_test_data_provider_aura.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
@@ -119,6 +120,7 @@ WindowPortMus::RequestLayerTreeFrameSink(
       gpu_memory_buffer_manager, nullptr /* shared_bitmap_manager */,
       nullptr /* synthetic_begin_frame_source */, std::move(sink_info),
       std::move(client_request),
+      base::MakeUnique<HitTestDataProviderAura>(window_),
       base::MakeUnique<viz::DefaultLocalSurfaceIdProvider>(),
       enable_surface_synchronization);
   window_tree_client_->AttachCompositorFrameSink(
@@ -392,7 +394,7 @@ WindowPortMus::ChangeSource WindowPortMus::OnTransientChildRemoved(
              : ChangeSource::LOCAL;
 }
 
-const viz::LocalSurfaceId& WindowPortMus::GetLocalSurfaceId() {
+const viz::LocalSurfaceId& WindowPortMus::GetLocalSurfaceId() const {
   return local_surface_id_;
 }
 
