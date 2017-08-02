@@ -9,15 +9,6 @@
 
 namespace blink {
 
-namespace {
-
-double ClampToMillisecond(double time_in_millis) {
-  // Long task times are clamped to 1 millisecond for security.
-  return floor(time_in_millis);
-}
-
-}  // namespace
-
 // static
 PerformanceLongTaskTiming* PerformanceLongTaskTiming::Create(
     double start_time,
@@ -36,10 +27,7 @@ PerformanceLongTaskTiming::PerformanceLongTaskTiming(double start_time,
                                                      String culprit_frame_src,
                                                      String culprit_frame_id,
                                                      String culprit_frame_name)
-    : PerformanceEntry(name,
-                       "longtask",
-                       ClampToMillisecond(start_time),
-                       ClampToMillisecond(end_time)) {
+    : PerformanceEntry(name, "longtask", start_time, end_time) {
   // Only one possible task type exists currently: "script"
   // Only one possible container type exists currently: "iframe"
   TaskAttributionTiming* attribution_entry =
