@@ -46,8 +46,12 @@ void FastInkPoints::Clear() {
 }
 
 gfx::Rect FastInkPoints::GetBoundingBox() const {
+  return gfx::ToEnclosingRect(GetBoundingBoxF());
+}
+
+gfx::RectF FastInkPoints::GetBoundingBoxF() const {
   if (IsEmpty())
-    return gfx::Rect();
+    return gfx::RectF();
 
   gfx::PointF min_point = GetOldest().location;
   gfx::PointF max_point = GetOldest().location;
@@ -55,7 +59,7 @@ gfx::Rect FastInkPoints::GetBoundingBox() const {
     min_point.SetToMin(point.location);
     max_point.SetToMax(point.location);
   }
-  return gfx::ToEnclosingRect(gfx::BoundingRect(min_point, max_point));
+  return gfx::BoundingRect(min_point, max_point);
 }
 
 FastInkPoints::FastInkPoint FastInkPoints::GetOldest() const {

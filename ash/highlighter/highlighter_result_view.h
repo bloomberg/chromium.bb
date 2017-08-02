@@ -36,8 +36,8 @@ class HighlighterResultView : public views::View {
 
   ~HighlighterResultView() override;
 
-  void AnimateInPlace(const gfx::Rect& bounds, SkColor color);
-  void AnimateDeflate(const gfx::Rect& bounds);
+  void AnimateInPlace(const gfx::RectF& bounds, SkColor color);
+  void AnimateDeflate(const gfx::RectF& bounds);
 
  private:
   void ScheduleFadeIn(const base::TimeDelta& delay,

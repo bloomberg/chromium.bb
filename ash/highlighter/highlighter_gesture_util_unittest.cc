@@ -64,11 +64,11 @@ class HighlighterGestureUtilTest : public AshTestBase {
   }
 
   bool DetectHorizontalStroke() {
-    return ash::DetectHorizontalStroke(points_.GetBoundingBox(), kPenTipSize);
+    return ash::DetectHorizontalStroke(points_.GetBoundingBoxF(), kPenTipSize);
   }
 
   bool DetectClosedShape() {
-    return ash::DetectClosedShape(points_.GetBoundingBox(), points_);
+    return ash::DetectClosedShape(points_.GetBoundingBoxF(), points_);
   }
 
  private:

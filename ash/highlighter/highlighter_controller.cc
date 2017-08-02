@@ -13,6 +13,7 @@
 #include "ash/system/palette/palette_utils.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/views/widget/widget.h"
@@ -24,12 +25,30 @@ namespace {
 // Adjust the height of the bounding box to match the pen tip height,
 // while keeping the same vertical center line. Adjust the width to
 // account for the pen tip width.
-gfx::Rect AdjustHorizontalStroke(const gfx::Rect& box,
-                                 const gfx::SizeF& pen_tip_size) {
-  return gfx::ToEnclosingRect(
-      gfx::RectF(box.x() - pen_tip_size.width() / 2,
-                 box.CenterPoint().y() - pen_tip_size.height() / 2,
-                 box.width() + pen_tip_size.width(), pen_tip_size.height()));
+gfx::RectF AdjustHorizontalStroke(const gfx::RectF& box,
+                                  const gfx::SizeF& pen_tip_size) {
+  return gfx::RectF(box.x() - pen_tip_size.width() / 2,
+                    box.CenterPoint().y() - pen_tip_size.height() / 2,
+                    box.width() + pen_tip_size.width(), pen_tip_size.height());
+}
+
+// This method computes the scale required to convert window-relative DIP
+// coordinates to the coordinate space of the screenshot taken from that window.
+// The transform returned by WindowTreeHost::GetRootTransform translates points
+// from DIP to physical screen pixels (by taking into account not only the
+// scale but also the rotation and the offset).
+// However, the screenshot bitmap is always oriented the same way as the window
+// from which it was taken, and has zero offset.
+// The code below deduces the scale from the transform by applying it to a pair
+// of points separated by the distance of 1, and measuring the distance between
+// the transformed points.
+float GetScreenshotScale(aura::Window* window) {
+  const gfx::Transform transform = window->GetHost()->GetRootTransform();
+  gfx::Point3F p1(0, 0, 0);
+  gfx::Point3F p2(1, 0, 0);
+  transform.TransformPoint(&p1);
+  transform.TransformPoint(&p2);
+  return (p2 - p1).Length();
 }
 
 // The default amount of time used to estimate time from VSYNC event to when
@@ -102,23 +121,24 @@ void HighlighterController::OnTouchEvent(ui::TouchEvent* event) {
 
   if (event->type() == ui::ET_TOUCH_RELEASED && highlighter_view_) {
     const FastInkPoints& points = highlighter_view_->points();
-    const gfx::Rect box = points.GetBoundingBox();
-    const gfx::Point pivot(box.CenterPoint());
+    const gfx::RectF box = points.GetBoundingBoxF();
+    const gfx::PointF pivot(box.CenterPoint());
 
-    const float scale_factor = current_window->layer()->device_scale_factor();
+    const float scale_factor = GetScreenshotScale(current_window);
 
     if (DetectHorizontalStroke(box, HighlighterView::kPenTipSize)) {
-      const gfx::Rect box_adjusted =
+      const gfx::RectF box_adjusted =
           AdjustHorizontalStroke(box, HighlighterView::kPenTipSize);
       observer_->HandleSelection(
-          gfx::ScaleToEnclosingRect(box_adjusted, scale_factor));
+          gfx::ToEnclosingRect(gfx::ScaleRect(box_adjusted, scale_factor)));
       highlighter_view_->Animate(pivot,
                                  HighlighterView::AnimationMode::kFadeout);
 
       result_view_ = base::MakeUnique<HighlighterResultView>(current_window);
       result_view_->AnimateInPlace(box_adjusted, HighlighterView::kPenColor);
     } else if (DetectClosedShape(box, points)) {
-      observer_->HandleSelection(gfx::ScaleToEnclosingRect(box, scale_factor));
+      observer_->HandleSelection(
+          gfx::ToEnclosingRect(gfx::ScaleRect(box, scale_factor)));
       highlighter_view_->Animate(pivot,
                                  HighlighterView::AnimationMode::kInflate);
 

@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -182,14 +183,14 @@ HighlighterResultView::HighlighterResultView(aura::Window* root_window) {
 
 HighlighterResultView::~HighlighterResultView() {}
 
-void HighlighterResultView::AnimateInPlace(const gfx::Rect& bounds,
+void HighlighterResultView::AnimateInPlace(const gfx::RectF& bounds,
                                            SkColor color) {
   ui::Layer* layer = widget_->GetLayer();
 
   // A solid transparent rectangle.
   result_layer_ = base::MakeUnique<ui::Layer>(ui::LAYER_SOLID_COLOR);
   result_layer_->set_name("HighlighterResultView:SOLID_LAYER");
-  result_layer_->SetBounds(bounds);
+  result_layer_->SetBounds(gfx::ToEnclosingRect(bounds));
   result_layer_->SetFillsBoundsOpaquely(false);
   result_layer_->SetMasksToBounds(false);
   result_layer_->SetColor(color);
@@ -201,14 +202,14 @@ void HighlighterResultView::AnimateInPlace(const gfx::Rect& bounds,
       base::TimeDelta::FromMilliseconds(kResultInPlaceFadeinDurationMs));
 }
 
-void HighlighterResultView::AnimateDeflate(const gfx::Rect& bounds) {
+void HighlighterResultView::AnimateDeflate(const gfx::RectF& bounds) {
   ui::Layer* layer = widget_->GetLayer();
 
-  result_layer_ = base::MakeUnique<ResultLayer>(bounds);
+  result_layer_ = base::MakeUnique<ResultLayer>(gfx::ToEnclosingRect(bounds));
   layer->Add(result_layer_.get());
 
   gfx::Transform transform;
-  const gfx::Point pivot = bounds.CenterPoint();
+  const gfx::PointF pivot = bounds.CenterPoint();
   transform.Translate(pivot.x() * (1 - kInitialScale),
                       pivot.y() * (1 - kInitialScale));
   transform.Scale(kInitialScale, kInitialScale);
