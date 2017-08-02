@@ -5,6 +5,7 @@
 #include "ash/host/ash_window_tree_host.h"
 
 #include "ash/host/ash_window_tree_host_init_params.h"
+#include "ash/host/ash_window_tree_host_platform.h"
 #include "ash/host/ash_window_tree_host_unified.h"
 #include "ash/shell_port.h"
 #include "base/memory/ptr_util.h"
@@ -12,12 +13,6 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/rect.h"
-
-#if defined(USE_OZONE)
-#include "ash/host/ash_window_tree_host_platform.h"
-#elif defined(USE_X11)
-#include "ash/host/ash_window_tree_host_x11.h"
-#endif
 
 namespace ash {
 
@@ -62,14 +57,8 @@ std::unique_ptr<AshWindowTreeHost> AshWindowTreeHost::Create(
     return base::MakeUnique<AshWindowTreeHostUnified>(
         init_params.initial_bounds);
   }
-#if defined(USE_OZONE)
   return base::MakeUnique<AshWindowTreeHostPlatform>(
       init_params.initial_bounds);
-#elif defined(USE_X11)
-  return base::MakeUnique<AshWindowTreeHostX11>(init_params.initial_bounds);
-#else
-#error Unsupported platform.
-#endif
 }
 
 }  // namespace ash

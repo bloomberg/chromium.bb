@@ -49,11 +49,6 @@
 #include "ui/message_center/message_center.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_X11)
-#include <X11/Xlib.h>
-#include "ui/events/test/events_test_utils_x11.h"
-#endif
-
 using chromeos::input_method::InputMethodManager;
 
 namespace ash {

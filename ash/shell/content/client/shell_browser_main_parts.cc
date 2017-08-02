@@ -43,10 +43,6 @@
 #include "ui/views/examples/examples_window_with_content.h"
 #include "ui/wm/core/wm_state.h"
 
-#if defined(USE_X11)
-#include "ui/events/devices/x11/touch_factory_x11.h"  // nogncheck
-#endif
-
 namespace ash {
 namespace shell {
 
@@ -56,11 +52,7 @@ ShellBrowserMainParts::ShellBrowserMainParts(
 
 ShellBrowserMainParts::~ShellBrowserMainParts() {}
 
-void ShellBrowserMainParts::PreMainMessageLoopStart() {
-#if defined(USE_X11)
-  ui::TouchFactory::SetTouchDeviceListFromCommandLine();
-#endif
-}
+void ShellBrowserMainParts::PreMainMessageLoopStart() {}
 
 void ShellBrowserMainParts::PostMainMessageLoopStart() {
   chromeos::DBusThreadManager::Initialize(
