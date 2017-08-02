@@ -253,6 +253,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   static Config GetAshConfig();
   static bool ShouldUseIMEService();
 
+  // Registers all ash related local state prefs to the given |registry|.
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+
   // Registers all ash related user profile prefs to the given |registry|.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 

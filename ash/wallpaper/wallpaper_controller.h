@@ -16,11 +16,13 @@
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "components/wallpaper/wallpaper_color_calculator_observer.h"
-#include "components/wallpaper/wallpaper_layout.h"
+#include "components/wallpaper/wallpaper_info.h"
 #include "components/wallpaper/wallpaper_resizer_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "ui/compositor/compositor_lock.h"
+
+class PrefRegistrySimple;
 
 namespace base {
 class SequencedTaskRunner;
@@ -64,6 +66,8 @@ class ASH_EXPORT WallpaperController
   WallpaperController();
   ~WallpaperController() override;
 
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+
   // Binds the mojom::WallpaperController interface request to this object.
   void BindRequest(mojom::WallpaperControllerRequest request);
 
@@ -83,7 +87,7 @@ class ASH_EXPORT WallpaperController
 
   // Sets the wallpaper and alerts observers of changes.
   void SetWallpaperImage(const gfx::ImageSkia& image,
-                         wallpaper::WallpaperLayout layout);
+                         const wallpaper::WallpaperInfo& info);
 
   // Creates an empty wallpaper. Some tests require a wallpaper widget is ready
   // when running. However, the wallpaper widgets are now created
@@ -126,7 +130,7 @@ class ASH_EXPORT WallpaperController
   void AddObserver(mojom::WallpaperObserverAssociatedPtrInfo observer) override;
   void SetWallpaperPicker(mojom::WallpaperPickerPtr picker) override;
   void SetWallpaper(const SkBitmap& wallpaper,
-                    wallpaper::WallpaperLayout layout) override;
+                    const wallpaper::WallpaperInfo& wallpaper_info) override;
   void GetWallpaperColors(GetWallpaperColorsCallback callback) override;
 
   // WallpaperResizerObserver:
@@ -211,6 +215,11 @@ class ASH_EXPORT WallpaperController
 
   // Caches the color profiles that need to do wallpaper color extracting.
   const std::vector<color_utils::ColorProfile> color_profiles_;
+
+  // Location (see WallpaperInfo::location) used by the current wallpaper.
+  // Used as a key for storing |prominent_colors_| in the
+  // wallpaper::kWallpaperColors pref. An empty string disables color caching.
+  std::string current_location_;
 
   gfx::Size current_max_display_size_;
 

@@ -20,6 +20,8 @@ ASH_PUBLIC_EXPORT extern const char kNightLightCustomEndTime[];
 ASH_PUBLIC_EXPORT extern const char kShowLogoutButtonInTray[];
 ASH_PUBLIC_EXPORT extern const char kLogoutDialogDurationMs[];
 
+ASH_PUBLIC_EXPORT extern const char kWallpaperColors[];
+
 }  // namespace prefs
 
 }  // namespace ash
