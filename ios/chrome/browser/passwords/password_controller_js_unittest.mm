@@ -209,7 +209,7 @@ TEST_F(PasswordControllerJsTest,
   const std::string base_url = BaseUrl();
   NSString* result = [NSString
       stringWithFormat:
-          @"[{\"action\":\"/generic_submit\","
+          @"[{\"action\":\"https://chromium.test/generic_submit\","
            "\"method\":\"post\","
            "\"name\":\"login_form\","
            "\"origin\":\"%s\","
@@ -244,7 +244,7 @@ TEST_F(PasswordControllerJsTest,
   const std::string base_url = BaseUrl();
   NSString* result = [NSString
       stringWithFormat:
-          @"[{\"action\":\"/generic_submit\","
+          @"[{\"action\":\"https://chromium.test/generic_submit\","
            "\"method\":\"post\","
            "\"name\":\"login_form1\","
            "\"origin\":\"%s\","
@@ -254,7 +254,7 @@ TEST_F(PasswordControllerJsTest,
            "\"usernameElement\":\"name\","
            "\"usernameValue\":\"\","
            "\"passwords\":[{\"element\":\"password\",\"value\":\"\"}]},"
-           "{\"action\":\"/generic_s2\","
+           "{\"action\":\"https://chromium.test/generic_s2\","
            "\"method\":\"post\","
            "\"name\":\"login_form2\","
            "\"origin\":\"%s\","
@@ -284,7 +284,7 @@ TEST_F(PasswordControllerJsTest, GetPasswordFormData) {
   NSString* parameter = @"window.document.getElementsByTagName('form')[0]";
   NSString* result = [NSString
       stringWithFormat:
-          @"{\"action\":\"/generic_submit\","
+          @"{\"action\":\"https://chromium.test/generic_submit\","
            "\"method\":\"post\","
            "\"name\":\"np\","
            "\"origin\":\"%s\","
@@ -299,6 +299,36 @@ TEST_F(PasswordControllerJsTest, GetPasswordFormData) {
       result,
       ExecuteJavaScriptWithFormat(
           @"__gCrWeb.stringify(__gCrWeb.getPasswordFormData(%@))", parameter));
+};
+
+// Check that if a form action is not set then the action is parsed to the
+// current url.
+TEST_F(PasswordControllerJsTest, FormActionIsNotSet) {
+  LoadHtmlAndInject(
+      @"<html><body>"
+       "<form name='login_form'>"
+       "  Name: <input type='text' name='name'>"
+       "  Password: <input type='password' name='password'>"
+       "  <input type='submit' value='Submit'>"
+       "</form>"
+       "</body></html>");
+
+  const std::string base_url = BaseUrl();
+  NSString* result = [NSString
+      stringWithFormat:
+          @"[{\"action\":\"https://chromium.test/\","
+           "\"method\":null,"
+           "\"name\":\"login_form\","
+           "\"origin\":\"%s\","
+           "\"fields\":[{\"element\":\"name\",\"type\":\"text\"},"
+           "{\"element\":\"password\",\"type\":\"password\"},"
+           "{\"element\":\"\",\"type\":\"submit\"}],"
+           "\"usernameElement\":\"name\","
+           "\"usernameValue\":\"\","
+           "\"passwords\":[{\"element\":\"password\",\"value\":\"\"}]}]",
+          base_url.c_str()];
+  EXPECT_NSEQ(result,
+              ExecuteJavaScriptWithFormat(@"__gCrWeb.findPasswordForms()"));
 };
 
 }  // namespace
