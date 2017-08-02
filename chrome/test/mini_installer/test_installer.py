@@ -10,15 +10,19 @@ the design documentation at http://goo.gl/Q0rGM6
 """
 
 import argparse
+import contextlib
 import datetime
 import inspect
 import json
 import os
+import shutil
 import subprocess
 import sys
 import time
 import traceback
 import unittest
+import win32api
+from win32com.shell import shell, shellcon
 import _winreg
 
 from variable_expander import VariableExpander
@@ -332,7 +336,57 @@ def ParseConfigFile(filename, variable_expander):
   return config
 
 
-def main():
+@contextlib.contextmanager
+def ConfigureTempOnDrive(drive):
+  """Ensures that TMP is on |drive|, restoring state on completion.
+
+  This does not change the current Python runtime's idea of tempdir.
+  """
+  tmp_set = False
+  old_tmp = None
+  tmp_created = None
+  # Set TMP to something reasonable if the default temp path is not on the
+  # desired drive. Note that os.environ is used to mutate the environment since
+  # doing so writes through to the process's underlying environment block. Reads
+  # are performed directly in the off chance that code elsewhere has modified
+  # the environment without going through os.environ.
+  temp = win32api.GetTempPath()
+  if not temp or os.path.splitdrive(temp)[0] != drive:
+    # Try to use one of the standard Temp dir locations.
+    for candidate in [os.getenv(v) for v in ['LOCALAPPDATA', 'windir']]:
+      if candidate and os.path.splitdrive(candidate)[0] == drive:
+        temp = os.path.join(candidate, 'Temp')
+        if os.path.isdir(temp):
+          old_tmp = os.getenv('TMP')
+          os.environ['TMP'] = temp
+          tmp_set = True
+          break
+    # Otherwise make a Temp dir at the root of the drive.
+    if not tmp_set:
+      temp = os.path.join(drive, os.sep, 'Temp')
+      if not os.path.exists(temp):
+        os.mkdir(temp)
+        tmp_created = temp
+      elif not os.path.isdir(temp):
+        raise Exception('Cannot create %s without clobbering something' % temp)
+      old_tmp = os.getenv('TMP')
+      os.environ['TMP'] = temp
+      tmp_set = True
+  try:
+    yield
+  finally:
+    if tmp_set:
+      if old_tmp is None:
+        del os.environ['TMP']
+      else:
+        os.environ['TMP'] = old_tmp
+    if tmp_created:
+      shutil.rmtree(tmp_created, True)
+      if os.path.isdir(tmp_created):
+        raise Exception('Failed to entirely delete directory %s' % tmp_created)
+
+
+def DoMain():
   parser = argparse.ArgumentParser()
   parser.add_argument('--build-dir', default='out',
                       help='Path to main build directory (the parent of the '
@@ -386,6 +440,16 @@ def main():
       json.dump(_FullResults(suite, result, {}), fp, indent=2)
       fp.write('\n')
   return 0 if result.wasSuccessful() else 1
+
+
+def main():
+  # Make sure that TMP and Chrome's installation directory are on the same
+  # drive to work around https://crbug.com/700809. (CSIDL_PROGRAM_FILESX86 is
+  # valid for both 32 and 64-bit apps running on 32 or 64-bit Windows.)
+  drive = os.path.splitdrive(
+      shell.SHGetFolderPath(0, shellcon.CSIDL_PROGRAM_FILESX86, None, 0))[0]
+  with ConfigureTempOnDrive(drive):
+    return DoMain()
 
 
 # TODO(dpranke): Find a way for this to be shared with the mojo and other tests.
