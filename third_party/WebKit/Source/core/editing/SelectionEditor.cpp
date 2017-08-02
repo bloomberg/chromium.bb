@@ -113,8 +113,7 @@ void SelectionEditor::MarkCacheDirty() {
 
 void SelectionEditor::SetSelection(const SelectionInDOMTree& new_selection) {
   new_selection.AssertValidFor(GetDocument());
-  if (selection_ == new_selection)
-    return;
+  DCHECK_NE(selection_, new_selection);
   ClearDocumentCachedRange();
   MarkCacheDirty();
   selection_ = new_selection;
