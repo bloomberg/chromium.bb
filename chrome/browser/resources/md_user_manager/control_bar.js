@@ -52,14 +52,14 @@ Polymer({
    * @private
    */
   onLaunchGuestTap_: function(event) {
-    this.browserProxy_.areAllProfilesLocked().then(function(allProfilesLocked) {
+    this.browserProxy_.areAllProfilesLocked().then(allProfilesLocked => {
       if (!allProfilesLocked || this.isForceSigninEnabled_) {
         this.browserProxy_.launchGuestUser();
       } else {
         document.querySelector('error-dialog')
             .show(this.i18n('browseAsGuestAllProfilesLockedError'));
       }
-    }.bind(this));
+    });
   },
 
   /**
@@ -68,7 +68,7 @@ Polymer({
    * @private
    */
   onAddUserTap_: function(event) {
-    this.browserProxy_.areAllProfilesLocked().then(function(allProfilesLocked) {
+    this.browserProxy_.areAllProfilesLocked().then(allProfilesLocked => {
       if (!allProfilesLocked || this.isForceSigninEnabled_) {
         // Event is caught by user-manager-pages.
         this.fire('change-page', {page: 'create-user-page'});
@@ -76,6 +76,6 @@ Polymer({
         document.querySelector('error-dialog')
             .show(this.i18n('addProfileAllProfilesLockedError'));
       }
-    }.bind(this));
+    });
   }
 });

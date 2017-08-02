@@ -154,9 +154,9 @@ Polymer({
         'create-profile-warning', this.handleMessage_.bind(this));
     this.addWebUIListener(
         'create-profile-error', this.handleMessage_.bind(this));
-    this.addWebUIListener('profile-icons-received', function(icons) {
+    this.addWebUIListener('profile-icons-received', icons => {
       this.availableIcons_ = icons;
-    }.bind(this));
+    });
     this.addWebUIListener(
         'profile-defaults-received', this.handleProfileDefaults_.bind(this));
     this.addWebUIListener(
