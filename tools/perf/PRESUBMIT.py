@@ -89,15 +89,14 @@ def _CheckWprShaFiles(input_api, output_api):
       continue
     wpr_archive_shas.append(filename)
 
-  if wpr_archive_shas:
-    out, return_code = _RunArgs([
-        input_api.python_executable,
-        input_api.os_path.join(perf_dir, 'validate_wpr_archives')] +
-        wpr_archive_shas,
-        input_api)
-    if return_code:
-      results.append(output_api.PresubmitError(
-          'Validating WPR archives failed:', long_text=out))
+  out, return_code = _RunArgs([
+      input_api.python_executable,
+      input_api.os_path.join(perf_dir, 'validate_wpr_archives')] +
+      wpr_archive_shas,
+      input_api)
+  if return_code:
+    results.append(output_api.PresubmitError(
+        'Validating WPR archives failed:', long_text=out))
   return results
 
 

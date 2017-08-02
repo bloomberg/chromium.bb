@@ -50,7 +50,7 @@ def GetMissingArchivesInCloudStorage(archive_infos, wpr_sha_files):
     wpr_sha_files = abs_wpr_sha_files_path
 
   cloud_storage_paths = set()
-  missing_archives = []
+  missing_sha_files = set()
   for wpr_archive_info in archive_infos:
     bucket = wpr_archive_info._bucket
     story_archives = wpr_archive_info._data['archives']
@@ -60,17 +60,18 @@ def GetMissingArchivesInCloudStorage(archive_infos, wpr_sha_files):
             archive_path)
         hash_path = NormalizedPath(archive_path + '.sha1')
         if not os.path.exists(hash_path):
-          missing_archives.append(archive_path)
+          missing_sha_files.add(hash_path)
           continue
-        if wpr_sha_files and hash_path not in wpr_sha_files:
+        if hash_path not in wpr_sha_files:
           continue
         remote_path = cloud_storage.ReadHash(hash_path)
         cloud_storage_paths.add((bucket, remote_path, archive_path))
 
+  missing_archives = set()
   for (bucket, remote_path, archive_path) in cloud_storage_paths:
     if not cloud_storage.Exists(bucket, remote_path):
-      missing_archives.append((archive_path, bucket))
-  return missing_archives
+      missing_archives.add((archive_path, bucket))
+  return missing_archives, missing_sha_files
 
 
 def main(args):
@@ -84,11 +85,15 @@ def main(args):
       continue
     archive_infos.append(s.wpr_archive_info)
 
-  missing_archives = GetMissingArchivesInCloudStorage(
+  missing_archives, missing_sha_files = GetMissingArchivesInCloudStorage(
       archive_infos, options.wpr_sha_files)
   assert not missing_archives, (
-        'Archives not checked in cloud storage properly:\n%s' %
-    '\n'.join('%s (expected bucket: %s)' % (p, b) for p, b in missing_archives))
+      'Archives not checked in cloud storage properly:\n%s' %
+      '\n'.join('%s (expected bucket: %s)' % (p, b) for p, b in missing_archives))
+  assert not missing_sha_files, (
+      'These SHA files are missing. Did you forget to check them in?\n%s' %
+      '\n'.join(missing_sha_files))
+
 
 
 if __name__ == '__main__':
