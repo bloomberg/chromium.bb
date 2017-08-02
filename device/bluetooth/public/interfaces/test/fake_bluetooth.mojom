@@ -105,10 +105,16 @@ interface FakeCentral {
   // have completed or if there was an error during any of them.
   SetNextGATTDiscoveryResponse(string address, uint16 code) => (bool success);
 
-  // Signals a state change in a BluetoothRemoteGATTService. This involves any
-  // characteristics and/or descriptors that get added or removed from the
-  // service, as well as Service Changed indications from the remote device.
-  // https://webbluetoothcg.github.io/web-bluetooth/#event-types
+  // Simulates an Indication from the peripheral's GATT `Service Changed`
+  // Characteristic from BT 4.2 Vol 3 Part G 7.1. This Indication is signaled
+  // when services, characteristics, or descriptors are changed, added, or
+  // removed.
+  //
+  // The value for `Service Changed` is a range of attribute handles that have
+  // changed. However, this testing specification works at an abstracted
+  // level and does not expose setting attribute handles when adding
+  // attributes. Consequently, this simulate method should include the full
+  // range of all the peripheral's attribute handle values.
   SimulateGATTServicesChanged(string address) => (bool success);
 
   // Adds a fake GATT Service with |service_uuid| to |peripheral_address|
