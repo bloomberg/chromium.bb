@@ -1598,6 +1598,8 @@ void CompareFlags(const PaintFlags& original, const PaintFlags& written) {
 void CompareImages(const PaintImage& original, const PaintImage& written) {}
 
 void CompareAnnotateOp(const AnnotateOp* original, const AnnotateOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   EXPECT_EQ(original->annotation_type, written->annotation_type);
   EXPECT_EQ(original->rect, written->rect);
   EXPECT_EQ(!!original->data, !!written->data);
@@ -1616,12 +1618,16 @@ void CompareClipDeviceRectOp(const ClipDeviceRectOp* original,
 }
 
 void CompareClipPathOp(const ClipPathOp* original, const ClipPathOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   EXPECT_TRUE(original->path == written->path);
   EXPECT_EQ(original->op, written->op);
   EXPECT_EQ(original->antialias, written->antialias);
 }
 
 void CompareClipRectOp(const ClipRectOp* original, const ClipRectOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   EXPECT_EQ(original->rect, written->rect);
   EXPECT_EQ(original->op, written->op);
   EXPECT_EQ(original->antialias, written->antialias);
@@ -1629,17 +1635,23 @@ void CompareClipRectOp(const ClipRectOp* original, const ClipRectOp* written) {
 
 void CompareClipRRectOp(const ClipRRectOp* original,
                         const ClipRRectOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   EXPECT_EQ(original->rrect, written->rrect);
   EXPECT_EQ(original->op, written->op);
   EXPECT_EQ(original->antialias, written->antialias);
 }
 
 void CompareConcatOp(const ConcatOp* original, const ConcatOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   EXPECT_EQ(original->matrix, written->matrix);
   EXPECT_EQ(original->matrix.getType(), written->matrix.getType());
 }
 
 void CompareDrawArcOp(const DrawArcOp* original, const DrawArcOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   CompareFlags(original->flags, written->flags);
   EXPECT_EQ(original->oval, written->oval);
   EXPECT_EQ(original->start_angle, written->start_angle);
@@ -1649,6 +1661,8 @@ void CompareDrawArcOp(const DrawArcOp* original, const DrawArcOp* written) {
 
 void CompareDrawCircleOp(const DrawCircleOp* original,
                          const DrawCircleOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   CompareFlags(original->flags, written->flags);
   EXPECT_EQ(original->cx, written->cx);
   EXPECT_EQ(original->cy, written->cy);
@@ -1657,11 +1671,15 @@ void CompareDrawCircleOp(const DrawCircleOp* original,
 
 void CompareDrawColorOp(const DrawColorOp* original,
                         const DrawColorOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   EXPECT_EQ(original->color, written->color);
 }
 
 void CompareDrawDRRectOp(const DrawDRRectOp* original,
                          const DrawDRRectOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   CompareFlags(original->flags, written->flags);
   EXPECT_EQ(original->outer, written->outer);
   EXPECT_EQ(original->inner, written->inner);
@@ -1669,6 +1687,8 @@ void CompareDrawDRRectOp(const DrawDRRectOp* original,
 
 void CompareDrawImageOp(const DrawImageOp* original,
                         const DrawImageOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   CompareFlags(original->flags, written->flags);
   CompareImages(original->image, written->image);
   EXPECT_EQ(original->left, written->left);
@@ -1677,6 +1697,8 @@ void CompareDrawImageOp(const DrawImageOp* original,
 
 void CompareDrawImageRectOp(const DrawImageRectOp* original,
                             const DrawImageRectOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   CompareFlags(original->flags, written->flags);
   CompareImages(original->image, written->image);
   EXPECT_EQ(original->src, written->src);
@@ -1685,11 +1707,15 @@ void CompareDrawImageRectOp(const DrawImageRectOp* original,
 
 void CompareDrawIRectOp(const DrawIRectOp* original,
                         const DrawIRectOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   CompareFlags(original->flags, written->flags);
   EXPECT_EQ(original->rect, written->rect);
 }
 
 void CompareDrawLineOp(const DrawLineOp* original, const DrawLineOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   CompareFlags(original->flags, written->flags);
   EXPECT_EQ(original->x0, written->x0);
   EXPECT_EQ(original->y0, written->y0);
@@ -1698,17 +1724,23 @@ void CompareDrawLineOp(const DrawLineOp* original, const DrawLineOp* written) {
 }
 
 void CompareDrawOvalOp(const DrawOvalOp* original, const DrawOvalOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   CompareFlags(original->flags, written->flags);
   EXPECT_EQ(original->oval, written->oval);
 }
 
 void CompareDrawPathOp(const DrawPathOp* original, const DrawPathOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   CompareFlags(original->flags, written->flags);
   EXPECT_TRUE(original->path == written->path);
 }
 
 void CompareDrawPosTextOp(const DrawPosTextOp* original,
                           const DrawPosTextOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   CompareFlags(original->flags, written->flags);
   ASSERT_EQ(original->bytes, written->bytes);
   EXPECT_EQ(std::string(static_cast<const char*>(original->GetData())),
@@ -1719,17 +1751,23 @@ void CompareDrawPosTextOp(const DrawPosTextOp* original,
 }
 
 void CompareDrawRectOp(const DrawRectOp* original, const DrawRectOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   CompareFlags(original->flags, written->flags);
   EXPECT_EQ(original->rect, written->rect);
 }
 
 void CompareDrawRRectOp(const DrawRRectOp* original,
                         const DrawRRectOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   CompareFlags(original->flags, written->flags);
   EXPECT_EQ(original->rrect, written->rrect);
 }
 
 void CompareDrawTextOp(const DrawTextOp* original, const DrawTextOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   CompareFlags(original->flags, written->flags);
   EXPECT_EQ(original->x, written->x);
   EXPECT_EQ(original->y, written->y);
@@ -1740,6 +1778,8 @@ void CompareDrawTextOp(const DrawTextOp* original, const DrawTextOp* written) {
 
 void CompareDrawTextBlobOp(const DrawTextBlobOp* original,
                            const DrawTextBlobOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   CompareFlags(original->flags, written->flags);
   EXPECT_EQ(original->x, written->x);
   EXPECT_EQ(original->y, written->y);
@@ -1772,28 +1812,40 @@ void CompareDrawTextBlobOp(const DrawTextBlobOp* original,
 
 void CompareNoopOp(const NoopOp* original, const NoopOp* written) {
   // Nothing to compare.
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
 }
 
 void CompareRestoreOp(const RestoreOp* original, const RestoreOp* written) {
   // Nothing to compare.
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
 }
 
 void CompareRotateOp(const RotateOp* original, const RotateOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   EXPECT_EQ(original->degrees, written->degrees);
 }
 
 void CompareSaveOp(const SaveOp* original, const SaveOp* written) {
   // Nothing to compare.
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
 }
 
 void CompareSaveLayerOp(const SaveLayerOp* original,
                         const SaveLayerOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   CompareFlags(original->flags, written->flags);
   EXPECT_EQ(original->bounds, written->bounds);
 }
 
 void CompareSaveLayerAlphaOp(const SaveLayerAlphaOp* original,
                              const SaveLayerAlphaOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   EXPECT_EQ(original->bounds, written->bounds);
   EXPECT_EQ(original->alpha, written->alpha);
   EXPECT_EQ(original->preserve_lcd_text_requests,
@@ -1801,23 +1853,35 @@ void CompareSaveLayerAlphaOp(const SaveLayerAlphaOp* original,
 }
 
 void CompareScaleOp(const ScaleOp* original, const ScaleOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   EXPECT_EQ(original->sx, written->sx);
   EXPECT_EQ(original->sy, written->sy);
 }
 
 void CompareSetMatrixOp(const SetMatrixOp* original,
                         const SetMatrixOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   EXPECT_EQ(original->matrix, written->matrix);
 }
 
 void CompareTranslateOp(const TranslateOp* original,
                         const TranslateOp* written) {
+  EXPECT_TRUE(original->IsValid());
+  EXPECT_TRUE(written->IsValid());
   EXPECT_EQ(original->dx, written->dx);
   EXPECT_EQ(original->dy, written->dy);
 }
 
 class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
  public:
+  PaintOpSerializationTest() {
+    // Verify test data.
+    for (size_t i = 0; i < test_rrects.size(); ++i)
+      EXPECT_TRUE(test_rrects[i].isValid());
+  }
+
   PaintOpType GetParamType() const {
     return static_cast<PaintOpType>(GetParam());
   }
