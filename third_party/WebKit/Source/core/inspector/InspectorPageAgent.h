@@ -166,8 +166,8 @@ class CORE_EXPORT InspectorPageAgent final
   void FrameStoppedLoading(LocalFrame*);
   void FrameScheduledNavigation(LocalFrame*, ScheduledNavigation*);
   void FrameClearedScheduledNavigation(LocalFrame*);
-  void WillRunJavaScriptDialog(const String& message, ChromeClient::DialogType);
-  void DidRunJavaScriptDialog(bool result);
+  void WillRunJavaScriptDialog();
+  void DidRunJavaScriptDialog();
   void DidResizeMainFrame();
   void DidChangeViewport();
   void Will(const probe::UpdateLayout&);

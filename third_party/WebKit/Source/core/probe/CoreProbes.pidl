@@ -144,8 +144,8 @@ interface CoreProbes {
   void animationPlayStateChanged(Document*, Animation*, Animation::AnimationPlayState oldPlayState, Animation::AnimationPlayState newPlayState);
   void windowCreated(LocalFrame* opener, LocalFrame* created);
   void consoleMessageAdded(ExecutionContext*, ConsoleMessage*);
-  void willRunJavaScriptDialog(LocalFrame* frame, const String& message, ChromeClient::DialogType dialogType);
-  void didRunJavaScriptDialog(LocalFrame* frame, bool result);
+  void willRunJavaScriptDialog(LocalFrame* frame);
+  void didRunJavaScriptDialog(LocalFrame* frame);
   void documentWriteFetchScript([Keep] Document*);
   void didChangeViewport(LocalFrame* document);
   void breakableLocation(ExecutionContext* context, const char* name);
