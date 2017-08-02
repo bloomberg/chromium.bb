@@ -66,6 +66,7 @@ chrome_ios_eg_test("ios_chrome_ui_egtests") {
     "//ios/chrome/browser/ui/find_bar:eg_tests",
     "//ios/chrome/browser/ui/first_run:eg_tests",
     "//ios/chrome/browser/ui/history:eg_tests",
+    "//ios/chrome/browser/ui/history_popup:eg_tests",
     "//ios/chrome/browser/ui/infobars:eg_tests",
     "//ios/chrome/browser/ui/ntp:eg_tests",
     "//ios/chrome/browser/ui/ntp/recent_tabs:eg_tests",

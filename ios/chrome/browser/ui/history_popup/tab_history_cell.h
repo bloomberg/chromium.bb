@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_HISTORY_TAB_HISTORY_CELL_H_
-#define IOS_CHROME_BROWSER_UI_HISTORY_TAB_HISTORY_CELL_H_
+#ifndef IOS_CHROME_BROWSER_UI_HISTORY_POPUP_TAB_HISTORY_CELL_H_
+#define IOS_CHROME_BROWSER_UI_HISTORY_POPUP_TAB_HISTORY_CELL_H_
 
 #import <UIKit/UIKit.h>
 
@@ -27,4 +27,4 @@ class NavigationItem;
 @interface TabHistorySectionFooter : UICollectionReusableView
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_HISTORY_TAB_HISTORY_CELL_H_
+#endif  // IOS_CHROME_BROWSER_UI_HISTORY_POPUP_TAB_HISTORY_CELL_H_

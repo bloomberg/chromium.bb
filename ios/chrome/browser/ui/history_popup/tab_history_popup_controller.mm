@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/history/tab_history_popup_controller.h"
+#import "ios/chrome/browser/ui/history_popup/tab_history_popup_controller.h"
 
 #import <QuartzCore/QuartzCore.h>
 
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/ui/history/tab_history_view_controller.h"
+#import "ios/chrome/browser/ui/history_popup/tab_history_view_controller.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_view.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -149,7 +149,7 @@ static const CGFloat kHeightPercentage = 0.85;
   CGFloat cellWidth = kTabHistoryMinWidth;
   UIFont* font = [[MDCTypography fontLoader] regularFontOfSize:16];
   for (web::NavigationItem* item : items) {
-    // TODO(rohitrao): Can this be replaced with GetTitleForDisplay()?
+    // Can this be replaced with GetTitleForDisplay()?
     NSString* cellText = item->GetTitle().empty()
                              ? base::SysUTF8ToNSString(item->GetURL().spec())
                              : base::SysUTF16ToNSString(item->GetTitle());
