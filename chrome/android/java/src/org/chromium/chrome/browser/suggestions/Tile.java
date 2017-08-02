@@ -16,6 +16,9 @@ public class Tile implements OfflinableSuggestion {
     private final String mWhitelistIconPath;
     private final int mIndex;
 
+    @TileGroup.TileSectionType
+    private final int mSectionType;
+
     @TileSource
     private final int mSource;
 
@@ -45,6 +48,8 @@ public class Tile implements OfflinableSuggestion {
         mUrl = url;
         mWhitelistIconPath = whitelistIconPath;
         mIndex = index;
+        // TODO(dgn): get data from C++ after https://crrev/c/593659 lands.
+        mSectionType = TileGroup.TileSectionType.PERSONALIZED;
         mSource = source;
     }
 
@@ -62,11 +67,12 @@ public class Tile implements OfflinableSuggestion {
      * difference between the two that would require a redraw.
      * Assumes that the current tile and the old tile (if provided) both describe the same site,
      * so the URLs have to be the same.
+     *
+     * @return Whether non-transient data is different and the tile should be redrawn.
      */
-    public boolean importData(@Nullable Tile tile) {
-        if (tile == null) return true;
-
+    public boolean importData(Tile tile) {
         assert tile.getUrl().equals(mUrl);
+        assert tile.getSectionType() == mSectionType;
 
         mType = tile.getType();
         mIcon = tile.getIcon();
@@ -169,5 +175,10 @@ public class Tile implements OfflinableSuggestion {
      */
     public void setIcon(@Nullable Drawable icon) {
         mIcon = icon;
+    }
+
+    @TileGroup.TileSectionType
+    public int getSectionType() {
+        return mSectionType;
     }
 }
