@@ -49,7 +49,7 @@ class EchoPrivateGetOobeTimestampFunction
   bool RunAsync() override;
 
  private:
-  bool GetOobeTimestampOnFileThread();
+  bool GetOobeTimestampOnFileSequence();
   DECLARE_EXTENSION_FUNCTION("echoPrivate.getOobeTimestamp",
                              ECHOPRIVATE_GETOOBETIMESTAMP)
 };

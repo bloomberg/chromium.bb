@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -25,13 +26,11 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/common/extension.h"
 
 namespace echo_api = extensions::api::echo_private;
-
-using content::BrowserThread;
 
 namespace {
 
@@ -141,13 +140,12 @@ EchoPrivateGetOobeTimestampFunction::~EchoPrivateGetOobeTimestampFunction() {
 }
 
 bool EchoPrivateGetOobeTimestampFunction::RunAsync() {
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::FILE, FROM_HERE,
+  base::PostTaskAndReplyWithResult(
+      extensions::GetExtensionFileTaskRunner().get(), FROM_HERE,
       base::Bind(
-          &EchoPrivateGetOobeTimestampFunction::GetOobeTimestampOnFileThread,
+          &EchoPrivateGetOobeTimestampFunction::GetOobeTimestampOnFileSequence,
           this),
-      base::Bind(
-          &EchoPrivateGetOobeTimestampFunction::SendResponse, this));
+      base::Bind(&EchoPrivateGetOobeTimestampFunction::SendResponse, this));
   return true;
 }
 
@@ -155,8 +153,9 @@ bool EchoPrivateGetOobeTimestampFunction::RunAsync() {
 // The timestamp is used to determine when the user first activates the device.
 // If we can get the timestamp info, return it as yyyy-mm-dd, otherwise, return
 // an empty string.
-bool EchoPrivateGetOobeTimestampFunction::GetOobeTimestampOnFileThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+bool EchoPrivateGetOobeTimestampFunction::GetOobeTimestampOnFileSequence() {
+  DCHECK(
+      extensions::GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
 
   const char kOobeTimestampFile[] = "/home/chronos/.oobe_completed";
   std::string timestamp = "";
