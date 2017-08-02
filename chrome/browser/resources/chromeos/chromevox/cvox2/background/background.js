@@ -487,10 +487,6 @@ Background.prototype = {
       if (!lca || lca.state[StateType.EDITABLE] ||
           !range.start.node.state[StateType.EDITABLE])
         range.select();
-
-      // Richly editable output gets handled by editing.js.
-      if (lca && lca.state.richlyEditable)
-        return;
     }
 
     o.withRichSpeechAndBraille(

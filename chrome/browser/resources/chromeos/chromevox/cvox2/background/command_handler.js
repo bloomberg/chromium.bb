@@ -508,13 +508,13 @@ CommandHandler.onCommand = function(command) {
 
         // Stop if we've wrapped back to the document.
         var maybeDoc = newRange.start.node;
-        if (maybeDoc.role == RoleType.ROOT_WEB_AREA &&
-            maybeDoc.parent.root.role == RoleType.DESKTOP) {
+        if (AutomationPredicate.root(maybeDoc)) {
           ChromeVoxState.isReadingContinuously = false;
           return;
         }
 
         ChromeVoxState.instance.setCurrentRange(newRange);
+        newRange.select();
 
         new Output()
             .withRichSpeechAndBraille(
@@ -523,11 +523,11 @@ CommandHandler.onCommand = function(command) {
             .onSpeechEnd(continueReading)
             .go();
       }.bind(this);
-
+      var startNode = ChromeVoxState.instance.currentRange.start.node;
+      var collapsedRange = cursors.Range.fromNode(startNode);
       new Output()
           .withRichSpeechAndBraille(
-              ChromeVoxState.instance.currentRange_, null,
-              Output.EventType.NAVIGATE)
+              collapsedRange, collapsedRange, Output.EventType.NAVIGATE)
           .onSpeechEnd(continueReading)
           .go();
 
@@ -726,7 +726,8 @@ CommandHandler.onCommand = function(command) {
     var bound = current.getBound(dir).node;
     if (bound) {
       var node = AutomationUtil.findNextNode(
-          bound, dir, pred, {skipInitialAncestry: true});
+          bound, dir, pred,
+          {skipInitialAncestry: true, root: AutomationPredicate.editableRoot});
 
       if (node && !skipSync) {
         node = AutomationUtil.findNodePre(
@@ -739,7 +740,7 @@ CommandHandler.onCommand = function(command) {
       } else {
         cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.WRAP);
         var root = bound;
-        while (root && !AutomationPredicate.root(root))
+        while (root && !AutomationPredicate.editableRoot(root))
           root = root.parent;
 
         if (!root)
@@ -752,8 +753,10 @@ CommandHandler.onCommand = function(command) {
                       root, dir, AutomationPredicate.leaf) ||
               bound;
         }
-        node = AutomationUtil.findNextNode(
-            bound, dir, pred, {skipInitialAncestry: true});
+        node = AutomationUtil.findNextNode(bound, dir, pred, {
+          skipInitialAncestry: true,
+          root: AutomationPredicate.editableRoot
+        });
 
         if (node && !skipSync) {
           node = AutomationUtil.findNodePre(

@@ -843,8 +843,11 @@ Output.prototype = {
         var valueEnd = buff.getSpanEnd(selSpan);
         startIndex = valueStart + selSpan.startIndex;
         endIndex = valueStart + selSpan.endIndex;
-        buff.setSpan(new cvox.ValueSpan(0), valueStart, valueEnd);
-        buff.setSpan(new cvox.ValueSelectionSpan(), startIndex, endIndex);
+        try {
+          buff.setSpan(new cvox.ValueSpan(0), valueStart, valueEnd);
+          buff.setSpan(new cvox.ValueSelectionSpan(), startIndex, endIndex);
+        } catch (e) {
+        }
       }
 
       var output = new cvox.NavBraille(
