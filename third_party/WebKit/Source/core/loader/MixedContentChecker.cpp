@@ -426,7 +426,9 @@ bool MixedContentChecker::ShouldBlockFetch(
 bool MixedContentChecker::ShouldBlockFetchOnWorker(
     WorkerOrWorkletGlobalScope* global_scope,
     WebWorkerFetchContext* worker_fetch_context,
-    const ResourceRequest& request,
+    WebURLRequest::RequestContext request_context,
+    WebURLRequest::FrameType frame_type,
+    ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
     SecurityViolationReportingPolicy reporting_policy) {
   if (!MixedContentChecker::IsMixedContent(global_scope->GetSecurityOrigin(),
@@ -437,7 +439,7 @@ bool MixedContentChecker::ShouldBlockFetchOnWorker(
   UseCounter::Count(global_scope, WebFeature::kMixedContentPresent);
   UseCounter::Count(global_scope, WebFeature::kMixedContentBlockable);
   if (ContentSecurityPolicy* policy = global_scope->GetContentSecurityPolicy())
-    policy->ReportMixedContent(url, request.GetRedirectStatus());
+    policy->ReportMixedContent(url, redirect_status);
 
   // Blocks all mixed content request from worklets.
   // TODO(horo): Revise this when the spec is updated.
@@ -477,7 +479,7 @@ bool MixedContentChecker::ShouldBlockFetchOnWorker(
 
   if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
     LogToConsoleAboutFetch(global_scope, global_scope->Url(), url,
-                           request.GetRequestContext(), allowed, nullptr);
+                           request_context, allowed, nullptr);
   }
   return !allowed;
 }
@@ -691,7 +693,7 @@ WebMixedContentContextType MixedContentChecker::ContextTypeForInspector(
   if (!mixed_frame)
     return WebMixedContentContextType::kNotMixedContent;
 
-  // See comment in shouldBlockFetch() about loading the main resource of a
+  // See comment in ShouldBlockFetch() about loading the main resource of a
   // subframe.
   if (request.GetFrameType() == WebURLRequest::kFrameTypeNested &&
       !SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(
