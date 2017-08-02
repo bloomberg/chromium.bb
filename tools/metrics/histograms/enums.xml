@@ -15990,6 +15990,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2063" label="PresentationRequestStartSecureOrigin"/>
   <int value="2064" label="PresentationRequestStartInsecureOrigin"/>
   <int value="2065" label="PersistentClientHintHeader"/>
+  <int value="2066" label="StyleSheetListNonNullAnonymousNamedGetter"/>
 </enum>
 
 <enum name="FeedbackSource">

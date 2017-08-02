@@ -68,7 +68,12 @@ CSSStyleSheet* StyleSheetList::AnonymousNamedGetter(const AtomicString& name) {
   HTMLStyleElement* item = GetNamedItem(name);
   if (!item)
     return nullptr;
-  return item->sheet();
+  CSSStyleSheet* sheet = item->sheet();
+  if (sheet) {
+    UseCounter::Count(*GetDocument(),
+                      WebFeature::kStyleSheetListNonNullAnonymousNamedGetter);
+  }
+  return sheet;
 }
 
 DEFINE_TRACE(StyleSheetList) {
