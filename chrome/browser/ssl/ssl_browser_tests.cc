@@ -87,6 +87,7 @@
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -895,6 +896,112 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBrokenHTTPSWithActiveInsecureContent) {
   // Now check that the page is marked as having run insecure content.
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
                                  AuthState::RAN_INSECURE_CONTENT);
+}
+
+namespace {
+
+// A WebContentsObserver that allows the user to wait for a
+// DidChangeVisibleSecurityState event.
+class SecurityStateWebContentsObserver : public content::WebContentsObserver {
+ public:
+  explicit SecurityStateWebContentsObserver(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {}
+  ~SecurityStateWebContentsObserver() override {}
+
+  void WaitForDidChangeVisibleSecurityState() { run_loop_.Run(); }
+
+  // WebContentsObserver:
+  void DidChangeVisibleSecurityState() override { run_loop_.Quit(); }
+
+ private:
+  base::RunLoop run_loop_;
+};
+
+// A WebContentsObserver that allows the user to wait for a same-page
+// navigation. Tests using this observer will fail if a non-same-page navigation
+// completes after calling WaitForSamePageNavigation.
+class SamePageNavigationObserver : public content::WebContentsObserver {
+ public:
+  explicit SamePageNavigationObserver(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {}
+  ~SamePageNavigationObserver() override {}
+
+  void WaitForSamePageNavigation() { run_loop_.Run(); }
+
+  // WebContentsObserver:
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    ASSERT_TRUE(navigation_handle->IsSameDocument());
+    run_loop_.Quit();
+  }
+
+ private:
+  base::RunLoop run_loop_;
+};
+
+}  // namespace
+
+// Tests that the mixed content flags are reset when going back to an existing
+// navigation entry that had mixed content. Regression test for
+// https://crbug.com/750649.
+IN_PROC_BROWSER_TEST_F(SSLUITest, GoBackToMixedContent) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(https_server_.Start());
+
+  // Navigate to a URL and dynamically load mixed content.
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html"));
+  CheckAuthenticatedState(tab, AuthState::NONE);
+  SecurityStateWebContentsObserver observer(tab);
+  ASSERT_TRUE(content::ExecuteScript(tab,
+                                     "var i = document.createElement('img');"
+                                     "i.src = 'http://example.test';"
+                                     "document.body.appendChild(i);"));
+  observer.WaitForDidChangeVisibleSecurityState();
+  CheckSecurityState(tab, CertError::NONE, security_state::NONE,
+                     AuthState::DISPLAYED_INSECURE_CONTENT);
+
+  // Now navigate somewhere else, and then back to the page that dynamically
+  // loaded mixed content.
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/ssl/google.html"));
+  CheckUnauthenticatedState(
+      browser()->tab_strip_model()->GetActiveWebContents(), AuthState::NONE);
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
+  content::WaitForLoadStop(tab);
+  // After going back, the mixed content indicator should no longer be present.
+  CheckAuthenticatedState(tab, AuthState::NONE);
+}
+
+// Tests that the mixed content flags are not reset for an in-page navigation.
+IN_PROC_BROWSER_TEST_F(SSLUITest, MixedContentWithSamePageNavigation) {
+  ASSERT_TRUE(https_server_.Start());
+
+  // Navigate to a URL and dynamically load mixed content.
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html"));
+  CheckAuthenticatedState(tab, AuthState::NONE);
+  SecurityStateWebContentsObserver security_state_observer(tab);
+  ASSERT_TRUE(content::ExecuteScript(tab,
+                                     "var i = document.createElement('img');"
+                                     "i.src = 'http://example.test';"
+                                     "document.body.appendChild(i);"));
+  security_state_observer.WaitForDidChangeVisibleSecurityState();
+  CheckSecurityState(tab, CertError::NONE, security_state::NONE,
+                     AuthState::DISPLAYED_INSECURE_CONTENT);
+
+  // Initiate a same-page navigation and check that the page is still marked as
+  // having displayed mixed content.
+  SamePageNavigationObserver navigation_observer(tab);
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html#foo"));
+  navigation_observer.WaitForSamePageNavigation();
+  CheckSecurityState(tab, CertError::NONE, security_state::NONE,
+                     AuthState::DISPLAYED_INSECURE_CONTENT);
 }
 
 // Tests that the WebContents's flag for displaying content with cert
