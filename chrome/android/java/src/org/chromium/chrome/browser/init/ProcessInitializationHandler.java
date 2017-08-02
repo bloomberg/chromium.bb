@@ -65,7 +65,6 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
-import org.chromium.chrome.browser.services.AccountsChangedReceiver;
 import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.sync.SyncController;
@@ -74,6 +73,7 @@ import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.content.browser.ChildProcessLauncherHelper;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.device.geolocation.LocationProviderFactory;
@@ -345,8 +345,8 @@ public class ProcessInitializationHandler {
             @Override
             public void run() {
                 ForcedSigninProcessor.start(application, null);
-                AccountsChangedReceiver.addObserver(
-                        new AccountsChangedReceiver.AccountsChangedObserver() {
+                AccountManagerFacade.get().addObserver(
+                        new AccountsChangeObserver() {
                             @Override
                             public void onAccountsChanged() {
                                 ThreadUtils.runOnUiThread(new Runnable() {
