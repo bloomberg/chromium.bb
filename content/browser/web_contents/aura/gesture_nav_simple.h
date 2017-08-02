@@ -27,9 +27,6 @@ class GestureNavSimple : public OverscrollControllerDelegate {
   void OnAffordanceAnimationEnded();
 
  private:
-  void AbortGestureAnimation();
-  void CompleteGestureAnimation();
-
   // OverscrollControllerDelegate:
   gfx::Size GetDisplaySize() const override;
   bool OnOverscrollUpdate(float delta_x, float delta_y) override;
@@ -39,14 +36,14 @@ class GestureNavSimple : public OverscrollControllerDelegate {
                               OverscrollSource source) override;
   base::Optional<float> GetMaxOverscrollDelta() const override;
 
-  WebContentsImpl* web_contents_;
+  WebContentsImpl* web_contents_ = nullptr;
   std::unique_ptr<Affordance> affordance_;
-  float completion_threshold_;
+  float completion_threshold_ = 0.f;
   OverscrollSource source_ = OverscrollSource::NONE;
 
   // When an overscroll is active, represents the maximum overscroll delta we
   // expect in OnOverscrollUpdate().
-  float max_delta_;
+  float max_delta_ = 0.f;
 
   DISALLOW_COPY_AND_ASSIGN(GestureNavSimple);
 };

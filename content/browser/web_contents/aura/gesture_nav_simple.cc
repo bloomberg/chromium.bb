@@ -40,7 +40,8 @@ namespace {
 // Parameters defining the arrow icon inside the affordance.
 const int kArrowSize = 16;
 const SkColor kArrowColor = gfx::kGoogleBlue500;
-const uint8_t kArrowInitialOpacity = 0x4D;
+const float kArrowFullOpacity = 1.f;
+const float kArrowInitialOpacity = .3f;
 
 // The arrow opacity remains constant until progress reaches this threshold,
 // then increases quickly as the progress increases beyond the threshold
@@ -115,6 +116,54 @@ void RecordCancelled(NavigationDirection direction, OverscrollSource source) {
     RecordAction(base::UserMetricsAction("Overscroll_Cancelled.Forward"));
 }
 
+// Responsible for drawing the affordance arrow. Depending on the overscroll
+// mode, it will draw back or forward arrow.
+class Arrow : public ui::LayerDelegate {
+ public:
+  explicit Arrow(OverscrollMode mode);
+  ~Arrow() override;
+
+  ui::Layer* layer() { return &layer_; }
+
+ private:
+  // ui::LayerDelegate:
+  void OnPaintLayer(const ui::PaintContext& context) override;
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
+
+  const OverscrollMode mode_;
+  ui::Layer layer_;
+
+  DISALLOW_COPY_AND_ASSIGN(Arrow);
+};
+
+Arrow::Arrow(OverscrollMode mode) : mode_(mode), layer_(ui::LAYER_TEXTURED) {
+  DCHECK(mode_ == OVERSCROLL_EAST || mode_ == OVERSCROLL_WEST);
+  gfx::Rect bounds(kArrowSize, kArrowSize);
+  bounds.set_x(kMaxRippleBurstRadius - kArrowSize / 2);
+  bounds.set_y(kMaxRippleBurstRadius - kArrowSize / 2);
+  layer_.SetBounds(bounds);
+  layer_.SetFillsBoundsOpaquely(false);
+  layer_.set_delegate(this);
+}
+
+Arrow::~Arrow() {}
+
+void Arrow::OnPaintLayer(const ui::PaintContext& context) {
+  const gfx::ImageSkia& image = gfx::CreateVectorIcon(
+      mode_ == OVERSCROLL_EAST ? vector_icons::kBackArrowIcon
+                               : vector_icons::kForwardArrowIcon,
+      kArrowSize, kArrowColor);
+
+  ui::PaintRecorder recorder(context, layer_.size());
+  gfx::Canvas* canvas = recorder.canvas();
+  canvas->DrawImageInt(image, 0, 0);
+}
+
+void Arrow::OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) {}
+
+void Arrow::OnDeviceScaleFactorChanged(float device_scale_factor) {}
+
 }  // namespace
 
 // This class is responsible for creating, painting, and positioning the layer
@@ -141,7 +190,7 @@ class Affordance : public ui::LayerDelegate, public gfx::AnimationDelegate {
   void Complete();
 
   // Returns the root layer of the affordance.
-  ui::Layer* root_layer() const { return root_layer_.get(); }
+  ui::Layer* root_layer() { return &root_layer_; }
 
   // Returns whether the affordance is performing abort or complete animation.
   bool IsFinishing() const { return state_ != State::DRAGGING; }
@@ -149,7 +198,9 @@ class Affordance : public ui::LayerDelegate, public gfx::AnimationDelegate {
  private:
   enum class State { DRAGGING, ABORTING, COMPLETING };
 
-  void UpdateTransform();
+  void UpdatePaintedLayer();
+  void UpdateArrowLayer();
+  void UpdateLayers();
   void SchedulePaint();
   void SetAbortProgress(float progress);
   void SetCompleteProgress(float progress);
@@ -179,13 +230,13 @@ class Affordance : public ui::LayerDelegate, public gfx::AnimationDelegate {
 
   // Root layer of the affordance. This is used to clip the affordance to the
   // content bounds.
-  std::unique_ptr<ui::Layer> root_layer_;
+  ui::Layer root_layer_;
 
   // Layer that actually paints the affordance.
-  std::unique_ptr<ui::Layer> painted_layer_;
+  ui::Layer painted_layer_;
 
-  // Arrow image to be used for the affordance.
-  const gfx::Image image_;
+  // The arrow for the affordance.
+  Arrow arrow_;
 
   // Values that determine current state of the affordance.
   State state_ = State::DRAGGING;
@@ -205,30 +256,26 @@ Affordance::Affordance(GestureNavSimple* owner,
     : owner_(owner),
       mode_(mode),
       max_drag_progress_(max_drag_progress),
-      root_layer_(base::MakeUnique<ui::Layer>(ui::LAYER_NOT_DRAWN)),
-      painted_layer_(base::MakeUnique<ui::Layer>(ui::LAYER_TEXTURED)),
-      image_(gfx::CreateVectorIcon(mode == OVERSCROLL_EAST
-                                       ? vector_icons::kBackArrowIcon
-                                       : vector_icons::kForwardArrowIcon,
-                                   kArrowSize,
-                                   kArrowColor)) {
-  DCHECK(mode == OVERSCROLL_EAST || mode == OVERSCROLL_WEST);
-  DCHECK(!image_.IsEmpty());
+      root_layer_(ui::LAYER_NOT_DRAWN),
+      painted_layer_(ui::LAYER_TEXTURED),
+      arrow_(mode) {
+  DCHECK(mode_ == OVERSCROLL_EAST || mode_ == OVERSCROLL_WEST);
 
-  root_layer_->SetBounds(content_bounds);
-  root_layer_->SetMasksToBounds(true);
+  root_layer_.SetBounds(content_bounds);
+  root_layer_.SetMasksToBounds(true);
 
-  painted_layer_->SetFillsBoundsOpaquely(false);
+  painted_layer_.SetFillsBoundsOpaquely(false);
   int x =
       mode_ == OVERSCROLL_EAST
           ? -kMaxRippleBurstRadius - kBackgroundRadius
           : content_bounds.width() - kMaxRippleBurstRadius + kBackgroundRadius;
   int y = std::max(0, content_bounds.height() / 2 - kMaxRippleBurstRadius);
-  painted_layer_->SetBounds(
+  painted_layer_.SetBounds(
       gfx::Rect(x, y, 2 * kMaxRippleBurstRadius, 2 * kMaxRippleBurstRadius));
-  painted_layer_->set_delegate(this);
+  painted_layer_.set_delegate(this);
 
-  root_layer_->Add(painted_layer_.get());
+  painted_layer_.Add(arrow_.layer());
+  root_layer_.Add(&painted_layer_);
 }
 
 Affordance::~Affordance() {}
@@ -241,7 +288,7 @@ void Affordance::SetDragProgress(float progress) {
     return;
   drag_progress_ = progress;
 
-  UpdateTransform();
+  UpdateLayers();
   SchedulePaint();
 }
 
@@ -268,15 +315,44 @@ void Affordance::Complete() {
   animation_->Start();
 }
 
-void Affordance::UpdateTransform() {
-  float offset = GetAffordanceProgress() * kAffordanceActivationOffset;
+void Affordance::UpdatePaintedLayer() {
+  const float offset = GetAffordanceProgress() * kAffordanceActivationOffset;
   gfx::Transform transform;
   transform.Translate(mode_ == OVERSCROLL_EAST ? offset : -offset, 0);
-  painted_layer_->SetTransform(transform);
+  painted_layer_.SetTransform(transform);
+}
+
+void Affordance::UpdateArrowLayer() {
+  const float progress = std::min(1.f, GetAffordanceProgress());
+  // Calculate the offset for the arrow relative to its final position.
+  const float arrow_offset =
+      (1 - progress) * (-kBackgroundRadius + kArrowSize / 2.f);
+  gfx::Transform transform;
+  transform.Translate(gfx::Vector2dF(
+      mode_ == OVERSCROLL_EAST ? arrow_offset : -arrow_offset, 0));
+  arrow_.layer()->SetTransform(transform);
+
+  // The arrow opacity is fixed before progress reaches
+  // kArrowOpacityProgressThreshold and after that increases linearly to 1;
+  // essentially, making a quick bump at the end.
+  float opacity = kArrowInitialOpacity;
+  if (progress > kArrowOpacityProgressThreshold) {
+    const float max_opacity_bump = kArrowFullOpacity - kArrowInitialOpacity;
+    const float opacity_bump_ratio =
+        std::min(1.f, (progress - kArrowOpacityProgressThreshold) /
+                          (1.f - kArrowOpacityProgressThreshold));
+    opacity += opacity_bump_ratio * max_opacity_bump;
+  }
+  arrow_.layer()->SetOpacity(opacity);
+}
+
+void Affordance::UpdateLayers() {
+  UpdatePaintedLayer();
+  UpdateArrowLayer();
 }
 
 void Affordance::SchedulePaint() {
-  painted_layer_->SchedulePaint(gfx::Rect(painted_layer_->size()));
+  painted_layer_.SchedulePaint(gfx::Rect(painted_layer_.size()));
 }
 
 void Affordance::SetAbortProgress(float progress) {
@@ -288,7 +364,7 @@ void Affordance::SetAbortProgress(float progress) {
     return;
   abort_progress_ = progress;
 
-  UpdateTransform();
+  UpdateLayers();
   SchedulePaint();
 }
 
@@ -301,8 +377,8 @@ void Affordance::SetCompleteProgress(float progress) {
     return;
   complete_progress_ = progress;
 
-  painted_layer_->SetOpacity(gfx::Tween::CalculateValue(
-      kBurstAnimationTweenType, 1 - complete_progress_));
+  painted_layer_.SetOpacity(gfx::Tween::CalculateValue(kBurstAnimationTweenType,
+                                                       1 - complete_progress_));
   SchedulePaint();
 }
 
@@ -331,7 +407,7 @@ void Affordance::OnPaintLayer(const ui::PaintContext& context) {
   DCHECK(abort_progress_ == 0.f || state_ == State::ABORTING);
   DCHECK(complete_progress_ == 0.f || state_ == State::COMPLETING);
 
-  ui::PaintRecorder recorder(context, painted_layer_->size());
+  ui::PaintRecorder recorder(context, painted_layer_.size());
   gfx::Canvas* canvas = recorder.canvas();
 
   gfx::PointF center_point(kMaxRippleBurstRadius, kMaxRippleBurstRadius);
@@ -364,28 +440,6 @@ void Affordance::OnPaintLayer(const ui::PaintContext& context) {
                       kBgShadowColor);
   bg_flags.setLooper(gfx::CreateShadowDrawLooper(shadow));
   canvas->DrawCircle(center_point, kBackgroundRadius, bg_flags);
-
-  // Draw the arrow.
-  float arrow_x = center_point.x() - kArrowSize / 2.f;
-  float arrow_y = center_point.y() - kArrowSize / 2.f;
-  // Calculate the offset for the arrow relative to its circular background.
-  float arrow_x_offset =
-      (1 - progress) * (-kBackgroundRadius + kArrowSize / 2.f);
-  arrow_x += mode_ == OVERSCROLL_EAST ? arrow_x_offset : -arrow_x_offset;
-  // Calculate arrow opacity. Opacity is fixed before progress reaches
-  // kArrowOpacityProgressThreshold and after that increases linearly to 1;
-  // essentially, making a quick bump at the end.
-  uint8_t arrow_opacity = kArrowInitialOpacity;
-  if (progress > kArrowOpacityProgressThreshold) {
-    const uint8_t max_opacity_bump = 0xFF - kArrowInitialOpacity;
-    const float opacity_bump_ratio =
-        std::min(1.f, (progress - kArrowOpacityProgressThreshold) /
-                          (1.f - kArrowOpacityProgressThreshold));
-    arrow_opacity +=
-        static_cast<uint8_t>(opacity_bump_ratio * max_opacity_bump);
-  }
-  canvas->DrawImageInt(*image_.ToImageSkia(), static_cast<int>(arrow_x),
-                       static_cast<int>(arrow_y), arrow_opacity);
 }
 
 void Affordance::OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) {}
@@ -415,21 +469,9 @@ void Affordance::AnimationCanceled(const gfx::Animation* animation) {
 }
 
 GestureNavSimple::GestureNavSimple(WebContentsImpl* web_contents)
-    : web_contents_(web_contents),
-      completion_threshold_(0.f),
-      max_delta_(0.f) {}
+    : web_contents_(web_contents) {}
 
 GestureNavSimple::~GestureNavSimple() {}
-
-void GestureNavSimple::AbortGestureAnimation() {
-  if (affordance_)
-    affordance_->Abort();
-}
-
-void GestureNavSimple::CompleteGestureAnimation() {
-  if (affordance_)
-    affordance_->Complete();
-}
 
 void GestureNavSimple::OnAffordanceAnimationEnded() {
   affordance_ = nullptr;
@@ -454,7 +496,7 @@ void GestureNavSimple::OnOverscrollComplete(OverscrollMode overscroll_mode) {
   if (!affordance_ || affordance_->IsFinishing())
     return;
 
-  CompleteGestureAnimation();
+  affordance_->Complete();
 
   NavigationControllerImpl& controller = web_contents_->GetController();
   NavigationDirection direction = NavigationDirection::NONE;
@@ -488,9 +530,9 @@ void GestureNavSimple::OnOverscrollModeChange(OverscrollMode old_mode,
   if (!ShouldNavigateForward(controller, new_mode) &&
       !ShouldNavigateBack(controller, new_mode)) {
     // If there is an overscroll in progress - record its cancellation.
-    if (affordance_) {
+    if (affordance_ && !affordance_->IsFinishing()) {
       RecordCancelled(GetDirectionFromMode(old_mode), source_);
-      AbortGestureAnimation();
+      affordance_->Abort();
     }
     source_ = OverscrollSource::NONE;
     return;
