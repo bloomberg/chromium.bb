@@ -126,6 +126,9 @@ target(link_target_type, "ipc_service_sources") {
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
   }
+  if (is_fuchsia) {
+    sources += [ "image_transport_surface_fuchsia.cc" ]
+  }
 }
 
 source_set("test_support") {
