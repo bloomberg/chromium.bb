@@ -37,7 +37,7 @@
 
 namespace blink {
 
-#define BITS_OF_ABSOLUTE_COLUMN_INDEX 27
+#define BITS_OF_ABSOLUTE_COLUMN_INDEX 28
 static const unsigned kUnsetColumnIndex =
     (1u << BITS_OF_ABSOLUTE_COLUMN_INDEX) - 1;
 static const unsigned kMaxColumnIndex = kUnsetColumnIndex - 1;
@@ -329,12 +329,6 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
            RowIndex() + RowSpan() == other->RowIndex() + other->RowSpan();
   }
 
-  void SetIsSpanningCollapsedRow(bool spanningCollapsedRow) {
-    is_spanning_collapsed_row_ = spanningCollapsedRow;
-  }
-
-  bool IsSpanningCollapsedRow() const { return is_spanning_collapsed_row_; }
-
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void ComputePreferredLogicalWidths() override;
@@ -482,7 +476,6 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   unsigned cell_width_changed_ : 1;
   unsigned has_col_span_ : 1;
   unsigned has_row_span_ : 1;
-  unsigned is_spanning_collapsed_row_ : 1;
 
   // This is set when collapsed_border_values_ needs recalculation.
   mutable unsigned collapsed_border_values_valid_ : 1;

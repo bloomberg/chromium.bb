@@ -457,7 +457,17 @@ void LayoutTableCell::ComputeOverflow(LayoutUnit old_client_after_edge,
 }
 
 bool LayoutTableCell::ShouldClipOverflow() const {
-  return IsSpanningCollapsedRow() || LayoutBox::ShouldClipOverflow();
+  if (LayoutBox::ShouldClipOverflow())
+    return true;
+  unsigned row_span = RowSpan();
+  if (row_span == 1)
+    return false;
+  unsigned row_index = RowIndex();
+  for (unsigned r = row_index; r < row_index + row_span; r++) {
+    if (Section()->RowHasVisibilityCollapse(r))
+      return true;
+  }
+  return false;
 }
 
 LayoutUnit LayoutTableCell::CellBaselinePosition() const {
