@@ -11127,6 +11127,43 @@ TEST_P(ParameterizedWebFrameTest, MouseOverDifferntNodeClearsTooltip) {
       document->GetFrame()->GetChromeClient().LastSetTooltipNodeForTesting());
 }
 
+// Ensure mouse curosr should be pointer when hover scrollbar.
+TEST_P(ParameterizedWebFrameTest, MouseOverScrollbarInCustomCursorElement) {
+  RegisterMockedHttpURLLoad("scrollbar-in-custom-cursor-element.html");
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+      base_url_ + "scrollbar-in-custom-cursor-element.html");
+
+  web_view_helper.Resize(WebSize(250, 250));
+
+  web_view->UpdateAllLifecyclePhases();
+
+  Document* document =
+      ToLocalFrame(web_view->GetPage()->MainFrame())->GetDocument();
+
+  Element* div = document->getElementById("d1");
+
+  // Ensure hittest has DIV and scrollbar.
+  HitTestResult hit_test_result =
+      web_view->CoreHitTestResultAt(WebPoint(195, 5));
+
+  EXPECT_EQ(hit_test_result.InnerElement(), div);
+  EXPECT_TRUE(hit_test_result.GetScrollbar());
+
+  WebMouseEvent mouse_over_scrollbar(
+      WebInputEvent::kMouseMove, WebFloatPoint(195, 5), WebFloatPoint(195, 5),
+      WebPointerProperties::Button::kNoButton, 0, WebInputEvent::kNoModifiers,
+      TimeTicks::Now().InSeconds());
+  mouse_over_scrollbar.SetFrameScale(1);
+  document->GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+      mouse_over_scrollbar, Vector<WebMouseEvent>());
+
+  EXPECT_EQ(Cursor::Type::kPointer, document->GetFrame()
+                                        ->GetChromeClient()
+                                        .LastSetCursorForTesting()
+                                        .GetType());
+}
+
 // Makes sure that mouse hover over an overlay scrollbar doesn't activate
 // elements below(except the Element that owns the scrollbar) unless the
 // scrollbar is faded out.

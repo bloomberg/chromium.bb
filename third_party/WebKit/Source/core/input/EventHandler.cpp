@@ -414,6 +414,9 @@ OptionalCursor EventHandler::SelectCursor(const HitTestResult& result) {
   if (scroll_manager_->MiddleClickAutoscrollInProgress())
     return kNoCursorChange;
 
+  if (result.GetScrollbar())
+    return PointerCursor();
+
   Node* node = result.InnerPossiblyPseudoNode();
   if (!node)
     return SelectAutoCursor(result, node, IBeamCursor());
@@ -550,9 +553,6 @@ OptionalCursor EventHandler::SelectCursor(const HitTestResult& result) {
 OptionalCursor EventHandler::SelectAutoCursor(const HitTestResult& result,
                                               Node* node,
                                               const Cursor& i_beam) {
-  if (result.GetScrollbar())
-    return PointerCursor();
-
   const bool is_over_link =
       !GetSelectionController().MouseDownMayStartSelect() &&
       result.IsOverLink();
