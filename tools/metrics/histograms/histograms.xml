@@ -79989,6 +79989,56 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="TabManager.SessionRestore.CompressedPagesPerSecond"
+    units="pages/s">
+  <owner>fmeawad@chromium.org</owner>
+  <summary>
+    The number of pages compressed per second during session restore. Recorded
+    at the end of session restore as an average over the entire period, defined
+    as the period of time when session restore is actively loading tabs, which
+    ends when either all tabs have been loaded and their pages rendered, or tab
+    loading needs to be deferred in cases where the system is under memory
+    pressure. Only recorded on macOS.
+  </summary>
+</histogram>
+
+<histogram name="TabManager.SessionRestore.DecompressedPagesPerSecond"
+    units="pages/s">
+  <owner>fmweawad@chromium.org</owner>
+  <summary>
+    The number of pages decompressed per second during session restore. Recorded
+    at the end of session restore as an average over the entire period, defined
+    as the period of time when session restore is actively loading tabs, which
+    ends when either all tabs have been loaded and their pages rendered, or tab
+    loading needs to be deferred in cases where the system is under memory
+    pressure. Only recorded on macOS.
+  </summary>
+</histogram>
+
+<histogram name="TabManager.SessionRestore.SwapInPerSecond" units="swaps/s">
+  <owner>fmeawad@chromium.org</owner>
+  <summary>
+    The number of swap-ins per second during session restore. Recorded at the
+    end of session restore as an average over the entire period, defined as the
+    period of time when session restore is actively loading tabs, which ends
+    when either all tabs have been loaded and their pages rendered, or tab
+    loading needs to be deferred in cases where the system is under memory
+    pressure.
+  </summary>
+</histogram>
+
+<histogram name="TabManager.SessionRestore.SwapOutPerSecond" units="swaps/s">
+  <owner>fmeawad@chromium.org</owner>
+  <summary>
+    The number of swap-ins per second during session restore. Recorded at the
+    end of session restore as an average over the entire period, defined as the
+    period of time when session restore is actively loading tabs, which ends
+    when either all tabs have been loaded and their pages rendered, or tab
+    loading needs to be deferred in cases where the system is under memory
+    pressure.
+  </summary>
+</histogram>
+
 <histogram name="TabManager.SessionRestore.SwitchToTab" enum="TabLoadingState">
   <owner>fmeawad@chromium.org</owner>
   <summary>
