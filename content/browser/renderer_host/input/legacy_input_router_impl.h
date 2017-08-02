@@ -150,7 +150,8 @@ class CONTENT_EXPORT LegacyInputRouterImpl
   void OnHasTouchEventHandlers(bool has_handlers);
   void OnSetTouchAction(cc::TouchAction touch_action);
   void OnSetWhiteListedTouchAction(cc::TouchAction white_listed_touch_action,
-                                   uint32_t unique_touch_event_id);
+                                   uint32_t unique_touch_event_id,
+                                   InputEventAckState ack_result);
   void OnDidStopFlinging();
 
   // Indicates the source of an ack provided to |ProcessInputEventAck()|.

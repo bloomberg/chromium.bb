@@ -509,7 +509,11 @@ void LegacyInputRouterImpl::OnSetTouchAction(cc::TouchAction touch_action) {
 
 void LegacyInputRouterImpl::OnSetWhiteListedTouchAction(
     cc::TouchAction white_listed_touch_action,
-    uint32_t unique_touch_event_id) {
+    uint32_t unique_touch_event_id,
+    InputEventAckState ack_result) {
+  // TODO(hayleyferr): Catch the cases that we have filtered out sending the
+  // touchstart.
+
   touch_action_filter_.OnSetWhiteListedTouchAction(white_listed_touch_action);
   client_->OnSetWhiteListedTouchAction(white_listed_touch_action);
 }

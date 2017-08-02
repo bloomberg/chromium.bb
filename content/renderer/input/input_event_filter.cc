@@ -130,12 +130,12 @@ void InputEventFilter::DispatchNonBlockingEventToMainThread(
   }
 }
 
-void InputEventFilter::SetWhiteListedTouchAction(
-    int routing_id,
-    cc::TouchAction touch_action,
-    uint32_t unique_touch_event_id) {
+void InputEventFilter::SetWhiteListedTouchAction(int routing_id,
+                                                 cc::TouchAction touch_action,
+                                                 uint32_t unique_touch_event_id,
+                                                 InputEventAckState ack_state) {
   SendMessage(base::MakeUnique<InputHostMsg_SetWhiteListedTouchAction>(
-      routing_id, touch_action, unique_touch_event_id));
+      routing_id, touch_action, unique_touch_event_id, ack_state));
 }
 
 void InputEventFilter::OnFilterAdded(IPC::Channel* channel) {

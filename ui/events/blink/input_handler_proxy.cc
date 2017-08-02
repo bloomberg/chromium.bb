@@ -1112,8 +1112,6 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
   cc::TouchAction white_listed_touch_action = cc::kTouchActionAuto;
   EventDisposition result = HitTestTouchEvent(
       touch_event, &is_touching_scrolling_layer, &white_listed_touch_action);
-  client_->SetWhiteListedTouchAction(white_listed_touch_action,
-                                     touch_event.unique_touch_event_id);
 
   // If |result| is still DROP_EVENT look at the touch end handler as
   // we may not want to discard the entire touch sequence. Note this
@@ -1131,6 +1129,9 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
   if (is_flinging_on_impl && is_touching_scrolling_layer)
     result = DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING;
 
+  client_->SetWhiteListedTouchAction(white_listed_touch_action,
+                                     touch_event.unique_touch_event_id, result);
+
   return result;
 }
 
@@ -1144,8 +1145,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchMove(
     cc::TouchAction white_listed_touch_action = cc::kTouchActionAuto;
     EventDisposition result = HitTestTouchEvent(
         touch_event, &is_touching_scrolling_layer, &white_listed_touch_action);
-    client_->SetWhiteListedTouchAction(white_listed_touch_action,
-                                       touch_event.unique_touch_event_id);
+    client_->SetWhiteListedTouchAction(
+        white_listed_touch_action, touch_event.unique_touch_event_id, result);
     return result;
   }
   return static_cast<EventDisposition>(touch_result_);

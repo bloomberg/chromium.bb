@@ -56,7 +56,8 @@ class CONTENT_EXPORT InputHandlerManagerClient {
       const ui::LatencyInfo& latency_info) = 0;
   virtual void SetWhiteListedTouchAction(int routing_id,
                                          cc::TouchAction touch_action,
-                                         uint32_t unique_touch_event_id) = 0;
+                                         uint32_t unique_touch_event_id,
+                                         InputEventAckState ack_state) = 0;
 
  protected:
   InputHandlerManagerClient() {}
