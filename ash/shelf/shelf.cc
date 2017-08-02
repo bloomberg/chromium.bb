@@ -120,6 +120,8 @@ void Shelf::CreateShelfWidget(aura::Window* root) {
   aura::Window* status_container =
       root->GetChildById(kShellWindowId_StatusContainer);
   shelf_widget_->CreateStatusAreaWidget(status_container);
+
+  Shell::Get()->window_tree_host_manager()->AddObserver(this);
 }
 
 void Shelf::ShutdownShelfWidget() {
@@ -128,7 +130,11 @@ void Shelf::ShutdownShelfWidget() {
 }
 
 void Shelf::DestroyShelfWidget() {
-  shelf_widget_.reset();
+  // May be called multiple times during shutdown.
+  if (shelf_widget_) {
+    shelf_widget_.reset();
+    Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
+  }
 }
 
 void Shelf::NotifyShelfInitialized() {
@@ -363,6 +369,21 @@ void Shelf::OnBackgroundUpdated(ShelfBackgroundType background_type,
     return;
   for (auto& observer : observers_)
     observer.OnBackgroundTypeChanged(background_type, change_type);
+}
+
+void Shelf::OnWindowTreeHostReusedForDisplay(
+    AshWindowTreeHost* window_tree_host,
+    const display::Display& display) {
+  // See comment in OnWindowTreeHostsSwappedDisplays().
+  NotifyShelfInitialized();
+}
+
+void Shelf::OnWindowTreeHostsSwappedDisplays(AshWindowTreeHost* host1,
+                                             AshWindowTreeHost* host2) {
+  // The display id for this shelf instance may have changed, so request
+  // re-initialization to fetch the alignment and auto-hide state from prefs.
+  // See http://crbug.com/748291
+  NotifyShelfInitialized();
 }
 
 }  // namespace ash
