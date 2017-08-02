@@ -13,6 +13,7 @@ namespace ios {
 class ChromeBrowserState;
 }
 
+@protocol ApplicationCommands;
 @class RecentTabsTableViewController;
 @protocol UrlLoader;
 
@@ -27,7 +28,8 @@ class ChromeBrowserState;
 
 // Public initializer.
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
-                  browserState:(ios::ChromeBrowserState*)browserState;
+                  browserState:(ios::ChromeBrowserState*)browserState
+                    dispatcher:(id<ApplicationCommands>)dispatcher;
 
 // Private initializer, exposed for testing.
 - (instancetype)initWithController:(RecentTabsTableViewController*)controller

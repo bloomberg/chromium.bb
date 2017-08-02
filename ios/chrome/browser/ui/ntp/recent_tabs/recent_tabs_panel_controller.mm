@@ -57,10 +57,12 @@
 @synthesize delegate = _delegate;
 
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
-                  browserState:(ios::ChromeBrowserState*)browserState {
+                  browserState:(ios::ChromeBrowserState*)browserState
+                    dispatcher:(id<ApplicationCommands>)dispatcher {
   return [self initWithController:[[RecentTabsTableViewController alloc]
                                       initWithBrowserState:browserState
-                                                    loader:loader]
+                                                    loader:loader
+                                                dispatcher:dispatcher]
                      browserState:browserState];
 }
 

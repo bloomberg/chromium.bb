@@ -189,7 +189,7 @@
                                      title:l10n_util::GetNSStringWithFixup(
                                                IDS_HISTORY_SHOW_HISTORY)
                                     action:^{
-                                      execute(IDC_SHOW_HISTORY);
+                                      [weakDispatcher showHistory];
                                     }],
       [UIKeyCommand
           cr_keyCommandWithInput:@"."

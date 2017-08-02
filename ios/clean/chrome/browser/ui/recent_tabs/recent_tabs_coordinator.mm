@@ -28,13 +28,15 @@
   if (!IsIPadIdiom()) {
     self.viewController = [RecentTabsPanelViewController
         controllerToPresentForBrowserState:self.browser->browser_state()
-                                    loader:nil];
+                                    loader:nil
+                                dispatcher:nil];
     self.viewController.modalPresentationStyle = UIModalPresentationFormSheet;
     self.viewController.modalPresentationCapturesStatusBarAppearance = YES;
   } else {
     self.wrapperController = [[RecentTabsPanelController alloc]
         initWithLoader:nil
-          browserState:self.browser->browser_state()];
+          browserState:self.browser->browser_state()
+            dispatcher:nil];
     self.viewController = [self.wrapperController viewController];
   }
   [super start];

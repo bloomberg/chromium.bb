@@ -209,7 +209,7 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
     case IDC_SHOW_BOOKMARK_MANAGER:
       base::RecordAction(UserMetricsAction("MobileMenuAllBookmarks"));
       break;
-    case IDC_SHOW_HISTORY:
+    case TOOLS_SHOW_HISTORY:
       base::RecordAction(UserMetricsAction("MobileMenuHistory"));
       break;
     case IDC_SHOW_OTHER_DEVICES:

@@ -18,6 +18,8 @@ namespace ios {
 class ChromeBrowserState;
 }
 
+@protocol ApplicationCommands;
+
 @protocol RecentTabsTableViewControllerDelegate<NSObject>
 // Tells the delegate when the table view content scrolled or changed size.
 - (void)recentTabsTableViewContentMoved:(UITableView*)tableView;
@@ -49,7 +51,8 @@ class ChromeBrowserState;
 // |browserState|
 // and |loader| must not be nil.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                              loader:(id<UrlLoader>)loader;
+                              loader:(id<UrlLoader>)loader
+                          dispatcher:(id<ApplicationCommands>)dispatcher;
 
 // Refreshes the table view to match the current sync state.
 - (void)refreshUserState:(SessionsSyncUserState)state;

@@ -17,7 +17,6 @@
 #define IDC_FIND                                       37000
 #define IDC_FIND_NEXT                                  37001
 #define IDC_FIND_PREVIOUS                              37002
-#define IDC_SHOW_HISTORY                               40010
 #define IDC_SHOW_BOOKMARK_MANAGER                      40011
 #define IDC_HELP_PAGE_VIA_MENU                         40020
 #define IDC_TOGGLE_TAB_SWITCHER                        40901

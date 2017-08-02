@@ -39,6 +39,9 @@
 // Starts a voice search on the current BVC.
 - (void)startVoiceSearch:(StartVoiceSearchCommand*)command;
 
+// Shows the History UI.
+- (void)showHistory;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_APPLICATION_COMMANDS_H_
