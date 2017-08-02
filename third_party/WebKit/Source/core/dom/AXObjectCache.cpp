@@ -217,6 +217,4 @@ STATIC_ASSERT_ENUM(kWebAXEventTextInserted, AXObjectCache::kAXTextInserted);
 STATIC_ASSERT_ENUM(kWebAXEventTextRemoved, AXObjectCache::kAXTextRemoved);
 STATIC_ASSERT_ENUM(kWebAXEventValueChanged, AXObjectCache::kAXValueChanged);
 
-#undef STATIC_ASSERT_ENUM
-
 }  // namespace blink
