@@ -664,9 +664,12 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
   render_pass->damage_rect.Union(damage_rect);
   cc::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  quad_state->quad_layer_rect = gfx::Rect(content_size_);
-  quad_state->visible_quad_layer_rect = quad_rect;
-  quad_state->opacity = state_.alpha;
+  quad_state->SetAll(
+      gfx::Transform() /* quad_to_target_transform */,
+      gfx::Rect(content_size_) /* quad_layer_rect */,
+      quad_rect /* visible_quad_layer_rect */, gfx::Rect() /* clip_rect */,
+      false /* is_clipped */, state_.alpha /* opacity */,
+      SkBlendMode::kSrcOver /* blend_mode */, 0 /* sorting_context_id */);
 
   if (current_resource_.id) {
     gfx::PointF uv_top_left(0.f, 0.f);
