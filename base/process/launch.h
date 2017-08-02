@@ -40,9 +40,8 @@ typedef std::vector<HANDLE> HandlesToInheritVector;
 #elif defined(OS_FUCHSIA)
 typedef std::vector<mx_handle_t> HandlesToInheritVector;
 #endif
+
 #if defined(OS_POSIX)
-// TODO(fuchsia): Turn this if into an elif, after the OS_FUCHSIA check, once
-// callers have been cleaned-up not to rely on it (crbug.com/748350).
 typedef std::vector<std::pair<int, int>> FileHandleMappingVector;
 #endif
 
