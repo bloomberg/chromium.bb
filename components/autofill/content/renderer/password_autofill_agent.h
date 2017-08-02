@@ -43,7 +43,8 @@ class RendererSavePasswordProgressLogger;
 class PasswordAutofillAgent : public content::RenderFrameObserver,
                               public mojom::PasswordAutofillAgent {
  public:
-  explicit PasswordAutofillAgent(content::RenderFrame* render_frame);
+  PasswordAutofillAgent(content::RenderFrame* render_frame,
+                        service_manager::BinderRegistry* registry);
   ~PasswordAutofillAgent() override;
 
   void BindRequest(mojom::PasswordAutofillAgentRequest request);
@@ -202,9 +203,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   };
 
   // RenderFrameObserver:
-  void OnInterfaceRequestForFrame(
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* interface_pipe) override;
   void DidFinishDocumentLoad() override;
   void DidFinishLoad() override;
   void FrameDetached() override;
@@ -316,8 +314,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   mojo::Binding<mojom::PasswordAutofillAgent> binding_;
 
   blink::WebFormElementObserver* form_element_observer_;
-
-  service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillAgent);
 };

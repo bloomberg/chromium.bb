@@ -514,7 +514,9 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
 void ChromeContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
-  new ChromeRenderFrameObserver(render_frame);
+  ChromeRenderFrameObserver* render_frame_observer =
+      new ChromeRenderFrameObserver(render_frame);
+  service_manager::BinderRegistry* registry = render_frame_observer->registry();
 
   bool should_whitelist_for_content_settings =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -525,7 +527,8 @@ void ChromeContentRendererClient::RenderFrameCreated(
       ChromeExtensionsRendererClient::GetInstance()->extension_dispatcher();
 #endif
   ContentSettingsObserver* content_settings = new ContentSettingsObserver(
-      render_frame, ext_dispatcher, should_whitelist_for_content_settings);
+      render_frame, ext_dispatcher, should_whitelist_for_content_settings,
+      registry);
   if (chrome_observer_.get()) {
     content_settings->SetContentSettingRules(
         chrome_observer_->content_setting_rules());
@@ -533,7 +536,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ChromeExtensionsRendererClient::GetInstance()->RenderFrameCreated(
-      render_frame);
+      render_frame, registry);
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -571,7 +574,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
 
   // Set up a mojo service to test if this page is a distiller page.
   new dom_distiller::DistillerJsRenderFrameObserver(
-      render_frame, chrome::ISOLATED_WORLD_ID_CHROME_INTERNAL);
+      render_frame, chrome::ISOLATED_WORLD_ID_CHROME_INTERNAL, registry);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableDistillabilityService)) {
@@ -581,14 +584,15 @@ void ChromeContentRendererClient::RenderFrameCreated(
   }
 
   // Set up a mojo service to test if this page is a contextual search page.
-  new contextual_search::OverlayJsRenderFrameObserver(render_frame);
+  new contextual_search::OverlayJsRenderFrameObserver(render_frame, registry);
 
   PasswordAutofillAgent* password_autofill_agent =
-      new PasswordAutofillAgent(render_frame);
+      new PasswordAutofillAgent(render_frame, registry);
   PasswordGenerationAgent* password_generation_agent =
-      new PasswordGenerationAgent(render_frame, password_autofill_agent);
+      new PasswordGenerationAgent(render_frame, password_autofill_agent,
+                                  registry);
   new AutofillAgent(render_frame, password_autofill_agent,
-                    password_generation_agent);
+                    password_generation_agent, registry);
 
   // There is no render thread, thus no UnverifiedRulesetDealer in
   // ChromeRenderViewTests.
@@ -605,7 +609,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   new SpellCheckProvider(render_frame, spellcheck_.get());
 #if BUILDFLAG(HAS_SPELLCHECK_PANEL)
-  new SpellCheckPanel(render_frame);
+  new SpellCheckPanel(render_frame, registry);
 #endif  // BUILDFLAG(HAS_SPELLCHECK_PANEL)
 #endif
 }

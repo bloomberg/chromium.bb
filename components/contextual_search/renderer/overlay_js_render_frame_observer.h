@@ -22,13 +22,11 @@ namespace contextual_search {
 // in an overlay panel.
 class OverlayJsRenderFrameObserver : public content::RenderFrameObserver {
  public:
-  explicit OverlayJsRenderFrameObserver(content::RenderFrame* render_frame);
+  OverlayJsRenderFrameObserver(content::RenderFrame* render_frame,
+                               service_manager::BinderRegistry* registry);
   ~OverlayJsRenderFrameObserver() override;
 
   // RenderFrameObserver implementation.
-  void OnInterfaceRequestForFrame(
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* interface_pipe) override;
   void DidStartProvisionalLoad(
       blink::WebDocumentLoader* document_loader) override;
   void DidClearWindowObject() override;
@@ -41,9 +39,6 @@ class OverlayJsRenderFrameObserver : public content::RenderFrameObserver {
   // RenderFrameObserver implementation.
   void OnDestruct() override;
 
-  // Add the mojo interface to a RenderFrame's
-  // service_manager::InterfaceRegistry.
-  void RegisterMojoInterface();
   // Creates the OverlayPageNotifierService connecting the browser to this
   // observer.
   void CreateOverlayPageNotifierService(
@@ -54,7 +49,9 @@ class OverlayJsRenderFrameObserver : public content::RenderFrameObserver {
   // Track if the current page is presented in the contextual search overlay.
   bool is_contextual_search_overlay_;
 
-  service_manager::BinderRegistry registry_;
+  // Requests for mojom::OverlayPageNotifierService are only bound while
+  // a load is active.
+  bool can_bind_requests_ = false;
 
   base::WeakPtrFactory<OverlayJsRenderFrameObserver> weak_factory_;
 

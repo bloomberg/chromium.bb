@@ -11,6 +11,7 @@
 #include "chrome/renderer/chrome_mock_render_thread.h"
 #include "content/public/test/render_view_test.h"
 #include "extensions/features/features.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 class ChromeContentRendererClient;
 
@@ -56,6 +57,8 @@ class ChromeRenderViewTest : public content::RenderViewTest {
   autofill::TestPasswordAutofillAgent* password_autofill_agent_;
   autofill::TestPasswordGenerationAgent* password_generation_;
   autofill::AutofillAgent* autofill_agent_;
+
+  std::unique_ptr<service_manager::BinderRegistry> registry_;
 
   // Naked pointer as ownership is with content::RenderViewTest::render_thread_.
   ChromeMockRenderThread* chrome_render_thread_;

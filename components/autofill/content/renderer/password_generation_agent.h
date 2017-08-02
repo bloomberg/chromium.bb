@@ -36,7 +36,8 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
                                 public mojom::PasswordGenerationAgent {
  public:
   PasswordGenerationAgent(content::RenderFrame* render_frame,
-                          PasswordAutofillAgent* password_agent);
+                          PasswordAutofillAgent* password_agent,
+                          service_manager::BinderRegistry* registry);
   ~PasswordGenerationAgent() override;
 
   void BindRequest(mojom::PasswordGenerationAgentRequest request);
@@ -88,9 +89,6 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   typedef std::vector<AccountCreationFormData> AccountCreationFormDataList;
 
   // RenderFrameObserver:
-  void OnInterfaceRequestForFrame(
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* interface_pipe) override;
   void DidFinishDocumentLoad() override;
   void DidFinishLoad() override;
   void OnDestruct() override;
@@ -196,8 +194,6 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   mojom::PasswordManagerClientAssociatedPtr password_manager_client_;
 
   mojo::Binding<mojom::PasswordGenerationAgent> binding_;
-
-  service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationAgent);
 };

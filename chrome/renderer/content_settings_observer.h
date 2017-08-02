@@ -47,7 +47,8 @@ class ContentSettingsObserver
   // should be whitelisted for content settings.
   ContentSettingsObserver(content::RenderFrame* render_frame,
                           extensions::Dispatcher* extension_dispatcher,
-                          bool should_whitelist);
+                          bool should_whitelist,
+                          service_manager::BinderRegistry* registry);
   ~ContentSettingsObserver() override;
 
   // Sets the content setting rules which back |allowImage()|, |allowScript()|,
@@ -106,9 +107,6 @@ class ContentSettingsObserver
   FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest, PluginsTemporarilyAllowed);
 
   // RenderFrameObserver implementation.
-  void OnInterfaceRequestForFrame(
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* interface_pipe) override;
   bool OnMessageReceived(const IPC::Message& message) override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_document_navigation) override;
@@ -183,8 +181,6 @@ class ContentSettingsObserver
 
   mojo::BindingSet<chrome::mojom::InsecureContentRenderer>
       insecure_content_renderer_bindings_;
-
-  service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsObserver);
 };

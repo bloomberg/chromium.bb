@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "extensions/renderer/extensions_renderer_client.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/base/page_transition_types.h"
 
 class ChromeExtensionsDispatcherDelegate;
@@ -53,7 +54,8 @@ class ChromeExtensionsRendererClient
 
   // See ChromeContentRendererClient methods with the same names.
   void RenderThreadStarted();
-  void RenderFrameCreated(content::RenderFrame* render_frame);
+  void RenderFrameCreated(content::RenderFrame* render_frame,
+                          service_manager::BinderRegistry* registry);
   void RenderViewCreated(content::RenderView* render_view);
   bool OverrideCreatePlugin(content::RenderFrame* render_frame,
                             const blink::WebPluginParams& params);
