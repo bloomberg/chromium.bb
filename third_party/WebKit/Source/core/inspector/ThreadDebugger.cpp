@@ -131,8 +131,11 @@ void ThreadDebugger::PromiseRejectionRevoked(v8::Local<v8::Context> context,
 }
 
 void ThreadDebugger::beginUserGesture() {
+  v8::Local<v8::Context> context = isolate_->GetCurrentContext();
+  ExecutionContext* ec = ToExecutionContext(context);
+  Document* document = ec && ec->IsDocument() ? ToDocument(ec) : nullptr;
   user_gesture_indicator_ = WTF::WrapUnique(
-      new UserGestureIndicator(UserGestureToken::Create(nullptr)));
+      new UserGestureIndicator(UserGestureToken::Create(document)));
 }
 
 void ThreadDebugger::endUserGesture() {

@@ -49,7 +49,7 @@
                 "include": ["enable", "disable", "reload", "navigate", "stopLoading", "getNavigationHistory", "navigateToHistoryEntry", "captureScreenshot",
                     "startScreencast", "stopScreencast", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled", "requestAppBanner",
                     "printToPDF", "bringToFront"],
-                "include_events": ["interstitialShown", "interstitialHidden", "screencastVisibilityChanged", "screencastFrame", "colorPicked"],
+                "include_events": ["colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "screencastVisibilityChanged", "screencastFrame"],
                 "async": ["captureScreenshot", "printToPDF"]
             },
             {

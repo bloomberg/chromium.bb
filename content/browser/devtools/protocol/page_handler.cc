@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -45,7 +46,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_util.h"
 #include "ui/snapshot/snapshot.h"
-#include "url/gurl.h"
 
 namespace content {
 namespace protocol {
@@ -113,6 +113,21 @@ PageHandler::PageHandler(EmulationHandler* emulation_handler)
 }
 
 PageHandler::~PageHandler() {
+}
+
+// static
+std::vector<PageHandler*> PageHandler::EnabledForWebContents(
+    WebContentsImpl* contents) {
+  if (!DevToolsAgentHost::HasFor(contents))
+    return std::vector<PageHandler*>();
+  std::vector<PageHandler*> result;
+  for (auto* handler :
+       PageHandler::ForAgentHost(static_cast<DevToolsAgentHostImpl*>(
+           DevToolsAgentHost::GetOrCreateFor(contents).get()))) {
+    if (handler->enabled_)
+      result.push_back(handler);
+  }
+  return result;
 }
 
 // static
@@ -198,6 +213,45 @@ void PageHandler::DidDetachInterstitialPage() {
   frontend_->InterstitialHidden();
 }
 
+void PageHandler::DidRunJavaScriptDialog(
+    const GURL& url,
+    const base::string16& message,
+    const base::string16& default_prompt,
+    JavaScriptDialogType dialog_type,
+    const JavaScriptDialogCallback& callback) {
+  if (!enabled_)
+    return;
+  DCHECK(pending_dialog_.is_null());
+  pending_dialog_ = callback;
+  std::string type = Page::DialogTypeEnum::Alert;
+  if (dialog_type == JAVASCRIPT_DIALOG_TYPE_CONFIRM)
+    type = Page::DialogTypeEnum::Confirm;
+  if (dialog_type == JAVASCRIPT_DIALOG_TYPE_PROMPT)
+    type = Page::DialogTypeEnum::Prompt;
+  frontend_->JavascriptDialogOpening(url.spec(), base::UTF16ToUTF8(message),
+                                     type, base::UTF16ToUTF8(default_prompt));
+}
+
+void PageHandler::DidRunBeforeUnloadConfirm(
+    const GURL& url,
+    const JavaScriptDialogCallback& callback) {
+  if (!enabled_)
+    return;
+  DCHECK(pending_dialog_.is_null());
+  pending_dialog_ = callback;
+  frontend_->JavascriptDialogOpening(url.spec(), std::string(),
+                                     Page::DialogTypeEnum::Beforeunload,
+                                     std::string());
+}
+
+void PageHandler::DidCloseJavaScriptDialog(bool success,
+                                           const base::string16& user_input) {
+  if (!enabled_)
+    return;
+  pending_dialog_.Reset();
+  frontend_->JavascriptDialogClosed(success, base::UTF16ToUTF8(user_input));
+}
+
 Response PageHandler::Enable() {
   enabled_ = true;
   if (GetWebContents() && GetWebContents()->ShowingInterstitialPage())
@@ -208,6 +262,9 @@ Response PageHandler::Enable() {
 Response PageHandler::Disable() {
   enabled_ = false;
   screencast_enabled_ = false;
+  if (!pending_dialog_.is_null())
+    pending_dialog_.Run(false, base::string16());
+  pending_dialog_.Reset();
   return Response::FallThrough();
 }
 
@@ -511,23 +568,28 @@ Response PageHandler::ScreencastFrameAck(int session_id) {
 
 Response PageHandler::HandleJavaScriptDialog(bool accept,
                                              Maybe<std::string> prompt_text) {
-  base::string16 prompt_override;
-  if (prompt_text.isJust())
-    prompt_override = base::UTF8ToUTF16(prompt_text.fromJust());
-
   WebContentsImpl* web_contents = GetWebContents();
   if (!web_contents)
     return Response::InternalError();
 
+  if (pending_dialog_.is_null())
+    return Response::InvalidParams("No dialog is showing");
+
+  base::string16 prompt_override;
+  if (prompt_text.isJust())
+    prompt_override = base::UTF8ToUTF16(prompt_text.fromJust());
+  pending_dialog_.Run(accept, prompt_override);
+
+  // Clean up the dialog UI if any.
   JavaScriptDialogManager* manager =
       web_contents->GetDelegate()->GetJavaScriptDialogManager(web_contents);
-  if (manager && manager->HandleJavaScriptDialog(
-          web_contents, accept,
-          prompt_text.isJust() ? &prompt_override : nullptr)) {
-    return Response::OK();
+  if (manager) {
+    manager->HandleJavaScriptDialog(
+        web_contents, accept,
+        prompt_text.isJust() ? &prompt_override : nullptr);
   }
 
-  return Response::Error("Could not handle JavaScript dialog");
+  return Response::OK();
 }
 
 Response PageHandler::RequestAppBanner() {

@@ -77,7 +77,7 @@ const char kParamsParam[] = "params";
 class TestJavaScriptDialogManager : public JavaScriptDialogManager,
                                     public WebContentsDelegate {
  public:
-  TestJavaScriptDialogManager() : handle_(false) {}
+  TestJavaScriptDialogManager() {}
   ~TestJavaScriptDialogManager() override {}
 
   void Handle()
@@ -119,15 +119,19 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
   bool HandleJavaScriptDialog(WebContents* web_contents,
                               bool accept,
                               const base::string16* prompt_override) override {
+    is_handled_ = true;
     return true;
   }
 
   void CancelDialogs(WebContents* web_contents,
                      bool reset_state) override {}
 
+  bool is_handled() { return is_handled_; }
+
  private:
   DialogClosedCallback callback_;
-  bool handle_;
+  bool handle_ = false;
+  bool is_handled_ = false;
   DISALLOW_COPY_AND_ASSIGN(TestJavaScriptDialogManager);
 };
 
@@ -1170,13 +1174,101 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, JavaScriptDialogNotifications) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
   TestJavaScriptDialogManager dialog_manager;
-  shell()->web_contents()->SetDelegate(&dialog_manager);
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  wc->SetDelegate(&dialog_manager);
   SendCommand("Page.enable", nullptr, true);
+
   std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
-  params->SetString("expression", "alert('alert')");
+  params->SetString("expression", "prompt('hello?', 'default')");
+  SendCommand("Runtime.evaluate", std::move(params), false);
+
+  params = WaitForNotification("Page.javascriptDialogOpening");
+  std::string url;
+  EXPECT_TRUE(params->GetString("url", &url));
+  EXPECT_EQ("about:blank", url);
+  std::string message;
+  EXPECT_TRUE(params->GetString("message", &message));
+  EXPECT_EQ("hello?", message);
+  std::string type;
+  EXPECT_TRUE(params->GetString("type", &type));
+  EXPECT_EQ("prompt", type);
+  std::string default_prompt;
+  EXPECT_TRUE(params->GetString("defaultPrompt", &default_prompt));
+  EXPECT_EQ("default", default_prompt);
+
+  params.reset(new base::DictionaryValue());
+  params->SetBoolean("accept", true);
+  params->SetString("promptText", "hi!");
+  SendCommand("Page.handleJavaScriptDialog", std::move(params), false);
+
+  params = WaitForNotification("Page.javascriptDialogClosed", true);
+  bool result = false;
+  EXPECT_TRUE(params->GetBoolean("result", &result));
+  EXPECT_TRUE(result);
+
+  EXPECT_TRUE(dialog_manager.is_handled());
+
+  std::string input;
+  EXPECT_TRUE(params->GetString("userInput", &input));
+  EXPECT_EQ("hi!", input);
+  wc->SetDelegate(nullptr);
+  wc->SetJavaScriptDialogManagerForTesting(nullptr);
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, JavaScriptDialogInterop) {
+  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
+  Attach();
+  TestJavaScriptDialogManager dialog_manager;
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  wc->SetDelegate(&dialog_manager);
+  SendCommand("Page.enable", nullptr, true);
+
+  std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+  params->SetString("expression", "alert('42')");
   SendCommand("Runtime.evaluate", std::move(params), false);
   WaitForNotification("Page.javascriptDialogOpening");
+
   dialog_manager.Handle();
+  WaitForNotification("Page.javascriptDialogClosed", true);
+  wc->SetDelegate(nullptr);
+  wc->SetJavaScriptDialogManagerForTesting(nullptr);
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, BeforeUnloadDialog) {
+  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
+  Attach();
+  TestJavaScriptDialogManager dialog_manager;
+
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  wc->SetDelegate(&dialog_manager);
+  SendCommand("Runtime.enable", nullptr, true);
+
+  std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+
+  params.reset(new base::DictionaryValue());
+  params->SetString("expression",
+                    "window.onbeforeunload=()=>{return 'prompt';}");
+  params->SetBoolean("userGesture", true);
+  SendCommand("Runtime.evaluate", std::move(params), true);
+
+  SendCommand("Page.enable", nullptr, true);
+  SendCommand("Page.reload", nullptr, false);
+
+  params = WaitForNotification("Page.javascriptDialogOpening", true);
+
+  std::string url;
+  EXPECT_TRUE(params->GetString("url", &url));
+  EXPECT_EQ("about:blank", url);
+  std::string type;
+  EXPECT_TRUE(params->GetString("type", &type));
+  EXPECT_EQ("beforeunload", type);
+
+  params.reset(new base::DictionaryValue());
+  params->SetBoolean("accept", true);
+  SendCommand("Page.handleJavaScriptDialog", std::move(params), false);
+  WaitForNotification("Page.javascriptDialogClosed", true);
+  wc->SetDelegate(nullptr);
+  wc->SetJavaScriptDialogManagerForTesting(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, BrowserCreateAndCloseTarget) {

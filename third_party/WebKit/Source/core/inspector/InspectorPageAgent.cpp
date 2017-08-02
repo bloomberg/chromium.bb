@@ -99,22 +99,6 @@ String FrameId(LocalFrame* frame) {
   return frame ? IdentifiersFactory::FrameId(frame) : "";
 }
 
-String DialogTypeToProtocol(ChromeClient::DialogType dialog_type) {
-  switch (dialog_type) {
-    case ChromeClient::kAlertDialog:
-      return protocol::Page::DialogTypeEnum::Alert;
-    case ChromeClient::kConfirmDialog:
-      return protocol::Page::DialogTypeEnum::Confirm;
-    case ChromeClient::kPromptDialog:
-      return protocol::Page::DialogTypeEnum::Prompt;
-    case ChromeClient::kHTMLDialog:
-      return protocol::Page::DialogTypeEnum::Beforeunload;
-    case ChromeClient::kPrintDialog:
-      NOTREACHED();
-  }
-  return protocol::Page::DialogTypeEnum::Alert;
-}
-
 String ScheduledNavigationReasonToProtocol(ScheduledNavigation::Reason reason) {
   using ReasonEnum =
       protocol::Page::FrameScheduledNavigationNotification::ReasonEnum;
@@ -786,16 +770,11 @@ void InspectorPageAgent::FrameClearedScheduledNavigation(LocalFrame* frame) {
   GetFrontend()->frameClearedScheduledNavigation(FrameId(frame));
 }
 
-void InspectorPageAgent::WillRunJavaScriptDialog(
-    const String& message,
-    ChromeClient::DialogType dialog_type) {
-  GetFrontend()->javascriptDialogOpening(message,
-                                         DialogTypeToProtocol(dialog_type));
+void InspectorPageAgent::WillRunJavaScriptDialog() {
   GetFrontend()->flush();
 }
 
-void InspectorPageAgent::DidRunJavaScriptDialog(bool result) {
-  GetFrontend()->javascriptDialogClosed(result);
+void InspectorPageAgent::DidRunJavaScriptDialog() {
   GetFrontend()->flush();
 }
 

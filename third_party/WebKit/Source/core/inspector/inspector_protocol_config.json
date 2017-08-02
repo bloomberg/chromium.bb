@@ -82,7 +82,7 @@
                 "exclude": ["getNavigationHistory", "navigateToHistoryEntry", "captureScreenshot", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled",
                             "getAppManifest", "requestAppBanner", "setControlNavigations", "processNavigation", "printToPDF", "bringToFront"],
                 "async": ["getResourceContent", "searchInResource"],
-                "exclude_events": ["screencastFrame", "screencastVisibilityChanged", "colorPicked", "interstitialShown", "interstitialHidden", "navigationRequested"]
+                "exclude_events": ["screencastFrame", "screencastVisibilityChanged", "colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "navigationRequested"]
             },
             {
                 "domain": "Emulation",
