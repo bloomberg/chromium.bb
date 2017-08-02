@@ -55,6 +55,7 @@
 #include "components/metrics/single_sample_metrics.h"
 #include "components/viz/client/client_layer_tree_frame_sink.h"
 #include "components/viz/client/client_shared_bitmap_manager.h"
+#include "components/viz/client/hit_test_data_provider.h"
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/resources/buffer_to_texture_target_map.h"
@@ -1972,7 +1973,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
       callback.Run(base::MakeUnique<viz::ClientLayerTreeFrameSink>(
           std::move(vulkan_context_provider),
           std::move(synthetic_begin_frame_source), std::move(sink_info),
-          std::move(client_request),
+          std::move(client_request), nullptr /* hit_test_data_provider */,
           base::MakeUnique<RendererLocalSurfaceIdProvider>(),
           false /* enable_surface_synchroninzation */));
       return;
@@ -2002,7 +2003,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     callback.Run(base::MakeUnique<viz::ClientLayerTreeFrameSink>(
         nullptr, nullptr, nullptr, shared_bitmap_manager(),
         std::move(synthetic_begin_frame_source), std::move(sink_info),
-        std::move(client_request),
+        std::move(client_request), nullptr /* hit_test_data_provider */,
         base::MakeUnique<RendererLocalSurfaceIdProvider>(),
         false /* enable_surface_synchroninzation */));
     return;
@@ -2077,7 +2078,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
       std::move(context_provider), std::move(worker_context_provider),
       GetGpuMemoryBufferManager(), nullptr,
       std::move(synthetic_begin_frame_source), std::move(sink_info),
-      std::move(client_request),
+      std::move(client_request), nullptr /* hit_test_data_provider */,
       base::MakeUnique<RendererLocalSurfaceIdProvider>(),
       false /* enable_surface_synchroninzation */));
 }

@@ -10,6 +10,7 @@ viz_source_set("client") {
     "client_layer_tree_frame_sink.h",
     "client_shared_bitmap_manager.cc",
     "client_shared_bitmap_manager.h",
+    "hit_test_data_provider.h",
     "local_surface_id_provider.cc",
     "local_surface_id_provider.h",
   ]
@@ -21,5 +22,6 @@ viz_source_set("client") {
     "//components/viz/common",
     "//mojo/public/cpp/bindings",
     "//services/viz/public/interfaces/compositing",
+    "//services/viz/public/interfaces/hit_test",
   ]
 }

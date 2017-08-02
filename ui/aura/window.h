@@ -332,6 +332,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
                            int64_t old_value,
                            std::unique_ptr<ui::PropertyData> data) override;
  private:
+  friend class HitTestDataProviderAura;
   friend class LayoutManager;
   friend class PropertyConverter;
   friend class WindowPort;

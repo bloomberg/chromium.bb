@@ -44,6 +44,7 @@ component("aura") {
     "mus/focus_synchronizer.h",
     "mus/focus_synchronizer_delegate.h",
     "mus/focus_synchronizer_observer.h",
+    "mus/hit_test_data_provider_aura.h",
     "mus/in_flight_change.h",
     "mus/input_method_mus.h",
     "mus/mus_context_factory.h",
@@ -106,6 +107,7 @@ component("aura") {
     "mus/client_surface_embedder.cc",
     "mus/drag_drop_controller_mus.cc",
     "mus/focus_synchronizer.cc",
+    "mus/hit_test_data_provider_aura.cc",
     "mus/in_flight_change.cc",
     "mus/input_method_mus.cc",
     "mus/mus_context_factory.cc",
@@ -336,6 +338,7 @@ test("aura_unittests") {
   sources = [
     "gestures/gesture_recognizer_unittest.cc",
     "mus/drag_drop_controller_mus_unittest.cc",
+    "mus/hit_test_data_provider_aura_unittest.cc",
     "mus/input_method_mus_unittest.cc",
     "mus/os_exchange_data_provider_mus_unittest.cc",
     "mus/property_converter_unittest.cc",
@@ -352,6 +355,7 @@ test("aura_unittests") {
   deps = [
     ":test_support",
     "//base/test:test_support",
+    "//components/viz/client",
     "//mojo/common",
     "//mojo/edk/system",
     "//net",
