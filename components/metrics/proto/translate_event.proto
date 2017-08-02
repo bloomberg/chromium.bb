@@ -67,7 +67,7 @@ message TranslateEventProto {
   optional RankerResponse ranker_response = 9;
 
   // The action performed by the user in the translate UI.
-  // Next tag 27.
+  // Next tag 28.
   enum EventType {
     // The feedback event does not correspond to any of the enumerated
     // cases.
@@ -141,6 +141,9 @@ message TranslateEventProto {
     // The translate UI was not shown because the language is in the user's User
     // Language Profile.
     LANGUAGE_IN_ULP = 24;
+    // Failed to initialize the translate script, this can happen for iOS due
+    // to CSPs.
+    INITIALIZATION_ERROR = 27;
   }
 
   // Event received from translate UI.
