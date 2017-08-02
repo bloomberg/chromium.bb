@@ -1341,7 +1341,7 @@ void vpx_idct16x16_256_add_sse2(const tran_low_t *input, uint8_t *dest, int stri
 RTCD_EXTERN void (*vpx_idct16x16_256_add)(const tran_low_t *input, uint8_t *dest, int stride);
 
 void vpx_idct16x16_38_add_c(const tran_low_t *input, uint8_t *dest, int stride);
-void vpx_idct16x16_256_add_sse2(const tran_low_t *input, uint8_t *dest, int stride);
+void vpx_idct16x16_38_add_sse2(const tran_low_t *input, uint8_t *dest, int stride);
 RTCD_EXTERN void (*vpx_idct16x16_38_add)(const tran_low_t *input, uint8_t *dest, int stride);
 
 void vpx_idct32x32_1024_add_c(const tran_low_t *input, uint8_t *dest, int stride);
@@ -2489,7 +2489,7 @@ static void setup_rtcd_internal(void)
     vpx_idct16x16_256_add = vpx_idct16x16_256_add_c;
     if (flags & HAS_SSE2) vpx_idct16x16_256_add = vpx_idct16x16_256_add_sse2;
     vpx_idct16x16_38_add = vpx_idct16x16_38_add_c;
-    if (flags & HAS_SSE2) vpx_idct16x16_38_add = vpx_idct16x16_256_add_sse2;
+    if (flags & HAS_SSE2) vpx_idct16x16_38_add = vpx_idct16x16_38_add_sse2;
     vpx_idct32x32_1024_add = vpx_idct32x32_1024_add_c;
     if (flags & HAS_SSE2) vpx_idct32x32_1024_add = vpx_idct32x32_1024_add_sse2;
     vpx_idct32x32_135_add = vpx_idct32x32_135_add_c;
