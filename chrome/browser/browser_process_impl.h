@@ -137,7 +137,7 @@ class BrowserProcessImpl : public BrowserProcess,
   subresource_filter::ContentRulesetService*
   subresource_filter_ruleset_service() override;
 
-#if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   void StartAutoupdateTimer() override;
 #endif
 
@@ -297,7 +297,7 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<ChromeResourceDispatcherHostDelegate>
       resource_dispatcher_host_delegate_;
 
-#if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   base::RepeatingTimer autoupdate_timer_;
 
   // Gets called by autoupdate timer to see if browser needs restart and can be
@@ -305,7 +305,7 @@ class BrowserProcessImpl : public BrowserProcess,
   void OnAutoupdateTimer();
   bool CanAutorestartForUpdate() const;
   void RestartBackgroundInstance();
-#endif  // defined(OS_WIN) || defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#endif  // defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 
   // component updater is normally not used under ChromeOS due
   // to concerns over integrity of data shared between profiles,

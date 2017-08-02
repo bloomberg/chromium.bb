@@ -1454,8 +1454,7 @@ nqe::internal::NetworkID NetworkQualityEstimator::GetCurrentNetworkID() const {
       case NetworkChangeNotifier::ConnectionType::CONNECTION_ETHERNET:
         break;
       case NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI:
-#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
-    defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_WIN)
         network_id.id = GetWifiSSID();
 #endif
         break;

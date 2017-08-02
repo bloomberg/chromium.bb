@@ -117,6 +117,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
                                       BluetoothDevice* device,
                                       const std::string& old_address) {}
 
+// TODO(crbug.com/732991): Update comment and fix redundant #ifs throughout.
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
     // This function is implemented for ChromeOS only, and the support for
     // Android, MaxOS and Windows should be added on demand in the future.
@@ -262,7 +263,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // Returns a weak pointer to an existing adapter for testing purposes only.
   base::WeakPtr<BluetoothAdapter> GetWeakPtrForTesting();
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if defined(OS_LINUX)
   // Shutdown the adapter: tear down and clean up all objects owned by
   // BluetoothAdapter. After this call, the BluetoothAdapter will behave as if
   // no Bluetooth controller exists in the local system. |IsPresent| will return
@@ -444,7 +445,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       const CreateAdvertisementCallback& callback,
       const AdvertisementErrorCallback& error_callback) = 0;
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if defined(OS_LINUX)
   // Sets the interval between two consecutive advertisements. Valid ranges
   // for the interval are from 20ms to 10.24 seconds, with min <= max.
   // Note: This is a best effort. The actual interval may vary non-trivially
