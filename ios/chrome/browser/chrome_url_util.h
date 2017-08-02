@@ -18,6 +18,9 @@ bool UrlIsExternalFileReference(const GURL& url);
 bool UrlHasChromeScheme(const GURL& url);
 bool UrlHasChromeScheme(NSURL* url);
 
+// Returns YES if |url| matches chrome://newtab.
+bool IsURLNtp(const GURL& url);
+
 // Returns true if |scheme| is handled in Chrome, or by default handlers in
 // net::URLRequest.
 bool IsHandledProtocol(const std::string& scheme);

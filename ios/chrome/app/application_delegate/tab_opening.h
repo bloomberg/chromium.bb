@@ -7,6 +7,7 @@
 
 #include "base/ios/block_types.h"
 #include "ios/chrome/app/application_mode.h"
+#import "ios/chrome/browser/app_startup_parameters.h"
 #include "ui/base/page_transition_types.h"
 
 @class AppState;
@@ -32,6 +33,13 @@ class GURL;
 // Returns whether an NTP tab should be opened when the specified tabModel is
 // made current.
 - (BOOL)shouldOpenNTPTabOnActivationOfTabModel:(TabModel*)tabModel;
+
+// Returns a block that can be executed on the new tab to trigger one of the
+// commands. This block can be passed to
+// |dismissModalsAndOpenSelectedTabInMode:withURL:transition:completion:|.
+// This block must only be executed if new tab opened on NTP.
+- (ProceduralBlock)completionBlockForTriggeringAction:
+    (NTPTabOpeningPostOpeningAction)action;
 
 @end
 

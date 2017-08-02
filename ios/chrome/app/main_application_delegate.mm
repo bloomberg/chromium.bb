@@ -4,6 +4,7 @@
 
 #import "ios/chrome/app/main_application_delegate.h"
 
+#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/app/application_delegate/app_navigation.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
@@ -244,6 +245,8 @@
 
   BOOL applicationActive =
       [application applicationState] == UIApplicationStateActive;
+  DCHECK(applicationActive || !base::ios::IsRunningOnIOS11OrLater());
+
   return [URLOpener openURL:url
           applicationActive:applicationActive
                     options:options

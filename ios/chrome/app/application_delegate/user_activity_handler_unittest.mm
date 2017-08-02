@@ -403,19 +403,19 @@ TEST_F(UserActivityHandlerTest, continueUserActivityShortcutActions) {
 
   NSArray* parametersToTest = @[
     @[
-      base::SysUTF8ToNSString(spotlight::kSpotlightActionNewTab), @NO, @NO, @NO
+      base::SysUTF8ToNSString(spotlight::kSpotlightActionNewTab), @(NO_ACTION)
     ],
     @[
-      base::SysUTF8ToNSString(spotlight::kSpotlightActionNewIncognitoTab), @YES,
-      @NO, @NO
+      base::SysUTF8ToNSString(spotlight::kSpotlightActionNewIncognitoTab),
+      @(NO_ACTION)
     ],
     @[
-      base::SysUTF8ToNSString(spotlight::kSpotlightActionVoiceSearch), @NO,
-      @YES, @NO
+      base::SysUTF8ToNSString(spotlight::kSpotlightActionVoiceSearch),
+      @(START_VOICE_SEARCH)
     ],
     @[
-      base::SysUTF8ToNSString(spotlight::kSpotlightActionQRScanner), @NO, @NO,
-      @YES
+      base::SysUTF8ToNSString(spotlight::kSpotlightActionQRScanner),
+      @(START_QR_CODE_SCANNER)
     ]
   ];
 
@@ -447,12 +447,8 @@ TEST_F(UserActivityHandlerTest, continueUserActivityShortcutActions) {
     EXPECT_TRUE(result);
     EXPECT_EQ(gurlNewTab,
               [fakeStartupInformation startupParameters].externalURL);
-    EXPECT_EQ([parameters[1] boolValue],
-              [fakeStartupInformation startupParameters].launchInIncognito);
-    EXPECT_EQ([parameters[2] boolValue],
-              [fakeStartupInformation startupParameters].launchVoiceSearch);
-    EXPECT_EQ([parameters[3] boolValue],
-              [fakeStartupInformation startupParameters].launchQRScanner);
+    EXPECT_EQ([parameters[1] intValue],
+              [fakeStartupInformation startupParameters].postOpeningAction);
   }
 }
 
@@ -546,9 +542,10 @@ TEST_F(UserActivityHandlerTest, performActionForShortcutItemWithRealShortcut) {
   [fakeStartupInformation setIsPresentingFirstRunUI:NO];
 
   NSArray* parametersToTest = @[
-    @[ @"OpenNewTab", @NO, @NO, @NO ], @[ @"OpenIncognitoTab", @YES, @NO, @NO ],
-    @[ @"OpenVoiceSearch", @NO, @YES, @NO ],
-    @[ @"OpenQRScanner", @NO, @NO, @YES ]
+    @[ @"OpenNewTab", @NO, @(NO_ACTION) ],
+    @[ @"OpenIncognitoTab", @YES, @(NO_ACTION) ],
+    @[ @"OpenVoiceSearch", @NO, @(START_VOICE_SEARCH) ],
+    @[ @"OpenQRScanner", @NO, @(START_QR_CODE_SCANNER) ]
   ];
 
   swizzleHandleStartupParameters();
@@ -578,10 +575,8 @@ TEST_F(UserActivityHandlerTest, performActionForShortcutItemWithRealShortcut) {
               [fakeStartupInformation startupParameters].externalURL);
     EXPECT_EQ([[parameters objectAtIndex:1] boolValue],
               [fakeStartupInformation startupParameters].launchInIncognito);
-    EXPECT_EQ([[parameters objectAtIndex:2] boolValue],
-              [fakeStartupInformation startupParameters].launchVoiceSearch);
-    EXPECT_EQ([[parameters objectAtIndex:3] boolValue],
-              [fakeStartupInformation startupParameters].launchQRScanner);
+    EXPECT_EQ([[parameters objectAtIndex:2] intValue],
+              [fakeStartupInformation startupParameters].postOpeningAction);
     EXPECT_TRUE(completionHandlerExecuted());
     EXPECT_TRUE(completionHandlerArgument());
     EXPECT_TRUE(getHandleStartupParametersHasBeenCalled());

@@ -231,7 +231,7 @@ enum MobileSessionStartAction {
           declaredSourceApp:appId
             secureSourceApp:secureSourceApp
                 completeURL:url];
-    [params setLaunchVoiceSearch:YES];
+    [params setPostOpeningAction:START_VOICE_SEARCH];
     return params;
   }
 
@@ -252,7 +252,7 @@ enum MobileSessionStartAction {
           declaredSourceApp:appId
             secureSourceApp:secureSourceApp
                 completeURL:url];
-    [params setLaunchFocusOmnibox:YES];
+    [params setPostOpeningAction:FOCUS_OMNIBOX];
     return params;
   }
 
@@ -278,7 +278,7 @@ enum MobileSessionStartAction {
           declaredSourceApp:appId
             secureSourceApp:secureSourceApp
                 completeURL:url];
-    [params setLaunchQRScanner:YES];
+    [params setPostOpeningAction:START_QR_CODE_SCANNER];
     return params;
   }
 
@@ -291,7 +291,7 @@ enum MobileSessionStartAction {
             secureSourceApp:secureSourceApp
                 completeURL:url];
     [params setLaunchInIncognito:YES];
-    [params setLaunchFocusOmnibox:YES];
+    [params setPostOpeningAction:FOCUS_OMNIBOX];
     return params;
   }
 
