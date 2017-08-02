@@ -3491,18 +3491,26 @@
     // CSS logical props
     {
       name: "inline-size",
+      api_class: "CSSPropertyAPILogicalWidthOrHeight",
+      api_methods: ["parseSingleValue"],
       direction_aware: true,
     },
     {
       name: "block-size",
+      api_class: "CSSPropertyAPILogicalWidthOrHeight",
+      api_methods: ["parseSingleValue"],
       direction_aware: true,
     },
     {
       name: "min-inline-size",
+      api_class: "CSSPropertyAPILogicalWidthOrHeight",
+      api_methods: ["parseSingleValue"],
       direction_aware: true,
     },
     {
       name: "min-block-size",
+      api_class: "CSSPropertyAPILogicalWidthOrHeight",
+      api_methods: ["parseSingleValue"],
       direction_aware: true,
     },
     {
@@ -3634,22 +3642,22 @@
     },
     {
       name: "-webkit-logical-width",
-      api_class: "CSSPropertyAPIWebkitLogicalWidthOrHeight",
+      api_class: "CSSPropertyAPILogicalWidthOrHeight",
       direction_aware: true,
     },
     {
       name: "-webkit-logical-height",
-      api_class: "CSSPropertyAPIWebkitLogicalWidthOrHeight",
+      api_class: "CSSPropertyAPILogicalWidthOrHeight",
       direction_aware: true,
     },
     {
       name: "-webkit-min-logical-width",
-      api_class: "CSSPropertyAPIWebkitLogicalWidthOrHeight",
+      api_class: "CSSPropertyAPILogicalWidthOrHeight",
       direction_aware: true,
     },
     {
       name: "-webkit-min-logical-height",
-      api_class: "CSSPropertyAPIWebkitLogicalWidthOrHeight",
+      api_class: "CSSPropertyAPILogicalWidthOrHeight",
       direction_aware: true,
     },
     {
