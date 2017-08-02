@@ -612,6 +612,144 @@
         failTest("Unexpected error: " + e)
       });
   }
+
+  function srcObjectAddVideoTrack() {
+    var video = document.createElement('video');
+    video.autoplay = true;
+    assertEquals(video.srcObject, null);
+    navigator.mediaDevices.getUserMedia({audio: true, video: true})
+      .then(stream => {
+        video.onplaying = function() {
+          video.onplaying = null;
+          video.onloadstart = function() {
+            failTest("loadstart should not be called");
+          }
+
+          video.onresize = function() {
+            assertNotEquals(video.srcObject, null);
+            assertTrue(video.videoHeight > 0);
+            assertTrue(video.videoWidth > 0);
+            reportTestSuccess();
+          }
+
+          assertNotEquals(video.srcObject, null);
+          assertEquals(video.videoWidth, 0);
+          assertEquals(video.videoHeight, 0);
+          video.srcObject.addTrack(stream.getVideoTracks()[0]);
+        }
+        video.srcObject = new MediaStream(stream.getAudioTracks());
+      })
+    .catch(e => {
+      failTest("Unexpected error: " + e)
+    });
+  }
+
+  function srcObjectRemoveVideoTrack() {
+    var video = document.createElement('video');
+    video.autoplay = true;
+    assertEquals(video.srcObject, null);
+    navigator.mediaDevices.getUserMedia({audio: true, video: true})
+      .then(stream => {
+        video.onplaying = function() {
+          video.onplaying = null;
+          video.onloadstart = function() {
+            failTest("loadstart should not be called");
+          }
+
+          video.onresize = function() {
+            assertNotEquals(video.srcObject, null);
+            assertEquals(0, video.videoHeight);
+            assertEquals(0, video.videoWidth);
+            reportTestSuccess();
+          }
+
+          assertNotEquals(video.srcObject, null);
+          assertTrue(video.videoWidth > 0);
+          assertTrue(video.videoHeight > 0);
+          stream.removeTrack(stream.getVideoTracks()[0]);
+        }
+        video.srcObject = stream;
+      })
+    .catch(e => {
+      failTest("Unexpected error: " + e)
+    });
+  }
+
+  function srcObjectRemoveFirstOfTwoVideoTracks() {
+    var canvas = document.createElement('canvas');
+    var canvas_stream = canvas.captureStream();
+    var canvas_width = canvas_stream.getVideoTracks()[0].getSettings().width;
+    var canvas_height = canvas_stream.getVideoTracks()[0].getSettings().height;
+    assertTrue(canvas_width > 1);
+    assertTrue(canvas_height > 1);
+
+    // Paint something on the canvas, so that it produces frames.
+    var ctx = canvas.getContext("2d");
+    ctx.moveTo(0,0);
+    ctx.lineTo(200,100);
+    ctx.stroke();
+
+    var video = document.createElement('video');
+    video.autoplay = true;
+    assertEquals(video.srcObject, null);
+    var gum_width = canvas_width + 1;
+    var gum_height = canvas_height + 1;
+    navigator.mediaDevices.getUserMedia({
+        video: {
+          width: {exact: gum_width},
+          height: {exact: gum_height}
+        }
+      }).then(gum_stream => {
+        var gum_settings = gum_stream.getVideoTracks()[0].getSettings();
+        assertEquals(gum_width, gum_settings.width)
+        assertEquals(gum_height, gum_settings.height)
+        var big_stream = new MediaStream();
+        big_stream.addTrack(canvas_stream.getVideoTracks()[0]);
+        big_stream.addTrack(gum_stream.getVideoTracks()[0]);
+        video.onprogress = function() {
+          assertEquals(canvas_width, video.videoWidth);
+          assertEquals(canvas_height, video.videoHeight);
+          assertNotEquals(video.videoWidth, gum_width)
+          assertNotEquals(video.videoHeight, gum_height)
+          video.onprogress = function() {
+            assertEquals(gum_width, video.videoWidth);
+            assertEquals(gum_height, video.videoHeight);
+            assertNotEquals(video.videoWidth, canvas_width)
+            assertNotEquals(video.videoHeight, canvas_height)
+            reportTestSuccess();
+          }
+          big_stream.removeTrack(big_stream.getVideoTracks()[0]);
+        }
+        video.srcObject = big_stream;
+    })
+    .catch(e => {
+      failTest("Unexpected error: " + e)
+    });
+  }
+
+  function srcObjectReassignSameObject() {
+    var video = document.createElement('video');
+    video.autoplay = true;
+    assertEquals(video.srcObject, null);
+    navigator.mediaDevices.getUserMedia({audio: true, video: true})
+      .then(stream => {
+        video.onplaying = function() {
+          video.onplaying = null;
+          video.onloadstart = function() {
+            reportTestSuccess();
+          }
+          assertNotEquals(video.srcObject, null);
+          assertTrue(video.videoWidth > 0);
+          assertTrue(video.videoHeight > 0);
+          // Reassigning the same object should trigger the load algorithm.
+          video.srcObject = video.srcObject;
+        }
+        video.srcObject = stream;
+      })
+    .catch(e => {
+      failTest("Unexpected error: " + e)
+    });
+  }
   </script>
 </head>
 <body>

@@ -33,8 +33,6 @@ using blink::WebVector;
 
 namespace test_runner {
 
-class MockExtraData : public WebMediaStream::ExtraData {};
-
 MockWebUserMediaClient::MockWebUserMediaClient(WebTestDelegate* delegate)
     : delegate_(delegate),
       should_enumerate_extra_device_(false),
@@ -57,7 +55,6 @@ void MockWebUserMediaClient::RequestUserMedia(
   WebMediaStream stream;
   stream.Initialize(WebVector<WebMediaStreamTrack>(),
                     WebVector<WebMediaStreamTrack>());
-  stream.SetExtraData(new MockExtraData());
 
   if (request.Audio() &&
       !delegate_->AddMediaStreamAudioSourceAndTrack(&stream)) {
