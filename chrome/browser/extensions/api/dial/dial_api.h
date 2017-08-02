@@ -96,6 +96,9 @@ class DialAPI : public RefcountedKeyedService,
   // |dial_registry_|.
   media_router::DialRegistry* dial_registry_;
 
+  // Number of dial.onDeviceList event listeners.
+  int num_on_device_list_listeners_;
+
   // Device data for testing.
   std::unique_ptr<media_router::DialDeviceData> test_device_data_;
   std::unique_ptr<media_router::DialDeviceDescriptionData>
