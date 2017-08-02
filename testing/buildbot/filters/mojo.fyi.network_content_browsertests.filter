@@ -86,9 +86,7 @@
 -NavigationHandleImplBrowserTest.ErrorCodeOnRedirect
 -NavigationHandleImplBrowserTest.RedirectToRendererDebugUrl
 -ParallelDownloadTest.ParallelDownloadComplete
--PaymentAppBrowserTest.PaymentAppInvocation
--PaymentAppBrowserTest.PaymentAppInvocationAndFailed
--PaymentAppBrowserTest.PaymentAppOpenWindowFailed
+-PaymentAppBrowserTest.*
 -PlzNavigateNavigationHandleImplBrowserTest.ErrorPageNetworkError
 -PowerMonitorTest.TestGpuProcess
 -PowerMonitorTest.TestRendererProcess
