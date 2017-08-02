@@ -20,6 +20,18 @@ PASS navigator.getGamepads()[0].buttons[1].pressed is false
 PASS navigator.getGamepads()[0].axes.length is 2
 PASS navigator.getGamepads()[0].axes[0] is 0.5
 PASS navigator.getGamepads()[0].axes[1] is -1.0
+PASS navigator.getGamepads()[0].axes === navigator.getGamepads()[0].axes is true
+PASS navigator.getGamepads()[0].buttons === navigator.getGamepads()[0].buttons is true
+PASS navigator.getGamepads()[0].axes === oldAxes is true
+PASS navigator.getGamepads()[0].buttons === oldButtons is true
+PASS navigator.getGamepads()[0].axes === oldAxes is true
+PASS navigator.getGamepads()[0].buttons === oldButtons is true
+PASS navigator.getGamepads()[0].axes === oldAxes is false
+PASS navigator.getGamepads()[0].buttons === oldButtons is false
+PASS navigator.getGamepads()[0].axes === oldAxes is true
+PASS navigator.getGamepads()[0].buttons === oldButtons is true
+PASS navigator.getGamepads()[0].axes === oldAxes is false
+PASS navigator.getGamepads()[0].buttons === oldButtons is false
 PASS successfullyParsed is true
 
 TEST COMPLETE

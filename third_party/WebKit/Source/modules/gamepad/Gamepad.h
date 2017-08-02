@@ -61,11 +61,13 @@ class Gamepad final : public GarbageCollectedFinalized<Gamepad>,
   const String& mapping() const { return mapping_; }
   void SetMapping(const String& val) { mapping_ = val; }
 
-  const DoubleVector& axes() const { return axes_; }
+  const DoubleVector& axes();
   void SetAxes(unsigned count, const double* data);
+  bool isAxisDataDirty() const { return is_axis_data_dirty_; }
 
-  const GamepadButtonVector& buttons() const { return buttons_; }
+  const GamepadButtonVector& buttons();
   void SetButtons(unsigned count, const device::GamepadButton* data);
+  bool isButtonDataDirty() const { return is_button_data_dirty_; }
 
   GamepadPose* pose() const { return pose_; }
   void SetPose(const device::GamepadPose&);
@@ -91,6 +93,8 @@ class Gamepad final : public GarbageCollectedFinalized<Gamepad>,
   Member<GamepadPose> pose_;
   String hand_;
   unsigned display_id_;
+  bool is_axis_data_dirty_;
+  bool is_button_data_dirty_;
 };
 
 }  // namespace blink

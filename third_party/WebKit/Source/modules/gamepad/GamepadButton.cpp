@@ -12,4 +12,18 @@ GamepadButton* GamepadButton::Create() {
 
 GamepadButton::GamepadButton() : value_(0.), pressed_(false), touched_(false) {}
 
+bool GamepadButton::IsEqual(const device::GamepadButton& device_button) const {
+  return value_ == device_button.value && pressed_ == device_button.pressed &&
+         touched_ == (device_button.touched || device_button.pressed ||
+                      (device_button.value > 0.0f));
+}
+
+void GamepadButton::UpdateValuesFrom(
+    const device::GamepadButton& device_button) {
+  value_ = device_button.value;
+  pressed_ = device_button.pressed;
+  touched_ = (device_button.touched || device_button.pressed ||
+              (device_button.value > 0.0f));
+}
+
 }  // namespace blink

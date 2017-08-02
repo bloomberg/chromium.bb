@@ -19,6 +19,8 @@ PASS event.gamepad.buttons[2].pressed is true
 PASS event.gamepad.axes[0] is 0.5
 PASS event.gamepad.axes[1] is -1.0
 PASS event.gamepad.axes[2] is 0.333333
+PASS axes[0] is 0.5
+PASS buttons.hasOwnProperty('foo') is false
 Gamepad disconnected
 PASS event.__proto__ is GamepadEvent.prototype
 PASS event.__proto__.__proto__ is Event.prototype

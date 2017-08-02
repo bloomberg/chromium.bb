@@ -34,6 +34,8 @@
         shouldBe("gamepad.buttons[0].pressed.__proto__", "Boolean.prototype");
         shouldBe("gamepad.buttons[0].value.__proto__", "Number.prototype");
         shouldBe("gamepad.mapping.__proto__", "String.prototype");
+        shouldBeTrue("Object.isFrozen(gamepad.axes)");
+        shouldBeTrue("Object.isFrozen(gamepad.buttons)");
     }
     else
     {

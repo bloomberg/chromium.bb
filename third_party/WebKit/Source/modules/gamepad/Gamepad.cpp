@@ -25,30 +25,60 @@
 
 #include "modules/gamepad/Gamepad.h"
 
+#include <algorithm>
+
 namespace blink {
 
-Gamepad::Gamepad() : index_(0), timestamp_(0), display_id_(0) {}
+Gamepad::Gamepad()
+    : index_(0),
+      timestamp_(0),
+      display_id_(0),
+      is_axis_data_dirty_(true),
+      is_button_data_dirty_(true) {}
 
 Gamepad::~Gamepad() {}
 
+const Gamepad::DoubleVector& Gamepad::axes() {
+  is_axis_data_dirty_ = false;
+  return axes_;
+}
+
 void Gamepad::SetAxes(unsigned count, const double* data) {
+  bool skip_update =
+      axes_.size() == count && std::equal(data, data + count, axes_.begin());
+  if (skip_update)
+    return;
+
   axes_.resize(count);
   if (count)
     std::copy(data, data + count, axes_.begin());
+  is_axis_data_dirty_ = true;
+}
+
+const GamepadButtonVector& Gamepad::buttons() {
+  is_button_data_dirty_ = false;
+  return buttons_;
 }
 
 void Gamepad::SetButtons(unsigned count, const device::GamepadButton* data) {
+  bool skip_update =
+      buttons_.size() == count &&
+      std::equal(data, data + count, buttons_.begin(),
+                 [](const device::GamepadButton& device_gamepad_button,
+                    const Member<GamepadButton>& gamepad_button) {
+                   return gamepad_button->IsEqual(device_gamepad_button);
+                 });
+  if (skip_update)
+    return;
+
   if (buttons_.size() != count) {
     buttons_.resize(count);
     for (unsigned i = 0; i < count; ++i)
       buttons_[i] = GamepadButton::Create();
   }
-  for (unsigned i = 0; i < count; ++i) {
-    buttons_[i]->SetValue(data[i].value);
-    buttons_[i]->SetPressed(data[i].pressed);
-    buttons_[i]->SetTouched(data[i].touched || data[i].pressed ||
-                            (data[i].value > 0.0f));
-  }
+  for (unsigned i = 0; i < count; ++i)
+    buttons_[i]->UpdateValuesFrom(data[i]);
+  is_button_data_dirty_ = true;
 }
 
 void Gamepad::SetPose(const device::GamepadPose& pose) {
