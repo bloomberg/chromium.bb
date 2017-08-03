@@ -13,6 +13,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/permission_manager.h"
 #include "content/public/browser/permission_type.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
@@ -911,6 +913,28 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, WindowPrint) {
   EXPECT_TRUE(WaitForLoad(web_contents));
   EXPECT_FALSE(
       EvaluateScript(web_contents, "window.print()")->HasExceptionDetails());
+}
+
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, AllowInsecureLocalhostFlag) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  https_server.ServeFilesFromSourceDirectory("headless/test/data");
+  ASSERT_TRUE(https_server.Start());
+  GURL test_url = https_server.GetURL("/hello.html");
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowInsecureLocalhost);
+
+  HeadlessBrowserContext* browser_context =
+      browser()->CreateBrowserContextBuilder().Build();
+
+  HeadlessWebContentsImpl* web_contents =
+      HeadlessWebContentsImpl::From(browser_context->CreateWebContentsBuilder()
+                                        .SetInitialURL(test_url)
+                                        .Build());
+
+  // If the certificate fails to validate, this should fail.
+  EXPECT_TRUE(WaitForLoad(web_contents));
 }
 
 }  // namespace headless
