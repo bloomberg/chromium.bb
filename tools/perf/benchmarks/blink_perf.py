@@ -165,7 +165,8 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
 
   def SetOptions(self, options):
     super(_BlinkPerfMeasurement, self).SetOptions(options)
-    if 'content-shell' in options.browser_options.browser_type:
+    browser_type = options.browser_options.browser_type
+    if browser_type and 'content-shell' in browser_type:
       options.AppendExtraBrowserArgs('--expose-internals-for-testing')
 
   def _ContinueTestRunWithTracing(self, tab):
