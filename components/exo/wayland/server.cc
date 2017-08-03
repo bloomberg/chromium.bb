@@ -2047,6 +2047,15 @@ void remote_surface_set_window_geometry(wl_client* client,
       gfx::Rect(x, y, width, height));
 }
 
+void remote_surface_set_orientation(wl_client* client,
+                                    wl_resource* resource,
+                                    int32_t orientation) {
+  GetUserDataAs<ShellSurface>(resource)->SetOrientation(
+      orientation == ZCR_REMOTE_SURFACE_V1_ORIENTATION_PORTRAIT
+          ? Orientation::PORTRAIT
+          : Orientation::LANDSCAPE);
+}
+
 void remote_surface_set_scale(wl_client* client,
                               wl_resource* resource,
                               wl_fixed_t scale) {
@@ -2221,7 +2230,8 @@ const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_set_always_on_top,
     remote_surface_unset_always_on_top,
     remote_surface_ack_configure,
-    remote_surface_move};
+    remote_surface_move,
+    remote_surface_set_orientation};
 
 ////////////////////////////////////////////////////////////////////////////////
 // notification_surface_interface:
@@ -2574,7 +2584,7 @@ const struct zcr_remote_shell_v1_interface remote_shell_implementation = {
     remote_shell_destroy, remote_shell_get_remote_surface,
     remote_shell_get_notification_surface};
 
-const uint32_t remote_shell_version = 5;
+const uint32_t remote_shell_version = 6;
 
 void bind_remote_shell(wl_client* client,
                        void* data,

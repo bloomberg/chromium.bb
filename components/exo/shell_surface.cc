@@ -31,6 +31,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/class_property.h"
+#include "ui/compositor/compositor.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/path.h"
@@ -49,6 +50,12 @@ DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(Surface*, kMainSurfaceKey, nullptr)
 
 // Application Id set by the client.
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kApplicationIdKey, nullptr);
+
+// Maximum amount of time to wait until the window is resized
+// to match the display's orientation in tablet mode.
+// TODO(oshima): Looks like android is generating unnecessary frames.
+// Fix it on Android side and reduce the timeout.
+constexpr int kRotationLockTimeoutMs = 2500;
 
 // This is a struct for accelerator keys used to close ShellSurfaces.
 const struct Accelerator {
@@ -196,6 +203,12 @@ class ShellSurfaceWidget : public views::Widget {
   DISALLOW_COPY_AND_ASSIGN(ShellSurfaceWidget);
 };
 
+Orientation SizeToOrientation(const gfx::Size& size) {
+  DCHECK_NE(size.width(), size.height());
+  return size.width() > size.height() ? Orientation::LANDSCAPE
+                                      : Orientation::PORTRAIT;
+}
+
 }  // namespace
 
 // Helper class used to coalesce a number of changes into one "configure"
@@ -301,6 +314,7 @@ ShellSurface::ShellSurface(Surface* surface,
       container_(container) {
   WMHelper::GetInstance()->AddActivationObserver(this);
   WMHelper::GetInstance()->AddDisplayConfigurationObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
   surface->AddSurfaceObserver(this);
   SetRootSurface(surface);
   host_window()->Show();
@@ -334,6 +348,7 @@ ShellSurface::~ShellSurface() {
   }
   WMHelper::GetInstance()->RemoveActivationObserver(this);
   WMHelper::GetInstance()->RemoveDisplayConfigurationObserver(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
   if (parent_)
     parent_->RemoveObserver(this);
   if (root_surface())
@@ -599,6 +614,12 @@ void ShellSurface::SetGeometry(const gfx::Rect& geometry) {
   pending_geometry_ = geometry;
 }
 
+void ShellSurface::SetOrientation(Orientation orientation) {
+  TRACE_EVENT1("exo", "ShellSurface::SetOrientation", "orientation",
+               orientation == Orientation::PORTRAIT ? "portrait" : "landscape");
+  pending_orientation_ = orientation;
+}
+
 void ShellSurface::SetRectangularShadowEnabled(bool enabled) {
   TRACE_EVENT1("exo", "ShellSurface::SetRectangularShadowEnabled", "enabled",
                enabled);
@@ -774,6 +795,11 @@ void ShellSurface::OnSurfaceCommit() {
       if (container_ == ash::kShellWindowId_SystemModalContainer)
         UpdateSystemModal();
     }
+    orientation_ = pending_orientation_;
+    if (expected_orientation_ == orientation_)
+      compositor_lock_.reset();
+  } else {
+    compositor_lock_.reset();
   }
 }
 
@@ -983,7 +1009,7 @@ void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
 
     // The shadow size may be updated to match the widget. Change it back
     // to the shadow content size.
-    // TODO(oshima): When the arc window reiszing is enabled, we may want to
+    // TODO(oshima): When the window reiszing is enabled, we may want to
     // implement shadow management here instead of using shadow controller.
     UpdateShadow();
 
@@ -1083,6 +1109,38 @@ void ShellSurface::OnKeyEvent(ui::KeyEvent* event) {
       event->key_code() == ui::VKEY_ESCAPE) {
     EndDrag(true /* revert */);
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// display::DisplayObserver overrides:
+
+void ShellSurface::OnDisplayMetricsChanged(const display::Display& new_display,
+                                           uint32_t changed_metrics) {
+  if (!widget_ || !widget_->IsActive() || bounds_mode_ != BoundsMode::CLIENT ||
+      !WMHelper::GetInstance()->IsTabletModeWindowManagerEnabled()) {
+    return;
+  }
+
+  const display::Screen* screen = display::Screen::GetScreen();
+  display::Display current_display =
+      screen->GetDisplayNearestWindow(widget_->GetNativeWindow());
+  if (current_display.id() != new_display.id() ||
+      !(changed_metrics & display::DisplayObserver::DISPLAY_METRIC_ROTATION)) {
+    return;
+  }
+
+  Orientation target_orientation = SizeToOrientation(new_display.size());
+  if (orientation_ == target_orientation)
+    return;
+  expected_orientation_ = target_orientation;
+  EnsureCompositorIsLocked();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ui::CompositorLockClient overrides:
+
+void ShellSurface::CompositorLockTimedOut() {
+  compositor_lock_.reset();
 }
 
 void ShellSurface::OnMouseEvent(ui::MouseEvent* event) {
@@ -1723,6 +1781,15 @@ gfx::Point ShellSurface::GetMouseLocation() const {
   aura::Window::ConvertPointToTarget(
       root_window, widget_->GetNativeWindow()->parent(), &location);
   return location;
+}
+
+void ShellSurface::EnsureCompositorIsLocked() {
+  if (!compositor_lock_) {
+    ui::Compositor* compositor =
+      widget_->GetNativeWindow()->layer()->GetCompositor();
+    compositor_lock_ = compositor->GetCompositorLock(
+        this, base::TimeDelta::FromMilliseconds(kRotationLockTimeoutMs));
+  }
 }
 
 }  // namespace exo

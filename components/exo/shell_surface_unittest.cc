@@ -11,11 +11,13 @@
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/shell_test_api.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "ash/wm/workspace_controller_test_api.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"
@@ -27,6 +29,8 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
+#include "ui/compositor/compositor.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
@@ -1001,6 +1005,44 @@ TEST_F(ShellSurfaceTest,
   ash::wm::WMEvent minimize_event(ash::wm::WM_EVENT_MINIMIZE);
   aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
   ash::wm::GetWindowState(window)->OnWMEvent(&minimize_event);
+}
+
+TEST_F(ShellSurfaceTest, CompositorLockInRotation) {
+  UpdateDisplay("800x600");
+  const gfx::Size buffer_size(800, 600);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(
+      surface.get(), nullptr, ShellSurface::BoundsMode::CLIENT, gfx::Point(),
+      true, false, ash::kShellWindowId_DefaultContainer));
+  ash::Shell* shell = ash::Shell::Get();
+  shell->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  // Start in maximized.
+  shell_surface->Maximize();
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  gfx::Rect maximum_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  shell_surface->SetGeometry(maximum_bounds);
+  shell_surface->SetOrientation(Orientation::LANDSCAPE);
+  surface->Commit();
+
+  ui::Compositor* compositor =
+      shell_surface->GetWidget()->GetNativeWindow()->layer()->GetCompositor();
+
+  EXPECT_FALSE(compositor->IsLocked());
+
+  UpdateDisplay("800x600/r");
+
+  EXPECT_TRUE(compositor->IsLocked());
+
+  shell_surface->SetOrientation(Orientation::PORTRAIT);
+  surface->Commit();
+
+  EXPECT_FALSE(compositor->IsLocked());
 }
 
 }  // namespace
