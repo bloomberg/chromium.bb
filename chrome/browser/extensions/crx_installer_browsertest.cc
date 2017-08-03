@@ -141,7 +141,6 @@ WebApplicationInfo CreateWebAppInfo(const char* title,
   web_app_info.title = base::UTF8ToUTF16(title);
   web_app_info.description = base::UTF8ToUTF16(description);
   web_app_info.app_url = GURL(app_url);
-  web_app_info.scope = GURL(app_url);
 
   web_app_info.icons.push_back(CreateIconInfoWithBitmap(size));
 

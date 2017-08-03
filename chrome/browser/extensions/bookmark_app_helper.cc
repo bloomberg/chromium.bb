@@ -18,7 +18,6 @@
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/favicon_downloader.h"
@@ -32,7 +31,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/webshare/share_target_pref_helper.h"
-#include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/origin_trials/chrome_origin_trial_policy.h"
@@ -358,9 +356,6 @@ void BookmarkAppHelper::UpdateWebAppInfoFromManifest(
   // Set the url based on the manifest value, if any.
   if (manifest.start_url.is_valid())
     web_app_info->app_url = manifest.start_url;
-
-  if (!manifest.scope.is_empty())
-    web_app_info->scope = manifest.scope;
 
   // If any icons are specified in the manifest, they take precedence over any
   // we picked up from the web_app stuff.
@@ -810,7 +805,6 @@ void GetWebApplicationInfoFromApp(
   web_app_info.app_url = AppLaunchInfo::GetLaunchWebURL(extension);
   web_app_info.title = base::UTF8ToUTF16(extension->non_localized_name());
   web_app_info.description = base::UTF8ToUTF16(extension->description());
-  web_app_info.scope = GetScopeURLFromBookmarkApp(extension);
 
   const ExtensionIconSet& icon_set = extensions::IconsInfo::GetIcons(extension);
   std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
