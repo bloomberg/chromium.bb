@@ -1274,7 +1274,7 @@ FcFreeTypeQueryFace (const FT_Face  face,
     /*
      * Get the OS/2 table
      */
-    os2 = (TT_OS2 *) FT_Get_Sfnt_Table (face, ft_sfnt_os2);
+    os2 = (TT_OS2 *) FT_Get_Sfnt_Table (face, FT_SFNT_OS2);
 
     /*
      * Look first in the OS/2 table for the foundry, if
