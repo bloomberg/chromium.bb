@@ -462,6 +462,10 @@ void ShellSurface::SetPinned(ash::mojom::WindowPinType type) {
 void ShellSurface::SetSystemUiVisibility(bool autohide) {
   TRACE_EVENT1("exo", "ShellSurface::SetSystemUiVisibility", "autohide",
                autohide);
+
+  if (!widget_)
+    CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
+
   ash::wm::SetAutoHideShelf(widget_->GetNativeWindow(), autohide);
 }
 
