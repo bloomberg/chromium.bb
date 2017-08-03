@@ -58,6 +58,9 @@ class SearchCardView : public views::View {
           GetShadowForZHeight(kSearchResultZHeight)));
       content_view->SetBackground(
           views::CreateSolidBackground(kCardBackgroundColor));
+    } else {
+      content_view->SetBackground(
+          views::CreateSolidBackground(kCardBackgroundColorFullscreen));
     }
     SetLayoutManager(new views::FillLayout());
     AddChildView(content_view);
@@ -182,8 +185,7 @@ SearchResultPageView::SearchResultPageView()
   SetLayoutManager(new views::FillLayout);
 }
 
-SearchResultPageView::~SearchResultPageView() {
-}
+SearchResultPageView::~SearchResultPageView() = default;
 
 void SearchResultPageView::SetSelection(bool select) {
   if (select)

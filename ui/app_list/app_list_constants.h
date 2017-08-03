@@ -60,6 +60,7 @@ APP_LIST_EXPORT extern const float kFolderBubbleRadius;
 APP_LIST_EXPORT extern const float kFolderBubbleOffsetY;
 
 APP_LIST_EXPORT extern const SkColor kCardBackgroundColor;
+APP_LIST_EXPORT extern const SkColor kCardBackgroundColorFullscreen;
 
 APP_LIST_EXPORT extern const int kPageTransitionDurationInMs;
 APP_LIST_EXPORT extern const int kOverscrollPageTransitionDurationMs;

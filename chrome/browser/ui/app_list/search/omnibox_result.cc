@@ -159,7 +159,8 @@ OmniboxResult::OmniboxResult(Profile* profile,
       list_controller_(list_controller),
       autocomplete_controller_(autocomplete_controller),
       is_voice_query_(is_voice_query),
-      match_(match) {
+      match_(match),
+      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
   if (match_.search_terms_args && autocomplete_controller_) {
     match_.search_terms_args->from_app_list = true;
     autocomplete_controller_->UpdateMatchDestinationURL(
@@ -213,7 +214,7 @@ void OmniboxResult::UpdateIcon() {
   bool is_bookmarked =
       bookmark_model && bookmark_model->IsBookmarked(match_.destination_url);
 
-  if (features::IsFullscreenAppListEnabled()) {
+  if (is_fullscreen_app_list_enabled_) {
     const gfx::VectorIcon& icon =
         is_bookmarked ? kIcBookmarkIcon : TypeToVectorIcon(match_.type);
     SetIcon(
@@ -233,11 +234,17 @@ void OmniboxResult::UpdateTitleAndDetails() {
                                &title_tags);
   set_title_tags(title_tags);
 
-  set_details(match_.description);
-  SearchResult::Tags details_tags;
-  ACMatchClassificationsToTags(match_.description, match_.description_class,
-                               &details_tags);
-  set_details_tags(details_tags);
+  // Do not set details for omnibox non-url search result. This will make
+  // SearchResultView show single line row for omnibox non-url search result.
+  if (!is_fullscreen_app_list_enabled_ ||
+      !AutocompleteMatch::IsSearchType(match_.type)) {
+    set_is_url(true);
+    set_details(match_.description);
+    SearchResult::Tags details_tags;
+    ACMatchClassificationsToTags(match_.description, match_.description_class,
+                                 &details_tags);
+    set_details_tags(details_tags);
+  }
 }
 
 }  // namespace app_list

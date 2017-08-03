@@ -74,6 +74,10 @@ class APP_LIST_EXPORT SearchResultView
   void UpdateDetailsText();
   void UpdateAccessibleName();
 
+  // Creates title/details render text.
+  void CreateTitleRenderText();
+  void CreateDetailsRenderText();
+
   // views::View overrides:
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
@@ -105,9 +109,9 @@ class APP_LIST_EXPORT SearchResultView
   // SearchResultActionsViewDelegate overrides:
   void OnSearchResultActionActivated(size_t index, int event_flags) override;
 
-  SearchResult* result_;  // Owned by AppListModel::SearchResults.
+  SearchResult* result_ = nullptr;  // Owned by AppListModel::SearchResults.
 
-  bool is_last_result_;
+  bool is_last_result_ = false;
 
   // Parent list view. Owned by views hierarchy.
   SearchResultListView* list_view_;

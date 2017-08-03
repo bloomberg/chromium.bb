@@ -56,6 +56,7 @@ std::unique_ptr<SearchResult> LauncherSearchResult::Duplicate() const {
       new LauncherSearchResult(item_id_, discrete_value_relevance_, profile_,
                                extension_, icon_image_loader_);
   duplicated_result->set_title(title());
+  duplicated_result->set_title_tags(title_tags());
   return base::WrapUnique(duplicated_result);
 }
 

@@ -64,10 +64,10 @@ class APP_LIST_EXPORT SearchResult {
     // Similar to ACMatchClassification::Style, the style values are not
     // mutually exclusive.
     enum Style {
-      NONE  = 0,
-      URL   = 1 << 0,
+      NONE = 0,
+      URL = 1 << 0,
       MATCH = 1 << 1,
-      DIM   = 1 << 2,
+      DIM = 1 << 2,
     };
 
     Tag(int styles, size_t start, size_t end)
@@ -154,9 +154,7 @@ class APP_LIST_EXPORT SearchResult {
     distance_from_origin_ = distance;
   }
 
-  const Actions& actions() const {
-    return actions_;
-  }
+  const Actions& actions() const { return actions_; }
   void SetActions(const Actions& sets);
 
   // Whether the result can be automatically selected by a voice query.
@@ -169,6 +167,9 @@ class APP_LIST_EXPORT SearchResult {
 
   int percent_downloaded() const { return percent_downloaded_; }
   void SetPercentDownloaded(int percent_downloaded);
+
+  bool is_url() const { return is_url_; }
+  void set_is_url(bool is_url) { is_url_ = is_url; }
 
   // Returns the dimension at which this result's icon should be displayed.
   int GetPreferredIconDimension() const;
@@ -254,6 +255,10 @@ class APP_LIST_EXPORT SearchResult {
 
   bool is_installing_ = false;
   int percent_downloaded_ = 0;
+
+  // Indicates whether result is an omnibox url result. Set by OmniboxResult
+  // subclass.
+  bool is_url_ = false;
 
   base::ObserverList<SearchResultObserver> observers_;
 
