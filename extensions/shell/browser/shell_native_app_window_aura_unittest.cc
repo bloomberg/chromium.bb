@@ -29,7 +29,7 @@ class ShellNativeAppWindowAuraTest : public ExtensionsTest {
     AppWindowClient::Set(&app_window_client_);
   }
 
-  ~ShellNativeAppWindowAuraTest() override {}
+  ~ShellNativeAppWindowAuraTest() override { AppWindowClient::Set(nullptr); }
 
  protected:
   ShellAppWindowClient app_window_client_;
