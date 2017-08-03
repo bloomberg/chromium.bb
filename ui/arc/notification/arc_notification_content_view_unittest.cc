@@ -247,6 +247,7 @@ class ArcNotificationContentViewTest : public views::ViewsTestBase {
     DummyEvent dummy_event;
     auto* control_buttons_view =
         GetArcNotificationContentView()->control_buttons_view_;
+    ASSERT_TRUE(control_buttons_view);
     message_center::PaddedButton* close_button =
         control_buttons_view->close_button();
     ASSERT_NE(nullptr, close_button);
@@ -257,18 +258,31 @@ class ArcNotificationContentViewTest : public views::ViewsTestBase {
       const message_center::Notification& notification) {
     DCHECK(!notification_view_);
 
-    notification_view_.reset(static_cast<ArcNotificationView*>(
-        message_center::MessageViewFactory::Create(controller(), notification,
-                                                   true)));
-    notification_view_->set_owned_by_client();
+    auto result = CreateNotificationView(notification);
+    notification_view_ = std::move(result.first);
+    wrapper_widget_ = std::move(result.second);
+    wrapper_widget_->Show();
+  }
+
+  std::pair<std::unique_ptr<ArcNotificationView>,
+            std::unique_ptr<views::Widget>>
+  CreateNotificationView(const message_center::Notification& notification) {
+    std::unique_ptr<ArcNotificationView> notification_view(
+        static_cast<ArcNotificationView*>(
+            message_center::MessageViewFactory::Create(controller(),
+                                                       notification, true)));
+    notification_view->set_owned_by_client();
     views::Widget::InitParams params(
         CreateParams(views::Widget::InitParams::TYPE_POPUP));
 
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    wrapper_widget_ = base::MakeUnique<views::Widget>();
-    wrapper_widget_->Init(params);
-    wrapper_widget_->SetContentsView(notification_view_.get());
-    wrapper_widget_->SetSize(notification_view_->GetPreferredSize());
+    auto wrapper_widget = base::MakeUnique<views::Widget>();
+    wrapper_widget->Init(params);
+    wrapper_widget->SetContentsView(notification_view.get());
+    wrapper_widget->SetSize(notification_view->GetPreferredSize());
+
+    return std::make_pair(std::move(notification_view),
+                          std::move(wrapper_widget));
   }
 
   void CloseNotificationView() {
@@ -394,6 +408,61 @@ TEST_F(ArcNotificationContentViewTest, ReuseSurfaceAfterClosing) {
 
   // Reuse again.
   CreateAndShowNotificationView(notification);
+  CloseNotificationView();
+}
+
+TEST_F(ArcNotificationContentViewTest, ReuseAndCloseSurfaceBeforeClosing) {
+  std::string notification_key("notification id");
+
+  auto notification_item =
+      base::MakeUnique<MockArcNotificationItem>(notification_key);
+  message_center::Notification notification =
+      CreateNotification(notification_item.get());
+
+  surface_manager()->PrepareSurface(notification_key);
+
+  // Create the first view.
+  auto result = CreateNotificationView(notification);
+  auto notification_view = std::move(result.first);
+  auto wrapper_widget = std::move(result.second);
+  wrapper_widget->Show();
+
+  // Create the second view.
+  CreateAndShowNotificationView(notification);
+  // Close second view.
+  CloseNotificationView();
+
+  // Close the first view.
+  wrapper_widget->Close();
+  wrapper_widget.reset();
+  notification_view.reset();
+}
+
+TEST_F(ArcNotificationContentViewTest, ReuseSurfaceBeforeClosing) {
+  std::string notification_key("notification id");
+
+  auto notification_item =
+      base::MakeUnique<MockArcNotificationItem>(notification_key);
+  message_center::Notification notification =
+      CreateNotification(notification_item.get());
+
+  surface_manager()->PrepareSurface(notification_key);
+
+  // Create the first view.
+  auto result = CreateNotificationView(notification);
+  auto notification_view = std::move(result.first);
+  auto wrapper_widget = std::move(result.second);
+  wrapper_widget->Show();
+
+  // Create the second view.
+  CreateAndShowNotificationView(notification);
+
+  // Close the first view.
+  wrapper_widget->Close();
+  wrapper_widget.reset();
+  notification_view.reset();
+
+  // Close second view.
   CloseNotificationView();
 }
 
