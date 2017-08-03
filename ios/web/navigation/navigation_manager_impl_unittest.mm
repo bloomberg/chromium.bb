@@ -1791,11 +1791,12 @@ TEST_P(NavigationManagerTest, ApplyTransientRewriters) {
 
 // Tests that GetIndexOfItem() returns the correct values.
 TEST_P(NavigationManagerTest, GetIndexOfItem) {
-  if (GetParam() == TEST_WK_BASED_NAVIGATION_MANAGER) {
-    // TODO(crbug.com/734150): Enable this test once |GetIndexOfItem| is
-    // implemented in WKBasedNavigationManager.
-    return;
-  }
+  // This test manipuates the WKBackForwardListItems in mock_wk_list_ directly
+  // to retain the NavigationItem association.
+  WKBackForwardListItem* wk_item0 =
+      [CRWTestBackForwardList itemWithURLString:@"http://www.url.com/0"];
+  WKBackForwardListItem* wk_item1 =
+      [CRWTestBackForwardList itemWithURLString:@"http://www.url.com/1"];
 
   // Create two items and add them to the NavigationManagerImpl.
   navigation_manager()->AddPendingItem(
@@ -1803,7 +1804,7 @@ TEST_P(NavigationManagerTest, GetIndexOfItem) {
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
 
-  [mock_wk_list_ setCurrentURL:@"http://www.url.com/0"];
+  mock_wk_list_.currentItem = wk_item0;
   navigation_manager()->CommitPendingItem();
 
   web::NavigationItem* item0 = navigation_manager()->GetLastCommittedItem();
@@ -1812,9 +1813,8 @@ TEST_P(NavigationManagerTest, GetIndexOfItem) {
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
 
-  [mock_wk_list_ setCurrentURL:@"http://www.url.com/1"
-                  backListURLs:@[ @"http://www.url.com/0" ]
-               forwardListURLs:nil];
+  mock_wk_list_.currentItem = wk_item1;
+  mock_wk_list_.backList = @[ wk_item0 ];
   navigation_manager()->CommitPendingItem();
 
   web::NavigationItem* item1 = navigation_manager()->GetLastCommittedItem();
