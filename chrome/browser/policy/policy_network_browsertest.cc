@@ -403,7 +403,7 @@ IN_PROC_BROWSER_TEST_F(QuicAllowedPolicyDynamicTest,
   EXPECT_FALSE(IsQuicEnabled(system_request_context()));
   EXPECT_FALSE(IsQuicEnabled(safe_browsing_service_request_context()));
   EXPECT_FALSE(IsQuicEnabled(profile_1()->GetRequestContext()));
-  EXPECT_TRUE(IsQuicEnabled(profile_2()->GetRequestContext()));
+  EXPECT_FALSE(IsQuicEnabled(profile_2()->GetRequestContext()));
 
   // Disable QUIC in second profile
   SetQuicAllowedPolicy(policy_for_profile_2(), false);

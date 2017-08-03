@@ -34,6 +34,7 @@
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/net/predictor.h"
+#include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/notifications/extension_welcome_notification.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
@@ -43,7 +44,6 @@
 #include "chrome/browser/prefs/origin_trial_prefs.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
-#include "chrome/browser/profiles/net_http_session_params_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -472,7 +472,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   MediaDeviceIDSalt::RegisterProfilePrefs(registry);
   MediaStreamDevicesController::RegisterProfilePrefs(registry);
   NavigationCorrectionTabObserver::RegisterProfilePrefs(registry);
-  NetHttpSessionParamsObserver::RegisterProfilePrefs(registry);
   NotifierStateTracker::RegisterProfilePrefs(registry);
   ntp_snippets::BreakingNewsGCMAppHandler::RegisterProfilePrefs(registry);
   ntp_snippets::ContentSuggestionsService::RegisterProfilePrefs(registry);
@@ -491,6 +490,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   PrefsTabHelper::RegisterProfilePrefs(registry);
   Profile::RegisterProfilePrefs(registry);
   ProfileImpl::RegisterProfilePrefs(registry);
+  ProfileNetworkContextService::RegisterProfilePrefs(registry);
   ProtocolHandlerRegistry::RegisterProfilePrefs(registry);
   PushMessagingAppIdentifier::RegisterProfilePrefs(registry);
   RegisterBrowserUserPrefs(registry);

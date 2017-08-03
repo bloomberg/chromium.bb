@@ -7,9 +7,14 @@
 
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_member.h"
 #include "content/public/common/network_service.mojom.h"
 
 class Profile;
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 
 // KeyedService that initializes and provides access to the NetworkContexts for
 // a Profile. This will eventually replace ProfileIOData.
@@ -54,13 +59,20 @@ class ProfileNetworkContextService : public KeyedService {
   // be called once for a profile, from the ChromeContentBrowserClient.
   content::mojom::NetworkContextPtr CreateMainNetworkContext();
 
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
  private:
+  // Checks |quic_allowed_|, and disables QUIC if needed.
+  void DisableQuicIfNotAllowed();
+
   Profile* const profile_;
 
   // This is a NetworkContext that wraps ProfileIOData's main URLRequestContext.
   // Always initialized in SetUpProfileIODataMainContext, but it's only returned
   // by Context() when the network service is disabled.
   content::mojom::NetworkContextPtr profile_io_data_main_network_context_;
+
+  BooleanPrefMember quic_allowed_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileNetworkContextService);
 };

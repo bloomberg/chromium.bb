@@ -4,13 +4,17 @@
 
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "content/network/network_context.h"
 #include "content/network/network_service_impl.h"
 #include "content/public/common/network_service.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "net/http/http_network_session.h"
+#include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,6 +39,10 @@ class NetworkContextTest : public testing::Test {
         std::move(context_params));
   }
 
+  mojom::NetworkService* network_service() const {
+    return network_service_.get();
+  }
+
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<NetworkServiceImpl> network_service_;
@@ -44,6 +52,47 @@ class NetworkContextTest : public testing::Test {
   // message loop must be spun for that to happen.
   mojom::NetworkContextPtr network_context_ptr_;
 };
+
+TEST_F(NetworkContextTest, DisableQuic) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableQuic);
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(mojom::NetworkContextParams::New());
+  // By default, QUIC should be enabled for new NetworkContexts when the command
+  // line indicates it should be.
+  EXPECT_TRUE(network_context->url_request_context()
+                  ->http_transaction_factory()
+                  ->GetSession()
+                  ->params()
+                  .enable_quic);
+
+  // Disabling QUIC should disable it on existing NetworkContexts.
+  network_service()->DisableQuic();
+  EXPECT_FALSE(network_context->url_request_context()
+                   ->http_transaction_factory()
+                   ->GetSession()
+                   ->params()
+                   .enable_quic);
+
+  // Disabling QUIC should disable it new NetworkContexts.
+  std::unique_ptr<NetworkContext> network_context2 =
+      CreateContextWithParams(mojom::NetworkContextParams::New());
+  EXPECT_FALSE(network_context2->url_request_context()
+                   ->http_transaction_factory()
+                   ->GetSession()
+                   ->params()
+                   .enable_quic);
+
+  // Disabling QUIC again should be harmless.
+  network_service()->DisableQuic();
+  std::unique_ptr<NetworkContext> network_context3 =
+      CreateContextWithParams(mojom::NetworkContextParams::New());
+  EXPECT_FALSE(network_context3->url_request_context()
+                   ->http_transaction_factory()
+                   ->GetSession()
+                   ->params()
+                   .enable_quic);
+}
 
 TEST_F(NetworkContextTest, DisableDataUrlSupport) {
   mojom::NetworkContextParamsPtr context_params =

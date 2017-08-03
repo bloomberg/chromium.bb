@@ -39,12 +39,21 @@ class SystemNetworkContextManager {
   // NetworkContext will not be used by the SystemNetworkContextManager.
   //
   // Must be called before the system NetworkContext is first used.
+  //
+  // |is_quic_allowed| is set to true if policy allows QUIC to be enabled.
   static void SetUp(
       content::mojom::NetworkContextRequest* network_context_request,
-      content::mojom::NetworkContextParamsPtr* network_context_params);
+      content::mojom::NetworkContextParamsPtr* network_context_params,
+      bool* is_quic_allowed);
 
-  // Returns the System NetworkContext. May only be called after SetUp().
+  // Returns the System NetworkContext. May only be called after SetUp(). Does
+  // any initialization of the NetworkService that may be needed when first
+  // called.
   static content::mojom::NetworkContext* Context();
+
+  // Permanently disables QUIC, both for NetworkContexts using the IOThread's
+  // NetworkService, and for those using the network service (if enabled).
+  static void DisableQuic();
 
  private:
   static SystemNetworkContextManager* GetInstance();
@@ -65,6 +74,8 @@ class SystemNetworkContextManager {
   // Always initialized in SetUp, but it's only returned by Context() when the
   // network service is disabled.
   content::mojom::NetworkContextPtr io_thread_network_context_;
+
+  bool is_quic_allowed_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(SystemNetworkContextManager);
 };

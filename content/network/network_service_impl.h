@@ -48,9 +48,14 @@ class CONTENT_EXPORT NetworkServiceImpl : public service_manager::Service,
   // mojom::NetworkService implementation:
   void CreateNetworkContext(mojom::NetworkContextRequest request,
                             mojom::NetworkContextParamsPtr params) override;
+  void DisableQuic() override;
+
+  bool quic_disabled() const { return quic_disabled_; }
 
  private:
   class MojoNetLog;
+
+  friend class NetworkService;
 
   // service_manager::Service implementation.
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
@@ -70,6 +75,8 @@ class CONTENT_EXPORT NetworkServiceImpl : public service_manager::Service,
   // NetworkContexts share global state with the NetworkService, so must be
   // destroyed first.
   std::set<NetworkContext*> network_contexts_;
+
+  bool quic_disabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceImpl);
 };

@@ -20,7 +20,6 @@ namespace content {
 // Allows an in-process NetworkService to be set up.
 class CONTENT_EXPORT NetworkService : public mojom::NetworkService {
  public:
-  // TODO(mmenke): Take in a NetworkServiceRequest.
   static std::unique_ptr<NetworkService> Create();
 
   // Can be used to seed a NetworkContext with a consumer-configured
