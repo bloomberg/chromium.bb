@@ -17,6 +17,7 @@
     "DOMSubtreeModified",
     "abort",
     "abortpayment",
+    "accessibleclick",
     "activate",
     "active",
     "addsourcebuffer",

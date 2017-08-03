@@ -822,6 +822,77 @@ const AXObject* AXObject::InertRoot() const {
   return 0;
 }
 
+bool AXObject::DispatchEventToAOMEventListeners(Event& event,
+                                                Element* target_element) {
+  HeapVector<Member<AccessibleNode>> event_path;
+  for (AXObject* ancestor = this; ancestor;
+       ancestor = ancestor->ParentObject()) {
+    Element* ancestor_element = ancestor->GetElement();
+    if (!ancestor_element)
+      continue;
+
+    AccessibleNode* ancestor_accessible_node =
+        ancestor_element->ExistingAccessibleNode();
+    if (!ancestor_accessible_node)
+      continue;
+
+    event_path.push_back(ancestor_accessible_node);
+  }
+
+  // Short-circuit: if there are no AccessibleNodes attached anywhere
+  // in the ancestry of this node, exit.
+  if (!event_path.size())
+    return false;
+
+  // Since we now know the AOM is being used in this document, get the
+  // AccessibleNode for the target element and create it if necessary -
+  // otherwise we wouldn't be able to set the event target. However note
+  // that if it didn't previously exist it won't be part of the event path.
+  if (!target_element)
+    target_element = GetElement();
+  AccessibleNode* target = nullptr;
+  if (target_element) {
+    target = target_element->accessibleNode();
+    event.SetTarget(target);
+  }
+
+  // Capturing phase.
+  event.SetEventPhase(Event::kCapturingPhase);
+  for (int i = static_cast<int>(event_path.size()) - 1; i >= 0; i--) {
+    // Don't call capturing event listeners on the target. Note that
+    // the target may not necessarily be in the event path which is why
+    // we check here.
+    if (event_path[i] == target)
+      break;
+
+    event.SetCurrentTarget(event_path[i]);
+    event_path[i]->FireEventListeners(&event);
+    if (event.PropagationStopped())
+      return true;
+  }
+
+  // Targeting phase.
+  event.SetEventPhase(Event::kAtTarget);
+  event.SetCurrentTarget(event_path[0]);
+  event_path[0]->FireEventListeners(&event);
+  if (event.PropagationStopped())
+    return true;
+
+  // Bubbling phase.
+  event.SetEventPhase(Event::kBubblingPhase);
+  for (size_t i = 1; i < event_path.size(); i++) {
+    event.SetCurrentTarget(event_path[i]);
+    event_path[i]->FireEventListeners(&event);
+    if (event.PropagationStopped())
+      return true;
+  }
+
+  if (event.defaultPrevented())
+    return true;
+
+  return false;
+}
+
 bool AXObject::IsDescendantOfDisabledNode() const {
   UpdateCachedAttributeValuesIfNeeded();
   return cached_is_descendant_of_disabled_node_;
@@ -1714,6 +1785,10 @@ LayoutRect AXObject::GetBoundsInFrameCoordinates() const {
 // Modify or take an action on an object.
 //
 
+bool AXObject::PerformDefaultAction() {
+  return Press();
+}
+
 bool AXObject::Press() {
   Document* document = GetDocument();
   if (!document)
@@ -1722,6 +1797,10 @@ bool AXObject::Press() {
   UserGestureIndicator gesture_indicator(
       UserGestureToken::Create(document, UserGestureToken::kNewGesture));
   Element* action_elem = ActionElement();
+  Event* event = Event::CreateCancelable(EventTypeNames::accessibleclick);
+  if (DispatchEventToAOMEventListeners(*event, action_elem))
+    return true;
+
   if (action_elem) {
     action_elem->AccessKeyAction(true);
     return true;

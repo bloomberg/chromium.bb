@@ -14,7 +14,7 @@ interface Accelerometer : Sensor
     getter y
     getter z
     method constructor
-interface AccessibleNode
+interface AccessibleNode : EventTarget
     attribute @@toStringTag
     getter activeDescendant
     getter atomic
@@ -43,6 +43,7 @@ interface AccessibleNode
     getter modal
     getter multiline
     getter multiselectable
+    getter onaccessibleclick
     getter orientation
     getter owns
     getter placeholder
@@ -91,6 +92,7 @@ interface AccessibleNode
     setter modal
     setter multiline
     setter multiselectable
+    setter onaccessibleclick
     setter orientation
     setter owns
     setter placeholder
