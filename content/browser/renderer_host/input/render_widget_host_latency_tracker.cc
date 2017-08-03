@@ -80,62 +80,62 @@ void AddLatencyInfoComponentIds(LatencyInfo* latency,
 
 void RecordEQTAccuracy(base::TimeDelta queueing_time,
                        base::TimeDelta expected_queueing_time) {
-  float expected_queueing_time_ms = expected_queueing_time.InMillisecondsF();
+  float queueing_time_ms = queueing_time.InMillisecondsF();
 
-  if (expected_queueing_time_ms < 10) {
+  if (queueing_time_ms < 10) {
     UMA_HISTOGRAM_TIMES(
         "RendererScheduler."
-        "QueueingDurationWhenExpectedQueueingTime_LessThan.10ms",
-        queueing_time);
+        "ExpectedQueueingTimeWhenQueueingTime_LessThan.10ms",
+        expected_queueing_time);
   }
 
-  if (expected_queueing_time_ms < 150) {
+  if (queueing_time_ms < 150) {
     UMA_HISTOGRAM_TIMES(
         "RendererScheduler."
-        "QueueingDurationWhenExpectedQueueingTime_LessThan.150ms",
-        queueing_time);
+        "ExpectedQueueingTimeWhenQueueingTime_LessThan.150ms",
+        expected_queueing_time);
   }
 
-  if (expected_queueing_time_ms < 300) {
+  if (queueing_time_ms < 300) {
     UMA_HISTOGRAM_TIMES(
         "RendererScheduler."
-        "QueueingDurationWhenExpectedQueueingTime_LessThan.300ms",
-        queueing_time);
+        "ExpectedQueueingTimeWhenQueueingTime_LessThan.300ms",
+        expected_queueing_time);
   }
 
-  if (expected_queueing_time_ms < 450) {
+  if (queueing_time_ms < 450) {
     UMA_HISTOGRAM_TIMES(
         "RendererScheduler."
-        "QueueingDurationWhenExpectedQueueingTime_LessThan.450ms",
-        queueing_time);
+        "ExpectedQueueingTimeWhenQueueingTime_LessThan.450ms",
+        expected_queueing_time);
   }
 
-  if (expected_queueing_time_ms > 10) {
+  if (queueing_time_ms > 10) {
     UMA_HISTOGRAM_TIMES(
         "RendererScheduler."
-        "QueueingDurationWhenExpectedQueueingTime_GreaterThan.10ms",
-        queueing_time);
+        "ExpectedQueueingTimeWhenQueueingTime_GreaterThan.10ms",
+        expected_queueing_time);
   }
 
-  if (expected_queueing_time_ms > 150) {
+  if (queueing_time_ms > 150) {
     UMA_HISTOGRAM_TIMES(
         "RendererScheduler."
-        "QueueingDurationWhenExpectedQueueingTime_GreaterThan.150ms",
-        queueing_time);
+        "ExpectedQueueingTimeWhenQueueingTime_GreaterThan.150ms",
+        expected_queueing_time);
   }
 
-  if (expected_queueing_time_ms > 300) {
+  if (queueing_time_ms > 300) {
     UMA_HISTOGRAM_TIMES(
         "RendererScheduler."
-        "QueueingDurationWhenExpectedQueueingTime_GreaterThan.300ms",
-        queueing_time);
+        "ExpectedQueueingTimeWhenQueueingTime_GreaterThan.300ms",
+        expected_queueing_time);
   }
 
-  if (expected_queueing_time_ms > 450) {
+  if (queueing_time_ms > 450) {
     UMA_HISTOGRAM_TIMES(
         "RendererScheduler."
-        "QueueingDurationWhenExpectedQueueingTime_GreaterThan.450ms",
-        queueing_time);
+        "ExpectedQueueingTimeWhenQueueingTime_GreaterThan.450ms",
+        expected_queueing_time);
   }
 }
 
