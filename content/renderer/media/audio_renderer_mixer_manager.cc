@@ -19,30 +19,38 @@
 #include "media/base/audio_renderer_mixer_input.h"
 
 namespace {
+
 // Calculate mixer output parameters based on mixer input parameters and
 // hardware parameters for audio output.
 media::AudioParameters GetMixerOutputParams(
     const media::AudioParameters& input_params,
     const media::AudioParameters& hardware_params,
     media::AudioLatency::LatencyType latency) {
-  int output_sample_rate = input_params.sample_rate();
-  bool valid_not_fake_hardware_params =
-      hardware_params.format() != media::AudioParameters::AUDIO_FAKE &&
-      hardware_params.IsValid();
-  int preferred_high_latency_output_buffer_size = 0;
+  int output_sample_rate, preferred_output_buffer_size;
+  if (!hardware_params.IsValid() ||
+      hardware_params.format() == media::AudioParameters::AUDIO_FAKE) {
+    // With fake or invalid hardware params, don't waste cycles on resampling.
+    output_sample_rate = input_params.sample_rate();
+    preferred_output_buffer_size = 0;  // Let media::AudioLatency() choose.
+  } else if (media::AudioLatency::IsResamplingPassthroughSupported(latency)) {
+    // Certain platforms don't require us to resample to a single rate for low
+    // latency, so again, don't waste cycles on resampling.
+    output_sample_rate = input_params.sample_rate();
 
-#if !defined(OS_CHROMEOS)
-  // On ChromeOS as well as when a fake device is used, we can rely on the
-  // playback device to handle resampling, so don't waste cycles on it here.
-  // On other systems if hardware parameters are valid and the device is not
-  // fake, resample to hardware sample rate. Otherwise, pass the input one and
-  // let the browser side handle automatic fallback.
-  if (valid_not_fake_hardware_params) {
+    // For playback, prefer the input params buffer size unless the hardware
+    // needs something even larger (say for Bluetooth devices).
+    if (latency == media::AudioLatency::LATENCY_PLAYBACK) {
+      preferred_output_buffer_size =
+          std::max(input_params.frames_per_buffer(),
+                   hardware_params.frames_per_buffer());
+    } else {
+      preferred_output_buffer_size = hardware_params.frames_per_buffer();
+    }
+  } else {
+    // Otherwise, always resample and rebuffer to the hardware parameters.
     output_sample_rate = hardware_params.sample_rate();
-    preferred_high_latency_output_buffer_size =
-        hardware_params.frames_per_buffer();
+    preferred_output_buffer_size = hardware_params.frames_per_buffer();
   }
-#endif
 
   int output_buffer_size = 0;
 
@@ -54,13 +62,11 @@ media::AudioParameters GetMixerOutputParams(
       break;
     case media::AudioLatency::LATENCY_RTC:
       output_buffer_size = media::AudioLatency::GetRtcBufferSize(
-          output_sample_rate, valid_not_fake_hardware_params
-                                  ? hardware_params.frames_per_buffer()
-                                  : 0);
+          output_sample_rate, preferred_output_buffer_size);
       break;
     case media::AudioLatency::LATENCY_PLAYBACK:
       output_buffer_size = media::AudioLatency::GetHighLatencyBufferSize(
-          output_sample_rate, preferred_high_latency_output_buffer_size);
+          output_sample_rate, preferred_output_buffer_size);
       break;
     case media::AudioLatency::LATENCY_EXACT_MS:
     // TODO(olka): add support when WebAudio requires it.
