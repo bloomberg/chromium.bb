@@ -5,6 +5,7 @@
 #include "chrome/common/chrome_features.h"
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "extensions/features/features.h"
 #include "ppapi/features/features.h"
@@ -135,6 +136,11 @@ const base::Feature kClickToOpenPDFPlaceholder{
 // search engine's search page consistent.
 const base::Feature kConsistentOmniboxGeolocation{
     "ConsistentOmniboxGeolocation", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
+
+#if defined(OS_MACOSX)
+const base::Feature kContentFullscreen{"ContentFullscreen",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_ANDROID)

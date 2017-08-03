@@ -2086,6 +2086,12 @@ const char kFullscreenToolbarRevealDescription[] =
     "Reveal the toolbar in fullscreen for a short period when the tab strip "
     "has changed.";
 
+const char kContentFullscreenName[] = "Improved Content Fullscreen";
+
+const char kContentFullscreenDescription[] =
+    "Fullscreen content window detaches from main browser window and goes to "
+    "a new space without moving or changing the original browser window.";
+
 const char kTabStripKeyboardFocusName[] = "Tab Strip Keyboard Focus";
 
 const char kTabStripKeyboardFocusDescription[] =
