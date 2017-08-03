@@ -33,21 +33,6 @@ const base::Value* FindFirstPeriodicInterval(const base::Value& root) {
   return nullptr;
 }
 
-const base::Value* ResolveValuePath(const base::Value& input,
-                                    std::initializer_list<const char*> path) {
-  const base::Value* cur = &input;
-  for (const char* component : path) {
-    if (!cur->is_dict())
-      return nullptr;
-
-    auto found = cur->FindKey(component);
-    if (found == cur->DictEnd())
-      return nullptr;
-    cur = &found->second;
-  }
-  return cur;
-}
-
 }  // namespace
 
 TEST(ProfilingJsonExporter, Simple) {
@@ -84,13 +69,13 @@ TEST(ProfilingJsonExporter, Simple) {
   ASSERT_TRUE(periodic_interval) << "Array contains no periodic_interval";
 
   const base::Value* heaps_v2 =
-      ResolveValuePath(*periodic_interval, {"args", "dumps", "heaps_v2"});
+      periodic_interval->GetPath({"args", "dumps", "heaps_v2"});
   ASSERT_TRUE(heaps_v2);
 
   // Counts should be a list of two items, a 1 and a 2 (in either order). The
   // two matching 16-byte allocations should be coalesced to produce the 2.
   const base::Value* counts =
-      ResolveValuePath(*heaps_v2, {"allocators", "malloc", "counts"});
+      heaps_v2->GetPath({"allocators", "malloc", "counts"});
   ASSERT_TRUE(counts);
   EXPECT_EQ(2u, counts->GetList().size());
   EXPECT_TRUE((counts->GetList()[0].GetInt() == 1 &&
