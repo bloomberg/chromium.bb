@@ -126,12 +126,6 @@ const int kUseDefaultFade = -1;
 const int kMediaDuckFadeMs = 150;
 const int kMediaUnduckFadeMs = 700;
 
-// Force chunk_size to be multiple of 4. Needed for some NEON implementations.
-// Some third-party AudioPostProcessors require it.
-const int kBufferAlignment = 4;
-static_assert((kBufferAlignment & (kBufferAlignment - 1)) == 0,
-              "alignment must be a power of 2");
-
 int64_t TimespecToMicroseconds(struct timespec time) {
   return static_cast<int64_t>(time.tv_sec) *
              base::Time::kMicrosecondsPerSecond +
@@ -859,14 +853,13 @@ bool StreamMixerAlsa::TryWriteFrames() {
   const int min_frames_in_buffer =
       output_samples_per_second_ * kMinBufferedDataMs / 1000;
   int chunk_size =
-      (output_samples_per_second_ * kMaxAudioWriteTimeMilliseconds / 1000) &
-      ~(kBufferAlignment - 1);
+      output_samples_per_second_ * kMaxAudioWriteTimeMilliseconds / 1000;
   bool is_silence = true;
   for (auto&& filter_group : filter_groups_) {
     filter_group->ClearActiveInputs();
   }
   for (auto&& input : inputs_) {
-    int read_size = input->MaxReadSize() & ~(kBufferAlignment - 1);
+    int read_size = input->MaxReadSize();
     if (read_size > 0) {
       DCHECK(input->filter_group());
       input->filter_group()->AddActiveInput(input.get());

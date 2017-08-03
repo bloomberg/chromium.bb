@@ -32,10 +32,6 @@ namespace media {
 
 namespace {
 
-const int kBufferAlignment = 4;
-static_assert((kBufferAlignment & (kBufferAlignment - 1)) == 0,
-              "alignment must be a power of 2");
-
 using FloatType = ::media::Float32SampleTypeTraits;
 
 // Testing constants that are common to multiple test cases.
@@ -184,10 +180,6 @@ std::unique_ptr<::media::AudioBus> GetTestData(size_t index) {
   auto data = ::media::AudioBus::Create(kNumChannels, frames);
   data->FromInterleaved(kTestData[index], frames, kBytesPerSample);
   return data;
-}
-
-int AlignedBufferSize(int size) {
-  return size & ~(kBufferAlignment - 1);
 }
 
 class MockInputQueue : public StreamMixerAlsa::InputQueue {
@@ -567,27 +559,19 @@ TEST_F(StreamMixerAlsaTest, WriteFrames) {
   // The mixer should pull data from all streams, using the smallest
   // MaxReadSize provided by any of the channels.
   // TODO(slan): Check that the proper number of frames is pulled.
-  // Actual size of pulled data should be truncated to factor of
-  // kBufferAlignment.
-
   ASSERT_EQ(3u, inputs.size());
-  inputs[0]->SetMaxReadSize(kMaxChunkSize + 4);
+  inputs[0]->SetMaxReadSize(kMaxChunkSize + 1);
   inputs[1]->SetMaxReadSize(kMaxChunkSize - 1);
   inputs[2]->SetMaxReadSize(kMaxChunkSize * 2);
   for (auto* input : inputs) {
-    EXPECT_CALL(*input,
-                GetResampledData(_, AlignedBufferSize(kMaxChunkSize - 1)))
-        .Times(1);
-    EXPECT_CALL(*input, VolumeScaleAccumulate(
-                            _, _, AlignedBufferSize(kMaxChunkSize - 1), _))
+    EXPECT_CALL(*input, GetResampledData(_, kMaxChunkSize - 1)).Times(1);
+    EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, kMaxChunkSize - 1, _))
         .Times(kNumChannels);
     EXPECT_CALL(*input, AfterWriteFrames(_)).Times(1);
   }
 
   // TODO(slan): Verify that the data is mixed properly with math.
-  EXPECT_CALL(*mock_alsa(),
-              PcmWritei(_, _, AlignedBufferSize(kMaxChunkSize - 1)))
-      .Times(1);
+  EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, kMaxChunkSize - 1)).Times(1);
   mixer->WriteFramesForTest();
 
   // Make two of these streams non-primary, and exhaust a non-primary stream.
@@ -781,7 +765,7 @@ TEST_F(StreamMixerAlsaTest, TwoUnscaledStreamsMixProperlyWithEdgeCases) {
   // ::media::AudioBus instances, rather than wrapping statically declared float
   // arrays. The latter method is brittle, as ::media::AudioBus requires 16-bit
   // alignment for internal data.
-  const int kNumFrames = 4;
+  const int kNumFrames = 3;
 
   const int32_t kMaxSample = std::numeric_limits<int32_t>::max();
   const int32_t kMinSample = std::numeric_limits<int32_t>::min();
@@ -842,11 +826,11 @@ TEST_F(StreamMixerAlsaTest, WriteBuffersOfVaryingLength) {
   EXPECT_EQ(StreamMixerAlsa::kStateNormalPlayback, mixer->state());
 
   // The input stream will provide buffers of several different lengths.
-  input->SetMaxReadSize(4);
-  EXPECT_CALL(*input, GetResampledData(_, 4));
-  EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, 4, _)).Times(kNumChannels);
+  input->SetMaxReadSize(7);
+  EXPECT_CALL(*input, GetResampledData(_, 7));
+  EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, 7, _)).Times(kNumChannels);
   EXPECT_CALL(*input, AfterWriteFrames(_));
-  EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, 4)).Times(1);
+  EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, 7)).Times(1);
   mixer->WriteFramesForTest();
 
   input->SetMaxReadSize(100);
@@ -1005,7 +989,7 @@ TEST_F(StreamMixerAlsaTest, PostProcessorDelayListedDeviceId) {
   std::transform(delays.begin(), delays.end(), delays.begin(),
                  &FramesToDelayUs);
 
-  const int kNumFrames = 12;
+  const int kNumFrames = 10;
   for (auto* input : inputs) {
     input->SetMaxReadSize(kNumFrames);
     input->SetPaused(false);
@@ -1043,30 +1027,6 @@ TEST_F(StreamMixerAlsaTest, PostProcessorDelayListedDeviceId) {
   mixer->WriteFramesForTest();
 }
 
-TEST_F(StreamMixerAlsaTest, OneStreamTruncatedProperly) {
-  auto* input = new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond);
-  input->SetPaused(false);
-
-  StreamMixerAlsa* mixer = StreamMixerAlsa::Get();
-  EXPECT_CALL(*input, Initialize(_)).Times(1);
-  mixer->AddInput(base::WrapUnique(input));
-  EXPECT_EQ(StreamMixerAlsa::kStateNormalPlayback, mixer->state());
-
-  int preCalc[6][2] = {{4, 4}, {7, 4}, {8, 8}, {9, 8}, {880, 880}, {882, 880}};
-
-  for (int i = 0; i < 6; ++i) {
-    int readSize = preCalc[i][0];
-    int expectedSize = preCalc[i][1];
-    input->SetMaxReadSize(readSize);
-    EXPECT_CALL(*input, GetResampledData(_, expectedSize));
-    EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, expectedSize, _))
-        .Times(kNumChannels);
-    EXPECT_CALL(*input, AfterWriteFrames(_));
-    EXPECT_CALL(*mock_alsa(), PcmWritei(_, _, expectedSize)).Times(1);
-    mixer->WriteFramesForTest();
-  }
-}
-
 TEST_F(StreamMixerAlsaTest, PostProcessorDelayUnlistedDevice) {
   const std::string device_id = "not-a-device-id";
   testing::StrictMock<MockInputQueue>* input =
@@ -1075,7 +1035,7 @@ TEST_F(StreamMixerAlsaTest, PostProcessorDelayUnlistedDevice) {
   // Delay should be based on default processor
   int64_t delay = FramesToDelayUs(
       kDefaultProcessorDelay + kLinearizeProcessorDelay + kMixProcessorDelay);
-  const int kNumFrames = 12;
+  const int kNumFrames = 10;
   input->SetMaxReadSize(kNumFrames);
   input->SetPaused(false);
 
