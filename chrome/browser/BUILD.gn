@@ -2329,8 +2329,6 @@ split_static_library("browser") {
       "policy/default_geolocation_policy_handler.h",
       "prefs/active_profile_pref_service.cc",
       "prefs/active_profile_pref_service.h",
-      "task_manager/providers/arc/arc_process_filter.cc",
-      "task_manager/providers/arc/arc_process_filter.h",
       "task_manager/providers/arc/arc_process_task.cc",
       "task_manager/providers/arc/arc_process_task.h",
       "task_manager/providers/arc/arc_process_task_provider.cc",
