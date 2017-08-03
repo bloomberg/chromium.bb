@@ -462,22 +462,16 @@ class PrerenderTest : public testing::Test {
 
 TEST_F(PrerenderTest, PrerenderRespectsDisableFlag) {
   test_utils::RestorePrerenderMode restore_prerender_mode;
-  ASSERT_TRUE(PrerenderManager::IsAnyPrerenderingPossible());
-  ASSERT_EQ(PrerenderManager::PRERENDER_MODE_ENABLED,
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(kNoStatePrefetchFeature);
+  prerender::ConfigurePrerender();
+  EXPECT_FALSE(PrerenderManager::IsAnyPrerenderingPossible());
+  EXPECT_EQ(PrerenderManager::PRERENDER_MODE_DISABLED,
             PrerenderManager::GetMode(ORIGIN_NONE));
-
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndDisableFeature(kNoStatePrefetchFeature);
-    prerender::ConfigurePrerender();
-    EXPECT_FALSE(PrerenderManager::IsAnyPrerenderingPossible());
-    EXPECT_EQ(PrerenderManager::PRERENDER_MODE_DISABLED,
-              PrerenderManager::GetMode(ORIGIN_NONE));
-    EXPECT_EQ(PrerenderManager::PRERENDER_MODE_DISABLED,
-              PrerenderManager::GetMode(ORIGIN_OMNIBOX));
-    EXPECT_EQ(PrerenderManager::PRERENDER_MODE_DISABLED,
-              PrerenderManager::GetMode(ORIGIN_INSTANT));
-  }
+  EXPECT_EQ(PrerenderManager::PRERENDER_MODE_DISABLED,
+            PrerenderManager::GetMode(ORIGIN_OMNIBOX));
+  EXPECT_EQ(PrerenderManager::PRERENDER_MODE_DISABLED,
+            PrerenderManager::GetMode(ORIGIN_INSTANT));
 }
 
 TEST_F(PrerenderTest, PrerenderRespectsFieldTrialParameters) {
@@ -603,6 +597,7 @@ TEST_F(PrerenderTest, PrerenderRespectsFieldTrialParametersDefaultNone) {
 TEST_F(PrerenderTest, PrerenderRespectsThirdPartyCookiesPref) {
   GURL url("http://www.google.com/");
   test_utils::RestorePrerenderMode restore_prerender_mode;
+  PrerenderManager::SetMode(PrerenderManager::PRERENDER_MODE_ENABLED);
   ASSERT_TRUE(PrerenderManager::IsAnyPrerenderingPossible());
 
   profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
@@ -614,6 +609,7 @@ TEST_F(PrerenderTest, PrerenderRespectsThirdPartyCookiesPref) {
 TEST_F(PrerenderTest, OfflinePrerenderIgnoresThirdPartyCookiesPref) {
   GURL url("http://www.google.com/");
   test_utils::RestorePrerenderMode restore_prerender_mode;
+  PrerenderManager::SetMode(PrerenderManager::PRERENDER_MODE_ENABLED);
   ASSERT_TRUE(PrerenderManager::IsAnyPrerenderingPossible());
 
   profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
@@ -715,6 +711,7 @@ TEST_F(PrerenderTest, OfflinePrerenderIgnoresPrerenderMode) {
 
 TEST_F(PrerenderTest, PrerenderDisabledOnLowEndDevice) {
   GURL url("http://www.google.com/");
+  prerender_manager()->SetMode(PrerenderManager::PRERENDER_MODE_ENABLED);
   ASSERT_TRUE(PrerenderManager::IsAnyPrerenderingPossible());
   prerender_manager()->SetIsLowEndDevice(true);
   EXPECT_FALSE(AddSimplePrerender(url));
@@ -724,6 +721,7 @@ TEST_F(PrerenderTest, PrerenderDisabledOnLowEndDevice) {
 
 TEST_F(PrerenderTest, OfflinePrerenderPossibleOnLowEndDevice) {
   GURL url("http://www.google.com/");
+  prerender_manager()->SetMode(PrerenderManager::PRERENDER_MODE_ENABLED);
   ASSERT_TRUE(PrerenderManager::IsAnyPrerenderingPossible());
 
   prerender_manager()->SetIsLowEndDevice(true);
@@ -1393,6 +1391,8 @@ TEST_F(PrerenderTest, CancelAllTest) {
 
 TEST_F(PrerenderTest, OmniboxNotAllowedWhenDisabled) {
   DisablePrerender();
+  test_utils::RestorePrerenderMode restore_prerender_mode;
+  PrerenderManager::SetOmniboxMode(PrerenderManager::PRERENDER_MODE_ENABLED);
   EXPECT_FALSE(prerender_manager()->AddPrerenderFromOmnibox(
       GURL("http://www.example.com"), nullptr, gfx::Size()));
   histogram_tester().ExpectUniqueSample("Prerender.FinalStatus",

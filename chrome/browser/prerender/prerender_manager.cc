@@ -166,11 +166,11 @@ int PrerenderManager::prerenders_per_session_count_ = 0;
 
 // static
 PrerenderManager::PrerenderManagerMode PrerenderManager::mode_ =
-    PRERENDER_MODE_ENABLED;
+    PRERENDER_MODE_DISABLED;
 PrerenderManager::PrerenderManagerMode PrerenderManager::instant_mode_ =
-    PRERENDER_MODE_ENABLED;
+    PRERENDER_MODE_DISABLED;
 PrerenderManager::PrerenderManagerMode PrerenderManager::omnibox_mode_ =
-    PRERENDER_MODE_ENABLED;
+    PRERENDER_MODE_DISABLED;
 
 struct PrerenderManager::NavigationRecord {
   NavigationRecord(const GURL& url, base::TimeTicks time, Origin origin)
