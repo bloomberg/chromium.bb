@@ -21,6 +21,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "content/public/app/content_main.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "headless/app/headless_shell.h"
 #include "headless/app/headless_shell_switches.h"
@@ -153,6 +154,10 @@ void HeadlessShell::Shutdown() {
       web_contents_->GetDevToolsTarget()->DetachClient(devtools_client_.get());
     }
   }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDeterministicFetch)) {
+    devtools_client_->GetNetwork()->GetExperimental()->RemoveObserver(this);
+  }
   web_contents_->RemoveObserver(this);
   web_contents_ = nullptr;
   browser_context_->Close();
@@ -160,6 +165,7 @@ void HeadlessShell::Shutdown() {
 }
 
 void HeadlessShell::DevToolsTargetReady() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   web_contents_->GetDevToolsTarget()->AttachClient(devtools_client_.get());
   devtools_client_->GetInspector()->GetExperimental()->AddObserver(this);
   devtools_client_->GetPage()->GetExperimental()->AddObserver(this);
@@ -169,6 +175,7 @@ void HeadlessShell::DevToolsTargetReady() {
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDeterministicFetch)) {
+    devtools_client_->GetNetwork()->GetExperimental()->AddObserver(this);
     devtools_client_->GetNetwork()
         ->GetExperimental()
         ->SetRequestInterceptionEnabled(
@@ -250,6 +257,7 @@ void HeadlessShell::OnTargetCrashed(
 }
 
 void HeadlessShell::PollReadyState() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // We need to check the current location in addition to the ready state to
   // be sure the expected page is ready.
   devtools_client_->GetRuntime()->Evaluate(
@@ -293,10 +301,11 @@ void HeadlessShell::OnLoadEventFired(const page::LoadEventFiredParams& params) {
 // network::Observer implementation:
 void HeadlessShell::OnRequestIntercepted(
     const headless::network::RequestInterceptedParams& params) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (params.GetIsNavigationRequest()) {
     deterministic_dispatcher_->NavigationRequested(
         base::MakeUnique<ShellNavigationRequest>(weak_factory_.GetWeakPtr(),
-                                                 params));
+                                                 params.GetInterceptionId()));
     return;
   }
   devtools_client_->GetNetwork()->GetExperimental()->ContinueInterceptedRequest(
@@ -329,6 +338,7 @@ void HeadlessShell::OnPageReady() {
 }
 
 void HeadlessShell::FetchDom() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   devtools_client_->GetRuntime()->Evaluate(
       "document.body.outerHTML",
       base::Bind(&HeadlessShell::OnDomFetched, weak_factory_.GetWeakPtr()));
@@ -349,6 +359,7 @@ void HeadlessShell::OnDomFetched(
 }
 
 void HeadlessShell::InputExpression() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Note that a real system should read user input asynchronously, because
   // otherwise all other browser activity is suspended (e.g., page loading).
   printf(">>> ");
@@ -379,6 +390,7 @@ void HeadlessShell::OnExpressionResult(
 }
 
 void HeadlessShell::CaptureScreenshot() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   devtools_client_->GetPage()->GetExperimental()->CaptureScreenshot(
       page::CaptureScreenshotParams::Builder().Build(),
       base::Bind(&HeadlessShell::OnScreenshotCaptured,
@@ -397,6 +409,7 @@ void HeadlessShell::OnScreenshotCaptured(
 }
 
 void HeadlessShell::PrintToPDF() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   devtools_client_->GetPage()->GetExperimental()->PrintToPDF(
       page::PrintToPDFParams::Builder()
           .SetDisplayHeaderFooter(true)
@@ -418,6 +431,7 @@ void HeadlessShell::OnPDFCreated(
 void HeadlessShell::WriteFile(const std::string& file_path_switch,
                               const std::string& default_file_name,
                               const std::string& base64_data) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::FilePath file_name =
       base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           file_path_switch);
@@ -437,6 +451,7 @@ void HeadlessShell::WriteFile(const std::string& file_path_switch,
 void HeadlessShell::OnFileOpened(const std::string& base64_data,
                                  const base::FilePath file_name,
                                  base::File::Error error_code) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!file_proxy_->IsValid()) {
     LOG(ERROR) << "Writing to file " << file_name.value()
                << " was unsuccessful, could not open file: "
@@ -469,6 +484,7 @@ void HeadlessShell::OnFileWritten(const base::FilePath file_name,
                                   const size_t length,
                                   base::File::Error error_code,
                                   int write_result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (write_result < static_cast<int>(length)) {
     // TODO(eseckler): Support recovering from partial writes.
     LOG(ERROR) << "Writing to file " << file_name.value()
