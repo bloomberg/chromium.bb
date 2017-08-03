@@ -134,4 +134,22 @@ AccessibilityRole AXARIAGridCell::ScanToDecideHeaderRole() {
   return kCellRole;
 }
 
+AXRestriction AXARIAGridCell::Restriction() const {
+  const AXRestriction cell_restriction = AXLayoutObject::Restriction();
+  // Specified gridcell restriction or local ARIA markup takes precedence.
+  if (cell_restriction != kNone || HasAttribute(HTMLNames::aria_readonlyAttr) ||
+      HasAttribute(HTMLNames::aria_disabledAttr))
+    return cell_restriction;
+
+  // Gridcell does not have it's own ARIA input restriction, so
+  // fall back on parent grid's readonly state.
+  // See ARIA specification regarding grid/treegrid and readonly.
+  const AXObject* container = ParentTable();
+  const bool is_in_readonly_grid = container &&
+                                   (container->RoleValue() == kGridRole ||
+                                    container->RoleValue() == kTreeGridRole) &&
+                                   container->Restriction() == kReadOnly;
+  return is_in_readonly_grid ? kReadOnly : kNone;
+}
+
 }  // namespace blink
