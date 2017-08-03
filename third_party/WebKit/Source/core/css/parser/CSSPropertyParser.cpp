@@ -813,7 +813,8 @@ bool CSSPropertyParser::ParseFontFaceDescriptor(CSSPropertyID prop_id) {
       parsed_value = ConsumeFontDisplay(range_);
       break;
     case CSSPropertyFontStretch:
-      parsed_value = CSSPropertyFontUtils::ConsumeFontStretch(range_);
+      parsed_value = CSSPropertyFontUtils::ConsumeFontStretch(
+          range_, kCSSFontFaceRuleMode);
       break;
     case CSSPropertyFontStyle:
       parsed_value = CSSPropertyFontUtils::ConsumeFontStyle(range_);

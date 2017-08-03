@@ -126,15 +126,28 @@ static CSSValue* CombineToRangeListOrNull(const CSSPrimitiveValue* range_start,
   return value_list;
 }
 
-CSSValue* CSSPropertyFontUtils::ConsumeFontStretch(CSSParserTokenRange& range) {
+CSSValue* CSSPropertyFontUtils::ConsumeFontStretch(
+    CSSParserTokenRange& range,
+    const CSSParserMode& parser_mode) {
   CSSIdentifierValue* parsed_keyword = ConsumeFontStretchKeywordOnly(range);
   if (parsed_keyword)
     return parsed_keyword;
-  CSSPrimitiveValue* percent =
+
+  CSSPrimitiveValue* start_percent =
       CSSPropertyParserHelpers::ConsumePercent(range, kValueRangeNonNegative);
-  if (!percent || percent->GetFloatValue() <= 0)
+  if (!start_percent || start_percent->GetFloatValue() <= 0)
     return nullptr;
-  return percent;
+
+  // In a non-font-face context, more than one percentage is not allowed.
+  if (parser_mode != kCSSFontFaceRuleMode || range.AtEnd())
+    return start_percent;
+
+  CSSPrimitiveValue* end_percent =
+      CSSPropertyParserHelpers::ConsumePercent(range, kValueRangeNonNegative);
+  if (!end_percent || end_percent->GetFloatValue() <= 0)
+    return nullptr;
+
+  return CombineToRangeListOrNull(start_percent, end_percent);
 }
 
 CSSValue* CSSPropertyFontUtils::ConsumeFontWeight(
