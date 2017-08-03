@@ -63,6 +63,7 @@ AV1_CX_SRCS-yes += encoder/lookahead.c
 AV1_CX_SRCS-yes += encoder/lookahead.h
 AV1_CX_SRCS-yes += encoder/mcomp.h
 AV1_CX_SRCS-yes += encoder/encoder.h
+AV1_CX_SRCS-yes += encoder/random.h
 AV1_CX_SRCS-yes += encoder/ratectrl.h
 ifeq ($(CONFIG_XIPHRC),yes)
 AV1_CX_SRCS-yes += encoder/ratectrl_xiph.h

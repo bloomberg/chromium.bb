@@ -14,6 +14,7 @@
 
 #include "av1/encoder/cost.h"
 #include "av1/encoder/palette.h"
+#include "av1/encoder/random.h"
 
 static float calc_dist(const float *p1, const float *p2, int dim) {
   float dist = 0;
@@ -40,12 +41,6 @@ void av1_calc_indices(const float *data, const float *centroids,
       }
     }
   }
-}
-
-// Generate a random number in the range [0, 32768).
-static unsigned int lcg_rand16(unsigned int *state) {
-  *state = (unsigned int)(*state * 1103515245ULL + 12345);
-  return *state / 65536 % 32768;
 }
 
 static void calc_centroids(const float *data, float *centroids,

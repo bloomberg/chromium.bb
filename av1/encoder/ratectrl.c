@@ -29,6 +29,7 @@
 #include "av1/common/seg_common.h"
 
 #include "av1/encoder/encodemv.h"
+#include "av1/encoder/random.h"
 #include "av1/encoder/ratectrl.h"
 
 // Max rate target for 1080P and below encodes under normal circumstances
@@ -1690,11 +1691,6 @@ void av1_set_target_rate(AV1_COMP *cpi) {
   if (cpi->oxcf.rc_mode == AOM_VBR || cpi->oxcf.rc_mode == AOM_CQ)
     vbr_rate_correction(cpi, &target_rate);
   av1_rc_set_frame_target(cpi, target_rate);
-}
-
-static unsigned int lcg_rand16(unsigned int *state) {
-  *state = (unsigned int)(*state * 1103515245ULL + 12345);
-  return *state / 65536 % 32768;
 }
 
 uint8_t av1_calculate_next_resize_scale(const AV1_COMP *cpi) {
