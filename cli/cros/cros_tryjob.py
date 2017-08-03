@@ -223,14 +223,11 @@ Examples:
       if not cros_build_lib.BooleanPrompt(prompt=prompt, default=False):
         cros_build_lib.Die('No confirmation.')
 
-    # TODO: Local patch support.
-    assert not self.options.local_patches, 'TODO: Local patches.'
-
     # Verify gerrit patches are valid.
     print('Verifying patches...')
     patch_pool = trybot_patch_pool.TrybotPatchPool.FromOptions(
         gerrit_patches=self.options.gerrit_patches,
-        local_patches=[],
+        local_patches=self.options.local_patches,
         sourceroot=constants.SOURCE_ROOT,
         remote_patches=[])
 
