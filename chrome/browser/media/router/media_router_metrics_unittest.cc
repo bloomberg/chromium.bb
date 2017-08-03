@@ -139,41 +139,4 @@ TEST(MediaRouterMetricsTest, RecordDialDeviceDescriptionParsingError) {
                   Bucket(static_cast<int>(action3), 2)));
 }
 
-TEST(MediaRouterMetricsTest, RecordDialDeviceCounts) {
-  MediaRouterMetrics metrics;
-  base::SimpleTestClock* clock = new base::SimpleTestClock();
-  metrics.SetClockForTest(base::WrapUnique(clock));
-  base::HistogramTester tester;
-  tester.ExpectTotalCount(
-      MediaRouterMetrics::kHistogramDialAvailableDeviceCount, 0);
-  tester.ExpectTotalCount(MediaRouterMetrics::kHistogramDialKnownDeviceCount,
-                          0);
-
-  clock->SetNow(base::Time::Now());
-  metrics.RecordDialDeviceCounts(6, 10);
-  metrics.RecordDialDeviceCounts(7, 10);
-  tester.ExpectTotalCount(
-      MediaRouterMetrics::kHistogramDialAvailableDeviceCount, 1);
-  tester.ExpectTotalCount(MediaRouterMetrics::kHistogramDialKnownDeviceCount,
-                          1);
-  tester.ExpectBucketCount(
-      MediaRouterMetrics::kHistogramDialAvailableDeviceCount, 6, 1);
-  tester.ExpectBucketCount(MediaRouterMetrics::kHistogramDialKnownDeviceCount,
-                           10, 1);
-
-  clock->Advance(base::TimeDelta::FromHours(2));
-  metrics.RecordDialDeviceCounts(7, 10);
-
-  tester.ExpectTotalCount(
-      MediaRouterMetrics::kHistogramDialAvailableDeviceCount, 2);
-  tester.ExpectTotalCount(MediaRouterMetrics::kHistogramDialKnownDeviceCount,
-                          2);
-  tester.ExpectBucketCount(
-      MediaRouterMetrics::kHistogramDialAvailableDeviceCount, 6, 1);
-  tester.ExpectBucketCount(
-      MediaRouterMetrics::kHistogramDialAvailableDeviceCount, 7, 1);
-  tester.ExpectBucketCount(MediaRouterMetrics::kHistogramDialKnownDeviceCount,
-                           10, 2);
-}
-
 }  // namespace media_router

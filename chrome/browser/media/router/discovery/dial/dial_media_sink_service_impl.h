@@ -10,8 +10,8 @@
 
 #include "chrome/browser/media/router/discovery/dial/device_description_service.h"
 #include "chrome/browser/media/router/discovery/dial/dial_registry.h"
+#include "chrome/browser/media/router/discovery/media_sink_discovery_metrics.h"
 #include "chrome/browser/media/router/discovery/media_sink_service_base.h"
-#include "chrome/browser/media/router/media_router_metrics.h"
 
 namespace media_router {
 
@@ -80,7 +80,7 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
 
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 
-  MediaRouterMetrics metrics_;
+  DialDeviceCountMetrics metrics_;
 };
 
 }  // namespace media_router
