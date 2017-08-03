@@ -934,6 +934,7 @@ void AppListView::StartAnimationForState(AppListState target_state) {
   ui::LayerAnimator* animator = fullscreen_widget_->GetLayer()->GetAnimator();
   animator->set_preemption_strategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  animator->StopAnimating();
   animator->ScheduleAnimation(
       new ui::LayerAnimationSequence(std::move(animation_element)));
 }
