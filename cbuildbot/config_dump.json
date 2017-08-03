@@ -3626,6 +3626,7 @@
     },
     "betty-chrome-pfq": {
         "_template": "chrome_pfq",
+        "active_waterfall": "chromeos",
         "boards": [
             "betty"
         ],
@@ -14755,6 +14756,7 @@
         "slave_configs": [
             "amd64-generic-chromium-pfq",
             "arm-generic-chromium-pfq",
+            "betty-chrome-pfq",
             "bob-chrome-pfq",
             "caroline-chrome-pfq",
             "chell-chrome-pfq",

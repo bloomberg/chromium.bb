@@ -2926,6 +2926,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   _chrome_pfq_experimental_boards = frozenset([
+      'betty',
       'bob',
       'hana',
       'nyan_big',
