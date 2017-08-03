@@ -9,8 +9,9 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 
-var updatedFrameURL = "data:text/html,Updated contents of iframe";
-var updatedObjectURL = "data:text/html,Updated contents of object";
+var subframeURL = "resources/object-as-frame-subframe-new.html";
+var updatedFrameHash = "#updated-contents-of-iframe";
+var updatedObjectHash = "#updated-contents-of-object";
 
 function runTests()
 {
@@ -21,6 +22,8 @@ function runTests()
     document.getElementsByName('frame')[0].onload = handleLoad;
     document.getElementsByName('obj')[0].onload = handleLoad;
 
+    let updatedFrameURL = subframeURL + updatedFrameHash;
+    let updatedObjectURL = subframeURL + updatedObjectHash;
     debug("Loading '" + updatedFrameURL + "' in iframe...");
     debug("Loading '" + updatedObjectURL + "' in object...");
     open(updatedFrameURL, "frame");
@@ -35,8 +38,8 @@ function handleLoad()
     if (numLoads < 2)
         return;
 
-    shouldBe("window.frames[0].location.toString()", '"' + updatedFrameURL + '"');
-    shouldBe("window.frames[1].location.toString()", '"' + updatedObjectURL + '"');
+    shouldBe("window.frames[0].location.hash", '"' + updatedFrameHash + '"');
+    shouldBe("window.frames[1].location.hash", '"' + updatedObjectHash + '"');
     if (window.testRunner) {
         testRunner.notifyDone();
     }
@@ -46,8 +49,8 @@ function handleLoad()
 </head>
 <body onload="runTests()">
 
-<iframe name="frame" src="data:text/html,Old contents of iframe"></iframe>
-<object name="obj" type="text/html" data="data:text/html,New contents of frame"></object>
+<iframe name="frame" src="resources/object-as-frame-subframe-old.html#old-contents-of-iframe"></iframe>
+<object name="obj" type="text/html" data="resources/object-as-frame-subframe-old.html#old-contents-of-object"></object>
 
 </body>
 </html>

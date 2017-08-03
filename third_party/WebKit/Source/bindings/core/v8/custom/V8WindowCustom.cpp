@@ -134,9 +134,10 @@ void V8Window::eventAttributeSetterCustom(
 void V8Window::frameElementAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   LocalDOMWindow* impl = ToLocalDOMWindow(V8Window::toImpl(info.Holder()));
+  Element* frameElement = impl->frameElement();
 
   if (!BindingSecurity::ShouldAllowAccessTo(
-          CurrentDOMWindow(info.GetIsolate()), impl->frameElement(),
+          CurrentDOMWindow(info.GetIsolate()), frameElement,
           BindingSecurity::ErrorReportOption::kDoNotReport)) {
     V8SetReturnValueNull(info);
     return;
@@ -145,11 +146,12 @@ void V8Window::frameElementAttributeGetterCustom(
   // The wrapper for an <iframe> should get its prototype from the context of
   // the frame it's in, rather than its own frame.
   // So, use its containing document as the creation context when wrapping.
-  v8::Local<v8::Value> creation_context = ToV8(
-      &impl->frameElement()->GetDocument(), info.Holder(), info.GetIsolate());
+  v8::Local<v8::Value> creation_context =
+      ToV8(frameElement->GetDocument().domWindow(), info.Holder(),
+           info.GetIsolate());
   CHECK(!creation_context.IsEmpty());
   v8::Local<v8::Value> wrapper =
-      ToV8(impl->frameElement(), v8::Local<v8::Object>::Cast(creation_context),
+      ToV8(frameElement, v8::Local<v8::Object>::Cast(creation_context),
            info.GetIsolate());
   V8SetReturnValue(info, wrapper);
 }
