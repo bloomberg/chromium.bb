@@ -16,22 +16,3 @@ mojom("compositing") {
     "//ui/gfx/mojo",
   ]
 }
-
-source_set("tests") {
-  testonly = true
-
-  sources = [
-    "struct_traits_unittest.cc",
-  ]
-
-  deps = [
-    ":compositing",
-    "//base/test:test_support",
-    "//components/viz/common:common",
-    "//media/capture/mojo:capture_types",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp:service_test_support",
-    "//testing/gtest",
-    "//ui/gfx:test_support",
-  ]
-}

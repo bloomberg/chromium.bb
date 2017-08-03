@@ -4,14 +4,14 @@
 
 mojom = "//services/viz/public/interfaces/compositing/resource_settings.mojom"
 public_headers = [ "//components/viz/common/resources/resource_settings.h" ]
-traits_headers = [ "//services/viz/public/interfaces/compositing/resource_settings_struct_traits.h" ]
+traits_headers = [ "//services/viz/public/cpp/compositing/resource_settings_struct_traits.h" ]
 deps = [
   "//cc",
   "//mojo/common:struct_traits",
   "//ui/gfx/mojo",
 ]
 sources = [
-  "resource_settings_struct_traits.cc",
+  "//services/viz/public/cpp/compositing/resource_settings_struct_traits.cc",
 ]
 type_mappings = [
   "viz.mojom.BufferToTextureTargetKey=std::pair<gfx::BufferUsage, gfx::BufferFormat>",
