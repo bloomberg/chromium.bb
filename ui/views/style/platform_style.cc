@@ -50,6 +50,7 @@ const bool PlatformStyle::kTreeViewSelectionPaintsEntireRow = false;
 const bool PlatformStyle::kTreeViewUsesOpenIcon = true;
 const bool PlatformStyle::kUseRipples = true;
 const bool PlatformStyle::kMirrorBubbleArrowInRTLByDefault = true;
+const bool PlatformStyle::kTextfieldScrollsToStartOnFocusChange = false;
 
 // static
 std::unique_ptr<ScrollBar> PlatformStyle::CreateScrollBar(bool is_horizontal) {

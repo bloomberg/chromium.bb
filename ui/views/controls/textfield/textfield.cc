@@ -803,7 +803,7 @@ bool Textfield::CanHandleAccelerators() const {
 }
 
 void Textfield::AboutToRequestFocusFromTabTraversal(bool reverse) {
-  SelectAll(false);
+  SelectAll(PlatformStyle::kTextfieldScrollsToStartOnFocusChange);
 }
 
 bool Textfield::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
@@ -1036,6 +1036,11 @@ void Textfield::OnFocus() {
 void Textfield::OnBlur() {
   gfx::RenderText* render_text = GetRenderText();
   render_text->set_focused(false);
+
+  // If necessary, yank the cursor to the logical start of the textfield.
+  if (PlatformStyle::kTextfieldScrollsToStartOnFocusChange)
+    model_->MoveCursorTo(gfx::SelectionModel(0, gfx::CURSOR_FORWARD));
+
   if (GetInputMethod()) {
     GetInputMethod()->DetachTextInputClient(this);
 #if defined(OS_CHROMEOS)
