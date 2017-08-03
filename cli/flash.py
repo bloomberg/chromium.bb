@@ -207,7 +207,11 @@ class USBImager(object):
         '--dst=%s' % device,
         '--skip_postinstall',
     ]
-    cros_build_lib.SudoRunCommand(cmd)
+    cros_build_lib.SudoRunCommand(cmd,
+                                  print_cmd=True,
+                                  debug_level=logging.NOTICE,
+                                  combine_stdout_stderr=True,
+                                  log_output=True)
 
   def CopyImageToDevice(self, image, device):
     """Copies |image| to the removable |device|.
