@@ -114,33 +114,6 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardWebContentTest,
   EXPECT_FALSE(IsKeyboardVisible());
 }
 
-// Test for crbug.com/489366. In FLOATING mode, switch to a new IME in a
-// different extension should exit FLOATING mode and position the new IME in
-// FULL_WIDTH mode.
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardWebContentTest,
-                       IMEInDifferentExtensionNotCentered) {
-  gfx::Rect test_bounds(0, 0, 0, kKeyboardHeightForTest);
-  FocusEditableNodeAndShowKeyboard(test_bounds);
-  keyboard::KeyboardController* controller =
-      keyboard::KeyboardController::GetInstance();
-  const gfx::Rect& screen_bounds = ash::Shell::GetPrimaryRootWindow()->bounds();
-  gfx::Rect keyboard_bounds = controller->GetContainerWindow()->bounds();
-  EXPECT_EQ(kKeyboardHeightForTest, keyboard_bounds.height());
-  EXPECT_EQ(screen_bounds.height(),
-            keyboard_bounds.height() + keyboard_bounds.y());
-  controller->SetKeyboardMode(keyboard::FLOATING);
-  // Move keyboard to a random place.
-  ui()->GetContentsWindow()->SetBounds(gfx::Rect(50, 50, 50, 50));
-  EXPECT_EQ(gfx::Rect(50, 50, 50, 50),
-            controller->GetContainerWindow()->bounds());
-
-  MockEnableIMEInDifferentExtension("chrome-extension://domain-1", test_bounds);
-  keyboard_bounds = controller->GetContainerWindow()->bounds();
-  EXPECT_EQ(kKeyboardHeightForTest, keyboard_bounds.height());
-  EXPECT_EQ(screen_bounds.height(),
-            keyboard_bounds.height() + keyboard_bounds.y());
-}
-
 class VirtualKeyboardAppWindowTest : public extensions::PlatformAppBrowserTest {
  public:
   VirtualKeyboardAppWindowTest() {}

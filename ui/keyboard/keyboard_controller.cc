@@ -259,7 +259,6 @@ KeyboardController::KeyboardController(std::unique_ptr<KeyboardUI> ui,
       layout_delegate_(delegate),
       show_on_resize_(false),
       keyboard_locked_(false),
-      keyboard_mode_(FULL_WIDTH),
       state_(KeyboardControllerState::UNKNOWN),
       weak_factory_report_lingering_state_(this),
       weak_factory_will_hide_(this) {
@@ -362,14 +361,10 @@ void KeyboardController::SetContainerBounds(const gfx::Rect& new_bounds,
     }
   }
 
-  if (keyboard_mode() == FULL_WIDTH) {
-    // We need to send out this notification only if keyboard is visible since
-    // the contents window is resized even if keyboard is hidden.
-    if (keyboard_visible())
-      NotifyContentsBoundsChanging(new_bounds);
-  } else if (keyboard_mode() == FLOATING) {
-    NotifyContentsBoundsChanging(gfx::Rect());
-  }
+  // We need to send out this notification only if keyboard is visible since
+  // the contents window is resized even if keyboard is hidden.
+  if (keyboard_visible())
+    NotifyContentsBoundsChanging(new_bounds);
 }
 
 void KeyboardController::AddObserver(KeyboardControllerObserver* observer) {
@@ -383,23 +378,6 @@ bool KeyboardController::HasObserver(
 
 void KeyboardController::RemoveObserver(KeyboardControllerObserver* observer) {
   observer_list_.RemoveObserver(observer);
-}
-
-void KeyboardController::SetKeyboardMode(KeyboardMode mode) {
-  if (keyboard_mode_ == mode)
-    return;
-
-  keyboard_mode_ = mode;
-  // When keyboard is floating, no overscroll or resize is necessary. Sets
-  // keyboard bounds to zero so overscroll or resize is disabled.
-  if (keyboard_mode_ == FLOATING) {
-    NotifyContentsBoundsChanging(gfx::Rect());
-  } else if (keyboard_mode_ == FULL_WIDTH) {
-    AdjustKeyboardBounds();
-    // No animation is needed. Just change the bounds and ensure caret in
-    // workarea.
-    NotifyKeyboardBoundsChangingAndEnsrueCaretInWorkArea();
-  }
 }
 
 void KeyboardController::HideKeyboard(HideReason reason) {
@@ -500,21 +478,10 @@ void KeyboardController::OnWindowBoundsChanged(aura::Window* window,
     return;
 
   int container_height = container_->bounds().height();
-  if (keyboard_mode_ == FULL_WIDTH) {
-    container_->SetBounds(gfx::Rect(new_bounds.x(),
-                                    new_bounds.bottom() - container_height,
-                                    new_bounds.width(),
-                                    container_height));
-  } else if (keyboard_mode_ == FLOATING) {
-    // When screen rotate, horizontally center floating virtual keyboard
-    // window and vertically align it to the bottom.
-    int container_width = container_->bounds().width();
-    container_->SetBounds(gfx::Rect(
-        new_bounds.x() + (new_bounds.width() - container_width) / 2,
-        new_bounds.bottom() - container_height,
-        container_width,
-        container_height));
-  }
+
+  container_->SetBounds(gfx::Rect(new_bounds.x(),
+                                  new_bounds.bottom() - container_height,
+                                  new_bounds.width(), container_height));
 }
 
 void KeyboardController::Reload() {
@@ -687,15 +654,11 @@ void KeyboardController::PopulateKeyboardContent(int64_t display_id,
   container_animator->set_preemption_strategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
 
-  if (keyboard_mode_ == FLOATING) {
-    animation_observer_.reset();
-  } else {
-    animation_observer_.reset(new CallbackAnimationObserver(
-        container_animator,
-        base::BindOnce(&KeyboardController::ShowAnimationFinished,
-                       base::Unretained(this))));
-    container_animator->AddObserver(animation_observer_.get());
-  }
+  animation_observer_.reset(new CallbackAnimationObserver(
+      container_animator,
+      base::BindOnce(&KeyboardController::ShowAnimationFinished,
+                     base::Unretained(this))));
+  container_animator->AddObserver(animation_observer_.get());
 
   ui_->ShowKeyboardContainer(container_.get());
 
@@ -750,20 +713,12 @@ void KeyboardController::HideAnimationFinished() {
 }
 
 void KeyboardController::AdjustKeyboardBounds() {
-  // When keyboard is floating, no resize is necessary.
-  if (keyboard_mode_ == FLOATING)
-    return;
-
-  if (keyboard_mode_ == FULL_WIDTH) {
-    // TODO(bshe): revisit this logic after we decide to support resize virtual
-    // keyboard.
-    int keyboard_height = GetContainerWindow()->bounds().height();
-    const gfx::Rect& root_bounds = container_->GetRootWindow()->bounds();
-    gfx::Rect new_bounds = root_bounds;
-    new_bounds.set_y(root_bounds.height() - keyboard_height);
-    new_bounds.set_height(keyboard_height);
-    GetContainerWindow()->SetBounds(new_bounds);
-  }
+  int keyboard_height = GetContainerWindow()->bounds().height();
+  const gfx::Rect& root_bounds = container_->GetRootWindow()->bounds();
+  gfx::Rect new_bounds = root_bounds;
+  new_bounds.set_y(root_bounds.height() - keyboard_height);
+  new_bounds.set_height(keyboard_height);
+  GetContainerWindow()->SetBounds(new_bounds);
 }
 
 void KeyboardController::CheckStateTransition(KeyboardControllerState prev,
