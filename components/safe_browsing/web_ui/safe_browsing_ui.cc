@@ -31,6 +31,14 @@ using base::Time;
 namespace safe_browsing {
 namespace {
 #if SAFE_BROWSING_DB_LOCAL
+
+base::Value UserReadableTimeFromMillisSinceEpoch(int64_t time_in_milliseconds) {
+  base::Time time = base::Time::UnixEpoch() +
+                    base::TimeDelta::FromMilliseconds(time_in_milliseconds);
+  return base::Value(
+      base::UTF16ToASCII(base::TimeFormatShortDateAndTime(time)));
+}
+
 void AddStoreInfo(const DatabaseManagerInfo::DatabaseInfo::StoreInfo store_info,
                   base::ListValue* database_info_list) {
   if (store_info.has_file_size_bytes() && store_info.has_file_name()) {
@@ -43,6 +51,18 @@ void AddStoreInfo(const DatabaseManagerInfo::DatabaseInfo::StoreInfo store_info,
     database_info_list->GetList().push_back(base::Value("Store update status"));
     database_info_list->GetList().push_back(
         base::Value(store_info.update_status()));
+  }
+  if (store_info.has_last_apply_update_time_millis()) {
+    database_info_list->GetList().push_back(base::Value("Last update time"));
+    database_info_list->GetList().push_back(
+        UserReadableTimeFromMillisSinceEpoch(
+            store_info.last_apply_update_time_millis()));
+  }
+  if (store_info.has_checks_attempted()) {
+    database_info_list->GetList().push_back(
+        base::Value("Number of database checks"));
+    database_info_list->GetList().push_back(
+        base::Value(static_cast<int>(store_info.checks_attempted())));
   }
 }
 
@@ -72,12 +92,9 @@ void AddUpdateInfo(const DatabaseManagerInfo::UpdateInfo update_info,
   }
   if (update_info.has_last_update_time_millis()) {
     database_info_list->GetList().push_back(base::Value("Last update time"));
-    // Converts time to Base::Time
-    base::Time last_update =
-        base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(
-                                      update_info.last_update_time_millis());
-    database_info_list->GetList().push_back(base::Value(
-        base::UTF16ToASCII(base::TimeFormatShortDateAndTime(last_update))));
+    database_info_list->GetList().push_back(
+        UserReadableTimeFromMillisSinceEpoch(
+            update_info.last_update_time_millis()));
   }
 }
 #endif
