@@ -757,9 +757,6 @@ const char kUserAgent[]                     = "user-agent";
 // all of its state.
 const char kUserDataDir[]                   = "user-data-dir";
 
-// Uses experimental simple cache backend if possible.
-const char kUseSimpleCacheBackend[]         = "use-simple-cache-backend";
-
 // Examines a .crx for validity and prints the result.
 const char kValidateCrx[]                   = "validate-crx";
 

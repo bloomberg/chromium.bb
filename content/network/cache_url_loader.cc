@@ -29,6 +29,9 @@ class CacheURLLoader {
     resource_response.mime_type = "text/html";
     client_->OnReceiveResponse(resource_response, base::nullopt, nullptr);
 
+    DCHECK(base::StartsWith(url.spec(), kChromeUINetworkViewCacheURL,
+                            base::CompareCase::INSENSITIVE_ASCII));
+
     std::string cache_key =
         url.spec().substr(strlen(kChromeUINetworkViewCacheURL));
 

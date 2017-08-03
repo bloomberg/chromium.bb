@@ -38,6 +38,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/cookie_config/cookie_store_util.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
@@ -45,6 +46,7 @@
 #include "components/data_reduction_proxy/core/browser/data_store_impl.h"
 #include "components/domain_reliability/monitor.h"
 #include "components/net_log/chrome_net_log.h"
+#include "components/network_session_configurator/browser/network_session_configurator.h"
 #include "components/offline_pages/features/features.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
@@ -80,45 +82,12 @@
 
 namespace {
 
-// Returns the URLRequestContextBuilder::HttpCacheParams::Type that the disk
-// cache should use.
-net::URLRequestContextBuilder::HttpCacheParams::Type ChooseCacheType() {
-#if !defined(OS_ANDROID)
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kUseSimpleCacheBackend)) {
-    const std::string opt_value =
-        command_line.GetSwitchValueASCII(switches::kUseSimpleCacheBackend);
-    if (base::LowerCaseEqualsASCII(opt_value, "off"))
-      return net::URLRequestContextBuilder::HttpCacheParams::DISK_BLOCKFILE;
-    if (opt_value.empty() || base::LowerCaseEqualsASCII(opt_value, "on"))
-      return net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE;
-  }
-  const std::string experiment_name =
-      base::FieldTrialList::FindFullName("SimpleCacheTrial");
-  if (base::StartsWith(experiment_name, "Disable",
-                       base::CompareCase::INSENSITIVE_ASCII)) {
-    return net::URLRequestContextBuilder::HttpCacheParams::DISK_BLOCKFILE;
-  }
-  if (base::StartsWith(experiment_name, "ExperimentYes",
-                       base::CompareCase::INSENSITIVE_ASCII)) {
-    return net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE;
-  }
-#endif  // #if !defined(OS_ANDROID)
-
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-  return net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE;
-#else
-  return net::URLRequestContextBuilder::HttpCacheParams::DISK_BLOCKFILE;
-#endif
-}
-
 // Returns the BackendType that the disk cache should use.
 // TODO(mmenke): Once all URLRequestContexts are set up using
 // URLRequestContextBuilders, and the media URLRequestContext is take care of
 // (In one way or another), this should be removed.
-net::BackendType ChooseCacheBackendType() {
-  switch (ChooseCacheType()) {
+net::BackendType ChooseCacheBackendType(const base::CommandLine& command_line) {
+  switch (network_session_configurator::ChooseCacheType(command_line)) {
     case net::URLRequestContextBuilder::HttpCacheParams::DISK_BLOCKFILE:
       return net::CACHE_BACKEND_BLOCKFILE;
     case net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE:
@@ -166,8 +135,6 @@ ProfileImplIOData::Handle::~Handle() {
 void ProfileImplIOData::Handle::Init(
     const base::FilePath& cookie_path,
     const base::FilePath& channel_id_path,
-    const base::FilePath& cache_path,
-    int cache_max_size,
     const base::FilePath& media_cache_path,
     int media_cache_max_size,
     const base::FilePath& extensions_cookie_path,
@@ -185,8 +152,6 @@ void ProfileImplIOData::Handle::Init(
 
   lazy_params->cookie_path = cookie_path;
   lazy_params->channel_id_path = channel_id_path;
-  lazy_params->cache_path = cache_path;
-  lazy_params->cache_max_size = cache_max_size;
   lazy_params->media_cache_path = media_cache_path;
   lazy_params->media_cache_max_size = media_cache_max_size;
   lazy_params->extensions_cookie_path = extensions_cookie_path;
@@ -207,7 +172,8 @@ void ProfileImplIOData::Handle::Init(
   // Keep track of profile path and cache sizes separately so we can use them
   // on demand when creating storage isolated URLRequestContextGetters.
   io_data_->profile_path_ = profile_path;
-  io_data_->app_cache_max_size_ = cache_max_size;
+  io_data_->app_cache_max_size_ =
+      pref_service->GetInteger(prefs::kDiskCacheSize);
   io_data_->app_media_cache_max_size_ = media_cache_max_size;
 
   io_data_->predictor_.reset(predictor);
@@ -430,8 +396,7 @@ ProfileImplIOData::Handle::GetAllContextGetters() {
 }
 
 ProfileImplIOData::LazyParams::LazyParams()
-    : cache_max_size(0),
-      media_cache_max_size(0),
+    : media_cache_max_size(0),
       session_cookie_mode(
           content::CookieStoreConfig::EPHEMERAL_SESSION_COOKIES) {}
 
@@ -531,12 +496,6 @@ void ProfileImplIOData::InitializeInternal(
   builder->SetCookieAndChannelIdStores(std::move(cookie_store),
                                        std::move(channel_id_service));
 
-  net::URLRequestContextBuilder::HttpCacheParams cache_params;
-  cache_params.type = ChooseCacheType();
-  cache_params.path = lazy_params_->cache_path;
-  cache_params.max_size = lazy_params_->cache_max_size;
-  builder->EnableHttpCache(cache_params);
-
   AddProtocolHandlersToBuilder(builder, protocol_handlers);
 
   // Install the Offline Page Interceptor.
@@ -618,8 +577,9 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
     app_backend = net::HttpCache::DefaultBackend::InMemory(0);
   } else {
     app_backend.reset(new net::HttpCache::DefaultBackend(
-        net::DISK_CACHE, ChooseCacheBackendType(), cache_path,
-        app_cache_max_size_));
+        net::DISK_CACHE,
+        ChooseCacheBackendType(*base::CommandLine::ForCurrentProcess()),
+        cache_path, app_cache_max_size_));
   }
 
   std::unique_ptr<net::CookieStore> cookie_store;
@@ -726,9 +686,10 @@ net::URLRequestContext* ProfileImplIOData::InitializeMediaRequestContext(
 
   // Use a separate HTTP disk cache for isolated apps.
   std::unique_ptr<net::HttpCache::BackendFactory> media_backend(
-      new net::HttpCache::DefaultBackend(net::MEDIA_CACHE,
-                                         ChooseCacheBackendType(), cache_path,
-                                         cache_max_size));
+      new net::HttpCache::DefaultBackend(
+          net::MEDIA_CACHE,
+          ChooseCacheBackendType(*base::CommandLine::ForCurrentProcess()),
+          cache_path, cache_max_size));
   std::unique_ptr<net::HttpCache> media_http_cache = CreateHttpFactory(
       main_request_context()->http_transaction_factory(),
       std::move(media_backend));

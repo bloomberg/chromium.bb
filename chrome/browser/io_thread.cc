@@ -839,8 +839,6 @@ void IOThread::ConstructSystemRequestContext() {
   builder->set_ftp_enabled(true);
 #endif
 
-  builder->DisableHttpCache();
-
   globals_->network_service = content::NetworkService::Create();
   if (!is_quic_allowed_on_init_)
     globals_->network_service->DisableQuic();
