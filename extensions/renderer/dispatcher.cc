@@ -504,16 +504,28 @@ void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
     int64_t service_worker_version_id,
     const GURL& service_worker_scope,
     const GURL& script_url) {
-  if (script_url.SchemeIs(kExtensionScheme)) {
+  if (!script_url.SchemeIs(kExtensionScheme)) {
     // See comment in DidInitializeServiceWorkerContextOnWorkerThread.
-    g_worker_script_context_set.Get().Remove(v8_context, script_url);
-    // TODO(devlin): We're not calling
-    // ExtensionBindingsSystem::WillReleaseScriptContext() here. This should be
-    // fine, since the entire bindings system is being destroyed when we
-    // remove the worker data, but we might want to notify the system anyway.
+    return;
   }
-  if (ExtensionsClient::Get()->ExtensionAPIEnabledInExtensionServiceWorkers())
+
+  if (ExtensionsClient::Get()->ExtensionAPIEnabledInExtensionServiceWorkers()) {
+    // TODO(lazyboy/devlin): Should this cleanup happen in a worker class, like
+    // WorkerThreadDispatcher? If so, we should move the initialization as well.
+    ScriptContext* script_context = WorkerThreadDispatcher::GetScriptContext();
+    ExtensionBindingsSystem* worker_bindings_system =
+        WorkerThreadDispatcher::GetBindingsSystem();
+    worker_bindings_system->WillReleaseScriptContext(script_context);
+    // Note: we have to remove the context (and thus perform invalidation on
+    // the native handlers) prior to removing the worker data, which destroys
+    // the associated bindings system.
+    g_worker_script_context_set.Get().Remove(v8_context, script_url);
     WorkerThreadDispatcher::Get()->RemoveWorkerData(service_worker_version_id);
+  } else {
+    // If extension APIs in service workers aren't enabled, we just need to
+    // remove the context.
+    g_worker_script_context_set.Get().Remove(v8_context, script_url);
+  }
 }
 
 void Dispatcher::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
