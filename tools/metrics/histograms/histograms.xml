@@ -63231,6 +63231,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="RendererScheduler.ExpectedQueueingTimeWhenQueueingTime"
+    units="ms">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Expected queueing time for events which were queued on the main thread
+    longer or shorter than a threshold, given by the QueueingTimeThreshold
+    suffix.
+
+    Team: input-dev@chromium.org.
+  </summary>
+</histogram>
+
 <histogram name="RendererScheduler.ExpectedTaskQueueingDuration" units="ms">
   <owner>tdresser@chromium.org</owner>
   <summary>
@@ -63326,6 +63338,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="RendererScheduler.QueueingDurationWhenExpectedQueueingTime"
     units="ms">
+  <obsolete>
+    Deprecated as of 08/2017. Replaced with
+    RendererScheduler.ExpectedQueueingTimeWhenQueueingTime.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between sending an event to the renderer main thread and when the
@@ -92400,6 +92416,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="ExpectedQueueingDurationThreshold" separator="_">
+  <obsolete>
+    Deprecated as of 08/2017. Replaced with ExpectedQueueingDurationThreshold.
+  </obsolete>
   <suffix name="GreaterThan.10ms"
       label="Expected Queueing Time greater than 10ms."/>
   <suffix name="GreaterThan.150ms"
@@ -97825,6 +97844,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="Omnibox.QueryTime"/>
   <affected-histogram name="Omnibox.QueryTime2"/>
   <affected-histogram name="ShortcutsProvider.QueryIndexTime"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="QueueingTimeThreshold" separator="_">
+  <suffix name="GreaterThan.10ms" label="Queueing Time greater than 10ms."/>
+  <suffix name="GreaterThan.150ms" label="Queueing Time greater than 150ms."/>
+  <suffix name="GreaterThan.300ms" label="Queueing Time greater than 300ms."/>
+  <suffix name="GreaterThan.450ms" label="Queueing Time greater than 450ms."/>
+  <suffix name="LessThan.10ms" label="Queueing Time less than 10ms."/>
+  <suffix name="LessThan.150ms" label="Queueing Time less than 150ms."/>
+  <suffix name="LessThan.300ms" label="Queueing Time less than 300ms."/>
+  <suffix name="LessThan.450ms" label="Queueing Time less than 450ms."/>
+  <affected-histogram
+      name="RendererScheduler.ExpectedQueueingTimeWhenQueueingTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="QuicConnectionType" separator="">
