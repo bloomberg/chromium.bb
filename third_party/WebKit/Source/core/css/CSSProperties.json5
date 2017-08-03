@@ -3900,6 +3900,7 @@
       name: "grid-gap",
       longhands: ["grid-row-gap", "grid-column-gap"],
       api_class: true,
+      api_methods: ["parseShorthand"],
       runtime_flag: "CSSGridLayout",
     },
     {
@@ -3931,6 +3932,7 @@
       name: "marker",
       longhands: ["marker-start", "marker-mid", "marker-end"],
       api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "offset",
