@@ -976,4 +976,18 @@ TEST_F(TabManagerTest, BackgroundTabsLoadingOrdering) {
   EXPECT_FALSE(tab_manager->IsNavigationDelayedForTest(nav_handle3_.get()));
 }
 
+TEST_F(TabManagerTest, IsTabRestoredInForeground) {
+  TabManager* tab_manager = g_browser_process->GetTabManager();
+
+  std::unique_ptr<WebContents> contents(CreateWebContents());
+  contents->WasShown();
+  tab_manager->OnWillRestoreTab(contents.get());
+  EXPECT_TRUE(tab_manager->IsTabRestoredInForeground(contents.get()));
+
+  contents.reset(CreateWebContents());
+  contents->WasHidden();
+  tab_manager->OnWillRestoreTab(contents.get());
+  EXPECT_FALSE(tab_manager->IsTabRestoredInForeground(contents.get()));
+}
+
 }  // namespace resource_coordinator

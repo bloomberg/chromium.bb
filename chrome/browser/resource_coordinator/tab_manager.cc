@@ -598,6 +598,10 @@ bool TabManager::IsTabInSessionRestore(WebContents* web_contents) const {
   return GetWebContentsData(web_contents)->is_in_session_restore();
 }
 
+bool TabManager::IsTabRestoredInForeground(WebContents* web_contents) const {
+  return GetWebContentsData(web_contents)->is_restored_in_foreground();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // TabManager, private:
 
@@ -1159,6 +1163,7 @@ void TabManager::OnWillRestoreTab(WebContents* web_contents) {
   WebContentsData* data = GetWebContentsData(web_contents);
   DCHECK(!data->is_in_session_restore());
   data->SetIsInSessionRestore(true);
+  data->SetIsRestoredInForeground(web_contents->IsVisible());
 }
 
 void TabManager::OnDidFinishNavigation(

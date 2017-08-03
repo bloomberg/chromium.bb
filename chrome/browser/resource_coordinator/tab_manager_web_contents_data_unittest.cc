@@ -235,4 +235,10 @@ TEST_F(TabManagerWebContentsDataTest, IsInSessionRestoreWithTabClose) {
   EXPECT_FALSE(tab_data()->is_in_session_restore());
 }
 
+TEST_F(TabManagerWebContentsDataTest, IsTabRestoredInForeground) {
+  EXPECT_FALSE(tab_data()->is_restored_in_foreground());
+  tab_data()->SetIsRestoredInForeground(true);
+  EXPECT_TRUE(tab_data()->is_restored_in_foreground());
+}
+
 }  // namespace resource_coordinator
