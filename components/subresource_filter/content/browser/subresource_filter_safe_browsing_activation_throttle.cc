@@ -281,6 +281,8 @@ bool SubresourceFilterSafeBrowsingActivationThrottle::
       // ACTIVATION_LIST does not support non http/s URLs.
       if (!scheme_is_http_or_https)
         return false;
+      if (matched_list == ActivationList::NONE)
+        return false;
       if (conditions.activation_list == matched_list)
         return true;
       if (conditions.activation_list == ActivationList::PHISHING_INTERSTITIAL &&
