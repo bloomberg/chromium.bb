@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store_change.h"
@@ -57,35 +56,24 @@ bool RemoveLoginsByURLAndTimeFromBackend(
   return true;
 }
 
-// Only meant to be called once, during the construction of PasswordStoreX.
-// Multiple calls would potentially return different task runners.
-scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunnerForBackend(
-    PasswordStoreX::NativeBackend* backend) {
-  scoped_refptr<base::SequencedTaskRunner> result;
-  if (backend)
-    result = backend->GetBackgroundTaskRunner();
-  if (result)
-    return result;
-  // Using USER_VISIBLE priority, because the passwords obtained through tasks
-  // on the background runner influence what the user sees.
-  return base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
-}
-
 }  // namespace
 
 PasswordStoreX::PasswordStoreX(
-    scoped_refptr<base::SequencedTaskRunner> main_thread_runner,
     std::unique_ptr<password_manager::LoginDatabase> login_db,
-    NativeBackend* backend)
-    : PasswordStoreDefault(main_thread_runner,
-                           GetBackgroundTaskRunnerForBackend(backend),
-                           std::move(login_db)),
-      backend_(backend),
-      migration_checked_(!backend),
+    std::unique_ptr<NativeBackend> backend)
+    : PasswordStoreDefault(std::move(login_db)),
+      backend_(std::move(backend)),
+      migration_checked_(false),
       allow_fallback_(false) {}
 
 PasswordStoreX::~PasswordStoreX() {}
+
+scoped_refptr<base::SequencedTaskRunner>
+PasswordStoreX::CreateBackgroundTaskRunner() const {
+  scoped_refptr<base::SequencedTaskRunner> result =
+      backend_ ? backend_->GetBackgroundTaskRunner() : nullptr;
+  return result ? result : PasswordStoreDefault::CreateBackgroundTaskRunner();
+}
 
 PasswordStoreChangeList PasswordStoreX::AddLoginImpl(const PasswordForm& form) {
   CheckMigration();
@@ -258,7 +246,7 @@ bool PasswordStoreX::FillBlacklistLogins(
 }
 
 void PasswordStoreX::CheckMigration() {
-  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   if (migration_checked_ || !backend_.get())
     return;
   migration_checked_ = true;

@@ -14,11 +14,10 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
-#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -27,9 +26,6 @@
 #include "components/password_manager/core/browser/password_store_origin_unittest.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -304,14 +300,15 @@ enum BackendType {
   WORKING_BACKEND
 };
 
-PasswordStoreX::NativeBackend* GetBackend(BackendType backend_type) {
+std::unique_ptr<PasswordStoreX::NativeBackend> GetBackend(
+    BackendType backend_type) {
   switch (backend_type) {
     case FAILING_BACKEND:
-      return new FailingBackend;
+      return base::MakeUnique<FailingBackend>();
     case WORKING_BACKEND:
-      return new MockBackend;
+      return base::MakeUnique<MockBackend>();
     default:
-      return nullptr;
+      return std::unique_ptr<PasswordStoreX::NativeBackend>();
   }
 }
 
@@ -319,7 +316,7 @@ class PasswordStoreXTestDelegate {
  public:
   PasswordStoreX* store() { return store_.get(); }
 
-  static void FinishAsyncProcessing();
+  void FinishAsyncProcessing();
 
  protected:
   explicit PasswordStoreXTestDelegate(BackendType backend_type);
@@ -330,7 +327,7 @@ class PasswordStoreXTestDelegate {
 
   base::FilePath test_login_db_file_path() const;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::test::ScopedTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   BackendType backend_type_;
   scoped_refptr<PasswordStoreX> store_;
@@ -341,8 +338,7 @@ class PasswordStoreXTestDelegate {
 PasswordStoreXTestDelegate::PasswordStoreXTestDelegate(BackendType backend_type)
     : backend_type_(backend_type) {
   SetupTempDir();
-  store_ = new PasswordStoreX(base::SequencedTaskRunnerHandle::Get(),
-                              base::MakeUnique<password_manager::LoginDatabase>(
+  store_ = new PasswordStoreX(base::MakeUnique<password_manager::LoginDatabase>(
                                   test_login_db_file_path()),
                               GetBackend(backend_type_));
   store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
@@ -350,11 +346,10 @@ PasswordStoreXTestDelegate::PasswordStoreXTestDelegate(BackendType backend_type)
 
 PasswordStoreXTestDelegate::~PasswordStoreXTestDelegate() {
   store_->ShutdownOnUIThread();
-  FinishAsyncProcessing();
 }
 
 void PasswordStoreXTestDelegate::FinishAsyncProcessing() {
-  content::RunAllBlockingPoolTasksUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 void PasswordStoreXTestDelegate::SetupTempDir() {
@@ -393,6 +388,8 @@ INSTANTIATE_TYPED_TEST_CASE_P(XWorkingBackend,
 
 class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
  protected:
+  PasswordStoreXTest() = default;
+
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
@@ -401,17 +398,20 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
     return temp_dir_.GetPath().Append(FILE_PATH_LITERAL("login_test"));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  void WaitForPasswordStore() { task_environment_.RunUntilIdle(); }
 
+ private:
+  base::test::ScopedTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
+
+  DISALLOW_COPY_AND_ASSIGN(PasswordStoreXTest);
 };
 
 TEST_P(PasswordStoreXTest, Notifications) {
   std::unique_ptr<password_manager::LoginDatabase> login_db(
       new password_manager::LoginDatabase(test_login_db_file_path()));
   scoped_refptr<PasswordStoreX> store(
-      new PasswordStoreX(base::SequencedTaskRunnerHandle::Get(),
-                         std::move(login_db), GetBackend(GetParam())));
+      new PasswordStoreX(std::move(login_db), GetBackend(GetParam())));
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   password_manager::PasswordFormData form_data = {
@@ -442,9 +442,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
   // Adding a login should trigger a notification.
   store->AddLogin(*form);
 
-  // The PasswordStore schedules tasks to run on the DB thread. Wait for them
-  // to complete.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  WaitForPasswordStore();
 
   // Change the password.
   form->password_value = base::ASCIIToUTF16("a different password");
@@ -460,8 +458,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
   // Updating the login with the new password should trigger a notification.
   store->UpdateLogin(*form);
 
-  // Wait for PasswordStore to send execute.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  WaitForPasswordStore();
 
   const PasswordStoreChange expected_delete_changes[] = {
     PasswordStoreChange(PasswordStoreChange::REMOVE, *form),
@@ -474,8 +471,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
   // Deleting the login should trigger a notification.
   store->RemoveLogin(*form);
 
-  // Wait for PasswordStore to execute.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  WaitForPasswordStore();
 
   store->RemoveObserver(&observer);
 
@@ -484,10 +480,10 @@ TEST_P(PasswordStoreXTest, Notifications) {
 
 TEST_P(PasswordStoreXTest, NativeMigration) {
   std::vector<std::unique_ptr<PasswordForm>> expected_autofillable;
-  InitExpectedForms(true, 50, &expected_autofillable);
+  InitExpectedForms(true, 5, &expected_autofillable);
 
   std::vector<std::unique_ptr<PasswordForm>> expected_blacklisted;
-  InitExpectedForms(false, 50, &expected_blacklisted);
+  InitExpectedForms(false, 5, &expected_blacklisted);
 
   const base::FilePath login_db_file = test_login_db_file_path();
   std::unique_ptr<password_manager::LoginDatabase> login_db(
@@ -515,8 +511,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   // Initializing the PasswordStore shouldn't trigger a native migration (yet).
   login_db.reset(new password_manager::LoginDatabase(login_db_file));
   scoped_refptr<PasswordStoreX> store(
-      new PasswordStoreX(base::SequencedTaskRunnerHandle::Get(),
-                         std::move(login_db), GetBackend(GetParam())));
+      new PasswordStoreX(std::move(login_db), GetBackend(GetParam())));
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   MockPasswordStoreConsumer consumer;
@@ -527,7 +522,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
                   UnorderedPasswordFormElementsAre(&expected_autofillable)));
 
   store->GetAutofillableLogins(&consumer);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  WaitForPasswordStore();
 
   // The blacklisted forms should have been migrated to the native backend.
   EXPECT_CALL(consumer,
@@ -535,7 +530,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
                   UnorderedPasswordFormElementsAre(&expected_blacklisted)));
 
   store->GetBlacklistLogins(&consumer);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  WaitForPasswordStore();
 
   MockLoginDatabaseReturn ld_return;
 
@@ -551,8 +546,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
 
   LoginDatabaseQueryCallback(store->login_db(), true, &ld_return);
 
-  // Wait for the login DB methods to execute.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  WaitForPasswordStore();
 
   if (GetParam() == WORKING_BACKEND) {
     // Likewise, no blacklisted logins should be left in the login DB.
@@ -566,8 +560,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
 
   LoginDatabaseQueryCallback(store->login_db(), false, &ld_return);
 
-  // Wait for the login DB methods to execute.
-  content::RunAllBlockingPoolTasksUntilIdle();
+  WaitForPasswordStore();
 
   if (GetParam() == WORKING_BACKEND) {
     // If the migration succeeded, then not only should there be no logins left

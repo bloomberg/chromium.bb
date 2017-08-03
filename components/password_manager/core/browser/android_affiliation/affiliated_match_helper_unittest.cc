@@ -329,6 +329,7 @@ class AffiliatedMatchHelperTest : public testing::Test {
     mock_affiliation_service_ = service.get();
 
     password_store_ = new TestPasswordStore;
+    password_store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
     match_helper_.reset(
         new AffiliatedMatchHelper(password_store_.get(), std::move(service)));
@@ -338,6 +339,8 @@ class AffiliatedMatchHelperTest : public testing::Test {
     match_helper_.reset();
     password_store_->ShutdownOnUIThread();
     password_store_ = nullptr;
+    // Clean up on the background thread.
+    RunUntilIdle();
   }
 
   base::MessageLoop message_loop_;
