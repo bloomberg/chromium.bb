@@ -13,7 +13,7 @@
 #include "chrome/browser/media/android/router/media_router_android.h"
 #else
 #include "chrome/browser/media/router/event_page_request_manager_factory.h"
-#include "chrome/browser/media/router/mojo/media_router_mojo_impl.h"
+#include "chrome/browser/media/router/mojo/media_router_desktop.h"
 #endif
 
 using content::BrowserContext;
@@ -76,7 +76,7 @@ KeyedService* MediaRouterFactory::BuildServiceInstanceFor(
 #if defined(OS_ANDROID)
   media_router = new MediaRouterAndroid(context);
 #else
-  media_router = new MediaRouterMojoImpl(context);
+  media_router = new MediaRouterDesktop(context);
 #endif
   media_router->Initialize();
   return media_router;

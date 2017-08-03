@@ -3817,6 +3817,7 @@ test("unit_tests") {
       # Move media_router_ui_service_factory_unittest.cc to chrome/browser/ui.
       "../browser/media/router/media_router_ui_service_factory_unittest.cc",
       "../browser/media/router/mojo/media_route_controller_unittest.cc",
+      "../browser/media/router/mojo/media_router_desktop_unittest.cc",
       "../browser/media/router/mojo/media_router_mojo_impl_unittest.cc",
       "../browser/media/router/mojo/media_router_mojo_metrics_unittest.cc",
       "../browser/policy/local_sync_policy_handler_unittest.cc",

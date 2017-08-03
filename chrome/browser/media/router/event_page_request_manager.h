@@ -56,6 +56,12 @@ class EventPageRequestManager : public KeyedService {
     return media_route_provider_extension_id_;
   }
 
+  bool mojo_connections_ready() const { return mojo_connections_ready_; }
+
+  void set_mojo_connections_ready_for_test(bool ready) {
+    mojo_connections_ready_ = ready;
+  }
+
  protected:
   explicit EventPageRequestManager(content::BrowserContext* context);
 
