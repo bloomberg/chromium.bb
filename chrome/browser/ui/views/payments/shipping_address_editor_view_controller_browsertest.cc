@@ -520,10 +520,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        SelectingIncompleteAddress) {
   // Add incomplete address.
   autofill::AutofillProfile profile;
-  profile.SetInfo(autofill::AutofillType(autofill::NAME_FULL),
-                  base::ASCIIToUTF16(kNameFull), kLocale);
+  profile.SetInfo(autofill::NAME_FULL, base::ASCIIToUTF16(kNameFull), kLocale);
   // Also set non-default country, to make sure proper fields will be used.
-  profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_COUNTRY),
+  profile.SetInfo(autofill::ADDRESS_HOME_COUNTRY,
                   base::ASCIIToUTF16(kCountryWithoutStates), kLocale);
   AddAutofillProfile(profile);
 
@@ -572,10 +571,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   autofill::AutofillProfile* saved_profile =
       personal_data_manager->GetProfiles()[0];
   DCHECK(saved_profile);
-  EXPECT_EQ(
-      base::ASCIIToUTF16(kCountryWithoutStates),
-      saved_profile->GetInfo(
-          autofill::AutofillType(autofill::ADDRESS_HOME_COUNTRY), kLocale));
+  EXPECT_EQ(base::ASCIIToUTF16(kCountryWithoutStates),
+            saved_profile->GetInfo(autofill::ADDRESS_HOME_COUNTRY, kLocale));
   ExpectExistingRequiredFields(/*unset_types=*/nullptr,
                                /*accept_empty_phone_number=*/false);
 
@@ -613,8 +610,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        FocusFirstInvalidField_NotName) {
   // Add address with only the name set, so that another view takes focus.
   autofill::AutofillProfile profile;
-  profile.SetInfo(autofill::AutofillType(autofill::NAME_FULL),
-                  base::ASCIIToUTF16(kNameFull), "fr_CA");
+  profile.SetInfo(autofill::NAME_FULL, base::ASCIIToUTF16(kNameFull), "fr_CA");
   AddAutofillProfile(profile);
 
   InvokePaymentRequestUI();
@@ -729,11 +725,12 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   ASSERT_EQ(1UL, personal_data_manager->GetProfiles().size());
   autofill::AutofillProfile* profile = personal_data_manager->GetProfiles()[0];
   DCHECK(profile);
+  // Use GetRawInfo to get the country code.
   EXPECT_EQ(base::ASCIIToUTF16(kCountryWithoutStatesCode),
             profile->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
   // State/Region is no longer set.
   EXPECT_EQ(base::ASCIIToUTF16(""),
-            profile->GetRawInfo(autofill::ADDRESS_HOME_STATE));
+            profile->GetInfo(autofill::ADDRESS_HOME_STATE, kLocale));
   EXPECT_EQ(50U, profile->use_count());
   EXPECT_EQ(kJanuary2017, profile->use_date());
 }
@@ -790,8 +787,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        CountryButNoState) {
   // Add address with a country but no state.
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
-  profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_STATE),
-                  base::ASCIIToUTF16(""), kLocale);
+  profile.SetInfo(autofill::ADDRESS_HOME_STATE, base::ASCIIToUTF16(""),
+                  kLocale);
   AddAutofillProfile(profile);
 
   InvokePaymentRequestUI();
@@ -837,7 +834,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        CountryAndInvalidState) {
   // Add address with a country but no state.
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
-  profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_STATE),
+  profile.SetInfo(autofill::ADDRESS_HOME_STATE,
                   base::ASCIIToUTF16("INVALIDSTATE"), kLocale);
   AddAutofillProfile(profile);
 
@@ -861,10 +858,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        NoCountryNoState) {
   // Add address without a country or no state.
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
-  profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_COUNTRY),
-                  base::ASCIIToUTF16(""), kLocale);
-  profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_STATE),
-                  base::ASCIIToUTF16(""), kLocale);
+  profile.SetInfo(autofill::ADDRESS_HOME_COUNTRY, base::ASCIIToUTF16(""),
+                  kLocale);
+  profile.SetInfo(autofill::ADDRESS_HOME_STATE, base::ASCIIToUTF16(""),
+                  kLocale);
   AddAutofillProfile(profile);
 
   InvokePaymentRequestUI();
@@ -910,9 +907,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        NoCountryInvalidState) {
   // Add address without a country or no state.
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
-  profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_COUNTRY),
-                  base::ASCIIToUTF16(""), kLocale);
-  profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_STATE),
+  profile.SetInfo(autofill::ADDRESS_HOME_COUNTRY, base::ASCIIToUTF16(""),
+                  kLocale);
+  profile.SetInfo(autofill::ADDRESS_HOME_STATE,
                   base::ASCIIToUTF16("INVALIDSTATE"), kLocale);
   AddAutofillProfile(profile);
 
@@ -960,9 +957,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        NoCountryValidState_SyncRegionLoad) {
   // Add address without a country but a valid state for the default country.
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
-  profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_COUNTRY),
-                  base::ASCIIToUTF16(""), kLocale);
-  profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_STATE),
+  profile.SetInfo(autofill::ADDRESS_HOME_COUNTRY, base::ASCIIToUTF16(""),
+                  kLocale);
+  profile.SetInfo(autofill::ADDRESS_HOME_STATE,
                   base::ASCIIToUTF16("California"), kLocale);
   AddAutofillProfile(profile);
 
@@ -1010,9 +1007,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        NoCountryValidState_AsyncRegionLoad) {
   // Add address without a country but a valid state for the default country.
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
-  profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_COUNTRY),
-                  base::ASCIIToUTF16(""), kLocale);
-  profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_STATE),
+  profile.SetInfo(autofill::ADDRESS_HOME_COUNTRY, base::ASCIIToUTF16(""),
+                  kLocale);
+  profile.SetInfo(autofill::ADDRESS_HOME_STATE,
                   base::ASCIIToUTF16("California"), kLocale);
   AddAutofillProfile(profile);
 
@@ -1060,10 +1057,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        DefaultRegion_RegionCode) {
   // Add address without a country but a valid state for the default country.
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
-  profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_COUNTRY),
-                  base::ASCIIToUTF16(""), kLocale);
-  profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_STATE),
-                  base::ASCIIToUTF16("ca"), kLocale);
+  profile.SetInfo(autofill::ADDRESS_HOME_COUNTRY, base::ASCIIToUTF16(""),
+                  kLocale);
+  profile.SetInfo(autofill::ADDRESS_HOME_STATE, base::ASCIIToUTF16("ca"),
+                  kLocale);
   AddAutofillProfile(profile);
 
   InvokePaymentRequestUI();
@@ -1091,9 +1088,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        DefaultRegion_RegionName) {
   // Add address without a country but a valid state for the default country.
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
-  profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_COUNTRY),
-                  base::ASCIIToUTF16(""), kLocale);
-  profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_STATE),
+  profile.SetInfo(autofill::ADDRESS_HOME_COUNTRY, base::ASCIIToUTF16(""),
+                  kLocale);
+  profile.SetInfo(autofill::ADDRESS_HOME_STATE,
                   base::ASCIIToUTF16("california"), kLocale);
   AddAutofillProfile(profile);
 
@@ -1120,10 +1117,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        NoCountryProfileDoesntSetCountryToLocale) {
   // Add address without a country but a valid state for the default country.
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
-  profile.SetInfo(autofill::AutofillType(autofill::NAME_FULL),
-                  base::ASCIIToUTF16(kNameFull), kLocale);
-  profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_COUNTRY),
-                  base::ASCIIToUTF16(""), kLocale);
+  profile.SetInfo(autofill::NAME_FULL, base::ASCIIToUTF16(kNameFull), kLocale);
+  profile.SetInfo(autofill::ADDRESS_HOME_COUNTRY, base::ASCIIToUTF16(""),
+                  kLocale);
   AddAutofillProfile(profile);
 
   InvokePaymentRequestUI();
@@ -1135,10 +1131,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 
   ClickOnBackArrow();
   PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
-  EXPECT_EQ(
-      base::ASCIIToUTF16(""),
-      request->state()->shipping_profiles()[0]->GetInfo(
-          autofill::AutofillType(autofill::ADDRESS_HOME_COUNTRY), kLocale));
+  EXPECT_EQ(base::ASCIIToUTF16(""),
+            request->state()->shipping_profiles()[0]->GetInfo(
+                autofill::ADDRESS_HOME_COUNTRY, kLocale));
 }
 
 }  // namespace payments

@@ -406,35 +406,6 @@ void CreditCard::SetRawInfo(ServerFieldType type,
   }
 }
 
-base::string16 CreditCard::GetInfo(const AutofillType& type,
-                                   const std::string& app_locale) const {
-  ServerFieldType storable_type = type.GetStorableType();
-  if (storable_type == CREDIT_CARD_NUMBER) {
-    // Web pages should never actually be filled by a masked server card,
-    // but this function is used at the preview stage.
-    if (record_type() == MASKED_SERVER_CARD)
-      return NetworkAndLastFourDigits();
-
-    return StripSeparators(number_);
-  }
-
-  return GetRawInfo(storable_type);
-}
-
-bool CreditCard::SetInfo(const AutofillType& type,
-                         const base::string16& value,
-                         const std::string& app_locale) {
-  ServerFieldType storable_type = type.GetStorableType();
-  if (storable_type == CREDIT_CARD_NUMBER)
-    SetRawInfo(storable_type, StripSeparators(value));
-  else if (storable_type == CREDIT_CARD_EXP_MONTH)
-    return SetExpirationMonthFromString(value, app_locale);
-  else
-    SetRawInfo(storable_type, value);
-
-  return true;
-}
-
 void CreditCard::GetMatchingTypes(const base::string16& text,
                                   const std::string& app_locale,
                                   ServerFieldTypeSet* matching_types) const {
@@ -880,6 +851,35 @@ void CreditCard::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
   supported_types->insert(CREDIT_CARD_EXP_4_DIGIT_YEAR);
   supported_types->insert(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR);
   supported_types->insert(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
+}
+
+base::string16 CreditCard::GetInfoImpl(const AutofillType& type,
+                                       const std::string& app_locale) const {
+  ServerFieldType storable_type = type.GetStorableType();
+  if (storable_type == CREDIT_CARD_NUMBER) {
+    // Web pages should never actually be filled by a masked server card,
+    // but this function is used at the preview stage.
+    if (record_type() == MASKED_SERVER_CARD)
+      return NetworkAndLastFourDigits();
+
+    return StripSeparators(number_);
+  }
+
+  return GetRawInfo(storable_type);
+}
+
+bool CreditCard::SetInfoImpl(const AutofillType& type,
+                             const base::string16& value,
+                             const std::string& app_locale) {
+  ServerFieldType storable_type = type.GetStorableType();
+  if (storable_type == CREDIT_CARD_NUMBER)
+    SetRawInfo(storable_type, StripSeparators(value));
+  else if (storable_type == CREDIT_CARD_EXP_MONTH)
+    return SetExpirationMonthFromString(value, app_locale);
+  else
+    SetRawInfo(storable_type, value);
+
+  return true;
 }
 
 base::string16 CreditCard::NetworkForFill() const {

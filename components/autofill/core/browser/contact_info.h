@@ -39,15 +39,15 @@ class NameInfo : public FormGroup {
   // FormGroup:
   base::string16 GetRawInfo(ServerFieldType type) const override;
   void SetRawInfo(ServerFieldType type, const base::string16& value) override;
-  base::string16 GetInfo(const AutofillType& type,
-                         const std::string& app_locale) const override;
-  bool SetInfo(const AutofillType& type,
-               const base::string16& value,
-               const std::string& app_locale) override;
 
  private:
   // FormGroup:
   void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
+  base::string16 GetInfoImpl(const AutofillType& type,
+                             const std::string& app_locale) const override;
+  bool SetInfoImpl(const AutofillType& type,
+                   const base::string16& value,
+                   const std::string& app_locale) override;
 
   // Returns the full name, which is either |full_|, or if |full_| is empty,
   // is composed of given, middle and family.

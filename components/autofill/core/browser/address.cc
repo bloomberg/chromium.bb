@@ -160,8 +160,52 @@ void Address::SetRawInfo(ServerFieldType type, const base::string16& value) {
   }
 }
 
-base::string16 Address::GetInfo(const AutofillType& type,
-                                const std::string& app_locale) const {
+void Address::GetMatchingTypes(const base::string16& text,
+                               const std::string& app_locale,
+                               ServerFieldTypeSet* matching_types) const {
+  FormGroup::GetMatchingTypes(text, app_locale, matching_types);
+
+  // Check to see if the |text| canonicalized as a country name is a match.
+  std::string country_code = CountryNames::GetInstance()->GetCountryCode(text);
+  if (!country_code.empty() && country_code_ == country_code)
+    matching_types->insert(ADDRESS_HOME_COUNTRY);
+
+  AutofillProfileComparator comparator(app_locale);
+  // Check to see if the |text| could be the full name or abbreviation of a
+  // state.
+  base::string16 canon_text = comparator.NormalizeForComparison(text);
+  base::string16 state_name;
+  base::string16 state_abbreviation;
+  state_names::GetNameAndAbbreviation(canon_text, &state_name,
+                                      &state_abbreviation);
+  if (!state_name.empty() || !state_abbreviation.empty()) {
+    l10n::CaseInsensitiveCompare compare;
+    base::string16 canon_profile_state = comparator.NormalizeForComparison(
+        GetInfo(AutofillType(ADDRESS_HOME_STATE), app_locale));
+    if ((!state_name.empty() &&
+         compare.StringsEqual(state_name, canon_profile_state)) ||
+        (!state_abbreviation.empty() &&
+         compare.StringsEqual(state_abbreviation, canon_profile_state))) {
+      matching_types->insert(ADDRESS_HOME_STATE);
+    }
+  }
+}
+
+void Address::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
+  supported_types->insert(ADDRESS_HOME_LINE1);
+  supported_types->insert(ADDRESS_HOME_LINE2);
+  supported_types->insert(ADDRESS_HOME_LINE3);
+  supported_types->insert(ADDRESS_HOME_STREET_ADDRESS);
+  supported_types->insert(ADDRESS_HOME_DEPENDENT_LOCALITY);
+  supported_types->insert(ADDRESS_HOME_CITY);
+  supported_types->insert(ADDRESS_HOME_STATE);
+  supported_types->insert(ADDRESS_HOME_ZIP);
+  supported_types->insert(ADDRESS_HOME_SORTING_CODE);
+  supported_types->insert(ADDRESS_HOME_COUNTRY);
+}
+
+base::string16 Address::GetInfoImpl(const AutofillType& type,
+                                    const std::string& app_locale) const {
   if (type.html_type() == HTML_TYPE_COUNTRY_CODE)
     return base::ASCIIToUTF16(country_code_);
 
@@ -172,9 +216,9 @@ base::string16 Address::GetInfo(const AutofillType& type,
   return GetRawInfo(storable_type);
 }
 
-bool Address::SetInfo(const AutofillType& type,
-                      const base::string16& value,
-                      const std::string& app_locale) {
+bool Address::SetInfoImpl(const AutofillType& type,
+                          const base::string16& value,
+                          const std::string& app_locale) {
   if (type.html_type() == HTML_TYPE_COUNTRY_CODE) {
     if (!data_util::IsValidCountryCode(base::i18n::ToUpper(value))) {
       country_code_ = std::string();
@@ -206,51 +250,6 @@ bool Address::SetInfo(const AutofillType& type,
   }
 
   return true;
-}
-
-void Address::GetMatchingTypes(const base::string16& text,
-                               const std::string& app_locale,
-                               ServerFieldTypeSet* matching_types) const {
-  FormGroup::GetMatchingTypes(text, app_locale, matching_types);
-
-  // Check to see if the |text| canonicalized as a country name is a match.
-  std::string country_code = CountryNames::GetInstance()->GetCountryCode(text);
-  if (!country_code.empty() && country_code_ == country_code)
-    matching_types->insert(ADDRESS_HOME_COUNTRY);
-
-  AutofillProfileComparator comparator(app_locale);
-  // Check to see if the |text| could be the full name or abbreviation of a
-  // state.
-  base::string16 canon_text = comparator.NormalizeForComparison(text);
-  base::string16 state_name;
-  base::string16 state_abbreviation;
-  state_names::GetNameAndAbbreviation(canon_text, &state_name,
-                                      &state_abbreviation);
-  if (!state_name.empty() || !state_abbreviation.empty()) {
-    l10n::CaseInsensitiveCompare compare;
-    base::string16 canon_profile_state =
-        comparator.NormalizeForComparison(
-            GetInfo(AutofillType(ADDRESS_HOME_STATE), app_locale));
-    if ((!state_name.empty() &&
-         compare.StringsEqual(state_name, canon_profile_state)) ||
-        (!state_abbreviation.empty() &&
-         compare.StringsEqual(state_abbreviation, canon_profile_state))) {
-      matching_types->insert(ADDRESS_HOME_STATE);
-    }
-  }
-}
-
-void Address::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
-  supported_types->insert(ADDRESS_HOME_LINE1);
-  supported_types->insert(ADDRESS_HOME_LINE2);
-  supported_types->insert(ADDRESS_HOME_LINE3);
-  supported_types->insert(ADDRESS_HOME_STREET_ADDRESS);
-  supported_types->insert(ADDRESS_HOME_DEPENDENT_LOCALITY);
-  supported_types->insert(ADDRESS_HOME_CITY);
-  supported_types->insert(ADDRESS_HOME_STATE);
-  supported_types->insert(ADDRESS_HOME_ZIP);
-  supported_types->insert(ADDRESS_HOME_SORTING_CODE);
-  supported_types->insert(ADDRESS_HOME_COUNTRY);
 }
 
 void Address::TrimStreetAddress() {

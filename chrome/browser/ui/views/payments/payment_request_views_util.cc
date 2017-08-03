@@ -122,8 +122,7 @@ std::unique_ptr<views::View> GetShippingAddressLabel(
     base::string16* accessible_content,
     bool enabled) {
   DCHECK(accessible_content);
-  base::string16 name =
-      profile.GetInfo(autofill::AutofillType(autofill::NAME_FULL), locale);
+  base::string16 name = profile.GetInfo(autofill::NAME_FULL, locale);
 
   base::string16 address =
       GetShippingAddressLabelFormAutofillProfile(profile, locale);
@@ -304,21 +303,18 @@ std::unique_ptr<views::View> GetContactInfoLabel(
     const PaymentsProfileComparator& comp,
     base::string16* accessible_content) {
   DCHECK(accessible_content);
-  base::string16 name =
-      options.request_payer_name()
-          ? profile.GetInfo(autofill::AutofillType(autofill::NAME_FULL), locale)
-          : base::string16();
+  base::string16 name = options.request_payer_name()
+                            ? profile.GetInfo(autofill::NAME_FULL, locale)
+                            : base::string16();
 
   base::string16 phone =
       options.request_payer_phone()
           ? data_util::GetFormattedPhoneNumberForDisplay(profile, locale)
           : base::string16();
 
-  base::string16 email =
-      options.request_payer_email()
-          ? profile.GetInfo(autofill::AutofillType(autofill::EMAIL_ADDRESS),
-                            locale)
-          : base::string16();
+  base::string16 email = options.request_payer_email()
+                             ? profile.GetInfo(autofill::EMAIL_ADDRESS, locale)
+                             : base::string16();
 
   std::unique_ptr<views::View> base_label =
       GetBaseProfileLabel(type, name, phone, email, accessible_content);

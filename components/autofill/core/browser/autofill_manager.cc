@@ -1415,7 +1415,7 @@ int AutofillManager::SetProfilesForCreditCardUpload(
       verified_name = comparator->NormalizeForComparison(card_name);
       for (const AutofillProfile& profile : candidate_profiles) {
         const base::string16 address_name = comparator->NormalizeForComparison(
-            profile.GetInfo(AutofillType(NAME_FULL), app_locale_));
+            profile.GetInfo(NAME_FULL, app_locale_));
         if (address_name.empty())
           continue;
         if (verified_name.empty() ||
@@ -1429,8 +1429,8 @@ int AutofillManager::SetProfilesForCreditCardUpload(
     } else {
       verified_name = RemoveMiddleInitial(card_name);
       for (const AutofillProfile& profile : candidate_profiles) {
-        const base::string16 address_name = RemoveMiddleInitial(
-            profile.GetInfo(AutofillType(NAME_FULL), app_locale_));
+        const base::string16 address_name =
+            RemoveMiddleInitial(profile.GetInfo(NAME_FULL, app_locale_));
         if (address_name.empty())
           continue;
         if (verified_name.empty()) {

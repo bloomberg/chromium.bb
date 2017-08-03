@@ -208,10 +208,8 @@ bool AutofillProfileComparator::MergeCJKNames(
     const AutofillProfile& p1,
     const AutofillProfile& p2,
     NameInfo* info) const {
-  DCHECK(data_util::IsCJKName(p1.GetInfo(AutofillType(NAME_FULL),
-                                         app_locale_)));
-  DCHECK(data_util::IsCJKName(p2.GetInfo(AutofillType(NAME_FULL),
-                                         app_locale_)));
+  DCHECK(data_util::IsCJKName(p1.GetInfo(NAME_FULL, app_locale_)));
+  DCHECK(data_util::IsCJKName(p2.GetInfo(NAME_FULL, app_locale_)));
 
   struct Name {
     base::string16 given;
@@ -754,9 +752,9 @@ bool AutofillProfileComparator::HaveMergeableNames(
     const AutofillProfile& p1,
     const AutofillProfile& p2) const {
   base::string16 full_name_1 =
-      NormalizeForComparison(p1.GetInfo(AutofillType(NAME_FULL), app_locale_));
+      NormalizeForComparison(p1.GetInfo(NAME_FULL, app_locale_));
   base::string16 full_name_2 =
-      NormalizeForComparison(p2.GetInfo(AutofillType(NAME_FULL), app_locale_));
+      NormalizeForComparison(p2.GetInfo(NAME_FULL, app_locale_));
 
   if (full_name_1.empty() || full_name_2.empty() ||
       full_name_1 == full_name_2) {
@@ -775,22 +773,18 @@ bool AutofillProfileComparator::HaveMergeableNames(
 bool AutofillProfileComparator::HaveMergeableCJKNames(
     const AutofillProfile& p1,
     const AutofillProfile& p2) const {
-  base::string16 name_1 =
-      NormalizeForComparison(p1.GetInfo(AutofillType(NAME_FULL), app_locale_),
-                             DISCARD_WHITESPACE);
-  base::string16 name_2 =
-      NormalizeForComparison(p2.GetInfo(AutofillType(NAME_FULL), app_locale_),
-                             DISCARD_WHITESPACE);
+  base::string16 name_1 = NormalizeForComparison(
+      p1.GetInfo(NAME_FULL, app_locale_), DISCARD_WHITESPACE);
+  base::string16 name_2 = NormalizeForComparison(
+      p2.GetInfo(NAME_FULL, app_locale_), DISCARD_WHITESPACE);
   return name_1 == name_2;
 }
 
 bool AutofillProfileComparator::HaveMergeableEmailAddresses(
     const AutofillProfile& p1,
     const AutofillProfile& p2) const {
-  const base::string16& email_1 =
-      p1.GetInfo(AutofillType(EMAIL_ADDRESS), app_locale_);
-  const base::string16& email_2 =
-      p2.GetInfo(AutofillType(EMAIL_ADDRESS), app_locale_);
+  const base::string16& email_1 = p1.GetInfo(EMAIL_ADDRESS, app_locale_);
+  const base::string16& email_2 = p2.GetInfo(EMAIL_ADDRESS, app_locale_);
   return email_1.empty() || email_2.empty() ||
          case_insensitive_compare_.StringsEqual(email_1, email_2);
 }
@@ -798,10 +792,10 @@ bool AutofillProfileComparator::HaveMergeableEmailAddresses(
 bool AutofillProfileComparator::HaveMergeableCompanyNames(
     const AutofillProfile& p1,
     const AutofillProfile& p2) const {
-  const base::string16& company_name_1 = NormalizeForComparison(
-      p1.GetInfo(AutofillType(COMPANY_NAME), app_locale_));
-  const base::string16& company_name_2 = NormalizeForComparison(
-      p2.GetInfo(AutofillType(COMPANY_NAME), app_locale_));
+  const base::string16& company_name_1 =
+      NormalizeForComparison(p1.GetInfo(COMPANY_NAME, app_locale_));
+  const base::string16& company_name_2 =
+      NormalizeForComparison(p2.GetInfo(COMPANY_NAME, app_locale_));
   return company_name_1.empty() || company_name_2.empty() ||
          CompareTokens(company_name_1, company_name_2) != DIFFERENT_TOKENS;
 }
@@ -946,9 +940,9 @@ bool AutofillProfileComparator::HaveMergeableAddresses(
   // Heuristic: Street addresses are mergeable if one is a (possibly empty) bag
   // of words subset of the other.
   const base::string16& address1 = rewriter.Rewrite(NormalizeForComparison(
-      p1.GetInfo(AutofillType(ADDRESS_HOME_STREET_ADDRESS), app_locale_)));
+      p1.GetInfo(ADDRESS_HOME_STREET_ADDRESS, app_locale_)));
   const base::string16& address2 = rewriter.Rewrite(NormalizeForComparison(
-      p2.GetInfo(AutofillType(ADDRESS_HOME_STREET_ADDRESS), app_locale_)));
+      p2.GetInfo(ADDRESS_HOME_STREET_ADDRESS, app_locale_)));
   if (CompareTokens(address1, address2) == DIFFERENT_TOKENS) {
     return false;
   }

@@ -996,9 +996,8 @@ bool AutofillTable::GetServerProfiles(
 
     // SetInfo instead of SetRawInfo so the constituent pieces will be parsed
     // for these data types.
-    profile->SetInfo(AutofillType(NAME_FULL), recipient_name,
-                     profile->language_code());
-    profile->SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), phone_number,
+    profile->SetInfo(NAME_FULL, recipient_name, profile->language_code());
+    profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, phone_number,
                      profile->language_code());
 
     profiles->push_back(std::move(profile));
@@ -2444,9 +2443,8 @@ bool AutofillTable::MigrateToVersion65AddServerMetadataTables() {
     profile.SetRawInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(index++));
     base::string16 phone_number = s.ColumnString16(index++);
     profile.set_language_code(s.ColumnString(index++));
-    profile.SetInfo(AutofillType(NAME_FULL), recipient_name,
-                    profile.language_code());
-    profile.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), phone_number,
+    profile.SetInfo(NAME_FULL, recipient_name, profile.language_code());
+    profile.SetInfo(PHONE_HOME_WHOLE_NUMBER, phone_number,
                     profile.language_code());
     profile.GenerateServerProfileIdentifier();
     profiles.push_back(profile);

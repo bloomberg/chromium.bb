@@ -278,38 +278,6 @@ void AutofillProfile::SetRawInfo(ServerFieldType type,
     form_group->SetRawInfo(type, value);
 }
 
-base::string16 AutofillProfile::GetInfo(const AutofillType& type,
-                                        const std::string& app_locale) const {
-  if (type.html_type() == HTML_TYPE_FULL_ADDRESS) {
-    std::unique_ptr<AddressData> address_data =
-        i18n::CreateAddressDataFromAutofillProfile(*this, app_locale);
-    if (!addressinput::HasAllRequiredFields(*address_data))
-      return base::string16();
-
-    std::vector<std::string> lines;
-    ::i18n::addressinput::GetFormattedNationalAddress(*address_data, &lines);
-    return base::UTF8ToUTF16(base::JoinString(lines, "\n"));
-  }
-
-  const FormGroup* form_group = FormGroupForType(type);
-  if (!form_group)
-    return base::string16();
-
-  return form_group->GetInfo(type, app_locale);
-}
-
-bool AutofillProfile::SetInfo(const AutofillType& type,
-                              const base::string16& value,
-                              const std::string& app_locale) {
-  FormGroup* form_group = MutableFormGroupForType(type);
-  if (!form_group)
-    return false;
-
-  base::string16 trimmed_value;
-  base::TrimWhitespace(value, base::TRIM_ALL, &trimmed_value);
-  return form_group->SetInfo(type, trimmed_value, app_locale);
-}
-
 void AutofillProfile::GetSupportedTypes(
     ServerFieldTypeSet* supported_types) const {
   FormGroupList info = FormGroups();
@@ -759,6 +727,39 @@ bool AutofillProfile::IsValidationSupportedForType(ServerFieldType type) {
     default:
       return false;
   }
+}
+
+base::string16 AutofillProfile::GetInfoImpl(
+    const AutofillType& type,
+    const std::string& app_locale) const {
+  if (type.html_type() == HTML_TYPE_FULL_ADDRESS) {
+    std::unique_ptr<AddressData> address_data =
+        i18n::CreateAddressDataFromAutofillProfile(*this, app_locale);
+    if (!addressinput::HasAllRequiredFields(*address_data))
+      return base::string16();
+
+    std::vector<std::string> lines;
+    ::i18n::addressinput::GetFormattedNationalAddress(*address_data, &lines);
+    return base::UTF8ToUTF16(base::JoinString(lines, "\n"));
+  }
+
+  const FormGroup* form_group = FormGroupForType(type);
+  if (!form_group)
+    return base::string16();
+
+  return form_group->GetInfoImpl(type, app_locale);
+}
+
+bool AutofillProfile::SetInfoImpl(const AutofillType& type,
+                                  const base::string16& value,
+                                  const std::string& app_locale) {
+  FormGroup* form_group = MutableFormGroupForType(type);
+  if (!form_group)
+    return false;
+
+  base::string16 trimmed_value;
+  base::TrimWhitespace(value, base::TRIM_ALL, &trimmed_value);
+  return form_group->SetInfoImpl(type, trimmed_value, app_locale);
 }
 
 // static

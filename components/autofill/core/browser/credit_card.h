@@ -101,11 +101,6 @@ class CreditCard : public AutofillDataModel {
                         ServerFieldTypeSet* matching_types) const override;
   base::string16 GetRawInfo(ServerFieldType type) const override;
   void SetRawInfo(ServerFieldType type, const base::string16& value) override;
-  base::string16 GetInfo(const AutofillType& type,
-                         const std::string& app_locale) const override;
-  bool SetInfo(const AutofillType& type,
-               const base::string16& value,
-               const std::string& app_locale) override;
 
   // Special method to set value for HTML5 month input type.
   void SetInfoForMonthInputType(const base::string16& value);
@@ -248,6 +243,11 @@ class CreditCard : public AutofillDataModel {
 
   // FormGroup:
   void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
+  base::string16 GetInfoImpl(const AutofillType& type,
+                             const std::string& app_locale) const override;
+  bool SetInfoImpl(const AutofillType& type,
+                   const base::string16& value,
+                   const std::string& app_locale) override;
 
   // The issuer network of the card to fill in to the page, e.g. 'Mastercard'.
   base::string16 NetworkForFill() const;
