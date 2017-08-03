@@ -131,6 +131,9 @@ class RendererController final : public SharedSession::Client,
   // Helper to request the media pipeline switch to the remoting renderer.
   void StartRemoting(StartTrigger start_trigger);
 
+  // Callback to get the estimated transmission capacity from Remoter.
+  void OnReceivedTransmissionCapacity(double rate);
+
   // Indicates whether remoting is started.
   bool remote_rendering_started_ = false;
 
@@ -189,6 +192,9 @@ class RendererController final : public SharedSession::Client,
   base::OneShotTimer delayed_start_stability_timer_;
 
   std::unique_ptr<base::TickClock> clock_;
+
+  // The estimated transmission capacity (bytes/s) from Remoter.
+  double transmission_capacity_ = 0;
 
   base::WeakPtrFactory<RendererController> weak_factory_;
 

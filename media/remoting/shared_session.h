@@ -128,6 +128,9 @@ class SharedSession final : public mojom::RemotingSource,
 
   RpcBroker* rpc_broker() { return &rpc_broker_; }
 
+  void EstimateTransmissionCapacity(
+      mojom::Remoter::EstimateTransmissionCapacityCallback callback);
+
  private:
   friend class base::RefCountedThreadSafe<SharedSession>;
   ~SharedSession() override;
