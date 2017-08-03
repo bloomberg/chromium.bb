@@ -74,11 +74,11 @@ void ExtractUuid(const SDP_ELEMENT_DATA& uuid_data,
       *uuid = device::BluetoothUUID(uuid_hex);
     } else if (inner_uuid_data.specificType == SDP_ST_UUID32) {
       std::string uuid_hex =
-          base::StringPrintf("%08x", inner_uuid_data.data.uuid32);
+          base::StringPrintf("%08lx", inner_uuid_data.data.uuid32);
       *uuid = device::BluetoothUUID(uuid_hex);
     } else if (inner_uuid_data.specificType == SDP_ST_UUID128) {
       *uuid = device::BluetoothUUID(base::StringPrintf(
-          "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+          "%08lx-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
           inner_uuid_data.data.uuid128.Data1,
           inner_uuid_data.data.uuid128.Data2,
           inner_uuid_data.data.uuid128.Data3,

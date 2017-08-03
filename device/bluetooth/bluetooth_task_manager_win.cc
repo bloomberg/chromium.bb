@@ -228,7 +228,7 @@ BluetoothUUID BluetoothTaskManagerWin::BluetoothLowEnergyUuidToBluetoothUuid(
     return BluetoothUUID(uuid_hex);
   } else {
     return BluetoothUUID(base::StringPrintf(
-        "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+        "%08lx-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
         bth_le_uuid.Value.LongUuid.Data1, bth_le_uuid.Value.LongUuid.Data2,
         bth_le_uuid.Value.LongUuid.Data3, bth_le_uuid.Value.LongUuid.Data4[0],
         bth_le_uuid.Value.LongUuid.Data4[1],
