@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zcr_remote_shell_v1" version="5">
+  <interface name="zcr_remote_shell_v1" version="6">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -171,7 +171,7 @@
     </event>
   </interface>
 
-  <interface name="zcr_remote_surface_v1" version="5">
+  <interface name="zcr_remote_surface_v1" version="6">
     <description summary="A desktop window">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface
@@ -194,6 +194,14 @@
       <entry name="visible" value="1" summary="system ui is visible"/>
       <entry name="autohide_non_sticky" value="2" summary="system ui autohides and is not sticky"/>
       <entry name="autohide_sticky" value="3" summary="system ui autohides and is sticky"/>
+    </enum>
+
+    <enum name="orientation">
+      <description summary="window orientation">
+         The orientation of the window.
+      </description>
+      <entry name="portrait" value="1" summary="portrait"/>
+      <entry name="landscape" value="2" summary="landscape"/>
     </enum>
 
     <request name="destroy" type="destructor">
@@ -531,6 +539,15 @@
 	The compositor may ignore move requests depending on the state of the
 	surface, e.g. fullscreen or maximized.
       </description>
+    </request>
+
+    <!-- Version 6 additions -->
+
+    <request name="set_orientation" since="6">
+      <description summary="set orientation">
+	Set an orientation for the surface.
+      </description>
+      <arg name="orientation" type="int"/>
     </request>
 
   </interface>
