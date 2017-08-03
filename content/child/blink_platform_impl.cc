@@ -191,6 +191,8 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_MEDIA_REMOTING_DISABLE_TEXT;
     case WebLocalizedString::kMediaRemotingCastText:
       return IDS_MEDIA_REMOTING_CAST_TEXT;
+    case WebLocalizedString::kMediaRemotingCastToUnknownDeviceText:
+      return IDS_MEDIA_REMOTING_CAST_TO_UNKNOWN_DEVICE_TEXT;
     case WebLocalizedString::kMultipleFileUploadText:
       return IDS_FORM_FILE_MULTIPLE_UPLOAD;
     case WebLocalizedString::kOtherColorLabel:

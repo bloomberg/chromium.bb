@@ -93,6 +93,7 @@ struct WebLocalizedString {
     kInputElementAltText,
     kMediaRemotingDisableText,
     kMediaRemotingCastText,
+    kMediaRemotingCastToUnknownDeviceText,
     kMissingPluginText,
     kMultipleFileUploadText,
     kOtherColorLabel,

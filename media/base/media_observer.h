@@ -16,10 +16,12 @@ class MEDIA_EXPORT MediaObserverClient {
   virtual ~MediaObserverClient() {}
 
   // Requests to restart the media pipeline and create a new renderer as soon as
-  // possible. |is_rendered_remotely| indicates whether the media is rendered
-  // remotely. When it is true, all the optimizations that might suspend the
-  // media pipeline should be disabled.
-  virtual void SwitchRenderer(bool is_rendered_remotely) = 0;
+  // possible. When switching to remote renderer, all the optimizations that
+  // might suspend the media pipeline should be disabled.
+  // |remote_device_friendly_name| can be empty if the remote device is unknown.
+  virtual void SwitchToRemoteRenderer(
+      const std::string& remote_device_friendly_name) = 0;
+  virtual void SwitchToLocalRenderer() = 0;
 
   // Requests to activate monitoring changes on viewport intersection.
   virtual void ActivateViewportIntersectionMonitoring(bool activate) = 0;

@@ -44,7 +44,7 @@ RendererController::~RendererController() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (remote_rendering_started_) {
     DCHECK(client_);
-    client_->SwitchRenderer(false);
+    client_->SwitchToLocalRenderer();
   }
   metrics_recorder_.WillStopSession(MEDIA_ELEMENT_DESTROYED);
   session_->RemoveClient(this);
@@ -57,7 +57,7 @@ void RendererController::OnStarted(bool success) {
     if (remote_rendering_started_) {
       metrics_recorder_.DidStartSession();
       DCHECK(client_);
-      client_->SwitchRenderer(true);
+      client_->SwitchToRemoteRenderer(session_->sink_name());
     } else {
       session_->StopRemoting(this);
     }
@@ -398,7 +398,7 @@ void RendererController::UpdateAndMaybeSwitch(StartTrigger start_trigger,
     DCHECK(!is_encrypted_);
     DCHECK_NE(stop_trigger, UNKNOWN_STOP_TRIGGER);
     metrics_recorder_.WillStopSession(stop_trigger);
-    client_->SwitchRenderer(false);
+    client_->SwitchToLocalRenderer();
     VLOG(2) << "Request to stop remoting: stop_trigger=" << stop_trigger;
     session_->StopRemoting(this);
   }
@@ -455,13 +455,13 @@ void RendererController::StartRemoting(StartTrigger start_trigger) {
   DCHECK(client_);
   remote_rendering_started_ = true;
   if (session_->state() == SharedSession::SESSION_PERMANENTLY_STOPPED) {
-    client_->SwitchRenderer(true);
+    client_->SwitchToRemoteRenderer(session_->sink_name());
     return;
   }
   DCHECK_NE(start_trigger, UNKNOWN_START_TRIGGER);
   metrics_recorder_.WillStartSession(start_trigger);
-  // |MediaObserverClient::SwitchRenderer()| will be called after remoting is
-  // started successfully.
+  // |MediaObserverClient::SwitchToRemoteRenderer()| will be called after
+  // remoting is started successfully.
   session_->StartRemoting(this);
 }
 

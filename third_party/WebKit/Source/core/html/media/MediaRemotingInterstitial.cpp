@@ -8,6 +8,8 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/media/MediaRemotingElements.h"
+#include "platform/text/PlatformLocale.h"
+#include "public/platform/WebLocalizedString.h"
 
 namespace {
 
@@ -44,8 +46,21 @@ MediaRemotingInterstitial::MediaRemotingInterstitial(
   AppendChild(exit_button_);
 }
 
-void MediaRemotingInterstitial::Show() {
+void MediaRemotingInterstitial::Show(
+    const WebString& remote_device_friendly_name) {
   DCHECK(!should_be_visible_);
+  if (remote_device_friendly_name.IsEmpty()) {
+    cast_text_message_->setInnerText(
+        GetVideoElement().GetLocale().QueryString(
+            WebLocalizedString::kMediaRemotingCastToUnknownDeviceText),
+        ASSERT_NO_EXCEPTION);
+  } else {
+    cast_text_message_->setInnerText(
+        GetVideoElement().GetLocale().QueryString(
+            WebLocalizedString::kMediaRemotingCastText,
+            remote_device_friendly_name),
+        ASSERT_NO_EXCEPTION);
+  }
   if (toggle_insterstitial_timer_.IsActive())
     toggle_insterstitial_timer_.Stop();
   should_be_visible_ = true;

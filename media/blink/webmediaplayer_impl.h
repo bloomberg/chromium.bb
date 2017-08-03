@@ -229,7 +229,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 #endif
 
   // MediaObserverClient implementation.
-  void SwitchRenderer(bool is_rendered_remotely) override;
+  void SwitchToRemoteRenderer(
+      const std::string& remote_device_friendly_name) override;
+  void SwitchToLocalRenderer() override;
   void ActivateViewportIntersectionMonitoring(bool activate) override;
   void UpdateRemotePlaybackCompatibility(bool is_compatible) override;
 

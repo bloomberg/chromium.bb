@@ -824,7 +824,10 @@ below:
       <message name="IDS_MEDIA_REMOTING_DISABLE_TEXT" desc="Media remoting disable button label.">
        Play on both screens
       </message>
-      <message name="IDS_MEDIA_REMOTING_CAST_TEXT" desc="Media remoting cast video text message.">
+      <message name="IDS_MEDIA_REMOTING_CAST_TEXT" desc="Text message shown to the user when casting a video to a known remote device.">
+       Now casting to <ph name="DEVICE_FRIENDLY_NAME">$1<ex>Living Room TV</ex></ph>
+      </message>
+      <message name="IDS_MEDIA_REMOTING_CAST_TO_UNKNOWN_DEVICE_TEXT" desc="Text message shown to the user when casting a video to an unknown remote device.">
        Now casting to your TV
       </message>
       <message name="IDS_MEDIA_TRACKS_NO_LABEL" desc="Menu item label for a text track that has no name specified. The number represents the track number in the list of tracks.">
