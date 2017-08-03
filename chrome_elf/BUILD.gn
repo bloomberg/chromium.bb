@@ -66,6 +66,22 @@ shared_library("chrome_elf") {
   }
 }
 
+# For code that isn't Chrome-the browser, like test binaries, these stubs stand
+# in for chrome_elf.;
+static_library("test_stubs") {
+  testonly = true
+
+  sources = [
+    "chrome_elf_main.h",
+    "chrome_elf_test_stubs.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//chrome/common:constants",
+  ]
+}
+
 ##------------------------------------------------------------------------------
 ## source sets
 ##------------------------------------------------------------------------------
@@ -144,7 +160,7 @@ static_library("crash") {
   ]
   deps = [
     ":hook_util",
-    "//base:base",  # This needs to go.  DEP of app, crash_keys, client.
+    "//base",  # This needs to go.  DEP of app, crash_keys, client.
     "//base:base_static",  # pe_image
     "//chrome/install_static:install_static_util",
     "//components/crash/content/app:app",

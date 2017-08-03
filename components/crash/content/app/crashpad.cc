@@ -119,18 +119,8 @@ void InitializeCrashpadImpl(bool initial_client,
   }
 
   // database_path is only valid in the browser process.
-#if defined(OS_WIN)
-  internal::PlatformCrashpadInitializationOptions init_options = {};
-  init_options.user_data_dir = user_data_dir;
-
   base::FilePath database_path = internal::PlatformCrashpadInitialization(
-      initial_client, browser_process, embedded_handler, &init_options);
-#else
-  DCHECK(user_data_dir.empty());
-
-  base::FilePath database_path = internal::PlatformCrashpadInitialization(
-      initial_client, browser_process, embedded_handler, nullptr);
-#endif
+      initial_client, browser_process, embedded_handler, user_data_dir);
 
   crashpad::CrashpadInfo* crashpad_info =
       crashpad::CrashpadInfo::GetCrashpadInfo();

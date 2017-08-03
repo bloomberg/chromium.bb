@@ -120,21 +120,14 @@ void GetPlatformCrashpadAnnotations(
     std::map<std::string, std::string>* annotations);
 #endif  // defined(OS_WIN)
 
-struct PlatformCrashpadInitializationOptions {
-#if defined(OS_WIN)
-  // On Windows, if |user_data_dir| is non-empty, it will be passed to the
-  // handler process for use by Chrome Crashpad extensions.
-  std::string user_data_dir;
-#endif
-};
-
-// The platform-specific portion of InitializeCrashpad().
+// The platform-specific portion of InitializeCrashpad(). On windows, if
+// user_data_dir is non-empty, the user data directory will be passed to the
+// handler process for use by Chrome Crashpad extensions.
 // Returns the database path, if initializing in the browser process.
-base::FilePath PlatformCrashpadInitialization(
-    bool initial_client,
-    bool browser_process,
-    bool embedded_handler,
-    PlatformCrashpadInitializationOptions* init_options);
+base::FilePath PlatformCrashpadInitialization(bool initial_client,
+                                              bool browser_process,
+                                              bool embedded_handler,
+                                              const std::string& user_data_dir);
 
 }  // namespace internal
 
