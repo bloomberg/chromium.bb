@@ -107,6 +107,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/cert_loader.h"
@@ -169,10 +170,12 @@
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/touch/touch_device.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/chromeos/events/pref_names.h"
 #include "ui/events/event_utils.h"
+#include "ui/message_center/message_center.h"
 
 #if BUILDFLAG(ENABLE_RLZ)
 #include "components/rlz/rlz_tracker.h"
@@ -787,6 +790,11 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     VLOG(1) << "Relaunching browser for user: " << account_id.Serialize()
             << " with hash: " << user_id_hash;
   }
+
+  // Set product name ("Chrome OS" or "Chromium OS") to be used in context
+  // header of new-style notification.
+  message_center::MessageCenter::Get()->SetProductOSName(
+      l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME));
 }
 
 class GuestLanguageSetCallbackData {
