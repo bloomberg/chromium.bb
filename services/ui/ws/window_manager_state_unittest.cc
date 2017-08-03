@@ -249,7 +249,7 @@ TEST_F(WindowManagerStateTest, PreTargetConsumed) {
   window_tree()->AddWindow(FirstRootId(window_tree()), child_window_id);
   child_window->SetVisible(true);
   SetCanFocusUp(child_window);
-  tree()->GetDisplay(child_window)->AddActivationParent(child_window->parent());
+  child_window->parent()->set_is_activation_parent(true);
   ASSERT_TRUE(window_tree()->SetFocus(child_window_id));
 
   // Register a pre-accelerator.
@@ -305,7 +305,7 @@ TEST_F(WindowManagerStateTest, AckWithProperties) {
   window_tree()->AddWindow(FirstRootId(window_tree()), child_window_id);
   child_window->SetVisible(true);
   SetCanFocusUp(child_window);
-  tree()->GetDisplay(child_window)->AddActivationParent(child_window->parent());
+  child_window->parent()->set_is_activation_parent(true);
   ASSERT_TRUE(window_tree()->SetFocus(child_window_id));
 
   // Register a pre-accelerator.

@@ -97,6 +97,12 @@ class EventDispatcherDelegate {
   virtual void OnEventTargetNotFound(const ui::Event& event,
                                      int64_t display_id) = 0;
 
+  // Called when an event occurs that targets a window that should be blocked
+  // by a modal window. |modal_transient| is the modal window that should
+  // receive the event.
+  virtual void OnEventOccurredOutsideOfModalWindow(
+      ServerWindow* modal_transient) = 0;
+
  protected:
   virtual ~EventDispatcherDelegate() {}
 };

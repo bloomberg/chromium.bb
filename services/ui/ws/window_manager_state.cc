@@ -18,6 +18,7 @@
 #include "services/ui/ws/event_targeter.h"
 #include "services/ui/ws/platform_display.h"
 #include "services/ui/ws/server_window.h"
+#include "services/ui/ws/server_window_tracker.h"
 #include "services/ui/ws/user_display_manager.h"
 #include "services/ui/ws/user_id_tracker.h"
 #include "services/ui/ws/window_manager_display_root.h"
@@ -183,11 +184,6 @@ bool WindowManagerState::SetCapture(ServerWindow* window,
   }
 #endif
   return event_dispatcher_.SetCaptureWindow(window, client_id);
-}
-
-void WindowManagerState::ReleaseCaptureBlockedByModalWindow(
-    const ServerWindow* modal_window) {
-  event_dispatcher_.ReleaseCaptureBlockedByModalWindow(modal_window);
 }
 
 void WindowManagerState::ReleaseCaptureBlockedByAnyModalWindow() {
@@ -812,6 +808,11 @@ void WindowManagerState::OnEventTargetNotFound(const ui::Event& event,
                                          nullptr /* ignore_tree */, display_id);
   if (event.IsMousePointerEvent())
     UpdateNativeCursorFromDispatcher();
+}
+
+void WindowManagerState::OnEventOccurredOutsideOfModalWindow(
+    ServerWindow* modal_transient) {
+  // TODO(sky): notify WindowManager so it can do an animation.
 }
 
 void WindowManagerState::OnWindowEmbeddedAppDisconnected(ServerWindow* window) {

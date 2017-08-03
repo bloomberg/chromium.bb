@@ -556,6 +556,27 @@ bool WindowTree::SetModalType(const ClientWindowId& window_id,
   return true;
 }
 
+bool WindowTree::SetChildModalParent(
+    const ClientWindowId& window_id,
+    const ClientWindowId& modal_parent_window_id) {
+  ServerWindow* window = GetWindowByClientId(window_id);
+  ServerWindow* modal_parent_window =
+      GetWindowByClientId(modal_parent_window_id);
+  // A value of null for |modal_parent_window| resets the modal parent.
+  if (!window) {
+    DVLOG(1) << "SetChildModalParent failed (invalid id)";
+    return false;
+  }
+
+  if (!access_policy_->CanSetChildModalParent(window, modal_parent_window)) {
+    DVLOG(1) << "SetChildModalParent failed (access denied)";
+    return false;
+  }
+
+  window->SetChildModalParent(modal_parent_window);
+  return true;
+}
+
 std::vector<const ServerWindow*> WindowTree::GetWindowTree(
     const ClientWindowId& window_id) const {
   const ServerWindow* window = GetWindowByClientId(window_id);
@@ -701,17 +722,10 @@ void WindowTree::OnWindowManagerCreatedTopLevelWindow(
 
 void WindowTree::AddActivationParent(const ClientWindowId& window_id) {
   ServerWindow* window = GetWindowByClientId(window_id);
-  if (window) {
-    Display* display = GetDisplay(window);
-    if (display) {
-      display->AddActivationParent(window);
-    } else {
-      DVLOG(1) << "AddActivationParent failed "
-               << "(window not associated with display)";
-    }
-  } else {
+  if (window)
+    window->set_is_activation_parent(true);
+  else
     DVLOG(1) << "AddActivationParent failed (invalid window id)";
-  }
 }
 
 void WindowTree::OnChangeCompleted(uint32_t change_id, bool success) {
@@ -1519,6 +1533,14 @@ void WindowTree::SetModalType(uint32_t change_id,
       change_id, SetModalType(ClientWindowId(window_id), modal_type));
 }
 
+void WindowTree::SetChildModalParent(uint32_t change_id,
+                                     Id window_id,
+                                     Id parent_window_id) {
+  client()->OnChangeCompleted(
+      change_id, SetChildModalParent(ClientWindowId(window_id),
+                                     ClientWindowId(parent_window_id)));
+}
+
 void WindowTree::ReorderWindow(uint32_t change_id,
                                Id window_id,
                                Id relative_window_id,
@@ -2250,14 +2272,7 @@ void WindowTree::RemoveActivationParent(Id transport_window_id) {
     DVLOG(1) << "RemoveActivationParent failed (invalid window id)";
     return;
   }
-
-  Display* display = GetDisplay(window);
-  if (!display) {
-    DVLOG(1) << "RemoveActivationParent window not associated with display";
-    return;
-  }
-
-  display->RemoveActivationParent(window);
+  window->set_is_activation_parent(false);
 }
 
 void WindowTree::ActivateNextWindow() {

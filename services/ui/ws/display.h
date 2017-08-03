@@ -18,13 +18,11 @@
 #include "services/ui/common/types.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree_host.mojom.h"
-#include "services/ui/ws/focus_controller_delegate.h"
 #include "services/ui/ws/focus_controller_observer.h"
 #include "services/ui/ws/platform_display.h"
 #include "services/ui/ws/platform_display_delegate.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_observer.h"
-#include "services/ui/ws/server_window_tracker.h"
 #include "services/ui/ws/user_id_tracker_observer.h"
 #include "services/ui/ws/window_manager_window_tree_factory_set_observer.h"
 #include "ui/display/display.h"
@@ -59,7 +57,6 @@ class DisplayTestApi;
 class Display : public PlatformDisplayDelegate,
                 public mojom::WindowTreeHost,
                 public FocusControllerObserver,
-                public FocusControllerDelegate,
                 public UserIdTrackerObserver,
                 public WindowManagerWindowTreeFactorySetObserver,
                 public EventSink {
@@ -134,9 +131,6 @@ class Display : public PlatformDisplayDelegate,
 
   void ActivateNextWindow();
 
-  void AddActivationParent(ServerWindow* window);
-  void RemoveActivationParent(ServerWindow* window);
-
   void UpdateTextInputState(ServerWindow* window,
                             const ui::TextInputState& state);
   void SetImeVisibility(ServerWindow* window, bool visible);
@@ -198,9 +192,6 @@ class Display : public PlatformDisplayDelegate,
   void OnNativeCaptureLost() override;
   OzonePlatform* GetOzonePlatform() override;
 
-  // FocusControllerDelegate:
-  bool CanHaveActiveChildren(ServerWindow* window) const override;
-
   // FocusControllerObserver:
   void OnActivationChanged(ServerWindow* old_active_window,
                            ServerWindow* new_active_window) override;
@@ -227,8 +218,6 @@ class Display : public PlatformDisplayDelegate,
   // In internal window mode this contains information about the display. In
   // external window mode this will be invalid.
   display::Display display_;
-
-  ServerWindowTracker activation_parents_;
 
   viz::LocalSurfaceIdAllocator allocator_;
 

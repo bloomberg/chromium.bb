@@ -223,6 +223,10 @@ void TestWindowTree::SetModalType(uint32_t change_id,
   OnChangeReceived(change_id, WindowTreeChangeType::MODAL);
 }
 
+void TestWindowTree::SetChildModalParent(uint32_t change_id,
+                                         Id window_id,
+                                         Id parent_window_id) {}
+
 void TestWindowTree::ReorderWindow(uint32_t change_id,
                                    uint32_t window_id,
                                    uint32_t relative_window_id,

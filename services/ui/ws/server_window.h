@@ -20,6 +20,7 @@
 #include "services/ui/ws/ids.h"
 #include "services/viz/compositing/privileged/interfaces/frame_sink_manager.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "ui/base/window_tracker_template.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -29,9 +30,9 @@
 namespace ui {
 namespace ws {
 
+class ServerWindowCompositorFrameSinkManager;
 class ServerWindowDelegate;
 class ServerWindowObserver;
-class ServerWindowCompositorFrameSinkManager;
 
 // Server side representation of a window. Delegate is informed of interesting
 // events.
@@ -139,6 +140,13 @@ class ServerWindow {
   ModalType modal_type() const { return modal_type_; }
   void SetModalType(ModalType modal_type);
 
+  void SetChildModalParent(ServerWindow* modal_parent);
+  const ServerWindow* GetChildModalParent() const;
+  ServerWindow* GetChildModalParent() {
+    return const_cast<ServerWindow*>(
+        const_cast<const ServerWindow*>(this)->GetChildModalParent());
+  }
+
   // Returns true if this contains |window| or is |window|.
   bool Contains(const ServerWindow* window) const;
 
@@ -170,6 +178,9 @@ class ServerWindow {
 
   void set_can_focus(bool can_focus) { can_focus_ = can_focus; }
   bool can_focus() const { return can_focus_; }
+
+  void set_is_activation_parent(bool value) { is_activation_parent_ = value; }
+  bool is_activation_parent() const { return is_activation_parent_; }
 
   void set_event_targeting_policy(mojom::EventTargetingPolicy policy) {
     event_targeting_policy_ = policy;
@@ -286,6 +297,15 @@ class ServerWindow {
   bool accepts_drops_ = false;
 
   base::ObserverList<ServerWindowObserver> observers_;
+
+  // Used to track the modal parent of a child modal window.
+  std::unique_ptr<WindowTrackerTemplate<ServerWindow, ServerWindowObserver>>
+      child_modal_parent_tracker_;
+
+  // Whether the children of this window can be active. Also used to determine
+  // when a window is considered top level. That is, if true the children of
+  // this window are considered top level windows.
+  bool is_activation_parent_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ServerWindow);
 };

@@ -824,9 +824,10 @@ void WindowServer::OnWindowVisibilityChanged(ServerWindow* window) {
 
   WindowManagerDisplayRoot* display_root =
       display_manager_->GetWindowManagerDisplayRoot(window);
-  if (display_root)
-    display_root->window_manager_state()->ReleaseCaptureBlockedByModalWindow(
-        window);
+  if (display_root) {
+    display_root->window_manager_state()
+        ->ReleaseCaptureBlockedByAnyModalWindow();
+  }
 }
 
 void WindowServer::OnWindowCursorChanged(ServerWindow* window,

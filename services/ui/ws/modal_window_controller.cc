@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "services/ui/ws/event_dispatcher.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_drawn_tracker.h"
@@ -33,6 +34,35 @@ const ServerWindow* GetWindowModalTargetForWindow(const ServerWindow* window) {
   return GetWindowModalTargetForWindow(modal_window);
 }
 
+// Returns true if |transient| is a valid modal window. |target_window| is
+// the window being considered.
+bool IsModalTransientChild(const ServerWindow* transient,
+                           const ServerWindow* target_window) {
+  return transient->IsDrawn() &&
+         (transient->modal_type() == MODAL_TYPE_WINDOW ||
+          transient->modal_type() == MODAL_TYPE_SYSTEM ||
+          (transient->modal_type() == MODAL_TYPE_CHILD &&
+           (transient->GetChildModalParent() &&
+            transient->GetChildModalParent()->Contains(target_window))));
+}
+
+// Returns the deepest modal window starting at |activatable|. |target_window|
+// is the window being considered.
+const ServerWindow* GetModalTransientChild(const ServerWindow* activatable,
+                                           const ServerWindow* target_window) {
+  for (const ServerWindow* transient : activatable->transient_children()) {
+    if (IsModalTransientChild(transient, target_window)) {
+      if (transient->transient_children().empty())
+        return transient;
+
+      const ServerWindow* modal_child =
+          GetModalTransientChild(transient, target_window);
+      return modal_child ? modal_child : transient;
+    }
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 ModalWindowController::ModalWindowController(EventDispatcher* event_dispatcher)
@@ -55,40 +85,43 @@ void ModalWindowController::AddSystemModalWindow(ServerWindow* window) {
       window, base::MakeUnique<ServerWindowDrawnTracker>(window, this)));
   window->AddObserver(this);
 
-  event_dispatcher_->ReleaseCaptureBlockedByModalWindow(window);
-}
-
-bool ModalWindowController::IsWindowBlockedBy(
-    const ServerWindow* window,
-    const ServerWindow* modal_window) const {
-  DCHECK(window);
-  DCHECK(modal_window);
-  if (modal_window->modal_type() == MODAL_TYPE_NONE ||
-      !modal_window->IsDrawn()) {
-    return false;
-  }
-
-  if (modal_window->transient_parent() &&
-      !modal_window->transient_parent()->Contains(window)) {
-    return false;
-  }
-
-  return true;
+  event_dispatcher_->ReleaseCaptureBlockedByAnyModalWindow();
 }
 
 bool ModalWindowController::IsWindowBlocked(const ServerWindow* window) const {
-  DCHECK(window);
-  return GetTargetForWindow(window) != window;
+  if (!window)
+    return false;
+
+  if (GetModalTransient(window))
+    return true;
+
+  // TODO(sky): the checks here are not enough, need to match that of
+  // RootWindowController::CanWindowReceiveEvents().
+  ServerWindow* system_modal_window = GetActiveSystemModalWindow();
+  return system_modal_window ? !system_modal_window->Contains(window) : false;
 }
 
-const ServerWindow* ModalWindowController::GetTargetForWindow(
+const ServerWindow* ModalWindowController::GetModalTransient(
     const ServerWindow* window) const {
-  // TODO(moshayedi): crbug.com/697127. Handle MODAL_TYPE_CHILD.
-  ServerWindow* system_modal_window = GetActiveSystemModalWindow();
-  if (system_modal_window)
-    return system_modal_window->Contains(window) ? window : system_modal_window;
+  if (!window)
+    return nullptr;
 
-  return window ? GetWindowModalTargetForWindow(window) : nullptr;
+  // We always want to check the for the transient child of the toplevel window.
+  const ServerWindow* toplevel = GetToplevelWindow(window);
+  if (!toplevel)
+    return nullptr;
+
+  return GetModalTransientChild(toplevel, window);
+}
+
+const ServerWindow* ModalWindowController::GetToplevelWindow(
+    const ServerWindow* window) const {
+  const ServerWindow* last = nullptr;
+  for (const ServerWindow *w = window; w; last = w, w = w->parent()) {
+    if (w->is_activation_parent())
+      return last;
+  }
+  return nullptr;
 }
 
 ServerWindow* ModalWindowController::GetActiveSystemModalWindow() const {

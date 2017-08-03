@@ -25,6 +25,7 @@ DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, int64_t)
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT,
                                         aura::client::WindowEmbedType)
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, aura::client::FocusClient*)
+DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, aura::Window*)
 
 namespace aura {
 namespace client {
@@ -51,6 +52,7 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kMirroringEnabledKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(WindowEmbedType,
                              kEmbedType,
                              WindowEmbedType::NONE);
+DEFINE_UI_CLASS_PROPERTY_KEY(Window*, kChildModalParentKey, nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(ui::ModalType, kModalKey, ui::MODAL_TYPE_NONE);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kNameKey, nullptr);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Size, kPreferredSize, nullptr);

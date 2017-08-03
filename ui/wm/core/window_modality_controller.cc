@@ -22,19 +22,10 @@
 #include "ui/wm/core/window_util.h"
 
 namespace wm {
-
-// Transient child's modal parent.
-extern const aura::WindowProperty<aura::Window*>* const kModalParentKey;
-DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*, kModalParentKey, NULL);
-
 namespace {
 
 bool HasAncestor(aura::Window* window, aura::Window* ancestor) {
-  if (!window)
-    return false;
-  if (window == ancestor)
-    return true;
-  return HasAncestor(window->parent(), ancestor);
+  return ancestor && ancestor->Contains(window);
 }
 
 bool TransientChildIsWindowModal(aura::Window* window) {
@@ -50,15 +41,15 @@ bool TransientChildIsChildModal(aura::Window* window) {
 }
 
 aura::Window* GetModalParent(aura::Window* window) {
-  return window->GetProperty(kModalParentKey);
+  return window->GetProperty(aura::client::kChildModalParentKey);
 }
 
 bool IsModalTransientChild(aura::Window* transient, aura::Window* original) {
   return transient->IsVisible() &&
-      (TransientChildIsWindowModal(transient) ||
-       TransientChildIsSystemModal(transient) ||
-       (TransientChildIsChildModal(transient) &&
-        (HasAncestor(original, GetModalParent(transient)))));
+         (TransientChildIsWindowModal(transient) ||
+          TransientChildIsSystemModal(transient) ||
+          (TransientChildIsChildModal(transient) &&
+           HasAncestor(original, GetModalParent(transient))));
 }
 
 aura::Window* GetModalTransientChild(
@@ -83,7 +74,7 @@ aura::Window* GetModalTransientChild(
 }  // namespace
 
 void SetModalParent(aura::Window* child, aura::Window* parent) {
-  child->SetProperty(kModalParentKey, parent);
+  child->SetProperty(aura::client::kChildModalParentKey, parent);
 }
 
 aura::Window* GetModalTransient(aura::Window* window) {

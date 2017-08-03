@@ -36,23 +36,22 @@ class ModalWindowController : public ServerWindowObserver,
   // the active one.
   void AddSystemModalWindow(ServerWindow* window);
 
-  // Checks whether |modal_window| is a visible modal window that blocks
-  // |window|.
-  bool IsWindowBlockedBy(const ServerWindow* window,
-                         const ServerWindow* modal_window) const;
-
   // Checks whether |window| is blocked by any visible modal window.
   bool IsWindowBlocked(const ServerWindow* window) const;
 
-  // Returns the window that events targeted to |window| should be retargeted
-  // to; according to modal windows. If any modal window is blocking |window|
-  // (either system modal or window modal), returns the topmost one; otherwise,
-  // returns |window| itself.
-  const ServerWindow* GetTargetForWindow(const ServerWindow* window) const;
-  ServerWindow* GetTargetForWindow(ServerWindow* window) const {
+  // Returns the deepest modal window that is a transient descendants of the
+  // top-level window for |window|.
+  ServerWindow* GetModalTransient(ServerWindow* window) {
     return const_cast<ServerWindow*>(
-        GetTargetForWindow(static_cast<const ServerWindow*>(window)));
+        GetModalTransient(static_cast<const ServerWindow*>(window)));
   }
+  const ServerWindow* GetModalTransient(const ServerWindow* window) const;
+
+  ServerWindow* GetToplevelWindow(ServerWindow* window) {
+    return const_cast<ServerWindow*>(
+        GetToplevelWindow(static_cast<const ServerWindow*>(window)));
+  }
+  const ServerWindow* GetToplevelWindow(const ServerWindow* window) const;
 
  private:
   friend class test::ModalWindowControllerTestApi;

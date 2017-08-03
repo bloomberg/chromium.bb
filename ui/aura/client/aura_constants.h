@@ -93,6 +93,9 @@ AURA_EXPORT extern const WindowProperty<gfx::Size*>* const kMinimumSize;
 // should render regardless of its actual visibility state.
 AURA_EXPORT extern const WindowProperty<bool>* const kMirroringEnabledKey;
 
+// The modal parent of a child modal window.
+AURA_EXPORT extern const WindowProperty<Window*>* const kChildModalParentKey;
+
 // A property key to store the window modality.
 AURA_EXPORT extern const WindowProperty<ui::ModalType>* const kModalKey;
 
