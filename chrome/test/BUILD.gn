@@ -4852,6 +4852,7 @@ test("unit_tests") {
       "../browser/ui/views/apps/app_info_dialog/app_info_dialog_views_unittest.cc",
       "../browser/ui/views/apps/app_info_dialog/app_info_permissions_panel_unittest.cc",
       "../browser/ui/views/confirm_bubble_views_unittest.cc",
+      "../browser/ui/views/first_run_bubble_unittest.cc",
       "../browser/ui/views/global_error_bubble_view_unittest.cc",
       "../browser/ui/views/harmony/layout_provider_unittest.cc",
       "../browser/ui/views/page_info/page_info_bubble_view_unittest.cc",
@@ -4914,7 +4915,6 @@ test("unit_tests") {
         # Get these compiling on Mac - see http://crbug.com/657883.
         "../browser/ui/views/crypto_module_password_dialog_view_unittest.cc",
         "../browser/ui/views/desktop_capture/desktop_media_picker_views_unittest.cc",
-        "../browser/ui/views/first_run_bubble_unittest.cc",
       ]
     }
   }

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "build/build_config.h"
 #include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
 #include "chrome/browser/extensions/chrome_extension_chooser_dialog.h"
@@ -15,6 +16,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/intent_picker_bubble_view.h"
+#else
+#include "chrome/browser/ui/views/first_run_bubble.h"
 #endif  // OS_CHROMEOS
 
 // This file provides definitions of desktop browser dialog-creation methods for
@@ -62,6 +65,12 @@ task_manager::TaskManagerTableModel* ShowTaskManager(Browser* browser) {
 
 void HideTaskManager() {
   task_manager::TaskManagerView::Hide();
+}
+
+void ShowFirstRunBubble(Browser* browser) {
+#if !defined(OS_CHROMEOS)
+  FirstRunBubble::Show(browser);
+#endif  // OS_CHROMEOS
 }
 
 }  // namespace chrome

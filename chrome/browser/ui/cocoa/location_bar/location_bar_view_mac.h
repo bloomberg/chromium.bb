@@ -12,7 +12,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
@@ -58,7 +57,6 @@ class LocationBarViewMac : public LocationBar,
   ~LocationBarViewMac() override;
 
   // Overridden from LocationBar:
-  void ShowFirstRunBubble() override;
   GURL GetDestinationURL() const override;
   WindowOpenDisposition GetWindowOpenDisposition() const override;
   ui::PageTransition GetPageTransition() const override;
@@ -219,8 +217,6 @@ class LocationBarViewMac : public LocationBar,
   // tab contents state.
   bool RefreshContentSettingsDecorations();
 
-  void ShowFirstRunBubbleInternal();
-
   // Updates the translate decoration in the omnibox with the current translate
   // state.
   void UpdateTranslateDecoration();
@@ -300,9 +296,6 @@ class LocationBarViewMac : public LocationBar,
 
   // The security level of the location bar icon.
   security_state::SecurityLevel security_level_;
-
-  // Used to schedule a task for the first run info bubble.
-  base::WeakPtrFactory<LocationBarViewMac> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewMac);
 };

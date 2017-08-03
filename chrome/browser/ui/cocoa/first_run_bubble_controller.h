@@ -24,10 +24,10 @@ class Profile;
 }
 
 // Creates and shows a first run bubble. |browser| is NULL in unittests.
-+ (FirstRunBubbleController*) showForView:(NSView*)view
-                                   offset:(NSPoint)offset
-                                  browser:(Browser*)browser
-                                  profile:(Profile*)profile;
++ (FirstRunBubbleController*)showAtPoint:(NSPoint)anchorPoint
+                            parentWindow:(NSWindow*)parentWindow
+                                 browser:(Browser*)browser
+                                 profile:(Profile*)profile;
 
 // Handle the bubble's 'Change' button; direct users to search engine options.
 - (IBAction)onChange:(id)sender;

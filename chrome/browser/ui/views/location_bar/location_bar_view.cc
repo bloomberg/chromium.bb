@@ -136,9 +136,6 @@ LocationBarView::LocationBarView(Browser* browser,
 }
 
 LocationBarView::~LocationBarView() {
-  if (template_url_service_)
-    template_url_service_->RemoveObserver(this);
-
   zoom::ZoomEventManager::GetForBrowserContext(profile())
       ->RemoveZoomEventManagerObserver(this);
 }
@@ -804,18 +801,6 @@ void LocationBarView::RefreshClearAllButtonIcon() {
                              ui::NativeTheme::kColorId_TextfieldDefaultColor));
 }
 
-void LocationBarView::ShowFirstRunBubbleInternal() {
-  // First run bubble doesn't make sense for Chrome OS.
-#if !defined(OS_CHROMEOS)
-  WebContents* web_contents = delegate_->GetWebContents();
-  if (!web_contents)
-    return;
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (browser)
-    FirstRunBubble::ShowBubble(browser, GetSecurityBubbleAnchorView());
-#endif
-}
-
 base::string16 LocationBarView::GetLocationIconText() const {
   if (GetToolbarModel()->GetURL().SchemeIs(content::kChromeUIScheme))
     return l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
@@ -860,19 +845,6 @@ bool LocationBarView::ShouldAnimateLocationIconTextVisibilityChange() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, private LocationBar implementation:
-
-void LocationBarView::ShowFirstRunBubble() {
-  // Wait until search engines have loaded to show the first run bubble.
-  TemplateURLService* url_service =
-      TemplateURLServiceFactory::GetForProfile(profile());
-  if (!url_service->loaded()) {
-    template_url_service_ = url_service;
-    template_url_service_->AddObserver(this);
-    template_url_service_->Load();
-    return;
-  }
-  ShowFirstRunBubbleInternal();
-}
 
 GURL LocationBarView::GetDestinationURL() const {
   return destination_url();
@@ -1087,16 +1059,4 @@ const ToolbarModel* LocationBarView::GetToolbarModel() const {
 
 void LocationBarView::SetFocusAndSelection(bool select_all) {
   FocusLocation(select_all);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// LocationBarView, private TemplateURLServiceObserver implementation:
-
-void LocationBarView::OnTemplateURLServiceChanged() {
-  template_url_service_->RemoveObserver(this);
-  template_url_service_ = nullptr;
-  // If the browser is no longer active, let's not show the info bubble, as this
-  // would make the browser the active window again.
-  if (omnibox_view_ && omnibox_view_->GetWidget()->IsActive())
-    ShowFirstRunBubble();
 }

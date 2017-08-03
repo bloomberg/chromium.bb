@@ -9,11 +9,13 @@
 
 #include "base/macros.h"
 #include "ui/events/event.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/link_listener.h"
 
 namespace views {
 class EventMonitor;
+class View;
 }
 
 class Browser;
@@ -21,8 +23,18 @@ class Browser;
 class FirstRunBubble : public views::BubbleDialogDelegateView,
                        public views::LinkListener {
  public:
-  // |browser| is the opening browser and is NULL in unittests.
-  static FirstRunBubble* ShowBubble(Browser* browser, views::View* anchor_view);
+  // If |anchor_view| is not null, the bubble is anchored to it; otherwise, it
+  // is anchored to the rect returned by
+  // bubble_anchor_util::GetPageInfoAnchorRect().
+  FirstRunBubble(Browser* browser,
+                 views::View* anchor_view,
+                 gfx::NativeWindow parent_window);
+  ~FirstRunBubble() override;
+
+  // Usual uses of this dialog don't actually need the created FirstRunBubble,
+  // but unit-tests do, so the ShowForTest() version returns it.
+  static void Show(Browser* browser);
+  static FirstRunBubble* ShowForTest(views::View* anchor_view);
 
  protected:
   // views::BubbleDialogDelegateView overrides:
@@ -30,15 +42,12 @@ class FirstRunBubble : public views::BubbleDialogDelegateView,
   int GetDialogButtons() const override;
 
  private:
-  FirstRunBubble(Browser* browser, views::View* anchor_view);
-  ~FirstRunBubble() override;
-
   // This class observes keyboard events, mouse clicks and touch down events
   // targeted towards the anchor widget and dismisses the first run bubble
   // accordingly.
   class FirstRunBubbleCloser : public ui::EventHandler {
    public:
-    FirstRunBubbleCloser(FirstRunBubble* bubble, views::View* anchor_view);
+    FirstRunBubbleCloser(FirstRunBubble* bubble, gfx::NativeWindow parent);
     ~FirstRunBubbleCloser() override;
 
     // ui::EventHandler overrides.
@@ -65,5 +74,7 @@ class FirstRunBubble : public views::BubbleDialogDelegateView,
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunBubble);
 };
+
+namespace first_run {}  // namespace first_run
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FIRST_RUN_BUBBLE_H_

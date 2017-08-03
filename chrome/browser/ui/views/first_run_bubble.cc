@@ -8,8 +8,11 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/bubble_anchor_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/views/bubble_anchor_util_views.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/search_engines/util.h"
@@ -22,31 +25,34 @@
 #include "ui/views/widget/widget.h"
 
 namespace {
+
 const int kTopInset = 1;
 const int kLeftInset = 2;
 const int kBottomInset = 7;
 const int kRightInset = 2;
-}  // namespace
 
-// static
-FirstRunBubble* FirstRunBubble::ShowBubble(Browser* browser,
-                                           views::View* anchor_view) {
+FirstRunBubble* ShowBubbleImpl(Browser* browser,
+                               views::View* anchor_view,
+                               gfx::NativeWindow parent_window) {
   first_run::LogFirstRunMetric(first_run::FIRST_RUN_BUBBLE_SHOWN);
-
-  FirstRunBubble* delegate = new FirstRunBubble(browser, anchor_view);
+  FirstRunBubble* delegate =
+      new FirstRunBubble(browser, anchor_view, parent_window);
   views::BubbleDialogDelegateView::CreateBubble(delegate)->ShowInactive();
   return delegate;
 }
+
+}  // namespace
 
 void FirstRunBubble::Init() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const gfx::FontList& original_font_list =
       rb.GetFontList(ui::ResourceBundle::MediumFont);
 
-  const base::string16 search_engine_name = browser_ ?
-      GetDefaultSearchEngineName(
-          TemplateURLServiceFactory::GetForProfile(browser_->profile())) :
-      base::string16();
+  const base::string16 search_engine_name =
+      browser_
+          ? GetDefaultSearchEngineName(
+                TemplateURLServiceFactory::GetForProfile(browser_->profile()))
+          : base::string16();
 
   // TODO(tapted): Update these when there are mocks. http://crbug.com/699338.
   views::Label* title = new views::Label(
@@ -86,22 +92,37 @@ void FirstRunBubble::Init() {
   layout->AddView(subtext, columns->num_columns(), 1);
 }
 
-FirstRunBubble::FirstRunBubble(Browser* browser, views::View* anchor_view)
-    : views::BubbleDialogDelegateView(anchor_view,
-                                      views::BubbleBorder::TOP_LEFT),
+FirstRunBubble::FirstRunBubble(Browser* browser,
+                               views::View* anchor_view,
+                               gfx::NativeWindow parent_window)
+    : views::BubbleDialogDelegateView(nullptr, views::BubbleBorder::TOP_LEFT),
       browser_(browser),
-      bubble_closer_(this, anchor_view) {
-  // Compensate for built-in vertical padding in the anchor view's image.
-  set_anchor_view_insets(gfx::Insets(
-      GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
+      bubble_closer_(this, parent_window) {
+  if (anchor_view) {
+    // Compensate for built-in vertical padding in the anchor view's image.
+    set_anchor_view_insets(gfx::Insets(
+        GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
+    SetAnchorView(anchor_view);
+  } else {
+    SetAnchorRect(bubble_anchor_util::GetPageInfoAnchorRect(browser));
+  }
   chrome::RecordDialogCreation(chrome::DialogIdentifier::FIRST_RUN);
+}
+
+FirstRunBubble::~FirstRunBubble() {}
+
+void FirstRunBubble::Show(Browser* browser) {
+  ShowBubbleImpl(browser, bubble_anchor_util::GetPageInfoAnchorView(browser),
+                 browser->window()->GetNativeWindow());
+}
+
+FirstRunBubble* FirstRunBubble::ShowForTest(views::View* anchor_view) {
+  return ShowBubbleImpl(nullptr, anchor_view,
+                        anchor_view->GetWidget()->GetNativeWindow());
 }
 
 int FirstRunBubble::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
-}
-
-FirstRunBubble::~FirstRunBubble() {
 }
 
 void FirstRunBubble::LinkClicked(views::Link* source, int event_flags) {
@@ -114,10 +135,9 @@ void FirstRunBubble::LinkClicked(views::Link* source, int event_flags) {
 
 FirstRunBubble::FirstRunBubbleCloser::FirstRunBubbleCloser(
     FirstRunBubble* bubble,
-    views::View* anchor_view)
+    gfx::NativeWindow parent)
     : bubble_(bubble) {
-  event_monitor_ = views::EventMonitor::CreateWindowMonitor(
-      this, anchor_view->GetWidget()->GetNativeWindow());
+  event_monitor_ = views::EventMonitor::CreateWindowMonitor(this, parent);
 }
 
 FirstRunBubble::FirstRunBubbleCloser::~FirstRunBubbleCloser() {}
