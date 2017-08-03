@@ -310,27 +310,36 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form) {
       continue;
     }
 
-    static const size_t kMaxLabelSize = 100;
+    constexpr size_t kMaxLabelSize = 100;
     const base::string16 truncated_label = field_data.label.substr(
         0, std::min(field_data.label.length(), kMaxLabelSize));
 
     const FormFieldDataPredictions& field = form.fields[i];
 
+    // A rough estimate of the maximum title size is:
+    //    7 field titles at <17 chars each
+    //    + 6 values at <40 chars each
+    //    + 1 truncated label at <kMaxLabelSize;
+    //    = 459 chars, rounded up to the next multiple of 64 = 512
+    // A particularly large parseable name could blow through this and cause
+    // another allocation, but that's OK.
+    constexpr size_t kMaxTitleSize = 512;
     std::string title;
+    title.reserve(kMaxTitleSize);
     title += "overall type: ";
     title += field.overall_type;
-    title += " server type: $2 ";
+    title += "\nserver type: ";
     title += field.server_type;
-    title += " heuristic type: $3";
+    title += "\nheuristic type: ";
     title += field.heuristic_type;
-    title += " label: $4";
+    title += "\nlabel: ";
     title += base::UTF16ToUTF8(truncated_label);
-    title += " parseable name: $5";
-    title += field.overall_type;
-    title += " field signature: $6";
-    title += field.overall_type;
-    title += " form signature: $7";
-    title += field.overall_type;
+    title += "\nparseable name: ";
+    title += field.parseable_name;
+    title += "\nfield signature: ";
+    title += field.signature;
+    title += "\nform signature: ";
+    title += form.signature;
 
     element.SetAttribute("title", WebString::FromUTF8(title));
 
