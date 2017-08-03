@@ -99,7 +99,7 @@ copy("deb_packaging_files") {
     "debian/changelog.template",
     "debian/control.template",
     "debian/debian.menu",
-    "debian/expected_deps_x64_jessie",
+    "debian/expected_deps_x64",
     "debian/postinst",
     "debian/postrm",
     "debian/prerm",
