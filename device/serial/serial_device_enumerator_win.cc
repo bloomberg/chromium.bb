@@ -109,7 +109,7 @@ std::vector<mojom::SerialDeviceInfoPtr> GetDevicesNew() {
       // serial device. If the COM can't be found, ignore the device.
       continue;
 
-    mojom::SerialDeviceInfoPtr info(mojom::SerialDeviceInfo::New());
+    auto info = mojom::SerialDeviceInfo::New();
     info->path = com_port;
 
     std::string display_name;
@@ -145,7 +145,7 @@ std::vector<mojom::SerialDeviceInfoPtr> GetDevicesOld() {
       HKEY_LOCAL_MACHINE, L"HARDWARE\\DEVICEMAP\\SERIALCOMM\\");
   std::vector<mojom::SerialDeviceInfoPtr> devices;
   for (; iter_key.Valid(); ++iter_key) {
-    mojom::SerialDeviceInfoPtr info(mojom::SerialDeviceInfo::New());
+    auto info = mojom::SerialDeviceInfo::New();
     info->path = base::UTF16ToASCII(iter_key.Value());
     devices.push_back(std::move(info));
   }

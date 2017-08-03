@@ -119,7 +119,7 @@ std::vector<mojom::SerialDeviceInfoPtr> GetDevicesNew() {
   base::mac::ScopedIOObject<io_iterator_t> scoped_it(it);
   base::mac::ScopedIOObject<io_service_t> scoped_device;
   while (scoped_device.reset(IOIteratorNext(scoped_it.get())), scoped_device) {
-    mojom::SerialDeviceInfoPtr callout_info(mojom::SerialDeviceInfo::New());
+    auto callout_info = mojom::SerialDeviceInfo::New();
 
     uint16_t vendorId;
     if (GetUInt16Property(scoped_device.get(), CFSTR(kUSBVendorID),
@@ -192,7 +192,7 @@ std::vector<mojom::SerialDeviceInfoPtr> GetDevicesOld() {
     std::set<std::string>::const_iterator i = valid_patterns.begin();
     for (; i != valid_patterns.end(); ++i) {
       if (base::MatchPattern(next_device, *i)) {
-        mojom::SerialDeviceInfoPtr info(mojom::SerialDeviceInfo::New());
+        auto info = mojom::SerialDeviceInfo::New();
         info->path = next_device;
         devices.push_back(std::move(info));
         break;
