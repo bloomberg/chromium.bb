@@ -115,6 +115,7 @@ class NvdaChromeTest(unittest.TestCase):
     app = pywinauto.application.Application()
     app.connect_(process = self._chrome_proc.pid)
     self._pywinauto_window = app.top_window_()
+    self.last_nvda_log_line = 0;
 
     try:
       self._WaitForSpeech(['Address and search bar edit', 'about:blank'])
@@ -151,7 +152,7 @@ class NvdaChromeTest(unittest.TestCase):
     """
     if not os.access(NVDA_LOGPATH, os.F_OK):
       return []
-    lines = open(NVDA_LOGPATH).readlines()
+    lines = open(NVDA_LOGPATH).readlines()[self.last_nvda_log_line:]
     regex = re.compile(r"u'((?:[^\'\\]|\\.)*)\'")
     result = []
     for line in lines:
@@ -159,6 +160,7 @@ class NvdaChromeTest(unittest.TestCase):
         speech_with_whitespace = m.group(1)
         speech_stripped = re.sub(r'\s+', ' ', speech_with_whitespace).strip()
         result.append(speech_stripped)
+    self.last_nvda_log_line = len(lines) - 1
     return result
 
   def _WaitForSpeech(self, expected):
