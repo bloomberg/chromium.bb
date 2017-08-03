@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,6 @@ Polymer({
   behaviors: [
     CrPolicyNetworkBehavior,
     I18nBehavior,
-    PrefsBehavior,
-    settings.RouteObserverBehavior,
   ],
 
   properties: {
@@ -31,6 +29,13 @@ Polymer({
     editable: {
       type: Boolean,
       value: false,
+    },
+
+    /** Whether shared proxies are allowed. */
+    useSharedProxies: {
+      type: Boolean,
+      value: false,
+      observer: 'updateProxy_',
     },
 
     /**
@@ -62,12 +67,6 @@ Polymer({
       value: false,
       observer: 'useSameProxyChanged_',
     },
-
-    /**
-     * Reflects prefs.settings.use_shared_proxies for data binding.
-     * @private
-     */
-    useSharedProxies_: Boolean,
 
     /**
      * Array of proxy configuration types.
@@ -102,10 +101,6 @@ Polymer({
     },
   },
 
-  observers: [
-    'useSharedProxiesChanged_(prefs.settings.use_shared_proxies.value)',
-  ],
-
   /**
    * Saved Manual properties so that switching to another type does not loose
    * any set properties while the UI is open.
@@ -127,12 +122,10 @@ Polymer({
    */
   proxyModified_: false,
 
-  /** @protected settings.RouteObserverBehavior */
-  currentRouteChanged: function(newRoute) {
+  reset: function() {
     this.proxyModified_ = false;
     this.proxy_ = this.createDefaultProxySettings_();
-    if (newRoute == settings.routes.NETWORK_DETAIL)
-      this.updateProxy_();
+    this.updateProxy_();
   },
 
   /** @private */
@@ -154,7 +147,7 @@ Polymer({
     // proxy settings (use the default values).
     if (this.isShared_()) {
       var property = this.getProxySettingsTypeProperty_();
-      if (!this.isControlled(property) && !this.useSharedProxies_) {
+      if (!this.isControlled(property) && !this.useSharedProxies) {
         this.setProxyAsync_(proxy);
         return;  // Proxy settings will be ignored.
       }
@@ -226,13 +219,6 @@ Polymer({
   /** @private */
   useSameProxyChanged_: function() {
     this.proxyModified_ = true;
-  },
-
-  /** @private */
-  useSharedProxiesChanged_: function() {
-    var pref = this.getPref('settings.use_shared_proxies');
-    this.useSharedProxies_ = !!pref && !!pref.value;
-    this.updateProxy_();
   },
 
   /**
@@ -371,40 +357,12 @@ Polymer({
   },
 
   /**
-   * @return {boolean}
-   * @private
-   */
-  shouldShowNetworkPolicyIndicator_: function() {
-    var property = this.getProxySettingsTypeProperty_();
-    return !!property && !this.isExtensionControlled(property) &&
-        this.isNetworkPolicyEnforced(property);
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  shouldShowExtensionIndicator_: function() {
-    var property = this.getProxySettingsTypeProperty_();
-    return !!property && this.isExtensionControlled(property);
-  },
-
-  /**
-   * @param {!CrOnc.ManagedProperty} property
-   * @return {boolean}
-   * @private
-   */
-  shouldShowAllowShared_: function(property) {
-    return !this.isControlled(property) && this.isShared_();
-  },
-
-  /**
    * @param {string} propertyName
    * @return {boolean} Whether the named property setting is editable.
    * @private
    */
   isEditable_: function(propertyName) {
-    if (!this.editable || (this.isShared_() && !this.useSharedProxies_))
+    if (!this.editable || (this.isShared_() && !this.useSharedProxies))
       return false;
     if (!this.networkProperties.hasOwnProperty('ProxySettings'))
       return true;  // No proxy settings defined, so not enforced.
@@ -457,41 +415,5 @@ Polymer({
    */
   matches_: function(property, value) {
     return property == value;
-  },
-
-  /**
-   * Handles the change event for the shared proxy checkbox. Shows a
-   * confirmation dialog.
-   * @param {!Event} event
-   * @private
-   */
-  onAllowSharedProxiesChange_: function(event) {
-    this.$.confirmAllowSharedDialog.showModal();
-  },
-
-  /**
-   * Handles the shared proxy confirmation dialog 'Confirm' button.
-   * @private
-   */
-  onAllowSharedDialogConfirm_: function() {
-    /** @type {!SettingsCheckboxElement} */ (this.$.allowShared)
-        .sendPrefChange();
-    this.$.confirmAllowSharedDialog.close();
-  },
-
-  /**
-   * Handles the shared proxy confirmation dialog 'Cancel' button or a cancel
-   * event.
-   * @private
-   */
-  onAllowSharedDialogCancel_: function() {
-    /** @type {!SettingsCheckboxElement} */ (this.$.allowShared)
-        .resetToPrefValue();
-    this.$.confirmAllowSharedDialog.close();
-  },
-
-  /** @private */
-  onAllowSharedDialogClose_: function() {
-    cr.ui.focusWithoutInk(assert(this.$$('#allowShared')));
   },
 });

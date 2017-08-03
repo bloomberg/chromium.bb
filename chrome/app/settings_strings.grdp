@@ -1177,6 +1177,9 @@
     <message name="IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS" desc="Settings > Network: Name servers label.">
       Name servers
     </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_WPAD" desc="Settings > Internet > Network details: Web Proxy Auto Discovery (WPAD) label.">
+      Web Proxy Auto Discovery URL:
+    </message>
     <message name="IDS_SETTINGS_INTERNET_MOBILE_SEARCH" desc="Settings > Internet > Message in Mobile section when searching for mobile networks.">
       Searching for mobile networks
     </message>
@@ -1197,9 +1200,6 @@
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_PROXY_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the proxy configuration settings. Only visible by screen reader software.">
       Show proxy settings
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_WPAD" desc="Settings > Internet > Network details: Web Proxy Auto Discovery (WPAD) section label.">
-      Web Proxy Auto Discovery URL:
     </message>
     <message name="IDS_SETTINGS_SETTINGS_NETWORK_ALLOW_DATA_ROAMING" desc="Settings > Internet > Network details: Toggle label to allow mobile data roaming.">
       Allow mobile data roaming
