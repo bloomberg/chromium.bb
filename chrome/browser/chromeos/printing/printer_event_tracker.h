@@ -14,6 +14,9 @@ namespace chromeos {
 
 struct UsbPrinter {
   UsbPrinter();
+  UsbPrinter(const UsbPrinter& printer);
+  UsbPrinter& operator=(const UsbPrinter& printer);
+
   ~UsbPrinter();
 
   // USB MFG string

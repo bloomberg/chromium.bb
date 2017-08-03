@@ -22,6 +22,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
+#include "chrome/browser/chromeos/printing/printer_event_tracker.h"
+#include "chrome/browser/chromeos/printing/printer_event_tracker_factory.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/chromeos/printing/usb_printer_detector.h"
 #include "chrome/browser/chromeos/printing/usb_printer_util.h"
@@ -65,10 +67,21 @@ struct SetUpPrinterData {
 //
 // TODO(justincarlson): Possibly go deeper and query the IEEE1284 fields
 // for make and model if we determine those are more likely to contain
-// what we want.
+// what we want.  Strings currently come from udev.
 std::string GuessEffectiveMakeAndModel(const device::UsbDevice& device) {
   return base::UTF16ToUTF8(device.manufacturer_string()) + " " +
          base::UTF16ToUTF8(device.product_string());
+}
+
+chromeos::UsbPrinter ToUsbPrinter(const SetUpPrinterData& printer_data) {
+  chromeos::UsbPrinter usb_printer;
+  usb_printer.vendor_id = printer_data.device->vendor_id();
+  usb_printer.model_id = printer_data.device->product_id();
+  usb_printer.manufacturer =
+      base::UTF16ToUTF8(printer_data.device->manufacturer_string());
+  usb_printer.model = base::UTF16ToUTF8(printer_data.device->product_string());
+  usb_printer.printer = *printer_data.printer;
+  return usb_printer;
 }
 
 // The PrinterDetector that drives the flow for setting up a USB printer to use
@@ -270,6 +283,9 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
       if (data->is_new) {
         SyncedPrintersManagerFactory::GetForBrowserContext(profile_)
             ->UpdateConfiguredPrinter(*data->printer);
+        chromeos::PrinterEventTrackerFactory::GetForBrowserContext(profile_)
+            ->RecordUsbPrinterInstalled(
+                ToUsbPrinter(*data), chromeos::PrinterEventTracker::kAutomatic);
       }
       // TODO(justincarlson): If the device was hotplugged, pop a timed
       // notification that says the printer is now available for printing.

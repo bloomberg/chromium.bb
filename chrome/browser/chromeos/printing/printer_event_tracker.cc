@@ -54,6 +54,23 @@ void SetNetworkPrinterInfo(metrics::PrinterEventProto* event,
 }  // namespace
 
 UsbPrinter::UsbPrinter() = default;
+
+UsbPrinter::UsbPrinter(const UsbPrinter& other)
+    : manufacturer(other.manufacturer),
+      model(other.model),
+      vendor_id(other.vendor_id),
+      model_id(other.model_id),
+      printer(other.printer) {}
+
+UsbPrinter& UsbPrinter::operator=(const UsbPrinter& other) {
+  manufacturer = other.manufacturer;
+  model = other.model;
+  vendor_id = other.vendor_id;
+  model_id = other.model_id;
+  printer = other.printer;
+  return *this;
+}
+
 UsbPrinter::~UsbPrinter() = default;
 
 PrinterEventTracker::PrinterEventTracker() = default;
