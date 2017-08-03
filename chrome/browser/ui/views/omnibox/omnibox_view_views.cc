@@ -210,15 +210,6 @@ void OmniboxViewViews::Update() {
   const security_state::SecurityLevel old_security_level = security_level_;
   UpdateSecurityLevel();
   if (model()->UpdatePermanentText()) {
-    // Select all the new text if the user had all the old text selected, or if
-    // there was no previous text (for new tab page URL replacement extensions).
-    // This makes one particular case better: the user clicks in the box to
-    // change it right before the permanent URL is changed.  Since the new URL
-    // is still fully selected, the user's typing will replace the edit contents
-    // as they'd intended.
-    const bool was_select_all = IsSelectAll();
-    const bool was_reversed = GetSelectedRange().is_reversed();
-
     RevertAll();
 
     // Only select all when we have focus.  If we don't have focus, selecting
@@ -229,8 +220,8 @@ void OmniboxViewViews::Update() {
     // trailing portion of a long URL being scrolled into view.  We could try
     // and address cases like this, but it seems better to just not muck with
     // things when the omnibox isn't focused to begin with.
-    if (was_select_all && model()->has_focus())
-      SelectAll(was_reversed);
+    if (model()->has_focus())
+      SelectAll(true);
   } else if (old_security_level != security_level_) {
     EmphasizeURLComponents();
   }

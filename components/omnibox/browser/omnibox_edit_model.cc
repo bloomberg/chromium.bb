@@ -659,9 +659,6 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
                               SEARCH_ENGINE_MAX);
   }
 
-  // Get the current text before we call RevertAll() which will clear it.
-  base::string16 current_text = view_->GetText();
-
   if (disposition != WindowOpenDisposition::NEW_BACKGROUND_TAB) {
     base::AutoReset<bool> tmp(&in_revert_, true);
     view_->RevertAll();  // Revert the box to its unedited state.
