@@ -238,9 +238,6 @@ TEST_F(PluginInfoMessageFilterTest, FindEnabledPlugin) {
 }
 
 TEST_F(PluginInfoMessageFilterTest, PreferHtmlOverPlugins) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
-
   // The HTML5 By Default feature hides Flash using the plugin filter.
   filter_.set_plugin_enabled(fake_flash_path_, false);
 

@@ -613,10 +613,6 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
   void SetUpInProcessBrowserTestFixture() override {
     test_utils::PrerenderInProcessBrowserTest::
         SetUpInProcessBrowserTestFixture();
-
-    // Although PreferHtmlOverPlugins is redundant with the Field Trial testing
-    // configuration, the official builders don't use those, so enable it here.
-    feature_list_.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
   }
 
   void NavigateToDestURL() const {

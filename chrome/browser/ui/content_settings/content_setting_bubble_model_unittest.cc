@@ -42,11 +42,6 @@ class ContentSettingBubbleModelTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    // Although this is redundant with the Field Trial testing configuration,
-    // the
-    // official builders don't use those, so enable it here.
-    feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
-
     TabSpecificContentSettings::CreateForWebContents(web_contents());
     InfoBarService::CreateForWebContents(web_contents());
   }

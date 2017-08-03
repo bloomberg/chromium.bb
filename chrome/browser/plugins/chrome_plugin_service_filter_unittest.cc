@@ -103,23 +103,11 @@ class ChromePluginServiceFilterTest : public ChromeRenderViewHostTestHarness {
   base::FilePath flash_plugin_path_;
 };
 
-TEST_F(ChromePluginServiceFilterTest, FlashAvailableByDefault) {
-  content::WebPluginInfo flash_plugin(
-      base::ASCIIToUTF16(content::kFlashPluginName), flash_plugin_path_,
-      base::ASCIIToUTF16("1"), base::ASCIIToUTF16("The Flash plugin."));
-  EXPECT_TRUE(IsPluginAvailable(GURL(), url::Origin(),
-                                profile()->GetResourceContext(), flash_plugin));
-}
-
 TEST_F(ChromePluginServiceFilterTest, PreferHtmlOverPluginsDefault) {
   content::WebPluginInfo flash_plugin(
       base::ASCIIToUTF16(content::kFlashPluginName), flash_plugin_path_,
       base::ASCIIToUTF16("1"), base::ASCIIToUTF16("The Flash plugin."));
   base::HistogramTester histograms;
-
-  // Activate PreferHtmlOverPlugins.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
 
   // The default content setting should block Flash, as there should be 0
   // engagement.
@@ -180,10 +168,6 @@ TEST_F(ChromePluginServiceFilterTest,
       base::ASCIIToUTF16(content::kFlashPluginName), flash_plugin_path_,
       base::ASCIIToUTF16("1"), base::ASCIIToUTF16("The Flash plugin."));
   base::HistogramTester histograms;
-
-  // Activate PreferHtmlOverPlugins.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
 
   // Allow plugins by default.
   HostContentSettingsMap* map =
@@ -319,10 +303,6 @@ TEST_F(ChromePluginServiceFilterTest,
       base::ASCIIToUTF16(content::kFlashPluginName), flash_plugin_path_,
       base::ASCIIToUTF16("1"), base::ASCIIToUTF16("The Flash plugin."));
 
-  // Activate PreferHtmlOverPlugins.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
-
   // Block plugins in the original profile. This should inherit into incognito.
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile());
@@ -362,10 +342,6 @@ TEST_F(ChromePluginServiceFilterTest,
   content::WebPluginInfo flash_plugin(
       base::ASCIIToUTF16(content::kFlashPluginName), flash_plugin_path_,
       base::ASCIIToUTF16("1"), base::ASCIIToUTF16("The Flash plugin."));
-
-  // Activate PreferHtmlOverPlugins.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
 
   GURL url("http://www.google.com");
 
@@ -408,10 +384,6 @@ TEST_F(ChromePluginServiceFilterTest, ManagedSetting) {
   content::WebPluginInfo flash_plugin(
       base::ASCIIToUTF16(content::kFlashPluginName), flash_plugin_path_,
       base::ASCIIToUTF16("1"), base::ASCIIToUTF16("The Flash plugin."));
-
-  // Activate PreferHtmlOverPlugins.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
 
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile());

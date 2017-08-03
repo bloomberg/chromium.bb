@@ -354,6 +354,11 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ASSERT_TRUE(ppapi::RegisterFlashTestPlugin(command_line));
 
+    // Plugin throttling is irrelevant to this test and just makes it harder to
+    // verify if a test Flash plugin loads successfully.
+    command_line->AppendSwitchASCII(
+        switches::kOverridePluginPowerSaverForTesting, "never");
+
 #if !defined(DISABLE_NACL)
     // Ensure NaCl can run.
     command_line->AppendSwitch(switches::kEnableNaCl);
@@ -370,13 +375,6 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
         default_command_line, switches::kDisableComponentUpdate, command_line);
   }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(WIDEVINE_CDM_AVAILABLE)
-
-  void SetUpInProcessBrowserTestFixture() override {
-    ContentSettingsTest::SetUpInProcessBrowserTestFixture();
-
-    // Disable the HTML by Default feature so we can test blocked plugins.
-    feature_list.InitAndDisableFeature(features::kPreferHtmlOverPlugins);
-  }
 
   void RunLoadPepperPluginTest(const char* mime_type, bool expect_loaded) {
     const char* expected_result = expect_loaded ? "Loaded" : "Not Loaded";
@@ -495,12 +493,6 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesTest, Flash) {
 // The following tests verify that Pepper plugins that use JavaScript settings
 // instead of Plugins settings still work when Plugins are blocked.
 
-// The plugin successfully loaded above is blocked.
-IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
-                       BlockedFlash) {
-  RunLoadPepperPluginTest(content::kFlashPluginSwfMimeType, false);
-}
-
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(WIDEVINE_CDM_AVAILABLE) && \
     !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
@@ -525,7 +517,7 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
 // The following tests verify that those same Pepper plugins do not work when
 // JavaScript is blocked.
 
-// A plugin with no special behavior is not blocked when JavaScript is blocked.
+// Flash is not blocked when JavaScript is blocked.
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
                        Flash) {
   RunJavaScriptBlockedTest("load_flash_no_js.html", false);
