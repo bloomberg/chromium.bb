@@ -78,6 +78,7 @@ class ChrootManager(object):
     else:
       logging.PrintBuildbotStepText('(Using fresh chroot)')
       osutils.RmDir(chroot, ignore_missing=True, sudo=True)
+      osutils.SafeUnlink(chroot + '.img')
       return True
 
   def ClearChrootVersion(self, chroot=None):
