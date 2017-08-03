@@ -68,6 +68,8 @@ class AnswerCardWebContents : public AnswerCardContents,
   // Current widget host.
   content::RenderWidgetHost* host_ = nullptr;
 
+  Profile* const profile_;  // Unowned
+
   DISALLOW_COPY_AND_ASSIGN(AnswerCardWebContents);
 };
 

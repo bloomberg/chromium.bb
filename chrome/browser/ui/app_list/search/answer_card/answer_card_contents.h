@@ -13,12 +13,6 @@ namespace app_list {
 class AnswerCardResult;
 }
 
-namespace content {
-class NavigationHandle;
-struct OpenURLParams;
-class WebContents;
-}
-
 namespace gfx {
 class Size;
 }
@@ -41,10 +35,11 @@ class AnswerCardContents {
     // events in WebContentsDelegate and WebContentsObserver, however,
     // unnecessary parameters are omitted.
     virtual void UpdatePreferredSize(const gfx::Size& pref_size) = 0;
-    virtual content::WebContents* OpenURLFromTab(
-        const content::OpenURLParams& params) = 0;
-    virtual void DidFinishNavigation(
-        content::NavigationHandle* navigation_handle) = 0;
+    virtual void DidFinishNavigation(const GURL& url,
+                                     bool has_error,
+                                     bool has_answer_card,
+                                     const std::string& result_title,
+                                     const std::string& issued_query) = 0;
     virtual void DidStopLoading() = 0;
 
    private:

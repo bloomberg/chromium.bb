@@ -22,10 +22,6 @@ namespace app_list {
 class AppListModel;
 }
 
-namespace net {
-class HttpResponseHeaders;
-}
-
 namespace app_list {
 
 // Search provider for the answer card.
@@ -45,17 +41,17 @@ class AnswerCardSearchProvider : public SearchProvider,
 
   // AnswerCardContents::Delegate overrides:
   void UpdatePreferredSize(const gfx::Size& pref_size) override;
-  content::WebContents* OpenURLFromTab(
-      const content::OpenURLParams& params) override;
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(const GURL& url,
+                           bool has_error,
+                           bool has_answer_card,
+                           const std::string& result_title,
+                           const std::string& issued_query) override;
   void DidStopLoading() override;
 
  private:
   bool IsCardSizeOk() const;
   void RecordReceivedAnswerFinalResult();
   void OnResultAvailable(bool is_available);
-  bool ParseResponseHeaders(const net::HttpResponseHeaders* headers);
   // Returns Url to open when the user clicks at the result for |query|.
   std::string GetResultUrl(const base::string16& query) const;
 
