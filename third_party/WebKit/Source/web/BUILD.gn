@@ -37,8 +37,6 @@ component("web") {
 
   sources = [
     "AssertMatchingEnums.cpp",
-    "WebExport.h",
-    "WebKit.cpp",
   ]
 
   if (is_mac) {

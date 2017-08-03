@@ -57,10 +57,17 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebFallbackThemeEngine.h"
 #include "public/platform/WebRect.h"
+#include "public/web/WebKit.h"
 
 // The methods in this file are shared by all themes on every platform.
 
 namespace blink {
+
+// Wrapper function defined in WebKit.h
+void SetMockThemeEnabledForTest(bool value) {
+  LayoutTestSupport::SetMockThemeEnabledForTest(value);
+  LayoutTheme::GetTheme().DidChangeThemeEngine();
+}
 
 using namespace HTMLNames;
 

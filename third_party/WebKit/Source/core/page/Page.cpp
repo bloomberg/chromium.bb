@@ -64,8 +64,16 @@
 #include "platform/plugins/PluginData.h"
 #include "platform/scroll/SmoothScrollSequencer.h"
 #include "public/platform/Platform.h"
+#include "public/web/WebKit.h"
 
 namespace blink {
+
+// Wrapper function defined in WebKit.h
+void ResetPluginCache(bool reload_pages) {
+  DCHECK(!reload_pages);
+  Page::RefreshPlugins();
+  Page::ResetPluginData();
+}
 
 // Set of all live pages; includes internal Page objects that are
 // not observable from scripts.

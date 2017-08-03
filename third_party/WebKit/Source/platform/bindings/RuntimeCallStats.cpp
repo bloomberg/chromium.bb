@@ -8,8 +8,16 @@
 #include <algorithm>
 #include "platform/bindings/V8PerIsolateData.h"
 #include "platform/wtf/text/StringBuilder.h"
+#include "public/web/WebKit.h"
 
 namespace blink {
+
+// Wrapper function defined in WebKit.h
+void LogRuntimeCallStats() {
+  LOG(INFO)
+      << "\n"
+      << RuntimeCallStats::From(MainThreadIsolate())->ToString().Utf8().data();
+}
 
 namespace {
 RuntimeCallStats* g_runtime_call_stats_for_testing = nullptr;

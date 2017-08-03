@@ -12,12 +12,18 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/wtf/allocator/Partitions.h"
 #include "public/platform/WebThread.h"
+#include "public/web/WebKit.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/sys_utils.h"
 #endif
 
 namespace blink {
+
+// Wrapper function defined in WebKit.h
+void DecommitFreeableMemory() {
+  WTF::Partitions::DecommitFreeableMemory();
+}
 
 // static
 bool MemoryCoordinator::is_low_end_device_ = false;
