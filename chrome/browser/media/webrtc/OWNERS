@@ -15,7 +15,6 @@ per-file media_permission*=raymes@chromium.org
 # For WebRTC desktop capturer related changes only
 per-file native_desktop_media_list*=zijiehe@chromium.org
 
-per-file *permission_context*=set noparent
 per-file *permission_context*=file://chrome/browser/permissions/PERMISSIONS_OWNERS
 
 # COMPONENT: Blink>WebRTC
