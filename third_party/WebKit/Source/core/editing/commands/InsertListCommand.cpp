@@ -161,7 +161,7 @@ void InsertListCommand::DoApply(EditingState* editing_state) {
     const VisiblePosition& new_end =
         PreviousPositionOf(visible_end, kCannotCrossEditingBoundary);
     SelectionInDOMTree::Builder builder;
-    builder.SetIsDirectional(EndingSelection().IsDirectional());
+    builder.SetIsDirectional(EndingVisibleSelection().IsDirectional());
     builder.Collapse(visible_start.ToPositionWithAffinity());
     if (new_end.IsNotNull())
       builder.Extend(new_end.DeepEquivalent());
@@ -171,7 +171,7 @@ void InsertListCommand::DoApply(EditingState* editing_state) {
   }
 
   const HTMLQualifiedName& list_tag = (type_ == kOrderedList) ? olTag : ulTag;
-  if (EndingSelection().IsRange()) {
+  if (EndingVisibleSelection().IsRange()) {
     bool force_list_creation = false;
     VisibleSelection selection =
         SelectionForParagraphIteration(EndingVisibleSelection());
@@ -294,13 +294,14 @@ void InsertListCommand::DoApply(EditingState* editing_state) {
       visible_start_of_selection = CreateVisiblePosition(start_of_selection);
     }
 
-    SetEndingSelection(SelectionInDOMTree::Builder()
-                           .SetAffinity(visible_start_of_selection.Affinity())
-                           .SetBaseAndExtentDeprecated(
-                               visible_start_of_selection.DeepEquivalent(),
-                               visible_end_of_selection.DeepEquivalent())
-                           .SetIsDirectional(EndingSelection().IsDirectional())
-                           .Build());
+    SetEndingSelection(
+        SelectionInDOMTree::Builder()
+            .SetAffinity(visible_start_of_selection.Affinity())
+            .SetBaseAndExtentDeprecated(
+                visible_start_of_selection.DeepEquivalent(),
+                visible_end_of_selection.DeepEquivalent())
+            .SetIsDirectional(EndingVisibleSelection().IsDirectional())
+            .Build());
     return;
   }
 
