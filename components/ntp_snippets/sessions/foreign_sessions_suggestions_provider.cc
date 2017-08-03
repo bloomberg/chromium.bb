@@ -220,9 +220,9 @@ void ForeignSessionsSuggestionsProvider::DismissSuggestion(
 
 void ForeignSessionsSuggestionsProvider::FetchSuggestionImage(
     const ContentSuggestion::ID& suggestion_id,
-    const ImageFetchedCallback& callback) {
+    ImageFetchedCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, gfx::Image()));
+      FROM_HERE, base::BindOnce(std::move(callback), gfx::Image()));
 }
 
 void ForeignSessionsSuggestionsProvider::Fetch(

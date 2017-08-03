@@ -45,7 +45,7 @@ class ContextualSuggestionsSource {
   // Asynchronous if cache or network is queried.
   void FetchContextualSuggestionImage(
       const ContentSuggestion::ID& suggestion_id,
-      const ImageFetchedCallback& callback);
+      ImageFetchedCallback callback);
 
  private:
   void DidFetchContextualSuggestions(

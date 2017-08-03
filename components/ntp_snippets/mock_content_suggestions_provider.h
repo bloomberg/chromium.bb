@@ -58,9 +58,13 @@ class MockContentSuggestionsProvider : public ContentSuggestionsProvider {
   MOCK_METHOD1(ClearDismissedSuggestionsForDebugging, void(Category category));
   MOCK_METHOD1(DismissSuggestion,
                void(const ContentSuggestion::ID& suggestion_id));
-  MOCK_METHOD2(FetchSuggestionImage,
-               void(const ContentSuggestion::ID& suggestion_id,
-                    const ImageFetchedCallback& callback));
+  // Because gmock cannot mock the movable-type callback ImageFetchedCallback,
+  // FetchSuggestionImage calls the mock method FetchSuggestionImageMock,
+  // which may then be checked with EXPECT_CALL.
+  void FetchSuggestionImage(const ContentSuggestion::ID& id,
+                            ImageFetchedCallback callback) override;
+  MOCK_METHOD2(FetchSuggestionImageMock,
+               void(const ContentSuggestion::ID&, const ImageFetchedCallback&));
 
  private:
   std::vector<Category> provided_categories_;

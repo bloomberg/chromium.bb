@@ -139,7 +139,7 @@ class ContentSuggestionsService : public KeyedService,
   // the callback gets an empty image. The callback will not be called
   // synchronously.
   void FetchSuggestionImage(const ContentSuggestion::ID& suggestion_id,
-                            const ImageFetchedCallback& callback);
+                            ImageFetchedCallback callback);
 
   // Fetches the favicon from local cache (if larger than or equal to
   // |minimum_size_in_pixel|) or from Google server (if there is no icon in the
@@ -149,7 +149,7 @@ class ContentSuggestionsService : public KeyedService,
   void FetchSuggestionFavicon(const ContentSuggestion::ID& suggestion_id,
                               int minimum_size_in_pixel,
                               int desired_size_in_pixel,
-                              const ImageFetchedCallback& callback);
+                              ImageFetchedCallback callback);
 
   // Dismisses the suggestion with the given |suggestion_id|, if it exists.
   // This will not trigger an update through the observers (i.e. providers must
@@ -346,7 +346,7 @@ class ContentSuggestionsService : public KeyedService,
   void GetFaviconFromCache(const GURL& publisher_url,
                            int minimum_size_in_pixel,
                            int desired_size_in_pixel,
-                           const ImageFetchedCallback& callback,
+                           ImageFetchedCallback callback,
                            bool continue_to_google_server);
 
   // Callbacks for fetching favicons.
@@ -354,14 +354,14 @@ class ContentSuggestionsService : public KeyedService,
       const GURL& publisher_url,
       int minimum_size_in_pixel,
       int desired_size_in_pixel,
-      const ImageFetchedCallback& callback,
+      ImageFetchedCallback callback,
       bool continue_to_google_server,
       const favicon_base::LargeIconImageResult& result);
   void OnGetFaviconFromGoogleServerFinished(
       const GURL& publisher_url,
       int minimum_size_in_pixel,
       int desired_size_in_pixel,
-      const ImageFetchedCallback& callback,
+      ImageFetchedCallback callback,
       favicon_base::GoogleFaviconServerRequestStatus status);
 
   // Whether the content suggestions feature is enabled.

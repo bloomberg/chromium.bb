@@ -63,7 +63,7 @@ class DownloadSuggestionsProvider
       const ntp_snippets::ContentSuggestion::ID& suggestion_id) override;
   void FetchSuggestionImage(
       const ntp_snippets::ContentSuggestion::ID& suggestion_id,
-      const ntp_snippets::ImageFetchedCallback& callback) override;
+      ntp_snippets::ImageFetchedCallback callback) override;
   void Fetch(const ntp_snippets::Category& category,
              const std::set<std::string>& known_suggestion_ids,
              const ntp_snippets::FetchDoneCallback& callback) override;
