@@ -21,7 +21,6 @@
 #include "modules/canvas2d/CanvasGradient.h"
 #include "modules/canvas2d/CanvasPattern.h"
 #include "modules/webgl/WebGLRenderingContext.h"
-#include "platform/graphics/Canvas2DImageBufferSurface.h"
 #include "platform/graphics/CanvasHeuristicParameters.h"
 #include "platform/graphics/RecordingImageBufferSurface.h"
 #include "platform/graphics/StaticBitmapImage.h"
@@ -129,7 +128,7 @@ class CanvasRenderingContext2DTest : public ::testing::Test {
 
   void TearDown() override;
   void UnrefCanvas();
-  PassRefPtr<Canvas2DLayerBridge> MakeBridge(
+  std::unique_ptr<Canvas2DLayerBridge> MakeBridge(
       const IntSize&,
       Canvas2DLayerBridge::AccelerationMode);
 
@@ -247,10 +246,10 @@ void CanvasRenderingContext2DTest::TearDown() {
   SharedGpuContext::SetContextProviderFactoryForTesting(nullptr);
 }
 
-PassRefPtr<Canvas2DLayerBridge> CanvasRenderingContext2DTest::MakeBridge(
+std::unique_ptr<Canvas2DLayerBridge> CanvasRenderingContext2DTest::MakeBridge(
     const IntSize& size,
     Canvas2DLayerBridge::AccelerationMode acceleration_mode) {
-  return AdoptRef(new Canvas2DLayerBridge(
+  return WTF::WrapUnique(new Canvas2DLayerBridge(
       size, 0, kNonOpaque, acceleration_mode, CanvasColorParams()));
 }
 
@@ -931,11 +930,9 @@ TEST_F(CanvasRenderingContext2DTest, MAYBE_GetImageDataDisablesAcceleration) {
 
   CreateContext(kNonOpaque);
   IntSize size(300, 300);
-  RefPtr<Canvas2DLayerBridge> bridge =
+  std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(size, Canvas2DLayerBridge::kEnableAcceleration);
-  std::unique_ptr<Canvas2DImageBufferSurface> surface(
-      new Canvas2DImageBufferSurface(bridge, size));
-  CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
+  CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(bridge));
 
   EXPECT_TRUE(CanvasElement().GetImageBuffer()->IsAccelerated());
   EXPECT_EQ(1u, GetGlobalAcceleratedImageBufferCount());
@@ -1000,11 +997,9 @@ TEST_F(CanvasRenderingContext2DTest, TextureUploadHeuristics) {
 
     CreateContext(kNonOpaque);
     IntSize size(dst_size, dst_size);
-    RefPtr<Canvas2DLayerBridge> bridge =
+    std::unique_ptr<Canvas2DLayerBridge> bridge =
         MakeBridge(size, Canvas2DLayerBridge::kEnableAcceleration);
-    std::unique_ptr<Canvas2DImageBufferSurface> surface(
-        new Canvas2DImageBufferSurface(bridge, size));
-    CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
+    CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(bridge));
 
     EXPECT_TRUE(CanvasElement().GetImageBuffer()->IsAccelerated());
     EXPECT_EQ(1u, GetGlobalAcceleratedImageBufferCount());
@@ -1532,13 +1527,11 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
        ElementRequestsCompositingUpdateOnHibernateAndWakeUp) {
   CreateContext(kNonOpaque);
   IntSize size(300, 300);
-  RefPtr<Canvas2DLayerBridge> bridge =
+  std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(size, Canvas2DLayerBridge::kEnableAcceleration);
   // Force hibernatation to occur in an immediate task.
   bridge->DontUseIdleSchedulingForTesting();
-  std::unique_ptr<Canvas2DImageBufferSurface> surface(
-      new Canvas2DImageBufferSurface(bridge, size));
-  CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
+  CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(bridge));
 
   EXPECT_TRUE(CanvasElement().GetImageBuffer()->IsAccelerated());
 
