@@ -509,6 +509,32 @@ TEST(ParsedCertificateTest, SerialNumber37BytesLong) {
   EXPECT_EQ(der::Input(expected_serial), cert->tbs().serial_number);
 }
 
+// Tests a serial number which is zero. RFC 5280 says they should be positive,
+// however also recommends supporting non-positive ones, so parsing here
+// is expected to succeed.
+TEST(ParsedCertificateTest, SerialNumberZero) {
+  scoped_refptr<ParsedCertificate> cert =
+      ParseCertificateFromFile("serial_zero.pem", {});
+  ASSERT_TRUE(cert);
+
+  static const uint8_t expected_serial[] = {0x00};
+  EXPECT_EQ(der::Input(expected_serial), cert->tbs().serial_number);
+}
+
+// Tests a serial number which not a number (NULL).
+TEST(ParsedCertificateTest, SerialNotNumber) {
+  scoped_refptr<ParsedCertificate> cert =
+      ParseCertificateFromFile("serial_not_number.pem", {});
+  ASSERT_FALSE(cert);
+}
+
+// Tests a serial number which uses a non-minimal INTEGER encoding
+TEST(ParsedCertificateTest, SerialNotMinimal) {
+  scoped_refptr<ParsedCertificate> cert =
+      ParseCertificateFromFile("serial_not_minimal.pem", {});
+  ASSERT_FALSE(cert);
+}
+
 // Tests parsing a certificate that has an inhibitAnyPolicy extension.
 TEST(ParsedCertificateTest, InhibitAnyPolicy) {
   scoped_refptr<ParsedCertificate> cert =
