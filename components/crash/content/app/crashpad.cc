@@ -92,6 +92,7 @@ bool LogMessageHandler(int severity,
 
 void InitializeCrashpadImpl(bool initial_client,
                             const std::string& process_type,
+                            const std::string& user_data_dir,
                             bool embedded_handler) {
   static bool initialized = false;
   DCHECK(!initialized);
@@ -118,8 +119,18 @@ void InitializeCrashpadImpl(bool initial_client,
   }
 
   // database_path is only valid in the browser process.
+#if defined(OS_WIN)
+  internal::PlatformCrashpadInitializationOptions init_options = {};
+  init_options.user_data_dir = user_data_dir;
+
   base::FilePath database_path = internal::PlatformCrashpadInitialization(
-      initial_client, browser_process, embedded_handler);
+      initial_client, browser_process, embedded_handler, &init_options);
+#else
+  DCHECK(user_data_dir.empty());
+
+  base::FilePath database_path = internal::PlatformCrashpadInitialization(
+      initial_client, browser_process, embedded_handler, nullptr);
+#endif
 
   crashpad::CrashpadInfo* crashpad_info =
       crashpad::CrashpadInfo::GetCrashpadInfo();
@@ -190,13 +201,14 @@ void InitializeCrashpadImpl(bool initial_client,
 }  // namespace
 
 void InitializeCrashpad(bool initial_client, const std::string& process_type) {
-  InitializeCrashpadImpl(initial_client, process_type, false);
+  InitializeCrashpadImpl(initial_client, process_type, std::string(), false);
 }
 
 #if defined(OS_WIN)
 void InitializeCrashpadWithEmbeddedHandler(bool initial_client,
-                                           const std::string& process_type) {
-  InitializeCrashpadImpl(initial_client, process_type, true);
+                                           const std::string& process_type,
+                                           const std::string& user_data_dir) {
+  InitializeCrashpadImpl(initial_client, process_type, user_data_dir, true);
 }
 #endif  // OS_WIN
 
