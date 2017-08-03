@@ -732,40 +732,131 @@ static const aom_cdf_prob
 #endif  // CONFIG_EXT_INTER
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
+#ifdef TWO_MODE
 const aom_tree_index av1_ncobmc_mode_tree[TREE_SIZE(MAX_NCOBMC_MODES)] = {
-  -NO_OVERLAP,    2,  -NCOBMC_MODE_1, 4,
-  -NCOBMC_MODE_2, 6,  -NCOBMC_MODE_3, 8,
-  -NCOBMC_MODE_4, 10, -NCOBMC_MODE_5, 12,
-  -NCOBMC_MODE_6, 14, -NCOBMC_MODE_7, -NCOBMC_MODE_8
+  -NCOBMC_MODE_0, -NCOBMC_MODE_1
 };
+#else
+const aom_tree_index av1_ncobmc_mode_tree[TREE_SIZE(MAX_NCOBMC_MODES)] = {
+  -NCOBMC_MODE_0, 2,
+  -NCOBMC_MODE_1, 4,
+  -NCOBMC_MODE_2, 6,
+  -NCOBMC_MODE_3, 8,
+  -NCOBMC_MODE_4, 10,
+  -NCOBMC_MODE_5, 12,
+  -NCOBMC_MODE_6, -NCOBMC_MODE_7
+};
+#endif  // TWO_MODE
 
 // TODO(weitinglin): find default prob
+//                   right now setting the first mode with probability 1/255,
+//                   the last eight modes with equal probabilities
 static const aom_prob
     default_ncobmc_mode_prob[ADAPT_OVERLAP_BLOCKS][MAX_NCOBMC_MODES - 1] = {
-      { 23, 37, 37, 38, 65, 71, 81, 86 },   // 8x8
-      { 28, 32, 37, 43, 51, 64, 85, 128 },  // 16X16 equal prob
-      { 86, 22, 32, 25, 10, 40, 97, 65 },   // 32X32
-      { 28, 32, 37, 43, 51, 64, 85, 128 }   // 64X64 equal prob
+#ifdef TWO_MODE
+      { 127 }, { 127 }, { 127 }, { 127 }
+#else
+      { 32, 36, 43, 51, 64, 85, 128 },  // 8x8
+      { 32, 36, 43, 51, 64, 85, 128 },  // 16X16
+      { 32, 36, 43, 51, 64, 85, 128 },  // 32X32
+      { 32, 36, 43, 51, 64, 85, 128 }   // 64X64
+#endif  // TWO_MODE
     };
 static const aom_cdf_prob
     default_ncobmc_mode_cdf[ADAPT_OVERLAP_BLOCKS][CDF_SIZE(MAX_NCOBMC_MODES)] =
-        { { AOM_ICDF(127), AOM_ICDF(4207), AOM_ICDF(8287), AOM_ICDF(12367),
-            AOM_ICDF(16447), AOM_ICDF(20527), AOM_ICDF(24607), AOM_ICDF(28687),
-            AOM_ICDF(32768), 0 },
-          { AOM_ICDF(127), AOM_ICDF(4207), AOM_ICDF(8287), AOM_ICDF(12367),
-            AOM_ICDF(16447), AOM_ICDF(20527), AOM_ICDF(24607), AOM_ICDF(28687),
-            AOM_ICDF(32768), 0 },
-          { AOM_ICDF(127), AOM_ICDF(4207), AOM_ICDF(8287), AOM_ICDF(12367),
-            AOM_ICDF(16447), AOM_ICDF(20527), AOM_ICDF(24607), AOM_ICDF(28687),
-            AOM_ICDF(32768), 0 },
-          { AOM_ICDF(127), AOM_ICDF(4207), AOM_ICDF(8287), AOM_ICDF(12367),
-            AOM_ICDF(16447), AOM_ICDF(20527), AOM_ICDF(24607), AOM_ICDF(28687),
-            AOM_ICDF(32768), 0 } };
+#ifdef TWO_MODE
+        { { AOM_ICDF(16256), AOM_ICDF(32768), 0 },
+          { AOM_ICDF(16256), AOM_ICDF(32768), 0 },
+          { AOM_ICDF(16256), AOM_ICDF(32768), 0 },
+          { AOM_ICDF(16256), AOM_ICDF(32768), 0 } };
+#else
+        { { AOM_ICDF(4096), AOM_ICDF(8192), AOM_ICDF(12288), AOM_ICDF(16384),
+            AOM_ICDF(20480), AOM_ICDF(24576), AOM_ICDF(28672), AOM_ICDF(32768),
+            0 },
+          { AOM_ICDF(4096), AOM_ICDF(8192), AOM_ICDF(12288), AOM_ICDF(16384),
+            AOM_ICDF(20480), AOM_ICDF(24576), AOM_ICDF(28672), AOM_ICDF(32768),
+            0 },
+          { AOM_ICDF(4096), AOM_ICDF(8192), AOM_ICDF(12288), AOM_ICDF(16384),
+            AOM_ICDF(20480), AOM_ICDF(24576), AOM_ICDF(28672), AOM_ICDF(32768),
+            0 },
+          { AOM_ICDF(4096), AOM_ICDF(8192), AOM_ICDF(12288), AOM_ICDF(16384),
+            AOM_ICDF(20480), AOM_ICDF(24576), AOM_ICDF(28672), AOM_ICDF(32768),
+            0 } };
+#endif  // TWO_MODEE
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
-
 // Change this section appropriately once warped motion is supported
 #if CONFIG_MOTION_VAR && !CONFIG_WARPED_MOTION
-#if !CONFIG_NCOBMC_ADAPT_WEIGHT
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
+const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)] = {
+  -SIMPLE_TRANSLATION, 2, -OBMC_CAUSAL, -NCOBMC_ADAPT_WEIGHT,
+};
+static const aom_prob
+    default_motion_mode_prob[BLOCK_SIZES_ALL][MOTION_MODES - 1] = {
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+      { 255, 255 },
+      { 255, 255 },
+      { 255, 255 },
+#endif
+      { 255, 255 },
+      { 255, 255 },
+      { 255, 255 },
+      /** Only these nine block sizes allow ncobmc_adapt_weight **/
+      { 45, 207 },
+      { 42, 211 },
+      { 34, 207 },
+      { 181, 123 },
+      { 129, 141 },
+      { 15, 209 },
+      { 231, 122 },
+      { 195, 190 },
+      { 168, 190 },
+      /** ----------------------------------------------------- **/
+      { 244, 255 },
+#if CONFIG_EXT_PARTITION
+      { 252, 255 },
+      { 252, 255 },
+      { 252, 255 },
+#endif  // CONFIG_EXT_PARTITION
+      { 255, 200 },
+      { 255, 200 },
+      { 255, 200 },
+      { 255, 200 },
+    };
+static const aom_cdf_prob
+    default_motion_mode_cdf[BLOCK_SIZES_ALL][CDF_SIZE(MOTION_MODES)] = {
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+      { AOM_ICDF(255 * 128), AOM_ICDF(32768), 0, 0 },
+      { AOM_ICDF(255 * 128), AOM_ICDF(32768), 0, 0 },
+      { AOM_ICDF(255 * 128), AOM_ICDF(32768), 0, 0 },
+#endif
+      { AOM_ICDF(255 * 128), AOM_ICDF(32768), 0, 0 },
+      { AOM_ICDF(255 * 128), AOM_ICDF(32768), 0, 0 },
+      { AOM_ICDF(255 * 128), AOM_ICDF(32768), 0, 0 },
+      /** Only these seven block sizes allow ncobmc_adapt_weight **/
+      { AOM_ICDF(5702), AOM_ICDF(27555), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(5408), AOM_ICDF(27964), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(4330), AOM_ICDF(27298), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(23107), AOM_ICDF(27760), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(16490), AOM_ICDF(25461), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(1959), AOM_ICDF(27153), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(29530), AOM_ICDF(31073), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(25057), AOM_ICDF(30840), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(21588), AOM_ICDF(29940), AOM_ICDF(32768), 0 },
+      /** ----------------------------------------------------- **/
+      { AOM_ICDF(244 * 128), AOM_ICDF(32768), AOM_ICDF(32768), 0 },
+#if CONFIG_EXT_PARTITION
+      { AOM_ICDF(32256), AOM_ICDF(32768), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32256), AOM_ICDF(32768), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32256), AOM_ICDF(32768), AOM_ICDF(32768), 0 },
+#endif
+      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32768), 0 }
+    };
+#else  // CONFIG_NCOBMC_ADAPT_WEIGHT
 const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)] = {
   -SIMPLE_TRANSLATION, -OBMC_CAUSAL
 };
@@ -814,62 +905,6 @@ static const aom_cdf_prob
       { AOM_ICDF(255 * 128), AOM_ICDF(32768), 0 },
       { AOM_ICDF(255 * 128), AOM_ICDF(32768), 0 },
       { AOM_ICDF(255 * 128), AOM_ICDF(32768), 0 },
-    };
-
-#else
-// TODO(weitinglin): The default probability is copied from warped motion right
-//                   now as a place holder. It needs to be fined tuned after
-//                   NCOBMC_ADAPT_WEIGHT is actually implemented. Also needs to
-//                   change this section appropriately once warped motion is
-//                   supported.
-const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)] = {
-  -SIMPLE_TRANSLATION, 2, -OBMC_CAUSAL, -NCOBMC_ADAPT_WEIGHT,
-};
-static const aom_prob
-    default_motion_mode_prob[BLOCK_SIZES_ALL][MOTION_MODES - 1] = {
-#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
-      { 255, 200 }, { 255, 200 }, { 255, 200 },
-#endif
-      { 255, 200 }, { 255, 200 }, { 255, 200 }, { 151, 200 }, { 153, 200 },
-      { 144, 200 }, { 178, 200 }, { 165, 200 }, { 160, 200 }, { 207, 200 },
-      { 195, 200 }, { 168, 200 }, { 244, 200 },
-#if CONFIG_EXT_PARTITION
-      { 252, 200 }, { 252, 200 }, { 252, 200 },
-#endif  // CONFIG_EXT_PARTITION
-      { 255, 200 }, { 255, 200 }, { 255, 200 }, { 255, 200 }, { 255, 200 },
-      { 255, 200 },
-    };
-static const aom_cdf_prob
-    default_motion_mode_cdf[BLOCK_SIZES_ALL][CDF_SIZE(MOTION_MODES)] = {
-#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
-      { AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
-#endif
-      { AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(7936), AOM_ICDF(19091), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(4991), AOM_ICDF(19205), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(4992), AOM_ICDF(19314), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(15104), AOM_ICDF(21590), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(9855), AOM_ICDF(21043), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(12800), AOM_ICDF(22238), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(24320), AOM_ICDF(26498), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(26496), AOM_ICDF(28995), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(25216), AOM_ICDF(28166), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(30592), AOM_ICDF(31238), AOM_ICDF(32768), 0 },
-#if CONFIG_EXT_PARTITION
-      { AOM_ICDF(32256), AOM_ICDF(32656), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32256), AOM_ICDF(32656), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32256), AOM_ICDF(32656), AOM_ICDF(32768), 0 },
-#endif
-      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32768), 0 },
     };
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 #elif !CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
@@ -925,7 +960,6 @@ static const aom_cdf_prob
     };
 
 #elif CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
-
 const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)] = {
   -SIMPLE_TRANSLATION, 2, -OBMC_CAUSAL, -WARPED_CAUSAL,
 };

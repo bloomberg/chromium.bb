@@ -110,6 +110,22 @@ typedef struct PVQ_QUEUE {
 } PVQ_QUEUE;
 #endif
 
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
+typedef struct superblock_mi_boundaries {
+  int mi_row_begin;
+  int mi_col_begin;
+  int mi_row_end;
+  int mi_col_end;
+} SB_MI_BD;
+
+typedef struct {
+  int KERNEL_TL[MAX_SB_SIZE][MAX_SB_SIZE];
+  int KERNEL_TR[MAX_SB_SIZE][MAX_SB_SIZE];
+  int KERNEL_BL[MAX_SB_SIZE][MAX_SB_SIZE];
+  int KERNEL_BR[MAX_SB_SIZE][MAX_SB_SIZE];
+} NCOBMC_KERNELS;
+#endif
+
 typedef struct {
   uint8_t *plane[MAX_MB_PLANE];
   int stride[MAX_MB_PLANE];
@@ -442,7 +458,7 @@ typedef struct MB_MODE_INFO {
   // blocks. A rectangular block is divided into two squared blocks and each
   // squared block has an interpolation mode.
   NCOBMC_MODE ncobmc_mode[2];
-#endif
+#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 #endif  // CONFIG_MOTION_VAR
   int_mv mv[2];
   int_mv pred_mv[2];
@@ -773,6 +789,12 @@ typedef struct macroblockd {
 
 #if CONFIG_CFL
   CFL_CTX *cfl;
+#endif
+
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
+  uint8_t *ncobmc_pred_buf[MAX_MB_PLANE];
+  int ncobmc_pred_buf_stride[MAX_MB_PLANE];
+  SB_MI_BD sb_mi_bd;
 #endif
 } MACROBLOCKD;
 
@@ -1569,10 +1591,10 @@ static INLINE MOTION_MODE motion_mode_allowed(
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT && CONFIG_MOTION_VAR
 static INLINE NCOBMC_MODE ncobmc_mode_allowed_bsize(BLOCK_SIZE bsize) {
-  if (bsize < BLOCK_8X8 || bsize > BLOCK_64X64)
+  if (bsize < BLOCK_8X8 || bsize >= BLOCK_64X64)
     return NO_OVERLAP;
   else
-    return (NCOBMC_MODE)(MAX_NCOBMC_MODES - 1);
+    return MAX_NCOBMC_MODES;
 }
 
 static INLINE MOTION_MODE
@@ -1587,21 +1609,22 @@ motion_mode_allowed_wrapper(int for_mv_search,
   const MB_MODE_INFO *mbmi = &mi->mbmi;
   MOTION_MODE motion_mode_for_mv_search = motion_mode_allowed(
 #if CONFIG_GLOBAL_MOTION
-      int block, const WarpedMotionParams *gm_params,
+      block, gm_params,
 #endif
 #if CONFIG_WARPED_MOTION
       xd,
 #endif
       mi);
   int ncobmc_mode_allowed =
-      ncobmc_mode_allowed_bsize(mbmi->sb_type) && is_inter_mode(mbmi->mode);
+      (ncobmc_mode_allowed_bsize(mbmi->sb_type) < NO_OVERLAP) &&
+      motion_mode_for_mv_search >= OBMC_CAUSAL;
   if (for_mv_search)
     return motion_mode_for_mv_search;
   else
     return ncobmc_mode_allowed ? NCOBMC_ADAPT_WEIGHT
                                : motion_mode_for_mv_search;
 }
-#endif
+#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT && CONFIG_MOTION_VAR
 
 static INLINE void assert_motion_mode_valid(MOTION_MODE mode,
 #if CONFIG_GLOBAL_MOTION
@@ -1618,6 +1641,9 @@ static INLINE void assert_motion_mode_valid(MOTION_MODE mode,
 #if CONFIG_GLOBAL_MOTION
                                   block, gm_params,
 #endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_WARPED_MOTION
+                                  xd,
+#endif
                                   mi);
 #else
   const MOTION_MODE last_motion_mode_allowed = motion_mode_allowed(
