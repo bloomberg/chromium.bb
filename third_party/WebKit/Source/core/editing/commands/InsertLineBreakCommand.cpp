@@ -126,11 +126,10 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
       node_to_insert = extra_node;
     }
 
-    SetEndingSelection(
-        SelectionInDOMTree::Builder()
-            .Collapse(Position::BeforeNode(*node_to_insert))
-            .SetIsDirectional(EndingVisibleSelection().IsDirectional())
-            .Build());
+    SetEndingSelection(SelectionInDOMTree::Builder()
+                           .Collapse(Position::BeforeNode(*node_to_insert))
+                           .SetIsDirectional(EndingSelection().IsDirectional())
+                           .Build());
   } else if (pos.ComputeEditingOffset() <= CaretMinOffset(pos.AnchorNode())) {
     InsertNodeAt(node_to_insert, pos, editing_state);
     if (editing_state->IsAborted())
@@ -148,7 +147,7 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
     SetEndingSelection(
         SelectionInDOMTree::Builder()
             .Collapse(Position::InParentAfterNode(*node_to_insert))
-            .SetIsDirectional(EndingVisibleSelection().IsDirectional())
+            .SetIsDirectional(EndingSelection().IsDirectional())
             .Build());
     // If we're inserting after all of the rendered text in a text node, or into
     // a non-text node, a simple insertion is sufficient.
@@ -161,7 +160,7 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
     SetEndingSelection(
         SelectionInDOMTree::Builder()
             .Collapse(Position::InParentAfterNode(*node_to_insert))
-            .SetIsDirectional(EndingVisibleSelection().IsDirectional())
+            .SetIsDirectional(EndingSelection().IsDirectional())
             .Build());
   } else if (pos.AnchorNode()->IsTextNode()) {
     // Split a text node
@@ -195,11 +194,10 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
       }
     }
 
-    SetEndingSelection(
-        SelectionInDOMTree::Builder()
-            .Collapse(ending_position)
-            .SetIsDirectional(EndingVisibleSelection().IsDirectional())
-            .Build());
+    SetEndingSelection(SelectionInDOMTree::Builder()
+                           .Collapse(ending_position)
+                           .SetIsDirectional(EndingSelection().IsDirectional())
+                           .Build());
   }
 
   // Handle the case where there is a typing style.

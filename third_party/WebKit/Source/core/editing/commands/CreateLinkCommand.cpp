@@ -36,13 +36,13 @@ CreateLinkCommand::CreateLinkCommand(Document& document, const String& url)
 }
 
 void CreateLinkCommand::DoApply(EditingState* editing_state) {
-  if (EndingVisibleSelection().IsNone())
+  if (EndingSelection().IsNone())
     return;
 
   HTMLAnchorElement* anchor_element = HTMLAnchorElement::Create(GetDocument());
   anchor_element->SetHref(AtomicString(url_));
 
-  if (EndingVisibleSelection().IsRange()) {
+  if (EndingSelection().IsRange()) {
     ApplyStyledElement(anchor_element, editing_state);
     if (editing_state->IsAborted())
       return;
@@ -59,7 +59,7 @@ void CreateLinkCommand::DoApply(EditingState* editing_state) {
         SelectionInDOMTree::Builder()
             .Collapse(Position::InParentBeforeNode(*anchor_element))
             .Extend(Position::InParentAfterNode(*anchor_element))
-            .SetIsDirectional(EndingVisibleSelection().IsDirectional())
+            .SetIsDirectional(EndingSelection().IsDirectional())
             .Build());
   }
 }
