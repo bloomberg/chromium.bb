@@ -15,8 +15,10 @@
 #include "base/timer/timer.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_status.h"
+#include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider.h"
+#include "components/ntp_snippets/status.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
@@ -60,8 +62,13 @@ class SnippetsInternalsMessageHandler
   void HandleClearCachedSuggestions(const base::ListValue* args);
   void HandleClearDismissedSuggestions(const base::ListValue* args);
   void HandleToggleDismissedSuggestions(const base::ListValue* args);
-  void ClearClassification(const base::ListValue* args);
-  void FetchRemoteSuggestionsInTheBackground(const base::ListValue* args);
+  void HandleClearClassification(const base::ListValue* args);
+  void HandleFetchRemoteSuggestionsInTheBackground(const base::ListValue* args);
+  void HandleFetchContextualSuggestions(const base::ListValue* args);
+  void OnContextualSuggestionsFetched(
+      ntp_snippets::Status status_code,
+      const GURL& url,
+      std::vector<ntp_snippets::ContentSuggestion> suggestions);
   void HandlePushDummySuggestionIn10Seconds(const base::ListValue* args);
 
   void SendAllContent();
