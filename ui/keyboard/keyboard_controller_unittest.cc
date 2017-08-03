@@ -345,16 +345,16 @@ TEST_P(KeyboardControllerTest, KeyboardSize) {
   ASSERT_EQ(screen_bounds.height(), initial_bounds.y());
   VerifyKeyboardWindowSize(container, keyboard);
 
-  // In FULL_WIDTH mode, attempt to change window width or move window up from
-  // the bottom are ignored. Changing window height is supported.
+  // Attempt to change window width or move window up from the bottom are
+  // ignored. Changing window height is supported.
   gfx::Rect expected_bounds(0,
                             screen_bounds.height() - 50,
                             screen_bounds.width(),
                             50);
 
   // The x position of new bounds may not be 0 if shelf is on the left side of
-  // screen. In FULL_WIDTH mode, the virtual keyboard should always align with
-  // the left edge of screen. See http://crbug.com/510595.
+  // screen. The virtual keyboard should always align with the left edge of
+  // screen. See http://crbug.com/510595.
   gfx::Rect new_bounds(10, 0, 50, 50);
   keyboard->SetBounds(new_bounds);
   ASSERT_EQ(expected_bounds, container->bounds());
@@ -400,18 +400,6 @@ TEST_P(KeyboardControllerTest, KeyboardSizeMultiRootWindow) {
 
   const gfx::Rect& new_bounds = container->bounds();
   EXPECT_EQ(500, new_bounds.y());
-  VerifyKeyboardWindowSize(container, keyboard);
-}
-
-TEST_P(KeyboardControllerTest, FloatingKeyboardSize) {
-  aura::Window* container(controller()->GetContainerWindow());
-  aura::Window* keyboard(ui()->GetContentsWindow());
-  root_window()->AddChild(container);
-  controller()->SetKeyboardMode(FLOATING);
-  container->AddChild(keyboard);
-  gfx::Rect new_bounds(0, 50, 50, 50);
-  keyboard->SetBounds(new_bounds);
-  ASSERT_EQ(new_bounds, container->bounds());
   VerifyKeyboardWindowSize(container, keyboard);
 }
 
@@ -521,66 +509,6 @@ TEST_P(KeyboardControllerTest, CheckOverscrollInsetDuringVisibilityChange) {
   SetFocus(&input_client);
   // Insets should be enabled for new windows as hide was cancelled.
   EXPECT_TRUE(ShouldEnableInsets(ui()->GetContentsWindow()));
-}
-
-// Verify switch to FLOATING mode will reset the overscroll or resize and when
-// in FLOATING mode, overscroll or resize wont be triggered.
-TEST_P(KeyboardControllerTest, FloatingKeyboardDontOverscrollOrResize) {
-  ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
-  ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
-  ui::DummyTextInputClient no_input_client(ui::TEXT_INPUT_TYPE_NONE);
-
-  base::RunLoop run_loop;
-  aura::Window* container(controller()->GetContainerWindow());
-  root_window()->AddChild(container);
-  std::unique_ptr<KeyboardContainerObserver> keyboard_container_observer(
-      new KeyboardContainerObserver(container, &run_loop));
-  gfx::Rect screen_bounds = root_window()->bounds();
-  ScopedTouchKeyboardEnabler scoped_touch_keyboard_enabler;
-
-  SetFocus(&input_client);
-  gfx::Rect expected_bounds(
-      0, screen_bounds.height() - kDefaultVirtualKeyboardHeight,
-      screen_bounds.width(), kDefaultVirtualKeyboardHeight);
-  // Verify overscroll or resize is in effect.
-  EXPECT_EQ(expected_bounds, notified_bounds());
-  EXPECT_EQ(1, number_of_calls());
-
-  controller()->SetKeyboardMode(FLOATING);
-  // Switch to FLOATING should clear overscroll or resize.
-  EXPECT_EQ(gfx::Rect(), notified_bounds());
-  EXPECT_EQ(2, number_of_calls());
-  SetFocus(&no_input_client);
-  run_loop.Run();
-  EXPECT_EQ(gfx::Rect(), notified_bounds());
-  EXPECT_EQ(3, number_of_calls());
-  SetFocus(&input_client);
-  // In FLOATING mode, no overscroll or resize should be triggered.
-  EXPECT_EQ(3, number_of_calls());
-  EXPECT_EQ(gfx::Rect(), controller()->current_keyboard_bounds());
-}
-
-// Verify switch to FULL_WIDTH mode will move virtual keyboard to the right
-// place and sets the correct overscroll.
-TEST_P(KeyboardControllerTest, SwitchToFullWidthVirtualKeyboard) {
-  ScopedTouchKeyboardEnabler scoped_keyboard_enabler;
-  ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
-
-  aura::Window* container(controller()->GetContainerWindow());
-  root_window()->AddChild(container);
-  gfx::Rect screen_bounds = root_window()->bounds();
-  SetFocus(&input_client);
-
-  controller()->SetKeyboardMode(FLOATING);
-  EXPECT_EQ(gfx::Rect(), notified_bounds());
-  EXPECT_EQ(gfx::Rect(), controller()->current_keyboard_bounds());
-
-  controller()->SetKeyboardMode(FULL_WIDTH);
-  gfx::Rect expected_bounds(
-      0, screen_bounds.height() - kDefaultVirtualKeyboardHeight,
-      screen_bounds.width(), kDefaultVirtualKeyboardHeight);
-  EXPECT_EQ(expected_bounds, notified_bounds());
-  EXPECT_EQ(expected_bounds, controller()->current_keyboard_bounds());
 }
 
 TEST_P(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
@@ -741,26 +669,6 @@ TEST_P(KeyboardControllerAnimationTest, ContainerShowWhileHide) {
   EXPECT_EQ(gfx::Transform(), layer->transform());
 }
 
-// Test for crbug.com/568274.
-TEST_P(KeyboardControllerTest, FloatingKeyboardShowOnFirstTap) {
-  ScopedTouchKeyboardEnabler scoped_keyboard_enabler;
-  aura::Window* container(controller()->GetContainerWindow());
-  aura::Window* keyboard(ui()->GetContentsWindow());
-  root_window()->AddChild(container);
-
-  controller()->SetKeyboardMode(FLOATING);
-  container->AddChild(keyboard);
-  // Mock focus on an input field.
-  ui()->GetInputMethod()->ShowImeIfNeeded();
-  // Mock set keyboard size from javascript side. In floating mode, virtual
-  // keyboard's size is decided by client.
-  gfx::Rect new_bounds(0, 50, 50, 50);
-  keyboard->SetBounds(new_bounds);
-  ASSERT_EQ(new_bounds, container->bounds());
-  EXPECT_TRUE(keyboard->IsVisible());
-  EXPECT_TRUE(container->IsVisible());
-}
-
 TEST_P(KeyboardControllerTest, DisplayChangeShouldNotifyBoundsChange) {
   ScopedTouchKeyboardEnabler scoped_keyboard_enabler;
   ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
@@ -768,7 +676,6 @@ TEST_P(KeyboardControllerTest, DisplayChangeShouldNotifyBoundsChange) {
   aura::Window* container(controller()->GetContainerWindow());
   root_window()->AddChild(container);
 
-  controller()->SetKeyboardMode(FULL_WIDTH);
   SetFocus(&input_client);
   gfx::Rect new_bounds(0, 0, 1280, 800);
   ASSERT_NE(new_bounds, root_window()->bounds());

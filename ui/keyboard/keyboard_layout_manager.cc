@@ -16,24 +16,14 @@ void KeyboardLayoutManager::OnWindowResized() {
   if (contents_window_) {
     gfx::Rect container_bounds = controller_->GetContainerWindow()->bounds();
     // Always align container window and keyboard window.
-    if (controller_->keyboard_mode() == FULL_WIDTH) {
-      SetChildBounds(contents_window_, gfx::Rect(container_bounds.size()));
-    } else {
-      SetChildBoundsDirect(contents_window_,
-                           gfx::Rect(container_bounds.size()));
-    }
+    SetChildBounds(contents_window_, gfx::Rect(container_bounds.size()));
   }
 }
 
 void KeyboardLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   DCHECK(!contents_window_);
   contents_window_ = child;
-  if (controller_->keyboard_mode() == FULL_WIDTH) {
-    controller_->GetContainerWindow()->SetBounds(gfx::Rect());
-  } else if (controller_->keyboard_mode() == FLOATING) {
-    controller_->GetContainerWindow()->SetBounds(child->bounds());
-    SetChildBoundsDirect(contents_window_, gfx::Rect(child->bounds().size()));
-  }
+  controller_->GetContainerWindow()->SetBounds(gfx::Rect());
 }
 
 void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
@@ -50,16 +40,16 @@ void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
   const aura::Window* root_window =
       controller_->GetContainerWindow()->GetRootWindow();
   gfx::Rect new_bounds = requested_bounds;
-  if (controller_->keyboard_mode() == FULL_WIDTH) {
-    // Honors only the height of the request bounds
-    const gfx::Rect& window_bounds = root_window->bounds();
-    new_bounds.set_y(window_bounds.height() - requested_bounds.height());
-    // If shelf is positioned on the left side of screen, x is not 0. In
-    // FULL_WIDTH mode, the virtual keyboard should always align with the left
-    // edge of the screen. So manually set x to 0 here.
-    new_bounds.set_x(0);
-    new_bounds.set_width(window_bounds.width());
-  }
+
+  // Honors only the height of the request bounds
+  const gfx::Rect& window_bounds = root_window->bounds();
+  new_bounds.set_y(window_bounds.height() - requested_bounds.height());
+  // If shelf is positioned on the left side of screen, x is not 0. In
+  // FULL_WIDTH mode, the virtual keyboard should always align with the left
+  // edge of the screen. So manually set x to 0 here.
+  new_bounds.set_x(0);
+  new_bounds.set_width(window_bounds.width());
+
   // Containar bounds should only be reset when the contents window bounds
   // actually change. Otherwise it interrupts the initial animation of showing
   // the keyboard. Described in crbug.com/356753.

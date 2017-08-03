@@ -230,7 +230,6 @@ void KeyboardUIContent::ReloadKeyboardIfNeeded() {
       TRACE_EVENT0("vk", "ReloadKeyboardIfNeeded");
       GetContentsWindow()->SetBounds(gfx::Rect());
       keyboard_contents_->ClosePage();
-      keyboard_controller()->SetKeyboardMode(FULL_WIDTH);
     }
     LoadContents(GetVirtualKeyboardUrl());
   }
