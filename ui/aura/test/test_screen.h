@@ -12,6 +12,7 @@
 #include "ui/display/screen_base.h"
 
 namespace gfx {
+class ColorSpace;
 class Insets;
 class Rect;
 class Transform;
@@ -35,6 +36,7 @@ class TestScreen : public display::ScreenBase, public WindowObserver {
   WindowTreeHost* CreateHostForPrimaryDisplay();
 
   void SetDeviceScaleFactor(float device_scale_fator);
+  void SetColorSpace(const gfx::ColorSpace& color_space);
   void SetDisplayRotation(display::Display::Rotation rotation);
   void SetUIScale(float ui_scale);
   void SetWorkAreaInsets(const gfx::Insets& insets);
