@@ -1762,60 +1762,19 @@ TEST_P(ResourceProviderTest, DeleteExportedResources) {
     resource_ids_to_receive.insert(id2);
     resource_provider_->DeclareUsedResourcesFromChild(child_id,
                                                       resource_ids_to_receive);
-  }
 
-  EXPECT_EQ(2u, resource_provider_->num_resources());
-  ResourceProvider::ResourceIdMap resource_map =
-      resource_provider_->GetChildToParentMap(child_id);
-  viz::ResourceId mapped_id1 = resource_map[id1];
-  viz::ResourceId mapped_id2 = resource_map[id2];
-  EXPECT_NE(0u, mapped_id1);
-  EXPECT_NE(0u, mapped_id2);
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(id1));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(id2));
-
-  {
-    // The parent transfers the resources to the grandparent.
-    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
-    resource_ids_to_transfer.push_back(mapped_id1);
-    resource_ids_to_transfer.push_back(mapped_id2);
-
-    std::vector<viz::TransferableResource> list;
-    resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list);
-
-    ASSERT_EQ(2u, list.size());
-    if (GetParam() == ResourceProvider::RESOURCE_TYPE_GL_TEXTURE) {
-      EXPECT_TRUE(list[0].mailbox_holder.sync_token.HasData());
-      EXPECT_TRUE(list[1].mailbox_holder.sync_token.HasData());
-    }
-    EXPECT_TRUE(resource_provider_->InUseByConsumer(id1));
-    EXPECT_TRUE(resource_provider_->InUseByConsumer(id2));
-
-    // Release the resource in the parent. Set no resources as being in use. The
-    // resources are exported so that can't be transferred back yet.
-    viz::ResourceIdSet no_resources;
-    resource_provider_->DeclareUsedResourcesFromChild(child_id, no_resources);
-
+    std::vector<viz::ReturnedResource> returned =
+        viz::TransferableResource::ReturnResources(list);
+    child_resource_provider_->ReceiveReturnsFromParent(returned);
     EXPECT_EQ(0u, returned_to_child.size());
     EXPECT_EQ(2u, resource_provider_->num_resources());
 
-    // Return the resources from the grandparent to the parent. They should be
-    // returned to the child then.
-    EXPECT_EQ(2u, list.size());
-    EXPECT_EQ(mapped_id1, list[0].id);
-    EXPECT_EQ(mapped_id2, list[1].id);
-    std::vector<viz::ReturnedResource> returned =
-        viz::TransferableResource::ReturnResources(list);
-    resource_provider_->ReceiveReturnsFromParent(returned);
-
+    // Return the resources from the parent, it should be returned at this
+    // point.
+    viz::ResourceIdSet no_resources;
+    resource_provider_->DeclareUsedResourcesFromChild(child_id, no_resources);
+    EXPECT_EQ(2u, returned_to_child.size());
     EXPECT_EQ(0u, resource_provider_->num_resources());
-    ASSERT_EQ(2u, returned_to_child.size());
-    if (GetParam() == ResourceProvider::RESOURCE_TYPE_GL_TEXTURE) {
-      EXPECT_TRUE(returned_to_child[0].sync_token.HasData());
-      EXPECT_TRUE(returned_to_child[1].sync_token.HasData());
-    }
-    EXPECT_FALSE(returned_to_child[0].lost);
-    EXPECT_FALSE(returned_to_child[1].lost);
   }
 }
 
@@ -1862,77 +1821,13 @@ TEST_P(ResourceProviderTest, DestroyChildWithExportedResources) {
     resource_ids_to_receive.insert(id2);
     resource_provider_->DeclareUsedResourcesFromChild(child_id,
                                                       resource_ids_to_receive);
-  }
 
-  EXPECT_EQ(2u, resource_provider_->num_resources());
-  ResourceProvider::ResourceIdMap resource_map =
-      resource_provider_->GetChildToParentMap(child_id);
-  viz::ResourceId mapped_id1 = resource_map[id1];
-  viz::ResourceId mapped_id2 = resource_map[id2];
-  EXPECT_NE(0u, mapped_id1);
-  EXPECT_NE(0u, mapped_id2);
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(id1));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(id2));
-
-  {
-    // The parent transfers the resources to the grandparent.
-    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
-    resource_ids_to_transfer.push_back(mapped_id1);
-    resource_ids_to_transfer.push_back(mapped_id2);
-
-    std::vector<viz::TransferableResource> list;
-    resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list);
-
-    ASSERT_EQ(2u, list.size());
-    if (GetParam() == ResourceProvider::RESOURCE_TYPE_GL_TEXTURE) {
-      EXPECT_TRUE(list[0].mailbox_holder.sync_token.HasData());
-      EXPECT_TRUE(list[1].mailbox_holder.sync_token.HasData());
-    }
-    EXPECT_TRUE(resource_provider_->InUseByConsumer(id1));
-    EXPECT_TRUE(resource_provider_->InUseByConsumer(id2));
-
-    // Release the resource in the parent. Set no resources as being in use. The
-    // resources are exported so that can't be transferred back yet.
-    viz::ResourceIdSet no_resources;
-    resource_provider_->DeclareUsedResourcesFromChild(child_id, no_resources);
-
-    // Destroy the child, the resources should not be returned yet.
     EXPECT_EQ(0u, returned_to_child.size());
     EXPECT_EQ(2u, resource_provider_->num_resources());
-
+    // Destroy the child, the resources should be returned.
     resource_provider_->DestroyChild(child_id);
-
-    EXPECT_EQ(2u, resource_provider_->num_resources());
-    ASSERT_EQ(0u, returned_to_child.size());
-
-    // Return a resource from the grandparent, it should be returned at this
-    // point.
-    EXPECT_EQ(2u, list.size());
-    EXPECT_EQ(mapped_id1, list[0].id);
-    EXPECT_EQ(mapped_id2, list[1].id);
-    std::vector<viz::TransferableResource> return_list;
-    return_list.push_back(list[1]);
-    list.pop_back();
-    std::vector<viz::ReturnedResource> returned =
-        viz::TransferableResource::ReturnResources(return_list);
-    resource_provider_->ReceiveReturnsFromParent(returned);
-
-    EXPECT_EQ(1u, resource_provider_->num_resources());
-    ASSERT_EQ(1u, returned_to_child.size());
-    if (GetParam() == ResourceProvider::RESOURCE_TYPE_GL_TEXTURE) {
-      EXPECT_TRUE(returned_to_child[0].sync_token.HasData());
-    }
-    EXPECT_FALSE(returned_to_child[0].lost);
-    returned_to_child.clear();
-
-    // Destroy the parent resource provider. The resource that's left should be
-    // lost at this point, and returned.
-    resource_provider_ = nullptr;
-    ASSERT_EQ(1u, returned_to_child.size());
-    if (GetParam() == ResourceProvider::RESOURCE_TYPE_GL_TEXTURE) {
-      EXPECT_TRUE(returned_to_child[0].sync_token.HasData());
-    }
-    EXPECT_TRUE(returned_to_child[0].lost);
+    EXPECT_EQ(2u, returned_to_child.size());
+    EXPECT_EQ(0u, resource_provider_->num_resources());
   }
 }
 
@@ -1987,121 +1882,6 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources) {
     child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
   }
   EXPECT_EQ(0u, child_resource_provider_->num_resources());
-}
-
-TEST_P(ResourceProviderTest, UnuseTransferredResources) {
-  gfx::Size size(1, 1);
-  viz::ResourceFormat format = viz::RGBA_8888;
-  size_t pixel_size = TextureSizeBytes(size, format);
-  ASSERT_EQ(4U, pixel_size);
-
-  viz::ResourceId id = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
-      gfx::ColorSpace());
-  uint8_t data[4] = {1, 2, 3, 4};
-  child_resource_provider_->CopyToResource(id, data, size);
-
-  std::vector<viz::ReturnedResource> returned_to_child;
-  int child_id =
-      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
-  const ResourceProvider::ResourceIdMap& map =
-      resource_provider_->GetChildToParentMap(child_id);
-  {
-    // Transfer some resource to the parent.
-    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
-    resource_ids_to_transfer.push_back(id);
-
-    std::vector<viz::TransferableResource> list;
-    child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
-                                                  &list);
-    EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id));
-    resource_provider_->ReceiveFromChild(child_id, list);
-    viz::ResourceIdSet resource_ids_to_receive;
-    resource_ids_to_receive.insert(id);
-    resource_provider_->DeclareUsedResourcesFromChild(child_id,
-                                                      resource_ids_to_receive);
-  }
-  std::vector<viz::TransferableResource> sent_to_top_level;
-  {
-    // Parent transfers to top-level.
-    ASSERT_TRUE(map.find(id) != map.end());
-    viz::ResourceId parent_id = map.find(id)->second;
-    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
-    resource_ids_to_transfer.push_back(parent_id);
-    resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
-                                            &sent_to_top_level);
-    EXPECT_TRUE(resource_provider_->InUseByConsumer(parent_id));
-  }
-  {
-    // Stop using resource.
-    viz::ResourceIdSet empty;
-    resource_provider_->DeclareUsedResourcesFromChild(child_id, empty);
-    // Resource is not yet returned to the child, since it's in use by the
-    // top-level.
-    EXPECT_TRUE(returned_to_child.empty());
-  }
-  {
-    // Send the resource to the parent again.
-    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
-    resource_ids_to_transfer.push_back(id);
-    std::vector<viz::TransferableResource> list;
-    child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
-                                                  &list);
-    EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id));
-    resource_provider_->ReceiveFromChild(child_id, list);
-    viz::ResourceIdSet resource_ids_to_receive;
-    resource_ids_to_receive.insert(id);
-    resource_provider_->DeclareUsedResourcesFromChild(child_id,
-                                                      resource_ids_to_receive);
-  }
-  {
-    // Receive returns back from top-level.
-    std::vector<viz::ReturnedResource> returned =
-        viz::TransferableResource::ReturnResources(sent_to_top_level);
-    resource_provider_->ReceiveReturnsFromParent(returned);
-    // Resource is still not yet returned to the child, since it's declared used
-    // in the parent.
-    EXPECT_TRUE(returned_to_child.empty());
-    ASSERT_TRUE(map.find(id) != map.end());
-    viz::ResourceId parent_id = map.find(id)->second;
-    EXPECT_FALSE(resource_provider_->InUseByConsumer(parent_id));
-  }
-  {
-    sent_to_top_level.clear();
-    // Parent transfers again to top-level.
-    ASSERT_TRUE(map.find(id) != map.end());
-    viz::ResourceId parent_id = map.find(id)->second;
-    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
-    resource_ids_to_transfer.push_back(parent_id);
-    resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
-                                            &sent_to_top_level);
-    EXPECT_TRUE(resource_provider_->InUseByConsumer(parent_id));
-  }
-  {
-    // Receive returns back from top-level.
-    std::vector<viz::ReturnedResource> returned =
-        viz::TransferableResource::ReturnResources(sent_to_top_level);
-    resource_provider_->ReceiveReturnsFromParent(returned);
-    // Resource is still not yet returned to the child, since it's still
-    // declared used in the parent.
-    EXPECT_TRUE(returned_to_child.empty());
-    ASSERT_TRUE(map.find(id) != map.end());
-    viz::ResourceId parent_id = map.find(id)->second;
-    EXPECT_FALSE(resource_provider_->InUseByConsumer(parent_id));
-  }
-  {
-    // Stop using resource.
-    viz::ResourceIdSet empty;
-    resource_provider_->DeclareUsedResourcesFromChild(child_id, empty);
-    // Resource should have been returned to the child, since it's no longer in
-    // use by the top-level.
-    ASSERT_EQ(1u, returned_to_child.size());
-    EXPECT_EQ(id, returned_to_child[0].id);
-    EXPECT_EQ(2, returned_to_child[0].count);
-    child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
-    returned_to_child.clear();
-    EXPECT_FALSE(child_resource_provider_->InUseByConsumer(id));
-  }
 }
 
 class ResourceProviderTestTextureFilters : public ResourceProviderTest {
@@ -2306,7 +2086,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
       base::Bind(ReleaseCallback, &release_sync_token, &lost_resource,
                  &main_thread_task_runner);
   viz::ResourceId resource =
-      resource_provider_->CreateResourceFromTextureMailbox(
+      child_resource_provider_->CreateResourceFromTextureMailbox(
           viz::TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D),
           SingleReleaseCallbackImpl::Create(callback));
   EXPECT_EQ(1u, context()->NumTextures());
@@ -2316,7 +2096,8 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(resource);
     std::vector<viz::TransferableResource> list;
-    resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list);
+    child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
+                                                  &list);
     ASSERT_EQ(1u, list.size());
     EXPECT_LE(sync_token.release_count(),
               list[0].mailbox_holder.sync_token.release_count());
@@ -2344,11 +2125,11 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     // consistent.
     std::vector<viz::ReturnedResource> returned =
         viz::TransferableResource::ReturnResources(list);
-    resource_provider_->ReceiveReturnsFromParent(returned);
+    child_resource_provider_->ReceiveReturnsFromParent(returned);
     EXPECT_EQ(1u, context()->NumTextures());
     EXPECT_FALSE(release_sync_token.HasData());
 
-    resource_provider_->DeleteResource(resource);
+    child_resource_provider_->DeleteResource(resource);
     EXPECT_LE(list[0].mailbox_holder.sync_token.release_count(),
               release_sync_token.release_count());
     EXPECT_FALSE(lost_resource);
@@ -2360,7 +2141,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
   sync_token = release_sync_token;
   EXPECT_LT(0u, sync_token.release_count());
   release_sync_token.Clear();
-  resource = resource_provider_->CreateResourceFromTextureMailbox(
+  resource = child_resource_provider_->CreateResourceFromTextureMailbox(
       viz::TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D),
       SingleReleaseCallbackImpl::Create(callback));
   EXPECT_EQ(1u, context()->NumTextures());
@@ -2370,7 +2151,8 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(resource);
     std::vector<viz::TransferableResource> list;
-    resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list);
+    child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
+                                                  &list);
     ASSERT_EQ(1u, list.size());
     EXPECT_LE(sync_token.release_count(),
               list[0].mailbox_holder.sync_token.release_count());
@@ -2395,7 +2177,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     EXPECT_TRUE(list[0].mailbox_holder.sync_token.HasData());
 
     // Delete the resource, which shouldn't do anything.
-    resource_provider_->DeleteResource(resource);
+    child_resource_provider_->DeleteResource(resource);
     EXPECT_EQ(1u, context()->NumTextures());
     EXPECT_FALSE(release_sync_token.HasData());
 
@@ -2403,7 +2185,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     // sync points to be consistent.
     std::vector<viz::ReturnedResource> returned =
         viz::TransferableResource::ReturnResources(list);
-    resource_provider_->ReceiveReturnsFromParent(returned);
+    child_resource_provider_->ReceiveReturnsFromParent(returned);
     EXPECT_LE(list[0].mailbox_holder.sync_token.release_count(),
               release_sync_token.release_count());
     EXPECT_FALSE(lost_resource);
@@ -2472,83 +2254,6 @@ TEST_P(ResourceProviderTest, LostResourceInParent) {
             child_resource_provider_->InUseByConsumer(resource));
 }
 
-TEST_P(ResourceProviderTest, LostResourceInGrandParent) {
-  gfx::Size size(1, 1);
-  viz::ResourceFormat format = viz::RGBA_8888;
-  viz::ResourceId resource = child_resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
-      gfx::ColorSpace());
-  child_resource_provider_->AllocateForTesting(resource);
-
-  std::vector<viz::ReturnedResource> returned_to_child;
-  int child_id =
-      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
-  {
-    // Transfer the resource to the parent.
-    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
-    resource_ids_to_transfer.push_back(resource);
-    std::vector<viz::TransferableResource> list;
-    child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
-                                                  &list);
-    EXPECT_EQ(1u, list.size());
-
-    resource_provider_->ReceiveFromChild(child_id, list);
-    viz::ResourceIdSet resource_ids_to_receive;
-    resource_ids_to_receive.insert(resource);
-    resource_provider_->DeclareUsedResourcesFromChild(child_id,
-                                                      resource_ids_to_receive);
-  }
-
-  {
-    ResourceProvider::ResourceIdMap resource_map =
-        resource_provider_->GetChildToParentMap(child_id);
-    viz::ResourceId parent_resource = resource_map[resource];
-    EXPECT_NE(0u, parent_resource);
-
-    // Transfer to a grandparent.
-    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
-    resource_ids_to_transfer.push_back(parent_resource);
-    std::vector<viz::TransferableResource> list;
-    resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list);
-
-    // Receive back a lost resource from the grandparent.
-    EXPECT_EQ(1u, list.size());
-    EXPECT_EQ(parent_resource, list[0].id);
-    std::vector<viz::ReturnedResource> returned =
-        viz::TransferableResource::ReturnResources(list);
-    EXPECT_EQ(1u, returned.size());
-    EXPECT_EQ(parent_resource, returned[0].id);
-    returned[0].lost = true;
-    resource_provider_->ReceiveReturnsFromParent(returned);
-
-    // The resource should be lost.
-    EXPECT_TRUE(resource_provider_->IsLost(parent_resource));
-
-    // Lost resources stay in use in the parent forever.
-    EXPECT_TRUE(resource_provider_->InUseByConsumer(parent_resource));
-  }
-
-  {
-    EXPECT_EQ(0u, returned_to_child.size());
-
-    // Transfer resources back from the parent to the child. Set no resources as
-    // being in use.
-    viz::ResourceIdSet no_resources;
-    resource_provider_->DeclareUsedResourcesFromChild(child_id, no_resources);
-
-    // Expect the resource to be lost.
-    ASSERT_EQ(1u, returned_to_child.size());
-    EXPECT_TRUE(returned_to_child[0].lost);
-    child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
-    returned_to_child.clear();
-  }
-
-  // The resource should be lost.
-  EXPECT_TRUE(child_resource_provider_->IsLost(resource));
-
-  // Lost resources stay in use in the parent forever.
-  EXPECT_TRUE(child_resource_provider_->InUseByConsumer(resource));
-}
 
 TEST_P(ResourceProviderTest, LostMailboxInParent) {
   gpu::SyncToken release_sync_token;
@@ -2601,76 +2306,6 @@ TEST_P(ResourceProviderTest, LostMailboxInParent) {
   child_resource_provider_->DeleteResource(resource);
   EXPECT_EQ(lost_resource,
             GetParam() == ResourceProvider::RESOURCE_TYPE_GL_TEXTURE);
-}
-
-TEST_P(ResourceProviderTest, LostMailboxInGrandParent) {
-  gpu::SyncToken release_sync_token;
-  bool lost_resource = false;
-  bool release_called = false;
-  gpu::SyncToken sync_token;
-  viz::ResourceId resource = CreateChildMailbox(
-      &release_sync_token, &lost_resource, &release_called, &sync_token);
-
-  std::vector<viz::ReturnedResource> returned_to_child;
-  int child_id =
-      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
-  {
-    // Transfer the resource to the parent.
-    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
-    resource_ids_to_transfer.push_back(resource);
-    std::vector<viz::TransferableResource> list;
-    child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
-                                                  &list);
-    EXPECT_EQ(1u, list.size());
-
-    resource_provider_->ReceiveFromChild(child_id, list);
-    viz::ResourceIdSet resource_ids_to_receive;
-    resource_ids_to_receive.insert(resource);
-    resource_provider_->DeclareUsedResourcesFromChild(child_id,
-                                                      resource_ids_to_receive);
-  }
-
-  {
-    ResourceProvider::ResourceIdMap resource_map =
-        resource_provider_->GetChildToParentMap(child_id);
-    viz::ResourceId parent_resource = resource_map[resource];
-    EXPECT_NE(0u, parent_resource);
-
-    // Transfer to a grandparent.
-    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
-    resource_ids_to_transfer.push_back(parent_resource);
-    std::vector<viz::TransferableResource> list;
-    resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list);
-
-    // Receive back a lost resource from the grandparent.
-    EXPECT_EQ(1u, list.size());
-    EXPECT_EQ(parent_resource, list[0].id);
-    std::vector<viz::ReturnedResource> returned =
-        viz::TransferableResource::ReturnResources(list);
-    EXPECT_EQ(1u, returned.size());
-    EXPECT_EQ(parent_resource, returned[0].id);
-    returned[0].lost = true;
-    resource_provider_->ReceiveReturnsFromParent(returned);
-  }
-
-  {
-    EXPECT_EQ(0u, returned_to_child.size());
-
-    // Transfer resources back from the parent to the child. Set no resources as
-    // being in use.
-    viz::ResourceIdSet no_resources;
-    resource_provider_->DeclareUsedResourcesFromChild(child_id, no_resources);
-
-    // Expect the resource to be lost.
-    ASSERT_EQ(1u, returned_to_child.size());
-    EXPECT_TRUE(returned_to_child[0].lost);
-    child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
-    returned_to_child.clear();
-  }
-
-  // Delete the resource in the child. Expect the resource to be lost.
-  child_resource_provider_->DeleteResource(resource);
-  EXPECT_TRUE(lost_resource);
 }
 
 TEST_P(ResourceProviderTest, Shutdown) {
