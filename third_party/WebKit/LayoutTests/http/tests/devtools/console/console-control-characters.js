@@ -1,17 +1,28 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
 
-(async function() {
-  TestRunner.addResult(`Verify that control characters are substituted with printable characters.\n`);
+function test()
+{
+    // The following command has control character.
+    InspectorTest.evaluateInConsole("var\u001D i = 0;", onEvaluated);
 
-  await TestRunner.loadModule('console_test_runner');
-  await TestRunner.showPanel('console');
+    function onEvaluated()
+    {
+        InspectorTest.dumpConsoleMessages();
+        InspectorTest.completeTest();
+    }
+}
 
-  ConsoleTestRunner.evaluateInConsole('var\u001d i = 0;', onEvaluated);
+</script>
+</head>
 
-  function onEvaluated() {
-    ConsoleTestRunner.dumpConsoleMessages();
-    TestRunner.completeTest();
-  }
-})();
+<body onload="runTest()">
+<p>
+    Verify that control characters are substituted with printable characters.
+</p>
+
+</body>
+</html>

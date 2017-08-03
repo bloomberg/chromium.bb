@@ -1,28 +1,33 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
 
-(async function() {
-  TestRunner.addResult(`Tests that console does not log deprecated warning messages while dir-dumping objects.\n`);
+function logObjects()
+{
+    console.dir(window);
+    console.dir(document.getElementById("foo").createShadowRoot());
+}
 
-  await TestRunner.loadModule('console_test_runner');
-  await TestRunner.showPanel('console');
-
-  await TestRunner.loadHTML(`
-    <div id="foo"></div>
-  `);
-  await TestRunner.evaluateInPagePromise(`
-     function logObjects()
+function test()
+{
+    InspectorTest.evaluateInPage("logObjects()", step2);
+    function step2()
     {
-        console.dir(window);
-        console.dir(document.getElementById("foo").createShadowRoot());
+        InspectorTest.dumpConsoleMessages();
+        InspectorTest.completeTest();
     }
-  `);
+}
 
-  TestRunner.evaluateInPage('logObjects()', step2);
+</script>
+</head>
 
-  function step2() {
-    ConsoleTestRunner.dumpConsoleMessages();
-    TestRunner.completeTest();
-  }
-})();
+<body onload="runTest()">
+<div id="foo"></div>
+<p>
+Tests that console does not log deprecated warning messages while dir-dumping objects.
+</p>
+
+</body>
+</html>
