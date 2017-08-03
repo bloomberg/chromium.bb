@@ -226,6 +226,8 @@ class Service : public service_manager::Service,
   // Set to true in StartDisplayInit().
   bool is_gpu_ready_ = false;
 
+  bool in_destructor_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(Service);
 };
 
