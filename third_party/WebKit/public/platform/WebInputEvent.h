@@ -41,7 +41,7 @@
 namespace blink {
 
 // The classes defined in this file are intended to be used with
-// WebWidget's handleInputEvent method.  These event types are cross-
+// WebWidget's HandleInputEvent method.  These event types are cross-
 // platform and correspond closely to WebCore's Platform*Event classes.
 //
 // WARNING! These classes must remain PODs (plain old data).  They are

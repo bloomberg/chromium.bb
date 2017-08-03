@@ -58,16 +58,16 @@ class WebSourceBuffer {
   virtual double HighestPresentationTimestamp() = 0;
 
   // Run coded frame eviction/garbage collection algorithm.
-  // |currentPlaybackTime| is HTMLMediaElement::currentTime. The algorithm
+  // |current_playback_time| is HTMLMediaElement::currentTime. The algorithm
   // will try to preserve data around current playback position.
-  // |newDataSize| is size of new data about to be appended to SourceBuffer.
+  // |new_data_size| is size of new data about to be appended to SourceBuffer.
   // Could be zero for appendStream if stream size is unknown in advance.
   // Returns false if buffer is still full after eviction.
   virtual bool EvictCodedFrames(double current_playback_time,
                                 size_t new_data_size) = 0;
 
   // Appends data and runs the segment parser loop algorithm.
-  // The algorithm may update |*timestampOffset| if |timestampOffset| is not
+  // The algorithm may update |*timestamp_offset| if |timestamp_offset| is not
   // null.
   // Returns true on success, otherwise the append error algorithm needs to
   // run with the decode error parameter set to true.
@@ -86,7 +86,7 @@ class WebSourceBuffer {
   virtual void SetAppendWindowEnd(double) = 0;
 
   // After this method is called, this WebSourceBuffer should never use the
-  // client pointer passed to setClient().
+  // client pointer passed to SetClient().
   virtual void RemovedFromMediaSource() = 0;
 };
 

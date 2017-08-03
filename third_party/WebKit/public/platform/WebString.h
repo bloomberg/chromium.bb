@@ -51,24 +51,24 @@ namespace blink {
 // Use either one of static methods to convert ASCII, Latin1, UTF-8 or
 // UTF-16 string into WebString:
 //
-// * WebString::fromASCII(const std::string& ascii)
-// * WebString::fromLatin1(const std::string& latin1)
-// * WebString::fromUTF8(const std::string& utf8)
-// * WebString::fromUTF16(const base::string16& utf16)
-// * WebString::fromUTF16(const base::NullableString16& utf16)
+// * WebString::FromASCII(const std::string& ascii)
+// * WebString::FromLatin1(const std::string& latin1)
+// * WebString::FromUTF8(const std::string& utf8)
+// * WebString::FromUTF16(const base::string16& utf16)
+// * WebString::FromUTF16(const base::NullableString16& utf16)
 //
 // Similarly, use either of following methods to convert WebString to
 // ASCII, Latin1, UTF-8 or UTF-16:
 //
-// * webstring.ascii()
-// * webstring.latin1()
-// * webstring.utf8()
-// * webstring.utf16()
+// * webstring.Ascii()
+// * webstring.Latin1()
+// * webstring.Utf8()
+// * webstring.Utf16()
 // * WebString::toNullableString16(webstring)
 //
 // Note that if you need to convert the UTF8 string converted from WebString
-// back to WebString with fromUTF8() you may want to specify Strict
-// UTF8ConversionMode when you call utf8(), as fromUTF8 rejects strings
+// back to WebString with FromUTF8() you may want to specify Strict
+// UTF8ConversionMode when you call Utf8(), as FromUTF8 rejects strings
 // with invalid UTF8 characters.
 //
 // Some types like GURL and base::FilePath can directly take either utf-8 or
@@ -161,7 +161,7 @@ class WebString {
   // Use this rather than calling base::IsStringASCII().
   BLINK_PLATFORM_EXPORT bool ContainsOnlyASCII() const;
 
-  // Does same as fromLatin1 but asserts if the given string has non-ascii char.
+  // Does same as FromLatin1 but asserts if the given string has non-ascii char.
   BLINK_PLATFORM_EXPORT static WebString FromASCII(const std::string&);
 
   template <int N>

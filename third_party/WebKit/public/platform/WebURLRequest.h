@@ -225,7 +225,7 @@ class WebURLRequest {
 
   BLINK_PLATFORM_EXPORT WebString HttpHeaderField(const WebString& name) const;
   // It's not possible to set the referrer header using this method. Use
-  // setHTTPReferrer instead.
+  // SetHTTPReferrer instead.
   BLINK_PLATFORM_EXPORT void SetHTTPHeaderField(const WebString& name,
                                                 const WebString& value);
   BLINK_PLATFORM_EXPORT void SetHTTPReferrer(const WebString& referrer,
@@ -282,7 +282,7 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT void SetAppCacheHostID(int);
 
   // If true, the response body will be downloaded to a file managed by the
-  // WebURLLoader. See WebURLResponse::downloadedFilePath.
+  // WebURLLoader. See WebURLResponse::DownloadFilePath.
   BLINK_PLATFORM_EXPORT bool DownloadToFile() const;
   BLINK_PLATFORM_EXPORT void SetDownloadToFile(bool);
 
@@ -375,15 +375,15 @@ class WebURLRequest {
 
  protected:
   // Permit subclasses to set arbitrary ResourceRequest pointer as
-  // |m_resourceRequest|. |m_ownedResourceRequest| is not set in this case.
+  // |resource_request_|. |owned_resource_request_| is not set in this case.
   BLINK_PLATFORM_EXPORT explicit WebURLRequest(ResourceRequest&);
 #endif
 
  private:
   struct ResourceRequestContainer;
 
-  // If this instance owns a ResourceRequest then |m_ownedResourceRequest|
-  // is non-null and |m_resourceRequest| points to the ResourceRequest
+  // If this instance owns a ResourceRequest then |owned_resource_request_|
+  // is non-null and |resource_request_| points to the ResourceRequest
   // instance it contains.
   std::unique_ptr<ResourceRequestContainer> owned_resource_request_;
 

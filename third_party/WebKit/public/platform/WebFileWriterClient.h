@@ -47,7 +47,7 @@ class WebFileWriterClient {
 
   // Called if the write or truncate fails, or if it is cancelled before the
   // write or truncate completes. Completion of an operation will be signalled
-  // exactly once, either by didFail, didTruncate, or didWrite(..., true).
+  // exactly once, either by DidFail, DidTruncate, or DidWrite(..., true).
   virtual void DidFail(WebFileError) = 0;
 
  protected:

@@ -36,7 +36,7 @@ class BLINK_PLATFORM_EXPORT WebMediaRecorderHandler {
   virtual void Resume() {}
 
   // MediaRecorder API isTypeSupported(), which boils down to
-  // canSupportMimeType() [1] "If true is returned from this method, it only
+  // CanSupportMimeType() [1] "If true is returned from this method, it only
   // indicates that the MediaRecorder implementation is capable of recording
   // Blob objects for the specified MIME type. Recording may still fail if
   // sufficient resources are not available to support the concrete media

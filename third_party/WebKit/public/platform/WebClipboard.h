@@ -71,11 +71,11 @@ class WebClipboard {
     return WebVector<WebString>();
   }
   virtual WebString ReadPlainText(Buffer) { return WebString(); }
-  // fragmentStart and fragmentEnd are indexes into the returned markup that
-  // indicate the start and end of the fragment if the returned markup
+  // |fragment_start| and |fragment_end| are indexes into the returned markup
+  // that indicate the start and end of the fragment if the returned markup
   // contains additional context. If there is no additional context,
-  // fragmentStart will be zero and fragmentEnd will be the same as the length
-  // of the returned markup.
+  // |fragment_start| will be zero and |fragment_end| will be the same as the
+  // length of the returned markup.
   virtual WebString ReadHTML(Buffer buffer,
                              WebURL* page_url,
                              unsigned* fragment_start,

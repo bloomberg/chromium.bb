@@ -41,7 +41,8 @@ class BLINK_PLATFORM_EXPORT WebContentLayerClient {
   enum PaintingControlSetting {
     // Returns the last PaintArtifact produced.
     kPaintDefaultBehavior,
-    // Paints the content to simulate the behavior of FrameView::paintTree().
+    // Paints the content to simulate the behavior of
+    // LocalFrameView::PaintTree().
     kPaintDefaultBehaviorForTest,
     // Puts the GraphicsContext in disabled mode and disables display item
     // construction in PaintController.
@@ -54,7 +55,7 @@ class BLINK_PLATFORM_EXPORT WebContentLayerClient {
 
   // The paintable region is the rectangular region, within the bounds of the
   // layer this client paints, that the client is capable of painting via
-  // paintContents().  Calling paintContents will return a WebDisplayitemList
+  // PaintContents().  Calling PaintContents will return a WebDisplayitemList
   // that is guaranteed valid only within this region.  In particular, this is
   // used to represent the interest rect in Blink.
   virtual gfx::Rect PaintableRegion() = 0;
@@ -70,7 +71,7 @@ class BLINK_PLATFORM_EXPORT WebContentLayerClient {
 
   // Returns an estimate of the current memory usage within this object,
   // excluding memory shared with painting artifacts (i.e.,
-  // WebDisplayItemList). Should be invoked after paintContents, so that the
+  // WebDisplayItemList). Should be invoked after PaintContents, so that the
   // result includes data cached internally during painting.
   virtual size_t ApproximateUnsharedMemoryUsage() const { return 0; }
 

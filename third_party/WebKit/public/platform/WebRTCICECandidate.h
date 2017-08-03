@@ -67,8 +67,8 @@ class WebRTCICECandidate {
   BLINK_PLATFORM_EXPORT void SetSdpMLineIndex(unsigned short);
 
 #if INSIDE_BLINK
-  // TODO(guidou): Support setting sdpMLineIndex to -1 to indicate the absence
-  // of a value for sdpMLineIndex. crbug.com/614958
+  // TODO(guidou): Support setting sdp_m_line_index to -1 to indicate the
+  // absence of a value for sdp_m_line_index. crbug.com/614958
   WebRTCICECandidate(WebString candidate,
                      WebString sdp_mid,
                      unsigned short sdp_m_line_index) {

@@ -51,12 +51,12 @@ class WebURL;
 class WebBlobRegistry {
  public:
   // Builder class for creating blobs. The blob is built on calling the
-  // build() method, where IPCs are sent to the browser.
+  // Build() method, where IPCs are sent to the browser.
   // Preconditions:
   // * Not meant to be used on multiple threads.
   // * Must not be kept alive longer than creator WebBlobRegistry (shouldn't
   //   be an issue because of the singleton nature of the WebBlobRegistry)
-  // * append.* methods are invalid after build() is called.
+  // * Append.* methods are invalid after Build() is called.
   class Builder {
    public:
     virtual ~Builder() {}
@@ -75,17 +75,17 @@ class WebBlobRegistry {
                                      uint64_t length,
                                      double expected_modification_time) = 0;
 
-    // Builds the blob. All calls to append* are invalid after calling this
+    // Builds the blob. All calls to Append* are invalid after calling this
     // method.
     virtual void Build() = 0;
   };
 
   virtual ~WebBlobRegistry() {}
 
-  // TODO(dmurph): Deprecate and migrate to createBuilder
+  // TODO(dmurph): Deprecate and migrate to CreateBuilder
   virtual void RegisterBlobData(const WebString& uuid, const WebBlobData&) {}
 
-  // The blob is finalized (and sent to the browser) on calling build() on the
+  // The blob is finalized (and sent to the browser) on calling Build() on the
   // Builder object.
   virtual std::unique_ptr<Builder> CreateBuilder(
       const WebString& uuid,

@@ -112,18 +112,18 @@ class WebCryptoDigestor {
  public:
   virtual ~WebCryptoDigestor() {}
 
-  // consume() will return |true| on the successful addition of data to the
+  // Consume() will return |true| on the successful addition of data to the
   // partially generated digest. It will return |false| when that fails. After
-  // a return of |false|, consume() should not be called again (nor should
-  // finish() be called).
+  // a return of |false|, Consume() should not be called again (nor should
+  // Finish() be called).
   virtual bool Consume(const unsigned char* data, unsigned data_size) {
     return false;
   }
 
-  // finish() will return |true| if the digest has been successfully computed
+  // Finish() will return |true| if the digest has been successfully computed
   // and put into the result buffer, otherwise it will return |false|. In
-  // either case, neither finish() nor consume() should be called again after
-  // a call to finish(). resultData is valid until the WebCrytpoDigestor
+  // either case, neither Finish() nor Consume() should be called again after
+  // a call to Finish(). |result_data| is valid until the WebCrytpoDigestor
   // object is destroyed.
   virtual bool Finish(unsigned char*& result_data, unsigned& result_data_size) {
     return false;
@@ -179,9 +179,9 @@ class WebCrypto {
   //   * Data buffers are transfered as WebVectors. Implementations are free
   //     to re-use or transfer their storage.
   //
-  //   * All WebCryptoKeys are guaranteeed to be !isNull().
+  //   * All WebCryptoKeys are guaranteeed to be !IsNull().
   //
-  //   * All WebCryptoAlgorithms are guaranteed to be !isNull()
+  //   * All WebCryptoAlgorithms are guaranteed to be !IsNull()
   //
   //   * Look to the Web Crypto spec for an explanation of the parameter. The
   //     method names here have a 1:1 correspondence with those of
@@ -198,7 +198,7 @@ class WebCrypto {
   //
   // Only the following checks can be assumed as having already passed:
   //
-  //  * The key is extractable when calling into exportKey/wrapKey.
+  //  * The key is extractable when calling into ExportKey/WrapKey.
   //  * The key usages permit the operation being requested.
   //  * The key's algorithm matches that of the requested operation.
   //
@@ -286,7 +286,7 @@ class WebCrypto {
 
   // This is the exception to the "Completing the request" guarantees
   // outlined above. This is useful for Blink internal crypto and is not part
-  // of the WebCrypto standard. createDigestor must provide the result via
+  // of the WebCrypto standard. CreateDigestor must provide the result via
   // the WebCryptoDigestor object synchronously. This will never return null.
   virtual std::unique_ptr<WebCryptoDigestor> CreateDigestor(
       WebCryptoAlgorithmId algorithm_id) {
@@ -297,7 +297,7 @@ class WebCrypto {
   // Structured clone
   // -----------------------
   //
-  // deserializeKeyForClone() and serializeKeyForClone() are used for
+  // DeserializeKeyForClone() and SerializeKeyForClone() are used for
   // implementing structured cloning of WebCryptoKey.
   //
   // Blink is responsible for saving and restoring all of the attributes of
@@ -334,7 +334,7 @@ class WebCrypto {
   //   * The bytes to deserialize were corrupted
 
   // Creates a new key given key data which was written using
-  // serializeKeyForClone(). Returns true on success.
+  // SerializeKeyForClone(). Returns true on success.
   virtual bool DeserializeKeyForClone(const WebCryptoKeyAlgorithm&,
                                       WebCryptoKeyType,
                                       bool extractable,

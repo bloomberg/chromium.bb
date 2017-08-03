@@ -40,7 +40,7 @@ namespace blink {
 class BLINK_PLATFORM_EXPORT WebMessagePortChannelClient {
  public:
   // Alerts that new messages have arrived, which are retrieved by calling
-  // WebMessagePortChannel::tryGetMessage. Note that this may be called
+  // WebMessagePortChannel::TryGetMessage. Note that this may be called
   // on any thread.
   virtual void MessageAvailable() = 0;
 

@@ -97,9 +97,9 @@ struct WebCursorInfo {
   WebImage custom_image;
 
 #ifdef WIN32
-  // On Windows, TypeCustom may alternatively reference an externally
-  // defined HCURSOR. If type is TypeCustom and externalHandle is non-
-  // null, then customData should be ignored. The WebCursorInfo is not
+  // On Windows, kTypeCustom may alternatively reference an externally
+  // defined HCURSOR. If |type| is kTypeCustom and |external_handle| is non-
+  // null, then |custom_image| should be ignored. The WebCursorInfo is not
   // responsible for managing the lifetime of this cursor handle.
   HCURSOR external_handle;
 #endif

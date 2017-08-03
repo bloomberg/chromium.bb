@@ -63,28 +63,28 @@ class WebDragData {
     StorageType storage_type;
 
     // TODO(dcheng): This should probably be a union.
-    // Only valid when storageType == StorageTypeString.
+    // Only valid when storage_type == kStorageTypeString.
     WebString string_type;
     WebString string_data;
 
-    // Title associated with a link when stringType == "text/uri-list".
+    // Title associated with a link when string_type == "text/uri-list".
     WebString title;
 
-    // Only valid when stringType == "text/html". Stores the base URL for the
+    // Only valid when string_type == "text/html". Stores the base URL for the
     // contained markup.
     WebURL base_url;
 
-    // Only valid when storageType == StorageTypeFilename.
+    // Only valid when storage_type == kStorageTypeFilename.
     WebString filename_data;
     WebString display_name_data;
 
-    // Only valid when storageType == StorageTypeBinaryData.
+    // Only valid when storage_type == kStorageTypeBinaryData.
     WebData binary_data;
     WebURL binary_data_source_url;
     WebString binary_data_filename_extension;
     WebString binary_data_content_disposition;
 
-    // Only valid when storageType == StorageTypeFileSystemFile.
+    // Only valid when storage_type == kStorageTypeFileSystemFile.
     WebURL file_system_url;
     long long file_system_file_size;
     WebString file_system_id;
@@ -111,8 +111,8 @@ class WebDragData {
   WebVector<Item> Items() const { return item_list_; }
 
   BLINK_PLATFORM_EXPORT void SetItems(WebVector<Item> item_list);
-  // FIXME: setItems is slow because setItems copies WebVector.
-  // Instead, use swapItems.
+  // FIXME: SetItems is slow because SetItems copies WebVector.
+  // Instead, use SwapItems.
   void SwapItems(WebVector<Item>& item_list) { item_list_.Swap(item_list); }
 
   void Initialize() { valid_ = true; }

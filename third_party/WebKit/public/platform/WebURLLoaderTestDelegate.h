@@ -13,7 +13,7 @@ class WebURLResponse;
 class WebURLLoaderClient;
 struct WebURLError;
 
-// Use with WebUnitTestSupport::setLoaderDelegate to intercept calls to a
+// Use with WebURLLoaderMockFactory::SetLoaderDelegate to intercept calls to a
 // WebURLLoaderClient for controlling network responses in a test. Default
 // implementations of all methods just call the original method on the
 // WebURLLoaderClient.

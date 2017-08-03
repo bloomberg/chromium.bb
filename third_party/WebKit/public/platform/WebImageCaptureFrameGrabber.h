@@ -17,7 +17,7 @@ class WebMediaStreamTrack;
 
 using WebImageCaptureGrabFrameCallbacks = WebCallbacks<sk_sp<SkImage>, void>;
 
-// Platform interface of an ImageCapture class for grabFrame() calls.
+// Platform interface of an ImageCapture class for GrabFrame() calls.
 class WebImageCaptureFrameGrabber {
  public:
   virtual ~WebImageCaptureFrameGrabber() {}
