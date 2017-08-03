@@ -370,7 +370,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UnexpectedLaunchType) {
   ASSERT_TRUE(AppsMatchChecker().Wait());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, BookmarkApp) {
+IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, BookmarkAppBasic) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameApps());
 
@@ -378,9 +378,40 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, BookmarkApp) {
       GetExtensionRegistry(GetProfile(0))->enabled_extensions().size();
 
   WebApplicationInfo web_app_info;
-  web_app_info.app_url = GURL("http://www.chromium.org");
+  web_app_info.app_url = GURL("http://www.chromium.org/");
+  web_app_info.scope = GURL("http://www.chromium.org/");
   web_app_info.title = base::UTF8ToUTF16("Test name");
   web_app_info.description = base::UTF8ToUTF16("Test description");
+  ++num_extensions;
+  {
+    content::WindowedNotificationObserver windowed_observer(
+        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+        content::NotificationService::AllSources());
+    extensions::CreateOrUpdateBookmarkApp(GetExtensionService(GetProfile(0)),
+                                          &web_app_info);
+    windowed_observer.Wait();
+    EXPECT_EQ(num_extensions,
+              GetExtensionRegistry(GetProfile(0))->enabled_extensions().size());
+  }
+  {
+    // Wait for the synced app to install.
+    content::WindowedNotificationObserver windowed_observer(
+        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+        base::Bind(&AllProfilesHaveSameApps));
+    windowed_observer.Wait();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, BookmarkAppMinimal) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameApps());
+
+  size_t num_extensions =
+      GetExtensionRegistry(GetProfile(0))->enabled_extensions().size();
+
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = GURL("http://www.chromium.org/");
+  web_app_info.title = base::UTF8ToUTF16("Test name");
   ++num_extensions;
   {
     content::WindowedNotificationObserver windowed_observer(

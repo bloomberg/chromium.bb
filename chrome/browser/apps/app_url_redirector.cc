@@ -6,9 +6,15 @@
 
 #include "apps/launcher.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/web_applications/web_app.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "components/navigation_interception/intercept_navigation_throttle.h"
 #include "components/navigation_interception/navigation_params.h"
@@ -35,6 +41,12 @@ bool LaunchAppWithUrl(
     const navigation_interception::NavigationParams& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // Redirecting for Bookmark Apps is hidden behind a feature flag.
+  if (app->from_bookmark() &&
+      !base::FeatureList::IsEnabled(features::kDesktopPWAWindowing)) {
+    return false;
+  }
+
   // Redirect top-level navigations only. This excludes iframes and webviews
   // in particular.
   if (source->IsSubframe()) {
@@ -56,6 +68,27 @@ bool LaunchAppWithUrl(
 
   Profile* profile =
       Profile::FromBrowserContext(source->GetBrowserContext());
+
+  if (app->from_bookmark()) {
+    Browser* browser = chrome::FindBrowserWithWebContents(source);
+    if (browser == nullptr) {
+      DVLOG(1) << "Don't override: No browser, can't know if already in app.";
+      return false;
+    }
+
+    if (browser->app_name() ==
+        web_app::GenerateApplicationNameFromExtensionId(app->id())) {
+      DVLOG(1) << "Don't override: Already in app.";
+      return false;
+    }
+
+    AppLaunchParams launch_params(
+        profile, app.get(), extensions::LAUNCH_CONTAINER_WINDOW,
+        WindowOpenDisposition::CURRENT_TAB, extensions::SOURCE_URL_HANDLER);
+    launch_params.override_url = params.url();
+    OpenApplication(launch_params);
+    return true;
+  }
 
   DVLOG(1) << "Launching app handler with URL: "
            << params.url().spec() << " -> "
