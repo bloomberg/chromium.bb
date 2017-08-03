@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/browser/extension_navigation_throttle.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -9,9 +10,9 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/content_client.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
-#include "extensions/browser/extension_navigation_throttle.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -181,8 +182,8 @@ TEST_F(ExtensionNavigationThrottleUnitTest, WebPageAncestor) {
   content::RenderFrameHost* child =
       render_frame_host_tester(main_rfh())->AppendChild("subframe1");
   GURL url = extension()->GetResourceURL(kAccessible);
-  render_frame_host_tester(child)->SimulateNavigationStart(url);
-  render_frame_host_tester(child)->SimulateNavigationCommit(url);
+  child =
+      content::NavigationSimulator::NavigateAndCommitFromDocument(url, child);
   content::RenderFrameHost* grand_child =
       render_frame_host_tester(child)->AppendChild("grandchild");
 

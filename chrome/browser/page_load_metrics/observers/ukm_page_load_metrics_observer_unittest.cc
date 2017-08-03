@@ -13,6 +13,7 @@
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "components/ukm/ukm_source.h"
+#include "content/public/test/navigation_simulator.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -127,12 +128,13 @@ TEST_F(UkmPageLoadMetricsObserverTest, FailedProvisionalLoad) {
   EXPECT_CALL(mock_network_quality_provider(), GetEffectiveConnectionType())
       .WillRepeatedly(Return(net::EFFECTIVE_CONNECTION_TYPE_2G));
 
+  // The following simulates a navigation that fails and should commit an error
+  // page, but finishes before the error page actually commits.
   GURL url(kTestUrl1);
-  content::RenderFrameHostTester* rfh_tester =
-      content::RenderFrameHostTester::For(main_rfh());
-  rfh_tester->SimulateNavigationStart(url);
-  rfh_tester->SimulateNavigationError(url, net::ERR_TIMED_OUT);
-  rfh_tester->SimulateNavigationStop();
+  std::unique_ptr<content::NavigationSimulator> navigation =
+      content::NavigationSimulator::CreateRendererInitiated(url, main_rfh());
+  navigation->Fail(net::ERR_TIMED_OUT);
+  content::RenderFrameHostTester::For(main_rfh())->SimulateNavigationStop();
 
   // Simulate closing the tab.
   DeleteContents();
