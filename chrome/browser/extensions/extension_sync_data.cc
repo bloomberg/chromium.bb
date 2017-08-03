@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/manifest_handlers/app_icon_color_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -126,7 +125,6 @@ ExtensionSyncData::ExtensionSyncData(const Extension& extension,
   if (is_app_ && extension.from_bookmark()) {
     bookmark_app_description_ = extension.description();
     bookmark_app_url_ = AppLaunchInfo::GetLaunchWebURL(&extension).spec();
-    bookmark_app_scope_ = GetScopeURLFromBookmarkApp(&extension).spec();
     bookmark_app_icon_color_ = AppIconColorInfo::GetIconColorString(&extension);
     extensions::LinkedAppIcons icons =
         LinkedAppIcons::GetLinkedAppIcons(&extension);
@@ -221,9 +219,6 @@ void ExtensionSyncData::ToAppSpecifics(sync_pb::AppSpecifics* specifics) const {
   if (!bookmark_app_description_.empty())
     specifics->set_bookmark_app_description(bookmark_app_description_);
 
-  if (!bookmark_app_scope_.empty())
-    specifics->set_bookmark_app_scope(bookmark_app_scope_);
-
   if (!bookmark_app_icon_color_.empty())
     specifics->set_bookmark_app_icon_color(bookmark_app_icon_color_);
 
@@ -300,7 +295,6 @@ bool ExtensionSyncData::PopulateFromAppSpecifics(
 
   bookmark_app_url_ = specifics.bookmark_app_url();
   bookmark_app_description_ = specifics.bookmark_app_description();
-  bookmark_app_scope_ = specifics.bookmark_app_url();
   bookmark_app_icon_color_ = specifics.bookmark_app_icon_color();
 
   for (int i = 0; i < specifics.linked_app_icons_size(); ++i) {
