@@ -5,6 +5,7 @@
 #import <XCTest/XCTest.h>
 
 #include "base/command_line.h"
+#include "base/ios/ios_util.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -19,6 +20,7 @@
 #import "components/translate/ios/browser/js_translate_manager.h"
 #import "components/translate/ios/browser/language_detection_controller.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/translate/before_translate_infobar_controller.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
@@ -108,17 +110,23 @@ NSString* GetTranslateInfobarSwitchLabel(const std::string& language) {
 }
 
 // Returns a matcher for the button with label "Cancel" in the language picker.
-// TODO(crbug.com/750344): Change the matcher to use accessibility ID.
+// The language picker uses the system accessibility labels, thus no IDS_CANCEL.
 id<GREYMatcher> LanguagePickerCancelButton() {
-  return grey_allOf(chrome_test_util::ButtonWithAccessibilityLabel(@"Cancel"),
-                    grey_userInteractionEnabled(), nil);
+  // Setting A11y id on this button doesn't work on iOS 9.0.
+  if (base::ios::IsRunningOnIOS10OrLater())
+    return grey_accessibilityID(kLanguagePickerCancelButtonId);
+
+  return chrome_test_util::ButtonWithAccessibilityLabel(@"Cancel");
 }
 
 // Returns a matcher for the button with label "Done" in the language picker.
-// TODO(crbug.com/750344): Change the matcher to use accessibility ID.
+// The language picker uses the system accessibility labels, thus no IDS_DONE.
 id<GREYMatcher> LanguagePickerDoneButton() {
-  return grey_allOf(chrome_test_util::ButtonWithAccessibilityLabel(@"Done"),
-                    grey_userInteractionEnabled(), nil);
+  // Setting A11y ID on this button doesn't work on iOS 9.0.
+  if (base::ios::IsRunningOnIOS10OrLater())
+    return grey_accessibilityID(kLanguagePickerDoneButtonId);
+
+  return chrome_test_util::ButtonWithAccessibilityLabel(@"Done");
 }
 
 #pragma mark - TestResponseProvider
@@ -615,8 +623,6 @@ using translate::LanguageDetectionController;
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
                                    kFrench)] performAction:grey_tap()];
 
-  // The language picker uses the system accessibility labels (thus no
-  // IDS_CANCEL here).
   [[EarlGrey selectElementWithMatcher:LanguagePickerCancelButton()]
       assertWithMatcher:grey_notNil()];
 

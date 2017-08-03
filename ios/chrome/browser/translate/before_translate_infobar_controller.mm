@@ -22,6 +22,9 @@
 #error "This file requires ARC support."
 #endif
 
+NSString* const kLanguagePickerCancelButtonId = @"LanguagePickerCancelButton";
+NSString* const kLanguagePickerDoneButtonId = @"LanguagePickerDoneButton";
+
 namespace {
 
 CGFloat kNavigationBarHeight = 44;
@@ -302,10 +305,12 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                            target:self
                            action:@selector(languageSelectionDone)];
+  [doneButton setAccessibilityIdentifier:kLanguagePickerDoneButtonId];
   UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                            target:self
                            action:@selector(dismissLanguageSelectionView)];
+  [cancelButton setAccessibilityIdentifier:kLanguagePickerCancelButtonId];
   UINavigationItem* item = [[UINavigationItem alloc] initWithTitle:@""];
   [item setRightBarButtonItem:doneButton];
   [item setLeftBarButtonItem:cancelButton];
