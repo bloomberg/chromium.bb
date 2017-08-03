@@ -160,7 +160,7 @@ void InsertIncrementalTextCommand::DoApply(EditingState* editing_state) {
                                       common_suffix_length);
   const VisibleSelection& selection_for_insertion =
       ComputeSelectionForInsertion(selection_range, offset, length,
-                                   EndingVisibleSelection().IsDirectional());
+                                   EndingSelection().IsDirectional());
 
   SetEndingSelectionWithoutValidation(selection_for_insertion.Start(),
                                       selection_for_insertion.End());
