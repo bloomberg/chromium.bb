@@ -207,21 +207,15 @@ class SimpleBuilder(generic_builders.Builder):
 
     stage_list += [[chrome_stages.SimpleChromeArtifactsStage, board]]
 
-    # TODO(phobbs) Temporary code to make VMTests advisory in pre-cq.
-    # See crbug.com/748995
-    if config.pre_cq:
-      vm_test_stage = test_stages.ForgivenVMTestStage
-    else:
-      vm_test_stage = test_stages.VMTestStage
-
     if config.vm_test_runs > 1:
       # Run the VMTests multiple times to see if they fail.
       stage_list += [
           [generic_stages.RepeatStage, config.vm_test_runs,
-           vm_test_stage, board]]
+           test_stages.VMTestStage, board]]
     else:
       # Give the VMTests one retry attempt in case failures are flaky.
-      stage_list += [[generic_stages.RetryStage, 1, vm_test_stage, board]]
+      stage_list += [[generic_stages.RetryStage, 1,
+                      test_stages.VMTestStage, board]]
 
     if config.gce_tests:
       # Give the GCETests one retry attempt in case failures are flaky.
