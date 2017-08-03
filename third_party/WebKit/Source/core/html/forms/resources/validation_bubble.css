@@ -13,7 +13,6 @@
   box-sizing: border-box;
   display: inline-block;
   font-family: system-ui;
-  font-size: 16px;
   max-width: 50%;
   opacity: 0;
   position: absolute;
@@ -22,19 +21,33 @@
 
 #container.shown-initially {
   /* If scaleY is smaller than 0.2, an assertion failure occurs in Skia. */
-  transform: scaleY(0.2);
+  transform: scale(0.96, 0.96);
 }
 
 #container.shown-fully {
   opacity: 1.0;
-  transform: scaleY(1);
-  transition: opacity 0.3s, transform 0.3s;
+  transform: scale(1, 1);
+  transition: opacity 466.67ms cubic-bezier(0.4, 0, 0.2, 1), transform 1166.67ms cubic-bezier(0.2, 0, 0, 1);
 }
 
 #container.hiding {
   opacity: 0;
   /* See ValidationMessageClientImpl::HideValidationMessage too */
-  transition: opacity 0.6s;
+  transition: opacity 133.33ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#container.shown-initially -webkit-any(#icon, #main-message, #sub-message) {
+  opacity: 0;
+}
+
+#container.shown-fully -webkit-any(#icon, #main-message, #sub-message) {
+  opacity: 1;
+  transition: opacity 700ms cubic-bezier(0.3, 0, 0.1, 1);
+}
+
+#container.hiding -webkit-any(#icon, #main-message, #sub-message) {
+  opacity: 0;
+  transition: opacity 116.67ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #bubble-body {
@@ -115,7 +128,7 @@
 }
 
 #main-message {
-  font-size: 16px;
+  font-size: 14px;
   grid-row: 1;
   grid-column: 2;
   margin-top: 3px;
