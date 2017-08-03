@@ -514,10 +514,6 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
                            action:@selector(toolbarVoiceSearchButtonPressed:)
                  forControlEvents:UIControlEventTouchUpInside];
 
-    // Assign tags before calling -setUpButton, since only buttons with tags
-    // have -chromeExecuteCommand added as a target.
-    [_voiceSearchButton setTag:IDC_VOICE_SEARCH];
-
     [_webToolbar addSubview:_voiceSearchButton];
     [_webToolbar addSubview:_starButton];
     [_webToolbar addSubview:_stopButton];

@@ -1424,11 +1424,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     case IDC_SHOW_MAIL_COMPOSER:
       [self.currentBVC chromeExecuteCommand:sender];
       break;
-    case IDC_VOICE_SEARCH: {
-      StartVoiceSearchCommand* command =
-          [[StartVoiceSearchCommand alloc] initWithOriginView:nil];
-      [self startVoiceSearch:command];
-    } break;
 
     case IDC_CLEAR_BROWSING_DATA_IOS: {
       // Clear both the main browser state and the associated incognito
