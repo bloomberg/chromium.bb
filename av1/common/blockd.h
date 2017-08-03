@@ -118,12 +118,7 @@ typedef struct superblock_mi_boundaries {
   int mi_col_end;
 } SB_MI_BD;
 
-typedef struct {
-  int KERNEL_TL[MAX_SB_SIZE][MAX_SB_SIZE];
-  int KERNEL_TR[MAX_SB_SIZE][MAX_SB_SIZE];
-  int KERNEL_BL[MAX_SB_SIZE][MAX_SB_SIZE];
-  int KERNEL_BR[MAX_SB_SIZE][MAX_SB_SIZE];
-} NCOBMC_KERNELS;
+typedef struct { int16_t KERNEL[4][MAX_SB_SIZE][MAX_SB_SIZE]; } NCOBMC_KERNELS;
 #endif
 
 typedef struct {

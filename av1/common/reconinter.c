@@ -3577,19 +3577,18 @@ void build_ncobmc_intrpl_pred(const AV1_COMMON *const cm, MACROBLOCKD *xd,
         int i;
         for (i = 0; i < 4; ++i) tmp_p[i] = preds[i][plane];
 
-        tmp = (int64_t)knls->KERNEL_TL[k_r][k_c] * tmp_p[0][pos] +
-              (int64_t)knls->KERNEL_TR[k_r][k_c] * tmp_p[1][pos] +
-              (int64_t)knls->KERNEL_BL[k_r][k_c] * tmp_p[2][pos] +
-              (int64_t)knls->KERNEL_BR[k_r][k_c] * tmp_p[3][pos];
+        tmp = 0;
+        for (i = 0; i < 4; ++i)
+          tmp += knls->KERNEL[i][k_r][k_c] * tmp_p[i][pos];
+
       } else {
         uint16_t *tmp_p[4];
         int i;
         for (i = 0; i < 4; ++i) tmp_p[i] = CONVERT_TO_SHORTPTR(preds[i][plane]);
 
-        tmp = (int64_t)knls->KERNEL_TL[k_r][k_c] * tmp_p[0][pos] +
-              (int64_t)knls->KERNEL_TR[k_r][k_c] * tmp_p[1][pos] +
-              (int64_t)knls->KERNEL_BL[k_r][k_c] * tmp_p[2][pos] +
-              (int64_t)knls->KERNEL_BR[k_r][k_c] * tmp_p[3][pos];
+        tmp = 0;
+        for (i = 0; i < 4; ++i)
+          tmp += knls->KERNEL[i][k_r][k_c] * tmp_p[i][pos];
       }
 
       q_tmp = (tmp <= 0) ? 0 : ROUND_POWER_OF_TWO(tmp, KERNEL_SCALE_LOG);
