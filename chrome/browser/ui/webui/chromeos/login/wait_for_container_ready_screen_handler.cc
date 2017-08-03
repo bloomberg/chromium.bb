@@ -45,6 +45,7 @@ void WaitForContainerReadyScreenHandler::DeclareLocalizedValues(
                IDS_WAIT_FOR_CONTAINER_READY_TITLE);
   builder->Add("waitForContainerReadyIntroMessage",
                IDS_WAIT_FOR_CONTAINER_READY_INTRO_MESSAGE);
+  builder->Add("voiceInteractionLogo", IDS_VOICE_INTERACTION_LOGO);
 }
 
 void WaitForContainerReadyScreenHandler::Bind(
