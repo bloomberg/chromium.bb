@@ -1085,3 +1085,8 @@ template("assert_valid_out_dir") {
 assert_valid_out_dir("_unused") {
   actual_sources = [ "$root_build_dir/foo" ]
 }
+
+a = "foo"
+b = "bar"
+c = a + b
+print(c)
