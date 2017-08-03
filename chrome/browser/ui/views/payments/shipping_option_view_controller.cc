@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/payments/shipping_option_view_controller.h"
 
+#include <memory>
+
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "components/payments/content/payment_request_spec.h"
@@ -82,7 +84,8 @@ ShippingOptionViewController::ShippingOptionViewController(
     PaymentRequestSpec* spec,
     PaymentRequestState* state,
     PaymentRequestDialogView* dialog)
-    : PaymentRequestSheetController(spec, state, dialog) {
+    : PaymentRequestSheetController(spec, state, dialog),
+      shipping_option_list_(dialog) {
   spec->AddObserver(this);
   for (const auto& option : spec->GetShippingOptions()) {
     shipping_option_list_.AddItem(base::MakeUnique<ShippingOptionItem>(

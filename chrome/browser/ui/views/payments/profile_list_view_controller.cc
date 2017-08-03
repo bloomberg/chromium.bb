@@ -368,7 +368,7 @@ ProfileListViewController::ProfileListViewController(
     PaymentRequestSpec* spec,
     PaymentRequestState* state,
     PaymentRequestDialogView* dialog)
-    : PaymentRequestSheetController(spec, state, dialog) {}
+    : PaymentRequestSheetController(spec, state, dialog), list_(dialog) {}
 
 ProfileListViewController::~ProfileListViewController() {}
 
