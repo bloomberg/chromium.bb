@@ -626,12 +626,6 @@ class CC_EXPORT ResourceProvider
     int child_id;
     viz::ResourceId id_in_child;
     unsigned gl_id;
-    // Pixel buffer used for set pixels without unnecessary copying.
-    unsigned gl_pixel_buffer_id;
-    // Query used to determine when asynchronous set pixels complete.
-    unsigned gl_upload_query_id;
-    // Query used to determine when read lock fence has passed.
-    unsigned gl_read_lock_query_id;
     ReleaseCallbackImpl release_callback_impl;
     uint8_t* pixels;
     int lock_for_read_count;
