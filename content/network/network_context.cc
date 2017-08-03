@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
-#include "components/network_session_configurator/common/network_switches.h"
+#include "components/network_session_configurator/browser/network_session_configurator.h"
 #include "content/network/cache_url_loader.h"
 #include "content/network/network_service_impl.h"
 #include "content/network/network_service_url_loader_factory_impl.h"
@@ -44,37 +44,28 @@ void ApplyContextParamsToBuilder(
   DCHECK(!network_context_params->enable_ftp_url_support);
 #endif
 
+  net::HttpNetworkSession::Params session_params;
+  bool is_quic_force_disabled = false;
   if (network_service && network_service->quic_disabled())
-    builder->SetQuicEnabled(false);
+    is_quic_force_disabled = true;
+
+  network_session_configurator::ParseCommandLineAndFieldTrials(
+      *base::CommandLine::ForCurrentProcess(), is_quic_force_disabled,
+      network_context_params->quic_user_agent_id, &session_params);
+
+  session_params.http_09_on_non_default_ports_enabled =
+      network_context_params->http_09_on_non_default_ports_enabled;
+
+  builder->set_http_network_session_params(session_params);
 }
 
 std::unique_ptr<net::URLRequestContext> MakeURLRequestContext(
     mojom::NetworkContextParams* network_context_params,
     NetworkServiceImpl* network_service) {
   net::URLRequestContextBuilder builder;
-  net::HttpNetworkSession::Params params;
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kIgnoreCertificateErrors))
-    params.ignore_certificate_errors = true;
-  if (command_line->HasSwitch(switches::kEnableQuic))
-    params.enable_quic = true;
 
-  if (command_line->HasSwitch(switches::kTestingFixedHttpPort)) {
-    int value;
-    base::StringToInt(
-        command_line->GetSwitchValueASCII(switches::kTestingFixedHttpPort),
-        &value);
-    params.testing_fixed_http_port = value;
-  }
-  if (command_line->HasSwitch(switches::kTestingFixedHttpsPort)) {
-    int value;
-    base::StringToInt(
-        command_line->GetSwitchValueASCII(switches::kTestingFixedHttpsPort),
-        &value);
-    params.testing_fixed_https_port = value;
-  }
-  builder.set_http_network_session_params(params);
   if (command_line->HasSwitch(switches::kHostResolverRules)) {
     std::unique_ptr<net::HostResolver> host_resolver(
         net::HostResolver::CreateDefaultResolver(nullptr));

@@ -11,6 +11,9 @@ import "url/mojo/url.mojom";
 
 // Parameters for constructing a network context.
 struct NetworkContextParams {
+  // QUIC user agent.
+  string quic_user_agent_id;
+
   // Points to the cookie file. Currently ignored. An in-memory cookie store is
   // always used instead.
   // TODO(mmenke): Respect this parameter.
@@ -20,7 +23,7 @@ struct NetworkContextParams {
 
   // Enabled protocols. Note that these apply to all fetches, including those
   // used to fetch PAC scripts.
-  
+
   // True if data URLs should be supported.
   bool enable_data_url_support = false;
   // True if file URLs should be supported.
@@ -29,6 +32,9 @@ struct NetworkContextParams {
   // True if ftp URLs should be supported.
   // Must be false if built without FTP support.
   bool enable_ftp_url_support = false;
+
+  // Enables HTTP/0.9 on ports other than 80 for HTTP and 443 for HTTPS.
+  bool http_09_on_non_default_ports_enabled = false;
 };
 
 // Represents a distinct context for making network requests, with its own

@@ -45,7 +45,7 @@ source_set("network_sources") {
 
   deps = [
     "//base",
-    "//components/network_session_configurator/common",
+    "//components/network_session_configurator/browser",
     "//content:export",
     "//content/common",
     "//content/common:mojo_bindings",

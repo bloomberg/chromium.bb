@@ -22,7 +22,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -41,7 +40,6 @@
 #include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/sth_distributor_provider.h"
-#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -53,7 +51,6 @@
 #include "components/data_use_measurement/core/data_use_ascriber.h"
 #include "components/metrics/metrics_service.h"
 #include "components/net_log/chrome_net_log.h"
-#include "components/network_session_configurator/browser/network_session_configurator.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -306,7 +303,6 @@ IOThread::IOThread(
 #endif
       globals_(nullptr),
       is_quic_allowed_on_init_(true),
-      http_09_on_non_default_ports_enabled_(false),
       weak_factory_(this) {
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
@@ -380,14 +376,6 @@ IOThread::IOThread(
   pac_https_url_stripping_enabled_.Init(prefs::kPacHttpsUrlStrippingEnabled,
                                         local_state);
   pac_https_url_stripping_enabled_.MoveToThread(io_thread_proxy);
-
-  const base::Value* value =
-      policy_service
-          ->GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
-                                                std::string()))
-          .GetValue(policy::key::kHttp09OnNonDefaultPortsEnabled);
-  if (value)
-    value->GetAsBoolean(&http_09_on_non_default_ports_enabled_);
 
   chrome_browser_net::SetGlobalSTHDistributor(
       std::unique_ptr<net::ct::STHDistributor>(new net::ct::STHDistributor()));
@@ -552,8 +540,8 @@ void IOThread::Init() {
       command_line.HasSwitch(switches::kEnableTcpFastOpen);
   net::CheckSupportAndMaybeEnableTCPFastOpen(always_enable_tfo_if_supported);
 
-  ConfigureParamsFromFieldTrialsAndCommandLine(
-      command_line, http_09_on_non_default_ports_enabled_, &session_params_);
+  if (command_line.HasSwitch(switches::kIgnoreUrlFetcherCertRequests))
+    net::URLFetcher::SetIgnoreCertificateRequests(true);
 
 #if defined(OS_MACOSX)
   // Start observing Keychain events. This needs to be done on the UI thread,
@@ -716,10 +704,6 @@ void IOThread::ClearHostCache(
     host_cache->ClearForHosts(host_filter);
 }
 
-const net::HttpNetworkSession::Params& IOThread::NetworkSessionParams() const {
-  return session_params_;
-}
-
 void IOThread::DisableQuic() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   globals_->network_service->DisableQuic();
@@ -849,8 +833,6 @@ void IOThread::ConstructSystemRequestContext() {
   SetUpProxyConfigService(builder.get(),
                           std::move(system_proxy_config_service_));
 
-  builder->set_http_network_session_params(session_params_);
-
   builder->set_data_enabled(true);
   builder->set_file_enabled(true);
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
@@ -876,30 +858,6 @@ void IOThread::ConstructSystemRequestContext() {
   net::CertVerifyProcAndroid::SetCertNetFetcher(
       net::CreateCertNetFetcher(globals_->system_request_context));
 #endif
-}
-
-// static
-void IOThread::ConfigureParamsFromFieldTrialsAndCommandLine(
-    const base::CommandLine& command_line,
-    bool http_09_on_non_default_ports_enabled,
-    net::HttpNetworkSession::Params* params) {
-  std::string quic_user_agent_id = chrome::GetChannelString();
-  if (!quic_user_agent_id.empty())
-    quic_user_agent_id.push_back(' ');
-  quic_user_agent_id.append(
-      version_info::GetProductNameAndVersionForUserAgent());
-  quic_user_agent_id.push_back(' ');
-  quic_user_agent_id.append(content::BuildOSCpuInfo());
-
-  network_session_configurator::ParseCommandLineAndFieldTrials(
-      command_line, false /* is_quic_force_disabled */, quic_user_agent_id,
-      params);
-
-  if (command_line.HasSwitch(switches::kIgnoreUrlFetcherCertRequests))
-    net::URLFetcher::SetIgnoreCertificateRequests(true);
-
-  params->http_09_on_non_default_ports_enabled =
-      http_09_on_non_default_ports_enabled;
 }
 
 metrics::UpdateUsagePrefCallbackType IOThread::GetMetricsDataUseForwarder() {
