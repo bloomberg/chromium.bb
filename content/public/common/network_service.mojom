@@ -18,8 +18,15 @@ struct NetworkContextParams {
   // always used instead.
   // TODO(mmenke): Respect this parameter.
   mojo.common.mojom.FilePath? cookie_path;
-  // Points to the cache directory. If null, an in-memory database is used.
-  mojo.common.mojom.FilePath? cache_dir;
+
+  // True if an HTTP cache should be used.
+  bool http_cache_enabled = true;
+  // Maximum size of the HTTP cache. 0 means to use the default size.
+  // Ignored if the cache is disabled.
+  int32 http_cache_max_size = 0;
+  // Points to the HTTP cache directory. Ignored if the cache is disabled.
+  // If null and the cache is enabled, an in-memory database is used.
+  mojo.common.mojom.FilePath? http_cache_path;
 
   // Enabled protocols. Note that these apply to all fetches, including those
   // used to fetch PAC scripts.

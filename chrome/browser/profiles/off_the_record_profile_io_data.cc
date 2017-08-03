@@ -212,11 +212,6 @@ void OffTheRecordProfileIOData::InitializeInternal(
   builder->SetCookieAndChannelIdStores(std::move(cookie_store),
                                        std::move(channel_id_service));
 
-  // Create an in memory cache using the default size.
-  net::URLRequestContextBuilder::HttpCacheParams cache_params;
-  cache_params.type = net::URLRequestContextBuilder::HttpCacheParams::IN_MEMORY;
-  builder->EnableHttpCache(cache_params);
-
   AddProtocolHandlersToBuilder(builder, protocol_handlers);
   SetUpJobFactoryDefaultsForBuilder(
       builder, std::move(request_interceptors),

@@ -193,9 +193,7 @@ class ProfileImpl : public Profile {
   void UpdateAvatarInStorage();
   void UpdateIsEphemeralInStorage();
 
-  void GetCacheParameters(bool is_media_context,
-                          base::FilePath* cache_path,
-                          int* max_size);
+  void GetMediaCacheParameters(base::FilePath* cache_path, int* max_size);
 
   PrefProxyConfigTracker* CreateProxyConfigTracker();
 

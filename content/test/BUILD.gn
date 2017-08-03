@@ -1527,6 +1527,7 @@ test("content_unittests") {
     "//cc/ipc",
     "//components/leveldb/public/cpp",
     "//components/metrics/proto",
+    "//components/network_session_configurator/browser",
     "//components/network_session_configurator/common",
     "//components/offline_pages/features:features",
     "//components/rappor:test_support",
