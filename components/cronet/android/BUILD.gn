@@ -790,6 +790,8 @@ instrumentation_test_apk(
   apk_under_test = ":cronet_smoketests_platform_only_apk"
   android_manifest = "test/javatests/AndroidManifest.xml"
   deps = [
+    "//base:base_java_test_support",
+    "//third_party/android_support_test_runner:runner_java",
     ":cronet_smoketests_platform_only_java",
   ]
 
