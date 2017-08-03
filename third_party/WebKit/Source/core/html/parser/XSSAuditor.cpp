@@ -307,21 +307,30 @@ static void TruncateForScriptLikeAttribute(String& decoded_snippet) {
   }
 }
 
+static void TruncateForSemicolonSeparatedScriptLikeAttribute(
+    String& decoded_snippet) {
+  // Same as script-like attributes, but semicolons can introduce page data.
+  TruncateForScriptLikeAttribute(decoded_snippet);
+  size_t position = decoded_snippet.Find(";");
+  if (position != kNotFound)
+    decoded_snippet.Truncate(position);
+}
+
 static bool IsSemicolonSeparatedAttribute(
     const HTMLToken::Attribute& attribute) {
   return ThreadSafeMatch(attribute.NameAsVector(), SVGNames::valuesAttr);
 }
 
-static String SemicolonSeparatedValueContainingJavaScriptURL(
+static bool IsSemicolonSeparatedValueContainingJavaScriptURL(
     const String& value) {
   Vector<String> value_list;
   value.Split(';', value_list);
   for (size_t i = 0; i < value_list.size(); ++i) {
     String stripped = StripLeadingAndTrailingHTMLSpaces(value_list[i]);
     if (ProtocolIsJavaScript(stripped))
-      return stripped;
+      return true;
   }
-  return g_empty_string;
+  return false;
 }
 
 XSSAuditor::XSSAuditor()
@@ -711,15 +720,14 @@ bool XSSAuditor::EraseDangerousAttributesIfInjected(
           Canonicalize(SnippetFromAttribute(request, attribute),
                        kScriptLikeAttributeTruncation));
     } else if (IsSemicolonSeparatedAttribute(attribute)) {
-      String sub_value =
-          SemicolonSeparatedValueContainingJavaScriptURL(attribute.Value());
-      if (!sub_value.IsEmpty()) {
+      if (IsSemicolonSeparatedValueContainingJavaScriptURL(attribute.Value())) {
         value_contains_java_script_url = true;
         erase_attribute =
             IsContainedInRequest(Canonicalize(
                 NameFromAttribute(request, attribute), kNoTruncation)) &&
             IsContainedInRequest(
-                Canonicalize(sub_value, kScriptLikeAttributeTruncation));
+                Canonicalize(SnippetFromAttribute(request, attribute),
+                             kSemicolonSeparatedScriptLikeAttributeTruncation));
       }
     } else if (ProtocolIsJavaScript(
                    StripLeadingAndTrailingHTMLSpaces(attribute.Value()))) {
@@ -825,6 +833,8 @@ String XSSAuditor::Canonicalize(String snippet, TruncationKind treatment) {
       TruncateForSrcLikeAttribute(decoded_snippet);
     else if (treatment == kScriptLikeAttributeTruncation)
       TruncateForScriptLikeAttribute(decoded_snippet);
+    else if (treatment == kSemicolonSeparatedScriptLikeAttributeTruncation)
+      TruncateForSemicolonSeparatedScriptLikeAttribute(decoded_snippet);
   }
 
   return decoded_snippet.RemoveCharacters(&IsNonCanonicalCharacter);
