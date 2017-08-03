@@ -124,6 +124,23 @@ const Extension* GetExtension(const AppLaunchParams& params) {
                                         ExtensionRegistry::TERMINATED);
 }
 
+bool IsAllowedToOverrideURL(const extensions::Extension* extension,
+                            const GURL& override_url) {
+  if (extension->web_extent().MatchesURL(override_url))
+    return true;
+
+  if (override_url.GetOrigin() == extension->url())
+    return true;
+
+  if (extension->from_bookmark() &&
+      extensions::AppLaunchInfo::GetFullLaunchURL(extension).GetOrigin() ==
+          override_url.GetOrigin()) {
+    return true;
+  }
+
+  return false;
+}
+
 // Get the launch URL for a given extension, with optional override/fallback.
 // |override_url|, if non-empty, will be preferred over the extension's
 // launch url.
@@ -134,8 +151,7 @@ GURL UrlForExtension(const extensions::Extension* extension,
 
   GURL url;
   if (!override_url.is_empty()) {
-    DCHECK(extension->web_extent().MatchesURL(override_url) ||
-           override_url.GetOrigin() == extension->url());
+    DCHECK(IsAllowedToOverrideURL(extension, override_url));
     url = override_url;
   } else {
     url = extensions::AppLaunchInfo::GetFullLaunchURL(extension);
