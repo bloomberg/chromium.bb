@@ -90966,7 +90966,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram_suffixes name="CompositorPendingTreeType" separator=".">
   <suffix name="Main" label="Commit initiated pending tree"/>
   <suffix name="Impl" label="Impl side invalidation initiated pending tree"/>
-  <affected-histogram name="Scheduling.ReadyToActivateToActivationDuration2"/>
+  <affected-histogram
+      name="Scheduling.Browser.ReadyToActivateToActivationDuration2"/>
+  <affected-histogram
+      name="Scheduling.Renderer.ReadyToActivateToActivationDuration2"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="CompositorTimingHistoryProcess" separator="."
