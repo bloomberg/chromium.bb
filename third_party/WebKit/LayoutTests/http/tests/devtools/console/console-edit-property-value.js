@@ -1,69 +1,86 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
 
-(async function() {
-  TestRunner.addResult(`Tests that property values can be edited inline in the console via double click.\n`);
+function logToConsole()
+{
+    var obj = {a: 1, b: "foo", c: null, d: 2};
+    console.log(obj);
+}
 
-  await TestRunner.loadModule('console_test_runner');
-  await TestRunner.showPanel('console');
+var test = function()
+{
+    InspectorTest.evaluateInConsole("logToConsole()", step1);
 
-  await TestRunner.evaluateInPagePromise(`
-     function logToConsole()
+    function step1()
     {
-        var obj = {a: 1, b: "foo", c: null, d: 2};
-        console.log(obj);
+        InspectorTest.expandConsoleMessages(step2);
     }
-  `);
 
-  ConsoleTestRunner.evaluateInConsole('logToConsole()', step1);
+    function step2()
+    {
+        var valueElements = getValueElements();
+        doubleClickTypeAndEnter(valueElements[0], "1 + 2");
+        InspectorTest.waitForRemoteObjectsConsoleMessages(step3);
+    }
 
-  function step1() {
-    ConsoleTestRunner.expandConsoleMessages(step2);
-  }
+    function step3()
+    {
+        var valueElements = getValueElements();
+        doubleClickTypeAndEnter(valueElements[1], "nonExistingValue");
+        InspectorTest.waitForRemoteObjectsConsoleMessages(step4);
+    }
 
-  function step2() {
-    var valueElements = getValueElements();
-    doubleClickTypeAndEnter(valueElements[0], '1 + 2');
-    ConsoleTestRunner.waitForRemoteObjectsConsoleMessages(step3);
-  }
+    function step4()
+    {
+        var valueElements = getValueElements();
+        doubleClickTypeAndEnter(valueElements[2], "[1, 2, 3]");
+        InspectorTest.waitForRemoteObjectsConsoleMessages(step5);
+    }
 
-  function step3() {
-    var valueElements = getValueElements();
-    doubleClickTypeAndEnter(valueElements[1], 'nonExistingValue');
-    ConsoleTestRunner.waitForRemoteObjectsConsoleMessages(step4);
-  }
+    function step5()
+    {
+        var valueElements = getValueElements();
+        doubleClickTypeAndEnter(valueElements[3], "{x: 2}");
+        InspectorTest.waitForRemoteObjectsConsoleMessages(step6);
+    }
 
-  function step4() {
-    var valueElements = getValueElements();
-    doubleClickTypeAndEnter(valueElements[2], '[1, 2, 3]');
-    ConsoleTestRunner.waitForRemoteObjectsConsoleMessages(step5);
-  }
+    function step6()
+    {
+        InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
+        InspectorTest.completeTest();
+    }
 
-  function step5() {
-    var valueElements = getValueElements();
-    doubleClickTypeAndEnter(valueElements[3], '{x: 2}');
-    ConsoleTestRunner.waitForRemoteObjectsConsoleMessages(step6);
-  }
+    function getValueElements()
+    {
+        var messageElement = Console.ConsoleView.instance()._visibleViewMessages[1].element();
+        return messageElement.querySelector(".console-message-text *").shadowRoot.querySelectorAll(".value");
+    }
 
-  function step6() {
-    ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
-    TestRunner.completeTest();
-  }
+    function doubleClickTypeAndEnter(node, text)
+    {
+        var event = document.createEvent("MouseEvent");
+        event.initMouseEvent("dblclick", true, true, null, 2);
+        node.dispatchEvent(event);
 
-  function getValueElements() {
-    var messageElement = Console.ConsoleView.instance()._visibleViewMessages[1].element();
-    return messageElement.querySelector('.console-message-text *').shadowRoot.querySelectorAll('.value');
-  }
+        InspectorTest.addResult("Node was hidden after dblclick: " + node.classList.contains("hidden"));
 
-  function doubleClickTypeAndEnter(node, text) {
-    var event = document.createEvent('MouseEvent');
-    event.initMouseEvent('dblclick', true, true, null, 2);
-    node.dispatchEvent(event);
-    TestRunner.addResult('Node was hidden after dblclick: ' + node.classList.contains('hidden'));
-    var messageElement = Console.ConsoleView.instance()._visibleViewMessages[1].element();
-    var editPrompt = messageElement.querySelector('.console-message-text *').shadowRoot.querySelector('.text-prompt');
-    editPrompt.textContent = text;
-    editPrompt.dispatchEvent(TestRunner.createKeyEvent('Enter'));
-  }
-})();
+        var messageElement = Console.ConsoleView.instance()._visibleViewMessages[1].element();
+        var editPrompt = messageElement.querySelector(".console-message-text *").shadowRoot.querySelector(".text-prompt");
+        editPrompt.textContent = text;
+        editPrompt.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that property values can be edited inline in the console via double click.
+</p>
+
+</body>
+</html>
