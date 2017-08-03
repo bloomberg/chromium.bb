@@ -235,6 +235,47 @@ TEST_F(HostFrameSinkManagerTest, DropTemporaryReference) {
   GetFrameSinkManagerClient()->OnSurfaceCreated(MakeSurfaceInfo(surface_id));
 }
 
+TEST_F(HostFrameSinkManagerTest, DropTemporaryReferenceForStaleClient) {
+  FakeHostFrameSinkClient client;
+  host_manager().RegisterFrameSinkId(kClientFrameSinkId, &client);
+  auto support_client =
+      CreateCompositorFrameSinkSupport(kClientFrameSinkId, false /* is_root */);
+  EXPECT_TRUE(FrameSinkDataExists(kClientFrameSinkId));
+
+  host_manager().RegisterFrameSinkId(kParentFrameSinkId, &client);
+  auto support_parent =
+      CreateCompositorFrameSinkSupport(kParentFrameSinkId, true /* is_root */);
+  EXPECT_TRUE(FrameSinkDataExists(kParentFrameSinkId));
+
+  // Register should call through to FrameSinkManagerImpl.
+  EXPECT_CALL(manager_impl(), RegisterFrameSinkHierarchy(kParentFrameSinkId,
+                                                         kClientFrameSinkId));
+  host_manager().RegisterFrameSinkHierarchy(kParentFrameSinkId,
+                                            kClientFrameSinkId);
+
+  const SurfaceId client_surface_id = MakeSurfaceId(kClientFrameSinkId, 1);
+  EXPECT_CALL(manager_impl(), DropTemporaryReference(client_surface_id))
+      .Times(0);
+  EXPECT_CALL(manager_impl(), AssignTemporaryReference(client_surface_id, _))
+      .Times(1);
+  GetFrameSinkManagerClient()->OnSurfaceCreated(
+      MakeSurfaceInfo(client_surface_id));
+  testing::Mock::VerifyAndClearExpectations(&manager_impl());
+
+  // Invaidating the client should cause the next SurfaceId to be dropped.
+  support_client.reset();
+  host_manager().InvalidateFrameSinkId(kClientFrameSinkId);
+
+  const SurfaceId client_surface_id2 = MakeSurfaceId(kClientFrameSinkId, 2);
+  EXPECT_CALL(manager_impl(), DropTemporaryReference(client_surface_id2))
+      .Times(1);
+  GetFrameSinkManagerClient()->OnSurfaceCreated(
+      MakeSurfaceInfo(client_surface_id2));
+
+  support_parent.reset();
+  host_manager().InvalidateFrameSinkId(kParentFrameSinkId);
+}
+
 TEST_F(HostFrameSinkManagerTest, DisplayRootTemporaryReference) {
   const SurfaceId surface_id = MakeSurfaceId(kParentFrameSinkId, 1);
   auto support = CreateCompositorFrameSinkSupport(surface_id.frame_sink_id(),
