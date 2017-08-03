@@ -250,7 +250,6 @@ views::ToggleButton* TrayPopupUtils::CreateToggleButton(
       (kTrayToggleButtonWidth - toggle_size.width()) / 2;
   toggle->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(vertical_padding, horizontal_padding)));
-  toggle->SetFocusPainter(CreateFocusPainter());
   toggle->SetAccessibleName(l10n_util::GetStringUTF16(accessible_name_id));
   return toggle;
 }

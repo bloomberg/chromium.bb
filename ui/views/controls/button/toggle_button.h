@@ -23,6 +23,10 @@ class VIEWS_EXPORT ToggleButton : public CustomButton {
   void SetIsOn(bool is_on, bool animate);
   bool is_on() const { return is_on_; }
 
+  void set_accepts_events(bool accepts_events) {
+    accepts_events_ = accepts_events;
+  }
+
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
 
@@ -43,9 +47,12 @@ class VIEWS_EXPORT ToggleButton : public CustomButton {
 
   // views::View:
   const char* GetClassName() const override;
+  bool CanAcceptEvent(const ui::Event& event) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnFocus() override;
+  void OnBlur() override;
 
   // CustomButton:
   void NotifyClick(const ui::Event& event) override;
@@ -59,9 +66,13 @@ class VIEWS_EXPORT ToggleButton : public CustomButton {
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
 
-  bool is_on_;
-  gfx::SlideAnimation slide_animation_;
+  bool is_on_ = false;
+  gfx::SlideAnimation slide_animation_{this};
   ThumbView* thumb_view_;
+
+  // When false, this button won't accept input. Different from View::SetEnabled
+  // in that the view retains focus when this is false but not when disabled.
+  bool accepts_events_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(ToggleButton);
 };

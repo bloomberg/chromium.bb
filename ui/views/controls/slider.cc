@@ -20,7 +20,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -184,21 +183,6 @@ void Slider::MoveButtonTo(const gfx::Point& point) {
       VALUE_CHANGED_BY_USER);
 }
 
-void Slider::OnPaintFocus(gfx::Canvas* canvas) {
-  if (!HasFocus())
-    return;
-
-  // TODO(estade): make this a glow effect instead: crbug.com/658783
-  gfx::Rect focus_bounds = GetLocalBounds();
-  focus_bounds.Inset(gfx::Insets(1));
-  canvas->DrawSolidFocusRect(
-      gfx::RectF(focus_bounds),
-      SkColorSetA(GetNativeTheme()->GetSystemColor(
-                      ui::NativeTheme::kColorId_FocusedBorderColor),
-                  0x99),
-      2);
-}
-
 void Slider::OnSliderDragStarted() {
   SetHighlighted(true);
   if (listener_)
@@ -321,8 +305,6 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawCircle(
       thumb_center,
       is_active_ ? kThumbRadius : (kThumbRadius - kThumbStroke / 2), flags);
-
-  OnPaintFocus(canvas);
 }
 
 void Slider::OnFocus() {

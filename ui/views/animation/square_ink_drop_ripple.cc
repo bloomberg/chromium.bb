@@ -238,6 +238,8 @@ void SquareInkDropRipple::AnimateStateChange(
       }
       break;
     case InkDropState::ACTION_PENDING:
+      if (old_ink_drop_state == new_ink_drop_state)
+        return;
       DCHECK_EQ(InkDropState::HIDDEN, old_ink_drop_state)
           << " old_ink_drop_state=" << ToString(old_ink_drop_state);
       AnimateToOpacity(visible_opacity_,

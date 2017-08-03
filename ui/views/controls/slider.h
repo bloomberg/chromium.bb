@@ -87,8 +87,6 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   // Moves the button to the specified point and updates the value accordingly.
   void MoveButtonTo(const gfx::Point& point);
 
-  void OnPaintFocus(gfx::Canvas* canvas);
-
   // Notify the listener_, if not NULL, that dragging started.
   void OnSliderDragStarted();
 
