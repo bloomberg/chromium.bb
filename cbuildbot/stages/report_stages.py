@@ -18,7 +18,6 @@ from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib.const import waterfall
-from chromite.lib import buildbucket_lib
 from chromite.lib import cidb
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -920,46 +919,6 @@ class ReportStage(generic_stages.BuilderStage,
                                         builder_run.debug,
                                         upload_urls=upload_urls)
 
-  def IsSheriffOMaticDispatchBuild(self):
-    """Determine if Sheriff-o-Matic alerts should be dispatched.
-
-    Returns:
-      tree if the alerts should be dispatcher, None otherwise.
-    """
-    if self._run.debug:
-      return None
-    # active_waterfall can be wrong for things like try jobs.
-    for tree in constants.SOM_BUILDS:
-      for build in constants.SOM_BUILDS[tree]:
-        if (os.environ.get('BUILDBOT_MASTERNAME', '') == build[0] and
-            self._run.config.name == build[1]):
-          return tree
-    return None
-
-  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
-  def RunAlertsDispatcher(self, db_credentials_dir, tree):
-    """Submit alerts summary to Sheriff-o-Matic.
-
-    Args:
-      db_credentials_dir: Path to CIDB database credentials.
-      tree: Sheriff-o-Matic tree to submit alerts to.
-    """
-    dispatcher_cmd = [os.path.join(self._build_root, 'chromite', 'scripts',
-                                   'som_alerts_dispatcher'),
-                      '--som_tree', tree]
-    if buildbucket_lib.GetServiceAccount(constants.CHROMEOS_SERVICE_ACCOUNT):
-      # User the service account file if it exists.
-      dispatcher_cmd.extend(['--service_acct_json',
-                             constants.CHROMEOS_SERVICE_ACCOUNT])
-    if tree != constants.SOM_TREE:
-      dispatcher_cmd.append('--allow_experimental')
-    dispatcher_cmd.append(db_credentials_dir)
-
-    try:
-      cros_build_lib.RunCommand(dispatcher_cmd)
-    except cros_build_lib.RunCommandError as e:
-      logging.warn('Unable to run alerts dispatcher: %s', e)
-
   def PerformStage(self):
     """Perform the actual work for this stage.
 
@@ -1085,10 +1044,6 @@ class ReportStage(generic_stages.BuilderStage,
 
       # Dump report about things we retry.
       retry_stats.ReportStats(sys.stdout)
-
-      tree = self.IsSheriffOMaticDispatchBuild()
-      if tree:
-        self.RunAlertsDispatcher(db.db_credentials_dir, tree)
 
   def _GetBuildDuration(self):
     """Fetches the duration of this build in seconds, from cidb.

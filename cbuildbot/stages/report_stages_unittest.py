@@ -423,18 +423,6 @@ class ReportStageTest(AbstractReportStageTestCase):
         child_configs, config_status_map)
     self.assertEqual(expected, child_config_list)
 
-  def testIsSheriffOMaticDispatchBuildTrue(self):
-    """Test IsSheriffOMaticDispatchBuild with important build."""
-    os.environ['BUILDBOT_MASTERNAME'] = waterfall.WATERFALL_INTERNAL
-    self._Prepare('master-paladin')
-    stage = self.ConstructStage()
-    self.assertEqual(stage.IsSheriffOMaticDispatchBuild(), 'chromeos')
-
-  def testIsSheriffOMaticImportantBuild(self):
-    """Test IsSheriffOMaticImportantBuild with unimportant build."""
-    stage = self.ConstructStage()
-    self.assertIsNone(stage.IsSheriffOMaticDispatchBuild())
-
   def testPerformStage(self):
     """Test PerformStage."""
     mock_sd = self.PatchObject(metrics, 'SecondsDistribution')
