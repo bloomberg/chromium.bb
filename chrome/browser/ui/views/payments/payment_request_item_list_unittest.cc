@@ -59,7 +59,7 @@ class TestListItem : public PaymentRequestItemList::Item {
 }  // namespace
 
 TEST(PaymentRequestItemListTest, TestAddItem) {
-  PaymentRequestItemList list;
+  PaymentRequestItemList list(nullptr);
 
   std::unique_ptr<views::View> list_view = list.CreateListView();
   EXPECT_FALSE(list_view->has_children());
@@ -90,7 +90,7 @@ TEST(PaymentRequestItemListTest, TestAddItem) {
 }
 
 TEST(PaymentRequestItemListTest, TestSelectItemResultsInSingleItemSelected) {
-  PaymentRequestItemList list;
+  PaymentRequestItemList list(nullptr);
 
   std::vector<std::unique_ptr<TestListItem>> items;
   items.push_back(base::MakeUnique<TestListItem>(&list, false));
