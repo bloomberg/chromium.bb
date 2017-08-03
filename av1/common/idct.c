@@ -1495,8 +1495,12 @@ static void imrc32x32_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   if (eob == 1) {
     aom_idct32x32_1_add_c(input, dest, stride);
   } else {
-    tran_low_t mask[32 * 32];
-    get_mrc_mask(txfm_param->dst, txfm_param->stride, mask, 32, 32, 32);
+    int mask[32 * 32];
+    int n_masked_vals =
+        get_mrc_mask(txfm_param->dst, txfm_param->stride, mask, 32, 32, 32);
+
+    if (!is_valid_mrc_mask(n_masked_vals, 32, 32))
+      assert(0 && "Invalid MRC mask");
     if (eob <= quarter)
       // non-zero coeff only in upper-left 8x8
       aom_imrc32x32_34_add_c(input, dest, stride, mask);

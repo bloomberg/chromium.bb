@@ -377,6 +377,10 @@ typedef struct MB_MODE_INFO {
 #endif                      // CONFIG_SUPERTX
   int8_t seg_id_predicted;  // valid only when temporal_update is enabled
 
+#if CONFIG_MRC_TX
+  int valid_mrc_mask;
+#endif  // CONFIG_MRC_TX
+
   // Only for INTRA blocks
   UV_PREDICTION_MODE uv_mode;
 #if CONFIG_PALETTE

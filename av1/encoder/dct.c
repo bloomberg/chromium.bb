@@ -1092,9 +1092,14 @@ static void fhalfright32(const tran_low_t *input, tran_low_t *output) {
 #if CONFIG_MRC_TX
 static void get_masked_residual32(const int16_t **input, int *input_stride,
                                   const uint8_t *pred, int pred_stride,
-                                  int16_t *masked_input) {
+                                  int16_t *masked_input, int *valid_mask) {
   int mrc_mask[32 * 32];
-  get_mrc_mask(pred, pred_stride, mrc_mask, 32, 32, 32);
+  int n_masked_vals = get_mrc_mask(pred, pred_stride, mrc_mask, 32, 32, 32);
+  // Do not use MRC_DCT if mask is invalid. DCT_DCT will be used instead.
+  if (!is_valid_mrc_mask(n_masked_vals, 32, 32)) {
+    *valid_mask = 0;
+    return;
+  }
   int32_t sum = 0;
   int16_t avg;
   // Get the masked average of the prediction
@@ -1103,7 +1108,7 @@ static void get_masked_residual32(const int16_t **input, int *input_stride,
       sum += mrc_mask[i * 32 + j] * (*input)[i * (*input_stride) + j];
     }
   }
-  avg = ROUND_POWER_OF_TWO_SIGNED(sum, 10);
+  avg = sum / n_masked_vals;
   // Replace all of the unmasked pixels in the prediction with the average
   // of the masked pixels
   for (int i = 0; i < 32; ++i) {
@@ -1113,6 +1118,7 @@ static void get_masked_residual32(const int16_t **input, int *input_stride,
   }
   *input = masked_input;
   *input_stride = 32;
+  *valid_mask = 1;
 }
 #endif  // CONFIG_MRC_TX
 
@@ -2464,7 +2470,7 @@ void av1_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
   if (tx_type == MRC_DCT) {
     int16_t masked_input[32 * 32];
     get_masked_residual32(&input, &stride, txfm_param->dst, txfm_param->stride,
-                          masked_input);
+                          masked_input, txfm_param->valid_mask);
   }
 #endif  // CONFIG_MRC_TX
 

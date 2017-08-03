@@ -600,6 +600,9 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   txfm_param.is_inter = is_inter_block(mbmi);
   txfm_param.dst = dst;
   txfm_param.stride = dst_stride;
+#if CONFIG_MRC_TX
+  txfm_param.valid_mask = &mbmi->valid_mrc_mask;
+#endif  // CONFIG_MRC_TX
 #endif  // CONFIG_MRC_TX || CONFIG_LGT
 #if CONFIG_LGT
   txfm_param.mode = get_prediction_mode(xd->mi[0], plane, tx_size, block);

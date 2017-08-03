@@ -1642,6 +1642,11 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
         !supertx_enabled &&
 #endif  // CONFIG_SUPERTX
         !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
+#if CONFIG_MRC_TX
+      if (tx_type == MRC_DCT)
+        assert(mbmi->valid_mrc_mask && "Invalid MRC mask");
+#endif  // CONFIG_MRC_TX
+
       const int eset =
           get_ext_tx_set(tx_size, bsize, is_inter, cm->reduced_tx_set_used);
       // eset == 0 should correspond to a set with only DCT_DCT and there

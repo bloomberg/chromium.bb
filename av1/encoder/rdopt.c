@@ -2159,6 +2159,13 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   }
 #endif  // DISABLE_TRELLISQ_SEARCH
 
+#if CONFIG_MRC_TX
+  if (mbmi->tx_type == MRC_DCT && !mbmi->valid_mrc_mask) {
+    args->exit_early = 1;
+    return;
+  }
+#endif  // CONFIG_MRC_TX
+
   if (!is_inter_block(mbmi)) {
     struct macroblock_plane *const p = &x->plane[plane];
     av1_inverse_transform_block_facade(xd, plane, block, blk_row, blk_col,
