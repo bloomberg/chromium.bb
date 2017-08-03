@@ -52,9 +52,6 @@ ChromeRenderViewObserver::~ChromeRenderViewObserver() {
 bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderViewObserver, message)
-#if !defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_WebUIJavaScript, OnWebUIJavaScript)
-#endif
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_UpdateBrowserControlsState,
                         OnUpdateBrowserControlsState)
@@ -65,13 +62,6 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
 
   return handled;
 }
-
-#if !defined(OS_ANDROID)
-void ChromeRenderViewObserver::OnWebUIJavaScript(
-    const base::string16& javascript) {
-  webui_javascript_.push_back(javascript);
-}
-#endif
 
 #if defined(OS_ANDROID)
 void ChromeRenderViewObserver::OnUpdateBrowserControlsState(
@@ -93,19 +83,6 @@ void ChromeRenderViewObserver::Navigate(const GURL& url) {
   // event (including tab reload).
   if (web_cache_impl_)
     web_cache_impl_->ExecutePendingClearCache();
-}
-
-void ChromeRenderViewObserver::DidCommitProvisionalLoad(
-    blink::WebLocalFrame* frame,
-    bool is_new_navigation) {
-  auto* render_frame = content::RenderFrame::FromWebFrame(frame);
-  if (render_frame->IsMainFrame() &&
-      (render_frame->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI) &&
-      !webui_javascript_.empty()) {
-    for (const auto& script : webui_javascript_)
-      render_view()->GetMainRenderFrame()->ExecuteJavaScript(script);
-    webui_javascript_.clear();
-  }
 }
 
 void ChromeRenderViewObserver::OnDestruct() {
