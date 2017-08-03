@@ -10,7 +10,7 @@
 Polymer({
   is: 'site-details-permission',
 
-  behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
+  behaviors: [SiteSettingsBehavior],
 
   properties: {
     /**
@@ -27,27 +27,7 @@ Polymer({
     defaultSetting_: String,
   },
 
-  observers: ['siteChanged_(site, category)'],
-
-  /** @override */
-  attached: function() {
-    this.addWebUIListener(
-        'contentSettingSitePermissionChanged',
-        this.sitePermissionChanged_.bind(this));
-  },
-
-  /**
-   * Returns true if the origins match, e.g. http://google.com and
-   * http://[*.]google.com.
-   * @param {string} left The first origin to compare.
-   * @param {string} right The second origin to compare.
-   * @return {boolean} True if the origins are the same.
-   * @private
-   */
-  sameOrigin_: function(left, right) {
-    return this.removePatternWildcard(left) ==
-        this.removePatternWildcard(right);
-  },
+  observers: ['siteChanged_(site)'],
 
   /**
    * Updates the drop-down value after |site| has changed.
@@ -77,27 +57,6 @@ Polymer({
       // Users are able to override embargo, so leave enabled in that case.
       this.$.permission.disabled =
           site.source != settings.SiteSettingSource.EMBARGO;
-    }
-  },
-
-  /**
-   * Called when a site within a category has been changed.
-   * @param {number} category The category that changed.
-   * @param {string} origin The origin of the site that changed.
-   * @param {string} embeddingOrigin The embedding origin of the site that
-   *     changed.
-   * @private
-   */
-  sitePermissionChanged_: function(category, origin, embeddingOrigin) {
-    if (this.site === undefined)
-      return;
-    if (category != this.category)
-      return;
-
-    if (origin == '' ||
-        (origin == this.site.origin &&
-         embeddingOrigin == this.site.embeddingOrigin)) {
-      this.siteChanged_(this.site);
     }
   },
 

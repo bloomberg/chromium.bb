@@ -259,4 +259,55 @@ suite('SiteDetails', function() {
       assertEquals(settings.ContentSetting.DEFAULT, args[2]);
     })
   });
+
+  test('permissions update dynamically', function() {
+    browserProxy.setPrefs(prefs);
+    testElement = createSiteDetails('https://foo.com:443');
+
+    var siteDetailsPermission =
+        testElement.root.querySelector('#notifications');
+
+    // Wait for all the permissions to be populated initially.
+    return browserProxy.whenCalled('getOriginPermissions')
+        .then(function(result) {
+          // Make sure initial state is as expected.
+          assertEquals(
+              settings.ContentSetting.BLOCK,
+              siteDetailsPermission.site.setting);
+          assertEquals(
+              settings.SiteSettingSource.POLICY,
+              siteDetailsPermission.site.source);
+          assertEquals(
+              settings.ContentSetting.BLOCK,
+              siteDetailsPermission.$.permission.value);
+
+          // Set new prefs and make sure only that permission is updated.
+          var newException = {
+            embeddingOrigin: testElement.origin,
+            origin: testElement.origin,
+            setting: settings.ContentSetting.ASK,
+            source: settings.SiteSettingSource.DEFAULT,
+          };
+          browserProxy.resetResolver('getOriginPermissions');
+          browserProxy.setSinglePref(
+              settings.ContentSettingsTypes.NOTIFICATIONS, newException);
+          return browserProxy.whenCalled('getOriginPermissions');
+        })
+        .then(function(args) {
+          // The notification pref was just updated, so make sure the call to
+          // getOriginPermissions was to check notifications.
+          assertTrue(
+              args[1].includes(settings.ContentSettingsTypes.NOTIFICATIONS));
+
+          // Check |siteDetailsPermission| now shows the new permission value.
+          assertEquals(
+              settings.ContentSetting.ASK, siteDetailsPermission.site.setting);
+          assertEquals(
+              settings.SiteSettingSource.DEFAULT,
+              siteDetailsPermission.site.source);
+          assertEquals(
+              settings.ContentSetting.DEFAULT,
+              siteDetailsPermission.$.permission.value);
+        });
+  });
 });
