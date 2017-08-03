@@ -17,10 +17,6 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/search_engines/template_url_service.h"
-#include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/page_navigator.h"
-#include "net/http/http_response_headers.h"
-#include "net/http/http_status_code.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search_box_model.h"
@@ -37,10 +33,6 @@ enum class SearchAnswerRequestResult {
   REQUEST_RESULT_RECEIVED_ANSWER_TOO_LARGE = 4,
   REQUEST_RESULT_MAX = 5
 };
-
-constexpr char kSearchAnswerHasResult[] = "SearchAnswer-HasResult";
-constexpr char kSearchAnswerIssuedQuery[] = "SearchAnswer-IssuedQuery";
-constexpr char kSearchAnswerTitle[] = "SearchAnswer-Title";
 
 void RecordRequestResult(SearchAnswerRequestResult request_result) {
   UMA_HISTOGRAM_ENUMERATION("SearchAnswer.RequestResult", request_result,
@@ -116,33 +108,13 @@ void AnswerCardSearchProvider::UpdatePreferredSize(const gfx::Size& pref_size) {
   }
 }
 
-content::WebContents* AnswerCardSearchProvider::OpenURLFromTab(
-    const content::OpenURLParams& params) {
-  // Open the user-clicked link in the browser taking into account the requested
-  // disposition.
-  chrome::NavigateParams new_tab_params(profile_, params.url,
-                                        params.transition);
-
-  new_tab_params.disposition = params.disposition;
-
-  if (params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB) {
-    // When the user asks to open a link as a background tab, we show an
-    // activated window with the new activated tab after the user closes the
-    // launcher. So it's "background" relative to the launcher itself.
-    new_tab_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-    new_tab_params.window_action = chrome::NavigateParams::SHOW_WINDOW_INACTIVE;
-  }
-
-  chrome::Navigate(&new_tab_params);
-
-  base::RecordAction(base::UserMetricsAction("SearchAnswer_OpenedUrl"));
-
-  return new_tab_params.target_contents;
-}
-
 void AnswerCardSearchProvider::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->GetURL() != current_request_url_) {
+    const GURL& url,
+    bool has_error,
+    bool has_answer_card,
+    const std::string& result_title,
+    const std::string& issued_query) {
+  if (url != current_request_url_) {
     // TODO(vadimt): Remove this and similar logging once testing is complete if
     // we think this is not useful after release or happens too frequently.
     VLOG(1) << "DidFinishNavigation: Another request started";
@@ -152,29 +124,27 @@ void AnswerCardSearchProvider::DidFinishNavigation(
   }
 
   VLOG(1) << "DidFinishNavigation: Latest request completed";
-  if (!navigation_handle->HasCommitted() || navigation_handle->IsErrorPage() ||
-      !navigation_handle->IsInMainFrame()) {
-    LOG(ERROR) << "Failed to navigate: HasCommitted="
-               << navigation_handle->HasCommitted()
-               << ", IsErrorPage=" << navigation_handle->IsErrorPage()
-               << ", IsInMainFrame=" << navigation_handle->IsInMainFrame();
+  if (has_error) {
     RecordRequestResult(
         SearchAnswerRequestResult::REQUEST_RESULT_REQUEST_FAILED);
     return;
   }
 
   if (!features::IsAnswerCardDarkRunEnabled()) {
-    if (!ParseResponseHeaders(navigation_handle->GetResponseHeaders())) {
+    if (!has_answer_card || result_title.empty()) {
       RecordRequestResult(SearchAnswerRequestResult::REQUEST_RESULT_NO_ANSWER);
       return;
     }
+    result_title_ = result_title;
+    if (!issued_query.empty())
+      result_url_ = GetResultUrl(base::UTF8ToUTF16(issued_query));
   } else {
     // In the dark run mode, every other "server response" contains a card.
     dark_run_received_answer_ = !dark_run_received_answer_;
     if (!dark_run_received_answer_)
       return;
     // SearchResult requires a non-empty id. This "url" will never be opened.
-    result_url_ = "some string";
+    result_url_ = "https://www.google.com/?q=something";
   }
 
   received_answer_ = true;
@@ -236,44 +206,6 @@ void AnswerCardSearchProvider::OnResultAvailable(bool is_available) {
         base::UTF8ToUTF16(result_title_), contents_.get()));
   }
   SwapResults(&results);
-}
-
-bool AnswerCardSearchProvider::ParseResponseHeaders(
-    const net::HttpResponseHeaders* headers) {
-  if (!headers) {
-    LOG(ERROR) << "Failed to parse response headers: no headers";
-    return false;
-  }
-  if (headers->response_code() != net::HTTP_OK) {
-    LOG(ERROR) << "Failed to parse response headers: response code="
-               << headers->response_code();
-    return false;
-  }
-  if (!headers->HasHeaderValue(kSearchAnswerHasResult, "true")) {
-    LOG(ERROR) << "Failed to parse response headers: " << kSearchAnswerHasResult
-               << " header != true";
-    return false;
-  }
-  if (!headers->GetNormalizedHeader(kSearchAnswerTitle, &result_title_)) {
-    LOG(ERROR) << "Failed to parse response headers: " << kSearchAnswerTitle
-               << " header is not present";
-    return false;
-  }
-
-  std::string issued_query;
-  // TODO(749320): Make the header mandatory once the production server starts
-  // serving it.
-  if (headers->GetNormalizedHeader(kSearchAnswerIssuedQuery, &issued_query)) {
-    // The header contains the autocompleted query that corresponds to the card
-    // contents. Use it for the open-URL, and for deduplication with the omnibox
-    // search results.
-    result_url_ = GetResultUrl(base::UTF8ToUTF16(issued_query));
-  } else {
-    VLOG(1) << "Warning: " << kSearchAnswerIssuedQuery
-            << " header is not present";
-  }
-
-  return true;
 }
 
 std::string AnswerCardSearchProvider::GetResultUrl(

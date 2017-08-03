@@ -7,10 +7,15 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
+#include "net/http/http_status_code.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
 #include "ui/views/controls/webview/web_contents_set_background_color.h"
 #include "ui/views/controls/webview/webview.h"
@@ -19,6 +24,10 @@
 namespace app_list {
 
 namespace {
+
+constexpr char kSearchAnswerHasResult[] = "SearchAnswer-HasResult";
+constexpr char kSearchAnswerIssuedQuery[] = "SearchAnswer-IssuedQuery";
+constexpr char kSearchAnswerTitle[] = "SearchAnswer-Title";
 
 class SearchAnswerWebView : public views::WebView {
  public:
@@ -50,6 +59,38 @@ class SearchAnswerWebView : public views::WebView {
   DISALLOW_COPY_AND_ASSIGN(SearchAnswerWebView);
 };
 
+void ParseResponseHeaders(const net::HttpResponseHeaders* headers,
+                          bool* has_answer_card,
+                          std::string* result_title,
+                          std::string* issued_query) {
+  if (!headers) {
+    LOG(ERROR) << "Failed to parse response headers: no headers";
+    return;
+  }
+  if (headers->response_code() != net::HTTP_OK) {
+    LOG(ERROR) << "Failed to parse response headers: response code="
+               << headers->response_code();
+    return;
+  }
+  if (!headers->HasHeaderValue(kSearchAnswerHasResult, "true")) {
+    LOG(ERROR) << "Failed to parse response headers: " << kSearchAnswerHasResult
+               << " header != true";
+    return;
+  }
+  if (!headers->GetNormalizedHeader(kSearchAnswerTitle, result_title)) {
+    LOG(ERROR) << "Failed to parse response headers: " << kSearchAnswerTitle
+               << " header is not present";
+    return;
+  }
+  if (!headers->GetNormalizedHeader(kSearchAnswerIssuedQuery, issued_query)) {
+    // TODO(749320): Make the header mandatory once the production server
+    // starts serving it.
+    VLOG(1) << "Warning: " << kSearchAnswerIssuedQuery
+            << " header is not present";
+  }
+  *has_answer_card = true;
+}
+
 }  // namespace
 
 AnswerCardWebContents::AnswerCardWebContents(Profile* profile)
@@ -59,7 +100,8 @@ AnswerCardWebContents::AnswerCardWebContents(Profile* profile)
               profile,
               content::SiteInstance::Create(profile)))),
       mouse_event_callback_(base::Bind(&AnswerCardWebContents::HandleMouseEvent,
-                                       base::Unretained(this))) {
+                                       base::Unretained(this))),
+      profile_(profile) {
   content::RendererPreferences* renderer_prefs =
       web_contents_->GetMutableRendererPrefs();
   renderer_prefs->can_accept_load_drops = false;
@@ -117,7 +159,26 @@ content::WebContents* AnswerCardWebContents::OpenURLFromTab(
   if (!params.user_gesture)
     return WebContentsDelegate::OpenURLFromTab(source, params);
 
-  return delegate()->OpenURLFromTab(params);
+  // Open the user-clicked link in the browser taking into account the requested
+  // disposition.
+  chrome::NavigateParams new_tab_params(profile_, params.url,
+                                        params.transition);
+
+  new_tab_params.disposition = params.disposition;
+
+  if (params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB) {
+    // When the user asks to open a link as a background tab, we show an
+    // activated window with the new activated tab after the user closes the
+    // launcher. So it's "background" relative to the launcher itself.
+    new_tab_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+    new_tab_params.window_action = chrome::NavigateParams::SHOW_WINDOW_INACTIVE;
+  }
+
+  chrome::Navigate(&new_tab_params);
+
+  base::RecordAction(base::UserMetricsAction("SearchAnswer_OpenedUrl"));
+
+  return new_tab_params.target_contents;
 }
 
 bool AnswerCardWebContents::HandleContextMenu(
@@ -128,7 +189,25 @@ bool AnswerCardWebContents::HandleContextMenu(
 
 void AnswerCardWebContents::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  delegate()->DidFinishNavigation(navigation_handle);
+  bool has_answer_card = false;
+  std::string result_title;
+  std::string issued_query;
+
+  const bool has_error = !navigation_handle->HasCommitted() ||
+                         navigation_handle->IsErrorPage() ||
+                         !navigation_handle->IsInMainFrame();
+  if (has_error) {
+    LOG(ERROR) << "Failed to navigate: HasCommitted="
+               << navigation_handle->HasCommitted()
+               << ", IsErrorPage=" << navigation_handle->IsErrorPage()
+               << ", IsInMainFrame=" << navigation_handle->IsInMainFrame();
+  } else {
+    ParseResponseHeaders(navigation_handle->GetResponseHeaders(),
+                         &has_answer_card, &result_title, &issued_query);
+  }
+
+  delegate()->DidFinishNavigation(navigation_handle->GetURL(), has_error,
+                                  has_answer_card, result_title, issued_query);
 }
 
 void AnswerCardWebContents::DidStopLoading() {
