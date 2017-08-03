@@ -63,7 +63,7 @@ class NvdaChromeTest(unittest.TestCase):
       os.remove(NVDA_LOGPATH)
     if os.access(CHROME_PROFILES_PATH, os.F_OK):
       shutil.rmtree(CHROME_PROFILES_PATH)
-    os.mkdir(CHROME_PROFILES_PATH, 0777)
+    os.mkdir(CHROME_PROFILES_PATH, 0o777)
 
     def handler(signum, frame):
       print('Test interrupted, attempting to kill subprocesses.')
