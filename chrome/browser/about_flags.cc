@@ -2589,7 +2589,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-fullscreen-toolbar-reveal",
      flag_descriptions::kFullscreenToolbarRevealName,
      flag_descriptions::kFullscreenToolbarRevealDescription, kOsMac,
-     SINGLE_VALUE_TYPE(switches::kEnableFullscreenToolbarReveal)},
+     FEATURE_VALUE_TYPE(features::kFullscreenToolbarReveal)},
 #endif  // OS_MACOSX
     {"important-sites-in-cbd", flag_descriptions::kImportantSitesInCbdName,
      flag_descriptions::kImportantSitesInCbdDescription, kOsAll,

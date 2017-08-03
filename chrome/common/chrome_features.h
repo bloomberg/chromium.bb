@@ -96,6 +96,10 @@ extern const base::Feature kExpectCTReporting;
 extern const base::Feature kExperimentalAppBanners;
 extern const base::Feature kExperimentalKeyboardLockUI;
 
+#if defined(OS_MACOSX)
+extern const base::Feature kFullscreenToolbarReveal;
+#endif
+
 #if defined(OS_WIN)
 extern const base::Feature kGdiTextPrinting;
 #endif

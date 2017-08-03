@@ -22797,6 +22797,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1604051051" label="SpecialLocale:disabled"/>
   <int value="-1599538279" label="enable-md-policy-page"/>
   <int value="-1596559650" label="max-tiles-for-interest-area"/>
+  <int value="-1594298767" label="FullscreenToolbarReveal:enabled"/>
   <int value="-1586642651" label="MaterialDesignExtensions:disabled"/>
   <int value="-1583728573" label="AutofillCreditCardSigninPromo:disabled"/>
   <int value="-1581724231" label="ModalPermissionPrompts:enabled"/>
@@ -23864,6 +23865,7 @@ from previous Chrome versions.
   <int value="1910240042" label="enable-experimental-fullscreen-exit-ui"/>
   <int value="1913298816" label="OverlayScrollbar:enabled"/>
   <int value="1915178511" label="disable-blink-features"/>
+  <int value="1925627218" label="FullscreenToolbarReveal:disabled"/>
   <int value="1927259098" label="TranslateLanguageByULP:enabled"/>
   <int value="1928407249" label="NewPhotoPicker:enabled"/>
   <int value="1930901873" label="disable-sync-app-list"/>
