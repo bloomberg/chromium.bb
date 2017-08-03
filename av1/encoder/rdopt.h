@@ -144,4 +144,20 @@ int av1_tx_type_cost(const AV1_COMMON *cm, const MACROBLOCK *x,
                      const MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane,
                      TX_SIZE tx_size, TX_TYPE tx_type);
 
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
+void av1_check_ncobmc_adapt_weight_rd(const struct AV1_COMP *cpi,
+                                      struct macroblock *x, int mi_row,
+                                      int mi_col);
+
+int get_ncobmc_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
+                    MACROBLOCKD *xd, int mi_row, int mi_col, int bsize);
+
+void av1_setup_src_planes_pxl(MACROBLOCK *x, const YV12_BUFFER_CONFIG *src,
+                              int pxl_row, int pxl_col);
+
+void rebuild_ncobmc_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
+                         MACROBLOCKD *xd, int mi_row, int mi_col, int bsize,
+                         int xd_mi_offset, NCOBMC_MODE best_mode, int rebuild);
+#endif
+
 #endif  // AV1_ENCODER_RDOPT_H_
