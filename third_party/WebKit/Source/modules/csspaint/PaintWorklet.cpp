@@ -13,7 +13,10 @@
 
 namespace blink {
 
+const size_t PaintWorklet::kNumGlobalScopes = 2u;
 DocumentPaintDefinition* const kInvalidDocumentDefinition = nullptr;
+// We use each global scope for many frames to try to maximize cache hits.
+const size_t kFrameCountToSwitch = 120u;
 
 // static
 PaintWorklet* PaintWorklet::Create(LocalFrame* frame) {
@@ -31,11 +34,19 @@ void PaintWorklet::AddPendingGenerator(const String& name,
   pending_generator_registry_->AddPendingGenerator(name, generator);
 }
 
+// For this document, we try to check how many times there is a repaint, which
+// represents how many frames have executed this paint function. Then for every
+// 120 frames, we switch to another global scope, to enforce the constraint that
+// we can't rely on the state of the paint worklet global scope.
+size_t PaintWorklet::SelectGlobalScope() const {
+  size_t current_paint_frame_count = GetFrame()->View()->PaintFrameCount();
+  return (current_paint_frame_count / kFrameCountToSwitch) % kNumGlobalScopes;
+}
+
 RefPtr<Image> PaintWorklet::Paint(const String& name,
                                   const ImageResourceObserver& observer,
                                   const IntSize& size,
                                   const CSSStyleValueVector* data) {
-  // TODO(xidachen): add policy for which global scope to select.
   if (!document_definition_map_.Contains(name))
     return nullptr;
 

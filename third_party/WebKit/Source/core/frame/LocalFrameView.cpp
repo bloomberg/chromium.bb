@@ -214,7 +214,8 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       suppress_adjust_view_size_(false),
       allows_layout_invalidation_after_layout_clean_(true),
       forcing_layout_parent_view_(false),
-      main_thread_scrolling_reasons_(0) {
+      main_thread_scrolling_reasons_(0),
+      paint_frame_count_(0) {
   Init();
 }
 
@@ -3269,6 +3270,7 @@ void LocalFrameView::PaintTree() {
 
   LayoutViewItem view = GetLayoutViewItem();
   DCHECK(!view.IsNull());
+  paint_frame_count_++;
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
   });
