@@ -625,7 +625,8 @@ void MessageLoopForUI::Attach() {
 }
 #endif
 
-#if defined(USE_OZONE) || (defined(USE_X11) && !defined(USE_GLIB))
+#if (defined(USE_OZONE) && !defined(OS_FUCHSIA)) || \
+    (defined(USE_X11) && !defined(USE_GLIB))
 bool MessageLoopForUI::WatchFileDescriptor(
     int fd,
     bool persistent,
