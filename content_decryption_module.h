@@ -73,12 +73,12 @@ CDM_API const char* GetCdmVersion();
 
 namespace cdm {
 
-class AudioFrames;
-class DecryptedBlock;
-class VideoFrame;
+class CDM_CLASS_API AudioFrames;
+class CDM_CLASS_API DecryptedBlock;
+class CDM_CLASS_API VideoFrame;
 
-class Host_8;
-class Host_9;
+class CDM_CLASS_API Host_8;
+class CDM_CLASS_API Host_9;
 
 enum Status {
   kSuccess = 0,
