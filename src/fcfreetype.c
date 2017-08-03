@@ -53,7 +53,6 @@
 #include FT_FREETYPE_H
 #include FT_ADVANCES_H
 #include FT_TRUETYPE_TABLES_H
-#include FT_TRUETYPE_TAGS_H
 #include FT_SFNT_NAMES_H
 #include FT_TRUETYPE_IDS_H
 #include FT_TYPE1_TABLES_H
@@ -2199,25 +2198,17 @@ FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4)
     return 0;
 }
 
-typedef struct _FcFreeTypeCheckGlyphInfo
-{
-  unsigned int num_glyphs;
-  FcBool long_offset;
-  union {
-    FcChar32 u32[1];
-    FcChar16 u16[1];
-  } offsets;
-} FcFreeTypeCheckGlyphInfo;
-
 static FcBool
 FcFreeTypeCheckGlyph (FT_Face face,
-		      FcFreeTypeCheckGlyphInfo *info,
 		      FcChar32 ucs4,
 		      FT_UInt glyph, FcBlanks *blanks,
 		      FT_Pos *advance,
 		      FcBool using_strike)
 {
     FT_Int	    load_flags = FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH | FT_LOAD_NO_SCALE | FT_LOAD_NO_HINTING;
+
+    if (!glyph)
+	return FcFalse;
 
     if (using_strike)
 	load_flags &= ~FT_LOAD_NO_SCALE;
@@ -2232,42 +2223,10 @@ FcFreeTypeCheckGlyph (FT_Face face,
     if (face->face_flags & FT_FACE_FLAG_SCALABLE)
 	load_flags |= FT_LOAD_NO_BITMAP;
 
-    /*
-     * Previously, we used to load glyphs here...
-     * If the load succeeded, then for bitmap fonts we were
-     * accepting, and for outline glyphs, we'd check whether
-     * the outline is non-empty...
-     *
-     * The new logic skips much of that and only checks for
-     * outline non-emptiness for TrueType outlines.  We might
-     * want to add logic to load glyphs for bitmap-only fonts
-     * again.  If not, there's a whole lot more cruft that can
-     * be removed...
-     */
-
     if (advance)
     {
 	*advance = 0;
 	FT_Get_Advance (face, glyph, load_flags, advance);
-    }
-
-    if (info)
-    {
-	if (glyph >= info->num_glyphs)
-	    return FcFalse;
-
-	if ((info->long_offset ?
-	     info->offsets.u32[glyph] == info->offsets.u32[glyph+1] :
-	     info->offsets.u16[glyph] == info->offsets.u16[glyph+1]))
-	{
-	    /*
-	     * Glyphs with no contours are only OK if
-	     * they're members of the Blanks set specified
-	     * in the configuration.  If blanks isn't set,
-	     * then allow any glyph to be blank
-	     */
-	    return !blanks || FcBlanksIsMember (blanks, ucs4);
-	}
     }
 
     return FcTrue;
@@ -2277,7 +2236,6 @@ FcFreeTypeCheckGlyph (FT_Face face,
 
 static FcCharSet *
 FcFreeTypeCharSetAndSpacingForSize (FT_Face face,
-				    FcFreeTypeCheckGlyphInfo *info,
 				    FcBlanks *blanks,
 				    int *spacing,
 				    FT_Int strike_index)
@@ -2320,7 +2278,7 @@ FcFreeTypeCharSetAndSpacingForSize (FT_Face face,
             ucs4 = FT_Get_First_Char (face, &glyph);
             while (glyph != 0)
 	    {
-		if (FcFreeTypeCheckGlyph (face, info, ucs4, glyph, blanks, &advance, using_strike))
+		if (FcFreeTypeCheckGlyph (face, ucs4, glyph, blanks, &advance, using_strike))
 		{
 		    if (advance)
 		    {
@@ -2406,7 +2364,7 @@ FcFreeTypeCharSetAndSpacingForSize (FT_Face face,
 	    {
 		ucs4 = FcGlyphNameToUcs4 (name_buf);
 		if (ucs4 != 0xffff &&
-		    FcFreeTypeCheckGlyph (face, info, ucs4, glyph, blanks, &advance, using_strike))
+		    FcFreeTypeCheckGlyph (face, ucs4, glyph, blanks, &advance, using_strike))
 		{
 		    if (advance)
 		    {
@@ -2449,7 +2407,7 @@ FcFreeTypeCharSetAndSpacingForSize (FT_Face face,
 
 	if (has_char && !has_bit)
 	{
-	    if (!FcFreeTypeCheckGlyph (face, info, ucs4, glyph, blanks, &advance, using_strike))
+	    if (!FcFreeTypeCheckGlyph (face, ucs4, glyph, blanks, &advance, using_strike))
 		printf ("Bitmap missing broken char 0x%x\n", ucs4);
 	    else
 		printf ("Bitmap missing char 0x%x\n", ucs4);
@@ -2476,61 +2434,8 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 {
     FcCharSet	*cs;
     FT_Int	strike_index = -1;
-    TT_Header	*head_table = FT_Get_Sfnt_Table (face, ft_sfnt_head);
-    FcFreeTypeCheckGlyphInfo	*info = NULL;
 
-    if (head_table)
-    {
-	/*
-	 * Check for bitmap-only ttf fonts that are missing the glyf table.
-	 * In that case, pick a size and look for glyphs in that size instead
-	 */
-	if (!(face->face_flags & FT_FACE_FLAG_SCALABLE) && face->num_fixed_sizes > 0)
-	{
-	    int	    i;
-
-	    strike_index = 0;
-
-	    /* Select the face closest to 16 pixels tall */
-	    for (i = 1; i < face->num_fixed_sizes; i++) {
-		if (abs (face->available_sizes[i].height - 16) <
-		    abs (face->available_sizes[strike_index].height - 16))
-		    strike_index = i;
-	    }
-	}
-	else if (head_table->Glyph_Data_Format == 0)
-	{
-	    /* Try loading the 'loca' table, which we will later use to detect
-	     * glyphs without outline (to reject them).  If font is other than
-	     * TrueType outlines, we bypass that check. */
-	    unsigned int num_glyphs = face->num_glyphs;
-	    FcBool long_offset = head_table->Index_To_Loc_Format > 0;
-	    FT_ULong needed_len = (num_glyphs + 1) * (long_offset ? 4 : 2);
-	    FT_ULong table_len = 0;
-	    if (FT_Err_Ok == FT_Load_Sfnt_Table (face, TTAG_loca, 0, NULL, &table_len) &&
-		(table_len = FC_MIN(needed_len, table_len)) >= (long_offset ? 4 : 2) &&
-		(info = malloc (sizeof (*info) + table_len)))
-	    {
-		if (FT_Err_Ok != FT_Load_Sfnt_Table (face, TTAG_loca, 0,
-						     (FT_Byte *)&info->offsets, &table_len))
-		{
-		    free (info);
-		    info = NULL;
-		}
-		else
-		{
-		    info->num_glyphs = FC_MIN(num_glyphs,
-					      (table_len / (long_offset ? 4 : 2)) - 1);
-		    info->long_offset = long_offset;
-		}
-	    }
-	}
-    }
-
-    cs = FcFreeTypeCharSetAndSpacingForSize (face, info, blanks, spacing, strike_index);
-
-    if (info)
-	free (info);
+    cs = FcFreeTypeCharSetAndSpacingForSize (face, blanks, spacing, strike_index);
 
     return cs;
 }
