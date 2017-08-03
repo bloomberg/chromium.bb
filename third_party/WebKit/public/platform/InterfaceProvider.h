@@ -12,7 +12,7 @@
 namespace blink {
 
 // Implementations of blink::InterfaceProvider should be thread safe. As such it
-// is okay to call |getInterface| from any thread, without the thread hopping
+// is okay to call |GetInterface| from any thread, without the thread hopping
 // that would have been necesary with service_manager::InterfaceProvider.
 class BLINK_PLATFORM_EXPORT InterfaceProvider {
  public:

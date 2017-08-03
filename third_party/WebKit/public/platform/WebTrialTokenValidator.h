@@ -26,7 +26,7 @@ class WebTrialTokenValidator {
 
   // Returns whether the given token is valid for the specified origin. If the
   // token is valid, it also returns the feature the token is valid for in
-  // |*featureName|.
+  // |*feature_name|.
   virtual WebOriginTrialTokenStatus ValidateToken(const WebString& token,
                                                   const WebSecurityOrigin&,
                                                   WebString* feature_name) = 0;

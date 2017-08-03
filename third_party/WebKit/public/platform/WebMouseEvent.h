@@ -103,8 +103,8 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
   BLINK_PLATFORM_EXPORT WebFloatPoint MovementInRootFrame() const;
   BLINK_PLATFORM_EXPORT WebFloatPoint PositionInRootFrame() const;
 
-  // Sets any scaled values to be their computed values and sets |frameScale|
-  // back to 1 and |translateX|, |translateY| back to 0.
+  // Sets any scaled values to be their computed values and sets |frame_scale_|
+  // back to 1 and |frame_translate_| X and Y coordinates back to 0.
   BLINK_PLATFORM_EXPORT WebMouseEvent FlattenTransform() const;
 #endif
 

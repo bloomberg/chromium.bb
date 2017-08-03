@@ -29,7 +29,7 @@ class WebRTCDtlsFingerprint {
 };
 
 // Corresponds to |rtc::RTCCertificatePEM| in WebRTC.
-// See |WebRTCCertificate::toPEM| and |WebRTCCertificateGenerator::fromPEM|.
+// See |WebRTCCertificate::ToPEM| and |WebRTCCertificateGenerator::FromPEM|.
 class WebRTCCertificatePEM {
  public:
   WebRTCCertificatePEM(WebString private_key, WebString certificate)
@@ -63,7 +63,7 @@ class WebRTCCertificate {
   virtual uint64_t Expires() const = 0;
   virtual WebVector<WebRTCDtlsFingerprint> GetFingerprints() const = 0;
   // Creates a PEM strings representation of the certificate. See also
-  // |WebRTCCertificateGenerator::fromPEM|.
+  // |WebRTCCertificateGenerator::FromPEM|.
   virtual WebRTCCertificatePEM ToPEM() const = 0;
   // Checks if the two certificate objects represent the same certificate value,
   // as should be the case for a clone and the original.

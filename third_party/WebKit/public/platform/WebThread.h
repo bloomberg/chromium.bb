@@ -70,7 +70,7 @@ class BLINK_PLATFORM_EXPORT WebThread {
   //
   // Default scheduler task queue does not give scheduler enough freedom to
   // manage task priorities and should not be used.
-  // Use TaskRunnerHelper::get instead (crbug.com/624696).
+  // Use TaskRunnerHelper::Get instead (crbug.com/624696).
   virtual WebTaskRunner* GetWebTaskRunner() { return nullptr; }
   base::SingleThreadTaskRunner* GetSingleThreadTaskRunner();
 

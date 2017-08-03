@@ -16,10 +16,10 @@ namespace blink {
 // can read data from it.
 //
 // A WebDataConsumerHandle is a thread-safe object. A user can call
-// |obtainReader| or destruct the object on any thread.
+// |ObtainReader| or destruct the object on any thread.
 // A WebDataConsumerHandle having a reader is called "locked". A
 // WebDataConsumerHandle or its reader are called "waiting" when reading from
-// the handle or reader returns ShouldWait.
+// the handle or reader returns kShouldWait.
 //
 // WebDataConsumerHandle can be created / used / destructed only on
 // Oilpan-enabled threads.
@@ -55,25 +55,25 @@ class BLINK_PLATFORM_EXPORT WebDataConsumerHandle {
   };
 
   // This class provides a means to read data from the associated handle. A
-  // Reader object is bound to the thread on which |obtainReader| is called.
+  // Reader object is bound to the thread on which |ObtainReader| is called.
   // Any functions including the destructor should be called on the thread.
   // A reader can outlive the associated handle. In such a case, the handle
   // destruction will not affect the reader functionality.
-  // Reading functions may success (i.e. return Ok) or fail (otherwise), and
+  // Reading functions may success (i.e. return kOk) or fail (otherwise), and
   // the behavior which is not specified is unspecified.
   class BLINK_PLATFORM_EXPORT Reader {
    public:
     // Destructing a reader means it is released and a user can get another
-    // Reader by calling |obtainReader| on any thread again.
+    // Reader by calling |ObtainReader| on any thread again.
     virtual ~Reader() {}
 
     // Reads data into |data| up to |size| bytes. The actual read size will
-    // be stored in |*readSize|. This function cannot be called when a
+    // be stored in |*read_size|. This function cannot be called when a
     // two-phase read is in progress.
-    // Returns Done when it reaches to the end of the data.
-    // Returns ShouldWait when the handle does not have data to read but
+    // Returns kDone when it reaches to the end of the data.
+    // Returns kShouldWait when the handle does not have data to read but
     // it is not closed or errored.
-    // The default implementation uses beginRead and endRead.
+    // The default implementation uses BeginRead and EndRead.
     virtual Result Read(void* data,
                         size_t /* size */,
                         Flags,
@@ -81,15 +81,15 @@ class BLINK_PLATFORM_EXPORT WebDataConsumerHandle {
 
     // Begins a two-phase read. On success, the function stores a buffer
     // that contains the read data of length |*available| into |*buffer|.
-    // Returns Done when it reaches to the end of the data.
-    // Returns ShouldWait when the handle does not have data to read but
+    // Returns kDone when it reaches to the end of the data.
+    // Returns kShouldWait when the handle does not have data to read but
     // it is not closed or errored.
-    // On fail, you don't have to (and should not) call endRead, because the
+    // On fail, you don't have to (and should not) call EndRead, because the
     // read session implicitly ends in that case.
     virtual Result BeginRead(const void** buffer, Flags, size_t* available) = 0;
 
     // Ends a two-phase read.
-    // |readSize| indicates the actual read size.
+    // |read_size| indicates the actual read size.
     virtual Result EndRead(size_t read_size) = 0;
   };
 

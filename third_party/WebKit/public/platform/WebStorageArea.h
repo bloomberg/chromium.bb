@@ -52,7 +52,7 @@ class WebStorageArea {
   virtual unsigned length() = 0;
 
   // Get a value for a specific key. Valid key indices are 0 through
-  // length() - 1.  Indexes may change on any set/removeItem call. Will return
+  // length() - 1.  Indexes may change on any Set/RemoveItem call. Will return
   // null if the index provided is out of range.
   virtual WebString Key(unsigned index) = 0;
 
@@ -62,7 +62,7 @@ class WebStorageArea {
 
   // Set the value that corresponds to a specific key. Result will either be
   // ResultOK or some particular error. The value is NOT set when there's an
-  // error.  |pageUrl| is the url that should be used if a storage event fires.
+  // error.  |page_url| is the url that should be used if a storage event fires.
   virtual void SetItem(const WebString& key,
                        const WebString& new_value,
                        const WebURL& page_url,
@@ -71,14 +71,14 @@ class WebStorageArea {
     SetItem(key, new_value, page_url, result, unused);
   }
 
-  // Remove the value associated with a particular key. |pageUrl| is the url
+  // Remove the value associated with a particular key. |page_url| is the url
   // that should be used if a storage event fires.
   virtual void RemoveItem(const WebString& key, const WebURL& page_url) {
     WebString unused;
     RemoveItem(key, page_url, unused);
   }
 
-  // Clear all key/value pairs. |pageUrl| is the url that should be used if a
+  // Clear all key/value pairs. |page_url| is the url that should be used if a
   // storage event fires.
   virtual void Clear(const WebURL& page_url) {
     bool unused;
@@ -86,7 +86,7 @@ class WebStorageArea {
   }
 
   // DEPRECATED - being replaced by the async variants above which do not return
-  // oldValues or block until completion.
+  // old_values or block until completion.
   virtual void SetItem(const WebString& key,
                        const WebString& new_value,
                        const WebURL&,

@@ -58,12 +58,12 @@ class BLINK_PLATFORM_EXPORT WebContentDecryptionModuleSession {
     virtual void Close() = 0;
 
     // Called when the expiration time for the session changes.
-    // |updatedExpiryTimeInMS| is specified as the number of milliseconds
+    // |updated_expiry_time_in_ms| is specified as the number of milliseconds
     // since 01 January, 1970 UTC.
     virtual void ExpirationChanged(double updated_expiry_time_in_ms) = 0;
 
     // Called when the set of keys for this session changes or existing keys
-    // change state. |hasAdditionalUsableKey| is set if a key is newly
+    // change state. |has_additional_usable_key| is set if a key is newly
     // usable (e.g. new key available, previously expired key has been
     // renewed, etc.) and the browser should attempt to resume playback
     // if necessary.

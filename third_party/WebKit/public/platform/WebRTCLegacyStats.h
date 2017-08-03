@@ -44,12 +44,12 @@ class WebRTCLegacyStatsMemberIterator {
   virtual WebRTCLegacyStatsMemberType GetType() const = 0;
   // Value getters. No conversion is performed; the function must match the
   // member's |type|.
-  virtual int ValueInt() const = 0;        // WebRTCLegacyStatsMemberTypeInt
-  virtual int64_t ValueInt64() const = 0;  // WebRTCLegacyStatsMemberTypeInt64
-  virtual float ValueFloat() const = 0;    // WebRTCLegacyStatsMemberTypeFloat
+  virtual int ValueInt() const = 0;        // kWebRTCLegacyStatsMemberTypeInt
+  virtual int64_t ValueInt64() const = 0;  // kWebRTCLegacyStatsMemberTypeInt64
+  virtual float ValueFloat() const = 0;    // kWebRTCLegacyStatsMemberTypeFloat
   virtual WebString ValueString()
-      const = 0;                       // WebRTCLegacyStatsMemberTypeString
-  virtual bool ValueBool() const = 0;  // WebRTCLegacyStatsMemberTypeBool
+      const = 0;                       // kWebRTCLegacyStatsMemberTypeString
+  virtual bool ValueBool() const = 0;  // kWebRTCLegacyStatsMemberTypeBool
 
   // Converts the value to string (regardless of |type|).
   virtual WebString ValueToString() const = 0;

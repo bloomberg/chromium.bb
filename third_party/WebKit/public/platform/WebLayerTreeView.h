@@ -79,7 +79,7 @@ class WebLayerTreeView {
   virtual void SetBackgroundColor(WebColor) {}
 
   // Sets whether this view is visible. In threaded mode, a view that is not
-  // visible will not composite or trigger updateAnimations() or layout() calls
+  // visible will not composite or trigger UpdateAnimations() or Layout() calls
   // until it becomes visible.
   virtual void SetVisible(bool) {}
 
@@ -113,9 +113,9 @@ class WebLayerTreeView {
                                           WebBrowserControlsState current,
                                           bool animate) {}
 
-  // Set browser controls height. If |shrinkViewport| is set to true, then Blink
-  // shrunk the viewport clip layers by the top and bottom browser controls
-  // height. Top controls will translate the web page down and do not
+  // Set browser controls height. If |shrink_viewport| is set to true, then
+  // Blink shrunk the viewport clip layers by the top and bottom browser
+  // controls height. Top controls will translate the web page down and do not
   // immediately scroll when hiding. The bottom controls scroll immediately and
   // never translate the content (only clip it).
   virtual void SetBrowserControlsHeight(float top_height,

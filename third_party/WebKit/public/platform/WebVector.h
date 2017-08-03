@@ -112,7 +112,7 @@ class WebVector {
 
   size_t size() const { return data_.size(); }
   bool empty() const { return data_.empty(); }
-  // TODO(slangley): Remove all uses of isEmpty.
+  // TODO(slangley): Remove all uses of IsEmpty.
   bool IsEmpty() const { return empty(); }
 
   T& operator[](size_t i) {

@@ -56,8 +56,8 @@ class WebRuntimeFeatures {
   // Enables or disables a feature by its string identifier from
   // Source/platform/RuntimeEnabledFeatures.in.
   // Note: We use std::string instead of WebString because this API can
-  // be called before blink::initalize(). We can't create WebString objects
-  // before blink::initialize().
+  // be called before blink::Initalize(). We can't create WebString objects
+  // before blink::Initialize().
   BLINK_PLATFORM_EXPORT static void EnableFeatureFromString(
       const std::string& name,
       bool enable);

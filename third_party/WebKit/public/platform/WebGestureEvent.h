@@ -45,12 +45,12 @@ class WebGestureEvent : public WebInputEvent {
   WebPointerProperties::PointerType primary_pointer_type =
       WebPointerProperties::PointerType::kUnknown;
 
-  // If the WebGestureEvent has sourceDevice=WebGestureDeviceTouchscreen, this
-  // field contains the unique identifier for the touch event that released
+  // If the WebGestureEvent has source_device == kWebGestureDeviceTouchscreen,
+  // this field contains the unique identifier for the touch event that released
   // this event at TouchDispositionGestureFilter. If the WebGestureEvents was
   // not released through a touch event (e.g. timer-released gesture events or
-  // gesture events with sourceDevice!=WebGestureDeviceTouchscreen), the field
-  // contains 0. See crbug.com/618738.
+  // gesture events with source_device != kWebGestureDeviceTouchscreen), the
+  // field contains 0. See crbug.com/618738.
   uint32_t unique_touch_event_id;
 
   // This field exists to allow BrowserPlugin to mark GestureScroll events as
@@ -99,7 +99,7 @@ class WebGestureEvent : public WebInputEvent {
       // target and instead just scroll the viewport.
       bool target_viewport;
       // The state of inertial phase scrolling. OSX has unique phases for normal
-      // and momentum scroll events. Should always be UnknownMomentumPhase for
+      // and momentum scroll events. Should always be kUnknownMomentumPhase for
       // touch based input as it generates GestureFlingStart instead.
       InertialPhaseState inertial_phase;
       // True if this event was synthesized in order to force a hit test;
@@ -129,11 +129,11 @@ class WebGestureEvent : public WebInputEvent {
     } scroll_update;
 
     struct {
-      // The original delta units the scrollBegin and scrollUpdates
+      // The original delta units the ScrollBegin and ScrollUpdates
       // were sent as.
       ScrollUnits delta_units;
       // The state of inertial phase scrolling. OSX has unique phases for normal
-      // and momentum scroll events. Should always be UnknownMomentumPhase for
+      // and momentum scroll events. Should always be kUnknownMomentumPhase for
       // touch based input as it generates GestureFlingStart instead.
       InertialPhaseState inertial_phase;
       // True if this event was synthesized in order to generate the proper
@@ -153,7 +153,7 @@ class WebGestureEvent : public WebInputEvent {
 
     struct {
       bool target_viewport;
-      // If set to true, don't treat flingCancel
+      // If set to true, don't treat fling_cancel
       // as a part of fling boost events sequence.
       bool prevent_boosting;
     } fling_cancel;
@@ -200,8 +200,8 @@ class WebGestureEvent : public WebInputEvent {
   BLINK_PLATFORM_EXPORT void ApplyTouchAdjustment(
       WebFloatPoint root_frame_coords);
 
-  // Sets any scaled values to be their computed values and sets |frameScale|
-  // back to 1 and |translateX|, |translateY| back to 0.
+  // Sets any scaled values to be their computed values and sets |frame_scale_|
+  // back to 1 and |frame_translate_| X and Y coordinates back to 0.
   BLINK_PLATFORM_EXPORT void FlattenTransform();
 
   bool PreventPropagation() const {

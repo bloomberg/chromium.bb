@@ -50,7 +50,7 @@ class WebPrerenderingSupport {
   virtual void Cancel(const WebPrerender&) = 0;
 
   // A prerender is abandoned when it's navigated away from or suspended in the
-  // page cache. This is a weaker signal than cancel(), since the launcher
+  // page cache. This is a weaker signal than Cancel(), since the launcher
   // hasn't indicated that the prerender isn't wanted, and we may end up using
   // it after, for instance, a short redirect chain.
   virtual void Abandon(const WebPrerender&) = 0;

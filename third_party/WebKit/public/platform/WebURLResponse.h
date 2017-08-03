@@ -298,15 +298,15 @@ class WebURLResponse {
 #if INSIDE_BLINK
  protected:
   // Permit subclasses to set arbitrary ResourceResponse pointer as
-  // |m_resourceResponse|. |m_ownedResourceResponse| is not set in this case.
+  // |resource_response_|. |owned_resource_response_| is not set in this case.
   BLINK_PLATFORM_EXPORT explicit WebURLResponse(ResourceResponse&);
 #endif
 
  private:
   struct ResourceResponseContainer;
 
-  // If this instance owns a ResourceResponse then |m_ownedResourceResponse|
-  // is non-null and |m_resourceResponse| points to the ResourceResponse
+  // If this instance owns a ResourceResponse then |owned_resource_response_|
+  // is non-null and |resource_response_| points to the ResourceResponse
   // instance it contains.
   std::unique_ptr<ResourceResponseContainer> owned_resource_response_;
 

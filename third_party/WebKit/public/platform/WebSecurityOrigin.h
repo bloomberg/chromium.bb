@@ -71,7 +71,7 @@ class WebSecurityOrigin {
   BLINK_PLATFORM_EXPORT WebString Host() const;
   BLINK_PLATFORM_EXPORT unsigned short Port() const;
 
-  // |port()| will return 0 if the port is the default for an origin. This
+  // |Port()| will return 0 if the port is the default for an origin. This
   // method instead returns the effective port, even if it is the default port
   // (e.g. "http" => 80).
   BLINK_PLATFORM_EXPORT unsigned short EffectivePort() const;

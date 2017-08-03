@@ -129,9 +129,9 @@ class WebMediaPlayer {
   virtual WebTimeRanges Seekable() const = 0;
 
   // Attempts to switch the audio output device.
-  // Implementations of setSinkId take ownership of the WebSetSinkCallbacks
+  // Implementations of SetSinkId take ownership of the WebSetSinkCallbacks
   // object.
-  // Note also that setSinkId implementations must make sure that all
+  // Note also that SetSinkId implementations must make sure that all
   // methods of the WebSetSinkCallbacks object, including constructors and
   // destructors, run in the same thread where the object is created
   // (i.e., the blink thread).
@@ -211,7 +211,7 @@ class WebMediaPlayer {
     return false;
   }
 
-  // Do tex(Sub)Image2D/3D for current frame. If it is not implemented for given
+  // Do Tex(Sub)Image2D/3D for current frame. If it is not implemented for given
   // parameters or fails, it returns false.
   // The method is wrapping calls to glTexImage2D, glTexSubImage2D,
   // glTexImage3D and glTexSubImage3D and parameters have the same name and
@@ -260,20 +260,20 @@ class WebMediaPlayer {
   // Inform WebMediaPlayer when the element starts/stops being the dominant
   // visible content. This will only be called after the monitoring of the
   // intersection with viewport is activated by calling
-  // WebMediaPlayerClient::activateViewportIntersectionMonitoring().
+  // WebMediaPlayerClient::ActivateViewportIntersectionMonitoring().
   virtual void BecameDominantVisibleContent(bool is_dominant) {}
 
   // Inform WebMediaPlayer when the element starts/stops being the effectively
   // fullscreen video, i.e. being the fullscreen element or child of the
   // fullscreen element, and being dominant in the viewport.
   //
-  // TODO(zqzhang): merge with becameDominantVisibleContent(). See
+  // TODO(zqzhang): merge with BecameDominantVisibleContent(). See
   // https://crbug.com/696211
   virtual void SetIsEffectivelyFullscreen(bool) {}
 
   virtual void EnabledAudioTracksChanged(
       const WebVector<TrackId>& enabled_track_ids) {}
-  // |selectedTrackId| is null if no track is selected.
+  // |selected_track_id| is null if no track is selected.
   virtual void SelectedVideoTrackChanged(TrackId* selected_track_id) {}
 
   // TODO(kainino): This is for a prototype implementation for getting the

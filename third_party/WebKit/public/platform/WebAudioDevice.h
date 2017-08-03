@@ -39,7 +39,7 @@ class WebAudioDevice {
  public:
   class BLINK_PLATFORM_EXPORT RenderCallback {
    public:
-    // Note: |delay| and |delayTimestamp| arguments are high-precision
+    // Note: |delay| and |delay_timestamp| arguments are high-precision
     // measurements of the state of the system in the recent past. To be clear,
     // |delay| does *not* represent the point-in-time at which the first
     // rendered sample will be played out.

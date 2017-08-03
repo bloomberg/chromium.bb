@@ -73,29 +73,29 @@ class WebFileSystemCallbacks {
   // return values.
   BLINK_PLATFORM_EXPORT void DidSucceed();
 
-  // Callback for WebFileSystem::readMetadata. Called with the file metadata
+  // Callback for WebFileSystem::ReadMetadata. Called with the file metadata
   // for the requested path.
   BLINK_PLATFORM_EXPORT void DidReadMetadata(const WebFileInfo&);
 
-  // Callback for WebFileSystem::createSnapshot. The metadata also includes the
+  // Callback for WebFileSystem::CreateSnapshot. The metadata also includes the
   // platform file path.
   BLINK_PLATFORM_EXPORT void DidCreateSnapshotFile(const WebFileInfo&);
 
-  // Callback for WebFileSystem::readDirectory. Called with a vector of
+  // Callback for WebFileSystem::ReadDirectory. Called with a vector of
   // file entries in the requested directory. This callback might be called
-  // multiple times if the directory has many entries. |hasMore| must be
+  // multiple times if the directory has many entries. |has_more| must be
   // true when there are more entries.
   BLINK_PLATFORM_EXPORT void DidReadDirectory(
       const WebVector<WebFileSystemEntry>&,
       bool has_more);
 
-  // Callback for WebFileSystem::openFileSystem. Called with a name and
+  // Callback for WebFileSystem::OpenFileSystem. Called with a name and
   // root URL for the FileSystem when the request is accepted.
   BLINK_PLATFORM_EXPORT void DidOpenFileSystem(const WebString& name,
                                                const WebURL& root_url);
 
-  // Callback for WebFileSystem::resolveURL. Called with a name, root URL and
-  // file path for the FileSystem when the request is accepted. |isDirectory|
+  // Callback for WebFileSystem::ResolveURL. Called with a name, root URL and
+  // file path for the FileSystem when the request is accepted. |is_directory|
   // must be true when an entry to be resolved is a directory.
   BLINK_PLATFORM_EXPORT void DidResolveURL(const WebString& name,
                                            const WebURL& root_url,
@@ -103,7 +103,7 @@ class WebFileSystemCallbacks {
                                            const WebString& file_path,
                                            bool is_directory);
 
-  // Callback for WebFileSystem::createFileWriter. Called with an instance
+  // Callback for WebFileSystem::CreateFileWriter. Called with an instance
   // of WebFileWriter and the target file length. The writer's ownership
   // is transferred to the callback.
   BLINK_PLATFORM_EXPORT void DidCreateFileWriter(WebFileWriter*,
