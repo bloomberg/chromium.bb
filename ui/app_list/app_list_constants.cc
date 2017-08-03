@@ -61,6 +61,7 @@ const float kFolderBubbleRadius = 23;
 const float kFolderBubbleOffsetY = 1;
 
 const SkColor kCardBackgroundColor = SK_ColorWHITE;
+const SkColor kCardBackgroundColorFullscreen = SkColorSetRGB(0xFA, 0xFA, 0xFC);
 
 // Duration in milliseconds for page transition.
 const int kPageTransitionDurationInMs = 180;
