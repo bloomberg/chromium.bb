@@ -15,7 +15,6 @@
 namespace base {
 
 class SequencedWorkerPool;
-class SequencedTaskRunner;
 
 }  // namespace base
 
@@ -25,10 +24,6 @@ class TodayMetricsLog;
 class TodayMetricsServiceClient;
 
 }  // namespace
-
-class ValueMapPrefStore;
-class PrefRegistrySimple;
-class PrefService;
 
 // Utility class to create metrics log that can be pushed to Chrome. The
 // extension creates and fills the logs with UserAction. The upload is done by
@@ -56,10 +51,6 @@ class TodayMetricsLogger : base::HistogramFlattener {
   bool CreateNewLog();
 
   base::MessageLoop message_loop_;
-  scoped_refptr<PrefRegistrySimple> pref_registry_;
-  std::unique_ptr<PrefService> pref_service_;
-  scoped_refptr<ValueMapPrefStore> value_map_prefs_;
-  scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
   std::unique_ptr<TodayMetricsLog> log_;
   scoped_refptr<base::SequencedWorkerPool> thread_pool_;
   std::unique_ptr<TodayMetricsServiceClient> metrics_service_client_;

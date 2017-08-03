@@ -35,7 +35,7 @@ class MetricsLogManagerTest : public testing::Test {
   MetricsLogStore* log_store() { return &log_store_; }
 
   MetricsLog* CreateLog(MetricsLog::LogType log_type) {
-    return new MetricsLog("id", 0, log_type, &client_, &pref_service_);
+    return new MetricsLog("id", 0, log_type, &client_);
   }
 
  private:
