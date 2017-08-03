@@ -2062,11 +2062,6 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
                                         parse_form_start_time);
   }
 
-  if (!queryable_forms.empty() && download_manager_) {
-    // Query the server if at least one of the forms was parsed.
-    download_manager_->StartQueryRequest(queryable_forms);
-  }
-
   if (!queryable_forms.empty() || !non_queryable_forms.empty()) {
     AutofillMetrics::LogUserHappinessMetric(AutofillMetrics::FORMS_LOADED);
 
@@ -2093,10 +2088,16 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   }
 #endif
 
-  // For the |non_queryable_forms|, we have all the field type info we're ever
-  // going to get about them.  For the other forms, we'll wait until we get a
-  // response from the server.
+  // Send the current type predictions to the renderer. For non-queryable forms
+  // this is all the information about them that will ever be available. The
+  // queryable forms will be updated once the field type query is complete.
   driver()->SendAutofillTypePredictionsToRenderer(non_queryable_forms);
+  driver()->SendAutofillTypePredictionsToRenderer(queryable_forms);
+
+  if (!queryable_forms.empty() && download_manager_) {
+    // Query the server if at least one of the forms was parsed.
+    download_manager_->StartQueryRequest(queryable_forms);
+  }
 }
 
 bool AutofillManager::ParseForm(const FormData& form,
