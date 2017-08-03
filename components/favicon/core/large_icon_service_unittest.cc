@@ -11,11 +11,10 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/favicon/core/favicon_client.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
@@ -126,14 +125,12 @@ class LargeIconServiceTest : public testing::Test {
   LargeIconServiceTest()
       : mock_image_fetcher_(new NiceMock<MockImageFetcher>()),
         large_icon_service_(&mock_favicon_service_,
-                            base::ThreadTaskRunnerHandle::Get(),
                             base::WrapUnique(mock_image_fetcher_)) {}
 
   ~LargeIconServiceTest() override {}
 
  protected:
-  base::MessageLoopForIO loop_;
-
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   NiceMock<MockImageFetcher>* mock_image_fetcher_;
   testing::NiceMock<MockFaviconService> mock_favicon_service_;
   LargeIconService large_icon_service_;
@@ -169,7 +166,7 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServer) {
 
   EXPECT_CALL(callback,
               Run(favicon_base::GoogleFaviconServerRequestStatus::SUCCESS));
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   histogram_tester_.ExpectUniqueSample(
       "Favicons.LargeIconService.DownloadedSize", 64, /*expected_count=*/1);
 }
@@ -207,7 +204,7 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerWithCustomUrl) {
 
   EXPECT_CALL(callback,
               Run(favicon_base::GoogleFaviconServerRequestStatus::SUCCESS));
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 }
 
 TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerWithOriginalUrl) {
@@ -239,7 +236,7 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerWithOriginalUrl) {
 
   EXPECT_CALL(callback,
               Run(favicon_base::GoogleFaviconServerRequestStatus::SUCCESS));
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 }
 
 TEST_F(LargeIconServiceTest, ShouldTrimQueryParametersForGoogleServer) {
@@ -264,7 +261,7 @@ TEST_F(LargeIconServiceTest, ShouldTrimQueryParametersForGoogleServer) {
           TRAFFIC_ANNOTATION_FOR_TESTS,
           favicon_base::GoogleFaviconServerCallback());
 
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 }
 
 TEST_F(LargeIconServiceTest, ShouldNotCheckOnPublicUrls) {
@@ -285,7 +282,7 @@ TEST_F(LargeIconServiceTest, ShouldNotCheckOnPublicUrls) {
 
   EXPECT_CALL(callback, Run(favicon_base::GoogleFaviconServerRequestStatus::
                                 FAILURE_CONNECTION_ERROR));
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 }
 
 TEST_F(LargeIconServiceTest, ShouldNotQueryGoogleServerIfInvalidScheme) {
@@ -305,7 +302,7 @@ TEST_F(LargeIconServiceTest, ShouldNotQueryGoogleServerIfInvalidScheme) {
   EXPECT_CALL(
       callback,
       Run(favicon_base::GoogleFaviconServerRequestStatus::FAILURE_INVALID));
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_THAT(histogram_tester_.GetAllSamples(
                   "Favicons.LargeIconService.DownloadedSize"),
               IsEmpty());
@@ -336,7 +333,7 @@ TEST_F(LargeIconServiceTest, ShouldReportUnavailableIfFetchFromServerFails) {
 
   EXPECT_CALL(callback, Run(favicon_base::GoogleFaviconServerRequestStatus::
                                 FAILURE_CONNECTION_ERROR));
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   // Verify that download failure gets recorded.
   histogram_tester_.ExpectUniqueSample(
       "Favicons.LargeIconService.DownloadedSize", 0, /*expected_count=*/1);
@@ -366,7 +363,7 @@ TEST_F(LargeIconServiceTest, ShouldNotGetFromGoogleServerIfUnavailable) {
 
   EXPECT_CALL(callback, Run(favicon_base::GoogleFaviconServerRequestStatus::
                                 FAILURE_HTTP_ERROR_CACHED));
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_THAT(histogram_tester_.GetAllSamples(
                   "Favicons.LargeIconService.DownloadedSize"),
               IsEmpty());
@@ -396,7 +393,7 @@ class LargeIconServiceGetterTest : public LargeIconServiceTest,
                      base::Unretained(this)),
           &cancelable_task_tracker_);
     }
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
   }
 
   void RawBitmapResultCallback(const favicon_base::LargeIconResult& result) {

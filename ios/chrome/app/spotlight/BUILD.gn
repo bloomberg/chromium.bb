@@ -58,6 +58,7 @@ source_set("unit_tests") {
   deps = [
     ":spotlight",
     "//base",
+    "//base/test:test_support",
     "//components/bookmarks/browser",
     "//components/bookmarks/test",
     "//components/favicon/core",

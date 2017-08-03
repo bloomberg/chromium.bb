@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
@@ -134,8 +133,7 @@ class ReadingListCoordinatorTest : public web::WebTestWithWebState {
     reading_list_model_.reset(new ReadingListModelImpl(
         nullptr, nullptr, base::MakeUnique<base::DefaultClock>()));
     large_icon_service_.reset(new favicon::LargeIconService(
-        &mock_favicon_service_, base::ThreadTaskRunnerHandle::Get(),
-        /*image_fetcher=*/nullptr));
+        &mock_favicon_service_, /*image_fetcher=*/nullptr));
     mediator_ =
         [[ReadingListMediator alloc] initWithModel:reading_list_model_.get()
                                   largeIconService:large_icon_service_.get()];

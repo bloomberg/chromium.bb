@@ -17,6 +17,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -182,7 +183,6 @@ class LargeIconWorker : public base::RefCountedThreadSafe<LargeIconWorker> {
                   int desired_size_in_pixel,
                   favicon_base::LargeIconCallback raw_bitmap_callback,
                   favicon_base::LargeIconImageCallback image_callback,
-                  scoped_refptr<base::TaskRunner> background_task_runner,
                   base::CancelableTaskTracker* tracker);
 
   // Must run on the owner (UI) thread in production.
@@ -221,13 +221,14 @@ LargeIconWorker::LargeIconWorker(
     int desired_size_in_pixel,
     favicon_base::LargeIconCallback raw_bitmap_callback,
     favicon_base::LargeIconImageCallback image_callback,
-    scoped_refptr<base::TaskRunner> background_task_runner,
     base::CancelableTaskTracker* tracker)
     : min_source_size_in_pixel_(min_source_size_in_pixel),
       desired_size_in_pixel_(desired_size_in_pixel),
       raw_bitmap_callback_(raw_bitmap_callback),
       image_callback_(image_callback),
-      background_task_runner_(background_task_runner),
+      background_task_runner_(base::CreateTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       tracker_(tracker),
       fallback_icon_style_(
           base::MakeUnique<favicon_base::FallbackIconStyle>()) {}
@@ -326,10 +327,8 @@ void OnFetchIconFromGoogleServerComplete(
 
 LargeIconService::LargeIconService(
     FaviconService* favicon_service,
-    const scoped_refptr<base::TaskRunner>& background_task_runner,
     std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher)
     : favicon_service_(favicon_service),
-      background_task_runner_(background_task_runner),
       image_fetcher_(std::move(image_fetcher)) {
   large_icon_types_.push_back(favicon_base::IconType::WEB_MANIFEST_ICON);
   large_icon_types_.push_back(favicon_base::IconType::FAVICON);
@@ -433,9 +432,9 @@ LargeIconService::GetLargeIconOrFallbackStyleImpl(
   DCHECK_LE(1, min_source_size_in_pixel);
   DCHECK_LE(0, desired_size_in_pixel);
 
-  scoped_refptr<LargeIconWorker> worker = new LargeIconWorker(
-      min_source_size_in_pixel, desired_size_in_pixel, raw_bitmap_callback,
-      image_callback, background_task_runner_, tracker);
+  scoped_refptr<LargeIconWorker> worker =
+      new LargeIconWorker(min_source_size_in_pixel, desired_size_in_pixel,
+                          raw_bitmap_callback, image_callback, tracker);
 
   int max_size_in_pixel =
       std::max(desired_size_in_pixel, min_source_size_in_pixel);
