@@ -171,6 +171,40 @@ class BASE_EXPORT Value {
   // This overload is necessary to avoid ambiguity for const char* arguments.
   dict_iterator SetKey(const char* key, Value value);
 
+  // Searches a hierarchy of dictionary values for a given value. If a path
+  // of dictionaries exist, returns the item at that path. If any of the path
+  // components do not exist or if any but the last path components are not
+  // dictionaries, returns nullptr.
+  //
+  // The type of the leaf Value is not checked.
+  //
+  // Implementation note: This can't return an iterator because the iterator
+  // will actually be into another Value, so it can't be compared to iterators
+  // from thise one (in particular, the DictEnd() iterator).
+  //
+  // Example:
+  //   auto found = FindPath({"foo", "bar"});
+  Value* FindPath(std::initializer_list<const char*> path);
+  const Value* FindPath(std::initializer_list<const char*> path) const;
+
+  // Like FindPath but will only return the value if the leaf Value type
+  // matches the given type. Will return nullptr otherwise.
+  Value* FindPathOfType(std::initializer_list<const char*> path, Type type);
+  const Value* FindPathOfType(std::initializer_list<const char*> path,
+                              Type type) const;
+
+  // Sets the given path, expanding and creating dictionary keys as necessary.
+  //
+  // The current value must be a dictionary. If path components do not exist,
+  // they will be created. If any but the last components matches a value that
+  // is not a dictionary, the function will fail (it will not overwrite the
+  // value) and return nullptr. The last path component will be unconditionally
+  // overwritten if it exists, and created if it doesn't.
+  //
+  // Example:
+  //   value.SetPath({"foo", "bar"}, std::move(myvalue));
+  Value* SetPath(std::initializer_list<const char*> path, Value value);
+
   // |DictEnd| returns the end iterator of the underlying dictionary. It is
   // intended to be used with |FindKey| in order to determine whether a given
   // key is present in the dictionary.
