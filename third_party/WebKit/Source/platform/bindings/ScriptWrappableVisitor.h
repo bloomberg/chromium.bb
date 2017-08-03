@@ -117,6 +117,13 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer,
     if (!src_object || !dst_object) {
       return;
     }
+
+    const ThreadState* thread_state = ThreadState::Current();
+    DCHECK(thread_state);
+    // Bail out if tracing is not in progress.
+    if (!thread_state->WrapperTracingInProgress())
+      return;
+
     // We only require a write barrier if |srcObject|  is already marked. Note
     // that this implicitly disables the write barrier when the GC is not
     // active as object will not be marked in this case.
@@ -124,8 +131,6 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer,
       return;
     }
 
-    const ThreadState* thread_state = ThreadState::Current();
-    DCHECK(thread_state);
     // If the wrapper is already marked we can bail out here.
     if (TraceTrait<T>::GetHeapObjectHeader(dst_object)->IsWrapperHeaderMarked())
       return;

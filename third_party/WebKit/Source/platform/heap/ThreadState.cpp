@@ -123,6 +123,8 @@ ThreadState::ThreadState()
       isolate_(nullptr),
       trace_dom_wrappers_(nullptr),
       invalidate_dead_objects_in_wrappers_marking_deque_(nullptr),
+      perform_cleanup_(nullptr),
+      wrapper_tracing_in_progress_(false),
 #if defined(ADDRESS_SANITIZER)
       asan_fake_stack_(__asan_get_current_fake_stack()),
 #endif
