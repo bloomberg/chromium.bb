@@ -117,6 +117,8 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, WindowOpen) {
   EXPECT_EQ(expected_bounds.size(),
             child->web_contents()->GetContainerBounds().size());
 #endif  // !defined(OS_MACOSX)
+
+  browser_context->RemoveObserver(&observer);
 }
 
 class HeadlessWindowOpenTabSocketTest : public HeadlessBrowserTest,
@@ -239,6 +241,8 @@ IN_PROC_BROWSER_TEST_F(HeadlessWindowOpenTabSocketTest,
 
   RunAsynchronousTest();
   EXPECT_EQ("Embedder sent us: One", message_);
+
+  browser_context->RemoveObserver(this);
 }
 
 class HeadlessNoDevToolsTabSocketTest : public HeadlessBrowserTest,

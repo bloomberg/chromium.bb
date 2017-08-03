@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "content/public/browser/browser_thread.h"
+#include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_context_options.h"
 #include "headless/lib/browser/headless_network_delegate.h"
 #include "net/dns/mapped_host_resolver.h"
@@ -56,9 +57,15 @@ HeadlessURLRequestContextGetter::HeadlessURLRequestContextGetter(
     proxy_config_service_ =
         net::ProxyService::CreateSystemProxyConfigService(io_task_runner_);
   }
+  base::AutoLock lock(lock_);
+  headless_browser_context_->AddObserver(this);
 }
 
-HeadlessURLRequestContextGetter::~HeadlessURLRequestContextGetter() {}
+HeadlessURLRequestContextGetter::~HeadlessURLRequestContextGetter() {
+  base::AutoLock lock(lock_);
+  if (headless_browser_context_)
+    headless_browser_context_->RemoveObserver(this);
+}
 
 net::URLRequestContext*
 HeadlessURLRequestContextGetter::GetURLRequestContext() {
@@ -76,8 +83,12 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
     } else {
       builder.set_proxy_config_service(std::move(proxy_config_service_));
     }
-    builder.set_network_delegate(
-        base::MakeUnique<HeadlessNetworkDelegate>(headless_browser_context_));
+
+    {
+      base::AutoLock lock(lock_);
+      builder.set_network_delegate(
+          base::MakeUnique<HeadlessNetworkDelegate>(headless_browser_context_));
+    }
 
     if (!host_resolver_rules_.empty()) {
       std::unique_ptr<net::HostResolver> host_resolver(
@@ -109,6 +120,11 @@ HeadlessURLRequestContextGetter::GetNetworkTaskRunner() const {
 
 net::HostResolver* HeadlessURLRequestContextGetter::host_resolver() const {
   return url_request_context_->host_resolver();
+}
+
+void HeadlessURLRequestContextGetter::OnHeadlessBrowserContextDestruct() {
+  base::AutoLock lock(lock_);
+  headless_browser_context_ = nullptr;
 }
 
 }  // namespace headless

@@ -21,9 +21,17 @@ const char kDevToolsEmulateNetworkConditionsClientId[] =
 
 HeadlessNetworkDelegate::HeadlessNetworkDelegate(
     HeadlessBrowserContextImpl* headless_browser_context)
-    : headless_browser_context_(headless_browser_context) {}
+    : headless_browser_context_(headless_browser_context) {
+  base::AutoLock lock(lock_);
+  if (headless_browser_context_)
+    headless_browser_context_->AddObserver(this);
+}
 
-HeadlessNetworkDelegate::~HeadlessNetworkDelegate() {}
+HeadlessNetworkDelegate::~HeadlessNetworkDelegate() {
+  base::AutoLock lock(lock_);
+  if (headless_browser_context_)
+    headless_browser_context_->RemoveObserver(this);
+}
 
 int HeadlessNetworkDelegate::OnBeforeURLRequest(
     net::URLRequest* request,
@@ -62,7 +70,8 @@ void HeadlessNetworkDelegate::OnResponseStarted(net::URLRequest* request,
 void HeadlessNetworkDelegate::OnCompleted(net::URLRequest* request,
                                           bool started,
                                           int net_error) {
-  if (net_error != net::OK)
+  base::AutoLock lock(lock_);
+  if (headless_browser_context_ && net_error != net::OK)
     headless_browser_context_->NotifyUrlRequestFailed(request, net_error);
 }
 
@@ -96,6 +105,11 @@ bool HeadlessNetworkDelegate::OnCanAccessFile(
     const base::FilePath& original_path,
     const base::FilePath& absolute_path) const {
   return true;
+}
+
+void HeadlessNetworkDelegate::OnHeadlessBrowserContextDestruct() {
+  base::AutoLock lock(lock_);
+  headless_browser_context_ = nullptr;
 }
 
 }  // namespace headless

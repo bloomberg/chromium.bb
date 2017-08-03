@@ -7,6 +7,8 @@
 
 #include "base/macros.h"
 
+#include "base/synchronization/lock.h"
+#include "headless/public/headless_browser_context.h"
 #include "net/base/network_delegate_impl.h"
 
 namespace headless {
@@ -14,13 +16,15 @@ class HeadlessBrowserContextImpl;
 
 // We use the HeadlessNetworkDelegate to remove DevTools request headers before
 // requests are actually fetched and for reporting failed network requests.
-class HeadlessNetworkDelegate : public net::NetworkDelegateImpl {
+class HeadlessNetworkDelegate : public net::NetworkDelegateImpl,
+                                public HeadlessBrowserContext::Observer {
  public:
   explicit HeadlessNetworkDelegate(
       HeadlessBrowserContextImpl* headless_browser_context);
   ~HeadlessNetworkDelegate() override;
 
  private:
+  // net::NetworkDelegateImpl implementation:
   int OnBeforeURLRequest(net::URLRequest* request,
                          const net::CompletionCallback& callback,
                          GURL* new_url) override;
@@ -69,6 +73,10 @@ class HeadlessNetworkDelegate : public net::NetworkDelegateImpl {
                        const base::FilePath& original_path,
                        const base::FilePath& absolute_path) const override;
 
+  // HeadlessBrowserContext::Observer implementation:
+  void OnHeadlessBrowserContextDestruct() override;
+
+  base::Lock lock_;  // Protects |headless_browser_context_|.
   HeadlessBrowserContextImpl* headless_browser_context_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessNetworkDelegate);
