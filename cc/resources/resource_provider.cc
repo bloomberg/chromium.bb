@@ -191,9 +191,6 @@ ResourceProvider::Resource::Resource(GLuint texture_id,
                                      viz::ResourceFormat format)
     : child_id(0),
       gl_id(texture_id),
-      gl_pixel_buffer_id(0),
-      gl_upload_query_id(0),
-      gl_read_lock_query_id(0),
       pixels(nullptr),
       lock_for_read_count(0),
       imported_count(0),
@@ -233,9 +230,6 @@ ResourceProvider::Resource::Resource(uint8_t* pixels,
                                      GLenum filter)
     : child_id(0),
       gl_id(0),
-      gl_pixel_buffer_id(0),
-      gl_upload_query_id(0),
-      gl_read_lock_query_id(0),
       pixels(pixels),
       lock_for_read_count(0),
       imported_count(0),
@@ -276,9 +270,6 @@ ResourceProvider::Resource::Resource(const viz::SharedBitmapId& bitmap_id,
                                      GLenum filter)
     : child_id(0),
       gl_id(0),
-      gl_pixel_buffer_id(0),
-      gl_upload_query_id(0),
-      gl_read_lock_query_id(0),
       pixels(nullptr),
       lock_for_read_count(0),
       imported_count(0),
@@ -774,24 +765,7 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
     DCHECK(gl);
     gl->DestroyImageCHROMIUM(resource->image_id);
   }
-  if (resource->gl_upload_query_id) {
-    DCHECK(resource->origin == Resource::INTERNAL);
-    GLES2Interface* gl = ContextGL();
-    DCHECK(gl);
-    gl->DeleteQueriesEXT(1, &resource->gl_upload_query_id);
-  }
-  if (resource->gl_read_lock_query_id) {
-    DCHECK(resource->origin == Resource::INTERNAL);
-    GLES2Interface* gl = ContextGL();
-    DCHECK(gl);
-    gl->DeleteQueriesEXT(1, &resource->gl_read_lock_query_id);
-  }
-  if (resource->gl_pixel_buffer_id) {
-    DCHECK(resource->origin == Resource::INTERNAL);
-    GLES2Interface* gl = ContextGL();
-    DCHECK(gl);
-    gl->DeleteBuffers(1, &resource->gl_pixel_buffer_id);
-  }
+
   if (resource->origin == Resource::EXTERNAL) {
     DCHECK(resource->mailbox().IsValid());
     gpu::SyncToken sync_token = resource->mailbox().sync_token();
@@ -817,6 +791,7 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
     resource->release_callback_impl.Run(sync_token, lost_resource,
                                         blocking_main_thread_task_runner_);
   }
+
   if (resource->gl_id) {
     GLES2Interface* gl = ContextGL();
     DCHECK(gl);
