@@ -49,6 +49,19 @@ button {
   font-size: x-large;
   font-weight: bold;
 }
+#rebaseline {
+  box-sizing: border-box;
+  position: fixed;
+  width: 96vw;
+  height: 96vh;
+  top: 2vh;
+  left: 2vw;
+  border: 5px solid black;
+  background-color: white;
+  padding: 16px;
+  box-shadow: 0 0 20px;
+  overflow: auto;
+}
 .fix-width {
   display: inline-block;
   width: 7em;
@@ -249,8 +262,24 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
       <option value="expectation">TestExpectations</option>
     </select>
 </div>
+
+<div id="rebaseline_panel" style="margin-top:8px">
+  <span class="fix-width">Select tests to rebaseline</span>
+  <button onclick="javascript:RebaselineTool.showRebaselineCheckboxes()">Select</button>
+  <button onclick="javascript:RebaselineTool.clearRebaselineCheckboxes()">Clear</button>
+  <button onclick="javascript:RebaselineTool.doneRebaselineSelection()">Done</button>
+</div>
 <hr>
 <div id="report" style="margin-top:8px">
+</div>
+
+<div id="rebaseline" class="hidden">
+  <button style="position:fixed;right:30px;" onclick="javascript:GUI.toggleVisibility('rebaseline')">Close</button>
+  <div style="text-align:center">
+    Script below has been copied to clipboard.
+    Paste to terminal to rebaseline the selected tests.
+  </div>
+  <pre id="rebaseline_script"></pre>
 </div>
 
 <template id="genericResult">
@@ -382,7 +411,9 @@ let Report = {
 
   printPlainTest: (test, path, traversal) => {
     let pathParser = new PathParser(path);
-    let html = "" + pathParser.dir + "/"
+    let html = ""
+      + "<input type='checkbox' class='rebaseline-checkbox' style='display:none'>"
+      + pathParser.dir + "/"
       + "<a target='test' tabindex='-1' href='" + pathParser.testHref + "'>"
       + pathParser.file + "</a>";
     html = "<div class='expect' tabindex='0' data-id='"+ test.expectId +"'><div class='details'></div>" + html + "</div>";
@@ -428,12 +459,24 @@ let Report = {
     }
     let html = "";
     html += bug;
-    html += " " + pathParser.dir + "/"
+    html += " "
+      + "<input type='checkbox' class='rebaseline-checkbox' style='display:none'>"
+      + pathParser.dir + "/"
       + "<a target='test' tabindex='-1' href='" + pathParser.testHref + "'>"
       + pathParser.file + "</a>";
     html += " [ " + status + " ]";
     html = "<div class='expect' tabindex='0' data-id='"+ test.expectId +"'><div class='details'></div>" + html + "</div>";
     traversal.html.push(html);
+  },
+
+  getTestById: function(testId) {
+    let test;
+    (new Traversal(fullResults.tests)).traverse(function(thisTest) {
+      if (thisTest.expectId == testId)
+        test = thisTest;
+        return false;
+    });
+    return test;
   },
 
   // Returns links to test results [ {text:, link:}, ... ]
@@ -910,12 +953,7 @@ let GUI = {
       return;
     details.classList.add("open");
     let testId = parseInt(expectation.getAttribute("data-id"));
-    let test;
-    (new Traversal(fullResults.tests)).traverse(function(thisTest) {
-      if (thisTest.expectId == testId)
-        test = thisTest;
-        return false;
-    });
+    let test = Report.getTestById(testId);
     if (!test)
       console.error("could not find test by id");
     let results = Report.getResultsDiv(test);
@@ -943,6 +981,95 @@ let GUI = {
       return;
     expectation.querySelector(".details").classList.remove("open");
     expectation.nextSibling.remove();
+  }
+}
+
+let RebaselineTool = {
+  getCheckboxes: function() {
+    return document.querySelectorAll(".rebaseline-checkbox");
+  },
+
+  selectAll: function() {
+    let scriptPre = document.getElementById('rebaseline_script');
+    getSelection().selectAllChildren(scriptPre);
+    document.execCommand('copy');
+  },
+
+  showRebaselineCheckboxes: function() {
+    RebaselineTool.getCheckboxes().forEach(checkbox => {
+      checkbox.style.display = "";
+    });
+  },
+
+  clearRebaselineCheckboxes: function() {
+    RebaselineTool.getCheckboxes().forEach(checkbox => {
+      checkbox.checked = false;
+    });
+  },
+
+  hideRebaselineCheckboxes: function() {
+    RebaselineTool.getCheckboxes().forEach(checkbox => {
+      checkbox.style.display = "none";
+    });
+  },
+
+  getRebaselineList: function() {
+    let rebaselinedTests = [];
+    RebaselineTool.getCheckboxes().forEach(checkbox => {
+      if (!checkbox.checked)
+        return;
+      let testId = parseInt(checkbox.parentElement.getAttribute("data-id"));
+      let test = Report.getTestById(testId);
+      if (!test) {
+        console.error("could not find test by id");
+        return;
+      }
+      for (let link of Report.getResultLinks(test)) {
+        if (!link.link || link.text.indexOf("actual") == -1)
+          continue;
+        rebaselinedTests.push(link.link);
+      }
+    });
+    return rebaselinedTests;
+  },
+
+  resetDir: function(lines, dir) {
+    let depth = dir ? dir.split('/').length : 0;
+    if (depth > 0)
+      lines.push(`cd ${'..' + '/..'.repeat(depth - 1)}`);
+  },
+
+  ensureDir: function(lines, dir) {
+    lines.push(`mkdir -p ${dir}`);
+    lines.push(`cd ${dir}`);
+  },
+
+  generateRebaselineScript: function(list) {
+    let lines = [];
+    let dir = '';
+    list.forEach(file => {
+      let parser = new PathParser(file.startsWith('/') ? file : '/' + file);
+      if (parser.dir !== dir) {
+        RebaselineTool.resetDir(lines, dir);
+        RebaselineTool.ensureDir(lines, parser.dir);
+        dir = parser.dir;
+      }
+      let anchor = document.createElement('a');
+      anchor.href = file;
+      lines.push(`wget ${anchor.href}`);
+      lines.push(`mv ${parser.file} ${parser.file.replace('-actual.', '-expected.')}`);
+    });
+    RebaselineTool.resetDir(lines, dir);
+    return lines.join(';\n') + '\n\n';
+  },
+
+  doneRebaselineSelection: function() {
+    RebaselineTool.hideRebaselineCheckboxes();
+    document.getElementById('rebaseline_script').innerHTML =
+        RebaselineTool.generateRebaselineScript(
+            RebaselineTool.getRebaselineList());
+    GUI.toggleVisibility('rebaseline');
+    RebaselineTool.selectAll();
   }
 }
 
