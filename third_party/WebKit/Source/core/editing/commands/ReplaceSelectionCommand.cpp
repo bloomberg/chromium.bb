@@ -1759,20 +1759,18 @@ void ReplaceSelectionCommand::CompleteHTMLReplacement(
   end_of_inserted_range_ = end;
 
   if (select_replacement_) {
-    SetEndingSelection(
-        SelectionInDOMTree::Builder()
-            .SetBaseAndExtentDeprecated(start, end)
-            .SetIsDirectional(EndingVisibleSelection().IsDirectional())
-            .Build());
+    SetEndingSelection(SelectionInDOMTree::Builder()
+                           .SetBaseAndExtentDeprecated(start, end)
+                           .SetIsDirectional(EndingSelection().IsDirectional())
+                           .Build());
     return;
   }
 
   if (end.IsNotNull()) {
-    SetEndingSelection(
-        SelectionInDOMTree::Builder()
-            .Collapse(end)
-            .SetIsDirectional(EndingVisibleSelection().IsDirectional())
-            .Build());
+    SetEndingSelection(SelectionInDOMTree::Builder()
+                           .Collapse(end)
+                           .SetIsDirectional(EndingSelection().IsDirectional())
+                           .Build());
     return;
   }
   SetEndingSelection(SelectionInDOMTree());

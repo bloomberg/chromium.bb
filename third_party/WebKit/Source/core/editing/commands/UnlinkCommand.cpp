@@ -35,9 +35,9 @@ UnlinkCommand::UnlinkCommand(Document& document)
 void UnlinkCommand::DoApply(EditingState* editing_state) {
   // FIXME: If a caret is inside a link, we should remove it, but currently we
   // don't.
-  if (!EndingVisibleSelection().IsValidFor(GetDocument()))
+  if (!EndingSelection().IsValidFor(GetDocument()))
     return;
-  if (!EndingVisibleSelection().IsRange())
+  if (!EndingSelection().IsRange())
     return;
 
   RemoveStyledElement(HTMLAnchorElement::Create(GetDocument()), editing_state);

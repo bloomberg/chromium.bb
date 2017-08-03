@@ -152,6 +152,8 @@ blink_core_sources("editing") {
     "commands/ReplaceNodeWithSpanCommand.h",
     "commands/ReplaceSelectionCommand.cpp",
     "commands/ReplaceSelectionCommand.h",
+    "commands/SelectionForUndoStep.cpp",
+    "commands/SelectionForUndoStep.h",
     "commands/SetCharacterDataCommand.cpp",
     "commands/SetCharacterDataCommand.h",
     "commands/SetNodeAttributeCommand.cpp",
