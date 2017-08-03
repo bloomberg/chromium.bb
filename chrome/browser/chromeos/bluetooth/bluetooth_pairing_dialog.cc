@@ -30,9 +30,9 @@ namespace chromeos {
 
 namespace {
 
-// Default width/height ratio of screen size.
-const int kDefaultWidth = 480;
-const int kDefaultHeight = 280;
+// The width needs to match the width specified in cr_dialog.html :host.
+const int kDefaultWidth = 512;
+const int kDefaultHeight = 400;
 
 }  // namespace
 
@@ -51,8 +51,7 @@ BluetoothPairingDialog::BluetoothPairingDialog(
   device_data_.SetBoolean("connected", connected);
 }
 
-BluetoothPairingDialog::~BluetoothPairingDialog() {
-}
+BluetoothPairingDialog::~BluetoothPairingDialog() {}
 
 void BluetoothPairingDialog::ShowInContainer(int container_id) {
   // Dialog must be in a modal window container.
@@ -103,8 +102,7 @@ GURL BluetoothPairingDialog::GetDialogContentURL() const {
 }
 
 void BluetoothPairingDialog::GetWebUIMessageHandlers(
-    std::vector<WebUIMessageHandler*>* handlers) const {
-}
+    std::vector<WebUIMessageHandler*>* handlers) const {}
 
 void BluetoothPairingDialog::GetDialogSize(gfx::Size* size) const {
   size->SetSize(kDefaultWidth, kDefaultHeight);

@@ -4,59 +4,55 @@
 
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_ui.h"
 
-#include "base/memory/ptr_util.h"
-#include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/options/chromeos/bluetooth_options_handler.h"
-#include "chrome/browser/ui/webui/options/chromeos/core_chromeos_options_handler.h"
+#include "chrome/browser/ui/webui/chromeos/bluetooth_dialog_localized_strings_provider.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 
-using content::WebContents;
-using content::WebUIMessageHandler;
-
 namespace chromeos {
+
+namespace {
+
+void AddBluetoothStrings(content::WebUIDataSource* html_source) {
+  struct {
+    const char* name;
+    int id;
+  } localized_strings[] = {
+      {"ok", IDS_OK},
+      {"bluetoothPairDevicePageTitle",
+       IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE_TITLE},
+      {"cancel", IDS_CANCEL},
+      {"close", IDS_CLOSE},
+  };
+  for (const auto& entry : localized_strings)
+    html_source->AddLocalizedString(entry.name, entry.id);
+  chromeos::bluetooth_dialog::AddLocalizedStrings(html_source);
+}
+
+}  // namespace
 
 BluetoothPairingUI::BluetoothPairingUI(content::WebUI* web_ui)
     : WebDialogUI(web_ui) {
-  base::DictionaryValue localized_strings;
-
-  auto core_handler = base::MakeUnique<options::CoreChromeOSOptionsHandler>();
-  core_handler_ = core_handler.get();
-  web_ui->AddMessageHandler(std::move(core_handler));
-  core_handler_->set_handlers_host(this);
-  core_handler_->GetLocalizedValues(&localized_strings);
-
-  auto bluetooth_handler = base::MakeUnique<options::BluetoothOptionsHandler>();
-  bluetooth_handler_ = bluetooth_handler.get();
-  web_ui->AddMessageHandler(std::move(bluetooth_handler));
-  bluetooth_handler_->GetLocalizedValues(&localized_strings);
-
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIBluetoothPairingHost);
-  source->AddLocalizedStrings(localized_strings);
+
+  AddBluetoothStrings(source);
   source->SetJsonPath("strings.js");
   source->SetDefaultResource(IDR_BLUETOOTH_PAIR_DEVICE_HTML);
   source->DisableContentSecurityPolicy();
 
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, source);
+  source->AddResourcePath("bluetooth_dialog_host.html",
+                          IDR_BLUETOOTH_DIALOG_HOST_HTML);
+  source->AddResourcePath("bluetooth_dialog_host.js",
+                          IDR_BLUETOOTH_DIALOG_HOST_JS);
+
+  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }
 
-BluetoothPairingUI::~BluetoothPairingUI() {
-  // Uninitialize all registered handlers. The base class owns them and it will
-  // eventually delete them.
-  core_handler_->Uninitialize();
-  bluetooth_handler_->Uninitialize();
-}
-
-void BluetoothPairingUI::InitializeHandlers() {
-  core_handler_->InitializeHandler();
-  bluetooth_handler_->InitializeHandler();
-  core_handler_->InitializePage();
-  bluetooth_handler_->InitializePage();
-}
+BluetoothPairingUI::~BluetoothPairingUI() {}
 
 }  // namespace chromeos
