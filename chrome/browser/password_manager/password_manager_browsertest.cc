@@ -1500,6 +1500,10 @@ IN_PROC_BROWSER_TEST_F(
   redirect_observer.SetPathToWaitFor("/password/redirect.html");
   redirect_observer.Wait();
 
+  WaitForPasswordStore();
+  BubbleObserver prompt_observer(WebContents());
+  EXPECT_TRUE(prompt_observer.IsShowingSavePrompt());
+
   // Normally the redirect happens to done.html. Here an attack is simulated
   // that hijacks the redirect to a attacker controlled page.
   GURL http_url(
@@ -1513,6 +1517,8 @@ IN_PROC_BROWSER_TEST_F(
   attacker_observer.SetPathToWaitFor("/password/simple_password.html");
   attacker_observer.Wait();
 
+  EXPECT_TRUE(prompt_observer.IsShowingSavePrompt());
+
   std::string fill_and_submit_attacker_form =
       "document.getElementById('username_field').value = 'attacker_username';"
       "document.getElementById('password_field').value = 'attacker_password';"
@@ -1524,8 +1530,6 @@ IN_PROC_BROWSER_TEST_F(
   done_observer.SetPathToWaitFor("/password/done.html");
   done_observer.Wait();
 
-  WaitForPasswordStore();
-  BubbleObserver prompt_observer(WebContents());
   EXPECT_TRUE(prompt_observer.IsShowingSavePrompt());
   prompt_observer.AcceptSavePrompt();
 
