@@ -5,28 +5,16 @@
   var InterceptionHelper = await testRunner.loadScript('../resources/interception-test.js');
   var helper = new InterceptionHelper(testRunner, session);
 
-  var numRequests = 0;
-  var maybeDisableRequestInterception = function(event) {
-    numRequests++;
-    // To make this test non-flaky wait until the first three requests have
-    // been made before disabling.  We can't wait for all for because the
-    // scripts are blocking.
-    if (numRequests === 3)
-      helper.disableRequestInterception(event);
-  };
-
   var requestInterceptedDict = {
-      'resource-iframe.html': event => helper.allowRequest(event),
-      'i-dont-exist.css': maybeDisableRequestInterception,
-      'script.js': maybeDisableRequestInterception,
-      'script2.js': maybeDisableRequestInterception,
-      'post-echo.pl': maybeDisableRequestInterception,
+      'disable-iframe.html': event => helper.allowRequest(event),
+      'i-dont-exist.css': event => helper.disableRequestInterception(event),
+      'post-echo.pl': event => helper.allowRequest(event),
   };
 
   await helper.startInterceptionTest(requestInterceptedDict, 1);
   session.evaluate(`
     var iframe = document.createElement('iframe');
-    iframe.src = '${testRunner.url('./resources/resource-iframe.html')}';
+    iframe.src = '${testRunner.url('./resources/disable-iframe.html')}';
     document.body.appendChild(iframe);
   `);
 })
