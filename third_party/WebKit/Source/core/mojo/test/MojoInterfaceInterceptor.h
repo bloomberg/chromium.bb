@@ -65,7 +65,6 @@ class MojoInterfaceInterceptor final
 
   service_manager::InterfaceProvider* GetInterfaceProvider() const;
   void OnInterfaceRequest(mojo::ScopedMessagePipeHandle);
-  void DispatchInterfaceRequestEvent(mojo::ScopedMessagePipeHandle);
 
   const String interface_name_;
   bool started_ = false;
