@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/new_tab_promo.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
@@ -20,6 +22,11 @@
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/win/hwnd_util.h"
 #include "ui/views/win/hwnd_util.h"
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+#include "chrome/browser/feature_engagement/new_tab/new_tab_tracker.h"
+#include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
 #endif
 
 namespace {
@@ -177,6 +184,11 @@ bool NewTabButton::GetHitTestMask(gfx::Path* mask) const {
 }
 
 void NewTabButton::OnWidgetDestroying(views::Widget* widget) {
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+  feature_engagement::NewTabTrackerFactory::GetInstance()
+      ->GetForProfile(tab_strip_->controller()->GetProfile())
+      ->DismissNewTabTracker();
+#endif
   new_tab_promo_observer_.Remove(widget);
   // When the promo widget is destroyed, the NewTabButton needs to be
   // recolored.

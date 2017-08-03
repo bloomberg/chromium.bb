@@ -78,6 +78,7 @@ class BrowserTabStripController : public TabStripController,
   void CheckFileSupported(const GURL& url) override;
   SkColor GetToolbarTopSeparatorColor() const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
+  Profile* GetProfile() const override;
 
   // TabStripModelObserver implementation:
   void TabInsertedAt(TabStripModel* tab_strip_model,
@@ -118,8 +119,6 @@ class BrowserTabStripController : public TabStripController,
                                            int model_index,
                                            TabRendererData* data,
                                            TabStatus tab_status);
-
-  Profile* profile() const { return model_->profile(); }
 
   const TabStrip* tabstrip() const { return tabstrip_; }
 

@@ -357,9 +357,8 @@ void BrowserTabStripController::PerformDrop(bool drop_before,
 }
 
 bool BrowserTabStripController::IsCompatibleWith(TabStrip* other) const {
-  Profile* other_profile =
-      static_cast<BrowserTabStripController*>(other->controller())->profile();
-  return other_profile == profile();
+  Profile* other_profile = other->controller()->GetProfile();
+  return other_profile == GetProfile();
 }
 
 void BrowserTabStripController::CreateNewTab() {
@@ -376,8 +375,9 @@ void BrowserTabStripController::CreateNewTabWithLocation(
   // Use autocomplete to clean up the text, going so far as to turn it into
   // a search query if necessary.
   AutocompleteMatch match;
-  AutocompleteClassifierFactory::GetForProfile(profile())->Classify(
-      location, false, false, metrics::OmniboxEventProto::BLANK, &match, NULL);
+  AutocompleteClassifierFactory::GetForProfile(GetProfile())
+      ->Classify(location, false, false, metrics::OmniboxEventProto::BLANK,
+                 &match, NULL);
   if (match.destination_url.is_valid())
     model_->delegate()->AddTabAt(match.destination_url, -1, true);
 }
@@ -430,6 +430,10 @@ base::string16 BrowserTabStripController::GetAccessibleTabName(
     const Tab* tab) const {
   return browser_view_->GetAccessibleTabLabel(
       false /* include_app_name */, tabstrip_->GetModelIndexOfTab(tab));
+}
+
+Profile* BrowserTabStripController::GetProfile() const {
+  return model_->profile();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
