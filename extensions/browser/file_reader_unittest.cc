@@ -2,41 +2,44 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/browser/file_reader.h"
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/crx_file/id_util.h"
-#include "content/public/test/test_browser_thread.h"
-#include "extensions/browser/file_reader.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/common/extension_resource.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::BrowserThread;
 
 namespace extensions {
 
 class FileReaderTest : public testing::Test {
  public:
-  FileReaderTest() : file_thread_(BrowserThread::FILE) {
-    file_thread_.Start();
-  }
+  FileReaderTest() {}
+
  private:
-  base::MessageLoop message_loop_;
-  content::TestBrowserThread file_thread_;
+  base::test::ScopedTaskEnvironment task_environment_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileReaderTest);
 };
 
 class Receiver {
  public:
-  Receiver() : succeeded_(false) {
-  }
+  Receiver(const ExtensionResource& resource)
+      : succeeded_(false),
+        file_reader_(new FileReader(
+            resource,
+            FileReader::OptionalFileSequenceTask(),
+            base::Bind(&Receiver::DidReadFile, base::Unretained(this)))) {}
 
-  FileReader::DoneCallback NewCallback() {
-    return base::Bind(&Receiver::DidReadFile, base::Unretained(this));
+  void Run() {
+    file_reader_->Start();
+    run_loop_.Run();
   }
 
   bool succeeded() const { return succeeded_; }
@@ -46,11 +49,15 @@ class Receiver {
   void DidReadFile(bool success, std::unique_ptr<std::string> data) {
     succeeded_ = success;
     data_ = std::move(data);
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+    run_loop_.QuitWhenIdle();
   }
 
   bool succeeded_;
   std::unique_ptr<std::string> data_;
+  scoped_refptr<FileReader> file_reader_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(Receiver);
 };
 
 void RunBasicTest(const char* filename) {
@@ -64,14 +71,8 @@ void RunBasicTest(const char* filename) {
   std::string file_contents;
   ASSERT_TRUE(base::ReadFileToString(path, &file_contents));
 
-  Receiver receiver;
-
-  scoped_refptr<FileReader> file_reader(
-      new FileReader(resource, FileReader::OptionalFileThreadTaskCallback(),
-                     receiver.NewCallback()));
-  file_reader->Start();
-
-  base::RunLoop().Run();
+  Receiver receiver(resource);
+  receiver.Run();
 
   EXPECT_TRUE(receiver.succeeded());
   EXPECT_EQ(file_contents, receiver.data());
@@ -93,14 +94,8 @@ TEST_F(FileReaderTest, NonExistantFile) {
       FILE_PATH_LITERAL("file_that_does_not_exist")));
   path = path.AppendASCII("file_that_does_not_exist");
 
-  Receiver receiver;
-
-  scoped_refptr<FileReader> file_reader(
-      new FileReader(resource, FileReader::OptionalFileThreadTaskCallback(),
-                     receiver.NewCallback()));
-  file_reader->Start();
-
-  base::RunLoop().Run();
+  Receiver receiver(resource);
+  receiver.Run();
 
   EXPECT_FALSE(receiver.succeeded());
 }

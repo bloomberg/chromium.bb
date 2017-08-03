@@ -237,7 +237,7 @@ bool ExecuteCodeFunction::LoadFile(const std::string& file) {
                        resource_.relative_path().AsUTF8Unsafe(),
                        true /* We assume this call always succeeds */));
   } else {
-    FileReader::OptionalFileThreadTaskCallback get_file_and_l10n_callback =
+    FileReader::OptionalFileSequenceTask get_file_and_l10n_callback =
         base::Bind(&ExecuteCodeFunction::GetFileURLAndMaybeLocalizeInBackground,
                    this, extension_id, extension_path, extension_default_locale,
                    might_require_localization);
