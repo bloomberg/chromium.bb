@@ -56,7 +56,6 @@ class TestMetricsService : public MetricsService {
 
   using MetricsService::log_manager;
   using MetricsService::log_store;
-  using MetricsService::RecordCurrentEnvironmentHelper;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestMetricsService);
@@ -66,8 +65,13 @@ class TestMetricsLog : public MetricsLog {
  public:
   TestMetricsLog(const std::string& client_id,
                  int session_id,
-                 MetricsServiceClient* client)
-      : MetricsLog(client_id, session_id, MetricsLog::ONGOING_LOG, client) {}
+                 MetricsServiceClient* client,
+                 PrefService* local_state)
+      : MetricsLog(client_id,
+                   session_id,
+                   MetricsLog::ONGOING_LOG,
+                   client,
+                   local_state) {}
 
   ~TestMetricsLog() override {}
 
@@ -186,10 +190,9 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAtProviderRequest) {
   // Save an existing system profile to prefs, to correspond to what would be
   // saved from a previous session.
   TestMetricsServiceClient client;
-  TestMetricsLog log("client", 1, &client);
+  TestMetricsLog log("client", 1, &client, GetLocalState());
   DelegatingProvider delegating_provider;
-  TestMetricsService::RecordCurrentEnvironmentHelper(
-      &log, GetLocalState(), &delegating_provider, 0, 0);
+  log.RecordEnvironment(&delegating_provider, 0, 0);
 
   // Record stability build time and version from previous session, so that
   // stability metrics (including exited cleanly flag) won't be cleared.
@@ -258,10 +261,9 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   // Save an existing system profile to prefs, to correspond to what would be
   // saved from a previous session.
   TestMetricsServiceClient client;
-  TestMetricsLog log("client", 1, &client);
+  TestMetricsLog log("client", 1, &client, GetLocalState());
   DelegatingProvider delegating_provider;
-  TestMetricsService::RecordCurrentEnvironmentHelper(
-      &log, GetLocalState(), &delegating_provider, 0, 0);
+  log.RecordEnvironment(&delegating_provider, 0, 0);
 
   // Record stability build time and version from previous session, so that
   // stability metrics (including exited cleanly flag) won't be cleared.

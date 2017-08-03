@@ -154,7 +154,6 @@
 #include "components/metrics/metrics_rotation_scheduler.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/metrics_state_manager.h"
-#include "components/metrics/persistent_system_profile.h"
 #include "components/metrics/stability_metrics_provider.h"
 #include "components/metrics/url_constants.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -237,8 +236,6 @@ MetricsService::MetricsService(MetricsStateManager* state_manager,
   RegisterMetricsProvider(
       base::MakeUnique<StabilityMetricsProvider>(local_state_));
 
-  RegisterMetricsProvider(state_manager_->GetProvider());
-
   RegisterMetricsProvider(base::MakeUnique<variations::FieldTrialsProvider>(
       &synthetic_trial_registry_, base::StringPiece()));
 }
@@ -319,12 +316,6 @@ void MetricsService::EnableRecording() {
 
   state_manager_->ForceClientIdCreation();
   client_->SetMetricsClientId(state_manager_->client_id());
-
-  SystemProfileProto system_profile;
-  MetricsLog::RecordCoreSystemProfile(client_, &system_profile);
-  GlobalPersistentSystemProfile::GetInstance()->SetSystemProfile(
-      system_profile, /*complete=*/false);
-
   if (!log_manager_.current_log())
     OpenNewLog();
 
@@ -742,7 +733,7 @@ bool MetricsService::PrepareInitialStabilityLog(
   // log describes stats from the _previous_ session.
   std::string system_profile_app_version;
   if (!initial_stability_log->LoadSavedEnvironmentFromPrefs(
-          local_state_, &system_profile_app_version)) {
+          &system_profile_app_version)) {
     return false;
   }
   if (system_profile_app_version != prefs_previous_version)
@@ -821,29 +812,15 @@ void MetricsService::CheckForClonedInstall() {
 std::unique_ptr<MetricsLog> MetricsService::CreateLog(
     MetricsLog::LogType log_type) {
   return base::MakeUnique<MetricsLog>(state_manager_->client_id(), session_id_,
-                                      log_type, client_);
-}
-
-std::string MetricsService::RecordCurrentEnvironmentHelper(
-    MetricsLog* log,
-    PrefService* local_state,
-    DelegatingProvider* delegating_provider,
-    int64_t install_date,
-    int64_t enable_date) {
-  const SystemProfileProto& system_profile =
-      log->RecordEnvironment(delegating_provider, install_date, enable_date);
-  EnvironmentRecorder recorder(local_state);
-  return recorder.SerializeAndRecordEnvironmentToPrefs(system_profile);
+                                      log_type, client_, local_state_);
 }
 
 void MetricsService::RecordCurrentEnvironment(MetricsLog* log) {
   DCHECK(client_);
-  std::string serialized_proto = RecordCurrentEnvironmentHelper(
-      log, local_state_, &delegating_provider_, GetInstallDate(),
-      GetMetricsReportingEnabledDate());
-  GlobalPersistentSystemProfile::GetInstance()->SetSystemProfile(
-      serialized_proto, /*complete=*/true);
-  client_->OnEnvironmentUpdate(&serialized_proto);
+  std::string serialized_environment =
+      log->RecordEnvironment(&delegating_provider_, GetInstallDate(),
+                             GetMetricsReportingEnabledDate());
+  client_->OnEnvironmentUpdate(&serialized_environment);
 }
 
 void MetricsService::RecordCurrentHistograms() {

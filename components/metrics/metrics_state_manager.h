@@ -23,7 +23,6 @@ namespace metrics {
 
 class ClonedInstallDetector;
 class EnabledStateProvider;
-class MetricsProvider;
 
 // Responsible for managing MetricsService state prefs, specifically the UMA
 // client id and low entropy source. Code outside the metrics directory should
@@ -41,8 +40,6 @@ class MetricsStateManager {
       LoadClientInfoCallback;
 
   virtual ~MetricsStateManager();
-
-  std::unique_ptr<MetricsProvider> GetProvider();
 
   // Returns true if the user has consented to sending metric reports, and there
   // is no other reason to disable reporting. One such reason is client
