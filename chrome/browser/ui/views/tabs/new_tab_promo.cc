@@ -33,7 +33,7 @@ constexpr base::TimeDelta kBubbleCloseDelayShort =
 }  // namespace
 
 // static
-NewTabPromo* NewTabPromo::CreateSelfOwned(const gfx::Rect& anchor_rect) {
+NewTabPromo* NewTabPromo::Create(const gfx::Rect& anchor_rect) {
   return new NewTabPromo(anchor_rect);
 }
 

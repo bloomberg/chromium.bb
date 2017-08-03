@@ -22,8 +22,9 @@ class MouseEvent;
 // when prompted by the NewTabFeatureEngagementTracker.
 class NewTabPromo : public views::BubbleDialogDelegateView {
  public:
-  // Returns a self owned raw pointer to the NewTabButton.
-  static NewTabPromo* CreateSelfOwned(const gfx::Rect& anchor_rect);
+  // Returns a raw pointer to the NewTabButton. This raw pointer is owned by its
+  // NativeWidget.
+  static NewTabPromo* Create(const gfx::Rect& anchor_rect);
 
  private:
   // Constructs NewTabPromo. Anchors the bubble to the NewTabButton.
