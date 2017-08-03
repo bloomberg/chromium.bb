@@ -5,6 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_ARRAY_TRAITS_CARRAY_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_ARRAY_TRAITS_CARRAY_H_
 
+#include <cstddef>
 #include "mojo/public/cpp/bindings/array_traits.h"
 
 namespace mojo {

@@ -111,7 +111,12 @@ static const int kProcessIDs[] = {100, 101, 102};
 static const unsigned long long kDocumentIDs[] = {200, 201, 202};
 static const int kRenderFrameRouteIDs[] = {300, 301, 302};
 
-void BlockingReadFromMessagePort(MessagePort port, base::string16* message) {
+std::vector<uint8_t> StringPieceToVector(base::StringPiece s) {
+  return std::vector<uint8_t>(s.begin(), s.end());
+}
+
+void BlockingReadFromMessagePort(MessagePort port,
+                                 std::vector<uint8_t>* message) {
   base::RunLoop run_loop;
   port.SetCallback(run_loop.QuitClosure());
   run_loop.Run();
@@ -381,10 +386,11 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
                               std::set<uint32_t>());
 
   // Verify that |worker_msg_port| corresponds to |connector->local_port()|.
-  base::string16 expected_message(base::ASCIIToUTF16("test1"));
-  connector->local_port().PostMessage(expected_message,
+  std::vector<uint8_t> expected_message(StringPieceToVector("test1"));
+  connector->local_port().PostMessage(expected_message.data(),
+                                      expected_message.size(),
                                       std::vector<MessagePort>());
-  base::string16 received_message;
+  std::vector<uint8_t> received_message;
   BlockingReadFromMessagePort(worker_msg_port, &received_message);
   EXPECT_EQ(expected_message, received_message);
 
@@ -472,10 +478,11 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
                               std::set<uint32_t>());
 
   // Verify that |worker_msg_port1| corresponds to |connector0->local_port()|.
-  base::string16 expected_message1(base::ASCIIToUTF16("test1"));
-  connector0->local_port().PostMessage(expected_message1,
+  std::vector<uint8_t> expected_message1(StringPieceToVector("test1"));
+  connector0->local_port().PostMessage(expected_message1.data(),
+                                       expected_message1.size(),
                                        std::vector<MessagePort>());
-  base::string16 received_message1;
+  std::vector<uint8_t> received_message1;
   BlockingReadFromMessagePort(worker_msg_port1, &received_message1);
   EXPECT_EQ(expected_message1, received_message1);
 
@@ -544,10 +551,11 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
                               {feature1, feature2});
 
   // Verify that |worker_msg_port2| corresponds to |connector1->local_port()|.
-  base::string16 expected_message2(base::ASCIIToUTF16("test2"));
-  connector1->local_port().PostMessage(expected_message2,
+  std::vector<uint8_t> expected_message2(StringPieceToVector("test2"));
+  connector1->local_port().PostMessage(expected_message2.data(),
+                                       expected_message2.size(),
                                        std::vector<MessagePort>());
-  base::string16 received_message2;
+  std::vector<uint8_t> received_message2;
   BlockingReadFromMessagePort(worker_msg_port2, &received_message2);
   EXPECT_EQ(expected_message2, received_message2);
 
