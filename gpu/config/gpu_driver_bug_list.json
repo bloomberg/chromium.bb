@@ -1,6 +1,6 @@
 {
   "name": "gpu driver bug list",
-  "version": "10.23",
+  "version": "10.24",
   "entries": [
     {
       "id": 1,
@@ -2572,6 +2572,19 @@
       },
       "features": [
         "dont_disable_webgl_when_compositor_context_lost"
+      ]
+    },
+    {
+      "id": 238,
+      "description": "On Intel GPUs MSAA performance is not acceptable for GPU rasterization",
+      "cr_bugs": [527565, 751919],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x8086",
+      "multi_gpu_category": "any",
+      "features": [
+        "msaa_is_slow"
       ]
     }
   ],
