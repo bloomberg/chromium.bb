@@ -1236,6 +1236,7 @@ void NodeController::OnAcceptPeer(const ports::NodeName& from_node,
 void NodeController::OnChannelError(const ports::NodeName& from_node,
                                     NodeChannel* channel) {
   if (io_task_runner_->RunsTasksInCurrentSequence()) {
+    RequestContext request_context(RequestContext::Source::SYSTEM);
     DropPeer(from_node, channel);
   } else {
     io_task_runner_->PostTask(
