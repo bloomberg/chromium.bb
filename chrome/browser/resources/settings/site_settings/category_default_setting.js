@@ -124,14 +124,11 @@ Polymer({
         this.browserProxy.setDefaultValueForContentType(this.category, value);
         break;
       case settings.ContentSettingsTypes.PLUGINS:
-        // This category is tri-state: "Allow", "Block", "Ask before running".
-        var value = settings.ContentSetting.BLOCK;
-        if (this.categoryEnabled) {
-          value = this.subControlParams_.value ?
-              settings.ContentSetting.IMPORTANT_CONTENT :
-              settings.ContentSetting.ALLOW;
-        }
-        this.browserProxy.setDefaultValueForContentType(this.category, value);
+        // "Run important content" vs. "Block".
+        this.browserProxy.setDefaultValueForContentType(
+            this.category,
+            this.categoryEnabled ? settings.ContentSetting.IMPORTANT_CONTENT :
+                                   settings.ContentSetting.BLOCK);
         break;
       default:
         assertNotReached('Invalid category: ' + this.category);
@@ -170,18 +167,8 @@ Polymer({
     this.controlParams_ = /** @type {chrome.settingsPrivate.PrefObject} */ (
         Object.assign({'value': prefValue}, basePref));
 
-    var subPrefValue = false;
-    if (this.category == settings.ContentSettingsTypes.PLUGINS ||
-        this.category == settings.ContentSettingsTypes.COOKIES) {
-      if (this.category == settings.ContentSettingsTypes.PLUGINS &&
-          update.setting == settings.ContentSetting.IMPORTANT_CONTENT) {
-        subPrefValue = true;
-      } else if (
-          this.category == settings.ContentSettingsTypes.COOKIES &&
-          update.setting == settings.ContentSetting.SESSION_ONLY) {
-        subPrefValue = true;
-      }
-    }
+    var subPrefValue = this.category == settings.ContentSettingsTypes.COOKIES &&
+        update.setting == settings.ContentSetting.SESSION_ONLY;
     // The subControlParams_ must be replaced (rather than just value changes)
     // so that observers will be notified of the change.
     this.subControlParams_ = /** @type {chrome.settingsPrivate.PrefObject} */ (
@@ -197,17 +184,8 @@ Polymer({
         .then(defaultValue => {
           this.updateControlParams_(defaultValue);
 
-          // Flash only shows ALLOW or BLOCK descriptions on the toggle.
-          var setting = defaultValue.setting;
-          if (this.category == settings.ContentSettingsTypes.PLUGINS &&
-              setting == settings.ContentSetting.IMPORTANT_CONTENT) {
-            setting = settings.ContentSetting.ALLOW;
-          } else if (
-              this.category == settings.ContentSettingsTypes.COOKIES &&
-              setting == settings.ContentSetting.SESSION_ONLY) {
-            setting = settings.ContentSetting.ALLOW;
-          }
-          var categoryEnabled = setting != settings.ContentSetting.BLOCK;
+          var categoryEnabled =
+              this.computeIsSettingEnabled(defaultValue.setting);
           this.optionLabel_ =
               categoryEnabled ? this.toggleOnLabel : this.toggleOffLabel;
         });
