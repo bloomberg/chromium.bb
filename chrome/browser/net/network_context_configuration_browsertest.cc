@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/net/profile_network_context_service.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service.mojom.h"
@@ -183,6 +185,51 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, FileURL) {
   EXPECT_EQ(net::OK, client.completion_status().error_code);
 }
 
+class NetworkContextConfigurationFixedPortBrowserTest
+    : public NetworkContextConfigurationBrowserTest {
+ public:
+  NetworkContextConfigurationFixedPortBrowserTest() {}
+  ~NetworkContextConfigurationFixedPortBrowserTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(
+        switches::kTestingFixedHttpPort,
+        base::StringPrintf("%u", embedded_test_server()->port()));
+    LOG(WARNING) << base::StringPrintf("%u", embedded_test_server()->port());
+  }
+
+ private:
+};
+
+// Test that the command line switch makes it to the network service and is
+// respected.
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationFixedPortBrowserTest,
+                       TestingFixedPort) {
+  content::mojom::URLLoaderPtr loader;
+  content::ResourceRequest request;
+  content::TestURLLoaderClient client;
+  // This URL does not use the port the embedded test server is using. The
+  // command line switch should make it result in the request being directed to
+  // the test server anyways.
+  request.url = GURL("http://127.0.0.1/echo");
+  loader_factory()->CreateLoaderAndStart(
+      mojo::MakeRequest(&loader), 0, 0, content::mojom::kURLLoadOptionNone,
+      request, client.CreateInterfacePtr(),
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+  client.RunUntilResponseReceived();
+  ASSERT_TRUE(client.response_head().headers);
+  EXPECT_EQ(200, client.response_head().headers->response_code());
+
+  client.RunUntilResponseBodyArrived();
+  std::string response_body;
+  EXPECT_TRUE(mojo::common::BlockingCopyToString(client.response_body_release(),
+                                                 &response_body));
+  EXPECT_EQ("Echo", response_body);
+
+  client.RunUntilComplete();
+  EXPECT_EQ(net::OK, client.completion_status().error_code);
+}
+
 INSTANTIATE_TEST_CASE_P(
     SystemNetworkContext,
     NetworkContextConfigurationBrowserTest,
@@ -202,6 +249,30 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(
     IncognitoProfileMainNetworkContext,
     NetworkContextConfigurationBrowserTest,
+    ::testing::Values(TestCase({NetworkServiceState::kDisabled,
+                                NetworkContextType::kIncognitoProfile}),
+                      TestCase({NetworkServiceState::kEnabled,
+                                NetworkContextType::kIncognitoProfile})));
+
+INSTANTIATE_TEST_CASE_P(
+    SystemNetworkContext,
+    NetworkContextConfigurationFixedPortBrowserTest,
+    ::testing::Values(TestCase({NetworkServiceState::kDisabled,
+                                NetworkContextType::kSystem}),
+                      TestCase({NetworkServiceState::kEnabled,
+                                NetworkContextType::kSystem})));
+
+INSTANTIATE_TEST_CASE_P(
+    ProfileMainNetworkContext,
+    NetworkContextConfigurationFixedPortBrowserTest,
+    ::testing::Values(TestCase({NetworkServiceState::kDisabled,
+                                NetworkContextType::kProfile}),
+                      TestCase({NetworkServiceState::kEnabled,
+                                NetworkContextType::kProfile})));
+
+INSTANTIATE_TEST_CASE_P(
+    IncognitoProfileMainNetworkContext,
+    NetworkContextConfigurationFixedPortBrowserTest,
     ::testing::Values(TestCase({NetworkServiceState::kDisabled,
                                 NetworkContextType::kIncognitoProfile}),
                       TestCase({NetworkServiceState::kEnabled,

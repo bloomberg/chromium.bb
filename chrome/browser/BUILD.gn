@@ -707,6 +707,8 @@ split_static_library("browser") {
     "net/chrome_url_request_context_getter.h",
     "net/crl_set_fetcher.cc",
     "net/crl_set_fetcher.h",
+    "net/default_network_context_params.cc",
+    "net/default_network_context_params.h",
     "net/dns_probe_runner.cc",
     "net/dns_probe_runner.h",
     "net/dns_probe_service.cc",

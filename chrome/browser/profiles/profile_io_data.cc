@@ -1142,8 +1142,6 @@ void ProfileIOData::Init(
       base::Bind(&IOThread::UnregisterSTHObserver, base::Unretained(io_thread),
                  ct_tree_tracker_.get());
 
-  builder->set_http_network_session_params(
-      profile_params_->io_thread->NetworkSessionParams());
   if (data_reduction_proxy_io_data_.get()) {
     builder->set_shared_proxy_delegate(
         data_reduction_proxy_io_data_->proxy_delegate());

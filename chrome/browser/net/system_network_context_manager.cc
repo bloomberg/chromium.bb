@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/net/default_network_context_params.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
@@ -26,7 +27,7 @@ content::mojom::NetworkContextParamsPtr CreateNetworkContextParams() {
   // TODO(mmenke): Set up parameters here (No cache, in memory cookie store,
   // etc).
   content::mojom::NetworkContextParamsPtr network_context_params =
-      content::mojom::NetworkContextParams::New();
+      CreateDefaultNetworkContextParams();
 
   // These are needed for PAC scripts that use file or data URLs (Or FTP URLs?).
   network_context_params->enable_data_url_support = true;

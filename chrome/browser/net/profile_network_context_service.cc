@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "chrome/browser/net/default_network_context_params.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -25,7 +26,7 @@ namespace {
 content::mojom::NetworkContextParamsPtr CreateMainNetworkContextParams() {
   // TODO(mmenke): Set up parameters here.
   content::mojom::NetworkContextParamsPtr network_context_params =
-      content::mojom::NetworkContextParams::New();
+      CreateDefaultNetworkContextParams();
 
   // NOTE(mmenke): Keep these protocol handlers and
   // ProfileIOData::SetUpJobFactoryDefaultsForBuilder in sync with
