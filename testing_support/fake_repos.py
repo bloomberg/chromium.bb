@@ -573,6 +573,11 @@ recursedeps = [
       'DEPS': """
 deps = {
   'src/repo9': '/repo_9',
+
+  # This entry should appear in flattened file,
+  # but not recursed into, since it's not
+  # in recursedeps.
+  'src/repo6': '/repo_6',
 }
 recursedeps = [
   'src/repo9',

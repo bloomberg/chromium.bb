@@ -1727,7 +1727,7 @@ class Flattener(object):
           in DEPS
     """
     for solution in self._client.dependencies:
-      self._flatten_solution(solution)
+      self._flatten_dep(solution)
 
     if pin_all_deps:
       for dep in self._deps.itervalues():
@@ -1754,15 +1754,6 @@ class Flattener(object):
         _VarsToLines(self._vars) +
         [''])  # Ensure newline at end of file.
 
-  def _flatten_solution(self, solution):
-    """Visits a solution in order to flatten it (see CMDflatten).
-
-    Arguments:
-      solution (Dependency): one of top-level solutions in .gclient
-    """
-    self._flatten_dep(solution)
-    self._flatten_recurse(solution)
-
   def _flatten_dep(self, dep):
     """Visits a dependency in order to flatten it (see CMDflatten).
 
@@ -1783,12 +1774,17 @@ class Flattener(object):
     self._hooks.extend([(dep, hook) for hook in dep.deps_hooks])
     self._pre_deps_hooks.extend([(dep, hook) for hook in dep.pre_deps_hooks])
 
+    for sub_dep in dep.dependencies:
+      assert sub_dep.name not in self._deps
+      self._deps[sub_dep.name] = sub_dep
+
     for hook_os, os_hooks in dep.os_deps_hooks.iteritems():
       self._hooks_os.setdefault(hook_os, []).extend(
           [(dep, hook) for hook in os_hooks])
 
     self._add_deps_os(dep)
 
+    # Process recursedeps.
     deps_by_name = dict((d.name, d) for d in dep.dependencies)
     # Allow recursedeps entries that refer to deps_os entries.
     # In case there are multiple entries with the same name,
@@ -1798,18 +1794,10 @@ class Flattener(object):
         if os_dep.name not in deps_by_name:
           deps_by_name[os_dep.name] = os_dep
     for recurse_dep_name in (dep.recursedeps or []):
-      self._flatten_recurse(deps_by_name[recurse_dep_name])
+      for sub_dep in deps_by_name[recurse_dep_name].dependencies:
+        self._flatten_dep(sub_dep)
 
-  def _flatten_recurse(self, dep):
-    """Helper for flatten that recurses into |dep|'s dependencies.
-
-    Arguments:
-      dep (Dependency): dependency to process
-    """
-    self._add_deps_os(dep)
-
-    for sub_dep in dep.dependencies:
-      self._flatten_dep(sub_dep)
+      self._add_deps_os(deps_by_name[recurse_dep_name])
 
   def _add_deps_os(self, dep):
     """Helper for flatten that collects deps_os from |dep|.
