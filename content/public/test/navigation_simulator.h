@@ -34,15 +34,20 @@ struct Referrer;
 class NavigationSimulator : public WebContentsObserver {
  public:
   // Simulates a renderer-initiated navigation to |url| started in
-  // |render_frame_host| from start to commit.
-  static void NavigateAndCommitFromDocument(const GURL& original_url,
-                                            RenderFrameHost* render_frame_host);
+  // |render_frame_host| from start to commit. Returns the RenderFramehost that
+  // committed the navigation.
+  static RenderFrameHost* NavigateAndCommitFromDocument(
+      const GURL& original_url,
+      RenderFrameHost* render_frame_host);
 
   // Simulates a failed renderer-initiated navigation to |url| started in
-  // |render_frame_host| from start to commit.
-  static void NavigateAndFailFromDocument(const GURL& original_url,
-                                          int net_error_code,
-                                          RenderFrameHost* render_frame_host);
+  // |render_frame_host| from start to commit. Returns the RenderFramehost that
+  // committed the error page for the navigation, or nullptr if the navigation
+  // error did not result in an error page.
+  static RenderFrameHost* NavigateAndFailFromDocument(
+      const GURL& original_url,
+      int net_error_code,
+      RenderFrameHost* render_frame_host);
 
   // ---------------------------------------------------------------------------
 

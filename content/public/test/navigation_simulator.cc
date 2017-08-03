@@ -64,24 +64,27 @@ class NavigationThrottleCallbackRunner : public NavigationThrottle {
 }  // namespace
 
 // static
-void NavigationSimulator::NavigateAndCommitFromDocument(
+RenderFrameHost* NavigationSimulator::NavigateAndCommitFromDocument(
     const GURL& original_url,
     RenderFrameHost* render_frame_host) {
   NavigationSimulator simulator(
       original_url, static_cast<TestRenderFrameHost*>(render_frame_host));
   simulator.Commit();
+  return simulator.GetFinalRenderFrameHost();
 }
 
 // static
-void NavigationSimulator::NavigateAndFailFromDocument(
+RenderFrameHost* NavigationSimulator::NavigateAndFailFromDocument(
     const GURL& original_url,
     int net_error_code,
     RenderFrameHost* render_frame_host) {
   NavigationSimulator simulator(
       original_url, static_cast<TestRenderFrameHost*>(render_frame_host));
   simulator.Fail(net_error_code);
-  if (net_error_code != net::ERR_ABORTED)
-    simulator.CommitErrorPage();
+  if (net_error_code == net::ERR_ABORTED)
+    return nullptr;
+  simulator.CommitErrorPage();
+  return simulator.GetFinalRenderFrameHost();
 }
 
 // static
@@ -317,9 +320,8 @@ void NavigationSimulator::Commit() {
   params.origin = url::Origin(navigation_url_);
   params.transition = transition_;
   params.should_update_history = true;
-  params.did_create_new_entry =
-      !render_frame_host_->GetParent() ||
-      render_frame_host_->frame_tree_node()->has_committed_real_load();
+  params.did_create_new_entry = !ui::PageTransitionCoreTypeIs(
+      transition_, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
   params.gesture = NavigationGestureUser;
   params.contents_mime_type = "text/html";
   params.method = "GET";
@@ -422,7 +424,8 @@ void NavigationSimulator::CommitErrorPage() {
       base::TimeTicks::Now()));
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = 0;
-  params.did_create_new_entry = true;
+  params.did_create_new_entry = !ui::PageTransitionCoreTypeIs(
+      transition_, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
   params.url = navigation_url_;
   params.transition = transition_;
   params.was_within_same_document = false;

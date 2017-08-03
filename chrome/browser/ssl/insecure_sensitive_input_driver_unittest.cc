@@ -11,6 +11,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
 
 namespace {
@@ -72,12 +73,10 @@ TEST_F(InsecureSensitiveInputDriverTest, PasswordVisibilityWithSubframe) {
   // notifications for it are handled properly.
   content::RenderFrameHost* subframe =
       content::RenderFrameHostTester::For(main_rfh())->AppendChild("child");
+  subframe = content::NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("http://example2.test"), subframe);
   auto subframe_driver =
       base::MakeUnique<InsecureSensitiveInputDriver>(subframe);
-  content::RenderFrameHostTester* subframe_tester =
-      content::RenderFrameHostTester::For(subframe);
-  subframe_tester->SimulateNavigationStart(GURL("http://example2.test"));
-  subframe_tester->SimulateNavigationCommit(GURL("http://example2.test"));
   subframe_driver->PasswordFieldVisibleInInsecureContext();
 
   content::NavigationEntry* entry =
@@ -115,12 +114,10 @@ TEST_F(InsecureSensitiveInputDriverTest,
   // notifications for it are handled properly.
   content::RenderFrameHost* subframe =
       content::RenderFrameHostTester::For(main_rfh())->AppendChild("child");
+  subframe = content::NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("http://example2.test"), subframe);
   auto subframe_driver =
       base::MakeUnique<InsecureSensitiveInputDriver>(subframe);
-  content::RenderFrameHostTester* subframe_tester =
-      content::RenderFrameHostTester::For(subframe);
-  subframe_tester->SimulateNavigationStart(GURL("http://example2.test"));
-  subframe_tester->SimulateNavigationCommit(GURL("http://example2.test"));
   subframe_driver->PasswordFieldVisibleInInsecureContext();
 
   entry = web_contents()->GetController().GetVisibleEntry();
@@ -150,12 +147,12 @@ TEST_F(InsecureSensitiveInputDriverTest,
   // Create a subframe with a password field.
   content::RenderFrameHost* subframe =
       content::RenderFrameHostTester::For(main_rfh())->AppendChild("child");
+  subframe = content::NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL("http://example2.test"), subframe);
   auto subframe_driver =
       base::MakeUnique<InsecureSensitiveInputDriver>(subframe);
   content::RenderFrameHostTester* subframe_tester =
       content::RenderFrameHostTester::For(subframe);
-  subframe_tester->SimulateNavigationStart(GURL("http://example2.test"));
-  subframe_tester->SimulateNavigationCommit(GURL("http://example2.test"));
   subframe_driver->PasswordFieldVisibleInInsecureContext();
 
   content::NavigationEntry* entry =

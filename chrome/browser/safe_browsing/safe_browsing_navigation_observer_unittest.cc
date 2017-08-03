@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -176,18 +177,12 @@ TEST_F(SBNavigationObserverTest, BasicNavigationAndCommit) {
 }
 
 TEST_F(SBNavigationObserverTest, ServerRedirect) {
-  if (content::IsBrowserSideNavigationEnabled() &&
-      content::AreAllSitesIsolatedForTesting()) {
-    // http://crbug.com/674734 Fix this test with PlzNavigate and Site Isolation
-    return;
-  }
-  content::RenderFrameHostTester* rfh_tester =
-      content::RenderFrameHostTester::For(
-          browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
-  rfh_tester->SimulateNavigationStart(GURL("http://foo/3"));
-  GURL redirect("http://redirect/1");
-  rfh_tester->SimulateRedirect(redirect);
-  rfh_tester->SimulateNavigationCommit(redirect);
+  auto navigation = content::NavigationSimulator::CreateRendererInitiated(
+      GURL("http://foo/3"),
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
+  navigation->Start();
+  navigation->Redirect(GURL("http://redirect/1"));
+  navigation->Commit();
   int tab_id = SessionTabHelper::IdForTab(
       browser()->tab_strip_model()->GetWebContentsAt(0));
   auto* nav_list = navigation_event_list();
