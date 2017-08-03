@@ -58,7 +58,8 @@ TestCompositorHostX11::TestCompositorHostX11(
                   context_factory_,
                   context_factory_private_,
                   base::ThreadTaskRunnerHandle::Get(),
-                  false /* enable_surface_synchronization */) {}
+                  false /* enable_surface_synchronization */,
+                  false /* enable_pixel_canvas */) {}
 
 TestCompositorHostX11::~TestCompositorHostX11() {}
 

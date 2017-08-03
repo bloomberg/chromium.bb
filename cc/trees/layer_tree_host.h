@@ -319,6 +319,8 @@ class CC_EXPORT LayerTreeHost
   void SetDeviceScaleFactor(float device_scale_factor);
   float device_scale_factor() const { return device_scale_factor_; }
 
+  void SetRecordingScaleFactor(float recording_scale_factor);
+
   void SetPaintedDeviceScaleFactor(float painted_device_scale_factor);
   float painted_device_scale_factor() const {
     return painted_device_scale_factor_;
@@ -495,6 +497,8 @@ class CC_EXPORT LayerTreeHost
 
   void RequestBeginMainFrameNotExpected(bool new_state);
 
+  float recording_scale_factor() const { return recording_scale_factor_; }
+
  protected:
   LayerTreeHost(InitParams* params, CompositorMode mode);
 
@@ -602,6 +606,7 @@ class CC_EXPORT LayerTreeHost
 
   float device_scale_factor_ = 1.f;
   float painted_device_scale_factor_ = 1.f;
+  float recording_scale_factor_ = 1.f;
   float page_scale_factor_ = 1.f;
   float min_page_scale_factor_ = 1.f;
   float max_page_scale_factor_ = 1.f;

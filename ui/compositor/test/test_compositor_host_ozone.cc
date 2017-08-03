@@ -84,7 +84,8 @@ TestCompositorHostOzone::TestCompositorHostOzone(
                   context_factory,
                   context_factory_private,
                   base::ThreadTaskRunnerHandle::Get(),
-                  false /* enable_surface_synchronization */) {}
+                  false /* enable_surface_synchronization */,
+                  false /* enable_pixel_canvas */) {}
 
 TestCompositorHostOzone::~TestCompositorHostOzone() {}
 

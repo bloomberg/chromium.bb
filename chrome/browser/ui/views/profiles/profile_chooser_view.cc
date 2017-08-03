@@ -349,10 +349,10 @@ class EditableProfilePhoto : public views::LabelButton {
     SetEnabled(false);
   }
 
-  void PaintChildren(const ui::PaintContext& context) override {
+  void PaintChildren(const views::PaintInfo& paint_info) override {
     {
       // Display any children (the "change photo" overlay) as a circle.
-      ui::ClipRecorder clip_recorder(context);
+      ui::ClipRecorder clip_recorder(paint_info.context());
       gfx::Rect clip_bounds = image()->GetMirroredBounds();
       gfx::Path clip_mask;
       clip_mask.addCircle(
@@ -360,11 +360,11 @@ class EditableProfilePhoto : public views::LabelButton {
           clip_bounds.y() + clip_bounds.height() / 2,
           clip_bounds.width() / 2);
       clip_recorder.ClipPathWithAntiAliasing(clip_mask);
-      View::PaintChildren(context);
+      View::PaintChildren(paint_info);
     }
 
     ui::PaintRecorder paint_recorder(
-        context, gfx::Size(kProfileBadgeSize, kProfileBadgeSize));
+        paint_info.context(), gfx::Size(kProfileBadgeSize, kProfileBadgeSize));
     gfx::Canvas* canvas = paint_recorder.canvas();
     if (profile_->IsSupervised()) {
       gfx::Rect bounds(0, 0, kProfileBadgeSize, kProfileBadgeSize);

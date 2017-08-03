@@ -424,6 +424,11 @@ class COMPOSITOR_EXPORT Layer
   // surface even if layer is invisible is not a problem.
   void SetCacheRenderSurface(bool cache_render_surface);
 
+  // The back link from the mask layer to it's associated masked layer.
+  // We keep this reference for the case that if the mask layer gets deleted
+  // while attached to the main layer before the main layer is deleted.
+  const Layer* layer_mask_back_link() const { return layer_mask_back_link_; }
+
  private:
   friend class LayerOwner;
   class LayerMirror;

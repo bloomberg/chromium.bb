@@ -20,6 +20,7 @@
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/layout.h"
 #include "ui/base/view_prop.h"
+#include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
@@ -270,7 +271,8 @@ void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id) {
           ? frame_sink_id
           : context_factory_private->AllocateFrameSinkId(),
       context_factory, context_factory_private,
-      base::ThreadTaskRunnerHandle::Get(), enable_surface_synchronization));
+      base::ThreadTaskRunnerHandle::Get(), enable_surface_synchronization,
+      ui::IsPixelCanvasRecordingEnabled()));
   if (!dispatcher()) {
     window()->Init(ui::LAYER_NOT_DRAWN);
     window()->set_host(this);

@@ -36,5 +36,8 @@ specific_include_rules = {
   ],
   "views_test_suite\.cc": [
     "+gpu/ipc/service",
+  ],
+  "paint_info_unittest\.cc": [
+    "+cc/base",
   ]
 }

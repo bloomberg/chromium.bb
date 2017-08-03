@@ -1066,7 +1066,7 @@ void TabStrip::Layout() {
   DoLayout();
 }
 
-void TabStrip::PaintChildren(const ui::PaintContext& context) {
+void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   // The view order doesn't match the paint order (tabs_ contains the tab
   // ordering). Additionally we need to paint the tabs that are closing in
   // |tabs_closing_map_|.
@@ -1079,10 +1079,10 @@ void TabStrip::PaintChildren(const ui::PaintContext& context) {
     // We pass false for |lcd_text_requires_opaque_layer| so that background
     // tab titles will get LCD AA.  These are rendered opaquely on an opaque tab
     // background before the layer is composited, so this is safe.
-    ui::CompositingRecorder opacity_recorder(context, GetInactiveAlpha(false),
-                                             false);
+    ui::CompositingRecorder opacity_recorder(paint_info.context(),
+                                             GetInactiveAlpha(false), false);
 
-    PaintClosingTabs(tab_count(), context);
+    PaintClosingTabs(tab_count(), paint_info);
 
     int active_tab_index = -1;
     for (int i = tab_count() - 1; i >= 0; --i) {
@@ -1098,7 +1098,7 @@ void TabStrip::PaintChildren(const ui::PaintContext& context) {
       } else if (!tab->IsActive()) {
         if (!tab->IsSelected()) {
           if (!stacked_layout_)
-            tab->Paint(context);
+            tab->Paint(paint_info);
         } else {
           selected_tabs.push_back(tab);
         }
@@ -1106,19 +1106,19 @@ void TabStrip::PaintChildren(const ui::PaintContext& context) {
         active_tab = tab;
         active_tab_index = i;
       }
-      PaintClosingTabs(i, context);
+      PaintClosingTabs(i, paint_info);
     }
 
     // Draw from the left and then the right if we're in touch mode.
     if (stacked_layout_ && active_tab_index >= 0) {
       for (int i = 0; i < active_tab_index; ++i) {
         Tab* tab = tab_at(i);
-        tab->Paint(context);
+        tab->Paint(paint_info);
       }
 
       for (int i = tab_count() - 1; i > active_tab_index; --i) {
         Tab* tab = tab_at(i);
-        tab->Paint(context);
+        tab->Paint(paint_info);
       }
     }
   }
@@ -1126,34 +1126,34 @@ void TabStrip::PaintChildren(const ui::PaintContext& context) {
   // Now selected but not active. We don't want these dimmed if using native
   // frame, so they're painted after initial pass.
   for (size_t i = 0; i < selected_tabs.size(); ++i)
-    selected_tabs[i]->Paint(context);
+    selected_tabs[i]->Paint(paint_info);
 
   // Next comes the active tab.
   if (active_tab && !is_dragging)
-    active_tab->Paint(context);
+    active_tab->Paint(paint_info);
 
   // Paint the New Tab button.
   if (new_tab_button_->state() == views::CustomButton::STATE_PRESSED) {
-    new_tab_button_->Paint(context);
+    new_tab_button_->Paint(paint_info);
   } else {
     // Match the inactive tab opacity for non-pressed states.  See comments in
     // NewTabButton::PaintFill() for why we don't do this for the pressed state.
     // This call doesn't need to set |lcd_text_requires_opaque_layer| to false
     // because no text will be drawn.
-    ui::CompositingRecorder opacity_recorder(context, GetInactiveAlpha(true),
-                                             true);
-    new_tab_button_->Paint(context);
+    ui::CompositingRecorder opacity_recorder(paint_info.context(),
+                                             GetInactiveAlpha(true), true);
+    new_tab_button_->Paint(paint_info);
   }
 
   // And the dragged tabs.
   for (size_t i = 0; i < tabs_dragging.size(); ++i)
-    tabs_dragging[i]->Paint(context);
+    tabs_dragging[i]->Paint(paint_info);
 
   // If the active tab is being dragged, it goes last.
   if (active_tab && is_dragging)
-    active_tab->Paint(context);
+    active_tab->Paint(paint_info);
 
-  ui::PaintRecorder recorder(context, size());
+  ui::PaintRecorder recorder(paint_info.context(), size());
   gfx::Canvas* canvas = recorder.canvas();
   if (active_tab) {
     canvas->sk_canvas()->clipRect(
@@ -1784,13 +1784,13 @@ TabStrip::FindClosingTabResult TabStrip::FindClosingTab(const Tab* tab) {
   return FindClosingTabResult(tabs_closing_map_.end(), Tabs::iterator());
 }
 
-void TabStrip::PaintClosingTabs(int index, const ui::PaintContext& context) {
+void TabStrip::PaintClosingTabs(int index, const views::PaintInfo& paint_info) {
   if (tabs_closing_map_.find(index) == tabs_closing_map_.end())
     return;
 
   const Tabs& tabs = tabs_closing_map_[index];
   for (Tabs::const_reverse_iterator i(tabs.rbegin()); i != tabs.rend(); ++i)
-    (*i)->Paint(context);
+    (*i)->Paint(paint_info);
 }
 
 void TabStrip::UpdateStackedLayoutFromMouseEvent(views::View* source,

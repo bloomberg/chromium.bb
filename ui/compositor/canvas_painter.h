@@ -29,7 +29,8 @@ class COMPOSITOR_EXPORT CanvasPainter {
   CanvasPainter(SkBitmap* output,
                 const gfx::Size& paint_size,
                 float raster_scale,
-                SkColor clear_color);
+                SkColor clear_color,
+                bool is_pixel_canvas);
   ~CanvasPainter();
 
   const PaintContext& context() const { return context_; }

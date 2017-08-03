@@ -60,7 +60,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   gfx::Size GetMaximumSize() const override;
   void Layout() override;
   void OnPaint(gfx::Canvas* canvas) override;
-  void PaintChildren(const ui::PaintContext& context) override;
+  void PaintChildren(const PaintInfo& paint_info) override;
   void OnThemeChanged() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   void ViewHierarchyChanged(

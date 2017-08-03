@@ -494,9 +494,10 @@ void OmniboxPopupContentsView::OnPaint(gfx::Canvas* canvas) {
                        g_bottom_shadow.Get().height());
 }
 
-void OmniboxPopupContentsView::PaintChildren(const ui::PaintContext& context) {
+void OmniboxPopupContentsView::PaintChildren(
+    const views::PaintInfo& paint_info) {
   if (base::FeatureList::IsEnabled(omnibox::kUIExperimentNarrowDropdown)) {
-    View::PaintChildren(context);
+    View::PaintChildren(paint_info);
     return;
   }
 
@@ -504,15 +505,15 @@ void OmniboxPopupContentsView::PaintChildren(const ui::PaintContext& context) {
   contents_bounds.Inset(0, g_top_shadow.Get().height(), 0,
                         g_bottom_shadow.Get().height());
 
-  ui::ClipRecorder clip_recorder(context);
+  ui::ClipRecorder clip_recorder(paint_info.context());
   clip_recorder.ClipRect(contents_bounds);
   {
-    ui::PaintRecorder recorder(context, size());
+    ui::PaintRecorder recorder(paint_info.context(), size());
     SkColor background_color = result_view_at(0)->GetColor(
         OmniboxResultView::NORMAL, OmniboxResultView::BACKGROUND);
     recorder.canvas()->DrawColor(background_color);
   }
-  View::PaintChildren(context);
+  View::PaintChildren(paint_info);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
