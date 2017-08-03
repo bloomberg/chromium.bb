@@ -266,7 +266,7 @@ void Initializer::OnPreCrashStateRestored() {
   crash_recovery_manager_.reset();
 
   // Start a scan now that the Tether module has started up.
-  host_scan_scheduler_->UserLoggedIn();
+  host_scan_scheduler_->ScheduleScan();
 }
 
 void Initializer::OnBluetoothAdapterAdvertisingIntervalError(
