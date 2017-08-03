@@ -17,6 +17,7 @@ namespace extensions {
 namespace networking_private {
 
 extern const char kErrorAccessToSharedConfig[];
+extern const char kErrorInvalidArguments[];
 extern const char kErrorInvalidNetworkGuid[];
 extern const char kErrorInvalidNetworkOperation[];
 extern const char kErrorNetworkUnavailable[];
