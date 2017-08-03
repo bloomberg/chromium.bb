@@ -1112,7 +1112,6 @@
       "../../third_party/WebKit/Tools/Scripts/run-webkit-tests",
       "--seed", "4",
       "--no-show-results",
-      "--full-results-html",
       "--clobber-old-results",
       "--exit-after-n-failures", "5000",
       "--exit-after-n-crashes-or-timeouts", "100",
