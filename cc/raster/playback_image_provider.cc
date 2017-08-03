@@ -18,8 +18,7 @@ SkIRect RoundOutRect(const SkRect& rect) {
 void UnrefImageFromCache(DrawImage draw_image,
                          ImageDecodeCache* cache,
                          DecodedDrawImage decoded_draw_image) {
-  if (decoded_draw_image.image())
-    cache->DrawWithImageFinished(draw_image, decoded_draw_image);
+  cache->DrawWithImageFinished(draw_image, decoded_draw_image);
 }
 
 }  // namespace
