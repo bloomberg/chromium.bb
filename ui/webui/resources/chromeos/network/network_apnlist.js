@@ -9,6 +9,8 @@
 Polymer({
   is: 'network-apnlist',
 
+  behaviors: [I18nBehavior],
+
   properties: {
     /**
      * The current set of properties for the network matching |guid|.

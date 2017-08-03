@@ -1171,8 +1171,11 @@
     <message name="IDS_SETTINGS_INTERNET_CONFIG_SAVE_CREDENTIALS" desc="Settings > Internet > Network config: Label for the setting to save identity and password.">
       Save identity and password
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_ACCESS_POINT" desc="Settings > Internet > Network details: Access Point section label.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_ACCESS_POINT" desc="Settings > Internet > Network details: Access Point section label.">
       Access Point
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS" desc="Settings > Network: Name servers label.">
+      Name servers
     </message>
     <message name="IDS_SETTINGS_INTERNET_MOBILE_SEARCH" desc="Settings > Internet > Message in Mobile section when searching for mobile networks.">
       Searching for mobile networks
@@ -1182,9 +1185,6 @@
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_ADVANCED_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the advanced network properties. Only visible by screen reader software.">
       Show advanced network properties
-    </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_NAMESERVERS" desc="Settings > Internet > Network details: Name servers section label.">
-      Name servers
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_NETWORK" desc="Settings > Internet > Network details: Network section label.">
       Network

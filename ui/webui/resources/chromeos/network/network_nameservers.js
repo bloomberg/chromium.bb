@@ -8,6 +8,8 @@
 Polymer({
   is: 'network-nameservers',
 
+  behaviors: [I18nBehavior],
+
   properties: {
     /**
      * The network properties dictionary containing the nameserver properties to
