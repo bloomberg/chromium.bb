@@ -122,6 +122,11 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerTreeForSnapshot(
   DCHECK(layer_tree_owner);
 
   auto* root_layer = layer_tree_owner->root();
+  // The root layer might have a scaling transform applied (if the user has
+  // changed the UI scale via Ctrl-Shift-Plus/Minus).
+  // Clear the transform so that the snapshot is taken at 1:1 scale relative
+  // to screen pixels.
+  root_layer->SetTransform(gfx::Transform());
   root_window->layer()->Add(root_layer);
   root_window->layer()->StackAtBottom(root_layer);
   return layer_tree_owner;
