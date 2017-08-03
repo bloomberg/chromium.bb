@@ -48,6 +48,9 @@ constexpr SkColor kDefaultTextColor =
     SkColorSetARGBMacro(0x8A, 0x00, 0x00, 0x00);
 // URL color.
 constexpr SkColor kUrlColor = SkColorSetARGBMacro(0xFF, 0x33, 0x67, 0xD6);
+// Row selected color, #000 8%.
+constexpr SkColor kRowSelectedColor =
+    SkColorSetARGBMacro(0x14, 0x00, 0x00, 0x00);
 
 int GetIconViewWidth() {
   if (!features::IsFullscreenAppListEnabled())
@@ -331,10 +334,13 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
 
   // Possibly call FillRect a second time (these colours are partially
   // transparent, so the previous FillRect is not redundant).
-  if (selected)
-    canvas->FillRect(content_rect, kSelectedColor);
-  else if (hover)
+  if (selected) {
+    canvas->FillRect(content_rect, is_fullscreen_app_list_enabled_
+                                       ? kRowSelectedColor
+                                       : kSelectedColor);
+  } else if (!is_fullscreen_app_list_enabled_ && hover) {
     canvas->FillRect(content_rect, kHighlightedColor);
+  }
 
   if (!is_fullscreen_app_list_enabled_ && !is_last_result_) {
     gfx::Rect line_rect = content_rect;

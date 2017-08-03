@@ -115,7 +115,7 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
             ui::ResourceBundle::BaseFont);
 
     if (item_->display_type() == SearchResult::DISPLAY_RECOMMENDATION) {
-      EnableWhiteSelectedColor(true);
+      set_is_recommendation(true);
 
       title()->SetFontList(base_font.DeriveWithSizeDelta(1));
       title()->SetEnabledColor(kGridTitleColorFullscreen);
