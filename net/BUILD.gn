@@ -1041,6 +1041,8 @@ component("net") {
       "ntlm/ntlm_buffer_reader.h",
       "ntlm/ntlm_buffer_writer.cc",
       "ntlm/ntlm_buffer_writer.h",
+      "ntlm/ntlm_client.cc",
+      "ntlm/ntlm_client.h",
       "ntlm/ntlm_constants.h",
       "proxy/dhcp_proxy_script_adapter_fetcher_win.cc",
       "proxy/dhcp_proxy_script_adapter_fetcher_win.h",
@@ -1797,6 +1799,8 @@ component("net") {
         "ntlm/ntlm_buffer_reader.h",
         "ntlm/ntlm_buffer_writer.cc",
         "ntlm/ntlm_buffer_writer.h",
+        "ntlm/ntlm_client.cc",
+        "ntlm/ntlm_client.h",
         "ntlm/ntlm_constants.h",
       ]
     }
@@ -4898,6 +4902,7 @@ test("net_unittests") {
     "ntlm/des_unittest.cc",
     "ntlm/ntlm_buffer_reader_unittest.cc",
     "ntlm/ntlm_buffer_writer_unittest.cc",
+    "ntlm/ntlm_client_unittest.cc",
     "ntlm/ntlm_test_data.h",
     "ntlm/ntlm_unittest.cc",
     "proxy/dhcp_proxy_script_adapter_fetcher_win_unittest.cc",
@@ -5316,6 +5321,7 @@ test("net_unittests") {
       "ntlm/des_unittest.cc",
       "ntlm/ntlm_buffer_reader_unittest.cc",
       "ntlm/ntlm_buffer_writer_unittest.cc",
+      "ntlm/ntlm_client_unittest.cc",
       "ntlm/ntlm_test_data.h",
       "ntlm/ntlm_unittest.cc",
     ]
@@ -5876,6 +5882,21 @@ fuzzer_test("net_http_stream_parser_fuzzer") {
     "//net",
   ]
   dict = "data/fuzzer_dictionaries/net_http_stream_parser_fuzzer.dict"
+}
+
+fuzzer_test("net_ntlm_ntlm_client_fuzzer") {
+  sources = [
+    "ntlm/ntlm_client_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    ":test_support",
+    "//base",
+    "//net",
+    "//net:net_unittests",
+  ]
+  dict = "data/fuzzer_dictionaries/net_ntlm_ntlm_client_fuzzer.dict"
+  seed_corpus = "data/fuzzer_data/ntlm_client_fuzzer/"
 }
 
 if (!disable_brotli_filter) {
