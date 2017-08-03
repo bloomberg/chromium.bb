@@ -54434,6 +54434,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Pepper.SecureOrigin.MediaStreamRequest" enum="BooleanSecure">
+  <obsolete>
+    Deprecated as of 8/2017.
+  </obsolete>
   <owner>raymes@chromium.org</owner>
   <summary>
     Whether a Pepper media stream request (mic/cam access) comes from a plugin

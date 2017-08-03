@@ -101,6 +101,5 @@ void MediaStreamDevicePermissionContext::ResetPermission(
 }
 
 bool MediaStreamDevicePermissionContext::IsRestrictedToSecureOrigins() const {
-  return base::FeatureList::IsEnabled(
-      features::kRequireSecureOriginsForPepperMediaRequests);
+  return true;
 }

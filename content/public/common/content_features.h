@@ -64,8 +64,6 @@ CONTENT_EXPORT extern const base::Feature kRafAlignedMouseInputEvents;
 CONTENT_EXPORT extern const base::Feature kRafAlignedTouchInputEvents;
 CONTENT_EXPORT extern const base::Feature kRenderingPipelineThrottling;
 CONTENT_EXPORT extern const base::Feature kReportRendererPeakMemoryStats;
-CONTENT_EXPORT extern const base::Feature
-    kRequireSecureOriginsForPepperMediaRequests;
 CONTENT_EXPORT extern const base::Feature kResourceLoadScheduler;
 CONTENT_EXPORT extern const base::Feature kScrollAnchoring;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerNavigationPreload;

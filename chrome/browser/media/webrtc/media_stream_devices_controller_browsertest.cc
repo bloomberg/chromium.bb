@@ -845,40 +845,11 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerTest,
   ASSERT_TRUE(CheckDevicesListContains(content::MEDIA_DEVICE_VIDEO_CAPTURE));
 }
 
-// For Pepper request from insecure origin, even if it's ALLOW, it won't be
-// changed to ASK.
 IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerTest,
                        PepperRequestInsecure) {
   InitWithUrl(GURL("http://www.example.com"));
 
   SetPromptResponseType(PermissionRequestManager::ACCEPT_ALL);
-
-  {
-    // Test that with the kRequireSecureOriginsForPepperMediaRequests flag
-    // disabled that permission will be denied. TODO(raymes): Remove this when
-    // crbug.com/526324 is fixed.
-    base::test::ScopedFeatureList scoped_feature_list;
-    if (GetParam() == TestType::TEST_WITH_GROUPED_MEDIA_REQUESTS) {
-      scoped_feature_list.InitWithFeatures(
-          {features::kUsePermissionManagerForMediaRequests},
-          {features::kRequireSecureOriginsForPepperMediaRequests});
-    } else {
-      scoped_feature_list.InitWithFeatures(
-          {}, {features::kUsePermissionManagerForMediaRequests,
-               features::kRequireSecureOriginsForPepperMediaRequests});
-    }
-    RequestPermissions(
-        GetWebContents(),
-        CreateRequestWithType(example_audio_id(), std::string(),
-                              content::MEDIA_OPEN_DEVICE_PEPPER_ONLY),
-        base::Bind(&MediaStreamDevicesControllerTest::OnMediaStreamResponse,
-                   base::Unretained(this)));
-    ASSERT_EQ(2u, TotalPromptRequestCount());
-
-    ASSERT_EQ(content::MEDIA_DEVICE_OK, media_stream_result());
-    ASSERT_TRUE(CheckDevicesListContains(content::MEDIA_DEVICE_AUDIO_CAPTURE));
-    ASSERT_FALSE(CheckDevicesListContains(content::MEDIA_DEVICE_VIDEO_CAPTURE));
-  }
 
   ResetPromptCounters();
   RequestPermissions(
