@@ -165,6 +165,10 @@ class MockInputRouterImplClient : public InputRouterImplClient {
     return input_router_client_.GetAndResetOverscroll();
   }
 
+  cc::TouchAction GetAndResetWhiteListedTouchAction() {
+    return input_router_client_.GetAndResetWhiteListedTouchAction();
+  }
+
   void set_input_router(InputRouter* input_router) {
     input_router_client_.set_input_router(input_router);
   }
@@ -418,6 +422,13 @@ class InputRouterImplTest : public testing::Test {
   void OnSetTouchAction(cc::TouchAction touch_action) {
     input_router_->OnMessageReceived(
         InputHostMsg_SetTouchAction(0, touch_action));
+  }
+
+  void OnSetWhiteListedTouchAction(cc::TouchAction white_listed_touch_action,
+                                   uint32_t unique_touch_event_id,
+                                   InputEventAckState ack_result) {
+    input_router_->OnMessageReceived(InputHostMsg_SetWhiteListedTouchAction(
+        0, white_listed_touch_action, unique_touch_event_id, ack_result));
   }
 
   DispatchedEvents GetAndResetDispatchedEvents() {
@@ -1839,6 +1850,17 @@ TEST_F(InputRouterImplWheelScrollLatchingDisabledTest, OverscrollDispatch) {
 }
 TEST_F(InputRouterImplAsyncWheelEventEnabledTest, OverscrollDispatch) {
   OverscrollDispatch();
+}
+
+// Test proper routing of whitelisted touch action notifications received from
+// |SetWhiteListedTouchAction| IPC messages.
+TEST_F(InputRouterImplTest, OnSetWhiteListedTouchAction) {
+  cc::TouchAction touch_action = cc::kTouchActionPanY;
+  OnSetWhiteListedTouchAction(touch_action, 0,
+                              INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  cc::TouchAction white_listed_touch_action =
+      client_->GetAndResetWhiteListedTouchAction();
+  EXPECT_EQ(touch_action, white_listed_touch_action);
 }
 
 // Tests that touch event stream validation passes when events are filtered
