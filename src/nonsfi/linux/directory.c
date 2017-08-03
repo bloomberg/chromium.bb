@@ -22,7 +22,15 @@
 #include "native_client/src/nonsfi/linux/linux_sys_private.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_structs.h"
 
+/*
+ * The amount of space reserved for getdents64() usage.
+ */
 #define _DIRBLKSIZ 512
+
+struct buffers {
+  char getdents_buf[_DIRBLKSIZ];
+  struct dirent converted_entry;
+};
 
 DIR *fdopendir(int fd) {
   /*
@@ -44,7 +52,7 @@ DIR *fdopendir(int fd) {
     return NULL;
   }
 
-  dirp->dd_buf = malloc(_DIRBLKSIZ);
+  dirp->dd_buf = malloc(sizeof(struct buffers));
   if (dirp->dd_buf == NULL) {
     free(dirp);
     return NULL;
@@ -108,8 +116,11 @@ int readdir_r(DIR *dirp, struct dirent *entry, struct dirent **result) {
   }
 }
 
-/* Now we do not support readdir(). */
 struct dirent *readdir(DIR *dirp) {
-  fprintf(stderr, "readdir() is not supported now.\n");
-  abort();
+  struct dirent *de;
+  int error =
+      readdir_r(dirp, &((struct buffers *)dirp->dd_buf)->converted_entry, &de);
+  if (error)
+    errno = error;
+  return de;
 }
