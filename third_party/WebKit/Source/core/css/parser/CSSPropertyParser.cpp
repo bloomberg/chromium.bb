@@ -1378,18 +1378,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
   }
 
   switch (property) {
-    case CSSPropertyMarker: {
-      const CSSValue* marker = ParseSingleValue(CSSPropertyMarkerStart);
-      if (!marker || !range_.AtEnd())
-        return false;
-      AddParsedProperty(CSSPropertyMarkerStart, CSSPropertyMarker, *marker,
-                        important);
-      AddParsedProperty(CSSPropertyMarkerMid, CSSPropertyMarker, *marker,
-                        important);
-      AddParsedProperty(CSSPropertyMarkerEnd, CSSPropertyMarker, *marker,
-                        important);
-      return true;
-    }
     case CSSPropertyBorder:
       return ConsumeBorder(important);
     case CSSPropertyBackgroundRepeat:
@@ -1414,23 +1402,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
       return ConsumeBackgroundShorthand(backgroundShorthand(), important);
     case CSSPropertyWebkitMask:
       return ConsumeBackgroundShorthand(webkitMaskShorthand(), important);
-    case CSSPropertyGridGap: {
-      DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
-      DCHECK_EQ(shorthandForProperty(CSSPropertyGridGap).length(), 2u);
-      CSSValue* row_gap = ConsumeLengthOrPercent(range_, context_->Mode(),
-                                                 kValueRangeNonNegative);
-      CSSValue* column_gap = ConsumeLengthOrPercent(range_, context_->Mode(),
-                                                    kValueRangeNonNegative);
-      if (!row_gap || !range_.AtEnd())
-        return false;
-      if (!column_gap)
-        column_gap = row_gap;
-      AddParsedProperty(CSSPropertyGridRowGap, CSSPropertyGridGap, *row_gap,
-                        important);
-      AddParsedProperty(CSSPropertyGridColumnGap, CSSPropertyGridGap,
-                        *column_gap, important);
-      return true;
-    }
     case CSSPropertyGridTemplate:
       return ConsumeGridTemplateShorthand(CSSPropertyGridTemplate, important);
     case CSSPropertyGrid:
