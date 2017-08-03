@@ -84,8 +84,7 @@ class TodayMetricsLog : public metrics::MetricsLog {
   TodayMetricsLog(const std::string& client_id,
                   int session_id,
                   LogType log_type,
-                  TodayMetricsServiceClient* client,
-                  PrefService* local_state);
+                  TodayMetricsServiceClient* client);
 
   // Fills |encoded_log| with the serialized protobuf representation of the
   // record. Can be called even on open log.
@@ -158,13 +157,8 @@ base::TimeDelta TodayMetricsServiceClient::GetStandardUploadInterval() {
 TodayMetricsLog::TodayMetricsLog(const std::string& client_id,
                                  int session_id,
                                  LogType log_type,
-                                 TodayMetricsServiceClient* client,
-                                 PrefService* local_state)
-    : metrics::MetricsLog(client_id,
-                          session_id,
-                          log_type,
-                          client,
-                          local_state) {}
+                                 TodayMetricsServiceClient* client)
+    : metrics::MetricsLog(client_id, session_id, log_type, client) {}
 
 void TodayMetricsLog::GetOpenEncodedLog(std::string* encoded_log) const {
   uma_proto()->SerializeToString(encoded_log);
@@ -239,8 +233,7 @@ bool TodayMetricsLogger::CreateNewLog() {
       session_id, app_group::APP_GROUP_TODAY_EXTENSION);
   log_.reset(new TodayMetricsLog(base::SysNSStringToUTF8(client_id), session_id,
                                  metrics::MetricsLog::ONGOING_LOG,
-                                 metrics_service_client_.get(),
-                                 pref_service_.get()));
+                                 metrics_service_client_.get()));
 
   metrics::DelegatingProvider delegating_provider;
   log_->RecordEnvironment(&delegating_provider, [install_date longLongValue],
@@ -250,25 +243,12 @@ bool TodayMetricsLogger::CreateNewLog() {
 }
 
 TodayMetricsLogger::TodayMetricsLogger()
-    : pref_registry_(new PrefRegistrySimple()),
-      thread_pool_(
+    : thread_pool_(
           new base::SequencedWorkerPool(2,
                                         "LoggerPool",
                                         base::TaskPriority::BACKGROUND)),
       metrics_service_client_(new TodayMetricsServiceClient()),
       histogram_snapshot_manager_(this) {
-  metrics::MetricsLog::RegisterPrefs(pref_registry_.get());
-
-  NSString* url = [[NSSearchPathForDirectoriesInDomains(
-      NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0]
-      stringByAppendingPathComponent:@"Application Support/localstate"];
-  base::FilePath path(base::SysNSStringToUTF8(url));
-  sequenced_task_runner_ =
-      JsonPrefStore::GetTaskRunnerForFile(path, thread_pool_.get());
-  PrefServiceFactory factory;
-  factory.set_extension_prefs(value_map_prefs_.get());
-  factory.SetUserPrefsFile(path, sequenced_task_runner_.get());
-  pref_service_ = factory.Create(pref_registry_.get());
   base::StatisticsRecorder::Initialize();
 }
 

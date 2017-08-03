@@ -20,6 +20,7 @@
 #include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/machine_id_provider.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -50,6 +51,22 @@ void LogLowEntropyValue(int low_entropy_source_value) {
                               low_entropy_source_value);
 }
 
+class MetricsStateMetricsProvider : public MetricsProvider {
+ public:
+  MetricsStateMetricsProvider(PrefService* local_state)
+      : local_state_(local_state) {}
+
+  // MetricsProvider:
+  void ProvideCurrentSessionData(
+      ChromeUserMetricsExtension* uma_proto) override {
+    if (local_state_->GetBoolean(prefs::kMetricsResetIds))
+      UMA_HISTOGRAM_BOOLEAN("UMA.IsClonedInstall", true);
+  }
+
+ private:
+  PrefService* local_state_;
+};
+
 }  // namespace
 
 // static
@@ -79,6 +96,10 @@ MetricsStateManager::MetricsStateManager(
 MetricsStateManager::~MetricsStateManager() {
   DCHECK(instance_exists_);
   instance_exists_ = false;
+}
+
+std::unique_ptr<MetricsProvider> MetricsStateManager::GetProvider() {
+  return base::MakeUnique<MetricsStateMetricsProvider>(local_state_);
 }
 
 bool MetricsStateManager::IsMetricsReportingEnabled() {

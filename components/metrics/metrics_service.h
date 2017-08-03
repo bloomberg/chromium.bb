@@ -183,6 +183,16 @@ class MetricsService : public base::HistogramFlattener {
     return reporting_service_.metrics_log_store();
   }
 
+  // Records the current environment (system profile) in |log|, and persists
+  // the results in prefs.
+  // Exposed for testing.
+  static std::string RecordCurrentEnvironmentHelper(
+      MetricsLog* log,
+      PrefService* local_state,
+      DelegatingProvider* delegating_provider,
+      int64_t install_date,
+      int64_t enable_date);
+
  private:
   // The MetricsService has a lifecycle that is stored as a state.
   // See metrics_service.cc for description of this lifecycle.
@@ -284,7 +294,9 @@ class MetricsService : public base::HistogramFlattener {
   // Creates a new MetricsLog instance with the given |log_type|.
   std::unique_ptr<MetricsLog> CreateLog(MetricsLog::LogType log_type);
 
-  // Records the current environment (system profile) in |log|.
+  // Records the current environment (system profile) in |log|, and persists
+  // the results in prefs and GlobalPersistentSystemProfile.
+  // Exposed for testing.
   void RecordCurrentEnvironment(MetricsLog* log);
 
   // Record complete list of histograms into the current log.
