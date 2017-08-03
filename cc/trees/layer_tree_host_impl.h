@@ -539,7 +539,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   // Returns the amount of delta that can be applied to scroll_node, taking
   // page scale into account.
-  gfx::Vector2dF ComputeScrollDelta(ScrollNode* scroll_node,
+  gfx::Vector2dF ComputeScrollDelta(const ScrollNode& scroll_node,
                                     const gfx::Vector2dF& delta);
 
   void ScheduleMicroBenchmark(std::unique_ptr<MicroBenchmarkImpl> benchmark);
@@ -613,6 +613,9 @@ class CC_EXPORT LayerTreeHostImpl
 
   void ClearImageCacheOnNavigation();
 
+  bool CanConsumeDelta(const ScrollNode& scroll_node,
+                       const ScrollState& scroll_state);
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,
@@ -681,8 +684,6 @@ class CC_EXPORT LayerTreeHostImpl
       InputHandler::ScrollInputType type);
   bool IsInitialScrollHitTestReliable(LayerImpl* layer, const gfx::PointF&);
   void DistributeScrollDelta(ScrollState* scroll_state);
-  bool CanConsumeDelta(ScrollNode* scroll_node,
-                       const ScrollState& scroll_state);
 
   bool AnimatePageScale(base::TimeTicks monotonic_time);
   bool AnimateScrollbars(base::TimeTicks monotonic_time);

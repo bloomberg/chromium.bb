@@ -640,6 +640,8 @@ void SimulateGestureScrollSequence(WebContents* web_contents,
   scroll_begin.source_device = blink::kWebGestureDeviceTouchpad;
   scroll_begin.x = point.x();
   scroll_begin.y = point.y();
+  scroll_begin.data.scroll_begin.delta_x_hint = delta.x();
+  scroll_begin.data.scroll_begin.delta_y_hint = delta.y();
   widget_host->ForwardGestureEvent(scroll_begin);
 
   blink::WebGestureEvent scroll_update(

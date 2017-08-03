@@ -407,8 +407,10 @@ void RenderWidgetHostViewChildFrame::SetIsInert() {
 void RenderWidgetHostViewChildFrame::GestureEventAck(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
-  bool not_consumed = ack_result == INPUT_EVENT_ACK_STATE_NOT_CONSUMED ||
-                      ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
+  bool should_bubble =
+      ack_result == INPUT_EVENT_ACK_STATE_NOT_CONSUMED ||
+      ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS ||
+      ack_result == INPUT_EVENT_ACK_STATE_CONSUMED_SHOULD_BUBBLE;
 
   if (!frame_connector_)
     return;
@@ -419,7 +421,7 @@ void RenderWidgetHostViewChildFrame::GestureEventAck(
     // frame_connector_ decides to forward them for bubbling if the
     // GestureScrollBegin event is forwarded.
     if ((event.GetType() == blink::WebInputEvent::kGestureScrollBegin &&
-         not_consumed) ||
+         should_bubble) ||
         event.GetType() == blink::WebInputEvent::kGestureScrollUpdate ||
         event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
         event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
@@ -433,7 +435,7 @@ void RenderWidgetHostViewChildFrame::GestureEventAck(
     // always forwarded and handled according to current scroll state in the
     // RenderWidgetHostInputEventRouter.
     if ((event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
-         not_consumed) ||
+         should_bubble) ||
         event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
         event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
       frame_connector_->BubbleScrollEvent(event);

@@ -2869,6 +2869,19 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
     return scroll_status;
   }
 
+  // If the viewport is scrolling and it cannot consume any delta hints, the
+  // scroll event will need to get bubbled if the viewport is for a guest or
+  // oopif.
+  ScrollNode* viewport_scroll_node =
+      viewport()->MainScrollLayer()
+          ? active_tree_->property_trees()->scroll_tree.Node(
+                viewport()->MainScrollLayer()->scroll_tree_index())
+          : nullptr;
+  if (active_tree_->CurrentlyScrollingNode() == viewport_scroll_node &&
+      !viewport()->CanScroll(*scroll_state)) {
+    scroll_status.bubble = true;
+  }
+
   client_->RenewTreePriority();
   RecordCompositorSlowScrollMetric(type, CC_THREAD);
 
@@ -3032,20 +3045,20 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(
 }
 
 gfx::Vector2dF LayerTreeHostImpl::ComputeScrollDelta(
-    ScrollNode* scroll_node,
+    const ScrollNode& scroll_node,
     const gfx::Vector2dF& delta) {
   ScrollTree& scroll_tree = active_tree()->property_trees()->scroll_tree;
   float scale_factor = active_tree()->current_page_scale_factor();
 
   gfx::Vector2dF adjusted_scroll(delta);
   adjusted_scroll.Scale(1.f / scale_factor);
-  if (!scroll_node->user_scrollable_horizontal)
+  if (!scroll_node.user_scrollable_horizontal)
     adjusted_scroll.set_x(0);
-  if (!scroll_node->user_scrollable_vertical)
+  if (!scroll_node.user_scrollable_vertical)
     adjusted_scroll.set_y(0);
 
   gfx::ScrollOffset old_offset =
-      scroll_tree.current_scroll_offset(scroll_node->element_id);
+      scroll_tree.current_scroll_offset(scroll_node.element_id);
   gfx::ScrollOffset new_offset = scroll_tree.ClampScrollOffsetToLimits(
       old_offset + gfx::ScrollOffset(adjusted_scroll), scroll_node);
 
@@ -3071,7 +3084,7 @@ bool LayerTreeHostImpl::ScrollAnimationCreate(ScrollNode* scroll_node,
   gfx::ScrollOffset current_offset =
       scroll_tree.current_scroll_offset(scroll_node->element_id);
   gfx::ScrollOffset target_offset = scroll_tree.ClampScrollOffsetToLimits(
-      current_offset + gfx::ScrollOffset(delta), scroll_node);
+      current_offset + gfx::ScrollOffset(delta), *scroll_node);
 
   // Start the animation one full frame in. Without any offset, the animation
   // doesn't start until next frame, increasing latency, and preventing our
@@ -3184,7 +3197,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
       }
 
       gfx::Vector2dF scroll_delta =
-          ComputeScrollDelta(scroll_node, pending_delta);
+          ComputeScrollDelta(*scroll_node, pending_delta);
       if (ScrollAnimationCreate(scroll_node, scroll_delta, delayed_by)) {
         scroll_animating_latched_node_id_ = scroll_node->id;
         return scroll_status;
@@ -3446,7 +3459,7 @@ void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
       if (!scroll_node->scrollable)
         continue;
 
-      if (CanConsumeDelta(scroll_node, *scroll_state))
+      if (CanConsumeDelta(*scroll_node, *scroll_state))
         current_scroll_chain.push_front(scroll_node);
 
       float delta_x = scroll_state->is_beginning()
@@ -3467,9 +3480,8 @@ void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
   scroll_state->DistributeToScrollChainDescendant();
 }
 
-bool LayerTreeHostImpl::CanConsumeDelta(ScrollNode* scroll_node,
+bool LayerTreeHostImpl::CanConsumeDelta(const ScrollNode& scroll_node,
                                         const ScrollState& scroll_state) {
-  DCHECK(scroll_node);
   gfx::Vector2dF delta_to_scroll;
   if (scroll_state.is_beginning()) {
     delta_to_scroll = gfx::Vector2dF(scroll_state.delta_x_hint(),
@@ -3486,7 +3498,7 @@ bool LayerTreeHostImpl::CanConsumeDelta(ScrollNode* scroll_node,
   if (scroll_state.is_direct_manipulation()) {
     gfx::Vector2dF local_scroll_delta;
     if (!CalculateLocalScrollDeltaAndStartPoint(
-            *scroll_node,
+            scroll_node,
             gfx::PointF(scroll_state.position_x(), scroll_state.position_y()),
             delta_to_scroll, scroll_tree, &local_scroll_delta)) {
       return false;

@@ -447,8 +447,9 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   gfx::Vector2dF ScrollBy(ScrollNode* scroll_node,
                           const gfx::Vector2dF& scroll,
                           LayerTreeImpl* layer_tree_impl);
-  gfx::ScrollOffset ClampScrollOffsetToLimits(gfx::ScrollOffset offset,
-                                              ScrollNode* scroll_node) const;
+  gfx::ScrollOffset ClampScrollOffsetToLimits(
+      gfx::ScrollOffset offset,
+      const ScrollNode& scroll_node) const;
 
   const SyncedScrollOffset* GetSyncedScrollOffset(ElementId id) const;
 

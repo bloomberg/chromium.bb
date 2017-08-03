@@ -831,7 +831,10 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
                            "InputHandlerProxy::handle_input gesture scroll",
                            TRACE_EVENT_SCOPE_THREAD);
       gesture_scroll_on_impl_thread_ = true;
-      result = DID_HANDLE;
+      if (scroll_status.bubble)
+        result = DID_HANDLE_SHOULD_BUBBLE;
+      else
+        result = DID_HANDLE;
       break;
     case cc::InputHandler::SCROLL_UNKNOWN:
     case cc::InputHandler::SCROLL_ON_MAIN_THREAD:
@@ -1589,6 +1592,7 @@ bool InputHandlerProxy::TouchpadFlingScroll(
       CancelCurrentFlingWithoutNotifyingClient();
       break;
     case DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING:
+    case DID_HANDLE_SHOULD_BUBBLE:
       NOTREACHED();
       return false;
   }

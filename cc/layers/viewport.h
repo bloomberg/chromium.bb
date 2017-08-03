@@ -50,6 +50,8 @@ class CC_EXPORT Viewport {
                         bool affect_browser_controls,
                         bool scroll_outer_viewport);
 
+  bool CanScroll(const ScrollState& scroll_state) const;
+
   // Scrolls the viewport. Unlike the above method, scrolls the inner before
   // the outer viewport. Doesn't affect browser controls or return a result
   // since callers don't need it.
