@@ -18,8 +18,19 @@
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
+#include "public/web/WebKit.h"
 
 namespace blink {
+
+// Wrapper functions defined in WebKit.h
+void MemoryPressureNotificationToWorkerThreadIsolates(
+    v8::MemoryPressureLevel level) {
+  WorkerBackingThread::MemoryPressureNotificationToWorkerThreadIsolates(level);
+}
+
+void SetRAILModeOnWorkerThreadIsolates(v8::RAILMode rail_mode) {
+  WorkerBackingThread::SetRAILModeOnWorkerThreadIsolates(rail_mode);
+}
 
 static Mutex& IsolatesMutex() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());

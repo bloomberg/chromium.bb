@@ -31,8 +31,26 @@
 #include "platform/LayoutTestSupport.h"
 
 #include "platform/wtf/Assertions.h"
+#include "public/web/WebKit.h"
 
 namespace blink {
+
+// Wrapper functions defined in WebKit.h
+void SetLayoutTestMode(bool value) {
+  LayoutTestSupport::SetIsRunningLayoutTest(value);
+}
+
+bool LayoutTestMode() {
+  return LayoutTestSupport::IsRunningLayoutTest();
+}
+
+void SetFontAntialiasingEnabledForTest(bool value) {
+  LayoutTestSupport::SetFontAntialiasingEnabledForTest(value);
+}
+
+bool FontAntialiasingEnabledForTest() {
+  return LayoutTestSupport::IsFontAntialiasingEnabledForTest();
+}
 
 static bool g_is_running_layout_test = false;
 static bool g_is_mock_theme_enabled = false;

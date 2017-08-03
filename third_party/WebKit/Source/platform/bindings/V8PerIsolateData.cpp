@@ -37,9 +37,15 @@
 #include "platform/wtf/LeakAnnotations.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
+#include "public/web/WebKit.h"
 #include "v8/include/v8-debug.h"
 
 namespace blink {
+
+// Wrapper function defined in WebKit.h
+v8::Isolate* MainThreadIsolate() {
+  return V8PerIsolateData::MainThreadIsolate();
+}
 
 static V8PerIsolateData* g_main_thread_per_isolate_data = 0;
 
