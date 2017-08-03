@@ -196,6 +196,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'amd', 'passthrough', 'd3d11'], bug=685232)
 
     # Win / NVIDIA / Passthrough command decoder / D3D11
+    self.Flaky('conformance/extensions/oes-texture-half-float-with-video.html',
+        ['win7', 'nvidia', 'passthrough', 'd3d11', 'debug'], bug=751849)
     self.Flaky('conformance/programs/program-test.html',
         ['win', 'nvidia', 'passthrough', 'd3d11'], bug=737016)
 
