@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include "base/strings/string_piece.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "url/origin.h"
 
@@ -35,26 +36,31 @@ using FeatureToTokensMap = std::map<std::string /* feature_name */,
 CONTENT_EXPORT blink::WebOriginTrialTokenStatus ValidateToken(
     const std::string& token,
     const url::Origin& origin,
-    std::string* feature_name);
+    std::string* feature_name,
+    base::Time current_time);
 
 CONTENT_EXPORT bool RequestEnablesFeature(const net::URLRequest* request,
-                                          base::StringPiece feature_name);
+                                          base::StringPiece feature_name,
+                                          base::Time current_time);
 
 CONTENT_EXPORT bool RequestEnablesFeature(
     const GURL& request_url,
     const net::HttpResponseHeaders* response_headers,
-    base::StringPiece feature_name);
+    base::StringPiece feature_name,
+    base::Time current_time);
 
 // Returns all valid tokens in |headers|.
 CONTENT_EXPORT std::unique_ptr<FeatureToTokensMap> GetValidTokensFromHeaders(
     const url::Origin& origin,
-    const net::HttpResponseHeaders* headers);
+    const net::HttpResponseHeaders* headers,
+    base::Time current_time);
 
 // Returns all valid tokens in |tokens|. This method is used to re-validate
 // previously stored tokens.
 CONTENT_EXPORT std::unique_ptr<FeatureToTokensMap> GetValidTokens(
     const url::Origin& origin,
-    const FeatureToTokensMap& tokens);
+    const FeatureToTokensMap& tokens,
+    base::Time current_time);
 
 }  // namespace TrialTokenValidator
 

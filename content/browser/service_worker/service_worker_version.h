@@ -25,6 +25,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -391,6 +392,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Used to allow tests to change time for testing.
   void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
+
+  // Used to allow tests to change wall clock for testing.
+  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
 
   // Returns true if the service worker has work to do: it has pending
   // requests, in-progress streaming URLRequestJobs, or pending start callbacks.
@@ -793,6 +797,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // The clock used to vend tick time.
   std::unique_ptr<base::TickClock> tick_clock_;
+
+  // The clock used for actual (wall clock) time
+  std::unique_ptr<base::Clock> clock_;
 
   std::unique_ptr<PingController> ping_controller_;
 
