@@ -66,6 +66,10 @@ class VIEWS_EXPORT PlatformStyle {
   // opens in the opposite direction.
   static const bool kMirrorBubbleArrowInRTLByDefault;
 
+  // Whether to scroll text fields to the beginning when they gain or lose
+  // focus.
+  static const bool kTextfieldScrollsToStartOnFocusChange;
+
   // Creates the default scrollbar for the given orientation.
   static std::unique_ptr<ScrollBar> CreateScrollBar(bool is_horizontal);
 
