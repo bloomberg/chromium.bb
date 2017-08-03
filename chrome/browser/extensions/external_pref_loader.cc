@@ -18,6 +18,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/lazy_task_runner.h"
 #include "build/build_config.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
@@ -26,6 +27,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_file_task_runner.h"
 
 using content::BrowserThread;
 
@@ -36,7 +38,7 @@ base::FilePath::CharType kExternalExtensionJson[] =
 
 std::set<base::FilePath> GetPrefsCandidateFilesFromFolder(
       const base::FilePath& external_extension_search_path) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  base::ThreadRestrictions::AssertIOAllowed();
 
   std::set<base::FilePath> external_extension_paths;
 
@@ -144,9 +146,8 @@ void ExternalPrefLoader::StartLoading() {
       }
     }
   } else {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::BindOnce(&ExternalPrefLoader::LoadOnFileThread, this));
+    GetExtensionFileTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(&ExternalPrefLoader::LoadOnFileThread, this));
   }
 }
 
@@ -185,15 +186,14 @@ void ExternalPrefLoader::PostLoadAndRemoveObservers() {
   DCHECK(service);
   service->RemoveObserver(this);
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::BindOnce(&ExternalPrefLoader::LoadOnFileThread, this));
+  GetExtensionFileTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&ExternalPrefLoader::LoadOnFileThread, this));
 }
 
 void ExternalPrefLoader::LoadOnFileThread() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  base::ThreadRestrictions::AssertIOAllowed();
 
-  std::unique_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
+  auto prefs = base::MakeUnique<base::DictionaryValue>();
 
   // TODO(skerner): Some values of base_path_id_ will cause
   // PathService::Get() to return false, because the path does
@@ -233,7 +233,7 @@ void ExternalPrefLoader::LoadOnFileThread() {
 
 void ExternalPrefLoader::ReadExternalExtensionPrefFile(
     base::DictionaryValue* prefs) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  base::ThreadRestrictions::AssertIOAllowed();
   CHECK(NULL != prefs);
 
   base::FilePath json_file = base_path_.Append(kExternalExtensionJson);
@@ -271,7 +271,7 @@ void ExternalPrefLoader::ReadExternalExtensionPrefFile(
 
 void ExternalPrefLoader::ReadStandaloneExtensionPrefFiles(
     base::DictionaryValue* prefs) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  base::ThreadRestrictions::AssertIOAllowed();
   CHECK(NULL != prefs);
 
   // First list the potential .json candidates.
