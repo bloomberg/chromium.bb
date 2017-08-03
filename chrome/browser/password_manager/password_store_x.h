@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 
@@ -89,10 +90,11 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
     GetBackgroundTaskRunner() = 0;
   };
 
-  // |backend| may be NULL in which case this PasswordStoreX will act the same
-  // as PasswordStoreDefault.
-  PasswordStoreX(std::unique_ptr<password_manager::LoginDatabase> login_db,
-                 std::unique_ptr<NativeBackend> backend);
+  // Takes ownership of |login_db| and |backend|. |backend| may be NULL in which
+  // case this PasswordStoreX will act the same as PasswordStoreDefault.
+  PasswordStoreX(scoped_refptr<base::SequencedTaskRunner> main_thread_runner,
+                 std::unique_ptr<password_manager::LoginDatabase> login_db,
+                 NativeBackend* backend);
 
  private:
   friend class PasswordStoreXTest;
@@ -100,8 +102,6 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
   ~PasswordStoreX() override;
 
   // Implements PasswordStore interface.
-  scoped_refptr<base::SequencedTaskRunner> CreateBackgroundTaskRunner()
-      const override;
   password_manager::PasswordStoreChangeList AddLoginImpl(
       const autofill::PasswordForm& form) override;
   password_manager::PasswordStoreChangeList UpdateLoginImpl(

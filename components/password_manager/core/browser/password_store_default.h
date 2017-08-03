@@ -10,8 +10,11 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/sequenced_task_runner.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_store.h"
+
+class PrefService;
 
 namespace password_manager {
 
@@ -20,8 +23,14 @@ namespace password_manager {
 class PasswordStoreDefault : public PasswordStore {
  public:
   // The |login_db| must not have been Init()-ed yet. It will be initialized in
-  // a deferred manner on the background thread.
-  explicit PasswordStoreDefault(std::unique_ptr<LoginDatabase> login_db);
+  // a deferred manner on the DB thread.
+  PasswordStoreDefault(
+      scoped_refptr<base::SequencedTaskRunner> main_thread_runner,
+      scoped_refptr<base::SequencedTaskRunner> db_thread_runner,
+      std::unique_ptr<LoginDatabase> login_db);
+
+  bool Init(const syncer::SyncableService::StartSyncFlare& flare,
+            PrefService* prefs) override;
 
   void ShutdownOnUIThread() override;
 
@@ -31,9 +40,8 @@ class PasswordStoreDefault : public PasswordStore {
  protected:
   ~PasswordStoreDefault() override;
 
-  // Opens |login_db_| on the background thread.
-  void InitOnBackgroundThread(
-      const syncer::SyncableService::StartSyncFlare& flare) override;
+  // Opens |login_db_| on the DB thread.
+  void InitOnDBThread();
 
   // Implements PasswordStore interface.
   void ReportMetricsImpl(const std::string& sync_username,
@@ -84,8 +92,8 @@ class PasswordStoreDefault : public PasswordStore {
 
   // The login SQL database. The LoginDatabase instance is received via the
   // in an uninitialized state, so as to allow injecting mocks, then Init() is
-  // called on the background thread in a deferred manner. If opening the DB
-  // fails, |login_db_| will be reset and stay NULL for the lifetime of |this|.
+  // called on the DB thread in a deferred manner. If opening the DB fails,
+  // |login_db_| will be reset and stay NULL for the lifetime of |this|.
   std::unique_ptr<LoginDatabase> login_db_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreDefault);

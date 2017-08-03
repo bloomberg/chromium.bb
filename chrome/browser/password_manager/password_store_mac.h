@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/threading/thread.h"
 #include "components/password_manager/core/browser/keychain_migration_status_mac.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 #include "components/prefs/pref_member.h"
@@ -19,13 +20,15 @@ class LoginDatabase;
 // Password store for Mac. It creates a dedicated background thread
 class PasswordStoreMac : public password_manager::PasswordStoreDefault {
  public:
-  PasswordStoreMac(std::unique_ptr<password_manager::LoginDatabase> login_db,
+  PasswordStoreMac(scoped_refptr<base::SequencedTaskRunner> main_thread_runner,
+                   std::unique_ptr<password_manager::LoginDatabase> login_db,
                    PrefService* prefs);
 
   // PasswordStore:
   bool Init(const syncer::SyncableService::StartSyncFlare& flare,
             PrefService* prefs) override;
   void ShutdownOnUIThread() override;
+  scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner() override;
 
 #if defined(UNIT_TEST)
   password_manager::LoginDatabase* login_metadata_db() { return login_db(); }
@@ -34,18 +37,16 @@ class PasswordStoreMac : public password_manager::PasswordStoreDefault {
  private:
   ~PasswordStoreMac() override;
 
-  // PasswordStore:
-  void InitOnBackgroundThread(
-      const syncer::SyncableService::StartSyncFlare& flare) override;
+  void InitOnBackgroundThread(password_manager::MigrationStatus status);
 
   // Writes status to the prefs.
   void UpdateStatusPref(password_manager::MigrationStatus status);
 
-  // Bound to the pref containing migration status for the profile.
-  IntegerPrefMember migration_status_;
+  // Thread that the synchronous methods are run on.
+  std::unique_ptr<base::Thread> thread_;
 
-  // Initial migration status when the class is initialized.
-  password_manager::MigrationStatus initial_status_;
+  // Current migration status for the profile.
+  IntegerPrefMember migration_status_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreMac);
 };
