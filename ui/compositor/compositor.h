@@ -234,6 +234,11 @@ class COMPOSITOR_EXPORT Compositor
   // compositing layers on.
   float device_scale_factor() const { return device_scale_factor_; }
 
+  // The color space of the device that this compositor is being displayed on.
+  const gfx::ColorSpace& output_color_space() const {
+    return output_color_space_;
+  }
+
   // Where possible, draws are scissored to a damage region calculated from
   // changes to layer properties.  This bypasses that and indicates that
   // the whole frame needs to be drawn.

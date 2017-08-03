@@ -68,6 +68,12 @@ void TestScreen::SetDeviceScaleFactor(float device_scale_factor) {
   host_->OnHostResizedInPixels(bounds_in_pixel.size());
 }
 
+void TestScreen::SetColorSpace(const gfx::ColorSpace& color_space) {
+  display::Display display(GetPrimaryDisplay());
+  display.set_color_space(color_space);
+  display_list().UpdateDisplay(display);
+}
+
 void TestScreen::SetDisplayRotation(display::Display::Rotation rotation) {
   display::Display display(GetPrimaryDisplay());
   gfx::Rect bounds_in_pixel(display.GetSizeInPixel());

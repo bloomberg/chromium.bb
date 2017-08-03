@@ -356,7 +356,7 @@ void WindowTreeHost::OnDisplayMetricsChanged(const display::Display& display,
   if (metrics & DisplayObserver::DISPLAY_METRIC_COLOR_SPACE) {
     display::Screen* screen = display::Screen::GetScreen();
     if (compositor_ &&
-        display.id() != screen->GetDisplayNearestView(window()).id()) {
+        display.id() == screen->GetDisplayNearestView(window()).id()) {
       compositor_->SetDisplayColorSpace(display.color_space());
     }
   }
