@@ -157,7 +157,13 @@ CSSValue* CSSPropertyFontUtils::ConsumeFontWeight(
   if (token.Id() >= CSSValueNormal && token.Id() <= CSSValueLighter)
     return CSSPropertyParserHelpers::ConsumeIdent(range);
 
-  // Avoid consuming the first zero of font: 0/0; e.g. in the Acid3 test.
+  // Avoid consuming the first zero of font: 0/0; e.g. in the Acid3 test.  In
+  // font:0/0; the first zero is the font size, the second is the line height.
+  // In font: 100 0/0; we should parse the first 100 as font-weight, the 0
+  // before the slash as font size. We need to peek and check the token in order
+  // to avoid parsing a 0 font size as a font-weight. If we call ConsumeNumber
+  // straight away without Peek, then the parsing cursor advances too far and we
+  // parsed font-size as font-weight incorrectly.
   if (token.GetType() == kNumberToken &&
       (token.NumericValue() < 1 || token.NumericValue() > 1000))
     return nullptr;
