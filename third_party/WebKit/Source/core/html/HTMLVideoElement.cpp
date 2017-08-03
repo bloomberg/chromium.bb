@@ -510,7 +510,8 @@ ScriptPromise HTMLVideoElement::CreateImageBitmap(
                         event_target.ToLocalDOMWindow()->document(), options));
 }
 
-void HTMLVideoElement::MediaRemotingStarted() {
+void HTMLVideoElement::MediaRemotingStarted(
+    const WebString& remote_device_friendly_name) {
   DCHECK(media_remoting_status_ == MediaRemotingStatus::kNotStarted);
   media_remoting_status_ = MediaRemotingStatus::kStarted;
   if (!remoting_interstitial_) {
@@ -519,7 +520,7 @@ void HTMLVideoElement::MediaRemotingStarted() {
     shadow_root.InsertBefore(remoting_interstitial_, shadow_root.firstChild());
     HTMLMediaElement::AssertShadowRootChildren(shadow_root);
   }
-  remoting_interstitial_->Show();
+  remoting_interstitial_->Show(remote_device_friendly_name);
 }
 
 void HTMLVideoElement::MediaRemotingStopped() {

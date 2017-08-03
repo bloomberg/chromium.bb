@@ -311,7 +311,8 @@ void RemotePlayback::StateChanged(WebRemotePlaybackState state) {
       DispatchEvent(Event::Create(EventTypeNames::connecting));
       if (RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled() &&
           media_element_->IsHTMLVideoElement()) {
-        toHTMLVideoElement(media_element_)->MediaRemotingStarted();
+        // TODO(xjz): Pass the remote device name.
+        toHTMLVideoElement(media_element_)->MediaRemotingStarted(WebString());
       }
       break;
     case WebRemotePlaybackState::kConnected:

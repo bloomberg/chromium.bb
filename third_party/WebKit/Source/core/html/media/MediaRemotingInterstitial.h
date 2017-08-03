@@ -31,8 +31,11 @@ class MediaRemotingInterstitial final : public HTMLDivElement {
  public:
   explicit MediaRemotingInterstitial(HTMLVideoElement&);
 
-  // Show/Hide Media Remoting interstitial.
-  void Show();
+  // Show/Hide Media Remoting interstitial. |remote_device_friendly_name| will
+  // be shown in the UI to indicate which device the content is rendered on. An
+  // empty name indicates an unknown remote device. A default message will be
+  // shown in this case.
+  void Show(const WebString& remote_device_friendly_name);
   void Hide();
 
   void OnPosterImageChanged();
