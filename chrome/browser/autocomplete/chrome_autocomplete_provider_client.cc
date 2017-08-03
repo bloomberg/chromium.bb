@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
+#include "chrome/browser/autocomplete/contextual_suggestions_service_factory.h"
 #include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
@@ -131,6 +132,11 @@ TemplateURLService* ChromeAutocompleteProviderClient::GetTemplateURLService() {
 const TemplateURLService*
 ChromeAutocompleteProviderClient::GetTemplateURLService() const {
   return TemplateURLServiceFactory::GetForProfile(profile_);
+}
+
+ContextualSuggestionsService*
+ChromeAutocompleteProviderClient::GetContextualSuggestionsService() const {
+  return ContextualSuggestionsServiceFactory::GetForProfile(profile_);
 }
 
 const

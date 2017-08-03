@@ -98,9 +98,6 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   AutocompleteMatch NavigationToMatch(
       const SearchSuggestionParser::NavigationResult& navigation);
 
-  // Fetches zero-suggest suggestions by sending a request using |suggest_url|.
-  void Run(const GURL& suggest_url);
-
   // Converts the parsed results to a set of AutocompleteMatches and adds them
   // to |matches_|.  Also update the histograms for how many results were
   // received.
@@ -112,20 +109,21 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   AutocompleteMatch MatchForCurrentURL();
 
   // When the user is in the Most Visited field trial, we ask the TopSites
-  // service for the most visited URLs during Run().  It calls back to this
-  // function to return those |urls|.
+  // service for the most visited URLs. It then calls back to this function to
+  // return those |urls|.
   void OnMostVisitedUrlsAvailable(const history::MostVisitedURLList& urls);
+
+  // When the user is in the contextual omnibox suggestions field trial, we ask
+  // the ContextualSuggestionsService for a fetcher to retrieve recommendations.
+  // When the fetcher is ready, the contextual suggestion service then calls
+  // back to this function with the |fetcher| to use for the request.
+  void OnContextualSuggestionsFetcherAvailable(
+      std::unique_ptr<net::URLFetcher> fetcher);
 
   // Whether we can show zero suggest suggestions that are not based on
   // |current_page_url|. Also checks that other conditions for non-contextual
   // zero suggest are satisfied.
   bool ShouldShowNonContextualZeroSuggest(const GURL& current_page_url) const;
-
-  // Returns a URL string that should be used to to request contextual
-  // suggestions from the default provider.  Does not take into account whether
-  // sending this request is prohibited (e.g., in an incognito window).  Returns
-  // an empty string in case of an error.
-  std::string GetContextualSuggestionsUrl() const;
 
   // Checks whether we have a set of zero suggest results cached, and if so
   // populates |matches_| with cached results.
