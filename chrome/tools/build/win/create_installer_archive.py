@@ -13,6 +13,7 @@
 """
 
 import ConfigParser
+import fnmatch
 import glob
 import optparse
 import os
@@ -496,11 +497,16 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch,
   # chrome.exe can find them at runtime), except the ones that are already
   # staged (i.e. non-component DLLs).
   build_dlls = ParseDLLsFromDeps(build_dir, chrome_runtime_deps)
-  staged_dll_basenames = [os.path.basename(staged_dll) for staged_dll in \
-                          glob.glob(os.path.join(version_dir, '*.dll'))]
+  # Generate a list of relative dll paths that have already been staged into the
+  # version directory (i.e., non-component DLLs).
+  staged_dlls = [os.path.normcase(os.path.relpath(os.path.join(dir, file),
+                                                  version_dir)) \
+                 for dir, _, files in os.walk(version_dir) \
+                 for file in files if fnmatch.fnmatch(file, '*.dll')]
   component_dll_filenames = []
   for component_dll in [dll for dll in build_dlls if \
-                        os.path.basename(dll) not in staged_dll_basenames]:
+                        os.path.normcase(os.path.relpath(dll, build_dir)) \
+                        not in staged_dlls]:
     component_dll_name = os.path.basename(component_dll)
     component_dll_filenames.append(component_dll_name)
     g_archive_inputs.append(component_dll)
