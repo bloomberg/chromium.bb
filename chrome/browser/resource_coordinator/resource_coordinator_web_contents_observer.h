@@ -10,8 +10,10 @@
 #include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_interface.h"
 #include "services/resource_coordinator/public/interfaces/service_callbacks.mojom.h"
+#include "url/gurl.h"
 
 class ResourceCoordinatorWebContentsObserver
     : public content::WebContentsObserver,
@@ -21,6 +23,8 @@ class ResourceCoordinatorWebContentsObserver
   ~ResourceCoordinatorWebContentsObserver() override;
 
   static bool ukm_recorder_initialized;
+
+  static ukm::SourceId CreateUkmSourceId();
   static bool IsEnabled();
 
   resource_coordinator::ResourceCoordinatorInterface*
@@ -36,6 +40,7 @@ class ResourceCoordinatorWebContentsObserver
 
   void EnsureUkmRecorderInterface();
   void MaybeSetUkmRecorderInterface(bool ukm_recorder_already_initialized);
+  void UpdateUkmRecorder(const GURL& url);
 
  private:
   explicit ResourceCoordinatorWebContentsObserver(
@@ -46,6 +51,7 @@ class ResourceCoordinatorWebContentsObserver
 
   std::unique_ptr<resource_coordinator::ResourceCoordinatorInterface>
       tab_resource_coordinator_;
+  ukm::SourceId ukm_source_id_;
 
   resource_coordinator::mojom::ServiceCallbacksPtr service_callbacks_;
 

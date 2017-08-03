@@ -26,6 +26,8 @@ source_set("lib") {
     "coordination_unit/frame_coordination_unit_impl.h",
     "coordination_unit/process_coordination_unit_impl.cc",
     "coordination_unit/process_coordination_unit_impl.h",
+    "coordination_unit/tab_metrics_collector.cc",
+    "coordination_unit/tab_metrics_collector.h",
     "coordination_unit/tab_signal_generator_impl.cc",
     "coordination_unit/tab_signal_generator_impl.h",
     "coordination_unit/web_contents_coordination_unit_impl.cc",
@@ -44,6 +46,7 @@ source_set("lib") {
     "//base",
     "//components/ukm:ukm",
     "//mojo/public/cpp/bindings",
+    "//services/metrics/public/cpp:ukm_builders",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//services/service_manager/public/cpp/standalone_service:standalone_service",
   ]

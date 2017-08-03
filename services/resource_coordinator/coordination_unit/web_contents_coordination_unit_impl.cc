@@ -15,7 +15,7 @@ WebContentsCoordinationUnitImpl::~WebContentsCoordinationUnitImpl() = default;
 
 std::set<CoordinationUnitImpl*>
 WebContentsCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
-    CoordinationUnitType type) {
+    CoordinationUnitType type) const {
   switch (type) {
     case CoordinationUnitType::kProcess: {
       std::set<CoordinationUnitImpl*> process_coordination_units;

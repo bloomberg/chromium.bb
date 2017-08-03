@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
@@ -93,6 +94,9 @@ class ResourceCoordinatorRenderProcessProbe {
 
   // Number of measurements collected so far.
   size_t current_gather_cycle_ = 0u;
+
+  // Allows FieldTrial parameters to override defaults.
+  void UpdateWithFieldTrialParams();
 
   // Settings/getters for testing.
   void set_render_process_metrics_handler_for_testing(

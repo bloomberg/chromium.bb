@@ -46,6 +46,7 @@ class TabSignalGeneratorImpl : public CoordinationUnitGraphObserver,
 
   mojo::BindingSet<mojom::TabSignalGenerator> bindings_;
   mojo::InterfacePtrSet<mojom::TabSignalObserver> observers_;
+
   DISALLOW_COPY_AND_ASSIGN(TabSignalGeneratorImpl);
 };
 

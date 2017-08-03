@@ -5,16 +5,15 @@
 #ifndef SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_MANAGER_H_
 #define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_MANAGER_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <vector>
 
 #include "base/macros.h"
+#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-
-namespace ukm {
-class MojoUkmRecorder;
-class UkmEntryBuilder;
-}  // namespace ukm
 
 namespace service_manager {
 class ServiceContextRefFactory;
@@ -38,6 +37,7 @@ class CoordinationUnitManager {
   void set_ukm_recorder(ukm::MojoUkmRecorder* ukm_recorder) {
     ukm_recorder_ = ukm_recorder;
   }
+  ukm::MojoUkmRecorder* ukm_recorder() const { return ukm_recorder_; }
 
   void OnStart(service_manager::BinderRegistry* registry,
                service_manager::ServiceContextRefFactory* service_ref_factory);
@@ -46,9 +46,6 @@ class CoordinationUnitManager {
   void OnCoordinationUnitCreated(CoordinationUnitImpl* coordination_unit);
   void OnBeforeCoordinationUnitDestroyed(
       CoordinationUnitImpl* coordination_unit);
-
-  std::unique_ptr<ukm::UkmEntryBuilder> CreateUkmEntryBuilder(
-      const char* event_name);
 
   std::vector<std::unique_ptr<CoordinationUnitGraphObserver>>&
   observers_for_testing() {

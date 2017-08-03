@@ -21,7 +21,7 @@ class WebContentsCoordinationUnitImpl : public CoordinationUnitImpl {
 
   // CoordinationUnitImpl implementation.
   std::set<CoordinationUnitImpl*> GetAssociatedCoordinationUnitsOfType(
-      CoordinationUnitType type) override;
+      CoordinationUnitType type) const override;
   void RecalculateProperty(const mojom::PropertyType property_type) override;
 
  private:

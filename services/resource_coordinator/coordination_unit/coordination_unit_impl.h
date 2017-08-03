@@ -24,6 +24,7 @@ namespace resource_coordinator {
 
 class CoordinationUnitGraphObserver;
 class FrameCoordinationUnitImpl;
+class WebContentsCoordinationUnitImpl;
 
 class CoordinationUnitImpl : public mojom::CoordinationUnit {
  public:
@@ -35,6 +36,10 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
 
   static const FrameCoordinationUnitImpl* ToFrameCoordinationUnit(
       const CoordinationUnitImpl* coordination_unit);
+
+  static const WebContentsCoordinationUnitImpl* ToWebContentsCoordinationUnit(
+      const CoordinationUnitImpl* coordination_unit);
+
   static std::vector<CoordinationUnitImpl*> GetCoordinationUnitsOfType(
       CoordinationUnitType type);
 
@@ -64,7 +69,7 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
   // of type |CoordinationUnitType|. Note that a callee should
   // never be associated with itself.
   virtual std::set<CoordinationUnitImpl*> GetAssociatedCoordinationUnitsOfType(
-      CoordinationUnitType type);
+      CoordinationUnitType type) const;
   // Recalculate property internally.
   virtual void RecalculateProperty(const mojom::PropertyType property_type) {}
 
@@ -95,9 +100,9 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
 
   // Coordination unit graph traversal helper functions.
   std::set<CoordinationUnitImpl*> GetChildCoordinationUnitsOfType(
-      CoordinationUnitType type);
+      CoordinationUnitType type) const;
   std::set<CoordinationUnitImpl*> GetParentCoordinationUnitsOfType(
-      CoordinationUnitType type);
+      CoordinationUnitType type) const;
 
   const CoordinationUnitID id_;
   std::set<CoordinationUnitImpl*> children_;

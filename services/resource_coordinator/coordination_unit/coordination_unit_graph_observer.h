@@ -11,6 +11,7 @@
 namespace resource_coordinator {
 
 class CoordinationUnitImpl;
+class CoordinationUnitManager;
 
 // An observer API for the coordination unit graph maintained by GRC.
 //
@@ -73,7 +74,18 @@ class CoordinationUnitGraphObserver {
   virtual void OnBeforeCoordinationUnitDestroyed(
       const CoordinationUnitImpl* coordination_unit) {}
 
+  void set_coordination_unit_manager(
+      CoordinationUnitManager* coordination_unit_manager) {
+    coordination_unit_manager_ = coordination_unit_manager;
+  }
+
+  const CoordinationUnitManager& coordination_unit_manager() const {
+    return *coordination_unit_manager_;
+  }
+
  private:
+  CoordinationUnitManager* coordination_unit_manager_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(CoordinationUnitGraphObserver);
 };
 

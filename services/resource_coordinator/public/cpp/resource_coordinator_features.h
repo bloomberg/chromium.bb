@@ -27,6 +27,12 @@ namespace resource_coordinator {
 bool SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
 IsResourceCoordinatorEnabled();
 
+int64_t SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
+GetGRCRenderProcessCPUProfilingDurationInMs();
+
+int64_t SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
+GetGRCRenderProcessCPUProfilingIntervalInMs();
+
 }  // namespace resource_coordinator
 
 #endif  // SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_RESOURCE_COORDINATOR_FEATURES_H_
