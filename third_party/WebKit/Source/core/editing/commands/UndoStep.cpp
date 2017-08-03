@@ -15,16 +15,16 @@ uint64_t g_current_sequence_number = 0;
 }
 
 UndoStep* UndoStep::Create(Document* document,
-                           const SelectionForUndoStep& starting_selection,
-                           const SelectionForUndoStep& ending_selection,
+                           const VisibleSelection& starting_selection,
+                           const VisibleSelection& ending_selection,
                            InputEvent::InputType input_type) {
   return new UndoStep(document, starting_selection, ending_selection,
                       input_type);
 }
 
 UndoStep::UndoStep(Document* document,
-                   const SelectionForUndoStep& starting_selection,
-                   const SelectionForUndoStep& ending_selection,
+                   const VisibleSelection& starting_selection,
+                   const VisibleSelection& ending_selection,
                    InputEvent::InputType input_type)
     : document_(document),
       starting_selection_(starting_selection),
@@ -89,12 +89,12 @@ void UndoStep::Append(UndoStep* undo_step) {
   commands_.AppendVector(undo_step->commands_);
 }
 
-void UndoStep::SetStartingSelection(const SelectionForUndoStep& selection) {
+void UndoStep::SetStartingSelection(const VisibleSelection& selection) {
   starting_selection_ = selection;
   starting_root_editable_element_ = RootEditableElementOf(selection.Base());
 }
 
-void UndoStep::SetEndingSelection(const SelectionForUndoStep& selection) {
+void UndoStep::SetEndingSelection(const VisibleSelection& selection) {
   ending_selection_ = selection;
   ending_root_editable_element_ = RootEditableElementOf(selection.Base());
 }

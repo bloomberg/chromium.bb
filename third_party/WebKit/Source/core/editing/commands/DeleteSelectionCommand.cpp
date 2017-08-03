@@ -195,7 +195,7 @@ void DeleteSelectionCommand::SetStartingSelectionOnSmartDelete(
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       GetDocument().Lifecycle());
 
-  const bool is_base_first = StartingSelection().IsBaseFirst();
+  bool is_base_first = StartingVisibleSelection().IsBaseFirst();
   // TODO(yosin): We should not call |createVisiblePosition()| here and use
   // |start| and |end| as base/extent since |VisibleSelection| also calls
   // |createVisiblePosition()| during construction.
@@ -208,7 +208,7 @@ void DeleteSelectionCommand::SetStartingSelectionOnSmartDelete(
   builder.SetAffinity(new_base.Affinity())
       .SetBaseAndExtentDeprecated(new_base.DeepEquivalent(),
                                   new_extent.DeepEquivalent())
-      .SetIsDirectional(StartingSelection().IsDirectional());
+      .SetIsDirectional(StartingVisibleSelection().IsDirectional());
   SetStartingSelection(CreateVisibleSelection(builder.Build()));
 }
 
@@ -280,7 +280,7 @@ void DeleteSelectionCommand::InitializePositionData(
   if (NumEnclosingMailBlockquotes(start) != NumEnclosingMailBlockquotes(end) &&
       IsStartOfParagraph(visible_end) &&
       IsStartOfParagraph(CreateVisiblePosition(start)) &&
-      EndingSelection().IsRange()) {
+      EndingVisibleSelection().IsRange()) {
     merge_blocks_after_delete_ = false;
     prune_start_block_if_necessary_ = true;
   }
@@ -1126,7 +1126,7 @@ void DeleteSelectionCommand::DoApply(EditingState* editing_state) {
     GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
     SelectionInDOMTree::Builder builder;
     builder.SetAffinity(affinity);
-    builder.SetIsDirectional(EndingSelection().IsDirectional());
+    builder.SetIsDirectional(EndingVisibleSelection().IsDirectional());
     if (ending_position_.IsNotNull())
       builder.Collapse(ending_position_);
     SetEndingSelection(builder.Build());
@@ -1187,7 +1187,7 @@ void DeleteSelectionCommand::DoApply(EditingState* editing_state) {
 
   SelectionInDOMTree::Builder builder;
   builder.SetAffinity(affinity);
-  builder.SetIsDirectional(EndingSelection().IsDirectional());
+  builder.SetIsDirectional(EndingVisibleSelection().IsDirectional());
   if (ending_position_.IsNotNull())
     builder.Collapse(ending_position_);
   SetEndingSelection(builder.Build());

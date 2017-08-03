@@ -165,11 +165,10 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
 
   bool IsIncrementalInsertion() const { return is_incremental_insertion_; }
 
-  void DeleteKeyPressedInternal(
-      const VisibleSelection& selection_to_delete,
-      const SelectionForUndoStep& selection_after_undo,
-      bool kill_ring,
-      EditingState*);
+  void DeleteKeyPressedInternal(const VisibleSelection& selection_to_delete,
+                                const VisibleSelection& selection_after_undo,
+                                bool kill_ring,
+                                EditingState*);
 
   void DeleteSelectionIfRange(const VisibleSelection&,
                               EditingState*,
@@ -180,7 +179,7 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
 
   void ForwardDeleteKeyPressedInternal(
       const VisibleSelection& selection_to_delete,
-      const SelectionForUndoStep& selection_after_undo,
+      const VisibleSelection& selection_after_undo,
       bool kill_ring,
       EditingState*);
 

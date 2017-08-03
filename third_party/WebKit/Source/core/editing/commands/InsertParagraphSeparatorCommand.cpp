@@ -184,7 +184,7 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
   TextAffinity affinity = EndingVisibleSelection().Affinity();
 
   // Delete the current selection.
-  if (EndingSelection().IsRange()) {
+  if (EndingVisibleSelection().IsRange()) {
     GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
     CalculateStyleBeforeInsertion(insertion_position);
     DeleteSelection(editing_state, false, true);
@@ -336,10 +336,11 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
     if (editing_state->IsAborted())
       return;
 
-    SetEndingSelection(SelectionInDOMTree::Builder()
-                           .Collapse(Position::FirstPositionInNode(*parent))
-                           .SetIsDirectional(EndingSelection().IsDirectional())
-                           .Build());
+    SetEndingSelection(
+        SelectionInDOMTree::Builder()
+            .Collapse(Position::FirstPositionInNode(*parent))
+            .SetIsDirectional(EndingVisibleSelection().IsDirectional())
+            .Build());
     return;
   }
 
@@ -409,10 +410,11 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
       return;
 
     // In this case, we need to set the new ending selection.
-    SetEndingSelection(SelectionInDOMTree::Builder()
-                           .Collapse(insertion_position)
-                           .SetIsDirectional(EndingSelection().IsDirectional())
-                           .Build());
+    SetEndingSelection(
+        SelectionInDOMTree::Builder()
+            .Collapse(insertion_position)
+            .SetIsDirectional(EndingVisibleSelection().IsDirectional())
+            .Build());
     return;
   }
 
@@ -438,7 +440,7 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
       SetEndingSelection(
           SelectionInDOMTree::Builder()
               .Collapse(insertion_position)
-              .SetIsDirectional(EndingSelection().IsDirectional())
+              .SetIsDirectional(EndingVisibleSelection().IsDirectional())
               .Build());
       return;
     }
@@ -591,7 +593,7 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
   SetEndingSelection(
       SelectionInDOMTree::Builder()
           .Collapse(Position::FirstPositionInNode(*block_to_insert))
-          .SetIsDirectional(EndingSelection().IsDirectional())
+          .SetIsDirectional(EndingVisibleSelection().IsDirectional())
           .Build());
   ApplyStyleAfterInsertion(start_block, editing_state);
 }

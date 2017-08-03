@@ -297,8 +297,8 @@ void TypingCommand::AdjustSelectionAfterIncrementalInsertion(
   const size_t end = selection_start + text_length;
   const size_t start =
       CompositionType() == kTextCompositionUpdate ? selection_start : end;
-  const SelectionInDOMTree& selection =
-      CreateSelection(start, end, EndingSelection().IsDirectional(), element);
+  const SelectionInDOMTree& selection = CreateSelection(
+      start, end, EndingVisibleSelection().IsDirectional(), element);
 
   if (selection == frame->Selection()
                        .ComputeVisibleSelectionInDOMTreeDeprecated()
@@ -653,7 +653,8 @@ void TypingCommand::InsertParagraphSeparatorInQuotedContent(
   // If the selection starts inside a table, just insert the paragraph separator
   // normally Breaking the blockquote would also break apart the table, which is
   // unecessary when inserting a newline
-  if (EnclosingNodeOfType(EndingSelection().Start(), &IsTableStructureNode)) {
+  if (EnclosingNodeOfType(EndingVisibleSelection().Start(),
+                          &IsTableStructureNode)) {
     InsertParagraphSeparator(editing_state);
     return;
   }
@@ -689,10 +690,11 @@ bool TypingCommand::MakeEditableRootEmpty(EditingState* editing_state) {
   AddBlockPlaceholderIfNeeded(root, editing_state);
   if (editing_state->IsAborted())
     return false;
-  SetEndingSelection(SelectionInDOMTree::Builder()
-                         .Collapse(Position::FirstPositionInNode(*root))
-                         .SetIsDirectional(EndingSelection().IsDirectional())
-                         .Build());
+  SetEndingSelection(
+      SelectionInDOMTree::Builder()
+          .Collapse(Position::FirstPositionInNode(*root))
+          .SetIsDirectional(EndingVisibleSelection().IsDirectional())
+          .Build());
 
   return true;
 }
@@ -723,13 +725,13 @@ void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
 
   frame->GetSpellChecker().UpdateMarkersForWordsAffectedByEditing(false);
 
-  if (EndingSelection().IsRange()) {
-    DeleteKeyPressedInternal(EndingVisibleSelection(), EndingSelection(),
+  if (EndingVisibleSelection().IsRange()) {
+    DeleteKeyPressedInternal(EndingVisibleSelection(), EndingVisibleSelection(),
                              kill_ring, editing_state);
     return;
   }
 
-  if (!EndingSelection().IsCaret()) {
+  if (!EndingVisibleSelection().IsCaret()) {
     NOTREACHED();
     return;
   }
@@ -813,11 +815,12 @@ void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
     // If the caret is just after a table, select the table and don't delete
     // anything.
   } else if (Element* table = TableElementJustBefore(visible_start)) {
-    SetEndingSelection(SelectionInDOMTree::Builder()
-                           .Collapse(Position::BeforeNode(*table))
-                           .Extend(EndingSelection().Start())
-                           .SetIsDirectional(EndingSelection().IsDirectional())
-                           .Build());
+    SetEndingSelection(
+        SelectionInDOMTree::Builder()
+            .Collapse(Position::BeforeNode(*table))
+            .Extend(EndingVisibleSelection().Start())
+            .SetIsDirectional(EndingVisibleSelection().IsDirectional())
+            .Build());
     TypingAddedToOpenCommand(kDeleteKey);
     return;
   }
@@ -827,30 +830,28 @@ void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
           ? AdjustSelectionForBackwardDelete(selection_modifier.Selection())
           : selection_modifier.Selection();
 
-  if (!StartingSelection().IsRange() ||
-      selection_to_delete.Base() != StartingSelection().Start()) {
-    DeleteKeyPressedInternal(
-        selection_to_delete,
-        SelectionForUndoStep::From(selection_to_delete.AsSelection()),
-        kill_ring, editing_state);
+  if (!StartingVisibleSelection().IsRange() ||
+      selection_to_delete.Base() != StartingVisibleSelection().Start()) {
+    DeleteKeyPressedInternal(selection_to_delete, selection_to_delete,
+                             kill_ring, editing_state);
     return;
   }
-  // Note: |StartingSelection().End()| can be disconnected.
-  // See editing/deleting/delete_list_item.html on MacOS.
-  const SelectionForUndoStep& selection_after_undo =
-      SelectionForUndoStep::Builder()
-          .SetBaseAndExtentAsBackwardSelection(
-              StartingSelection().End(),
-              CreateVisiblePosition(selection_to_delete.Extent())
-                  .DeepEquivalent())
-          .Build();
+  // It's a little tricky to compute what the starting selection would
+  // have been in the original document. We can't let the VisibleSelection
+  // class's validation kick in or it'll adjust for us based on the
+  // current state of the document and we'll get the wrong result.
+  const VisibleSelection& selection_after_undo =
+      VisibleSelection::CreateWithoutValidationDeprecated(
+          StartingVisibleSelection().End(),
+          CreateVisiblePosition(selection_to_delete.Extent()).DeepEquivalent(),
+          selection_to_delete.Affinity());
   DeleteKeyPressedInternal(selection_to_delete, selection_after_undo, kill_ring,
                            editing_state);
 }
 
 void TypingCommand::DeleteKeyPressedInternal(
     const VisibleSelection& selection_to_delete,
-    const SelectionForUndoStep& selection_after_undo,
+    const VisibleSelection& selection_after_undo,
     bool kill_ring,
     EditingState* editing_state) {
   DCHECK(!selection_to_delete.IsNone());
@@ -905,13 +906,14 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
 
   frame->GetSpellChecker().UpdateMarkersForWordsAffectedByEditing(false);
 
-  if (EndingSelection().IsRange()) {
-    ForwardDeleteKeyPressedInternal(EndingVisibleSelection(), EndingSelection(),
-                                    kill_ring, editing_state);
+  if (EndingVisibleSelection().IsRange()) {
+    ForwardDeleteKeyPressedInternal(EndingVisibleSelection(),
+                                    EndingVisibleSelection(), kill_ring,
+                                    editing_state);
     return;
   }
 
-  if (!EndingSelection().IsCaret()) {
+  if (!EndingVisibleSelection().IsCaret()) {
     NOTREACHED();
     return;
   }
@@ -932,7 +934,8 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
                               TextGranularity::kCharacter);
   }
 
-  Position downstream_end = MostForwardCaretPosition(EndingSelection().End());
+  Position downstream_end =
+      MostForwardCaretPosition(EndingVisibleSelection().End());
   VisiblePosition visible_end = EndingVisibleSelection().VisibleEnd();
   Node* enclosing_table_cell =
       EnclosingNodeOfType(visible_end.DeepEquivalent(), &IsTableCell);
@@ -954,9 +957,9 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
     SetEndingSelection(
         SelectionInDOMTree::Builder()
             .SetBaseAndExtentDeprecated(
-                EndingSelection().End(),
+                EndingVisibleSelection().End(),
                 Position::AfterNode(*downstream_end.ComputeContainerNode()))
-            .SetIsDirectional(EndingSelection().IsDirectional())
+            .SetIsDirectional(EndingVisibleSelection().IsDirectional())
             .Build());
     TypingAddedToOpenCommand(kForwardDeleteKey);
     return;
@@ -973,30 +976,30 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
   }
 
   const VisibleSelection& selection_to_delete = selection_modifier.Selection();
-  if (!StartingSelection().IsRange() ||
+  if (!StartingVisibleSelection().IsRange() ||
       MostBackwardCaretPosition(selection_to_delete.Base()) !=
-          StartingSelection().Start()) {
-    ForwardDeleteKeyPressedInternal(
-        selection_to_delete,
-        SelectionForUndoStep::From(selection_to_delete.AsSelection()),
-        kill_ring, editing_state);
+          StartingVisibleSelection().Start()) {
+    ForwardDeleteKeyPressedInternal(selection_to_delete, selection_to_delete,
+                                    kill_ring, editing_state);
     return;
   }
-  // Note: |StartingSelection().Start()| can be disconnected.
-  const SelectionForUndoStep& selection_after_undo =
-      SelectionForUndoStep::Builder()
-          .SetBaseAndExtentAsForwardSelection(
-              StartingSelection().Start(),
-              ComputeExtentForForwardDeleteUndo(selection_to_delete,
-                                                StartingSelection().End()))
-          .Build();
+  // It's a little tricky to compute what the starting selection would
+  // have been in the original document. We can't let the VisibleSelection
+  // class's validation kick in or it'll adjust for us based on the
+  // current state of the document and we'll get the wrong result.
+  const VisibleSelection& selection_after_undo =
+      VisibleSelection::CreateWithoutValidationDeprecated(
+          StartingVisibleSelection().Start(),
+          ComputeExtentForForwardDeleteUndo(selection_to_delete,
+                                            StartingVisibleSelection().End()),
+          TextAffinity::kDownstream);
   ForwardDeleteKeyPressedInternal(selection_to_delete, selection_after_undo,
                                   kill_ring, editing_state);
 }
 
 void TypingCommand::ForwardDeleteKeyPressedInternal(
     const VisibleSelection& selection_to_delete,
-    const SelectionForUndoStep& selection_after_undo,
+    const VisibleSelection& selection_after_undo,
     bool kill_ring,
     EditingState* editing_state) {
   DCHECK(!selection_to_delete.IsNone());
