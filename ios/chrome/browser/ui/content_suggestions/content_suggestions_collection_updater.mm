@@ -162,7 +162,6 @@ const CGFloat kNumberOfMostVisitedLines = 2;
     _promoAdded = NO;
     _dataSource = dataSource;
     _dataSource.dataSink = self;
-    _sectionIdentifiersFromContentSuggestions = [[NSMutableSet alloc] init];
   }
   return self;
 }
@@ -588,6 +587,7 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
 - (void)resetModels {
   [self.collectionViewController loadModel];
   self.sectionInfoBySectionIdentifier = [[NSMutableDictionary alloc] init];
+  self.sectionIdentifiersFromContentSuggestions = [[NSMutableSet alloc] init];
 }
 
 // Runs the additional action for the section identified by |sectionInfo|.
