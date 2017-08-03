@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/test/base/testing_profile.h"
@@ -13,11 +14,10 @@
 #include "components/search_engines/template_url_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/view.h"
@@ -73,18 +73,17 @@ void FirstRunBubbleTest::CreateAndCloseBubbleOnEventTest(ui::Event* event) {
   anchor_widget.Show();
 
   FirstRunBubble* delegate =
-      FirstRunBubble::ShowBubble(nullptr, anchor_widget.GetContentsView());
+      FirstRunBubble::ShowForTest(anchor_widget.GetContentsView());
   EXPECT_TRUE(delegate);
 
   anchor_widget.GetContentsView()->RequestFocus();
 
   views::test::WidgetClosingObserver widget_observer(delegate->GetWidget());
 
-  ui::EventDispatchDetails details = anchor_widget.GetNativeWindow()
-                                         ->GetHost()
-                                         ->event_sink()
-                                         ->OnEventFromSource(event);
-  EXPECT_FALSE(details.dispatcher_destroyed);
+  ui::test::EventGenerator generator(GetContext(),
+                                     anchor_widget.GetNativeWindow());
+  generator.set_target(ui::test::EventGenerator::Target::APPLICATION);
+  generator.Dispatch(event);
 
   EXPECT_TRUE(widget_observer.widget_closed());
 }
@@ -99,7 +98,7 @@ TEST_F(FirstRunBubbleTest, CreateAndClose) {
   anchor_widget.Show();
 
   FirstRunBubble* delegate =
-      FirstRunBubble::ShowBubble(nullptr, anchor_widget.GetContentsView());
+      FirstRunBubble::ShowForTest(anchor_widget.GetContentsView());
   EXPECT_TRUE(delegate);
   delegate->GetWidget()->CloseNow();
 }
@@ -119,7 +118,14 @@ TEST_F(FirstRunBubbleTest, CloseBubbleOnMouseDownEvent) {
   CreateAndCloseBubbleOnEventTest(&mouse_down);
 }
 
-TEST_F(FirstRunBubbleTest, CloseBubbleOnTouchDownEvent) {
+#if defined(OS_MACOSX)
+// Touch events aren't supported on Mac: https://crbug.com/445520
+#define MAYBE_CloseBubbleOnTouchDownEvent DISABLED_CloseBubbleOnTouchDownEvent
+#else
+#define MAYBE_CloseBubbleOnTouchDownEvent CloseBubbleOnTouchDownEvent
+#endif
+
+TEST_F(FirstRunBubbleTest, MAYBE_CloseBubbleOnTouchDownEvent) {
   ui::TouchEvent touch_down(
       ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), ui::EventTimeForNow(),
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));

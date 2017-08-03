@@ -89,6 +89,9 @@ class ContentSettingBubbleViewsBridge {
 void ShowImportLockDialogViews(gfx::NativeWindow parent,
                                const base::Callback<void(bool)>& callback);
 
+// Shows the first run bubble.
+void ShowFirstRunBubbleViews(Browser* browser);
+
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_DIALOGS_VIEWS_MAC_H_

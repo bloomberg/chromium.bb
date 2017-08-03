@@ -8,11 +8,17 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/bubble_anchor_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #include "components/search_engines/util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/mac/coordinate_conversion.h"
 
 @interface FirstRunKeyResponder : NSResponder
 @end
@@ -42,24 +48,24 @@
 
 @implementation FirstRunBubbleController
 
-+ (FirstRunBubbleController*) showForView:(NSView*)view
-                                   offset:(NSPoint)offset
-                                  browser:(Browser*)browser
-                                  profile:(Profile*)profile {
++ (FirstRunBubbleController*)showAtPoint:(NSPoint)anchorPoint
+                            parentWindow:(NSWindow*)parentWindow
+                                 browser:(Browser*)browser
+                                 profile:(Profile*)profile {
   // Autoreleases itself on bubble close.
-  return [[FirstRunBubbleController alloc] initRelativeToView:view
-                                                       offset:offset
-                                                      browser:browser
-                                                      profile:profile];
+  return [[FirstRunBubbleController alloc] initWithAnchorPoint:anchorPoint
+                                                  parentWindow:parentWindow
+                                                       browser:browser
+                                                       profile:profile];
 }
 
-- (id)initRelativeToView:(NSView*)view
-                  offset:(NSPoint)offset
-                 browser:(Browser*)browser
-                 profile:(Profile*)profile {
+- (id)initWithAnchorPoint:(NSPoint)anchorPoint
+             parentWindow:(NSWindow*)parentWindow
+                  browser:(Browser*)browser
+                  profile:(Profile*)profile {
   if ((self = [super initWithWindowNibPath:@"FirstRunBubble"
-                            relativeToView:view
-                                    offset:offset])) {
+                              parentWindow:parentWindow
+                                anchoredAt:anchorPoint])) {
     browser_ = browser;
     profile_ = profile;
 
@@ -124,3 +130,18 @@
 }
 
 @end  // FirstRunBubbleController
+
+namespace chrome {
+
+void ShowFirstRunBubble(Browser* browser) {
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+    return chrome::ShowFirstRunBubbleViews(browser);
+  NSPoint anchor = gfx::ScreenPointToNSPoint(
+      bubble_anchor_util::GetPageInfoAnchorRect(browser).CenterPoint());
+  [FirstRunBubbleController showAtPoint:anchor
+                           parentWindow:browser->window()->GetNativeWindow()
+                                browser:browser
+                                profile:browser->profile()];
+}
+
+}  // namespace chrome

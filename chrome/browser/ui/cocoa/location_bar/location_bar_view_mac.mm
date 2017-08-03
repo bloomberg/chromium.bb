@@ -25,7 +25,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h"
-#import "chrome/browser/ui/cocoa/first_run_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
@@ -113,8 +112,7 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
       browser_(browser),
       location_bar_visible_(true),
       is_width_available_for_security_verbose_(false),
-      security_level_(security_state::NONE),
-      weak_ptr_factory_(this) {
+      security_level_(security_state::NONE) {
   std::vector<std::unique_ptr<ContentSettingImageModel>> models =
       ContentSettingImageModel::GenerateContentSettingImageModels();
   for (auto& model : models) {
@@ -145,14 +143,6 @@ LocationBarViewMac::~LocationBarViewMac() {
 
   zoom::ZoomEventManager::GetForBrowserContext(profile())
       ->RemoveZoomEventManagerObserver(this);
-}
-
-void LocationBarViewMac::ShowFirstRunBubble() {
-  // We need the browser window to be shown before we can show the bubble, but
-  // we get called before that's happened.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&LocationBarViewMac::ShowFirstRunBubbleInternal,
-                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 GURL LocationBarViewMac::GetDestinationURL() const {
@@ -645,23 +635,6 @@ bool LocationBarViewMac::RefreshContentSettingsDecorations() {
   for (const auto& decoration : content_setting_decorations_)
     icons_updated |= decoration->UpdateFromWebContents(web_contents);
   return icons_updated;
-}
-
-void LocationBarViewMac::ShowFirstRunBubbleInternal() {
-  if (!field_ || ![field_ window])
-    return;
-
-  // Point the bubble's arrow at the middle of the page info icon. The x offset
-  // isn't the exact center, but this behavior matches other platforms and it
-  // looks better in practice since the arrow ends up between the handle and
-  // lens of the magnifying glass.
-  const NSPoint kOffset = NSMakePoint(
-      info_bubble::kBubbleArrowXOffset,
-      NSHeight([field_ frame]) / 2.0 - info_bubble::kBubbleArrowHeight);
-  [FirstRunBubbleController showForView:field_
-                                 offset:kOffset
-                                browser:browser_
-                                profile:profile()];
 }
 
 void LocationBarViewMac::UpdateTranslateDecoration() {
