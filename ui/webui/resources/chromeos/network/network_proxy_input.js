@@ -11,6 +11,8 @@
 Polymer({
   is: 'network-proxy-input',
 
+  behaviors: [I18nBehavior],
+
   properties: {
     /**
      * Whether or not the proxy value can be edited.
