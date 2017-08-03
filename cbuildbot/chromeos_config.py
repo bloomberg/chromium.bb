@@ -585,6 +585,7 @@ _x86_internal_release_boards = frozenset([
     'quawks',
     'rambi',
     'reef',
+    'reef-uni',
     'reks',
     'relm',
     'rikku',
@@ -2205,8 +2206,12 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       site_config, boards_dict, ge_build_config)
   hw_test_list = HWTestList(ge_build_config)
 
-  _paladin_boards = boards_dict['all_boards']
+  _separate_boards = boards_dict['all_boards']
+  _unified_builds = config_lib.GetUnifiedBuildConfigAllBuilds(ge_build_config)
+  _unified_board_names = set([b[config_lib.CONFIG_TEMPLATE_REFERENCE_BOARD_NAME]
+                              for b in _unified_builds])
 
+  _paladin_boards = _separate_boards | _unified_board_names
   # List of paladin boards where the regular paladin config is important.
   _paladin_important_boards = frozenset([
       'amd64-generic',
@@ -2251,6 +2256,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'poppy',
       'quawks',
       'reef',
+      'reef-uni',
       'samus',
       'scarlet',
       'sentry',
@@ -2398,6 +2404,29 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     config_name = '%s-%s' % (board, constants.PALADIN_TYPE)
     customizations = config_lib.BuildConfig()
     base_config = board_configs[board]
+    unibuild_config = None
+    if board in _unified_board_names:
+      for unibuild in _unified_builds:
+        if board == unibuild[config_lib.CONFIG_TEMPLATE_REFERENCE_BOARD_NAME]:
+          unibuild_config = unibuild
+          models = [m[config_lib.CONFIG_TEMPLATE_MODEL_NAME]
+                    for m in unibuild[config_lib.CONFIG_TEMPLATE_MODELS]]
+          if models:
+            test_model = models[0]
+          else:
+            test_model = board
+
+          # This is dealing with the reef case, which hopefully won't be
+          # replicated going forward.  This will match reef as the primary
+          # model for board reef-uni
+          for model in models:
+            if board.startswith(model):
+              test_model = model
+
+          # We're only going to test on one model.
+          # Right now, this is mainly due to hw lab provisioning limitations.
+          customizations.update(models=[test_model])
+
     if board in _paladin_moblab_hwtest_boards:
       customizations.update(
           hw_tests=[
@@ -2419,7 +2448,8 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       customizations.update(important=False)
     if board in _paladin_chroot_replace_boards:
       customizations.update(chroot_replace=True)
-    if board in boards_dict['internal_boards']:
+    if board in boards_dict['internal_boards']\
+        or board in _unified_board_names:
       customizations = customizations.derive(
           site_config.templates.internal,
           site_config.templates.official_chrome,
@@ -2477,7 +2507,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     )
 
     if config.active_waterfall:
-      master_config.AddSlave(config)
+      # Only add non-experimental unibuilds to the CQ
+      if ((not unibuild_config)
+          or (not unibuild_config[config_lib.CONFIG_TEMPLATE_EXPERIMENTAL])):
+        master_config.AddSlave(config)
 
   # N.B. The ordering of columns here is coupled to the ordering of
   # suites returned by DefaultListNonCanary().  If you change the
@@ -2502,6 +2535,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     ('elm',            None,             'hana'),          # oak (MTK8173)
     ('kevin',          None,             'bob'),           # gru (RK3399)
     ('reef',           None,             None),            # reef (APL)
+    ('reef-uni',       None,             None),            # reef (APL)
     (None,             None,             None),            # poppy (KBL)
   ])
 
@@ -3070,6 +3104,10 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
   board_configs = CreateInternalBoardConfigs(
       site_config, boards_dict, ge_build_config)
 
+  unified_builds = config_lib.GetUnifiedBuildConfigAllBuilds(ge_build_config)
+  unified_board_names = set([b[config_lib.CONFIG_TEMPLATE_REFERENCE_BOARD_NAME]
+                             for b in unified_builds])
+
   ### Master release config.
   master_config = site_config.Add(
       'master-release',
@@ -3109,8 +3147,8 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
 
   site_config.AddForBoards(
       config_lib.CONFIG_TYPE_RELEASE,
-      ((boards_dict['all_release_boards'] | _all_release_builder_boards) -
-       _critical_for_chrome_boards),
+      (((boards_dict['all_release_boards'] | _all_release_builder_boards)
+        - _critical_for_chrome_boards) - unified_board_names),
       board_configs,
       site_config.templates.release,
   )
