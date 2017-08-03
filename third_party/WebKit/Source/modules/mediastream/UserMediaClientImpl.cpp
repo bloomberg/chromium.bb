@@ -45,6 +45,8 @@ UserMediaClientImpl::UserMediaClientImpl(WebUserMediaClient* client)
 void UserMediaClientImpl::RequestUserMedia(UserMediaRequest* request) {
   if (client_)
     client_->RequestUserMedia(request);
+  else
+    request->FailUASpecific("NotSupportedError", String(), String());
 }
 
 void UserMediaClientImpl::CancelUserMediaRequest(UserMediaRequest* request) {
