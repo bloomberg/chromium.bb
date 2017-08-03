@@ -55,8 +55,7 @@ class MetricsLog {
   MetricsLog(const std::string& client_id,
              int session_id,
              LogType log_type,
-             MetricsServiceClient* client,
-             PrefService* local_state);
+             MetricsServiceClient* client);
   virtual ~MetricsLog();
 
   // Registers local state prefs used by this class.
@@ -91,14 +90,12 @@ class MetricsLog {
   // TODO(rkaplow): I think this can be a little refactored as it currently
   // records a pretty arbitrary set of things.
   // Records the current operating environment, including metrics provided by
-  // the specified |delegating_provider|.  Takes the list of synthetic
-  // trial IDs as a parameter. A synthetic trial is one that is set up
-  // dynamically by code in Chrome. For example, a pref may be mapped to a
-  // synthetic trial such that the group is determined by the pref value. The
-  // current environment is returned serialized as a string.
-  std::string RecordEnvironment(DelegatingProvider* delegating_provider,
-                                int64_t install_date,
-                                int64_t metrics_reporting_enabled_date);
+  // the specified |delegating_provider|. The current environment is
+  // returned as a SystemProfileProto.
+  const SystemProfileProto& RecordEnvironment(
+      DelegatingProvider* delegating_provider,
+      int64_t install_date,
+      int64_t metrics_reporting_enabled_date);
 
   // Loads a saved system profile and the associated metrics into the log.
   // Returns true on success. Keep calling it with fresh logs until it returns
@@ -109,7 +106,8 @@ class MetricsLog {
   // call from prefs. On success, returns true and |app_version| contains the
   // recovered version. Otherwise (if there was no saved environment in prefs
   // or it could not be decoded), returns false and |app_version| is empty.
-  bool LoadSavedEnvironmentFromPrefs(std::string* app_version);
+  bool LoadSavedEnvironmentFromPrefs(PrefService* local_state,
+                                     std::string* app_version);
 
   // Record data from providers about the previous session into the log.
   void RecordPreviousSessionData(DelegatingProvider* delegating_provider);
@@ -180,8 +178,6 @@ class MetricsLog {
 
   // The time when the current log was created.
   const base::TimeTicks creation_time_;
-
-  PrefService* local_state_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsLog);
 };

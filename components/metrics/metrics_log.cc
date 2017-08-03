@@ -27,7 +27,6 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_service_client.h"
-#include "components/metrics/persistent_system_profile.h"
 #include "components/metrics/proto/histogram_event.pb.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "components/metrics/proto/user_action_event.pb.h"
@@ -88,13 +87,11 @@ int64_t RoundSecondsToHour(int64_t time_in_seconds) {
 MetricsLog::MetricsLog(const std::string& client_id,
                        int session_id,
                        LogType log_type,
-                       MetricsServiceClient* client,
-                       PrefService* local_state)
+                       MetricsServiceClient* client)
     : closed_(false),
       log_type_(log_type),
       client_(client),
-      creation_time_(base::TimeTicks::Now()),
-      local_state_(local_state) {
+      creation_time_(base::TimeTicks::Now()) {
   if (IsTestingID(client_id))
     uma_proto_.set_client_id(0);
   else
@@ -109,10 +106,6 @@ MetricsLog::MetricsLog(const std::string& client_id,
 
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
   RecordCoreSystemProfile(client_, system_profile);
-  if (log_type_ == ONGOING_LOG) {
-    GlobalPersistentSystemProfile::GetInstance()->SetSystemProfile(
-        *system_profile, /*complete=*/false);
-  }
 }
 
 MetricsLog::~MetricsLog() {
@@ -217,9 +210,6 @@ void MetricsLog::RecordCurrentSessionData(
   // uma log upload, just as we send histogram data.
   WriteRealtimeStabilityAttributes(incremental_uptime, uptime);
 
-  if (local_state_->GetBoolean(prefs::kMetricsResetIds))
-    UMA_HISTOGRAM_BOOLEAN("UMA.IsClonedInstall", true);
-
   delegating_provider->ProvideCurrentSessionData(uma_proto());
 }
 
@@ -269,7 +259,7 @@ void MetricsLog::WriteRealtimeStabilityAttributes(
     stability->set_uptime_sec(uptime_sec);
 }
 
-std::string MetricsLog::RecordEnvironment(
+const SystemProfileProto& MetricsLog::RecordEnvironment(
     DelegatingProvider* delegating_provider,
     int64_t install_date,
     int64_t metrics_reporting_enabled_date) {
@@ -300,16 +290,7 @@ std::string MetricsLog::RecordEnvironment(
 
   delegating_provider->ProvideSystemProfileMetrics(system_profile);
 
-  EnvironmentRecorder recorder(local_state_);
-  std::string serialized_proto =
-      recorder.SerializeAndRecordEnvironmentToPrefs(*system_profile);
-
-  if (log_type_ == ONGOING_LOG) {
-    GlobalPersistentSystemProfile::GetInstance()->SetSystemProfile(
-        serialized_proto, /*complete=*/true);
-  }
-
-  return serialized_proto;
+  return *system_profile;
 }
 
 bool MetricsLog::LoadIndependentMetrics(MetricsProvider* metrics_provider) {
@@ -321,12 +302,13 @@ bool MetricsLog::LoadIndependentMetrics(MetricsProvider* metrics_provider) {
                                                      &snapshot_manager);
 }
 
-bool MetricsLog::LoadSavedEnvironmentFromPrefs(std::string* app_version) {
+bool MetricsLog::LoadSavedEnvironmentFromPrefs(PrefService* local_state,
+                                               std::string* app_version) {
   DCHECK(app_version);
   app_version->clear();
 
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
-  EnvironmentRecorder recorder(local_state_);
+  EnvironmentRecorder recorder(local_state);
   bool success = recorder.LoadEnvironmentFromPrefs(system_profile);
   if (success)
     *app_version = system_profile->app_version();
