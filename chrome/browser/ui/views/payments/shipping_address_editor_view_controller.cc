@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/payments/validating_combobox.h"
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/browser/address_i18n.h"
 #include "components/autofill/core/browser/autofill_address_util.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -29,6 +30,8 @@
 #include "components/payments/core/payments_profile_comparator.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/libaddressinput/messages.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_formatter.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/textfield/textfield.h"
 
@@ -125,6 +128,15 @@ base::string16 ShippingAddressEditorViewController::GetInitialValueForType(
     }
 
     return initial_region;
+  }
+
+  if (type == autofill::ADDRESS_HOME_STREET_ADDRESS) {
+    std::string street_address_line;
+    i18n::addressinput::GetStreetAddressLinesAsSingleLine(
+        *autofill::i18n::CreateAddressDataFromAutofillProfile(
+            temporary_profile_, state()->GetApplicationLocale()),
+        &street_address_line);
+    return base::UTF8ToUTF16(street_address_line);
   }
 
   return temporary_profile_.GetInfo(autofill::AutofillType(type),
