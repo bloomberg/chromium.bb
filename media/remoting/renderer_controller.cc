@@ -416,10 +416,15 @@ void RendererController::WaitForStabilityBeforeStart(
           start_trigger,
           client_->AudioDecodedByteCount() + client_->VideoDecodedByteCount(),
           clock_->NowTicks()));
+
+  session_->EstimateTransmissionCapacity(
+      base::BindOnce(&RendererController::OnReceivedTransmissionCapacity,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void RendererController::CancelDelayedStart() {
   delayed_start_stability_timer_.Stop();
+  transmission_capacity_ = 0;
 }
 
 void RendererController::OnDelayedStartTimerFired(
@@ -437,16 +442,15 @@ void RendererController::OnDelayedStartTimerFired(
        decoded_bytes_before_delay) *
       8.0 / elapsed.InSecondsF() / 1000.0;
   DCHECK_GE(kilobits_per_second, 0);
-  // TODO(xjz): Gets the estimated transmission capacity (kbps) from Remoter.
-  const double capacity = 10000.0;
+  const double capacity_kbps = transmission_capacity_ * 8.0 / 1000.0;
   metrics_recorder_.RecordMediaBitrateVersusCapacity(kilobits_per_second,
-                                                     capacity);
-  if (kilobits_per_second <= kMaxMediaBitrateCapacityFraction * capacity) {
+                                                     capacity_kbps);
+  if (kilobits_per_second <= kMaxMediaBitrateCapacityFraction * capacity_kbps) {
     StartRemoting(start_trigger);
   } else {
     VLOG(1) << "Media remoting is not supported: bitrate(kbps)="
             << kilobits_per_second
-            << " transmission_capacity(kbps)=" << capacity;
+            << " transmission_capacity(kbps)=" << capacity_kbps;
     encountered_renderer_fatal_error_ = true;
   }
 }
@@ -463,6 +467,11 @@ void RendererController::StartRemoting(StartTrigger start_trigger) {
   // |MediaObserverClient::SwitchToRemoteRenderer()| will be called after
   // remoting is started successfully.
   session_->StartRemoting(this);
+}
+
+void RendererController::OnReceivedTransmissionCapacity(double rate) {
+  DCHECK_GE(rate, 0);
+  transmission_capacity_ = rate;
 }
 
 void RendererController::OnRendererFatalError(StopTrigger stop_trigger) {

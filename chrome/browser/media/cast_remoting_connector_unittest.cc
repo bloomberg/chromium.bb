@@ -133,6 +133,12 @@ class MockMediaRemoter : public media::mojom::MirrorServiceRemoter {
 
   void OnSinkAvailable() { source_->OnSinkAvailable(GetDefaultSinkMetadata()); }
 
+  void EstimateTransmissionCapacity(
+      media::mojom::Remoter::EstimateTransmissionCapacityCallback callback)
+      final {
+    std::move(callback).Run(0);
+  }
+
   void SendMessageToSource(const std::vector<uint8_t>& message) {
     source_->OnMessageFromSink(message);
   }

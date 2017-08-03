@@ -142,6 +142,8 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
                     media::mojom::RemotingStopReason reason);
   void SendMessageToSink(RemotingBridge* bridge,
                          const std::vector<uint8_t>& message);
+  void EstimateTransmissionCapacity(
+      media::mojom::Remoter::EstimateTransmissionCapacityCallback callback);
 
   // Called when RTP streams are started.
   void OnDataStreamsStarted(

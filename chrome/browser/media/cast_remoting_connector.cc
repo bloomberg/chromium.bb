@@ -96,6 +96,14 @@ class CastRemotingConnector::RemotingBridge : public media::mojom::Remoter {
     if (connector_)
       connector_->SendMessageToSink(this, message);
   }
+  void EstimateTransmissionCapacity(
+      media::mojom::Remoter::EstimateTransmissionCapacityCallback callback)
+      final {
+    if (connector_)
+      connector_->EstimateTransmissionCapacity(std::move(callback));
+    else
+      std::move(callback).Run(0);
+  }
 
  private:
   media::mojom::RemotingSourcePtr source_;
@@ -384,6 +392,14 @@ void CastRemotingConnector::OnMessageFromSink(
   if (!active_bridge_)
     return;
   active_bridge_->OnMessageFromSink(message);
+}
+
+void CastRemotingConnector::EstimateTransmissionCapacity(
+    media::mojom::Remoter::EstimateTransmissionCapacityCallback callback) {
+  if (remoter_)
+    remoter_->EstimateTransmissionCapacity(std::move(callback));
+  else
+    std::move(callback).Run(0);
 }
 
 void CastRemotingConnector::OnSinkAvailable(
