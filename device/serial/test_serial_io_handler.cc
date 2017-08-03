@@ -80,14 +80,13 @@ bool TestSerialIoHandler::ConfigurePortImpl() {
 
 mojom::SerialDeviceControlSignalsPtr TestSerialIoHandler::GetControlSignals()
     const {
-  mojom::SerialDeviceControlSignalsPtr signals(
-      mojom::SerialDeviceControlSignals::New());
+  auto signals = mojom::SerialDeviceControlSignals::New();
   *signals = device_control_signals_;
   return signals;
 }
 
 mojom::SerialConnectionInfoPtr TestSerialIoHandler::GetPortInfo() const {
-  mojom::SerialConnectionInfoPtr info(mojom::SerialConnectionInfo::New());
+  auto info = mojom::SerialConnectionInfo::New();
   *info = info_;
   return info;
 }

@@ -411,8 +411,7 @@ mojom::SerialDeviceControlSignalsPtr SerialIoHandlerPosix::GetControlSignals()
     return mojom::SerialDeviceControlSignalsPtr();
   }
 
-  mojom::SerialDeviceControlSignalsPtr signals(
-      mojom::SerialDeviceControlSignals::New());
+  auto signals = mojom::SerialDeviceControlSignals::New();
   signals->dcd = (status & TIOCM_CAR) != 0;
   signals->cts = (status & TIOCM_CTS) != 0;
   signals->dsr = (status & TIOCM_DSR) != 0;
@@ -464,7 +463,7 @@ mojom::SerialConnectionInfoPtr SerialIoHandlerPosix::GetPortInfo() const {
     return mojom::SerialConnectionInfoPtr();
   }
 
-  mojom::SerialConnectionInfoPtr info(mojom::SerialConnectionInfo::New());
+  auto info = mojom::SerialConnectionInfo::New();
 #if defined(OS_LINUX)
   // Linux forces c_ospeed to contain the correct value, which is nice.
   info->bitrate = config.c_ospeed;
