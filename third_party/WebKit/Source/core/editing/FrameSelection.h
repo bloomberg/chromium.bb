@@ -177,7 +177,7 @@ class CORE_EXPORT FrameSelection final
 
   void SetUseSecureKeyboardEntryWhenActive(bool);
 
-  bool IsHandleVisible() const;
+  bool IsHandleVisible() const { return is_handle_visible_; }
 
   void UpdateSecureKeyboardEntryIfActive();
 
@@ -272,6 +272,7 @@ class CORE_EXPORT FrameSelection final
   LayoutUnit x_pos_for_vertical_arrow_navigation_;
 
   bool focused_ : 1;
+  bool is_handle_visible_ = false;
 
   // Controls text granularity used to adjust the selection's extent in
   // moveRangeSelectionExtent.

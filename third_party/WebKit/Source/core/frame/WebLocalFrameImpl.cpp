@@ -1210,13 +1210,13 @@ void WebLocalFrameImpl::SelectRange(
       handle_visibility_behavior == kShowSelectionHandle ||
       (handle_visibility_behavior == kPreserveHandleVisibility &&
        selection.IsHandleVisible());
-  selection.SetSelection(SelectionInDOMTree::Builder()
-                             .SetBaseAndExtent(range)
-                             .SetAffinity(VP_DEFAULT_AFFINITY)
-                             .SetIsHandleVisible(show_handles)
-                             .SetIsDirectional(false)
-                             .Build(),
-                         SetSelectionData());
+  selection.SetSelection(
+      SelectionInDOMTree::Builder()
+          .SetBaseAndExtent(range)
+          .SetAffinity(VP_DEFAULT_AFFINITY)
+          .SetIsDirectional(false)
+          .Build(),
+      SetSelectionData::Builder().SetShouldShowHandle(show_handles).Build());
 }
 
 WebString WebLocalFrameImpl::RangeAsText(const WebRange& web_range) {

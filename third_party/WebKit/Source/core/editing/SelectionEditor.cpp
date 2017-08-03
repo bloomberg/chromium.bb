@@ -181,7 +181,6 @@ void SelectionEditor::NodeChildrenWillBeRemoved(ContainerNode& container) {
     return;
   selection_ = SelectionInDOMTree::Builder()
                    .SetBaseAndExtent(new_base, new_extent)
-                   .SetIsHandleVisible(selection_.IsHandleVisible())
                    .Build();
   MarkCacheDirty();
 }
@@ -199,7 +198,6 @@ void SelectionEditor::NodeWillBeRemoved(Node& node_to_be_removed) {
     return;
   selection_ = SelectionInDOMTree::Builder()
                    .SetBaseAndExtent(new_base, new_extent)
-                   .SetIsHandleVisible(selection_.IsHandleVisible())
                    .Build();
   MarkCacheDirty();
 }
