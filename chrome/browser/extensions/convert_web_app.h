@@ -10,14 +10,44 @@
 #include "base/memory/ref_counted.h"
 
 namespace base {
+class DictionaryValue;
 class FilePath;
 class Time;
 }
 
+class GURL;
 struct WebApplicationInfo;
 
 namespace extensions {
 class Extension;
+
+// Creates a DictionaryValue with a single URL handler for |scope_url| and
+// |title|. |title| is meant to appear in relevant UI surfaces but it's not used
+// anywhere yet. The resulting DictionaryValue can be used as the "url_handlers"
+// field in a Chrome Apps manifest.
+//
+// To create a URL handler that will match the same URLs as the "within
+// scope" algorithm of the Web Manifest spec, we remove everything
+// but the origin and path and append a wildcard, i.e. "*", to the result.
+// According to the Web Manifest spec, a URL |url| is within scope of
+// |scope_url| if |url|'s origin is the same as |scope_url|'s origin and
+// |url|'s path starts with |scope_url|'s path.
+// Note that this results in some unexpected URLs being within scope
+// according to the spec:
+// Suppose |scope_url| is "https://example.com/foo" and |url| is
+// "https://example.com/foobar.html", then according to the spec algorithm
+// |url| is within scope.
+// See https://github.com/w3c/manifest/issues/554 for details.
+//
+// GetScopeURLFromBookmarkApp() reverses this operation, i.e. removes
+// the '*' from the scope URL handler, to retrieve the scope for a Bookmark App.
+// So if you change this, you also have to change GetScopeURLFromBookmarkApp().
+std::unique_ptr<base::DictionaryValue> CreateURLHandlersForBookmarkApp(
+    const GURL& scope_url,
+    const base::string16& title);
+
+// Retrieves the scope URL from a Bookmark App's URL handlers.
+GURL GetScopeURLFromBookmarkApp(const Extension* extension);
 
 // Generates a version number for an extension from a time. The goal is to make
 // use of the version number to communicate the date in a human readable form,
