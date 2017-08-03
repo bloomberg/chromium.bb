@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_ANDROID_STRING_MESSAGE_CODEC_H_
 #define CONTENT_BROWSER_ANDROID_STRING_MESSAGE_CODEC_H_
 
+#include <vector>
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 
@@ -20,10 +21,12 @@ namespace content {
 // handle string messages and this serialization format is static, as it is a
 // format we currently persist to disk via IndexedDB.
 
-CONTENT_EXPORT base::string16 EncodeStringMessage(const base::string16& data);
+CONTENT_EXPORT std::vector<uint8_t> EncodeStringMessage(
+    const base::string16& data);
 
-CONTENT_EXPORT bool DecodeStringMessage(const base::string16& encoded_data,
-                                        base::string16* result);
+CONTENT_EXPORT bool DecodeStringMessage(
+    const std::vector<uint8_t>& encoded_data,
+    base::string16* result);
 
 }  // namespace content
 

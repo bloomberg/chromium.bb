@@ -81,7 +81,7 @@ bool ContainsOnlyLatin1(const base::string16& data) {
 
 } // namespace
 
-base::string16 EncodeStringMessage(const base::string16& data) {
+std::vector<uint8_t> EncodeStringMessage(const base::string16& data) {
   std::vector<uint8_t> buffer;
   WriteUint8(kVersionTag, &buffer);
   WriteUint32(kVersion, &buffer);
@@ -100,20 +100,13 @@ base::string16 EncodeStringMessage(const base::string16& data) {
     WriteBytes(reinterpret_cast<const char*>(data.data()), num_bytes, &buffer);
   }
 
-  base::string16 result;
-  size_t result_num_bytes = (buffer.size() + 1) & ~1;
-  result.resize(result_num_bytes / 2);
-  uint8_t* destination = reinterpret_cast<uint8_t*>(&result[0]);
-  memcpy(destination, &buffer[0], buffer.size());
-  return result;
+  return buffer;
 }
 
-bool DecodeStringMessage(const base::string16& encoded_data,
+bool DecodeStringMessage(const std::vector<uint8_t>& encoded_data,
                          base::string16* result) {
-  size_t num_bytes = encoded_data.size() * 2;
-
-  const uint8_t* ptr = reinterpret_cast<const uint8_t*>(&encoded_data[0]);
-  const uint8_t* end = ptr + num_bytes;
+  const uint8_t* ptr = encoded_data.data();
+  const uint8_t* end = ptr + encoded_data.size();
   uint8_t tag;
 
   // Discard any leading version and padding tags.

@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -61,12 +60,13 @@ class CONTENT_EXPORT MessagePort {
 
   // Sends an encoded message (along with ports to transfer) to this port's
   // peer.
-  void PostMessage(const base::string16& encoded_message,
+  void PostMessage(const uint8_t* encoded_message,
+                   size_t encoded_message_size,
                    std::vector<MessagePort> ports);
 
   // Get the next available encoded message if any. Returns true if a message
   // was read.
-  bool GetMessage(base::string16* encoded_message,
+  bool GetMessage(std::vector<uint8_t>* encoded_message,
                   std::vector<MessagePort>* ports);
 
   // This callback will be invoked on a background thread when messages are

@@ -39,7 +39,6 @@ namespace blink {
 
 class WebMessagePortChannelClient;
 class WebMessagePortChannel;
-class WebString;
 
 using WebMessagePortChannelArray =
     WebVector<std::unique_ptr<WebMessagePortChannel>>;
@@ -51,8 +50,11 @@ class WebMessagePortChannel {
   virtual void SetClient(WebMessagePortChannelClient*) = 0;
   // Callee receives ownership of the passed vector.
   // FIXME: Blob refs should be passed to maintain ref counts. crbug.com/351753
-  virtual void PostMessage(const WebString&, WebMessagePortChannelArray) = 0;
-  virtual bool TryGetMessage(WebString*, WebMessagePortChannelArray&) = 0;
+  virtual void PostMessage(const uint8_t*,
+                           size_t,
+                           WebMessagePortChannelArray) = 0;
+  virtual bool TryGetMessage(WebVector<uint8_t>*,
+                             WebMessagePortChannelArray&) = 0;
 };
 
 }  // namespace blink

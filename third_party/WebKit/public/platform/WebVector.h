@@ -81,6 +81,8 @@ class WebVector {
 
   WebVector(WebVector<T>&& other) { Swap(other); }
 
+  WebVector(std::vector<T>&& other) : data_(std::move(other)) {}
+
   WebVector& operator=(const WebVector& other) {
     if (this != &other)
       Assign(other);
@@ -97,6 +99,11 @@ class WebVector {
   WebVector<T>& operator=(const C& other) {
     if (this != reinterpret_cast<const WebVector<T>*>(&other))
       Assign(other);
+    return *this;
+  }
+
+  WebVector<T>& operator=(std::vector<T>&& other) {
+    data_ = std::move(other);
     return *this;
   }
 
