@@ -184,6 +184,7 @@ class PasswordSyncableServiceWrapper {
  public:
   PasswordSyncableServiceWrapper() {
     password_store_ = new testing::StrictMock<MockPasswordStore>;
+    password_store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
     service_.reset(
         new PasswordSyncableService(password_store_->GetSyncInterface()));
     auto clock = base::MakeUnique<base::SimpleTestClock>();

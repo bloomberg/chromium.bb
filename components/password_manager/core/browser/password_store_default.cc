@@ -17,20 +17,10 @@ using autofill::PasswordForm;
 namespace password_manager {
 
 PasswordStoreDefault::PasswordStoreDefault(
-    scoped_refptr<base::SequencedTaskRunner> main_thread_runner,
-    scoped_refptr<base::SequencedTaskRunner> db_thread_runner,
     std::unique_ptr<LoginDatabase> login_db)
-    : PasswordStore(main_thread_runner, db_thread_runner),
-      login_db_(std::move(login_db)) {}
+    : login_db_(std::move(login_db)) {}
 
 PasswordStoreDefault::~PasswordStoreDefault() {
-}
-
-bool PasswordStoreDefault::Init(
-    const syncer::SyncableService::StartSyncFlare& flare,
-    PrefService* prefs) {
-  ScheduleTask(base::Bind(&PasswordStoreDefault::InitOnDBThread, this));
-  return PasswordStore::Init(flare, prefs);
 }
 
 void PasswordStoreDefault::ShutdownOnUIThread() {
@@ -38,13 +28,15 @@ void PasswordStoreDefault::ShutdownOnUIThread() {
   ScheduleTask(base::Bind(&PasswordStoreDefault::ResetLoginDB, this));
 }
 
-void PasswordStoreDefault::InitOnDBThread() {
-  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
+void PasswordStoreDefault::InitOnBackgroundThread(
+    const syncer::SyncableService::StartSyncFlare& flare) {
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   DCHECK(login_db_);
   if (!login_db_->Init()) {
     login_db_.reset();
     LOG(ERROR) << "Could not create/open login database.";
   }
+  PasswordStore::InitOnBackgroundThread(flare);
 }
 
 void PasswordStoreDefault::ReportMetricsImpl(
@@ -52,13 +44,13 @@ void PasswordStoreDefault::ReportMetricsImpl(
     bool custom_passphrase_sync_enabled) {
   if (!login_db_)
     return;
-  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   login_db_->ReportMetrics(sync_username, custom_passphrase_sync_enabled);
 }
 
 PasswordStoreChangeList PasswordStoreDefault::AddLoginImpl(
     const PasswordForm& form) {
-  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   if (!login_db_)
     return PasswordStoreChangeList();
   return login_db_->AddLogin(form);
@@ -66,7 +58,7 @@ PasswordStoreChangeList PasswordStoreDefault::AddLoginImpl(
 
 PasswordStoreChangeList PasswordStoreDefault::UpdateLoginImpl(
     const PasswordForm& form) {
-  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   if (!login_db_)
     return PasswordStoreChangeList();
   return login_db_->UpdateLogin(form);
@@ -74,7 +66,7 @@ PasswordStoreChangeList PasswordStoreDefault::UpdateLoginImpl(
 
 PasswordStoreChangeList PasswordStoreDefault::RemoveLoginImpl(
     const PasswordForm& form) {
-  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   PasswordStoreChangeList changes;
   if (login_db_ && login_db_->RemoveLogin(form))
     changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
@@ -194,43 +186,43 @@ PasswordStoreDefault::FillLoginsForSameOrganizationName(
 
 bool PasswordStoreDefault::FillAutofillableLogins(
     std::vector<std::unique_ptr<PasswordForm>>* forms) {
-  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   return login_db_ && login_db_->GetAutofillableLogins(forms);
 }
 
 bool PasswordStoreDefault::FillBlacklistLogins(
     std::vector<std::unique_ptr<PasswordForm>>* forms) {
-  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   return login_db_ && login_db_->GetBlacklistLogins(forms);
 }
 
 void PasswordStoreDefault::AddSiteStatsImpl(const InteractionsStats& stats) {
-  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   if (login_db_)
     login_db_->stats_table().AddRow(stats);
 }
 
 void PasswordStoreDefault::RemoveSiteStatsImpl(const GURL& origin_domain) {
-  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   if (login_db_)
     login_db_->stats_table().RemoveRow(origin_domain);
 }
 
 std::vector<InteractionsStats> PasswordStoreDefault::GetAllSiteStatsImpl() {
-  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   return login_db_ ? login_db_->stats_table().GetAllRows()
                    : std::vector<InteractionsStats>();
 }
 
 std::vector<InteractionsStats> PasswordStoreDefault::GetSiteStatsImpl(
     const GURL& origin_domain) {
-  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   return login_db_ ? login_db_->stats_table().GetRows(origin_domain)
                    : std::vector<InteractionsStats>();
 }
 
 void PasswordStoreDefault::ResetLoginDB() {
-  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   login_db_.reset();
 }
 

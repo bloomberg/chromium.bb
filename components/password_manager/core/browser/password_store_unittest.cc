@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// The passwords in the tests below are all empty because PasswordStoreDefault
-// does not store the actual passwords on OS X (they are stored in the Keychain
-// instead). We could special-case it, but it is easier to just have empty
-// passwords. This will not be needed anymore if crbug.com/466638 is fixed.
-
 #include <stddef.h>
 
 #include <utility>
@@ -15,13 +10,10 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/os_crypt/os_crypt_mocker.h"
@@ -83,6 +75,8 @@ constexpr const char kTestAndroidIconURL2[] = "https://example.com/icon_2.png";
 
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
  public:
+  MockPasswordStoreConsumer() = default;
+
   MOCK_METHOD1(OnGetPasswordStoreResultsConstRef,
                void(const std::vector<std::unique_ptr<PasswordForm>>&));
 
@@ -91,6 +85,9 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
       std::vector<std::unique_ptr<PasswordForm>> results) override {
     OnGetPasswordStoreResultsConstRef(results);
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockPasswordStoreConsumer);
 };
 
 class MockPasswordStoreSigninNotifier : public PasswordStoreSigninNotifier {
@@ -101,10 +98,12 @@ class MockPasswordStoreSigninNotifier : public PasswordStoreSigninNotifier {
 
 class StartSyncFlareMock {
  public:
-  StartSyncFlareMock() {}
-  ~StartSyncFlareMock() {}
+  StartSyncFlareMock() = default;
 
   MOCK_METHOD1(StartSyncFlare, void(syncer::ModelType));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StartSyncFlareMock);
 };
 
 }  // namespace
@@ -127,18 +126,21 @@ class PasswordStoreTest : public testing::Test {
     OSCryptMocker::TearDown();
   }
 
+  void WaitForPasswordStore() { scoped_task_environment_.RunUntilIdle(); }
+
   base::FilePath test_login_db_file_path() const {
     return temp_dir_.GetPath().Append(FILE_PATH_LITERAL("login_test"));
   }
 
+ private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir temp_dir_;
+
+  DISALLOW_COPY_AND_ASSIGN(PasswordStoreTest);
 };
 
 TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::SequencedTaskRunnerHandle::Get(),
-      base::SequencedTaskRunnerHandle::Get(),
       base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
@@ -180,7 +182,6 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
     all_forms.push_back(FillPasswordFormWithData(form_data[i]));
     store->AddLogin(*all_forms.back());
   }
-  base::RunLoop().RunUntilIdle();
 
   // We expect to get back only the "recent" www.google.com login.
   // Theoretically these should never actually exist since there are no longer
@@ -224,87 +225,27 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   store->GetLogins(accounts_google, &consumer);
   store->GetLogins(bar_example, &consumer);
 
-  base::RunLoop().RunUntilIdle();
+  WaitForPasswordStore();
 
   store->ShutdownOnUIThread();
-  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(PasswordStoreTest, StartSyncFlare) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::SequencedTaskRunnerHandle::Get(),
-      base::SequencedTaskRunnerHandle::Get(),
       base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
   StartSyncFlareMock mock;
   store->Init(
       base::Bind(&StartSyncFlareMock::StartSyncFlare, base::Unretained(&mock)),
       nullptr);
-  {
-    PasswordForm form;
-    form.origin = GURL("http://accounts.google.com/LoginAuth");
-    form.signon_realm = "http://accounts.google.com/";
-    EXPECT_CALL(mock, StartSyncFlare(syncer::PASSWORDS));
-    store->AddLogin(form);
-    base::RunLoop().RunUntilIdle();
-  }
-  store->ShutdownOnUIThread();
-  base::RunLoop().RunUntilIdle();
-}
 
-TEST_F(PasswordStoreTest, GetLoginImpl) {
-  /* clang-format off */
-  static const PasswordFormData kTestCredential = {
-      PasswordForm::SCHEME_HTML,
-      kTestWebRealm1,
-      kTestWebOrigin1,
-      "", L"", L"username_element",  L"password_element",
-      L"username_value",
-      L"", true, 1};
-  /* clang-format on */
-
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::SequencedTaskRunnerHandle::Get(),
-      base::SequencedTaskRunnerHandle::Get(),
-      base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
-  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
-
-  // For each attribute in the primary key, create one form that mismatches on
-  // that attribute.
-  std::unique_ptr<PasswordForm> test_form(
-      FillPasswordFormWithData(kTestCredential));
-  std::unique_ptr<PasswordForm> mismatching_form_1(
-      new PasswordForm(*test_form));
-  mismatching_form_1->signon_realm = kTestPSLMatchingWebRealm;
-  std::unique_ptr<PasswordForm> mismatching_form_2(
-      new PasswordForm(*test_form));
-  mismatching_form_2->origin = GURL(kTestPSLMatchingWebOrigin);
-  std::unique_ptr<PasswordForm> mismatching_form_3(
-      new PasswordForm(*test_form));
-  mismatching_form_3->username_element = base::ASCIIToUTF16("other_element");
-  std::unique_ptr<PasswordForm> mismatching_form_4(
-      new PasswordForm(*test_form));
-  mismatching_form_4->password_element = base::ASCIIToUTF16("other_element");
-  std::unique_ptr<PasswordForm> mismatching_form_5(
-      new PasswordForm(*test_form));
-  mismatching_form_5->username_value =
-      base::ASCIIToUTF16("other_username_value");
-
-  store->AddLogin(*mismatching_form_1);
-  store->AddLogin(*mismatching_form_2);
-  store->AddLogin(*mismatching_form_3);
-  store->AddLogin(*mismatching_form_4);
-  store->AddLogin(*mismatching_form_5);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(store->GetLoginImpl(*test_form));
-
-  store->AddLogin(*test_form);
-  base::RunLoop().RunUntilIdle();
-  std::unique_ptr<PasswordForm> returned_form = store->GetLoginImpl(*test_form);
-  ASSERT_TRUE(returned_form);
-  EXPECT_EQ(*test_form, *returned_form);
+  PasswordForm form;
+  form.origin = GURL("http://accounts.google.com/LoginAuth");
+  form.signon_realm = "http://accounts.google.com/";
+  EXPECT_CALL(mock, StartSyncFlare(syncer::PASSWORDS));
+  store->AddLogin(form);
+  WaitForPasswordStore();
 
   store->ShutdownOnUIThread();
-  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
@@ -327,15 +268,13 @@ TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
   /* clang-format on */
 
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::SequencedTaskRunnerHandle::Get(),
-      base::SequencedTaskRunnerHandle::Get(),
       base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   std::unique_ptr<PasswordForm> old_form(
       FillPasswordFormWithData(kTestCredentials[0]));
   store->AddLogin(*old_form);
-  base::RunLoop().RunUntilIdle();
+  WaitForPasswordStore();
 
   MockPasswordStoreObserver mock_observer;
   store->AddObserver(&mock_observer);
@@ -350,7 +289,8 @@ TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
   old_primary_key.username_value = old_form->username_value;
   old_primary_key.password_element = old_form->password_element;
   store->UpdateLoginWithPrimaryKey(*new_form, old_primary_key);
-  base::RunLoop().RunUntilIdle();
+  WaitForPasswordStore();
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
 
   MockPasswordStoreConsumer mock_consumer;
   std::vector<std::unique_ptr<PasswordForm>> expected_forms;
@@ -359,11 +299,10 @@ TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
               OnGetPasswordStoreResultsConstRef(
                   UnorderedPasswordFormElementsAre(&expected_forms)));
   store->GetAutofillableLogins(&mock_consumer);
-  base::RunLoop().RunUntilIdle();
+  WaitForPasswordStore();
 
   store->RemoveObserver(&mock_observer);
   store->ShutdownOnUIThread();
-  base::RunLoop().RunUntilIdle();
 }
 
 // Verify that RemoveLoginsCreatedBetween() fires the completion callback after
@@ -381,15 +320,13 @@ TEST_F(PasswordStoreTest, RemoveLoginsCreatedBetweenCallbackIsCalled) {
   /* clang-format on */
 
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::SequencedTaskRunnerHandle::Get(),
-      base::SequencedTaskRunnerHandle::Get(),
       base::WrapUnique(new LoginDatabase(test_login_db_file_path()))));
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   std::unique_ptr<PasswordForm> test_form(
       FillPasswordFormWithData(kTestCredential));
   store->AddLogin(*test_form);
-  base::RunLoop().RunUntilIdle();
+  WaitForPasswordStore();
 
   MockPasswordStoreObserver mock_observer;
   store->AddObserver(&mock_observer);
@@ -398,12 +335,11 @@ TEST_F(PasswordStoreTest, RemoveLoginsCreatedBetweenCallbackIsCalled) {
   store->RemoveLoginsCreatedBetween(
       base::Time::FromDoubleT(0), base::Time::FromDoubleT(2),
       base::MessageLoop::current()->QuitWhenIdleClosure());
-  base::RunLoop().Run();
+  WaitForPasswordStore();
   testing::Mock::VerifyAndClearExpectations(&mock_observer);
 
   store->RemoveObserver(&mock_observer);
   store->ShutdownOnUIThread();
-  base::RunLoop().RunUntilIdle();
 }
 
 // When no Android applications are actually affiliated with the realm of the
@@ -435,8 +371,6 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
   /* clang-format on */
 
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::SequencedTaskRunnerHandle::Get(),
-      base::SequencedTaskRunnerHandle::Get(),
       base::WrapUnique(new LoginDatabase(test_login_db_file_path()))));
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
@@ -447,13 +381,11 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
   for (size_t i = 0; i < arraysize(kTestCredentials); ++i) {
     all_credentials.push_back(FillPasswordFormWithData(kTestCredentials[i]));
     store->AddLogin(*all_credentials.back());
-    base::RunLoop().RunUntilIdle();
   }
 
   PasswordStore::FormDigest observed_form = {
       PasswordForm::SCHEME_HTML, kTestWebRealm1, GURL(kTestWebOrigin1)};
 
-  MockPasswordStoreConsumer mock_consumer;
   std::vector<std::unique_ptr<PasswordForm>> expected_results;
   expected_results.push_back(
       base::MakeUnique<PasswordForm>(*all_credentials[0]));
@@ -468,12 +400,13 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
   mock_helper->ExpectCallToGetAffiliatedAndroidRealms(
       observed_form, no_affiliated_android_realms);
 
+  MockPasswordStoreConsumer mock_consumer;
   EXPECT_CALL(mock_consumer,
               OnGetPasswordStoreResultsConstRef(
                   UnorderedPasswordFormElementsAre(&expected_results)));
   store->GetLogins(observed_form, &mock_consumer);
+  WaitForPasswordStore();
   store->ShutdownOnUIThread();
-  base::RunLoop().RunUntilIdle();
 }
 
 // There are 3 Android applications affiliated with the realm of the observed
@@ -539,8 +472,6 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
       }};
 
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::SequencedTaskRunnerHandle::Get(),
-      base::SequencedTaskRunnerHandle::Get(),
       base::WrapUnique(new LoginDatabase(test_login_db_file_path()))));
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
@@ -552,13 +483,11 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
     all_credentials.push_back(
         FillPasswordFormWithData(i.form_data, i.use_federated_login));
     store->AddLogin(*all_credentials.back());
-    base::RunLoop().RunUntilIdle();
   }
 
   PasswordStore::FormDigest observed_form = {
       PasswordForm::SCHEME_HTML, kTestWebRealm1, GURL(kTestWebOrigin1)};
 
-  MockPasswordStoreConsumer mock_consumer;
   std::vector<std::unique_ptr<PasswordForm>> expected_results;
   expected_results.push_back(
       base::MakeUnique<PasswordForm>(*all_credentials[0]));
@@ -588,30 +517,20 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
   mock_helper->ExpectCallToGetAffiliatedAndroidRealms(
       observed_form, affiliated_android_realms);
 
+  MockPasswordStoreConsumer mock_consumer;
   EXPECT_CALL(mock_consumer,
               OnGetPasswordStoreResultsConstRef(
                   UnorderedPasswordFormElementsAre(&expected_results)));
 
   store->GetLogins(observed_form, &mock_consumer);
+  WaitForPasswordStore();
   store->ShutdownOnUIThread();
-  base::RunLoop().RunUntilIdle();
 }
-
-// This test must use passwords, which are not stored on Mac, therefore the test
-// is disabled on Mac. This should not be a huge issue as functionality in the
-// platform-independent base class is tested. See also the file-level comment.
-#if defined(OS_MACOSX)
-#define MAYBE_UpdatePasswordsStoredForAffiliatedWebsites \
-  DISABLED_UpdatePasswordsStoredForAffiliatedWebsites
-#else
-#define MAYBE_UpdatePasswordsStoredForAffiliatedWebsites \
-  UpdatePasswordsStoredForAffiliatedWebsites
-#endif
 
 // When the password stored for an Android application is updated, credentials
 // with the same username stored for affiliated web sites should also be updated
 // automatically.
-TEST_F(PasswordStoreTest, MAYBE_UpdatePasswordsStoredForAffiliatedWebsites) {
+TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
   const wchar_t kTestUsername[] = L"username_value_1";
   const wchar_t kTestOtherUsername[] = L"username_value_2";
   const wchar_t kTestOldPassword[] = L"old_password_value";
@@ -723,8 +642,6 @@ TEST_F(PasswordStoreTest, MAYBE_UpdatePasswordsStoredForAffiliatedWebsites) {
                    << test_remove_and_add_login);
 
       scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-          base::SequencedTaskRunnerHandle::Get(),
-          base::SequencedTaskRunnerHandle::Get(),
           base::WrapUnique(new LoginDatabase(test_login_db_file_path()))));
       store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
       store->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max(),
@@ -738,8 +655,8 @@ TEST_F(PasswordStoreTest, MAYBE_UpdatePasswordsStoredForAffiliatedWebsites) {
         all_credentials.back()->date_synced =
             all_credentials.back()->date_created;
         store->AddLogin(*all_credentials.back());
-        base::RunLoop().RunUntilIdle();
       }
+      WaitForPasswordStore();
 
       // The helper must be injected after the initial test data is set up,
       // otherwise it will already start propagating updates as new Android
@@ -789,12 +706,18 @@ TEST_F(PasswordStoreTest, MAYBE_UpdatePasswordsStoredForAffiliatedWebsites) {
                                        expected_number_of_propageted_updates)));
       }
       if (test_remove_and_add_login) {
-        store->RemoveLoginSync(*all_credentials[0]);
-        store->AddLoginSync(*expected_credentials_after_update[0]);
+        store->ScheduleTask(
+            base::Bind(IgnoreResult(&PasswordStore::RemoveLoginSync), store,
+                       *all_credentials[0]));
+        store->ScheduleTask(
+            base::Bind(IgnoreResult(&PasswordStore::AddLoginSync), store,
+                       *expected_credentials_after_update[0]));
       } else {
-        store->UpdateLoginSync(*expected_credentials_after_update[0]);
+        store->ScheduleTask(
+            base::Bind(IgnoreResult(&PasswordStore::UpdateLoginSync), store,
+                       *expected_credentials_after_update[0]));
       }
-      base::RunLoop().RunUntilIdle();
+      WaitForPasswordStore();
       store->RemoveObserver(&mock_observer);
 
       MockPasswordStoreConsumer mock_consumer;
@@ -802,8 +725,9 @@ TEST_F(PasswordStoreTest, MAYBE_UpdatePasswordsStoredForAffiliatedWebsites) {
                                      UnorderedPasswordFormElementsAre(
                                          &expected_credentials_after_update)));
       store->GetAutofillableLogins(&mock_consumer);
+      WaitForPasswordStore();
       store->ShutdownOnUIThread();
-      base::RunLoop().RunUntilIdle();
+      WaitForPasswordStore();
     }
   }
 }
@@ -822,8 +746,6 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliationAndBrandingInformation) {
   for (bool blacklisted : {false, true}) {
     SCOPED_TRACE(testing::Message("use blacklisted logins: ") << blacklisted);
     scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-        base::SequencedTaskRunnerHandle::Get(),
-        base::SequencedTaskRunnerHandle::Get(),
         base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
     store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
     store->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max(),
@@ -834,7 +756,6 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliationAndBrandingInformation) {
       all_credentials.push_back(FillPasswordFormWithData(test_credential));
       all_credentials.back()->blacklisted_by_user = blacklisted;
       store->AddLogin(*all_credentials.back());
-      base::RunLoop().RunUntilIdle();
     }
 
     MockPasswordStoreConsumer mock_consumer;
@@ -876,9 +797,8 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliationAndBrandingInformation) {
     // Since GetAutofillableLoginsWithAffiliationAndBrandingInformation
     // schedules a request for affiliation information to UI thread, don't
     // shutdown UI thread until there are no tasks in the UI queue.
-    base::RunLoop().RunUntilIdle();
+    WaitForPasswordStore();
     store->ShutdownOnUIThread();
-    base::RunLoop().RunUntilIdle();
   }
 }
 
@@ -912,8 +832,6 @@ TEST_F(PasswordStoreTest, GetLoginsForSameOrganizationName) {
        L"username_value_6", L"", true, 1}};
 
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::SequencedTaskRunnerHandle::Get(),
-      base::SequencedTaskRunnerHandle::Get(),
       base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
@@ -933,9 +851,8 @@ TEST_F(PasswordStoreTest, GetLoginsForSameOrganizationName) {
               OnGetPasswordStoreResultsConstRef(
                   UnorderedPasswordFormElementsAre(&expected_results)));
   store->GetLoginsForSameOrganizationName(observed_form_realm, &mock_consumer);
-  base::RunLoop().RunUntilIdle();
+  WaitForPasswordStore();
   store->ShutdownOnUIThread();
-  base::RunLoop().RunUntilIdle();
 }
 
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
@@ -948,15 +865,12 @@ TEST_F(PasswordStoreTest, CheckPasswordReuse) {
        "https://facebook.com", "", L"", L"", L"", L"", L"topsecret", true, 1}};
 
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::SequencedTaskRunnerHandle::Get(),
-      base::SequencedTaskRunnerHandle::Get(),
       base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   for (const auto& test_credentials : kTestCredentials) {
     auto credentials = FillPasswordFormWithData(test_credentials);
     store->AddLogin(*credentials);
-    base::RunLoop().RunUntilIdle();
   }
 
   static constexpr struct {
@@ -982,19 +896,16 @@ TEST_F(PasswordStoreTest, CheckPasswordReuse) {
 
     store->CheckReuse(base::WideToUTF16(test_data.input), test_data.domain,
                       &mock_consumer);
-    base::RunLoop().RunUntilIdle();
+    WaitForPasswordStore();
   }
 
   store->ShutdownOnUIThread();
-  base::RunLoop().RunUntilIdle();
 }
 #endif
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 TEST_F(PasswordStoreTest, SavingClearingSyncPassword) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::SequencedTaskRunnerHandle::Get(),
-      base::SequencedTaskRunnerHandle::Get(),
       base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
 
   TestingPrefServiceSimple prefs;
@@ -1009,7 +920,7 @@ TEST_F(PasswordStoreTest, SavingClearingSyncPassword) {
   const base::string16 sync_password = base::ASCIIToUTF16("password");
   const base::string16 input = base::ASCIIToUTF16("123password");
   store->SaveSyncPasswordHash(sync_password);
-  base::RunLoop().RunUntilIdle();
+  WaitForPasswordStore();
   EXPECT_TRUE(prefs.HasPrefPath(prefs::kSyncPasswordHash));
 
   // Check that sync password reuse is found.
@@ -1018,7 +929,7 @@ TEST_F(PasswordStoreTest, SavingClearingSyncPassword) {
       mock_consumer,
       OnReuseFound(sync_password, std::string(kSyncPasswordDomain), 1, 0));
   store->CheckReuse(input, "https://facebook.com", &mock_consumer);
-  base::RunLoop().RunUntilIdle();
+  WaitForPasswordStore();
   testing::Mock::VerifyAndClearExpectations(&mock_consumer);
 
   // Check that no sync password reuse is found after clearing the saved sync
@@ -1027,16 +938,13 @@ TEST_F(PasswordStoreTest, SavingClearingSyncPassword) {
   EXPECT_FALSE(prefs.HasPrefPath(prefs::kSyncPasswordHash));
   EXPECT_CALL(mock_consumer, OnReuseFound(_, _, _, _)).Times(0);
   store->CheckReuse(input, "https://facebook.com", &mock_consumer);
-  base::RunLoop().RunUntilIdle();
+  WaitForPasswordStore();
 
   store->ShutdownOnUIThread();
-  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(PasswordStoreTest, SubscriptionAndUnsubscriptionFromSignInEvents) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::SequencedTaskRunnerHandle::Get(),
-      base::SequencedTaskRunnerHandle::Get(),
       base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
 
   std::unique_ptr<MockPasswordStoreSigninNotifier> notifier =
@@ -1051,7 +959,6 @@ TEST_F(PasswordStoreTest, SubscriptionAndUnsubscriptionFromSignInEvents) {
   // Check that |store| is unsubscribed from sign-in events on shutdown.
   EXPECT_CALL(*notifier_weak, UnsubscribeFromSigninEvents());
   store->ShutdownOnUIThread();
-  base::RunLoop().RunUntilIdle();
 }
 #endif
 

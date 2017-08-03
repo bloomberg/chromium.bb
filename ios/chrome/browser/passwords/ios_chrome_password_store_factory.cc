@@ -90,8 +90,7 @@ IOSChromePasswordStoreFactory::BuildServiceInstanceFor(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
 
   scoped_refptr<password_manager::PasswordStore> store =
-      new password_manager::PasswordStoreDefault(
-          main_thread_runner, db_thread_runner, std::move(login_db));
+      new password_manager::PasswordStoreDefault(std::move(login_db));
   if (!store->Init(ios::sync_start_util::GetFlareForSyncableService(
                        context->GetStatePath()),
                    nullptr)) {
