@@ -75,6 +75,7 @@ AV1_CX_SRCS-yes += encoder/treewriter.h
 AV1_CX_SRCS-yes += encoder/mcomp.c
 AV1_CX_SRCS-yes += encoder/encoder.c
 ifeq ($(CONFIG_PALETTE),yes)
+AV1_CX_SRCS-yes += encoder/k_means_template.h
 AV1_CX_SRCS-yes += encoder/palette.h
 AV1_CX_SRCS-yes += encoder/palette.c
 endif
