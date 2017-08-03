@@ -238,12 +238,6 @@ const base::Feature kRenderingPipelineThrottling{
 const base::Feature kReportRendererPeakMemoryStats{
     "ReportRendererPeakMemoryStats", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Require camera/mic requests from pepper plugins to be made from secure
-// origins.
-const base::Feature kRequireSecureOriginsForPepperMediaRequests{
-    "RequireSecureOriginsForPepperMediaRequests",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Loading Dispatcher v0 support with ResourceLoadScheduler (crbug.com/729954).
 const base::Feature kResourceLoadScheduler{"ResourceLoadScheduler",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

@@ -143,9 +143,7 @@ int PepperMediaDeviceManager::OpenDevice(PP_DeviceType_Dev type,
 
   RendererPpapiHostImpl* host =
       RendererPpapiHostImpl::GetForPPInstance(pp_instance);
-  if (base::FeatureList::IsEnabled(
-          features::kRequireSecureOriginsForPepperMediaRequests) &&
-      !host->IsSecureContext(pp_instance)) {
+  if (!host->IsSecureContext(pp_instance)) {
     RenderFrame* render_frame = host->GetRenderFrameForInstance(pp_instance);
     if (render_frame) {
       render_frame->AddMessageToConsole(CONSOLE_MESSAGE_LEVEL_WARNING,
