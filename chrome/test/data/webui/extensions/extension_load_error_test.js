@@ -24,71 +24,68 @@ cr.define('extension_load_error_tests', function() {
     retryLoadUnpacked: function() {},
   };
 
-  function registerTests() {
-    suite('ExtensionLoadErrorTests', function() {
-      /** @type {extensions.LoadError} */
-      var loadError;
+  suite('ExtensionLoadErrorTests', function() {
+    /** @type {extensions.LoadError} */
+    var loadError;
 
-      /** @type {MockDelegate} */
-      var mockDelegate;
+    /** @type {MockDelegate} */
+    var mockDelegate;
 
-      var fakeGuid = 'uniqueId';
+    var fakeGuid = 'uniqueId';
 
-      var stubLoadError = {
-        error: 'error',
-        path: 'some/path/',
-        retryGuid: fakeGuid,
+    var stubLoadError = {
+      error: 'error',
+      path: 'some/path/',
+      retryGuid: fakeGuid,
+    };
+
+    setup(function() {
+      PolymerTest.clearBody();
+      mockDelegate = new MockDelegate();
+      loadError = new extensions.LoadError();
+      loadError.delegate = mockDelegate;
+      loadError.loadError = stubLoadError;
+      document.body.appendChild(loadError);
+    });
+
+    test(assert(TestNames.Interaction), function() {
+      var dialogElement = loadError.$$('dialog');
+      var isDialogVisible = function() {
+        var rect = dialogElement.getBoundingClientRect();
+        return rect.width * rect.height > 0;
       };
 
-      setup(function() {
-        PolymerTest.clearBody();
-        mockDelegate = new MockDelegate();
-        loadError = new extensions.LoadError();
-        loadError.delegate = mockDelegate;
-        loadError.loadError = stubLoadError;
-        document.body.appendChild(loadError);
-      });
+      expectFalse(isDialogVisible());
+      loadError.show();
+      expectTrue(isDialogVisible());
 
-      test(assert(TestNames.Interaction), function() {
-        var dialogElement = loadError.$$('dialog');
-        var isDialogVisible = function() {
-          var rect = dialogElement.getBoundingClientRect();
-          return rect.width * rect.height > 0;
-        };
+      mockDelegate.testClickingCalls(
+          loadError.$$('.action-button'), 'retryLoadUnpacked', [fakeGuid]);
+      expectFalse(isDialogVisible());
 
-        expectFalse(isDialogVisible());
-        loadError.show();
-        expectTrue(isDialogVisible());
-
-        mockDelegate.testClickingCalls(
-            loadError.$$('.action-button'), 'retryLoadUnpacked', [fakeGuid]);
-        expectFalse(isDialogVisible());
-
-        loadError.show();
-        MockInteractions.tap(loadError.$$('.cancel-button'));
-        expectFalse(isDialogVisible());
-      });
-
-      test(assert(TestNames.CodeSection), function() {
-        expectTrue(loadError.$.code.isEmpty());
-        var loadErrorWithSource = {
-          error: 'Some error',
-          path: '/some/path',
-          source: {
-            beforeHighlight: 'before',
-            highlight: 'highlight',
-            afterHighlight: 'after',
-          },
-        };
-
-        loadError.loadError = loadErrorWithSource;
-        expectFalse(loadError.$.code.isEmpty());
-      });
+      loadError.show();
+      MockInteractions.tap(loadError.$$('.cancel-button'));
+      expectFalse(isDialogVisible());
     });
-  }
+
+    test(assert(TestNames.CodeSection), function() {
+      expectTrue(loadError.$.code.isEmpty());
+      var loadErrorWithSource = {
+        error: 'Some error',
+        path: '/some/path',
+        source: {
+          beforeHighlight: 'before',
+          highlight: 'highlight',
+          afterHighlight: 'after',
+        },
+      };
+
+      loadError.loadError = loadErrorWithSource;
+      expectFalse(loadError.$.code.isEmpty());
+    });
+  });
 
   return {
-    registerTests: registerTests,
     TestNames: TestNames,
   };
 });
