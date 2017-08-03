@@ -3558,10 +3558,13 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                      bsize, ctx_none, best_rdc.rdcost);
     if (this_rdc.rate != INT_MAX) {
       if (bsize_at_least_8x8) {
-        this_rdc.rate += partition_cost[PARTITION_NONE];
+        const int pt_cost = partition_cost[PARTITION_NONE] < INT_MAX
+                                ? partition_cost[PARTITION_NONE]
+                                : 0;
+        this_rdc.rate += pt_cost;
         this_rdc.rdcost = RDCOST(x->rdmult, this_rdc.rate, this_rdc.dist);
 #if CONFIG_SUPERTX
-        this_rate_nocoef += partition_cost[PARTITION_NONE];
+        this_rate_nocoef += pt_cost;
 #endif
       }
 
