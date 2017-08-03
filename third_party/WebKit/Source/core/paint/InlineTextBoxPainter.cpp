@@ -642,20 +642,6 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
     DCHECK(*marker_it);
     const DocumentMarker& marker = **marker_it;
 
-    // Paint either the background markers or the foreground markers, but not
-    // both.
-    switch (marker.GetType()) {
-      case DocumentMarker::kGrammar:
-      case DocumentMarker::kSpelling:
-        if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground)
-          continue;
-        break;
-      case DocumentMarker::kTextMatch:
-      case DocumentMarker::kComposition:
-      case DocumentMarker::kActiveSuggestion:
-        break;
-    }
-
     if (marker.EndOffset() <= inline_text_box_.Start()) {
       // marker is completely before this run.  This might be a marker that sits
       // before the first run we draw, or markers that were within runs we
@@ -670,10 +656,14 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
     // marker intersects this run.  Paint it.
     switch (marker.GetType()) {
       case DocumentMarker::kSpelling:
+        if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground)
+          continue;
         inline_text_box_.PaintDocumentMarker(paint_info.context, box_origin,
                                              marker, style, font, false);
         break;
       case DocumentMarker::kGrammar:
+        if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground)
+          continue;
         inline_text_box_.PaintDocumentMarker(paint_info.context, box_origin,
                                              marker, style, font, true);
         break;
@@ -701,7 +691,8 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
         }
       } break;
       default:
-        NOTREACHED();
+        // Marker is not painted, or painting code has not been added yet
+        break;
     }
   }
 }
