@@ -34,6 +34,10 @@ class TestShellDelegate : public ShellDelegate {
     active_user_pref_service_ = pref_service;
   }
 
+  void set_local_state_pref_service(PrefService* pref_service) {
+    local_state_pref_service_ = pref_service;
+  }
+
   // Overridden from ShellDelegate:
   ::service_manager::Connector* GetShellConnector() const override;
   bool IsIncognitoAllowed() const override;
@@ -82,6 +86,7 @@ class TestShellDelegate : public ShellDelegate {
   bool media_sessions_suspended_ = false;
   std::unique_ptr<ShelfInitializer> shelf_initializer_;
   PrefService* active_user_pref_service_ = nullptr;  // Not owned.
+  PrefService* local_state_pref_service_ = nullptr;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(TestShellDelegate);
 };
