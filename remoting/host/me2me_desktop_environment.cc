@@ -56,6 +56,14 @@ std::string Me2MeDesktopEnvironment::GetCapabilities() const {
     capabilities += " ";
     capabilities += protocol::kTouchEventsCapability;
   }
+
+// TODO(jarhar): Replace this ifdef with settings in DesktopEnvironmentOptions,
+//               and then a chrome policy.
+#ifdef CHROME_REMOTE_DESKTOP_FILE_TRANSFER_ENABLED
+  capabilities += " ";
+  capabilities += protocol::kFileTransferCapability;
+#endif
+
   return capabilities;
 }
 
