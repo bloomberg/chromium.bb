@@ -8,12 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/flat_map.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/process/process.h"
@@ -292,9 +292,9 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   // CBF_WEBKIT    none         empty vector
   // CBF_DATA      format       char array
   //               data         byte array
-  typedef std::vector<char> ObjectMapParam;
-  typedef std::vector<ObjectMapParam> ObjectMapParams;
-  typedef std::map<int /* ObjectType */, ObjectMapParams> ObjectMap;
+  using ObjectMapParam = std::vector<char>;
+  using ObjectMapParams = std::vector<ObjectMapParam>;
+  using ObjectMap = base::flat_map<int /* ObjectType */, ObjectMapParams>;
 
   // Write a bunch of objects to the system clipboard. Copies are made of the
   // contents of |objects|.
@@ -337,13 +337,13 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   // A list of allowed threads. By default, this is empty and no thread checking
   // is done (in the unit test case), but a user (like content) can set which
   // threads are allowed to call this method.
-  typedef std::vector<base::PlatformThreadId> AllowedThreadsVector;
+  using AllowedThreadsVector = std::vector<base::PlatformThreadId>;
   static base::LazyInstance<AllowedThreadsVector>::DestructorAtExit
       allowed_threads_;
 
   // Mapping from threads to clipboard objects.
-  typedef std::map<base::PlatformThreadId, std::unique_ptr<Clipboard>>
-      ClipboardMap;
+  using ClipboardMap =
+      base::flat_map<base::PlatformThreadId, std::unique_ptr<Clipboard>>;
   static base::LazyInstance<ClipboardMap>::DestructorAtExit clipboard_map_;
 
   // Mutex that controls access to |g_clipboard_map|.
