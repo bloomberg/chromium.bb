@@ -72,11 +72,6 @@ class PageSwitcherButton : public views::CustomButton {
   }
 
  protected:
-  bool IsTriggerableEvent(const ui::Event& event) override {
-    return event.IsMouseEvent() &&
-           (triggerable_event_flags() & event.flags()) != 0;
-  }
-
   std::unique_ptr<views::InkDrop> CreateInkDrop() override {
     std::unique_ptr<views::InkDropImpl> ink_drop =
         CustomButton::CreateDefaultInkDropImpl();
