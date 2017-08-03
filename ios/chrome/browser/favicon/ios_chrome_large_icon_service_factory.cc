@@ -6,7 +6,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
-#include "base/task_scheduler/post_task.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/image_fetcher/ios/ios_image_decoder_impl.h"
@@ -43,15 +42,9 @@ IOSChromeLargeIconServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
-
   return base::MakeUnique<favicon::LargeIconService>(
       ios::FaviconServiceFactory::GetForBrowserState(
           browser_state, ServiceAccessType::EXPLICIT_ACCESS),
-      task_runner,
       base::MakeUnique<image_fetcher::ImageFetcherImpl>(
           image_fetcher::CreateIOSImageDecoder(),
           browser_state->GetRequestContext()));

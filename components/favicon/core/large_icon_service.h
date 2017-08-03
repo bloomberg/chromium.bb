@@ -16,10 +16,6 @@
 
 class GURL;
 
-namespace base {
-class TaskRunner;
-}
-
 namespace image_fetcher {
 class ImageFetcher;
 }
@@ -34,7 +30,6 @@ class LargeIconService : public KeyedService {
  public:
   LargeIconService(
       FaviconService* favicon_service,
-      const scoped_refptr<base::TaskRunner>& background_task_runner,
       std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher);
   ~LargeIconService() override;
 
@@ -120,7 +115,6 @@ class LargeIconService : public KeyedService {
       base::CancelableTaskTracker* tracker);
 
   FaviconService* favicon_service_;
-  scoped_refptr<base::TaskRunner> background_task_runner_;
 
   // A pre-populated list of icon types to consider when looking for large
   // icons. This is an optimization over populating an icon type vector on each

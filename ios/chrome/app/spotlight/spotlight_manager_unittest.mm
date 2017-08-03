@@ -8,11 +8,9 @@
 #import <Foundation/Foundation.h>
 
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
@@ -67,8 +65,7 @@ class SpotlightManagerTest : public testing::Test {
   SpotlightManagerTest() {
     model_ = bookmarks::TestBookmarkClient::CreateModel();
     large_icon_service_.reset(new favicon::LargeIconService(
-        &mock_favicon_service_, base::ThreadTaskRunnerHandle::Get(),
-        /*image_fetcher=*/nullptr));
+        &mock_favicon_service_, /*image_fetcher=*/nullptr));
     bookmarksSpotlightManager_ = [[BookmarksSpotlightManager alloc]
         initWithLargeIconService:large_icon_service_.get()
                    bookmarkModel:model_.get()];
@@ -80,7 +77,7 @@ class SpotlightManagerTest : public testing::Test {
 
   ~SpotlightManagerTest() override { [bookmarksSpotlightManager_ shutdown]; }
 
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   testing::StrictMock<favicon::MockFaviconService> mock_favicon_service_;
   std::unique_ptr<favicon::LargeIconService> large_icon_service_;
   base::CancelableTaskTracker cancelable_task_tracker_;

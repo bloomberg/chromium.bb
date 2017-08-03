@@ -8,9 +8,7 @@
 
 #import "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
@@ -62,8 +60,7 @@ class ReadingListCollectionViewControllerTest : public testing::Test {
     reading_list_model_.reset(new ReadingListModelImpl(
         nullptr, nullptr, base::MakeUnique<base::DefaultClock>()));
     large_icon_service_.reset(new favicon::LargeIconService(
-        &mock_favicon_service_, base::ThreadTaskRunnerHandle::Get(),
-        /*image_fetcher=*/nullptr));
+        &mock_favicon_service_, /*image_fetcher=*/nullptr));
     mediator_ =
         [[ReadingListMediator alloc] initWithModel:reading_list_model_.get()
                                   largeIconService:large_icon_service_.get()];
