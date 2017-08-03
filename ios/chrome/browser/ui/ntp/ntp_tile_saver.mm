@@ -153,6 +153,9 @@ void WriteSavedMostVisited(NSDictionary<NSURL*, NTPTile*>* mostVisitedSites) {
   NSUserDefaults* sharedDefaults =
       [[NSUserDefaults alloc] initWithSuiteName:app_group::ApplicationGroup()];
   [sharedDefaults setObject:data forKey:app_group::kSuggestedItems];
+
+  // TODO(crbug.com/750673): Update the widget's visibility depending on
+  // availability of sites.
 }
 
 NSDictionary* ReadSavedMostVisited() {

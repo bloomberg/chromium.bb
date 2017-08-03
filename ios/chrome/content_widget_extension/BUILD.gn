@@ -44,11 +44,15 @@ source_set("content_widget") {
     "content_widget_view.mm",
     "content_widget_view_controller.h",
     "content_widget_view_controller.mm",
+    "most_visited_tile_view.h",
+    "most_visited_tile_view.mm",
   ]
 
   deps = [
     "//base",
+    "//ios/chrome/browser/ui/favicon:favicon_ui",
     "//ios/chrome/browser/ui/ntp:ntp_tile",
+    "//ios/chrome/browser/ui/util:constraints_ui",
     "//ios/chrome/common/app_group",
   ]
 
