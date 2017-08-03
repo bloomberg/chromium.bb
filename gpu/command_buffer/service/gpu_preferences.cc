@@ -8,13 +8,7 @@
 
 namespace gpu {
 
-GpuPreferences::GpuPreferences() {
-  gpu_program_cache_size = kDefaultMaxProgramCacheMemoryBytes;
-#if defined(OS_ANDROID)
-  if (base::SysInfo::IsLowEndDevice())
-    gpu_program_cache_size = kLowEndMaxProgramCacheMemoryBytes;
-#endif
-}
+GpuPreferences::GpuPreferences() = default;
 
 GpuPreferences::GpuPreferences(const GpuPreferences& other) = default;
 

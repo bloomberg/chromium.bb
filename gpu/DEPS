@@ -5,6 +5,7 @@ include_rules = [
   "+third_party/smhasher",
   "+third_party/swiftshader",
   "+third_party/protbuf",
+  "+third_party/zlib",
   "+crypto",
   "+ui/gfx",
   "+ui/gl",

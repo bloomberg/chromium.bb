@@ -12,8 +12,11 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/checked_math.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/sys_info.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/disk_cache_proto.pb.h"
@@ -21,7 +24,18 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/shader_manager.h"
+#include "third_party/zlib/zlib.h"
 #include "ui/gl/gl_bindings.h"
+
+// Macro to help with logging times under 10ms.
+#define UMA_HISTOGRAM_VERY_SHORT_TIMES(name, time_delta)                       \
+  UMA_HISTOGRAM_CUSTOM_COUNTS(                                                 \
+      name,                                                                    \
+      static_cast<base::HistogramBase::Sample>((time_delta).InMicroseconds()), \
+      1,                                                                       \
+      static_cast<base::HistogramBase::Sample>(                                \
+          base::TimeDelta::FromMilliseconds(10).InMicroseconds()),             \
+      50);
 
 namespace gpu {
 namespace gles2 {
@@ -209,6 +223,64 @@ bool ProgramBinaryExtensionsAvailable() {
           gl::g_current_gl_driver->ext.b_GL_OES_get_program_binary);
 }
 
+// Returns an empty vector if compression fails.
+std::vector<uint8_t> CompressData(const std::vector<uint8_t>& data) {
+  auto start_time = base::TimeTicks::Now();
+  Cr_z_uLongf compressed_size = compressBound(data.size());
+  std::vector<uint8_t> compressed_data(compressed_size);
+  // Level indicates a trade-off between compression and speed. Level 1
+  // indicates fastest speed (with worst compression).
+  auto result = compress2(compressed_data.data(), &compressed_size, data.data(),
+                          data.size(), 1 /* level */);
+  // It should be impossible for compression to fail with the provided
+  // parameters.
+  bool success = Z_OK == result;
+  UMA_HISTOGRAM_BOOLEAN("GPU.ProgramCache.CompressDataSuccess", success);
+  if (!success)
+    return std::vector<uint8_t>();
+
+  compressed_data.resize(compressed_size);
+  compressed_data.shrink_to_fit();
+
+  UMA_HISTOGRAM_VERY_SHORT_TIMES("GPU.ProgramCache.CompressDataTime",
+                                 base::TimeTicks::Now() - start_time);
+  UMA_HISTOGRAM_PERCENTAGE("GPU.ProgramCache.CompressionPercentage",
+                           (100 * compressed_size) / data.size());
+
+  return compressed_data;
+}
+
+// Returns an empty vector if decompression fails.
+std::vector<uint8_t> DecompressData(const std::vector<uint8_t>& data,
+                                    size_t decompressed_size,
+                                    size_t max_size_bytes) {
+  auto start_time = base::TimeTicks::Now();
+  std::vector<uint8_t> decompressed_data(decompressed_size);
+  Cr_z_uLongf decompressed_size_out =
+      static_cast<Cr_z_uLongf>(decompressed_size);
+  auto result = uncompress(decompressed_data.data(), &decompressed_size_out,
+                           data.data(), data.size());
+
+  bool success =
+      result == Z_OK && decompressed_data.size() == decompressed_size_out;
+  UMA_HISTOGRAM_BOOLEAN("GPU.ProgramCache.DecompressDataSuccess", success);
+  if (!success)
+    return std::vector<uint8_t>();
+
+  UMA_HISTOGRAM_VERY_SHORT_TIMES("GPU.ProgramCache.DecompressDataTime",
+                                 base::TimeTicks::Now() - start_time);
+
+  return decompressed_data;
+}
+
+bool CompressProgramBinaries() {
+#if !defined(OS_ANDROID)
+  return false;
+#else   // !defined(OS_ANDROID)
+  return base::SysInfo::IsLowEndDevice();
+#endif  // !defined(OS_ANDROID)
+}
+
 }  // namespace
 
 MemoryProgramCache::MemoryProgramCache(
@@ -220,6 +292,7 @@ MemoryProgramCache::MemoryProgramCache(
       disable_gpu_shader_disk_cache_(disable_gpu_shader_disk_cache),
       disable_program_caching_for_transform_feedback_(
           disable_program_caching_for_transform_feedback),
+      compress_program_binaries_(CompressProgramBinaries()),
       curr_size_bytes_(0),
       store_(ProgramMRUCache::NO_AUTO_EVICT),
       activity_flags_(activity_flags) {}
@@ -267,12 +340,22 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
     return PROGRAM_LOAD_FAILURE;
   }
   const scoped_refptr<ProgramCacheValue> value = found->second;
+  const std::vector<uint8_t>& decoded =
+      value->is_compressed()
+          ? DecompressData(value->data(), value->decompressed_length(),
+                           max_size_bytes_)
+          : value->data();
+  if (decoded.empty()) {
+    // Decompression failure.
+    DCHECK(value->is_compressed());
+    return PROGRAM_LOAD_FAILURE;
+  }
 
   {
     GpuProcessActivityFlags::ScopedSetFlag scoped_set_flag(
         activity_flags_, ActivityFlagsBase::FLAG_LOADING_PROGRAM_BINARY);
     glProgramBinary(program, value->format(),
-                    static_cast<const GLvoid*>(value->data()), value->length());
+                    static_cast<const GLvoid*>(decoded.data()), decoded.size());
   }
 
   GLint success = 0;
@@ -296,7 +379,9 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
         GpuProgramProto::default_instance().New());
     proto->set_sha(sha, kHashLength);
     proto->set_format(value->format());
-    proto->set_program(value->data(), value->length());
+    proto->set_program(value->data().data(), value->data().size());
+    proto->set_program_is_compressed(value->is_compressed());
+    proto->set_program_decompressed_length(value->decompressed_length());
 
     FillShaderProto(proto->mutable_vertex_shader(), a_sha, shader_a);
     FillShaderProto(proto->mutable_fragment_shader(), b_sha, shader_b);
@@ -324,17 +409,23 @@ void MemoryProgramCache::SaveLinkedProgram(
   }
   GLenum format;
   GLsizei length = 0;
-  glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH_OES, &length);
+  glGetProgramiv(program, GL_PROGRAM_BINARY_LENGTH, &length);
   if (length == 0 || static_cast<unsigned int>(length) > max_size_bytes_) {
     return;
   }
-  std::unique_ptr<char[]> binary(new char[length]);
-  glGetProgramBinary(program,
-                     length,
-                     NULL,
-                     &format,
-                     binary.get());
-  UMA_HISTOGRAM_COUNTS("GPU.ProgramCache.ProgramBinarySizeBytes", length);
+  std::vector<uint8_t> binary(length);
+  glGetProgramBinary(program, length, NULL, &format,
+                     reinterpret_cast<char*>(binary.data()));
+
+  if (compress_program_binaries_) {
+    binary = CompressData(binary);
+    if (binary.empty()) {
+      // Zero size indicates failure.
+      return;
+    }
+  }
+  UMA_HISTOGRAM_COUNTS("GPU.ProgramCache.ProgramBinarySizeBytes",
+                       binary.size());
 
   char a_sha[kHashLength];
   char b_sha[kHashLength];
@@ -363,7 +454,7 @@ void MemoryProgramCache::SaveLinkedProgram(
   if(existing != store_.end())
     store_.Erase(existing);
 
-  while (curr_size_bytes_ + length > max_size_bytes_) {
+  while (curr_size_bytes_ + binary.size() > max_size_bytes_) {
     DCHECK(!store_.empty());
     store_.Erase(store_.rbegin());
   }
@@ -373,7 +464,9 @@ void MemoryProgramCache::SaveLinkedProgram(
         GpuProgramProto::default_instance().New());
     proto->set_sha(sha, kHashLength);
     proto->set_format(format);
-    proto->set_program(binary.get(), length);
+    proto->set_program(binary.data(), binary.size());
+    proto->set_program_decompressed_length(length);
+    proto->set_program_is_compressed(compress_program_binaries_);
 
     FillShaderProto(proto->mutable_vertex_shader(), a_sha, shader_a);
     FillShaderProto(proto->mutable_fragment_shader(), b_sha, shader_b);
@@ -383,13 +476,13 @@ void MemoryProgramCache::SaveLinkedProgram(
   store_.Put(
       sha_string,
       new ProgramCacheValue(
-          length, format, binary.release(), sha_string, a_sha,
-          shader_a->attrib_map(), shader_a->uniform_map(),
+          format, std::move(binary), compress_program_binaries_, length,
+          sha_string, a_sha, shader_a->attrib_map(), shader_a->uniform_map(),
           shader_a->varying_map(), shader_a->output_variable_list(),
-          shader_a->interface_block_map(), b_sha,
-          shader_b->attrib_map(), shader_b->uniform_map(),
-          shader_b->varying_map(), shader_b->output_variable_list(),
-          shader_b->interface_block_map(), this));
+          shader_a->interface_block_map(), b_sha, shader_b->attrib_map(),
+          shader_b->uniform_map(), shader_b->varying_map(),
+          shader_b->output_variable_list(), shader_b->interface_block_map(),
+          this));
 
   UMA_HISTOGRAM_COUNTS("GPU.ProgramCache.MemorySizeAfterKb",
                        curr_size_bytes_ / 1024);
@@ -454,14 +547,17 @@ void MemoryProgramCache::LoadProgram(const std::string& key,
           &fragment_interface_blocks);
     }
 
-    std::unique_ptr<char[]> binary(new char[proto->program().length()]);
-    memcpy(binary.get(), proto->program().c_str(), proto->program().length());
+    std::vector<uint8_t> binary(proto->program().length());
+    memcpy(binary.data(), proto->program().c_str(), proto->program().length());
 
     store_.Put(
         proto->sha(),
         new ProgramCacheValue(
-            proto->program().length(), proto->format(), binary.release(),
-            proto->sha(), proto->vertex_shader().sha().c_str(), vertex_attribs,
+            proto->format(), std::move(binary),
+            proto->has_program_is_compressed() &&
+                proto->program_is_compressed(),
+            proto->program_decompressed_length(), proto->sha(),
+            proto->vertex_shader().sha().c_str(), vertex_attribs,
             vertex_uniforms, vertex_varyings, vertex_output_variables,
             vertex_interface_blocks, proto->fragment_shader().sha().c_str(),
             fragment_attribs, fragment_uniforms, fragment_varyings,
@@ -484,9 +580,10 @@ size_t MemoryProgramCache::Trim(size_t limit) {
 }
 
 MemoryProgramCache::ProgramCacheValue::ProgramCacheValue(
-    GLsizei length,
     GLenum format,
-    const char* data,
+    std::vector<uint8_t> data,
+    bool is_compressed,
+    GLsizei decompressed_length,
     const std::string& program_hash,
     const char* shader_0_hash,
     const AttributeMap& attrib_map_0,
@@ -501,9 +598,10 @@ MemoryProgramCache::ProgramCacheValue::ProgramCacheValue(
     const OutputVariableList& output_variable_list_1,
     const InterfaceBlockMap& interface_block_map_1,
     MemoryProgramCache* program_cache)
-    : length_(length),
-      format_(format),
-      data_(data),
+    : format_(format),
+      data_(std::move(data)),
+      is_compressed_(is_compressed),
+      decompressed_length_(decompressed_length),
       program_hash_(program_hash),
       shader_0_hash_(shader_0_hash, kHashLength),
       attrib_map_0_(attrib_map_0),
@@ -518,12 +616,12 @@ MemoryProgramCache::ProgramCacheValue::ProgramCacheValue(
       output_variable_list_1_(output_variable_list_1),
       interface_block_map_1_(interface_block_map_1),
       program_cache_(program_cache) {
-  program_cache_->curr_size_bytes_ += length_;
+  program_cache_->curr_size_bytes_ += data_.size();
   program_cache_->LinkedProgramCacheSuccess(program_hash);
 }
 
 MemoryProgramCache::ProgramCacheValue::~ProgramCacheValue() {
-  program_cache_->curr_size_bytes_ -= length_;
+  program_cache_->curr_size_bytes_ -= data_.size();
   program_cache_->Evict(program_hash_);
 }
 

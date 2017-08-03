@@ -24606,6 +24606,45 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The time to compile a shader.</summary>
 </histogram>
 
+<histogram name="GPU.ProgramCache.CompressDataSuccess" units="BooleanSuccess">
+  <owner>ericrk@chromium.org</owner>
+  <summary>
+    Whether we succeeded in compressing program data. Expected to always be
+    true.
+  </summary>
+</histogram>
+
+<histogram name="GPU.ProgramCache.CompressDataTime" units="microseconds">
+  <owner>ericrk@chromium.org</owner>
+  <summary>
+    The time to compress a program's binary data during insertion into the
+    program cache.
+  </summary>
+</histogram>
+
+<histogram name="GPU.ProgramCache.CompressionPercentage" units="%">
+  <owner>ericrk@chromium.org</owner>
+  <summary>
+    The percentage of raw size that a program binary takes after compression.
+  </summary>
+</histogram>
+
+<histogram name="GPU.ProgramCache.DecompressDataSuccess" units="BooleanSuccess">
+  <owner>ericrk@chromium.org</owner>
+  <summary>
+    Whether we succeeded in decompressing program data. Failure indicates disk
+    or memory corruption.
+  </summary>
+</histogram>
+
+<histogram name="GPU.ProgramCache.DecompressDataTime" units="microseconds">
+  <owner>ericrk@chromium.org</owner>
+  <summary>
+    The time to decompress a program's binary data during retrieval from the
+    program cache.
+  </summary>
+</histogram>
+
 <histogram name="GPU.ProgramCache.LoadBinarySuccess" enum="BooleanSuccess">
   <owner>vmiura@chromium.org</owner>
   <summary>

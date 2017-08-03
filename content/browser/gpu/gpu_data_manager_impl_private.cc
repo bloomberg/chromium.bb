@@ -42,6 +42,7 @@
 #include "gpu/config/gpu_util.h"
 #include "gpu/config/software_rendering_list_autogen.h"
 #include "gpu/ipc/common/memory_stats.h"
+#include "gpu/ipc/host/shader_disk_cache.h"
 #include "gpu/ipc/service/switches.h"
 #include "media/media_features.h"
 #include "ui/base/ui_base_switches.h"
@@ -925,6 +926,9 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
       (command_line->HasSwitch(switches::kEnableES3APIs) ||
        !IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL2)) &&
       !command_line->HasSwitch(switches::kDisableES3APIs);
+
+  gpu_preferences->gpu_program_cache_size =
+      gpu::ShaderDiskCache::CacheSizeBytes();
 }
 
 void GpuDataManagerImplPrivate::DisableHardwareAcceleration() {

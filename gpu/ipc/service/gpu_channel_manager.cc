@@ -104,8 +104,7 @@ GpuChannelManager::~GpuChannelManager() {
 }
 
 gles2::ProgramCache* GpuChannelManager::program_cache() {
-  if (!program_cache_.get() &&
-      !gpu_preferences_.disable_gpu_program_cache) {
+  if (!program_cache_.get()) {
     const GpuDriverBugWorkarounds& workarounds = gpu_driver_bug_workarounds_;
     bool disable_disk_cache =
         gpu_preferences_.disable_gpu_shader_disk_cache ||
