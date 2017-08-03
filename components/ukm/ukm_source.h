@@ -5,18 +5,16 @@
 #ifndef COMPONENTS_UKM_UKM_SOURCE_H_
 #define COMPONENTS_UKM_UKM_SOURCE_H_
 
-#include <stddef.h>
 #include <map>
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"
 
 namespace ukm {
 
 class Source;
-
-typedef int64_t SourceId;
 
 // Contains UKM data for a single navigation entry.
 class UkmSource {

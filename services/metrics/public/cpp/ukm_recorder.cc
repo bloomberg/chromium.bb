@@ -4,7 +4,6 @@
 
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
-#include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
@@ -33,8 +32,7 @@ UkmRecorder* UkmRecorder::Get() {
 
 // static
 ukm::SourceId UkmRecorder::GetNewSourceID() {
-  static base::AtomicSequenceNumber seq;
-  return static_cast<ukm::SourceId>(seq.GetNext());
+  return AssignNewSourceId();
 }
 
 std::unique_ptr<UkmEntryBuilder> UkmRecorder::GetEntryBuilder(
