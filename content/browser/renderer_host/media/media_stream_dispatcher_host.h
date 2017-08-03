@@ -70,6 +70,8 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
  private:
   friend class MockMediaStreamDispatcherHost;
 
+  void DeviceOpenFailed(int render_frame_id, int page_request_id);
+
   // mojom::MediaStreamDispatcherHost implementation
   void GenerateStream(int32_t render_frame_id,
                       int32_t request_id,
@@ -96,6 +98,9 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
       int page_request_id,
       MediaStreamRequestResult result,
       mojom::MediaStreamDispatcherPtrInfo dispatcher_info);
+  void OnDeviceOpenFailed(int render_frame_id,
+                          int page_request_id,
+                          mojom::MediaStreamDispatcherPtrInfo dispatcher_info);
 
   std::map<int, mojom::MediaStreamDispatcherPtr> dispatchers_;
 

@@ -63,7 +63,3 @@ IPC_MESSAGE_ROUTED3(MediaStreamMsg_DeviceOpened,
                     int /* request id */,
                     std::string /* label */,
                     content::StreamDeviceInfo /* the device */)
-
-// The browser has failed to open a device.
-IPC_MESSAGE_ROUTED1(MediaStreamMsg_DeviceOpenFailed,
-                    int /* request id */)
