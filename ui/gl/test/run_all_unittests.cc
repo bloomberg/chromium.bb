@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 
@@ -14,7 +18,6 @@
 
 #if defined(USE_OZONE)
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -28,17 +31,25 @@ class GlTestSuite : public base::TestSuite {
  protected:
   void Initialize() override {
     base::TestSuite::Initialize();
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+    // This registers a custom NSApplication. It must be done before
+    // ScopedTaskEnvironment registers a regular NSApplication.
+    mock_cr_app::RegisterMockCrApp();
+#endif
+
+    scoped_task_environment_ =
+        base::MakeUnique<base::test::ScopedTaskEnvironment>(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI);
+
 #if defined(USE_OZONE)
-    main_loop_.reset(new base::MessageLoopForUI());
     // Make Ozone run in single-process mode, where it doesn't expect a GPU
     // process and it spawns and starts its own DRM thread.
     ui::OzonePlatform::InitParams params;
     params.single_process = true;
+    // This initialization must be done after ScopedTaskEnvironment has
+    // initialized the UI thread.
     ui::OzonePlatform::InitializeForUI(params);
-#endif
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-    mock_cr_app::RegisterMockCrApp();
 #endif
   }
 
@@ -47,10 +58,7 @@ class GlTestSuite : public base::TestSuite {
   }
 
  private:
-#if defined(USE_OZONE)
-  // On Ozone, the backend initializes the event system using a UI thread.
-  std::unique_ptr<base::MessageLoopForUI> main_loop_;
-#endif
+  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(GlTestSuite);
 };
