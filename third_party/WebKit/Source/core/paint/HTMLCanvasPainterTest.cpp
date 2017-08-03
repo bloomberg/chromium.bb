@@ -12,7 +12,6 @@
 #include "core/loader/EmptyClients.h"
 #include "core/paint/StubChromeClientForSPv2.h"
 #include "core/testing/DummyPageHolder.h"
-#include "platform/graphics/Canvas2DImageBufferSurface.h"
 #include "platform/graphics/Canvas2DLayerBridge.h"
 #include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
@@ -66,8 +65,9 @@ class HTMLCanvasPainterTestForSPv2 : public ::testing::Test,
     return chrome_client_->HasLayer(layer);
   }
 
-  RefPtr<Canvas2DLayerBridge> MakeCanvas2DLayerBridge(const IntSize& size) {
-    return AdoptRef(new Canvas2DLayerBridge(
+  std::unique_ptr<Canvas2DLayerBridge> MakeCanvas2DLayerBridge(
+      const IntSize& size) {
+    return WTF::WrapUnique(new Canvas2DLayerBridge(
         size, 0, kNonOpaque, Canvas2DLayerBridge::kForceAccelerationForTesting,
         CanvasColorParams()));
   }
@@ -89,10 +89,9 @@ TEST_P(HTMLCanvasPainterTestForSPv2, Canvas2DLayerAppearsInLayerTree) {
   attributes.setAlpha(true);
   CanvasRenderingContext* context =
       element->GetCanvasRenderingContext("2d", attributes);
-  RefPtr<Canvas2DLayerBridge> bridge =
+  std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeCanvas2DLayerBridge(IntSize(300, 200));
-  element->CreateImageBufferUsingSurfaceForTesting(WTF::WrapUnique(
-      new Canvas2DImageBufferSurface(bridge, IntSize(300, 200))));
+  element->CreateImageBufferUsingSurfaceForTesting(std::move(bridge));
   ASSERT_EQ(context, element->RenderingContext());
   ASSERT_TRUE(context->IsComposited());
   ASSERT_TRUE(element->IsAccelerated());
