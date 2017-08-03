@@ -1847,16 +1847,14 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
       }
 #endif  // CONFIG_EXT_INTER
 
+      int mode_allowed = (mbmi->mode == NEWMV);
 #if CONFIG_EXT_INTER
+      mode_allowed |= (mbmi->mode == NEW_NEWMV);
 #if CONFIG_COMPOUND_SINGLEREF
-      if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV ||
-          mbmi->mode == SR_NEW_NEWMV) {
-#else   // !CONFIG_COMPOUND_SINGLEREF
-      if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV) {
+      mode_allowed |= (mbmi->mode == SR_NEW_NEWMV);
 #endif  // CONFIG_COMPOUND_SINGLEREF
-#else   // !CONFIG_EXT_INTER
-      if (mbmi->mode == NEWMV) {
 #endif  // CONFIG_EXT_INTER
+      if (mode_allowed) {
         uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
         int idx;
 
@@ -1872,10 +1870,11 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
       }
 
 #if CONFIG_EXT_INTER
-      if (have_nearmv_in_inter_mode(mbmi->mode)) {
+      if (have_nearmv_in_inter_mode(mbmi->mode))
 #else
-      if (mbmi->mode == NEARMV) {
+      if (mbmi->mode == NEARMV)
 #endif
+      {
         uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
         int idx;
 
@@ -3028,66 +3027,24 @@ static INLINE void load_pred_mv(MACROBLOCK *x, PICK_MODE_CONTEXT *ctx) {
 
 #if CONFIG_FP_MB_STATS
 const int qindex_skip_threshold_lookup[BLOCK_SIZES] = {
-  0,
-  10,
-  10,
-  30,
-  40,
-  40,
-  60,
-  80,
-  80,
-  90,
-  100,
-  100,
-  120,
+  0, 10, 10, 30, 40, 40, 60, 80, 80, 90, 100, 100, 120,
 #if CONFIG_EXT_PARTITION
   // TODO(debargha): What are the correct numbers here?
-  130,
-  130,
-  150
+  130, 130, 150
 #endif  // CONFIG_EXT_PARTITION
 };
 const int qindex_split_threshold_lookup[BLOCK_SIZES] = {
-  0,
-  3,
-  3,
-  7,
-  15,
-  15,
-  30,
-  40,
-  40,
-  60,
-  80,
-  80,
-  120,
+  0, 3, 3, 7, 15, 15, 30, 40, 40, 60, 80, 80, 120,
 #if CONFIG_EXT_PARTITION
   // TODO(debargha): What are the correct numbers here?
-  160,
-  160,
-  240
+  160, 160, 240
 #endif  // CONFIG_EXT_PARTITION
 };
 const int complexity_16x16_blocks_threshold[BLOCK_SIZES] = {
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  4,
-  4,
-  6,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4, 4, 6,
 #if CONFIG_EXT_PARTITION
   // TODO(debargha): What are the correct numbers here?
-  8,
-  8,
-  10
+  8, 8, 10
 #endif  // CONFIG_EXT_PARTITION
 };
 
@@ -3162,10 +3119,11 @@ static void rd_test_partition3(
 #endif
 
 #if CONFIG_SUPERTX
-  if (sum_rdc.rdcost < INT64_MAX) {
+  if (sum_rdc.rdcost < INT64_MAX)
 #else
-  if (sum_rdc.rdcost < best_rdc->rdcost) {
+  if (sum_rdc.rdcost < best_rdc->rdcost)
 #endif
+  {
     PICK_MODE_CONTEXT *ctx_0 = &ctxs[0];
     update_state(cpi, td, ctx_0, mi_row0, mi_col0, subsize0, 1);
     encode_superblock(cpi, td, tp, DRY_RUN_NORMAL, mi_row0, mi_col0, subsize0,
@@ -3203,10 +3161,11 @@ static void rd_test_partition3(
     }
 
 #if CONFIG_SUPERTX
-    if (sum_rdc.rdcost < INT64_MAX) {
+    if (sum_rdc.rdcost < INT64_MAX)
 #else
-    if (sum_rdc.rdcost < best_rdc->rdcost) {
+    if (sum_rdc.rdcost < best_rdc->rdcost)
 #endif
+    {
       PICK_MODE_CONTEXT *ctx_1 = &ctxs[1];
       update_state(cpi, td, ctx_1, mi_row1, mi_col1, subsize1, 1);
       encode_superblock(cpi, td, tp, DRY_RUN_NORMAL, mi_row1, mi_col1, subsize1,
@@ -3733,10 +3692,11 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     } else {
       int idx;
 #if CONFIG_SUPERTX
-      for (idx = 0; idx < 4 && sum_rdc.rdcost < INT64_MAX; ++idx) {
+      for (idx = 0; idx < 4 && sum_rdc.rdcost < INT64_MAX; ++idx)
 #else
-      for (idx = 0; idx < 4 && sum_rdc.rdcost < best_rdc.rdcost; ++idx) {
+      for (idx = 0; idx < 4 && sum_rdc.rdcost < best_rdc.rdcost; ++idx)
 #endif  // CONFIG_SUPERTX
+      {
         const int x_idx = (idx & 1) * mi_step;
         const int y_idx = (idx >> 1) * mi_step;
 
@@ -5518,10 +5478,11 @@ void av1_encode_frame(AV1_COMP *cpi) {
       cm->tx_mode = ALLOW_32X32 + CONFIG_TX64X64;
 #else
 #if CONFIG_RECT_TX_EXT && CONFIG_EXT_TX
-    if (cm->tx_mode == TX_MODE_SELECT && counts->quarter_tx_size[1] == 0) {
+    if (cm->tx_mode == TX_MODE_SELECT && counts->quarter_tx_size[1] == 0)
 #else
-    if (cm->tx_mode == TX_MODE_SELECT) {
+    if (cm->tx_mode == TX_MODE_SELECT)
 #endif
+    {
 #if CONFIG_TX64X64
       int count4x4 = 0;
       int count8x8_8x8p = 0, count8x8_lp = 0;
@@ -5808,10 +5769,11 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
 
 #if CONFIG_RECT_TX_EXT
   if (tx_size == plane_tx_size ||
-      mbmi->tx_size == quarter_txsize_lookup[mbmi->sb_type]) {
+      mbmi->tx_size == quarter_txsize_lookup[mbmi->sb_type])
 #else
-  if (tx_size == plane_tx_size) {
+  if (tx_size == plane_tx_size)
 #endif
+  {
     ++counts->txfm_partition[ctx][0];
 #if CONFIG_RECT_TX_EXT
     if (tx_size == plane_tx_size)
