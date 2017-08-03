@@ -88,16 +88,6 @@
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Disable MDM Integration</string>
-			<key>Key</key>
-			<string>MDMIntegrationDisabled</string>
-			<key>DefaultValue</key>
-			<false/>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSToggleSwitchSpecifier</string>
-			<key>Title</key>
 			<string>Disable SafariVC Sign In</string>
 			<key>Key</key>
 			<string>SafariVCSignInDisabled</string>

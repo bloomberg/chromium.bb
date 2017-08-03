@@ -40,7 +40,6 @@ NSString* const kForceResetContextualSearch = @"ForceResetContextualSearch";
 NSString* const kGaiaEnvironment = @"GAIAEnvironment";
 NSString* const kHeuristicsForPasswordGeneration =
     @"HeuristicsForPasswordGeneration";
-NSString* const kMDMIntegrationDisabled = @"MDMIntegrationDisabled";
 NSString* const kOriginServerHost = @"AlternateOriginServerHost";
 NSString* const kSafariVCSignInDisabled = @"SafariVCSignInDisabled";
 NSString* const kWhatsNewPromoStatus = @"WhatsNewPromoStatus";
@@ -101,13 +100,14 @@ bool IsAutoReloadEnabled() {
 }
 
 bool IsLRUSnapshotCacheEnabled() {
-  // TODO(crbug.com/751553): Remove this flag and its associated code.
+  // TODO(crbug.com/751553): Remove this function and its associated code.
   return NO;
 }
 
 bool IsMDMIntegrationEnabled() {
-  return ![[NSUserDefaults standardUserDefaults]
-      boolForKey:kMDMIntegrationDisabled];
+  // TODO(crbug.com/752073): Remove this function and its associated code,
+  // or convert it into a base::Feature.
+  return YES;
 }
 
 bool IsMemoryDebuggingEnabled() {
