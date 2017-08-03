@@ -77,41 +77,25 @@ promise_test(() => {
   return Promise.reject();
 }, "interface interceptors are mutually exclusive");
 
-test(async t => {
+test(() => {
   const kTestInterfaceName = "foo::mojom::Bar";
+  let interceptedHandle = null;
 
-  // First check that the interceptor can be started and intercepts requests.
   let interceptor = new MojoInterfaceInterceptor(kTestInterfaceName);
-  let promise = new Promise(resolve => {
-    interceptor.oninterfacerequest = e => {
-      resolve(e.handle);
-    };
-  });
+  interceptor.oninterfacerequest = e => { interceptedHandle = e.handle; };
   interceptor.start();
 
-  let pipe = Mojo.createMessagePipe();
-  Mojo.bindInterface(kTestInterfaceName, pipe.handle0);
-  let interceptedHandle = await promise;
-  assert_true(interceptedHandle instanceof MojoHandle);
-  interceptedHandle.close();
-  pipe.handle1.close();
-
-  // Stop the interceptor and make another request.
+  let {handle0, handle1} = Mojo.createMessagePipe();
+  Mojo.bindInterface(kTestInterfaceName, handle0);
   interceptor.stop();
 
-  pipe = Mojo.createMessagePipe();
-  interceptor.oninterfacerequest = t.step_func(() => {
-    assert_unreached("unexpected 'interfacerequest' event after stop");
-  });
-  promise = new Promise(resolve => {
-    let watcher = pipe.handle1.watch({peerClosed: true}, () => {
-      watcher.cancel();  // Necessary to avoid a DCHECK when handle1 is closed.
-      resolve();
-    });
-  });
-  Mojo.bindInterface(kTestInterfaceName, pipe.handle0);
-  await promise;
-  pipe.handle1.close();
+  assert_true(interceptedHandle instanceof MojoHandle);
+  interceptedHandle.close();
+  interceptedHandle = null;
+
+  Mojo.bindInterface(kTestInterfaceName, handle1);
+  assert_equals(interceptedHandle, null);
+  handle1.close();
 
   interceptor = new MojoInterfaceInterceptor(kTestInterfaceName);
   interceptor.oninterfacerequest = e => {};
