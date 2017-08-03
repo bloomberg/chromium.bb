@@ -6,7 +6,9 @@
 #define PerformanceObserver_h
 
 #include "core/CoreExport.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/timing/PerformanceEntry.h"
+#include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"
@@ -24,8 +26,11 @@ using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
 
 class CORE_EXPORT PerformanceObserver final
     : public GarbageCollected<PerformanceObserver>,
-      public ScriptWrappable {
+      public ScriptWrappable,
+      public ActiveScriptWrappable<PerformanceObserver>,
+      public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(PerformanceObserver);
   friend class PerformanceBase;
   friend class PerformanceBaseTest;
   friend class PerformanceObserverTest;
@@ -40,11 +45,14 @@ class CORE_EXPORT PerformanceObserver final
   void EnqueuePerformanceEntry(PerformanceEntry&);
   PerformanceEntryTypeMask FilterOptions() const { return filter_options_; }
 
+  // ScriptWrappable
+  bool HasPendingActivity() const final;
+
   DECLARE_TRACE();
   DECLARE_TRACE_WRAPPERS();
 
  private:
-  PerformanceObserver(ScriptState*,
+  PerformanceObserver(ExecutionContext*,
                       PerformanceBase*,
                       PerformanceObserverCallback*);
   void Deliver();

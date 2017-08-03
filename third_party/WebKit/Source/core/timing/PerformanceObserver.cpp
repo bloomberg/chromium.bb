@@ -32,14 +32,16 @@ PerformanceObserver* PerformanceObserver::Create(
             "PerformanceObserver", "No 'window' in current context."));
     return nullptr;
   }
-  return new PerformanceObserver(
-      script_state, DOMWindowPerformance::performance(*window), callback);
+  return new PerformanceObserver(ExecutionContext::From(script_state),
+                                 DOMWindowPerformance::performance(*window),
+                                 callback);
 }
 
-PerformanceObserver::PerformanceObserver(ScriptState* script_state,
+PerformanceObserver::PerformanceObserver(ExecutionContext* execution_context,
                                          PerformanceBase* performance,
                                          PerformanceObserverCallback* callback)
-    : execution_context_(ExecutionContext::From(script_state)),
+    : ContextClient(execution_context),
+      execution_context_(execution_context),
       callback_(this, callback),
       performance_(performance),
       filter_options_(PerformanceEntry::kInvalid),
@@ -76,9 +78,8 @@ void PerformanceObserver::observe(const PerformanceObserverInit& observer_init,
 }
 
 void PerformanceObserver::disconnect() {
-  if (performance_) {
+  if (performance_)
     performance_->UnregisterPerformanceObserver(*this);
-  }
   performance_entries_.clear();
   is_registered_ = false;
 }
@@ -88,6 +89,10 @@ void PerformanceObserver::EnqueuePerformanceEntry(PerformanceEntry& entry) {
   performance_entries_.push_back(&entry);
   if (performance_)
     performance_->ActivateObserver(*this);
+}
+
+bool PerformanceObserver::HasPendingActivity() const {
+  return is_registered_;
 }
 
 bool PerformanceObserver::ShouldBeSuspended() const {
@@ -108,6 +113,7 @@ void PerformanceObserver::Deliver() {
 }
 
 DEFINE_TRACE(PerformanceObserver) {
+  ContextClient::Trace(visitor);
   visitor->Trace(execution_context_);
   visitor->Trace(callback_);
   visitor->Trace(performance_);
