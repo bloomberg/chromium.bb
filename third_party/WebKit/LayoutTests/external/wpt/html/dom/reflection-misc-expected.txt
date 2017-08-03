@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 3089 tests; 3075 PASS, 14 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS html.title: 32 tests
 PASS html.lang: 32 tests
 PASS html.dir: 62 tests

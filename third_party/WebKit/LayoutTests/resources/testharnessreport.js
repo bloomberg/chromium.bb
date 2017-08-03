@@ -175,6 +175,11 @@
                 harness_status.message +
                 "\n";
         }
+
+        // Iterate through tests array and build string that contains
+        // results for all tests.
+        let testResults = "";
+        let resultCounter = [0, 0, 0, 0];
         // reflection tests contain huge number of tests, and Chromium code
         // review tool has the 1MB diff size limit. We merge PASS lines.
         if (output_document.URL.indexOf("/html/dom/reflection") >= 0) {
@@ -188,40 +193,39 @@
                             if (!tests[j].name.startsWith(prefix) || tests[j].status != 0)
                                 break;
                         }
-                        if ((j - i) > 1) {
-                            resultStr += convertResult(tests[i].status) +
-                                " " + sanitize(prefix) + " " + (j - i) + " tests\n"
+                        const numPasses = j - i;
+                        if (numPasses > 1) {
+                            resultCounter[0] += numPasses;
+                            testResults += convertResult(tests[i].status) +
+                                ` ${sanitize(prefix)} ${numPasses} tests\n`;
                             i = j - 1;
                             continue;
                         }
                     }
                 }
-                resultStr += convertResult(tests[i].status) + " " +
+                resultCounter[tests[i].status]++;
+                testResults += convertResult(tests[i].status) + " " +
                     sanitize(tests[i].name) + " " +
                     sanitize(tests[i].message) + "\n";
             }
         } else {
-            // Iterate through tests array and build string that contains
-            // results for all tests.
-            let testResults = "";
-            let resultCounter = [0, 0, 0, 0];
             for (var i = 0; i < tests.length; ++i) {
                 resultCounter[tests[i].status]++;
                 testResults += convertResult(tests[i].status) + " " +
                     sanitize(tests[i].name) + " " +
                     sanitize(tests[i].message) + "\n";
             }
-            if (output_document.URL.indexOf("http://web-platform.test") >= 0 &&
-                tests.length >= 50 && (resultCounter[1] || resultCounter[2] || resultCounter[3])) {
-                // Output failure metrics if there are many.
-                resultStr += `Found ${tests.length} tests;` +
-                    ` ${resultCounter[0]} PASS,` +
-                    ` ${resultCounter[1]} FAIL,` +
-                    ` ${resultCounter[2]} TIMEOUT,` +
-                    ` ${resultCounter[3]} NOTRUN.\n`;
-            }
-            resultStr += testResults;
         }
+        if (output_document.URL.indexOf("http://web-platform.test") >= 0 &&
+            tests.length >= 50 && (resultCounter[1] || resultCounter[2] || resultCounter[3])) {
+            // Output failure metrics if there are many.
+            resultStr += `Found ${tests.length} tests;` +
+                ` ${resultCounter[0]} PASS,` +
+                ` ${resultCounter[1]} FAIL,` +
+                ` ${resultCounter[2]} TIMEOUT,` +
+                ` ${resultCounter[3]} NOTRUN.\n`;
+        }
+        resultStr += testResults;
 
         resultStr += "Harness: the test ran to completion.\n";
 
