@@ -153,16 +153,23 @@ bool ScrollManager::CanScroll(const ScrollState& scroll_state,
   if (!delta_x && !delta_y)
     return true;
 
-  if (IsViewportScrollingElement(current_element))
-    return true;
+  ScrollableArea* scrollable_area = nullptr;
 
-  if (current_element == *(frame_->GetDocument()->documentElement()))
-    return true;
+  if (IsViewportScrollingElement(current_element) ||
+      current_element == *(frame_->GetDocument()->documentElement())) {
+    if (!frame_->Tree().Parent() || frame_->Tree().Parent()->IsLocalFrame())
+      return true;
 
-  ScrollableArea* scrollable_area =
-      current_element.GetLayoutBox()
-          ? current_element.GetLayoutBox()->GetScrollableArea()
-          : nullptr;
+    // For oopif the viewport is added to scroll chain only if it can actually
+    // consume some delta hints.
+    DCHECK(frame_->Tree().Parent()->IsRemoteFrame());
+    scrollable_area =
+        frame_->View() ? frame_->View()->GetScrollableArea() : nullptr;
+  }
+
+  if (!scrollable_area && current_element.GetLayoutBox())
+    scrollable_area = current_element.GetLayoutBox()->GetScrollableArea();
+
   if (!scrollable_area)
     return false;
 

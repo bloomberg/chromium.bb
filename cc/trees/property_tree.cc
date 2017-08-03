@@ -1255,7 +1255,7 @@ void ScrollTree::OnScrollOffsetAnimated(ElementId id,
 
   ScrollNode* scroll_node = Node(scroll_tree_index);
   if (SetScrollOffset(id,
-                      ClampScrollOffsetToLimits(scroll_offset, scroll_node)))
+                      ClampScrollOffsetToLimits(scroll_offset, *scroll_node)))
     layer_tree_impl->DidUpdateScrollOffset(id);
   layer_tree_impl->DidAnimateScrollOffset();
 }
@@ -1556,7 +1556,7 @@ gfx::Vector2dF ScrollTree::ScrollBy(ScrollNode* scroll_node,
   DCHECK(scroll_node->scrollable);
   gfx::ScrollOffset old_offset = current_scroll_offset(scroll_node->element_id);
   gfx::ScrollOffset new_offset =
-      ClampScrollOffsetToLimits(old_offset + adjusted_scroll, scroll_node);
+      ClampScrollOffsetToLimits(old_offset + adjusted_scroll, *scroll_node);
   if (SetScrollOffset(scroll_node->element_id, new_offset))
     layer_tree_impl->DidUpdateScrollOffset(scroll_node->element_id);
 
@@ -1567,8 +1567,8 @@ gfx::Vector2dF ScrollTree::ScrollBy(ScrollNode* scroll_node,
 
 gfx::ScrollOffset ScrollTree::ClampScrollOffsetToLimits(
     gfx::ScrollOffset offset,
-    ScrollNode* scroll_node) const {
-  offset.SetToMin(MaxScrollOffset(scroll_node->id));
+    const ScrollNode& scroll_node) const {
+  offset.SetToMin(MaxScrollOffset(scroll_node.id));
   offset.SetToMax(gfx::ScrollOffset());
   return offset;
 }

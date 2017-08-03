@@ -69,7 +69,12 @@ class InputHandlerProxy
     DID_NOT_HANDLE,
     DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING,
     DID_HANDLE_NON_BLOCKING,
-    DROP_EVENT
+    DROP_EVENT,
+    // The compositor did handle the scroll event (so it wouldn't forward the
+    // event to the main thread.) but it didn't consume the scroll so it should
+    // pass it to the next consumer (either overscrolling or bubbling the event
+    // to the next renderer).
+    DID_HANDLE_SHOULD_BUBBLE,
   };
   using EventDispositionCallback =
       base::OnceCallback<void(EventDisposition,

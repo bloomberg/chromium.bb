@@ -72,6 +72,25 @@ Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& delta,
   return result;
 }
 
+bool Viewport::CanScroll(const ScrollState& scroll_state) const {
+  if (!OuterScrollLayer())
+    return false;
+
+  bool result = false;
+  ScrollTree& scroll_tree =
+      host_impl_->active_tree()->property_trees()->scroll_tree;
+  ScrollNode* inner_node =
+      scroll_tree.Node(InnerScrollLayer()->scroll_tree_index());
+  if (inner_node)
+    result |= host_impl_->CanConsumeDelta(*inner_node, scroll_state);
+  ScrollNode* outer_node =
+      scroll_tree.Node(OuterScrollLayer()->scroll_tree_index());
+  if (outer_node)
+    result |= host_impl_->CanConsumeDelta(*outer_node, scroll_state);
+
+  return result;
+}
+
 void Viewport::ScrollByInnerFirst(const gfx::Vector2dF& delta) {
   LayerImpl* scroll_layer = InnerScrollLayer();
 
@@ -104,7 +123,7 @@ gfx::Vector2dF Viewport::ScrollAnimated(const gfx::Vector2dF& delta,
   ScrollNode* inner_node =
       scroll_tree.Node(InnerScrollLayer()->scroll_tree_index());
   gfx::Vector2dF inner_delta =
-      host_impl_->ComputeScrollDelta(inner_node, delta);
+      host_impl_->ComputeScrollDelta(*inner_node, delta);
 
   gfx::Vector2dF pending_delta = scaled_delta - inner_delta;
   pending_delta.Scale(scale_factor);
@@ -112,7 +131,7 @@ gfx::Vector2dF Viewport::ScrollAnimated(const gfx::Vector2dF& delta,
   ScrollNode* outer_node =
       scroll_tree.Node(OuterScrollLayer()->scroll_tree_index());
   gfx::Vector2dF outer_delta =
-      host_impl_->ComputeScrollDelta(outer_node, pending_delta);
+      host_impl_->ComputeScrollDelta(*outer_node, pending_delta);
 
   if (inner_delta.IsZero() && outer_delta.IsZero())
     return gfx::Vector2dF(0, 0);
