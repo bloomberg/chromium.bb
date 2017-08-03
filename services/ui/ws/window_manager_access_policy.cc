@@ -46,6 +46,12 @@ bool WindowManagerAccessPolicy::CanSetModal(
   return true;
 }
 
+bool WindowManagerAccessPolicy::CanSetChildModalParent(
+    const ServerWindow* window,
+    const ServerWindow* modal_parent) const {
+  return true;
+}
+
 bool WindowManagerAccessPolicy::CanReorderWindow(
     const ServerWindow* window,
     const ServerWindow* relative_window,

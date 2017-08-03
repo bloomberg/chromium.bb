@@ -222,6 +222,7 @@ void WindowTreeTest::SetupEventTargeting(TestWindowTreeClient** out_client,
       gfx::Rect(0, 0, 100, 100), gfx::Rect(0, 0, 50, 50));
   window_event_targeting_helper_.CreateSecondaryTree(
       embed_window, gfx::Rect(20, 20, 20, 20), out_client, window_tree, window);
+  FirstRoot(*window_tree)->set_is_activation_parent(true);
 }
 
 // Verifies focus correctly changes on pointer events.
@@ -274,7 +275,7 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   tree1_client->tracker()->changes()->clear();
   wm_client()->tracker()->changes()->clear();
 
-  display1->AddActivationParent(embed_window);
+  embed_window->set_is_activation_parent(true);
 
   // Focus should go to child1. This result in notifying both the window
   // manager and client client being notified.
@@ -329,6 +330,25 @@ TEST_F(WindowTreeTest, BasicInputEventTarget) {
             ChangesToDescription1(*embed_client->tracker()->changes())[0]);
   EXPECT_EQ("InputEvent window=2,1 event_action=16",
             ChangesToDescription1(*embed_client->tracker()->changes())[1]);
+}
+
+// Verifies SetChildModalParent() works correctly.
+TEST_F(WindowTreeTest, SetChildModalParent) {
+  TestWindowTreeClient* embed_client = nullptr;
+  WindowTree* tree = nullptr;
+  ServerWindow* window = nullptr;
+  EXPECT_NO_FATAL_FAILURE(SetupEventTargeting(&embed_client, &tree, &window));
+
+  ClientWindowId w1_id;
+  ServerWindow* w1 = NewWindowInTreeWithParent(tree, window, &w1_id);
+  ASSERT_TRUE(w1);
+  ClientWindowId w2_id;
+  ServerWindow* w2 = NewWindowInTreeWithParent(tree, window, &w2_id);
+  ASSERT_TRUE(w2);
+  ASSERT_TRUE(tree->SetChildModalParent(w1_id, w2_id));
+  EXPECT_EQ(w2, w1->GetChildModalParent());
+  ASSERT_TRUE(tree->SetChildModalParent(w1_id, ClientWindowId()));
+  EXPECT_EQ(nullptr, w1->GetChildModalParent());
 }
 
 // Tests that a client can watch for events outside its bounds.

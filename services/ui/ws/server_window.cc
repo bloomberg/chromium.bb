@@ -14,6 +14,7 @@
 #include "services/ui/ws/server_window_compositor_frame_sink_manager.h"
 #include "services/ui/ws/server_window_delegate.h"
 #include "services/ui/ws/server_window_observer.h"
+#include "services/ui/ws/server_window_tracker.h"
 #include "ui/base/cursor/cursor.h"
 
 namespace ui {
@@ -276,6 +277,22 @@ void ServerWindow::SetModalType(ModalType modal_type) {
   modal_type_ = modal_type;
   for (auto& observer : observers_)
     observer.OnWindowModalTypeChanged(this, old_modal_type);
+}
+
+void ServerWindow::SetChildModalParent(ServerWindow* modal_parent) {
+  if (modal_parent) {
+    child_modal_parent_tracker_ = base::MakeUnique<ServerWindowTracker>();
+    child_modal_parent_tracker_->Add(modal_parent);
+  } else {
+    child_modal_parent_tracker_.reset();
+  }
+}
+
+const ServerWindow* ServerWindow::GetChildModalParent() const {
+  return child_modal_parent_tracker_ &&
+                 !child_modal_parent_tracker_->windows().empty()
+             ? *child_modal_parent_tracker_->windows().begin()
+             : nullptr;
 }
 
 bool ServerWindow::Contains(const ServerWindow* window) const {

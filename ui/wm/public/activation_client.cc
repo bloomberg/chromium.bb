@@ -7,7 +7,6 @@
 #include "ui/aura/window.h"
 #include "ui/base/class_property.h"
 
-DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(WM_PUBLIC_EXPORT, aura::Window*)
 DECLARE_UI_CLASS_PROPERTY_TYPE(wm::ActivationClient*)
 
 namespace wm {

@@ -59,6 +59,8 @@ class EventDispatcher : public ServerWindowObserver,
   explicit EventDispatcher(EventDispatcherDelegate* delegate);
   ~EventDispatcher() override;
 
+  void set_fallback_to_root(bool value) { fallback_to_root_ = value; }
+
   // Cancels capture and stops tracking any pointer events. This does not send
   // any events to the delegate.
   void Reset();
@@ -105,10 +107,6 @@ class EventDispatcher : public ServerWindowObserver,
   // one that is visible and added most recently or shown most recently would be
   // the active one.
   void AddSystemModalWindow(ServerWindow* window);
-
-  // Checks if |modal_window| is a visible modal window that blocks current
-  // capture window and if that's the case, releases the capture.
-  void ReleaseCaptureBlockedByModalWindow(const ServerWindow* modal_window);
 
   // Checks if the current capture window is blocked by any visible modal window
   // and if that's the case, releases the capture.
@@ -340,6 +338,13 @@ class EventDispatcher : public ServerWindowObserver,
   AcceleratorMatchPhase previous_accelerator_match_phase_ =
       AcceleratorMatchPhase::ANY;
 #endif
+
+  // Used to determine behavior when the target of an event is blocked by a
+  // modal window.
+  // . If true, the target becomes the root window.
+  // . If false, no target is used, which means the window-manager does not
+  //   see the event.
+  bool fallback_to_root_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(EventDispatcher);
 };

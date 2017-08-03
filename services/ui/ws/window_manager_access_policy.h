@@ -31,6 +31,8 @@ class WindowManagerAccessPolicy : public AccessPolicy {
   bool CanRemoveTransientWindowFromParent(
       const ServerWindow* window) const override;
   bool CanSetModal(const ServerWindow* window) const override;
+  bool CanSetChildModalParent(const ServerWindow* window,
+                              const ServerWindow* modal_parent) const override;
   bool CanReorderWindow(const ServerWindow* window,
                         const ServerWindow* relative_window,
                         mojom::OrderDirection direction) const override;

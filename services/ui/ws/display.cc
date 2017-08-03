@@ -155,14 +155,6 @@ void Display::ActivateNextWindow() {
   focus_controller_->ActivateNextWindow();
 }
 
-void Display::AddActivationParent(ServerWindow* window) {
-  activation_parents_.Add(window);
-}
-
-void Display::RemoveActivationParent(ServerWindow* window) {
-  activation_parents_.Remove(window);
-}
-
 void Display::UpdateTextInputState(ServerWindow* window,
                                    const ui::TextInputState& state) {
   // Do not need to update text input for unfocused windows.
@@ -274,7 +266,7 @@ void Display::CreateRootWindow(const gfx::Size& size) {
       mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   root_->SetBounds(gfx::Rect(size), allocator_.GenerateId());
   root_->SetVisible(true);
-  focus_controller_ = base::MakeUnique<FocusController>(this, root_.get());
+  focus_controller_ = base::MakeUnique<FocusController>(root_.get());
   focus_controller_->AddObserver(this);
 }
 
@@ -337,10 +329,6 @@ ServerWindow* Display::GetActiveRootWindow() {
   if (display_root)
     return display_root->root();
   return nullptr;
-}
-
-bool Display::CanHaveActiveChildren(ServerWindow* window) const {
-  return window && activation_parents_.Contains(window);
 }
 
 void Display::OnActivationChanged(ServerWindow* old_active_window,

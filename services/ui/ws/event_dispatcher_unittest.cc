@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "services/ui/common/accelerator_util.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "services/ui/ws/accelerator.h"
 #include "services/ui/ws/event_dispatcher_delegate.h"
 #include "services/ui/ws/server_window.h"
@@ -79,6 +80,11 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   }
 
   void set_root(ServerWindow* root) { root_ = root; }
+
+  ServerWindow* window_that_blocked_event() {
+    return window_that_blocked_event_;
+  }
+  void ClearWindowThatBlockedEvent() { window_that_blocked_event_ = nullptr; }
 
   // Returns the last dispatched event, or null if there are no more.
   std::unique_ptr<DispatchedEventDetails>
@@ -167,6 +173,10 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
                              int64_t display_id) override {
     last_event_target_not_found_ = ui::Event::Clone(event);
   }
+  void OnEventOccurredOutsideOfModalWindow(
+      ServerWindow* modal_transient) override {
+    window_that_blocked_event_ = modal_transient;
+  }
 
   Delegate* delegate_;
   ServerWindow* focused_window_;
@@ -177,6 +187,7 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   ServerWindow* root_ = nullptr;
   std::unique_ptr<ui::Event> last_event_target_not_found_;
   base::Optional<bool> last_cursor_visibility_;
+  ServerWindow* window_that_blocked_event_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventDispatcherDelegate);
 };
@@ -204,7 +215,7 @@ void ExpectDispatchedEventDetailsMatches(const DispatchedEventDetails* details,
     ASSERT_FALSE(details);
     return;
   }
-
+  ASSERT_TRUE(details);
   ASSERT_EQ(target, details->window);
   ASSERT_TRUE(details->event);
   ASSERT_TRUE(details->event->IsLocatedEvent());
@@ -396,6 +407,7 @@ void EventDispatcherTest::SetUp() {
   window_delegate_ = base::MakeUnique<TestServerWindowDelegate>();
   root_window_ =
       base::MakeUnique<ServerWindow>(window_delegate_.get(), WindowId(1, 2));
+  root_window_->set_is_activation_parent(true);
   window_delegate_->set_root_window(root_window_.get());
   root_window_->SetVisible(true);
 
@@ -1463,7 +1475,7 @@ TEST_P(EventDispatcherTest, ResetClearsCapture) {
   EXPECT_EQ(nullptr, event_dispatcher()->capture_window());
 }
 
-// Tests that events on a modal parent target the modal child.
+// Tests that events on a parent of a modal window are blocked.
 TEST_P(EventDispatcherTest, ModalWindowEventOnModalParent) {
   std::unique_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
   std::unique_ptr<ServerWindow> w2 = CreateChildWindow(WindowId(1, 5));
@@ -1481,19 +1493,39 @@ TEST_P(EventDispatcherTest, ModalWindowEventOnModalParent) {
       base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
   DispatchEvent(event_dispatcher(), mouse_pressed, 0,
                 EventDispatcher::AcceleratorMatchPhase::ANY);
+  // As |w2| is modal and the event is over |w1|, no events should be queued,
+  // and the delegate should be informed of this.
+  ASSERT_FALSE(test_event_dispatcher_delegate()->has_queued_events());
+  EXPECT_EQ(w2.get(),
+            test_event_dispatcher_delegate()->window_that_blocked_event());
+  test_event_dispatcher_delegate()->ClearWindowThatBlockedEvent();
 
+  const ui::PointerEvent mouse_released(ui::MouseEvent(
+      ui::ET_MOUSE_RELEASED, gfx::Point(15, 15), gfx::Point(15, 15),
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  DispatchEvent(event_dispatcher(), mouse_released, 0,
+                EventDispatcher::AcceleratorMatchPhase::ANY);
+  ASSERT_FALSE(test_event_dispatcher_delegate()->has_queued_events());
+  EXPECT_FALSE(test_event_dispatcher_delegate()->window_that_blocked_event());
+
+  // Send event over |w2|.
+  const ui::PointerEvent mouse_pressed2(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, gfx::Point(55, 15), gfx::Point(55, 15),
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  DispatchEvent(event_dispatcher(), mouse_pressed2, 0,
+                EventDispatcher::AcceleratorMatchPhase::ANY);
   std::unique_ptr<DispatchedEventDetails> details =
       test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
   ASSERT_TRUE(details);
   EXPECT_EQ(w2.get(), details->window);
-  EXPECT_TRUE(details->IsNonclientArea());
 
   ASSERT_TRUE(details->event);
   ASSERT_TRUE(details->event->IsPointerEvent());
 
   ui::PointerEvent* dispatched_event = details->event->AsPointerEvent();
-  EXPECT_EQ(gfx::Point(15, 15), dispatched_event->root_location());
-  EXPECT_EQ(gfx::Point(-35, 5), dispatched_event->location());
+  EXPECT_EQ(gfx::Point(55, 15), dispatched_event->root_location());
+  EXPECT_EQ(gfx::Point(5, 5), dispatched_event->location());
+  EXPECT_FALSE(test_event_dispatcher_delegate()->window_that_blocked_event());
 }
 
 // Tests that events on a modal child target the modal child itself.
@@ -1565,9 +1597,39 @@ TEST_P(EventDispatcherTest, ModalWindowEventOnUnrelatedWindow) {
   EXPECT_EQ(gfx::Point(5, 5), dispatched_event->location());
 }
 
-// Tests that events events on a descendant of a modal parent target the modal
-// child.
+// Tests that events on a descendant of a modal parent target the modal child.
 TEST_P(EventDispatcherTest, ModalWindowEventOnDescendantOfModalParent) {
+  std::unique_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> w11 =
+      CreateChildWindowWithParent(WindowId(1, 4), w1.get());
+  std::unique_ptr<ServerWindow> w2 = CreateChildWindow(WindowId(1, 5));
+
+  root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
+  w1->SetBounds(gfx::Rect(10, 10, 30, 30));
+  w11->SetBounds(gfx::Rect(10, 10, 10, 10));
+  w2->SetBounds(gfx::Rect(50, 10, 10, 10));
+
+  w1->AddTransientWindow(w2.get());
+  w2->SetModalType(MODAL_TYPE_WINDOW);
+
+  // Send event that is over |w11|.
+  const ui::PointerEvent mouse_pressed(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, gfx::Point(25, 25), gfx::Point(25, 25),
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  DispatchEvent(event_dispatcher(), mouse_pressed, 0,
+                EventDispatcher::AcceleratorMatchPhase::ANY);
+
+  // The event is targeted at |w11|, but is blocked by the modal window |w2|.
+  ASSERT_TRUE(test_event_dispatcher_delegate()->last_event_target_not_found());
+  ASSERT_FALSE(test_event_dispatcher_delegate()->has_queued_events());
+}
+
+// Same as ModalWindowEventOnDescendantOfModalParent but with fallback to root
+// enabled.
+TEST_P(EventDispatcherTest,
+       ModalWindowEventOnDescendantOfModalParentWithFallback) {
+  event_dispatcher()->set_fallback_to_root(true);
+
   std::unique_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
   std::unique_ptr<ServerWindow> w11 =
       CreateChildWindowWithParent(WindowId(1, 4), w1.get());
@@ -1591,7 +1653,7 @@ TEST_P(EventDispatcherTest, ModalWindowEventOnDescendantOfModalParent) {
   std::unique_ptr<DispatchedEventDetails> details =
       test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
   ASSERT_TRUE(details);
-  EXPECT_EQ(w2.get(), details->window);
+  EXPECT_EQ(root_window(), details->window);
   EXPECT_TRUE(details->IsNonclientArea());
 
   ASSERT_TRUE(details->event);
@@ -1599,7 +1661,7 @@ TEST_P(EventDispatcherTest, ModalWindowEventOnDescendantOfModalParent) {
 
   ui::PointerEvent* dispatched_event = details->event->AsPointerEvent();
   EXPECT_EQ(gfx::Point(25, 25), dispatched_event->root_location());
-  EXPECT_EQ(gfx::Point(-25, 15), dispatched_event->location());
+  EXPECT_EQ(gfx::Point(25, 25), dispatched_event->location());
 }
 
 // Tests that events on a system modal window target the modal window itself.
@@ -1640,7 +1702,30 @@ TEST_P(EventDispatcherTest, ModalWindowEventOutsideSystemModal) {
   w1->SetModalType(MODAL_TYPE_SYSTEM);
   event_dispatcher()->AddSystemModalWindow(w1.get());
 
-  // Send event that is over |w1|.
+  // Send event that is outside of |w1|.
+  const ui::PointerEvent mouse_pressed(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, gfx::Point(45, 15), gfx::Point(45, 15),
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  DispatchEvent(event_dispatcher(), mouse_pressed, 0,
+                EventDispatcher::AcceleratorMatchPhase::ANY);
+
+  ASSERT_TRUE(test_event_dispatcher_delegate()->last_event_target_not_found());
+  ASSERT_FALSE(test_event_dispatcher_delegate()->has_queued_events());
+}
+
+// Variant of ModalWindowEventOutsideSystemModal with
+// set_fallback_to_root(true).
+TEST_P(EventDispatcherTest, ModalWindowEventOutsideSystemModalWithFallback) {
+  event_dispatcher()->set_fallback_to_root(true);
+
+  std::unique_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
+
+  root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
+  w1->SetBounds(gfx::Rect(10, 10, 30, 30));
+  w1->SetModalType(MODAL_TYPE_SYSTEM);
+  event_dispatcher()->AddSystemModalWindow(w1.get());
+
+  // Send event that is outside of |w1|.
   const ui::PointerEvent mouse_pressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(45, 15), gfx::Point(45, 15),
       base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
@@ -1650,7 +1735,7 @@ TEST_P(EventDispatcherTest, ModalWindowEventOutsideSystemModal) {
   std::unique_ptr<DispatchedEventDetails> details =
       test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
   ASSERT_TRUE(details);
-  EXPECT_EQ(w1.get(), details->window);
+  EXPECT_EQ(root_window(), details->window);
   EXPECT_TRUE(details->IsNonclientArea());
 
   ASSERT_TRUE(details->event);
@@ -1658,7 +1743,7 @@ TEST_P(EventDispatcherTest, ModalWindowEventOutsideSystemModal) {
 
   ui::PointerEvent* dispatched_event = details->event->AsPointerEvent();
   EXPECT_EQ(gfx::Point(45, 15), dispatched_event->root_location());
-  EXPECT_EQ(gfx::Point(35, 5), dispatched_event->location());
+  EXPECT_EQ(gfx::Point(45, 15), dispatched_event->location());
 }
 
 // Tests events on a sub-window of system modal window target the window itself.
@@ -2065,6 +2150,32 @@ TEST_P(EventDispatcherTest, KeyHidesCursorOnNoMatch) {
 
   EXPECT_EQ(base::Optional<bool>(false),
             event_dispatcher_delegate->last_cursor_visibility());
+}
+
+TEST_P(EventDispatcherTest, ChildModal) {
+  std::unique_ptr<ServerWindow> modal_parent =
+      CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> child_modal_window =
+      CreateChildWindow(WindowId(1, 4));
+
+  root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
+  modal_parent->SetBounds(gfx::Rect(10, 10, 30, 30));
+  child_modal_window->SetBounds(gfx::Rect(50, 10, 10, 10));
+  modal_parent->AddTransientWindow(child_modal_window.get());
+  child_modal_window->SetModalType(MODAL_TYPE_CHILD);
+  child_modal_window->SetChildModalParent(modal_parent.get());
+
+  const ui::PointerEvent press_event(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, gfx::Point(20, 25), gfx::Point(20, 25),
+      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  DispatchEvent(event_dispatcher(), press_event, 0,
+                EventDispatcher::AcceleratorMatchPhase::ANY);
+
+  // As the event falls over |modal_parent|, but there is a CHILD_MODAL window,
+  // the event is blocked and the delegate notified.
+  EXPECT_FALSE(test_event_dispatcher_delegate()->has_queued_events());
+  EXPECT_EQ(child_modal_window.get(),
+            test_event_dispatcher_delegate()->window_that_blocked_event());
 }
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */, EventDispatcherTest, testing::Bool());

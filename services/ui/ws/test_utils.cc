@@ -621,7 +621,7 @@ void WindowEventTargetingHelper::CreateSecondaryTree(
   ASSERT_TRUE(child1);
   EXPECT_TRUE(tree1->AddWindow(ClientWindowIdForWindow(tree1, embed_window),
                                child1_id));
-  tree1->GetDisplay(embed_window)->AddActivationParent(embed_window);
+  embed_window->set_is_activation_parent(true);
 
   child1->SetVisible(true);
   child1->SetBounds(window_bounds, base::nullopt);

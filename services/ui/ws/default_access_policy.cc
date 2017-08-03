@@ -59,6 +59,15 @@ bool DefaultAccessPolicy::CanSetModal(const ServerWindow* window) const {
          WasCreatedByThisClient(window);
 }
 
+bool DefaultAccessPolicy::CanSetChildModalParent(
+    const ServerWindow* window,
+    const ServerWindow* modal_parent) const {
+  return (delegate_->HasRootForAccessPolicy(window) ||
+          WasCreatedByThisClient(window)) &&
+         (!modal_parent || delegate_->HasRootForAccessPolicy(modal_parent) ||
+          WasCreatedByThisClient(modal_parent));
+}
+
 bool DefaultAccessPolicy::CanReorderWindow(
     const ServerWindow* window,
     const ServerWindow* relative_window,
