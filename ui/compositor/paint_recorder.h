@@ -32,6 +32,8 @@ class COMPOSITOR_EXPORT PaintRecorder {
   // PaintRecorder is in use. Canvas is bounded by |recording_size|.
   PaintRecorder(const PaintContext& context,
                 const gfx::Size& recording_size,
+                float recording_scale_x,
+                float recording_scale_y,
                 PaintCache* cache);
   PaintRecorder(const PaintContext& context, const gfx::Size& recording_size);
   ~PaintRecorder();

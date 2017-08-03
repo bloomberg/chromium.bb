@@ -15,7 +15,9 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/paint_context.h"
@@ -232,7 +234,8 @@ const ui::LayerTreeOwner* DragWindowController::GetDragLayerOwnerForTest(
 }
 
 void DragWindowController::RequestLayerPaintForTest() {
-  ui::PaintContext context(nullptr, 1.0f, gfx::Rect());
+  ui::PaintContext context(nullptr, 1.0f, gfx::Rect(),
+                           window_->GetHost()->compositor()->is_pixel_canvas());
   for (auto& details : drag_windows_) {
     std::vector<ui::Layer*> layers;
     layers.push_back(details->drag_window_->layer());

@@ -340,6 +340,41 @@ inline Rect ScaleToEnclosedRect(const Rect& rect, float scale) {
   return ScaleToEnclosedRect(rect, scale, scale);
 }
 
+// Scales |rect| by scaling its four corner points. If the corner points lie on
+// non-integral coordinate after scaling, their values are rounded to the
+// nearest integer.
+// This is helpful during layout when relative positions of multiple gfx::Rect
+// in a given coordinate space needs to be same after scaling as it was before
+// scaling. ie. this gives a lossless relative positioning of rects.
+inline Rect ScaleToRoundedRect(const Rect& rect, float x_scale, float y_scale) {
+  if (x_scale == 1.f && y_scale == 1.f)
+    return rect;
+
+  DCHECK(
+      base::IsValueInRangeForNumericType<int>(std::round(rect.x() * x_scale)));
+  DCHECK(
+      base::IsValueInRangeForNumericType<int>(std::round(rect.y() * y_scale)));
+  DCHECK(base::IsValueInRangeForNumericType<int>(
+      std::round(rect.right() * x_scale)));
+  DCHECK(base::IsValueInRangeForNumericType<int>(
+      std::round(rect.bottom() * y_scale)));
+
+  int x = static_cast<int>(std::round(rect.x() * x_scale));
+  int y = static_cast<int>(std::round(rect.y() * y_scale));
+  int r = rect.width() == 0
+              ? x
+              : static_cast<int>(std::round(rect.right() * x_scale));
+  int b = rect.height() == 0
+              ? y
+              : static_cast<int>(std::round(rect.bottom() * y_scale));
+
+  return Rect(x, y, r - x, b - y);
+}
+
+inline Rect ScaleToRoundedRect(const Rect& rect, float scale) {
+  return ScaleToRoundedRect(rect, scale, scale);
+}
+
 // This is declared here for use in gtest-based unit tests but is defined in
 // the //ui/gfx:test_support target. Depend on that to use this in your unit
 // test. This should not be used in production code - call ToString() instead.

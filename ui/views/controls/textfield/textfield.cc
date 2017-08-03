@@ -1115,8 +1115,11 @@ void Textfield::WriteDragDataForView(View* sender,
   if (!ui::XVisualManager::GetInstance()->ArgbVisualAvailable())
     color = GetBackgroundColor();
 #endif
-  label.Paint(
-      ui::CanvasPainter(&bitmap, label.size(), raster_scale, color).context());
+  label.Paint(PaintInfo::CreateRootPaintInfo(
+      ui::CanvasPainter(&bitmap, label.size(), raster_scale, color,
+                        GetWidget()->GetCompositor()->is_pixel_canvas())
+          .context(),
+      label.size()));
   const gfx::Vector2d kOffset(-15, 0);
   gfx::ImageSkia image(gfx::ImageSkiaRep(bitmap, raster_scale));
   data->provider().SetDragImage(image, kOffset);

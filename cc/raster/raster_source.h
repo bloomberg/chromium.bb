@@ -143,6 +143,7 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   const gfx::Size size_;
   const bool clear_canvas_with_debug_color_;
   const int slow_down_raster_scale_factor_for_debug_;
+  const float recording_scale_factor_;
 
  private:
   void RasterCommon(SkCanvas* canvas,

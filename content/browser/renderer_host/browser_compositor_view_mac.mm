@@ -104,7 +104,8 @@ RecyclableCompositorMac::RecyclableCompositorMac()
                   content::GetContextFactory(),
                   content::GetContextFactoryPrivate(),
                   ui::WindowResizeHelperMac::Get()->task_runner(),
-                  false /* enable_surface_synchronization */) {
+                  false /* enable_surface_synchronization */,
+                  false /* enable_pixel_canvas */) {
   compositor_.SetAcceleratedWidget(
       accelerated_widget_mac_->accelerated_widget());
   Suspend();

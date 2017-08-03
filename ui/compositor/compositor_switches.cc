@@ -32,6 +32,11 @@ const char kUIShowPaintRects[] = "ui-show-paint-rects";
 
 const char kUISlowAnimations[] = "ui-slow-animations";
 
+// If enabled, all draw commands recorded on canvas are done in pixel aligned
+// measurements. This also enables scaling of all elements in views and layers
+// to be done via corner points. See https://goo.gl/Dqig5s
+const char kEnablePixelCanvasRecording[] = "enable-pixel-canvas-recording";
+
 }  // namespace switches
 
 namespace ui {
@@ -40,6 +45,13 @@ bool IsUIZeroCopyEnabled() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   return command_line.HasSwitch(switches::kUIEnableZeroCopy);
+}
+
+bool IsPixelCanvasRecordingEnabled() {
+  static const bool is_pixel_canvas_recording_enabled =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePixelCanvasRecording);
+  return is_pixel_canvas_recording_enabled;
 }
 
 }  // namespace ui

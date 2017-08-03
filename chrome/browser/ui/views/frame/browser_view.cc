@@ -2005,8 +2005,8 @@ void BrowserView::ViewHierarchyChanged(
 #endif
 }
 
-void BrowserView::PaintChildren(const ui::PaintContext& context) {
-  views::ClientView::PaintChildren(context);
+void BrowserView::PaintChildren(const views::PaintInfo& paint_info) {
+  views::ClientView::PaintChildren(paint_info);
   // Don't reset the instance before it had a chance to get compositor callback.
   if (!histogram_helper_) {
     histogram_helper_ = BrowserWindowHistogramHelper::

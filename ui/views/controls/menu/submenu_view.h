@@ -69,7 +69,7 @@ class VIEWS_EXPORT SubmenuView : public View,
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // Painting.
-  void PaintChildren(const ui::PaintContext& context) override;
+  void PaintChildren(const PaintInfo& paint_info) override;
 
   // Drag and drop methods. These are forwarded to the MenuController.
   bool GetDropFormats(

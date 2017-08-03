@@ -1037,6 +1037,12 @@ void LayerTreeHost::SetDeviceScaleFactor(float device_scale_factor) {
   SetNeedsCommit();
 }
 
+void LayerTreeHost::SetRecordingScaleFactor(float recording_scale_factor) {
+  if (recording_scale_factor_ == recording_scale_factor)
+    return;
+  recording_scale_factor_ = recording_scale_factor;
+}
+
 void LayerTreeHost::SetPaintedDeviceScaleFactor(
     float painted_device_scale_factor) {
   if (painted_device_scale_factor_ == painted_device_scale_factor)

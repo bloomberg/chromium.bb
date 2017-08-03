@@ -51,6 +51,8 @@ class CC_EXPORT RecordingSource {
 
   void SetNeedsDisplayRect(const gfx::Rect& layer_rect);
 
+  void SetRecordingScaleFactor(float recording_scale_factor);
+
   // These functions are virtual for testing.
   virtual scoped_refptr<RasterSource> CreateRasterSource() const;
 
@@ -68,6 +70,7 @@ class CC_EXPORT RecordingSource {
   SkColor background_color_;
   scoped_refptr<DisplayItemList> display_list_;
   size_t painter_reported_memory_usage_;
+  float recording_scale_factor_;
 
  private:
   void UpdateInvalidationForNewViewport(const gfx::Rect& old_recorded_viewport,

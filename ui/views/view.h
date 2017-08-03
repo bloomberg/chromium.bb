@@ -37,6 +37,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/path.h"
+#include "ui/views/paint_info.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/views_export.h"
 
@@ -543,7 +544,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // for View coordinates and language direction as required, allows the View
   // to paint itself via the various OnPaint*() event handlers and then paints
   // the hierarchy beneath it.
-  void Paint(const ui::PaintContext& parent_context);
+  void Paint(const PaintInfo& parent_paint_info);
 
   // The background object may be null.
   void SetBackground(std::unique_ptr<Background> b);
@@ -1152,7 +1153,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Responsible for calling Paint() on child Views. Override to control the
   // order child Views are painted.
-  virtual void PaintChildren(const ui::PaintContext& context);
+  virtual void PaintChildren(const PaintInfo& info);
 
   // Override to provide rendering in any part of the View's bounds. Typically
   // this is the "contents" of the view. If you override this method you will
@@ -1166,6 +1167,13 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Override to paint a border not specified by SetBorder().
   virtual void OnPaintBorder(gfx::Canvas* canvas);
+
+  // Returns the type of scaling to be done for this View. Override this to
+  // change the default scaling type from |kScaleToFit|. You would want to
+  // override this for a view and return |kScaleToScaleFactor| in cases where
+  // scaling should cause no distortion. Such as in the case of an image or
+  // an icon.
+  virtual PaintInfo::ScaleType GetPaintScaleType() const;
 
   // Accelerated painting ------------------------------------------------------
 
@@ -1291,6 +1299,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   friend class ViewLayerTest;
   friend class Widget;
 
+  FRIEND_TEST_ALL_PREFIXES(ViewTest, PaintWithMovedViewUsesCache);
+  FRIEND_TEST_ALL_PREFIXES(ViewTest, PaintWithMovedViewUsesCacheInRTL);
+  FRIEND_TEST_ALL_PREFIXES(ViewTest, PaintWithUnknownInvalidation);
+
   // Painting  -----------------------------------------------------------------
 
   enum SchedulePaintType {
@@ -1314,17 +1326,19 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // during painting.
   bool ShouldPaint() const;
 
-  // Returns the offset that should be used when constructing the paint context
+  // Returns the bounds that should be used when constructing the |PaintInfo|
   // for this view.
-  gfx::Vector2d GetPaintContextOffset() const;
+  gfx::Rect GetPaintRecordingBounds() const;
 
   // Adjusts the transform of |recorder| in advance of painting.
-  void SetupTransformRecorderForPainting(ui::TransformRecorder* recorder) const;
+  void SetupTransformRecorderForPainting(
+      const gfx::Vector2d& offset_from_parent,
+      ui::TransformRecorder* recorder) const;
 
   // Recursively calls the painting method |func| on all non-layered children,
   // in Z order.
-  void RecursivePaintHelper(void (View::*func)(const ui::PaintContext&),
-                            const ui::PaintContext& context);
+  void RecursivePaintHelper(void (View::*func)(const PaintInfo&),
+                            const PaintInfo& info);
 
   // Invokes Paint() and, if necessary, PaintDebugRects().  Should be called
   // only on the root of a widget/layer.  PaintDebugRects() is invoked as a
@@ -1335,7 +1349,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Draws a semitransparent rect to indicate the bounds of this view.
   // Recursively does the same for all children.  Invoked only with
   // --draw-view-bounds-rects.
-  void PaintDebugRects(const ui::PaintContext& parent_context);
+  void PaintDebugRects(const PaintInfo& paint_info);
 
   // Tree operations -----------------------------------------------------------
 
