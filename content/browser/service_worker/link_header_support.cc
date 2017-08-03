@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "components/link_header_util/link_header_util.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -42,7 +43,8 @@ void HandleServiceWorkerLink(
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures) &&
-      !TrialTokenValidator::RequestEnablesFeature(request, "ForeignFetch")) {
+      !TrialTokenValidator::RequestEnablesFeature(request, "ForeignFetch",
+                                                  base::Time::Now())) {
     // TODO(mek): Log attempt to use without having correct token?
     return;
   }

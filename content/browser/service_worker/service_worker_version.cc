@@ -20,6 +20,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -290,7 +291,8 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       site_for_uma_(ServiceWorkerMetrics::SiteFromURL(scope_)),
       context_(context),
       script_cache_map_(this, context),
-      tick_clock_(base::WrapUnique(new base::DefaultTickClock)),
+      tick_clock_(base::MakeUnique<base::DefaultTickClock>()),
+      clock_(base::MakeUnique<base::DefaultClock>()),
       ping_controller_(new PingController(this)),
       weak_factory_(this) {
   DCHECK_NE(kInvalidServiceWorkerVersionId, version_id);
@@ -552,7 +554,7 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
       << " can only be dispatched to an active worker: " << status();
 
   int request_id = pending_requests_.Add(base::MakeUnique<PendingRequest>(
-      error_callback, base::Time::Now(), tick_clock_->NowTicks(), event_type));
+      error_callback, clock_->Now(), tick_clock_->NowTicks(), event_type));
   TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker", "ServiceWorkerVersion::Request",
                            pending_requests_.Lookup(request_id), "Request id",
                            request_id, "Event type",
@@ -622,7 +624,7 @@ bool ServiceWorkerVersion::FinishExternalRequest(
   if (iter != external_request_uuid_to_request_id_.end()) {
     int request_id = iter->second;
     external_request_uuid_to_request_id_.erase(iter);
-    return FinishRequest(request_id, true, base::Time::Now());
+    return FinishRequest(request_id, true, clock_->Now());
   }
 
   // It is possible that the request was cancelled or timed out before and we
@@ -743,8 +745,8 @@ void ServiceWorkerVersion::Doom() {
 
 void ServiceWorkerVersion::SetValidOriginTrialTokens(
     const TrialTokenValidator::FeatureToTokensMap& tokens) {
-  origin_trial_tokens_ =
-      TrialTokenValidator::GetValidTokens(url::Origin(scope()), tokens);
+  origin_trial_tokens_ = TrialTokenValidator::GetValidTokens(
+      url::Origin(scope()), tokens, clock_->Now());
 }
 
 void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
@@ -796,7 +798,7 @@ void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
   //     wasn't set in the entry.
   if (!origin_trial_tokens_) {
     origin_trial_tokens_ = TrialTokenValidator::GetValidTokensFromHeaders(
-        url::Origin(scope()), http_info.headers.get());
+        url::Origin(scope()), http_info.headers.get(), clock_->Now());
   }
 
   for (auto& observer : listeners_)
@@ -810,6 +812,11 @@ void ServiceWorkerVersion::SimulatePingTimeoutForTesting() {
 void ServiceWorkerVersion::SetTickClockForTesting(
     std::unique_ptr<base::TickClock> tick_clock) {
   tick_clock_ = std::move(tick_clock);
+}
+
+void ServiceWorkerVersion::SetClockForTesting(
+    std::unique_ptr<base::Clock> clock) {
+  clock_ = std::move(clock);
 }
 
 const net::HttpResponseInfo*
@@ -1799,7 +1806,7 @@ void ServiceWorkerVersion::MarkIfStale() {
   if (!registration || registration->active_version() != this)
     return;
   base::TimeDelta time_since_last_check =
-      base::Time::Now() - registration->last_update_check();
+      clock_->Now() - registration->last_update_check();
   if (time_since_last_check > kServiceWorkerScriptMaxCacheAge)
     RestartTick(&stale_time_);
 }

@@ -112,11 +112,9 @@ const char kInsecureOriginToken[] =
     "YW1wbGUuY29tOjgwIiwgImZlYXR1cmUiOiAiRnJvYnVsYXRlIiwgImV4cGlyeSI6"
     "IDIwMDAwMDAwMDB9";
 
-// These timestamps should be in the past and future, respectively. Sanity
-// checks within the tests assert that that is true, to guard against poorly-set
-// system clocks. (And against the inevitable march of time past the year 2033)
-double kPastTimestamp = 1000000000;
-double kFutureTimestamp = 2000000000;
+// This timestamp is set to a time after the expiry timestamp of kExpiredToken,
+// but before the expiry timestamp of kValidToken.
+double kNowTimestamp = 1500000000;
 
 class TestOriginTrialPolicy : public OriginTrialPolicy {
  public:
@@ -190,15 +188,6 @@ class TrialTokenValidatorTest : public testing::Test {
 
   ~TrialTokenValidatorTest() override { SetContentClient(nullptr); }
 
-  void SetUp() override {
-    // Ensure that the system clock is set to a date that the matches the test
-    // expectations. If this fails, either the clock on the test device is
-    // incorrect, or the actual date is after 2033-05-18, and the tokens need to
-    // be regenerated.
-    ASSERT_GT(base::Time::Now(), base::Time::FromDoubleT(kPastTimestamp));
-    ASSERT_LT(base::Time::Now(), base::Time::FromDoubleT(kFutureTimestamp));
-  }
-
   void SetPublicKey(const uint8_t* key) {
     test_content_client_.SetOriginTrialPublicKey(key);
   }
@@ -210,6 +199,8 @@ class TrialTokenValidatorTest : public testing::Test {
   void DisableToken(const std::string& token_signature) {
     test_content_client_.DisableToken(token_signature);
   }
+
+  base::Time Now() { return base::Time::FromDoubleT(kNowTimestamp); }
 
   const url::Origin appropriate_origin_;
   const url::Origin inappropriate_origin_;
@@ -224,17 +215,11 @@ class TrialTokenValidatorTest : public testing::Test {
   TestContentClient test_content_client_;
 };
 
-// Flaky on Android swarming bots: crbug.com/672294
-#if defined(OS_ANDROID)
-#define MAYBE_ValidateValidToken DISABLED_ValidateValidToken
-#else
-#define MAYBE_ValidateValidToken ValidateValidToken
-#endif
-TEST_F(TrialTokenValidatorTest, MAYBE_ValidateValidToken) {
+TEST_F(TrialTokenValidatorTest, ValidateValidToken) {
   std::string feature;
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::kSuccess,
-            TrialTokenValidator::ValidateToken(kSampleToken,
-                                               appropriate_origin_, &feature));
+            TrialTokenValidator::ValidateToken(
+                kSampleToken, appropriate_origin_, &feature, Now()));
   EXPECT_EQ(kAppropriateFeatureName, feature);
 }
 
@@ -242,60 +227,54 @@ TEST_F(TrialTokenValidatorTest, ValidateInappropriateOrigin) {
   std::string feature;
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::kWrongOrigin,
             TrialTokenValidator::ValidateToken(
-                kSampleToken, inappropriate_origin_, &feature));
+                kSampleToken, inappropriate_origin_, &feature, Now()));
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::kWrongOrigin,
             TrialTokenValidator::ValidateToken(kSampleToken, insecure_origin_,
-                                               &feature));
+                                               &feature, Now()));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateInvalidSignature) {
   std::string feature;
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::kInvalidSignature,
-            TrialTokenValidator::ValidateToken(kInvalidSignatureToken,
-                                               appropriate_origin_, &feature));
+            TrialTokenValidator::ValidateToken(
+                kInvalidSignatureToken, appropriate_origin_, &feature, Now()));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateUnparsableToken) {
   std::string feature;
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::kMalformed,
-            TrialTokenValidator::ValidateToken(kUnparsableToken,
-                                               appropriate_origin_, &feature));
+            TrialTokenValidator::ValidateToken(
+                kUnparsableToken, appropriate_origin_, &feature, Now()));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateExpiredToken) {
   std::string feature;
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::kExpired,
-            TrialTokenValidator::ValidateToken(kExpiredToken,
-                                               appropriate_origin_, &feature));
+            TrialTokenValidator::ValidateToken(
+                kExpiredToken, appropriate_origin_, &feature, Now()));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateValidTokenWithIncorrectKey) {
   std::string feature;
   SetPublicKey(kTestPublicKey2);
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::kInvalidSignature,
-            TrialTokenValidator::ValidateToken(kSampleToken,
-                                               appropriate_origin_, &feature));
+            TrialTokenValidator::ValidateToken(
+                kSampleToken, appropriate_origin_, &feature, Now()));
 }
 
-// Flaky on Android swarming bots: crbug.com/672294
-#if defined(OS_ANDROID)
-#define MAYBE_ValidatorRespectsDisabledFeatures DISABLED_ValidatorRespectsDisabledFeatures
-#else
-#define MAYBE_ValidatorRespectsDisabledFeatures ValidatorRespectsDisabledFeatures
-#endif
-TEST_F(TrialTokenValidatorTest, MAYBE_ValidatorRespectsDisabledFeatures) {
+TEST_F(TrialTokenValidatorTest, ValidatorRespectsDisabledFeatures) {
   std::string feature;
   // Disable an irrelevant feature; token should still validate
   DisableFeature(kInappropriateFeatureName);
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::kSuccess,
-            TrialTokenValidator::ValidateToken(kSampleToken,
-                                               appropriate_origin_, &feature));
+            TrialTokenValidator::ValidateToken(
+                kSampleToken, appropriate_origin_, &feature, Now()));
   EXPECT_EQ(kAppropriateFeatureName, feature);
   // Disable the token's feature; it should no longer be valid
   DisableFeature(kAppropriateFeatureName);
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::kFeatureDisabled,
-            TrialTokenValidator::ValidateToken(kSampleToken,
-                                               appropriate_origin_, &feature));
+            TrialTokenValidator::ValidateToken(
+                kSampleToken, appropriate_origin_, &feature, Now()));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidatorRespectsDisabledTokens) {
@@ -303,80 +282,63 @@ TEST_F(TrialTokenValidatorTest, ValidatorRespectsDisabledTokens) {
   // Disable an irrelevant token; token should still validate
   DisableToken(expired_token_signature_);
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::kSuccess,
-            TrialTokenValidator::ValidateToken(kSampleToken,
-                                               appropriate_origin_, &feature));
+            TrialTokenValidator::ValidateToken(
+                kSampleToken, appropriate_origin_, &feature, Now()));
   EXPECT_EQ(kAppropriateFeatureName, feature);
   // Disable the token; it should no longer be valid
   DisableToken(valid_token_signature_);
   EXPECT_EQ(blink::WebOriginTrialTokenStatus::kTokenDisabled,
-            TrialTokenValidator::ValidateToken(kSampleToken,
-                                               appropriate_origin_, &feature));
+            TrialTokenValidator::ValidateToken(
+                kSampleToken, appropriate_origin_, &feature, Now()));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateRequestInsecure) {
   response_headers_->AddHeader(std::string("Origin-Trial: ") +
                                kInsecureOriginToken);
   EXPECT_FALSE(TrialTokenValidator::RequestEnablesFeature(
-      GURL(kInsecureOrigin), response_headers_.get(), kAppropriateFeatureName));
+      GURL(kInsecureOrigin), response_headers_.get(), kAppropriateFeatureName,
+      Now()));
 }
 
-// Flaky on Android swarming bots: crbug.com/672294
-#if defined(OS_ANDROID)
-#define MAYBE_ValidateRequestValidToken DISABLED_ValidateRequestValidToken
-#else
-#define MAYBE_ValidateRequestValidToken ValidateRequestValidToken
-#endif
-TEST_F(TrialTokenValidatorTest, MAYBE_ValidateRequestValidToken) {
+TEST_F(TrialTokenValidatorTest, ValidateRequestValidToken) {
   response_headers_->AddHeader(std::string("Origin-Trial: ") + kSampleToken);
   EXPECT_TRUE(TrialTokenValidator::RequestEnablesFeature(
       GURL(kAppropriateOrigin), response_headers_.get(),
-      kAppropriateFeatureName));
+      kAppropriateFeatureName, Now()));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateRequestNoTokens) {
   EXPECT_FALSE(TrialTokenValidator::RequestEnablesFeature(
       GURL(kAppropriateOrigin), response_headers_.get(),
-      kAppropriateFeatureName));
+      kAppropriateFeatureName, Now()));
 }
 
-// Flaky on Android swarming bots: crbug.com/672294
-#if defined(OS_ANDROID)
-#define MAYBE_ValidateRequestMultipleHeaders DISABLED_ValidateRequestMultipleHeaders
-#else
-#define MAYBE_ValidateRequestMultipleHeaders ValidateRequestMultipleHeaders
-#endif
-TEST_F(TrialTokenValidatorTest, MAYBE_ValidateRequestMultipleHeaders) {
+TEST_F(TrialTokenValidatorTest, ValidateRequestMultipleHeaders) {
   response_headers_->AddHeader(std::string("Origin-Trial: ") + kSampleToken);
   response_headers_->AddHeader(std::string("Origin-Trial: ") + kExpiredToken);
   EXPECT_TRUE(TrialTokenValidator::RequestEnablesFeature(
       GURL(kAppropriateOrigin), response_headers_.get(),
-      kAppropriateFeatureName));
+      kAppropriateFeatureName, Now()));
   EXPECT_FALSE(TrialTokenValidator::RequestEnablesFeature(
       GURL(kAppropriateOrigin), response_headers_.get(),
-      kInappropriateFeatureName));
+      kInappropriateFeatureName, Now()));
   EXPECT_FALSE(TrialTokenValidator::RequestEnablesFeature(
       GURL(kInappropriateOrigin), response_headers_.get(),
-      kAppropriateFeatureName));
+      kAppropriateFeatureName, Now()));
 }
 
-// Flaky on Android swarming bots: crbug.com/672294
-#if defined(OS_ANDROID)
-#define MAYBE_ValidateRequestMultipleHeaderValues DISABLED_ValidateRequestMultipleHeaderValues
-#else
-#define MAYBE_ValidateRequestMultipleHeaderValues ValidateRequestMultipleHeaderValues
-#endif
-TEST_F(TrialTokenValidatorTest, MAYBE_ValidateRequestMultipleHeaderValues) {
+TEST_F(TrialTokenValidatorTest, ValidateRequestMultipleHeaderValues) {
   response_headers_->AddHeader(std::string("Origin-Trial: ") + kExpiredToken +
                                ", " + kSampleToken);
   EXPECT_TRUE(TrialTokenValidator::RequestEnablesFeature(
       GURL(kAppropriateOrigin), response_headers_.get(),
-      kAppropriateFeatureName));
+      kAppropriateFeatureName, Now()));
   EXPECT_FALSE(TrialTokenValidator::RequestEnablesFeature(
       GURL(kAppropriateOrigin), response_headers_.get(),
-      kInappropriateFeatureName));
+      kInappropriateFeatureName, Now()));
   EXPECT_FALSE(TrialTokenValidator::RequestEnablesFeature(
       GURL(kInappropriateOrigin), response_headers_.get(),
-      kAppropriateFeatureName));
+      kAppropriateFeatureName, Now()));
 }
 
 }  // namespace content
