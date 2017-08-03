@@ -248,4 +248,90 @@ TEST_F(ElementTest, GetElementsByClassNameCrash) {
   // The test passes if no crash happens.
 }
 
+TEST_F(ElementTest, GetBoundingClientRectForSVG) {
+  Document& document = GetDocument();
+  SetBodyContent(
+      "<style>body { margin: 0 }</style>"
+      "<svg width='500' height='500'>"
+      "  <rect id='rect' x='10' y='100' width='100' height='71'/>"
+      "  <rect id='stroke' x='10' y='100' width='100' height='71' "
+      "      stroke-width='7'/>"
+      "  <rect id='stroke_transformed' x='10' y='100' width='100' height='71' "
+      "      stroke-width='7' transform='translate(3, 5)'/>"
+      "  <foreignObject id='foreign' x='10' y='100' width='100' height='71'/>"
+      "  <foreignObject id='foreign_transformed' transform='translate(3, 5)' "
+      "      x='10' y='100' width='100' height='71'/>"
+      "  <svg id='svg' x='10' y='100'>"
+      "    <rect width='100' height='71'/>"
+      "  </svg>"
+      "  <svg id='svg_stroke' x='10' y='100'>"
+      "    <rect width='100' height='71' stroke-width='7'/>"
+      "  </svg>"
+      "</svg>");
+
+  Element* rect = document.getElementById("rect");
+  DOMRect* rect_bounding_client_rect = rect->getBoundingClientRect();
+  EXPECT_EQ(10, rect_bounding_client_rect->left());
+  EXPECT_EQ(100, rect_bounding_client_rect->top());
+  EXPECT_EQ(100, rect_bounding_client_rect->width());
+  EXPECT_EQ(71, rect_bounding_client_rect->height());
+  EXPECT_EQ(IntRect(10, 100, 100, 71), rect->BoundsInViewport());
+
+  // TODO(pdr): Should we should be excluding the stroke (here, and below)?
+  // See: https://github.com/w3c/svgwg/issues/339 and Element::ClientQuads.
+  Element* stroke = document.getElementById("stroke");
+  DOMRect* stroke_bounding_client_rect = stroke->getBoundingClientRect();
+  EXPECT_EQ(10, stroke_bounding_client_rect->left());
+  EXPECT_EQ(100, stroke_bounding_client_rect->top());
+  EXPECT_EQ(100, stroke_bounding_client_rect->width());
+  EXPECT_EQ(71, stroke_bounding_client_rect->height());
+  // TODO(pdr): BoundsInViewport is not web exposed and should include stroke.
+  EXPECT_EQ(IntRect(10, 100, 100, 71), stroke->BoundsInViewport());
+
+  Element* stroke_transformed = document.getElementById("stroke_transformed");
+  DOMRect* stroke_transformedbounding_client_rect =
+      stroke_transformed->getBoundingClientRect();
+  EXPECT_EQ(13, stroke_transformedbounding_client_rect->left());
+  EXPECT_EQ(105, stroke_transformedbounding_client_rect->top());
+  EXPECT_EQ(100, stroke_transformedbounding_client_rect->width());
+  EXPECT_EQ(71, stroke_transformedbounding_client_rect->height());
+  // TODO(pdr): BoundsInViewport is not web exposed and should include stroke.
+  EXPECT_EQ(IntRect(13, 105, 100, 71), stroke_transformed->BoundsInViewport());
+
+  Element* foreign = document.getElementById("foreign");
+  DOMRect* foreign_bounding_client_rect = foreign->getBoundingClientRect();
+  EXPECT_EQ(10, foreign_bounding_client_rect->left());
+  EXPECT_EQ(100, foreign_bounding_client_rect->top());
+  EXPECT_EQ(100, foreign_bounding_client_rect->width());
+  EXPECT_EQ(71, foreign_bounding_client_rect->height());
+  EXPECT_EQ(IntRect(10, 100, 100, 71), foreign->BoundsInViewport());
+
+  Element* foreign_transformed = document.getElementById("foreign_transformed");
+  DOMRect* foreign_transformed_bounding_client_rect =
+      foreign_transformed->getBoundingClientRect();
+  EXPECT_EQ(13, foreign_transformed_bounding_client_rect->left());
+  EXPECT_EQ(105, foreign_transformed_bounding_client_rect->top());
+  EXPECT_EQ(100, foreign_transformed_bounding_client_rect->width());
+  EXPECT_EQ(71, foreign_transformed_bounding_client_rect->height());
+  EXPECT_EQ(IntRect(13, 105, 100, 71), foreign_transformed->BoundsInViewport());
+
+  Element* svg = document.getElementById("svg");
+  DOMRect* svg_bounding_client_rect = svg->getBoundingClientRect();
+  EXPECT_EQ(10, svg_bounding_client_rect->left());
+  EXPECT_EQ(100, svg_bounding_client_rect->top());
+  EXPECT_EQ(100, svg_bounding_client_rect->width());
+  EXPECT_EQ(71, svg_bounding_client_rect->height());
+  EXPECT_EQ(IntRect(10, 100, 100, 71), svg->BoundsInViewport());
+
+  Element* svg_stroke = document.getElementById("svg_stroke");
+  DOMRect* svg_stroke_bounding_client_rect =
+      svg_stroke->getBoundingClientRect();
+  EXPECT_EQ(10, svg_stroke_bounding_client_rect->left());
+  EXPECT_EQ(100, svg_stroke_bounding_client_rect->top());
+  EXPECT_EQ(100, svg_stroke_bounding_client_rect->width());
+  EXPECT_EQ(71, svg_stroke_bounding_client_rect->height());
+  // TODO(pdr): BoundsInViewport is not web exposed and should include stroke.
+  EXPECT_EQ(IntRect(10, 100, 100, 71), svg_stroke->BoundsInViewport());
+}
+
 }  // namespace blink
