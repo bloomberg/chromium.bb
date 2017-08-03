@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/optional.h"
 #include "chrome/installer/zucchini/typed_value.h"
 
 namespace zucchini {
@@ -33,14 +34,15 @@ constexpr PoolTag kNoPoolTag(0xFF);
 
 // Specification of references in an image file.
 struct ReferenceTypeTraits {
+  constexpr ReferenceTypeTraits() = default;
   constexpr ReferenceTypeTraits(offset_t width,
                                 TypeTag type_tag,
                                 PoolTag pool_tag)
       : width(width), type_tag(type_tag), pool_tag(pool_tag) {}
 
   // |width| specifies number of bytes covered by the reference's binary
-  // |encoding.
-  offset_t width;
+  // encoding.
+  offset_t width = 0;
   // |type_tag| identifies the reference type being described.
   TypeTag type_tag = kNoTypeTag;
   // |pool_tag| identifies the pool this type belongs to.
@@ -58,6 +60,30 @@ struct Reference {
 inline bool operator==(const Reference& a, const Reference& b) {
   return a.location == b.location && a.target == b.target;
 }
+
+// Interface for extracting References through member function GetNext().
+// This is used by Disassemblers to extract references from an image file.
+// Typically, a Reader lazily extracts values and does not hold any storage.
+class ReferenceReader {
+ public:
+  virtual ~ReferenceReader() = default;
+
+  // Returns the next available Reference, or nullopt_t if exhausted.
+  // Extracted References must be ordered by their location in the image.
+  virtual base::Optional<Reference> GetNext() = 0;
+};
+
+// Interface for writing References through member function
+// PutNext(reference). This is used by Disassemblers to write new References
+// in the image file.
+class ReferenceWriter {
+ public:
+  virtual ~ReferenceWriter() = default;
+
+  // Writes |reference| in the underlying image file. This operation always
+  // succeeds.
+  virtual void PutNext(Reference reference) = 0;
+};
 
 // Helper functions to mark an offset_t, so we can distinguish file offsets from
 // Label indexes. Implementation: Marking is flagged by the most significant bit

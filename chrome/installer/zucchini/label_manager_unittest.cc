@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-#include "chrome/installer/zucchini/disassembler.h"
+#include "chrome/installer/zucchini/test_reference_reader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace zucchini {
@@ -16,23 +16,6 @@ namespace {
 
 constexpr auto BAD = kUnusedIndex;
 using OffsetVector = std::vector<offset_t>;
-
-// A trivial ReferenceReader that only reads injected references.
-class TestReferenceReader : public ReferenceReader {
- public:
-  explicit TestReferenceReader(const std::vector<Reference>& refs)
-      : references_(refs) {}
-
-  base::Optional<Reference> GetNext() override {
-    if (index_ == references_.size())
-      return base::nullopt;
-    return references_[index_++];
-  }
-
- private:
-  std::vector<Reference> references_;
-  size_t index_ = 0;
-};
 
 }  // namespace
 
@@ -81,13 +64,13 @@ TEST(LabelManagerTest, OrderedInsertTargets) {
 
   // Initialize with some data. |location| does not matter.
   TestReferenceReader reader1({{0, 0x33}, {1, 0x11}, {2, 0x44}, {3, 0x11}});
-  label_manager.InsertTargets(&reader1);
+  label_manager.InsertTargets(std::move(reader1));
   EXPECT_EQ(OffsetVector({0x11, 0x33, 0x44}), label_manager.Labels());
 
   // Insert more data.
   TestReferenceReader reader2(
       {{0, 0x66}, {1, 0x11}, {2, 0x11}, {3, 0x44}, {4, 0x00}});
-  label_manager.InsertTargets(&reader2);
+  label_manager.InsertTargets(std::move(reader2));
   EXPECT_EQ(OffsetVector({0x00, 0x11, 0x33, 0x44, 0x66}),
             label_manager.Labels());
 }
