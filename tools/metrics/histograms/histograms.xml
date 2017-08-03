@@ -99874,6 +99874,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram_suffixes name="V8WasmSeparateAsmAndWasm" separator=".">
   <suffix name="asm" label="This histogram contains results for asm.js"/>
   <suffix name="wasm" label="This histogram contains results for WASM modules"/>
+  <affected-histogram name="V8.WasmCompileFunctionMicroSeconds"/>
   <affected-histogram name="V8.WasmCompileModuleMicroSeconds"/>
   <affected-histogram name="V8.WasmDecodeFunctionMicroSeconds"/>
   <affected-histogram name="V8.WasmDecodeModuleMicroSeconds"/>
