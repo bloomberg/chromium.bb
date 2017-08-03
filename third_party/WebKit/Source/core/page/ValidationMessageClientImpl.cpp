@@ -132,7 +132,7 @@ void ValidationMessageClientImpl::HideValidationMessage(const Element& anchor) {
       this, &ValidationMessageClientImpl::Reset);
   // This should be equal to or larger than transition duration of
   // #container.hiding in validation_bubble.css.
-  const double kHidingAnimationDuration = 0.6;
+  const double kHidingAnimationDuration = 0.13333;
   timer_->StartOneShot(kHidingAnimationDuration, BLINK_FROM_HERE);
 }
 

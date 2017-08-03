@@ -158,8 +158,15 @@ void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
                                       kForceSynchronousLoad)));
 
   Element& container = GetElementById("container");
-  if (LayoutTestSupport::IsRunningLayoutTest())
+  if (LayoutTestSupport::IsRunningLayoutTest()) {
     container.SetInlineStyleProperty(CSSPropertyTransition, "none");
+    GetElementById("icon").SetInlineStyleProperty(CSSPropertyTransition,
+                                                  "none");
+    GetElementById("main-message")
+        .SetInlineStyleProperty(CSSPropertyTransition, "none");
+    GetElementById("sub-message")
+        .SetInlineStyleProperty(CSSPropertyTransition, "none");
+  }
   // Get the size to decide position later.
   FrameView().UpdateAllLifecyclePhases();
   bubble_size_ = container.VisibleBoundsInVisualViewport().Size();
