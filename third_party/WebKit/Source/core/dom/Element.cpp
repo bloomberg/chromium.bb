@@ -1150,8 +1150,17 @@ IntRect Element::BoundsInViewport() const {
     return IntRect();
 
   Vector<FloatQuad> quads;
-  if (IsSVGElement() && GetLayoutObject()) {
+
+  // TODO(pdr): Unify the quad/bounds code with Element::ClientQuads.
+
+  // Foreign objects need to convert between SVG and HTML coordinate spaces and
+  // cannot use LocalToAbsoluteQuad directly with ObjectBoundingBox which is
+  // SVG coordinates and not HTML coordinates. Instead, use the AbsoluteQuads
+  // codepath below.
+  if (IsSVGElement() && GetLayoutObject() &&
+      !GetLayoutObject()->IsSVGForeignObject()) {
     // Get the bounding rectangle from the SVG model.
+    // TODO(pdr): This should include stroke.
     if (ToSVGElement(this)->IsSVGGraphicsElement())
       quads.push_back(GetLayoutObject()->LocalToAbsoluteQuad(
           GetLayoutObject()->ObjectBoundingBox()));
@@ -1192,8 +1201,16 @@ void Element::ClientQuads(Vector<FloatQuad>& quads) {
   if (!element_layout_object)
     return;
 
-  if (IsSVGElement() && !element_layout_object->IsSVGRoot()) {
+  // Foreign objects need to convert between SVG and HTML coordinate spaces and
+  // cannot use LocalToAbsoluteQuad directly with ObjectBoundingBox which is
+  // SVG coordinates and not HTML coordinates. Instead, use the AbsoluteQuads
+  // codepath below.
+  if (IsSVGElement() && !element_layout_object->IsSVGRoot() &&
+      !element_layout_object->IsSVGForeignObject()) {
     // Get the bounding rectangle from the SVG model.
+    // TODO(pdr): ObjectBoundingBox does not include stroke and the spec is not
+    // clear (see: https://github.com/w3c/svgwg/issues/339, crbug.com/529734).
+    // If stroke is desired, we can update this to use AbsoluteQuads, below.
     if (ToSVGElement(this)->IsSVGGraphicsElement())
       quads.push_back(element_layout_object->LocalToAbsoluteQuad(
           element_layout_object->ObjectBoundingBox()));
