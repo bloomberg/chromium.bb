@@ -9,6 +9,12 @@ config("usrsctp_config") {
     "usrsctplib/usrsctplib",
     "usrsctplib/usrsctplib/netinet",
   ]
+  if (is_clang && llvm_force_head_revision) {
+    cflags = [
+      # TODO(hans): https://crbug.com/749197
+      "-Wno-pragma-pack",
+    ]
+  }
 }
 
 config("usrsctp_warnings") {
