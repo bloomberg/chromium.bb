@@ -89,3 +89,9 @@ button {
   max-width: 100px;
   min-height: 40px;
 }
+
+#contextual-suggestions-section input {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+}
