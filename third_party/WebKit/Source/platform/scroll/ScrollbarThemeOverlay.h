@@ -59,8 +59,6 @@ class PLATFORM_EXPORT ScrollbarThemeOverlay : public ScrollbarTheme {
   double OverlayScrollbarFadeOutDelaySeconds() const override;
   double OverlayScrollbarFadeOutDurationSeconds() const override;
 
-  int ThumbPosition(const ScrollbarThemeClient&,
-                    float scroll_position) override;
   int ThumbLength(const ScrollbarThemeClient&) override;
 
   bool HasButtons(const ScrollbarThemeClient&) override { return false; }
