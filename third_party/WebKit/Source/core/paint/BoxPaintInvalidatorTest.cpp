@@ -5,7 +5,9 @@
 #include "core/paint/BoxPaintInvalidator.h"
 
 #include "core/HTMLNames.h"
+#include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintInvalidator.h"
@@ -114,6 +116,33 @@ class BoxPaintInvalidatorTest : public ::testing::WithParamInterface<bool>,
 };
 
 INSTANTIATE_TEST_CASE_P(All, BoxPaintInvalidatorTest, ::testing::Bool());
+
+TEST_P(BoxPaintInvalidatorTest, SlowMapToVisualRectInAncestorSpaceLayoutView) {
+  SetBodyInnerHTML(
+      "<!doctype html>"
+      "<style>"
+      "#parent {"
+      "    display: inline-block;"
+      "    width: 300px;"
+      "    height: 300px;"
+      "    margin-top: 200px;"
+      "    filter: blur(3px);"  // Forces the slow path in
+                                // SlowMapToVisualRectInAncestorSpace.
+      "    border: 1px solid rebeccapurple;"
+      "}"
+      "</style>"
+      "<div id=parent>"
+      "  <iframe id='target' src='data:text/html,<body style='background: "
+      "blue;'></body>'></iframe>"
+      "</div>");
+
+  auto& target = *GetDocument().getElementById("target");
+  EXPECT_RECT_EQ(IntRect(2, 202, 318, 168),
+                 EnclosingIntRect(ToHTMLFrameOwnerElement(target)
+                                      .contentDocument()
+                                      ->GetLayoutView()
+                                      ->VisualRect()));
+}
 
 TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonPaintingNothing) {
   ScopedSlimmingPaintV2ForTest spv2(true);
