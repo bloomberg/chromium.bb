@@ -1892,7 +1892,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_ASK_BEFORE_SENDING},
     {"siteSettingsAskBeforeSendingRecommended",
      IDS_SETTINGS_SITE_SETTINGS_ASK_BEFORE_SENDING_RECOMMENDED},
-    {"siteSettingsFlashAllow", IDS_SETTINGS_SITE_SETTINGS_FLASH_ALLOW},
     {"siteSettingsFlashBlock", IDS_SETTINGS_SITE_SETTINGS_FLASH_BLOCK},
     {"siteSettingsAllowRecentlyClosedSites",
      IDS_SETTINGS_SITE_SETTINGS_ALLOW_RECENTLY_CLOSED_SITES},
@@ -2024,19 +2023,18 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   if (PluginUtils::ShouldPreferHtmlOverPlugins(
           HostContentSettingsMapFactory::GetForProfile(profile))) {
     LocalizedString flash_strings[] = {
-        {"siteSettingsFlashAskBefore",
-         IDS_SETTINGS_SITE_SETTINGS_FLASH_ASK_BEFORE_RUNNING},
-        {"siteSettingsFlashAskBeforeSubtitle",
-         IDS_SETTINGS_SITE_SETTINGS_FLASH_ASK_BEFORE_RUNNING_SUBTITLE},
+        {"siteSettingsFlashAskFirst", IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST},
+        {"siteSettingsFlashAskFirstRecommended",
+         IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST_RECOMMENDED},
     };
     AddLocalizedStringsBulk(html_source, flash_strings,
                             arraysize(flash_strings));
   } else {
     LocalizedString flash_strings[] = {
-        {"siteSettingsFlashAskBefore",
+        {"siteSettingsFlashAskFirst",
          IDS_SETTINGS_SITE_SETTINGS_FLASH_DETECT_IMPORTANT},
-        {"siteSettingsFlashAskBeforeSubtitle",
-         IDS_SETTINGS_SITE_SETTINGS_FLASH_DETECT_IMPORTANT_SUBTITLE},
+        {"siteSettingsFlashAskFirstRecommended",
+         IDS_SETTINGS_SITE_SETTINGS_FLASH_DETECT_IMPORTANT_RECOMMENDED},
     };
     AddLocalizedStringsBulk(html_source, flash_strings,
                             arraysize(flash_strings));
