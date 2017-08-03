@@ -7,16 +7,13 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -86,7 +83,7 @@ class PasswordStoreDefaultTestDelegate {
 
   PasswordStoreDefault* store() { return store_.get(); }
 
-  static void FinishAsyncProcessing();
+  void FinishAsyncProcessing();
 
  private:
   void SetupTempDir();
@@ -126,7 +123,7 @@ PasswordStoreDefaultTestDelegate::~PasswordStoreDefaultTestDelegate() {
 }
 
 void PasswordStoreDefaultTestDelegate::FinishAsyncProcessing() {
-  base::RunLoop().RunUntilIdle();
+  scoped_task_environment_.RunUntilIdle();
 }
 
 void PasswordStoreDefaultTestDelegate::SetupTempDir() {
@@ -135,16 +132,15 @@ void PasswordStoreDefaultTestDelegate::SetupTempDir() {
 
 void PasswordStoreDefaultTestDelegate::ClosePasswordStore() {
   store_->ShutdownOnUIThread();
-  base::RunLoop().RunUntilIdle();
+  FinishAsyncProcessing();
   ASSERT_TRUE(temp_dir_.Delete());
 }
 
 scoped_refptr<PasswordStoreDefault>
 PasswordStoreDefaultTestDelegate::CreateInitializedStore(
     std::unique_ptr<LoginDatabase> database) {
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::SequencedTaskRunnerHandle::Get(),
-      base::SequencedTaskRunnerHandle::Get(), std::move(database)));
+  scoped_refptr<PasswordStoreDefault> store(
+      new PasswordStoreDefault(std::move(database)));
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   return store;
@@ -179,8 +175,6 @@ TEST(PasswordStoreDefaultTest, NonASCIIData) {
     store->AddLogin(*expected_forms.back());
   }
 
-  base::RunLoop().RunUntilIdle();
-
   MockPasswordStoreConsumer consumer;
 
   // We expect to get the same data back, even though it's not all ASCII.
@@ -190,7 +184,7 @@ TEST(PasswordStoreDefaultTest, NonASCIIData) {
           password_manager::UnorderedPasswordFormElementsAre(&expected_forms)));
   store->GetAutofillableLogins(&consumer);
 
-  base::RunLoop().RunUntilIdle();
+  delegate.FinishAsyncProcessing();
 }
 
 TEST(PasswordStoreDefaultTest, Notifications) {
@@ -212,7 +206,7 @@ TEST(PasswordStoreDefaultTest, Notifications) {
 
   // Adding a login should trigger a notification.
   store->AddLogin(*form);
-  base::RunLoop().RunUntilIdle();
+  delegate.FinishAsyncProcessing();
 
   // Change the password.
   form->password_value = base::ASCIIToUTF16("a different password");
@@ -226,7 +220,7 @@ TEST(PasswordStoreDefaultTest, Notifications) {
 
   // Updating the login with the new password should trigger a notification.
   store->UpdateLogin(*form);
-  base::RunLoop().RunUntilIdle();
+  delegate.FinishAsyncProcessing();
 
   const PasswordStoreChange expected_delete_changes[] = {
       PasswordStoreChange(PasswordStoreChange::REMOVE, *form),
@@ -237,7 +231,7 @@ TEST(PasswordStoreDefaultTest, Notifications) {
 
   // Deleting the login should trigger a notification.
   store->RemoveLogin(*form);
-  base::RunLoop().RunUntilIdle();
+  delegate.FinishAsyncProcessing();
 
   store->RemoveObserver(&observer);
 }
@@ -247,9 +241,9 @@ TEST(PasswordStoreDefaultTest, Notifications) {
 // notifications.
 TEST(PasswordStoreDefaultTest, OperationsOnABadDatabaseSilentlyFail) {
   PasswordStoreDefaultTestDelegate delegate(
-      base::WrapUnique(new BadLoginDatabase));
+      base::MakeUnique<BadLoginDatabase>());
   PasswordStoreDefault* bad_store = delegate.store();
-  base::RunLoop().RunUntilIdle();
+  delegate.FinishAsyncProcessing();
   ASSERT_EQ(nullptr, bad_store->login_db());
 
   testing::StrictMock<MockPasswordStoreObserver> mock_observer;
@@ -265,41 +259,42 @@ TEST(PasswordStoreDefaultTest, OperationsOnABadDatabaseSilentlyFail) {
   blacklisted_form->blacklisted_by_user = true;
   bad_store->AddLogin(*form);
   bad_store->AddLogin(*blacklisted_form);
-  base::RunLoop().RunUntilIdle();
+  delegate.FinishAsyncProcessing();
 
   // Get all logins; autofillable logins; blacklisted logins.
   testing::StrictMock<MockPasswordStoreConsumer> mock_consumer;
   EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
   bad_store->GetLogins(PasswordStore::FormDigest(*form), &mock_consumer);
-  base::RunLoop().RunUntilIdle();
+  delegate.FinishAsyncProcessing();
   testing::Mock::VerifyAndClearExpectations(&mock_consumer);
   EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
   bad_store->GetAutofillableLogins(&mock_consumer);
-  base::RunLoop().RunUntilIdle();
+  delegate.FinishAsyncProcessing();
   testing::Mock::VerifyAndClearExpectations(&mock_consumer);
   EXPECT_CALL(mock_consumer, OnGetPasswordStoreResultsConstRef(IsEmpty()));
   bad_store->GetBlacklistLogins(&mock_consumer);
-  base::RunLoop().RunUntilIdle();
+  delegate.FinishAsyncProcessing();
+  testing::Mock::VerifyAndClearExpectations(&mock_consumer);
 
   // Report metrics.
   bad_store->ReportMetrics("Test Username", true);
-  base::RunLoop().RunUntilIdle();
+  delegate.FinishAsyncProcessing();
 
   // Change the login.
   form->password_value = base::ASCIIToUTF16("a different password");
   bad_store->UpdateLogin(*form);
-  base::RunLoop().RunUntilIdle();
+  delegate.FinishAsyncProcessing();
 
   // Delete one login; a range of logins.
   bad_store->RemoveLogin(*form);
-  base::RunLoop().RunUntilIdle();
+  delegate.FinishAsyncProcessing();
   base::RunLoop run_loop;
   bad_store->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max(),
                                         run_loop.QuitClosure());
   run_loop.Run();
 
   bad_store->RemoveLoginsSyncedBetween(base::Time(), base::Time::Max());
-  base::RunLoop().RunUntilIdle();
+  delegate.FinishAsyncProcessing();
 
   // Ensure no notifications and no explosions during shutdown either.
   bad_store->RemoveObserver(&mock_observer);
