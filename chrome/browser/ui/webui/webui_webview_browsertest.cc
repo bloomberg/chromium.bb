@@ -158,6 +158,12 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, ExecuteScriptCodeFromFile) {
       base::Value(GetTestUrl("empty.html").spec())));
 }
 
+// TODO(crbug.com/751907) Flaky on CrOS trybots.
+#if defined(OS_CHROMEOS)
+#define MAYBE_AddContentScript DISABLED_AddContentScript
+#else
+#define MAYBE_AddContentScript AddContentScript
+#endif
 IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddContentScript) {
   ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
 
@@ -165,6 +171,12 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddContentScript) {
       "testAddContentScript", base::Value(GetTestUrl("empty.html").spec())));
 }
 
+// TODO(crbug.com/751907) Flaky on CrOS trybots.
+#if defined(OS_CHROMEOS)
+#define MAYBE_AddMultiContentScripts DISABLED_AddMultiContentScripts
+#else
+#define MAYBE_AddMultiContentScripts AddMultiContentScripts
+#endif
 IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddMultiContentScripts) {
   ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
 
@@ -173,9 +185,17 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddMultiContentScripts) {
       base::Value(GetTestUrl("empty.html").spec())));
 }
 
+// TODO(crbug.com/751907) Flaky on CrOS trybots.
+#if defined(OS_CHROMEOS)
+#define MAYBE_AddContentScriptWithSameNameShouldOverwriteTheExistingOne \
+  DISABLED_AddContentScriptWithSameNameShouldOverwriteTheExistingOne
+#else
+#define MAYBE_AddContentScriptWithSameNameShouldOverwriteTheExistingOne \
+  AddContentScriptWithSameNameShouldOverwriteTheExistingOne
+#endif
 IN_PROC_BROWSER_TEST_F(
     WebUIWebViewBrowserTest,
-    AddContentScriptWithSameNameShouldOverwriteTheExistingOne) {
+    MAYBE_AddContentScriptWithSameNameShouldOverwriteTheExistingOne) {
   ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
@@ -193,7 +213,14 @@ IN_PROC_BROWSER_TEST_F(
       base::Value(GetTestUrl("empty.html").spec())));
 }
 
-IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddAndRemoveContentScripts) {
+// TODO(crbug.com/751907) Flaky on CrOS trybots.
+#if defined(OS_CHROMEOS)
+#define MAYBE_AddAndRemoveContentScripts DISABLED_AddAndRemoveContentScripts
+#else
+#define MAYBE_AddAndRemoveContentScripts AddAndRemoveContentScripts
+#endif
+IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest,
+                       MAYBE_AddAndRemoveContentScripts) {
   ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
@@ -247,9 +274,12 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddContentScriptWithCode) {
 }
 
 #if defined(OS_CHROMEOS)
+// TODO(crbug.com/662673) Flaky on CrOS trybots.
+#define MAYBE_AddContentScriptIncognito AddContentScriptIncognito
 // Right now we only have incognito WebUI on CrOS, but this should
 // theoretically work for all platforms.
-IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddContentScriptIncognito) {
+IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest,
+                       MAYBE_AddContentScriptIncognito) {
   Browser* incognito_browser =
       OpenURLOffTheRecord(browser()->profile(), GetWebViewEnabledWebUIURL());
 
