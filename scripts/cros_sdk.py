@@ -67,7 +67,7 @@ PROXY_NEEDED_TOOLS = ('ip',)
 
 # Tools needed when use_image is true (the default).
 IMAGE_NEEDED_TOOLS = ('losetup', 'lvchange', 'lvcreate', 'lvs', 'mke2fs',
-                      'pvscan', 'vgchange', 'vgcreate', 'vgs')
+                      'pvscan', 'thin_check', 'vgchange', 'vgcreate', 'vgs')
 
 
 def GetArchStageTarballs(version):
@@ -644,8 +644,6 @@ def main(argv):
   _ReportMissing(osutils.FindMissingBinaries(NEEDED_TOOLS))
   if options.proxy_sim:
     _ReportMissing(osutils.FindMissingBinaries(PROXY_NEEDED_TOOLS))
-  if options.use_image:
-    _ReportMissing(osutils.FindMissingBinaries(IMAGE_NEEDED_TOOLS))
 
   if (sdk_latest_version == '<unknown>' or
       bootstrap_latest_version == '<unknown>'):
@@ -691,6 +689,23 @@ def main(argv):
   # Finally, flip create if necessary.
   if options.enter:
     options.create |= not chroot_exists
+
+  # If we're going to be using a loopback image for the chroot, we need
+  # LVM tools installed.  We can skip the check if something that looks
+  # like a chroot is already visible in the expected place, since we won't
+  # actually call any LVM commands in that case.
+  if options.use_image and options.create:
+    missing = osutils.FindMissingBinaries(IMAGE_NEEDED_TOOLS)
+    if missing:
+      raise SystemExit(
+          'The tool(s) %s were not found.\n'
+          'Please make sure the lvm2 and thin-provisioning-tools packages '
+          'are installed on your host.\n'
+          'Example(ubuntu):\n'
+          '  sudo apt-get install lvm2 thin-provisioning-tools\n\n'
+          'If you want to run without lvm2, pass --nouse-image (chroot '
+          'snapshots will be unavailable).'
+          % ', '.join(missing))
 
   # This dance is to support mounting the chroot inside a separate mount
   # namespace.  While we're here in the original namespace, we set up a
