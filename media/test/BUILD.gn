@@ -167,5 +167,5 @@ fuzzer_test("media_pipeline_integration_fuzzer") {
     "close_fd_mask=1",
   ]
 
-  seed_corpus = "media/test/data/"
+  seed_corpus = "//media/test/data/"
 }
