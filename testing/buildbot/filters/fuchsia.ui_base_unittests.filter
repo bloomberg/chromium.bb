@@ -4,3 +4,7 @@
 # crbug.com/740608 .
 -*DataPackTest.*
 -ResourceBundleImageTest.*
+
+# Flaking, see https://crbug.com/752220.
+-ClipboardTest/0.ClearTest
+-L10nUtilTest.TimeDurationFormatAllLocales
