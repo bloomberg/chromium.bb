@@ -275,6 +275,10 @@ void URLRequestContextBuilder::SetSpdyAndQuicEnabled(bool spdy_enabled,
   http_network_session_params_.enable_quic = quic_enabled;
 }
 
+void URLRequestContextBuilder::SetQuicEnabled(bool quic_enabled) {
+  http_network_session_params_.enable_quic = quic_enabled;
+}
+
 void URLRequestContextBuilder::set_ct_verifier(
     std::unique_ptr<CTVerifier> ct_verifier) {
   ct_verifier_ = std::move(ct_verifier);

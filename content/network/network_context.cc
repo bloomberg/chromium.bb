@@ -18,6 +18,7 @@
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_network_session.h"
+#include "net/http/http_transaction_factory.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/url_request/url_request_context.h"
@@ -29,7 +30,8 @@ namespace {
 
 void ApplyContextParamsToBuilder(
     net::URLRequestContextBuilder* builder,
-    mojom::NetworkContextParams* network_context_params) {
+    mojom::NetworkContextParams* network_context_params,
+    NetworkServiceImpl* network_service) {
   builder->set_data_enabled(network_context_params->enable_data_url_support);
 #if !BUILDFLAG(DISABLE_FILE_SUPPORT)
   builder->set_file_enabled(network_context_params->enable_file_url_support);
@@ -41,16 +43,22 @@ void ApplyContextParamsToBuilder(
 #else  // BUILDFLAG(DISABLE_FTP_SUPPORT)
   DCHECK(!network_context_params->enable_ftp_url_support);
 #endif
+
+  if (network_service && network_service->quic_disabled())
+    builder->SetQuicEnabled(false);
 }
 
 std::unique_ptr<net::URLRequestContext> MakeURLRequestContext(
-    mojom::NetworkContextParams* network_context_params) {
+    mojom::NetworkContextParams* network_context_params,
+    NetworkServiceImpl* network_service) {
   net::URLRequestContextBuilder builder;
   net::HttpNetworkSession::Params params;
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kIgnoreCertificateErrors))
     params.ignore_certificate_errors = true;
+  if (command_line->HasSwitch(switches::kEnableQuic))
+    params.enable_quic = true;
 
   if (command_line->HasSwitch(switches::kTestingFixedHttpPort)) {
     int value;
@@ -98,7 +106,8 @@ std::unique_ptr<net::URLRequestContext> MakeURLRequestContext(
     builder.set_proxy_service(net::ProxyService::CreateDirect());
   }
 
-  ApplyContextParamsToBuilder(&builder, network_context_params);
+  ApplyContextParamsToBuilder(&builder, network_context_params,
+                              network_service);
 
   return builder.Build();
 }
@@ -109,7 +118,8 @@ NetworkContext::NetworkContext(NetworkServiceImpl* network_service,
                                mojom::NetworkContextRequest request,
                                mojom::NetworkContextParamsPtr params)
     : network_service_(network_service),
-      url_request_context_(MakeURLRequestContext(params.get())),
+      url_request_context_(
+          MakeURLRequestContext(params.get(), network_service)),
       params_(std::move(params)),
       binding_(this, std::move(request)) {
   network_service_->RegisterNetworkContext(this);
@@ -121,13 +131,15 @@ NetworkContext::NetworkContext(NetworkServiceImpl* network_service,
 // constructors. Can only share them once consumer code is ready for its
 // corresponding options to be overwritten.
 NetworkContext::NetworkContext(
+    NetworkServiceImpl* network_service,
     mojom::NetworkContextRequest request,
     mojom::NetworkContextParamsPtr params,
     std::unique_ptr<net::URLRequestContextBuilder> builder)
-    : network_service_(nullptr),
+    : network_service_(network_service),
       params_(std::move(params)),
       binding_(this, std::move(request)) {
-  ApplyContextParamsToBuilder(builder.get(), params_.get());
+  network_service_->RegisterNetworkContext(this);
+  ApplyContextParamsToBuilder(builder.get(), params_.get(), network_service);
   url_request_context_ = builder->Build();
 }
 
@@ -171,6 +183,10 @@ void NetworkContext::HandleViewCacheRequest(const GURL& url,
   StartCacheURLLoader(url, url_request_context_.get(), std::move(client));
 }
 
+void NetworkContext::DisableQuic() {
+  url_request_context_->http_transaction_factory()->GetSession()->DisableQuic();
+}
+
 void NetworkContext::Cleanup() {
   // The NetworkService is going away, so have to destroy the
   // net::URLRequestContext held by this NetworkContext.
@@ -181,7 +197,7 @@ NetworkContext::NetworkContext()
     : network_service_(nullptr),
       params_(mojom::NetworkContextParams::New()),
       binding_(this) {
-  url_request_context_ = MakeURLRequestContext(params_.get());
+  url_request_context_ = MakeURLRequestContext(params_.get(), network_service_);
 }
 
 void NetworkContext::OnConnectionError() {

@@ -61,10 +61,9 @@ class IOThreadPeer {
   }
   static void ConfigureParamsFromFieldTrialsAndCommandLine(
       const base::CommandLine& command_line,
-      bool is_quic_allowed_by_policy,
       net::HttpNetworkSession::Params* params) {
-    IOThread::ConfigureParamsFromFieldTrialsAndCommandLine(
-        command_line, is_quic_allowed_by_policy, false, params);
+    IOThread::ConfigureParamsFromFieldTrialsAndCommandLine(command_line, false,
+                                                           params);
   }
 };
 
@@ -330,17 +329,15 @@ class ConfigureParamsFromFieldTrialsAndCommandLineTest
     : public ::testing::Test {
  public:
   ConfigureParamsFromFieldTrialsAndCommandLineTest()
-      : command_line_(base::CommandLine::NO_PROGRAM),
-        is_quic_allowed_by_policy_(true) {}
+      : command_line_(base::CommandLine::NO_PROGRAM) {}
 
  protected:
   void ConfigureParamsFromFieldTrialsAndCommandLine() {
-    IOThreadPeer::ConfigureParamsFromFieldTrialsAndCommandLine(
-        command_line_, is_quic_allowed_by_policy_, &params_);
+    IOThreadPeer::ConfigureParamsFromFieldTrialsAndCommandLine(command_line_,
+                                                               &params_);
   }
 
   base::CommandLine command_line_;
-  bool is_quic_allowed_by_policy_;
   net::HttpNetworkSession::Params params_;
 };
 
@@ -451,16 +448,6 @@ TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
   EXPECT_EQ(1u, params_.origins_to_force_quic_on.size());
   EXPECT_TRUE(
       base::ContainsKey(params_.origins_to_force_quic_on, net::HostPortPair()));
-}
-
-TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest,
-       QuicDisallowedByPolicy) {
-  command_line_.AppendSwitch("enable-quic");
-  is_quic_allowed_by_policy_ = false;
-
-  ConfigureParamsFromFieldTrialsAndCommandLine();
-
-  EXPECT_FALSE(params_.enable_quic);
 }
 
 TEST_F(ConfigureParamsFromFieldTrialsAndCommandLineTest, QuicMaxPacketLength) {

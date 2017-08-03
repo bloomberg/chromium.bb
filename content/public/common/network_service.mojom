@@ -50,4 +50,8 @@ interface NetworkService {
   // Creates a new network context with the given parameters.
   CreateNetworkContext(NetworkContext& context,
                        NetworkContextParams params);
+
+  // Disables QUIC for the NetworkService. Affects all existing NetworkContexts,
+  // and all new ones that are created. Once called, QUIC cannot be re-enabled.
+  DisableQuic();
 };

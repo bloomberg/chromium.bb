@@ -202,10 +202,10 @@ class IOThread : public content::BrowserThreadDelegate {
 
   const net::HttpNetworkSession::Params& NetworkSessionParams() const;
 
-  // Dynamically disables QUIC for HttpNetworkSessions owned by io_thread, and
-  // to HttpNetworkSession::Params which are used for the creation of new
-  // HttpNetworkSessions. Not that re-enabling Quic dynamically is not
-  // supported for simplicity and requires a browser restart.
+  // Dynamically disables QUIC for all NetworkContexts using the IOThread's
+  // NetworkService. Re-enabling Quic dynamically is not supported for
+  // simplicity and requires a browser restart. May only be called on the IO
+  // thread.
   void DisableQuic();
 
   // Returns the callback for updating data use prefs.
@@ -273,7 +273,6 @@ class IOThread : public content::BrowserThreadDelegate {
   // configure |params|.
   static void ConfigureParamsFromFieldTrialsAndCommandLine(
       const base::CommandLine& command_line,
-      bool is_quic_allowed_by_policy,
       bool http_09_on_non_default_ports_enabled,
       net::HttpNetworkSession::Params* params);
 
@@ -354,8 +353,8 @@ class IOThread : public content::BrowserThreadDelegate {
   scoped_refptr<net::URLRequestContextGetter>
       system_url_request_context_getter_;
 
-  // True if QUIC is allowed by policy.
-  bool is_quic_allowed_by_policy_;
+  // True if QUIC is initially enabled.
+  bool is_quic_allowed_on_init_;
 
   // True if HTTP/0.9 is allowed on non-default ports by policy.
   bool http_09_on_non_default_ports_enabled_;

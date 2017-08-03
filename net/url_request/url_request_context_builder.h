@@ -292,6 +292,9 @@ class NET_EXPORT URLRequestContextBuilder {
   void SetSpdyAndQuicEnabled(bool spdy_enabled,
                              bool quic_enabled);
 
+  // TODO(mmenke): Remove this.
+  void SetQuicEnabled(bool quic_enabled);
+
   void set_throttling_enabled(bool throttling_enabled) {
     throttling_enabled_ = throttling_enabled;
   }
