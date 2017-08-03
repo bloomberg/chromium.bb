@@ -19,7 +19,6 @@ class View;
 
 namespace payments {
 
-class PaymentRequestDialogView;
 class PaymentRequestSpec;
 class PaymentRequestState;
 
@@ -124,7 +123,7 @@ class PaymentRequestItemList {
     DISALLOW_COPY_AND_ASSIGN(Item);
   };
 
-  explicit PaymentRequestItemList(PaymentRequestDialogView* dialog);
+  PaymentRequestItemList();
   virtual ~PaymentRequestItemList();
 
   // Adds an item to this list. |item->list()| should return this object.
@@ -141,8 +140,6 @@ class PaymentRequestItemList {
   // Deselects the currently selected item and selects |item| instead.
   void SelectItem(Item* item);
 
-  PaymentRequestDialogView* dialog() { return dialog_; }
-
  private:
   // Unselects the currently selected item. This is private so that the list can
   // use it when selecting a new item while avoiding consumers of this class
@@ -151,7 +148,6 @@ class PaymentRequestItemList {
 
   std::vector<std::unique_ptr<Item>> items_;
   Item* selected_item_;
-  PaymentRequestDialogView* dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestItemList);
 };

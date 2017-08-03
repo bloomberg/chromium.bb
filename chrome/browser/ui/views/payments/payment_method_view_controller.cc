@@ -186,8 +186,7 @@ PaymentMethodViewController::PaymentMethodViewController(
     PaymentRequestSpec* spec,
     PaymentRequestState* state,
     PaymentRequestDialogView* dialog)
-    : PaymentRequestSheetController(spec, state, dialog),
-      payment_method_list_(dialog) {
+    : PaymentRequestSheetController(spec, state, dialog) {
   const std::vector<std::unique_ptr<PaymentInstrument>>& available_instruments =
       state->available_instruments();
   for (const auto& instrument : available_instruments) {
