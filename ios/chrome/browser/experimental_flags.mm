@@ -96,14 +96,8 @@ bool IsAlertOnBackgroundUploadEnabled() {
 }
 
 bool IsAutoReloadEnabled() {
-  std::string group_name = base::FieldTrialList::FindFullName("IOSAutoReload");
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableOfflineAutoReload))
-    return true;
-  if (command_line->HasSwitch(switches::kDisableOfflineAutoReload))
-    return false;
-  return base::StartsWith(group_name, "Enabled",
-                          base::CompareCase::INSENSITIVE_ASCII);
+  // TODO(crbug.com/752084): Remove this function and its associated code.
+  return false;
 }
 
 bool IsLRUSnapshotCacheEnabled() {

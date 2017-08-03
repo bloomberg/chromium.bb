@@ -27,9 +27,6 @@ const char kDisableIOSPasswordGeneration[] = "disable-ios-password-generation";
 const char kDisableIOSPasswordSuggestions[] =
     "disable-ios-password-suggestions";
 
-// Disable auto-reload of error pages if offline.
-const char kDisableOfflineAutoReload[] = "disable-offline-auto-reload";
-
 // Disables the tab strip auto scroll new tabs.
 const char kDisableTabStripAutoScrollNewTabs[] =
     "disable-tab-strip-autoscroll-new-tabs";
@@ -64,9 +61,6 @@ const char kEnableIOSHandoffToOtherDevices[] =
 
 // Enable password generation for iOS.
 const char kEnableIOSPasswordGeneration[] = "enable-ios-password-generation";
-
-// Enable auto-reload of error pages if offline.
-const char kEnableOfflineAutoReload[] = "enable-offline-auto-reload";
 
 // Enables context-sensitive reader mode button in the toolbar.
 const char kEnableReaderModeToolbarIcon[] = "enable-reader-mode-toolbar-icon";
