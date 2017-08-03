@@ -4,6 +4,7 @@ jochen@chromium.org
 sdefresne@chromium.org
 
 # Note: Best not to use globs (like autofill*) due to crbug.com/397984
+
 per-file app_modal_strings.grdp=file://components/app_modal/OWNERS
 per-file autofill_strings.grdp=file://components/autofill/OWNERS
 per-file bookmark_bar_strings.grdp=file://components/bookmarks/OWNERS
