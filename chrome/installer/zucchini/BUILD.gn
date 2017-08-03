@@ -17,6 +17,8 @@ static_library("zucchini_lib") {
     "crc32.h",
     "disassembler.cc",
     "disassembler.h",
+    "disassembler_no_op.cc",
+    "disassembler_no_op.h",
     "image_utils.h",
     "io_utils.cc",
     "io_utils.h",
