@@ -255,7 +255,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
       if (x_a != 0) {
 #if CONFIG_NEW_QUANT
         dx = av1_dequant_coeff_nuq(x, dqv, dequant_val[band_translate[i]]) -
-             (coeff[rc] << shift);
+             (coeff[rc] * (1 << shift));
 #if CONFIG_HIGHBITDEPTH
         if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
           dx >>= xd->bd - 8;
