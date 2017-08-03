@@ -15,7 +15,20 @@
 
 namespace ash {
 
-using TrayUpdateTest = AshTestBase;
+class TrayUpdateTest : public AshTestBase {
+ public:
+  TrayUpdateTest() = default;
+  ~TrayUpdateTest() override = default;
+
+  // testing::Test:
+  void TearDown() override {
+    AshTestBase::TearDown();
+    TrayUpdate::ResetForTesting();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TrayUpdateTest);
+};
 
 // Tests that the update icon becomes visible when an update becomes
 // available.
@@ -41,6 +54,9 @@ TEST_F(TrayUpdateTest, VisibilityAfterUpdate) {
 TEST_F(TrayUpdateTest, VisibilityAfterFlashUpdate) {
   SystemTray* tray = GetPrimarySystemTray();
   TrayUpdate* tray_update = tray->tray_update();
+
+  // The system starts with no update pending, so the icon isn't visible.
+  EXPECT_FALSE(tray_update->tray_view()->visible());
 
   // Simulate an update.
   Shell::Get()->system_tray_controller()->ShowUpdateIcon(
