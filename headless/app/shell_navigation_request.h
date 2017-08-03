@@ -19,20 +19,31 @@ class HeadlessShell;
 class ShellNavigationRequest : public NavigationRequest {
  public:
   ShellNavigationRequest(base::WeakPtr<HeadlessShell> headless_shell,
-                         const network::RequestInterceptedParams& params);
+                         const std::string& interception_id);
 
   ~ShellNavigationRequest() override;
 
   void StartProcessing(base::Closure done_callback) override;
 
  private:
+  static void StartProcessingOnUiThread(
+      std::unique_ptr<base::WeakPtr<HeadlessShell>> headless_shell,
+      std::string interception_id,
+      base::Closure done_callback);
+
   // Note the navigation likely isn't done when this is called, however we
   // expect it will have been committed and the initial resource load requested.
   static void ContinueInterceptedRequestResult(
       base::Closure done_callback,
       std::unique_ptr<network::ContinueInterceptedRequestResult>);
 
-  base::WeakPtr<HeadlessShell> headless_shell_;
+  static void ContinueInterceptedRequestResultOnIoThread(
+      base::Closure done_callback);
+
+  // Yuck we need to post a weak pointer from the IO -> UI threads but WeakPtr
+  // is super finicky about which threads it's touched on. By boxing this up in
+  // a unique_ptr we can pass it about and only touch it on the UI thread.
+  std::unique_ptr<base::WeakPtr<HeadlessShell>> headless_shell_;
   std::string interception_id_;
 };
 
