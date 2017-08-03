@@ -31,63 +31,58 @@ cr.define('extension_toolbar_tests', function() {
     ClickHandlers: 'click handlers',
   };
 
-  function registerTests() {
-    suite('ExtensionToolbarTest', function() {
-      /** @type {MockDelegate} */
-      var mockDelegate;
+  suite('ExtensionToolbarTest', function() {
+    /** @type {MockDelegate} */
+    var mockDelegate;
 
-      /** @type {extensions.Toolbar} */
-      var toolbar;
+    /** @type {extensions.Toolbar} */
+    var toolbar;
 
-      setup(function() {
-        toolbar = document.querySelector('extensions-manager').toolbar;
-        mockDelegate = new MockDelegate();
-        toolbar.set('delegate', mockDelegate);
-      });
-
-      test(assert(TestNames.Layout), function() {
-        extension_test_util.testIronIcons(toolbar);
-
-        var testVisible = extension_test_util.testVisible.bind(null, toolbar);
-        testVisible('#dev-mode', true);
-        testVisible('#load-unpacked', false);
-        testVisible('#pack-extensions', false);
-        testVisible('#update-now', false);
-
-        toolbar.set('inDevMode', true);
-        Polymer.dom.flush();
-
-        testVisible('#dev-mode', true);
-        testVisible('#load-unpacked', true);
-        testVisible('#pack-extensions', true);
-        testVisible('#update-now', true);
-      });
-
-      test(assert(TestNames.ClickHandlers), function() {
-        toolbar.set('inDevMode', true);
-        Polymer.dom.flush();
-
-        mockDelegate.testClickingCalls(
-            toolbar.$['dev-mode'], 'setProfileInDevMode',
-            [false]);
-        mockDelegate.testClickingCalls(
-            toolbar.$['dev-mode'], 'setProfileInDevMode',
-            [true]);
-        mockDelegate.testClickingCalls(
-            toolbar.$$('#load-unpacked'), 'loadUnpacked', []);
-        mockDelegate.testClickingCalls(
-            toolbar.$$('#update-now'), 'updateAllExtensions', []);
-
-        var listener = new extension_test_util.ListenerMock();
-        listener.addListener(toolbar, 'pack-tap');
-        MockInteractions.tap(toolbar.$$('#pack-extensions'));
-        listener.verify();
-      });
+    setup(function() {
+      toolbar = document.querySelector('extensions-manager').toolbar;
+      mockDelegate = new MockDelegate();
+      toolbar.set('delegate', mockDelegate);
     });
-  }
+
+    test(assert(TestNames.Layout), function() {
+      extension_test_util.testIronIcons(toolbar);
+
+      var testVisible = extension_test_util.testVisible.bind(null, toolbar);
+      testVisible('#dev-mode', true);
+      testVisible('#load-unpacked', false);
+      testVisible('#pack-extensions', false);
+      testVisible('#update-now', false);
+
+      toolbar.set('inDevMode', true);
+      Polymer.dom.flush();
+
+      testVisible('#dev-mode', true);
+      testVisible('#load-unpacked', true);
+      testVisible('#pack-extensions', true);
+      testVisible('#update-now', true);
+    });
+
+    test(assert(TestNames.ClickHandlers), function() {
+      toolbar.set('inDevMode', true);
+      Polymer.dom.flush();
+
+      mockDelegate.testClickingCalls(
+          toolbar.$['dev-mode'], 'setProfileInDevMode', [false]);
+      mockDelegate.testClickingCalls(
+          toolbar.$['dev-mode'], 'setProfileInDevMode', [true]);
+      mockDelegate.testClickingCalls(
+          toolbar.$$('#load-unpacked'), 'loadUnpacked', []);
+      mockDelegate.testClickingCalls(
+          toolbar.$$('#update-now'), 'updateAllExtensions', []);
+
+      var listener = new extension_test_util.ListenerMock();
+      listener.addListener(toolbar, 'pack-tap');
+      MockInteractions.tap(toolbar.$$('#pack-extensions'));
+      listener.verify();
+    });
+  });
 
   return {
-    registerTests: registerTests,
     TestNames: TestNames,
   };
 });

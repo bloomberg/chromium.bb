@@ -52,174 +52,171 @@ cr.define('extension_pack_dialog_tests', function() {
     return rect.width * rect.height > 0;
   };
 
-  function registerTests() {
-    suite('ExtensionPackDialogTests', function() {
-      /** @type {extensions.PackDialog} */
-      var packDialog;
+  suite('ExtensionPackDialogTests', function() {
+    /** @type {extensions.PackDialog} */
+    var packDialog;
 
-      /** @type {MockDelegate} */
-      var mockDelegate;
+    /** @type {MockDelegate} */
+    var mockDelegate;
 
-      setup(function() {
-        PolymerTest.clearBody();
-        mockDelegate = new MockDelegate();
-        packDialog = new extensions.PackDialog();
-        packDialog.delegate = mockDelegate;
-        document.body.appendChild(packDialog);
-      });
+    setup(function() {
+      PolymerTest.clearBody();
+      mockDelegate = new MockDelegate();
+      packDialog = new extensions.PackDialog();
+      packDialog.delegate = mockDelegate;
+      document.body.appendChild(packDialog);
+    });
 
-      test(assert(TestNames.Interaction), function() {
-        var dialogElement = packDialog.$$('dialog');
+    test(assert(TestNames.Interaction), function() {
+      var dialogElement = packDialog.$$('dialog');
 
-        expectFalse(isElementVisible(dialogElement));
-        packDialog.show();
-        expectTrue(isElementVisible(dialogElement));
-        expectEquals('', packDialog.$$('#root-dir').value);
-        MockInteractions.tap(packDialog.$$('#root-dir-browse'));
-        expectTrue(!!mockDelegate.rootPromise);
-        expectEquals('', packDialog.$$('#root-dir').value);
-        var kRootPath = 'this/is/a/path';
+      expectFalse(isElementVisible(dialogElement));
+      packDialog.show();
+      expectTrue(isElementVisible(dialogElement));
+      expectEquals('', packDialog.$$('#root-dir').value);
+      MockInteractions.tap(packDialog.$$('#root-dir-browse'));
+      expectTrue(!!mockDelegate.rootPromise);
+      expectEquals('', packDialog.$$('#root-dir').value);
+      var kRootPath = 'this/is/a/path';
 
-        var promises = [];
-        promises.push(mockDelegate.rootPromise.promise.then(function() {
-          expectEquals(kRootPath, packDialog.$$('#root-dir').value);
-          expectEquals(kRootPath, packDialog.packDirectory_);
-        }));
+      var promises = [];
+      promises.push(mockDelegate.rootPromise.promise.then(function() {
+        expectEquals(kRootPath, packDialog.$$('#root-dir').value);
+        expectEquals(kRootPath, packDialog.packDirectory_);
+      }));
 
-        expectEquals('', packDialog.$$('#key-file').value);
-        MockInteractions.tap(packDialog.$$('#key-file-browse'));
-        expectTrue(!!mockDelegate.keyPromise);
-        expectEquals('', packDialog.$$('#key-file').value);
-        var kKeyPath = 'here/is/another/path';
+      expectEquals('', packDialog.$$('#key-file').value);
+      MockInteractions.tap(packDialog.$$('#key-file-browse'));
+      expectTrue(!!mockDelegate.keyPromise);
+      expectEquals('', packDialog.$$('#key-file').value);
+      var kKeyPath = 'here/is/another/path';
 
-        promises.push(mockDelegate.keyPromise.promise.then(function() {
-          expectEquals(kKeyPath, packDialog.$$('#key-file').value);
-          expectEquals(kKeyPath, packDialog.keyFile_);
-        }));
+      promises.push(mockDelegate.keyPromise.promise.then(function() {
+        expectEquals(kKeyPath, packDialog.$$('#key-file').value);
+        expectEquals(kKeyPath, packDialog.keyFile_);
+      }));
 
-        mockDelegate.rootPromise.resolve(kRootPath);
-        mockDelegate.keyPromise.resolve(kKeyPath);
+      mockDelegate.rootPromise.resolve(kRootPath);
+      mockDelegate.keyPromise.resolve(kKeyPath);
 
-        return Promise.all(promises).then(function() {
-          MockInteractions.tap(packDialog.$$('.action-button'));
-          expectEquals(kRootPath, mockDelegate.rootPath);
-          expectEquals(kKeyPath, mockDelegate.keyPath);
-        });
-      });
-
-      test(assert(TestNames.PackSuccess), function() {
-        var dialogElement = packDialog.$$('dialog');
-
-        packDialog.show();
-        expectTrue(isElementVisible(dialogElement));
-
-        var kRootPath = 'this/is/a/path';
-        mockDelegate.mockResponse = {
-          status: chrome.developerPrivate.PackStatus.SUCCESS
-        };
-
-        MockInteractions.tap(packDialog.$$('#root-dir-browse'));
-        mockDelegate.rootPromise.resolve(kRootPath);
-
-        return mockDelegate.rootPromise.promise
-            .then(() => {
-              expectEquals(kRootPath, packDialog.$$('#root-dir').value);
-              MockInteractions.tap(packDialog.$$('.action-button'));
-
-              return PolymerTest.flushTasks();
-            })
-            .then(() => {
-              expectFalse(isElementVisible(dialogElement));
-            });
-      });
-
-      test(assert(TestNames.PackError), function() {
-        var dialogElement = packDialog.$$('dialog');
-        var packDialogAlert;
-        var alertElement;
-
-        packDialog.show();
-        expectTrue(isElementVisible(dialogElement));
-
-        var kRootPath = 'this/is/a/path';
-        mockDelegate.mockResponse = {
-          status: chrome.developerPrivate.PackStatus.ERROR
-        };
-
-        MockInteractions.tap(packDialog.$$('#root-dir-browse'));
-        mockDelegate.rootPromise.resolve(kRootPath);
-
-        return mockDelegate.rootPromise.promise.then(() => {
-          expectEquals(kRootPath, packDialog.$$('#root-dir').value);
-          MockInteractions.tap(packDialog.$$('.action-button'));
-          Polymer.dom.flush();
-
-          // Make sure new alert and the appropriate buttons are visible.
-          packDialogAlert = packDialog.$$('extensions-pack-dialog-alert');
-          alertElement = packDialogAlert.$.dialog;
-          expectTrue(isElementVisible(alertElement));
-          expectTrue(isElementVisible(dialogElement));
-          expectFalse(packDialogAlert.$$('.cancel-button').hidden);
-          expectTrue(packDialogAlert.$$('.action-button').hidden);
-
-          // After cancel, original dialog is still open and values unchanged.
-          MockInteractions.tap(packDialogAlert.$$('.cancel-button'));
-          expectFalse(isElementVisible(alertElement));
-          expectTrue(isElementVisible(dialogElement));
-          expectEquals(kRootPath, packDialog.$$('#root-dir').value);
-        });
-      });
-
-      test(assert(TestNames.PackWarning), function() {
-        var dialogElement = packDialog.$$('dialog');
-        var packDialogAlert;
-        var alertElement;
-
-        packDialog.show();
-        expectTrue(isElementVisible(dialogElement));
-
-        var kRootPath = 'this/is/a/path';
-        mockDelegate.mockResponse = {
-          status: chrome.developerPrivate.PackStatus.WARNING,
-          item_path: 'item_path',
-          pem_path: 'pem_path',
-          override_flags: 1,
-        };
-
-        MockInteractions.tap(packDialog.$$('#root-dir-browse'));
-        mockDelegate.rootPromise.resolve(kRootPath);
-
-        return mockDelegate.rootPromise.promise
-            .then(() => {
-              expectEquals(kRootPath, packDialog.$$('#root-dir').value);
-              MockInteractions.tap(packDialog.$$('.action-button'));
-              Polymer.dom.flush();
-
-              // Make sure new alert and the appropriate buttons are visible.
-              packDialogAlert = packDialog.$$('extensions-pack-dialog-alert');
-              alertElement = packDialogAlert.$.dialog;
-              expectTrue(isElementVisible(alertElement));
-              expectTrue(isElementVisible(dialogElement));
-              expectFalse(packDialogAlert.$$('.cancel-button').hidden);
-              expectFalse(packDialogAlert.$$('.action-button').hidden);
-
-              // Make sure "proceed anyway" try to pack extension again.
-              MockInteractions.tap(packDialogAlert.$$('.action-button'));
-
-              return PolymerTest.flushTasks();
-            })
-            .then(() => {
-              // Make sure packExtension is called again with the right params.
-              expectFalse(isElementVisible(alertElement));
-              expectEquals(
-                  mockDelegate.flag, mockDelegate.mockResponse.override_flags);
-            });
+      return Promise.all(promises).then(function() {
+        MockInteractions.tap(packDialog.$$('.action-button'));
+        expectEquals(kRootPath, mockDelegate.rootPath);
+        expectEquals(kKeyPath, mockDelegate.keyPath);
       });
     });
-  }
+
+    test(assert(TestNames.PackSuccess), function() {
+      var dialogElement = packDialog.$$('dialog');
+
+      packDialog.show();
+      expectTrue(isElementVisible(dialogElement));
+
+      var kRootPath = 'this/is/a/path';
+      mockDelegate.mockResponse = {
+        status: chrome.developerPrivate.PackStatus.SUCCESS
+      };
+
+      MockInteractions.tap(packDialog.$$('#root-dir-browse'));
+      mockDelegate.rootPromise.resolve(kRootPath);
+
+      return mockDelegate.rootPromise.promise
+          .then(() => {
+            expectEquals(kRootPath, packDialog.$$('#root-dir').value);
+            MockInteractions.tap(packDialog.$$('.action-button'));
+
+            return PolymerTest.flushTasks();
+          })
+          .then(() => {
+            expectFalse(isElementVisible(dialogElement));
+          });
+    });
+
+    test(assert(TestNames.PackError), function() {
+      var dialogElement = packDialog.$$('dialog');
+      var packDialogAlert;
+      var alertElement;
+
+      packDialog.show();
+      expectTrue(isElementVisible(dialogElement));
+
+      var kRootPath = 'this/is/a/path';
+      mockDelegate.mockResponse = {
+        status: chrome.developerPrivate.PackStatus.ERROR
+      };
+
+      MockInteractions.tap(packDialog.$$('#root-dir-browse'));
+      mockDelegate.rootPromise.resolve(kRootPath);
+
+      return mockDelegate.rootPromise.promise.then(() => {
+        expectEquals(kRootPath, packDialog.$$('#root-dir').value);
+        MockInteractions.tap(packDialog.$$('.action-button'));
+        Polymer.dom.flush();
+
+        // Make sure new alert and the appropriate buttons are visible.
+        packDialogAlert = packDialog.$$('extensions-pack-dialog-alert');
+        alertElement = packDialogAlert.$.dialog;
+        expectTrue(isElementVisible(alertElement));
+        expectTrue(isElementVisible(dialogElement));
+        expectFalse(packDialogAlert.$$('.cancel-button').hidden);
+        expectTrue(packDialogAlert.$$('.action-button').hidden);
+
+        // After cancel, original dialog is still open and values unchanged.
+        MockInteractions.tap(packDialogAlert.$$('.cancel-button'));
+        expectFalse(isElementVisible(alertElement));
+        expectTrue(isElementVisible(dialogElement));
+        expectEquals(kRootPath, packDialog.$$('#root-dir').value);
+      });
+    });
+
+    test(assert(TestNames.PackWarning), function() {
+      var dialogElement = packDialog.$$('dialog');
+      var packDialogAlert;
+      var alertElement;
+
+      packDialog.show();
+      expectTrue(isElementVisible(dialogElement));
+
+      var kRootPath = 'this/is/a/path';
+      mockDelegate.mockResponse = {
+        status: chrome.developerPrivate.PackStatus.WARNING,
+        item_path: 'item_path',
+        pem_path: 'pem_path',
+        override_flags: 1,
+      };
+
+      MockInteractions.tap(packDialog.$$('#root-dir-browse'));
+      mockDelegate.rootPromise.resolve(kRootPath);
+
+      return mockDelegate.rootPromise.promise
+          .then(() => {
+            expectEquals(kRootPath, packDialog.$$('#root-dir').value);
+            MockInteractions.tap(packDialog.$$('.action-button'));
+            Polymer.dom.flush();
+
+            // Make sure new alert and the appropriate buttons are visible.
+            packDialogAlert = packDialog.$$('extensions-pack-dialog-alert');
+            alertElement = packDialogAlert.$.dialog;
+            expectTrue(isElementVisible(alertElement));
+            expectTrue(isElementVisible(dialogElement));
+            expectFalse(packDialogAlert.$$('.cancel-button').hidden);
+            expectFalse(packDialogAlert.$$('.action-button').hidden);
+
+            // Make sure "proceed anyway" try to pack extension again.
+            MockInteractions.tap(packDialogAlert.$$('.action-button'));
+
+            return PolymerTest.flushTasks();
+          })
+          .then(() => {
+            // Make sure packExtension is called again with the right params.
+            expectFalse(isElementVisible(alertElement));
+            expectEquals(
+                mockDelegate.flag, mockDelegate.mockResponse.override_flags);
+          });
+    });
+  });
 
   return {
-    registerTests: registerTests,
     TestNames: TestNames,
   };
 });

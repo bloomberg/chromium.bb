@@ -66,135 +66,139 @@ cr.define('extension_service_tests', function() {
     ProfileSettings: 'profile settings',
   };
 
-  function registerTests() {
-    suite('ExtensionServiceTest', function() {
-      /** @const{string} */
-      var kExtensionId = 'ldnnhddmnhbkjipkidpdiheffobcpfmf';
+  suite('ExtensionServiceTest', function() {
+    /** @const{string} */
+    var kExtensionId = 'ldnnhddmnhbkjipkidpdiheffobcpfmf';
 
-      /** @const */
-      var EventType = chrome.developerPrivate.EventType;
+    /** @const */
+    var EventType = chrome.developerPrivate.EventType;
 
-      /** @const */
-      var ExtensionState = chrome.developerPrivate.ExtensionState;
+    /** @const */
+    var ExtensionState = chrome.developerPrivate.ExtensionState;
 
-      /** @type {extensions.Service} */
-      var service;
+    /** @type {extensions.Service} */
+    var service;
 
-      /** @type {extensions.Manager} */
-      var manager;
+    /** @type {extensions.Manager} */
+    var manager;
 
-      var getItemData = function(id) {
-        var elMatches = function(el) { return el.id == id; };
-        return manager.extensions.find(elMatches) ||
-               manager.apps.find(elMatches);
+    var getItemData = function(id) {
+      var elMatches = function(el) {
+        return el.id == id;
       };
+      return manager.extensions.find(elMatches) || manager.apps.find(elMatches);
+    };
 
-      suiteSetup(function() {
-        return PolymerTest.importHtml('chrome://extensions/service.html');
-      });
+    suiteSetup(function() {
+      return PolymerTest.importHtml('chrome://extensions/service.html');
+    });
 
-      // Initialize an extension item before each test.
-      setup(function() {
-        service = extensions.Service.getInstance();
-        manager = document.getElementsByTagName('extensions-manager')[0];
-      });
+    // Initialize an extension item before each test.
+    setup(function() {
+      service = extensions.Service.getInstance();
+      manager = document.getElementsByTagName('extensions-manager')[0];
+    });
 
-      test(assert(TestNames.EnableAndDisable), function(done) {
-        var item = getItemData(kExtensionId);
-        assertTrue(!!item);
-        expectEquals(kExtensionId, item.id);
-        expectEquals('My extension 1', item.name);
-        expectEquals(ExtensionState.ENABLED, item.state);
+    test(assert(TestNames.EnableAndDisable), function(done) {
+      var item = getItemData(kExtensionId);
+      assertTrue(!!item);
+      expectEquals(kExtensionId, item.id);
+      expectEquals('My extension 1', item.name);
+      expectEquals(ExtensionState.ENABLED, item.state);
 
-        var disabledListener =
-            new ItemChangedListener(kExtensionId, EventType.UNLOADED);
-        service.setItemEnabled(kExtensionId, false);
-        disabledListener.onUpdate.then(function() {
-          // Note: we need to re-get the item since the object in the manager's
-          // collection was replaced, rather than updated.
-          var item = getItemData(kExtensionId);
-          assertTrue(!!item);
-          expectEquals(ExtensionState.DISABLED, item.state);
+      var disabledListener =
+          new ItemChangedListener(kExtensionId, EventType.UNLOADED);
+      service.setItemEnabled(kExtensionId, false);
+      disabledListener.onUpdate
+          .then(function() {
+            // Note: we need to re-get the item since the object in the
+            // manager's collection was replaced, rather than updated.
+            var item = getItemData(kExtensionId);
+            assertTrue(!!item);
+            expectEquals(ExtensionState.DISABLED, item.state);
 
-          enabledListener =
-              new ItemChangedListener(kExtensionId, EventType.LOADED);
-          service.setItemEnabled(kExtensionId, true);
-          return enabledListener.onUpdate;
-        }).then(function() {
-          var item = getItemData(kExtensionId);
-          assertTrue(!!item);
-          expectEquals(ExtensionState.ENABLED, item.state);
-          done();
-        });
-      });
-
-      test(assert(TestNames.ToggleIncognitoMode), function(done) {
-        var item = getItemData(kExtensionId);
-        assertTrue(!!item);
-        expectTrue(item.incognitoAccess.isEnabled);
-        expectFalse(item.incognitoAccess.isActive);
-
-        var incognitoListener =
-            new ItemChangedListener(kExtensionId, EventType.LOADED);
-        chrome.test.runWithUserGesture(function() {
-          service.setItemAllowedIncognito(kExtensionId, true);
-        });
-        incognitoListener.onUpdate.then(function() {
-          var item = getItemData(kExtensionId);
-          assertTrue(!!item);
-          expectTrue(item.incognitoAccess.isActive);
-
-          var disabledIncognitoListener =
-              new ItemChangedListener(kExtensionId, EventType.LOADED);
-          chrome.test.runWithUserGesture(function() {
-            service.setItemAllowedIncognito(kExtensionId, false);
+            enabledListener =
+                new ItemChangedListener(kExtensionId, EventType.LOADED);
+            service.setItemEnabled(kExtensionId, true);
+            return enabledListener.onUpdate;
+          })
+          .then(function() {
+            var item = getItemData(kExtensionId);
+            assertTrue(!!item);
+            expectEquals(ExtensionState.ENABLED, item.state);
+            done();
           });
-          return disabledIncognitoListener.onUpdate;
-        }).then(function() {
-          var item = getItemData(kExtensionId);
-          assertTrue(!!item);
-          expectFalse(item.incognitoAccess.isActive);
-          done();
-        });
+    });
+
+    test(assert(TestNames.ToggleIncognitoMode), function(done) {
+      var item = getItemData(kExtensionId);
+      assertTrue(!!item);
+      expectTrue(item.incognitoAccess.isEnabled);
+      expectFalse(item.incognitoAccess.isActive);
+
+      var incognitoListener =
+          new ItemChangedListener(kExtensionId, EventType.LOADED);
+      chrome.test.runWithUserGesture(function() {
+        service.setItemAllowedIncognito(kExtensionId, true);
       });
+      incognitoListener.onUpdate
+          .then(function() {
+            var item = getItemData(kExtensionId);
+            assertTrue(!!item);
+            expectTrue(item.incognitoAccess.isActive);
 
-      test(assert(TestNames.Uninstall), function(done) {
-        var item = getItemData(kExtensionId);
-        assertTrue(!!item);
-        var uninstallListener =
-            new ItemChangedListener(kExtensionId, EventType.UNINSTALLED);
-        chrome.test.runWithUserGesture(function() {
-          service.deleteItem(kExtensionId);
-        });
-        uninstallListener.onUpdate.then(function() {
-          expectFalse(!!getItemData(kExtensionId));
-          done();
-        });
+            var disabledIncognitoListener =
+                new ItemChangedListener(kExtensionId, EventType.LOADED);
+            chrome.test.runWithUserGesture(function() {
+              service.setItemAllowedIncognito(kExtensionId, false);
+            });
+            return disabledIncognitoListener.onUpdate;
+          })
+          .then(function() {
+            var item = getItemData(kExtensionId);
+            assertTrue(!!item);
+            expectFalse(item.incognitoAccess.isActive);
+            done();
+          });
+    });
+
+    test(assert(TestNames.Uninstall), function(done) {
+      var item = getItemData(kExtensionId);
+      assertTrue(!!item);
+      var uninstallListener =
+          new ItemChangedListener(kExtensionId, EventType.UNINSTALLED);
+      chrome.test.runWithUserGesture(function() {
+        service.deleteItem(kExtensionId);
       });
-
-      test(assert(TestNames.ProfileSettings), function(done) {
-        expectFalse(manager.inDevMode);
-
-        var profileListener = new ProfileChangedListener();
-        service.setProfileInDevMode(true);
-
-        profileListener.onUpdate.then(function() {
-          expectTrue(manager.inDevMode);
-
-          var noDevModeProfileListener = new ProfileChangedListener();
-          service.setProfileInDevMode(false);
-          return noDevModeProfileListener.onUpdate;
-        }).then(function() {
-          expectFalse(manager.inDevMode);
-          done();
-        });
+      uninstallListener.onUpdate.then(function() {
+        expectFalse(!!getItemData(kExtensionId));
+        done();
       });
     });
-  }
+
+    test(assert(TestNames.ProfileSettings), function(done) {
+      expectFalse(manager.inDevMode);
+
+      var profileListener = new ProfileChangedListener();
+      service.setProfileInDevMode(true);
+
+      profileListener.onUpdate
+          .then(function() {
+            expectTrue(manager.inDevMode);
+
+            var noDevModeProfileListener = new ProfileChangedListener();
+            service.setProfileInDevMode(false);
+            return noDevModeProfileListener.onUpdate;
+          })
+          .then(function() {
+            expectFalse(manager.inDevMode);
+            done();
+          });
+    });
+  });
 
   return {
     ChangeListener: ChangeListener,
-    registerTests: registerTests,
     TestNames: TestNames,
   };
 });
