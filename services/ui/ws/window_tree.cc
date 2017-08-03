@@ -552,26 +552,7 @@ bool WindowTree::SetModalType(const ClientWindowId& window_id,
   if (window->modal_type() == modal_type)
     return true;
 
-  auto* display_root = GetWindowManagerDisplayRoot(window);
-  switch (modal_type) {
-    case MODAL_TYPE_SYSTEM:
-      if (!display_root) {
-        DVLOG(1) << "SetModalType failed (no display root)";
-        return false;
-      }
-      window->SetModalType(modal_type);
-      display_root->window_manager_state()->AddSystemModalWindow(window);
-      break;
-    case MODAL_TYPE_NONE:
-    case MODAL_TYPE_WINDOW:
-    case MODAL_TYPE_CHILD:
-      window->SetModalType(modal_type);
-      break;
-  }
-  if (display_root && modal_type != MODAL_TYPE_NONE) {
-    display_root->window_manager_state()->ReleaseCaptureBlockedByModalWindow(
-        window);
-  }
+  window->SetModalType(modal_type);
   return true;
 }
 
