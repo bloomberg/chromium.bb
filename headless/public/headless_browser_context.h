@@ -88,6 +88,9 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Observer {
   // thread.
   virtual void UrlRequestFailed(net::URLRequest* request, int net_error) {}
 
+  // Indicates the HeadlessBrowserContext is about to be deleted.
+  virtual void OnHeadlessBrowserContextDestruct() {}
+
  protected:
   virtual ~Observer() {}
 };
