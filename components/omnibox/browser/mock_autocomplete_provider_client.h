@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_scheme_classifier.h"
+#include "components/omnibox/browser/contextual_suggestions_service.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -43,6 +44,11 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
   const TemplateURLService* GetTemplateURLService() const override {
     return template_url_service_.get();
   }
+  ContextualSuggestionsService* GetContextualSuggestionsService()
+      const override {
+    return contextual_suggestions_service_.get();
+  }
+
   std::unique_ptr<KeywordExtensionsDelegate> GetKeywordExtensionsDelegate(
       KeywordProvider* keyword_provider) override {
     return nullptr;
@@ -85,6 +91,7 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
   }
 
  private:
+  std::unique_ptr<ContextualSuggestionsService> contextual_suggestions_service_;
   std::unique_ptr<TemplateURLService> template_url_service_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAutocompleteProviderClient);

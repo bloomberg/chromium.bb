@@ -83,6 +83,8 @@ split_static_library("browser") {
     "autocomplete/chrome_autocomplete_provider_client.h",
     "autocomplete/chrome_autocomplete_scheme_classifier.cc",
     "autocomplete/chrome_autocomplete_scheme_classifier.h",
+    "autocomplete/contextual_suggestions_service_factory.cc",
+    "autocomplete/contextual_suggestions_service_factory.h",
     "autocomplete/in_memory_url_index_factory.cc",
     "autocomplete/in_memory_url_index_factory.h",
     "autocomplete/shortcuts_backend_factory.cc",

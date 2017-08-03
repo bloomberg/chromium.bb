@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/autocomplete_scheme_classifier.h"
@@ -82,6 +83,7 @@ class BaseSearchProviderTest : public testing::Test {
         AutocompleteProvider::TYPE_SEARCH, client_.get());
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<NiceMock<TestBaseSearchProvider> > provider_;
   std::unique_ptr<NiceMock<MockAutocompleteProviderClient>> client_;
 };
