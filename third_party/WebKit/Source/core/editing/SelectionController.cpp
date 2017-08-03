@@ -562,15 +562,14 @@ bool SelectionController::SelectClosestWordFromHitTestResult(
     visibility = HandleVisibility::kVisible;
   }
 
-  const VisibleSelectionInFlatTree& adjusted_selection =
+  const SelectionInFlatTree& adjusted_selection =
       append_trailing_whitespace == AppendTrailingWhitespace::kShouldAppend
-          ? new_selection.AppendTrailingWhitespace()
-          : new_selection;
+          ? AdjustSelectionWithTrailingWhitespace(new_selection.AsSelection())
+          : new_selection.AsSelection();
 
   return UpdateSelectionForMouseDownDispatchingSelectStart(
       inner_node,
-      ExpandSelectionToRespectUserSelectAll(inner_node,
-                                            adjusted_selection.AsSelection()),
+      ExpandSelectionToRespectUserSelectAll(inner_node, adjusted_selection),
       TextGranularity::kWord, visibility);
 }
 
@@ -608,14 +607,13 @@ void SelectionController::SelectClosestMisspellingFromHitTestResult(
   const PositionInFlatTree end(container_node, marker->EndOffset());
   const VisibleSelectionInFlatTree& new_selection = CreateVisibleSelection(
       SelectionInFlatTree::Builder().Collapse(start).Extend(end).Build());
-  const VisibleSelectionInFlatTree& adjusted_selection =
+  const SelectionInFlatTree& adjusted_selection =
       append_trailing_whitespace == AppendTrailingWhitespace::kShouldAppend
-          ? new_selection.AppendTrailingWhitespace()
-          : new_selection;
+          ? AdjustSelectionWithTrailingWhitespace(new_selection.AsSelection())
+          : new_selection.AsSelection();
   UpdateSelectionForMouseDownDispatchingSelectStart(
       inner_node,
-      ExpandSelectionToRespectUserSelectAll(inner_node,
-                                            adjusted_selection.AsSelection()),
+      ExpandSelectionToRespectUserSelectAll(inner_node, adjusted_selection),
       TextGranularity::kWord, HandleVisibility::kNotVisible);
 }
 
