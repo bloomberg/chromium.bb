@@ -24,7 +24,7 @@ SkColor WallpaperControllerTestApi::ApplyColorProducingWallpaper() {
   canvas.DrawColor(color);
   gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(canvas.GetBitmap());
   wallpaper::WallpaperInfo info("", wallpaper::WALLPAPER_LAYOUT_CENTER,
-                                user_manager::User::DEFAULT,
+                                wallpaper::DEFAULT,
                                 base::Time::Now().LocalMidnight());
   controller_->SetWallpaperImage(image, info);
 

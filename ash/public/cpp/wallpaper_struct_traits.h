@@ -6,7 +6,6 @@
 #define ASH_PUBLIC_CPP_WALLPAPER_STRUCT_TRAITS_H_
 
 #include "ash/public/interfaces/wallpaper.mojom.h"
-#include "components/user_manager/user.h"
 #include "components/wallpaper/wallpaper_info.h"
 
 namespace base {
@@ -56,26 +55,24 @@ struct EnumTraits<ash::mojom::WallpaperLayout, wallpaper::WallpaperLayout> {
 };
 
 template <>
-struct EnumTraits<ash::mojom::WallpaperType,
-                  user_manager::User::WallpaperType> {
-  static ash::mojom::WallpaperType ToMojom(
-      user_manager::User::WallpaperType input) {
+struct EnumTraits<ash::mojom::WallpaperType, wallpaper::WallpaperType> {
+  static ash::mojom::WallpaperType ToMojom(wallpaper::WallpaperType input) {
     switch (input) {
-      case user_manager::User::WallpaperType::DAILY:
+      case wallpaper::DAILY:
         return ash::mojom::WallpaperType::DAILY;
-      case user_manager::User::CUSTOMIZED:
+      case wallpaper::CUSTOMIZED:
         return ash::mojom::WallpaperType::CUSTOMIZED;
-      case user_manager::User::DEFAULT:
+      case wallpaper::DEFAULT:
         return ash::mojom::WallpaperType::DEFAULT;
-      case user_manager::User::ONLINE:
+      case wallpaper::ONLINE:
         return ash::mojom::WallpaperType::ONLINE;
-      case user_manager::User::POLICY:
+      case wallpaper::POLICY:
         return ash::mojom::WallpaperType::POLICY;
-      case user_manager::User::THIRDPARTY:
+      case wallpaper::THIRDPARTY:
         return ash::mojom::WallpaperType::THIRDPARTY;
-      case user_manager::User::DEVICE:
+      case wallpaper::DEVICE:
         return ash::mojom::WallpaperType::DEVICE;
-      case user_manager::User::WALLPAPER_TYPE_COUNT:
+      case wallpaper::WALLPAPER_TYPE_COUNT:
         break;
     }
     NOTREACHED();
@@ -83,28 +80,28 @@ struct EnumTraits<ash::mojom::WallpaperType,
   }
 
   static bool FromMojom(ash::mojom::WallpaperType input,
-                        user_manager::User::WallpaperType* out) {
+                        wallpaper::WallpaperType* out) {
     switch (input) {
       case ash::mojom::WallpaperType::DAILY:
-        *out = user_manager::User::WallpaperType::DAILY;
+        *out = wallpaper::DAILY;
         return true;
       case ash::mojom::WallpaperType::CUSTOMIZED:
-        *out = user_manager::User::WallpaperType::CUSTOMIZED;
+        *out = wallpaper::CUSTOMIZED;
         return true;
       case ash::mojom::WallpaperType::DEFAULT:
-        *out = user_manager::User::WallpaperType::DEFAULT;
+        *out = wallpaper::DEFAULT;
         return true;
       case ash::mojom::WallpaperType::ONLINE:
-        *out = user_manager::User::WallpaperType::ONLINE;
+        *out = wallpaper::ONLINE;
         return true;
       case ash::mojom::WallpaperType::POLICY:
-        *out = user_manager::User::WallpaperType::POLICY;
+        *out = wallpaper::POLICY;
         return true;
       case ash::mojom::WallpaperType::THIRDPARTY:
-        *out = user_manager::User::WallpaperType::THIRDPARTY;
+        *out = wallpaper::THIRDPARTY;
         return true;
       case ash::mojom::WallpaperType::DEVICE:
-        *out = user_manager::User::WallpaperType::DEVICE;
+        *out = wallpaper::DEVICE;
         return true;
     }
     NOTREACHED();
@@ -122,7 +119,7 @@ struct ASH_PUBLIC_EXPORT
       const wallpaper::WallpaperInfo& i) {
     return i.layout;
   }
-  static const user_manager::User::WallpaperType& type(
+  static const wallpaper::WallpaperType& type(
       const wallpaper::WallpaperInfo& i) {
     return i.type;
   }

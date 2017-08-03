@@ -36,7 +36,6 @@ class SequencedTaskRunner;
 }
 
 namespace user_manager {
-class User;
 class UserImage;
 }
 
@@ -250,7 +249,7 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
                                   const WallpaperFilesId& wallpaper_files_id,
                                   const std::string& file,
                                   WallpaperLayout layout,
-                                  user_manager::User::WallpaperType type,
+                                  WallpaperType type,
                                   const gfx::ImageSkia& image,
                                   bool update_wallpaper) = 0;
 
