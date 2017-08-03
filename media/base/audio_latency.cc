@@ -13,6 +13,10 @@
 #include "build/build_config.h"
 #include "media/base/limits.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "media/base/mac/audio_latency_mac.h"
 #endif
@@ -35,6 +39,23 @@ uint32_t RoundUpToPowerOfTwo(uint32_t v) {
 }
 #endif
 }  // namespace
+
+// static
+bool AudioLatency::IsResamplingPassthroughSupported(LatencyType type) {
+#if defined(OS_CHROMEOS)
+  return true;
+#elif defined(OS_ANDROID)
+  // Only N MR1+ has support for OpenSLES performance modes which allow for
+  // power efficient playback. Per the Android audio team, we shouldn't waste
+  // cycles on resampling when using the playback mode. See OpenSLESOutputStream
+  // for additional implementation details.
+  return type == LATENCY_PLAYBACK &&
+         base::android::BuildInfo::GetInstance()->sdk_int() >=
+             base::android::SDK_VERSION_NOUGAT_MR1;
+#else
+  return false;
+#endif
+}
 
 // static
 int AudioLatency::GetHighLatencyBufferSize(int sample_rate,
@@ -66,11 +87,7 @@ int AudioLatency::GetHighLatencyBufferSize(int sample_rate,
   const int high_latency_buffer_size = RoundUpToPowerOfTwo(twenty_ms_size);
 #endif  // defined(OS_WIN)
 
-#if defined(OS_CHROMEOS)
-  return high_latency_buffer_size;  // No preference.
-#else
   return std::max(preferred_buffer_size, high_latency_buffer_size);
-#endif  // defined(OS_CHROMEOS)
 }
 
 // static

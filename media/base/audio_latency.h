@@ -31,6 +31,9 @@ class MEDIA_EXPORT AudioLatency {
     LATENCY_COUNT = LATENCY_LAST + 1
   };
 
+  // Indicates if the OS does not require resampling for playback.
+  static bool IsResamplingPassthroughSupported(LatencyType type);
+
   // |preferred_buffer_size| should be set to 0 if a client has no preference.
   static int GetHighLatencyBufferSize(int sample_rate,
                                       int preferred_buffer_size);

@@ -394,19 +394,24 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
     use_stream_params = false;
   }
 
+  // Target ~20ms for our buffer size (which is optimal for power efficiency and
+  // responsiveness to play/pause events), but if the hardware needs something
+  // even larger (say for Bluetooth devices) prefer that.
+  //
+  // Even if |use_stream_params| is true we should choose a value here based on
+  // hardware parameters since it affects the initial buffer size used by
+  // AudioRendererAlgorithm. Too small and we will underflow if the hardware
+  // asks for a buffer larger than the initial algorithm capacity.
+  const int preferred_buffer_size =
+      std::max(2 * stream->audio_decoder_config().samples_per_second() / 100,
+               hw_params.IsValid() ? hw_params.frames_per_buffer() : 0);
+
   if (use_stream_params) {
-    // The actual buffer size is controlled via the size of the AudioBus
-    // provided to Render(), but we should choose a value here based on hardware
-    // parameters if possible since it affects the initial buffer size used by
-    // the algorithm. Too little will cause underflow on Bluetooth devices.
-    int buffer_size =
-        std::max(stream->audio_decoder_config().samples_per_second() / 100,
-                 hw_params.IsValid() ? hw_params.frames_per_buffer() : 0);
     audio_parameters_.Reset(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                             stream->audio_decoder_config().channel_layout(),
                             stream->audio_decoder_config().samples_per_second(),
                             stream->audio_decoder_config().bits_per_channel(),
-                            buffer_size);
+                            preferred_buffer_size);
     audio_parameters_.set_channels_for_discrete(
         stream->audio_decoder_config().channels());
     buffer_converter_.reset();
@@ -414,17 +419,14 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
     // To allow for seamless sample rate adaptations (i.e. changes from say
     // 16kHz to 48kHz), always resample to the hardware rate.
     int sample_rate = hw_params.sample_rate();
-    int preferred_buffer_size = hw_params.frames_per_buffer();
 
-#if defined(OS_CHROMEOS)
-    // On ChromeOS let the OS level resampler handle resampling unless the
-    // initial sample rate is too low; this allows support for sample rate
-    // adaptations where necessary.
-    if (stream->audio_decoder_config().samples_per_second() >= 44100) {
+    // If supported by the OS and the initial sample rate is not too low, let
+    // the OS level resampler handle resampling for power efficiency.
+    if (AudioLatency::IsResamplingPassthroughSupported(
+            AudioLatency::LATENCY_PLAYBACK) &&
+        stream->audio_decoder_config().samples_per_second() >= 44100) {
       sample_rate = stream->audio_decoder_config().samples_per_second();
-      preferred_buffer_size = 0;  // No preference.
     }
-#endif
 
     int stream_channel_count = stream->audio_decoder_config().channels();
 
