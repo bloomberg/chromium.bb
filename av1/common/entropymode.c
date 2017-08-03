@@ -872,7 +872,6 @@ static const aom_cdf_prob
       { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32768), 0 },
     };
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
-
 #elif !CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 
 const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)] = {

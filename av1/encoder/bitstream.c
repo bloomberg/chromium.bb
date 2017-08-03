@@ -509,6 +509,9 @@ static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_GLOBAL_MOTION
                                   0, cm->global_motion,
 #endif  // CONFIG_GLOBAL_MOTION
+#if CONFIG_WARPED_MOTION
+                                  xd,
+#endif
                                   mi);
 #else
   MOTION_MODE last_motion_mode_allowed = motion_mode_allowed(
@@ -547,25 +550,12 @@ static void write_ncobmc_mode(MACROBLOCKD *xd, const MODE_INFO *mi,
   ADAPT_OVERLAP_BLOCK ao_block = adapt_overlap_block_lookup[mbmi->sb_type];
   if (mbmi->motion_mode != NCOBMC_ADAPT_WEIGHT) return;
 
-#ifndef TRAINING_WEIGHTS
   aom_write_symbol(w, mbmi->ncobmc_mode[0],
                    xd->tile_ctx->ncobmc_mode_cdf[ao_block], MAX_NCOBMC_MODES);
   if (mi_size_wide[mbmi->sb_type] != mi_size_high[mbmi->sb_type]) {
     aom_write_symbol(w, mbmi->ncobmc_mode[1],
                      xd->tile_ctx->ncobmc_mode_cdf[ao_block], MAX_NCOBMC_MODES);
   }
-#else
-  int block;
-  for (block = 0; block < 4; ++block)
-    aom_write_symbol(w, mbmi->ncobmc_mode[0][block],
-                     xd->tile_ctx->ncobmc_mode_cdf[ao_block], MAX_NCOBMC_MODES);
-  if (mi_size_wide[mbmi->sb_type] != mi_size_high[mbmi->sb_type]) {
-    for (block = 0; block < 4; ++block)
-      aom_write_symbol(w, mbmi->ncobmc_mode[1][block],
-                       xd->tile_ctx->ncobmc_mode_cdf[ao_block],
-                       MAX_NCOBMC_MODES);
-  }
-#endif
 }
 #endif
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
