@@ -725,21 +725,25 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
         match.input_location = i->prefix.length();
         match.match_in_scheme = !i->num_components;
 
-        bool url_has_subdomain =
-            row_url.host_piece().length() >
+        size_t domain_length =
             net::registry_controlled_domains::GetDomainAndRegistry(
                 row_url.host_piece(),
                 net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)
                 .size();
-        bool input_matches_host =
-            row_url.host_piece().find(base::UTF16ToUTF8(
-                params->input.text())) != base::StringPiece::npos;
-        match.match_in_subdomain = url_has_subdomain && input_matches_host;
+        const url::Parsed& parsed = row_url.parsed_for_possibly_invalid_spec();
 
-        size_t path_pos =
-            row_url.parsed_for_possibly_invalid_spec().CountCharactersBefore(
-                url::Parsed::PATH, false);
-        match.match_after_host = prefixed_input.length() >= path_pos;
+        size_t host_pos =
+            parsed.CountCharactersBefore(url::Parsed::HOST, false);
+        size_t path_pos = parsed.CountCharactersBefore(url::Parsed::PATH, true);
+        size_t domain_pos = path_pos - domain_length;
+
+        // For the match to be in the subdomain, the prefix cannot encompass
+        // the subdomain, and the whole prefixed input (prefix + input) should
+        // be in the host or later.
+        match.match_in_subdomain = match.input_location < domain_pos &&
+                                   prefixed_input.length() > host_pos;
+
+        match.match_after_host = prefixed_input.length() > path_pos;
 
         match.innermost_match =
             i->num_components >= best_prefix->num_components;
