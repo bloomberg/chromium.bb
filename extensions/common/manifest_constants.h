@@ -496,6 +496,7 @@ extern const char kReservedMessageFound[];
 extern const char kRulesFileIsInvalid[];
 extern const char kUnrecognizedManifestKey[];
 extern const char kUnrecognizedManifestProperty[];
+extern const char kUrlHandlersInHostedApps[];
 extern const char kWebRequestConflictsWithLazyBackground[];
 #if defined(OS_CHROMEOS)
 extern const char kDuplicateActionHandlerFound[];

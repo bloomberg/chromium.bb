@@ -13,17 +13,20 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/version.h"
+#include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/web_application_info.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_resource.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -33,6 +36,8 @@
 #include "url/gurl.h"
 
 namespace extensions {
+
+namespace keys = manifest_keys;
 
 namespace {
 
@@ -87,6 +92,141 @@ base::Time GetTestTime(int year, int month, int day, int hour, int minute,
 
 }  // namespace
 
+TEST(ExtensionFromWebApp, GetScopeURLFromBookmarkApp) {
+  base::ScopedTempDir extensions_dir;
+  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
+
+  base::DictionaryValue manifest;
+  manifest.SetString(keys::kName, "Test App");
+  manifest.SetString(keys::kVersion, "0");
+  manifest.SetString(keys::kLaunchWebURL, "http://aaronboodman.com/gearpad/");
+
+  // Create a "url_handlers" dictionary with one URL handler generated from
+  // the scope.
+  // {
+  //   "scope": {
+  //     "matches": [ "http://aaronboodman.com/gearpad/*" ],
+  //     "title": "Test App"
+  //   },
+  // }
+  GURL scope_url = GURL("http://aaronboodman.com/gearpad/");
+  manifest.SetDictionary(keys::kUrlHandlers,
+                         CreateURLHandlersForBookmarkApp(
+                             scope_url, base::ASCIIToUTF16("Test App")));
+
+  std::string error;
+  scoped_refptr<Extension> bookmark_app =
+      Extension::Create(extensions_dir.GetPath(), Manifest::INTERNAL, manifest,
+                        Extension::FROM_BOOKMARK, &error);
+  ASSERT_TRUE(bookmark_app.get());
+
+  EXPECT_EQ(scope_url, GetScopeURLFromBookmarkApp(bookmark_app.get()));
+}
+
+TEST(ExtensionFromWebApp, GetScopeURLFromBookmarkApp_NoURLHandlers) {
+  base::ScopedTempDir extensions_dir;
+  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
+
+  base::DictionaryValue manifest;
+  manifest.SetString(keys::kName, "Test App");
+  manifest.SetString(keys::kVersion, "0");
+  manifest.SetString(keys::kLaunchWebURL, "http://aaronboodman.com/gearpad/");
+  manifest.SetDictionary(keys::kUrlHandlers,
+                         base::MakeUnique<base::DictionaryValue>());
+
+  std::string error;
+  scoped_refptr<Extension> bookmark_app =
+      Extension::Create(extensions_dir.GetPath(), Manifest::INTERNAL, manifest,
+                        Extension::FROM_BOOKMARK, &error);
+  ASSERT_TRUE(bookmark_app.get());
+
+  EXPECT_EQ(GURL(), GetScopeURLFromBookmarkApp(bookmark_app.get()));
+}
+
+TEST(ExtensionFromWebApp, GetScopeURLFromBookmarkApp_WrongURLHandler) {
+  base::ScopedTempDir extensions_dir;
+  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
+
+  base::DictionaryValue manifest;
+  manifest.SetString(keys::kName, "Test App");
+  manifest.SetString(keys::kVersion, "0");
+  manifest.SetString(keys::kLaunchWebURL, "http://aaronboodman.com/gearpad/");
+
+  // Create a "url_handlers" dictionary with one URL handler not generated
+  // from the scope.
+  // {
+  //   "test_url_handler": {
+  //     "matches": [ "http://*.aaronboodman.com/" ],
+  //     "title": "test handler"
+  //   }
+  // }
+  auto test_matches = base::MakeUnique<base::ListValue>();
+  test_matches->AppendString("http://*.aaronboodman.com/");
+
+  auto test_handler = base::MakeUnique<base::DictionaryValue>();
+  test_handler->SetList(keys::kMatches, std::move(test_matches));
+  test_handler->SetString(keys::kUrlHandlerTitle, "test handler");
+
+  auto url_handlers = base::MakeUnique<base::DictionaryValue>();
+  url_handlers->SetDictionary("test_url_handler", std::move(test_handler));
+  manifest.SetDictionary(keys::kUrlHandlers, std::move(url_handlers));
+
+  std::string error;
+  scoped_refptr<Extension> bookmark_app =
+      Extension::Create(extensions_dir.GetPath(), Manifest::INTERNAL, manifest,
+                        Extension::FROM_BOOKMARK, &error);
+  ASSERT_TRUE(bookmark_app.get());
+
+  EXPECT_EQ(GURL(), GetScopeURLFromBookmarkApp(bookmark_app.get()));
+}
+
+TEST(ExtensionFromWebApp, GetScopeURLFromBookmarkApp_ExtraURLHandler) {
+  base::ScopedTempDir extensions_dir;
+  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
+
+  base::DictionaryValue manifest;
+  manifest.SetString(keys::kName, "Test App");
+  manifest.SetString(keys::kVersion, "0");
+  manifest.SetString(keys::kLaunchWebURL, "http://aaronboodman.com/gearpad/");
+
+  // Create a "url_handlers" dictionary with two URL handlers. One for
+  // the scope and and extra one for testing.
+  // {
+  //   "scope": {
+  //     "matches": [ "http://aaronboodman.com/gearpad/*" ],
+  //     "title": "Test App"
+  //   },
+  //   "test_url_handler": {
+  //     "matches": [ "http://*.aaronboodman.com/" ],
+  //     "title": "test handler"
+  //   }
+  // }
+  GURL scope_url = GURL("http://aaronboodman.com/gearpad/");
+  std::unique_ptr<base::DictionaryValue> url_handlers =
+      CreateURLHandlersForBookmarkApp(scope_url,
+                                      base::ASCIIToUTF16("Test App"));
+
+  auto test_matches = base::MakeUnique<base::ListValue>();
+  test_matches->AppendString("http://*.aaronboodman.com/");
+
+  auto test_handler = base::MakeUnique<base::DictionaryValue>();
+  test_handler->SetList(keys::kMatches, std::move(test_matches));
+  test_handler->SetString(keys::kUrlHandlerTitle, "test handler");
+
+  url_handlers->SetDictionary("test_url_handler", std::move(test_handler));
+  manifest.SetDictionary(keys::kUrlHandlers, std::move(url_handlers));
+
+  std::string error;
+  scoped_refptr<Extension> bookmark_app =
+      Extension::Create(extensions_dir.GetPath(), Manifest::INTERNAL, manifest,
+                        Extension::FROM_BOOKMARK, &error);
+  ASSERT_TRUE(bookmark_app.get());
+
+  // Check that we can retrieve the scope even if there is an extra
+  // url handler.
+  EXPECT_EQ(scope_url, GetScopeURLFromBookmarkApp(bookmark_app.get()));
+}
+
 TEST(ExtensionFromWebApp, GenerateVersion) {
   EXPECT_EQ("2010.1.1.0",
             ConvertTimeToExtensionVersion(
@@ -108,6 +248,7 @@ TEST(ExtensionFromWebApp, Basic) {
   web_app.description =
       base::ASCIIToUTF16("The best text editor in the universe!");
   web_app.app_url = GURL("http://aaronboodman.com/gearpad/");
+  web_app.scope = GURL("http://aaronboodman.com/gearpad/");
 
   const int sizes[] = {16, 48, 128};
   for (size_t i = 0; i < arraysize(sizes); ++i) {
@@ -134,6 +275,7 @@ TEST(ExtensionFromWebApp, Basic) {
   EXPECT_EQ(base::UTF16ToUTF8(web_app.title), extension->name());
   EXPECT_EQ(base::UTF16ToUTF8(web_app.description), extension->description());
   EXPECT_EQ(web_app.app_url, AppLaunchInfo::GetFullLaunchURL(extension.get()));
+  EXPECT_EQ(web_app.scope, GetScopeURLFromBookmarkApp(extension.get()));
   EXPECT_EQ(0u,
             extension->permissions_data()->active_permissions().apis().size());
   ASSERT_EQ(0u, extension->web_extent().patterns().size());
@@ -179,10 +321,31 @@ TEST(ExtensionFromWebApp, Minimal) {
   EXPECT_EQ(base::UTF16ToUTF8(web_app.title), extension->name());
   EXPECT_EQ("", extension->description());
   EXPECT_EQ(web_app.app_url, AppLaunchInfo::GetFullLaunchURL(extension.get()));
+  EXPECT_TRUE(GetScopeURLFromBookmarkApp(extension.get()).is_empty());
   EXPECT_EQ(0u, IconsInfo::GetIcons(extension.get()).map().size());
   EXPECT_EQ(0u,
             extension->permissions_data()->active_permissions().apis().size());
   ASSERT_EQ(0u, extension->web_extent().patterns().size());
+}
+
+// Tests that a scope not ending in "/" works correctly.
+// The tested behavior is unexpected but is working correctly according
+// to the Web Manifest spec. https://github.com/w3c/manifest/issues/554
+TEST(ExtensionFromWebApp, ScopeDoesNotEndInSlash) {
+  base::ScopedTempDir extensions_dir;
+  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
+
+  WebApplicationInfo web_app;
+  web_app.title = base::ASCIIToUTF16("Gearpad");
+  web_app.description =
+      base::ASCIIToUTF16("The best text editor in the universe!");
+  web_app.app_url = GURL("http://aaronboodman.com/gearpad/");
+  web_app.scope = GURL("http://aaronboodman.com/gear");
+
+  scoped_refptr<Extension> extension = ConvertWebAppToExtension(
+      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0), extensions_dir.GetPath());
+  ASSERT_TRUE(extension.get());
+  EXPECT_EQ(web_app.scope, GetScopeURLFromBookmarkApp(extension.get()));
 }
 
 }  // namespace extensions

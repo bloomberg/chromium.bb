@@ -259,6 +259,6 @@
   },
   "url_handlers": {
     "channel": "stable",
-    "extension_types": ["platform_app"]
+    "extension_types": ["hosted_app", "platform_app"]
   }
 }

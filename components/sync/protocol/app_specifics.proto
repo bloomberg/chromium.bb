@@ -91,4 +91,7 @@ message AppSpecifics {
   // This is information about linked icons (that is, icons that are downloaded
   // from outside the app's bundle of files.
   repeated LinkedAppIconInfo linked_app_icons = 9;
+
+  // This is the scope of the bookmark app.
+  optional string bookmark_app_scope = 10;
 }
