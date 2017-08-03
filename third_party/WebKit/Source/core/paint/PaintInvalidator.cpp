@@ -38,9 +38,9 @@ static LayoutRect SlowMapToVisualRectInAncestorSpace(
   if (object.IsLayoutView()) {
     ToLayoutView(object).MapToVisualRectInAncestorSpace(
         &ancestor, result, kInputIsInFrameCoordinates, kDefaultVisualRectFlags);
+  } else {
+    object.MapToVisualRectInAncestorSpace(&ancestor, result);
   }
-
-  object.MapToVisualRectInAncestorSpace(&ancestor, result);
   return result;
 }
 
