@@ -122,7 +122,6 @@ TEST_CONFIG = """\
       'fake_args_file_twice': 'args_file_twice',
     },
   },
-  'luci_tryservers': {},
   'configs': {
     'args_file_goma': ['args_file', 'goma'],
     'args_file_twice': ['args_file', 'args_file'],
@@ -182,7 +181,6 @@ TEST_BAD_CONFIG = """\
       'b': 'gn_rel_bot_2',
     },
   },
-  'luci_tryservers': {},
   'mixins': {
     'gn': {'type': 'gn'},
     'chrome_with_codecs': {
@@ -207,7 +205,6 @@ GYP_HACKS_CONFIG = """\
       'fake_builder': 'fake_config',
     },
   },
-  'luci_tryservers': {},
   'configs': {
     'fake_config': ['fake_mixin'],
   },
@@ -220,28 +217,6 @@ GYP_HACKS_CONFIG = """\
           'gyp_link_concurrency=1 baz=1'),
     },
   },
-}
-"""
-
-TRYSERVER_CONFIG = """\
-{
-  'masters': {
-    'not_a_tryserver': {
-      'fake_builder': 'fake_config',
-    },
-    'tryserver.chromium.linux': {
-      'try_builder': 'fake_config',
-    },
-    'tryserver.chromium.mac': {
-      'try_builder2': 'fake_config',
-    },
-  },
-  'luci_tryservers': {
-    'luci_tryserver1': ['luci_builder1'],
-    'luci_tryserver2': ['luci_builder2'],
-  },
-  'configs': {},
-  'mixins': {},
 }
 """
 
@@ -579,22 +554,6 @@ class UnitTest(unittest.TestCase):
                     "GYP_LINK_CONCURRENCY=1\n"
                     "LLVM_FORCE_HEAD_REVISION=1\n"
                     "python build/gyp_chromium -G output_dir=_path_\n"))
-
-  def test_buildbucket(self):
-    mbw = self.fake_mbw()
-    mbw.files[mbw.default_config] = TRYSERVER_CONFIG
-    self.check(['gerrit-buildbucket-config'], mbw=mbw,
-               ret=0,
-               out=('# This file was generated using '
-                    '"tools/mb/mb.py gerrit-buildbucket-config".\n'
-                    '[bucket "luci.luci_tryserver1"]\n'
-                    '\tbuilder = luci_builder1\n'
-                    '[bucket "luci.luci_tryserver2"]\n'
-                    '\tbuilder = luci_builder2\n'
-                    '[bucket "master.tryserver.chromium.linux"]\n'
-                    '\tbuilder = try_builder\n'
-                    '[bucket "master.tryserver.chromium.mac"]\n'
-                    '\tbuilder = try_builder2\n'))
 
 
 if __name__ == '__main__':
