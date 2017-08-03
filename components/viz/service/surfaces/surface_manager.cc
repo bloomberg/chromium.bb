@@ -194,10 +194,11 @@ void SurfaceManager::AssignTemporaryReference(const SurfaceId& surface_id,
 
 void SurfaceManager::DropTemporaryReference(const SurfaceId& surface_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(lifetime_type_, LifetimeType::REFERENCES);
 
-  if (!HasTemporaryReference(surface_id))
+  if (lifetime_type_ != LifetimeType::REFERENCES ||
+      !HasTemporaryReference(surface_id)) {
     return;
+  }
 
   RemoveTemporaryReference(surface_id, false);
 }
