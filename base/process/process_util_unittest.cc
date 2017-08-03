@@ -680,6 +680,68 @@ TEST_F(ProcessUtilTest, MAYBE_FDRemapping) {
   DPCHECK(ret == 0);
 }
 
+const char kPipeValue = '\xcc';
+MULTIPROCESS_TEST_MAIN(ProcessUtilsVerifyStdio) {
+  // Write to stdio so the parent process can observe output.
+  CHECK_EQ(1, HANDLE_EINTR(write(STDOUT_FILENO, &kPipeValue, 1)));
+
+  // Close all of the handles, to verify they are valid.
+  CHECK_EQ(0, IGNORE_EINTR(close(STDIN_FILENO)));
+  CHECK_EQ(0, IGNORE_EINTR(close(STDOUT_FILENO)));
+  CHECK_EQ(0, IGNORE_EINTR(close(STDERR_FILENO)));
+  return 0;
+}
+
+TEST_F(ProcessUtilTest, FDRemappingIncludesStdio) {
+  int dev_null = open("/dev/null", O_RDONLY);
+  ASSERT_LT(2, dev_null);
+
+  // Backup stdio and replace it with the write end of a pipe, for our
+  // child process to inherit.
+  int pipe_fds[2];
+  int result = pipe(pipe_fds);
+  ASSERT_EQ(0, result);
+  int backup_stdio = dup(STDOUT_FILENO);
+  ASSERT_LE(0, backup_stdio);
+  result = dup2(pipe_fds[1], STDOUT_FILENO);
+  ASSERT_EQ(STDOUT_FILENO, result);
+
+  // Launch the test process, which should inherit our pipe stdio.
+  base::LaunchOptions options;
+  options.fds_to_remap.push_back(std::pair<int, int>(dev_null, dev_null));
+  base::SpawnChildResult spawn_child =
+      SpawnChildWithOptions("ProcessUtilsVerifyStdio", options);
+  ASSERT_TRUE(spawn_child.process.IsValid());
+
+  // Restore stdio, so we can output stuff.
+  result = dup2(backup_stdio, STDOUT_FILENO);
+  ASSERT_EQ(STDOUT_FILENO, result);
+
+  // Close our copy of the write end of the pipe, so that the read()
+  // from the other end will see EOF if it wasn't copied to the child.
+  result = IGNORE_EINTR(close(pipe_fds[1]));
+  ASSERT_EQ(0, result);
+
+  result = IGNORE_EINTR(close(backup_stdio));
+  ASSERT_EQ(0, result);
+  result = IGNORE_EINTR(close(dev_null));
+  ASSERT_EQ(0, result);
+
+  // Read from the pipe to verify that it is connected to the child
+  // process' stdio.
+  char buf[16] = {0};
+  EXPECT_EQ(1, HANDLE_EINTR(read(pipe_fds[0], buf, sizeof(buf))));
+  EXPECT_EQ(kPipeValue, buf[0]);
+
+  result = IGNORE_EINTR(close(pipe_fds[0]));
+  ASSERT_EQ(0, result);
+
+  int exit_code;
+  ASSERT_TRUE(spawn_child.process.WaitForExitWithTimeout(
+      base::TimeDelta::FromSeconds(5), &exit_code));
+  EXPECT_EQ(0, exit_code);
+}
+
 namespace {
 
 std::string TestLaunchProcess(const std::vector<std::string>& args,
@@ -922,8 +984,6 @@ MULTIPROCESS_TEST_MAIN(process_util_test_die_immediately) {
 }
 
 #if !defined(OS_ANDROID)
-const char kPipeValue = '\xcc';
-
 class ReadFromPipeDelegate : public base::LaunchOptions::PreExecDelegate {
  public:
   explicit ReadFromPipeDelegate(int fd) : fd_(fd) {}

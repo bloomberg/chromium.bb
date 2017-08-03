@@ -115,13 +115,22 @@ Process LaunchProcess(const std::vector<std::string>& argv,
     launchpad_set_environ(lp, new_environ.get());
   else
     to_clone |= LP_CLONE_ENVIRON;
-
-  if (options.fds_to_remap.empty())
-    to_clone |= LP_CLONE_MXIO_STDIO;
   launchpad_clone(lp, to_clone);
 
-  for (const auto& src_target : options.fds_to_remap)
+  // Clone the mapped file-descriptors, plus any of the stdio descriptors
+  // which were not explicitly specified.
+  bool stdio_already_mapped[3] = {false};
+  for (const auto& src_target : options.fds_to_remap) {
+    if (static_cast<size_t>(src_target.second) <
+        arraysize(stdio_already_mapped))
+      stdio_already_mapped[src_target.second] = true;
     launchpad_clone_fd(lp, src_target.first, src_target.second);
+  }
+  for (size_t stdio_fd = 0; stdio_fd < arraysize(stdio_already_mapped);
+       ++stdio_fd) {
+    if (!stdio_already_mapped[stdio_fd])
+      launchpad_clone_fd(lp, stdio_fd, stdio_fd);
+  }
 
   mx_handle_t proc;
   const char* errmsg;
