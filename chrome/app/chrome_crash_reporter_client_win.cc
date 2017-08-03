@@ -14,6 +14,7 @@
 #include <iterator>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
@@ -238,15 +239,22 @@ void ChromeCrashReporterClient::InitializeCrashReportingForProcess() {
   instance = new ChromeCrashReporterClient();
   ANNOTATE_LEAKING_OBJECT_PTR(instance);
 
-  std::wstring process_type = install_static::GetSwitchValueFromCommandLine(
+  base::string16 process_type = install_static::GetSwitchValueFromCommandLine(
       ::GetCommandLine(), install_static::kProcessType);
   // Don't set up Crashpad crash reporting in the Crashpad handler itself, nor
   // in the fallback crash handler for the Crashpad handler process.
   if (process_type != install_static::kCrashpadHandler &&
       process_type != install_static::kFallbackHandler) {
     crash_reporter::SetCrashReporterClient(instance);
+
+    // Pass along the user data directory from the browser process.
+    base::string16 user_data_dir;
+    if (process_type.empty())
+      install_static::GetUserDataDirectory(&user_data_dir, nullptr);
+
     crash_reporter::InitializeCrashpadWithEmbeddedHandler(
-        process_type.empty(), install_static::UTF16ToUTF8(process_type));
+        process_type.empty(), install_static::UTF16ToUTF8(process_type),
+        install_static::UTF16ToUTF8(user_data_dir));
   }
 }
 #endif  // NACL_WIN64
@@ -354,12 +362,13 @@ bool ChromeCrashReporterClient::GetCrashDumpLocation(
     return true;
 
   *crash_dir = install_static::GetCrashDumpLocation();
-  return true;
+  return !crash_dir->empty();
 }
 
 bool ChromeCrashReporterClient::GetCrashMetricsLocation(
     base::string16* metrics_dir) {
-  return install_static::GetUserDataDirectory(metrics_dir, nullptr);
+  install_static::GetUserDataDirectory(metrics_dir, nullptr);
+  return !metrics_dir->empty();
 }
 
 // TODO(ananta)

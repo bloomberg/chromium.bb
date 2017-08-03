@@ -93,8 +93,8 @@ void ConfigureCrashReporting(const InstallerState& installer_state) {
     }
   }
 
-  crash_reporter::InitializeCrashpadWithEmbeddedHandler(true,
-                                                        "Chrome Installer");
+  crash_reporter::InitializeCrashpadWithEmbeddedHandler(
+      true, "Chrome Installer", std::string());
 
   // Set up the metrics client id (a la child_process_logging::Init()).
   std::unique_ptr<metrics::ClientInfo> client_info =

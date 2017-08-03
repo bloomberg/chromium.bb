@@ -30,6 +30,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/install_static/initialize_from_primary_module.h"
 #include "chrome/install_static/install_util.h"
+#include "chrome/install_static/user_data_dir.h"
 #include "chrome_elf/chrome_elf_main.h"
 #include "components/crash/content/app/crash_switches.h"
 #include "components/crash/content/app/crashpad.h"
@@ -239,8 +240,16 @@ int main() {
 
   if (process_type == crash_reporter::switches::kCrashpadHandler) {
     crash_reporter::SetupFallbackCrashHandling(*command_line);
+
+    // The handler process must always be passed the user data dir on the
+    // command line.
+    DCHECK(command_line->HasSwitch(switches::kUserDataDir));
+
+    base::FilePath user_data_dir =
+        command_line->GetSwitchValuePath(switches::kUserDataDir);
     return crash_reporter::RunAsCrashpadHandler(
-        *base::CommandLine::ForCurrentProcess(), switches::kProcessType);
+        *base::CommandLine::ForCurrentProcess(), user_data_dir,
+        switches::kProcessType, switches::kUserDataDir);
   } else if (process_type == crash_reporter::switches::kFallbackCrashHandler) {
     return RunFallbackCrashHandler(*command_line);
   }

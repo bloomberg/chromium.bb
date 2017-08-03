@@ -59,9 +59,11 @@ void InitializeCrashpad(bool initial_client, const std::string& process_type);
 #if defined(OS_WIN)
 // This is the same as InitializeCrashpad(), but rather than launching a
 // crashpad_handler executable, relaunches the current executable with a command
-// line argument of --type=crashpad-handler.
+// line argument of --type=crashpad-handler. If user_data_dir is non-empty, it
+// is added to the handler's command line for use by Chrome Crashpad extensions.
 void InitializeCrashpadWithEmbeddedHandler(bool initial_client,
-                                           const std::string& process_type);
+                                           const std::string& process_type,
+                                           const std::string& user_data_dir);
 #endif  // OS_WIN
 
 // Returns the CrashpadClient for this process. This will lazily create it if
@@ -118,11 +120,21 @@ void GetPlatformCrashpadAnnotations(
     std::map<std::string, std::string>* annotations);
 #endif  // defined(OS_WIN)
 
+struct PlatformCrashpadInitializationOptions {
+#if defined(OS_WIN)
+  // On Windows, if |user_data_dir| is non-empty, it will be passed to the
+  // handler process for use by Chrome Crashpad extensions.
+  std::string user_data_dir;
+#endif
+};
+
 // The platform-specific portion of InitializeCrashpad().
 // Returns the database path, if initializing in the browser process.
-base::FilePath PlatformCrashpadInitialization(bool initial_client,
-                                              bool browser_process,
-                                              bool embedded_handler);
+base::FilePath PlatformCrashpadInitialization(
+    bool initial_client,
+    bool browser_process,
+    bool embedded_handler,
+    PlatformCrashpadInitializationOptions* init_options);
 
 }  // namespace internal
 
