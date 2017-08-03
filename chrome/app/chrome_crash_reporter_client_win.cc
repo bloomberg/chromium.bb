@@ -239,7 +239,7 @@ void ChromeCrashReporterClient::InitializeCrashReportingForProcess() {
   instance = new ChromeCrashReporterClient();
   ANNOTATE_LEAKING_OBJECT_PTR(instance);
 
-  base::string16 process_type = install_static::GetSwitchValueFromCommandLine(
+  std::wstring process_type = install_static::GetSwitchValueFromCommandLine(
       ::GetCommandLine(), install_static::kProcessType);
   // Don't set up Crashpad crash reporting in the Crashpad handler itself, nor
   // in the fallback crash handler for the Crashpad handler process.
@@ -247,8 +247,7 @@ void ChromeCrashReporterClient::InitializeCrashReportingForProcess() {
       process_type != install_static::kFallbackHandler) {
     crash_reporter::SetCrashReporterClient(instance);
 
-    // Pass along the user data directory from the browser process.
-    base::string16 user_data_dir;
+    std::wstring user_data_dir;
     if (process_type.empty())
       install_static::GetUserDataDirectory(&user_data_dir, nullptr);
 
