@@ -5,8 +5,8 @@
 #include "ui/gfx/image/image.h"
 
 #include <algorithm>
-#include <set>
 #include <utility>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -14,13 +14,9 @@
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/image/image_platform.h"
 #include "ui/gfx/image/image_png_rep.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/image/image_skia_source.h"
-
-#if !defined(OS_IOS)
-#include "ui/gfx/codec/png_codec.h"
-#endif
 
 #if defined(OS_IOS)
 #include "base/mac/foundation_util.h"
@@ -41,135 +37,6 @@ using RepresentationMap =
 }  // namespace
 
 namespace internal {
-
-#if defined(OS_IOS)
-scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromUIImage(
-    UIImage* uiimage);
-// Caller takes ownership of the returned UIImage.
-UIImage* CreateUIImageFromPNG(
-    const std::vector<ImagePNGRep>& image_png_reps);
-gfx::Size UIImageSize(UIImage* image);
-#elif defined(OS_MACOSX)
-scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromNSImage(
-    NSImage* nsimage);
-// Caller takes ownership of the returned NSImage.
-NSImage* NSImageFromPNG(const std::vector<ImagePNGRep>& image_png_reps,
-                        CGColorSpaceRef color_space);
-gfx::Size NSImageSize(NSImage* image);
-#endif // defined(OS_MACOSX)
-
-#if defined(OS_IOS)
-ImageSkia* ImageSkiaFromPNG(
-    const std::vector<ImagePNGRep>& image_png_reps);
-scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromImageSkia(
-    const ImageSkia* skia);
-#else
-// Returns a 16x16 red image to visually show error in decoding PNG.
-// Caller takes ownership of returned ImageSkia.
-ImageSkia* GetErrorImageSkia() {
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(16, 16);
-  bitmap.eraseARGB(0xff, 0xff, 0, 0);
-  return new ImageSkia(ImageSkiaRep(bitmap, 1.0f));
-}
-
-class PNGImageSource : public ImageSkiaSource {
- public:
-  PNGImageSource() {}
-  ~PNGImageSource() override {}
-
-  ImageSkiaRep GetImageForScale(float scale) override {
-    if (image_skia_reps_.empty())
-      return ImageSkiaRep();
-
-    const ImageSkiaRep* rep = NULL;
-    // gfx::ImageSkia passes one of the resource scale factors. The source
-    // should return:
-    // 1) The ImageSkiaRep with the highest scale if all available
-    // scales are smaller than |scale|.
-    // 2) The ImageSkiaRep with the smallest one that is larger than |scale|.
-    for (ImageSkiaRepSet::const_iterator iter = image_skia_reps_.begin();
-         iter != image_skia_reps_.end(); ++iter) {
-      if ((*iter).scale() == scale)
-        return (*iter);
-      if (!rep || rep->scale() < (*iter).scale())
-        rep = &(*iter);
-      if (rep->scale() >= scale)
-        break;
-    }
-    return rep ? *rep : ImageSkiaRep();
-  }
-
-  const gfx::Size size() const {
-    return size_;
-  }
-
-  bool AddPNGData(const ImagePNGRep& png_rep) {
-    const gfx::ImageSkiaRep rep = ToImageSkiaRep(png_rep);
-    if (rep.is_null())
-      return false;
-    if (size_.IsEmpty())
-      size_ = gfx::Size(rep.GetWidth(), rep.GetHeight());
-    image_skia_reps_.insert(rep);
-    return true;
-  }
-
-  static ImageSkiaRep ToImageSkiaRep(const ImagePNGRep& png_rep) {
-    scoped_refptr<base::RefCountedMemory> raw_data = png_rep.raw_data;
-    CHECK(raw_data.get());
-    SkBitmap bitmap;
-    if (!PNGCodec::Decode(raw_data->front(), raw_data->size(),
-                               &bitmap)) {
-      LOG(ERROR) << "Unable to decode PNG for " << png_rep.scale << ".";
-      return ImageSkiaRep();
-    }
-    return ImageSkiaRep(bitmap, png_rep.scale);
-  }
-
- private:
-  struct Compare {
-    bool operator()(const ImageSkiaRep& rep1, const ImageSkiaRep& rep2) {
-      return rep1.scale() < rep2.scale();
-    }
-  };
-
-  typedef std::set<ImageSkiaRep, Compare> ImageSkiaRepSet;
-  ImageSkiaRepSet image_skia_reps_;
-  gfx::Size size_;
-
-  DISALLOW_COPY_AND_ASSIGN(PNGImageSource);
-};
-
-ImageSkia* ImageSkiaFromPNG(
-    const std::vector<ImagePNGRep>& image_png_reps) {
-  if (image_png_reps.empty())
-    return GetErrorImageSkia();
-  std::unique_ptr<PNGImageSource> image_source(new PNGImageSource);
-
-  for (size_t i = 0; i < image_png_reps.size(); ++i) {
-    if (!image_source->AddPNGData(image_png_reps[i]))
-      return GetErrorImageSkia();
-  }
-  const gfx::Size& size = image_source->size();
-  DCHECK(!size.IsEmpty());
-  if (size.IsEmpty())
-    return GetErrorImageSkia();
-  return new ImageSkia(image_source.release(), size);
-}
-
-scoped_refptr<base::RefCountedMemory> Get1xPNGBytesFromImageSkia(
-    const ImageSkia* image_skia) {
-  ImageSkiaRep image_skia_rep = image_skia->GetRepresentation(1.0f);
-
-  scoped_refptr<base::RefCountedBytes> png_bytes(new base::RefCountedBytes());
-  if (image_skia_rep.scale() != 1.0f ||
-      !PNGCodec::EncodeBGRASkBitmap(image_skia_rep.sk_bitmap(), false,
-          &png_bytes->data())) {
-    return NULL;
-  }
-  return png_bytes;
-}
-#endif
 
 class ImageRepPNG;
 class ImageRepSkia;
