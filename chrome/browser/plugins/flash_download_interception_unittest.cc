@@ -39,9 +39,6 @@ TEST_F(FlashDownloadInterceptionTest, PreferHtmlOverPluginsOff) {
 }
 
 TEST_F(FlashDownloadInterceptionTest, DownloadUrlVariations) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
-
   const char* const flash_intercept_urls[] = {
       "https://get.adobe.com/flashplayer/",
       "http://get2.adobe.com/flashplayer/",
@@ -92,9 +89,6 @@ TEST_F(FlashDownloadInterceptionTest, DownloadUrlVariations) {
 }
 
 TEST_F(FlashDownloadInterceptionTest, NavigationThrottleCancelsNavigation) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
-
   // Set the source URL to an HTTP source.
   NavigateAndCommit(GURL("http://example.com"));
 
@@ -112,9 +106,6 @@ TEST_F(FlashDownloadInterceptionTest, NavigationThrottleCancelsNavigation) {
 }
 
 TEST_F(FlashDownloadInterceptionTest, OnlyInterceptOnDetectContentSetting) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
-
   // Default Setting (which is DETECT)
   EXPECT_TRUE(
       ShouldStopFlashDownloadAction("https://get.adobe.com/flashplayer/"));

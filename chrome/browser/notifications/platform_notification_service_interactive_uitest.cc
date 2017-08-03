@@ -233,15 +233,13 @@ bool PlatformNotificationServiceBrowserTest::RequestAndDenyPermission() {
 }
 
 void PlatformNotificationServiceBrowserTest::EnableFullscreenNotifications() {
-  feature_list_.InitWithFeatures({
-    features::kPreferHtmlOverPlugins,
-    features::kAllowFullscreenWebNotificationsFeature}, {});
+  feature_list_.InitAndEnableFeature(
+      features::kAllowFullscreenWebNotificationsFeature);
 }
 
 void PlatformNotificationServiceBrowserTest::DisableFullscreenNotifications() {
-  feature_list_.InitWithFeatures(
-      {features::kPreferHtmlOverPlugins},
-      {features::kAllowFullscreenWebNotificationsFeature});
+  feature_list_.InitAndDisableFeature(
+      features::kAllowFullscreenWebNotificationsFeature);
 }
 
 double PlatformNotificationServiceBrowserTest::GetEngagementScore(

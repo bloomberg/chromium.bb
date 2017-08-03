@@ -211,15 +211,13 @@ class NotificationsApiTest : public ExtensionApiTest {
   }
 
   void EnableFullscreenNotifications() {
-    feature_list_.InitWithFeatures({
-      features::kPreferHtmlOverPlugins,
-      extensions::kAllowFullscreenAppNotificationsFeature}, {});
+    feature_list_.InitAndEnableFeature(
+        extensions::kAllowFullscreenAppNotificationsFeature);
   }
 
   void DisableFullscreenNotifications() {
-    feature_list_.InitWithFeatures(
-        {features::kPreferHtmlOverPlugins},
-        {extensions::kAllowFullscreenAppNotificationsFeature});
+    feature_list_.InitAndDisableFeature(
+        extensions::kAllowFullscreenAppNotificationsFeature);
   }
 
  private:
