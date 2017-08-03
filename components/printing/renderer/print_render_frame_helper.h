@@ -56,7 +56,10 @@ class PrepareFrameAndViewForPrint;
 
 // Stores reference to frame using WebVew and unique name.
 // Workaround to modal dialog issue on Linux. crbug.com/236147.
-// If WebFrame someday supports WeakPtr, we should use it here.
+// TODO(dcheng): Try to get rid of this class. However, it's a bit tricky due to
+// PrepareFrameAndViewForPrint sometimes pointing to a WebLocalFrame associated
+// with a RenderFrame and sometimes pointing to an internally allocated
+// WebLocalFrame...
 class FrameReference {
  public:
   explicit FrameReference(blink::WebLocalFrame* frame);

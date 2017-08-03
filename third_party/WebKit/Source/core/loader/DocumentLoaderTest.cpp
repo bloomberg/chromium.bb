@@ -115,7 +115,7 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
     }
 
     // WebFrameClient overrides:
-    void FrameDetached(WebLocalFrame* frame, DetachType detach_type) override {
+    void FrameDetached(DetachType detach_type) override {
       if (dispatching_did_receive_data_) {
         // This should be called by the first didReceiveData() call, since
         // it should commit the provisional load.
@@ -127,7 +127,7 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
           DispatchOneByte();
         served_reentrantly_ = true;
       }
-      TestWebFrameClient::FrameDetached(frame, detach_type);
+      TestWebFrameClient::FrameDetached(detach_type);
     }
 
     void DispatchOneByte() {

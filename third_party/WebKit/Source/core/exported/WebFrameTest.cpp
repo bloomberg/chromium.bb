@@ -6518,10 +6518,8 @@ class TestWillInsertBodyWebFrameClient
     num_bodies_ = 0;
     did_load_ = true;
   }
-  void DidCreateDocumentElement(WebLocalFrame*) override {
-    EXPECT_EQ(0, num_bodies_);
-  }
-  void WillInsertBody(WebLocalFrame*) override { num_bodies_++; }
+  void DidCreateDocumentElement() override { EXPECT_EQ(0, num_bodies_); }
+  void WillInsertBody() override { num_bodies_++; }
 
   int num_bodies_;
   bool did_load_;
@@ -11845,9 +11843,9 @@ TEST_P(ParameterizedWebFrameTest, NoLoadingCompletionCallbacksInDetach) {
     ~LoadingObserverFrameClient() override {}
 
     // FrameTestHelpers::TestWebFrameClient:
-    void FrameDetached(WebLocalFrame* frame, DetachType type) override {
+    void FrameDetached(DetachType type) override {
       did_call_frame_detached_ = true;
-      TestWebFrameClient::FrameDetached(frame, type);
+      TestWebFrameClient::FrameDetached(type);
     }
 
     void DidStopLoading() override {

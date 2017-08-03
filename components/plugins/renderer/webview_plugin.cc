@@ -360,12 +360,9 @@ void WebViewPlugin::WebViewHelper::DidClearWindowObject() {
               plugin_->delegate_->GetV8Handle(isolate));
 }
 
-void WebViewPlugin::WebViewHelper::FrameDetached(blink::WebLocalFrame* frame,
-                                                 DetachType type) {
-  if (frame->FrameWidget())
-    frame->FrameWidget()->Close();
-
-  frame->Close();
+void WebViewPlugin::WebViewHelper::FrameDetached(DetachType type) {
+  main_frame()->FrameWidget()->Close();
+  main_frame()->Close();
 }
 
 service_manager::InterfaceProvider*

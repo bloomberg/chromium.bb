@@ -241,7 +241,7 @@ class BLINK_EXPORT WebFrameClient {
   // associated with this frame. If the DetachType is Remove, the frame should
   // also be removed from the frame tree; otherwise, if the DetachType is
   // Swap, the frame is being replaced in-place by WebFrame::swap().
-  virtual void FrameDetached(WebLocalFrame*, DetachType) {}
+  virtual void FrameDetached(DetachType) {}
 
   // This frame has become focused.
   virtual void FrameFocused() {}
@@ -408,7 +408,7 @@ class BLINK_EXPORT WebFrameClient {
 
   // A datasource has been created for a new navigation.  The given
   // datasource will become the provisional datasource for the frame.
-  virtual void DidCreateDocumentLoader(WebLocalFrame*, WebDocumentLoader*) {}
+  virtual void DidCreateDocumentLoader(WebDocumentLoader*) {}
 
   // A new provisional load has been started.
   virtual void DidStartProvisionalLoad(WebDocumentLoader* document_loader,
@@ -429,7 +429,7 @@ class BLINK_EXPORT WebFrameClient {
                                         WebHistoryCommitType) {}
 
   // The frame's document has just been initialized.
-  virtual void DidCreateNewDocument(WebLocalFrame* frame) {}
+  virtual void DidCreateNewDocument() {}
 
   // The window object for the frame has been cleared of any extra
   // properties that may have been set by script from the previously
@@ -438,11 +438,11 @@ class BLINK_EXPORT WebFrameClient {
 
   // The document element has been created.
   // This method may not invalidate the frame, nor execute JavaScript code.
-  virtual void DidCreateDocumentElement(WebLocalFrame*) {}
+  virtual void DidCreateDocumentElement() {}
 
   // Like |didCreateDocumentElement|, except this method may run JavaScript
   // code (and possibly invalidate the frame).
-  virtual void RunScriptsAtDocumentElementAvailable(WebLocalFrame*) {}
+  virtual void RunScriptsAtDocumentElementAvailable() {}
 
   // The page title is available.
   virtual void DidReceiveTitle(const WebString& title,
@@ -678,7 +678,7 @@ class BLINK_EXPORT WebFrameClient {
 
   // If the frame is loading an HTML document, this will be called to
   // notify that the <body> will be attached soon.
-  virtual void WillInsertBody(WebLocalFrame*) {}
+  virtual void WillInsertBody() {}
 
   // Informs the browser that the draggable regions have been updated.
   virtual void DraggableRegionsChanged() {}

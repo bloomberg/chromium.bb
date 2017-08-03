@@ -356,7 +356,7 @@ class TestWebFrameClient : public WebFrameClient {
   void BindWidgetClient(std::unique_ptr<TestWebWidgetClient>);
 
   // WebFrameClient:
-  void FrameDetached(WebLocalFrame*, DetachType) override;
+  void FrameDetached(DetachType) override;
   WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
                                   WebTreeScopeType,
                                   const WebString& name,

@@ -181,14 +181,6 @@ WebFrameTestClient::WebFrameTestClient(
 
 WebFrameTestClient::~WebFrameTestClient() {}
 
-void WebFrameTestClient::FrameDetached(blink::WebLocalFrame* frame,
-                                       DetachType type) {
-  if (frame->FrameWidget())
-    frame->FrameWidget()->Close();
-
-  frame->Close();
-}
-
 blink::WebColorChooser* WebFrameTestClient::CreateColorChooser(
     blink::WebColorChooserClient* client,
     const blink::WebColor& color,
