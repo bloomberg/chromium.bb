@@ -157,7 +157,7 @@ WebLocalFrameBase* LocalFrameClientImpl::GetWebFrame() const {
 
 void LocalFrameClientImpl::DidCreateNewDocument() {
   if (web_frame_->Client())
-    web_frame_->Client()->DidCreateNewDocument(web_frame_);
+    web_frame_->Client()->DidCreateNewDocument();
 }
 
 void LocalFrameClientImpl::DispatchDidClearWindowObjectInMainWorld() {
@@ -181,12 +181,12 @@ void LocalFrameClientImpl::DispatchDidClearWindowObjectInMainWorld() {
 
 void LocalFrameClientImpl::DocumentElementAvailable() {
   if (web_frame_->Client())
-    web_frame_->Client()->DidCreateDocumentElement(web_frame_);
+    web_frame_->Client()->DidCreateDocumentElement();
 }
 
 void LocalFrameClientImpl::RunScriptsAtDocumentElementAvailable() {
   if (web_frame_->Client())
-    web_frame_->Client()->RunScriptsAtDocumentElementAvailable(web_frame_);
+    web_frame_->Client()->RunScriptsAtDocumentElementAvailable();
   // The callback might have deleted the frame, do not use |this|!
 }
 
@@ -332,8 +332,7 @@ void LocalFrameClientImpl::Detached(FrameDetachType type) {
   // place at this point since we are no longer associated with the Page.
   web_frame_->SetClient(0);
 
-  client->FrameDetached(web_frame_,
-                        static_cast<WebFrameClient::DetachType>(type));
+  client->FrameDetached(static_cast<WebFrameClient::DetachType>(type));
 
   if (type == FrameDetachType::kRemove)
     web_frame_->DetachFromParent();
@@ -750,7 +749,7 @@ DocumentLoader* LocalFrameClientImpl::CreateDocumentLoader(
   WebDocumentLoaderImpl* document_loader = WebDocumentLoaderImpl::Create(
       frame, request, data, client_redirect_policy);
   if (web_frame_->Client())
-    web_frame_->Client()->DidCreateDocumentLoader(web_frame_, document_loader);
+    web_frame_->Client()->DidCreateDocumentLoader(document_loader);
   return document_loader;
 }
 
@@ -931,7 +930,7 @@ bool LocalFrameClientImpl::AllowWebGL(bool enabled_per_settings) {
 
 void LocalFrameClientImpl::DispatchWillInsertBody() {
   if (web_frame_->Client())
-    web_frame_->Client()->WillInsertBody(web_frame_);
+    web_frame_->Client()->WillInsertBody();
 }
 
 std::unique_ptr<WebServiceWorkerProvider>

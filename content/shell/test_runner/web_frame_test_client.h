@@ -33,7 +33,6 @@ class WebFrameTestClient : public blink::WebFrameClient {
   ~WebFrameTestClient() override;
 
   // WebFrameClient overrides needed by WebFrameTestProxy.
-  void FrameDetached(blink::WebLocalFrame*, DetachType) override;
   blink::WebColorChooser* CreateColorChooser(
       blink::WebColorChooserClient* client,
       const blink::WebColor& initial_color,

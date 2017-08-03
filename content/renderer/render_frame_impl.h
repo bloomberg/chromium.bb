@@ -520,7 +520,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebParsedFeaturePolicy& container_policy,
       const blink::WebFrameOwnerProperties& frame_owner_properties) override;
   void DidChangeOpener(blink::WebFrame* frame) override;
-  void FrameDetached(blink::WebLocalFrame* frame, DetachType type) override;
+  void FrameDetached(DetachType type) override;
   void FrameFocused() override;
   void WillCommitProvisionalLoad() override;
   void DidChangeName(const blink::WebString& name) override;
@@ -563,7 +563,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void WillSendSubmitEvent(const blink::WebFormElement& form) override;
   void WillSubmitForm(const blink::WebFormElement& form) override;
   void DidCreateDocumentLoader(
-      blink::WebLocalFrame* frame,
       blink::WebDocumentLoader* document_loader) override;
   void DidStartProvisionalLoad(blink::WebDocumentLoader* document_loader,
                                blink::WebURLRequest& request) override;
@@ -573,11 +572,10 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidCommitProvisionalLoad(
       const blink::WebHistoryItem& item,
       blink::WebHistoryCommitType commit_type) override;
-  void DidCreateNewDocument(blink::WebLocalFrame* frame) override;
+  void DidCreateNewDocument() override;
   void DidClearWindowObject() override;
-  void DidCreateDocumentElement(blink::WebLocalFrame* frame) override;
-  void RunScriptsAtDocumentElementAvailable(
-      blink::WebLocalFrame* frame) override;
+  void DidCreateDocumentElement() override;
+  void RunScriptsAtDocumentElementAvailable() override;
   void DidReceiveTitle(const blink::WebString& title,
                        blink::WebTextDirection direction) override;
   void DidChangeIcon(blink::WebIconURL::Type icon_type) override;
@@ -637,7 +635,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void WillReleaseScriptContext(v8::Local<v8::Context> context,
                                 int world_id) override;
   void DidChangeScrollOffset() override;
-  void WillInsertBody(blink::WebLocalFrame* frame) override;
+  void WillInsertBody() override;
   void ReportFindInPageMatchCount(int request_id,
                                   int count,
                                   bool final_update) override;

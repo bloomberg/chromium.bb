@@ -79,13 +79,6 @@ WorkerShadowPage::CreateApplicationCacheHost(
   return client_->CreateApplicationCacheHost(appcache_host_client);
 }
 
-void WorkerShadowPage::FrameDetached(WebLocalFrame* frame, DetachType type) {
-  DCHECK(IsMainThread());
-  DCHECK(type == DetachType::kRemove && frame->Parent());
-  DCHECK(frame->FrameWidget());
-  frame->Close();
-}
-
 service_manager::InterfaceProvider* WorkerShadowPage::GetInterfaceProvider() {
   DCHECK(IsMainThread());
   return &interface_provider_;
