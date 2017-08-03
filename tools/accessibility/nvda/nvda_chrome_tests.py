@@ -118,7 +118,7 @@ class NvdaChromeTest(unittest.TestCase):
     self.last_nvda_log_line = 0;
 
     try:
-      self._WaitForSpeech(['Address and search bar edit', 'about:blank'])
+      self._TestForSpeech(['Address and search bar edit', 'about:blank'])
     except:
       self.tearDown()
 
@@ -163,7 +163,16 @@ class NvdaChromeTest(unittest.TestCase):
     self.last_nvda_log_line = len(lines) - 1
     return result
 
-  def _WaitForSpeech(self, expected):
+  def _ArrayInArray(self, lines, expected):
+    positions = len(lines) - len(expected) + 1;
+    if (positions >= 0):
+      # loop through the number of positions that the subset can hold
+      for index in range(positions):
+        if (lines[index : index + len(expected)] == expected):
+          return True
+    return False
+
+  def _TestForSpeech(self, expected):
     """Block until the last speech in NVDA's log file is the given string(s).
 
     Repeatedly parses the log file until the last speech line(s) in the
@@ -172,26 +181,21 @@ class NvdaChromeTest(unittest.TestCase):
     Args:
       expected: string or a list of string - only succeeds if these are the last
         strings spoken, in order.
-
-    Returns when those strings are spoken, or throws an error if it times out
-      waiting for those strings.
     """
     if type(expected) is type(''):
       expected = [expected]
     start_time = time.time()
     while True:
       lines = self._GetSpeechFromNvdaLogFile()
-      if (lines[-len(expected):] == expected):
-        break
+
+      if self._ArrayInArray(lines, expected):
+        return True
 
       if time.time() - start_time >= WAIT_FOR_SPEECH_TIMEOUT_SECS:
-        print('** Speech from NVDA so far:')
-        for line in lines:
-          print('"%s"' % line)
-        print('** Was waiting for:')
-        for line in expected:
-          print('"%s"' % line)
-        raise Exception('Timed out')
+        self.fail("Test for expected speech failed.\n\nExpected:\n" +
+          str(expected) +
+          ".\n\nActual:\n" + str(lines));
+        return False
       time.sleep(0.1)
 
   #
@@ -201,34 +205,34 @@ class NvdaChromeTest(unittest.TestCase):
   def testTypingInOmnibox(self):
     # Ctrl+A: Select all.
     self._pywinauto_window.TypeKeys('^A')
-    self._WaitForSpeech('selecting about:blank')
+    self._TestForSpeech('selecting about:blank')
 
     # Type three characters.
     self._pywinauto_window.TypeKeys('xyz')
-    self._WaitForSpeech(['x', 'y', 'z'])
+    self._TestForSpeech(['x', 'y', 'z'])
 
     # Arrow back over two characters.
     self._pywinauto_window.TypeKeys('{LEFT}')
-    self._WaitForSpeech(['z', 'z', 'unselecting'])
+    self._TestForSpeech(['z', 'z', 'unselecting'])
 
     self._pywinauto_window.TypeKeys('{LEFT}')
-    self._WaitForSpeech('y')
+    self._TestForSpeech('y')
 
   def testFocusToolbarButton(self):
     # Alt+Shift+T.
     self._pywinauto_window.TypeKeys('%+T')
-    self._WaitForSpeech('Reload button Reload this page')
+    self._TestForSpeech('Reload button Reload this page')
 
   def testReadAllOnPageLoad(self):
     # Ctrl+A: Select all
     self._pywinauto_window.TypeKeys('^A')
-    self._WaitForSpeech('selecting about:blank')
+    self._TestForSpeech('selecting about:blank')
 
     # Load data url.
     self._pywinauto_window.TypeKeys('data:text/html,Hello<p>World.')
-    self._WaitForSpeech('dot')
+    self._TestForSpeech('dot')
     self._pywinauto_window.TypeKeys('{ENTER}')
-    self._WaitForSpeech(
+    self._TestForSpeech(
         ['document',
          'Hello',
          'World.'])
