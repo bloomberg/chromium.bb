@@ -160,14 +160,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
         "MAP * " + base::SysNSStringToUTF8(webPageReplayProxy));
   }
 
-  NSString* autoReloadEnabledValue =
-      [defaults stringForKey:@"AutoReloadEnabled"];
-  if ([autoReloadEnabledValue isEqualToString:@"Enabled"]) {
-    command_line->AppendSwitch(switches::kEnableOfflineAutoReload);
-  } else if ([autoReloadEnabledValue isEqualToString:@"Disabled"]) {
-    command_line->AppendSwitch(switches::kDisableOfflineAutoReload);
-  }
-
   // Populate command line flags from ReaderModeEnabled.
   if ([defaults boolForKey:@"ReaderModeEnabled"]) {
     command_line->AppendSwitch(switches::kEnableReaderModeToolbarIcon);
