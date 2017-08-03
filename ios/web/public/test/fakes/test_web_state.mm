@@ -69,6 +69,16 @@ UIView* TestWebState::GetView() {
   return view_;
 }
 
+void TestWebState::WasShown() {
+  for (auto& observer : observers_)
+    observer.WasShown();
+}
+
+void TestWebState::WasHidden() {
+  for (auto& observer : observers_)
+    observer.WasHidden();
+}
+
 const NavigationManager* TestWebState::GetNavigationManager() const {
   return navigation_manager_.get();
 }

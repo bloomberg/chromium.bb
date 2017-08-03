@@ -16,6 +16,16 @@ namespace web {
 class NavigationContext;
 class WebState;
 
+// Arguments passed to |WasShown|.
+struct TestWasShownInfo {
+  WebState* web_state;
+};
+
+// Arguments passed to |WasHidden|.
+struct TestWasHiddenInfo {
+  WebState* web_state;
+};
+
 // Arguments passed to |DidStartNavigation|.
 struct TestDidStartNavigationInfo {
   TestDidStartNavigationInfo();

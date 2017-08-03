@@ -33,6 +33,8 @@ class TestWebState : public WebState {
   bool ShouldSuppressDialogs() const override;
   void SetShouldSuppressDialogs(bool should_suppress) override;
   UIView* GetView() override;
+  void WasShown() override;
+  void WasHidden() override;
   BrowserState* GetBrowserState() const override;
   void OpenURL(const OpenURLParams& params) override {}
   void Stop() override {}

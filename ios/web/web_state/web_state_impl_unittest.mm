@@ -267,6 +267,18 @@ TEST_F(WebStateImplTest, ObserverTest) {
       new TestWebStateObserver(web_state_.get()));
   EXPECT_EQ(web_state_.get(), observer->web_state());
 
+  // Test that WasShown() is called.
+  ASSERT_FALSE(observer->was_shown_info());
+  web_state_->WasShown();
+  ASSERT_TRUE(observer->was_shown_info());
+  EXPECT_EQ(web_state_.get(), observer->was_shown_info()->web_state);
+
+  // Test that WasHidden() is called.
+  ASSERT_FALSE(observer->was_hidden_info());
+  web_state_->WasHidden();
+  ASSERT_TRUE(observer->was_hidden_info());
+  EXPECT_EQ(web_state_.get(), observer->was_hidden_info()->web_state);
+
   // Test that LoadProgressChanged() is called.
   ASSERT_FALSE(observer->change_loading_progress_info());
   const double kTestLoadProgress = 0.75;
