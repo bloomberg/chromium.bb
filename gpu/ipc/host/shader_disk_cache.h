@@ -65,6 +65,9 @@ class ShaderDiskCache : public base::RefCounted<ShaderDiskCache> {
   // been written to the cache.
   int SetCacheCompleteCallback(const net::CompletionCallback& callback);
 
+  // Returns the size which should be used for the shader disk cache.
+  static size_t CacheSizeBytes();
+
  private:
   friend class base::RefCounted<ShaderDiskCache>;
   friend class ShaderDiskCacheEntry;

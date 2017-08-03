@@ -61,6 +61,8 @@ message GpuProgramProto {
   optional bytes sha = 1;
   optional uint32 format = 2;
   optional bytes program = 3;
+  optional bool program_is_compressed = 6;
+  optional uint32 program_decompressed_length = 7;
 
   optional ShaderProto vertex_shader = 4;
   optional ShaderProto fragment_shader = 5;

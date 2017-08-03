@@ -7,7 +7,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/sys_info.h"
 #include "base/threading/thread_checker.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "net/base/cache_type.h"
 #include "net/base/io_buffer.h"
@@ -554,9 +556,9 @@ void ShaderDiskCache::Init(
 
   int rv = disk_cache::CreateCacheBackend(
       net::SHADER_CACHE, net::CACHE_BACKEND_DEFAULT,
-      cache_path_.Append(kGpuCachePath),
-      gpu::kDefaultMaxProgramCacheMemoryBytes, true, cache_task_runner, NULL,
-      &backend_, base::Bind(&ShaderDiskCache::CacheCreatedCallback, this));
+      cache_path_.Append(kGpuCachePath), CacheSizeBytes(), true,
+      cache_task_runner, NULL, &backend_,
+      base::Bind(&ShaderDiskCache::CacheCreatedCallback, this));
 
   if (rv == net::OK)
     cache_available_ = true;
@@ -635,6 +637,18 @@ int ShaderDiskCache::SetCacheCompleteCallback(
   }
   cache_complete_callback_ = callback;
   return net::ERR_IO_PENDING;
+}
+
+// static
+size_t ShaderDiskCache::CacheSizeBytes() {
+#if !defined(OS_ANDROID)
+  return kDefaultMaxProgramCacheMemoryBytes;
+#else   // !defined(OS_ANDROID)
+  if (!base::SysInfo::IsLowEndDevice())
+    return kDefaultMaxProgramCacheMemoryBytes;
+  else
+    return kLowEndMaxProgramCacheMemoryBytes;
+#endif  // !defined(OS_ANDROID)
 }
 
 }  // namespace gpu

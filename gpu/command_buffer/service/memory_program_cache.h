@@ -59,9 +59,10 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
 
   class ProgramCacheValue : public base::RefCounted<ProgramCacheValue> {
    public:
-    ProgramCacheValue(GLsizei length,
-                      GLenum format,
-                      const char* data,
+    ProgramCacheValue(GLenum format,
+                      std::vector<uint8_t> data,
+                      bool is_compressed,
+                      GLsizei decompressed_length,
                       const std::string& program_hash,
                       const char* shader_0_hash,
                       const AttributeMap& attrib_map_0,
@@ -77,17 +78,15 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
                       const InterfaceBlockMap& interface_block_map_1,
                       MemoryProgramCache* program_cache);
 
-    GLsizei length() const {
-      return length_;
-    }
-
     GLenum format() const {
       return format_;
     }
 
-    const char* data() const {
-      return data_.get();
-    }
+    const std::vector<uint8_t>& data() const { return data_; }
+
+    bool is_compressed() const { return is_compressed_; }
+
+    GLsizei decompressed_length() const { return decompressed_length_; }
 
     const std::string& shader_0_hash() const {
       return shader_0_hash_;
@@ -142,9 +141,10 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
 
     ~ProgramCacheValue();
 
-    const GLsizei length_;
     const GLenum format_;
-    const std::unique_ptr<const char[]> data_;
+    const std::vector<uint8_t> data_;
+    const bool is_compressed_;
+    const GLsizei decompressed_length_;
     const std::string program_hash_;
     const std::string shader_0_hash_;
     const AttributeMap attrib_map_0_;
@@ -171,6 +171,7 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
   const size_t max_size_bytes_;
   const bool disable_gpu_shader_disk_cache_;
   const bool disable_program_caching_for_transform_feedback_;
+  const bool compress_program_binaries_;
   size_t curr_size_bytes_;
   ProgramMRUCache store_;
   GpuProcessActivityFlags* activity_flags_;
