@@ -813,9 +813,7 @@ static bool EqualSelectionsAlgorithm(
   const VisibleSelectionTemplate<Strategy> selection_wrapper1(selection1);
   const VisibleSelectionTemplate<Strategy> selection_wrapper2(selection2);
 
-  return selection_wrapper1.Start() == selection_wrapper2.Start() &&
-         selection_wrapper1.End() == selection_wrapper2.End() &&
-         selection_wrapper1.Base() == selection_wrapper2.Base() &&
+  return selection_wrapper1.Base() == selection_wrapper2.Base() &&
          selection_wrapper1.Extent() == selection_wrapper2.Extent();
 }
 
