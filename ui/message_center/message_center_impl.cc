@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_switches.h"
@@ -941,6 +942,15 @@ void MessageCenterImpl::PausePopupTimers() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (popup_timers_controller_)
     popup_timers_controller_->PauseAll();
+}
+
+const base::string16& MessageCenterImpl::GetProductOSName() const {
+  return product_os_name_;
+}
+
+void MessageCenterImpl::SetProductOSName(
+    const base::string16& product_os_name) {
+  product_os_name_ = product_os_name;
 }
 
 void MessageCenterImpl::DisableTimersForTest() {
