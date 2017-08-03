@@ -788,7 +788,7 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
       : EmbeddedWorkerTestHelper(base::FilePath()),
         blob_uuid_(blob_uuid),
         blob_size_(blob_size) {}
-  ~BlobResponder() override {}
+  ~BlobResponder() override = default;
 
  protected:
   void OnFetchEvent(
