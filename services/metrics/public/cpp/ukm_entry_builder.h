@@ -9,11 +9,10 @@
 
 #include "base/macros.h"
 #include "services/metrics/public/cpp/metrics_export.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/metrics/public/interfaces/ukm_interface.mojom.h"
 
 namespace ukm {
-
-typedef int64_t SourceId;
 
 // The builder that builds UkmEntry and adds it to UkmRecorder.
 // The example usage is:

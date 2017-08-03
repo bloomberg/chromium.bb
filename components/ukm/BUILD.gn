@@ -49,12 +49,14 @@ static_library("ukm_interface") {
 
   public_deps = [
     "//base",
+    "//services/metrics/public/cpp:metrics_cpp",
     "//services/metrics/public/interfaces",
   ]
 
   deps = [
     ":ukm",
     "//mojo/public/cpp/bindings",
+    "//services/metrics/public/cpp:metrics_cpp",
   ]
 }
 
