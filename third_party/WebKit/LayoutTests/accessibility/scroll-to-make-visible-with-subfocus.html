@@ -28,7 +28,7 @@ function runTest() {
 
     // Scroll to make the midpoint of the target visible and check.
     if (window.accessibilityController)
-        targetAccessibleObject.scrollToMakeVisibleWithSubFocus(0, 2500, 100, 2600);
+        targetAccessibleObject.scrollToMakeVisibleWithSubFocus(0, 2500, 100, 100);
     window.minYOffset = target.offsetTop + 2500 - window.innerHeight;
     window.maxYOffset = target.offsetTop + 2500;
     shouldBe("window.pageYOffset >= minYOffset", "true");
