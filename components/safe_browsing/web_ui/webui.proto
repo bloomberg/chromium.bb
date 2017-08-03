@@ -17,8 +17,9 @@ message DatabaseManagerInfo {
     // Network status code for the last update request sent to SafeBrowsing.
     optional int32 network_status_code = 1;
 
-    // Time when the last update request was sent to SafeBrowsing.
-    optional int64 last_update_time_millis = 2;
+    // The time, since epoch, when the last update request was sent to
+    // SafeBrowsing.
+    optional uint64 last_update_time_millis = 2;
   }
 
   optional UpdateInfo update_info = 1;
@@ -29,7 +30,7 @@ message DatabaseManagerInfo {
     optional bool update_successful = 1;
 
     // Sum of the store sizes in the database.
-    optional int64 database_size_bytes = 2;
+    optional uint64 database_size_bytes = 2;
 
     // Describes the state of a store in the database.
     message StoreInfo {
@@ -43,6 +44,12 @@ message DatabaseManagerInfo {
       // store. The values of update_status corresponds to the enum
       // ApplyUpdateResult in V4Store.
       optional int32 update_status = 3;
+
+      // The time, since epoch, of applying the updates to the store.
+      optional uint64 last_apply_update_time_millis = 4;
+
+      // The number of times the store has been queried for a prefix.
+      optional uint32 checks_attempted = 5;
     }
 
     // Information about each of the stores managed by the database.
