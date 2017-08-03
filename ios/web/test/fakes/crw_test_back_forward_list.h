@@ -7,10 +7,15 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class WKBackForwardListItem;
 
 // A CRWTestBackForwardList can be used to stub out WKBackForwardList in tests.
 @interface CRWTestBackForwardList : NSObject
+
+// Returns an OCMock of WKBackForwardListItem with the given URL.
++ (WKBackForwardListItem*)itemWithURLString:(NSString*)URL;
 
 // WKBackForwardList interface
 @property(nullable, nonatomic, copy) NSArray<WKBackForwardListItem*>* backList;
@@ -27,9 +32,11 @@
 // Resets this instance to simulate a session with the current entry at
 // |currentItemURL|, and back and forward history entries as specified in
 // |backListURLs| and |forwardListURLs|.
-- (void)setCurrentURL:(nonnull NSString*)currentItemURL
+- (void)setCurrentURL:(NSString*)currentItemURL
          backListURLs:(nullable NSArray<NSString*>*)backListURLs
       forwardListURLs:(nullable NSArray<NSString*>*)forwardListURLs;
 @end
+
+NS_ASSUME_NONNULL_END
 
 #endif  // IOS_WEB_NAVIGATION_CRW_TEST_BACK_FORWARD_LIST_H_

@@ -105,8 +105,9 @@ void WKBasedNavigationManagerImpl::AddTransientItem(const GURL& url) {
 
   // Transient item is only supposed to be added for pending non-app-specific
   // navigations.
-  DCHECK(pending_item_->GetUserAgentType() != UserAgentType::NONE);
-  transient_item_->SetUserAgentType(pending_item_->GetUserAgentType());
+  NavigationItem* pending_item = GetPendingItem();
+  DCHECK(pending_item->GetUserAgentType() != UserAgentType::NONE);
+  transient_item_->SetUserAgentType(pending_item->GetUserAgentType());
 }
 
 void WKBasedNavigationManagerImpl::AddPendingItem(
@@ -176,12 +177,11 @@ void WKBasedNavigationManagerImpl::CommitPendingItem() {
   pending_item_index_ = -1;
   previous_item_index_ = last_committed_item_index_;
   last_committed_item_index_ = GetWKCurrentItemIndex();
-
   OnNavigationItemCommitted();
 }
 
 int WKBasedNavigationManagerImpl::GetIndexForOffset(int offset) const {
-  int result = (pending_item_index_ == -1) ? GetLastCommittedItemIndex()
+  int result = (pending_item_index_ == -1) ? GetWKCurrentItemIndex()
                                            : pending_item_index_;
 
   if (offset < 0 && GetTransientItem() && pending_item_index_ == -1) {
@@ -276,6 +276,15 @@ int WKBasedNavigationManagerImpl::GetPendingItemIndex() const {
 }
 
 int WKBasedNavigationManagerImpl::GetLastCommittedItemIndex() const {
+  // WKBackForwardList's |currentItem| is usually the last committed item,
+  // except when the pending navigation is a back-forward navigation, in which
+  // case it is actually the pending item. As a workaround, fall back to
+  // last_committed_item_index_. This is not 100% correct (since
+  // last_committed_item_index_ is only updated for main frame navigations),
+  // but is the best possible answer.
+  if (pending_item_index_ >= 0) {
+    return last_committed_item_index_;
+  }
   return GetWKCurrentItemIndex();
 }
 

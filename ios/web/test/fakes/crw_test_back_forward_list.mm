@@ -13,7 +13,6 @@
 #endif
 
 @interface CRWTestBackForwardList (PrivateMethods)
-- (WKBackForwardListItem*)mockItemWithURLString:(NSString*)URL;
 - (NSArray*)mockSublistWithURLArray:(NSArray<NSString*>*)URLs;
 @end
 
@@ -22,6 +21,12 @@
 @synthesize backList;
 @synthesize forwardList;
 @synthesize currentItem;
+
++ (WKBackForwardListItem*)itemWithURLString:(NSString*)URL {
+  id mock = OCMClassMock([WKBackForwardListItem class]);
+  OCMStub([mock URL]).andReturn([NSURL URLWithString:URL]);
+  return mock;
+}
 
 - (WKBackForwardListItem*)itemAtIndex:(NSInteger)index {
   if (index == 0) {
@@ -41,21 +46,15 @@
 - (void)setCurrentURL:(NSString*)currentItemURL
          backListURLs:(nullable NSArray<NSString*>*)backListURLs
       forwardListURLs:(nullable NSArray<NSString*>*)forwardListURLs {
-  self.currentItem = [self mockItemWithURLString:currentItemURL];
+  self.currentItem = [CRWTestBackForwardList itemWithURLString:currentItemURL];
   self.backList = [self mockSublistWithURLArray:backListURLs];
   self.forwardList = [self mockSublistWithURLArray:forwardListURLs];
-}
-
-- (WKBackForwardListItem*)mockItemWithURLString:(NSString*)URL {
-  id mock = OCMClassMock([WKBackForwardListItem class]);
-  OCMStub([mock URL]).andReturn([NSURL URLWithString:URL]);
-  return mock;
 }
 
 - (NSArray*)mockSublistWithURLArray:(NSArray<NSString*>*)URLs {
   NSMutableArray* array = [NSMutableArray arrayWithCapacity:URLs.count];
   for (NSString* URL : URLs) {
-    [array addObject:[self mockItemWithURLString:URL]];
+    [array addObject:[CRWTestBackForwardList itemWithURLString:URL]];
   }
   return [NSArray arrayWithArray:array];
 }
