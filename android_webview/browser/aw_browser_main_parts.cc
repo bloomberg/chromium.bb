@@ -120,7 +120,6 @@ int AwBrowserMainParts::PreCreateThreads() {
 
   base::android::MemoryPressureListenerAndroid::RegisterSystemCallback(
       base::android::AttachCurrentThread());
-  DeferredGpuCommandService::SetInstance();
   breakpad::CrashDumpObserver::Create();
 
   if (crash_reporter::IsCrashReporterEnabled()) {
@@ -170,6 +169,10 @@ void AwBrowserMainParts::PreMainMessageLoopRun() {
 
   // TODO(meacer): Remove when PlzNavigate ships.
   content::RenderFrameHost::AllowDataUrlNavigationForAndroidWebView();
+
+  // This only works because webview uses in-process gpu
+  // which is not started up early by BrowserMainLoop.
+  DeferredGpuCommandService::SetInstance();
 }
 
 bool AwBrowserMainParts::MainMessageLoopRun(int* result_code) {
