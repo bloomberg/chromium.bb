@@ -14,9 +14,12 @@
 
 namespace password_manager {
 
-TestPasswordStore::TestPasswordStore() = default;
+TestPasswordStore::TestPasswordStore()
+    : PasswordStore(base::SequencedTaskRunnerHandle::Get(),
+                    base::SequencedTaskRunnerHandle::Get()) {}
 
-TestPasswordStore::~TestPasswordStore() = default;
+TestPasswordStore::~TestPasswordStore() {
+}
 
 const TestPasswordStore::PasswordMap& TestPasswordStore::stored_passwords()
     const {
@@ -36,11 +39,6 @@ bool TestPasswordStore::IsEmpty() const {
     number_of_passwords += it->second.size();
   }
   return number_of_passwords == 0u;
-}
-
-scoped_refptr<base::SequencedTaskRunner>
-TestPasswordStore::CreateBackgroundTaskRunner() const {
-  return base::SequencedTaskRunnerHandle::Get();
 }
 
 PasswordStoreChangeList TestPasswordStore::AddLoginImpl(
