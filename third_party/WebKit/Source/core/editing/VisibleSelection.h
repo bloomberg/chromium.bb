@@ -106,8 +106,6 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
   bool IsBaseFirst() const { return base_is_first_; }
   bool IsDirectional() const { return is_directional_; }
 
-  VisibleSelectionTemplate<Strategy> AppendTrailingWhitespace() const;
-
   // TODO(yosin) Most callers probably don't want these functions, but
   // are using them for historical reasons. |toNormalizedEphemeralRange()|
   // contracts the range around text, and moves the caret most backward
@@ -198,6 +196,11 @@ PositionInFlatTree ComputeEndRespectingGranularity(
     const PositionInFlatTree&,
     const PositionInFlatTreeWithAffinity&,
     TextGranularity);
+
+// TODO(editing-dev): We should move |AdjustSelectionWithTrailingWhitespace()|
+// to "SelectionController.cpp" as file local function.
+CORE_EXPORT SelectionInFlatTree
+AdjustSelectionWithTrailingWhitespace(const SelectionInFlatTree&);
 
 }  // namespace blink
 
