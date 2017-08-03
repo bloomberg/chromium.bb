@@ -143,6 +143,14 @@ class TabManager::WebContentsData
 
   bool is_in_session_restore() const { return tab_data_.is_in_session_restore; }
 
+  void SetIsRestoredInForeground(bool is_restored_in_foreground) {
+    tab_data_.is_restored_in_foreground = is_restored_in_foreground;
+  }
+
+  bool is_restored_in_foreground() const {
+    return tab_data_.is_restored_in_foreground;
+  }
+
  private:
   // Needed to access tab_data_.
   FRIEND_TEST_ALL_PREFIXES(TabManagerWebContentsDataTest, CopyState);
@@ -177,6 +185,8 @@ class TabManager::WebContentsData
     // True if the tab was created by session restore. Remains true until the
     // end of the first navigation or the tab is closed.
     bool is_in_session_restore;
+    // True if the tab was created by session restore and initially foreground.
+    bool is_restored_in_foreground;
   };
 
   // Returns either the system's clock or the test clock. See |test_tick_clock_|
