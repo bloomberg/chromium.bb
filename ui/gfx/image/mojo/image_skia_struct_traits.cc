@@ -107,12 +107,32 @@ bool StructTraits<gfx::mojom::ImageSkiaRepDataView, gfx::ImageSkiaRep>::Read(
 }
 
 // static
-std::vector<gfx::ImageSkiaRep>
-StructTraits<gfx::mojom::ImageSkiaDataView, gfx::ImageSkia>::image_reps(
+void* StructTraits<gfx::mojom::ImageSkiaDataView, gfx::ImageSkia>::SetUpContext(
     const gfx::ImageSkia& input) {
   // Trigger the image to load everything.
   input.EnsureRepsForSupportedScales();
-  return input.image_reps();
+
+  // Use a context to return a stable list of ImageSkiaRep objects. That is,
+  // multiple calls of image_reps() should return exactly the same list of
+  // ImageSkiaRep objects. So that ImageSkiaRep with the same backing pixel
+  // buffer is properly serialized and only once.
+  return new std::vector<gfx::ImageSkiaRep>(input.image_reps());
+}
+
+// static
+void StructTraits<gfx::mojom::ImageSkiaDataView,
+                  gfx::ImageSkia>::TearDownContext(const gfx::ImageSkia& input,
+                                                   void* context) {
+  delete static_cast<std::vector<gfx::ImageSkiaRep>*>(context);
+}
+
+// static
+const std::vector<gfx::ImageSkiaRep>&
+StructTraits<gfx::mojom::ImageSkiaDataView, gfx::ImageSkia>::image_reps(
+    const gfx::ImageSkia& input,
+    void* context) {
+  // See the comment in SetUpContext regarding context usage.
+  return *(static_cast<std::vector<gfx::ImageSkiaRep>*>(context));
 }
 
 // static

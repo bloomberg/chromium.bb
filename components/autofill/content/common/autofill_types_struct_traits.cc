@@ -604,25 +604,24 @@ bool StructTraits<mojom::PasswordFormDataView, PasswordForm>::Read(
 }
 
 // static
-std::vector<autofill::FormFieldData> StructTraits<
-    mojom::PasswordFormFieldPredictionMapDataView,
-    PasswordFormFieldPredictionMap>::keys(const PasswordFormFieldPredictionMap&
-                                              r) {
-  std::vector<autofill::FormFieldData> data;
-  for (const auto& i : r)
-    data.push_back(i.first);
-  return data;
+void* StructTraits<mojom::PasswordFormFieldPredictionMapDataView,
+                   PasswordFormFieldPredictionMap>::
+    SetUpContext(const PasswordFormFieldPredictionMap& r) {
+  // Extracts keys vector and values vector from the map, saves them as a pair.
+  auto* pair = new KeysValuesPair();
+  for (const auto& i : r) {
+    pair->first.push_back(i.first);
+    pair->second.push_back(i.second);
+  }
+
+  return pair;
 }
 
 // static
-std::vector<autofill::PasswordFormFieldPredictionType>
-StructTraits<mojom::PasswordFormFieldPredictionMapDataView,
-             PasswordFormFieldPredictionMap>::
-    values(const PasswordFormFieldPredictionMap& r) {
-  std::vector<autofill::PasswordFormFieldPredictionType> types;
-  for (const auto& i : r)
-    types.push_back(i.second);
-  return types;
+void StructTraits<mojom::PasswordFormFieldPredictionMapDataView,
+                  PasswordFormFieldPredictionMap>::
+    TearDownContext(const PasswordFormFieldPredictionMap& r, void* context) {
+  delete static_cast<KeysValuesPair*>(context);
 }
 
 // static
@@ -647,23 +646,23 @@ bool StructTraits<mojom::PasswordFormFieldPredictionMapDataView,
 }
 
 // static
-std::vector<autofill::FormData>
-StructTraits<mojom::FormsPredictionsMapDataView, FormsPredictionsMap>::keys(
-    const FormsPredictionsMap& r) {
-  std::vector<autofill::FormData> data;
-  for (const auto& i : r)
-    data.push_back(i.first);
-  return data;
+void* StructTraits<mojom::FormsPredictionsMapDataView,
+                   FormsPredictionsMap>::SetUpContext(const FormsPredictionsMap&
+                                                          r) {
+  // Extracts keys vector and values vector from the map, saves them as a pair.
+  auto* pair = new KeysValuesPair();
+  for (const auto& i : r) {
+    pair->first.push_back(i.first);
+    pair->second.push_back(i.second);
+  }
+
+  return pair;
 }
 
 // static
-std::vector<autofill::PasswordFormFieldPredictionMap>
-StructTraits<mojom::FormsPredictionsMapDataView, FormsPredictionsMap>::values(
-    const FormsPredictionsMap& r) {
-  std::vector<autofill::PasswordFormFieldPredictionMap> maps;
-  for (const auto& i : r)
-    maps.push_back(i.second);
-  return maps;
+void StructTraits<mojom::FormsPredictionsMapDataView, FormsPredictionsMap>::
+    TearDownContext(const FormsPredictionsMap& r, void* context) {
+  delete static_cast<KeysValuesPair*>(context);
 }
 
 // static
