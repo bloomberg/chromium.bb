@@ -153,3 +153,7 @@ base::string16 FakeBaseTabStripController::GetAccessibleTabName(
     const Tab* tab) const {
   return base::string16();
 }
+
+Profile* FakeBaseTabStripController::GetProfile() const {
+  return nullptr;
+}

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_CONTROLLER_H_
 
 #include "base/strings/string16.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
@@ -126,6 +127,9 @@ class TabStripController {
 
   // Returns the accessible tab name.
   virtual base::string16 GetAccessibleTabName(const Tab* tab) const = 0;
+
+  // Returns the profile associated with the Tabstrip.
+  virtual Profile* GetProfile() const = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_CONTROLLER_H_
