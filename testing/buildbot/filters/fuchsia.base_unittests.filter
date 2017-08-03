@@ -75,8 +75,11 @@
 -VerifyPathControlledByUserTest.Symlinks
 -VerifyPathControlledByUserTest.WriteBitChecks
 
-# CancelableSyncSocket tests fail: http://crbug.com/741783
+# CancelableSyncSocket tests fail: https://crbug.com/741783
 -CancelableSyncSocket*
+
+# Likely flake cause identified, disabled pending fix: https://crbug.com/751748.
+-MemoryDumpSchedulerTest.*
 
 # These tests are occasionally flaking. See https://crbug.com/738275. Please be
 # pretty confident you've fixed their rarely-flakiness before re-enabling.
