@@ -60,6 +60,8 @@ class HostScanner : public HostScannerOperation::Observer {
   // function is a no-op.
   virtual void StartScan();
 
+  void NotifyScanFinished();
+
   // HostScannerOperation::Observer:
   void OnTetherAvailabilityResponse(
       std::vector<HostScannerOperation::ScannedDeviceInfo>&
@@ -80,8 +82,6 @@ class HostScanner : public HostScannerOperation::Observer {
     NOTIFICATION_SHOWN_MULTIPLE_HOSTS = 2,
     HOST_SCAN_RESULT_MAX
   };
-
-  void NotifyScanFinished();
 
   void OnTetherHostsFetched(const cryptauth::RemoteDeviceList& tether_hosts);
   void SetCacheEntry(
