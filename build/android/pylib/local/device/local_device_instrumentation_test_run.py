@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import contextlib
+import json
 import logging
 import os
 import posixpath
@@ -64,6 +65,12 @@ EXTRA_SCREENSHOT_FILE = (
 EXTRA_UI_CAPTURE_DIR = (
     'org.chromium.base.test.util.Screenshooter.ScreenshotDir')
 
+_EXTRA_TEST_LIST = (
+    'org.chromium.base.test.BaseChromiumAndroidJUnitRunner.TestList')
+
+_TEST_LIST_JUNIT4_RUNNERS = [
+    'org.chromium.base.test.BaseChromiumAndroidJUnitRunner']
+
 UI_CAPTURE_DIRS = ['chromium_tests_root', 'UiCapture']
 
 FEATURE_ANNOTATION = 'Feature'
@@ -87,8 +94,8 @@ def _LogTestEndpoints(device, test_name):
         ['log', '-p', 'i', '-t', _TAG, 'END %s' % test_name],
         check_return=True)
 
-# TODO(jbudorick): Make this private once the instrumentation test_runner is
-# deprecated.
+# TODO(jbudorick): Make this private once the instrumentation test_runner
+# is deprecated.
 def DidPackageCrashOnDevice(package_name, device):
   # Dismiss any error dialogs. Limit the number in case we have an error
   # loop or we are failing to dismiss.
@@ -305,7 +312,12 @@ class LocalDeviceInstrumentationTestRun(
 
   #override
   def _GetTests(self):
-    tests = self._test_instance.GetTests()
+    tests = None
+    if self._test_instance.junit4_runner_class in _TEST_LIST_JUNIT4_RUNNERS:
+      raw_tests = self._GetTestsFromRunner()
+      tests = self._test_instance.ProcessRawTests(raw_tests)
+    else:
+      tests = self._test_instance.GetTests()
     tests = self._ApplyExternalSharding(
         tests, self._test_instance.external_shard_index,
         self._test_instance.total_external_shards)
@@ -370,10 +382,11 @@ class LocalDeviceInstrumentationTestRun(
       if test['is_junit4']:
         target = '%s/%s' % (
             self._test_instance.test_package,
-            self._test_instance.test_runner_junit4)
+            self._test_instance.junit4_runner_class)
       else:
         target = '%s/%s' % (
-            self._test_instance.test_package, self._test_instance.test_runner)
+            self._test_instance.test_package,
+            self._test_instance.junit3_runner_class)
       extras['class'] = test_name
       if 'flags' in test and test['flags']:
         flags_to_add.extend(test['flags'])
@@ -550,6 +563,49 @@ class LocalDeviceInstrumentationTestRun(
     if self._env.concurrent_adb:
       post_test_step_thread_group.JoinAll()
     return results, None
+
+  def _GetTestsFromRunner(self):
+    test_apk_path = self._test_instance.test_apk.path
+    pickle_path = '%s-runner.pickle' % test_apk_path
+    try:
+      return instrumentation_test_instance.GetTestsFromPickle(
+          pickle_path, test_apk_path)
+    except instrumentation_test_instance.TestListPickleException as e:
+      logging.info('Could not get tests from pickle: %s', e)
+    logging.info('Getting tests by having %s list them.',
+                 self._test_instance.junit4_runner_class)
+    def list_tests(dev):
+      with device_temp_file.DeviceTempFile(
+          dev.adb, suffix='.json',
+          dir=dev.GetExternalStoragePath()) as dev_test_list_json:
+        junit4_runner_class = self._test_instance.junit4_runner_class
+        test_package = self._test_instance.test_package
+        extras = {}
+        extras['log'] = 'true'
+        extras['package'] = '.'.join(test_package.split('.')[:2])
+        extras[_EXTRA_TEST_LIST] = dev_test_list_json.name
+        target = '%s/%s' % (test_package, junit4_runner_class)
+        dev.StartInstrumentation(target, extras=extras)
+        with tempfile_ext.NamedTemporaryDirectory() as host_dir:
+          host_file = os.path.join(host_dir, 'list_tests.json')
+          dev.PullFile(dev_test_list_json.name, host_file)
+          with open(host_file, 'r') as host_file:
+              return json.load(host_file)
+
+    raw_test_lists = self._env.parallel_devices.pMap(list_tests).pGet(None)
+
+    # If all devices failed to list tests, raise an exception.
+    # Check that tl is not None and is not empty.
+    if all(not tl for tl in raw_test_lists):
+      raise device_errors.CommandFailedError(
+          'Failed to list tests on any device')
+
+    # Get the first viable list of raw tests
+    raw_tests = [tl for tl in raw_test_lists if tl][0]
+
+    instrumentation_test_instance.SaveTestsToPickle(
+        pickle_path, test_apk_path, raw_tests)
+    return raw_tests
 
   def _SaveScreenshot(self, device, screenshot_host_dir, screenshot_device_file,
                       test_name, results):
