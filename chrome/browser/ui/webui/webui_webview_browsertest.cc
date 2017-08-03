@@ -164,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, ExecuteScriptCodeFromFile) {
 #else
 #define MAYBE_AddContentScript AddContentScript
 #endif
-IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddContentScript) {
+IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, MAYBE_AddContentScript) {
   ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
@@ -177,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddContentScript) {
 #else
 #define MAYBE_AddMultiContentScripts AddMultiContentScripts
 #endif
-IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddMultiContentScripts) {
+IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, MAYBE_AddMultiContentScripts) {
   ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
@@ -275,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, AddContentScriptWithCode) {
 
 #if defined(OS_CHROMEOS)
 // TODO(crbug.com/662673) Flaky on CrOS trybots.
-#define MAYBE_AddContentScriptIncognito AddContentScriptIncognito
+#define MAYBE_AddContentScriptIncognito DISABLED_AddContentScriptIncognito
 // Right now we only have incognito WebUI on CrOS, but this should
 // theoretically work for all platforms.
 IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest,
