@@ -41,6 +41,14 @@ const FrameCoordinationUnitImpl* CoordinationUnitImpl::ToFrameCoordinationUnit(
 }
 
 // static
+const WebContentsCoordinationUnitImpl*
+CoordinationUnitImpl::ToWebContentsCoordinationUnit(
+    const CoordinationUnitImpl* coordination_unit) {
+  DCHECK(coordination_unit->id().type == CoordinationUnitType::kWebContents);
+  return static_cast<const WebContentsCoordinationUnitImpl*>(coordination_unit);
+}
+
+// static
 std::vector<CoordinationUnitImpl*>
 CoordinationUnitImpl::GetCoordinationUnitsOfType(CoordinationUnitType type) {
   std::vector<CoordinationUnitImpl*> results;
@@ -321,7 +329,7 @@ void CoordinationUnitImpl::UnregisterCoordinationPolicyCallback() {
 
 std::set<CoordinationUnitImpl*>
 CoordinationUnitImpl::GetChildCoordinationUnitsOfType(
-    CoordinationUnitType type) {
+    CoordinationUnitType type) const {
   std::set<CoordinationUnitImpl*> coordination_units;
 
   for (auto* child : children()) {
@@ -339,7 +347,7 @@ CoordinationUnitImpl::GetChildCoordinationUnitsOfType(
 
 std::set<CoordinationUnitImpl*>
 CoordinationUnitImpl::GetParentCoordinationUnitsOfType(
-    CoordinationUnitType type) {
+    CoordinationUnitType type) const {
   std::set<CoordinationUnitImpl*> coordination_units;
 
   for (auto* parent : parents()) {
@@ -357,7 +365,7 @@ CoordinationUnitImpl::GetParentCoordinationUnitsOfType(
 
 std::set<CoordinationUnitImpl*>
 CoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
-    CoordinationUnitType type) {
+    CoordinationUnitType type) const {
   NOTREACHED();
   return std::set<CoordinationUnitImpl*>();
 }

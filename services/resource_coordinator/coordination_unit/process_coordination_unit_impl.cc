@@ -17,7 +17,7 @@ ProcessCoordinationUnitImpl::~ProcessCoordinationUnitImpl() = default;
 
 std::set<CoordinationUnitImpl*>
 ProcessCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
-    CoordinationUnitType type) {
+    CoordinationUnitType type) const {
   switch (type) {
     case CoordinationUnitType::kWebContents: {
       // There is currently not a direct relationship between processes and

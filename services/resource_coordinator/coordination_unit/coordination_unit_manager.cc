@@ -9,8 +9,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_graph_observer.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_provider_impl.h"
@@ -46,6 +44,7 @@ void CoordinationUnitManager::OnStart(
 
 void CoordinationUnitManager::RegisterObserver(
     std::unique_ptr<CoordinationUnitGraphObserver> observer) {
+  observer->set_coordination_unit_manager(this);
   observers_.push_back(std::move(observer));
 }
 
@@ -62,13 +61,6 @@ void CoordinationUnitManager::OnCoordinationUnitCreated(
 void CoordinationUnitManager::OnBeforeCoordinationUnitDestroyed(
     CoordinationUnitImpl* coordination_unit) {
   coordination_unit->BeforeDestroyed();
-}
-
-std::unique_ptr<ukm::UkmEntryBuilder>
-CoordinationUnitManager::CreateUkmEntryBuilder(const char* event_name) {
-  DCHECK(ukm_recorder_ != nullptr);
-  return ukm_recorder_->GetEntryBuilder(ukm::UkmRecorder::GetNewSourceID(),
-                                        event_name);
 }
 
 }  // namespace resource_coordinator

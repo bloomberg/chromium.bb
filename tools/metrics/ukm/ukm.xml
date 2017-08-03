@@ -1050,4 +1050,32 @@ be describing additional metrics about the same event.
   <metric name="TargetLanguage"/>
 </event>
 
+<event name="CPUUsageMeasurement">
+  <owner>matthalp@google.com</owner>
+  <owner>oysteine@chromium.org</owner>
+  <summary>
+    A CPU usage measurement that corresponds to a tick in a CPU usage
+    time-series The tick interval is set as a FieldTrial parameter, which can be
+    obtained by cross referencing the UKM entry with the FieldTrial it was
+    launched with. There is also some metadata stored to determine how faitful
+    the CPU usage measurement is (e.g. NumberOfCoresidentTabs).
+  </summary>
+  <metric name="CPUUsage">
+    <summary>
+      CPU usage measurement.
+    </summary>
+  </metric>
+  <metric name="NumberOfCoresidentTabs">
+    <summary>
+      Number of co-resident tabs in all of the render processes a tab is
+      associated with when the CPU usage measurement is taken.
+    </summary>
+  </metric>
+  <metric name="Tick">
+    <summary>
+      Tick CPU Usage measurement was taken at.
+    </summary>
+  </metric>
+</event>
+
 </ukm-configuration>

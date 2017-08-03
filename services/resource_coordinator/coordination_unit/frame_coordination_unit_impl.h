@@ -23,7 +23,7 @@ class FrameCoordinationUnitImpl : public CoordinationUnitImpl {
 
   // CoordinationUnitImpl implementation.
   std::set<CoordinationUnitImpl*> GetAssociatedCoordinationUnitsOfType(
-      CoordinationUnitType type) override;
+      CoordinationUnitType type) const override;
 
   bool IsMainFrame() const;
 

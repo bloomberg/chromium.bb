@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "services/resource_coordinator/coordination_unit/tab_metrics_collector.h"
 #include "services/resource_coordinator/coordination_unit/tab_signal_generator_impl.h"
 #include "services/resource_coordinator/service_callbacks_impl.h"
 #include "services/service_manager/public/cpp/service_context.h"
@@ -47,6 +48,9 @@ void ResourceCoordinatorService::OnStart() {
                  base::Unretained(tab_signal_generator_impl.get())));
   coordination_unit_manager_.RegisterObserver(
       std::move(tab_signal_generator_impl));
+
+  coordination_unit_manager_.RegisterObserver(
+      base::MakeUnique<TabMetricsCollector>());
 
   coordination_unit_manager_.OnStart(&registry_, ref_factory_.get());
 }

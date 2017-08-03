@@ -4,9 +4,11 @@
 
 #include "services/resource_coordinator/coordination_unit/tab_signal_generator_impl.h"
 
+#include <utility>
+
+#include "base/values.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
-#include "services/resource_coordinator/coordination_unit/web_contents_coordination_unit_impl.h"
 
 namespace resource_coordinator {
 

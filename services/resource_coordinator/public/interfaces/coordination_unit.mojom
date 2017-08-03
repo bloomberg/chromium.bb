@@ -38,6 +38,7 @@ enum PropertyType {
   kNetworkIdle,
   kVisible,
   kURL,
+  kUkmSourceId,
 };
 
 interface CoordinationUnit {
