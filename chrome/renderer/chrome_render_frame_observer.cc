@@ -28,6 +28,8 @@
 #include "chrome/renderer/web_apps.h"
 #include "components/translate/content/renderer/translate_helper.h"
 #include "content/public/common/associated_interface_provider.h"
+#include "content/public/common/associated_interface_registry.h"
+#include "content/public/common/bindings_policy.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
@@ -141,6 +143,11 @@ ChromeRenderFrameObserver::ChromeRenderFrameObserver(
       *base::CommandLine::ForCurrentProcess();
   if (!command_line.HasSwitch(switches::kDisableClientSidePhishingDetection))
     SetClientSidePhishingDetection(true);
+#endif
+#if !defined(OS_ANDROID)
+  render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
+      base::Bind(&ChromeRenderFrameObserver::OnWebUITesterRequest,
+                 base::Unretained(this)));
 #endif
   translate_helper_ = new translate::TranslateHelper(
       render_frame, chrome::ISOLATED_WORLD_ID_TRANSLATE,
@@ -313,6 +320,13 @@ void ChromeRenderFrameObserver::SetClientSidePhishingDetection(
 }
 #endif
 
+#if !defined(OS_ANDROID)
+void ChromeRenderFrameObserver::ExecuteWebUIJavaScript(
+    const base::string16& javascript) {
+  webui_javascript_.push_back(javascript);
+}
+#endif
+
 void ChromeRenderFrameObserver::DidFinishLoad() {
   WebLocalFrame* frame = render_frame()->GetWebFrame();
   // Don't do anything for subframes.
@@ -352,6 +366,15 @@ void ChromeRenderFrameObserver::DidCommitProvisionalLoad(
   base::debug::SetCrashKeyValue(
       crash_keys::kViewCount,
       base::SizeTToString(content::RenderView::GetRenderViewCount()));
+
+#if !defined(OS_ANDROID)
+  if ((render_frame()->GetEnabledBindings() &
+       content::BINDINGS_POLICY_WEB_UI)) {
+    for (const auto& script : webui_javascript_)
+      render_frame()->ExecuteJavaScript(script);
+    webui_javascript_.clear();
+  }
+#endif
 }
 
 void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
@@ -436,6 +459,13 @@ void ChromeRenderFrameObserver::OnImageContextMenuRendererRequest(
 void ChromeRenderFrameObserver::OnPhishingDetectorRequest(
     chrome::mojom::PhishingDetectorRequest request) {
   phishing_detector_bindings_.AddBinding(this, std::move(request));
+}
+#endif
+
+#if !defined(OS_ANDROID)
+void ChromeRenderFrameObserver::OnWebUITesterRequest(
+    chrome::mojom::WebUITesterAssociatedRequest request) {
+  web_ui_tester_bindings_.AddBinding(this, std::move(request));
 }
 #endif
 

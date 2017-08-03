@@ -703,6 +703,10 @@ mojom("mojo_bindings") {
     ]
   }
 
+  if (!is_android) {
+    sources += [ "web_ui_tester.mojom" ]
+  }
+
   public_deps = [
     "//components/content_settings/core/common:mojo_bindings",
     "//mojo/common:common_custom_types",

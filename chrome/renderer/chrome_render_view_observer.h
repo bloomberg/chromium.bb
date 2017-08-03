@@ -35,14 +35,9 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
  private:
   // RenderViewObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
-  void DidCommitProvisionalLoad(blink::WebLocalFrame* frame,
-                                bool is_new_navigation) override;
   void Navigate(const GURL& url) override;
   void OnDestruct() override;
 
-#if !defined(OS_ANDROID)
-  void OnWebUIJavaScript(const base::string16& javascript);
-#endif
 #if defined(OS_ANDROID)
   void OnUpdateBrowserControlsState(content::BrowserControlsState constraints,
                                     content::BrowserControlsState current,
@@ -52,9 +47,6 @@ class ChromeRenderViewObserver : public content::RenderViewObserver {
 
   // Determines if a host is in the strict security host set.
   bool IsStrictSecurityHost(const std::string& host);
-
-  // Save the JavaScript to preload if a ViewMsg_WebUIJavaScript is received.
-  std::vector<base::string16> webui_javascript_;
 
   // Owned by ChromeContentRendererClient and outlive us.
   web_cache::WebCacheImpl* web_cache_impl_;

@@ -114,14 +114,6 @@ IPC_STRUCT_TRAITS_END()
 // RenderView messages
 // These are messages sent from the browser to the renderer process.
 
-#if !defined(OS_ANDROID)
-// For WebUI testing, this message requests JavaScript to be executed at a time
-// which is late enough to not be thrown out, and early enough to be before
-// onload events are fired.
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_WebUIJavaScript,
-                    base::string16  /* javascript */)
-#endif
-
 // Tells the render frame to load all blocked plugins with the given identifier.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_LoadBlockedPlugins,
                     std::string /* identifier */)
