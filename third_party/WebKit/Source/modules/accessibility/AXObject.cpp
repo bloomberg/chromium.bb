@@ -43,6 +43,8 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutBoxModelObject.h"
+#include "core/layout/LayoutView.h"
+#include "core/page/Page.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/wtf/HashSet.h"
@@ -1815,229 +1817,60 @@ bool AXObject::Press() {
 }
 
 void AXObject::ScrollToMakeVisible() const {
-  IntRect object_rect = PixelSnappedIntRect(GetBoundsInFrameCoordinates());
-  object_rect.SetLocation(IntPoint());
-  ScrollToMakeVisibleWithSubFocus(object_rect);
-}
-
-// This is a 1-dimensional scroll offset helper function that's applied
-// separately in the horizontal and vertical directions, because the
-// logic is the same. The goal is to compute the best scroll offset
-// in order to make an object visible within a viewport.
-//
-// If the object is already fully visible, returns the same scroll
-// offset.
-//
-// In case the whole object cannot fit, you can specify a
-// subfocus - a smaller region within the object that should
-// be prioritized. If the whole object can fit, the subfocus is
-// ignored.
-//
-// If possible, the object and subfocus are centered within the
-// viewport.
-//
-// Example 1: the object is already visible, so nothing happens.
-//   +----------Viewport---------+
-//                 +---Object---+
-//                 +--SubFocus--+
-//
-// Example 2: the object is not fully visible, so it's centered
-// within the viewport.
-//   Before:
-//   +----------Viewport---------+
-//                         +---Object---+
-//                         +--SubFocus--+
-//
-//   After:
-//                 +----------Viewport---------+
-//                         +---Object---+
-//                         +--SubFocus--+
-//
-// Example 3: the object is larger than the viewport, so the
-// viewport moves to show as much of the object as possible,
-// while also trying to center the subfocus.
-//   Before:
-//   +----------Viewport---------+
-//     +---------------Object--------------+
-//                         +-SubFocus-+
-//
-//   After:
-//             +----------Viewport---------+
-//     +---------------Object--------------+
-//                         +-SubFocus-+
-//
-// When constraints cannot be fully satisfied, the min
-// (left/top) position takes precedence over the max (right/bottom).
-//
-// Note that the return value represents the ideal new scroll offset.
-// This may be out of range - the calling function should clip this
-// to the available range.
-static int ComputeBestScrollOffset(int current_scroll_offset,
-                                   int subfocus_min,
-                                   int subfocus_max,
-                                   int object_min,
-                                   int object_max,
-                                   int viewport_min,
-                                   int viewport_max) {
-  int viewport_size = viewport_max - viewport_min;
-
-  // If the object size is larger than the viewport size, consider
-  // only a portion that's as large as the viewport, centering on
-  // the subfocus as much as possible.
-  if (object_max - object_min > viewport_size) {
-    // Since it's impossible to fit the whole object in the
-    // viewport, exit now if the subfocus is already within the viewport.
-    if (subfocus_min - current_scroll_offset >= viewport_min &&
-        subfocus_max - current_scroll_offset <= viewport_max)
-      return current_scroll_offset;
-
-    // Subfocus must be within focus.
-    subfocus_min = std::max(subfocus_min, object_min);
-    subfocus_max = std::min(subfocus_max, object_max);
-
-    // Subfocus must be no larger than the viewport size; favor top/left.
-    if (subfocus_max - subfocus_min > viewport_size)
-      subfocus_max = subfocus_min + viewport_size;
-
-    // Compute the size of an object centered on the subfocus, the size of the
-    // viewport.
-    int centered_object_min = (subfocus_min + subfocus_max - viewport_size) / 2;
-    int centered_object_max = centered_object_min + viewport_size;
-
-    object_min = std::max(object_min, centered_object_min);
-    object_max = std::min(object_max, centered_object_max);
-  }
-
-  // Exit now if the focus is already within the viewport.
-  if (object_min - current_scroll_offset >= viewport_min &&
-      object_max - current_scroll_offset <= viewport_max)
-    return current_scroll_offset;
-
-  // Center the object in the viewport.
-  return (object_min + object_max - viewport_min - viewport_max) / 2;
-}
-
-void AXObject::ScrollToMakeVisibleWithSubFocus(const IntRect& subfocus) const {
-  // Search up the parent chain until we find the first one that's scrollable.
-  const AXObject* scroll_parent = ParentObject() ? ParentObject() : this;
-  ScrollableArea* scrollable_area = 0;
-  while (scroll_parent) {
-    scrollable_area = scroll_parent->GetScrollableAreaIfScrollable();
-    if (scrollable_area)
-      break;
-    scroll_parent = scroll_parent->ParentObject();
-  }
-  if (!scroll_parent || !scrollable_area)
+  Node* node = GetNode();
+  LayoutObject* layout_object = node ? node->GetLayoutObject() : nullptr;
+  if (!layout_object || !node->isConnected())
     return;
+  LayoutRect target_rect(layout_object->AbsoluteBoundingBoxRect());
+  layout_object->ScrollRectToVisible(
+      target_rect, ScrollAlignment::kAlignCenterIfNeeded,
+      ScrollAlignment::kAlignCenterIfNeeded, kProgrammaticScroll,
+      !GetDocument()->GetPage()->GetSettings().GetInertVisualViewport(),
+      kScrollBehaviorAuto);
+  AxObjectCache().PostNotification(
+      AxObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
+      AXObjectCacheImpl::kAXLocationChanged);
+}
 
-  IntRect object_rect = PixelSnappedIntRect(GetBoundsInFrameCoordinates());
-  IntSize scroll_offset = scrollable_area->ScrollOffsetInt();
-  IntRect scroll_visible_rect = scrollable_area->VisibleContentRect();
-
-  // Convert the object rect into local coordinates.
-  if (!scroll_parent->IsWebArea()) {
-    object_rect.MoveBy(IntPoint(scroll_offset));
-    object_rect.MoveBy(
-        -PixelSnappedIntRect(scroll_parent->GetBoundsInFrameCoordinates())
-             .Location());
-  }
-
-  int desired_x = ComputeBestScrollOffset(
-      scroll_offset.Width(), object_rect.X() + subfocus.X(),
-      object_rect.X() + subfocus.MaxX(), object_rect.X(), object_rect.MaxX(), 0,
-      scroll_visible_rect.Width());
-  int desired_y = ComputeBestScrollOffset(
-      scroll_offset.Height(), object_rect.Y() + subfocus.Y(),
-      object_rect.Y() + subfocus.MaxY(), object_rect.Y(), object_rect.MaxY(), 0,
-      scroll_visible_rect.Height());
-
-  scroll_parent->SetScrollOffset(IntPoint(desired_x, desired_y));
-
-  // Convert the subfocus into the coordinates of the scroll parent.
-  IntRect new_subfocus = subfocus;
-  IntRect new_element_rect = PixelSnappedIntRect(GetBoundsInFrameCoordinates());
-  IntRect scroll_parent_rect =
-      PixelSnappedIntRect(scroll_parent->GetBoundsInFrameCoordinates());
-  new_subfocus.Move(new_element_rect.X(), new_element_rect.Y());
-  new_subfocus.Move(-scroll_parent_rect.X(), -scroll_parent_rect.Y());
-
-  if (scroll_parent->ParentObject()) {
-    // Recursively make sure the scroll parent itself is visible.
-    scroll_parent->ScrollToMakeVisibleWithSubFocus(new_subfocus);
-  } else {
-    // To minimize the number of notifications, only fire one on the topmost
-    // object that has been scrolled.
-    AxObjectCache().PostNotification(const_cast<AXObject*>(this),
-                                     AXObjectCacheImpl::kAXLocationChanged);
-  }
+void AXObject::ScrollToMakeVisibleWithSubFocus(const IntRect& rect) const {
+  Node* node = GetNode();
+  LayoutObject* layout_object = node ? node->GetLayoutObject() : nullptr;
+  if (!layout_object || !node->isConnected())
+    return;
+  LayoutRect target_rect(
+      layout_object->LocalToAbsoluteQuad(FloatQuad(FloatRect(rect)))
+          .BoundingBox());
+  // TODO(szager): This scroll alignment is intended to preserve existing
+  // behavior to the extent possible, but it's not clear that this behavior is
+  // well-spec'ed or optimal.  In particular, it favors centering things in
+  // the visible viewport rather than snapping them to the closest edge, which
+  // is the default behavior of element.scrollIntoView.
+  ScrollAlignment scroll_alignment = {
+      kScrollAlignmentNoScroll, kScrollAlignmentCenter, kScrollAlignmentCenter};
+  layout_object->ScrollRectToVisible(
+      target_rect, scroll_alignment, scroll_alignment, kProgrammaticScroll,
+      !GetDocument()->GetPage()->GetSettings().GetInertVisualViewport(),
+      kScrollBehaviorAuto);
+  AxObjectCache().PostNotification(
+      AxObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
+      AXObjectCacheImpl::kAXLocationChanged);
 }
 
 void AXObject::ScrollToGlobalPoint(const IntPoint& global_point) const {
-  // Search up the parent chain and create a vector of all scrollable parent
-  // objects and ending with this object itself.
-  HeapVector<Member<const AXObject>> objects;
-  AXObject* parent_object;
-  for (parent_object = this->ParentObject(); parent_object;
-       parent_object = parent_object->ParentObject()) {
-    if (parent_object->GetScrollableAreaIfScrollable())
-      objects.push_front(parent_object);
-  }
-  objects.push_back(this);
-
-  // Start with the outermost scrollable (the main window) and try to scroll the
-  // next innermost object to the given point.
-  int offset_x = 0, offset_y = 0;
-  IntPoint point = global_point;
-  size_t levels = objects.size() - 1;
-  for (size_t i = 0; i < levels; i++) {
-    const AXObject* outer = objects[i];
-    const AXObject* inner = objects[i + 1];
-    ScrollableArea* scrollable_area = outer->GetScrollableAreaIfScrollable();
-
-    IntRect inner_rect =
-        inner->IsWebArea()
-            ? PixelSnappedIntRect(
-                  inner->ParentObject()->GetBoundsInFrameCoordinates())
-            : PixelSnappedIntRect(inner->GetBoundsInFrameCoordinates());
-    IntRect object_rect = inner_rect;
-    IntSize scroll_offset = scrollable_area->ScrollOffsetInt();
-
-    // Convert the object rect into local coordinates.
-    object_rect.Move(offset_x, offset_y);
-    if (!outer->IsWebArea())
-      object_rect.Move(scroll_offset.Width(), scroll_offset.Height());
-
-    int desired_x = ComputeBestScrollOffset(
-        0, object_rect.X(), object_rect.MaxX(), object_rect.X(),
-        object_rect.MaxX(), point.X(), point.X());
-    int desired_y = ComputeBestScrollOffset(
-        0, object_rect.Y(), object_rect.MaxY(), object_rect.Y(),
-        object_rect.MaxY(), point.Y(), point.Y());
-    outer->SetScrollOffset(IntPoint(desired_x, desired_y));
-
-    if (outer->IsWebArea() && !inner->IsWebArea()) {
-      // If outer object we just scrolled is a web area (frame) but the inner
-      // object is not, keep track of the coordinate transformation to apply to
-      // future nested calculations.
-      scroll_offset = scrollable_area->ScrollOffsetInt();
-      offset_x -= (scroll_offset.Width() + point.X());
-      offset_y -= (scroll_offset.Height() + point.Y());
-      point.Move(scroll_offset.Width() - inner_rect.Width(),
-                 scroll_offset.Height() - inner_rect.Y());
-    } else if (inner->IsWebArea()) {
-      // Otherwise, if the inner object is a web area, reset the coordinate
-      // transformation.
-      offset_x = 0;
-      offset_y = 0;
-    }
-  }
-
-  // To minimize the number of notifications, only fire one on the topmost
-  // object that has been scrolled.
-  DCHECK(objects[0]);
-  // TODO(nektar): Switch to postNotification(objects[0] and remove |getNode|.
-  AxObjectCache().PostNotification(objects[0]->GetNode(),
-                                   AXObjectCacheImpl::kAXLocationChanged);
+  Node* node = GetNode();
+  LayoutObject* layout_object = node ? node->GetLayoutObject() : nullptr;
+  if (!layout_object || !node->isConnected())
+    return;
+  LayoutRect target_rect(layout_object->AbsoluteBoundingBoxRect());
+  target_rect.MoveBy(-global_point);
+  layout_object->ScrollRectToVisible(
+      target_rect, ScrollAlignment::kAlignLeftAlways,
+      ScrollAlignment::kAlignTopAlways, kProgrammaticScroll,
+      !GetDocument()->GetPage()->GetSettings().GetInertVisualViewport(),
+      kScrollBehaviorAuto);
+  AxObjectCache().PostNotification(
+      AxObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
+      AXObjectCacheImpl::kAXLocationChanged);
 }
 
 void AXObject::SetSequentialFocusNavigationStartingPoint() {
