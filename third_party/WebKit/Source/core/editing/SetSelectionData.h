@@ -33,6 +33,7 @@ class CORE_EXPORT SetSelectionData final {
   bool DoNotClearStrategy() const { return do_not_clear_strategy_; }
   bool ShouldCloseTyping() const { return should_close_typing_; }
   bool ShouldClearTypingStyle() const { return should_clear_typing_style_; }
+  bool ShouldShowHandle() const { return should_show_handle_; }
 
  private:
   CursorAlignOnScroll cursor_align_on_scroll_ = CursorAlignOnScroll::kIfNeeded;
@@ -42,6 +43,7 @@ class CORE_EXPORT SetSelectionData final {
   SetSelectionBy set_selection_by_ = SetSelectionBy::kSystem;
   bool should_close_typing_ = false;
   bool should_clear_typing_style_ = false;
+  bool should_show_handle_ = false;
 };
 
 // This class is used for building |SelectionData| object.
@@ -61,6 +63,7 @@ class CORE_EXPORT SetSelectionData::Builder final {
   Builder& SetSetSelectionBy(SetSelectionBy);
   Builder& SetShouldCloseTyping(bool);
   Builder& SetShouldClearTypingStyle(bool);
+  Builder& SetShouldShowHandle(bool);
 
  private:
   SetSelectionData data_;

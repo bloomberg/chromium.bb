@@ -296,7 +296,6 @@ TEST_F(FrameSelectionTest, SelectAllPreservesHandle) {
   const Position end_of_text(sample->firstChild(), 3);
   Selection().SetSelection(SelectionInDOMTree::Builder()
                                .Collapse(end_of_text)
-                               .SetIsHandleVisible(false)
                                .Build());
   EXPECT_FALSE(Selection().IsHandleVisible());
   Selection().SelectAll();
@@ -305,10 +304,13 @@ TEST_F(FrameSelectionTest, SelectAllPreservesHandle) {
          "selectAll. Then they shouldn't be present "
          "after it.";
 
-  Selection().SetSelection(SelectionInDOMTree::Builder()
-                               .Collapse(end_of_text)
-                               .SetIsHandleVisible(true)
-                               .Build());
+  Selection().SetSelection(
+      SelectionInDOMTree::Builder().Collapse(end_of_text).Build(),
+      SetSelectionData::Builder()
+          .SetShouldCloseTyping(true)
+          .SetShouldClearTypingStyle(true)
+          .SetShouldShowHandle(true)
+          .Build());
   EXPECT_TRUE(Selection().IsHandleVisible());
   Selection().SelectAll();
   EXPECT_TRUE(Selection().IsHandleVisible())
@@ -323,7 +325,6 @@ TEST_F(FrameSelectionTest, BoldCommandPreservesHandle) {
   const Position end_of_text(sample->firstChild(), 3);
   Selection().SetSelection(SelectionInDOMTree::Builder()
                                .Collapse(end_of_text)
-                               .SetIsHandleVisible(false)
                                .Build());
   EXPECT_FALSE(Selection().IsHandleVisible());
   Selection().SelectAll();
@@ -333,10 +334,13 @@ TEST_F(FrameSelectionTest, BoldCommandPreservesHandle) {
          "bold command. Then they shouldn't "
          "be present after it.";
 
-  Selection().SetSelection(SelectionInDOMTree::Builder()
-                               .Collapse(end_of_text)
-                               .SetIsHandleVisible(true)
-                               .Build());
+  Selection().SetSelection(
+      SelectionInDOMTree::Builder().Collapse(end_of_text).Build(),
+      SetSelectionData::Builder()
+          .SetShouldCloseTyping(true)
+          .SetShouldClearTypingStyle(true)
+          .SetShouldShowHandle(true)
+          .Build());
   EXPECT_TRUE(Selection().IsHandleVisible());
   Selection().SelectAll();
   GetDocument().execCommand("bold", false, "", ASSERT_NO_EXCEPTION);
@@ -352,7 +356,6 @@ TEST_F(FrameSelectionTest, SelectionOnRangeHidesHandles) {
   Selection().SetSelection(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 0), Position(text, 5))
-          .SetIsHandleVisible(false)
           .Build());
 
   Selection().SetSelection(SelectionInDOMTree::Builder()
@@ -367,7 +370,11 @@ TEST_F(FrameSelectionTest, SelectionOnRangeHidesHandles) {
   Selection().SetSelection(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position(text, 0), Position(text, 5))
-          .SetIsHandleVisible(true)
+          .Build(),
+      SetSelectionData::Builder()
+          .SetShouldCloseTyping(true)
+          .SetShouldClearTypingStyle(true)
+          .SetShouldShowHandle(true)
           .Build());
 
   Selection().SetSelection(SelectionInDOMTree::Builder()

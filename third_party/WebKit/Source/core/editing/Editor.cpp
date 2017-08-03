@@ -1494,10 +1494,10 @@ void Editor::ChangeSelectionAfterCommand(
   bool selection_did_not_change_dom_position =
       new_selection == GetFrame().Selection().GetSelectionInDOMTree();
   GetFrame().Selection().SetSelection(
-      SelectionInDOMTree::Builder(new_selection)
-          .SetIsHandleVisible(GetFrame().Selection().IsHandleVisible())
-          .Build(),
-      options);
+      new_selection,
+      SetSelectionData::Builder(options)
+          .SetShouldShowHandle(GetFrame().Selection().IsHandleVisible())
+          .Build());
 
   // Some editing operations change the selection visually without affecting its
   // position within the DOM. For example when you press return in the following

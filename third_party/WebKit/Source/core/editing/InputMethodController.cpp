@@ -394,11 +394,12 @@ bool InputMethodController::FinishComposingText(
     const SelectionInDOMTree& selection =
         SelectionInDOMTree::Builder()
             .SetBaseAndExtent(old_selection_range)
-            .SetIsHandleVisible(is_handle_visible)
             .Build();
     GetFrame().Selection().SetSelection(
-        selection,
-        SetSelectionData::Builder().SetShouldCloseTyping(true).Build());
+        selection, SetSelectionData::Builder()
+                       .SetShouldCloseTyping(true)
+                       .SetShouldShowHandle(is_handle_visible)
+                       .Build());
     return true;
   }
 
