@@ -128,10 +128,9 @@ AutofillProfile ProfileFromSpecifics(
 
   // SetInfo instead of SetRawInfo so the constituent pieces will be parsed
   // for these data types.
-  profile.SetInfo(AutofillType(NAME_FULL),
-                  base::UTF8ToUTF16(address.recipient_name()),
+  profile.SetInfo(NAME_FULL, base::UTF8ToUTF16(address.recipient_name()),
                   profile.language_code());
-  profile.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER),
+  profile.SetInfo(PHONE_HOME_WHOLE_NUMBER,
                   base::UTF8ToUTF16(address.phone_number()),
                   profile.language_code());
 

@@ -45,16 +45,26 @@ void FormGroup::GetNonEmptyTypes(const std::string& app_locale,
   }
 }
 
+base::string16 FormGroup::GetInfo(ServerFieldType type,
+                                  const std::string& app_locale) const {
+  return GetInfoImpl(AutofillType(type), app_locale);
+}
+
 base::string16 FormGroup::GetInfo(const AutofillType& type,
                                   const std::string& app_locale) const {
-  return GetRawInfo(type.GetStorableType());
+  return GetInfoImpl(type, app_locale);
+}
+
+bool FormGroup::SetInfo(ServerFieldType type,
+                        const base::string16& value,
+                        const std::string& app_locale) {
+  return SetInfoImpl(AutofillType(type), value, app_locale);
 }
 
 bool FormGroup::SetInfo(const AutofillType& type,
                         const base::string16& value,
                         const std::string& app_locale) {
-  SetRawInfo(type.GetStorableType(), value);
-  return true;
+  return SetInfoImpl(type, value, app_locale);
 }
 
 bool FormGroup::HasInfo(ServerFieldType type) const {
@@ -65,6 +75,18 @@ bool FormGroup::HasInfo(const AutofillType& type) const {
   // Use "en-US" as a placeholder locale. We are only interested in emptiness,
   // not in the presentation of the string.
   return !GetInfo(type, "en-US").empty();
+}
+
+base::string16 FormGroup::GetInfoImpl(const AutofillType& type,
+                                      const std::string& app_locale) const {
+  return GetRawInfo(type.GetStorableType());
+}
+
+bool FormGroup::SetInfoImpl(const AutofillType& type,
+                            const base::string16& value,
+                            const std::string& app_locale) {
+  SetRawInfo(type.GetStorableType(), value);
+  return true;
 }
 
 }  // namespace autofill

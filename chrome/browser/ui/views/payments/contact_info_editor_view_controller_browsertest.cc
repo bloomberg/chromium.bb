@@ -175,8 +175,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, ModifyExisting) {
   personal_data_manager->AddObserver(&personal_data_observer_);
 
   autofill::AutofillProfile incomplete_profile;
-  incomplete_profile.SetInfo(autofill::AutofillType(autofill::NAME_FULL),
-                             base::ASCIIToUTF16(kNameFull), GetLocale());
+  incomplete_profile.SetInfo(autofill::NAME_FULL, base::ASCIIToUTF16(kNameFull),
+                             GetLocale());
   AddAutofillProfile(incomplete_profile);
 
   InvokePaymentRequestUI();
@@ -224,12 +224,12 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
   personal_data_manager->AddObserver(&personal_data_observer_);
 
   autofill::AutofillProfile incomplete_profile;
-  incomplete_profile.SetInfo(autofill::AutofillType(autofill::NAME_FULL),
-                             base::ASCIIToUTF16(kNameFull), GetLocale());
+  incomplete_profile.SetInfo(autofill::NAME_FULL, base::ASCIIToUTF16(kNameFull),
+                             GetLocale());
   AddAutofillProfile(incomplete_profile);
 
   autofill::AutofillProfile other_incomplete_profile;
-  other_incomplete_profile.SetInfo(autofill::AutofillType(autofill::NAME_FULL),
+  other_incomplete_profile.SetInfo(autofill::NAME_FULL,
                                    base::ASCIIToUTF16("other"), GetLocale());
   AddAutofillProfile(other_incomplete_profile);
 

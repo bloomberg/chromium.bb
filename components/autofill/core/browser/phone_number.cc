@@ -93,69 +93,6 @@ void PhoneNumber::SetRawInfo(ServerFieldType type,
   cached_parsed_phone_ = i18n::PhoneObject();
 }
 
-// Normalize phones if |type| is a whole number:
-//   (650)2345678 -> 6502345678
-//   1-800-FLOWERS -> 18003569377
-// If the phone cannot be normalized, returns the stored value verbatim.
-base::string16 PhoneNumber::GetInfo(const AutofillType& type,
-                                    const std::string& app_locale) const {
-  ServerFieldType storable_type = type.GetStorableType();
-  UpdateCacheIfNeeded(app_locale);
-
-  // Queries for whole numbers will return the non-normalized number if
-  // normalization for the number fails.  All other field types require
-  // normalization.
-  if (storable_type != PHONE_HOME_WHOLE_NUMBER &&
-      !cached_parsed_phone_.IsValidNumber())
-    return base::string16();
-
-  switch (storable_type) {
-    case PHONE_HOME_WHOLE_NUMBER:
-      return cached_parsed_phone_.GetWholeNumber();
-
-    case PHONE_HOME_NUMBER:
-      return cached_parsed_phone_.number();
-
-    case PHONE_HOME_CITY_CODE:
-      return cached_parsed_phone_.city_code();
-
-    case PHONE_HOME_COUNTRY_CODE:
-      return cached_parsed_phone_.country_code();
-
-    case PHONE_HOME_CITY_AND_NUMBER:
-      return
-          cached_parsed_phone_.city_code() + cached_parsed_phone_.number();
-
-    case PHONE_HOME_EXTENSION:
-      return base::string16();
-
-    default:
-      NOTREACHED();
-      return base::string16();
-  }
-}
-
-bool PhoneNumber::SetInfo(const AutofillType& type,
-                          const base::string16& value,
-                          const std::string& app_locale) {
-  SetRawInfo(type.GetStorableType(), value);
-
-  if (number_.empty())
-    return true;
-
-  // Store a formatted (i.e., pretty printed) version of the number if either
-  // the number doesn't contain formatting marks.
-  UpdateCacheIfNeeded(app_locale);
-  if (base::ContainsOnlyChars(number_, base::ASCIIToUTF16("+0123456789"))) {
-    number_ = cached_parsed_phone_.GetFormattedNumber();
-  } else if (i18n::NormalizePhoneNumber(
-                 number_, GetRegion(*profile_, app_locale)).empty()) {
-    // The number doesn't make sense for this region; clear it.
-    number_.clear();
-  }
-  return !number_.empty();
-}
-
 void PhoneNumber::GetMatchingTypes(const base::string16& text,
                                    const std::string& app_locale,
                                    ServerFieldTypeSet* matching_types) const {
@@ -197,6 +134,70 @@ void PhoneNumber::GetMatchingTypes(const base::string16& text,
     }
   }
 }
+
+// Normalize phones if |type| is a whole number:
+//   (650)2345678 -> 6502345678
+//   1-800-FLOWERS -> 18003569377
+// If the phone cannot be normalized, returns the stored value verbatim.
+base::string16 PhoneNumber::GetInfoImpl(const AutofillType& type,
+                                        const std::string& app_locale) const {
+  ServerFieldType storable_type = type.GetStorableType();
+  UpdateCacheIfNeeded(app_locale);
+
+  // Queries for whole numbers will return the non-normalized number if
+  // normalization for the number fails.  All other field types require
+  // normalization.
+  if (storable_type != PHONE_HOME_WHOLE_NUMBER &&
+      !cached_parsed_phone_.IsValidNumber())
+    return base::string16();
+
+  switch (storable_type) {
+    case PHONE_HOME_WHOLE_NUMBER:
+      return cached_parsed_phone_.GetWholeNumber();
+
+    case PHONE_HOME_NUMBER:
+      return cached_parsed_phone_.number();
+
+    case PHONE_HOME_CITY_CODE:
+      return cached_parsed_phone_.city_code();
+
+    case PHONE_HOME_COUNTRY_CODE:
+      return cached_parsed_phone_.country_code();
+
+    case PHONE_HOME_CITY_AND_NUMBER:
+      return
+          cached_parsed_phone_.city_code() + cached_parsed_phone_.number();
+
+    case PHONE_HOME_EXTENSION:
+      return base::string16();
+
+    default:
+      NOTREACHED();
+      return base::string16();
+  }
+}
+
+bool PhoneNumber::SetInfoImpl(const AutofillType& type,
+                              const base::string16& value,
+                              const std::string& app_locale) {
+  SetRawInfo(type.GetStorableType(), value);
+
+  if (number_.empty())
+    return true;
+
+  // Store a formatted (i.e., pretty printed) version of the number if either
+  // the number doesn't contain formatting marks.
+  UpdateCacheIfNeeded(app_locale);
+  if (base::ContainsOnlyChars(number_, base::ASCIIToUTF16("+0123456789"))) {
+    number_ = cached_parsed_phone_.GetFormattedNumber();
+  } else if (i18n::NormalizePhoneNumber(
+                 number_, GetRegion(*profile_, app_locale)).empty()) {
+    // The number doesn't make sense for this region; clear it.
+    number_.clear();
+  }
+  return !number_.empty();
+}
+
 
 void PhoneNumber::UpdateCacheIfNeeded(const std::string& app_locale) const {
   std::string region = GetRegion(*profile_, app_locale);

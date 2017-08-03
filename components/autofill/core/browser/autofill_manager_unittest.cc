@@ -1473,28 +1473,28 @@ TEST_F(AutofillManagerTest,
   std::unique_ptr<AutofillProfile> profile1 =
       base::MakeUnique<AutofillProfile>();
   profile1->set_guid("00000000-0000-0000-0000-000000000103");
-  profile1->SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("Robin"), "en-US");
-  profile1->SetInfo(AutofillType(NAME_LAST), ASCIIToUTF16("Grimes"), "en-US");
-  profile1->SetInfo(AutofillType(ADDRESS_HOME_LINE1),
-                    ASCIIToUTF16("1234 Smith Blvd."), "en-US");
+  profile1->SetInfo(NAME_FIRST, ASCIIToUTF16("Robin"), "en-US");
+  profile1->SetInfo(NAME_LAST, ASCIIToUTF16("Grimes"), "en-US");
+  profile1->SetInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("1234 Smith Blvd."),
+                    "en-US");
   autofill_manager_->AddProfile(std::move(profile1));
 
   std::unique_ptr<AutofillProfile> profile2 =
       base::MakeUnique<AutofillProfile>();
   profile2->set_guid("00000000-0000-0000-0000-000000000124");
-  profile2->SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("Carl"), "en-US");
-  profile2->SetInfo(AutofillType(NAME_LAST), ASCIIToUTF16("Grimes"), "en-US");
-  profile2->SetInfo(AutofillType(ADDRESS_HOME_LINE1),
-                    ASCIIToUTF16("1234 Smith Blvd."), "en-US");
+  profile2->SetInfo(NAME_FIRST, ASCIIToUTF16("Carl"), "en-US");
+  profile2->SetInfo(NAME_LAST, ASCIIToUTF16("Grimes"), "en-US");
+  profile2->SetInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("1234 Smith Blvd."),
+                    "en-US");
   autofill_manager_->AddProfile(std::move(profile2));
 
   std::unique_ptr<AutofillProfile> profile3 =
       base::MakeUnique<AutofillProfile>();
   profile3->set_guid("00000000-0000-0000-0000-000000000126");
-  profile3->SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("Aaron"), "en-US");
-  profile3->SetInfo(AutofillType(NAME_LAST), ASCIIToUTF16("Googler"), "en-US");
-  profile3->SetInfo(AutofillType(ADDRESS_HOME_LINE1),
-                    ASCIIToUTF16("1600 Amphitheater pkwy"), "en-US");
+  profile3->SetInfo(NAME_FIRST, ASCIIToUTF16("Aaron"), "en-US");
+  profile3->SetInfo(NAME_LAST, ASCIIToUTF16("Googler"), "en-US");
+  profile3->SetInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("1600 Amphitheater pkwy"),
+                    "en-US");
   autofill_manager_->AddProfile(std::move(profile3));
 
   FormFieldData field;
@@ -2132,8 +2132,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_FancyPhone) {
   std::unique_ptr<AutofillProfile> profile =
       base::MakeUnique<AutofillProfile>();
   profile->set_guid("00000000-0000-0000-0000-000000000103");
-  profile->SetInfo(AutofillType(NAME_FULL), ASCIIToUTF16("Natty Bumppo"),
-                   "en-US");
+  profile->SetInfo(NAME_FULL, ASCIIToUTF16("Natty Bumppo"), "en-US");
   profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("1800PRAIRIE"));
   autofill_manager_->AddProfile(std::move(profile));
 
@@ -6690,23 +6689,21 @@ TEST_F(AutofillManagerTest,
   std::unique_ptr<AutofillProfile> profile1 =
       base::MakeUnique<AutofillProfile>();
   profile1->set_guid("00000000-0000-0000-0000-000000000103");
-  profile1->SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("Robin"), "en-US");
-  profile1->SetInfo(AutofillType(NAME_MIDDLE), ASCIIToUTF16("Adam Smith"),
+  profile1->SetInfo(NAME_FIRST, ASCIIToUTF16("Robin"), "en-US");
+  profile1->SetInfo(NAME_MIDDLE, ASCIIToUTF16("Adam Smith"), "en-US");
+  profile1->SetInfo(NAME_LAST, ASCIIToUTF16("Grimes"), "en-US");
+  profile1->SetInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("1234 Smith Blvd."),
                     "en-US");
-  profile1->SetInfo(AutofillType(NAME_LAST), ASCIIToUTF16("Grimes"), "en-US");
-  profile1->SetInfo(AutofillType(ADDRESS_HOME_LINE1),
-                    ASCIIToUTF16("1234 Smith Blvd."), "en-US");
   autofill_manager_->AddProfile(std::move(profile1));
 
   std::unique_ptr<AutofillProfile> profile2 =
       base::MakeUnique<AutofillProfile>();
   profile2->set_guid("00000000-0000-0000-0000-000000000124");
-  profile2->SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16("Carl"), "en-US");
-  profile2->SetInfo(AutofillType(NAME_MIDDLE), ASCIIToUTF16("Shawn Smith"),
+  profile2->SetInfo(NAME_FIRST, ASCIIToUTF16("Carl"), "en-US");
+  profile2->SetInfo(NAME_MIDDLE, ASCIIToUTF16("Shawn Smith"), "en-US");
+  profile2->SetInfo(NAME_LAST, ASCIIToUTF16("Grimes"), "en-US");
+  profile2->SetInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("1234 Smith Blvd."),
                     "en-US");
-  profile2->SetInfo(AutofillType(NAME_LAST), ASCIIToUTF16("Grimes"), "en-US");
-  profile2->SetInfo(AutofillType(ADDRESS_HOME_LINE1),
-                    ASCIIToUTF16("1234 Smith Blvd."), "en-US");
   autofill_manager_->AddProfile(std::move(profile2));
 
   FormFieldData field;

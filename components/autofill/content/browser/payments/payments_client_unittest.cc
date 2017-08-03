@@ -166,18 +166,14 @@ class PaymentsClientTest : public testing::Test, public PaymentsClientDelegate {
                                base::StringPiece phone_number) {
     AutofillProfile profile;
 
-    profile.SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16(first_name),
+    profile.SetInfo(NAME_FIRST, ASCIIToUTF16(first_name), "en-US");
+    profile.SetInfo(NAME_LAST, ASCIIToUTF16(last_name), "en-US");
+    profile.SetInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16(address_line), "en-US");
+    profile.SetInfo(ADDRESS_HOME_CITY, ASCIIToUTF16(city), "en-US");
+    profile.SetInfo(ADDRESS_HOME_STATE, ASCIIToUTF16(state), "en-US");
+    profile.SetInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16(zip), "en-US");
+    profile.SetInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16(phone_number),
                     "en-US");
-    profile.SetInfo(AutofillType(NAME_LAST), ASCIIToUTF16(last_name), "en-US");
-    profile.SetInfo(AutofillType(ADDRESS_HOME_LINE1),
-                    ASCIIToUTF16(address_line), "en-US");
-    profile.SetInfo(AutofillType(ADDRESS_HOME_CITY), ASCIIToUTF16(city),
-                    "en-US");
-    profile.SetInfo(AutofillType(ADDRESS_HOME_STATE), ASCIIToUTF16(state),
-                    "en-US");
-    profile.SetInfo(AutofillType(ADDRESS_HOME_ZIP), ASCIIToUTF16(zip), "en-US");
-    profile.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER),
-                    ASCIIToUTF16(phone_number), "en-US");
 
     return profile;
   }

@@ -44,14 +44,19 @@ class FormGroup {
 
   // Returns the string that should be auto-filled into a text field given the
   // type of that field, localized to the given |app_locale| if appropriate.
-  virtual base::string16 GetInfo(const AutofillType& type,
-                                 const std::string& app_locale) const;
+  base::string16 GetInfo(ServerFieldType type,
+                         const std::string& app_locale) const;
+  base::string16 GetInfo(const AutofillType& type,
+                         const std::string& app_locale) const;
 
-  // Used to populate this FormGroup object with data.  Canonicalizes the data
+  // Used to populate this FormGroup object with data. Canonicalizes the data
   // according to the specified |app_locale| prior to storing, if appropriate.
-  virtual bool SetInfo(const AutofillType& type,
-                       const base::string16& value,
-                       const std::string& app_locale);
+  bool SetInfo(ServerFieldType type,
+               const base::string16& value,
+               const std::string& app_locale);
+  bool SetInfo(const AutofillType& type,
+               const base::string16& value,
+               const std::string& app_locale);
 
   // Returns true iff the string associated with |type| is nonempty.
   bool HasInfo(ServerFieldType type) const;
@@ -65,6 +70,17 @@ class FormGroup {
   // Returns a set of server field types for which this FormGroup can store
   // data.  This method is additive on |supported_types|.
   virtual void GetSupportedTypes(ServerFieldTypeSet* supported_types) const = 0;
+
+  // Returns the string that should be auto-filled into a text field given the
+  // type of that field, localized to the given |app_locale| if appropriate.
+  virtual base::string16 GetInfoImpl(const AutofillType& type,
+                                     const std::string& app_locale) const;
+
+  // Used to populate this FormGroup object with data. Canonicalizes the data
+  // according to the specified |app_locale| prior to storing, if appropriate.
+  virtual bool SetInfoImpl(const AutofillType& type,
+                           const base::string16& value,
+                           const std::string& app_locale);
 };
 
 }  // namespace autofill

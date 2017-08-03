@@ -343,9 +343,8 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_KR) {
                        "Gangnam Finance Center", "152 Teheran-ro", "Gangnam-Gu",
                        "Seoul", "135-984", "KR", "+82-2-531-9000");
   profiles.back()->set_language_code("ko_Latn");
-  profiles.back()->SetInfo(AutofillType(ADDRESS_HOME_DEPENDENT_LOCALITY),
-                           UTF8ToUTF16("Yeoksam-Dong"),
-                           "en-US");
+  profiles.back()->SetInfo(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                           UTF8ToUTF16("Yeoksam-Dong"), "en-US");
   static const char* kExpectedLabels[] = {
       "",
       "Park Jae-sang",
@@ -735,7 +734,7 @@ TEST(AutofillProfileTest, MergeDataFrom_DifferentProfile) {
   EXPECT_EQ(kSettingsOrigin, a.origin());
   EXPECT_EQ(ASCIIToUTF16("Unit 5, area 51"), a.GetRawInfo(ADDRESS_HOME_LINE2));
   EXPECT_EQ(ASCIIToUTF16("Fox"), a.GetRawInfo(COMPANY_NAME));
-  base::string16 name = a.GetInfo(AutofillType(NAME_FULL), "en-US");
+  base::string16 name = a.GetInfo(NAME_FULL, "en-US");
   EXPECT_EQ(ASCIIToUTF16("Marion Mitchell Morrison"), name);
   EXPECT_EQ("en", a.language_code());
 }
@@ -917,7 +916,7 @@ TEST(AutofillProfileTest, SetRawInfoPreservesLineBreaks) {
 TEST(AutofillProfileTest, SetInfoPreservesLineBreaks) {
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
 
-  profile.SetInfo(AutofillType(ADDRESS_HOME_STREET_ADDRESS),
+  profile.SetInfo(ADDRESS_HOME_STREET_ADDRESS,
                   ASCIIToUTF16("123 Super St.\n"
                                "Apt. #42"),
                   "en-US");
@@ -937,8 +936,7 @@ TEST(AutofillProfileTest, SetRawInfoDoesntTrimWhitespace) {
 TEST(AutofillProfileTest, SetInfoTrimsWhitespace) {
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
 
-  profile.SetInfo(AutofillType(EMAIL_ADDRESS),
-                  ASCIIToUTF16("\tuser@example.com    "),
+  profile.SetInfo(EMAIL_ADDRESS, ASCIIToUTF16("\tuser@example.com    "),
                   "en-US");
   EXPECT_EQ(ASCIIToUTF16("user@example.com"),
             profile.GetRawInfo(EMAIL_ADDRESS));
@@ -964,12 +962,8 @@ TEST(AutofillProfileTest, FullAddress) {
   EXPECT_EQ(formatted_address, profile.GetInfo(full_address, "en-US"));
 
   // Some things can be missing...
-  profile.SetInfo(AutofillType(ADDRESS_HOME_LINE2),
-                  base::string16(),
-                  "en-US");
-  profile.SetInfo(AutofillType(EMAIL_ADDRESS),
-                  base::string16(),
-                  "en-US");
+  profile.SetInfo(ADDRESS_HOME_LINE2, base::string16(), "en-US");
+  profile.SetInfo(EMAIL_ADDRESS, base::string16(), "en-US");
   EXPECT_EQ(ASCIIToUTF16("Marion Mitchell Morrison\n"
                          "Fox\n"
                          "123 Zoo St.\n"
@@ -977,17 +971,13 @@ TEST(AutofillProfileTest, FullAddress) {
             profile.GetInfo(full_address, "en-US"));
 
   // ...but nothing comes out if a required field is missing.
-  profile.SetInfo(AutofillType(ADDRESS_HOME_STATE), base::string16(), "en-US");
+  profile.SetInfo(ADDRESS_HOME_STATE, base::string16(), "en-US");
   EXPECT_TRUE(profile.GetInfo(full_address, "en-US").empty());
 
   // Restore the state but remove country. This should also fail.
-  profile.SetInfo(AutofillType(ADDRESS_HOME_STATE),
-                               ASCIIToUTF16("CA"),
-                               "en-US");
+  profile.SetInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"), "en-US");
   EXPECT_FALSE(profile.GetInfo(full_address, "en-US").empty());
-  profile.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY),
-                               base::string16(),
-                               "en-US");
+  profile.SetInfo(ADDRESS_HOME_COUNTRY, base::string16(), "en-US");
   EXPECT_TRUE(profile.GetInfo(full_address, "en-US").empty());
 }
 

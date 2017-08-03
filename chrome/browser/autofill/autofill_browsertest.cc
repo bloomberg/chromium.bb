@@ -752,7 +752,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_UsePlusSignForInternationalNumber) {
       expectation = "14088714567";
 
     EXPECT_EQ(ASCIIToUTF16(expectation),
-              profile->GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), ""));
+              profile->GetInfo(PHONE_HOME_WHOLE_NUMBER, ""));
   }
 }
 
