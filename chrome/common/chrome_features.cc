@@ -25,6 +25,10 @@ const base::Feature kAllowAutoplayUnmutedInWebappManifestScope{
 const base::Feature kAppleScriptExecuteJavaScript{
     "AppleScriptExecuteJavaScript", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the fullscreen toolbar to reveal itself if it's hidden.
+const base::Feature kFullscreenToolbarReveal{"FullscreenToolbarReveal",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use the Toolkit-Views Task Manager window.
 const base::Feature kViewsTaskManager{"ViewsTaskManager",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
