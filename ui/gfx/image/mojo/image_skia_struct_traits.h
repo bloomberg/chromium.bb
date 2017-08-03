@@ -56,7 +56,11 @@ struct StructTraits<gfx::mojom::ImageSkiaRepDataView, gfx::ImageSkiaRep> {
 
 template <>
 struct StructTraits<gfx::mojom::ImageSkiaDataView, gfx::ImageSkia> {
-  static std::vector<gfx::ImageSkiaRep> image_reps(const gfx::ImageSkia& input);
+  static void* SetUpContext(const gfx::ImageSkia& input);
+  static void TearDownContext(const gfx::ImageSkia& input, void* context);
+  static const std::vector<gfx::ImageSkiaRep>& image_reps(
+      const gfx::ImageSkia& input,
+      void* context);
 
   static bool IsNull(const gfx::ImageSkia& input) {
     return input.image_reps().empty();

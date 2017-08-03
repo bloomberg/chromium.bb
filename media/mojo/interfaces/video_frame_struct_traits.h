@@ -19,6 +19,11 @@ namespace mojo {
 template <>
 struct StructTraits<media::mojom::VideoFrameDataView,
                     scoped_refptr<media::VideoFrame>> {
+  static void* SetUpContext(const scoped_refptr<media::VideoFrame>& input);
+
+  static void TearDownContext(const scoped_refptr<media::VideoFrame>&,
+                              void* context);
+
   static bool IsNull(const scoped_refptr<media::VideoFrame>& input) {
     return !input;
   }
@@ -52,8 +57,9 @@ struct StructTraits<media::mojom::VideoFrameDataView,
     return input->timestamp();
   }
 
-  static media::mojom::VideoFrameDataPtr data(
-      const scoped_refptr<media::VideoFrame>& input);
+  static media::mojom::VideoFrameDataPtr& data(
+      const scoped_refptr<media::VideoFrame>& input,
+      void* context);
 
   static bool Read(media::mojom::VideoFrameDataView input,
                    scoped_refptr<media::VideoFrame>* output);
