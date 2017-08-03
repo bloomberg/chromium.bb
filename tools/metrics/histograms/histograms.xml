@@ -84283,6 +84283,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Peak memory used to decode a WebAssembly module.</summary>
 </histogram>
 
+<histogram name="V8.WasmExecutionTimeMicroSeconds" units="microseconds">
+  <owner>bradnelson@chromium.org</owner>
+  <owner>titzer@chromium.org</owner>
+  <owner>eholk@chromium.org</owner>
+  <owner>kschimpf@chromium.org</owner>
+  <summary>Time spent executing WebAssembly.</summary>
+</histogram>
+
 <histogram name="V8.WasmFunctionSizeBytes" units="bytes">
   <owner>bradnelson@chromium.org</owner>
   <owner>titzer@chromium.org</owner>
