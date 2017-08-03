@@ -223,14 +223,106 @@ void Vp9Parser::Reset() {
   context_.Reset();
 }
 
+bool Vp9Parser::ParseUncompressedHeader(const FrameInfo& frame_info,
+                                        Vp9FrameHeader* fhdr,
+                                        Result* result) {
+  memset(&curr_frame_header_, 0, sizeof(curr_frame_header_));
+  *result = kInvalidStream;
+
+  Vp9UncompressedHeaderParser uncompressed_parser(&context_);
+  if (!uncompressed_parser.Parse(frame_info.ptr, frame_info.size,
+                                 &curr_frame_header_)) {
+    *result = kInvalidStream;
+    return true;
+  }
+
+  if (curr_frame_header_.header_size_in_bytes == 0) {
+    // Verify padding bits are zero.
+    for (off_t i = curr_frame_header_.uncompressed_header_size;
+         i < frame_info.size; i++) {
+      if (frame_info.ptr[i] != 0) {
+        DVLOG(1) << "Padding bits are not zeros.";
+        *result = kInvalidStream;
+        return true;
+      }
+    }
+    *fhdr = curr_frame_header_;
+    *result = kOk;
+    return true;
+  }
+  if (curr_frame_header_.uncompressed_header_size +
+          curr_frame_header_.header_size_in_bytes >
+      base::checked_cast<size_t>(frame_info.size)) {
+    DVLOG(1) << "header_size_in_bytes="
+             << curr_frame_header_.header_size_in_bytes
+             << " is larger than bytes left in buffer: "
+             << frame_info.size - curr_frame_header_.uncompressed_header_size;
+    *result = kInvalidStream;
+    return true;
+  }
+
+  return false;
+}
+
+bool Vp9Parser::ParseCompressedHeader(const FrameInfo& frame_info,
+                                      Result* result) {
+  *result = kInvalidStream;
+  size_t frame_context_idx = curr_frame_header_.frame_context_idx;
+  const Context::Vp9FrameContextManager& context_to_load =
+      context_.frame_context_managers_[frame_context_idx];
+  if (!context_to_load.initialized()) {
+    // 8.2 Frame order constraints
+    // must load an initialized set of probabilities.
+    DVLOG(1) << "loading uninitialized frame context, index="
+             << frame_context_idx;
+    *result = kInvalidStream;
+    return true;
+  }
+  if (context_to_load.needs_client_update()) {
+    DVLOG(3) << "waiting frame_context_idx=" << frame_context_idx
+             << " to update";
+    curr_frame_info_ = frame_info;
+    *result = kAwaitingRefresh;
+    return true;
+  }
+  curr_frame_header_.initial_frame_context = curr_frame_header_.frame_context =
+      context_to_load.frame_context();
+
+  Vp9CompressedHeaderParser compressed_parser;
+  if (!compressed_parser.Parse(
+          frame_info.ptr + curr_frame_header_.uncompressed_header_size,
+          curr_frame_header_.header_size_in_bytes, &curr_frame_header_)) {
+    *result = kInvalidStream;
+    return true;
+  }
+
+  if (curr_frame_header_.refresh_frame_context) {
+    // In frame parallel mode, we can refresh the context without decoding
+    // tile data.
+    if (curr_frame_header_.frame_parallel_decoding_mode) {
+      context_.UpdateFrameContext(frame_context_idx,
+                                  curr_frame_header_.frame_context);
+    } else {
+      context_.MarkFrameContextForUpdate(frame_context_idx);
+    }
+  }
+  return false;
+}
+
 Vp9Parser::Result Vp9Parser::ParseNextFrame(Vp9FrameHeader* fhdr) {
   DCHECK(fhdr);
   DVLOG(2) << "ParseNextFrame";
+  FrameInfo frame_info;
+  Result result;
 
   // If |curr_frame_info_| is valid, uncompressed header was parsed into
   // |curr_frame_header_| and we are awaiting context update to proceed with
   // compressed header parsing.
-  if (!curr_frame_info_.IsValid()) {
+  if (curr_frame_info_.IsValid()) {
+    DCHECK(parsing_compressed_header_);
+    frame_info = curr_frame_info_;
+    curr_frame_info_.Reset();
+  } else {
     if (frames_.empty()) {
       // No frames to be decoded, if there is no more stream, request more.
       if (!stream_)
@@ -244,76 +336,17 @@ Vp9Parser::Result Vp9Parser::ParseNextFrame(Vp9FrameHeader* fhdr) {
       }
     }
 
-    curr_frame_info_ = frames_.front();
+    frame_info = frames_.front();
     frames_.pop_front();
 
-    memset(&curr_frame_header_, 0, sizeof(curr_frame_header_));
-
-    Vp9UncompressedHeaderParser uncompressed_parser(&context_);
-    if (!uncompressed_parser.Parse(curr_frame_info_.ptr, curr_frame_info_.size,
-                                   &curr_frame_header_))
-      return kInvalidStream;
-
-    if (curr_frame_header_.header_size_in_bytes == 0) {
-      // Verify padding bits are zero.
-      for (off_t i = curr_frame_header_.uncompressed_header_size;
-           i < curr_frame_info_.size; i++) {
-        if (curr_frame_info_.ptr[i] != 0) {
-          DVLOG(1) << "Padding bits are not zeros.";
-          return kInvalidStream;
-        }
-      }
-      *fhdr = curr_frame_header_;
-      curr_frame_info_.Reset();
-      return kOk;
-    }
-    if (curr_frame_header_.uncompressed_header_size +
-            curr_frame_header_.header_size_in_bytes >
-        base::checked_cast<size_t>(curr_frame_info_.size)) {
-      DVLOG(1) << "header_size_in_bytes="
-               << curr_frame_header_.header_size_in_bytes
-               << " is larger than bytes left in buffer: "
-               << curr_frame_info_.size -
-                      curr_frame_header_.uncompressed_header_size;
-      return kInvalidStream;
-    }
+    if (ParseUncompressedHeader(frame_info, fhdr, &result))
+      return result;
   }
 
   if (parsing_compressed_header_) {
-    size_t frame_context_idx = curr_frame_header_.frame_context_idx;
-    const Context::Vp9FrameContextManager& context_to_load =
-        context_.frame_context_managers_[frame_context_idx];
-    if (!context_to_load.initialized()) {
-      // 8.2 Frame order constraints
-      // must load an initialized set of probabilities.
-      DVLOG(1) << "loading uninitialized frame context, index="
-               << frame_context_idx;
-      return kInvalidStream;
-    }
-    if (context_to_load.needs_client_update()) {
-      DVLOG(3) << "waiting frame_context_idx=" << frame_context_idx
-               << " to update";
-      return kAwaitingRefresh;
-    }
-    curr_frame_header_.initial_frame_context =
-        curr_frame_header_.frame_context = context_to_load.frame_context();
-
-    Vp9CompressedHeaderParser compressed_parser;
-    if (!compressed_parser.Parse(
-            curr_frame_info_.ptr + curr_frame_header_.uncompressed_header_size,
-            curr_frame_header_.header_size_in_bytes, &curr_frame_header_)) {
-      return kInvalidStream;
-    }
-
-    if (curr_frame_header_.refresh_frame_context) {
-      // In frame parallel mode, we can refresh the context without decoding
-      // tile data.
-      if (curr_frame_header_.frame_parallel_decoding_mode) {
-        context_.UpdateFrameContext(frame_context_idx,
-                                    curr_frame_header_.frame_context);
-      } else {
-        context_.MarkFrameContextForUpdate(frame_context_idx);
-      }
+    if (ParseCompressedHeader(frame_info, &result)) {
+      DCHECK(result != kAwaitingRefresh || curr_frame_info_.IsValid());
+      return result;
     }
   }
 
@@ -322,7 +355,6 @@ Vp9Parser::Result Vp9Parser::ParseNextFrame(Vp9FrameHeader* fhdr) {
   UpdateSlots();
 
   *fhdr = curr_frame_header_;
-  curr_frame_info_.Reset();
   return kOk;
 }
 
