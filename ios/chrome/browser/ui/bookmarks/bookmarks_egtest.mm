@@ -18,7 +18,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/pref_names.h"
-#import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
@@ -1096,16 +1095,16 @@ id<GREYMatcher> ActionSheet(Action action) {
   }];
   // Check that promo is visible.
   [BookmarksTestCase verifyPromoAlreadySeen:NO];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(kSigninPromoViewId)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"promo_view")]
+      assertWithMatcher:grey_notNil()];
 
   // Tap the dismiss button.
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kSigninPromoCloseButtonId)]
+      selectElementWithMatcher:grey_accessibilityID(@"promo_no_thanks_button")]
       performAction:grey_tap()];
 
   // Wait until promo is gone.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(kSigninPromoViewId)]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"promo_view")]
       assertWithMatcher:grey_notVisible()];
 
   // Check that the promo already seen state is updated.
@@ -1127,17 +1126,12 @@ id<GREYMatcher> ActionSheet(Action action) {
 
   // Check that promo is visible.
   [BookmarksTestCase verifyPromoAlreadySeen:NO];
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(kSigninPromoViewId),
-                                   grey_sufficientlyVisible(), nil)]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"promo_view")]
       assertWithMatcher:grey_notNil()];
 
   // Tap the Sign in button.
   [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
-                                              kSigninPromoSecondaryButtonId),
-                                          grey_sufficientlyVisible(), nil)]
+      selectElementWithMatcher:grey_accessibilityID(@"promo_sign_in_button")]
       performAction:grey_tap()];
 
   // Tap the CANCEL button.
@@ -1147,10 +1141,7 @@ id<GREYMatcher> ActionSheet(Action action) {
                      uppercaseString])] performAction:grey_tap()];
 
   // Check that the bookmarks UI reappeared and the cell is still here.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(kSigninPromoViewId),
-                                   grey_sufficientlyVisible(), nil)]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"promo_view")]
       assertWithMatcher:grey_notNil()];
 
   [BookmarksTestCase verifyPromoAlreadySeen:NO];
