@@ -1407,8 +1407,7 @@ size_t SpdyFramer::GetNumberRequiredContinuationFrames(size_t size) {
   return (overflow - 1) / payload_size + 1;
 }
 
-size_t SpdyFramer::GetHeaderFrameSizeSansBlock(
-    const SpdyHeadersIR& header_ir) const {
+size_t SpdyFramer::GetHeaderFrameSizeSansBlock(const SpdyHeadersIR& header_ir) {
   size_t min_size = kFrameHeaderSize;
 
   if (header_ir.padded()) {
@@ -1424,7 +1423,7 @@ size_t SpdyFramer::GetHeaderFrameSizeSansBlock(
 }
 
 size_t SpdyFramer::GetPushPromiseFrameSizeSansBlock(
-    const SpdyPushPromiseIR& push_promise_ir) const {
+    const SpdyPushPromiseIR& push_promise_ir) {
   size_t size = kPushPromiseFrameMinimumSize;
 
   if (push_promise_ir.padded()) {
