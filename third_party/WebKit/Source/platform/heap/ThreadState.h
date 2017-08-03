@@ -292,6 +292,11 @@ class PLATFORM_EXPORT ThreadState {
     object_resurrection_forbidden_ = false;
   }
 
+  bool WrapperTracingInProgress() const { return wrapper_tracing_in_progress_; }
+  void SetWrapperTracingInProgress(bool value) {
+    wrapper_tracing_in_progress_ = value;
+  }
+
   class MainThreadGCForbiddenScope final {
     STACK_ALLOCATED();
 
@@ -679,6 +684,7 @@ class PLATFORM_EXPORT ThreadState {
   void (*trace_dom_wrappers_)(v8::Isolate*, Visitor*);
   void (*invalidate_dead_objects_in_wrappers_marking_deque_)(v8::Isolate*);
   void (*perform_cleanup_)(v8::Isolate*);
+  bool wrapper_tracing_in_progress_;
 
 #if defined(ADDRESS_SANITIZER)
   void* asan_fake_stack_;
