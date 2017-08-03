@@ -111,8 +111,8 @@ struct Decoder {
   ~Decoder() { aom_codec_destroy(&dec_); }
 
   std::vector<int16_t> decode(const aom_codec_cx_pkt_t *pkt) {
-    aom_codec_decode(&dec_, (uint8_t *)pkt->data.frame.buf, pkt->data.frame.sz,
-                     NULL, 0);
+    aom_codec_decode(&dec_, (uint8_t *)pkt->data.frame.buf,
+                     (unsigned int)pkt->data.frame.sz, NULL, 0);
 
     aom_codec_iter_t iter = NULL;
     return serialize(aom_codec_get_frame(&dec_, &iter));
