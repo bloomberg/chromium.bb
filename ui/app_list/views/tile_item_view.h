@@ -27,6 +27,8 @@ class Label;
 namespace app_list {
 
 // The view for a tile in the app list on the start/search page.
+// TODO(warx): Merge this class to its subclass SearchResultTileItemView once
+// bubble launcher deprecates.
 class APP_LIST_EXPORT TileItemView : public views::CustomButton,
                                      public views::ButtonListener,
                                      public ImageShadowAnimator::Delegate {
@@ -76,7 +78,9 @@ class APP_LIST_EXPORT TileItemView : public views::CustomButton,
   views::Label* title() const { return title_; }
   void SetTitle(const base::string16& title);
 
-  void EnableWhiteSelectedColor(bool enabled);
+  void set_is_recommendation(bool is_recommendation) {
+    is_recommendation_ = is_recommendation;
+  }
 
  private:
   void UpdateBackgroundColor();
@@ -90,10 +94,13 @@ class APP_LIST_EXPORT TileItemView : public views::CustomButton,
 
   bool selected_ = false;
 
-  // Indicates whether the white color background selected color should be used
-  // for this TileItemView. It is enabled for suggested apps only for new
-  // design.
-  bool white_selected_color_enabled_ = false;
+  // Indicates whether this view is the base class for recommendation display
+  // type SearchResultTileItemView.
+  // TODO(warx): It is not needed once TileItemView class is merged to
+  // SearchResultTileItemVIew.
+  bool is_recommendation_ = false;
+
+  const bool is_fullscreen_app_list_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(TileItemView);
 };
