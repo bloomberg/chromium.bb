@@ -116,7 +116,8 @@ class ConvolveRoundTest : public ::testing::TestWithParam<ConvolveRoundParam> {
       for (int r = 0; r < h; ++r) {
         for (int c = 0; c < diff_wide; ++c) {
           ASSERT_EQ(dst_ref_[r * dst_stride + c], dst_[r * dst_stride + c])
-              << "Mismatch at r: " << r << " c: " << c << " test: " << test_num;
+              << "Mismatch at r: " << r << " c: " << c << " w: " << w
+              << " h: " << h << " test: " << test_num;
         }
       }
 
