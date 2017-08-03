@@ -1794,14 +1794,16 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 - (void)wasShown {
   _visible = YES;
   [self updateFullscreenWithToolbarVisible:YES];
-  [self.webController wasShown];
+  if (self.webState)
+    self.webState->WasShown();
   [_inputAccessoryViewController wasShown];
 }
 
 - (void)wasHidden {
   _visible = NO;
   [self updateFullscreenWithToolbarVisible:YES];
-  [self.webController wasHidden];
+  if (self.webState)
+    self.webState->WasHidden();
   [_inputAccessoryViewController wasHidden];
 }
 

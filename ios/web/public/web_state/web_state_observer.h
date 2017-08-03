@@ -30,6 +30,10 @@ class WebStateObserver {
   // Returns the web state associated with this observer.
   WebState* web_state() const { return web_state_; }
 
+  // These methods are invoked every time the WebState changes visibility.
+  virtual void WasShown() {}
+  virtual void WasHidden() {}
+
   // This method is invoked when committed navigation items have been pruned.
   virtual void NavigationItemsPruned(size_t pruned_item_count) {}
 

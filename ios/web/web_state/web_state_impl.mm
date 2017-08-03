@@ -576,6 +576,18 @@ UIView* WebStateImpl::GetView() {
   return [web_controller_ view];
 }
 
+void WebStateImpl::WasShown() {
+  [web_controller_ wasShown];
+  for (auto& observer : observers_)
+    observer.WasShown();
+}
+
+void WebStateImpl::WasHidden() {
+  [web_controller_ wasHidden];
+  for (auto& observer : observers_)
+    observer.WasHidden();
+}
+
 BrowserState* WebStateImpl::GetBrowserState() const {
   return navigation_manager_->GetBrowserState();
 }

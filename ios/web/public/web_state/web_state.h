@@ -124,6 +124,10 @@ class WebState : public base::SupportsUserData {
   // caller to size the view.
   virtual UIView* GetView() = 0;
 
+  // Must be called when the WebState becomes shown/hidden.
+  virtual void WasShown() = 0;
+  virtual void WasHidden() = 0;
+
   // Gets the BrowserState associated with this WebState. Can never return null.
   virtual BrowserState* GetBrowserState() const = 0;
 

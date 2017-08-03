@@ -19,6 +19,10 @@ class TestWebStateObserver : public WebStateObserver {
   TestWebStateObserver(WebState* web_state);
   ~TestWebStateObserver() override;
 
+  // Arguments passed to |WasShown|.
+  web::TestWasShownInfo* was_shown_info() { return was_shown_info_.get(); }
+  // Arguments passed to |WasHidden|.
+  web::TestWasHiddenInfo* was_hidden_info() { return was_hidden_info_.get(); }
   // Arguments passed to |DidStartNavigation|.
   web::TestDidStartNavigationInfo* did_start_navigation_info() {
     return did_start_navigation_info_.get();
@@ -94,6 +98,8 @@ class TestWebStateObserver : public WebStateObserver {
 
  private:
   // WebStateObserver implementation:
+  void WasShown() override;
+  void WasHidden() override;
   void NavigationItemCommitted(const LoadCommittedDetails&) override;
   void PageLoaded(PageLoadCompletionStatus load_completion_status) override;
   void InterstitialDismissed() override;
@@ -118,6 +124,8 @@ class TestWebStateObserver : public WebStateObserver {
   void DidStartLoading() override;
   void DidStopLoading() override;
 
+  std::unique_ptr<web::TestWasShownInfo> was_shown_info_;
+  std::unique_ptr<web::TestWasHiddenInfo> was_hidden_info_;
   std::unique_ptr<web::TestCommitNavigationInfo> commit_navigation_info_;
   std::unique_ptr<web::TestLoadPageInfo> load_page_info_;
   std::unique_ptr<web::TestDismissInterstitialInfo> dismiss_interstitial_info_;
