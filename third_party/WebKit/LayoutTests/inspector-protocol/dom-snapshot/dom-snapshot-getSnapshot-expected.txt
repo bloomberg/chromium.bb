@@ -13,7 +13,8 @@ Tests DOMSnapshot.getSnapshot method.
       "documentURL": "<string>",
       "baseURL": "<string>",
       "contentLanguage": "de",
-      "documentEncoding": "windows-1252"
+      "documentEncoding": "windows-1252",
+      "frameId": "<string>"
     },
     {
       "nodeType": 1,
@@ -363,7 +364,8 @@ Tests DOMSnapshot.getSnapshot method.
       "layoutNodeIndex": 19,
       "documentURL": "<string>",
       "baseURL": "<string>",
-      "documentEncoding": "windows-1252"
+      "documentEncoding": "windows-1252",
+      "frameId": "<string>"
     },
     {
       "nodeType": 1,

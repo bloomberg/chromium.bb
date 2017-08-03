@@ -12,7 +12,8 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "layoutNodeIndex": 0,
       "documentURL": "<string>",
       "baseURL": "<string>",
-      "documentEncoding": "windows-1252"
+      "documentEncoding": "windows-1252",
+      "frameId": "<string>"
     },
     {
       "nodeType": 1,

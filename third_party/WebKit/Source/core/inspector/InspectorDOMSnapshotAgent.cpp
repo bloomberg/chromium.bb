@@ -248,6 +248,7 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node) {
       value->setContentLanguage(document->ContentLanguage().Utf8().data());
     if (document->EncodingName())
       value->setDocumentEncoding(document->EncodingName().Utf8().data());
+    value->setFrameId(IdentifiersFactory::FrameId(document->GetFrame()));
   } else if (node->IsDocumentTypeNode()) {
     DocumentType* doc_type = ToDocumentType(node);
     value->setPublicId(doc_type->publicId());
