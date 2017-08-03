@@ -48,7 +48,10 @@ class ThreadTimesKeySilkCases(_ThreadTimes):
     return page_sets.KeySilkCasesStoryExpectations()
 
 
-@benchmark.Enabled('android', 'linux')
+# This benchmark runs only on android & linux, but is disabled because the page
+# set uses deprecated web platform features.  See http://crbug.com/750876
+# @benchmark.Enabled('android', 'linux')
+@benchmark.Disabled('all')
 class ThreadTimesKeyHitTestCases(_ThreadTimes):
   """Measure timeline metrics while performing smoothness action on key hit
   testing cases."""

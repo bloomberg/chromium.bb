@@ -500,7 +500,9 @@ class SmoothnessGpuRasterizationToughPinchZoomCases(_Smoothness):
     return StoryExpectations()
 
 
-@benchmark.Enabled('android')
+# This benchmark runs only on android, but is disabled because the page set
+# uses deprecated web platform features.  See http://crbug.com/750876
+@benchmark.Disabled('all')
 @benchmark.Owner(emails=['vmiura@chromium.org'])
 class SmoothnessGpuRasterizationPolymer(_Smoothness):
   """Measures rendering statistics for the Polymer cases with GPU rasterization.
