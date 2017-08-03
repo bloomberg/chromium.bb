@@ -328,13 +328,29 @@ void WKBasedNavigationManagerImpl::GoToIndex(int index) {
 }
 
 NavigationItemList WKBasedNavigationManagerImpl::GetBackwardItems() const {
-  DLOG(WARNING) << "Not yet implemented.";
-  return NavigationItemList();
+  NavigationItemList items;
+
+  // If the current navigation item is a transient item (e.g. SSL
+  // interstitial), the last committed item should also be considered part of
+  // the backward history.
+  int wk_current_item_index = GetWKCurrentItemIndex();
+  if (GetTransientItem() && wk_current_item_index >= 0) {
+    items.push_back(GetItemAtIndex(wk_current_item_index));
+  }
+
+  for (int index = wk_current_item_index - 1; index >= 0; index--) {
+    items.push_back(GetItemAtIndex(index));
+  }
+  return items;
 }
 
 NavigationItemList WKBasedNavigationManagerImpl::GetForwardItems() const {
-  DLOG(WARNING) << "Not yet implemented.";
-  return NavigationItemList();
+  NavigationItemList items;
+  for (int index = GetWKCurrentItemIndex() + 1; index < GetItemCount();
+       index++) {
+    items.push_back(GetItemAtIndex(index));
+  }
+  return items;
 }
 
 void WKBasedNavigationManagerImpl::CopyStateFromAndPrune(
