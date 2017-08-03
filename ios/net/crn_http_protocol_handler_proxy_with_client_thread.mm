@@ -44,13 +44,13 @@
   BOOL _requestComplete;
   BOOL _paused;
 
-  base::scoped_nsobject<NSMutableArray> _queuedInvocations;
+  // Contains code blocks to execute when the connection transitions from paused
+  // to resumed state.
+  NSMutableArray<void (^)()>* _queuedBlocks;
 }
 
-// Performs the selector on |clientThread_| using |runLoopModes_|.
-- (void)runInvocationQueueOnClientThread;
-- (void)postToClientThread:(SEL)aSelector, ... NS_REQUIRES_NIL_TERMINATION;
-- (void)invokeOnClientThread:(NSInvocation*)invocation;
+// Performs queued blocks on |clientThread_| using |runLoopModes_|.
+- (void)runQueuedBlocksOnClientThread;
 // These functions are just wrappers around the corresponding
 // NSURLProtocolClient methods, used for task posting.
 - (void)didFailWithErrorOnClientThread:(NSError*)error;
@@ -80,7 +80,7 @@
       _runLoopModes.reset(@[ NSRunLoopCommonModes ]);
     else
       _runLoopModes.reset(@[ mode, NSRunLoopCommonModes ]);
-    _queuedInvocations.reset([[NSMutableArray alloc] init]);
+    _queuedBlocks = [[NSMutableArray alloc] init];
   }
   return self;
 }
@@ -89,70 +89,51 @@
   DCHECK([NSThread currentThread] == _clientThread);
   _protocol = nil;
   _requestComplete = YES;
-  // Note that there may still be queued invocations here, if the chrome network
+  // Note that there may still be queued blocks here, if the chrome network
   // stack continues to emit events after the system network stack has paused
   // the request, and then the system network stack destroys the request.
-  _queuedInvocations.reset();
+  _queuedBlocks = nil;
 }
 
-- (void)runInvocationQueueOnClientThread {
+- (void)runQueuedBlocksOnClientThread {
   DCHECK([NSThread currentThread] == _clientThread);
   DCHECK(!_requestComplete || !_protocol);
-  // Each of the queued invocations may cause the system network stack to pause
-  // this request, in which case |runInvocationQueueOnClientThread| should
+  // Each of the queued blocks may cause the system network stack to pause
+  // this request, in which case |runQueuedBlocksOnClientThread| should
   // immediately stop running further queued invocations. The queue will be
   // drained again the next time the system network stack calls |resume|.
   //
   // Specifically, the system stack can call back into |pause| with this
-  // function still on the call stack. However, since new invocations are
-  // enqueued on this thread via posted invocations, no new invocations can be
+  // function still on the call stack. However, since new blocks are
+  // enqueued on this thread via posted invocations, no new blocks can be
   // added while this function is running.
-  while (!_paused && _queuedInvocations.get().count > 0) {
-    NSInvocation* invocation = [_queuedInvocations objectAtIndex:0];
-    // Since |_queuedInvocations| owns the only reference to each queued
-    // invocation, this function has to retain another reference before removing
-    // the queued invocation from the array.
-    [invocation invoke];
-    [_queuedInvocations removeObjectAtIndex:0];
+  while (!_paused && _queuedBlocks.count > 0) {
+    void (^block)() = _queuedBlocks[0];
+    // Since |_queuedBlocks| owns the only reference to each queued
+    // block, this function has to retain another reference before removing
+    // the queued block from the array.
+    block();
+    [_queuedBlocks removeObjectAtIndex:0];
   }
 }
 
-- (void)postToClientThread:(SEL)aSelector, ... {
-  // Build an NSInvocation representing an invocation of |aSelector| on |self|
-  // with the supplied varargs passed as arguments to the invocation.
-  NSMethodSignature* sig = [self methodSignatureForSelector:aSelector];
-  DCHECK(sig != nil);
-  NSInvocation* inv = [NSInvocation invocationWithMethodSignature:sig];
-  [inv setTarget:self];
-  [inv setSelector:aSelector];
-  [inv retainArguments];
-
-  size_t arg_index = 2;
-  va_list args;
-  va_start(args, aSelector);
-  __unsafe_unretained NSObject* arg = va_arg(args, NSObject*);
-  while (arg != nil) {
-    [inv setArgument:&arg atIndex:arg_index];
-    arg = va_arg(args, NSObject*);
-    arg_index++;
-  }
-  va_end(args);
-
-  DCHECK(arg_index == sig.numberOfArguments);
-  [self performSelector:@selector(invokeOnClientThread:)
+- (void)postBlockToClientThread:(dispatch_block_t)block {
+  DCHECK(block);
+  [self performSelector:@selector(performBlockOnClientThread:)
                onThread:_clientThread
-             withObject:inv
+             withObject:[block copy]
           waitUntilDone:NO
                   modes:_runLoopModes];
 }
 
-- (void)invokeOnClientThread:(NSInvocation*)invocation {
+- (void)performBlockOnClientThread:(dispatch_block_t)block {
   DCHECK([NSThread currentThread] == _clientThread);
   DCHECK(!_requestComplete || !_protocol);
+  DCHECK(block);
   if (!_paused) {
-    [invocation invoke];
+    block();
   } else {
-    [_queuedInvocations addObject:invocation];
+    [_queuedBlocks addObject:block];
   }
 }
 
@@ -165,23 +146,27 @@
     return;
   NSError* error =
       net::GetIOSError(nsErrorCode, netErrorCode, _url, _creationTime);
-  [self postToClientThread:@selector(didFailWithErrorOnClientThread:), error,
-                           nil];
+  [self postBlockToClientThread:^{
+    [self didFailWithErrorOnClientThread:error];
+  }];
 }
 
 - (void)didLoadData:(NSData*)data {
   DCHECK(_clientThread);
   if (!_protocol)
     return;
-  [self postToClientThread:@selector(didLoadDataOnClientThread:), data, nil];
+  [self postBlockToClientThread:^{
+    [self didLoadDataOnClientThread:data];
+  }];
 }
 
 - (void)didReceiveResponse:(NSURLResponse*)response {
   DCHECK(_clientThread);
   if (!_protocol)
     return;
-  [self postToClientThread:@selector(didReceiveResponseOnClientThread:),
-                           response, nil];
+  [self postBlockToClientThread:^{
+    [self didReceiveResponseOnClientThread:response];
+  }];
 }
 
 - (void)wasRedirectedToRequest:(NSURLRequest*)request
@@ -190,16 +175,19 @@
   DCHECK(_clientThread);
   if (!_protocol)
     return;
-  [self postToClientThread:@selector(wasRedirectedToRequestOnClientThread:
-                                                         redirectResponse:),
-                           request, redirectResponse, nil];
+  [self postBlockToClientThread:^{
+    [self wasRedirectedToRequestOnClientThread:request
+                              redirectResponse:redirectResponse];
+  }];
 }
 
 - (void)didFinishLoading {
   DCHECK(_clientThread);
   if (!_protocol)
     return;
-  [self postToClientThread:@selector(didFinishLoadingOnClientThread), nil];
+  [self postBlockToClientThread:^{
+    [self didFinishLoadingOnClientThread];
+  }];
 }
 
 // Feature support methods that don't forward to the NSURLProtocolClient.
@@ -259,7 +247,7 @@
   DCHECK([NSThread currentThread] == _clientThread);
   DCHECK(!_requestComplete || !_protocol);
   _paused = NO;
-  [self runInvocationQueueOnClientThread];
+  [self runQueuedBlocksOnClientThread];
 }
 
 @end
