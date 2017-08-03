@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_database.h"
@@ -50,110 +51,115 @@ struct TestURLInfo {
   int typed_count;
   int age_in_days;
 } test_db[] = {
-  {"http://www.google.com/", "Google", 3, 3, 80},
+    {"http://www.google.com/", "Google", 3, 3, 80},
 
-  // High-quality pages should get a host synthesized as a lower-quality match.
-  {"http://slashdot.org/favorite_page.html", "Favorite page", 200, 100, 80},
+    // High-quality pages should get a host synthesized as a lower-quality
+    // match.
+    {"http://slashdot.org/favorite_page.html", "Favorite page", 200, 100, 80},
 
-  // Less popular pages should have hosts synthesized as higher-quality
-  // matches.
-  {"http://kerneltrap.org/not_very_popular.html", "Less popular", 4, 0, 80},
+    // Less popular pages should have hosts synthesized as higher-quality
+    // matches.
+    {"http://kerneltrap.org/not_very_popular.html", "Less popular", 4, 0, 80},
 
-  // Unpopular pages should not appear in the results at all.
-  {"http://freshmeat.net/unpopular.html", "Unpopular", 1, 0, 80},
+    // Unpopular pages should not appear in the results at all.
+    {"http://freshmeat.net/unpopular.html", "Unpopular", 1, 0, 80},
 
-  // If a host has a match, we should pick it up during host synthesis.
-  {"http://news.google.com/?ned=us&topic=n", "Google News - U.S.", 2, 2, 80},
-  {"http://news.google.com/", "Google News", 1, 1, 80},
+    // If a host has a match, we should pick it up during host synthesis.
+    {"http://news.google.com/?ned=us&topic=n", "Google News - U.S.", 2, 2, 80},
+    {"http://news.google.com/", "Google News", 1, 1, 80},
 
-  // Matches that are normally not inline-autocompletable should be
-  // autocompleted if they are shorter substitutes for longer matches that would
-  // have been inline autocompleted.
-  {"http://synthesisatest.com/foo/", "Test A", 1, 1, 80},
-  {"http://synthesisbtest.com/foo/", "Test B", 1, 1, 80},
-  {"http://synthesisbtest.com/foo/bar.html", "Test B Bar", 2, 2, 80},
+    // Matches that are normally not inline-autocompletable should be
+    // autocompleted if they are shorter substitutes for longer matches that
+    // would have been inline autocompleted.
+    {"http://synthesisatest.com/foo/", "Test A", 1, 1, 80},
+    {"http://synthesisbtest.com/foo/", "Test B", 1, 1, 80},
+    {"http://synthesisbtest.com/foo/bar.html", "Test B Bar", 2, 2, 80},
 
-  // Suggested short URLs must be "good enough" and must match user input.
-  {"http://foo.com/", "Dir", 5, 5, 80},
-  {"http://foo.com/dir/", "Dir", 2, 2, 80},
-  {"http://foo.com/dir/another/", "Dir", 5, 1, 80},
-  {"http://foo.com/dir/another/again/", "Dir", 10, 0, 80},
-  {"http://foo.com/dir/another/again/myfile.html", "File", 10, 2, 80},
+    // Suggested short URLs must be "good enough" and must match user input.
+    {"http://foo.com/", "Dir", 5, 5, 80},
+    {"http://foo.com/dir/", "Dir", 2, 2, 80},
+    {"http://foo.com/dir/another/", "Dir", 5, 1, 80},
+    {"http://foo.com/dir/another/again/", "Dir", 10, 0, 80},
+    {"http://foo.com/dir/another/again/myfile.html", "File", 10, 2, 80},
 
-  // We throw in a lot of extra URLs here to make sure we're testing the
-  // history database's query, not just the autocomplete provider.
-  {"http://startest.com/y/a", "A", 2, 2, 80},
-  {"http://startest.com/y/b", "B", 5, 2, 80},
-  {"http://startest.com/x/c", "C", 5, 2, 80},
-  {"http://startest.com/x/d", "D", 5, 5, 80},
-  {"http://startest.com/y/e", "E", 4, 2, 80},
-  {"http://startest.com/y/f", "F", 3, 2, 80},
-  {"http://startest.com/y/g", "G", 3, 2, 80},
-  {"http://startest.com/y/h", "H", 3, 2, 80},
-  {"http://startest.com/y/i", "I", 3, 2, 80},
-  {"http://startest.com/y/j", "J", 3, 2, 80},
-  {"http://startest.com/y/k", "K", 3, 2, 80},
-  {"http://startest.com/y/l", "L", 3, 2, 80},
-  {"http://startest.com/y/m", "M", 3, 2, 80},
+    // We throw in a lot of extra URLs here to make sure we're testing the
+    // history database's query, not just the autocomplete provider.
+    {"http://startest.com/y/a", "A", 2, 2, 80},
+    {"http://startest.com/y/b", "B", 5, 2, 80},
+    {"http://startest.com/x/c", "C", 5, 2, 80},
+    {"http://startest.com/x/d", "D", 5, 5, 80},
+    {"http://startest.com/y/e", "E", 4, 2, 80},
+    {"http://startest.com/y/f", "F", 3, 2, 80},
+    {"http://startest.com/y/g", "G", 3, 2, 80},
+    {"http://startest.com/y/h", "H", 3, 2, 80},
+    {"http://startest.com/y/i", "I", 3, 2, 80},
+    {"http://startest.com/y/j", "J", 3, 2, 80},
+    {"http://startest.com/y/k", "K", 3, 2, 80},
+    {"http://startest.com/y/l", "L", 3, 2, 80},
+    {"http://startest.com/y/m", "M", 3, 2, 80},
 
-  // A file: URL is useful for testing that fixup does the right thing w.r.t.
-  // the number of trailing slashes on the user's input.
-  {"file:///C:/foo.txt", "", 2, 2, 80},
+    // A file: URL is useful for testing that fixup does the right thing w.r.t.
+    // the number of trailing slashes on the user's input.
+    {"file:///C:/foo.txt", "", 2, 2, 80},
 
-  // Results with absurdly high typed_counts so that very generic queries like
-  // "http" will give consistent results even if more data is added above.
-  {"http://bogussite.com/a", "Bogus A", 10002, 10000, 80},
-  {"http://bogussite.com/b", "Bogus B", 10001, 10000, 80},
-  {"http://bogussite.com/c", "Bogus C", 10000, 10000, 80},
+    // Results with absurdly high typed_counts so that very generic queries like
+    // "http" will give consistent results even if more data is added above.
+    {"http://bogussite.com/a", "Bogus A", 10002, 10000, 80},
+    {"http://bogussite.com/b", "Bogus B", 10001, 10000, 80},
+    {"http://bogussite.com/c", "Bogus C", 10000, 10000, 80},
 
-  // Domain name with number.
-  {"http://www.17173.com/", "Domain with number", 3, 3, 80},
+    // Domain name with number.
+    {"http://www.17173.com/", "Domain with number", 3, 3, 80},
 
-  // URLs to test exact-matching behavior.
-  {"http://go/", "Intranet URL", 1, 1, 80},
-  {"http://gooey/", "Intranet URL 2", 5, 5, 80},
+    // URLs to test exact-matching behavior.
+    {"http://go/", "Intranet URL", 1, 1, 80},
+    {"http://gooey/", "Intranet URL 2", 5, 5, 80},
 
-  // URLs for testing offset adjustment.
-  {"http://www.\xEA\xB5\x90\xEC\x9C\xA1.kr/", "Korean", 2, 2, 80},
-  {"http://spaces.com/path%20with%20spaces/foo.html", "Spaces", 2, 2, 80},
-  {"http://ms/c++%20style%20guide", "Style guide", 2, 2, 80},
+    // URLs for testing offset adjustment.
+    {"http://www.\xEA\xB5\x90\xEC\x9C\xA1.kr/", "Korean", 2, 2, 80},
+    {"http://spaces.com/path%20with%20spaces/foo.html", "Spaces", 2, 2, 80},
+    {"http://ms/c++%20style%20guide", "Style guide", 2, 2, 80},
 
-  // URLs for testing ctrl-enter behavior.
-  {"http://binky/", "Intranet binky", 2, 2, 80},
-  {"http://winky/", "Intranet winky", 2, 2, 80},
-  {"http://www.winky.com/", "Internet winky", 5, 0, 80},
+    // URLs for testing ctrl-enter behavior.
+    {"http://binky/", "Intranet binky", 2, 2, 80},
+    {"http://winky/", "Intranet winky", 2, 2, 80},
+    {"http://www.winky.com/", "Internet winky", 5, 0, 80},
 
-  // URLs used by EmptyVisits.
-  {"http://pandora.com/", "Pandora", 2, 2, 80},
-  // This entry is explicitly added more recently than
-  // history::kLowQualityMatchAgeLimitInDays.
-  // {"http://pa/", "pa", 0, 0, 80},
+    // URLs used by EmptyVisits.
+    {"http://pandora.com/", "Pandora", 2, 2, 80},
+    // This entry is explicitly added more recently than
+    // history::kLowQualityMatchAgeLimitInDays.
+    // {"http://pa/", "pa", 0, 0, 80},
 
-  // For intranet based tests.
-  {"http://intra/one", "Intranet", 2, 2, 80},
-  {"http://intra/two", "Intranet two", 1, 1, 80},
-  {"http://intra/three", "Intranet three", 2, 2, 80},
-  {"http://moo/bar", "Intranet moo", 1, 1, 80},
-  {"http://typedhost/typedpath", "Intranet typed", 1, 1, 80},
-  {"http://typedhost/untypedpath", "Intranet untyped", 1, 0, 80},
+    // For intranet based tests.
+    {"http://intra/one", "Intranet", 2, 2, 80},
+    {"http://intra/two", "Intranet two", 1, 1, 80},
+    {"http://intra/three", "Intranet three", 2, 2, 80},
+    {"http://moo/bar", "Intranet moo", 1, 1, 80},
+    {"http://typedhost/typedpath", "Intranet typed", 1, 1, 80},
+    {"http://typedhost/untypedpath", "Intranet untyped", 1, 0, 80},
 
-  {"http://x.com/one", "Internet", 2, 2, 80},
-  {"http://x.com/two", "Internet two", 1, 1, 80},
-  {"http://x.com/three", "Internet three", 2, 2, 80},
+    {"http://x.com/one", "Internet", 2, 2, 80},
+    {"http://x.com/two", "Internet two", 1, 1, 80},
+    {"http://x.com/three", "Internet three", 2, 2, 80},
 
-  // For punycode tests.
-  {"http://puny.xn--h2by8byc123p.in/", "Punycode", 2, 2, 5 },
-  {"http://two_puny.xn--1lq90ic7f1rc.cn/",
-    "Punycode to be rendered in Unicode", 2, 2, 5 },
+    // For punycode tests.
+    {"http://puny.xn--h2by8byc123p.in/", "Punycode", 2, 2, 5},
+    {"http://two_puny.xn--1lq90ic7f1rc.cn/",
+     "Punycode to be rendered in Unicode", 2, 2, 5},
 
-  // For experimental HUP scoring test.
-  {"http://7.com/1a", "One", 8, 4, 4},
-  {"http://7.com/2a", "Two A", 4, 2, 8},
-  {"http://7.com/2b", "Two B", 4, 1, 8},
-  {"http://7.com/3a", "Three", 2, 1, 16},
-  {"http://7.com/4a", "Four A", 1, 1, 32},
-  {"http://7.com/4b", "Four B", 1, 1, 64},
-  {"http://7.com/5a", "Five A", 8, 0, 64},  // never typed.
+    // For experimental HUP scoring test.
+    {"http://7.com/1a", "One", 8, 4, 4},
+    {"http://7.com/2a", "Two A", 4, 2, 8},
+    {"http://7.com/2b", "Two B", 4, 1, 8},
+    {"http://7.com/3a", "Three", 2, 1, 16},
+    {"http://7.com/4a", "Four A", 1, 1, 32},
+    {"http://7.com/4b", "Four B", 1, 1, 64},
+    {"http://7.com/5a", "Five A", 8, 0, 64},  // never typed.
+
+    // For match URL formatting test.
+    {"https://www.abc.def.com/path", "URL with subdomain", 4, 4, 80},
+    {"https://www.hij.com/path", "URL with www only", 4, 4, 80},
 };
 
 class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
@@ -240,6 +246,11 @@ class HistoryURLProviderTest : public testing::Test,
     return RunTest(text, desired_tld, prevent_inline_autocomplete,
                    expected_urls, num_results, &type);
   }
+
+  // Verifies that for the given |input_text|, the first match's contents
+  // are |expected_match_contents|.
+  void ExpectFormattedFullMatch(const std::string& input_text,
+                                const wchar_t* expected_match_contents);
 
   base::MessageLoop message_loop_;
   ACMatches matches_;
@@ -349,6 +360,22 @@ void HistoryURLProviderTest::RunTest(
     EXPECT_EQ(expected_urls[i].allowed_to_be_default_match,
               matches_[i].allowed_to_be_default_match);
   }
+}
+
+void HistoryURLProviderTest::ExpectFormattedFullMatch(
+    const std::string& input_text,
+    const wchar_t* expected_match_contents) {
+  AutocompleteInput input(ASCIIToUTF16(input_text), base::string16::npos,
+                          std::string(), GURL(), base::string16(),
+                          metrics::OmniboxEventProto::INVALID_SPEC, false,
+                          false, true, true, false, TestSchemeClassifier());
+  autocomplete_->Start(input, false);
+  if (!autocomplete_->done())
+    base::RunLoop().Run();
+
+  // Test the variations of URL formatting on the first match.
+  EXPECT_EQ(base::WideToUTF16(expected_match_contents),
+            autocomplete_->matches().front().contents);
 }
 
 TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
@@ -1124,4 +1151,63 @@ TEST_F(HistoryURLProviderTest, HUPScoringExperiment) {
                 matches_[j].relevance);
     }
   }
+}
+
+TEST_F(HistoryURLProviderTest, MatchURLFormatting) {
+  // Sanity check behavior under default flags.
+  ExpectFormattedFullMatch("abc", L"https://www.abc.def.com/path");
+  ExpectFormattedFullMatch("hij", L"https://www.hij.com/path");
+
+  auto feature_list = base::MakeUnique<base::test::ScopedFeatureList>();
+  feature_list->InitWithFeatures(
+      {omnibox::kUIExperimentHideSuggestionUrlScheme,
+       omnibox::kUIExperimentHideSuggestionUrlTrivialSubdomains,
+       omnibox::kUIExperimentElideSuggestionUrlAfterHost},
+      {});
+
+  // Sanity check that scheme, subdomain, and path can all be trimmed or elided.
+  ExpectFormattedFullMatch("hij", L"hij.com/\x2026\x0000");
+
+  // Verify that the scheme is preserved if part of match.
+  ExpectFormattedFullMatch("https://www.hi",
+                           L"https://www.hij.com/\x2026\x0000");
+
+  // Verify that the whole subdomain is preserved if part of match.
+  ExpectFormattedFullMatch("abc", L"www.abc.def.com/\x2026\x0000");
+  ExpectFormattedFullMatch("www.hij", L"www.hij.com/\x2026\x0000");
+
+  // Verify that the path is preserved if part of the match.
+  ExpectFormattedFullMatch("hij.com/pa", L"hij.com/path");
+
+  // Verify preserving both the scheme and subdomain.
+  ExpectFormattedFullMatch("https://www.hi",
+                           L"https://www.hij.com/\x2026\x0000");
+
+  // Verify preserving everything.
+  ExpectFormattedFullMatch("https://www.hij.com/p",
+                           L"https://www.hij.com/path");
+
+  // Verify that upper case input still works for subdomain matching.
+  ExpectFormattedFullMatch("WWW.hij", L"www.hij.com/\x2026\x0000");
+
+  // Verify that matching in the subdomain-only preserves the subdomain.
+  ExpectFormattedFullMatch("ww", L"www.abc.def.com/\x2026\x0000");
+  ExpectFormattedFullMatch("https://ww",
+                           L"https://www.abc.def.com/\x2026\x0000");
+
+  // Test individual feature flags as a sanity check.
+  feature_list.reset(new base::test::ScopedFeatureList);
+  feature_list->InitAndEnableFeature(
+      omnibox::kUIExperimentHideSuggestionUrlScheme);
+  ExpectFormattedFullMatch("hij", L"www.hij.com/path");
+
+  feature_list.reset(new base::test::ScopedFeatureList);
+  feature_list->InitAndEnableFeature(
+      omnibox::kUIExperimentHideSuggestionUrlTrivialSubdomains);
+  ExpectFormattedFullMatch("hij", L"https://hij.com/path");
+
+  feature_list.reset(new base::test::ScopedFeatureList);
+  feature_list->InitAndEnableFeature(
+      omnibox::kUIExperimentElideSuggestionUrlAfterHost);
+  ExpectFormattedFullMatch("hij", L"https://www.hij.com/\x2026\x0000");
 }
