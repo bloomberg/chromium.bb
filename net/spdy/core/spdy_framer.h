@@ -335,6 +335,15 @@ class SPDY_EXPORT_PRIVATE SpdyFramer {
   // Gets the serialized flags for the given |frame|.
   static uint8_t GetSerializedFlags(const SpdyFrameIR& frame);
 
+  // Calculates the number of bytes required to serialize a SpdyHeadersIR, not
+  // including the bytes to be used for the encoded header set.
+  static size_t GetHeaderFrameSizeSansBlock(const SpdyHeadersIR& header_ir);
+
+  // Calculates the number of bytes required to serialize a SpdyPushPromiseIR,
+  // not including the bytes to be used for the encoded header set.
+  static size_t GetPushPromiseFrameSizeSansBlock(
+      const SpdyPushPromiseIR& push_promise_ir);
+
   explicit SpdyFramer(CompressionOption option);
 
   virtual ~SpdyFramer();
@@ -561,6 +570,9 @@ class SPDY_EXPORT_PRIVATE SpdyFramer {
   void SetEncoderHeaderTableDebugVisitor(
       std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor);
 
+  // Get (and lazily initialize) the HPACK encoder state.
+  HpackEncoder* GetHpackEncoder();
+
   void SetOverwriteLastFrame(bool value) { overwrite_last_frame_ = value; }
   void SetIsLastFrame(bool value) { is_last_frame_ = value; }
   bool ShouldOverwriteLastFrame() const { return overwrite_last_frame_; }
@@ -693,9 +705,6 @@ class SPDY_EXPORT_PRIVATE SpdyFramer {
   };
 
  private:
-  // Get (and lazily initialize) the HPACK encoder state.
-  HpackEncoder* GetHpackEncoder();
-
   size_t GetNumberRequiredContinuationFrames(size_t size);
 
   bool WritePayloadWithContinuation(SpdyFrameBuilder* builder,
@@ -726,15 +735,6 @@ class SPDY_EXPORT_PRIVATE SpdyFramer {
   bool SerializePushPromiseGivenEncoding(const SpdyPushPromiseIR& push_promise,
                                          const SpdyString& encoding,
                                          ZeroCopyOutputBuffer* output) const;
-
-  // Calculates the number of bytes required to serialize a SpdyHeadersIR, not
-  // including the bytes to be used for the encoded header set.
-  size_t GetHeaderFrameSizeSansBlock(const SpdyHeadersIR& header_ir) const;
-
-  // Calculates the number of bytes required to serialize a SpdyPushPromiseIR,
-  // not including the bytes to be used for the encoded header set.
-  size_t GetPushPromiseFrameSizeSansBlock(
-      const SpdyPushPromiseIR& push_promise_ir) const;
 
   // Serializes the flags octet for a given SpdyHeadersIR.
   uint8_t SerializeHeaderFrameFlags(const SpdyHeadersIR& header_ir) const;
