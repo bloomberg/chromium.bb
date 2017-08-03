@@ -16,8 +16,6 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/customization/customization_wallpaper_downloader.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "components/user_manager/user.h"
-#include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_manager.h"
 #include "components/wallpaper/wallpaper_color_calculator.h"
 #include "components/wallpaper/wallpaper_color_calculator_observer.h"
@@ -32,6 +30,11 @@
 namespace gfx {
 class ImageSkia;
 }
+
+namespace user_manager {
+class User;
+class UserImage;
+}  // namespace user_manager
 
 namespace chromeos {
 
@@ -88,7 +91,7 @@ class WallpaperManager
                           const wallpaper::WallpaperFilesId& wallpaper_files_id,
                           const std::string& file,
                           wallpaper::WallpaperLayout layout,
-                          user_manager::User::WallpaperType type,
+                          wallpaper::WallpaperType type,
                           const gfx::ImageSkia& image,
                           bool update_wallpaper) override;
   void SetDefaultWallpaperNow(const AccountId& account_id) override;

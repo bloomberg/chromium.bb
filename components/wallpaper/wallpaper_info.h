@@ -6,13 +6,14 @@
 #define COMPONENTS_WALLPAPER_WALLPAPER_INFO_H_
 
 #include "base/time/time.h"
-#include "components/user_manager/user.h"
 #include "components/wallpaper/wallpaper_export.h"
 
 namespace wallpaper {
 
-// This enum is used to back a histogram, and should therefore be treated as
-// append-only.
+// This enum is used to define the buckets for an enumerated UMA histogram.
+// Hence,
+//   (a) existing enumerated constants should never be deleted or reordered,
+//   (b) new constants should only be appended at the end of the enumeration.
 enum WallpaperLayout {
   // Center the wallpaper on the desktop without scaling it. The wallpaper
   // may be cropped.
@@ -29,14 +30,31 @@ enum WallpaperLayout {
   NUM_WALLPAPER_LAYOUT,
 };
 
+// This enum is used to define the buckets for an enumerated UMA histogram.
+// Hence,
+//   (a) existing enumerated constants should never be deleted or reordered,
+//   (b) new constants should only be appended at the end of the enumeration.
+enum WallpaperType {
+  DAILY = 0,         // Surprise wallpaper. Changes once a day if enabled.
+  CUSTOMIZED = 1,    // Selected by user.
+  DEFAULT = 2,       // Default.
+  /* UNKNOWN = 3 */  // Removed.
+  ONLINE = 4,        // WallpaperInfo.location denotes an URL.
+  POLICY = 5,        // Controlled by policy, can't be changed by the user.
+  THIRDPARTY = 6,    // Current wallpaper is set by a third party app.
+  DEVICE = 7,        // Current wallpaper is the device policy controlled
+                     // wallpaper. It shows on the login screen if the device
+                     // is an enterprise managed device.
+  WALLPAPER_TYPE_COUNT = 8
+};
+
 struct WALLPAPER_EXPORT WallpaperInfo {
   WallpaperInfo()
-      : layout(WALLPAPER_LAYOUT_CENTER),
-        type(user_manager::User::WALLPAPER_TYPE_COUNT) {}
+      : layout(WALLPAPER_LAYOUT_CENTER), type(WALLPAPER_TYPE_COUNT) {}
 
   WallpaperInfo(const std::string& in_location,
                 WallpaperLayout in_layout,
-                user_manager::User::WallpaperType in_type,
+                WallpaperType in_type,
                 const base::Time& in_date)
       : location(in_location),
         layout(in_layout),
@@ -54,7 +72,7 @@ struct WALLPAPER_EXPORT WallpaperInfo {
   // (corresponding to user wallpaper_files_id) or online wallpaper URL.
   std::string location;
   WallpaperLayout layout;
-  user_manager::User::WallpaperType type;
+  WallpaperType type;
   base::Time date;
 };
 

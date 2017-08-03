@@ -336,14 +336,14 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, SetResetClear) {
   InjectPolicy(0, kRedImageFileName);
   RunUntilWallpaperChangeCount(2);
   GetUserWallpaperInfo(0, &info);
-  ASSERT_EQ(user_manager::User::POLICY, info.type);
+  ASSERT_EQ(wallpaper::POLICY, info.type);
   ASSERT_EQ(kRedImageColor, GetAverageWallpaperColor());
 
   // First user: Set wallpaper policy to green image and verify average color.
   InjectPolicy(0, kGreenImageFileName);
   RunUntilWallpaperChangeCount(3);
   GetUserWallpaperInfo(0, &info);
-  ASSERT_EQ(user_manager::User::POLICY, info.type);
+  ASSERT_EQ(wallpaper::POLICY, info.type);
   ASSERT_EQ(kGreenImageColor, GetAverageWallpaperColor());
 
   // First user: Clear wallpaper policy and verify that the default wallpaper is
@@ -351,7 +351,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, SetResetClear) {
   InjectPolicy(0, "");
   RunUntilWallpaperChangeCount(4);
   GetUserWallpaperInfo(0, &info);
-  ASSERT_EQ(user_manager::User::DEFAULT, info.type);
+  ASSERT_EQ(wallpaper::DEFAULT, info.type);
   ASSERT_EQ(original_wallpaper_color, GetAverageWallpaperColor());
 
   // Check wallpaper change count to ensure that setting the second user's

@@ -119,21 +119,21 @@ const user_manager::User* GetUserFromBrowserContext(
   return user;
 }
 
-user_manager::User::WallpaperType getWallpaperType(
+wallpaper::WallpaperType getWallpaperType(
     wallpaper_private::WallpaperSource source) {
   switch (source) {
     case wallpaper_private::WALLPAPER_SOURCE_ONLINE:
-      return user_manager::User::ONLINE;
+      return wallpaper::ONLINE;
     case wallpaper_private::WALLPAPER_SOURCE_DAILY:
-      return user_manager::User::DAILY;
+      return wallpaper::DAILY;
     case wallpaper_private::WALLPAPER_SOURCE_CUSTOM:
-      return user_manager::User::CUSTOMIZED;
+      return wallpaper::CUSTOMIZED;
     case wallpaper_private::WALLPAPER_SOURCE_OEM:
-      return user_manager::User::DEFAULT;
+      return wallpaper::DEFAULT;
     case wallpaper_private::WALLPAPER_SOURCE_THIRDPARTY:
-      return user_manager::User::THIRDPARTY;
+      return wallpaper::THIRDPARTY;
     default:
-      return user_manager::User::ONLINE;
+      return wallpaper::ONLINE;
   }
 }
 
@@ -293,9 +293,7 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::OnWallpaperDecoded(
                                                update_wallpaper);
   bool is_persistent = !user_manager::UserManager::Get()
                             ->IsCurrentUserNonCryptohomeDataEphemeral();
-  wallpaper::WallpaperInfo info = {params->url,
-                                   layout,
-                                   user_manager::User::ONLINE,
+  wallpaper::WallpaperInfo info = {params->url, layout, wallpaper::ONLINE,
                                    base::Time::Now().LocalMidnight()};
   wallpaper_manager->SetUserWallpaperInfo(account_id_, info, is_persistent);
   SetResult(base::MakeUnique<base::Value>(true));
@@ -397,9 +395,7 @@ void WallpaperPrivateSetWallpaperFunction::SetDecodedWallpaper(
 
   bool is_persistent = !user_manager::UserManager::Get()
                             ->IsCurrentUserNonCryptohomeDataEphemeral();
-  wallpaper::WallpaperInfo info = {params->url,
-                                   layout,
-                                   user_manager::User::ONLINE,
+  wallpaper::WallpaperInfo info = {params->url, layout, wallpaper::ONLINE,
                                    base::Time::Now().LocalMidnight()};
   Profile* profile = Profile::FromBrowserContext(browser_context());
   // This API is only available to the component wallpaper picker. We do not
@@ -470,7 +466,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
   wallpaper_manager->SetCustomWallpaper(
       account_id_, wallpaper_files_id_, params->file_name, layout,
-      user_manager::User::CUSTOMIZED, image, update_wallpaper);
+      wallpaper::CUSTOMIZED, image, update_wallpaper);
   unsafe_wallpaper_decoder_ = NULL;
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
@@ -535,7 +531,7 @@ bool WallpaperPrivateSetCustomWallpaperLayoutFunction::RunAsync() {
       chromeos::WallpaperManager::Get();
   wallpaper::WallpaperInfo info;
   wallpaper_manager->GetLoggedInUserWallpaperInfo(&info);
-  if (info.type != user_manager::User::CUSTOMIZED) {
+  if (info.type != wallpaper::CUSTOMIZED) {
     SetError("Only custom wallpaper can change layout.");
     return false;
   }
@@ -761,8 +757,8 @@ WallpaperPrivateRecordWallpaperUMAFunction::Run() {
       record_wallpaper_uma::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  user_manager::User::WallpaperType source = getWallpaperType(params->source);
+  wallpaper::WallpaperType source = getWallpaperType(params->source);
   UMA_HISTOGRAM_ENUMERATION("Ash.Wallpaper.Source", source,
-                            user_manager::User::WALLPAPER_TYPE_COUNT);
+                            wallpaper::WALLPAPER_TYPE_COUNT);
   return RespondNow(NoArguments());
 }

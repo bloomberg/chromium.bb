@@ -164,7 +164,7 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
   wallpaper_manager->SetCustomWallpaper(
       account_id_, wallpaper_files_id_, params_->details.filename, layout,
-      user_manager::User::CUSTOMIZED, image, update_wallpaper);
+      wallpaper::CUSTOMIZED, image, update_wallpaper);
   unsafe_wallpaper_decoder_ = NULL;
 
   // Save current extension name. It will be displayed in the component

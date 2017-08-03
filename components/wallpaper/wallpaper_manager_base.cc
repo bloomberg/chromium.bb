@@ -288,7 +288,7 @@ void WallpaperManagerBase::EnsureLoggedInUserWallpaperLoaded() {
   WallpaperInfo info;
   if (GetLoggedInUserWallpaperInfo(&info)) {
     UMA_HISTOGRAM_ENUMERATION("Ash.Wallpaper.Type", info.type,
-                              user_manager::User::WALLPAPER_TYPE_COUNT);
+                              WALLPAPER_TYPE_COUNT);
     RecordWallpaperAppType();
     if (info == current_user_wallpaper_info_)
       return;
@@ -327,8 +327,7 @@ bool WallpaperManagerBase::GetLoggedInUserWallpaperInfo(WallpaperInfo* info) {
     info->location = current_user_wallpaper_info_.location = "";
     info->layout = current_user_wallpaper_info_.layout =
         WALLPAPER_LAYOUT_CENTER_CROPPED;
-    info->type = current_user_wallpaper_info_.type =
-        user_manager::User::DEFAULT;
+    info->type = current_user_wallpaper_info_.type = DEFAULT;
     info->date = current_user_wallpaper_info_.date =
         base::Time::Now().LocalMidnight();
     return true;
@@ -343,8 +342,8 @@ void WallpaperManagerBase::SetDefaultWallpaper(const AccountId& account_id,
   RemoveUserWallpaperInfo(account_id);
 
   const wallpaper::WallpaperInfo info = {
-      std::string(), wallpaper::WALLPAPER_LAYOUT_CENTER,
-      user_manager::User::DEFAULT, base::Time::Now().LocalMidnight()};
+      std::string(), wallpaper::WALLPAPER_LAYOUT_CENTER, DEFAULT,
+      base::Time::Now().LocalMidnight()};
   const bool is_persistent =
       !user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
           account_id);
@@ -434,14 +433,14 @@ bool WallpaperManagerBase::IsPolicyControlled(
   WallpaperInfo info;
   if (!GetUserWallpaperInfo(account_id, &info))
     return false;
-  return info.type == user_manager::User::POLICY;
+  return info.type == POLICY;
 }
 
 void WallpaperManagerBase::OnPolicySet(const std::string& policy,
                                        const AccountId& account_id) {
   WallpaperInfo info;
   GetUserWallpaperInfo(account_id, &info);
-  info.type = user_manager::User::POLICY;
+  info.type = POLICY;
   SetUserWallpaperInfo(account_id, info, true /* is_persistent */);
 }
 
@@ -449,7 +448,7 @@ void WallpaperManagerBase::OnPolicyCleared(const std::string& policy,
                                            const AccountId& account_id) {
   WallpaperInfo info;
   GetUserWallpaperInfo(account_id, &info);
-  info.type = user_manager::User::DEFAULT;
+  info.type = DEFAULT;
   SetUserWallpaperInfo(account_id, info, true /* is_persistent */);
   SetDefaultWallpaperNow(account_id);
 }
@@ -590,7 +589,7 @@ void WallpaperManagerBase::InitInitialUserWallpaper(const AccountId& account_id,
                                                     bool is_persistent) {
   current_user_wallpaper_info_.location = "";
   current_user_wallpaper_info_.layout = WALLPAPER_LAYOUT_CENTER_CROPPED;
-  current_user_wallpaper_info_.type = user_manager::User::DEFAULT;
+  current_user_wallpaper_info_.type = DEFAULT;
   current_user_wallpaper_info_.date = base::Time::Now().LocalMidnight();
 
   std::string device_wallpaper_url;
@@ -599,7 +598,7 @@ void WallpaperManagerBase::InitInitialUserWallpaper(const AccountId& account_id,
                                &device_wallpaper_hash)) {
     current_user_wallpaper_info_.location =
         GetDeviceWallpaperFilePath().value();
-    current_user_wallpaper_info_.type = user_manager::User::DEVICE;
+    current_user_wallpaper_info_.type = DEVICE;
   }
 
   WallpaperInfo info = current_user_wallpaper_info_;
@@ -694,11 +693,9 @@ void WallpaperManagerBase::CacheUserWallpaper(const AccountId& account_id) {
 
     base::FilePath wallpaper_dir;
     base::FilePath wallpaper_path;
-    if (info.type == user_manager::User::CUSTOMIZED ||
-        info.type == user_manager::User::POLICY ||
-        info.type == user_manager::User::DEVICE) {
+    if (info.type == CUSTOMIZED || info.type == POLICY || info.type == DEVICE) {
       base::FilePath wallpaper_path;
-      if (info.type == user_manager::User::DEVICE) {
+      if (info.type == DEVICE) {
         wallpaper_path = GetDeviceWallpaperFilePath();
       } else {
         const char* sub_dir = GetCustomWallpaperSubdirForCurrentResolution();
@@ -779,8 +776,7 @@ void WallpaperManagerBase::LoadWallpaper(
   base::FilePath wallpaper_path;
 
   // Do a sanity check that file path information is not empty.
-  if (info.type == user_manager::User::ONLINE ||
-      info.type == user_manager::User::DEFAULT) {
+  if (info.type == ONLINE || info.type == DEFAULT) {
     if (info.location.empty()) {
       if (base::SysInfo::IsRunningOnChromeOS()) {
         NOTREACHED() << "User wallpaper info appears to be broken: "
@@ -798,7 +794,7 @@ void WallpaperManagerBase::LoadWallpaper(
     }
   }
 
-  if (info.type == user_manager::User::ONLINE) {
+  if (info.type == ONLINE) {
     std::string file_name = GURL(info.location).ExtractFileName();
     WallpaperResolution resolution = GetAppropriateResolution();
     // Only solid color wallpapers have stretch layout and they have only one
@@ -825,7 +821,7 @@ void WallpaperManagerBase::LoadWallpaper(
     loaded_wallpapers_for_test_++;
     StartLoad(account_id, info, update_wallpaper, wallpaper_path,
               std::move(on_finish));
-  } else if (info.type == user_manager::User::DEFAULT) {
+  } else if (info.type == DEFAULT) {
     // Default wallpapers are migrated from M21 user profiles. A code refactor
     // overlooked that case and caused these wallpapers not being loaded at all.
     // On some slow devices, it caused login webui not visible after upgrade to
@@ -849,7 +845,7 @@ void WallpaperManagerBase::MoveCustomWallpapersSuccess(
     const wallpaper::WallpaperFilesId& wallpaper_files_id) {
   WallpaperInfo info;
   GetUserWallpaperInfo(account_id, &info);
-  if (info.type == user_manager::User::CUSTOMIZED) {
+  if (info.type == CUSTOMIZED) {
     // New file field should include user wallpaper_files_id in addition to
     // file name.  This is needed because at login screen, wallpaper_files_id
     // is not available.

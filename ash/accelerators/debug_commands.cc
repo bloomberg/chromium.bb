@@ -111,7 +111,7 @@ void HandleToggleWallpaperMode() {
   WallpaperController* wallpaper_controller =
       Shell::Get()->wallpaper_controller();
   wallpaper::WallpaperInfo info("", wallpaper::WALLPAPER_LAYOUT_STRETCH,
-                                user_manager::User::DEFAULT,
+                                wallpaper::DEFAULT,
                                 base::Time::Now().LocalMidnight());
   switch (++index % 4) {
     case 0:
