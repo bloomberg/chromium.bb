@@ -288,5 +288,18 @@ TEST(RenderPassTest, CopyAllWithCulledQuads) {
   CompareRenderPassLists(pass_list, copy_list);
 }
 
+TEST(RenderPassTest, ReplacedQuadsShouldntMove) {
+  std::unique_ptr<SharedQuadState> quad_state =
+      base::MakeUnique<SharedQuadState>();
+  QuadList quad_list;
+  SolidColorDrawQuad* quad =
+      quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+  gfx::Rect quad_rect(1, 2, 3, 4);
+  quad->SetNew(quad_state.get(), quad_rect, quad_rect, SkColor(), false);
+  quad_list.ReplaceExistingQuadWithOpaqueTransparentSolidColor(
+      quad_list.begin());
+  EXPECT_EQ(quad_list.begin()->rect, quad_rect);
+}
+
 }  // namespace
 }  // namespace cc
