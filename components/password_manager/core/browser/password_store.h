@@ -92,10 +92,10 @@ class PasswordStore : protected PasswordStoreSync,
     GURL origin;
   };
 
-  PasswordStore(scoped_refptr<base::SequencedTaskRunner> main_thread_runner,
-                scoped_refptr<base::SequencedTaskRunner> db_thread_runner);
+  PasswordStore();
 
-  // Reimplement this to add custom initialization. Always call this too.
+  // Reimplement this to add custom initialization. Always call this too on the
+  // UI thread.
   virtual bool Init(const syncer::SyncableService::StartSyncFlare& flare,
                     PrefService* prefs);
 
@@ -333,10 +333,14 @@ class PasswordStore : protected PasswordStoreSync,
 
   ~PasswordStore() override;
 
-  // Get the TaskRunner to use for PasswordStore background tasks.
-  // By default, a SequencedTaskRunner on the DB thread is used, but
-  // subclasses can override.
-  virtual scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner();
+  // Create a TaskRunner to be saved in |background_task_runner_|.
+  virtual scoped_refptr<base::SequencedTaskRunner> CreateBackgroundTaskRunner()
+      const;
+
+  // Creates PasswordSyncableService and PasswordReuseDetector instances on the
+  // background thread. Subclasses can add more logic.
+  virtual void InitOnBackgroundThread(
+      const syncer::SyncableService::StartSyncFlare& flare);
 
   // Methods below will be run in PasswordStore's own thread.
   // Synchronous implementation that reports usage metrics.
@@ -444,15 +448,15 @@ class PasswordStore : protected PasswordStoreSync,
   void ClearSyncPasswordHashImpl();
 #endif
 
-  // TaskRunner for tasks that run on the main thread (usually the UI thread).
-  scoped_refptr<base::SequencedTaskRunner> main_thread_runner_;
+  scoped_refptr<base::SequencedTaskRunner> main_thread_runner() const {
+    return main_thread_runner_;
+  }
 
-  // TaskRunner for the DB thread. By default, this is the task runner used for
-  // background tasks -- see |GetBackgroundTaskRunner|.
-  scoped_refptr<base::SequencedTaskRunner> db_thread_runner_;
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner() const {
+    return background_task_runner_;
+  }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(PasswordStoreTest, GetLoginImpl);
   FRIEND_TEST_ALL_PREFIXES(PasswordStoreTest,
                            UpdatePasswordsStoredForAffiliatedWebsites);
 
@@ -461,11 +465,11 @@ class PasswordStore : protected PasswordStoreSync,
   void Schedule(void (PasswordStore::*func)(std::unique_ptr<GetLoginsRequest>),
                 PasswordStoreConsumer* consumer);
 
-  // Wrapper method called on the destination thread (DB for non-mac) that
-  // invokes |task| and then calls back into the source thread to notify
-  // observers that the password store may have been modified via
-  // NotifyLoginsChanged(). Note that there is no guarantee that the called
-  // method will actually modify the password store data.
+  // Wrapper method called on the destination thread that invokes |task| and
+  // then calls back into the source thread to notify observers that the
+  // password store may have been modified via NotifyLoginsChanged(). Note that
+  // there is no guarantee that the called method will actually modify the
+  // password store data.
   void WrapModificationTask(ModificationTask task);
 
   // Temporary specializations of WrapModificationTask for a better stack trace.
@@ -541,7 +545,8 @@ class PasswordStore : protected PasswordStoreSync,
       std::vector<std::unique_ptr<autofill::PasswordForm>> forms,
       std::unique_ptr<GetLoginsRequest> request);
 
-  // Schedules GetLoginsWithAffiliationsImpl() to be run on the DB thread.
+  // Schedules GetLoginsWithAffiliationsImpl() to be run on the background
+  // thread.
   void ScheduleGetLoginsWithAffiliations(
       const FormDigest& form,
       std::unique_ptr<GetLoginsRequest> request,
@@ -579,14 +584,15 @@ class PasswordStore : protected PasswordStoreSync,
       const autofill::PasswordForm& updated_android_form,
       const std::vector<std::string>& affiliated_web_realms);
 
-  // Creates PasswordSyncableService and PasswordReuseDetector instances on the
-  // background thread.
-  void InitOnBackgroundThread(
-      const syncer::SyncableService::StartSyncFlare& flare);
-
   // Deletes object that should be destroyed on the background thread.
   // WARNING: this method can be skipped on shutdown.
   void DestroyOnBackgroundThread();
+
+  // TaskRunner for tasks that run on the main thread (usually the UI thread).
+  scoped_refptr<base::SequencedTaskRunner> main_thread_runner_;
+
+  // TaskRunner for all the background operations.
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   // The observers.
   scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_;

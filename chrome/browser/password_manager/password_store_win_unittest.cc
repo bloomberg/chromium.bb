@@ -162,8 +162,6 @@ class PasswordStoreWinTest : public testing::Test {
 
   PasswordStoreWin* CreatePasswordStore() {
     return new PasswordStoreWin(
-        base::SequencedTaskRunnerHandle::Get(),
-        base::SequencedTaskRunnerHandle::Get(),
         base::MakeUnique<LoginDatabase>(test_login_db_file_path()), wds_.get());
   }
 

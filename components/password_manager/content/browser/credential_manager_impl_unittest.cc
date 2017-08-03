@@ -16,11 +16,8 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/password_manager/core/browser/android_affiliation/mock_affiliated_match_helper.h"
 #include "components/password_manager/core/browser/credential_manager_password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -164,10 +161,6 @@ base::WeakPtr<PasswordManagerDriver> TestCredentialManagerImpl::GetDriver() {
   return driver_;
 }
 
-void RunAllPendingTasks() {
-  content::RunAllBlockingPoolTasksUntilIdle();
-}
-
 class SlightlyLessStubbyPasswordManagerDriver
     : public StubPasswordManagerDriver {
  public:
@@ -211,6 +204,7 @@ class CredentialManagerImplTest : public content::RenderViewHostTestHarness {
   void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
     store_ = new TestPasswordStore;
+    store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
     client_.reset(
         new testing::NiceMock<MockPasswordManagerClient>(store_.get()));
     stub_driver_.reset(
@@ -365,6 +359,8 @@ class CredentialManagerImplTest : public content::RenderViewHostTestHarness {
     cm_service_impl_->Get(mediation, include_passwords, federations,
                           std::move(callback));
   }
+
+  void RunAllPendingTasks() { scoped_task_environment()->RunUntilIdle(); }
 
  protected:
   autofill::PasswordForm form_;

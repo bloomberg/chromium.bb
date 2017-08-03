@@ -37,6 +37,9 @@ class TestPasswordStore : public PasswordStore {
  protected:
   ~TestPasswordStore() override;
 
+  scoped_refptr<base::SequencedTaskRunner> CreateBackgroundTaskRunner()
+      const override;
+
   // PasswordStore interface
   PasswordStoreChangeList AddLoginImpl(
       const autofill::PasswordForm& form) override;
