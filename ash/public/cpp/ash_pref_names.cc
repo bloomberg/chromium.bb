@@ -8,6 +8,9 @@ namespace ash {
 
 namespace prefs {
 
+// A boolean pref which stores whether a stylus has been seen before.
+const char kHasSeenStylus[] = "ash.has_seen_stylus";
+
 // A boolean pref storing the enabled status of the NightLight feature.
 const char kNightLightEnabled[] = "ash.night_light.enabled";
 
