@@ -162,8 +162,7 @@ CSSValue* CSSPropertyFontUtils::ConsumeFontWeight(
       (token.NumericValue() < 1 || token.NumericValue() > 1000))
     return nullptr;
 
-  CSSPrimitiveValue* start_weight = nullptr;
-  start_weight =
+  CSSPrimitiveValue* start_weight =
       CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeNonNegative);
   if (!start_weight || start_weight->GetFloatValue() < 1 ||
       start_weight->GetFloatValue() > 1000)
@@ -172,22 +171,16 @@ CSSValue* CSSPropertyFontUtils::ConsumeFontWeight(
   // In a non-font-face context, more than one number is not allowed. Return
   // what we have. If there is trailing garbage, the AtEnd() check in
   // CSSPropertyParser::ParseValueStart will catch that.
-  if (parser_mode != kCSSFontFaceRuleMode)
+  if (parser_mode != kCSSFontFaceRuleMode || range.AtEnd())
     return start_weight;
 
-  CSSPrimitiveValue* end_weight = nullptr;
-  if (!range.AtEnd()) {
-    end_weight =
-        CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeNonNegative);
-    if (!end_weight || end_weight->GetFloatValue() < 1 ||
-        end_weight->GetFloatValue() > 1000)
-      return nullptr;
-  }
+  CSSPrimitiveValue* end_weight =
+      CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeNonNegative);
+  if (!end_weight || end_weight->GetFloatValue() < 1 ||
+      end_weight->GetFloatValue() > 1000)
+    return nullptr;
 
-  if (end_weight)
-    return CombineToRangeListOrNull(start_weight, end_weight);
-
-  return start_weight;
+  return CombineToRangeListOrNull(start_weight, end_weight);
 }
 
 // TODO(bugsnash): move this to the FontFeatureSettings API when it is no longer
