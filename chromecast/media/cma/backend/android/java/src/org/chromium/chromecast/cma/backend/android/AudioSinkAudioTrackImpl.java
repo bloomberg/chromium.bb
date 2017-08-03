@@ -5,6 +5,8 @@
 package org.chromium.chromecast.cma.backend.android;
 
 import android.annotation.TargetApi;
+import android.content.Context;
+import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTimestamp;
@@ -13,6 +15,7 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.util.SparseIntArray;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -48,11 +51,22 @@ class AudioSinkAudioTrackImpl {
     private static final int DEBUG_LEVEL = 0;
 
     // Mapping from Android's stream_type to Cast's AudioContentType (used for callback).
-    private static final SparseIntArray CAST_TYPE_TO_ANDROID_TYPE_MAP = new SparseIntArray(3) {
+    private static final SparseIntArray CAST_TYPE_TO_ANDROID_USAGE_TYPE_MAP = new SparseIntArray(
+            3) {
         {
-            append(AudioContentType.MEDIA, AudioManager.STREAM_MUSIC);
-            append(AudioContentType.ALARM, AudioManager.STREAM_ALARM);
-            append(AudioContentType.COMMUNICATION, AudioManager.STREAM_SYSTEM);
+            append(AudioContentType.MEDIA, AudioAttributes.USAGE_MEDIA);
+            append(AudioContentType.ALARM, AudioAttributes.USAGE_ALARM);
+            append(AudioContentType.COMMUNICATION, AudioAttributes.USAGE_ASSISTANCE_SONIFICATION);
+        }
+    };
+
+    private static final SparseIntArray CAST_TYPE_TO_ANDROID_CONTENT_TYPE_MAP = new SparseIntArray(
+            3) {
+        {
+            append(AudioContentType.MEDIA, AudioAttributes.CONTENT_TYPE_MUSIC);
+            // Note: ALARM uses the same as COMMUNICATON.
+            append(AudioContentType.ALARM, AudioAttributes.CONTENT_TYPE_SONIFICATION);
+            append(AudioContentType.COMMUNICATION, AudioAttributes.CONTENT_TYPE_SONIFICATION);
         }
     };
 
@@ -67,6 +81,11 @@ class AudioSinkAudioTrackImpl {
     private static final long SEC_IN_NSEC = 1000000000L;
     private static final long TIMESTAMP_UPDATE_PERIOD = 3 * SEC_IN_NSEC;
     private static final long UNDERRUN_LOG_THROTTLE_PERIOD = SEC_IN_NSEC;
+
+    private static AudioManager sAudioManager = null;
+
+    private static int sSessionIdMedia = AudioManager.ERROR;
+    private static int sSessionIdNonMedia = AudioManager.ERROR;
 
     private final long mNativeAudioSinkAudioTrackImpl;
 
@@ -100,6 +119,40 @@ class AudioSinkAudioTrackImpl {
     private ByteBuffer mPcmBuffer; // PCM audio data (native->java)
     private ByteBuffer mRenderingDelayBuffer; // RenderingDelay return value
                                               // (java->native)
+
+    private static AudioManager getAudioManager() {
+        if (sAudioManager == null) {
+            sAudioManager = (AudioManager) ContextUtils.getApplicationContext().getSystemService(
+                    Context.AUDIO_SERVICE);
+        }
+        return sAudioManager;
+    }
+
+    @CalledByNative
+    public static int getSessionIdMedia() {
+        if (sSessionIdMedia == AudioManager.ERROR) {
+            sSessionIdMedia = getAudioManager().generateAudioSessionId();
+            if (sSessionIdMedia == AudioManager.ERROR) {
+                Log.e(TAG, "Cannot generate session-id for media tracks!");
+            } else {
+                Log.i(TAG, "Session-id for media tracks is " + sSessionIdMedia);
+            }
+        }
+        return sSessionIdMedia;
+    }
+
+    @CalledByNative
+    public static int getSessionIdNonMedia() {
+        if (sSessionIdNonMedia == AudioManager.ERROR) {
+            sSessionIdNonMedia = getAudioManager().generateAudioSessionId();
+            if (sSessionIdNonMedia == AudioManager.ERROR) {
+                Log.e(TAG, "Cannot generate session-id for non-media tracks!");
+            } else {
+                Log.i(TAG, "Session-id for non-media tracks is " + sSessionIdNonMedia);
+            }
+        }
+        return sSessionIdNonMedia;
+    }
 
     /** Construction */
     @CalledByNative
@@ -149,11 +202,32 @@ class AudioSinkAudioTrackImpl {
         // similar.
         int bufferSizeInBytes =
                 5 * AudioTrack.getMinBufferSize(mSampleRateInHz, CHANNEL_CONFIG, AUDIO_FORMAT);
-        int streamType = CAST_TYPE_TO_ANDROID_TYPE_MAP.get(castContentType);
+
+        int usageType = CAST_TYPE_TO_ANDROID_USAGE_TYPE_MAP.get(castContentType);
+        int contentType = CAST_TYPE_TO_ANDROID_CONTENT_TYPE_MAP.get(castContentType);
+        int sessionId = (usageType == AudioAttributes.USAGE_MEDIA) ? getSessionIdMedia()
+                                                                   : getSessionIdNonMedia();
         Log.i(TAG,
-                "Init: create an AudioTrack of size=" + bufferSizeInBytes + " type=" + streamType);
-        mAudioTrack = new AudioTrack(streamType, mSampleRateInHz, CHANNEL_CONFIG, AUDIO_FORMAT,
-                bufferSizeInBytes, AUDIO_MODE);
+                "Init: create an AudioTrack of size=" + bufferSizeInBytes
+                        + " usageType=" + usageType + " contentType=" + contentType
+                        + " with session-id=" + sessionId);
+
+        AudioTrack.Builder builder = new AudioTrack.Builder();
+        builder.setBufferSizeInBytes(bufferSizeInBytes)
+                .setTransferMode(AUDIO_MODE)
+                .setAudioAttributes(new AudioAttributes.Builder()
+                                            .setUsage(usageType)
+                                            .setContentType(contentType)
+                                            .build())
+                .setAudioFormat(new AudioFormat.Builder()
+                                        .setEncoding(AUDIO_FORMAT)
+                                        .setSampleRate(mSampleRateInHz)
+                                        .setChannelMask(CHANNEL_CONFIG)
+                                        .build());
+        if (sessionId != AudioManager.ERROR) builder.setSessionId(sessionId);
+
+        mAudioTrack = builder.build();
+
         mRefPointTStamp = new AudioTimestamp();
 
         // Allocated shared buffers.
