@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/reading_list/reading_list_download_service.h"
 #include "ios/chrome/browser/reading_list/reading_list_download_service_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#include "ios/chrome/browser/tabs/tab_constants.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_mediator.h"
@@ -251,8 +252,13 @@ readingListCollectionViewController:
 
   [readingListCollectionViewController willBeDismissed];
 
+  // Use a referrer with a specific URL to signal that this entry should not be
+  // taken into account for the Most Visited tiles.
+  web::Referrer referrer;
+  referrer.url = GURL(tab_constants::kDoNotConsiderForMostVisited);
+
   [self.URLLoader loadURL:entry->URL()
-                 referrer:web::Referrer()
+                 referrer:referrer
                transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
         rendererInitiated:NO];
 

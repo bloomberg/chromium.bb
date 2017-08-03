@@ -10,7 +10,6 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
-#include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
 #include "components/ntp_tiles/metrics.h"
 #include "components/ntp_tiles/most_visited_sites.h"
@@ -28,6 +27,7 @@
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/ntp_tiles/ios_most_visited_sites_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#include "ios/chrome/browser/tabs/tab_constants.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -196,7 +196,7 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=new_tab";
   // Use a referrer with a specific URL to mark this entry as coming from
   // ContentSuggestions.
   web::Referrer referrer;
-  referrer.url = GURL(ntp_snippets::kContentSuggestionsApiScope);
+  referrer.url = GURL(tab_constants::kDoNotConsiderForMostVisited);
 
   [self.URLLoader loadURL:suggestionItem.URL
                  referrer:referrer

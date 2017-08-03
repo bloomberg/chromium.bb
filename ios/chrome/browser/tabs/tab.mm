@@ -73,6 +73,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_overlay_provider.h"
 #import "ios/chrome/browser/snapshots/web_controller_snapshot_helper.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
+#include "ios/chrome/browser/tabs/tab_constants.h"
 #import "ios/chrome/browser/tabs/tab_delegate.h"
 #import "ios/chrome/browser/tabs/tab_dialog_delegate.h"
 #import "ios/chrome/browser/tabs/tab_headers_delegate.h"
@@ -162,10 +163,6 @@ class TabInfoBarObserver;
 // terminated.
 const char kRendererTerminationStateHistogram[] =
     "Tab.StateAtRendererTermination";
-
-// Referrer used for clicks on article suggestions on the NTP.
-const char kChromeContentSuggestionsReferrer[] =
-    "https://www.googleapis.com/auth/chrome-content-suggestions";
 
 // Enum corresponding to UMA's TabForegroundState, for
 // Tab.StateAtRendererTermination. Must be kept in sync with the UMA enum.
@@ -882,7 +879,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // Clicks on content suggestions on the NTP should not contribute to the
   // Most Visited tiles in the NTP.
   const bool considerForNTPMostVisited =
-      referrer.url != GURL(kChromeContentSuggestionsReferrer);
+      referrer.url != GURL(tab_constants::kDoNotConsiderForMostVisited);
   history::HistoryAddPageArgs args(
       url, item->GetTimestamp(), &_tabHistoryContext, item->GetUniqueID(),
       referrer.url, redirects, item->GetTransitionType(),

@@ -34,6 +34,7 @@ source_set("reading_list") {
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/feature_engagement",
     "//ios/chrome/browser/reading_list",
+    "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/favicon",
