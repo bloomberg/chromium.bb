@@ -10,6 +10,8 @@
 Polymer({
   is: 'network-ip-config',
 
+  behaviors: [I18nBehavior],
+
   properties: {
     /**
      * The network properties dictionary containing the IP Config properties to

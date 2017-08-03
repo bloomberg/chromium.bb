@@ -4,6 +4,13 @@
 {
   'targets': [
     {
+      'target_name': 'network_resources',
+      'type': 'none',
+      'dependencies': [
+        'network/compiled_resources2.gyp:*',
+      ],
+    },
+    {
       'target_name': 'bluetooth_dialog',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_dialog/compiled_resources2.gyp:cr_dialog',
