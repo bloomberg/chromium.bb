@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -52,13 +52,13 @@ WAIT_FOR_SPEECH_TIMEOUT_SECS = 3.0
 class NvdaChromeTest(unittest.TestCase):
   @classmethod
   def setUpClass(cls):
-    print 'user data: %s' % CHROME_PROFILES_PATH
-    print 'chrome: %s' % CHROME_PATH
-    print 'nvda: %s' % NVDA_PATH
-    print 'nvda_proctest: %s' % NVDA_PROCTEST_PATH
+    print('user data: %s' % CHROME_PROFILES_PATH)
+    print('chrome: %s' % CHROME_PATH)
+    print('nvda: %s' % NVDA_PATH)
+    print('nvda_proctest: %s' % NVDA_PROCTEST_PATH)
 
-    print
-    print 'Clearing user data directory and log file from previous runs'
+    print()
+    print('Clearing user data directory and log file from previous runs')
     if os.access(NVDA_LOGPATH, os.F_OK):
       os.remove(NVDA_LOGPATH)
     if os.access(CHROME_PROFILES_PATH, os.F_OK):
@@ -66,7 +66,7 @@ class NvdaChromeTest(unittest.TestCase):
     os.mkdir(CHROME_PROFILES_PATH, 0777)
 
     def handler(signum, frame):
-      print 'Test interrupted, attempting to kill subprocesses.'
+      print('Test interrupted, attempting to kill subprocesses.')
       self.tearDown()
       sys.exit()
     signal.signal(signal.SIGINT, handler)
@@ -77,16 +77,16 @@ class NvdaChromeTest(unittest.TestCase):
             '--user-data-dir=%s' % user_data_dir,
             '--no-first-run',
             'about:blank']
-    print
-    print ' '.join(args)
+    print()
+    print(' '.join(args))
     self._chrome_proc = subprocess.Popen(args)
     self._chrome_proc.poll()
     if self._chrome_proc.returncode is None:
-      print 'Chrome is running'
+      print('Chrome is running')
     else:
-      print 'Chrome exited with code', self._chrome_proc.returncode
+      print('Chrome exited with code', self._chrome_proc.returncode)
       sys.exit()
-    print 'Chrome pid: %d' % self._chrome_proc.pid
+    print('Chrome pid: %d' % self._chrome_proc.pid)
 
     os.environ['NVDA_SPECIFIC_PROCESS'] = str(self._chrome_proc.pid)
 
@@ -99,11 +99,11 @@ class NvdaChromeTest(unittest.TestCase):
     self._nvda_proc = subprocess.Popen(args)
     self._nvda_proc.poll()
     if self._nvda_proc.returncode is None:
-      print 'NVDA is running'
+      print('NVDA is running')
     else:
-      print 'NVDA exited with code', self._nvda_proc.returncode
+      print('NVDA exited with code', self._nvda_proc.returncode)
       sys.exit()
-    print 'NVDA pid: %d' % self._nvda_proc.pid
+    print('NVDA pid: %d' % self._nvda_proc.pid)
 
     app = pywinauto.application.Application()
     app.connect_(process = self._chrome_proc.pid)
@@ -115,22 +115,22 @@ class NvdaChromeTest(unittest.TestCase):
       self.tearDown()
 
   def tearDown(self):
-    print
-    print 'Shutting down'
+    print()
+    print('Shutting down')
 
     self._chrome_proc.poll()
     if self._chrome_proc.returncode is None:
-      print 'Killing Chrome subprocess'
+      print('Killing Chrome subprocess')
       self._chrome_proc.kill()
     else:
-      print 'Chrome already died.'
+      print('Chrome already died.')
 
     self._nvda_proc.poll()
     if self._nvda_proc.returncode is None:
-      print 'Killing NVDA subprocess'
+      print('Killing NVDA subprocess')
       self._nvda_proc.kill()
     else:
-      print 'NVDA already died.'
+      print('NVDA already died.')
 
   def _GetSpeechFromNvdaLogFile(self):
     """Return everything NVDA would have spoken as a list of strings.
@@ -176,12 +176,12 @@ class NvdaChromeTest(unittest.TestCase):
         break
 
       if time.time() - start_time >= WAIT_FOR_SPEECH_TIMEOUT_SECS:
-        print '** Speech from NVDA so far:'
+        print('** Speech from NVDA so far:')
         for line in lines:
-          print '"%s"' % line
-        print '** Was waiting for:'
+          print('"%s"' % line)
+        print('** Was waiting for:')
         for line in expected:
-          print '"%s"' % line
+          print('"%s"' % line)
         raise Exception('Timed out')
       time.sleep(0.1)
 
