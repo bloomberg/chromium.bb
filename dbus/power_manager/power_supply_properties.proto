@@ -107,25 +107,28 @@ message PowerSupplyProperties {
   optional BatteryState battery_state = 15;
 
   // Estimated battery charge as a percent of its total capacity, in the
-  // range [0.0, 100.0].
-  optional double battery_percent = 7;
+  // range [0.0, 100.0]. Unset if a battery isn't present.
+  optional double battery_percent = 7 [default = -1.0];
 
   // Estimated time until the battery is empty, in seconds, or zero if the
   // battery isn't discharging. -1 if the estimated time would be huge
-  // (e.g. because the current is zero or close to zero).
+  // (e.g. because the current is zero or close to zero). Unset if a battery
+  // isn't present.
   optional int64 battery_time_to_empty_sec = 5;
 
   // Estimated time until the battery is full, in seconds, or zero if the
   // battery isn't charging. -1 if the estimated time would be huge (e.g.
-  // because the current is zero or close to zero).
+  // because the current is zero or close to zero). Unset if a battery isn't
+  // present.
   optional int64 battery_time_to_full_sec = 6;
 
   // True when |battery_time_to_*| can't be trusted, e.g. because the power
-  // source just changed.
+  // source just changed. Unset if a battery isn't present.
   optional bool is_calculating_battery_time = 12 [default = false];
 
-  // The battery discharge rate measured in W. Positive if the battery is
-  // being discharged and negative if it's being charged.
+  // The battery discharge rate measured in W. Positive if the battery is being
+  // discharged, negative if it's being charged, or unset if a battery isn't
+  // present.
   optional double battery_discharge_rate = 16;
 
   // True if it is possible for some connected devices to function as either
