@@ -9,37 +9,12 @@
 #include <string>
 #include <vector>
 
-#include "base/optional.h"
 #include "chrome/installer/zucchini/buffer_view.h"
 #include "chrome/installer/zucchini/image_utils.h"
 
 namespace zucchini {
 
 class Disassembler;
-
-// Interface for extracting References through member function GetNext().
-// This is used by Disassemblers to extract references from an image file.
-// Typycally, a Reader lazily extracts values and does not hold any storage.
-class ReferenceReader {
- public:
-  virtual ~ReferenceReader() = default;
-
-  // Returns the next available Reference, or nullopt_t if exhausted.
-  // Extracted References must be ordered by their location in the image.
-  virtual base::Optional<Reference> GetNext() = 0;
-};
-
-// Interface for writing References through member function
-// PutNext(reference). This is used by Disassemblers to write new References
-// in the image file.
-class ReferenceWriter {
- public:
-  virtual ~ReferenceWriter() = default;
-
-  // Writes |reference| in the underlying image file. This operation always
-  // succeeds.
-  virtual void PutNext(Reference reference) = 0;
-};
 
 // A ReferenceGroup is associated with a specific |type| and has convenience
 // methods to obtain readers and writers for that type. A ReferenceGroup does
