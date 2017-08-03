@@ -40,6 +40,7 @@ source_set("content_suggestions") {
     "//ios/chrome/browser/ntp_snippets",
     "//ios/chrome/browser/ntp_tiles",
     "//ios/chrome/browser/reading_list",
+    "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/collection_view/cells",
