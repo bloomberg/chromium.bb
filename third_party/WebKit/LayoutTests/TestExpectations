@@ -3090,6 +3090,6 @@ crbug.com/749965 [ Win7 Debug ] media/controls/controls-video-keynav.html [ Fail
 crbug.com/750310 [ Win7 Debug ] virtual/off-main-thread-fetch/http/tests/inspector/network/network-blocked-reason.html [ Timeout ]
 
 # Sheriff failures 2017-08-03
-crbug.com/751906 [ Linux Debug ] http/tests/devtools/console/console-correct-suggestions.js [ Timeout Pass ]
-crbug.com/751906 [ Linux Debug ] virtual/mojo-loading/http/tests/devtools/console/console-correct-suggestions.js [ Timeout Pass ]
+crbug.com/751906 http/tests/devtools/console/console-correct-suggestions.js [ Timeout Pass ]
+crbug.com/751906 virtual/mojo-loading/http/tests/devtools/console/console-correct-suggestions.js [ Timeout Pass ]
 crbug.com/751955 external/wpt/webusb/idlharness.https.html [ Timeout Pass ]
