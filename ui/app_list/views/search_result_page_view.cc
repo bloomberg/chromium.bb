@@ -98,6 +98,8 @@ class SearchResultPageBackground : public views::Background {
     flags.setColor(color_);
     canvas->DrawRoundRect(bounds, corner_radius_, flags);
 
+    if (bounds.height() <= kSearchBoxHeight)
+      return;
     // Draw a separator between SearchBoxView and SearchResultPageView.
     bounds.set_y(kSearchBoxHeight);
     bounds.set_height(kSeparatorThickness);
