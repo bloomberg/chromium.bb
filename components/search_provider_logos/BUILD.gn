@@ -33,6 +33,33 @@ static_library("search_provider_logos") {
   ]
 }
 
+bundle_data("unit_tests_bundle_data") {
+  visibility = [ ":unit_tests" ]
+  testonly = true
+  sources = [
+    "//components/test/data/search_provider_logos/ddljson_android1.json",
+    "//components/test/data/search_provider_logos/ddljson_android1_fp.json",
+    "//components/test/data/search_provider_logos/ddljson_android2.json",
+    "//components/test/data/search_provider_logos/ddljson_android2_fp.json",
+    "//components/test/data/search_provider_logos/ddljson_android3.json",
+    "//components/test/data/search_provider_logos/ddljson_android3_fp.json",
+    "//components/test/data/search_provider_logos/ddljson_android4.json",
+    "//components/test/data/search_provider_logos/ddljson_android4_fp.json",
+    "//components/test/data/search_provider_logos/ddljson_ios1.json",
+    "//components/test/data/search_provider_logos/ddljson_ios1_fp.json",
+    "//components/test/data/search_provider_logos/ddljson_ios2.json",
+    "//components/test/data/search_provider_logos/ddljson_ios2_fp.json",
+    "//components/test/data/search_provider_logos/ddljson_ios3.json",
+    "//components/test/data/search_provider_logos/ddljson_ios3_fp.json",
+    "//components/test/data/search_provider_logos/ddljson_ios4.json",
+    "//components/test/data/search_provider_logos/ddljson_ios4_fp.json",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/" +
+        "{{source_root_relative_dir}}/{{source_file_part}}",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -42,6 +69,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":search_provider_logos",
+    ":unit_tests_bundle_data",
     "//base/test:test_support",
     "//net:test_support",
     "//testing/gmock",
