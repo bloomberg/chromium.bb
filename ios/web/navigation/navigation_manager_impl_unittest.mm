@@ -1827,6 +1827,136 @@ TEST_P(NavigationManagerTest, GetIndexOfItem) {
   EXPECT_EQ(-1, navigation_manager()->GetIndexOfItem(item_not_found.get()));
 }
 
+// Tests that GetBackwardItems() and GetForwardItems() return expected entries
+// when current item is in the middle of the navigation history.
+TEST_P(NavigationManagerTest, TestBackwardForwardItems) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/0"];
+  navigation_manager()->CommitPendingItem();
+
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/1"
+                  backListURLs:@[ @"http://www.url.com/0" ]
+               forwardListURLs:nil];
+  navigation_manager()->CommitPendingItem();
+
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/2"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  [mock_wk_list_
+        setCurrentURL:@"http://www.url.com/2"
+         backListURLs:@[ @"http://www.url.com/0", @"http://www.url.com/1" ]
+      forwardListURLs:nil];
+  navigation_manager()->CommitPendingItem();
+
+  EXPECT_EQ(2, navigation_manager()->GetLastCommittedItemIndex());
+  NavigationItemList back_items = navigation_manager()->GetBackwardItems();
+  EXPECT_EQ(2U, back_items.size());
+  EXPECT_EQ("http://www.url.com/1", back_items[0]->GetURL().spec());
+  EXPECT_EQ("http://www.url.com/0", back_items[1]->GetURL().spec());
+  EXPECT_TRUE(navigation_manager()->GetForwardItems().empty());
+
+  if (GetParam() == TEST_WK_BASED_NAVIGATION_MANAGER) {
+    // TODO(crbug.com/734150): Enable this test once |GoToIndex| is
+    // implemented in WKBasedNavigationManager.
+    return;
+  }
+  navigation_manager()->GoBack();
+  EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
+  back_items = navigation_manager()->GetBackwardItems();
+  EXPECT_EQ(1U, back_items.size());
+  EXPECT_EQ("http://www.url.com/0", back_items[0]->GetURL().spec());
+  NavigationItemList forward_items = navigation_manager()->GetForwardItems();
+  EXPECT_EQ(1U, forward_items.size());
+  EXPECT_EQ("http://www.url.com/2", forward_items[0]->GetURL().spec());
+}
+
+// Tests that pending item is not considered part of session history so that
+// GetBackwardItems returns the second last committed item even if there is a
+// pendign item.
+TEST_P(NavigationManagerTest, NewPendingItemIsHiddenFromHistory) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/0"];
+  navigation_manager()->CommitPendingItem();
+
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/1"
+                  backListURLs:@[ @"http://www.url.com/0" ]
+               forwardListURLs:nil];
+  navigation_manager()->CommitPendingItem();
+
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/2"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
+  EXPECT_TRUE(navigation_manager()->GetPendingItem());
+
+  NavigationItemList back_items = navigation_manager()->GetBackwardItems();
+  EXPECT_EQ(1U, back_items.size());
+  EXPECT_EQ("http://www.url.com/0", back_items[0]->GetURL().spec());
+}
+
+// Tests that all committed items are considered history if there is a transient
+// item. This can happen if an intersitial was loaded for SSL error.
+// See crbug.com/691311.
+TEST_P(NavigationManagerTest,
+       BackwardItemsShouldContainAllCommittedIfCurrentIsTransient) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/0"];
+  navigation_manager()->CommitPendingItem();
+
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  navigation_manager()->AddTransientItem(GURL("http://www.url.com/1"));
+
+  EXPECT_EQ(0, navigation_manager()->GetLastCommittedItemIndex());
+  EXPECT_TRUE(navigation_manager()->GetTransientItem());
+
+  NavigationItemList back_items = navigation_manager()->GetBackwardItems();
+  EXPECT_EQ(1U, back_items.size());
+  EXPECT_EQ("http://www.url.com/0", back_items[0]->GetURL().spec());
+}
+
+TEST_P(NavigationManagerTest, BackwardItemsShouldBeEmptyIfFirstIsTransient) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  navigation_manager()->AddTransientItem(GURL("http://www.url.com/0"));
+
+  EXPECT_EQ(-1, navigation_manager()->GetLastCommittedItemIndex());
+  EXPECT_TRUE(navigation_manager()->GetTransientItem());
+
+  NavigationItemList back_items = navigation_manager()->GetBackwardItems();
+  EXPECT_TRUE(back_items.empty());
+}
+
 INSTANTIATE_TEST_CASE_P(
     ProgrammaticNavigationManagerTest,
     NavigationManagerTest,

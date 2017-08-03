@@ -78,10 +78,9 @@ TEST_F(WKBasedNavigationManagerTest, SyncAfterItemAtIndex) {
 
 // Tests that Referrer is inferred from the previous WKBackForwardListItem.
 TEST_F(WKBasedNavigationManagerTest, SyncAfterItemAtIndexWithPreviousItem) {
-  [mock_wk_list_
-        setCurrentURL:@"http://www.1.com"
-         backListURLs:[NSArray arrayWithObjects:@"http://www.0.com", nil]
-      forwardListURLs:[NSArray arrayWithObjects:@"http://www.2.com", nil]];
+  [mock_wk_list_ setCurrentURL:@"http://www.1.com"
+                  backListURLs:@[ @"http://www.0.com" ]
+               forwardListURLs:@[ @"http://www.2.com" ]];
   EXPECT_EQ(3, manager_->GetItemCount());
   EXPECT_EQ(1, manager_->GetLastCommittedItemIndex());
 
@@ -140,11 +139,9 @@ TEST_F(WKBasedNavigationManagerTest, GetItemAtIndexAfterCommitPending) {
   NavigationItem* pending_item2 = manager_->GetPendingItem();
 
   // Simulate an iframe navigation between the two main frame navigations.
-  [mock_wk_list_
-        setCurrentURL:@"http://www.2.com"
-         backListURLs:[NSArray arrayWithObjects:@"http://www.0.com",
-                                                @"http://www.1.com", nil]
-      forwardListURLs:nil];
+  [mock_wk_list_ setCurrentURL:@"http://www.2.com"
+                  backListURLs:@[ @"http://www.0.com", @"http://www.1.com" ]
+               forwardListURLs:nil];
   manager_->CommitPendingItem();
 
   EXPECT_EQ(3, manager_->GetItemCount());
@@ -172,10 +169,9 @@ TEST_F(WKBasedNavigationManagerTest, GetItemAtIndexAfterCommitPending) {
 // pending item is a back forward navigation.
 TEST_F(WKBasedNavigationManagerTest, ReusePendingItemForHistoryNavigation) {
   // Simulate two regular navigations.
-  [mock_wk_list_
-        setCurrentURL:@"http://www.1.com"
-         backListURLs:[NSArray arrayWithObjects:@"http://www.0.com", nil]
-      forwardListURLs:nil];
+  [mock_wk_list_ setCurrentURL:@"http://www.1.com"
+                  backListURLs:@[ @"http://www.0.com" ]
+               forwardListURLs:nil];
 
   // Force sync NavigationItems.
   NavigationItem* original_item0 = manager_->GetItemAtIndex(0);
@@ -188,7 +184,7 @@ TEST_F(WKBasedNavigationManagerTest, ReusePendingItemForHistoryNavigation) {
   WKBackForwardListItem* wk_item1 = [mock_wk_list_ itemAtIndex:0];
   mock_wk_list_.currentItem = wk_item0;
   mock_wk_list_.backList = nil;
-  mock_wk_list_.forwardList = [NSArray arrayWithObjects:wk_item1, nil];
+  mock_wk_list_.forwardList = @[ wk_item1 ];
   OCMExpect([mock_web_view_ URL])
       .andReturn([[NSURL alloc] initWithString:@"http://www.0.com"]);
 
