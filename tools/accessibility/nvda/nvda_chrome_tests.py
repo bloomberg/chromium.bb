@@ -57,6 +57,13 @@ class NvdaChromeTest(unittest.TestCase):
     print('nvda: %s' % NVDA_PATH)
     print('nvda_proctest: %s' % NVDA_PROCTEST_PATH)
 
+    tasklist = subprocess.Popen("tasklist", shell=True, stdout=subprocess.PIPE)
+    tasklist_output = tasklist.communicate()[0].decode('utf8').split('\r\n')
+    for task in tasklist_output:
+      if (task.split(' ', 1)[0] == "nvda.exe"):
+        print("nvda.exe is running!  Please kill it before running these tests")
+        sys.exit()
+
     print()
     print('Clearing user data directory and log file from previous runs')
     if os.access(NVDA_LOGPATH, os.F_OK):
