@@ -145,16 +145,16 @@ ContentSuggestionsService::GetSuggestionsForCategory(Category category) const {
 
 void ContentSuggestionsService::FetchSuggestionImage(
     const ContentSuggestion::ID& suggestion_id,
-    const ImageFetchedCallback& callback) {
+    ImageFetchedCallback callback) {
   if (!providers_by_category_.count(suggestion_id.category())) {
     LOG(WARNING) << "Requested image for suggestion " << suggestion_id
                  << " for unavailable category " << suggestion_id.category();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, gfx::Image()));
+        FROM_HERE, base::BindOnce(std::move(callback), gfx::Image()));
     return;
   }
   providers_by_category_[suggestion_id.category()]->FetchSuggestionImage(
-      suggestion_id, callback);
+      suggestion_id, std::move(callback));
 }
 
 // TODO(jkrcal): Split the favicon fetching into a separate class.
@@ -162,17 +162,17 @@ void ContentSuggestionsService::FetchSuggestionFavicon(
     const ContentSuggestion::ID& suggestion_id,
     int minimum_size_in_pixel,
     int desired_size_in_pixel,
-    const ImageFetchedCallback& callback) {
+    ImageFetchedCallback callback) {
   const GURL& domain_with_favicon = GetFaviconDomain(suggestion_id);
   if (!domain_with_favicon.is_valid() || !large_icon_service_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, gfx::Image()));
+        FROM_HERE, base::BindOnce(std::move(callback), gfx::Image()));
     RecordFaviconFetchResult(FaviconFetchResult::FAILURE);
     return;
   }
 
   GetFaviconFromCache(domain_with_favicon, minimum_size_in_pixel,
-                      desired_size_in_pixel, callback,
+                      desired_size_in_pixel, std::move(callback),
                       /*continue_to_google_server=*/true);
 }
 
@@ -203,7 +203,7 @@ void ContentSuggestionsService::GetFaviconFromCache(
     const GURL& publisher_url,
     int minimum_size_in_pixel,
     int desired_size_in_pixel,
-    const ImageFetchedCallback& callback,
+    ImageFetchedCallback callback,
     bool continue_to_google_server) {
   // TODO(jkrcal): Create a general wrapper function in LargeIconService that
   // does handle the get-from-cache-and-fallback-to-google-server functionality
@@ -215,7 +215,8 @@ void ContentSuggestionsService::GetFaviconFromCache(
       publisher_url, minimum_size_in_pixel, /*desired_size_in_pixel=*/0,
       base::Bind(&ContentSuggestionsService::OnGetFaviconFromCacheFinished,
                  base::Unretained(this), publisher_url, minimum_size_in_pixel,
-                 desired_size_in_pixel, callback, continue_to_google_server),
+                 desired_size_in_pixel, base::Passed(std::move(callback)),
+                 continue_to_google_server),
       &favicons_task_tracker_);
 }
 
@@ -223,11 +224,11 @@ void ContentSuggestionsService::OnGetFaviconFromCacheFinished(
     const GURL& publisher_url,
     int minimum_size_in_pixel,
     int desired_size_in_pixel,
-    const ImageFetchedCallback& callback,
+    ImageFetchedCallback callback,
     bool continue_to_google_server,
     const favicon_base::LargeIconImageResult& result) {
   if (!result.image.IsEmpty()) {
-    callback.Run(result.image);
+    std::move(callback).Run(result.image);
     // The icon is from cache if we haven't gone to Google server yet. The icon
     // is freshly fetched, otherwise.
     RecordFaviconFetchResult(continue_to_google_server
@@ -245,7 +246,7 @@ void ContentSuggestionsService::OnGetFaviconFromCacheFinished(
     // We cannot download from the server if there is some small icon in the
     // cache (resulting in non-default background color) or if we already did
     // so.
-    callback.Run(gfx::Image());
+    std::move(callback).Run(gfx::Image());
     RecordFaviconFetchResult(FaviconFetchResult::FAILURE);
     return;
   }
@@ -280,23 +281,23 @@ void ContentSuggestionsService::OnGetFaviconFromCacheFinished(
           base::Bind(
               &ContentSuggestionsService::OnGetFaviconFromGoogleServerFinished,
               base::Unretained(this), publisher_url, minimum_size_in_pixel,
-              desired_size_in_pixel, callback));
+              desired_size_in_pixel, base::Passed(std::move(callback))));
 }
 
 void ContentSuggestionsService::OnGetFaviconFromGoogleServerFinished(
     const GURL& publisher_url,
     int minimum_size_in_pixel,
     int desired_size_in_pixel,
-    const ImageFetchedCallback& callback,
+    ImageFetchedCallback callback,
     favicon_base::GoogleFaviconServerRequestStatus status) {
   if (status != favicon_base::GoogleFaviconServerRequestStatus::SUCCESS) {
-    callback.Run(gfx::Image());
+    std::move(callback).Run(gfx::Image());
     RecordFaviconFetchResult(FaviconFetchResult::FAILURE);
     return;
   }
 
   GetFaviconFromCache(publisher_url, minimum_size_in_pixel,
-                      desired_size_in_pixel, callback,
+                      desired_size_in_pixel, std::move(callback),
                       /*continue_to_google_server=*/false);
 }
 

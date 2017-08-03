@@ -93,7 +93,7 @@ class ContentSuggestionsProvider {
   // fails, the callback gets a null image. The callback will not be called
   // synchronously.
   virtual void FetchSuggestionImage(const ContentSuggestion::ID& suggestion_id,
-                                    const ImageFetchedCallback& callback) = 0;
+                                    ImageFetchedCallback callback) = 0;
 
   // Fetches more suggestions for the given category. The new suggestions
   // will not include any suggestion of the |known_suggestion_ids| sets.

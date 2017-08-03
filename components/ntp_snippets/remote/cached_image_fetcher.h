@@ -48,30 +48,30 @@ class CachedImageFetcher : public image_fetcher::ImageFetcherDelegate {
   // to the underlying cache with a fallback to the network.
   void FetchSuggestionImage(const ContentSuggestion::ID& suggestion_id,
                             const GURL& image_url,
-                            const ImageFetchedCallback& callback);
+                            ImageFetchedCallback callback);
 
  private:
   // image_fetcher::ImageFetcherDelegate implementation.
   void OnImageDataFetched(const std::string& id_within_category,
                           const std::string& image_data) override;
 
-  void OnImageDecodingDone(const ImageFetchedCallback& callback,
+  void OnImageDecodingDone(ImageFetchedCallback callback,
                            const std::string& id_within_category,
                            const gfx::Image& image,
                            const image_fetcher::RequestMetadata& metadata);
   void OnImageFetchedFromDatabase(
-      const ImageFetchedCallback& callback,
+      ImageFetchedCallback callback,
       const ContentSuggestion::ID& suggestion_id,
       const GURL& image_url,
       // SnippetImageCallback requires by-value (not const ref).
       std::string data);
-  void OnImageDecodedFromDatabase(const ImageFetchedCallback& callback,
+  void OnImageDecodedFromDatabase(ImageFetchedCallback callback,
                                   const ContentSuggestion::ID& suggestion_id,
                                   const GURL& url,
                                   const gfx::Image& image);
   void FetchImageFromNetwork(const ContentSuggestion::ID& suggestion_id,
                              const GURL& url,
-                             const ImageFetchedCallback& callback);
+                             ImageFetchedCallback callback);
 
   std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
   RemoteSuggestionsDatabase* database_;

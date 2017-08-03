@@ -236,13 +236,13 @@ void DownloadSuggestionsProvider::DismissSuggestion(
 
 void DownloadSuggestionsProvider::FetchSuggestionImage(
     const ContentSuggestion::ID& suggestion_id,
-    const ntp_snippets::ImageFetchedCallback& callback) {
+    ntp_snippets::ImageFetchedCallback callback) {
   // TODO(vitaliii): Fetch proper thumbnail from OfflinePageModel once it is
   // available there.
   // TODO(vitaliii): Provide site's favicon for assets downloads or file type.
   // See crbug.com/631447.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, gfx::Image()));
+      FROM_HERE, base::BindOnce(std::move(callback), gfx::Image()));
 }
 
 void DownloadSuggestionsProvider::Fetch(

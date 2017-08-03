@@ -43,6 +43,12 @@ CategoryInfo MockContentSuggestionsProvider::GetCategoryInfo(
                       base::ASCIIToUTF16("No suggestions message"));
 }
 
+void MockContentSuggestionsProvider::FetchSuggestionImage(
+    const ContentSuggestion::ID& id,
+    ImageFetchedCallback callback) {
+  FetchSuggestionImageMock(id, callback);
+}
+
 void MockContentSuggestionsProvider::FireSuggestionsChanged(
     Category category,
     std::vector<ContentSuggestion> suggestions) {

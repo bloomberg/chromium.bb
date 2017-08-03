@@ -1033,10 +1033,10 @@ void RemoteSuggestionsProviderImpl::NukeAllSuggestions() {
 
 void RemoteSuggestionsProviderImpl::FetchSuggestionImage(
     const ContentSuggestion::ID& suggestion_id,
-    const ImageFetchedCallback& callback) {
+    ImageFetchedCallback callback) {
   if (!base::ContainsKey(category_contents_, suggestion_id.category())) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, gfx::Image()));
+        FROM_HERE, base::BindOnce(std::move(callback), gfx::Image()));
     return;
   }
   GURL image_url = FindSuggestionImageUrl(suggestion_id);
@@ -1045,10 +1045,11 @@ void RemoteSuggestionsProviderImpl::FetchSuggestionImage(
     // find it in the database (and also can't fetch it remotely). Cut the
     // lookup short and return directly.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, gfx::Image()));
+        FROM_HERE, base::BindOnce(std::move(callback), gfx::Image()));
     return;
   }
-  image_fetcher_.FetchSuggestionImage(suggestion_id, image_url, callback);
+  image_fetcher_.FetchSuggestionImage(suggestion_id, image_url,
+                                      std::move(callback));
 }
 
 void RemoteSuggestionsProviderImpl::EnterStateReady() {

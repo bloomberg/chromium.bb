@@ -37,11 +37,12 @@ CachedImageFetcher::~CachedImageFetcher() {}
 void CachedImageFetcher::FetchSuggestionImage(
     const ContentSuggestion::ID& suggestion_id,
     const GURL& url,
-    const ImageFetchedCallback& callback) {
+    ImageFetchedCallback callback) {
   database_->LoadImage(
       suggestion_id.id_within_category(),
       base::Bind(&CachedImageFetcher::OnImageFetchedFromDatabase,
-                 base::Unretained(this), callback, suggestion_id, url));
+                 base::Unretained(this), base::Passed(std::move(callback)),
+                 suggestion_id, url));
 }
 
 // This function gets only called for caching the image data received from the
@@ -56,15 +57,15 @@ void CachedImageFetcher::OnImageDataFetched(
 }
 
 void CachedImageFetcher::OnImageDecodingDone(
-    const ImageFetchedCallback& callback,
+    ImageFetchedCallback callback,
     const std::string& id_within_category,
     const gfx::Image& image,
     const image_fetcher::RequestMetadata& metadata) {
-  callback.Run(image);
+  std::move(callback).Run(image);
 }
 
 void CachedImageFetcher::OnImageFetchedFromDatabase(
-    const ImageFetchedCallback& callback,
+    ImageFetchedCallback callback,
     const ContentSuggestion::ID& suggestion_id,
     const GURL& url,
     std::string data) {  // SnippetImageCallback requires by-value.
@@ -75,37 +76,38 @@ void CachedImageFetcher::OnImageFetchedFromDatabase(
         // We're not dealing with multi-frame images.
         /*desired_image_frame_size=*/gfx::Size(),
         base::Bind(&CachedImageFetcher::OnImageDecodedFromDatabase,
-                   base::Unretained(this), callback, suggestion_id, url));
+                   base::Unretained(this), base::Passed(std::move(callback)),
+                   suggestion_id, url));
     return;
   }
   // Fetching from the DB failed; start a network fetch.
-  FetchImageFromNetwork(suggestion_id, url, callback);
+  FetchImageFromNetwork(suggestion_id, url, std::move(callback));
 }
 
 void CachedImageFetcher::OnImageDecodedFromDatabase(
-    const ImageFetchedCallback& callback,
+    ImageFetchedCallback callback,
     const ContentSuggestion::ID& suggestion_id,
     const GURL& url,
     const gfx::Image& image) {
   if (!image.IsEmpty()) {
-    callback.Run(image);
+    std::move(callback).Run(image);
     return;
   }
   // If decoding the image failed, delete the DB entry.
   database_->DeleteImage(suggestion_id.id_within_category());
-  FetchImageFromNetwork(suggestion_id, url, callback);
+  FetchImageFromNetwork(suggestion_id, url, std::move(callback));
 }
 
 void CachedImageFetcher::FetchImageFromNetwork(
     const ContentSuggestion::ID& suggestion_id,
     const GURL& url,
-    const ImageFetchedCallback& callback) {
+    ImageFetchedCallback callback) {
   if (url.is_empty() || !thumbnail_requests_throttler_.DemandQuotaForRequest(
                             /*interactive_request=*/true)) {
     // Return an empty image. Directly, this is never synchronous with the
     // original FetchSuggestionImage() call - an asynchronous database query has
     // happened in the meantime.
-    callback.Run(gfx::Image());
+    std::move(callback).Run(gfx::Image());
     return;
   }
 
@@ -135,7 +137,7 @@ void CachedImageFetcher::FetchImageFromNetwork(
   image_fetcher_->StartOrQueueNetworkRequest(
       suggestion_id.id_within_category(), url,
       base::Bind(&CachedImageFetcher::OnImageDecodingDone,
-                 base::Unretained(this), callback),
+                 base::Unretained(this), base::Passed(std::move(callback))),
       traffic_annotation);
 }
 
