@@ -112,8 +112,7 @@ TEST_F(PaymentAppProviderTest, CanMakePaymentTest) {
   event_data->method_data.push_back(std::move(methodData));
 
   bool can_make_payment = false;
-  CanMakePayment(apps[GURL("https://example.com/")]->registration_id,
-                 std::move(event_data),
+  CanMakePayment(last_sw_registration_id(), std::move(event_data),
                  base::BindOnce(&CanMakePaymentCallback, &can_make_payment));
   ASSERT_TRUE(can_make_payment);
 }
@@ -139,26 +138,29 @@ TEST_F(PaymentAppProviderTest, InvokePaymentAppTest) {
   GetAllPaymentApps(base::Bind(&GetAllPaymentAppsCallback, &apps));
   ASSERT_EQ(2U, apps.size());
 
+  int64_t bobpay_registration_id = last_sw_registration_id();
+  EXPECT_EQ(apps[bobpay_registration_id]->origin.Serialize(),
+            "https://bobpay.com");
+
   payments::mojom::PaymentRequestEventDataPtr event_data =
       payments::mojom::PaymentRequestEventData::New();
   event_data->method_data.push_back(payments::mojom::PaymentMethodData::New());
   event_data->total = payments::mojom::PaymentCurrencyAmount::New();
 
   bool called = false;
-  InvokePaymentApp(apps[GURL("https://hellopay.com/")]->registration_id,
-                   std::move(event_data),
+  InvokePaymentApp(bobpay_registration_id, std::move(event_data),
                    base::Bind(&InvokePaymentAppCallback, &called));
   ASSERT_TRUE(called);
-
-  EXPECT_EQ(apps[GURL("https://hellopay.com/")]->registration_id,
-            last_sw_registration_id());
 }
 
 TEST_F(PaymentAppProviderTest, GetAllPaymentAppsTest) {
   PaymentManager* manager1 = CreatePaymentManager(
       GURL("https://hellopay.com/a"), GURL("https://hellopay.com/a/script.js"));
+  int64_t hellopay_registration_id = last_sw_registration_id();
+
   PaymentManager* manager2 = CreatePaymentManager(
       GURL("https://bobpay.com/b"), GURL("https://bobpay.com/b/script.js"));
+  int64_t bobpay_registration_id = last_sw_registration_id();
 
   PaymentHandlerStatus status;
   PaymentInstrumentPtr instrument_1 = PaymentInstrument::New();
@@ -180,8 +182,41 @@ TEST_F(PaymentAppProviderTest, GetAllPaymentAppsTest) {
   GetAllPaymentApps(base::Bind(&GetAllPaymentAppsCallback, &apps));
 
   ASSERT_EQ(2U, apps.size());
-  ASSERT_EQ(1U, apps[GURL("https://hellopay.com/")]->enabled_methods.size());
-  ASSERT_EQ(2U, apps[GURL("https://bobpay.com/")]->enabled_methods.size());
+  ASSERT_EQ(1U, apps[hellopay_registration_id]->enabled_methods.size());
+  ASSERT_EQ(2U, apps[bobpay_registration_id]->enabled_methods.size());
+}
+
+TEST_F(PaymentAppProviderTest, GetAllPaymentAppsFromTheSameOriginTest) {
+  PaymentManager* manager1 = CreatePaymentManager(
+      GURL("https://bobpay.com/a"), GURL("https://bobpay.com/a/script.js"));
+  int64_t bobpay_a_registration_id = last_sw_registration_id();
+
+  PaymentManager* manager2 = CreatePaymentManager(
+      GURL("https://bobpay.com/b"), GURL("https://bobpay.com/b/script.js"));
+  int64_t bobpay_b_registration_id = last_sw_registration_id();
+
+  PaymentHandlerStatus status;
+  PaymentInstrumentPtr instrument_1 = PaymentInstrument::New();
+  instrument_1->enabled_methods.push_back("hellopay");
+  SetPaymentInstrument(manager1, "test_key1", std::move(instrument_1),
+                       base::Bind(&SetPaymentInstrumentCallback, &status));
+
+  PaymentInstrumentPtr instrument_2 = PaymentInstrument::New();
+  instrument_2->enabled_methods.push_back("hellopay");
+  SetPaymentInstrument(manager2, "test_key2", std::move(instrument_2),
+                       base::Bind(&SetPaymentInstrumentCallback, &status));
+
+  PaymentInstrumentPtr instrument_3 = PaymentInstrument::New();
+  instrument_3->enabled_methods.push_back("bobpay");
+  SetPaymentInstrument(manager2, "test_key3", std::move(instrument_3),
+                       base::Bind(&SetPaymentInstrumentCallback, &status));
+
+  PaymentAppProvider::PaymentApps apps;
+  GetAllPaymentApps(base::Bind(&GetAllPaymentAppsCallback, &apps));
+
+  ASSERT_EQ(2U, apps.size());
+  ASSERT_EQ(1U, apps[bobpay_a_registration_id]->enabled_methods.size());
+  ASSERT_EQ(2U, apps[bobpay_b_registration_id]->enabled_methods.size());
 }
 
 }  // namespace content

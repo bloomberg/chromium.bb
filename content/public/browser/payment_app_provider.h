@@ -32,7 +32,7 @@ class CONTENT_EXPORT PaymentAppProvider {
   // Please see: content/browser/payments/payment_app_provider_impl.cc
   static PaymentAppProvider* GetInstance();
 
-  using PaymentApps = std::map<GURL, std::unique_ptr<StoredPaymentApp>>;
+  using PaymentApps = std::map<int64_t, std::unique_ptr<StoredPaymentApp>>;
   using GetAllPaymentAppsCallback = base::OnceCallback<void(PaymentApps)>;
   using InvokePaymentAppCallback =
       base::OnceCallback<void(payments::mojom::PaymentHandlerResponsePtr)>;

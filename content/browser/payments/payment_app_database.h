@@ -27,7 +27,7 @@ class ServiceWorkerRegistration;
 
 class CONTENT_EXPORT PaymentAppDatabase {
  public:
-  using PaymentApps = std::map<GURL, std::unique_ptr<StoredPaymentApp>>;
+  using PaymentApps = std::map<int64_t, std::unique_ptr<StoredPaymentApp>>;
   using ReadAllPaymentAppsCallback = base::OnceCallback<void(PaymentApps)>;
 
   using DeletePaymentInstrumentCallback =
