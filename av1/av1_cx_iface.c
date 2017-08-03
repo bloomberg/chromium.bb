@@ -23,6 +23,9 @@
 #include "av1/encoder/firstpass.h"
 #include "av1/av1_iface_common.h"
 
+#define MAG_SIZE (4)
+#define MAX_INDEX_SIZE (256)
+
 struct av1_extracfg {
   int cpu_used;  // available cpu percentage in 1/16
   unsigned int enable_auto_alt_ref;
@@ -1044,7 +1047,7 @@ static int write_superframe_index(aom_codec_alg_priv_t *ctx) {
   // Choose the magnitude
   int mag;
   unsigned int mask;
-  for (mag = 0, mask = 0xff; mag < 4; mag++) {
+  for (mag = 0, mask = 0xff; mag < MAG_SIZE; mag++) {
     if (max_frame_sz <= mask) break;
     mask <<= 8;
     mask |= 0xff;
@@ -1052,7 +1055,7 @@ static int write_superframe_index(aom_codec_alg_priv_t *ctx) {
   marker |= mag << 3;
 
   // Write the index
-  uint8_t buffer[256];
+  uint8_t buffer[MAX_INDEX_SIZE];
   uint8_t *x = buffer;
 
   if (TEST_SUPPLEMENTAL_SUPERFRAME_DATA) {
@@ -1080,6 +1083,7 @@ static int write_superframe_index(aom_codec_alg_priv_t *ctx) {
   *x++ = marker;
 
   const size_t index_sz = x - buffer;
+  assert(index_sz < MAX_INDEX_SIZE);
   assert(ctx->pending_cx_data_sz + index_sz < ctx->cx_data_sz);
 
   // move the frame to make room for the index
@@ -1229,9 +1233,13 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
       }
     }
 
-    size_t frame_size;
+    size_t frame_size = 0;
     unsigned int lib_flags = 0;
-    while (cx_data_sz >= ctx->cx_data_sz / 2 &&
+    int is_frame_visible = 0;
+    int index_size = 0;
+    // invisible frames get packed with the next visible frame
+    while (cx_data_sz - index_size >= ctx->cx_data_sz / 2 &&
+           !is_frame_visible &&
            -1 != av1_get_compressed_data(cpi, &lib_flags, &frame_size, cx_data,
                                          &dst_time_stamp, &dst_end_time_stamp,
                                          !img)) {
@@ -1241,24 +1249,28 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
         return AOM_CODEC_ERROR;
       }
 #endif
-      if (!frame_size) continue;
+      if (frame_size) {
+        if (ctx->pending_cx_data == 0) ctx->pending_cx_data = cx_data;
 
-      if (ctx->pending_cx_data == 0) ctx->pending_cx_data = cx_data;
+        ctx->pending_frame_sizes[ctx->pending_frame_count++] = frame_size;
+        ctx->pending_cx_data_sz += frame_size;
 
-      ctx->pending_frame_sizes[ctx->pending_frame_count++] = frame_size;
-      ctx->pending_cx_data_sz += frame_size;
+        cx_data += frame_size;
+        cx_data_sz -= frame_size;
 
-      cx_data += frame_size;
-      cx_data_sz -= frame_size;
+        index_size = MAG_SIZE * (ctx->pending_frame_count - 1) + 2;
 
-      // invisible frames get packed with the next visible frame
-      if (!cpi->common.show_frame) continue;
-
+        is_frame_visible = cpi->common.show_frame;
+      }
+    }
+    if (is_frame_visible) {
       // insert superframe index if needed
       if (ctx->pending_frame_count > 1) {
-        const size_t index_size = write_superframe_index(ctx);
-        cx_data += index_size;
-        cx_data_sz -= index_size;
+#if CONFIG_DEBUG
+        assert(index_size >= write_superframe_index(ctx));
+#else
+        write_superframe_index(ctx);
+#endif
       }
 
       // Add the frame packet to the list of returned packets.
