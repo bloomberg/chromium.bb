@@ -21,6 +21,7 @@ namespace ash {
 
 class AppListButton;
 class VoiceInteractionIconBackground;
+class VoiceInteractionIcon;
 
 class ASH_EXPORT VoiceInteractionOverlay : public views::View {
  public:
@@ -38,7 +39,7 @@ class ASH_EXPORT VoiceInteractionOverlay : public views::View {
       const ui::CallbackLayerAnimationObserver& observer);
 
   std::unique_ptr<ui::Layer> ripple_layer_;
-  std::unique_ptr<ui::Layer> icon_layer_;
+  std::unique_ptr<VoiceInteractionIcon> icon_layer_;
   std::unique_ptr<VoiceInteractionIconBackground> background_layer_;
 
   AppListButton* host_view_;
