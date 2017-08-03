@@ -57,6 +57,9 @@ interface MediaStreamDispatcher {
 
   // Informs the renderer that browser has failed to generate a stream.
   OnStreamGenerationFailed(int32 request_id, MediaStreamRequestResult result);
+
+  // Informs the renderer that browser has failed to open a device.
+  OnDeviceOpenFailed(int32 request_id);
 };
 
 interface MediaStreamDispatcherHost {

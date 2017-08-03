@@ -145,6 +145,8 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     OnStreamGenerationFailedInternal(request_id, result);
   }
 
+  void OnDeviceOpenFailed(int32_t request_id) override {}
+
   mojom::MediaStreamDispatcherPtr CreateInterfacePtrAndBind() {
     mojom::MediaStreamDispatcherPtr dispatcher;
     binding_.Bind(mojo::MakeRequest(&dispatcher));

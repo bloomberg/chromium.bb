@@ -210,8 +210,6 @@ bool MediaStreamDispatcher::OnMessageReceived(const IPC::Message& message) {
                         OnDeviceStopped)
     IPC_MESSAGE_HANDLER(MediaStreamMsg_DeviceOpened,
                         OnDeviceOpened)
-    IPC_MESSAGE_HANDLER(MediaStreamMsg_DeviceOpenFailed,
-                        OnDeviceOpenFailed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -309,22 +307,6 @@ void MediaStreamDispatcher::OnDeviceOpened(
   }
 }
 
-void MediaStreamDispatcher::OnDeviceOpenFailed(int request_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  for (auto it = requests_.begin(); it != requests_.end(); ++it) {
-    Request& request = *it;
-    if (request.ipc_request != request_id)
-      continue;
-    if (request.handler.get()) {
-      request.handler->OnDeviceOpenFailed(request.request_id);
-      DVLOG(1) << __func__ << " request_id=" << request.request_id;
-    }
-    requests_.erase(it);
-    break;
-  }
-}
-
 void MediaStreamDispatcher::OnStreamGenerationFailed(
     int32_t request_id,
     MediaStreamRequestResult result) {
@@ -336,6 +318,22 @@ void MediaStreamDispatcher::OnStreamGenerationFailed(
       continue;
     if (request.handler.get()) {
       request.handler->OnStreamGenerationFailed(request.request_id, result);
+      DVLOG(1) << __func__ << " request_id=" << request.request_id;
+    }
+    requests_.erase(it);
+    break;
+  }
+}
+
+void MediaStreamDispatcher::OnDeviceOpenFailed(int32_t request_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  for (auto it = requests_.begin(); it != requests_.end(); ++it) {
+    Request& request = *it;
+    if (request.ipc_request != request_id)
+      continue;
+    if (request.handler.get()) {
+      request.handler->OnDeviceOpenFailed(request.request_id);
       DVLOG(1) << __func__ << " request_id=" << request.request_id;
     }
     requests_.erase(it);

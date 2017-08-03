@@ -129,11 +129,11 @@ class CONTENT_EXPORT MediaStreamDispatcher
       int request_id,
       const std::string& label,
       const StreamDeviceInfo& device_info);
-  void OnDeviceOpenFailed(int request_id);
 
   // mojom::MediaStreamDispatcher implementation.
   void OnStreamGenerationFailed(int32_t request_id,
                                 MediaStreamRequestResult result) override;
+  void OnDeviceOpenFailed(int32_t request_id) override;
 
   void BindMediaStreamDispatcherRequest(
       mojom::MediaStreamDispatcherRequest request);
