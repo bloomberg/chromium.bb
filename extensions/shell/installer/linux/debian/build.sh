@@ -226,13 +226,6 @@ trap cleanup 0
 process_opts "$@"
 BUILDDIR=${BUILDDIR:=$(readlink -f "${SCRIPTDIR}/../../../../out/Release")}
 
-if [[ "$(basename ${SYSROOT})" = "debian_jessie_"*"-sysroot" ]]; then
-  TARGET_DISTRO="jessie"
-else
-  echo "Debian package can only be built using the jessie sysroot."
-  exit 1
-fi
-
 source ${BUILDDIR}/app_shell_installer/common/installer.include
 
 get_version_info
@@ -286,7 +279,7 @@ echo "$DPKG_SHLIB_DEPS" | sed 's/, /\n/g' | LANG=C sort > actual
 
 # Compare the expected dependency list to the generated list.
 BAD_DIFF=0
-diff -u "$SCRIPTDIR/expected_deps_${TARGETARCH}_${TARGET_DISTRO}" actual || \
+diff -u "$SCRIPTDIR/expected_deps_${TARGETARCH}" actual || \
   BAD_DIFF=1
 if [ $BAD_DIFF -ne 0 ] && [ -z "${IGNORE_DEPS_CHANGES:-}" ]; then
   echo

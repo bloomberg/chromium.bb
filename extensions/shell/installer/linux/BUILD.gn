@@ -71,7 +71,7 @@ copy("deb_packaging_files") {
     "//chrome/installer/linux/debian/changelog.template",
     "//chrome/installer/linux/debian/control.template",
     "debian/build.sh",
-    "debian/expected_deps_x64_jessie",
+    "debian/expected_deps_x64",
     "debian/postinst",
     "debian/postrm",
   ]
