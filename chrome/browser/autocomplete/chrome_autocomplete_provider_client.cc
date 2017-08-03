@@ -73,8 +73,8 @@ ChromeAutocompleteProviderClient::ChromeAutocompleteProviderClient(
     Profile* profile)
     : profile_(profile),
       scheme_classifier_(profile),
-      search_terms_data_(profile_) {
-}
+      search_terms_data_(profile_),
+      storage_partition_(nullptr) {}
 
 ChromeAutocompleteProviderClient::~ChromeAutocompleteProviderClient() {
 }
