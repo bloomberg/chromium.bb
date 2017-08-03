@@ -83,6 +83,8 @@ class DirectoryOwnersExtractorTest(unittest.TestCase):
     def test_find_and_extract_owners_out_of_tree(self):
         with self.assertRaises(AssertionError):
             self.extractor.find_and_extract_owners('third_party/WebKit/LayoutTests/other')
+        self.assertEqual(self.extractor.find_and_extract_owners('third_party/WebKit/LayoutTests'),
+                         (None, None))
 
     def test_extract_owners(self):
         self.filesystem.files = {

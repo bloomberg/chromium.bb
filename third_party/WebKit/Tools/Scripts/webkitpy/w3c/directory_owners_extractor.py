@@ -66,6 +66,10 @@ class DirectoryOwnersExtractor(object):
         assert not self.filesystem.isabs(start_directory)
         directory = self.finder.path_from_chromium_base(start_directory)
         external_root = self.finder.path_from_layout_tests('external')
+        # Changes to LayoutTests/TestExpectations itself should be skipped and
+        # not raise an assertion.
+        if directory == self.finder.layout_tests_dir():
+            return None, None
         assert directory.startswith(external_root)
         while directory != external_root:
             owners_file = self.filesystem.join(directory, 'OWNERS')
