@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/test/scoped_async_task_scheduler.h"
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
 #include "components/component_updater/component_updater_switches.h"
 #include "components/component_updater/component_updater_url_constants.h"
@@ -34,7 +33,6 @@ class ChromeComponentUpdaterConfiguratorTest : public testing::Test {
   TestingPrefServiceSimple* pref_service() { return pref_service_.get(); }
 
  private:
-  base::test::ScopedAsyncTaskScheduler scoped_async_task_scheduler_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeComponentUpdaterConfiguratorTest);
