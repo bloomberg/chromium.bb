@@ -31,10 +31,11 @@ const int kEtwBufferSizeInKBytes = 16;
 const int kEtwBufferFlushTimeoutInSeconds = 1;
 
 std::string GuidToString(const GUID& guid) {
-  return base::StringPrintf("%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-      guid.Data1, guid.Data2, guid.Data3,
-      guid.Data4[0], guid.Data4[1], guid.Data4[2], guid.Data4[3],
-      guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
+  return base::StringPrintf("%08lX-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+                            guid.Data1, guid.Data2, guid.Data3, guid.Data4[0],
+                            guid.Data4[1], guid.Data4[2], guid.Data4[3],
+                            guid.Data4[4], guid.Data4[5], guid.Data4[6],
+                            guid.Data4[7]);
 }
 
 }  // namespace
@@ -171,9 +172,9 @@ void EtwTracingAgent::AddSyncEventToBuffer() {
   auto value = base::MakeUnique<base::DictionaryValue>();
   value->SetString("guid", "ClockSync");
   value->SetString("walltime",
-                   base::StringPrintf("%08X%08X", walltime_in_us.HighPart,
+                   base::StringPrintf("%08lX%08lX", walltime_in_us.HighPart,
                                       walltime_in_us.LowPart));
-  value->SetString("tick", base::StringPrintf("%08X%08X", now_in_us.HighPart,
+  value->SetString("tick", base::StringPrintf("%08lX%08lX", now_in_us.HighPart,
                                               now_in_us.LowPart));
 
   // Append it to the events buffer.
@@ -187,7 +188,7 @@ void EtwTracingAgent::AppendEventToBuffer(EVENT_TRACE* event) {
   LARGE_INTEGER ts_us;
   ts_us.QuadPart = event->Header.TimeStamp.QuadPart / 10;
   value->SetString(
-      "ts", base::StringPrintf("%08X%08X", ts_us.HighPart, ts_us.LowPart));
+      "ts", base::StringPrintf("%08lX%08lX", ts_us.HighPart, ts_us.LowPart));
 
   value->SetString("guid", GuidToString(event->Header.Guid));
 
