@@ -316,6 +316,110 @@ const char* ProtoEnumToString(
 }
 
 const char* ProtoEnumToString(
+    sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::PasswordReuseDetected::
+        SafeBrowsingStatus::ReportingPopulation
+            safe_browsing_reporting_population) {
+  ASSERT_ENUM_BOUNDS(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+                         PasswordReuseDetected::SafeBrowsingStatus,
+                     ReportingPopulation, REPORTING_POPULATION_UNSPECIFIED,
+                     SCOUT);
+  switch (safe_browsing_reporting_population) {
+    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+                  PasswordReuseDetected::SafeBrowsingStatus,
+              REPORTING_POPULATION_UNSPECIFIED);
+    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+                  PasswordReuseDetected::SafeBrowsingStatus,
+              NONE);
+    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+                  PasswordReuseDetected::SafeBrowsingStatus,
+              EXTENDED_REPORTING);
+    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+                  PasswordReuseDetected::SafeBrowsingStatus,
+              SCOUT);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(
+    sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+        PasswordReuseDialogInteraction::InteractionResult interaction_result) {
+  ASSERT_ENUM_BOUNDS(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+                         PasswordReuseDialogInteraction,
+                     InteractionResult, UNSPECIFIED, WARNING_UI_IGNORED);
+  switch (interaction_result) {
+    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+                  PasswordReuseDialogInteraction,
+              UNSPECIFIED);
+    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+                  PasswordReuseDialogInteraction,
+              WARNING_ACTION_TAKEN);
+    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+                  PasswordReuseDialogInteraction,
+              WARNING_ACTION_IGNORED);
+    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+                  PasswordReuseDialogInteraction,
+              WARNING_UI_IGNORED);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(
+    sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::PasswordReuseLookup::
+        LookupResult lookup_result) {
+  ASSERT_ENUM_BOUNDS(
+      sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::PasswordReuseLookup,
+      LookupResult, UNSPECIFIED, URL_UNSUPPORTED);
+  switch (lookup_result) {
+    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+                  PasswordReuseLookup,
+              UNSPECIFIED);
+    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+                  PasswordReuseLookup,
+              WHITELIST_HIT);
+    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+                  PasswordReuseLookup,
+              CACHE_HIT);
+    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+                  PasswordReuseLookup,
+              REQUEST_SUCCESS);
+    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+                  PasswordReuseLookup,
+              REQUEST_FAILURE);
+    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+                  PasswordReuseLookup,
+              URL_UNSUPPORTED);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(
+    sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::PasswordReuseLookup::
+        ReputationVerdict verdict) {
+  ASSERT_ENUM_BOUNDS(
+      sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::PasswordReuseLookup,
+      ReputationVerdict, VERDICT_UNSPECIFIED, PHISHING);
+  switch (verdict) {
+    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+                  PasswordReuseLookup,
+              VERDICT_UNSPECIFIED);
+    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+                  PasswordReuseLookup,
+              SAFE);
+    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+                  PasswordReuseLookup,
+              LOW_REPUTATION);
+    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+                  PasswordReuseLookup,
+              PHISHING);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(
     sync_pb::WalletMaskedCreditCard::WalletCardClass wallet_card_class) {
   ASSERT_ENUM_BOUNDS(sync_pb::WalletMaskedCreditCard, WalletCardClass,
                      UNKNOWN_CARD_CLASS, PREPAID);
