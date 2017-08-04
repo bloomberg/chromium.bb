@@ -71,7 +71,8 @@ function checkPopulateMatrix(sensor, sensorType) {
 
           let rotationDOMMatrix = new DOMMatrix();
           sensorObject.populateMatrix(rotationDOMMatrix);
-          assert_array_equals(rotationDOMMatrix, kRotationDOMMatrix);
+          assert_array_equals(rotationDOMMatrix.toFloat64Array(),
+                              kRotationMatrix);
 
           // Sets every matrix element.
           rotationMatrix64.fill(123);
