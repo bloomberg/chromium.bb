@@ -359,7 +359,7 @@ bool EventTarget::AddEventListenerInternal(
   if (added) {
     if (listener->GetType() == EventListener::kJSEventListenerType) {
       ScriptWrappableVisitor::WriteBarrier(
-          this, static_cast<V8AbstractEventListener*>(listener));
+          static_cast<V8AbstractEventListener*>(listener));
     }
     AddedEventListener(event_type, registered_listener);
   }

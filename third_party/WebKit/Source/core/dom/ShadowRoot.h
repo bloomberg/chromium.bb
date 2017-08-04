@@ -155,7 +155,7 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   StyleSheetList& StyleSheets();
   void SetStyleSheets(StyleSheetList* style_sheet_list) {
     style_sheet_list_ = style_sheet_list;
-    ScriptWrappableVisitor::WriteBarrier(this, style_sheet_list_);
+    ScriptWrappableVisitor::WriteBarrier(style_sheet_list_);
   }
 
   DECLARE_VIRTUAL_TRACE();

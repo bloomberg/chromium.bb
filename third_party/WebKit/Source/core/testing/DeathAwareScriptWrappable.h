@@ -21,6 +21,8 @@ class DeathAwareScriptWrappable
   static bool has_died_;
 
  public:
+  typedef TraceWrapperMember<DeathAwareScriptWrappable> Wrapper;
+
   virtual ~DeathAwareScriptWrappable() {
     if (this == instance_) {
       has_died_ = true;
@@ -57,7 +59,7 @@ class DeathAwareScriptWrappable
   }
 
   void SetRawDependency(DeathAwareScriptWrappable* dependency) {
-    ScriptWrappableVisitor::WriteBarrier(this, dependency);
+    ScriptWrappableVisitor::WriteBarrier(dependency);
     raw_dependency_ = dependency;
   }
 
@@ -76,7 +78,6 @@ class DeathAwareScriptWrappable
   }
 
  private:
-  typedef TraceWrapperMember<DeathAwareScriptWrappable> Wrapper;
   DeathAwareScriptWrappable() : wrapped_dependency_(this, nullptr) {}
 
   Member<DeathAwareScriptWrappable> raw_dependency_;

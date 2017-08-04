@@ -39,11 +39,13 @@ TEST(ScriptWrappableVisitorTest, ScriptWrappableVisitorTracesWrappers) {
   V8TestingScope scope;
   ScriptWrappableVisitor* visitor =
       V8PerIsolateData::From(scope.GetIsolate())->GetScriptWrappableVisitor();
-  visitor->TracePrologue();
-
   DeathAwareScriptWrappable* target = DeathAwareScriptWrappable::Create();
   DeathAwareScriptWrappable* dependency = DeathAwareScriptWrappable::Create();
   target->SetRawDependency(dependency);
+
+  // The graph needs to be set up before starting tracing as otherwise the
+  // conservative write barrier would trigger.
+  visitor->TracePrologue();
 
   HeapObjectHeader* target_header = HeapObjectHeader::FromPayload(target);
   HeapObjectHeader* dependency_header =
@@ -177,24 +179,6 @@ TEST(ScriptWrappableVisitorTest, OilpanClearsMarkingDequeWhenObjectDied) {
 
   EXPECT_EQ(visitor->GetMarkingDeque()->front().RawObjectPointer(), nullptr);
 
-  visitor->AbortTracing();
-}
-
-TEST(ScriptWrappableVisitorTest, NonMarkedObjectDoesNothingOnWriteBarrierHit) {
-  V8TestingScope scope;
-
-  ScriptWrappableVisitor* visitor =
-      V8PerIsolateData::From(scope.GetIsolate())->GetScriptWrappableVisitor();
-  visitor->TracePrologue();
-
-  DeathAwareScriptWrappable* target = DeathAwareScriptWrappable::Create();
-  DeathAwareScriptWrappable* dependency = DeathAwareScriptWrappable::Create();
-
-  EXPECT_TRUE(visitor->GetMarkingDeque()->IsEmpty());
-
-  target->SetRawDependency(dependency);
-
-  EXPECT_TRUE(visitor->GetMarkingDeque()->IsEmpty());
   visitor->AbortTracing();
 }
 
@@ -336,7 +320,7 @@ class InterceptingScriptWrappableVisitorScope
 
 }  // namespace
 
-TEST(ScriptWrappableVisitorTest, NoWriteBarrierOnUnmarkedContainer) {
+TEST(ScriptWrappableVisitorTest, WriteBarrierOnUnmarkedContainer) {
   V8TestingScope scope;
   InterceptingScriptWrappableVisitorScope visitor_scope(scope.GetIsolate());
   auto* raw_visitor = visitor_scope.Visitor();
@@ -348,7 +332,9 @@ TEST(ScriptWrappableVisitorTest, NoWriteBarrierOnUnmarkedContainer) {
   HandleContainer* container = HandleContainer::Create();
   CHECK_EQ(0u, raw_visitor->NumberOfMarkedWrappers());
   container->SetValue(scope.GetIsolate(), str);
-  CHECK_EQ(0u, raw_visitor->NumberOfMarkedWrappers());
+  // The write barrier is conservative and does not check the mark bits of the
+  // source container.
+  CHECK_EQ(1u, raw_visitor->NumberOfMarkedWrappers());
 }
 
 TEST(ScriptWrappableVisitorTest, WriteBarrierTriggersOnMarkedContainer) {
@@ -402,6 +388,53 @@ TEST(ScriptWrappableVisitor, WriteBarrierForScriptWrappable) {
       target->SetWrapper(scope.GetIsolate(), target->GetWrapperTypeInfo(), obj);
   CHECK(success);
   CHECK_EQ(1u, raw_visitor->NumberOfMarkedWrappers());
+}
+
+TEST(ScriptWrappableVisitorTest, WriteBarrierOnHeapVectorSwap1) {
+  V8TestingScope scope;
+  ScriptWrappableVisitor* visitor =
+      V8PerIsolateData::From(scope.GetIsolate())->GetScriptWrappableVisitor();
+
+  HeapVector<DeathAwareScriptWrappable::Wrapper> vector1;
+  DeathAwareScriptWrappable* entry1 = DeathAwareScriptWrappable::Create();
+  vector1.push_back(entry1);
+  HeapVector<DeathAwareScriptWrappable::Wrapper> vector2;
+  DeathAwareScriptWrappable* entry2 = DeathAwareScriptWrappable::Create();
+  vector2.push_back(entry2);
+
+  visitor->TracePrologue();
+
+  EXPECT_TRUE(visitor->GetMarkingDeque()->IsEmpty());
+  swap(vector1, vector2);
+
+  EXPECT_TRUE(DequeContains(*visitor->GetMarkingDeque(), entry1));
+  EXPECT_TRUE(DequeContains(*visitor->GetMarkingDeque(), entry2));
+
+  visitor->AbortTracing();
+}
+
+TEST(ScriptWrappableVisitorTest, WriteBarrierOnHeapVectorSwap2) {
+  V8TestingScope scope;
+  ScriptWrappableVisitor* visitor =
+      V8PerIsolateData::From(scope.GetIsolate())->GetScriptWrappableVisitor();
+
+  HeapVector<DeathAwareScriptWrappable::Wrapper> vector1;
+  DeathAwareScriptWrappable* entry1 = DeathAwareScriptWrappable::Create();
+  vector1.push_back(entry1);
+  HeapVector<Member<DeathAwareScriptWrappable>> vector2;
+  DeathAwareScriptWrappable* entry2 = DeathAwareScriptWrappable::Create();
+  vector2.push_back(entry2);
+
+  visitor->TracePrologue();
+
+  EXPECT_TRUE(visitor->GetMarkingDeque()->IsEmpty());
+  swap(vector1, vector2);
+
+  // Only entry2 is held alive by TraceWrapperMember, so we only expect this
+  // barrier to fire.
+  EXPECT_TRUE(DequeContains(*visitor->GetMarkingDeque(), entry2));
+
+  visitor->AbortTracing();
 }
 
 }  // namespace blink

@@ -4520,10 +4520,10 @@ static void LiveNodeListBaseWriteBarrier(void* parent,
                                          const LiveNodeListBase* list) {
   if (IsHTMLCollectionType(list->GetType())) {
     ScriptWrappableVisitor::WriteBarrier(
-        parent, static_cast<const HTMLCollection*>(list));
+        static_cast<const HTMLCollection*>(list));
   } else {
     ScriptWrappableVisitor::WriteBarrier(
-        parent, static_cast<const LiveNodeList*>(list));
+        static_cast<const LiveNodeList*>(list));
   }
 }
 

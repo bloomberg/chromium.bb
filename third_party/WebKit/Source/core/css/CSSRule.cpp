@@ -47,13 +47,13 @@ const CSSParserContext* CSSRule::ParserContext() const {
 void CSSRule::SetParentStyleSheet(CSSStyleSheet* style_sheet) {
   parent_is_rule_ = false;
   parent_style_sheet_ = style_sheet;
-  ScriptWrappableVisitor::WriteBarrier(this, parent_style_sheet_);
+  ScriptWrappableVisitor::WriteBarrier(parent_style_sheet_);
 }
 
 void CSSRule::SetParentRule(CSSRule* rule) {
   parent_is_rule_ = true;
   parent_rule_ = rule;
-  ScriptWrappableVisitor::WriteBarrier(this, parent_rule_);
+  ScriptWrappableVisitor::WriteBarrier(parent_rule_);
 }
 
 DEFINE_TRACE(CSSRule) {

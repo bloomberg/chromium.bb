@@ -15,80 +15,69 @@ using Wrapper = TraceWrapperMember<DeathAwareScriptWrappable>;
 
 }  // namespace
 
+// These tests just ensure that entries are actually swapped. For write barrier
+// testing see bindings/core/v8/ScriptWrappableVisitorTest.cpp.
+
 TEST(TraceWrapperMemberTest, HeapVectorSwap) {
   HeapVector<Wrapper> vector1;
-  DeathAwareScriptWrappable* parent1 = DeathAwareScriptWrappable::Create();
-  DeathAwareScriptWrappable* child1 = DeathAwareScriptWrappable::Create();
-  vector1.push_back(Wrapper(parent1, child1));
+  DeathAwareScriptWrappable* entry1 = DeathAwareScriptWrappable::Create();
+  vector1.push_back(entry1);
 
   HeapVector<Wrapper> vector2;
-  DeathAwareScriptWrappable* parent2 = DeathAwareScriptWrappable::Create();
-  DeathAwareScriptWrappable* child2 = DeathAwareScriptWrappable::Create();
-  vector2.push_back(Wrapper(parent2, child2));
+  DeathAwareScriptWrappable* entry2 = DeathAwareScriptWrappable::Create();
+  vector2.push_back(entry2);
 
-  swap(vector1, vector2, parent1, parent2);
-  EXPECT_EQ(parent1, vector1.front().Parent());
-  EXPECT_EQ(parent2, vector2.front().Parent());
+  swap(vector1, vector2);
+  EXPECT_EQ(entry1, vector2.front());
+  EXPECT_EQ(entry2, vector1.front());
 }
 
 TEST(TraceWrapperMemberTest, HeapVectorSwap2) {
   HeapVector<Wrapper> vector1;
-  DeathAwareScriptWrappable* parent1 = DeathAwareScriptWrappable::Create();
-  DeathAwareScriptWrappable* child1 = DeathAwareScriptWrappable::Create();
-  vector1.push_back(Wrapper(parent1, child1));
+  DeathAwareScriptWrappable* entry1 = DeathAwareScriptWrappable::Create();
+  vector1.push_back(entry1);
 
   HeapVector<Member<DeathAwareScriptWrappable>> vector2;
-  DeathAwareScriptWrappable* child2 = DeathAwareScriptWrappable::Create();
-  vector2.push_back(child2);
+  DeathAwareScriptWrappable* entry2 = DeathAwareScriptWrappable::Create();
+  vector2.push_back(entry2);
 
-  swap(vector1, vector2, parent1);
-  EXPECT_EQ(1u, vector1.size());
-  EXPECT_EQ(child2, vector1.front().Get());
-  EXPECT_EQ(parent1, vector1.front().Parent());
-  EXPECT_EQ(1u, vector2.size());
-  EXPECT_EQ(child1, vector2.front().Get());
+  swap(vector1, vector2);
+  EXPECT_EQ(entry1, vector2.front());
+  EXPECT_EQ(entry2, vector1.front());
 }
 
 TEST(TraceWrapperMemberTest, HeapHashSet) {
+  const size_t kContainerSize = 10000;
   HeapHashSet<Wrapper> set;
-  DeathAwareScriptWrappable* parent = DeathAwareScriptWrappable::Create();
-
   // Loop enough so that underlying HashTable will rehash several times.
-  for (int i = 1; i < 10000; ++i) {
-    DeathAwareScriptWrappable* child = DeathAwareScriptWrappable::Create();
-    set.insert(Wrapper(parent, child));
+  for (size_t i = 1; i <= kContainerSize; ++i) {
+    DeathAwareScriptWrappable* entry = DeathAwareScriptWrappable::Create();
+    set.insert(entry);
   }
-  EXPECT_EQ(9999u, set.size());
+  EXPECT_EQ(kContainerSize, set.size());
 
   HeapHashSet<Wrapper> set2;
   swap(set, set2);
   EXPECT_EQ(0u, set.size());
-  EXPECT_EQ(9999u, set2.size());
-
-  for (int i = 1; i < 10000; ++i) {
-    auto wrapper = set2.TakeAny();
-    EXPECT_EQ(wrapper.Parent(), parent);
-  }
-
-  EXPECT_EQ(0u, set2.size());
+  EXPECT_EQ(kContainerSize, set2.size());
 }
 
 TEST(TraceWrapperMemberTest, HeapHashMapValue) {
+  const size_t kContainerSize = 10000;
   HeapHashMap<int, Wrapper> map;
-  DeathAwareScriptWrappable* parent = DeathAwareScriptWrappable::Create();
-
+  HeapVector<Wrapper> verification_vector;
   // Loop enough so that underlying HashTable will rehash several times.
-  for (int i = 1; i < 10000; ++i) {
-    DeathAwareScriptWrappable* child = DeathAwareScriptWrappable::Create();
-    map.insert(i, Wrapper(parent, child));
+  for (size_t i = 1; i <= kContainerSize; ++i) {
+    DeathAwareScriptWrappable* entry = DeathAwareScriptWrappable::Create();
+    map.insert(i, entry);
+    verification_vector.push_back(entry);
   }
-  EXPECT_EQ(9999u, map.size());
+  EXPECT_EQ(kContainerSize, map.size());
 
-  for (int i = 1; i < 10000; ++i) {
+  for (size_t i = 1; i <= kContainerSize; ++i) {
     auto wrapper = map.Take(i);
-    EXPECT_EQ(wrapper.Parent(), parent);
+    EXPECT_EQ(verification_vector[i - 1], wrapper.Get());
   }
-
   EXPECT_EQ(0u, map.size());
 }
 
