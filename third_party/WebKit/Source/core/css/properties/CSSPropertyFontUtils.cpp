@@ -6,6 +6,7 @@
 
 #include "core/css/CSSFontFamilyValue.h"
 #include "core/css/CSSFontFeatureValue.h"
+#include "core/css/CSSFontStyleRangeValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePair.h"
@@ -95,14 +96,60 @@ String CSSPropertyFontUtils::ConcatenateFamilyName(CSSParserTokenRange& range) {
   return builder.ToString();
 }
 
-// TODO(drott) crbug.com/739139: In a subsequent stage, make these three methods
-// understand ranges.
-CSSValue* CSSPropertyFontUtils::ConsumeFontStyle(CSSParserTokenRange& range) {
-  const CSSParserToken& token = range.Peek();
-  if (token.Id() == CSSValueNormal || token.Id() == CSSValueItalic ||
-      token.Id() == CSSValueOblique)
+static CSSValueList* CombineToRangeListOrNull(
+    const CSSPrimitiveValue* range_start,
+    const CSSPrimitiveValue* range_end) {
+  DCHECK(range_start);
+  DCHECK(range_end);
+  if (range_end->GetFloatValue() < range_start->GetFloatValue())
+    return nullptr;
+  CSSValueList* value_list = CSSValueList::CreateSpaceSeparated();
+  value_list->Append(*range_start);
+  value_list->Append(*range_end);
+  return value_list;
+}
+
+static bool IsAngleWithinLimits(CSSPrimitiveValue* angle) {
+  constexpr float kMaxAngle = 90.0f;
+  return angle->GetFloatValue() >= -kMaxAngle &&
+         angle->GetFloatValue() <= kMaxAngle;
+}
+
+CSSValue* CSSPropertyFontUtils::ConsumeFontStyle(
+    CSSParserTokenRange& range,
+    const CSSParserMode& parser_mode) {
+  if (range.Peek().Id() == CSSValueNormal ||
+      range.Peek().Id() == CSSValueItalic)
     return CSSPropertyParserHelpers::ConsumeIdent(range);
-  return nullptr;
+
+  if (range.Peek().Id() != CSSValueOblique)
+    return nullptr;
+
+  CSSIdentifierValue* oblique_identifier =
+      CSSPropertyParserHelpers::ConsumeIdent<CSSValueOblique>(range);
+
+  CSSPrimitiveValue* start_angle =
+      CSSPropertyParserHelpers::ConsumeAngle(range, nullptr, WTF::nullopt);
+  if (!start_angle)
+    return oblique_identifier;
+  if (!IsAngleWithinLimits(start_angle))
+    return nullptr;
+
+  if (parser_mode != kCSSFontFaceRuleMode || range.AtEnd()) {
+    CSSValueList* value_list = CSSValueList::CreateSpaceSeparated();
+    value_list->Append(*start_angle);
+    return CSSFontStyleRangeValue::Create(*oblique_identifier, *value_list);
+  }
+
+  CSSPrimitiveValue* end_angle =
+      CSSPropertyParserHelpers::ConsumeAngle(range, nullptr, WTF::nullopt);
+  if (!end_angle || !IsAngleWithinLimits(end_angle))
+    return nullptr;
+
+  CSSValueList* range_list = CombineToRangeListOrNull(start_angle, end_angle);
+  if (!range_list)
+    return nullptr;
+  return CSSFontStyleRangeValue::Create(*oblique_identifier, *range_list);
 }
 
 CSSIdentifierValue* CSSPropertyFontUtils::ConsumeFontStretchKeywordOnly(
@@ -112,18 +159,6 @@ CSSIdentifierValue* CSSPropertyFontUtils::ConsumeFontStretchKeywordOnly(
                                        token.Id() <= CSSValueUltraExpanded))
     return CSSPropertyParserHelpers::ConsumeIdent(range);
   return nullptr;
-}
-
-static CSSValue* CombineToRangeListOrNull(const CSSPrimitiveValue* range_start,
-                                          const CSSPrimitiveValue* range_end) {
-  DCHECK(range_start);
-  DCHECK(range_end);
-  if (range_end->GetFloatValue() < range_start->GetFloatValue())
-    return nullptr;
-  CSSValueList* value_list = CSSValueList::CreateSpaceSeparated();
-  value_list->Append(*range_start);
-  value_list->Append(*range_end);
-  return value_list;
 }
 
 CSSValue* CSSPropertyFontUtils::ConsumeFontStretch(

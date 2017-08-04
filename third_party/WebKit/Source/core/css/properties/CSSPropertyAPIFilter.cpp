@@ -45,7 +45,7 @@ static CSSFunctionValue* ConsumeFilterFunction(
       }
     } else if (filter_type == CSSValueHueRotate) {
       parsed_value = CSSPropertyParserHelpers::ConsumeAngle(
-          args, context, WebFeature::kUnitlessZeroAngleFilter);
+          args, &context, WebFeature::kUnitlessZeroAngleFilter);
     } else if (filter_type == CSSValueBlur) {
       parsed_value = CSSPropertyParserHelpers::ConsumeLength(
           args, kHTMLStandardMode, kValueRangeNonNegative);

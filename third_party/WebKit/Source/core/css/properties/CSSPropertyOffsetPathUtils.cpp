@@ -57,7 +57,7 @@ CSSValue* ConsumeRay(CSSParserTokenRange& range,
   while (!function_args.AtEnd()) {
     if (!angle) {
       angle = CSSPropertyParserHelpers::ConsumeAngle(
-          function_args, context, WTF::Optional<WebFeature>());
+          function_args, &context, WTF::Optional<WebFeature>());
       if (angle)
         continue;
     }

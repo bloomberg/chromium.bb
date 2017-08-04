@@ -102,7 +102,8 @@ bool ConsumeFont(bool important,
     CSSValueID id = range.Peek().Id();
     if (!font_style && (id == CSSValueNormal || id == CSSValueItalic ||
                         id == CSSValueOblique)) {
-      font_style = CSSPropertyFontUtils::ConsumeFontStyle(range);
+      font_style =
+          CSSPropertyFontUtils::ConsumeFontStyle(range, context.Mode());
       continue;
     }
     if (!font_variant_caps &&
