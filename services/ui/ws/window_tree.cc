@@ -750,6 +750,20 @@ void WindowTree::OnAccelerator(uint32_t accelerator_id,
                                           ui::Event::Clone(event));
 }
 
+void WindowTree::OnEventOccurredOutsideOfModalWindow(
+    const ServerWindow* modal_window) {
+  DCHECK(window_manager_internal_);
+  // Only tell the window manager about windows it created.
+  if (modal_window->id().client_id != id_)
+    return;
+
+  ClientWindowId client_window_id;
+  const bool is_known = IsWindowKnown(modal_window, &client_window_id);
+  // The window manager knows all windows.
+  DCHECK(is_known);
+  window_manager_internal_->OnEventBlockedByModalWindow(client_window_id.id);
+}
+
 void WindowTree::OnCursorTouchVisibleChanged(bool enabled) {
   DCHECK(window_manager_internal_);
   window_manager_internal_->OnCursorTouchVisibleChanged(enabled);

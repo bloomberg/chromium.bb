@@ -469,6 +469,7 @@ class AURA_EXPORT WindowTreeClient
                      uint32_t accelerator_id,
                      std::unique_ptr<ui::Event> event) override;
   void OnCursorTouchVisibleChanged(bool enabled) override;
+  void OnEventBlockedByModalWindow(Id window_id) override;
 
   // Overridden from WindowManagerClient:
   void SetFrameDecorationValues(

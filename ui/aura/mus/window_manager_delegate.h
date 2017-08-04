@@ -248,6 +248,10 @@ class AURA_EXPORT WindowManagerDelegate {
   // window.
   virtual void OnWmDeactivateWindow(Window* window) = 0;
 
+  // Called when an event is blocked by a modal window. |window| is the modal
+  // window that blocked the event.
+  virtual void OnEventBlockedByModalWindow(Window* window);
+
  protected:
   virtual ~WindowManagerDelegate() {}
 };

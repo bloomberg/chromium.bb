@@ -811,8 +811,8 @@ void WindowManagerState::OnEventTargetNotFound(const ui::Event& event,
 }
 
 void WindowManagerState::OnEventOccurredOutsideOfModalWindow(
-    ServerWindow* modal_transient) {
-  // TODO(sky): notify WindowManager so it can do an animation.
+    ServerWindow* modal_window) {
+  window_tree_->OnEventOccurredOutsideOfModalWindow(modal_window);
 }
 
 void WindowManagerState::OnWindowEmbeddedAppDisconnected(ServerWindow* window) {

@@ -246,6 +246,10 @@ interface WindowManager {
   // Whenever the visibility of the mouse cursor changes due to touch on the
   // server, the window manager gets notified of the change.
   OnCursorTouchVisibleChanged(bool enabled);
+
+  // Called when a pointer down event occurs on a window and the event is
+  // blocked by a modal window.
+  OnEventBlockedByModalWindow(uint32 window_id);
 };
 
 struct WmAccelerator {

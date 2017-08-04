@@ -215,6 +215,7 @@ class WindowTree : public mojom::WindowTree,
   void OnAccelerator(uint32_t accelerator_id,
                      const ui::Event& event,
                      AcceleratorCallback callback);
+  void OnEventOccurredOutsideOfModalWindow(const ServerWindow* modal_window);
 
   // Called when the cursor touch visibility bit changes. This is only called
   // on the WindowTree associated with a WindowManager.
