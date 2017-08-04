@@ -258,28 +258,10 @@ class WPTGitHub(object):
 
         return response.data
 
-    def pr_for_chromium_commit(self, chromium_commit):
-        """Returns a PR corresponding to the given ChromiumCommit, or None."""
-        pull_request = self.pr_with_change_id(chromium_commit.change_id())
-        if pull_request:
-            return pull_request
-        # The Change ID can't be used for commits made via Rietveld,
-        # so we fall back to trying to use commit position here, although
-        # commit position is not correct sometimes (https://crbug.com/737178).
-        # TODO(qyearsley): Remove this fallback after full Gerrit migration.
-        return self.pr_with_position(chromium_commit.position)
-
     def pr_with_change_id(self, target_change_id):
         for pull_request in self.all_pull_requests():
             change_id = self.extract_metadata('Change-Id: ', pull_request.body)
             if change_id == target_change_id:
-                return pull_request
-        return None
-
-    def pr_with_position(self, position):
-        for pull_request in self.all_pull_requests():
-            pr_commit_position = self.extract_metadata('Cr-Commit-Position: ', pull_request.body)
-            if position == pr_commit_position:
                 return pull_request
         return None
 

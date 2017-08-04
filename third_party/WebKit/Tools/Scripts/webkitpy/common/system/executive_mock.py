@@ -220,6 +220,7 @@ class MockExecutive(object):
 
 
 def mock_git_commands(vals, strict=False):
+    # TODO(robertma): Support optional look-up by arguments.
     def run_fn(args):
         sub_command = args[1]
         if strict and sub_command not in vals:
