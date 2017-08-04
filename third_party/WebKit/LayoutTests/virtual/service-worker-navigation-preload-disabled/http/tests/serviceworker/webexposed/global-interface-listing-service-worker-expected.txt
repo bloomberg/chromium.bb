@@ -929,6 +929,19 @@ interface PaymentRequestEvent : ExtendableEvent
     method constructor
     method openWindow
     method respondWith
+interface PerformanceEntry
+    attribute @@toStringTag
+    getter duration
+    getter entryType
+    getter name
+    getter startTime
+    method constructor
+    method toJSON
+interface PerformanceObserver
+    attribute @@toStringTag
+    method constructor
+    method disconnect
+    method observe
 interface PerformanceObserverEntryList
     attribute @@toStringTag
     method constructor

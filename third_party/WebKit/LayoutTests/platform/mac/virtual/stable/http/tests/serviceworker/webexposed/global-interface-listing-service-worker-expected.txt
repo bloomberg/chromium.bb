@@ -655,6 +655,19 @@ interface NotificationEvent : ExtendableEvent
     getter action
     getter notification
     method constructor
+interface PerformanceEntry
+    attribute @@toStringTag
+    getter duration
+    getter entryType
+    getter name
+    getter startTime
+    method constructor
+    method toJSON
+interface PerformanceObserver
+    attribute @@toStringTag
+    method constructor
+    method disconnect
+    method observe
 interface PerformanceObserverEntryList
     attribute @@toStringTag
     method constructor
