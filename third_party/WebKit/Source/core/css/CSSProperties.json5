@@ -3859,6 +3859,7 @@
       name: "grid",
       longhands: ["grid-template-rows", "grid-template-columns", "grid-template-areas", "grid-auto-flow", "grid-auto-rows", "grid-auto-columns", "grid-column-gap", "grid-row-gap"],
       api_class: true,
+      api_methods: ["parseShorthand"],
       runtime_flag: "CSSGridLayout",
     },
     {
@@ -3914,6 +3915,7 @@
       name: "grid-template",
       longhands: ["grid-template-rows", "grid-template-columns", "grid-template-areas"],
       api_class: true,
+      api_methods: ["parseShorthand"],
       runtime_flag: "CSSGridLayout",
     },
     {
