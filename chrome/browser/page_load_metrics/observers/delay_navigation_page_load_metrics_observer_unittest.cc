@@ -106,27 +106,22 @@ class DelayNavigationPageLoadMetricsObserverTest
                 .empty();
   }
 
-  void NavigateToDefaultUrlAndCommit() {
-    GURL url(kDefaultTestUrl);
-    content::RenderFrameHostTester* rfh_tester =
-        content::RenderFrameHostTester::For(main_rfh());
-    rfh_tester->SimulateNavigationStart(url);
-
-    // There may be other throttles that DEFER and post async tasks to the UI
-    // thread. Allow them to run to completion, so our throttle is guaranteed to
-    // have a chance to run.
-    base::RunLoop().RunUntilIdle();
-
+  void OnNavigationDeferred() {
     EXPECT_TRUE(mock_time_task_runner_->HasPendingTask());
     mock_time_task_runner_->FastForwardBy(
         base::TimeDelta::FromMilliseconds(kDelayMillis));
     EXPECT_FALSE(mock_time_task_runner_->HasPendingTask());
+  }
 
-    // Run any remaining async tasks, to make sure all other deferred throttles
-    // can complete.
-    base::RunLoop().RunUntilIdle();
-
-    rfh_tester->SimulateNavigationCommit(url);
+  void NavigateToDefaultUrlAndCommit() {
+    GURL url(kDefaultTestUrl);
+    std::unique_ptr<content::NavigationSimulator> navigation =
+        content::NavigationSimulator::CreateRendererInitiated(url, main_rfh());
+    navigation->SetOnDeferCallback(base::Bind(
+        &DelayNavigationPageLoadMetricsObserverTest::OnNavigationDeferred,
+        base::Unretained(this)));
+    navigation->Commit();
+    EXPECT_EQ(url, web_contents()->GetLastCommittedURL());
   }
 
   scoped_refptr<base::TestMockTimeTaskRunner> mock_time_task_runner_;

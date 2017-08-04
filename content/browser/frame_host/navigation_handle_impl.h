@@ -177,6 +177,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // Used in tests.
   State state_for_testing() const { return state_; }
+  void SetOnDeferCallbackForTesting(const base::Closure& on_defer_callback);
 
   // Whether or not the navigation has been initiated by a form submission.
   // TODO(arthursonzogni): This value is correct only when PlzNavigate is
@@ -604,6 +605,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Used to inform a RenderProcessHost that we expect this navigation to commit
   // in it.
   int expected_render_process_host_id_;
+
+  // Used in tests. Called when the navigation is deferred by one of the
+  // NavigationThrottles.
+  base::Closure on_defer_callback_for_testing_;
 
   base::WeakPtrFactory<NavigationHandleImpl> weak_factory_;
 
