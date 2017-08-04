@@ -13,13 +13,19 @@ source_set("generic_sensor") {
 
   output_name = "generic_sensor"
   sources = [
+    "absolute_orientation_euler_angles_fusion_algorithm_using_accelerometer_and_magnetometer.cc",
+    "absolute_orientation_euler_angles_fusion_algorithm_using_accelerometer_and_magnetometer.h",
     "generic_sensor_consts.h",
     "linear_acceleration_fusion_algorithm_using_accelerometer.cc",
     "linear_acceleration_fusion_algorithm_using_accelerometer.h",
     "linux/sensor_data_linux.cc",
     "linux/sensor_data_linux.h",
+    "orientation_euler_angles_fusion_algorithm_using_quaternion.cc",
+    "orientation_euler_angles_fusion_algorithm_using_quaternion.h",
     "orientation_quaternion_fusion_algorithm_using_euler_angles.cc",
     "orientation_quaternion_fusion_algorithm_using_euler_angles.h",
+    "orientation_util.cc",
+    "orientation_util.h",
     "platform_sensor.cc",
     "platform_sensor.h",
     "platform_sensor_accelerometer_mac.cc",
