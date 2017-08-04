@@ -221,17 +221,13 @@ void HTMLParserScriptRunner::ExecutePendingScriptAndDispatchEvent(
     }
   }
 
-  double script_parser_blocking_time =
-      pending_script->ParserBlockingLoadStartTime();
-  ScriptElementBase* element = pending_script->GetElement();
-
   // 1. "Let the script be the pending parsing-blocking script.
   //     There is no longer a pending parsing-blocking script."
   if (pending_script_type == ScriptStreamer::kParsingBlocking) {
     parser_blocking_script_ = nullptr;
   }
 
-  if (ScriptLoader* script_loader = element->Loader()) {
+  if (ScriptLoader* script_loader = pending_script->GetElement()->Loader()) {
     // 7. "Increment the parser's script nesting level by one (it should be
     //     zero before this step, so this sets it to one)."
     HTMLParserReentryPermit::ScriptNestingLevelIncrementer
@@ -243,12 +239,6 @@ void HTMLParserScriptRunner::ExecutePendingScriptAndDispatchEvent(
 
     // 8. "Execute the script."
     DCHECK(IsExecutingScript());
-    if (!pending_script->ErrorOccurred() && script_parser_blocking_time > 0.0) {
-      DocumentParserTiming::From(*document_)
-          .RecordParserBlockedOnScriptLoadDuration(
-              MonotonicallyIncreasingTime() - script_parser_blocking_time,
-              script_loader->WasCreatedDuringDocumentWrite());
-    }
     DoExecuteScript(pending_script, DocumentURLForScriptExecution(document_));
 
     // 9. "Decrement the parser's script nesting level by one.

@@ -122,10 +122,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
     return pending_script_ && pending_script_->IsReady();
   }
 
-  bool WasCreatedDuringDocumentWrite() {
-    return created_during_document_write_;
-  }
-
   bool DisallowedFetchForDocWrittenScript() {
     return document_write_intervention_ ==
            DocumentWriteIntervention::kDoNotFetchDocWrittenScript;
@@ -181,6 +177,10 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
 
   // PendingScriptClient
   void PendingScriptFinished(PendingScript*) override;
+
+  bool WasCreatedDuringDocumentWrite() {
+    return created_during_document_write_;
+  }
 
   Member<ScriptElementBase> element_;
   Member<ScriptResource> resource_;

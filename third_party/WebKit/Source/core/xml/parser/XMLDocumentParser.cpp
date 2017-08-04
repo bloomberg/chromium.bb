@@ -446,16 +446,6 @@ void XMLDocumentParser::PendingScriptFinished(
   DCHECK(script_loader);
   CHECK_EQ(script_loader->GetScriptType(), ScriptType::kClassic);
 
-  if (!pending_script->ErrorOccurred()) {
-    const double script_parser_blocking_time =
-        pending_script->ParserBlockingLoadStartTime();
-    if (script_parser_blocking_time > 0.0) {
-      DocumentParserTiming::From(*GetDocument())
-          .RecordParserBlockedOnScriptLoadDuration(
-              MonotonicallyIncreasingTime() - script_parser_blocking_time,
-              script_loader->WasCreatedDuringDocumentWrite());
-    }
-  }
   script_loader->ExecuteScriptBlock(pending_script, NullURL());
 
   script_element_ = nullptr;
