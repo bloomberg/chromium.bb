@@ -47,9 +47,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
       const base::android::JavaRef<jobject>&
           bluetooth_adapter_wrapper);  // Java Type: bluetoothAdapterWrapper
 
-  // Register C++ methods exposed to Java using JNI.
-  static bool RegisterJNI(JNIEnv* env);
-
   // BluetoothAdapter:
   std::string GetAddress() const override;
   std::string GetName() const override;

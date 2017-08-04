@@ -20,11 +20,6 @@ using base::android::ScopedJavaLocalRef;
 
 namespace device {
 
-// static
-bool UsbServiceAndroid::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);  // Generated in ChromeUsbService_jni.h
-}
-
 UsbServiceAndroid::UsbServiceAndroid()
     : UsbService(nullptr), weak_factory_(this) {
   JNIEnv* env = AttachCurrentThread();

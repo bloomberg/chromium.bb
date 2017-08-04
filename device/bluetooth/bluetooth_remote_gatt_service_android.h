@@ -46,9 +46,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceAndroid
 
   ~BluetoothRemoteGattServiceAndroid() override;
 
-  // Register C++ methods exposed to Java using JNI.
-  static bool RegisterJNI(JNIEnv* env);
-
   // Returns the associated ChromeBluetoothRemoteGattService Java object.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 

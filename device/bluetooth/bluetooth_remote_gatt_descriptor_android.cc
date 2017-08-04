@@ -47,12 +47,6 @@ BluetoothRemoteGattDescriptorAndroid::~BluetoothRemoteGattDescriptorAndroid() {
       AttachCurrentThread(), j_descriptor_);
 }
 
-// static
-bool BluetoothRemoteGattDescriptorAndroid::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(
-      env);  // Generated in ChromeBluetoothRemoteGattDescriptor_jni.h
-}
-
 base::android::ScopedJavaLocalRef<jobject>
 BluetoothRemoteGattDescriptorAndroid::GetJavaObject() {
   return base::android::ScopedJavaLocalRef<jobject>(j_descriptor_);

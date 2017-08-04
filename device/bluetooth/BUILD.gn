@@ -68,8 +68,6 @@ source_set("fake_bluetooth") {
 
 component("bluetooth") {
   sources = [
-    "android/bluetooth_jni_registrar.cc",
-    "android/bluetooth_jni_registrar.h",
     "android/wrappers.cc",
     "android/wrappers.h",
     "bluetooth_adapter.cc",

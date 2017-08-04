@@ -34,9 +34,6 @@ class GamepadPlatformDataFetcherAndroid : public GamepadDataFetcher {
 
   void GetGamepadData(bool devices_changed_hint) override;
 
-  // Registers the JNI methods for GamepadsReader.
-  static bool RegisterGamepadPlatformDataFetcherAndroid(JNIEnv* env);
-
  private:
   void OnAddedToProvider() override;
 

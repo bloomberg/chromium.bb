@@ -66,10 +66,6 @@ SensorManagerAndroid::SensorManagerAndroid()
 
 SensorManagerAndroid::~SensorManagerAndroid() {}
 
-bool SensorManagerAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 SensorManagerAndroid* SensorManagerAndroid::GetInstance() {
   DCHECK(base::MessageLoopForUI::IsCurrent());
   return base::Singleton<

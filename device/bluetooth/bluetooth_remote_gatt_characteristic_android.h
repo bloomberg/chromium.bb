@@ -48,9 +48,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
 
   ~BluetoothRemoteGattCharacteristicAndroid() override;
 
-  // Register C++ methods exposed to Java using JNI.
-  static bool RegisterJNI(JNIEnv* env);
-
   // Returns the associated ChromeBluetoothRemoteGattCharacteristic Java object.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 

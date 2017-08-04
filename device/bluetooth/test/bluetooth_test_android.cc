@@ -34,9 +34,6 @@ BluetoothTestAndroid::~BluetoothTestAndroid() {
 }
 
 void BluetoothTestAndroid::SetUp() {
-  // Register in SetUp so that ASSERT can be used.
-  ASSERT_TRUE(RegisterNativesImpl(AttachCurrentThread()));
-
   // Set the permission to true so that we can use the API.
   Java_Fakes_setLocationServicesState(
       AttachCurrentThread(), true /* hasPermission */, true /* isEnabled */);

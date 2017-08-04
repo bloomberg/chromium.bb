@@ -61,11 +61,6 @@ base::WeakPtr<BluetoothAdapterAndroid> BluetoothAdapterAndroid::Create(
   return adapter->weak_ptr_factory_.GetWeakPtr();
 }
 
-// static
-bool BluetoothAdapterAndroid::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);  // Generated in BluetoothAdapter_jni.h
-}
-
 std::string BluetoothAdapterAndroid::GetAddress() const {
   return ConvertJavaStringToUTF8(Java_ChromeBluetoothAdapter_getAddress(
       AttachCurrentThread(), j_adapter_));

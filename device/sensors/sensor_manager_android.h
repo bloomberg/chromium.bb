@@ -30,8 +30,6 @@ namespace device {
 // memory buffer, which is read by the renderer processes.
 class DEVICE_SENSOR_EXPORT SensorManagerAndroid {
  public:
-  // Must be called at startup, before GetInstance().
-  static bool Register(JNIEnv* env);
 
   // Should be called only on the UI thread.
   static SensorManagerAndroid* GetInstance();
