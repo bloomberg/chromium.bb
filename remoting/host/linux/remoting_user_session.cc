@@ -56,10 +56,16 @@ namespace {
 // unlikely to interfere with it, but is otherwise arbitrary.
 const int kMessageFd = 202;
 
+// This is the exit code the Python session script will use to signal that the
+// user-session wrapper should restart instead of exiting. It must be kept in
+// sync with RELAUNCH_EXIT_CODE in linux_me2me_host.py
+const int kRelaunchExitCode = 41;
+
 const char kPamName[] = "chrome-remote-desktop";
 const char kScriptName[] = "chrome-remote-desktop";
 const char kStartCommand[] = "start";
 const char kForegroundFlag[] = "--foreground";
+const char kExeSymlink[] = "/proc/self/exe";
 
 // This template will be formatted by strftime and then used by mkstemp
 const char kLogFileTemplate[] =
@@ -69,6 +75,11 @@ const char kUsageMessage[] =
     "This program is not intended to be run by end users. To configure Chrome\n"
     "Remote Desktop, please install the app from the Chrome Web Store:\n"
     "https://chrome.google.com/remotedesktop\n";
+
+// Holds the null-terminated path to this executable. This is obtained at
+// startup, since it may be harder to obtain later. (E.g., Linux will append
+// " (deleted)" if the file has been replaced by an update.)
+char gExecutablePath[PATH_MAX] = {};
 
 void PrintUsage() {
   std::fputs(kUsageMessage, stderr);
@@ -250,13 +261,21 @@ class PamHandle {
   DISALLOW_COPY_AND_ASSIGN(PamHandle);
 };
 
-std::string FindScriptPath() {
-  base::FilePath path;
-  bool result = base::ReadSymbolicLink(base::FilePath("/proc/self/exe"), &path);
-  PCHECK(result) << "Failed to determine binary location";
-  CHECK(path.IsAbsolute()) << "Retrieved binary location not absolute";
+// Initializes the gExecutablePath global to the location of the running
+// executable. Should be called at program start.
+void DetermineExecutablePath() {
+  ssize_t path_size =
+      readlink(kExeSymlink, gExecutablePath, arraysize(gExecutablePath));
+  PCHECK(path_size >= 0) << "Failed to determine executable location";
+  CHECK(path_size < PATH_MAX) << "Executable path too long";
+  gExecutablePath[path_size] = '\0';
+  CHECK(gExecutablePath[0] == '/') << "Executable path not absolute";
+}
 
-  return path.DirName().Append(kScriptName).value();
+// Returns the expected location of the session script based on the path to
+// this executable.
+std::string FindScriptPath() {
+  return base::FilePath(gExecutablePath).DirName().Append(kScriptName).value();
 }
 
 // Execs the me2me script.
@@ -273,8 +292,7 @@ void ExecMe2MeScript(base::EnvironmentMap environment,
       ShellEscapeArgument(FindScriptPath());
   CHECK(escaped_script_path) << "Could not escape script path";
 
-  std::string shell_arg =
-      *escaped_script_path + " --start --foreground --keep-parent-env";
+  std::string shell_arg = *escaped_script_path + " --start --child-process";
 
   environment["USER"] = pwinfo->pw_name;
   environment["LOGNAME"] = pwinfo->pw_name;
@@ -301,6 +319,24 @@ void ExecMe2MeScript(base::EnvironmentMap environment,
   execve(pwinfo->pw_shell, const_cast<char* const*>(arg_ptrs.data()),
          const_cast<char* const*>(env_ptrs.data()));
   PLOG(FATAL) << "Failed to exec login shell " << pwinfo->pw_shell;
+}
+
+// Relaunch the user session. When calling this function, the real UID must be
+// set to the target user, while the effective UID must be root. The provided
+// user must correspond with the current real UID.
+void Relaunch(const std::string& user) {
+  CHECK(getuid() != 0);
+
+  // Real user ID has already been set to the target user, but the corresponding
+  // environment variables may not have been if the session was started by root
+  // (e.g., at boot).
+  PCHECK(setenv("USER", user.c_str(), true) == 0) << "setenv failed";
+  PCHECK(setenv("LOGNAME", user.c_str(), true) == 0) << "setenv failed";
+
+  // Pass --foreground to continue using the same log file.
+  execl(gExecutablePath, gExecutablePath, kStartCommand, kForegroundFlag,
+        (char*)nullptr);
+  PCHECK(false) << "Failed to exec self";
 }
 
 // Runs the me2me script in a PAM session. Exits the program on failure.
@@ -380,9 +416,14 @@ void ExecuteSession(std::string user,
       PCHECK(wait_result >= 0) << "wait failed";
     } while (!WIFEXITED(status) && !WIFSIGNALED(status));
 
+    bool relaunch = false;
+
     if (WIFEXITED(status)) {
       if (WEXITSTATUS(status) == EXIT_SUCCESS) {
         LOG(INFO) << "Child exited successfully";
+      } else if (WEXITSTATUS(status) == kRelaunchExitCode) {
+        LOG(INFO) << "Restarting session";
+        relaunch = true;
       } else {
         LOG(WARNING) << "Child exited with status " << WEXITSTATUS(status);
       }
@@ -395,6 +436,10 @@ void ExecuteSession(std::string user,
       LOG(WARNING) << "Failed to close PAM session";
     }
     ignore_result(pam_handle.SetCredentials(PAM_DELETE_CRED));
+
+    if (relaunch) {
+      Relaunch(user);
+    }
   }
 }
 
@@ -620,6 +665,9 @@ void Daemonize() {
 }  // namespace
 
 int main(int argc, char** argv) {
+  // Initialize gExecutablePath
+  DetermineExecutablePath();
+
   if (argc < 2 || std::strcmp(argv[1], kStartCommand) != 0) {
     PrintUsage();
     std::exit(EXIT_FAILURE);
