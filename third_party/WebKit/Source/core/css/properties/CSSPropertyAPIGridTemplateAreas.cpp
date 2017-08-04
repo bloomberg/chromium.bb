@@ -9,7 +9,7 @@
 #include "core/css/parser/CSSParserToken.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyGridTemplateAreasUtils.h"
+#include "core/css/properties/CSSPropertyGridUtils.h"
 #include "core/style/GridArea.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
@@ -28,7 +28,7 @@ const CSSValue* CSSPropertyAPIGridTemplateAreas::parseSingleValue(
   size_t column_count = 0;
 
   while (range.Peek().GetType() == kStringToken) {
-    if (!CSSPropertyGridTemplateAreasUtils::ParseGridTemplateAreasRow(
+    if (!CSSPropertyGridUtils::ParseGridTemplateAreasRow(
             range.ConsumeIncludingWhitespace().Value().ToString(),
             grid_area_map, row_count, column_count))
       return nullptr;
