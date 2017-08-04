@@ -421,7 +421,11 @@ void DoLaunchChildTestProcess(
 
   options.fds_to_remap = test_launch_options.fds_to_remap;
   if (redirect_stdio) {
-    output_file_fd.reset(open(output_file.value().c_str(), O_RDWR));
+    // Don't use O_CREATE here - CreateTemporaryFile should have created it.
+    // O_APPEND is necessary on Fuchsia, otherwise stdio/stderr will have
+    // independent seek positions, and trample one another (crbug.com/751253).
+    output_file_fd.reset(
+        open(output_file.value().c_str(), O_WRONLY | O_APPEND | O_TRUNC));
     CHECK(output_file_fd.is_valid());
 
     options.fds_to_remap.push_back(
