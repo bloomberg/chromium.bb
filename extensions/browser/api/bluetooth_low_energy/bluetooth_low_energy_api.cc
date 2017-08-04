@@ -76,7 +76,7 @@ const char kErrorIndicatePropertyNotSet[] =
 const char kErrorServiceNotRegistered[] =
     "The characteristic is not owned by a service that is registered.";
 const char kErrorUnknownNotificationError[] =
-    "An unknown notification error occured.";
+    "An unknown notification error occurred.";
 
 const char kStatusAdvertisementAlreadyExists[] =
     "An advertisement is already advertising";

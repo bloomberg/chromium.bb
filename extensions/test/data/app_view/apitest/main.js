@@ -108,7 +108,7 @@ function testAppViewWithUndefinedDataShouldSucceed(appToEmbed) {
   LOG('appToEmbed  ' + appToEmbed);
   document.body.appendChild(appview);
   // Step 1: Attempt to connect to a non-existant app (abc123).
-  LOG('Attempting to connect to non-existant app.');
+  LOG('Attempting to connect to non-existent app.');
   appview.connect('abc123', undefined, function(success) {
     // Make sure we fail.
     if (success) {
@@ -116,7 +116,7 @@ function testAppViewWithUndefinedDataShouldSucceed(appToEmbed) {
       embedder.test.fail();
       return;
     }
-    LOG('failed to connect to non-existant app.');
+    LOG('failed to connect to non-existent app.');
     LOG('attempting to connect to known app.');
     // Step 2: Attempt to connect to an app we know exists.
     appview.connect(appToEmbed, undefined, function(success) {
