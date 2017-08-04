@@ -18,6 +18,12 @@ class MockMediaCodecBridge : public MediaCodecBridge,
  public:
   MockMediaCodecBridge();
   ~MockMediaCodecBridge() override;
+
+  // Helpers for conveniently setting expectations.
+  enum IsEos { kEos, kNotEos };
+  void AcceptOneInput(IsEos eos = kNotEos);
+  void ProduceOneOutput(IsEos eos = kNotEos);
+
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(Flush, MediaCodecStatus());
   MOCK_METHOD1(GetOutputSize, MediaCodecStatus(gfx::Size* size));

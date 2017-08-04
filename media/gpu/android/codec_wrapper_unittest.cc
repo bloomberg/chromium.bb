@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/test/mock_callback.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/mock_media_codec_bridge.h"
 #include "media/base/encryption_scheme.h"
@@ -15,11 +16,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::Invoke;
-using testing::Return;
 using testing::DoAll;
-using testing::SetArgPointee;
+using testing::Invoke;
 using testing::NiceMock;
+using testing::Return;
+using testing::SetArgPointee;
 using testing::_;
 
 namespace media {
@@ -29,8 +30,11 @@ class CodecWrapperTest : public testing::Test {
   CodecWrapperTest() {
     auto codec = base::MakeUnique<NiceMock<MockMediaCodecBridge>>();
     codec_ = codec.get();
-    wrapper_ = base::MakeUnique<CodecWrapper>(std::move(codec));
+    wrapper_ = base::MakeUnique<CodecWrapper>(std::move(codec),
+                                              output_buffer_release_cb_.Get());
     ON_CALL(*codec_, DequeueOutputBuffer(_, _, _, _, _, _, _))
+        .WillByDefault(Return(MEDIA_CODEC_OK));
+    ON_CALL(*codec_, QueueInputBuffer(_, _, _, _))
         .WillByDefault(Return(MEDIA_CODEC_OK));
   }
 
@@ -41,13 +45,15 @@ class CodecWrapperTest : public testing::Test {
 
   std::unique_ptr<CodecOutputBuffer> DequeueCodecOutputBuffer() {
     std::unique_ptr<CodecOutputBuffer> codec_buffer;
-    wrapper_->DequeueOutputBuffer(base::TimeDelta(), nullptr, nullptr,
+    bool eos = false;
+    wrapper_->DequeueOutputBuffer(base::TimeDelta(), nullptr, &eos,
                                   &codec_buffer);
     return codec_buffer;
   }
 
   NiceMock<MockMediaCodecBridge>* codec_;
   std::unique_ptr<CodecWrapper> wrapper_;
+  NiceMock<base::MockCallback<base::Closure>> output_buffer_release_cb_;
 };
 
 TEST_F(CodecWrapperTest, TakeCodecReturnsTheCodecFirstAndNullLater) {
@@ -193,6 +199,52 @@ TEST_F(CodecWrapperTest, CodecOutputBuffersHaveTheCorrectSize) {
           DoAll(SetArgPointee<0>(gfx::Size(42, 42)), Return(MEDIA_CODEC_OK)));
   auto codec_buffer = DequeueCodecOutputBuffer();
   ASSERT_EQ(codec_buffer->size(), gfx::Size(42, 42));
+}
+
+TEST_F(CodecWrapperTest, OutputBufferReleaseCbIsCalledWhenRendering) {
+  auto codec_buffer = DequeueCodecOutputBuffer();
+  EXPECT_CALL(output_buffer_release_cb_, Run()).Times(1);
+  codec_buffer->ReleaseToSurface();
+}
+
+TEST_F(CodecWrapperTest, OutputBufferReleaseCbIsCalledWhenDestructing) {
+  auto codec_buffer = DequeueCodecOutputBuffer();
+  EXPECT_CALL(output_buffer_release_cb_, Run()).Times(1);
+}
+
+TEST_F(CodecWrapperTest, CodecStartsInFlushedState) {
+  ASSERT_TRUE(wrapper_->IsFlushed());
+  ASSERT_FALSE(wrapper_->IsDraining());
+  ASSERT_FALSE(wrapper_->IsDrained());
+}
+
+TEST_F(CodecWrapperTest, CodecIsNotFlushedAfterAnInputIsQueued) {
+  wrapper_->QueueInputBuffer(0, nullptr, 0, base::TimeDelta());
+  ASSERT_FALSE(wrapper_->IsFlushed());
+  ASSERT_FALSE(wrapper_->IsDraining());
+  ASSERT_FALSE(wrapper_->IsDrained());
+}
+
+TEST_F(CodecWrapperTest, FlushReturnsCodecToFlushed) {
+  wrapper_->QueueInputBuffer(0, nullptr, 0, base::TimeDelta());
+  wrapper_->Flush();
+  ASSERT_TRUE(wrapper_->IsFlushed());
+}
+
+TEST_F(CodecWrapperTest, EosTransitionsToStateDraining) {
+  wrapper_->QueueInputBuffer(0, nullptr, 0, base::TimeDelta());
+  wrapper_->QueueEOS(0);
+  ASSERT_TRUE(wrapper_->IsDraining());
+}
+
+TEST_F(CodecWrapperTest, DequeuingEosTransitionsToStateDrained) {
+  // Set EOS on next dequeue.
+  codec_->ProduceOneOutput(MockMediaCodecBridge::kEos);
+  DequeueCodecOutputBuffer();
+  ASSERT_FALSE(wrapper_->IsFlushed());
+  ASSERT_TRUE(wrapper_->IsDrained());
+  wrapper_->Flush();
+  ASSERT_FALSE(wrapper_->IsDrained());
 }
 
 #if DCHECK_IS_ON()

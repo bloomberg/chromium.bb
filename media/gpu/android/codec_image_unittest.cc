@@ -40,7 +40,8 @@ class CodecImageTest : public testing::Test {
   void SetUp() override {
     auto codec = base::MakeUnique<NiceMock<MockMediaCodecBridge>>();
     codec_ = codec.get();
-    wrapper_ = base::MakeUnique<CodecWrapper>(std::move(codec));
+    wrapper_ = base::MakeUnique<CodecWrapper>(std::move(codec),
+                                              base::Bind(&base::DoNothing));
     ON_CALL(*codec_, DequeueOutputBuffer(_, _, _, _, _, _, _))
         .WillByDefault(Return(MEDIA_CODEC_OK));
 
