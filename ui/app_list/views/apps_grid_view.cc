@@ -294,8 +294,6 @@ AppsGridView::AppsGridView(ContentsView* contents_view)
 
     suggestions_container_ =
         new SuggestionsContainerView(contents_view_, nullptr);
-    suggestions_container_->SetPaintToLayer();
-    suggestions_container_->layer()->SetFillsBoundsOpaquely(false);
     AddChildView(suggestions_container_);
     UpdateSuggestions();
 
@@ -939,8 +937,6 @@ IndicatorChipView* AppsGridView::CreateIndicator(
     int indicator_text_message_id) {
   IndicatorChipView* indicator = new IndicatorChipView(
       l10n_util::GetStringUTF16(indicator_text_message_id));
-  indicator->SetPaintToLayer();
-  indicator->layer()->SetFillsBoundsOpaquely(false);
   AddChildView(indicator);
   return indicator;
 }
@@ -1724,14 +1720,11 @@ void AppsGridView::UpdateOpacity(float work_area_bottom, bool is_end_gesture) {
   UpdateOpacityOfItem(suggested_apps_indicator_,
                       suggested_indicator_bounds.CenterPoint().y());
 
-  // Updates the opacity of suggested apps.
-  const std::vector<SearchResultTileItemView*>& suggested_apps =
-      suggestions_container_->tile_views();
-  gfx::Rect suggested_app_bounds;
-  for (auto* suggested_app : suggested_apps) {
-    suggested_app_bounds = suggested_app->GetBoundsInScreen();
-    UpdateOpacityOfItem(suggested_app, suggested_app_bounds.CenterPoint().y());
-  }
+  // Updates the opacity of suggestions container.
+  gfx::Rect suggestions_container_bounds =
+      suggestions_container_->GetBoundsInScreen();
+  UpdateOpacityOfItem(suggestions_container_,
+                      suggestions_container_bounds.CenterPoint().y());
 
   // Updates the opacity of all apps indicator.
   gfx::Rect all_apps_indicator_bounds =
