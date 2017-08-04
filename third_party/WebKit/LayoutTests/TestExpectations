@@ -2781,8 +2781,6 @@ crbug.com/674720 virtual/mojo-loading/http/tests/loading/preload-img-test.html [
 crbug.com/708499 crbug.com/724817 fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Pass Timeout Crash ]
 crbug.com/708499 crbug.com/724817 virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Pass Timeout Crash ]
 
-crbug.com/706091 virtual/wheelscrolllatching/fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Failure Pass ]
-
 # Sheriff failure 2017-05-05
 crbug.com/703533 [ Mac ] shapedetection/detection-security-test.html  [ Crash Pass Timeout ]
 
