@@ -12489,6 +12489,7 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "hw_tests_override": [],
         "image_test": false,
         "internal": true,
         "manifest": "official.xml",
@@ -12499,6 +12500,22 @@
             "chrome_internal"
         ]
     },
+    "lakitu-external-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "lakitu"
+        ],
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "hw_tests_override": [],
+        "image_test": false,
+        "sync_chrome": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
     "lakitu-firmware": {
         "_template": "firmware",
         "boards": [
@@ -12507,10 +12524,12 @@
         "disk_layout": "base",
         "factory": false,
         "factory_install_netboot": false,
+        "hw_tests_override": [],
         "manifest": "official.xml"
     },
     "lakitu-full": {
         "_template": "full",
+        "active_waterfall": "chromiumos",
         "boards": [
             "lakitu"
         ],
@@ -12520,6 +12539,11 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "health_alert_recipients": [
+            "gci-alerts+buildbots@google.com"
+        ],
+        "health_threshold": 1,
+        "hw_tests_override": [],
         "image_test": false,
         "images": [
             "base",
@@ -12544,6 +12568,7 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "hw_tests": [],
+        "hw_tests_override": [],
         "image_test": false,
         "sync_chrome": false
     },
@@ -12556,6 +12581,7 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "hw_tests_override": [],
         "image_test": false,
         "internal": true,
         "manifest": "official.xml",
@@ -12574,6 +12600,7 @@
         "disk_layout": "base",
         "factory": false,
         "factory_install_netboot": false,
+        "hw_tests_override": [],
         "manifest": "official.xml"
     },
     "lakitu-gpu-full": {
@@ -12587,6 +12614,7 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "hw_tests_override": [],
         "image_test": false,
         "images": [
             "base",
@@ -12618,6 +12646,7 @@
             "gci-alerts+buildbots@google.com"
         ],
         "health_threshold": 1,
+        "hw_tests_override": [],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -12636,6 +12665,7 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "hw_tests_override": [],
         "image_test": false,
         "internal": true,
         "manifest": "official.xml",
@@ -12662,6 +12692,7 @@
         "gce_tests": [
             "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}"
         ],
+        "hw_tests_override": [],
         "image_test": false,
         "internal": true,
         "manifest": "official.xml",
@@ -12698,6 +12729,7 @@
             "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}",
             "{\n    \"test_type\": \"gce_smoke_test\",\n    \"timeout\": 3600\n}"
         ],
+        "hw_tests_override": [],
         "image_test": false,
         "internal": true,
         "manifest": "official.xml",
@@ -12735,6 +12767,7 @@
         ],
         "health_threshold": 1,
         "hw_tests": [],
+        "hw_tests_override": [],
         "hwqual": false,
         "image_test": false,
         "images": [
@@ -12791,6 +12824,7 @@
             "gci-alerts+buildbots@google.com"
         ],
         "health_threshold": 1,
+        "hw_tests_override": [],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -12812,6 +12846,7 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "hw_tests": [],
+        "hw_tests_override": [],
         "image_test": false,
         "sync_chrome": false
     },
@@ -12827,6 +12862,7 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "hw_tests": [],
+        "hw_tests_override": [],
         "image_test": false,
         "sync_chrome": false
     },
@@ -12839,6 +12875,7 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "hw_tests_override": [],
         "image_test": false,
         "internal": true,
         "manifest": "official.xml",
@@ -12865,6 +12902,7 @@
         "gce_tests": [
             "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}"
         ],
+        "hw_tests_override": [],
         "image_test": false,
         "internal": true,
         "manifest": "official.xml",
@@ -12901,6 +12939,7 @@
             "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}",
             "{\n    \"test_type\": \"gce_smoke_test\",\n    \"timeout\": 3600\n}"
         ],
+        "hw_tests_override": [],
         "image_test": false,
         "internal": true,
         "manifest": "official.xml",
@@ -12938,6 +12977,7 @@
         ],
         "health_threshold": 1,
         "hw_tests": [],
+        "hw_tests_override": [],
         "hwqual": false,
         "image_test": false,
         "images": [
@@ -12965,6 +13005,7 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "hw_tests_override": [],
         "image_test": false,
         "internal": true,
         "manifest": "official.xml",
@@ -12983,6 +13024,7 @@
         "disk_layout": "base",
         "factory": false,
         "factory_install_netboot": false,
+        "hw_tests_override": [],
         "manifest": "official.xml"
     },
     "lakitu-st-full": {
@@ -12996,6 +13038,7 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "hw_tests_override": [],
         "image_test": false,
         "images": [
             "base",
@@ -13027,6 +13070,7 @@
             "gci-alerts+buildbots@google.com"
         ],
         "health_threshold": 1,
+        "hw_tests_override": [],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -13045,6 +13089,7 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "hw_tests_override": [],
         "image_test": false,
         "internal": true,
         "manifest": "official.xml",
@@ -13071,6 +13116,7 @@
         "gce_tests": [
             "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}"
         ],
+        "hw_tests_override": [],
         "image_test": false,
         "internal": true,
         "manifest": "official.xml",
@@ -13107,6 +13153,7 @@
             "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}",
             "{\n    \"test_type\": \"gce_smoke_test\",\n    \"timeout\": 3600\n}"
         ],
+        "hw_tests_override": [],
         "image_test": false,
         "internal": true,
         "manifest": "official.xml",
@@ -13144,6 +13191,7 @@
         ],
         "health_threshold": 1,
         "hw_tests": [],
+        "hw_tests_override": [],
         "hwqual": false,
         "image_test": false,
         "images": [
@@ -13206,6 +13254,7 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "hw_tests_override": [],
         "image_test": false,
         "internal": true,
         "manifest": "official.xml",
@@ -13224,6 +13273,7 @@
         "disk_layout": "base",
         "factory": false,
         "factory_install_netboot": false,
+        "hw_tests_override": [],
         "manifest": "official.xml"
     },
     "lakitu_next-full": {
@@ -13237,6 +13287,7 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "hw_tests_override": [],
         "image_test": false,
         "images": [
             "base",
@@ -13268,6 +13319,7 @@
             "gci-alerts+buildbots@google.com"
         ],
         "health_threshold": 1,
+        "hw_tests_override": [],
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -13286,6 +13338,7 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "hw_tests_override": [],
         "image_test": false,
         "internal": true,
         "manifest": "official.xml",
@@ -13311,6 +13364,7 @@
         "gce_tests": [
             "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}"
         ],
+        "hw_tests_override": [],
         "image_test": false,
         "important": false,
         "internal": true,
@@ -13348,6 +13402,7 @@
             "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}",
             "{\n    \"test_type\": \"gce_smoke_test\",\n    \"timeout\": 3600\n}"
         ],
+        "hw_tests_override": [],
         "image_test": false,
         "internal": true,
         "manifest": "official.xml",
@@ -13385,6 +13440,7 @@
         ],
         "health_threshold": 1,
         "hw_tests": [],
+        "hw_tests_override": [],
         "hwqual": false,
         "image_test": false,
         "images": [

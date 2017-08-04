@@ -751,6 +751,7 @@ _waterfall_config_map = {
         'daisy-full',
         'oak-full',
         'x86-generic-full',
+        'lakitu-full',
 
         # ASAN
         'amd64-generic-asan',
@@ -1112,11 +1113,11 @@ def GeneralTemplates(site_config, ge_build_config):
 
   site_config.AddTemplate(
       'lakitu',
+      site_config.templates.no_hwtest_builder,
       sync_chrome=False,
       chrome_sdk=False,
       afdo_use=False,
       dev_installer_prebuilts=False,
-      hw_tests=[],
   )
 
   site_config.AddTemplate(
@@ -2031,6 +2032,16 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       boards=[],
       builder_class_name='test_builders.ChromiteTestsBuilder',
       description='Run the chromite network unittests.',
+  )
+
+  # Pre-cq for lakitu's public overlay.
+  site_config.Add(
+      'lakitu-external-pre-cq',
+      site_config.templates.pre_cq,
+      board_configs['lakitu'],
+      site_config.templates.lakitu,
+      site_config.templates.external,
+      useflags=append_useflags(['-chrome_internal']),
   )
 
 
@@ -3390,6 +3401,11 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           site_config.templates.lakitu_test_customizations,
           site_config.templates.lakitu_notification_emails,
           sign_types=['base'],
+      ),
+
+      # This is the full build of open-source overlay.
+      'lakitu-full': config_lib.BuildConfig().apply(
+          site_config.templates.lakitu_notification_emails,
       ),
 
       'lakitu-gpu-release': config_lib.BuildConfig().apply(
