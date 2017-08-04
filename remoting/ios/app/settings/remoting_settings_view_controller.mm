@@ -322,14 +322,6 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
     [weakSelf.navigationController setNavigationBarHidden:NO animated:YES];
   };
 
-  SettingOption* faqsOption = [[SettingOption alloc] init];
-  faqsOption.title = l10n_util::GetNSString(IDS_FAQS);
-  faqsOption.style = FlatButton;
-  faqsOption.action = ^{
-    [AppDelegate.instance navigateToFAQs:weakSelf.navigationController];
-    [weakSelf.navigationController setNavigationBarHidden:NO animated:YES];
-  };
-
   // TODO(yuweih): Currently the EAGLView is not captured by the feedback tool.
   // To get it working we need to override renderInContext in CAEAGLLayer.
   SettingOption* sendFeedbackOption = [[SettingOption alloc] init];
@@ -346,7 +338,7 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
                                  }];
   };
 
-  [_content addObject:@[ helpCenterOption, faqsOption, sendFeedbackOption ]];
+  [_content addObject:@[ helpCenterOption, sendFeedbackOption ]];
 
   DCHECK_EQ(_content.count, _sections.count);
 }
