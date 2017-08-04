@@ -4,8 +4,6 @@
 
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 
-#include <inttypes.h>
-
 #include "platform/graphics/paint/PropertyTreeState.h"
 
 namespace blink {
