@@ -72,13 +72,6 @@ ScopedJavaLocalRef<jstring> GetUnreachableWebDataUrl(
 }
 
 // static
-void SetLegacyCacheRemovalDelayForTest(JNIEnv*,
-                                       const JavaParamRef<jclass>&,
-                                       jlong delay_ms) {
-  AwBrowserContext::SetLegacyCacheRemovalDelayForTest(delay_ms);
-}
-
-// static
 ScopedJavaLocalRef<jstring> GetProductVersion(JNIEnv* env,
                                               const JavaParamRef<jclass>&) {
   return base::android::ConvertUTF8ToJavaString(env, PRODUCT_VERSION);
