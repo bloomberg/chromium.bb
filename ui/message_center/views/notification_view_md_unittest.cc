@@ -281,7 +281,7 @@ TEST_F(NotificationViewMDTest, CreateOrUpdateTest) {
   EXPECT_NE(nullptr, notification_view()->title_view_);
   EXPECT_NE(nullptr, notification_view()->message_view_);
   EXPECT_NE(nullptr, notification_view()->icon_view_);
-  EXPECT_NE(nullptr, notification_view()->image_view_);
+  EXPECT_NE(nullptr, notification_view()->image_container_view_);
 
   notification()->set_image(gfx::Image());
   notification()->set_title(base::string16());
@@ -292,7 +292,7 @@ TEST_F(NotificationViewMDTest, CreateOrUpdateTest) {
 
   EXPECT_EQ(nullptr, notification_view()->title_view_);
   EXPECT_EQ(nullptr, notification_view()->message_view_);
-  EXPECT_EQ(nullptr, notification_view()->image_view_);
+  EXPECT_EQ(nullptr, notification_view()->image_container_view_);
   // We still expect an icon view for all layouts.
   EXPECT_NE(nullptr, notification_view()->icon_view_);
 }
