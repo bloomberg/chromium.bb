@@ -149,7 +149,8 @@ void FullscreenController::EnterFullscreenModeForTab(WebContents* web_contents,
   // We need to update the fullscreen exit bubble, e.g., going from browser
   // fullscreen to tab fullscreen will need to show different content.
   tab_fullscreen_ = true;
-  exclusive_access_manager()->UpdateExclusiveAccessExitBubbleContent();
+  exclusive_access_manager()->UpdateExclusiveAccessExitBubbleContent(
+      ExclusiveAccessBubbleHideCallback());
 
   // This is only a change between Browser and Tab fullscreen. We generate
   // a fullscreen notification now because there is no window change.
@@ -319,7 +320,8 @@ void FullscreenController::NotifyTabExclusiveAccessLost() {
     state_prior_to_tab_fullscreen_ = STATE_INVALID;
     tab_fullscreen_ = false;
     web_contents->ExitFullscreen(will_cause_resize);
-    exclusive_access_manager()->UpdateExclusiveAccessExitBubbleContent();
+    exclusive_access_manager()->UpdateExclusiveAccessExitBubbleContent(
+        ExclusiveAccessBubbleHideCallback());
   }
 }
 
@@ -376,7 +378,8 @@ void FullscreenController::EnterFullscreenModeInternal(
   exclusive_access_manager()->context()->EnterFullscreen(
       url, exclusive_access_manager()->GetExclusiveAccessExitBubbleType());
 
-  exclusive_access_manager()->UpdateExclusiveAccessExitBubbleContent();
+  exclusive_access_manager()->UpdateExclusiveAccessExitBubbleContent(
+      ExclusiveAccessBubbleHideCallback());
 
   // Once the window has become fullscreen it'll call back to
   // WindowFullscreenStateChanged(). We don't do this immediately as
@@ -396,7 +399,8 @@ void FullscreenController::ExitFullscreenModeInternal() {
   exclusive_access_manager()->context()->ExitFullscreen();
   extension_caused_fullscreen_ = GURL();
 
-  exclusive_access_manager()->UpdateExclusiveAccessExitBubbleContent();
+  exclusive_access_manager()->UpdateExclusiveAccessExitBubbleContent(
+      ExclusiveAccessBubbleHideCallback());
 }
 
 bool FullscreenController::IsPrivilegedFullscreenForTab() const {

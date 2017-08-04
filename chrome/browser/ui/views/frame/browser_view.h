@@ -290,7 +290,8 @@ class BrowserView : public BrowserWindow,
   void ExitFullscreen() override;
   void UpdateExclusiveAccessExitBubbleContent(
       const GURL& url,
-      ExclusiveAccessBubbleType bubble_type) override;
+      ExclusiveAccessBubbleType bubble_type,
+      ExclusiveAccessBubbleHideCallback bubble_first_hide_callback) override;
   void OnExclusiveAccessUserInput() override;
   bool ShouldHideUIForFullscreen() const override;
   bool IsFullscreen() const override;

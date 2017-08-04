@@ -44,7 +44,8 @@ class ExclusiveAccessManager {
   ExclusiveAccessContext* context() const { return exclusive_access_context_; }
 
   ExclusiveAccessBubbleType GetExclusiveAccessExitBubbleType() const;
-  void UpdateExclusiveAccessExitBubbleContent();
+  void UpdateExclusiveAccessExitBubbleContent(
+      ExclusiveAccessBubbleHideCallback);
 
   GURL GetExclusiveAccessBubbleURL() const;
 

@@ -277,7 +277,8 @@ class FullscreenTestBrowserWindow : public TestBrowserWindow,
   void UnhideDownloadShelf() override {}
   void UpdateExclusiveAccessExitBubbleContent(
       const GURL& url,
-      ExclusiveAccessBubbleType bubble_type) override {}
+      ExclusiveAccessBubbleType bubble_type,
+      ExclusiveAccessBubbleHideCallback bubble_first_hide_callback) override {}
   void OnExclusiveAccessUserInput() override {}
 
   void set_toolbar_showing(bool showing) { toolbar_showing_ = showing; }

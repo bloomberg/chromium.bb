@@ -63,7 +63,8 @@ class FullscreenControllerTestWindow : public TestBrowserWindow,
   void ExitFullscreen() override;
   void UpdateExclusiveAccessExitBubbleContent(
       const GURL& url,
-      ExclusiveAccessBubbleType bubble_type) override;
+      ExclusiveAccessBubbleType bubble_type,
+      ExclusiveAccessBubbleHideCallback bubble_first_hide_callback) override;
   void OnExclusiveAccessUserInput() override;
 
   // Simulates the window changing state.
@@ -189,7 +190,8 @@ void FullscreenControllerTestWindow::HideDownloadShelf() {
 
 void FullscreenControllerTestWindow::UpdateExclusiveAccessExitBubbleContent(
     const GURL& url,
-    ExclusiveAccessBubbleType bubble_type) {}
+    ExclusiveAccessBubbleType bubble_type,
+    ExclusiveAccessBubbleHideCallback bubble_first_hide_callback) {}
 
 void FullscreenControllerTestWindow::OnExclusiveAccessUserInput() {}
 
