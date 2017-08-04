@@ -48,22 +48,6 @@ enum YAnchoring {
   YBOTTOM,
 };
 
-// TODO(vollick): Make every UiElement draw itself (i.e., encapsulate rendering
-// logic in the elements). This will let us remove this enumeration and the
-// UiRender can then just iterate over elements and tell them to render
-// themselves in turn. NB: this includes the reticle and controller, which are
-// not yet represented as UiElements.
-enum Fill {
-  NONE = 0,
-  // The element is filled with a radial gradient as specified by the edge and
-  // center color.
-  OPAQUE_GRADIENT = 1,
-  // Same as OPAQUE_GRADIENT but the element is drawn as a grid.
-  GRID_GRADIENT = 2,
-  // The element draws itself.
-  SELF = 3,
-};
-
 class UiElement : public cc::AnimationTarget {
  public:
   UiElement();
@@ -190,25 +174,6 @@ class UiElement : public cc::AnimationTarget {
   YAnchoring y_anchoring() const { return y_anchoring_; }
   void set_y_anchoring(YAnchoring y_anchoring) { y_anchoring_ = y_anchoring; }
 
-  Fill fill() const { return fill_; }
-  void set_fill(Fill fill) { fill_ = fill; }
-
-  SkColor edge_color() const { return edge_color_; }
-  void set_edge_color(const SkColor& edge_color) { edge_color_ = edge_color; }
-
-  SkColor center_color() const { return center_color_; }
-  void set_center_color(const SkColor& center_color) {
-    center_color_ = center_color;
-  }
-
-  SkColor grid_color() const { return grid_color_; }
-  void set_grid_color(const SkColor& grid_color) { grid_color_ = grid_color; }
-
-  int gridline_count() const { return gridline_count_; }
-  void set_gridline_count(int gridline_count) {
-    gridline_count_ = gridline_count;
-  }
-
   int draw_phase() const { return draw_phase_; }
   void set_draw_phase(int draw_phase) { draw_phase_ = draw_phase; }
 
@@ -295,6 +260,8 @@ class UiElement : public cc::AnimationTarget {
 
   std::vector<UiElement*>& children() { return children_; }
 
+  base::TimeTicks last_frame_time() const { return last_frame_time_; }
+
  private:
   // Valid IDs are non-negative.
   int id_ = -1;
@@ -336,14 +303,6 @@ class UiElement : public cc::AnimationTarget {
   YAnchoring y_anchoring_ = YAnchoring::YNONE;
 
   AnimationPlayer animation_player_;
-
-  Fill fill_ = Fill::NONE;
-
-  SkColor edge_color_ = SK_ColorWHITE;
-  SkColor center_color_ = SK_ColorWHITE;
-  SkColor grid_color_ = SK_ColorWHITE;
-
-  int gridline_count_ = 1;
 
   int draw_phase_ = -1;
 

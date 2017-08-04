@@ -13,7 +13,6 @@ namespace vr {
 ContentElement::ContentElement(ContentInputDelegate* delegate)
     : delegate_(delegate) {
   DCHECK(delegate);
-  set_fill(Fill::SELF);
   set_scrollable(true);
 }
 

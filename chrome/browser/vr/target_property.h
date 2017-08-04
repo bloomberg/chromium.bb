@@ -14,6 +14,8 @@ enum TargetProperty {
   BOUNDS,
   VISIBILITY,
   BACKGROUND_COLOR,
+  FOREGROUND_COLOR,
+  GRID_COLOR,
 };
 
 }  // namespace vr

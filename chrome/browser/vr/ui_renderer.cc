@@ -161,29 +161,8 @@ void UiRenderer::DrawElements(const gfx::Transform& view_proj_matrix,
 void UiRenderer::DrawElement(const gfx::Transform& view_proj_matrix,
                              const UiElement& element) {
   DCHECK_GE(element.draw_phase(), 0);
-  gfx::Transform transform = view_proj_matrix * element.world_space_transform();
-
-  switch (element.fill()) {
-    case Fill::OPAQUE_GRADIENT: {
-      vr_shell_renderer_->GetGradientQuadRenderer()->Draw(
-          transform, element.edge_color(), element.center_color(),
-          element.computed_opacity());
-      break;
-    }
-    case Fill::GRID_GRADIENT: {
-      vr_shell_renderer_->GetGradientGridRenderer()->Draw(
-          transform, element.edge_color(), element.center_color(),
-          element.grid_color(), element.gridline_count(),
-          element.computed_opacity());
-      break;
-    }
-    case Fill::SELF: {
-      element.Render(vr_shell_renderer_, transform);
-      break;
-    }
-    default:
-      break;
-  }
+  element.Render(vr_shell_renderer_,
+                 view_proj_matrix * element.world_space_transform());
 }
 
 std::vector<const UiElement*> UiRenderer::GetElementsInDrawOrder(

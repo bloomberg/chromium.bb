@@ -5,6 +5,7 @@
 #include "chrome/browser/vr/test/ui_scene_manager_test.h"
 
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_scene_manager.h"
 
@@ -80,7 +81,8 @@ bool UiSceneManagerTest::IsAnimating(UiElement* element,
 }
 
 SkColor UiSceneManagerTest::GetBackgroundColor() const {
-  UiElement* front = scene_->GetUiElementByDebugId(kBackgroundFront);
+  Rect* front =
+      static_cast<Rect*>(scene_->GetUiElementByDebugId(kBackgroundFront));
   EXPECT_NE(nullptr, front);
   if (!front)
     return SK_ColorBLACK;
@@ -91,7 +93,8 @@ SkColor UiSceneManagerTest::GetBackgroundColor() const {
   // share the same color.
   for (auto debug_id : {kBackgroundFront, kBackgroundLeft, kBackgroundBack,
                         kBackgroundRight, kBackgroundTop, kBackgroundBottom}) {
-    const UiElement* panel = scene_->GetUiElementByDebugId(debug_id);
+    const Rect* panel =
+        static_cast<Rect*>(scene_->GetUiElementByDebugId(debug_id));
     EXPECT_NE(nullptr, panel);
     if (!panel)
       return SK_ColorBLACK;
