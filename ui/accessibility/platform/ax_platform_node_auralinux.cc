@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task_runner.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/atk_util_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
@@ -392,9 +391,8 @@ void AXPlatformNodeAuraLinux::SetApplication(AXPlatformNode* application) {
 }
 
 // static
-void AXPlatformNodeAuraLinux::StaticInitialize(
-    scoped_refptr<base::TaskRunner> init_task_runner) {
-  AtkUtilAuraLinux::GetInstance()->Initialize(init_task_runner);
+void AXPlatformNodeAuraLinux::StaticInitialize() {
+  AtkUtilAuraLinux::GetInstance()->InitializeAsync();
 }
 
 AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {

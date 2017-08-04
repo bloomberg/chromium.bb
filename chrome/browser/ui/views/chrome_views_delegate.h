@@ -56,7 +56,6 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   ui::ContextFactory* GetContextFactory() override;
   ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
   std::string GetApplicationName() override;
-  scoped_refptr<base::TaskRunner> GetBlockingPoolTaskRunner() override;
 
  private:
 #if defined(OS_WIN)

@@ -13,10 +13,9 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
-#include "base/task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "ui/gfx/win/singleton_hwnd.h"
 #include "ui/gfx/win/singleton_hwnd_observer.h"
 #include "ui/views/views_delegate.h"
@@ -67,19 +66,19 @@ class WindowsSessionChangeObserver::WtsRegistrationNotificationManager {
     singleton_hwnd_observer_.reset(new gfx::SingletonHwndObserver(
         base::Bind(&WtsRegistrationNotificationManager::OnWndProc,
                    base::Unretained(this))));
-    scoped_refptr<base::TaskRunner> task_runner;
-    if (ViewsDelegate::GetInstance()) {
-      task_runner = ViewsDelegate::GetInstance()->GetBlockingPoolTaskRunner();
-    }
 
-    base::Closure wts_register =
-        base::Bind(base::IgnoreResult(&WTSRegisterSessionNotification),
-                   gfx::SingletonHwnd::GetInstance()->hwnd(),
-                   NOTIFY_FOR_THIS_SESSION);
-    if (task_runner) {
-      task_runner->PostTask(FROM_HERE, wts_register);
+    base::OnceClosure wts_register = base::BindOnce(
+        base::IgnoreResult(&WTSRegisterSessionNotification),
+        gfx::SingletonHwnd::GetInstance()->hwnd(), NOTIFY_FOR_THIS_SESSION);
+
+    // This should probably always be async but it wasn't async in the absence
+    // of a ViewsDelegate prior to the migration to TaskScheduler and making it
+    // async breaks many unrelated views unittests.
+    if (ViewsDelegate::GetInstance()) {
+      base::CreateCOMSTATaskRunnerWithTraits({})->PostTask(
+          FROM_HERE, std::move(wts_register));
     } else {
-      wts_register.Run();
+      std::move(wts_register).Run();
     }
   }
 
