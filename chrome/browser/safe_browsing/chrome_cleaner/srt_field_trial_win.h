@@ -37,8 +37,19 @@ enum NoPromptReasonHistogramValue {
   NO_PROMPT_REASON_BROWSER_NOT_AVAILABLE = 5,
   NO_PROMPT_REASON_NOT_ON_IDLE_STATE = 6,
   NO_PROMPT_REASON_IPC_CONNECTION_BROKEN = 7,
+  NO_PROMPT_REASON_WAITING_FOR_BROWSER = 8,
 
   NO_PROMPT_REASON_MAX,
+};
+
+// These values are used to send UMA information about the histogram type
+// and are replicated in the histograms.xml file, so the order MUST NOT CHANGE.
+enum PromptTypeHistogramValue {
+  PROMPT_TYPE_LEGACY_PROMPT_SHOWN = 0,
+  PROMPT_TYPE_ON_TRANSITION_TO_INFECTED_STATE = 1,
+  PROMPT_TYPE_ON_BROWSER_WINDOW_AVAILABLE = 2,
+
+  PROMPT_TYPE_MAX,
 };
 
 // When enabled, all user interaction with the Chrome Cleaner will happen from
@@ -66,8 +77,8 @@ std::string GetIncomingSRTSeed();
 // Records a value for the SRT Prompt Histogram.
 void RecordSRTPromptHistogram(SRTPromptHistogramValue value);
 
-// Records a SoftwareReporter.PromptShown histogram with value true.
-void RecordPromptShownHistogram();
+// Records a value for SoftwareReporter.PromptShownWithType Histogram
+void RecordPromptShownWithTypeHistogram(PromptTypeHistogramValue value);
 
 // Records a SoftwareReporter.PromptShown histogram with value false and
 // a SoftwareReporter.NoPromptReason histogram with the reason corresponding
