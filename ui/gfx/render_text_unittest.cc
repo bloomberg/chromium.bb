@@ -24,7 +24,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkFontStyle.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/break_list.h"
@@ -4118,19 +4118,22 @@ TEST_P(RenderTextTest, StylePropagated) {
   render_text->SetFontList(font_list);
 
   DrawVisualText();
-  EXPECT_EQ(SkTypeface::kNormal, GetRendererPaint().getTypeface()->style());
+  EXPECT_EQ(SkFontStyle::Normal(),
+            GetRendererPaint().getTypeface()->fontStyle());
 
   render_text->SetWeight(Font::Weight::BOLD);
   DrawVisualText();
-  EXPECT_EQ(SkTypeface::kBold, GetRendererPaint().getTypeface()->style());
+  EXPECT_EQ(SkFontStyle::Bold(), GetRendererPaint().getTypeface()->fontStyle());
 
   render_text->SetStyle(TextStyle::ITALIC, true);
   DrawVisualText();
-  EXPECT_EQ(SkTypeface::kBoldItalic, GetRendererPaint().getTypeface()->style());
+  EXPECT_EQ(SkFontStyle::BoldItalic(),
+            GetRendererPaint().getTypeface()->fontStyle());
 
   render_text->SetWeight(Font::Weight::NORMAL);
   DrawVisualText();
-  EXPECT_EQ(SkTypeface::kItalic, GetRendererPaint().getTypeface()->style());
+  EXPECT_EQ(SkFontStyle::Italic(),
+            GetRendererPaint().getTypeface()->fontStyle());
 }
 
 // Ensure the painter adheres to RenderText::subpixel_rendering_suppressed().
