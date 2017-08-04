@@ -347,6 +347,7 @@ blink_core_sources("css") {
     "parser/CSSParserToken.h",
     "parser/CSSParserTokenRange.cpp",
     "parser/CSSParserTokenRange.h",
+    "parser/CSSParserTokenStream.h",
     "parser/CSSPropertyParser.cpp",
     "parser/CSSPropertyParser.h",
     "parser/CSSPropertyParserHelpers.cpp",

@@ -117,6 +117,8 @@ class CORE_EXPORT CSSParserToken {
                       value_length_);
   }
 
+  bool IsEOF() const { return type_ == static_cast<unsigned>(kEOFToken); }
+
   UChar Delimiter() const;
   NumericSign GetNumericSign() const;
   NumericValueType GetNumericValueType() const;
