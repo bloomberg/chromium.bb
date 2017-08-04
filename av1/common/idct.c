@@ -1496,8 +1496,8 @@ static void imrc32x32_add_c(const tran_low_t *input, uint8_t *dest, int stride,
     aom_idct32x32_1_add_c(input, dest, stride);
   } else {
     int mask[32 * 32];
-    int n_masked_vals =
-        get_mrc_mask(txfm_param->dst, txfm_param->stride, mask, 32, 32, 32);
+    int n_masked_vals = get_mrc_mask(txfm_param->dst, txfm_param->stride, mask,
+                                     32, 32, 32, txfm_param->is_inter);
 
     if (!is_valid_mrc_mask(n_masked_vals, 32, 32))
       assert(0 && "Invalid MRC mask");
