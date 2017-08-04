@@ -109,23 +109,26 @@ void HighlighterView::AddNewPoint(const gfx::PointF& point,
 }
 
 void HighlighterView::Animate(const gfx::PointF& pivot,
-                              AnimationMode animation_mode) {
-  animation_timer_.reset(new base::Timer(
+                              AnimationMode animation_mode,
+                              const base::Closure& done) {
+  animation_timer_ = base::MakeUnique<base::OneShotTimer>();
+  animation_timer_->Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(kStrokeFadeoutDelayMs),
       base::Bind(&HighlighterView::FadeOut, base::Unretained(this), pivot,
-                 animation_mode),
-      false));
-  animation_timer_->Reset();
+                 animation_mode, done));
 }
 
 void HighlighterView::FadeOut(const gfx::PointF& pivot,
-                              AnimationMode animation_mode) {
+                              AnimationMode animation_mode,
+                              const base::Closure& done) {
   ui::Layer* layer = GetWidget()->GetLayer();
+
+  base::TimeDelta duration =
+      base::TimeDelta::FromMilliseconds(kStrokeFadeoutDurationMs);
 
   {
     ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
-    settings.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kStrokeFadeoutDurationMs));
+    settings.SetTransitionDuration(duration);
     settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
 
     layer->SetOpacity(0);
@@ -147,6 +150,9 @@ void HighlighterView::FadeOut(const gfx::PointF& pivot,
 
     layer->SetTransform(transform);
   }
+
+  animation_timer_ = base::MakeUnique<base::OneShotTimer>();
+  animation_timer_->Start(FROM_HERE, duration, done);
 }
 
 void HighlighterView::OnRedraw(gfx::Canvas& canvas,

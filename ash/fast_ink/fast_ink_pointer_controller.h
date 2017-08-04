@@ -1,0 +1,61 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef ASH_FAST_INK_FAST_INK_POINTER_CONTROLLER_H_
+#define ASH_FAST_INK_FAST_INK_POINTER_CONTROLLER_H_
+
+#include "ash/ash_export.h"
+#include "base/macros.h"
+#include "base/time/time.h"
+#include "ui/events/event_handler.h"
+
+namespace aura {
+class Window;
+}
+
+namespace views {
+class View;
+}
+
+namespace ash {
+
+// Base class for a fast ink based pointer controller. Enables/disables
+// the pointer, receives points and passes them off to be rendered.
+class ASH_EXPORT FastInkPointerController : public ui::EventHandler {
+ public:
+  FastInkPointerController();
+  ~FastInkPointerController() override;
+
+  // Enables/disables the pointer. The user still has to press to see
+  // the pointer.
+  void SetEnabled(bool enabled);
+
+ private:
+  // ui::EventHandler:
+  void OnTouchEvent(ui::TouchEvent* event) override;
+
+  // Returns the pointer view.
+  virtual views::View* GetPointerView() const = 0;
+
+  // Creates the pointer view.
+  virtual void CreatePointerView(base::TimeDelta presentation_delay,
+                                 aura::Window* root_window) = 0;
+
+  // Updates the pointer view.
+  virtual void UpdatePointerView(ui::TouchEvent* event) = 0;
+
+  // Destroys the pointer view if it exists.
+  virtual void DestroyPointerView() = 0;
+
+  // The presentation delay used for pointer location prediction.
+  const base::TimeDelta presentation_delay_;
+
+  bool enabled_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(FastInkPointerController);
+};
+
+}  // namespace ash
+
+#endif  // ASH_FAST_INK_FAST_INK_POINTER_CONTROLLER_H_

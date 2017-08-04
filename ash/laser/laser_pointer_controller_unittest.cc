@@ -88,10 +88,10 @@ TEST_F(LaserPointerControllerTest, LaserPointerRenderer) {
   // Verify that disabling the mode does not display the laser pointer.
   controller_test_api_.SetEnabled(false);
   EXPECT_FALSE(controller_test_api_.IsShowingLaserPointer());
+  EXPECT_FALSE(controller_test_api_.IsFadingAway());
 
   // Verify that disabling the mode while laser pointer is displayed does not
   // display the laser pointer.
-  controller_test_api_.SetIsFadingAway(false);
   controller_test_api_.SetEnabled(true);
   GetEventGenerator().PressTouch();
   GetEventGenerator().MoveTouch(gfx::Point(6, 6));

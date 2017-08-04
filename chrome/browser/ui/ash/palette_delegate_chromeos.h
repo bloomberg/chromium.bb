@@ -73,7 +73,7 @@ class PaletteDelegateChromeOS
   content::NotificationRegistrar registrar_;
 
   std::unique_ptr<ash::HighlighterSelectionObserver>
-      highlighter_selection_observer;
+      highlighter_selection_observer_;
 
   base::WeakPtrFactory<PaletteDelegateChromeOS> weak_factory_;
 
