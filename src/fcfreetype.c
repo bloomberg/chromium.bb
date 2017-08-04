@@ -2201,7 +2201,7 @@ FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4)
 static FcBool
 FcFreeTypeCheckGlyph (FT_Face face,
 		      FcChar32 ucs4,
-		      FT_UInt glyph, FcBlanks *blanks,
+		      FT_UInt glyph,
 		      FT_Pos *advance)
 {
     FT_Int	    load_flags = FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH | FT_LOAD_NO_SCALE | FT_LOAD_NO_HINTING;
@@ -2290,7 +2290,7 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
             ucs4 = FT_Get_First_Char (face, &glyph);
             while (glyph != 0)
 	    {
-		if (FcFreeTypeCheckGlyph (face, ucs4, glyph, blanks, &advance))
+		if (FcFreeTypeCheckGlyph (face, ucs4, glyph, &advance))
 		{
 		    if (advance)
 		    {
@@ -2376,7 +2376,7 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 	    {
 		ucs4 = FcGlyphNameToUcs4 (name_buf);
 		if (ucs4 != 0xffff &&
-		    FcFreeTypeCheckGlyph (face, ucs4, glyph, blanks, &advance))
+		    FcFreeTypeCheckGlyph (face, ucs4, glyph, &advance))
 		{
 		    if (advance)
 		    {
@@ -2419,7 +2419,7 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 
 	if (has_char && !has_bit)
 	{
-	    if (!FcFreeTypeCheckGlyph (face, ucs4, glyph, blanks, &advance))
+	    if (!FcFreeTypeCheckGlyph (face, ucs4, glyph, &advance))
 		printf ("Bitmap missing broken char 0x%x\n", ucs4);
 	    else
 		printf ("Bitmap missing char 0x%x\n", ucs4);
