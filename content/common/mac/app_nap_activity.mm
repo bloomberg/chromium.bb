@@ -36,7 +36,8 @@ AppNapActivity::AppNapActivity() {
 };
 
 AppNapActivity::~AppNapActivity() {
-  DCHECK(!assertion_->obj.get());
+  if (assertion_->obj.get())
+    End();
 };
 
 void AppNapActivity::InitializeAppNapSupport() {
