@@ -202,87 +202,15 @@ Polymer({
 Polymer({
   is: 'add-printer-manufacturer-model-dialog',
 
+  behaviors: [
+    SetManufacturerModelBehavior,
+  ],
+
   properties: {
-    /** @type {!CupsPrinterInfo} */
-    newPrinter: {
-      type: Object,
-      notify: true,
-    },
-
-    /** @type {?Array<string>} */
-    manufacturerList: {
-      type: Array,
-    },
-
-    /** @type {?Array<string>} */
-    modelList: {
-      type: Array,
-    },
-
     setupFailed: {
       type: Boolean,
       value: false,
     },
-  },
-
-  observers: [
-    'selectedManufacturerChanged_(newPrinter.ppdManufacturer)',
-  ],
-
-  /** @override */
-  ready: function() {
-    settings.CupsPrintersBrowserProxyImpl.getInstance()
-        .getCupsPrinterManufacturersList()
-        .then(this.manufacturerListChanged_.bind(this));
-  },
-
-  /**
-   * @param {string} manufacturer The manufacturer for which we are retrieving
-   *     models.
-   * @private
-   */
-  selectedManufacturerChanged_: function(manufacturer) {
-    // Reset model if manufacturer is changed.
-    this.set('newPrinter.ppdModel', '');
-    if (manufacturer) {
-      settings.CupsPrintersBrowserProxyImpl.getInstance()
-          .getCupsPrinterModelsList(manufacturer)
-          .then(this.modelListChanged_.bind(this));
-    }
-  },
-
-  /** @private */
-  onBrowseFile_: function() {
-    settings.CupsPrintersBrowserProxyImpl.getInstance()
-        .getCupsPrinterPPDPath()
-        .then(this.printerPPDPathChanged_.bind(this));
-  },
-
-  /**
-   * @param {string} path
-   * @private
-   */
-  printerPPDPathChanged_: function(path) {
-    this.set('newPrinter.printerPPDPath', path);
-    this.$$('paper-input').value = this.getBaseName_(path);
-  },
-
-  /**
-   * @param {!ManufacturersInfo} manufacturersInfo
-   * @private
-   */
-  manufacturerListChanged_: function(manufacturersInfo) {
-    if (manufacturersInfo.success)
-      this.manufacturerList = manufacturersInfo.manufacturers;
-  },
-
-  /**
-   * @param {!ModelsInfo} modelsInfo
-   * @private
-   */
-  modelListChanged_: function(modelsInfo) {
-    if (modelsInfo.success)
-      this.modelList = modelsInfo.models;
   },
 
   /** @private */
@@ -294,15 +222,6 @@ Polymer({
   switchToConfiguringDialog_: function() {
     this.$$('add-printer-dialog').close();
     this.fire('open-configuring-printer-dialog');
-  },
-
-  /**
-   * @param {string} path The full path of the file
-   * @return {string} The base name of the file
-   * @private
-   */
-  getBaseName_: function(path) {
-    return path.substring(path.lastIndexOf('/') + 1);
   },
 
   /**
@@ -571,6 +490,11 @@ Polymer({
    * @private
    */
   onAddPrinter_: function(success, printerName) {
+    // 'on-add-cups-printer' event might be triggered by editing an existing
+    // printer, in which case there is no configuring dialog.
+    if (!this.$$('add-printer-configuring-dialog'))
+      return;
+
     this.$$('add-printer-configuring-dialog').close();
     if (success)
       return;

@@ -44,20 +44,10 @@ Polymer({
     },
   },
 
-  listeners: {
-    'show-cups-printer-details': 'onShowCupsPrinterDetailsPage_',
-  },
-
   // <if expr="chromeos">
   /** @private */
   onTapCupsPrinters_: function() {
     settings.navigateTo(settings.routes.CUPS_PRINTERS);
-  },
-
-  /** @private */
-  onShowCupsPrinterDetailsPage_: function(event) {
-    settings.navigateTo(settings.routes.CUPS_PRINTER_DETAIL);
-    this.$.arraySelector.select(event.detail);
   },
   // </if>
 

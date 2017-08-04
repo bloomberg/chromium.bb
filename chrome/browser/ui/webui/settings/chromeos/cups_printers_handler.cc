@@ -69,10 +69,33 @@ void OnRemovedPrinter(const Printer::PrinterProtocol& protocol, bool success) {
                             Printer::PrinterProtocol::kProtocolMax);
 }
 
+// Create an empty CupsPrinterInfo dictionary value. It should be consistent
+// with the fields in js side. See cups_printers_browser_proxy.js for the
+// definition of CupsPrinterInfo.
+std::unique_ptr<base::DictionaryValue> CreateEmptyPrinterInfo() {
+  std::unique_ptr<base::DictionaryValue> printer_info =
+      base::MakeUnique<base::DictionaryValue>();
+  printer_info->SetString("ppdManufacturer", "");
+  printer_info->SetString("ppdModel", "");
+  printer_info->SetString("printerAddress", "");
+  printer_info->SetBoolean("printerAutoconf", false);
+  printer_info->SetString("printerDescription", "");
+  printer_info->SetString("printerId", "");
+  printer_info->SetString("printerManufacturer", "");
+  printer_info->SetString("printerModel", "");
+  printer_info->SetString("printerMakeAndModel", "");
+  printer_info->SetString("printerName", "");
+  printer_info->SetString("printerPPDPath", "");
+  printer_info->SetString("printerProtocol", "ipp");
+  printer_info->SetString("printerQueue", "");
+  printer_info->SetString("printerStatus", "");
+  return printer_info;
+}
+
 // Returns a JSON representation of |printer| as a CupsPrinterInfo.
 std::unique_ptr<base::DictionaryValue> GetPrinterInfo(const Printer& printer) {
   std::unique_ptr<base::DictionaryValue> printer_info =
-      base::MakeUnique<base::DictionaryValue>();
+      CreateEmptyPrinterInfo();
   printer_info->SetString("printerId", printer.id());
   printer_info->SetString("printerName", printer.display_name());
   printer_info->SetString("printerDescription", printer.description());
@@ -177,6 +200,10 @@ void CupsPrintersHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "stopDiscoveringPrinters",
       base::Bind(&CupsPrintersHandler::HandleStopDiscovery,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getPrinterPpdManufacturerAndModel",
+      base::Bind(&CupsPrintersHandler::HandleGetPrinterPpdManufacturerAndModel,
                  base::Unretained(this)));
 }
 
@@ -613,6 +640,44 @@ void CupsPrintersHandler::OnPrinterScanComplete() {
   UMA_HISTOGRAM_COUNTS_100("Printing.CUPS.PrintersDiscovered",
                            printer_detector_->GetPrinters().size());
   FireWebUIListener("on-printer-discovery-done");
+}
+
+void CupsPrintersHandler::HandleGetPrinterPpdManufacturerAndModel(
+    const base::ListValue* args) {
+  AllowJavascript();
+  CHECK_EQ(2U, args->GetSize());
+  std::string callback_id;
+  DCHECK(args->GetString(0, &callback_id));
+  std::string printer_id;
+  CHECK(args->GetString(1, &printer_id));
+
+  auto printer =
+      SyncedPrintersManagerFactory::GetForBrowserContext(profile_)->GetPrinter(
+          printer_id);
+  if (!printer) {
+    RejectJavascriptCallback(base::Value(callback_id), base::Value());
+    return;
+  }
+
+  ppd_provider_->ReverseLookup(
+      printer->ppd_reference().effective_make_and_model,
+      base::Bind(&CupsPrintersHandler::OnGetPrinterPpdManufacturerAndModel,
+                 weak_factory_.GetWeakPtr(), callback_id));
+}
+
+void CupsPrintersHandler::OnGetPrinterPpdManufacturerAndModel(
+    const std::string& callback_id,
+    PpdProvider::CallbackResultCode result_code,
+    const std::string& manufacturer,
+    const std::string& model) {
+  if (result_code != PpdProvider::SUCCESS) {
+    RejectJavascriptCallback(base::Value(callback_id), base::Value());
+    return;
+  }
+  base::DictionaryValue info;
+  info.SetString("ppdManufacturer", manufacturer);
+  info.SetString("ppdModel", model);
+  ResolveJavascriptCallback(base::Value(callback_id), info);
 }
 
 }  // namespace settings

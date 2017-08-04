@@ -109,14 +109,13 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
       const std::vector<PrinterDetector::DetectedPrinter>& printers) override;
   void OnPrinterScanComplete() override;
 
-  // Invokes debugd to add the printer to CUPS.  If |ipp_everywhere| is true,
-  // automatic configuration will be attempted  and |ppd_path| is ignored.
-  // |ppd_path| is the path to a Postscript Printer Description file that will
-  // be used to configure the printer capabilities.  This file must be in
-  // Downloads or the PPD Cache.
-  void AddPrinterToCups(std::unique_ptr<Printer> printer,
-                        const base::FilePath& ppd_path,
-                        bool ipp_everywhere);
+  // Given a printer id, find the corresponding ppdManufacturer and ppdModel.
+  void HandleGetPrinterPpdManufacturerAndModel(const base::ListValue* args);
+  void OnGetPrinterPpdManufacturerAndModel(
+      const std::string& callback_id,
+      PpdProvider::CallbackResultCode result_code,
+      const std::string& manufacturer,
+      const std::string& model);
 
   std::unique_ptr<CombiningPrinterDetector> printer_detector_;
   scoped_refptr<PpdProvider> ppd_provider_;
