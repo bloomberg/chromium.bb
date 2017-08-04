@@ -29,6 +29,9 @@ SuggestionsContainerView::SuggestionsContainerView(
     : contents_view_(contents_view),
       all_apps_button_(all_apps_button),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
+
   DCHECK(contents_view);
   view_delegate_ = contents_view_->app_list_main_view()->view_delegate();
   SetBackground(views::CreateSolidBackground(kLabelBackgroundColor));

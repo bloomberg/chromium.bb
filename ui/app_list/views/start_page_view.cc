@@ -487,14 +487,11 @@ void StartPageView::UpdateOpacity(float work_area_bottom, bool is_end_gesture) {
   gfx::Rect indicator_bounds = indicator_->GetLabelBoundsInScreen();
   UpdateOpacityOfItem(indicator_, indicator_bounds.CenterPoint().y());
 
-  // Updates opacity of suggested apps.
-  const std::vector<SearchResultTileItemView*>& suggested_apps =
-      suggestions_container_->tile_views();
-  gfx::Rect suggested_app_bounds;
-  for (auto* suggested_app : suggested_apps) {
-    suggested_app_bounds = suggested_app->GetBoundsInScreen();
-    UpdateOpacityOfItem(suggested_app, suggested_app_bounds.CenterPoint().y());
-  }
+  // Updates opacity of suggestions container.
+  gfx::Rect suggestions_container_bounds =
+      suggestions_container_->GetBoundsInScreen();
+  UpdateOpacityOfItem(suggestions_container_,
+                      suggestions_container_bounds.CenterPoint().y());
 
   // Updates opacity of expand arrow.
   gfx::Rect expand_arrow_bounds = expand_arrow_view_->GetBoundsInScreen();
