@@ -25,6 +25,7 @@ config("config") {
     "src/components/ShadowElevations/src",
     "src/components/ShadowLayer/src",
     "src/components/Snackbar/src",
+    "src/components/Themes/src",
     "src/components/Typography/src",
   ]
 }
@@ -97,6 +98,8 @@ source_set("material_components_ios") {
     "src/components/Collections/src/private/MDCCollectionViewStyler.m",
     "src/components/Collections/src/private/MaterialCollectionsStrings.h",
     "src/components/Collections/src/private/MaterialCollectionsStrings_table.h",
+    "src/components/Dialogs/src/ColorThemer/MDCAlertColorThemer.h",
+    "src/components/Dialogs/src/ColorThemer/MDCAlertColorThemer.m",
     "src/components/Dialogs/src/MDCAlertController.h",
     "src/components/Dialogs/src/MDCAlertController.m",
     "src/components/Dialogs/src/MDCDialogPresentationController.h",
@@ -160,6 +163,8 @@ source_set("material_components_ios") {
     "src/components/Snackbar/src/private/MDCSnackbarMessageViewInternal.h",
     "src/components/Snackbar/src/private/MDCSnackbarOverlayView.h",
     "src/components/Snackbar/src/private/MDCSnackbarOverlayView.m",
+    "src/components/Themes/src/MDCColorScheme.h",
+    "src/components/Themes/src/MDCColorScheme.m",
     "src/components/Typography/src/MDCTypography.h",
     "src/components/Typography/src/MDCTypography.m",
     "src/components/Typography/src/MaterialTypography.h",
