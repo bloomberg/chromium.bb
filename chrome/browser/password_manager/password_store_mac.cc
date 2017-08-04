@@ -33,9 +33,9 @@ void PasswordStoreMac::ShutdownOnUIThread() {
 
 PasswordStoreMac::~PasswordStoreMac() = default;
 
-void PasswordStoreMac::InitOnBackgroundThread(
+void PasswordStoreMac::InitOnBackgroundSequence(
     const syncer::SyncableService::StartSyncFlare& flare) {
-  PasswordStoreDefault::InitOnBackgroundThread(flare);
+  PasswordStoreDefault::InitOnBackgroundSequence(flare);
 
   if (login_db() && (initial_status_ == MigrationStatus::NOT_STARTED ||
                      initial_status_ == MigrationStatus::FAILED_ONCE ||
@@ -44,7 +44,7 @@ void PasswordStoreMac::InitOnBackgroundThread(
     // drop the entries in the DB because they don't have passwords anyway.
     login_db()->RemoveLoginsCreatedBetween(base::Time(), base::Time());
     initial_status_ = MigrationStatus::MIGRATION_STOPPED;
-    main_thread_runner()->PostTask(
+    main_task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&PasswordStoreMac::UpdateStatusPref, this, initial_status_));
   }

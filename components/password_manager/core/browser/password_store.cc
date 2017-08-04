@@ -115,11 +115,12 @@ PasswordStore::PasswordStore()
 
 bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare,
                          PrefService* prefs) {
-  main_thread_runner_ = base::SequencedTaskRunnerHandle::Get();
-  DCHECK(main_thread_runner_);
+  main_task_runner_ = base::SequencedTaskRunnerHandle::Get();
+  DCHECK(main_task_runner_);
   background_task_runner_ = CreateBackgroundTaskRunner();
   DCHECK(background_task_runner_);
-  ScheduleTask(base::Bind(&PasswordStore::InitOnBackgroundThread, this, flare));
+  ScheduleTask(
+      base::Bind(&PasswordStore::InitOnBackgroundSequence, this, flare));
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   hash_password_manager_.set_prefs(prefs);
   ScheduleTask(
@@ -315,8 +316,8 @@ bool PasswordStore::ScheduleTask(const base::Closure& task) {
 }
 
 void PasswordStore::ShutdownOnUIThread() {
-  ScheduleTask(base::Bind(&PasswordStore::DestroyOnBackgroundThread, this));
-  // The AffiliationService must be destroyed from the main thread.
+  ScheduleTask(base::Bind(&PasswordStore::DestroyOnBackgroundSequence, this));
+  // The AffiliationService must be destroyed from the main sequence.
   affiliated_match_helper_.reset();
   shutdown_called_ = true;
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
@@ -377,7 +378,7 @@ PasswordStore::CreateBackgroundTaskRunner() const {
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 }
 
-void PasswordStore::InitOnBackgroundThread(
+void PasswordStore::InitOnBackgroundSequence(
     const syncer::SyncableService::StartSyncFlare& flare) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!syncable_service_);
@@ -522,7 +523,7 @@ void PasswordStore::RemoveLoginsByURLAndTimeInternal(
       RemoveLoginsByURLAndTimeImpl(url_filter, delete_begin, delete_end);
   NotifyLoginsChanged(changes);
   if (!completion.is_null())
-    main_thread_runner_->PostTask(FROM_HERE, completion);
+    main_task_runner_->PostTask(FROM_HERE, completion);
 }
 
 void PasswordStore::RemoveLoginsCreatedBetweenInternal(
@@ -533,7 +534,7 @@ void PasswordStore::RemoveLoginsCreatedBetweenInternal(
       RemoveLoginsCreatedBetweenImpl(delete_begin, delete_end);
   NotifyLoginsChanged(changes);
   if (!completion.is_null())
-    main_thread_runner_->PostTask(FROM_HERE, completion);
+    main_task_runner_->PostTask(FROM_HERE, completion);
 }
 
 void PasswordStore::RemoveLoginsSyncedBetweenInternal(base::Time delete_begin,
@@ -550,7 +551,7 @@ void PasswordStore::RemoveStatisticsByOriginAndTimeInternal(
     const base::Closure& completion) {
   RemoveStatisticsByOriginAndTimeImpl(origin_filter, delete_begin, delete_end);
   if (!completion.is_null())
-    main_thread_runner_->PostTask(FROM_HERE, completion);
+    main_task_runner_->PostTask(FROM_HERE, completion);
 }
 
 void PasswordStore::DisableAutoSignInForOriginsInternal(
@@ -558,7 +559,7 @@ void PasswordStore::DisableAutoSignInForOriginsInternal(
     const base::Closure& completion) {
   DisableAutoSignInForOriginsImpl(origin_filter);
   if (!completion.is_null())
-    main_thread_runner_->PostTask(FROM_HERE, completion);
+    main_task_runner_->PostTask(FROM_HERE, completion);
 }
 
 void PasswordStore::GetLoginsForSameOrganizationNameImpl(
@@ -584,7 +585,7 @@ void PasswordStore::
     obtained_forms.clear();
   // Since AffiliatedMatchHelper's requests should be sent from UI thread,
   // post a request to UI thread.
-  main_thread_runner_->PostTask(
+  main_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&PasswordStore::InjectAffiliationAndBrandingInformation, this,
                  base::Passed(&obtained_forms), base::Passed(&request)));
@@ -605,7 +606,7 @@ void PasswordStore::GetBlacklistLoginsWithAffiliationAndBrandingInformationImpl(
     obtained_forms.clear();
   // Since AffiliatedMatchHelper's requests should be sent from UI thread,
   // post a request to UI thread.
-  main_thread_runner_->PostTask(
+  main_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&PasswordStore::InjectAffiliationAndBrandingInformation, this,
                  base::Passed(&obtained_forms), base::Passed(&request)));
@@ -691,7 +692,7 @@ void PasswordStore::FindAndUpdateAffiliatedWebLogins(
 
 void PasswordStore::ScheduleFindAndUpdateAffiliatedWebLogins(
     const PasswordForm& added_or_updated_android_form) {
-  main_thread_runner_->PostTask(
+  main_task_runner_->PostTask(
       FROM_HERE, base::Bind(&PasswordStore::FindAndUpdateAffiliatedWebLogins,
                             this, added_or_updated_android_form));
 }
@@ -783,7 +784,7 @@ void PasswordStore::ScheduleUpdateAffiliatedWebLoginsImpl(
                           updated_android_form, affiliated_web_realms));
 }
 
-void PasswordStore::DestroyOnBackgroundThread() {
+void PasswordStore::DestroyOnBackgroundSequence() {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   syncable_service_.reset();
 // TODO(crbug.com/706392): Fix password reuse detection for Android.

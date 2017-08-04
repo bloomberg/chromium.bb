@@ -63,7 +63,7 @@ extern const char kFrecencyFieldTrialLimitParam[];
 // Autofill.
 class PersonalDataManager : public KeyedService,
                             public WebDataServiceConsumer,
-                            public AutofillWebDataServiceObserverOnUIThread {
+                            public AutofillWebDataServiceObserverOnUISequence {
  public:
   explicit PersonalDataManager(const std::string& app_locale);
   ~PersonalDataManager() override;
@@ -87,7 +87,7 @@ class PersonalDataManager : public KeyedService,
       WebDataServiceBase::Handle h,
       std::unique_ptr<WDTypedResult> result) override;
 
-  // AutofillWebDataServiceObserverOnUIThread:
+  // AutofillWebDataServiceObserverOnUISequence:
   void AutofillMultipleChanged() override;
   void SyncStarted(syncer::ModelType model_type) override;
 
@@ -457,7 +457,7 @@ class PersonalDataManager : public KeyedService,
   mutable std::vector<CreditCard*> credit_cards_;
 
   // When the manager makes a request from WebDataServiceBase, the database
-  // is queried on another thread, we record the query handle until we
+  // is queried on another sequence, we record the query handle until we
   // get called back.  We store handles for both profile and credit card queries
   // so they can be loaded at the same time.
   WebDataServiceBase::Handle pending_profiles_query_;

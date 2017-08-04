@@ -25,9 +25,10 @@ class AutofillTable;
 class AutofillWebDataBackend;
 class AutofillWebDataService;
 
-class AutocompleteSyncBridge : public base::SupportsUserData::Data,
-                               public syncer::ModelTypeSyncBridge,
-                               public AutofillWebDataServiceObserverOnDBThread {
+class AutocompleteSyncBridge
+    : public base::SupportsUserData::Data,
+      public syncer::ModelTypeSyncBridge,
+      public AutofillWebDataServiceObserverOnDBSequence {
  public:
   AutocompleteSyncBridge();
   AutocompleteSyncBridge(
@@ -56,7 +57,7 @@ class AutocompleteSyncBridge : public base::SupportsUserData::Data,
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
 
-  // AutofillWebDataServiceObserverOnDBThread implementation.
+  // AutofillWebDataServiceObserverOnDBSequence implementation.
   void AutofillEntriesChanged(const AutofillChangeList& changes) override;
 
  private:

@@ -32,23 +32,25 @@ class AutofillEntry;
 class AutofillProfile;
 class AutofillWebDataBackend;
 class AutofillWebDataBackendImpl;
-class AutofillWebDataServiceObserverOnDBThread;
-class AutofillWebDataServiceObserverOnUIThread;
+class AutofillWebDataServiceObserverOnDBSequence;
+class AutofillWebDataServiceObserverOnUISequence;
 class CreditCard;
 
 // API for Autofill web data.
 class AutofillWebDataService : public AutofillWebData,
                                public WebDataServiceBase {
  public:
-  AutofillWebDataService(scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
-                         scoped_refptr<base::SingleThreadTaskRunner> db_thread);
-  AutofillWebDataService(scoped_refptr<WebDatabaseService> wdbs,
-                         scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
-                         scoped_refptr<base::SingleThreadTaskRunner> db_thread,
-                         const ProfileErrorCallback& callback);
+  AutofillWebDataService(
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> db_task_runner);
+  AutofillWebDataService(
+      scoped_refptr<WebDatabaseService> wdbs,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> db_task_runner,
+      const ProfileErrorCallback& callback);
 
   // WebDataServiceBase implementation.
-  void ShutdownOnUIThread() override;
+  void ShutdownOnUISequence() override;
 
   // AutofillWebData implementation.
   void AddFormFields(const std::vector<FormFieldData>& fields) override;
@@ -106,53 +108,53 @@ class AutofillWebDataService : public AutofillWebData,
   void RemoveOriginURLsModifiedBetween(const base::Time& delete_begin,
                                        const base::Time& delete_end) override;
 
-  void AddObserver(AutofillWebDataServiceObserverOnDBThread* observer);
-  void RemoveObserver(AutofillWebDataServiceObserverOnDBThread* observer);
+  void AddObserver(AutofillWebDataServiceObserverOnDBSequence* observer);
+  void RemoveObserver(AutofillWebDataServiceObserverOnDBSequence* observer);
 
-  void AddObserver(AutofillWebDataServiceObserverOnUIThread* observer);
-  void RemoveObserver(AutofillWebDataServiceObserverOnUIThread* observer);
+  void AddObserver(AutofillWebDataServiceObserverOnUISequence* observer);
+  void RemoveObserver(AutofillWebDataServiceObserverOnUISequence* observer);
 
-  // Returns a SupportsUserData objects that may be used to store data
-  // owned by the DB thread on this object. Should be called only from
-  // the DB thread, and will be destroyed on the DB thread soon after
-  // |ShutdownOnUIThread()| is called.
+  // Returns a SupportsUserData object that may be used to store data accessible
+  // from the DB sequence. Should be called only from the DB sequence, and will
+  // be destroyed on the DB sequence soon after ShutdownOnUISequence() is
+  // called.
   base::SupportsUserData* GetDBUserData();
 
-  // Takes a callback which will be called on the DB thread with a pointer to an
-  // |AutofillWebdataBackend|. This backend can be used to access or update the
-  // WebDatabase directly on the DB thread.
+  // Takes a callback which will be called on the DB sequence with a pointer to
+  // an AutofillWebdataBackend. This backend can be used to access or update the
+  // WebDatabase directly on the DB sequence.
   void GetAutofillBackend(
       const base::Callback<void(AutofillWebDataBackend*)>& callback);
 
-  // Returns a task runner that can be used to schedule tasks on the "DB"
+  // Returns a task runner that can be used to schedule tasks on the DB
   // sequence.
   base::SingleThreadTaskRunner* GetDBTaskRunner();
 
  protected:
   ~AutofillWebDataService() override;
 
-  virtual void NotifyAutofillMultipleChangedOnUIThread();
+  virtual void NotifyAutofillMultipleChangedOnUISequence();
 
-  virtual void NotifySyncStartedOnUIThread(syncer::ModelType model_type);
+  virtual void NotifySyncStartedOnUISequence(syncer::ModelType model_type);
 
   base::WeakPtr<AutofillWebDataService> AsWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
  private:
-  base::ObserverList<AutofillWebDataServiceObserverOnUIThread>
+  base::ObserverList<AutofillWebDataServiceObserverOnUISequence>
       ui_observer_list_;
 
-  // The task runner that this class uses as its UI thread.
-  scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
+  // The task runner that this class uses for UI tasks.
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
-  // The task runner that this class uses as its DB thread.
-  scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
+  // The task runner that this class uses for DB tasks.
+  scoped_refptr<base::SingleThreadTaskRunner> db_task_runner_;
 
   scoped_refptr<AutofillWebDataBackendImpl> autofill_backend_;
 
-  // This factory is used on the UI thread. All vended weak pointers are
-  // invalidated in ShutdownOnUIThread().
+  // This factory is used on the UI sequence. All vended weak pointers are
+  // invalidated in ShutdownOnUISequence().
   base::WeakPtrFactory<AutofillWebDataService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillWebDataService);

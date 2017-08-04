@@ -28,7 +28,7 @@ void PasswordStoreDefault::ShutdownOnUIThread() {
   ScheduleTask(base::Bind(&PasswordStoreDefault::ResetLoginDB, this));
 }
 
-void PasswordStoreDefault::InitOnBackgroundThread(
+void PasswordStoreDefault::InitOnBackgroundSequence(
     const syncer::SyncableService::StartSyncFlare& flare) {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   DCHECK(login_db_);
@@ -36,7 +36,7 @@ void PasswordStoreDefault::InitOnBackgroundThread(
     login_db_.reset();
     LOG(ERROR) << "Could not create/open login database.";
   }
-  PasswordStore::InitOnBackgroundThread(flare);
+  PasswordStore::InitOnBackgroundSequence(flare);
 }
 
 void PasswordStoreDefault::ReportMetricsImpl(

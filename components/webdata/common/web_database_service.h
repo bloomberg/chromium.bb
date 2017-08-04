@@ -53,11 +53,12 @@ class WEBDATA_EXPORT WebDatabaseService
   using DBLoadErrorCallback =
       base::Callback<void(sql::InitStatus, const std::string&)>;
 
-  // Takes the path to the WebDatabase file.
-  // WebDatabaseService lives on |ui_thread| and posts tasks to |db_thread|.
-  WebDatabaseService(const base::FilePath& path,
-                     scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
-                     scoped_refptr<base::SingleThreadTaskRunner> db_thread);
+  // WebDatabaseService lives on the UI sequence and posts tasks to the DB
+  // sequence.  |path| points to the WebDatabase file.
+  WebDatabaseService(
+      const base::FilePath& path,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> db_task_runner);
 
   // Adds |table| as a WebDatabaseTable that will participate in
   // managing the database, transferring ownership. All calls to this
@@ -77,18 +78,18 @@ class WEBDATA_EXPORT WebDatabaseService
   // Returns a pointer to the WebDatabaseBackend.
   scoped_refptr<WebDatabaseBackend> GetBackend() const;
 
-  // Schedule an update/write task on the DB thread.
+  // Schedule an update/write task on the DB sequence.
   virtual void ScheduleDBTask(
       const tracked_objects::Location& from_here,
       const WriteTask& task);
 
-  // Schedule a read task on the DB thread.
+  // Schedule a read task on the DB sequence.
   virtual WebDataServiceBase::Handle ScheduleDBTaskWithResult(
       const tracked_objects::Location& from_here,
       const ReadTask& task,
       WebDataServiceConsumer* consumer);
 
-  // Cancel an existing request for a task on the DB thread.
+  // Cancel an existing request for a task on the DB sequence.
   // TODO(caitkp): Think about moving the definition of the Handle type to
   // somewhere else.
   virtual void CancelRequest(WebDataServiceBase::Handle h);
@@ -126,7 +127,7 @@ class WEBDATA_EXPORT WebDatabaseService
   base::FilePath path_;
 
   // The primary owner is |WebDatabaseService| but is refcounted because
-  // PostTask on DB thread may outlive us.
+  // PostTask on DB sequence may outlive us.
   scoped_refptr<WebDatabaseBackend> web_db_backend_;
 
   // Callbacks to be called once the DB has loaded.
@@ -138,7 +139,7 @@ class WEBDATA_EXPORT WebDatabaseService
   // True if the WebDatabase has loaded.
   bool db_loaded_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> db_task_runner_;
 
   // All vended weak pointers are invalidated in ShutdownDatabase().
   base::WeakPtrFactory<WebDatabaseService> weak_ptr_factory_;

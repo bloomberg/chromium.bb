@@ -49,7 +49,7 @@ class AutofillTable;
 class AutocompleteSyncableService
     : public base::SupportsUserData::Data,
       public syncer::SyncableService,
-      public AutofillWebDataServiceObserverOnDBThread {
+      public AutofillWebDataServiceObserverOnDBSequence {
  public:
   ~AutocompleteSyncableService() override;
 
@@ -77,7 +77,7 @@ class AutocompleteSyncableService
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 
-  // AutofillWebDataServiceObserverOnDBThread:
+  // AutofillWebDataServiceObserverOnDBSequence:
   void AutofillEntriesChanged(const AutofillChangeList& changes) override;
 
   // Provides a StartSyncFlare to the SyncableService. See sync_start_util for

@@ -10,38 +10,38 @@
 
 namespace autofill {
 
-class AutofillWebDataServiceObserverOnDBThread {
+class AutofillWebDataServiceObserverOnDBSequence {
  public:
-  // Called on DB thread whenever Autofill entries are changed.
+  // Called on DB sequence whenever Autofill entries are changed.
   virtual void AutofillEntriesChanged(const AutofillChangeList& changes) {}
 
-  // Called on DB thread when an AutofillProfile has been added/removed/updated
-  // in the WebDatabase.
+  // Called on DB sequence when an AutofillProfile has been
+  // added/removed/updated in the WebDatabase.
   virtual void AutofillProfileChanged(const AutofillProfileChange& change) {}
 
-  // Called on DB thread when a CreditCard has been added/removed/updated in the
-  // WebDatabase.
+  // Called on DB sequence when a CreditCard has been added/removed/updated in
+  // the WebDatabase.
   virtual void CreditCardChanged(const CreditCardChange& change) {}
 
-  // Called on DB thread when multiple Autofill entries have been modified by
+  // Called on DB sequence when multiple Autofill entries have been modified by
   // Sync.
   virtual void AutofillMultipleChanged() {}
 
  protected:
-  virtual ~AutofillWebDataServiceObserverOnDBThread() {}
+  virtual ~AutofillWebDataServiceObserverOnDBSequence() {}
 };
 
-class AutofillWebDataServiceObserverOnUIThread {
+class AutofillWebDataServiceObserverOnUISequence {
  public:
-  // Called on UI thread when multiple Autofill entries have been modified by
+  // Called on UI sequence when multiple Autofill entries have been modified by
   // Sync.
   virtual void AutofillMultipleChanged() {}
 
-  // Called on UI thread when sync has started for |model_type|.
+  // Called on UI sequence when sync has started for |model_type|.
   virtual void SyncStarted(syncer::ModelType /* model_type */) {}
 
  protected:
-  virtual ~AutofillWebDataServiceObserverOnUIThread() {}
+  virtual ~AutofillWebDataServiceObserverOnUISequence() {}
 };
 
 }  // namespace autofill

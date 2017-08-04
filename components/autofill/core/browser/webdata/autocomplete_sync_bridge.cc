@@ -479,7 +479,6 @@ std::string AutocompleteSyncBridge::GetStorageKey(
   return BuildSerializedStorageKey(specifics.name(), specifics.value());
 }
 
-// AutofillWebDataServiceObserverOnDBThread implementation.
 void AutocompleteSyncBridge::AutofillEntriesChanged(
     const AutofillChangeList& changes) {
   DCHECK(thread_checker_.CalledOnValidThread());

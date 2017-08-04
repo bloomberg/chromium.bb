@@ -22,7 +22,7 @@ class PaymentManifestWebDataService : public WebDataServiceBase {
   PaymentManifestWebDataService(
       scoped_refptr<WebDatabaseService> wdbs,
       const ProfileErrorCallback& callback,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread);
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
 
   // Adds the web app |manifest|.
   void AddPaymentWebAppManifest(

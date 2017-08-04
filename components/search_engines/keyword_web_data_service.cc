@@ -37,10 +37,10 @@ KeywordWebDataService::BatchModeScoper::~BatchModeScoper() {
 
 KeywordWebDataService::KeywordWebDataService(
     scoped_refptr<WebDatabaseService> wdbs,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     const ProfileErrorCallback& callback)
-    : WebDataServiceBase(wdbs, callback, ui_thread), batch_mode_level_(0) {
-}
+    : WebDataServiceBase(wdbs, callback, ui_task_runner),
+      batch_mode_level_(0) {}
 
 void KeywordWebDataService::AddKeyword(const TemplateURLData& data) {
   if (batch_mode_level_) {

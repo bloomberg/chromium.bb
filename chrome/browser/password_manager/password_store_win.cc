@@ -75,7 +75,7 @@ class PasswordStoreWin::DBHandler : public WebDataServiceConsumer {
   scoped_refptr<PasswordWebDataService> web_data_service_;
 
   // This creates a cycle between us and PasswordStore. The cycle is broken
-  // from PasswordStoreWin::ShutdownOnUIThread, which deletes us.
+  // from PasswordStoreWin::ShutdownOnUIThread(), which deletes us.
   scoped_refptr<PasswordStoreWin> password_store_;
 
   PendingRequestMap pending_requests_;
@@ -137,8 +137,8 @@ PasswordStoreWin::DBHandler::GetIE7Results(
         matched_form->preferred = true;
         matched_form->date_created = info.date_created;
 
-        // Add this PasswordForm to the saved password table. We're on the DB
-        // thread already, so we use AddLoginImpl.
+        // Add this PasswordForm to the saved password table. We're on the
+        // background sequence already, so we use AddLoginImpl.
         password_store_->AddLoginImpl(*matched_form);
         matched_forms.push_back(std::move(matched_form));
       }
@@ -194,7 +194,7 @@ PasswordStoreWin::PasswordStoreWin(
 PasswordStoreWin::~PasswordStoreWin() {
 }
 
-void PasswordStoreWin::ShutdownOnBackgroundThread() {
+void PasswordStoreWin::ShutdownOnBackgroundSequence() {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   db_handler_.reset();
 }
@@ -202,7 +202,7 @@ void PasswordStoreWin::ShutdownOnBackgroundThread() {
 void PasswordStoreWin::ShutdownOnUIThread() {
   background_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&PasswordStoreWin::ShutdownOnBackgroundThread, this));
+      base::Bind(&PasswordStoreWin::ShutdownOnBackgroundSequence, this));
   PasswordStoreDefault::ShutdownOnUIThread();
 }
 
