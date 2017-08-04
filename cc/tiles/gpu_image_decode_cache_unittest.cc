@@ -654,6 +654,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDraw) {
   viz::ContextProvider::ScopedContextLock context_lock(context_provider.get());
   DecodedDrawImage decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
+  EXPECT_EQ(decoded_draw_image.filter_quality(), kMedium_SkFilterQuality);
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_FALSE(decoded_draw_image.is_at_raster_decode());
@@ -689,6 +690,7 @@ TEST_P(GpuImageDecodeCacheTest, GetLargeDecodedImageForDraw) {
   viz::ContextProvider::ScopedContextLock context_lock(context_provider.get());
   DecodedDrawImage decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
+  EXPECT_EQ(decoded_draw_image.filter_quality(), kMedium_SkFilterQuality);
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_FALSE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_FALSE(decoded_draw_image.is_at_raster_decode());
@@ -725,6 +727,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawAtRasterDecode) {
   viz::ContextProvider::ScopedContextLock context_lock(context_provider.get());
   DecodedDrawImage decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
+  EXPECT_EQ(decoded_draw_image.filter_quality(), kMedium_SkFilterQuality);
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_TRUE(decoded_draw_image.is_at_raster_decode());
@@ -741,10 +744,11 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawLargerScale) {
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
   sk_sp<SkImage> image = CreateImage(100, 100);
-  DrawImage draw_image(
-      CreatePaintImage(image), SkIRect::MakeWH(image->width(), image->height()),
-      quality, CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable),
-      DefaultColorSpace());
+  DrawImage draw_image(CreatePaintImage(image),
+                       SkIRect::MakeWH(image->width(), image->height()),
+                       kLow_SkFilterQuality,
+                       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable),
+                       DefaultColorSpace());
   scoped_refptr<TileTask> task;
   bool need_unref = cache.GetTaskForImageAndRef(
       draw_image, ImageDecodeCache::TracingInfo(), &task);
@@ -772,6 +776,8 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawLargerScale) {
   viz::ContextProvider::ScopedContextLock context_lock(context_provider.get());
   DecodedDrawImage decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
+  // |draw_image| had a low filter quality, so expect that to be respected.
+  EXPECT_EQ(decoded_draw_image.filter_quality(), kLow_SkFilterQuality);
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_FALSE(decoded_draw_image.is_at_raster_decode());
@@ -779,6 +785,8 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawLargerScale) {
 
   DecodedDrawImage larger_decoded_draw_image =
       cache.GetDecodedImageForDraw(larger_draw_image);
+  EXPECT_EQ(larger_decoded_draw_image.filter_quality(),
+            kMedium_SkFilterQuality);
   EXPECT_TRUE(larger_decoded_draw_image.image());
   EXPECT_TRUE(larger_decoded_draw_image.image()->isTextureBacked());
   EXPECT_FALSE(larger_decoded_draw_image.is_at_raster_decode());
@@ -829,6 +837,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawHigherQuality) {
   viz::ContextProvider::ScopedContextLock context_lock(context_provider.get());
   DecodedDrawImage decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
+  EXPECT_EQ(decoded_draw_image.filter_quality(), kLow_SkFilterQuality);
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_FALSE(decoded_draw_image.is_at_raster_decode());
@@ -836,6 +845,8 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawHigherQuality) {
 
   DecodedDrawImage larger_decoded_draw_image =
       cache.GetDecodedImageForDraw(higher_quality_draw_image);
+  EXPECT_EQ(larger_decoded_draw_image.filter_quality(),
+            kMedium_SkFilterQuality);
   EXPECT_TRUE(larger_decoded_draw_image.image());
   EXPECT_TRUE(larger_decoded_draw_image.image()->isTextureBacked());
   EXPECT_FALSE(larger_decoded_draw_image.is_at_raster_decode());
@@ -876,6 +887,7 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawNegative) {
   viz::ContextProvider::ScopedContextLock context_lock(context_provider.get());
   DecodedDrawImage decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
+  EXPECT_EQ(decoded_draw_image.filter_quality(), kMedium_SkFilterQuality);
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_EQ(decoded_draw_image.image()->width(), 50);
   EXPECT_EQ(decoded_draw_image.image()->height(), 50);
@@ -917,6 +929,7 @@ TEST_P(GpuImageDecodeCacheTest, GetLargeScaledDecodedImageForDraw) {
   // The mip level scale should never go below 0 in any dimension.
   EXPECT_EQ(1, decoded_draw_image.image()->width());
   EXPECT_EQ(24000, decoded_draw_image.image()->height());
+  EXPECT_EQ(decoded_draw_image.filter_quality(), kMedium_SkFilterQuality);
   EXPECT_FALSE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_FALSE(decoded_draw_image.is_at_raster_decode());
   EXPECT_TRUE(cache.DiscardableIsLockedForTesting(draw_image));
@@ -952,6 +965,7 @@ TEST_P(GpuImageDecodeCacheTest, AtRasterUsedDirectlyIfSpaceAllows) {
   viz::ContextProvider::ScopedContextLock context_lock(context_provider.get());
   DecodedDrawImage decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
+  EXPECT_EQ(decoded_draw_image.filter_quality(), kMedium_SkFilterQuality);
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_TRUE(decoded_draw_image.is_at_raster_decode());
@@ -992,6 +1006,7 @@ TEST_P(GpuImageDecodeCacheTest,
   viz::ContextProvider::ScopedContextLock context_lock(context_provider.get());
   DecodedDrawImage decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
+  EXPECT_EQ(decoded_draw_image.filter_quality(), kMedium_SkFilterQuality);
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_TRUE(decoded_draw_image.is_at_raster_decode());
@@ -1025,6 +1040,7 @@ TEST_P(GpuImageDecodeCacheTest,
   viz::ContextProvider::ScopedContextLock context_lock(context_provider.get());
   DecodedDrawImage decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
+  EXPECT_EQ(decoded_draw_image.filter_quality(), kMedium_SkFilterQuality);
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_FALSE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_TRUE(decoded_draw_image.is_at_raster_decode());
@@ -1035,6 +1051,8 @@ TEST_P(GpuImageDecodeCacheTest,
 
   DecodedDrawImage second_decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
+  EXPECT_EQ(second_decoded_draw_image.filter_quality(),
+            kMedium_SkFilterQuality);
   EXPECT_TRUE(second_decoded_draw_image.image());
   EXPECT_FALSE(second_decoded_draw_image.image()->isTextureBacked());
   EXPECT_TRUE(second_decoded_draw_image.is_at_raster_decode());
@@ -1326,7 +1344,7 @@ TEST_P(GpuImageDecodeCacheTest, QualityCappedAtMedium) {
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(low_task);
 
-  // Get the same image at kMedium_FilterQuality. We can't re-use low, so we
+  // Get the same image at kMedium_SkFilterQuality. We can't re-use low, so we
   // should get a new task/ref.
   DrawImage medium_draw_image(
       CreatePaintImage(image), SkIRect::MakeWH(image->width(), image->height()),
