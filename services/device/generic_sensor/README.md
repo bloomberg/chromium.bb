@@ -14,19 +14,19 @@ Support for the SensorTypes defined by the Mojo interface is summarized in this
 table. An empty cell indicates that the sensor type is not supported on that
 platform.
 
-| SensorType                        | Android                   | Linux          | macOS                                 | Windows                                   |
-| --------------------------------- | ------------------------- | -------------- | ------------------------------------- | ----------------------------------------- |
-| AMBIENT_LIGHT                     | TYPE_LIGHT                | in_illuminance | AppleLMUController                    | SENSOR_TYPE_AMBIENT_LIGHT                 |
-| PROXIMITY                         |                           |                |                                       |                                           |
-| ACCELEROMETER                     | TYPE_ACCELEROMETER        | in_accel       | SMCMotionSensor                       | SENSOR_TYPE_ACCELEROMETER_3D              |
-| LINEAR_ACCELEROMETER              | TYPE_LINEAR_ACCELEROMETER |                |                                       | ACCELEROMETER (*)                         |
-| GYROSCOPE                         | TYPE_GYROSCOPE            | in_anglvel     |                                       | SENSOR_TYPE_GYROMETER_3D                  |
-| MAGNETOMETER                      | TYPE_MAGNETIC_FIELD       | in_magn        |                                       | SENSOR_TYPE_COMPASS_3D                    |
-| PRESSURE                          |                           |                |                                       |                                           |
-| ABSOLUTE_ORIENTATION_EULER_ANGLES |                           |                |                                       | SENSOR_TYPE_INCLINOMETER_3D               |
-| ABSOLUTE_ORIENTATION_QUATERNION   | TYPE_ROTATION_VECTOR      |                |                                       | SENSOR_TYPE_AGGREGATED_DEVICE_ORIENTATION |
-| RELATIVE_ORIENTATION_EULER_ANGLES |                           |                | ACCELEROMETER (*)                     |                                           |
-| RELATIVE_ORIENTATION_QUATERNION   | TYPE_GAME_ROTATION_VECTOR |                | RELATIVE_ORIENTATION_EULER_ANGLES (*) |                                           |
+| SensorType                        | Android                   | Linux                                 | macOS                                 | Windows                                   |
+| --------------------------------- | ------------------------- | ------------------------------------- | ------------------------------------- | ----------------------------------------- |
+| AMBIENT_LIGHT                     | TYPE_LIGHT                | in_illuminance                        | AppleLMUController                    | SENSOR_TYPE_AMBIENT_LIGHT                 |
+| PROXIMITY                         |                           |                                       |                                       |                                           |
+| ACCELEROMETER                     | TYPE_ACCELEROMETER        | in_accel                              | SMCMotionSensor                       | SENSOR_TYPE_ACCELEROMETER_3D              |
+| LINEAR_ACCELEROMETER              | TYPE_LINEAR_ACCELEROMETER |                                       |                                       | ACCELEROMETER (*)                         |
+| GYROSCOPE                         | TYPE_GYROSCOPE            | in_anglvel                            |                                       | SENSOR_TYPE_GYROMETER_3D                  |
+| MAGNETOMETER                      | TYPE_MAGNETIC_FIELD       | in_magn                               |                                       | SENSOR_TYPE_COMPASS_3D                    |
+| PRESSURE                          |                           |                                       |                                       |                                           |
+| ABSOLUTE_ORIENTATION_EULER_ANGLES |                           |                                       |                                       | SENSOR_TYPE_INCLINOMETER_3D               |
+| ABSOLUTE_ORIENTATION_QUATERNION   | TYPE_ROTATION_VECTOR      |                                       |                                       | SENSOR_TYPE_AGGREGATED_DEVICE_ORIENTATION |
+| RELATIVE_ORIENTATION_EULER_ANGLES |                           | ACCELEROMETER (*)                     | ACCELEROMETER (*)                     |                                           |
+| RELATIVE_ORIENTATION_QUATERNION   | TYPE_GAME_ROTATION_VECTOR | RELATIVE_ORIENTATION_EULER_ANGLES (*) | RELATIVE_ORIENTATION_EULER_ANGLES (*) |                                           |
 
 (Note: "*" means the sensor type is provided by sensor fusion.)
 
@@ -42,7 +42,11 @@ SensorType.
 
 Sensors are implemented by reading values from the IIO subsystem. The values in
 the "Linux" column of the table above are the prefix of the sysfs files Chrome
-searches for to provide data for a SensorType.
+searches for to provide data for a SensorType. The
+RELATIVE_ORIENTATION_EULER_ANGLES sensor type is provided by interpreting the
+value that can be read from the ACCELEROMETER. The
+RELATIVE_ORIENTATION_QUATERNION sensor type is provided by interpreting the
+value that can be read from the RELATIVE_ORIENTATION_EULER_ANGLES.
 
 ### macOS
 
