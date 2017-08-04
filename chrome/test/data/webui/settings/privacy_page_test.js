@@ -388,14 +388,10 @@ cr.define('settings_privacy_page', function() {
     });
   }
 
-  return {
-    registerTests: function() {
-      if (cr.isMac || cr.isWin)
-        registerNativeCertificateManagerTests();
+  if (cr.isMac || cr.isWin)
+    registerNativeCertificateManagerTests();
 
-      registerClearBrowsingDataTests();
-      registerPrivacyPageTests();
-      registerSafeBrowsingExtendedReportingTests();
-    },
-  };
+  registerClearBrowsingDataTests();
+  registerPrivacyPageTests();
+  registerSafeBrowsingExtendedReportingTests();
 });
