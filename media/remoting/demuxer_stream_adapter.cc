@@ -271,6 +271,10 @@ void DemuxerStreamAdapter::OnNewBuffer(
       DCHECK(!input);
       SendReadAck();
       return;
+    case DemuxerStream::kError:
+      // Currently kError can only happen because of DECRYPTION_ERROR.
+      OnFatalError(DECRYPTION_ERROR);
+      return;
     case DemuxerStream::kConfigChanged:
       // TODO(erickung): Notify controller of new decoder config, just in case
       // that will require remoting to be shutdown (due to known
