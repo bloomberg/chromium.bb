@@ -20,6 +20,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
@@ -37,6 +38,7 @@ public class TileRenderer {
     private static final int ICON_CORNER_RADIUS_DP = 4;
     private static final int ICON_TEXT_SIZE_DP = 20;
     private static final int ICON_MIN_SIZE_PX = 48;
+    private static final int ICON_DECREASED_MIN_SIZE_PX = 32;
 
     private final Context mContext;
     private final ImageFetcher mImageFetcher;
@@ -56,10 +58,12 @@ public class TileRenderer {
 
         Resources resources = mContext.getResources();
         mDesiredIconSize = resources.getDimensionPixelSize(R.dimen.tile_view_icon_size);
-        // On ldpi devices, mDesiredIconSize could be even smaller than ICON_MIN_SIZE_PX.
-        mMinIconSize = Math.min(mDesiredIconSize, ICON_MIN_SIZE_PX);
         int desiredIconSizeDp =
                 Math.round(mDesiredIconSize / resources.getDisplayMetrics().density);
+
+        // On ldpi devices, mDesiredIconSize could be even smaller than the global limit.
+        mMinIconSize = Math.min(mDesiredIconSize,
+                useDecreasedMinSize() ? ICON_DECREASED_MIN_SIZE_PX : ICON_MIN_SIZE_PX);
 
         int cornerRadiusDp;
         if (tileStyle == TileView.Style.MODERN) {
@@ -72,6 +76,10 @@ public class TileRenderer {
                 ApiCompatibilityUtils.getColor(resources, R.color.default_favicon_background_color);
         mIconGenerator = new RoundedIconGenerator(mContext, desiredIconSizeDp, desiredIconSizeDp,
                 cornerRadiusDp, iconColor, ICON_TEXT_SIZE_DP);
+    }
+
+    private static boolean useDecreasedMinSize() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_TILES_LOWER_RESOLUTION_FAVICONS);
     }
 
     /**

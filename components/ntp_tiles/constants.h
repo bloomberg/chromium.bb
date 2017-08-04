@@ -23,6 +23,10 @@ extern const base::Feature kPopularSitesBakedInContentFeature;
 // Likely tiles on the New Tab Page.
 extern const base::Feature kNtpMostLikelyFaviconsFromServerFeature;
 
+// Feature to allow displaying lower resolution favicons for Tiles on the New
+// Tab Page.
+extern const base::Feature kLowerResolutionFaviconsFeature;
+
 // Use this to find out whether the kNtpMostLikelyFaviconsFromServerFeature is
 // enabled. This helper function abstracts iOS special way to override the
 // feature (via command-line params).
