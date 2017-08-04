@@ -36,6 +36,19 @@ source_set("encoder") {
     "//ui/gfx:color_space",
   ]
 
+  # Currently, building WebrtcVideoEncoderGpu is only supported on Windows and
+  # Linux, and encoding with WebrtcVideoEncoderGpu is only supported on Windows.
+  if (is_win || is_linux) {
+    sources += [
+      "webrtc_video_encoder_gpu.cc",
+      "webrtc_video_encoder_gpu.h",
+    ]
+    deps += [
+      "//gpu/command_buffer/service",
+      "//media/gpu",
+    ]
+  }
+
   # Opus depends on //media, which is not a supported include for iOS.
   # Also disabled it on Android, to avoid dependency on //media.
   # TODO(sergeyu): Cleanup host-only deps in client targets.
