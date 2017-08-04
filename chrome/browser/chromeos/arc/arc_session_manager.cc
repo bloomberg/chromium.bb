@@ -871,6 +871,9 @@ void ArcSessionManager::OnAndroidManagementChecked(
           base::Bind(&ArcSessionManager::OnArcSignInTimeout,
                      weak_ptr_factory_.GetWeakPtr()));
       StartArc();
+      // Since opt-in is an explicit user (or admin) action, relax the
+      // cgroups restriction now.
+      SetArcCpuRestriction(false /* do_restrict */);
       break;
     case policy::AndroidManagementClient::Result::MANAGED:
       ShowArcSupportHostError(
