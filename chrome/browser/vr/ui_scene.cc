@@ -17,6 +17,7 @@ namespace vr {
 void UiScene::AddUiElement(std::unique_ptr<UiElement> element) {
   CHECK_GE(element->id(), 0);
   CHECK_EQ(GetUiElementById(element->id()), nullptr);
+  CHECK_GE(element->draw_phase(), 0);
   if (!element->parent()) {
     CHECK_EQ(element->x_anchoring(), XAnchoring::XNONE);
     CHECK_EQ(element->y_anchoring(), YAnchoring::YNONE);
