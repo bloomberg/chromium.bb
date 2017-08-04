@@ -314,7 +314,8 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   bool set_chromeos_user_;
 #endif
 
-  // test_data/extensions.
+  // Set to "chrome/test/data/extensions". Derived classes may override.
+  // TODO(michaelpg): Don't override protected data members.
   base::FilePath test_data_dir_;
 
   std::unique_ptr<extensions::ChromeExtensionTestNotificationObserver>

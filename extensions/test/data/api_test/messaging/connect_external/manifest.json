@@ -2,8 +2,8 @@
   "name": "connect_external",
   "version": "1.0",
   "manifest_version": 2,
-  "description": "Tests connect to an external extension.",
+  "description": "Tests connecting to an external extension.",
   "background": {
-    "page": "test.html"
+    "scripts": ["test.js"]
   }
 }
