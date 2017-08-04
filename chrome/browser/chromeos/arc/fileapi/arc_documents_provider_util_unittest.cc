@@ -12,6 +12,14 @@ namespace arc {
 
 namespace {
 
+mojom::DocumentPtr MakeDocument(const std::string& display_name,
+                                const std::string& mime_type) {
+  mojom::DocumentPtr document = mojom::Document::New();
+  document->display_name = display_name;
+  document->mime_type = mime_type;
+  return document;
+}
+
 TEST(ArcDocumentsProviderUtilTest, EscapePathComponent) {
   EXPECT_EQ("", EscapePathComponent(""));
   EXPECT_EQ("%2E", EscapePathComponent("."));
@@ -219,6 +227,22 @@ TEST(ArcDocumentsProviderUtilTest, GetExtensionsForArcMimeType) {
 
   // Specially handled types.
   EXPECT_EQ(0u, GetExtensionsForArcMimeType("application/octet-stream").size());
+}
+
+TEST(ArcDocumentsProviderUtilTest, GetFileNameForDocument) {
+  EXPECT_EQ("kitten.png",
+            GetFileNameForDocument(MakeDocument("kitten.png", "image/png")));
+  EXPECT_EQ("a__b.png",
+            GetFileNameForDocument(MakeDocument("a//b.png", "image/png")));
+  EXPECT_EQ("_.png", GetFileNameForDocument(MakeDocument("", "image/png")));
+  EXPECT_EQ("_.png", GetFileNameForDocument(MakeDocument(".", "image/png")));
+  EXPECT_EQ("_.png", GetFileNameForDocument(MakeDocument("..", "image/png")));
+  EXPECT_EQ("_.png",
+            GetFileNameForDocument(MakeDocument("......", "image/png")));
+  EXPECT_EQ("kitten.png",
+            GetFileNameForDocument(MakeDocument("kitten", "image/png")));
+  EXPECT_EQ("kitten",
+            GetFileNameForDocument(MakeDocument("kitten", "abc/xyz")));
 }
 
 }  // namespace
