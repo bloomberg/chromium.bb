@@ -28204,6 +28204,12 @@ from previous Chrome versions.
   <int value="4" label="Back Touch Screen">
     Scrolled back using touch screen
   </int>
+  <int value="5" label="Reload Touchpad">
+    Reloaded using touchpad pull-to-refresh
+  </int>
+  <int value="6" label="Reload Touch Screen">
+    Reloaded using touch screen pull-to-refresh
+  </int>
 </enum>
 
 <enum name="P2PLookupResult">
