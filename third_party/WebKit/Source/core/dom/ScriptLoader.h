@@ -121,9 +121,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   virtual bool IsReady() const {
     return pending_script_ && pending_script_->IsReady();
   }
-  bool ErrorOccurred() const {
-    return pending_script_ && pending_script_->ErrorOccurred();
-  }
 
   bool WasCreatedDuringDocumentWrite() {
     return created_during_document_write_;
