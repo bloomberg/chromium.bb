@@ -2112,9 +2112,6 @@ FcCharSet *
 FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 {
     FcChar32	    page, off, ucs4;
-#ifdef CHECK
-    FcChar32	    font_max = 0;
-#endif
     FcCharSet	    *fcs;
     FcCharLeaf	    *leaf;
     int		    o;
@@ -2190,10 +2187,6 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 		    }
 		    off = ucs4 & 0xff;
 		    leaf->map[off >> 5] |= (1 << (off & 0x1f));
-#ifdef CHECK
-		    if (ucs4 > font_max)
-			font_max = ucs4;
-#endif
 		}
 		ucs4 = FT_Get_Next_Char (face, ucs4, &glyph);
 	    }
