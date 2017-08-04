@@ -178,22 +178,94 @@ public class AndroidPaymentAppFinderTest implements PaymentAppCreatedCallback {
     }
 
     /**
-     * Payment apps without metadata or without default payment method name in metadata should be
-     * filtered out.
+     * Payment apps without metadata should be filtered out.
      */
     @Test
     @Feature({"Payments"})
-    public void testBadMetadata() throws Throwable {
+    public void testNoMetadata() throws Throwable {
         Set<String> methods = new HashSet<>();
         methods.add("basic-card");
-        mPackageManager.installPaymentApp(
-                "BobPay", "com.bobpay", null /* no metadata */, "01020304050607080900");
-        mPackageManager.installPaymentApp("AlicePay", "com.alicepay",
-                "" /* no default payment method name in metadata */, "ABCDEFABCDEFABCDEFAB");
+        mPackageManager.installPaymentApp("BobPay", "com.bobpay", null /* no metadata */, "01");
 
         findApps(methods);
 
         Assert.assertTrue("No apps should match the query", mPaymentApps.isEmpty());
+
+        mPaymentApps.clear();
+        mAllPaymentAppsCreated = false;
+
+        findApps(methods);
+
+        Assert.assertTrue("No apps should still match the query", mPaymentApps.isEmpty());
+    }
+
+    /**
+     * Payment apps without default payment method name in metadata should still be able to use
+     * non-URL payment method names.
+     */
+    @Test
+    @Feature({"Payments"})
+    public void testNoDefaultPaymentMethodNameWithNonUrlPaymentMethodName() throws Throwable {
+        Set<String> methods = new HashSet<>();
+        methods.add("basic-card");
+        mPackageManager.installPaymentApp("AlicePay", "com.alicepay",
+                "" /* no default payment method name in metadata */, "AA");
+        mPackageManager.setStringArrayMetaData("com.alicepay", new String[] {"basic-card"});
+
+        findApps(methods);
+
+        Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
+        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals(1, mPaymentApps.get(0).getAppMethodNames().size());
+        Assert.assertEquals(
+                "basic-card", mPaymentApps.get(0).getAppMethodNames().iterator().next());
+
+        mPaymentApps.clear();
+        mAllPaymentAppsCreated = false;
+
+        findApps(methods);
+
+        Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
+        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals(1, mPaymentApps.get(0).getAppMethodNames().size());
+        Assert.assertEquals(
+                "basic-card", mPaymentApps.get(0).getAppMethodNames().iterator().next());
+    }
+
+    /**
+     * Payment apps without default payment method name in metadata should still be able to use
+     * URL payment method names that support all origins.
+     */
+    @Test
+    @Feature({"Payments"})
+    public void testNoDefaultPaymentMethodNameWithUrlPaymentMethodNameThatSupportsAllOrigins()
+            throws Throwable {
+        Set<String> methods = new HashSet<>();
+        methods.add(mServer.getURL("/components/test/data/payments/frankpay.com/webpay"));
+        mPackageManager.installPaymentApp("AlicePay", "com.alicepay",
+                "" /* no default payment method name in metadata */, "AA");
+        mPackageManager.setStringArrayMetaData("com.alicepay",
+                new String[] {
+                        mServer.getURL("/components/test/data/payments/frankpay.com/webpay")});
+
+        findApps(methods);
+
+        Assert.assertEquals("1 app should match the query", 1, mPaymentApps.size());
+        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals(1, mPaymentApps.get(0).getAppMethodNames().size());
+        Assert.assertEquals(mServer.getURL("/components/test/data/payments/frankpay.com/webpay"),
+                mPaymentApps.get(0).getAppMethodNames().iterator().next());
+
+        mPaymentApps.clear();
+        mAllPaymentAppsCreated = false;
+
+        findApps(methods);
+
+        Assert.assertEquals("1 app should still match the query", 1, mPaymentApps.size());
+        Assert.assertEquals("com.alicepay", mPaymentApps.get(0).getAppIdentifier());
+        Assert.assertEquals(1, mPaymentApps.get(0).getAppMethodNames().size());
+        Assert.assertEquals(mServer.getURL("/components/test/data/payments/frankpay.com/webpay"),
+                mPaymentApps.get(0).getAppMethodNames().iterator().next());
     }
 
     /** Payment apps without a human-readable name should be filtered out. */
