@@ -6,6 +6,8 @@
 #define COMPONENTS_NTP_SNIPPETS_BREAKING_NEWS_BREAKING_NEWS_GCM_APP_HANDLER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/time/clock.h"
+#include "base/timer/timer.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/ntp_snippets/breaking_news/breaking_news_listener.h"
@@ -25,9 +27,11 @@ class InstanceIDDriver;
 
 namespace ntp_snippets {
 
-// Handler for pushed GCM breaking news. It retrieves a subscription token
-// from the GCM server and registers/unregisters itself with the GCM service to
-// be called upon received push breaking news.
+// Handler for pushed GCM breaking news. It retrieves a subscription token from
+// the GCM server and registers/unregisters itself with the GCM service to be
+// called upon received push breaking news. When there is a listener, the token
+// is periodically validated. The validation may happen during StartListening if
+// enough time has passed since the last validation.
 class BreakingNewsGCMAppHandler : public BreakingNewsListener,
                                   public gcm::GCMAppHandler {
  public:
@@ -40,12 +44,16 @@ class BreakingNewsGCMAppHandler : public BreakingNewsListener,
                           const SuccessCallback& success_callback,
                           const ErrorCallback& error_callback)>;
 
+  // When provided, |timer_task_runner| and |timer_tick_clock| are used inside
+  // internal validation timer (e.g. for testing).
   BreakingNewsGCMAppHandler(
       gcm::GCMDriver* gcm_driver,
       instance_id::InstanceIDDriver* instance_id_driver,
       PrefService* pref_service_,
       std::unique_ptr<SubscriptionManager> subscription_manager,
-      const ParseJSONCallback& parse_json_callback);
+      const ParseJSONCallback& parse_json_callback,
+      std::unique_ptr<base::Clock> clock,
+      std::unique_ptr<base::OneShotTimer> token_validation_timer);
 
   // If still listening, calls StopListening()
   ~BreakingNewsGCMAppHandler() override;
@@ -69,14 +77,27 @@ class BreakingNewsGCMAppHandler : public BreakingNewsListener,
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
  private:
-  // Retrieves a subscription token that allows the content suggestions server
-  // to push content via GCM messages. Calling this method multiple times is not
-  // necessary but does not harm since the same token is returned everytime.
-  void Subscribe();
+  // If there is no subscription token or |force_token_retrieval|, retrieves a
+  // GCM subscription token and subscribes to content suggestions server with
+  // it. Otherwise, subscribes to content suggestions server with the existing
+  // token.
+  void Subscribe(bool force_token_retrieval);
 
-  // Called after the subscription is obtained from the GCM server.
-  void DidSubscribe(const std::string& subscription_token,
-                    instance_id::InstanceID::Result result);
+  // Called when a subscription token is obtained from the GCM server.
+  void DidRetrieveToken(const std::string& subscription_token,
+                        instance_id::InstanceID::Result result);
+
+  // Called periodically to validate the subscription token (it is stored on
+  // disk and may become corrupted) and resubscribe with the new token if the
+  // old one is invalid.
+  void ResubscribeIfInvalidToken();
+
+  // Called when token obtained from the GCM server for its validation.
+  void DidReceiveTokenForValidation(const std::string& new_token,
+                                    instance_id::InstanceID::Result result);
+
+  // If the validation is due, it may be scheduled immediately.
+  void ScheduleNextTokenValidation();
 
   // Called after successfully parsing the received suggestion JSON.
   void OnJsonSuccess(std::unique_ptr<base::Value> content);
@@ -85,15 +106,20 @@ class BreakingNewsGCMAppHandler : public BreakingNewsListener,
   // error.
   void OnJsonError(const std::string& json_str, const std::string& error);
 
+  bool IsListening() const;
+
   gcm::GCMDriver* const gcm_driver_;
   instance_id::InstanceIDDriver* const instance_id_driver_;
   PrefService* const pref_service_;
   const std::unique_ptr<SubscriptionManager> subscription_manager_;
   const ParseJSONCallback parse_json_callback_;
+  std::unique_ptr<base::Clock> clock_;
 
   // Called after every time a new message is received in OnMessage() to notify
   // the content provider.
   OnNewRemoteSuggestionCallback on_new_remote_suggestion_callback_;
+
+  std::unique_ptr<base::OneShotTimer> token_validation_timer_;
 
   base::WeakPtrFactory<BreakingNewsGCMAppHandler> weak_ptr_factory_;
 
