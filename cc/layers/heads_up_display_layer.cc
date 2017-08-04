@@ -20,8 +20,7 @@ scoped_refptr<HeadsUpDisplayLayer> HeadsUpDisplayLayer::Create() {
 HeadsUpDisplayLayer::HeadsUpDisplayLayer()
     : typeface_(SkTypeface::MakeFromName("times new roman", SkFontStyle())) {
   if (!typeface_) {
-    typeface_ = SkTypeface::MakeFromName(
-        "monospace", SkFontStyle::FromOldStyle(SkTypeface::kBold));
+    typeface_ = SkTypeface::MakeFromName("monospace", SkFontStyle::Bold());
   }
   DCHECK(typeface_.get());
   SetIsDrawable(true);
