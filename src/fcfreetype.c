@@ -2410,24 +2410,6 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 	}
     }
 #endif
-#ifdef CHECK
-    printf ("%d glyphs %d encoded\n", (int) face->num_glyphs, FcCharSetCount (fcs));
-    for (ucs4 = 0x0020; ucs4 <= font_max; ucs4++)
-    {
-	FcBool	has_char = (glyph = FcFreeTypeCharIndex (face, ucs4)) != 0;
-	FcBool	has_bit = FcCharSetHasChar (fcs, ucs4);
-
-	if (has_char && !has_bit)
-	{
-	    if (!FcFreeTypeCheckGlyph (face, ucs4, glyph, &advance))
-		printf ("Bitmap missing broken char 0x%x\n", ucs4);
-	    else
-		printf ("Bitmap missing char 0x%x\n", ucs4);
-	}
-	else if (!has_char && has_bit)
-	    printf ("Bitmap extra char 0x%x\n", ucs4);
-    }
-#endif
     if (fixed_advance)
 	*spacing = FC_MONO;
     else if (dual_advance && APPROXIMATELY_EQUAL (2 * FC_MIN (advance_one, advance_two), FC_MAX (advance_one, advance_two)))
