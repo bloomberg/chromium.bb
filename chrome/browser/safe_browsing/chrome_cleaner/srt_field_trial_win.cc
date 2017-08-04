@@ -37,9 +37,6 @@ const char kCanarySRTDownloadURL[] =
     "https://dl.google.com/dl"
     "/softwareremovaltool/win/c/chrome_cleanup_tool.exe?chrome-prompt=1";
 
-constexpr char kSoftwareReporterPromptShownMetricName[] =
-    "SoftwareReporter.PromptShown";
-
 }  // namespace
 
 namespace safe_browsing {
@@ -114,13 +111,13 @@ void RecordSRTPromptHistogram(SRTPromptHistogramValue value) {
                             SRT_PROMPT_MAX);
 }
 
-void RecordPromptShownHistogram() {
-  UMA_HISTOGRAM_BOOLEAN(kSoftwareReporterPromptShownMetricName, true);
+void RecordPromptShownWithTypeHistogram(PromptTypeHistogramValue value) {
+  UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.PromptShownWithType", value,
+                            PROMPT_TYPE_MAX);
 }
 
 void RecordPromptNotShownWithReasonHistogram(
     NoPromptReasonHistogramValue value) {
-  UMA_HISTOGRAM_BOOLEAN(kSoftwareReporterPromptShownMetricName, false);
   UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.NoPromptReason", value,
                             NO_PROMPT_REASON_MAX);
 }
