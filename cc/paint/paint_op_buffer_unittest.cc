@@ -784,7 +784,7 @@ class PaintOpBufferOffsetsTest : public ::testing::Test {
     buffer_.Playback(canvas, nullptr, nullptr, &offsets);
   }
 
- private:
+ protected:
   std::vector<size_t> offsets_;
   PaintOpBuffer buffer_;
 };
@@ -1030,6 +1030,253 @@ TEST_F(PaintOpBufferOffsetsTest,
     EXPECT_CALL(canvas, OnDrawRectWithColor(1u)).InSequence(s);
     EXPECT_CALL(canvas, OnDrawRectWithColor(2u)).InSequence(s);
     Playback(&canvas, Select({0, 1, 2, 3, 6}));
+  }
+}
+
+TEST_F(PaintOpBufferOffsetsTest, FlatteningIteratorEmptyList) {
+  std::vector<size_t> offsets = Select({});
+  PaintOpBuffer::FlatteningIterator iter(&buffer_, &offsets);
+  EXPECT_FALSE(iter);
+}
+
+TEST_F(PaintOpBufferOffsetsTest, FlatteningIteratorNoRecords) {
+  push_op<DrawColorOp>(0u, SkBlendMode::kClear);
+  push_op<DrawColorOp>(1u, SkBlendMode::kClear);
+  push_op<DrawColorOp>(2u, SkBlendMode::kClear);
+  push_op<DrawColorOp>(3u, SkBlendMode::kClear);
+  push_op<DrawColorOp>(4u, SkBlendMode::kClear);
+
+  // all ops
+  {
+    size_t op_count = 0;
+    std::vector<size_t> offsets = Select({0, 1, 2, 3, 4});
+    for (PaintOpBuffer::FlatteningIterator iter(&buffer_, &offsets); iter;
+         ++iter) {
+      PaintOp* base_op = *iter;
+      ASSERT_EQ(base_op->GetType(), PaintOpType::DrawColor);
+      DrawColorOp* op = static_cast<DrawColorOp*>(base_op);
+      EXPECT_EQ(op_count, op->color);
+      ++op_count;
+    }
+    EXPECT_EQ(5u, op_count);
+  }
+
+  // some ops
+  {
+    size_t op_count = 0;
+    size_t expected_color = 0;
+    std::vector<size_t> offsets = Select({0, 2, 4});
+    for (PaintOpBuffer::FlatteningIterator iter(&buffer_, &offsets); iter;
+         ++iter) {
+      PaintOp* base_op = *iter;
+      ASSERT_EQ(base_op->GetType(), PaintOpType::DrawColor);
+      DrawColorOp* op = static_cast<DrawColorOp*>(base_op);
+      EXPECT_EQ(expected_color, op->color);
+      expected_color += 2;
+      ++op_count;
+    }
+    EXPECT_EQ(3u, op_count);
+  }
+
+  // no ops
+  {
+    std::vector<size_t> offsets = Select({});
+    PaintOpBuffer::FlatteningIterator iter(&buffer_, &offsets);
+    EXPECT_FALSE(iter);
+  }
+}
+
+TEST_F(PaintOpBufferOffsetsTest, FlatteningIteratorMultipleUnnestedRecords) {
+  static constexpr SkBlendMode mode = SkBlendMode::kClear;
+
+  // Deliberately start with a draw record.
+  auto internal0 = sk_make_sp<PaintOpBuffer>();
+  internal0->push<DrawColorOp>(0u, mode);
+  push_op<DrawRecordOp>(internal0);
+  push_op<DrawColorOp>(1u, mode);
+  auto internal1 = sk_make_sp<PaintOpBuffer>();
+  internal1->push<DrawColorOp>(2u, mode);
+  internal1->push<DrawColorOp>(3u, mode);
+  internal1->push<DrawColorOp>(4u, mode);
+  push_op<DrawRecordOp>(internal1);
+  // Two draw records back to back.
+  auto internal2 = sk_make_sp<PaintOpBuffer>();
+  internal2->push<DrawColorOp>(5u, mode);
+  internal2->push<DrawColorOp>(6u, mode);
+  push_op<DrawRecordOp>(internal2);
+  push_op<DrawColorOp>(7u, SkBlendMode::kClear);
+  // Test empty draw records.
+  auto internal3 = sk_make_sp<PaintOpBuffer>();
+  push_op<DrawRecordOp>(internal3);
+  auto internal4 = sk_make_sp<PaintOpBuffer>();
+  push_op<DrawRecordOp>(internal4);
+  push_op<DrawColorOp>(8u, SkBlendMode::kClear);
+  auto internal5 = sk_make_sp<PaintOpBuffer>();
+  internal5->push<DrawColorOp>(9u, mode);
+  internal5->push<DrawColorOp>(10u, mode);
+  internal5->push<DrawColorOp>(11u, mode);
+  internal5->push<DrawColorOp>(12u, mode);
+  internal5->push<DrawColorOp>(13u, mode);
+  // Deliberately end with a draw record.
+  push_op<DrawRecordOp>(internal5);
+
+  EXPECT_EQ(9u, buffer_.size());
+
+  // all ops
+  {
+    size_t op_count = 0;
+    std::vector<size_t> offsets = Select({0, 1, 2, 3, 4, 5, 6, 7, 8});
+    for (PaintOpBuffer::FlatteningIterator iter(&buffer_, &offsets); iter;
+         ++iter) {
+      PaintOp* base_op = *iter;
+      ASSERT_EQ(base_op->GetType(), PaintOpType::DrawColor);
+      DrawColorOp* op = static_cast<DrawColorOp*>(base_op);
+      EXPECT_EQ(op_count, op->color);
+      ++op_count;
+    }
+    EXPECT_EQ(14u, op_count);
+  }
+
+  // some ops
+  {
+    size_t op_count = 0;
+    std::vector<size_t> offsets = Select({2, 4, 5, 6, 8});
+    std::vector<size_t> expected_colors = {2, 3, 4, 7, 9, 10, 11, 12, 13};
+    for (PaintOpBuffer::FlatteningIterator iter(&buffer_, &offsets); iter;
+         ++iter) {
+      PaintOp* base_op = *iter;
+      ASSERT_EQ(base_op->GetType(), PaintOpType::DrawColor);
+      DrawColorOp* op = static_cast<DrawColorOp*>(base_op);
+      ASSERT_LT(op_count, expected_colors.size());
+      EXPECT_EQ(expected_colors[op_count], op->color);
+      ++op_count;
+    }
+    EXPECT_EQ(expected_colors.size(), op_count);
+  }
+
+  // no ops
+  {
+    std::vector<size_t> offsets = Select({});
+    PaintOpBuffer::FlatteningIterator iter(&buffer_, &offsets);
+    EXPECT_FALSE(iter);
+  }
+}
+
+TEST_F(PaintOpBufferOffsetsTest, FlatteningIteratorManyNestedRecordsAllEmpty) {
+  auto empty_record = sk_make_sp<PaintOpBuffer>();
+
+  auto outer_record = sk_make_sp<PaintOpBuffer>();
+  auto record_chain = sk_make_sp<PaintOpBuffer>();
+  for (size_t i = 0; i < 5; ++i) {
+    outer_record->push<DrawRecordOp>(empty_record);
+    record_chain->push<DrawRecordOp>(empty_record);
+  }
+  for (size_t i = 0; i < 5; ++i) {
+    auto next_parent = sk_make_sp<PaintOpBuffer>();
+    next_parent->push<DrawRecordOp>(record_chain);
+    record_chain = next_parent;
+  }
+  outer_record->push<DrawRecordOp>(record_chain);
+  push_op<DrawRecordOp>(outer_record);
+
+  // Test a single top level draw record op.
+  {
+    std::vector<size_t> offsets = Select({0});
+    PaintOpBuffer::FlatteningIterator iter(&buffer_, &offsets);
+    EXPECT_FALSE(iter);
+  }
+
+  // Test multiple top level draw record ops.
+  push_op<DrawRecordOp>(outer_record);
+  push_op<DrawRecordOp>(outer_record);
+  {
+    std::vector<size_t> offsets = Select({0, 1, 2});
+    PaintOpBuffer::FlatteningIterator iter(&buffer_, &offsets);
+    EXPECT_FALSE(iter);
+  }
+
+  // Test multiple top level draw record ops, but only some offsets.
+  {
+    std::vector<size_t> offsets = Select({1});
+    PaintOpBuffer::FlatteningIterator iter(&buffer_, &offsets);
+    EXPECT_FALSE(iter);
+  }
+
+  // No offsets.
+  {
+    std::vector<size_t> offsets = Select({});
+    PaintOpBuffer::FlatteningIterator iter(&buffer_, &offsets);
+    EXPECT_FALSE(iter);
+  }
+}
+
+TEST_F(PaintOpBufferOffsetsTest, FlatteningIteratorManyNestedRecords) {
+  static constexpr SkBlendMode mode = SkBlendMode::kClear;
+
+  push_op<DrawColorOp>(0u, mode);
+  auto internal0 = sk_make_sp<PaintOpBuffer>();
+  auto internal00 = sk_make_sp<PaintOpBuffer>();
+  auto internal000 = sk_make_sp<PaintOpBuffer>();
+  internal000->push<DrawColorOp>(1u, mode);
+  internal00->push<DrawRecordOp>(internal000);
+  auto internal001 = sk_make_sp<PaintOpBuffer>();
+  internal001->push<DrawColorOp>(2u, mode);
+  internal001->push<DrawColorOp>(3u, mode);
+  internal00->push<DrawRecordOp>(internal001);
+  internal0->push<DrawRecordOp>(internal00);
+  push_op<DrawRecordOp>(internal0);
+  push_op<DrawColorOp>(4u, mode);
+
+  auto chain = sk_make_sp<PaintOpBuffer>();
+  chain->push<DrawColorOp>(5u, mode);
+  chain->push<DrawColorOp>(6u, mode);
+  chain->push<DrawColorOp>(7u, mode);
+  for (size_t i = 0; i < 5; ++i) {
+    auto next_parent = sk_make_sp<PaintOpBuffer>();
+    next_parent->push<DrawRecordOp>(chain);
+    chain = next_parent;
+  }
+  push_op<DrawRecordOp>(chain);
+
+  EXPECT_EQ(4u, buffer_.size());
+
+  // all ops
+  {
+    size_t op_count = 0;
+    std::vector<size_t> offsets = Select({0, 1, 2, 3});
+    for (PaintOpBuffer::FlatteningIterator iter(&buffer_, &offsets); iter;
+         ++iter) {
+      PaintOp* base_op = *iter;
+      ASSERT_EQ(base_op->GetType(), PaintOpType::DrawColor);
+      DrawColorOp* op = static_cast<DrawColorOp*>(base_op);
+      EXPECT_EQ(op_count, op->color);
+      ++op_count;
+    }
+    EXPECT_EQ(8u, op_count);
+  }
+
+  // some ops
+  {
+    size_t op_count = 0;
+    std::vector<size_t> offsets = Select({1, 3});
+    std::vector<size_t> expected_colors = {1, 2, 3, 5, 6, 7};
+    for (PaintOpBuffer::FlatteningIterator iter(&buffer_, &offsets); iter;
+         ++iter) {
+      PaintOp* base_op = *iter;
+      ASSERT_EQ(base_op->GetType(), PaintOpType::DrawColor);
+      DrawColorOp* op = static_cast<DrawColorOp*>(base_op);
+      ASSERT_LT(op_count, expected_colors.size());
+      EXPECT_EQ(expected_colors[op_count], op->color);
+      ++op_count;
+    }
+    EXPECT_EQ(expected_colors.size(), op_count);
+  }
+
+  // no ops
+  {
+    std::vector<size_t> offsets = Select({});
+    PaintOpBuffer::FlatteningIterator iter(&buffer_, &offsets);
+    EXPECT_FALSE(iter);
   }
 }
 

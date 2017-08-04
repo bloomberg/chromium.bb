@@ -1056,7 +1056,7 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
 #endif
   }
 
-  class Iterator {
+  class CC_PAINT_EXPORT Iterator {
    public:
     explicit Iterator(const PaintOpBuffer* buffer)
         : Iterator(buffer, buffer->data_.get(), 0u) {}
@@ -1095,14 +1095,9 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
     size_t op_offset_ = 0;
   };
 
- private:
-  friend class DisplayItemList;
-  friend class PaintOpBufferOffsetsTest;
-  friend class SolidColorAnalyzer;
-
-  class OffsetIterator {
+  class CC_PAINT_EXPORT OffsetIterator {
    public:
-    // We only trust with the offsets from the friend classes.
+    // Offsets and paint op buffer must come from the same DisplayItemList.
     OffsetIterator(const PaintOpBuffer* buffer,
                    const std::vector<size_t>* offsets)
         : buffer_(buffer), ptr_(buffer_->data_.get()), offsets_(offsets) {
@@ -1167,8 +1162,9 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
     size_t offsets_index_ = 0;
   };
 
-  class CompositeIterator {
+  class CC_PAINT_EXPORT CompositeIterator {
    public:
+    // Offsets and paint op buffer must come from the same DisplayItemList.
     CompositeIterator(const PaintOpBuffer* buffer,
                       const std::vector<size_t>* offsets);
     CompositeIterator(const CompositeIterator& other);
@@ -1205,6 +1201,44 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
     base::Optional<OffsetIterator> offset_iter_;
     base::Optional<Iterator> iter_;
   };
+
+  // Returns a stream of non-DrawRecord ops from a top level pob with indices.
+  // Upon encountering DrawRecord ops, it returns ops from inside them
+  // without returning the DrawRecord op itself.  It does this recursively.
+  class CC_PAINT_EXPORT FlatteningIterator {
+   public:
+    // Offsets and paint op buffer must come from the same DisplayItemList.
+    FlatteningIterator(const PaintOpBuffer* buffer,
+                       const std::vector<size_t>* offsets);
+    ~FlatteningIterator();
+
+    PaintOp* operator->() const {
+      return nested_iter_.empty() ? *top_level_iter_ : *nested_iter_.back();
+    }
+    PaintOp* operator*() const { return operator->(); }
+
+    FlatteningIterator& operator++() {
+      if (nested_iter_.empty())
+        ++top_level_iter_;
+      else
+        ++nested_iter_.back();
+      FlattenCurrentOpIfNeeded();
+      return *this;
+    }
+
+    operator bool() const { return top_level_iter_; }
+
+   private:
+    void FlattenCurrentOpIfNeeded();
+
+    PaintOpBuffer::OffsetIterator top_level_iter_;
+    std::vector<Iterator> nested_iter_;
+  };
+
+ private:
+  friend class DisplayItemList;
+  friend class PaintOpBufferOffsetsTest;
+  friend class SolidColorAnalyzer;
 
   // Replays the paint op buffer into the canvas. If |indices| is specified, it
   // contains indices in an increasing order and only the indices specified in
