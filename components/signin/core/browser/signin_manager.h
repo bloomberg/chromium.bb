@@ -184,15 +184,18 @@ class SigninManager : public SigninManagerBase,
   // a sign-in success notification.
   void OnSignedIn();
 
+  // Send all observers |GoogleSigninSucceeded| notifications.
+  void FireGoogleSigninSucceeded();
+
   // Waits for the AccountTrackerService, then sends GoogleSigninSucceeded to
   // the client and clears the local password.
   void PostSignedIn();
 
-  // AccountTrackerService::Observer implementation.
+  // AccountTrackerService::Observer:
   void OnAccountUpdated(const AccountInfo& info) override;
   void OnAccountUpdateFailed(const std::string& account_id) override;
 
-  // OAuth2TokenService::Observer
+  // OAuth2TokenService::Observer:
   void OnRefreshTokensLoaded() override;
 
   // Called when a new request to re-authenticate a user is in progress.
