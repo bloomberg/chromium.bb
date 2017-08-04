@@ -135,6 +135,11 @@ SESSION_OUTPUT_TIME_LIMIT_SECONDS = 30
 # remoting_user_session.cc.
 USER_SESSION_MESSAGE_FD = 202
 
+# This is the exit code used to signal to wrapper that it should restart instead
+# of exiting. It must be kept in sync with kRestartExitCode in
+# remoting_user_session.cc.
+RELAUNCH_EXIT_CODE = 41
+
 # Globals needed by the atexit cleanup() handler.
 g_desktop = None
 g_host_hash = hashlib.md5(socket.gethostname()).hexdigest()
@@ -1190,9 +1195,18 @@ class RelaunchInhibitor:
     logging.info("Failure count for '%s' is now %d", self.label, self.failures)
 
 
-def relaunch_self():
-  cleanup()
-  os.execvp(SCRIPT_PATH, sys.argv)
+def relaunch_self(child_process):
+  """Relaunches the session to pick up any changes to the session logic in case
+  Chrome Remote Desktop has been upgraded. If this script is running standalone,
+  just relaunch the script. If running under user-session, bubble the relaunch
+  request up so it can relaunch as well.
+  """
+  if child_process:
+    # cleanup run via atexit
+    sys.exit(RELAUNCH_EXIT_CODE)
+  else:
+    cleanup()
+    os.execvp(SCRIPT_PATH, sys.argv)
 
 
 def waitpid_with_timeout(pid, deadline):
@@ -1343,7 +1357,9 @@ Web Store: https://chrome.google.com/remotedesktop"""
                     action="store", metavar="USER",
                     help="Adds the specified user to the chrome-remote-desktop "
                     "group (must be run as root).")
-  parser.add_option("", "--keep-parent-env", dest="keep_env", default=False,
+  # The script is being run as a child process under the user-session binary.
+  # Don't daemonize and use the inherited environment.
+  parser.add_option("", "--child-process", dest="child_process", default=False,
                     action="store_true",
                     help=optparse.SUPPRESS_HELP)
   parser.add_option("", "--watch-resolution", dest="watch_resolution",
@@ -1515,20 +1531,20 @@ Web Store: https://chrome.google.com/remotedesktop"""
     print("Service already running.")
     return 0
 
-  # Detach a separate "daemon" process to run the session, unless specifically
-  # requested to run in the foreground.
-  if not options.foreground:
-    daemonize()
-  else:
+  # If we're running under user-session, try to open the messaging pipe.
+  if options.child_process:
     # Log to existing messaging pipe if it exists.
     try:
       ParentProcessLogger(USER_SESSION_MESSAGE_FD).start_logging()
     except (IOError, OSError):
       # One of these will be thrown if the file descriptor is invalid, such as
-      # if the script is not being run under the wrapper or the fd got closed by
-      # the login shell. In either case, just continue without sending log
-      # messages.
+      # if the the fd got closed by the login shell. In that case, just continue
+      # without sending log messages.
       pass
+  # Otherwise, detach a separate "daemon" process to run the session, unless
+  # specifically requested to run in the foreground.
+  elif not options.foreground:
+    daemonize()
 
   if host.host_id:
     logging.info("Using host_id: " + host.host_id)
@@ -1580,7 +1596,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
         # state to lose and now is a good time to pick up any updates to this
         # script that might have been installed.
         logging.info("Relaunching self")
-        relaunch_self()
+        relaunch_self(options.child_process)
       else:
         # If there is a non-zero |failures| count, restarting the whole script
         # would lose this information, so just launch the session as normal.
@@ -1589,7 +1605,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
           relaunch_times.append(x_server_inhibitor.earliest_relaunch_time)
         else:
           logging.info("Launching X server and X session.")
-          desktop.launch_session(options.keep_env, args)
+          desktop.launch_session(options.child_process, args)
           x_server_inhibitor.record_started(MINIMUM_PROCESS_LIFETIME,
                                             backoff_time)
           allow_relaunch_self = True
