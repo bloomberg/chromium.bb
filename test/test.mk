@@ -33,7 +33,6 @@ LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += altref_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += aq_segment_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += datarate_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += encode_api_test.cc
-LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += coding_path_sync.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += error_resilience_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += i420_video_source.h
 #LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER)    += realtime_test.cc
@@ -107,6 +106,7 @@ ifeq ($(CONFIG_AV1),yes)
 # These tests require both the encoder and decoder to be built.
 ifeq ($(CONFIG_AV1_ENCODER)$(CONFIG_AV1_DECODER),yesyes)
 # IDCT test currently depends on FDCT function
+LIBAOM_TEST_SRCS-yes                   += coding_path_sync.cc
 LIBAOM_TEST_SRCS-yes                   += idct8x8_test.cc
 LIBAOM_TEST_SRCS-yes                   += partial_idct_test.cc
 LIBAOM_TEST_SRCS-yes                   += superframe_test.cc

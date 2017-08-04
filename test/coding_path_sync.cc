@@ -15,8 +15,6 @@
 
 #include "./aom_config.h"
 
-#if CONFIG_AV1_ENCODER && CONFIG_AV1_DECODER
-
 #include "aom_ports/mem.h"  // ROUND_POWER_OF_TWO
 #include "aom/aomcx.h"
 #include "aom/aomdx.h"
@@ -152,5 +150,3 @@ TEST(CodingPathSync, SearchForHbdLbdMismatch) {
 }
 
 }  // namespace
-
-#endif
