@@ -1217,14 +1217,6 @@
             ]
         }
     },
-    "amd64-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "peppy"
-        ],
-        "important": true
-    },
     "amd64-generic-asan": {
         "_template": "asan",
         "active_waterfall": "chromiumos",
@@ -1890,14 +1882,6 @@
             "chrome_internal"
         ]
     },
-    "arm-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "veyron_jaq"
-        ],
-        "important": true
-    },
     "arm-generic-chromium-pfq": {
         "_template": "chromium_pfq",
         "active_waterfall": "chromeos",
@@ -1987,14 +1971,6 @@
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"security\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
-        ],
-        "important": true
-    },
-    "arm64-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "elm"
         ],
         "important": true
     },
@@ -15096,11 +15072,8 @@
         "important": true,
         "master": true,
         "slave_configs": [
-            "amd64-gcc-toolchain",
             "amd64-llvm-next-toolchain",
-            "arm-gcc-toolchain",
             "arm-llvm-next-toolchain",
-            "arm64-gcc-toolchain",
             "arm64-llvm-next-toolchain"
         ],
         "sync_chrome": true

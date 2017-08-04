@@ -1765,7 +1765,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
 
   ### Toolchain waterfall entries.
   ### Toolchain builder configs: 3 architectures {amd64,arm,arm64}
-  ###                          x 2 toolchains {gcc,llvm-next}
+  ###                          x 1 toolchains {llvm-next}
   ### All of these builders should be slaves of 'master-toolchain'.
 
   ### Master toolchain config.
@@ -1787,15 +1787,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
 
   def toolchainSlaveHelper(name, board, *args, **kwargs):
     master.AddSlaves([
-        site_config.Add(
-            name + '-gcc-toolchain',
-            site_config.templates.gcc_toolchain,
-            *args,
-            boards=['peppy' if name == 'amd64' else board],
-            important=True,
-            active_waterfall=waterfall.WATERFALL_INTERNAL,
-            **kwargs
-        ),
         site_config.Add(
             name + '-llvm-next-toolchain',
             site_config.templates.llvm_next_toolchain,
