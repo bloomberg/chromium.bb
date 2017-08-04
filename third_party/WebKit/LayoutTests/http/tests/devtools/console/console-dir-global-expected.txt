@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: line 9: [object Window]
 Tests that console dumps global object with properties.
 
 {
