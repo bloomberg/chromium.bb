@@ -9,7 +9,6 @@
 
 #include "core/testing/NullExecutionContext.h"
 #include "gin/public/isolate_holder.h"
-#include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "platform/bindings/ScriptState.h"
@@ -407,111 +406,6 @@ class DataConsumerHandleTestUtil {
     const char* DebugName() const override { return "ReplayingHandle"; }
 
     RefPtr<Context> context_;
-  };
-
-  class HandleReadResult final {
-    USING_FAST_MALLOC(HandleReadResult);
-
-   public:
-    HandleReadResult(WebDataConsumerHandle::Result result,
-                     const Vector<char>& data)
-        : result_(result), data_(data) {}
-    WebDataConsumerHandle::Result GetResult() const { return result_; }
-    const Vector<char>& Data() const { return data_; }
-
-   private:
-    const WebDataConsumerHandle::Result result_;
-    const Vector<char> data_;
-  };
-
-  // HandleReader reads all data from the given WebDataConsumerHandle using
-  // Reader::read on the thread on which it is created. When reading is done
-  // or failed, it calls the given callback with the result.
-  class HandleReader final : public WebDataConsumerHandle::Client {
-    USING_FAST_MALLOC(HandleReader);
-
-   public:
-    using OnFinishedReading =
-        WTF::Function<void(std::unique_ptr<HandleReadResult>)>;
-
-    HandleReader(std::unique_ptr<WebDataConsumerHandle>,
-                 std::unique_ptr<OnFinishedReading>);
-    void DidGetReadable() override;
-
-   private:
-    void RunOnFinishedReading(std::unique_ptr<HandleReadResult>);
-
-    std::unique_ptr<WebDataConsumerHandle::Reader> reader_;
-    std::unique_ptr<OnFinishedReading> on_finished_reading_;
-    Vector<char> data_;
-  };
-
-  // HandleTwoPhaseReader does the same as HandleReader, but it uses
-  // |beginRead| / |endRead| instead of |read|.
-  class HandleTwoPhaseReader final : public WebDataConsumerHandle::Client {
-    USING_FAST_MALLOC(HandleTwoPhaseReader);
-
-   public:
-    using OnFinishedReading =
-        WTF::Function<void(std::unique_ptr<HandleReadResult>)>;
-
-    HandleTwoPhaseReader(std::unique_ptr<WebDataConsumerHandle>,
-                         std::unique_ptr<OnFinishedReading>);
-    void DidGetReadable() override;
-
-   private:
-    void RunOnFinishedReading(std::unique_ptr<HandleReadResult>);
-
-    std::unique_ptr<WebDataConsumerHandle::Reader> reader_;
-    std::unique_ptr<OnFinishedReading> on_finished_reading_;
-    Vector<char> data_;
-  };
-
-  // HandleReaderRunner<T> creates a dedicated thread and run T on the thread
-  // where T is one of HandleReader and HandleTwophaseReader.
-  template <typename T>
-  class HandleReaderRunner final {
-    STACK_ALLOCATED();
-
-   public:
-    explicit HandleReaderRunner(std::unique_ptr<WebDataConsumerHandle> handle)
-        : thread_(WTF::WrapUnique(new Thread("reading thread"))),
-          event_(WTF::MakeUnique<WaitableEvent>()),
-          is_done_(false) {
-      thread_->GetThread()->PostTask(
-          BLINK_FROM_HERE, CrossThreadBind(&HandleReaderRunner::Start,
-                                           crossThreadUnretained(this),
-                                           WTF::Passed(std::move(handle))));
-    }
-    ~HandleReaderRunner() { Wait(); }
-
-    std::unique_ptr<HandleReadResult> Wait() {
-      if (is_done_)
-        return nullptr;
-      event_->Wait();
-      is_done_ = true;
-      return std::move(result_);
-    }
-
-   private:
-    void Start(std::unique_ptr<WebDataConsumerHandle> handle) {
-      handle_reader_ = WTF::WrapUnique(new T(
-          std::move(handle),
-          WTF::Bind(&HandleReaderRunner::OnFinished, WTF::Unretained(this))));
-    }
-
-    void OnFinished(std::unique_ptr<HandleReadResult> result) {
-      handle_reader_ = nullptr;
-      result_ = std::move(result);
-      event_->Signal();
-    }
-
-    std::unique_ptr<Thread> thread_;
-    std::unique_ptr<WaitableEvent> event_;
-    std::unique_ptr<HandleReadResult> result_;
-    bool is_done_;
-
-    std::unique_ptr<T> handle_reader_;
   };
 
   static std::unique_ptr<WebDataConsumerHandle>
