@@ -351,7 +351,7 @@ FcLangCompare (const FcChar8 *s1, const FcChar8 *s2)
 {
     FcChar8	    c1, c2;
     FcLangResult    result = FcLangDifferentLang;
-    FcChar8	   *s1_orig = s1;
+    const FcChar8  *s1_orig = s1;
     FcBool	    is_und;
 
     is_und = FcToLower (s1[0]) == 'u' &&
