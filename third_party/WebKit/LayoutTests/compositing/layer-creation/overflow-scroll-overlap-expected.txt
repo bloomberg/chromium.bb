@@ -29,11 +29,17 @@
     },
     {
       "name": "LayoutBlockFlow (relative positioned) DIV class='box'",
-      "position": [20, 45],
-      "bounds": [210, 100],
+      "position": [20, 6],
+      "bounds": [200, 100],
       "contentsOpaque": true,
       "drawsContent": true,
       "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='box')",
+      "position": [20, 161],
+      "bounds": [210, 100],
+      "drawsContent": true
     }
   ]
 }
