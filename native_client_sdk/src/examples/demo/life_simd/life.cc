@@ -403,7 +403,7 @@ void Life::wSimulate(int y) {
       //   Index 17 is 255 constant from kZero255 constant vector.
       //   Output pixel color values are in BGRABGRABGRABGRA order.
       // Since each pixel needs 4 bytes of color information, 16 cells will
-      // need to expand to 4 seperate 16 byte pixel splats.
+      // need to expand to 4 separate 16 byte pixel splats.
       u8x16_t pixel0_3 = __builtin_shufflevector(alive, kZero255,
         16, 0, 16, 17, 16, 1, 16, 17, 16, 2, 16, 17, 16, 3, 16, 17);
       u8x16_t pixel4_7 = __builtin_shufflevector(alive, kZero255,

@@ -177,7 +177,7 @@ TEST_F(TtyNodeTest, TtyOutput) {
 // Returns:
 //   0 -> Not readable
 //   1 -> Readable
-//  -1 -> Error occured
+//  -1 -> Error occurred
 static int IsReadable(int fd) {
   struct timeval timeout = {0, 0};
   fd_set readfds;

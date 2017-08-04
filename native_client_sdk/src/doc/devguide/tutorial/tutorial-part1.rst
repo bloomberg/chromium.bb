@@ -122,7 +122,7 @@ development.
 Step 4: Stub code for the tutorial
 ==================================
 
-The stub code for the tutorial is avalable in the SDK, in
+The stub code for the tutorial is available in the SDK, in
 ``pepper_$(VERSION)/getting_started/part1``. It contains the following files:
 
 * ``index.html``: Contains the HTML layout of the page as well as the JavaScript

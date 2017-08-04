@@ -65,7 +65,7 @@ class VpnProviderInstance : public pp::Instance {
        * connection. The response would usually contain configuration details
        * for the tunnel obtained from the VPN implementation.
        *
-       * Currently just signaling that is was executed succesfuly.
+       * Currently just signaling that is was executed successfully.
        */
 
       pp::VarDictionary dict;

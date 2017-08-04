@@ -32,7 +32,7 @@ bool operator<(const ScopedEventEmitter& src_a,
 //
 // The EventEmitter class provides notification of events to EventListeners
 // by registering EventInfo objects and signaling the EventListener
-// whenever thier state is changed.
+// whenever their state is changed.
 //
 // See "Kernel Events" in event_listener.h for additional information.
 

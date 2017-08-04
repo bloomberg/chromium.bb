@@ -103,7 +103,7 @@ Error TtyNode::Write(const HandleAttr& attr,
   int rtn = output_handler_.handler(
       static_cast<const char*>(buf), count, output_handler_.user_data);
 
-  // Negative return value means an error occured and the return
+  // Negative return value means an error occurred and the return
   // value is a negated errno value.
   if (rtn < 0)
     return -rtn;

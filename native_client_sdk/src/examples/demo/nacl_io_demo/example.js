@@ -15,7 +15,7 @@ function domContentLoaded(name, tc, config, width, height) {
   navigator.webkitPersistentStorage.requestQuota(5 * 1024 * 1024,
       function(bytes) {
         common.updateStatus(
-            'Allocated ' + bytes + ' bytes of persistant storage.');
+            'Allocated ' + bytes + ' bytes of persistent storage.');
         common.attachDefaultListeners();
         common.createNaClModule(name, tc, config, width, height);
       },

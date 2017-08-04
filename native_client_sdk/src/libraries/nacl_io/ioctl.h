@@ -14,7 +14,7 @@
  * thread that calls write(), or, for echoed input during the
  * NACL_IOC_HANDLEMESSAGE ioctl() on the thread calling ioctl(). The handler
  * should return the number of bytes written/handled, or -errno if an error
- * occured.
+ * occurred.
  */
 #define TIOCNACLOUTPUT 0xadcd03
 

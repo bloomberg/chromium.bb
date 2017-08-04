@@ -27,7 +27,7 @@ def ParseLine(line, new_target):
   """Parse one line of a GCC-generated deps file.
 
   Each line contains an optional target and then a list
-  of space seperated dependencies.  Spaces within filenames
+  of space separated dependencies.  Spaces within filenames
   are escaped with a backslash.
   """
   filenames = []

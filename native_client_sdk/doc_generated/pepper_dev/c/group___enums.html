@@ -130,7 +130,8 @@ Enumerations</h2><table class="memberdecls">
 <a class="el" href="group___enums.html#gga7df48e1c55f6401beea2a1b9c07967e8a48ed49219981a01405e97eb414c89fec">PP_GRAPHICS3DATTRIB_GPU_PREFERENCE</a> =  0x11000, 
 <a class="el" href="group___enums.html#gga7df48e1c55f6401beea2a1b9c07967e8a4295d8750ae536c3aed03d794429e336">PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_LOW_POWER</a> =  0x11001, 
 <br />
-&#160;&#160;<a class="el" href="group___enums.html#gga7df48e1c55f6401beea2a1b9c07967e8a1a7563ae755ca52d429302a35930201a">PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_PERFORMANCE</a> =  0x11002
+&#160;&#160;<a class="el" href="group___enums.html#gga7df48e1c55f6401beea2a1b9c07967e8a1a7563ae755ca52d429302a35930201a">PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_PERFORMANCE</a> =  0x11002, 
+<a class="el" href="group___enums.html#gga7df48e1c55f6401beea2a1b9c07967e8a0d6e908352a2bb73a37ca8b8e1e86c5c">PP_GRAPHICS3DATTRIB_SINGLE_BUFFER</a> =  0x3085
 <br />
  }</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#ga9815041477d810724e44da862f9852ed">PP_VarType</a> { <br />
@@ -260,7 +261,8 @@ Enumerations</h2><table class="memberdecls">
 <a class="el" href="group___enums.html#ggafe68e3c1031daa4a6496845ff47649cda59d6686dbce1f0dc092cb88a451bb3a6">PP_INPUTEVENT_CLASS_WHEEL</a> =  1 &lt;&lt; 2, 
 <a class="el" href="group___enums.html#ggafe68e3c1031daa4a6496845ff47649cda19b05264fa31d7e975eba297f9f146af">PP_INPUTEVENT_CLASS_TOUCH</a> =  1 &lt;&lt; 3, 
 <br />
-&#160;&#160;<a class="el" href="group___enums.html#ggafe68e3c1031daa4a6496845ff47649cda1280fe9a85edf74e20e4d503a345ab7d">PP_INPUTEVENT_CLASS_IME</a> =  1 &lt;&lt; 4
+&#160;&#160;<a class="el" href="group___enums.html#ggafe68e3c1031daa4a6496845ff47649cda1280fe9a85edf74e20e4d503a345ab7d">PP_INPUTEVENT_CLASS_IME</a> =  1 &lt;&lt; 4, 
+<a class="el" href="group___enums.html#ggafe68e3c1031daa4a6496845ff47649cda627e6717b0241595c6abe8464abe89f3">PP_INPUTEVENT_CLASS_COALESCED_TOUCH</a> =  1 &lt;&lt; 5
 <br />
  }</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group___enums.html#gad5885a239d04166c8777432c81e39d0a">PP_TouchListType</a> { <a class="el" href="group___enums.html#ggad5885a239d04166c8777432c81e39d0aa739dfd65f4cd719996f20bdd2e7db4ca">PP_TOUCHLIST_TYPE_TOUCHES</a> =  0, 
@@ -999,6 +1001,9 @@ Variables</h2><table class="memberdecls">
 <tr><td valign="top"><em><a class="anchor" id="gga7df48e1c55f6401beea2a1b9c07967e8a1a7563ae755ca52d429302a35930201a"></a><!-- doxytag: member="PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_PERFORMANCE" ref="gga7df48e1c55f6401beea2a1b9c07967e8a1a7563ae755ca52d429302a35930201a" args="" -->PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_PERFORMANCE</em>&nbsp;</td><td>
 <p>The context may be high-power and may be created on a discrete gpu. </p>
 </td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga7df48e1c55f6401beea2a1b9c07967e8a0d6e908352a2bb73a37ca8b8e1e86c5c"></a><!-- doxytag: member="PP_GRAPHICS3DATTRIB_SINGLE_BUFFER" ref="gga7df48e1c55f6401beea2a1b9c07967e8a0d6e908352a2bb73a37ca8b8e1e86c5c" args="" -->PP_GRAPHICS3DATTRIB_SINGLE_BUFFER</em>&nbsp;</td><td>
+<p>Whether or not offscreen color buffers exist in front/back pairs that can be swapped. </p>
+</td></tr>
 </table>
 </dd>
 </dl>
@@ -1112,6 +1117,10 @@ Variables</h2><table class="memberdecls">
 <tr><td valign="top"><em><a class="anchor" id="ggafe68e3c1031daa4a6496845ff47649cda1280fe9a85edf74e20e4d503a345ab7d"></a><!-- doxytag: member="PP_INPUTEVENT_CLASS_IME" ref="ggafe68e3c1031daa4a6496845ff47649cda1280fe9a85edf74e20e4d503a345ab7d" args="" -->PP_INPUTEVENT_CLASS_IME</em>&nbsp;</td><td>
 <p>Identifies IME composition input events. </p>
 <p>Request this input event class if you allow on-the-spot IME input. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="ggafe68e3c1031daa4a6496845ff47649cda627e6717b0241595c6abe8464abe89f3"></a><!-- doxytag: member="PP_INPUTEVENT_CLASS_COALESCED_TOUCH" ref="ggafe68e3c1031daa4a6496845ff47649cda627e6717b0241595c6abe8464abe89f3" args="" -->PP_INPUTEVENT_CLASS_COALESCED_TOUCH</em>&nbsp;</td><td>
+<p>Identifies coalesced touch input events. </p>
+<p>Touch events are coalesced for each frame. By default, the coalesced touch events will be dropped. Request this input event class if you intend to handle all the touch events. </p>
 </td></tr>
 </table>
 </dd>

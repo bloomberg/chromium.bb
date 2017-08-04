@@ -60,7 +60,7 @@ class TtyNode : public CharNode {
 
   // Output handler for TTY.  This is set via ioctl(2).
   struct tioc_nacl_output output_handler_;
-  // Lock to protect output_handler_.  This lock gets aquired whenever
+  // Lock to protect output_handler_.  This lock gets acquired whenever
   // output_handler_ is used or set.
   sdk_util::SimpleLock output_lock_;
 };

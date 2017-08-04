@@ -614,7 +614,7 @@ TEST_F(SocketTestWithServer, LargeSend) {
   ASSERT_EQ(0, ki_connect(sock_, (sockaddr*) &addr, addrlen))
       << "Failed with " << errno << ": " << strerror(errno);
 
-  // Call send an recv until all bytes have been transfered.
+  // Call send an recv until all bytes have been transferred.
   while (bytes_received < LARGE_SEND_BYTES) {
     if (bytes_sent < LARGE_SEND_BYTES) {
       int sent = ki_send(sock_, outbuf + bytes_sent,

@@ -19,7 +19,7 @@ Portable Native Client
 ======================
 
 Portable Native Client is enabled by default for web pages, so no separate
-distribution step is requred. Making PNaCl a part of your web application is as
+distribution step is required. Making PNaCl a part of your web application is as
 simple as embedding a manifest file that points to a **pexe**. See the
 :doc:`technical overview <../overview>` for more details.
 

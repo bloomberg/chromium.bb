@@ -86,7 +86,7 @@ void ThreadPool::PostExitAndJoinAll() {
 // Main work loop - one for each worker thread.
 void ThreadPool::WorkLoop() {
   while (true) {
-    // Wait for work. If no work is availble, this thread will sleep here.
+    // Wait for work. If no work is available, this thread will sleep here.
     sem_wait(&work_sem_);
     if (exiting_) break;
     while (true) {

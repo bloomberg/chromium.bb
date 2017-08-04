@@ -229,7 +229,7 @@ all:
 
 
 #
-# The install target is used to install built libraries to thier final destination.
+# The install target is used to install built libraries to their final destination.
 # By default this is the NaCl SDK 'lib' folder.
 #
 install:
