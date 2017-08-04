@@ -26,6 +26,7 @@
 #include "net/spdy/core/spdy_protocol.h"
 #include "net/spdy/core/spdy_test_utils.h"
 #include "net/spdy/platform/api/spdy_ptr_util.h"
+#include "net/spdy/platform/api/spdy_string_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -428,7 +429,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
                          size_t len) override {
     VLOG(1) << "OnStreamFrameData(" << stream_id << ", data, " << len << ", "
             << ")   data:\n"
-            << base::HexEncode(data, len);
+            << SpdyHexDump(SpdyStringPiece(data, len));
     EXPECT_EQ(header_stream_id_, stream_id);
 
     data_bytes_ += len;
