@@ -69,10 +69,15 @@ PP_Bool CanEditText(PP_Instance instance) {
   return ret;
 }
 
+void ReplaceSelection(PP_Instance instance, const char* text) {
+  HostDispatcher::GetForInstance(instance)->Send(
+      new PpapiMsg_PPPPdf_ReplaceSelection(API_ID_PPP_PDF, instance, text));
+}
+
 const PPP_Pdf ppp_pdf_interface = {
     &GetLinkAtPosition,   &Transform,        &GetPrintPresetOptionsFromDocument,
     &EnableAccessibility, &SetCaretPosition, &MoveRangeSelectionExtent,
-    &SetSelectionBounds,  &CanEditText,
+    &SetSelectionBounds,  &CanEditText,      &ReplaceSelection,
 };
 #else
 // The NaCl plugin doesn't need the host side interface - stub it out.
@@ -116,6 +121,8 @@ bool PPP_Pdf_Proxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPPdf_SetSelectionBounds,
                         OnPluginMsgSetSelectionBounds)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPPdf_CanEditText, OnPluginMsgCanEditText)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPPdf_ReplaceSelection,
+                        OnPluginMsgReplaceSelection)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -168,6 +175,12 @@ void PPP_Pdf_Proxy::OnPluginMsgCanEditText(PP_Instance instance,
                                            PP_Bool* result) {
   *result = PP_FromBool(ppp_pdf_ &&
                         CallWhileUnlocked(ppp_pdf_->CanEditText, instance));
+}
+
+void PPP_Pdf_Proxy::OnPluginMsgReplaceSelection(PP_Instance instance,
+                                                const std::string& text) {
+  if (ppp_pdf_)
+    CallWhileUnlocked(ppp_pdf_->ReplaceSelection, instance, text.c_str());
 }
 
 }  // namespace proxy

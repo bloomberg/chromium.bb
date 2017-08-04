@@ -237,6 +237,10 @@ class PDFEngine {
   // Returns true if focus is within an editable form text area, and false
   // otherwise.
   virtual bool CanEditText() = 0;
+  // Replace selected text within an editable form text area with another
+  // string. If there is no selected text, append the replacement text after the
+  // current caret position.
+  virtual void ReplaceSelection(const std::string& text) = 0;
   virtual std::string GetLinkAtPosition(const pp::Point& point) = 0;
   // Checks the permissions associated with this document.
   virtual bool HasPermission(DocumentPermission permission) const = 0;

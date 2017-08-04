@@ -44,6 +44,7 @@
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/Page.h"
+#include "platform/KeyboardCodes.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/ForeignLayerDisplayItem.h"
@@ -137,6 +138,33 @@ class TestPlugin : public FakeWebPlugin {
   TestPluginWebFrameClient* const test_client_;
 };
 
+// Subclass of FakeWebPlugin used for testing the Cut edit command, so
+// HasSelection() and CanEditText() return true by default.
+class TestPluginWithEditableText : public FakeWebPlugin {
+ public:
+  explicit TestPluginWithEditableText(const WebPluginParams& params)
+      : FakeWebPlugin(params), cut_called_(false) {}
+
+  bool HasSelection() const override { return true; }
+  bool CanEditText() const override { return true; }
+  bool ExecuteEditCommand(const WebString& name,
+                          const WebString& value) override {
+    if (name == "Cut") {
+      cut_called_ = true;
+      return true;
+    }
+    return false;
+  }
+
+  bool IsCutCalled() const { return cut_called_; }
+  void ResetCutStatus() { cut_called_ = false; }
+
+ private:
+  ~TestPluginWithEditableText() override {}
+
+  bool cut_called_;
+};
+
 class TestPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
   WebLocalFrame* CreateChildFrame(
       WebLocalFrame* parent,
@@ -152,17 +180,25 @@ class TestPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 
   WebPlugin* CreatePlugin(const WebPluginParams& params) override {
     if (params.mime_type == "application/x-webkit-test-webplugin" ||
-        params.mime_type == "application/pdf")
+        params.mime_type == "application/pdf") {
+      if (has_editable_text_)
+        return new TestPluginWithEditableText(params);
+
       return new TestPlugin(params, this);
+    }
     return WebFrameClient::CreatePlugin(params);
   }
 
  public:
   void OnPrintPage() { printed_page_ = true; }
   bool PrintedAtLeastOnePage() const { return printed_page_; }
+  void SetHasEditableText(bool has_editable_text) {
+    has_editable_text_ = has_editable_text;
+  }
 
  private:
   bool printed_page_ = false;
+  bool has_editable_text_ = false;
 };
 
 void TestPlugin::PrintPage(int page_number, WebCanvas* canvas) {
@@ -368,6 +404,8 @@ TEST_F(WebPluginContainerTest, Copy) {
   EXPECT_TRUE(web_view->MainFrame()->ToWebLocalFrame()->ExecuteCommand("Copy"));
   EXPECT_EQ(WebString("x"), Platform::Current()->Clipboard()->ReadPlainText(
                                 WebClipboard::Buffer()));
+
+  ClearClipboardBuffer();
 }
 
 TEST_F(WebPluginContainerTest, CopyFromContextMenu) {
@@ -402,6 +440,8 @@ TEST_F(WebPluginContainerTest, CopyFromContextMenu) {
   EXPECT_TRUE(web_view->MainFrameImpl()->ExecuteCommand("Copy"));
   EXPECT_EQ(WebString("x"), Platform::Current()->Clipboard()->ReadPlainText(
                                 WebClipboard::Buffer()));
+
+  ClearClipboardBuffer();
 }
 
 // Verifies |Ctrl-C| and |Ctrl-Insert| keyboard events, results in copying to
@@ -448,6 +488,72 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest) {
       ->HandleEvent(key_event_insert);
   EXPECT_EQ(WebString("x"), Platform::Current()->Clipboard()->ReadPlainText(
                                 WebClipboard::Buffer()));
+
+  ClearClipboardBuffer();
+}
+
+// Verifies |Ctrl-X| and |Shift-Delete| keyboard events, results in the "Cut"
+// command being invoked.
+TEST_F(WebPluginContainerTest, CutDeleteKeyboardEventsTest) {
+  RegisterMockedURL("plugin_container.html");
+  // Must outlive |web_view_helper|.
+  TestPluginWebFrameClient plugin_web_frame_client;
+  FrameTestHelpers::WebViewHelper web_view_helper;
+
+  // Use TestPluginWithEditableText for testing Cut().
+  plugin_web_frame_client.SetHasEditableText(true);
+
+  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+      base_url_ + "plugin_container.html", &plugin_web_frame_client);
+  EnablePlugins(web_view, WebSize(300, 300));
+
+  WebElement plugin_container_one_element =
+      web_view->MainFrameImpl()->GetDocument().GetElementById(
+          WebString::FromUTF8("translated-plugin"));
+
+  WebPlugin* plugin =
+      ToWebPluginContainerImpl(plugin_container_one_element.PluginContainer())
+          ->Plugin();
+  TestPluginWithEditableText* test_plugin =
+      static_cast<TestPluginWithEditableText*>(plugin);
+
+  WebInputEvent::Modifiers modifier_key = static_cast<WebInputEvent::Modifiers>(
+      WebInputEvent::kControlKey | WebInputEvent::kNumLockOn |
+      WebInputEvent::kIsLeft);
+#if defined(OS_MACOSX)
+  modifier_key = static_cast<WebInputEvent::Modifiers>(
+      WebInputEvent::kMetaKey | WebInputEvent::kNumLockOn |
+      WebInputEvent::kIsLeft);
+#endif
+  WebKeyboardEvent web_keyboard_event_x(WebInputEvent::kRawKeyDown,
+                                        modifier_key,
+                                        WebInputEvent::kTimeStampForTesting);
+  web_keyboard_event_x.windows_key_code = VKEY_X;
+  KeyboardEvent* key_event_x = KeyboardEvent::Create(web_keyboard_event_x, 0);
+  ToWebPluginContainerImpl(plugin_container_one_element.PluginContainer())
+      ->HandleEvent(key_event_x);
+
+  // Check that "Cut" command is invoked.
+  EXPECT_TRUE(test_plugin->IsCutCalled());
+
+  // Reset Cut status for next time.
+  test_plugin->ResetCutStatus();
+
+  modifier_key = static_cast<WebInputEvent::Modifiers>(
+      WebInputEvent::kShiftKey | WebInputEvent::kNumLockOn |
+      WebInputEvent::kIsLeft);
+
+  WebKeyboardEvent web_keyboard_event_delete(
+      WebInputEvent::kRawKeyDown, modifier_key,
+      WebInputEvent::kTimeStampForTesting);
+  web_keyboard_event_delete.windows_key_code = VKEY_DELETE;
+  KeyboardEvent* key_event_delete =
+      KeyboardEvent::Create(web_keyboard_event_delete, 0);
+  ToWebPluginContainerImpl(plugin_container_one_element.PluginContainer())
+      ->HandleEvent(key_event_delete);
+
+  // Check that "Cut" command is invoked.
+  EXPECT_TRUE(test_plugin->IsCutCalled());
 }
 
 // A class to facilitate testing that events are correctly received by plugins.
