@@ -22,9 +22,12 @@ Polymer({
 
     /**
      * The model for the printer action menu.
-     * @private {?CupsPrinterInfo}
+     * @type {?CupsPrinterInfo}
      */
-    activePrinter_: Object,
+    activePrinter: {
+      type: Object,
+      notify: true,
+    },
   },
 
   /** @private {settings.CupsPrintersBrowserProxy} */
@@ -40,7 +43,7 @@ Polymer({
    * @private
    */
   onOpenActionMenuTap_: function(e) {
-    this.activePrinter_ = e.model.item;
+    this.activePrinter = e.model.item;
     var menu = /** @type {!CrActionMenuElement} */ (
         this.$$('dialog[is=cr-action-menu]'));
     menu.showAt(/** @type {!Element} */ (
@@ -51,9 +54,9 @@ Polymer({
    * @param {{model:Object}} event
    * @private
    */
-  onDetailsTap_: function(event) {
-    // Event is caught by 'settings-printing-page'.
-    this.fire('show-cups-printer-details', this.activePrinter_);
+  onEditTap_: function(event) {
+    // Event is caught by 'settings-cups-printers'.
+    this.fire('edit-cups-printer-details');
     this.closeDropdownMenu_();
   },
 
@@ -62,16 +65,16 @@ Polymer({
    * @private
    */
   onRemoveTap_: function(event) {
-    var index = this.printers.indexOf(assert(this.activePrinter_));
+    var index = this.printers.indexOf(assert(this.activePrinter));
     this.splice('printers', index, 1);
     this.browserProxy_.removeCupsPrinter(
-        this.activePrinter_.printerId, this.activePrinter_.printerName);
+        this.activePrinter.printerId, this.activePrinter.printerName);
+    this.activePrinter = null;
     this.closeDropdownMenu_();
   },
 
   /** @private */
   closeDropdownMenu_: function() {
-    this.activePrinter_ = null;
     var menu = /** @type {!CrActionMenuElement} */ (
         this.$$('dialog[is=cr-action-menu]'));
     menu.close();

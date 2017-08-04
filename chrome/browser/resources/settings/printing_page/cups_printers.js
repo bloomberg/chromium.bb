@@ -21,12 +21,25 @@ Polymer({
       notify: true,
     },
 
+    /** @type {?CupsPrinterInfo} */
+    activePrinter: {
+      type: Object,
+      notify: true,
+    },
+
     searchTerm: {
       type: String,
     },
 
     /** @private */
     canAddPrinter_: Boolean,
+
+    /** @private */
+    showCupsEditPrinterDialog_: Boolean,
+  },
+
+  listeners: {
+    'edit-cups-printer-details': 'onShowCupsEditPrinterDialog_',
   },
 
   /**
@@ -126,4 +139,16 @@ Polymer({
   onAddPrinterDialogClose_: function() {
     cr.ui.focusWithoutInk(assert(this.$$('#addPrinter')));
   },
+
+  /** @private */
+  onShowCupsEditPrinterDialog_: function() {
+    this.showCupsEditPrinterDialog_ = true;
+    this.async(function() {
+      var dialog = this.$$('settings-cups-edit-printer-dialog');
+      dialog.addEventListener('close', function() {
+        this.showCupsEditPrinterDialog_ = false;
+      }.bind(this));
+    });
+  },
+
 });

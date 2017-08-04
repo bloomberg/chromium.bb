@@ -1,43 +1,19 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_scrollable_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-dropdown/iron-dropdown.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-input/iron-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
+<link rel="import" href="cups_printer_shared_css.html">
 <link rel="import" href="cups_printers_browser_proxy.html">
-<link rel="import" href="../settings_shared_css.html">
-<link rel="import" href="../settings_vars_css.html">
-
-<dom-module id="cups-add-printer-dialog-style">
-  <template>
-    <style>
-      .list-item {
-        background: none;
-        border: none;
-        box-sizing: border-box;
-        color: var(--paper-grey-800);
-        font: inherit;
-        min-height: 32px;
-        padding: 0 24px;
-        text-align: start;
-        width: 100%;
-        @apply(--settings-actionable);
-      }
-
-      .list-item:focus {
-        background-color: var(--paper-grey-300);
-        outline: none;
-      }
-    </style>
-  </template>
-</dom-module>
 
 <dom-module id="add-printer-list">
   <template>
-    <style include="settings-shared cups-add-printer-dialog-style">
+    <style include="cups-printer-shared">
       .list-item {
         padding: 0 20px;
       }
@@ -57,17 +33,10 @@
 
 <dom-module id="drop-down-search-box">
   <template>
-    <style include="settings-shared cups-add-printer-dialog-style">
+    <style include="cups-printer-shared">
       iron-dropdown,
       paper-input-container {
         width: 270px;
-      }
-
-      paper-input-container {
-        --paper-input-container-color: var(--paper-grey-600);
-        --paper-input-container-input: {
-          font-size: inherit;
-        };
       }
 
       iron-dropdown .dropdown-content {
@@ -75,6 +44,16 @@
         box-shadow: 0 2px 6px var(--paper-grey-500);
         min-width: 128px;
         padding: 8px 0;
+      }
+
+      /* The following styles make the arrow look aligned with md-select */
+      button[is='paper-icon-button-light'] {
+        height: 24px;
+        width: 24px;
+      }
+
+      #dropdownIcon {
+        background-size: 24px;
       }
     </style>
     <paper-input-container no-label-float on-tap="onTap_">
@@ -88,7 +67,7 @@
       </button>
     </paper-input-container>
     <iron-dropdown horizontal-align="left" vertical-align="top"
-        vertical-offset="47">
+        vertical-offset="35">
       <div class="dropdown-content">
         <template is="dom-repeat" items="[[items]]"
             filter="[[filterItems_(searchTerm_)]]">
@@ -119,7 +98,7 @@
       <div slot="title">
         <slot name="dialog-title"></slot>
       </div>
-      <div slot="body">
+      <div slot="body" scrollable>
         <slot name="dialog-body"></slot>
       </div>
       <div slot="button-container">
