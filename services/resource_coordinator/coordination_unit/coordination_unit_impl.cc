@@ -16,11 +16,6 @@
 
 namespace resource_coordinator {
 
-#define NOTIFY_OBSERVERS(observers, Method, ...) \
-  for (auto& observer : observers) {             \
-    observer.Method(__VA_ARGS__);                \
-  }
-
 namespace {
 
 using CUIDMap = std::unordered_map<CoordinationUnitID,
@@ -238,7 +233,8 @@ bool CoordinationUnitImpl::AddChild(CoordinationUnitImpl* child) {
       children_.count(child) ? false : children_.insert(child).second;
 
   if (success) {
-    NOTIFY_OBSERVERS(observers_, OnChildAdded, this, child);
+    for (auto& observer : observers_)
+      observer.OnChildAdded(this, child);
   }
 
   return success;
@@ -265,7 +261,8 @@ bool CoordinationUnitImpl::RemoveChild(CoordinationUnitImpl* child) {
   bool success = children_removed > 0;
 
   if (success) {
-    NOTIFY_OBSERVERS(observers_, OnChildRemoved, this, child);
+    for (auto& observer : observers_)
+      observer.OnChildRemoved(this, child);
   }
 
   return success;
@@ -275,7 +272,8 @@ void CoordinationUnitImpl::AddParent(CoordinationUnitImpl* parent) {
   DCHECK_EQ(0u, parents_.count(parent));
   parents_.insert(parent);
 
-  NOTIFY_OBSERVERS(observers_, OnParentAdded, this, parent);
+  for (auto& observer : observers_)
+    observer.OnParentAdded(this, parent);
 
   RecalcCoordinationPolicy();
 }
@@ -286,7 +284,8 @@ void CoordinationUnitImpl::RemoveParent(CoordinationUnitImpl* parent) {
 
   // TODO(matthalp, oysteine) should this go before or
   // after RecalcCoordinationPolicy?
-  NOTIFY_OBSERVERS(observers_, OnParentRemoved, this, parent);
+  for (auto& observer : observers_)
+    observer.OnParentRemoved(this, parent);
 
   RecalcCoordinationPolicy();
 }
@@ -387,12 +386,12 @@ void CoordinationUnitImpl::SetProperty(mojom::PropertyType property_type,
   const base::Value& property =
       *(properties_[property_type] = std::move(value));
   PropagateProperty(property_type, property);
-  NOTIFY_OBSERVERS(observers_, OnPropertyChanged, this, property_type,
-                   property);
+  OnPropertyChanged(property_type, property);
 }
 
 void CoordinationUnitImpl::BeforeDestroyed() {
-  NOTIFY_OBSERVERS(observers_, OnBeforeCoordinationUnitDestroyed, this);
+  for (auto& observer : observers_)
+    observer.OnBeforeCoordinationUnitDestroyed(this);
 }
 
 void CoordinationUnitImpl::AddObserver(
@@ -403,6 +402,13 @@ void CoordinationUnitImpl::AddObserver(
 void CoordinationUnitImpl::RemoveObserver(
     CoordinationUnitGraphObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void CoordinationUnitImpl::OnPropertyChanged(
+    const mojom::PropertyType property_type,
+    const base::Value& value) {
+  for (auto& observer : observers_)
+    observer.OnPropertyChanged(this, property_type, value);
 }
 
 }  // namespace resource_coordinator

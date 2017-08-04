@@ -32,22 +32,6 @@ bool TabSignalGeneratorImpl::ShouldObserve(
          coordination_unit_type == CoordinationUnitType::kFrame;
 }
 
-void TabSignalGeneratorImpl::OnPropertyChanged(
-    const CoordinationUnitImpl* coordination_unit,
-    const mojom::PropertyType property_type,
-    const base::Value& value) {
-  if (coordination_unit->id().type == CoordinationUnitType::kFrame) {
-    OnFramePropertyChanged(
-        CoordinationUnitImpl::ToFrameCoordinationUnit(coordination_unit),
-        property_type, value);
-  }
-}
-
-void TabSignalGeneratorImpl::BindToInterface(
-    resource_coordinator::mojom::TabSignalGeneratorRequest request) {
-  bindings_.AddBinding(this, std::move(request));
-}
-
 void TabSignalGeneratorImpl::OnFramePropertyChanged(
     const FrameCoordinationUnitImpl* coordination_unit,
     const mojom::PropertyType property_type,
@@ -65,6 +49,11 @@ void TabSignalGeneratorImpl::OnFramePropertyChanged(
       break;
     }
   }
+}
+
+void TabSignalGeneratorImpl::BindToInterface(
+    resource_coordinator::mojom::TabSignalGeneratorRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
 }  // namespace resource_coordinator

@@ -4,6 +4,9 @@
 
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 
+#include "services/resource_coordinator/coordination_unit/coordination_unit_graph_observer.h"
+#include "services/resource_coordinator/coordination_unit/web_contents_coordination_unit_impl.h"
+
 namespace resource_coordinator {
 
 FrameCoordinationUnitImpl::FrameCoordinationUnitImpl(
@@ -57,12 +60,29 @@ FrameCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
   }
 }
 
+const WebContentsCoordinationUnitImpl*
+FrameCoordinationUnitImpl::GetWebContentsCoordinationUnit() const {
+  for (auto* parent : parents_) {
+    if (parent->id().type != CoordinationUnitType::kWebContents)
+      continue;
+    return CoordinationUnitImpl::ToWebContentsCoordinationUnit(parent);
+  }
+  return nullptr;
+}
+
 bool FrameCoordinationUnitImpl::IsMainFrame() const {
   for (auto* parent : parents_) {
     if (parent->id().type == CoordinationUnitType::kFrame)
       return false;
   }
   return true;
+}
+
+void FrameCoordinationUnitImpl::OnPropertyChanged(
+    const mojom::PropertyType property_type,
+    const base::Value& value) {
+  for (auto& observer : observers())
+    observer.OnFramePropertyChanged(this, property_type, value);
 }
 
 }  // namespace resource_coordinator

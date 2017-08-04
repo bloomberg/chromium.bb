@@ -4,6 +4,8 @@
 
 #include "services/resource_coordinator/coordination_unit/web_contents_coordination_unit_impl.h"
 
+#include "services/resource_coordinator/coordination_unit/coordination_unit_graph_observer.h"
+
 namespace resource_coordinator {
 
 WebContentsCoordinationUnitImpl::WebContentsCoordinationUnitImpl(
@@ -42,6 +44,29 @@ WebContentsCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
   }
 }
 
+void WebContentsCoordinationUnitImpl::RecalculateProperty(
+    const mojom::PropertyType property_type) {
+  if (property_type == mojom::PropertyType::kCPUUsage) {
+    double cpu_usage = CalculateCPUUsage();
+
+    SetProperty(mojom::PropertyType::kCPUUsage,
+                base::MakeUnique<base::Value>(cpu_usage));
+  }
+}
+
+bool WebContentsCoordinationUnitImpl::IsVisible() const {
+  DCHECK(GetProperty(mojom::PropertyType::kVisible).is_bool());
+  return GetProperty(mojom::PropertyType::kVisible).GetBool();
+}
+
+void WebContentsCoordinationUnitImpl::OnPropertyChanged(
+    const mojom::PropertyType property_type,
+    const base::Value& value) {
+  for (auto& observer : observers()) {
+    observer.OnWebContentsPropertyChanged(this, property_type, value);
+  }
+}
+
 double WebContentsCoordinationUnitImpl::CalculateCPUUsage() {
   double cpu_usage = 0.0;
 
@@ -63,16 +88,6 @@ double WebContentsCoordinationUnitImpl::CalculateCPUUsage() {
   }
 
   return cpu_usage;
-}
-
-void WebContentsCoordinationUnitImpl::RecalculateProperty(
-    const mojom::PropertyType property_type) {
-  if (property_type == mojom::PropertyType::kCPUUsage) {
-    double cpu_usage = CalculateCPUUsage();
-
-    SetProperty(mojom::PropertyType::kCPUUsage,
-                base::MakeUnique<base::Value>(cpu_usage));
-  }
 }
 
 }  // namespace resource_coordinator
