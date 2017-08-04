@@ -336,6 +336,7 @@ void MediaStream::CompleteRead(DemuxerStream::Status status) {
       base::ResetAndReturn(&read_complete_callback_).Run(status, nullptr);
       return;
     case DemuxerStream::kAborted:
+    case DemuxerStream::kError:
       base::ResetAndReturn(&read_complete_callback_).Run(status, nullptr);
       return;
     case DemuxerStream::kOk:

@@ -42,13 +42,7 @@ class FakeDemuxerStreamTest : public testing::Test {
       num_buffers_received_++;
   }
 
-  enum ReadResult {
-    OK,
-    ABORTED,
-    CONFIG_CHANGED,
-    EOS,
-    PENDING
-  };
+  enum ReadResult { OK, ABORTED, CONFIG_CHANGED, READ_ERROR, EOS, PENDING };
 
   void EnterNormalReadState() {
     stream_.reset(
@@ -84,6 +78,12 @@ class FakeDemuxerStreamTest : public testing::Test {
         EXPECT_TRUE(stream_->SupportsConfigChanges());
         EXPECT_FALSE(read_pending_);
         EXPECT_EQ(DemuxerStream::kConfigChanged, status_);
+        EXPECT_FALSE(buffer_.get());
+        break;
+
+      case READ_ERROR:
+        EXPECT_FALSE(read_pending_);
+        EXPECT_EQ(DemuxerStream::kError, status_);
         EXPECT_FALSE(buffer_.get());
         break;
 
@@ -135,6 +135,16 @@ class FakeDemuxerStreamTest : public testing::Test {
     EXPECT_FALSE(read_pending_);
     if (had_read_pending)
       ExpectReadResult(ABORTED);
+  }
+
+  void Error() {
+    bool had_read_pending = read_pending_;
+    stream_->Error();
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_FALSE(read_pending_);
+    if (had_read_pending)
+      ExpectReadResult(READ_ERROR);
   }
 
   void ReadAllBuffers(int num_configs, int num_buffers_in_one_config) {
@@ -253,6 +263,35 @@ TEST_F(FakeDemuxerStreamTest, Reset_BeforeEOS) {
   stream_->HoldNextRead();
   ReadAndExpect(PENDING);
   Reset();
+  ReadAndExpect(EOS);
+}
+
+TEST_F(FakeDemuxerStreamTest, Error_Normal) {
+  EnterNormalReadState();
+  Error();
+  ReadAndExpect(OK);
+}
+
+TEST_F(FakeDemuxerStreamTest, Error_AfterHoldRead) {
+  EnterNormalReadState();
+  stream_->HoldNextRead();
+  Error();
+  ReadAndExpect(OK);
+}
+
+TEST_F(FakeDemuxerStreamTest, Error_BeforeConfigChanged) {
+  EnterNormalReadState();
+  stream_->HoldNextConfigChangeRead();
+  ReadUntilPending();
+  Error();
+  ReadAndExpect(CONFIG_CHANGED);
+}
+
+TEST_F(FakeDemuxerStreamTest, Error_BeforeEOS) {
+  EnterBeforeEOSState();
+  stream_->HoldNextRead();
+  ReadAndExpect(PENDING);
+  Error();
   ReadAndExpect(EOS);
 }
 

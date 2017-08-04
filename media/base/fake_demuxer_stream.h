@@ -59,6 +59,10 @@ class FakeDemuxerStream : public DemuxerStream {
   // always clears |hold_next_read_|.
   void Reset();
 
+  // Satisfies the pending read (if any) with kError and NULL. This call
+  // always clears |hold_next_read_|.
+  void Error();
+
   // Reset() this demuxer stream and set the reading position to the start of
   // the stream.
   void SeekToStart();

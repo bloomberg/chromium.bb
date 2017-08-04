@@ -363,6 +363,7 @@ message DemuxerStreamReadUntilCallback {
     kOk = 0;
     kAborted = 1;
     kConfigChanged = 2;
+    kError = 3;
   };
 
   optional Status status = 1;

@@ -140,6 +140,13 @@ void FakeDemuxerStream::Reset() {
     base::ResetAndReturn(&read_cb_).Run(kAborted, NULL);
 }
 
+void FakeDemuxerStream::Error() {
+  read_to_hold_ = -1;
+
+  if (!read_cb_.is_null())
+    base::ResetAndReturn(&read_cb_).Run(kError, nullptr);
+}
+
 void FakeDemuxerStream::SeekToStart() {
   Reset();
   Initialize();
