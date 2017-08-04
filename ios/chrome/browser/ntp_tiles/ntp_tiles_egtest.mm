@@ -32,6 +32,7 @@ using web::test::HttpServer;
 - (void)tearDown {
   chrome_test_util::ClearBrowsingHistory();
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  [super tearDown];
 }
 
 // Tests that loading a URL ends up creating an NTP tile.
@@ -67,13 +68,6 @@ using web::test::HttpServer;
 // Tests that only one NTP tile is displayed for a TopSite that involves a
 // redirect.
 - (void)testTopSitesTileAfterRedirect {
-  // TODO(crbug.com/751224): This test fails on "Plus" devices, so disabling
-  // it on iOS 11 to unblock running the test case on iPhone 6 Plus, iOS 11.
-  // Re-enable this test once the bug is fixed.
-  if (base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
-  }
-
   std::map<GURL, HtmlResponseProviderImpl::Response> responses;
   const GURL firstRedirectURL = HttpServer::MakeUrl("http://firstRedirect/");
   const GURL destinationURL = HttpServer::MakeUrl("http://destination/");
