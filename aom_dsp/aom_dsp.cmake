@@ -46,6 +46,7 @@ set(AOM_DSP_COMMON_INTRIN_SSE2
     "${AOM_ROOT}/aom_dsp/x86/aom_asm_stubs.c"
     "${AOM_ROOT}/aom_dsp/x86/convolve.h"
     "${AOM_ROOT}/aom_dsp/x86/txfm_common_sse2.h"
+    "${AOM_ROOT}/aom_dsp/x86/lpf_common_sse2.h"
     "${AOM_ROOT}/aom_dsp/x86/loopfilter_sse2.c")
 
 set(AOM_DSP_COMMON_ASM_SSSE3
@@ -66,6 +67,7 @@ set(AOM_DSP_COMMON_INTRIN_AVX2
     "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_intrin_avx2.c"
     "${AOM_ROOT}/aom_dsp/x86/loopfilter_avx2.c"
     "${AOM_ROOT}/aom_dsp/x86/inv_txfm_avx2.c"
+    "${AOM_ROOT}/aom_dsp/x86/common_avx2.h"
     "${AOM_ROOT}/aom_dsp/x86/inv_txfm_common_avx2.h"
     "${AOM_ROOT}/aom_dsp/x86/txfm_common_avx2.h")
 
@@ -189,7 +191,8 @@ if (CONFIG_HIGHBITDEPTH)
 
   set(AOM_DSP_COMMON_INTRIN_AVX2
       ${AOM_DSP_COMMON_INTRIN_AVX2}
-      "${AOM_ROOT}/aom_dsp/x86/highbd_convolve_avx2.c")
+      "${AOM_ROOT}/aom_dsp/x86/highbd_convolve_avx2.c"
+      "${AOM_ROOT}/aom_dsp/x86/highbd_loopfilter_avx2.c")
 else ()
   set(AOM_DSP_COMMON_INTRIN_DSPR2
       ${AOM_DSP_COMMON_INTRIN_DSPR2}

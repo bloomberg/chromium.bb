@@ -305,37 +305,37 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
   specialize qw/aom_highbd_lpf_vertical_16 sse2/;
 
   add_proto qw/void aom_highbd_lpf_vertical_16_dual/, "uint16_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh, int bd";
-  specialize qw/aom_highbd_lpf_vertical_16_dual sse2/;
+  specialize qw/aom_highbd_lpf_vertical_16_dual sse2 avx2/;
 
   add_proto qw/void aom_highbd_lpf_vertical_8/, "uint16_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh, int bd";
   specialize qw/aom_highbd_lpf_vertical_8 sse2/;
 
   add_proto qw/void aom_highbd_lpf_vertical_8_dual/, "uint16_t *s, int pitch, const uint8_t *blimit0, const uint8_t *limit0, const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1, const uint8_t *thresh1, int bd";
-  specialize qw/aom_highbd_lpf_vertical_8_dual sse2/;
+  specialize qw/aom_highbd_lpf_vertical_8_dual sse2 avx2/;
 
   add_proto qw/void aom_highbd_lpf_vertical_4/, "uint16_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh, int bd";
   specialize qw/aom_highbd_lpf_vertical_4 sse2/;
 
   add_proto qw/void aom_highbd_lpf_vertical_4_dual/, "uint16_t *s, int pitch, const uint8_t *blimit0, const uint8_t *limit0, const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1, const uint8_t *thresh1, int bd";
-  specialize qw/aom_highbd_lpf_vertical_4_dual sse2/;
+  specialize qw/aom_highbd_lpf_vertical_4_dual sse2 avx2/;
 
   add_proto qw/void aom_highbd_lpf_horizontal_edge_8/, "uint16_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh, int bd";
   specialize qw/aom_highbd_lpf_horizontal_edge_8 sse2/;
 
   add_proto qw/void aom_highbd_lpf_horizontal_edge_16/, "uint16_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh, int bd";
-  specialize qw/aom_highbd_lpf_horizontal_edge_16 sse2/;
+  specialize qw/aom_highbd_lpf_horizontal_edge_16 sse2 avx2/;
 
   add_proto qw/void aom_highbd_lpf_horizontal_8/, "uint16_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh, int bd";
   specialize qw/aom_highbd_lpf_horizontal_8 sse2/;
 
   add_proto qw/void aom_highbd_lpf_horizontal_8_dual/, "uint16_t *s, int pitch, const uint8_t *blimit0, const uint8_t *limit0, const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1, const uint8_t *thresh1, int bd";
-  specialize qw/aom_highbd_lpf_horizontal_8_dual sse2/;
+  specialize qw/aom_highbd_lpf_horizontal_8_dual sse2 avx2/;
 
   add_proto qw/void aom_highbd_lpf_horizontal_4/, "uint16_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh, int bd";
   specialize qw/aom_highbd_lpf_horizontal_4 sse2/;
 
   add_proto qw/void aom_highbd_lpf_horizontal_4_dual/, "uint16_t *s, int pitch, const uint8_t *blimit0, const uint8_t *limit0, const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1, const uint8_t *thresh1, int bd";
-  specialize qw/aom_highbd_lpf_horizontal_4_dual sse2/;
+  specialize qw/aom_highbd_lpf_horizontal_4_dual sse2 avx2/;
 }  # CONFIG_HIGHBITDEPTH
 
 #

@@ -165,6 +165,7 @@ DSP_SRCS-yes += loopfilter.c
 
 DSP_SRCS-$(ARCH_X86)$(ARCH_X86_64)   += x86/loopfilter_sse2.c
 DSP_SRCS-$(HAVE_AVX2)                += x86/loopfilter_avx2.c
+DSP_SRCS-$(HAVE_SSE2)                += x86/lpf_common_sse2.h
 
 DSP_SRCS-$(HAVE_NEON)   += arm/loopfilter_neon.c
 ifeq ($(HAVE_NEON_ASM),yes)
@@ -194,10 +195,12 @@ DSP_SRCS-$(HAVE_DSPR2)  += mips/loopfilter_mb_vert_dspr2.c
 
 ifeq ($(CONFIG_HIGHBITDEPTH),yes)
 DSP_SRCS-$(HAVE_SSE2)   += x86/highbd_loopfilter_sse2.c
+DSP_SRCS-$(HAVE_AVX2)   += x86/highbd_loopfilter_avx2.c
 endif  # CONFIG_HIGHBITDEPTH
 
 DSP_SRCS-yes            += txfm_common.h
 DSP_SRCS-yes            += x86/txfm_common_intrin.h
+DSP_SRCS-$(HAVE_AVX2)   += x86/common_avx2.h
 DSP_SRCS-$(HAVE_SSE2)   += x86/txfm_common_sse2.h
 DSP_SRCS-$(HAVE_SSSE3)  += x86/obmc_intrinsic_ssse3.h
 DSP_SRCS-$(HAVE_MSA)    += mips/txfm_macros_msa.h
