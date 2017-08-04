@@ -392,6 +392,17 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   return [item cellHeightForWidth:width];
 }
 
+- (BOOL)collectionView:(UICollectionView*)collectionView
+    shouldHideItemSeparatorAtIndexPath:(NSIndexPath*)indexPath {
+  return [self collectionView:collectionView
+      shouldHideItemBackgroundAtIndexPath:indexPath];
+}
+
+- (BOOL)collectionView:(UICollectionView*)collectionView
+    shouldHideHeaderSeparatorForSection:(NSInteger)section {
+  return YES;
+}
+
 #pragma mark - MDCCollectionViewEditingDelegate
 
 - (BOOL)collectionViewAllowsSwipeToDismissItem:
