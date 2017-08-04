@@ -47,7 +47,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
-#include "modules/indexeddb/IndexedDBClientImpl.h"
+#include "modules/indexeddb/IndexedDBClient.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeProxy.h"
@@ -376,7 +376,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
 
   WorkerClients* worker_clients = WorkerClients::Create();
   ProvideIndexedDBClientToWorker(worker_clients,
-                                 IndexedDBClientImpl::Create(*worker_clients));
+                                 IndexedDBClient::Create(*worker_clients));
 
   ProvideContentSettingsClientToWorker(worker_clients,
                                        std::move(content_settings_client_));

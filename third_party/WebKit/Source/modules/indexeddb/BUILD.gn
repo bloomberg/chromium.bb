@@ -61,8 +61,6 @@ blink_modules_sources("indexeddb") {
     "IndexedDB.h",
     "IndexedDBClient.cpp",
     "IndexedDBClient.h",
-    "IndexedDBClientImpl.cpp",
-    "IndexedDBClientImpl.h",
     "InspectorIndexedDBAgent.cpp",
     "InspectorIndexedDBAgent.h",
     "WebIDBCallbacksImpl.cpp",
