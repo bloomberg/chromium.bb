@@ -103,6 +103,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, CancelGenerateStream);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest,
                            GetNonScreenCaptureDevices);
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, DeviceClosed);
 
   struct Request;
 
@@ -115,25 +116,20 @@ class CONTENT_EXPORT MediaStreamDispatcher
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle* interface_pipe) override;
   void OnDestruct() override;
-  bool OnMessageReceived(const IPC::Message& message) override;
-
-  // Messages from the browser.
-  void OnStreamGenerated(
-      int request_id,
-      const std::string& label,
-      const StreamDeviceInfoArray& audio_array,
-      const StreamDeviceInfoArray& video_array);
-  void OnDeviceStopped(const std::string& label,
-                       const StreamDeviceInfo& device_info);
-  void OnDeviceOpened(
-      int request_id,
-      const std::string& label,
-      const StreamDeviceInfo& device_info);
 
   // mojom::MediaStreamDispatcher implementation.
+  void OnStreamGenerated(int32_t request_id,
+                         const std::string& label,
+                         const StreamDeviceInfoArray& audio_array,
+                         const StreamDeviceInfoArray& video_array) override;
   void OnStreamGenerationFailed(int32_t request_id,
                                 MediaStreamRequestResult result) override;
+  void OnDeviceOpened(int32_t request_id,
+                      const std::string& label,
+                      const StreamDeviceInfo& device_info) override;
   void OnDeviceOpenFailed(int32_t request_id) override;
+  void OnDeviceStopped(const std::string& label,
+                       const StreamDeviceInfo& device_info) override;
 
   void BindMediaStreamDispatcherRequest(
       mojom::MediaStreamDispatcherRequest request);

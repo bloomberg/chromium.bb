@@ -6,6 +6,13 @@ module content.mojom;
 
 import "url/mojo/origin.mojom";
 
+// TODO(c.padhi): Add typemapping for StreamDeviceInfo,
+// see https://crbug.com/742682.
+// Native struct content::StreamDeviceInfo.
+// (see content/common/media/media_stream_options.h)
+[Native]
+struct StreamDeviceInfo;
+
 // Types of media streams (see content/public/common/media_stream_request.h).
 enum MediaStreamType {
   MEDIA_NO_SERVICE,
@@ -51,17 +58,32 @@ struct StreamControls {
   bool disable_local_echo;
 };
 
+// Per-frame renderer-side interface that is used by the browser process to
+// respond to media stream requests from the renderer.
 interface MediaStreamDispatcher {
-  // TODO(c.padhi): Migrate the rest of the browser-to-renderer messages,
-  // see https://crbug.com/742682.
+  // Informs the renderer that browser has generated a stream successfully.
+  OnStreamGenerated(int32 request_id, string label,
+                    array<StreamDeviceInfo> audio_array,
+                    array<StreamDeviceInfo> video_array);
 
   // Informs the renderer that browser has failed to generate a stream.
   OnStreamGenerationFailed(int32 request_id, MediaStreamRequestResult result);
 
+  // TODO(wjia): should DeviceOpen* methods be merged with
+  // StreamGenerat* ones?
+  // Informs the renderer that browser has opened a device successfully.
+  OnDeviceOpened(int32 request_id, string label, StreamDeviceInfo device_info);
+
   // Informs the renderer that browser has failed to open a device.
   OnDeviceOpenFailed(int32 request_id);
+
+  // The browser reports that a media device has been stopped. Stopping was
+  // triggered from the browser process.
+  OnDeviceStopped(string label, StreamDeviceInfo device_info);
 };
 
+// Per-process browser-side interface that is used by the renderer process to
+// make media stream requests.
 interface MediaStreamDispatcherHost {
   // Requests a new media stream.
   GenerateStream(int32 render_frame_id, int32 request_id,
