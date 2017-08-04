@@ -43,6 +43,10 @@ class STORAGE_EXPORT BlobRegistryImpl : public mojom::BlobRegistry {
   void GetBlobFromUUID(mojom::BlobRequest blob,
                        const std::string& uuid) override;
 
+  size_t BlobsUnderConstructionForTesting() const {
+    return blobs_under_construction_.size();
+  }
+
  private:
   class BlobUnderConstruction;
 

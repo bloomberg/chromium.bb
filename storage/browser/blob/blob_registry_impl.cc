@@ -313,17 +313,28 @@ void BlobRegistryImpl::BlobUnderConstruction::ResolvedAllBlobDependencies() {
                           element->get_blob()->length);
     }
   }
+
+  BlobStorageContext::TransportAllowedCallback callback =
+      base::Bind(&BlobUnderConstruction::OnReadyForTransport,
+                 weak_ptr_factory_.GetWeakPtr());
+
   // OnReadyForTransport can be called synchronously, which can call
   // MarkAsFinishedAndDeleteSelf synchronously, so don't access any members
   // after this call.
   std::unique_ptr<BlobDataHandle> new_handle =
-      context()->BuildPreregisteredBlob(
-          builder_, base::Bind(&BlobUnderConstruction::OnReadyForTransport,
-                               weak_ptr_factory_.GetWeakPtr()));
+      context()->BuildPreregisteredBlob(builder_, callback);
 
   // TODO(mek): Update BlobImpl with new BlobDataHandle. Although handles
   // only differ in their size() attribute, which is currently not used by
   // BlobImpl.
+
+  // BuildPreregisteredBlob might or might not have called the callback if it
+  // finished synchronously, so call the callback directly. If it was already
+  // called |this| would have been deleted making calling the callback a no-op.
+  if (!new_handle->IsBeingBuilt()) {
+    callback.Run(new_handle->GetBlobStatus(),
+                 std::vector<BlobMemoryController::FileCreationInfo>());
+  }
 }
 
 void BlobRegistryImpl::BlobUnderConstruction::OnReadyForTransport(
