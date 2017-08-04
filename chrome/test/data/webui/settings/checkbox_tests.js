@@ -4,85 +4,79 @@
 
 /** @fileoverview Suite of tests for settings-checkbox. */
 cr.define('settings_checkbox', function() {
-  function registerTests() {
-    suite('SettingsCheckbox', function() {
-      /**
-       * Checkbox created before each test.
-       * @type {SettingsCheckbox}
-       */
-      var testElement;
+  suite('SettingsCheckbox', function() {
+    /**
+     * Checkbox created before each test.
+     * @type {SettingsCheckbox}
+     */
+    var testElement;
 
-      /**
-       * Pref value used in tests, should reflect checkbox 'checked' attribute.
-       * @type {SettingsCheckbox}
-       */
-      var pref = {
+    /**
+     * Pref value used in tests, should reflect checkbox 'checked' attribute.
+     * @type {SettingsCheckbox}
+     */
+    var pref = {
+      key: 'test',
+      type: chrome.settingsPrivate.PrefType.BOOLEAN,
+      value: true
+    };
+
+    // Initialize a checked settings-checkbox before each test.
+    setup(function() {
+      PolymerTest.clearBody();
+      testElement = document.createElement('settings-checkbox');
+      testElement.set('pref', pref);
+      document.body.appendChild(testElement);
+    });
+
+    test('value changes on tap', function() {
+      assertTrue(testElement.checked);
+
+      MockInteractions.tap(testElement.$.checkbox);
+      assertFalse(testElement.checked);
+      assertFalse(pref.value);
+
+      MockInteractions.tap(testElement.$.checkbox);
+      assertTrue(testElement.checked);
+      assertTrue(pref.value);
+    });
+
+    test('fires a change event', function(done) {
+      testElement.addEventListener('change', function() {
+        assertFalse(testElement.checked);
+        done();
+      });
+      MockInteractions.tap(testElement.$.checkbox);
+    });
+
+    test('does not change when disabled', function() {
+      testElement.checked = false;
+      testElement.setAttribute('disabled', '');
+      assertTrue(testElement.disabled);
+      assertTrue(testElement.$.checkbox.disabled);
+
+      MockInteractions.tap(testElement.$.checkbox);
+      assertFalse(testElement.checked);
+      assertFalse(testElement.$.checkbox.checked);
+    });
+
+    test('numerical pref', function() {
+      var prefNum = {
         key: 'test',
-        type: chrome.settingsPrivate.PrefType.BOOLEAN,
-        value: true
+        type: chrome.settingsPrivate.PrefType.NUMBER,
+        value: 1
       };
 
-      // Initialize a checked settings-checkbox before each test.
-      setup(function() {
-        PolymerTest.clearBody();
-        testElement = document.createElement('settings-checkbox');
-        testElement.set('pref', pref);
-        document.body.appendChild(testElement);
-      });
+      testElement.set('pref', prefNum);
+      assertTrue(testElement.checked);
 
-      test('value changes on tap', function() {
-        assertTrue(testElement.checked);
+      MockInteractions.tap(testElement.$.checkbox);
+      assertFalse(testElement.checked);
+      assertEquals(0, prefNum.value);
 
-        MockInteractions.tap(testElement.$.checkbox);
-        assertFalse(testElement.checked);
-        assertFalse(pref.value);
-
-        MockInteractions.tap(testElement.$.checkbox);
-        assertTrue(testElement.checked);
-        assertTrue(pref.value);
-      });
-
-      test('fires a change event', function(done) {
-        testElement.addEventListener('change', function() {
-          assertFalse(testElement.checked);
-          done();
-        });
-        MockInteractions.tap(testElement.$.checkbox);
-      });
-
-      test('does not change when disabled', function() {
-        testElement.checked = false;
-        testElement.setAttribute('disabled', '');
-        assertTrue(testElement.disabled);
-        assertTrue(testElement.$.checkbox.disabled);
-
-        MockInteractions.tap(testElement.$.checkbox);
-        assertFalse(testElement.checked);
-        assertFalse(testElement.$.checkbox.checked);
-      });
-
-      test('numerical pref', function() {
-        var prefNum = {
-          key: 'test',
-          type: chrome.settingsPrivate.PrefType.NUMBER,
-          value: 1
-        };
-
-        testElement.set('pref', prefNum);
-        assertTrue(testElement.checked);
-
-        MockInteractions.tap(testElement.$.checkbox);
-        assertFalse(testElement.checked);
-        assertEquals(0, prefNum.value);
-
-        MockInteractions.tap(testElement.$.checkbox);
-        assertTrue(testElement.checked);
-        assertEquals(1, prefNum.value);
-      });
+      MockInteractions.tap(testElement.$.checkbox);
+      assertTrue(testElement.checked);
+      assertEquals(1, prefNum.value);
     });
-  }
-
-  return {
-    registerTests: registerTests,
-  };
+  });
 });

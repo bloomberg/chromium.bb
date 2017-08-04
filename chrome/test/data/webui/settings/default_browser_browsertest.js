@@ -46,124 +46,116 @@ cr.define('settings_default_browser', function() {
     }
   }
 
-  function registerDefaultBrowserPageTests() {
-    suite('DefaultBrowserPageTest', function() {
-      var page = null;
+  suite('DefaultBrowserPageTest', function() {
+    var page = null;
 
-      /** @type {?settings.TestDefaultBrowserBrowserProxy} */
-      var browserProxy = null;
+    /** @type {?settings.TestDefaultBrowserBrowserProxy} */
+    var browserProxy = null;
 
-      setup(function() {
-        browserProxy = new TestDefaultBrowserBrowserProxy();
-        settings.DefaultBrowserBrowserProxyImpl.instance_ = browserProxy;
-        return initPage();
+    setup(function() {
+      browserProxy = new TestDefaultBrowserBrowserProxy();
+      settings.DefaultBrowserBrowserProxyImpl.instance_ = browserProxy;
+      return initPage();
+    });
+
+    teardown(function() {
+      page.remove();
+      page = null;
+    });
+
+    /** @return {!Promise} */
+    function initPage() {
+      browserProxy.reset();
+      PolymerTest.clearBody();
+      page = document.createElement('settings-default-browser-page');
+      document.body.appendChild(page);
+      return browserProxy.whenCalled('requestDefaultBrowserState');
+    }
+
+    test('default-browser-test-can-be-default', function(done) {
+      browserProxy.setDefaultBrowserInfo({
+        canBeDefault: true,
+        isDefault: false,
+        isDisabledByPolicy: false,
+        isUnknownError: false
       });
 
-      teardown(function() {
-        page.remove();
-        page = null;
-      });
-
-      /** @return {!Promise} */
-      function initPage() {
-        browserProxy.reset();
-        PolymerTest.clearBody();
-        page = document.createElement('settings-default-browser-page');
-        document.body.appendChild(page);
-        return browserProxy.whenCalled('requestDefaultBrowserState');
-      }
-
-      test('default-browser-test-can-be-default', function(done) {
-        browserProxy.setDefaultBrowserInfo({
-          canBeDefault: true,
-          isDefault: false,
-          isDisabledByPolicy: false,
-          isUnknownError: false
-        });
-
-        return initPage().then(function() {
-          assertFalse(page.isDefault_);
-          assertFalse(page.isSecondaryInstall_);
-          assertFalse(page.isUnknownError_);
-          assertTrue(page.maySetDefaultBrowser_);
-          done();
-        });
-      });
-
-      test('default-browser-test-is-default', function(done) {
-        assertTrue(!!page);
-        browserProxy.setDefaultBrowserInfo({
-          canBeDefault: true,
-          isDefault: true,
-          isDisabledByPolicy: false,
-          isUnknownError: false
-        });
-
-        return initPage().then(function() {
-          assertTrue(page.isDefault_);
-          assertFalse(page.isSecondaryInstall_);
-          assertFalse(page.isUnknownError_);
-          assertFalse(page.maySetDefaultBrowser_);
-          done();
-        });
-      });
-
-      test('default-browser-test-is-secondary-install', function(done) {
-        browserProxy.setDefaultBrowserInfo({
-          canBeDefault: false,
-          isDefault: false,
-          isDisabledByPolicy: false,
-          isUnknownError: false
-        });
-
-        return initPage().then(function() {
-          assertFalse(page.isDefault_);
-          assertTrue(page.isSecondaryInstall_);
-          assertFalse(page.isUnknownError_);
-          assertFalse(page.maySetDefaultBrowser_);
-          done();
-        });
-      });
-
-      test('default-browser-test-is-disabled-by-policy', function(done) {
-        browserProxy.setDefaultBrowserInfo({
-          canBeDefault: true,
-          isDefault: false,
-          isDisabledByPolicy: true,
-          isUnknownError: false
-        });
-
-        return initPage().then(function() {
-          assertFalse(page.isDefault_);
-          assertFalse(page.isSecondaryInstall_);
-          assertTrue(page.isUnknownError_);
-          assertFalse(page.maySetDefaultBrowser_);
-          done();
-        });
-      });
-
-      test('default-browser-test-is-unknown-error', function(done) {
-        browserProxy.setDefaultBrowserInfo({
-          canBeDefault: true,
-          isDefault: false,
-          isDisabledByPolicy: false,
-          isUnknownError: true
-        });
-
-        return initPage().then(function() {
-          assertFalse(page.isDefault_);
-          assertFalse(page.isSecondaryInstall_);
-          assertTrue(page.isUnknownError_);
-          assertFalse(page.maySetDefaultBrowser_);
-          done();
-        });
+      return initPage().then(function() {
+        assertFalse(page.isDefault_);
+        assertFalse(page.isSecondaryInstall_);
+        assertFalse(page.isUnknownError_);
+        assertTrue(page.maySetDefaultBrowser_);
+        done();
       });
     });
-  }
 
-  return {
-    registerTests: function() {
-      registerDefaultBrowserPageTests();
-    },
-  };
+    test('default-browser-test-is-default', function(done) {
+      assertTrue(!!page);
+      browserProxy.setDefaultBrowserInfo({
+        canBeDefault: true,
+        isDefault: true,
+        isDisabledByPolicy: false,
+        isUnknownError: false
+      });
+
+      return initPage().then(function() {
+        assertTrue(page.isDefault_);
+        assertFalse(page.isSecondaryInstall_);
+        assertFalse(page.isUnknownError_);
+        assertFalse(page.maySetDefaultBrowser_);
+        done();
+      });
+    });
+
+    test('default-browser-test-is-secondary-install', function(done) {
+      browserProxy.setDefaultBrowserInfo({
+        canBeDefault: false,
+        isDefault: false,
+        isDisabledByPolicy: false,
+        isUnknownError: false
+      });
+
+      return initPage().then(function() {
+        assertFalse(page.isDefault_);
+        assertTrue(page.isSecondaryInstall_);
+        assertFalse(page.isUnknownError_);
+        assertFalse(page.maySetDefaultBrowser_);
+        done();
+      });
+    });
+
+    test('default-browser-test-is-disabled-by-policy', function(done) {
+      browserProxy.setDefaultBrowserInfo({
+        canBeDefault: true,
+        isDefault: false,
+        isDisabledByPolicy: true,
+        isUnknownError: false
+      });
+
+      return initPage().then(function() {
+        assertFalse(page.isDefault_);
+        assertFalse(page.isSecondaryInstall_);
+        assertTrue(page.isUnknownError_);
+        assertFalse(page.maySetDefaultBrowser_);
+        done();
+      });
+    });
+
+    test('default-browser-test-is-unknown-error', function(done) {
+      browserProxy.setDefaultBrowserInfo({
+        canBeDefault: true,
+        isDefault: false,
+        isDisabledByPolicy: false,
+        isUnknownError: true
+      });
+
+      return initPage().then(function() {
+        assertFalse(page.isDefault_);
+        assertFalse(page.isSecondaryInstall_);
+        assertTrue(page.isUnknownError_);
+        assertFalse(page.maySetDefaultBrowser_);
+        done();
+      });
+    });
+  });
 });
