@@ -29,6 +29,7 @@
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/ntp_tiles/switches.h"
 #include "components/payments/core/features.h"
+#include "components/search_provider_logos/features.h"
 #include "components/security_state/core/switches.h"
 #include "components/signin/core/common/signin_switches.h"
 #include "components/strings/grit/components_strings.h"
@@ -65,6 +66,29 @@ const FeatureEntry::Choice kMarkHttpAsChoices[] = {
     {flag_descriptions::kMarkHttpAsDangerous,
      security_state::switches::kMarkHttpAs,
      security_state::switches::kMarkHttpAsDangerous}};
+
+const FeatureEntry::FeatureParam kUseDdljsonApiTest1[] = {
+    {search_provider_logos::features::kDdljsonOverrideUrlParam,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_ios1.json"}};
+const FeatureEntry::FeatureParam kUseDdljsonApiTest2[] = {
+    {search_provider_logos::features::kDdljsonOverrideUrlParam,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_ios2.json"}};
+const FeatureEntry::FeatureParam kUseDdljsonApiTest3[] = {
+    {search_provider_logos::features::kDdljsonOverrideUrlParam,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_ios3.json"}};
+const FeatureEntry::FeatureParam kUseDdljsonApiTest4[] = {
+    {search_provider_logos::features::kDdljsonOverrideUrlParam,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_ios4.json"}};
+
+const FeatureEntry::FeatureVariation kUseDdljsonApiVariations[] = {
+    {"(force test doodle 1)", kUseDdljsonApiTest1,
+     arraysize(kUseDdljsonApiTest1), nullptr},
+    {"(force test doodle 2)", kUseDdljsonApiTest2,
+     arraysize(kUseDdljsonApiTest2), nullptr},
+    {"(force test doodle 3)", kUseDdljsonApiTest3,
+     arraysize(kUseDdljsonApiTest3), nullptr},
+    {"(force test doodle 4)", kUseDdljsonApiTest4,
+     arraysize(kUseDdljsonApiTest4), nullptr}};
 
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
@@ -117,7 +141,13 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          feature_engagement::kIPHDemoMode,
          feature_engagement::kIPHDemoModeChoiceVariations,
-         "IPH_DemoMode")}};
+         "IPH_DemoMode")},
+    {"use-ddljson-api", flag_descriptions::kUseDdljsonApiName,
+     flag_descriptions::kUseDdljsonApiDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         search_provider_logos::features::kUseDdljsonApi,
+         kUseDdljsonApiVariations,
+         search_provider_logos::features::kUseDdljsonApi.name)}};
 
 // Add all switches from experimental flags to |command_line|.
 void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {

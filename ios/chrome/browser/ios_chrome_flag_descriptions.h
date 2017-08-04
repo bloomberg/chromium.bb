@@ -35,6 +35,10 @@ extern const char kPhysicalWeb[];
 // Description for the flag to enable Physical Web in the omnibox.
 extern const char kPhysicalWebDescription[];
 
+// Title and description for the flag to enable the ddljson Doodle API.
+extern const char kUseDdljsonApiName[];
+extern const char kUseDdljsonApiDescription[];
+
 // Title and description for the flag to enable Web Payments.
 extern const char kWebPaymentsName[];
 extern const char kWebPaymentsDescription[];
