@@ -196,13 +196,13 @@ TEST_F(InputMethodControllerTest, SetCompositionAfterEmoji) {
   Controller().SetEditableSelectionOffsets(PlainTextRange(2, 2));
   EXPECT_EQ(2, GetFrame()
                    .Selection()
-                   .ComputeVisibleSelectionInDOMTreeDeprecated()
-                   .Start()
+                   .GetSelectionInDOMTree()
+                   .Base()
                    .ComputeOffsetInContainerNode());
   EXPECT_EQ(2, GetFrame()
                    .Selection()
-                   .ComputeVisibleSelectionInDOMTreeDeprecated()
-                   .End()
+                   .GetSelectionInDOMTree()
+                   .Extent()
                    .ComputeOffsetInContainerNode());
 
   Controller().SetComposition(String("a"), underlines, 1, 1);
@@ -411,13 +411,13 @@ TEST_F(InputMethodControllerTest, SelectionOnConfirmExistingText) {
   Controller().FinishComposingText(InputMethodController::kKeepSelection);
   EXPECT_EQ(0, GetFrame()
                    .Selection()
-                   .ComputeVisibleSelectionInDOMTreeDeprecated()
-                   .Start()
+                   .GetSelectionInDOMTree()
+                   .Base()
                    .ComputeOffsetInContainerNode());
   EXPECT_EQ(0, GetFrame()
                    .Selection()
-                   .ComputeVisibleSelectionInDOMTreeDeprecated()
-                   .End()
+                   .GetSelectionInDOMTree()
+                   .Extent()
                    .ComputeOffsetInContainerNode());
 }
 
@@ -1438,8 +1438,8 @@ TEST_F(InputMethodControllerTest, SelectionWhenFocusChangeFinishesComposition) {
   EXPECT_EQ(3u, Controller().CompositionRange()->endOffset());
   EXPECT_EQ(3, GetFrame()
                    .Selection()
-                   .ComputeVisibleSelectionInDOMTreeDeprecated()
-                   .Start()
+                   .GetSelectionInDOMTree()
+                   .Base()
                    .ComputeOffsetInContainerNode());
 
   // Insert 'test'.
@@ -1449,8 +1449,8 @@ TEST_F(InputMethodControllerTest, SelectionWhenFocusChangeFinishesComposition) {
   EXPECT_TRUE(Controller().HasComposition());
   EXPECT_EQ(7, GetFrame()
                    .Selection()
-                   .ComputeVisibleSelectionInDOMTreeDeprecated()
-                   .Start()
+                   .GetSelectionInDOMTree()
+                   .Base()
                    .ComputeOffsetInContainerNode());
 
   // Focus change finishes composition.
@@ -1461,8 +1461,8 @@ TEST_F(InputMethodControllerTest, SelectionWhenFocusChangeFinishesComposition) {
   EXPECT_FALSE(Controller().HasComposition());
   EXPECT_EQ(7, GetFrame()
                    .Selection()
-                   .ComputeVisibleSelectionInDOMTreeDeprecated()
-                   .Start()
+                   .GetSelectionInDOMTree()
+                   .Base()
                    .ComputeOffsetInContainerNode());
 }
 
