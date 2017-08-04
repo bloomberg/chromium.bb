@@ -91,6 +91,8 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Updates the icon that indicates incognito/teleportation state.
   void UpdateProfileIndicatorIcon();
 
+  void PaintToolbarBackground(gfx::Canvas* canvas) const;
+
   const views::View* profile_indicator_icon() const {
     return profile_indicator_icon_;
   }

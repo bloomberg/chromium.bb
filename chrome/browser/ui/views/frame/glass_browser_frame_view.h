@@ -136,7 +136,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   // Paint various sub-components of this view.
   void PaintTitlebar(gfx::Canvas* canvas) const;
-  void PaintToolbarBackground(gfx::Canvas* canvas) const;
   void PaintClientEdge(gfx::Canvas* canvas) const;
   void FillClientEdgeRects(int x,
                            int y,
