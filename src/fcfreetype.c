@@ -2111,11 +2111,8 @@ FcFreeTypeCheckGlyph (FT_Face face,
 FcCharSet *
 FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spacing)
 {
-    FcChar32	    page, off, ucs4;
     FcCharSet	    *fcs;
-    FcCharLeaf	    *leaf;
     int		    o;
-    FT_UInt	    glyph;
     FT_Pos	    advance, advance_one = 0, advance_two = 0;
     FcBool	    has_advance = FcFalse, fixed_advance = FcTrue, dual_advance = FcFalse;
 
@@ -2147,82 +2144,83 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spac
 #endif
     for (o = 0; o < NUM_DECODE; o++)
     {
+	FcChar32	page, off, ucs4;
+	FcCharLeaf	*leaf;
+	FT_UInt	 	glyph;
+
 	if (FT_Select_Charmap (face, fcFontEncodings[o]) != 0)
 	    continue;
 
+	page = ~0;
+	leaf = NULL;
+	ucs4 = FT_Get_First_Char (face, &glyph);
+	while (glyph != 0)
 	{
-            page = ~0;
-            leaf = NULL;
-            ucs4 = FT_Get_First_Char (face, &glyph);
-            while (glyph != 0)
+	    if (FcFreeTypeCheckGlyph (face, ucs4, glyph, &advance))
 	    {
-		if (FcFreeTypeCheckGlyph (face, ucs4, glyph, &advance))
+		if (advance)
 		{
-		    if (advance)
+		    if (!has_advance)
 		    {
-			if (!has_advance)
-			{
-			    has_advance = FcTrue;
-			    advance_one = advance;
-			}
-			else if (!APPROXIMATELY_EQUAL (advance, advance_one))
-			{
-			    if (fixed_advance)
-			    {
-				dual_advance = FcTrue;
-				fixed_advance = FcFalse;
-				advance_two = advance;
-			    }
-			    else if (!APPROXIMATELY_EQUAL (advance, advance_two))
-				dual_advance = FcFalse;
-			}
+			has_advance = FcTrue;
+			advance_one = advance;
 		    }
-
-		    if ((ucs4 >> 8) != page)
+		    else if (!APPROXIMATELY_EQUAL (advance, advance_one))
 		    {
-			page = (ucs4 >> 8);
-			leaf = FcCharSetFindLeafCreate (fcs, ucs4);
-			if (!leaf)
-			    goto bail1;
+			if (fixed_advance)
+			{
+			    dual_advance = FcTrue;
+			    fixed_advance = FcFalse;
+			    advance_two = advance;
+			}
+			else if (!APPROXIMATELY_EQUAL (advance, advance_two))
+			    dual_advance = FcFalse;
 		    }
-		    off = ucs4 & 0xff;
-		    leaf->map[off >> 5] |= (1 << (off & 0x1f));
 		}
-		ucs4 = FT_Get_Next_Char (face, ucs4, &glyph);
-	    }
-	    if (fcFontEncodings[o] == FT_ENCODING_MS_SYMBOL)
-	    {
-		/* For symbol-encoded OpenType fonts, we duplicate the
-		 * U+F000..F0FF range at U+0000..U+00FF.  That's what
-		 * Windows seems to do, and that's hinted about at:
-		 * http://www.microsoft.com/typography/otspec/recom.htm
-		 * under "Non-Standard (Symbol) Fonts".
-		 *
-		 * See thread with subject "Webdings and other MS symbol
-		 * fonts don't display" on mailing list from May 2015.
-		 */
-		for (ucs4 = 0xF000; ucs4 < 0xF100; ucs4++)
-		{
-		    if (FcCharSetHasChar (fcs, ucs4))
-			FcCharSetAddChar (fcs, ucs4 - 0xF000);
-		}
-	    }
-#ifdef CHECK
-	    for (ucs4 = 0x0020; ucs4 < 0x10000; ucs4++)
-	    {
-		FcBool	    FT_Has, FC_Has;
 
-		FT_Has = FT_Get_Char_Index (face, ucs4) != 0;
-		FC_Has = FcCharSetHasChar (fcs, ucs4);
-		if (FT_Has != FC_Has)
+		if ((ucs4 >> 8) != page)
 		{
-		    printf ("0x%08x FT says %d FC says %d\n", ucs4, FT_Has, FC_Has);
+		    page = (ucs4 >> 8);
+		    leaf = FcCharSetFindLeafCreate (fcs, ucs4);
+		    if (!leaf)
+			goto bail1;
 		}
+		off = ucs4 & 0xff;
+		leaf->map[off >> 5] |= (1 << (off & 0x1f));
 	    }
-#endif
+	    ucs4 = FT_Get_Next_Char (face, ucs4, &glyph);
 	}
+	if (fcFontEncodings[o] == FT_ENCODING_MS_SYMBOL)
+	{
+	    /* For symbol-encoded OpenType fonts, we duplicate the
+	     * U+F000..F0FF range at U+0000..U+00FF.  That's what
+	     * Windows seems to do, and that's hinted about at:
+	     * http://www.microsoft.com/typography/otspec/recom.htm
+	     * under "Non-Standard (Symbol) Fonts".
+	     *
+	     * See thread with subject "Webdings and other MS symbol
+	     * fonts don't display" on mailing list from May 2015.
+	     */
+	    for (ucs4 = 0xF000; ucs4 < 0xF100; ucs4++)
+	    {
+		if (FcCharSetHasChar (fcs, ucs4))
+		    FcCharSetAddChar (fcs, ucs4 - 0xF000);
+	    }
+	}
+#ifdef CHECK
+	for (ucs4 = 0x0020; ucs4 < 0x10000; ucs4++)
+	{
+	    FcBool	    FT_Has, FC_Has;
 
-       break;
+	    FT_Has = FT_Get_Char_Index (face, ucs4) != 0;
+	    FC_Has = FcCharSetHasChar (fcs, ucs4);
+	    if (FT_Has != FC_Has)
+	    {
+		printf ("0x%08x FT says %d FC says %d\n", ucs4, FT_Has, FC_Has);
+	    }
+	}
+#endif
+	break;
     }
     if (fixed_advance)
 	*spacing = FC_MONO;
