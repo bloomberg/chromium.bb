@@ -3034,9 +3034,6 @@ crbug.com/626703 [ Win7 Debug ] external/wpt/encoding/legacy-mb-tchinese/big5/bi
 crbug.com/626703 [ Win7 Debug ] external/wpt/encoding/legacy-mb-tchinese/big5/big5-encode-form-errors-extBb.html [ Timeout Pass ]
 crbug.com/626703 [ Win7 Debug ] external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-encode-href-errors-han.html [ Timeout Pass ]
 
-# Needs a mac person to fix the bug
-crbug.com/719737 [ Mac ] css3/flexbox/radiobutton-min-size.html [ Failure ]
-
 # module script lacks XHTML support
 crbug.com/717643 external/wpt/html/semantics/scripting-1/the-script-element/module/module-in-xhtml.xhtml [ Failure ]
 
