@@ -445,21 +445,21 @@ InspectorTest.dumpNavigatorViewInMode = function(view, mode)
 }
 
 /**
- * @param {symbol} event
+ * @param {symbol} eventName
  * @param {!Common.Object} obj
  * @param {function(?):boolean=} condition
  * @return {!Promise}
  */
-InspectorTest.waitForEvent = function(event, obj, condition)
+InspectorTest.waitForEvent = function(eventName, obj, condition)
 {
-    condition = condition || function() { return true;};
+    condition = condition || function() { return true; };
     return new Promise(resolve => {
-        obj.addEventListener(event, onEventFired);
+        obj.addEventListener(eventName, onEventFired);
 
         function onEventFired(event) {
             if (!condition(event.data))
                 return;
-            obj.removeEventListener(event, onEventFired);
+            obj.removeEventListener(eventName, onEventFired);
             resolve(event.data);
         }
     });
