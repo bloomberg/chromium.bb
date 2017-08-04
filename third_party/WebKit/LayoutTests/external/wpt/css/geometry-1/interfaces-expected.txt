@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 548 tests; 545 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 552 tests; 549 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver 
 PASS DOMPointReadOnly interface: existence and properties of interface object 
 PASS DOMPointReadOnly interface object length 
@@ -104,6 +104,10 @@ PASS DOMRectReadOnly interface: new DOMRect() must inherit property "top" with t
 PASS DOMRectReadOnly interface: new DOMRect() must inherit property "right" with the proper type (6) 
 PASS DOMRectReadOnly interface: new DOMRect() must inherit property "bottom" with the proper type (7) 
 PASS DOMRectReadOnly interface: new DOMRect() must inherit property "left" with the proper type (8) 
+PASS Stringification of [object DOMRectList] 
+PASS DOMRectList interface: [object DOMRectList] must inherit property "length" with the proper type (0) 
+PASS DOMRectList interface: [object DOMRectList] must inherit property "item" with the proper type (1) 
+PASS DOMRectList interface: calling item(unsigned long) on [object DOMRectList] with too few arguments must throw TypeError 
 PASS DOMQuad interface: existence and properties of interface object 
 PASS DOMQuad interface object length 
 PASS DOMQuad interface object name 
