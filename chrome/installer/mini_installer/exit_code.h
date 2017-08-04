@@ -20,7 +20,7 @@ enum ExitCode {
   // DEPRECATED_SETUP_FAILURE = 103,
   // NO_PREVIOUS_SETUP_PATH = 104,
   COMMAND_STRING_OVERFLOW = 105,
-  COULD_NOT_CREATE_PROCESS = 106,
+  // COULD_NOT_CREATE_PROCESS = 106,
   WAIT_FOR_PROCESS_FAILED = 107,
   PATH_STRING_OVERFLOW = 108,
   UNABLE_TO_GET_WORK_DIRECTORY = 109,
@@ -33,6 +33,15 @@ enum ExitCode {
   UNABLE_TO_EXTRACT_SETUP = 116,
   UNABLE_TO_SET_DIRECTORY_ACL = 117,
   INVALID_OPTION = 118,
+  // These next codes specifically mean that the attempt to launch the previous
+  // setup.exe to patch it failed.
+  SETUP_PATCH_FAILED_FILE_NOT_FOUND = 119,            // ERROR_FILE_NOT_FOUND.
+  SETUP_PATCH_FAILED_PATH_NOT_FOUND = 120,            // ERROR_PATH_NOT_FOUND.
+  SETUP_PATCH_FAILED_COULD_NOT_CREATE_PROCESS = 121,  // All other errors.
+  // As above, but for running the new setup.exe to handle an install.
+  RUN_SETUP_FAILED_FILE_NOT_FOUND = 122,            // ERROR_FILE_NOT_FOUND.
+  RUN_SETUP_FAILED_PATH_NOT_FOUND = 123,            // ERROR_PATH_NOT_FOUND.
+  RUN_SETUP_FAILED_COULD_NOT_CREATE_PROCESS = 124,  // All other errors.
 };
 
 }  // namespace mini_installer
