@@ -558,9 +558,6 @@ WebInputEventResult ScrollManager::HandleGestureScrollEvent(
   if (!frame_->View())
     return WebInputEventResult::kNotHandled;
 
-  bool enable_touchpad_scroll_latching =
-      RuntimeEnabledFeatures::TouchpadAndWheelScrollLatchingEnabled();
-
   Node* event_target = nullptr;
   Scrollbar* scrollbar = nullptr;
   if (gesture_event.GetType() != WebInputEvent::kGestureScrollBegin) {
@@ -601,14 +598,6 @@ WebInputEventResult ScrollManager::HandleGestureScrollEvent(
       if (should_update_capture)
         scrollbar_handling_scroll_gesture_ = scrollbar;
       return WebInputEventResult::kHandledSuppressed;
-    }
-
-    // When touchpad scroll latching is enabled and mouse is over a scrollbar,
-    // GSU events will always latch to the scrollbar even when it hits the
-    // scroll content.
-    if (enable_touchpad_scroll_latching &&
-        gesture_event.GetType() == WebInputEvent::kGestureScrollUpdate) {
-      return WebInputEventResult::kNotHandled;
     }
 
     scrollbar_handling_scroll_gesture_ = nullptr;

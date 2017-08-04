@@ -4202,6 +4202,49 @@ TEST_P(ParameterizedWebFrameTest, ReloadDoesntSetRedirect) {
       web_view_helper.WebView()->MainFrameImpl());
 }
 
+TEST_P(ParameterizedWebFrameTest, scrollbarIsNotHandlingTouchpadScroll) {
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.Initialize();
+  web_view_helper.Resize(WebSize(200, 200));
+  WebViewBase* web_view = web_view_helper.WebView();
+
+  InitializeWithHTML(
+      *web_view->MainFrameImpl()->GetFrame(),
+      "<style>"
+      " #scrollable { height: 100px; width: 100px; overflow: scroll; }"
+      " #content { height: 200px; width: 200px;}"
+      "</style>"
+      "<div id='scrollable'>"
+      " <div id='content'></div>"
+      "</div>");
+
+  web_view->UpdateAllLifecyclePhases();
+
+  Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
+  Element* scrollable = document->getElementById("scrollable");
+
+  ScrollableArea* scrollable_area =
+      ToLayoutBox(scrollable->GetLayoutObject())->GetScrollableArea();
+  DCHECK(scrollable_area->VerticalScrollbar());
+  WebGestureEvent scroll_begin(WebInputEvent::kGestureScrollBegin,
+                               WebInputEvent::kNoModifiers,
+                               TimeTicks::Now().InSeconds());
+  scroll_begin.x = scroll_begin.global_x =
+      scrollable->OffsetLeft() + scrollable->OffsetWidth() - 2;
+  scroll_begin.y = scroll_begin.global_y = scrollable->OffsetTop();
+  scroll_begin.source_device = kWebGestureDeviceTouchpad;
+  scroll_begin.data.scroll_begin.delta_x_hint = 0;
+  scroll_begin.data.scroll_begin.delta_y_hint = 10;
+  scroll_begin.SetFrameScale(1);
+  document->GetFrame()->GetEventHandler().HandleGestureScrollEvent(
+      scroll_begin);
+  DCHECK(
+      !document->GetFrame()->GetEventHandler().IsScrollbarHandlingGestures());
+  bool should_update_capture = false;
+  DCHECK(!scrollable_area->VerticalScrollbar()->GestureEvent(
+      scroll_begin, &should_update_capture));
+}
+
 class ClearScrollStateOnCommitWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
