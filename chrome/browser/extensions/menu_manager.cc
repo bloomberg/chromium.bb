@@ -359,7 +359,7 @@ bool MenuManager::AddContextItem(const Extension* extension,
     if (item_ptr->checked())
       RadioItemSelected(item_ptr);
     else
-      SanitizeRadioList(context_items_[key]);
+      SanitizeRadioListsInMenu(context_items_[key]);
   }
 
   // If this is the first item for this extension, start loading its icon.
@@ -382,7 +382,7 @@ bool MenuManager::AddChildItem(const MenuItem::Id& parent_id,
   items_by_id_[child_ptr->id()] = child_ptr;
 
   if (child_ptr->type() == MenuItem::RADIO)
-    SanitizeRadioList(parent->children());
+    SanitizeRadioListsInMenu(parent->children());
   return true;
 }
 
@@ -426,7 +426,7 @@ bool MenuManager::ChangeParent(const MenuItem::Id& child_id,
     }
     child = old_parent->ReleaseChild(child_id, false /* non-recursive search*/);
     DCHECK(child.get() == child_ptr);
-    SanitizeRadioList(old_parent->children());
+    SanitizeRadioListsInMenu(old_parent->children());
   } else {
     // This is a top-level item, so we need to pull it out of our list of
     // top-level items.
@@ -447,17 +447,17 @@ bool MenuManager::ChangeParent(const MenuItem::Id& child_id,
     }
     child = std::move(*j);
     list.erase(j);
-    SanitizeRadioList(list);
+    SanitizeRadioListsInMenu(list);
   }
 
   if (new_parent) {
     new_parent->AddChild(std::move(child));
-    SanitizeRadioList(new_parent->children());
+    SanitizeRadioListsInMenu(new_parent->children());
   } else {
     const MenuItem::ExtensionKey& child_key = child_ptr->id().extension_key;
     context_items_[child_key].push_back(std::move(child));
     child_ptr->parent_id_.reset(nullptr);
-    SanitizeRadioList(context_items_[child_key]);
+    SanitizeRadioListsInMenu(context_items_[child_key]);
   }
   return true;
 }
@@ -485,7 +485,7 @@ bool MenuManager::RemoveContextMenuItem(const MenuItem::Id& id) {
       items_removed.insert(id);
       list.erase(j);
       result = true;
-      SanitizeRadioList(list);
+      SanitizeRadioListsInMenu(list);
       break;
     } else {
       // See if the item to remove was found as a descendant of the current
@@ -495,7 +495,7 @@ bool MenuManager::RemoveContextMenuItem(const MenuItem::Id& id) {
       if (child) {
         items_removed = child->RemoveAllDescendants();
         items_removed.insert(id);
-        SanitizeRadioList(GetItemById(*child->parent_id())->children());
+        SanitizeRadioListsInMenu(GetItemById(*child->parent_id())->children());
         result = true;
         break;
       }
@@ -739,11 +739,14 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
   }
 }
 
-void MenuManager::SanitizeRadioList(const MenuItem::OwnedList& item_list) {
+void MenuManager::SanitizeRadioListsInMenu(
+    const MenuItem::OwnedList& item_list) {
   auto i = item_list.begin();
   while (i != item_list.end()) {
     if ((*i)->type() != MenuItem::RADIO) {
-      break;
+      ++i;
+      // Move on to sanitize the next radio list, if any.
+      continue;
     }
 
     // Uncheck any checked radio items in the run, and at the end reset
