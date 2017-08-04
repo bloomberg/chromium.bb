@@ -103,8 +103,6 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   // need their frames painted.
   bool ShouldPaint() const;
 
-  void PaintToolbarBackground(gfx::Canvas* canvas);
-
   // View which contains the window controls.
   ash::FrameCaptionButtonContainerView* caption_button_container_;
 

@@ -141,7 +141,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // and titlebar background are a contiguous component.
   void PaintRestoredFrameBorder(gfx::Canvas* canvas) const;
   void PaintMaximizedFrameBorder(gfx::Canvas* canvas) const;
-  void PaintToolbarBackground(gfx::Canvas* canvas) const;
   void PaintClientEdge(gfx::Canvas* canvas) const;
   void FillClientEdgeRects(int x,
                            int y,
