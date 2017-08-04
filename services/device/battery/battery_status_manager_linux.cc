@@ -377,15 +377,18 @@ class BatteryStatusManagerLinux::BatteryStatusNotificationThread
   }
 
   bool IsDaemonVersionBelow_0_99() {
-    // TODO(thestig): Fix https://crbug.com/746146 and remove these CHECKs.
-    CHECK(upower_);
-    CHECK(upower_->properties());
     base::Version daemon_version = upower_->properties()->daemon_version();
     return daemon_version.IsValid() &&
            daemon_version.CompareTo(base::Version("0.99")) < 0;
   }
 
   void FindBatteryDevice() {
+    // If ShutdownDBusConnection() has been called, the DBus connection will be
+    // destroyed eventually. In the meanwhile, pending tasks can still end up
+    // calling this class. Ignore these calls.
+    if (!system_bus_)
+      return;
+
     // Move the currently watched battery_ device to a stack-local variable such
     // that we can enumerate all devices (once more):
     // first testing the display device, then testing all devices from
