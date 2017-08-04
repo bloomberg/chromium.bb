@@ -2229,6 +2229,18 @@ FcFreeTypeCheckGlyph (FT_Face face,
 	FT_Get_Advance (face, glyph, load_flags, advance);
     }
 
+    /* CID fonts built by Adobe used to make ASCII control chars to cid1
+     * (space glyph). As such, always check contour for those characters. */
+    if (ucs4 <= 0x001F)
+    {
+      if (FT_Load_Glyph (face, glyph, load_flags))
+	  return FcFalse;
+
+      if (face->glyph->format == FT_GLYPH_FORMAT_OUTLINE &&
+	  face->glyph->outline.n_contours == 0)
+	  return FcFalse;
+    }
+
     return FcTrue;
 }
 
