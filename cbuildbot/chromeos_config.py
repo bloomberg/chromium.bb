@@ -3512,6 +3512,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.no_hwtest_builder,
       description='VMTest Informational Builder for running deqp on betty.',
       build_type=constants.GENERIC_TYPE,
+      internal=True,
       boards=['betty'],
       builder_class_name='test_builders.VMInformationalBuilder',
       vm_tests=[config_lib.VMTestConfig(
