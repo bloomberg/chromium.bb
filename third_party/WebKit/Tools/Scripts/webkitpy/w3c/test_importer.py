@@ -246,7 +246,7 @@ class TestImporter(object):
             # TODO(qyearsley): We probably don't need to know about
             # corresponding PRs at all anymore, although this information
             # could still be useful for reference.
-            pull_request = self.wpt_github.pr_with_change_id(commit.change_id())
+            pull_request = self.wpt_github.pr_for_chromium_commit(commit)
             if pull_request:
                 _log.info('PR: https://github.com/w3c/web-platform-tests/pull/%d', pull_request.number)
             else:

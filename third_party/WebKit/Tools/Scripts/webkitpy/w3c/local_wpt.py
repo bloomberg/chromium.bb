@@ -7,6 +7,7 @@
 import logging
 
 from webkitpy.common.system.executive import ScriptError
+from webkitpy.w3c.chromium_commit import ChromiumCommit
 from webkitpy.w3c.common import WPT_GH_SSH_URL_TEMPLATE, WPT_MIRROR_URL, CHROMIUM_WPT_DIR
 
 _log = logging.getLogger(__name__)
@@ -47,6 +48,24 @@ class LocalWPT(object):
     def run(self, command, **kwargs):
         """Runs a command in the local WPT directory."""
         return self.host.executive.run_command(command, cwd=self.path, **kwargs)
+
+    def most_recent_chromium_commit(self):
+        """Finds the most recent commit in WPT with a Chromium commit position.
+
+        Returns:
+            A pair (commit hash, ChromiumCommit instance).
+        """
+        wpt_commit_hash = self.run(['git', 'rev-list', 'HEAD', '-n', '1', '--grep=Cr-Commit-Position'])
+        if not wpt_commit_hash:
+            return None, None
+
+        wpt_commit_hash = wpt_commit_hash.strip()
+        position = self.run(['git', 'footers', '--position', wpt_commit_hash])
+        position = position.strip()
+        assert position
+
+        chromium_commit = ChromiumCommit(self.host, position=position)
+        return wpt_commit_hash, chromium_commit
 
     def clean(self):
         """Resets git to a clean state, on origin/master with no changed files."""
