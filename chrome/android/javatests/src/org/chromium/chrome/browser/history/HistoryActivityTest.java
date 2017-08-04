@@ -172,8 +172,7 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
         assertEquals(View.GONE, mHistoryManager.getEmptyViewForTests().getVisibility());
     }
 
-    // @SmallTest
-    @FlakyTest
+    @SmallTest
     public void testRemove_AllItems() throws Exception {
         toggleItemSelection(2);
         toggleItemSelection(3);
