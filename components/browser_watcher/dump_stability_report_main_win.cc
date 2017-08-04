@@ -142,6 +142,27 @@ void PrintProcessState(FILE* out,
                        const browser_watcher::ProcessState& process) {
   fprintf(out, "Process %lld (%d threads)\n", process.process_id(),
           process.threads_size());
+
+  if (process.has_memory_state() &&
+      process.memory_state().has_windows_memory()) {
+    const auto& windows_memory = process.memory_state().windows_memory();
+    if (windows_memory.has_process_private_usage()) {
+      fprintf(out, "process_private_usage: %u pages\n",
+              windows_memory.process_private_usage());
+    }
+    if (windows_memory.has_process_peak_workingset_size()) {
+      fprintf(out, "process_peak_workingset_size: %u pages\n",
+              windows_memory.process_peak_workingset_size());
+    }
+    if (windows_memory.has_process_peak_pagefile_usage()) {
+      fprintf(out, "process_peak_pagefile_usage: %u pages\n",
+              windows_memory.process_peak_pagefile_usage());
+    }
+    if (windows_memory.has_process_allocation_attempt()) {
+      fprintf(out, "process_allocation_attempt: %u bytes\n",
+              windows_memory.process_allocation_attempt());
+    }
+  }
   for (const browser_watcher::ThreadState& thread : process.threads()) {
     fprintf(out, "Thread %lld (%s) : %d activities\n", thread.thread_id(),
             thread.thread_name().c_str(), thread.activity_count());
