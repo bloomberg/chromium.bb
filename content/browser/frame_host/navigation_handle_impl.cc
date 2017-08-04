@@ -497,6 +497,11 @@ NavigationData* NavigationHandleImpl::GetNavigationData() {
   return navigation_data_.get();
 }
 
+void NavigationHandleImpl::SetOnDeferCallbackForTesting(
+    const base::Closure& on_defer_callback) {
+  on_defer_callback_for_testing_ = on_defer_callback;
+}
+
 const GlobalRequestID& NavigationHandleImpl::GetGlobalRequestID() {
   DCHECK(state_ == WILL_PROCESS_RESPONSE || state_ == DEFERRING_RESPONSE ||
          state_ == READY_TO_COMMIT);
@@ -572,8 +577,11 @@ void NavigationHandleImpl::WillStartRequest(
     navigation_ui_data_ = GetDelegate()->GetNavigationUIData(this);
 
   // Notify each throttle of the request.
+  base::Closure on_defer_callback_copy = on_defer_callback_for_testing_;
   NavigationThrottle::ThrottleCheckResult result = CheckWillStartRequest();
   if (result == NavigationThrottle::DEFER) {
+    if (!on_defer_callback_copy.is_null())
+      on_defer_callback_copy.Run();
     // DO NOT ADD CODE: the NavigationHandle might have been destroyed during
     // one of the NavigationThrottle checks.
     return;
@@ -634,8 +642,11 @@ void NavigationHandleImpl::WillRedirectRequest(
   }
 
   // Notify each throttle of the request.
+  base::Closure on_defer_callback_copy = on_defer_callback_for_testing_;
   NavigationThrottle::ThrottleCheckResult result = CheckWillRedirectRequest();
   if (result == NavigationThrottle::DEFER) {
+    if (!on_defer_callback_copy.is_null())
+      on_defer_callback_copy.Run();
     // DO NOT ADD CODE: the NavigationHandle might have been destroyed during
     // one of the NavigationThrottle checks.
     return;
@@ -674,8 +685,11 @@ void NavigationHandleImpl::WillProcessResponse(
   transfer_callback_ = transfer_callback;
 
   // Notify each throttle of the response.
+  base::Closure on_defer_callback_copy = on_defer_callback_for_testing_;
   NavigationThrottle::ThrottleCheckResult result = CheckWillProcessResponse();
   if (result == NavigationThrottle::DEFER) {
+    if (!on_defer_callback_copy.is_null())
+      on_defer_callback_copy.Run();
     // DO NOT ADD CODE: the NavigationHandle might have been destroyed during
     // one of the NavigationThrottle checks.
     return;
@@ -978,9 +992,12 @@ void NavigationHandleImpl::ResumeInternal() {
                                "Resume");
 
   NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
+  base::Closure on_defer_callback_copy = on_defer_callback_for_testing_;
   if (state_ == DEFERRING_START) {
     result = CheckWillStartRequest();
     if (result == NavigationThrottle::DEFER) {
+      if (!on_defer_callback_copy.is_null())
+        on_defer_callback_copy.Run();
       // DO NOT ADD CODE: the NavigationHandle might have been destroyed during
       // one of the NavigationThrottle checks.
       return;
@@ -988,6 +1005,8 @@ void NavigationHandleImpl::ResumeInternal() {
   } else if (state_ == DEFERRING_REDIRECT) {
     result = CheckWillRedirectRequest();
     if (result == NavigationThrottle::DEFER) {
+      if (!on_defer_callback_copy.is_null())
+        on_defer_callback_copy.Run();
       // DO NOT ADD CODE: the NavigationHandle might have been destroyed during
       // one of the NavigationThrottle checks.
       return;
@@ -995,6 +1014,8 @@ void NavigationHandleImpl::ResumeInternal() {
   } else {
     result = CheckWillProcessResponse();
     if (result == NavigationThrottle::DEFER) {
+      if (!on_defer_callback_copy.is_null())
+        on_defer_callback_copy.Run();
       // DO NOT ADD CODE: the NavigationHandle might have been destroyed during
       // one of the NavigationThrottle checks.
       return;
