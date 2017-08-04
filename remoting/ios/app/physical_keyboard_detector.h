@@ -11,6 +11,8 @@
 @interface PhysicalKeyboardDetector : NSObject
 
 // |callback| will be called with YES if an physical keyboard is presented.
+// Note that you'll need to manually restore the first responder after the
+// detection is done.
 + (void)detectOnView:(UIView*)view callback:(void (^)(BOOL))callback;
 
 @end

@@ -51,6 +51,7 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
   // When set to true, ClientKeyboard will immediately resign first responder
   // after it becomes first responder.
   BOOL _blocksKeyboard;
+  BOOL _hasPhysicalKeyboard;
   NSLayoutConstraint* _keyboardHeightConstraint;
   EAGLView* _hostView;
 }
@@ -65,6 +66,7 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
     _keyboardSize = CGSizeZero;
     _surfaceCreated = NO;
     _blocksKeyboard = NO;
+    _hasPhysicalKeyboard = NO;
     _settings =
         [[RemotingPreferences instance] settingsForHost:client.hostInfo.hostId];
 
@@ -168,15 +170,8 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
 
   [PhysicalKeyboardDetector detectOnView:_hostView
                                 callback:^(BOOL hasPhysicalKeyboard) {
-                                  if (hasPhysicalKeyboard) {
-                                    _clientKeyboard.hasPhysicalKeyboard =
-                                        hasPhysicalKeyboard;
-
-                                    // Directly make the client keyboard first
-                                    // responder so that it can immediately
-                                    // handle key inputs.
-                                    [self showKeyboard];
-                                  }
+                                  _hasPhysicalKeyboard = hasPhysicalKeyboard;
+                                  [_clientKeyboard becomeFirstResponder];
                                 }];
 }
 
@@ -219,29 +214,15 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
   [self updateFABConstraintsAnimated:NO];
 }
 
-#pragma mark - Keyboard
-
-- (BOOL)isKeyboardActive {
-  return [_clientKeyboard isFirstResponder];
-}
-
-- (void)showKeyboard {
-  [_clientKeyboard becomeFirstResponder];
-}
-
-- (void)hideKeyboard {
-  [_clientKeyboard resignFirstResponder];
-}
-
 #pragma mark - Keyboard Notifications
 
 - (void)keyboardWillShow:(NSNotification*)notification {
   if (_blocksKeyboard) {
-    [self hideKeyboard];
-
     // This is to make sure the keyboard is removed from the responder chain.
     [_clientKeyboard removeFromSuperview];
     [self.view addSubview:_clientKeyboard];
+    _clientKeyboard.showsSoftKeyboard = NO;
+    [_clientKeyboard becomeFirstResponder];
     return;
   }
 
@@ -270,11 +251,11 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
 #pragma mark - ClientGesturesDelegate
 
 - (void)keyboardShouldShow {
-  [self showKeyboard];
+  _clientKeyboard.showsSoftKeyboard = YES;
 }
 
 - (void)keyboardShouldHide {
-  [self hideKeyboard];
+  _clientKeyboard.showsSoftKeyboard = NO;
 }
 
 #pragma mark - RemotingSettingsViewControllerDelegate
@@ -347,7 +328,7 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
       self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular;
 
   if (_settings.shouldResizeHostToFit && !isPhonePortrait &&
-      ![self isKeyboardActive]) {
+      !_clientKeyboard.showsSoftKeyboard) {
     [_client setHostResolution:_hostView.frame.size
                          scale:_hostView.contentScaleFactor];
   }
@@ -383,21 +364,22 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
                 preferredStyle:UIAlertControllerStyleActionSheet];
 
   __weak HostViewController* weakSelf = self;
-  if (!_clientKeyboard.hasPhysicalKeyboard) {
-    // These are only needed for soft keyboard.
-    if ([self isKeyboardActive]) {
+  if (!_hasPhysicalKeyboard) {
+    // These are only needed if the device has no physical keyboard.
+    __weak ClientKeyboard* weakClientKeyboard = _clientKeyboard;
+    if (_clientKeyboard.showsSoftKeyboard) {
       [self addActionToAlert:alert
                        title:IDS_HIDE_KEYBOARD
                        style:UIAlertActionStyleDefault
             restoresKeyboard:NO
                      handler:^() {
-                       [weakSelf hideKeyboard];
+                       weakClientKeyboard.showsSoftKeyboard = NO;
                      }];
     } else {
       [self addActionToAlert:alert
                        title:IDS_SHOW_KEYBOARD
                      handler:^() {
-                       [weakSelf showKeyboard];
+                       weakClientKeyboard.showsSoftKeyboard = YES;
                      }];
     }
   }
@@ -492,14 +474,14 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
                    style:(UIAlertActionStyle)style
         restoresKeyboard:(BOOL)restoresKeyboard
                  handler:(void (^)())handler {
-  BOOL isKeyboardActive = [self isKeyboardActive];
+  BOOL isKeyboardActive = _clientKeyboard.showsSoftKeyboard;
   [alert addAction:[UIAlertAction
                        actionWithTitle:l10n_util::GetNSString(titleMessageId)
                                  style:style
                                handler:^(UIAlertAction*) {
                                  _blocksKeyboard = NO;
                                  if (isKeyboardActive && restoresKeyboard) {
-                                   [self showKeyboard];
+                                   _clientKeyboard.showsSoftKeyboard = YES;
                                  }
                                  if (handler) {
                                    handler();
