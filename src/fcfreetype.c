@@ -2077,12 +2077,22 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spac
 {
     FcCharSet	    *fcs;
     int		    o;
+    FT_Int	    load_flags = FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH | FT_LOAD_NO_SCALE | FT_LOAD_NO_HINTING;
     FT_Pos	    advances[3];
     unsigned int    num_advances = 0;
 
     fcs = FcCharSetCreate ();
     if (!fcs)
 	goto bail0;
+
+    /* When using scalable fonts, only report those glyphs
+     * which can be scaled; otherwise those fonts will
+     * only be available at some sizes, and never when
+     * transformed.  Avoid this by simply reporting bitmap-only
+     * glyphs as missing
+     */
+    if (face->face_flags & FT_FACE_FLAG_SCALABLE)
+	load_flags |= FT_LOAD_NO_BITMAP;
 
 #if HAVE_FT_SELECT_SIZE
     if (!(face->face_flags & FT_FACE_FLAG_SCALABLE) &&
@@ -2121,17 +2131,6 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spac
 	while (glyph != 0)
 	{
 	    FcBool good = FcTrue;
-
-	    FT_Int	    load_flags = FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH | FT_LOAD_NO_SCALE | FT_LOAD_NO_HINTING;
-
-	    /* When using scalable fonts, only report those glyphs
-	     * which can be scaled; otherwise those fonts will
-	     * only be available at some sizes, and never when
-	     * transformed.  Avoid this by simply reporting bitmap-only
-	     * glyphs as missing
-	     */
-	    if (face->face_flags & FT_FACE_FLAG_SCALABLE)
-		load_flags |= FT_LOAD_NO_BITMAP;
 
 	    /* CID fonts built by Adobe used to make ASCII control chars to cid1
 	     * (space glyph). As such, always check contour for those characters. */
