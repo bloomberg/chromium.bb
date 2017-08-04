@@ -582,7 +582,7 @@ bool MixedContentChecker::IsMixedFormAction(
   if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
     String message = String::Format(
         "Mixed Content: The page at '%s' was loaded over a secure connection, "
-        "but contains a form which targets an insecure endpoint '%s'. This "
+        "but contains a form that targets an insecure endpoint '%s'. This "
         "endpoint should be made available over a secure connection.",
         MainResourceUrlForFrame(mixed_frame).ElidedString().Utf8().data(),
         url.ElidedString().Utf8().data());
