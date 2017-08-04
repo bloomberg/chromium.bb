@@ -40420,6 +40420,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.QuicServerInfo.WaitForDataReady.HandshakeConfirmedTime"
     units="Milliseconds">
+  <obsolete>
+    Deprecated as of 8/3/2017.
+  </obsolete>
   <owner>rch@chromium.org</owner>
   <summary>
     The elapsed time between waiting for reading of QUIC server information from
