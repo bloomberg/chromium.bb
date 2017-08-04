@@ -33,9 +33,3 @@ class TestExporterTest(unittest.TestCase):
         cl = GerritCL({'change_id': 1}, MockGerritAPI(None, None, None))
         actual_patch = cl.filter_transform_patch(sample_patch)
         self.assertEqual(actual_patch, expected_patch)
-
-    def test_strip_commit_positions(self):
-        commit_with_footers = ('Test commit\nChange-Id: foobar\n'
-                               'Cr-Original-Commit-Position: refs/heads/master@{#10}\n'
-                               'Cr-Commit-Position: refs/heads/master@{#10}')
-        self.assertEqual(GerritCL.strip_commit_positions(commit_with_footers), 'Test commit\nChange-Id: foobar')

@@ -5,6 +5,7 @@
 import unittest
 
 from webkitpy.common.host_mock import MockHost
+from webkitpy.common.system.executive_mock import MockExecutive, mock_git_commands
 from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.w3c.local_wpt import LocalWPT
 
@@ -47,6 +48,30 @@ class LocalWPTTest(unittest.TestCase):
         local_wpt = LocalWPT(host, 'token')
         local_wpt.run(['echo', 'rutabaga'])
         self.assertEqual(host.executive.calls, [['echo', 'rutabaga']])
+
+    def test_last_wpt_exported_commit(self):
+        host = MockHost()
+        host.executive = mock_git_commands({
+            'rev-list': '9ea4fc353a4b1c11c6e524270b11baa4d1ddfde8',
+            'footers': 'Cr-Commit-Position: 123',
+            'crrev-parse': 'add087a97844f4b9e307d9a216940582d96db306',
+        }, strict=True)
+        host.filesystem = MockFileSystem()
+        local_wpt = LocalWPT(host, 'token')
+
+        wpt_sha, chromium_commit = local_wpt.most_recent_chromium_commit()
+        self.assertEqual(wpt_sha, '9ea4fc353a4b1c11c6e524270b11baa4d1ddfde8')
+        self.assertEqual(chromium_commit.position, '123')
+        self.assertEqual(chromium_commit.sha, 'add087a97844f4b9e307d9a216940582d96db306')
+
+    def test_last_wpt_exported_commit_not_found(self):
+        host = MockHost()
+        host.executive = MockExecutive(run_command_fn=lambda _: '')
+        host.filesystem = MockFileSystem()
+        local_wpt = LocalWPT(host, 'token')
+
+        commit = local_wpt.most_recent_chromium_commit()
+        self.assertEqual(commit, (None, None))
 
     def test_create_branch_with_patch(self):
         host = MockHost()
