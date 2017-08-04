@@ -163,11 +163,10 @@ TEST_F(EventHandlerTest, dragSelectionAfterScroll) {
                    .GetSelectionController()
                    .MouseDownMayStartSelect());
 
-  ASSERT_TRUE(
-      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsRange());
-  Range* range = CreateRange(Selection()
-                                 .ComputeVisibleSelectionInDOMTreeDeprecated()
-                                 .ToNormalizedEphemeralRange());
+  ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsRange());
+  Range* range =
+      CreateRange(EphemeralRange(Selection().GetSelectionInDOMTree().Base(),
+                                 Selection().GetSelectionInDOMTree().Extent()));
   ASSERT_TRUE(range);
   EXPECT_EQ("Line 1\nLine 2", range->GetText());
 }
@@ -184,42 +183,33 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTap) {
   TapEventBuilder single_tap_event(IntPoint(0, 0), 1);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       single_tap_event);
-  ASSERT_TRUE(
-      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
-  EXPECT_EQ(Position(line, 0),
-            Selection().ComputeVisibleSelectionInDOMTreeDeprecated().Start());
+  ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsCaret());
+  EXPECT_EQ(Position(line, 0), Selection().GetSelectionInDOMTree().Base());
 
   // Multi-tap events on editable elements should trigger selection, just
   // like multi-click events.
   TapEventBuilder double_tap_event(IntPoint(0, 0), 2);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       double_tap_event);
-  ASSERT_TRUE(
-      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsRange());
-  EXPECT_EQ(Position(line, 0),
-            Selection().ComputeVisibleSelectionInDOMTreeDeprecated().Start());
+  ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsRange());
+  EXPECT_EQ(Position(line, 0), Selection().GetSelectionInDOMTree().Base());
   if (GetDocument()
           .GetFrame()
           ->GetEditor()
           .IsSelectTrailingWhitespaceEnabled()) {
-    EXPECT_EQ(Position(line, 4),
-              Selection().ComputeVisibleSelectionInDOMTreeDeprecated().End());
+    EXPECT_EQ(Position(line, 4), Selection().GetSelectionInDOMTree().Extent());
     EXPECT_EQ("One ", WebString(Selection().SelectedText()).Utf8());
   } else {
-    EXPECT_EQ(Position(line, 3),
-              Selection().ComputeVisibleSelectionInDOMTreeDeprecated().End());
+    EXPECT_EQ(Position(line, 3), Selection().GetSelectionInDOMTree().Extent());
     EXPECT_EQ("One", WebString(Selection().SelectedText()).Utf8());
   }
 
   TapEventBuilder triple_tap_event(IntPoint(0, 0), 3);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       triple_tap_event);
-  ASSERT_TRUE(
-      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsRange());
-  EXPECT_EQ(Position(line, 0),
-            Selection().ComputeVisibleSelectionInDOMTreeDeprecated().Start());
-  EXPECT_EQ(Position(line, 13),
-            Selection().ComputeVisibleSelectionInDOMTreeDeprecated().End());
+  ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsRange());
+  EXPECT_EQ(Position(line, 0), Selection().GetSelectionInDOMTree().Base());
+  EXPECT_EQ(Position(line, 13), Selection().GetSelectionInDOMTree().Extent());
   EXPECT_EQ("One Two Three", WebString(Selection().SelectedText()).Utf8());
 }
 
@@ -234,27 +224,21 @@ TEST_F(EventHandlerTest, multiClickSelectionFromTapDisabledIfNotEditable) {
   TapEventBuilder single_tap_event(IntPoint(0, 0), 1);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       single_tap_event);
-  ASSERT_TRUE(
-      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
-  EXPECT_EQ(Position(line, 0),
-            Selection().ComputeVisibleSelectionInDOMTreeDeprecated().Start());
+  ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsCaret());
+  EXPECT_EQ(Position(line, 0), Selection().GetSelectionInDOMTree().Base());
 
   // As the text is readonly, multi-tap events should not trigger selection.
   TapEventBuilder double_tap_event(IntPoint(0, 0), 2);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       double_tap_event);
-  ASSERT_TRUE(
-      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
-  EXPECT_EQ(Position(line, 0),
-            Selection().ComputeVisibleSelectionInDOMTreeDeprecated().Start());
+  ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsCaret());
+  EXPECT_EQ(Position(line, 0), Selection().GetSelectionInDOMTree().Base());
 
   TapEventBuilder triple_tap_event(IntPoint(0, 0), 3);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       triple_tap_event);
-  ASSERT_TRUE(
-      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
-  EXPECT_EQ(Position(line, 0),
-            Selection().ComputeVisibleSelectionInDOMTreeDeprecated().Start());
+  ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsCaret());
+  EXPECT_EQ(Position(line, 0), Selection().GetSelectionInDOMTree().Base());
 }
 
 TEST_F(EventHandlerTest, draggedInlinePositionTest) {
@@ -492,8 +476,7 @@ TEST_F(EventHandlerTest, EmptyTextfieldInsertionOnTap) {
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       single_tap_event);
 
-  ASSERT_TRUE(
-      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsCaret());
   ASSERT_FALSE(Selection().IsHandleVisible());
 }
 
@@ -504,8 +487,7 @@ TEST_F(EventHandlerTest, NonEmptyTextfieldInsertionOnTap) {
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       single_tap_event);
 
-  ASSERT_TRUE(
-      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsCaret());
   ASSERT_TRUE(Selection().IsHandleVisible());
 }
 
@@ -516,8 +498,7 @@ TEST_F(EventHandlerTest, NewlineDivInsertionOnTap) {
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       single_tap_event);
 
-  ASSERT_TRUE(
-      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsCaret());
   ASSERT_TRUE(Selection().IsHandleVisible());
 }
 
@@ -528,8 +509,7 @@ TEST_F(EventHandlerTest, EmptyTextfieldInsertionOnLongPress) {
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       long_press_event);
 
-  ASSERT_TRUE(
-      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsCaret());
   ASSERT_TRUE(Selection().IsHandleVisible());
 
   // Single Tap on an empty edit field should clear insertion handle
@@ -537,8 +517,7 @@ TEST_F(EventHandlerTest, EmptyTextfieldInsertionOnLongPress) {
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       single_tap_event);
 
-  ASSERT_TRUE(
-      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsCaret());
   ASSERT_FALSE(Selection().IsHandleVisible());
 }
 
@@ -549,8 +528,7 @@ TEST_F(EventHandlerTest, NonEmptyTextfieldInsertionOnLongPress) {
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       long_press_event);
 
-  ASSERT_TRUE(
-      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsCaret());
   ASSERT_TRUE(Selection().IsHandleVisible());
 }
 
@@ -562,8 +540,7 @@ TEST_F(EventHandlerTest, ClearHandleAfterTap) {
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       long_press_event);
 
-  ASSERT_TRUE(
-      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsCaret());
   ASSERT_TRUE(Selection().IsHandleVisible());
 
   // Tap away from text area should clear handle
@@ -582,8 +559,7 @@ TEST_F(EventHandlerTest, HandleNotShownOnMouseEvents) {
   GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
       left_mouse_press_event);
 
-  ASSERT_TRUE(
-      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsCaret());
   ASSERT_FALSE(Selection().IsHandleVisible());
 
   MousePressEventBuilder right_mouse_press_event(
@@ -591,8 +567,7 @@ TEST_F(EventHandlerTest, HandleNotShownOnMouseEvents) {
   GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
       right_mouse_press_event);
 
-  ASSERT_TRUE(
-      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsCaret());
   ASSERT_FALSE(Selection().IsHandleVisible());
 
   MousePressEventBuilder double_click_mouse_press_event(
@@ -600,8 +575,7 @@ TEST_F(EventHandlerTest, HandleNotShownOnMouseEvents) {
   GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
       double_click_mouse_press_event);
 
-  ASSERT_TRUE(
-      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsRange());
+  ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsRange());
   ASSERT_FALSE(Selection().IsHandleVisible());
 
   MousePressEventBuilder triple_click_mouse_press_event(
@@ -609,8 +583,7 @@ TEST_F(EventHandlerTest, HandleNotShownOnMouseEvents) {
   GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
       triple_click_mouse_press_event);
 
-  ASSERT_TRUE(
-      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsRange());
+  ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsRange());
   ASSERT_FALSE(Selection().IsHandleVisible());
 }
 
@@ -628,15 +601,13 @@ TEST_F(EventHandlerTest, MisspellingContextMenuEvent) {
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
       single_tap_event);
 
-  ASSERT_TRUE(
-      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsCaret());
   ASSERT_TRUE(Selection().IsHandleVisible());
 
   GetDocument().GetFrame()->GetEventHandler().ShowNonLocatedContextMenu(
       nullptr, kMenuSourceTouchHandle);
 
-  ASSERT_TRUE(
-      Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
+  ASSERT_TRUE(Selection().GetSelectionInDOMTree().IsCaret());
   ASSERT_TRUE(Selection().IsHandleVisible());
 }
 

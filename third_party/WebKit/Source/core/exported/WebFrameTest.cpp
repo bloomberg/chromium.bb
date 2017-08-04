@@ -5730,14 +5730,14 @@ TEST_P(ParameterizedWebFrameTest, MoveRangeSelectionExtentScollsInputField) {
 
   EXPECT_EQ(0, frame->GetFrame()
                    ->Selection()
-                   .ComputeVisibleSelectionInDOMTreeDeprecated()
+                   .ComputeVisibleSelectionInDOMTree()
                    .RootEditableElement()
                    ->scrollLeft());
   frame->MoveRangeSelectionExtent(
       WebPoint(end_web_rect.x + 500, end_web_rect.y));
   EXPECT_GE(frame->GetFrame()
                 ->Selection()
-                .ComputeVisibleSelectionInDOMTreeDeprecated()
+                .ComputeVisibleSelectionInDOMTree()
                 .RootEditableElement()
                 ->scrollLeft(),
             1);
@@ -5759,12 +5759,11 @@ TEST_P(ParameterizedWebFrameTest, DISABLED_PositionForPointTest) {
   InitializeTextSelectionWebView(base_url_ + "select_range_span_editable.html",
                                  &web_view_helper);
   WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
-  LayoutObject* layout_object =
-      main_frame->GetFrame()
-          ->Selection()
-          .ComputeVisibleSelectionInDOMTreeDeprecated()
-          .RootEditableElement()
-          ->GetLayoutObject();
+  LayoutObject* layout_object = main_frame->GetFrame()
+                                    ->Selection()
+                                    .ComputeVisibleSelectionInDOMTree()
+                                    .RootEditableElement()
+                                    ->GetLayoutObject();
   EXPECT_EQ(0, ComputeOffset(layout_object, -1, -1));
   EXPECT_EQ(64, ComputeOffset(layout_object, 1000, 1000));
 
@@ -5774,7 +5773,7 @@ TEST_P(ParameterizedWebFrameTest, DISABLED_PositionForPointTest) {
   main_frame = web_view_helper.LocalMainFrame();
   layout_object = main_frame->GetFrame()
                       ->Selection()
-                      .ComputeVisibleSelectionInDOMTreeDeprecated()
+                      .ComputeVisibleSelectionInDOMTree()
                       .RootEditableElement()
                       ->GetLayoutObject();
   EXPECT_EQ(0, ComputeOffset(layout_object, -1, -1));
@@ -6613,11 +6612,10 @@ TEST_P(ParameterizedWebFrameTest, ReplaceMisspelledRange) {
   const int kAllTextBeginOffset = 0;
   const int kAllTextLength = 11;
   frame->SelectRange(WebRange(kAllTextBeginOffset, kAllTextLength));
-  EphemeralRange selection_range =
-      frame->GetFrame()
-          ->Selection()
-          .ComputeVisibleSelectionInDOMTreeDeprecated()
-          .ToNormalizedEphemeralRange();
+  EphemeralRange selection_range = frame->GetFrame()
+                                       ->Selection()
+                                       .ComputeVisibleSelectionInDOMTree()
+                                       .ToNormalizedEphemeralRange();
 
   EXPECT_EQ(1, textcheck.NumberOfTimesChecked());
   EXPECT_EQ(1, NumMarkersInRange(document, selection_range,
@@ -6662,11 +6660,10 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkers) {
   const int kAllTextBeginOffset = 0;
   const int kAllTextLength = 11;
   frame->SelectRange(WebRange(kAllTextBeginOffset, kAllTextLength));
-  EphemeralRange selection_range =
-      frame->GetFrame()
-          ->Selection()
-          .ComputeVisibleSelectionInDOMTreeDeprecated()
-          .ToNormalizedEphemeralRange();
+  EphemeralRange selection_range = frame->GetFrame()
+                                       ->Selection()
+                                       .ComputeVisibleSelectionInDOMTree()
+                                       .ToNormalizedEphemeralRange();
 
   EXPECT_EQ(0, NumMarkersInRange(document, selection_range,
                                  DocumentMarker::kSpelling));

@@ -61,11 +61,9 @@ String ContentAfterPastingHTML(DummyPageHolder* page_holder,
   frame.GetDocument()->UpdateStyleAndLayout();
   frame.Selection().SetSelection(
       SelectionInDOMTree::Builder().SelectAllChildren(*body).Build());
+  EXPECT_TRUE(frame.Selection().ComputeVisibleSelectionInDOMTree().IsCaret());
   EXPECT_TRUE(
-      frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsCaret());
-  EXPECT_TRUE(frame.Selection()
-                  .ComputeVisibleSelectionInDOMTreeDeprecated()
-                  .IsContentEditable())
+      frame.Selection().ComputeVisibleSelectionInDOMTree().IsContentEditable())
       << "We should be pasting into something editable.";
 
   Pasteboard* pasteboard = Pasteboard::GeneralPasteboard();
