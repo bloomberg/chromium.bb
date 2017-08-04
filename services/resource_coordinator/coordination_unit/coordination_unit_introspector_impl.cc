@@ -8,6 +8,7 @@
 
 #include "base/process/process_handle.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 
 namespace resource_coordinator {
 
@@ -33,6 +34,10 @@ void CoordinationUnitIntrospectorImpl::GetProcessToURLMap(
         process_cu->GetAssociatedCoordinationUnitsOfType(
             CoordinationUnitType::kFrame);
     for (CoordinationUnitImpl* frame_cu : frame_cus) {
+      if (!CoordinationUnitImpl::ToFrameCoordinationUnit(frame_cu)
+               ->IsMainFrame()) {
+        continue;
+      }
       base::Value url_value = frame_cu->GetProperty(
           resource_coordinator::mojom::PropertyType::kURL);
       if (url_value.is_string()) {
