@@ -152,10 +152,9 @@ LayoutUnit ComputeInlineSizeForUnpositionedFloat(
   // the cached value.
   if (unpositioned_float->layout_result) {
     DCHECK(!is_same_writing_mode);
-    return NGFragment(parent_space->WritingMode(),
-                      unpositioned_float->layout_result.value()
-                          ->PhysicalFragment()
-                          .Get())
+    return NGFragment(
+               parent_space->WritingMode(),
+               unpositioned_float->layout_result->PhysicalFragment().Get())
         .InlineSize();
   }
 
@@ -184,7 +183,7 @@ LayoutUnit ComputeInlineSizeForUnpositionedFloat(
       unpositioned_float->node.Layout(space.Get());
 
   const NGPhysicalFragment* fragment =
-      unpositioned_float->layout_result.value()->PhysicalFragment().Get();
+      unpositioned_float->layout_result->PhysicalFragment().Get();
 
   DCHECK(fragment->BreakToken()->IsFinished());
 
@@ -220,7 +219,7 @@ NGPositionedFloat PositionFloat(LayoutUnit origin_block_offset,
 #if DCHECK_IS_ON()
     DCHECK(!is_same_writing_mode);
 #endif
-    layout_result = unpositioned_float->layout_result.value();
+    layout_result = unpositioned_float->layout_result;
   } else {
 #if DCHECK_IS_ON()
     DCHECK(is_same_writing_mode);
