@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENTERPRISE_ENROLLMENT_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENTERPRISE_ENROLLMENT_HELPER_H_
 
+#include <map>
 #include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
 class GoogleServiceAuthError;
 
@@ -21,6 +23,9 @@ class EnrollmentStatus;
 
 namespace chromeos {
 
+// Maps a license type to number of available licenses.
+using EnrollmentLicenseMap = std::map<policy::LicenseType, int>;
+
 class ActiveDirectoryJoinDelegate;
 
 // This class is capable to enroll the device into enterprise domain, using
@@ -29,8 +34,8 @@ class ActiveDirectoryJoinDelegate;
 // that are not longer needed.
 class EnterpriseEnrollmentHelper {
  public:
-  typedef policy::DeviceCloudPolicyInitializer::EnrollmentCallback
-      EnrollmentCallback;
+  using EnrollmentCallback =
+      policy::DeviceCloudPolicyInitializer::EnrollmentCallback;
 
   // Enumeration of the possible errors that can occur during enrollment which
   // are not covered by GoogleServiceAuthError or EnrollmentStatus.
@@ -45,6 +50,12 @@ class EnterpriseEnrollmentHelper {
    public:
     // Called when an error happens on attempt to receive authentication tokens.
     virtual void OnAuthError(const GoogleServiceAuthError& error) = 0;
+
+    // Called when there are multiple license types available for enrollment,
+    // and admin allowed user to choose license type to assign.
+    // Enrollment is paused, and will resume once UseLicenseType() is called.
+    virtual void OnMultipleLicensesAvailable(
+        const EnrollmentLicenseMap& licenses) = 0;
 
     // Called when an error happens during enrollment.
     virtual void OnEnrollmentError(policy::EnrollmentStatus status) = 0;
@@ -105,6 +116,9 @@ class EnterpriseEnrollmentHelper {
   // EnrollUsingAttestation can be called only once during the object's
   // lifetime, and only if none of the EnrollUsing* was called before.
   virtual void EnrollUsingAttestation() = 0;
+
+  // Continue enrollment using license |type|.
+  virtual void UseLicenseType(policy::LicenseType type) = 0;
 
   // Starts device attribute update process. First tries to get
   // permission to update device attributes for current user

@@ -113,6 +113,7 @@ class POLICY_EXPORT CloudPolicyClient {
   virtual void Register(
       enterprise_management::DeviceRegisterRequest::Type registration_type,
       enterprise_management::DeviceRegisterRequest::Flavor flavor,
+      enterprise_management::LicenseType::LicenseTypeEnum license_type,
       const std::string& auth_token,
       const std::string& client_id,
       const std::string& requisition,
@@ -124,6 +125,7 @@ class POLICY_EXPORT CloudPolicyClient {
   virtual void RegisterWithCertificate(
       enterprise_management::DeviceRegisterRequest::Type registration_type,
       enterprise_management::DeviceRegisterRequest::Flavor flavor,
+      enterprise_management::LicenseType::LicenseTypeEnum license_type,
       const std::string& pem_certificate_chain,
       const std::string& client_id,
       const std::string& requisition,

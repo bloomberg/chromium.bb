@@ -504,10 +504,11 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     enrollment_config.mode = with_cert ? EnrollmentConfig::MODE_ATTESTATION
                                        : EnrollmentConfig::MODE_MANUAL;
     std::string token = with_cert ? "" : "auth token";
-    initializer_->StartEnrollment(
+    initializer_->PrepareEnrollment(
         &device_management_service_, nullptr, enrollment_config, token,
         base::Bind(&DeviceCloudPolicyManagerChromeOSEnrollmentTest::Done,
                    base::Unretained(this)));
+    initializer_->StartEnrollment();
     base::RunLoop().RunUntilIdle();
     Mock::VerifyAndClearExpectations(&device_management_service_);
     AllowUninterestingRemoteCommandFetches();

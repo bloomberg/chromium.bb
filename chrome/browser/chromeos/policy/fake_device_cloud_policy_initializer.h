@@ -20,15 +20,19 @@ class DeviceManagementService;
 class FakeDeviceCloudPolicyInitializer : public DeviceCloudPolicyInitializer {
  public:
   FakeDeviceCloudPolicyInitializer();
+  ~FakeDeviceCloudPolicyInitializer() override;
 
   void Init() override;
   void Shutdown() override;
 
-  void StartEnrollment(DeviceManagementService* device_management_service,
-                       chromeos::ActiveDirectoryJoinDelegate* ad_join_delegate,
-                       const EnrollmentConfig& enrollment_config,
-                       const std::string& auth_token,
-                       const EnrollmentCallback& enrollment_callback) override;
+  void PrepareEnrollment(
+      DeviceManagementService* device_management_service,
+      chromeos::ActiveDirectoryJoinDelegate* ad_join_delegate,
+      const EnrollmentConfig& enrollment_config,
+      const std::string& auth_token,
+      const EnrollmentCallback& enrollment_callback) override;
+
+  void StartEnrollment() override;
 
   bool was_start_enrollment_called() {
     return was_start_enrollment_called_;
@@ -41,6 +45,7 @@ class FakeDeviceCloudPolicyInitializer : public DeviceCloudPolicyInitializer {
  private:
   bool was_start_enrollment_called_;
   EnrollmentStatus enrollment_status_;
+  EnrollmentCallback enrollment_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDeviceCloudPolicyInitializer);
 };

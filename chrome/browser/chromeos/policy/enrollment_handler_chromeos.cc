@@ -152,6 +152,48 @@ EnrollmentHandlerChromeOS::~EnrollmentHandlerChromeOS() {
   store_->RemoveObserver(this);
 }
 
+void EnrollmentHandlerChromeOS::CheckAvailableLicenses(
+    const AvailableLicensesCallback& license_callback) {
+  CHECK_EQ(STEP_PENDING, enrollment_step_);
+  available_licenses_callback_ = license_callback;
+  client_->RequestAvailableLicenses(
+      auth_token_,
+      base::Bind(&EnrollmentHandlerChromeOS::HandleAvailableLicensesResult,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void EnrollmentHandlerChromeOS::HandleAvailableLicensesResult(
+    bool success,
+    const CloudPolicyClient::LicenseMap& license_map) {
+  if (!success) {
+    ReportResult(
+        EnrollmentStatus::ForStatus(EnrollmentStatus::LICENSE_REQUEST_FAILED));
+    return;
+  }
+  if (!available_licenses_callback_)
+    available_licenses_callback_.Run(license_map);
+}
+
+void EnrollmentHandlerChromeOS::StartEnrollmentWithLicense(
+    LicenseType license_type) {
+  CHECK_EQ(STEP_PENDING, enrollment_step_);
+  CHECK_NE(license_type, ::policy::LicenseType::UNKNOWN);
+  switch (license_type) {
+    case LicenseType::PERPETUAL:
+      license_type_ = ::em::LicenseType::CDM_PERPETUAL;
+      break;
+    case LicenseType::ANNUAL:
+      license_type_ = ::em::LicenseType::CDM_ANNUAL;
+      break;
+    case LicenseType::KIOSK:
+      license_type_ = ::em::LicenseType::KIOSK;
+      break;
+    case LicenseType::UNKNOWN:
+      NOTREACHED();
+  }
+  StartEnrollment();
+}
+
 void EnrollmentHandlerChromeOS::StartEnrollment() {
   CHECK_EQ(STEP_PENDING, enrollment_step_);
   SetStep(STEP_STATE_KEYS);
@@ -322,7 +364,8 @@ void EnrollmentHandlerChromeOS::StartRegistration() {
     client_->Register(
         em::DeviceRegisterRequest::DEVICE,
         EnrollmentModeToRegistrationFlavor(enrollment_config_.mode),
-        auth_token_, client_id_, requisition_, current_state_key_);
+        license_type_, auth_token_, client_id_, requisition_,
+        current_state_key_);
   }
 }
 
@@ -344,7 +387,8 @@ void EnrollmentHandlerChromeOS::HandleRegistrationCertificateResult(
     client_->RegisterWithCertificate(
         em::DeviceRegisterRequest::DEVICE,
         EnrollmentModeToRegistrationFlavor(enrollment_config_.mode),
-        pem_certificate_chain, client_id_, requisition_, current_state_key_);
+        license_type_, pem_certificate_chain, client_id_, requisition_,
+        current_state_key_);
   else
     ReportResult(EnrollmentStatus::ForStatus(
         EnrollmentStatus::REGISTRATION_CERT_FETCH_FAILED));
@@ -635,6 +679,7 @@ void EnrollmentHandlerChromeOS::Stop() {
   SetStep(STEP_FINISHED);
   weak_ptr_factory_.InvalidateWeakPtrs();
   completion_callback_.Reset();
+  available_licenses_callback_.Reset();
 }
 
 void EnrollmentHandlerChromeOS::ReportResult(EnrollmentStatus status) {
