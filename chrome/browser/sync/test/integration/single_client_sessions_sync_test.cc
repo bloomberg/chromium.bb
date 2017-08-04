@@ -105,6 +105,24 @@ class SingleClientSessionsSyncTest : public SyncTest {
     WaitForHierarchyOnServer({{url.spec()}});
   }
 
+  // Simulates receiving list of accounts in the cookie jar from ListAccounts
+  // endpoint. Adds |account_ids| into signed in accounts, notifies
+  // ProfileSyncService and waits for change to propagate to sync engine.
+  void UpdateCookieJarAccountsAndWait(std::vector<std::string> account_ids) {
+    GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
+    std::vector<gaia::ListedAccount> accounts;
+    std::vector<gaia::ListedAccount> signed_out_accounts;
+    for (const auto& account_id : account_ids) {
+      gaia::ListedAccount signed_in_account;
+      signed_in_account.id = account_id;
+      accounts.push_back(signed_in_account);
+    }
+    base::RunLoop run_loop;
+    GetClient(0)->service()->OnGaiaAccountsInCookieUpdatedWithCallback(
+        accounts, signed_out_accounts, error, run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientSessionsSyncTest);
 };
@@ -358,19 +376,16 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, SourceTabIDSet) {
   EXPECT_EQ(new_tab_helper->source_tab_id(), source_tab_id);
 }
 
-// crbug.com/689662
-#if defined(OS_CHROMEOS)
-#define MAYBE_CookieJarMismatch DISABLED_CookieJarMismatch
-#else
-#define MAYBE_CookieJarMismatch CookieJarMismatch
-#endif
-IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, MAYBE_CookieJarMismatch) {
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
 
   sync_pb::ClientToServerMessage message;
 
+  // Simulate empty list of accounts in the cookie jar. This will record cookie
+  // jar mismatch.
+  UpdateCookieJarAccountsAndWait({});
   // The HistogramTester objects are scoped to allow more precise verification.
   {
     HistogramTester histogram_tester;
@@ -380,9 +395,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, MAYBE_CookieJarMismatch) {
     ASSERT_TRUE(OpenTab(0, url));
     WaitForURLOnServer(url);
 
-    // The cookie jar mismatch value will be true by default due to
-    // the way integration tests trigger signin (which does not involve a normal
-    // web content signin flow).
     ASSERT_TRUE(GetFakeServer()->GetLastCommitMessage(&message));
     ASSERT_TRUE(message.commit().config_params().cookie_jar_mismatch());
 
@@ -395,22 +407,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, MAYBE_CookieJarMismatch) {
   }
 
   // Trigger a cookie jar change (user signing in to content area).
-  gaia::ListedAccount signed_in_account;
-  signed_in_account.id =
-      GetClient(0)->service()->signin()->GetAuthenticatedAccountId();
-  std::vector<gaia::ListedAccount> accounts;
-  std::vector<gaia::ListedAccount> signed_out_accounts;
-  accounts.push_back(signed_in_account);
-  GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
-
   // Updating the cookie jar has to travel to the sync engine. It is possible
   // something is already running or scheduled to run on the sync thread. We
   // want to block here and not create the HistogramTester below until we know
   // the cookie jar stats have been updated.
-  base::RunLoop run_loop;
-  GetClient(0)->service()->OnGaiaAccountsInCookieUpdatedWithCallback(
-      accounts, signed_out_accounts, error, run_loop.QuitClosure());
-  run_loop.Run();
+  UpdateCookieJarAccountsAndWait(
+      {GetClient(0)->service()->signin()->GetAuthenticatedAccountId()});
 
   {
     HistogramTester histogram_tester;
