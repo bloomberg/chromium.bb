@@ -186,37 +186,6 @@ EventRewriterChromeOS::DeviceType GetDeviceType(const std::string& device_name,
   return EventRewriterChromeOS::kDeviceUnknown;
 }
 
-EventRewriterChromeOS::KeyboardTopRowLayout GetKeyboardTopRowLayout(
-    const base::FilePath& device_path) {
-  device::ScopedUdevPtr udev(device::udev_new());
-  if (!udev.get())
-    return EventRewriterChromeOS::kKbdTopRowLayoutDefault;
-
-  device::ScopedUdevDevicePtr device(device::udev_device_new_from_syspath(
-      udev.get(), device_path.value().c_str()));
-  if (!device.get())
-    return EventRewriterChromeOS::kKbdTopRowLayoutDefault;
-
-  const char kLayoutProperty[] = "CROS_KEYBOARD_TOP_ROW_LAYOUT";
-  std::string layout =
-      device::UdevDeviceGetPropertyValue(device.get(), kLayoutProperty);
-  if (layout.empty())
-    return EventRewriterChromeOS::kKbdTopRowLayoutDefault;
-
-  int layout_id;
-  if (!base::StringToInt(layout, &layout_id)) {
-    LOG(WARNING) << "Failed to parse " << kLayoutProperty << " value '"
-                 << layout << "'";
-    return EventRewriterChromeOS::kKbdTopRowLayoutDefault;
-  }
-  if (layout_id < EventRewriterChromeOS::kKbdTopRowLayoutMin ||
-      layout_id > EventRewriterChromeOS::kKbdTopRowLayoutMax) {
-    LOG(WARNING) << "Invalid " << kLayoutProperty << " '" << layout << "'";
-    return EventRewriterChromeOS::kKbdTopRowLayoutDefault;
-  }
-  return static_cast<EventRewriterChromeOS::KeyboardTopRowLayout>(layout_id);
-}
-
 struct KeyboardRemapping {
   // MatchKeyboardRemapping() succeeds if the tested has all of the specified
   // flags (and possibly other flags), and either the key_code matches or the
@@ -385,6 +354,39 @@ void EventRewriterChromeOS::BuildRewrittenKeyEvent(
       new ui::KeyEvent(key_event.type(), state.key_code, state.code,
                        state.flags, state.key, key_event.time_stamp());
   rewritten_event->reset(rewritten_key_event);
+}
+
+// static
+EventRewriterChromeOS::KeyboardTopRowLayout
+EventRewriterChromeOS::GetKeyboardTopRowLayout(
+    const base::FilePath& device_path) {
+  device::ScopedUdevPtr udev(device::udev_new());
+  if (!udev.get())
+    return EventRewriterChromeOS::kKbdTopRowLayoutDefault;
+
+  device::ScopedUdevDevicePtr device(device::udev_device_new_from_syspath(
+      udev.get(), device_path.value().c_str()));
+  if (!device.get())
+    return EventRewriterChromeOS::kKbdTopRowLayoutDefault;
+
+  const char kLayoutProperty[] = "CROS_KEYBOARD_TOP_ROW_LAYOUT";
+  std::string layout =
+      device::UdevDeviceGetPropertyValue(device.get(), kLayoutProperty);
+  if (layout.empty())
+    return EventRewriterChromeOS::kKbdTopRowLayoutDefault;
+
+  int layout_id;
+  if (!base::StringToInt(layout, &layout_id)) {
+    LOG(WARNING) << "Failed to parse " << kLayoutProperty << " value '"
+                 << layout << "'";
+    return EventRewriterChromeOS::kKbdTopRowLayoutDefault;
+  }
+  if (layout_id < EventRewriterChromeOS::kKbdTopRowLayoutMin ||
+      layout_id > EventRewriterChromeOS::kKbdTopRowLayoutMax) {
+    LOG(WARNING) << "Invalid " << kLayoutProperty << " '" << layout << "'";
+    return EventRewriterChromeOS::kKbdTopRowLayoutDefault;
+  }
+  return static_cast<EventRewriterChromeOS::KeyboardTopRowLayout>(layout_id);
 }
 
 void EventRewriterChromeOS::DeviceKeyPressedOrReleased(int device_id) {

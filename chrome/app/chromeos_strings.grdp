@@ -4417,8 +4417,23 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_INSTRUCTIONS" desc="The instructions for the keyboard overlay.">
     Hold Control, Alt, Shift, or Search to see keyboard shortcuts for those modifiers.
   </message>
+  <message name="IDS_KEYBOARD_OVERLAY_INSTRUCTIONS_LAYOUT2" desc="The instructions for the keyboard overlay when device is using the 2017 keyboard layout.">
+    Hold Control, Alt, Shift, or Launcher to see keyboard shortcuts for those modifiers.
+  </message>
   <message name="IDS_KEYBOARD_OVERLAY_INSTRUCTIONS_HIDE" desc="The instruction for hiding the keyboard overlay.">
     Type Ctrl+Alt+/ or Escape to hide
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_ASSISTANT_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'assistant' key.">
+    assistant
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_PLAY_PAUSE_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'play / pause' key.">
+    play / pause
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_SYSTEM_MENU_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'system menu' key.">
+    system menu
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_LAUNCHER_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'launcher / search' key.">
+    launcher
   </message>
   <message name="IDS_KEYBOARD_OVERLAY_ESC_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'esc' (Escape) key.">
     esc
