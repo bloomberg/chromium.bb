@@ -65,7 +65,7 @@ suite('SiteDetailsPermission', function() {
     testElement.$.permission.value = expectedContentSetting;
     testElement.$.permission.dispatchEvent(new CustomEvent('change'));
 
-    return browserProxy.whenCalled('setOriginPermissions').then(function(args) {
+    return browserProxy.whenCalled('setOriginPermissions').then((args) => {
       assertEquals(origin, args[0]);
       assertDeepEquals([testElement.category], args[1]);
       assertEquals(expectedContentSetting, args[2]);
@@ -92,15 +92,15 @@ suite('SiteDetailsPermission', function() {
 
     // Flip the permission and validate that prefs stay in sync.
     return validatePermissionFlipWorks(origin, settings.ContentSetting.ALLOW)
-        .then(function() {
+        .then(() => {
           return validatePermissionFlipWorks(
               origin, settings.ContentSetting.BLOCK);
         })
-        .then(function() {
+        .then(() => {
           return validatePermissionFlipWorks(
               origin, settings.ContentSetting.ALLOW);
         })
-        .then(function() {
+        .then(() => {
           return validatePermissionFlipWorks(
               origin, settings.ContentSetting.DEFAULT);
         });
@@ -119,40 +119,39 @@ suite('SiteDetailsPermission', function() {
     };
 
     return browserProxy.whenCalled('getDefaultValueForContentType')
-        .then(function() {
+        .then((args) => {
+          // Check getDefaultValueForContentType was called for camera category.
+          assertEquals(settings.ContentSettingsTypes.CAMERA, args);
+
           // The default option will always be the first in the menu.
           assertEquals(
               'Allow (default)', testElement.$.permission.options[0].text,
               'Default setting string should match prefs');
           browserProxy.resetResolver('getDefaultValueForContentType');
-          prefs.defaults.camera.setting = settings.ContentSetting.BLOCK;
-          browserProxy.setPrefs(prefs);
-          // Trigger a call to siteChanged_() by touching |testElement.site|.
-          testElement.site = {
-            origin: origin,
-            embeddingOrigin: '',
-            setting: settings.ContentSetting.BLOCK,
-            source: settings.SiteSettingSource.PREFERENCE,
+          var defaultPrefs = {
+            camera: {
+              setting: settings.ContentSetting.BLOCK,
+            }
           };
+          browserProxy.setDefaultPrefs(defaultPrefs);
           return browserProxy.whenCalled('getDefaultValueForContentType');
         })
-        .then(function() {
+        .then((args) => {
+          assertEquals(settings.ContentSettingsTypes.CAMERA, args);
           assertEquals(
               'Block (default)', testElement.$.permission.options[0].text,
               'Default setting string should match prefs');
           browserProxy.resetResolver('getDefaultValueForContentType');
-          prefs.defaults.camera.setting = settings.ContentSetting.ASK;
-          browserProxy.setPrefs(prefs);
-          // Trigger a call to siteChanged_() by touching |testElement.site|.
-          testElement.site = {
-            origin: origin,
-            embeddingOrigin: '',
-            setting: settings.ContentSetting.ASK,
-            source: settings.SiteSettingSource.PREFERENCE,
+          var defaultPrefs = {
+            camera: {
+              setting: settings.ContentSetting.ASK,
+            }
           };
+          browserProxy.setDefaultPrefs(defaultPrefs);
           return browserProxy.whenCalled('getDefaultValueForContentType');
         })
-        .then(function() {
+        .then((args) => {
+          assertEquals(settings.ContentSettingsTypes.CAMERA, args);
           assertEquals(
               'Ask (default)', testElement.$.permission.options[0].text,
               'Default setting string should match prefs');

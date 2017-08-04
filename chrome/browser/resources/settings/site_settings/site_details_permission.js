@@ -10,7 +10,7 @@
 Polymer({
   is: 'site-details-permission',
 
-  behaviors: [SiteSettingsBehavior],
+  behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
 
   properties: {
     /**
@@ -29,6 +29,13 @@ Polymer({
 
   observers: ['siteChanged_(site)'],
 
+  /** @override */
+  attached: function() {
+    this.addWebUIListener(
+        'contentSettingCategoryChanged',
+        this.onDefaultSettingChanged_.bind(this));
+  },
+
   /**
    * Updates the drop-down value after |site| has changed.
    * @param {!RawSiteException} site The site to display.
@@ -40,10 +47,7 @@ Polymer({
       this.$.permission.value = settings.ContentSetting.DEFAULT;
     } else {
       // The default setting is unknown, so consult the C++ backend for it.
-      this.browserProxy.getDefaultValueForContentType(this.category)
-          .then((defaultValue) => {
-            this.defaultSetting_ = defaultValue.setting;
-          });
+      this.updateDefaultPermission_(site);
       this.$.permission.value = site.setting;
     }
 
@@ -58,6 +62,29 @@ Polymer({
       this.$.permission.disabled =
           site.source != settings.SiteSettingSource.EMBARGO;
     }
+  },
+
+  /**
+   * Updates the default permission setting for this permission category.
+   * @param {!RawSiteException} site The site to display.
+   * @private
+   */
+  updateDefaultPermission_: function(site) {
+    this.browserProxy.getDefaultValueForContentType(this.category)
+        .then((defaultValue) => {
+          this.defaultSetting_ = defaultValue.setting;
+        });
+  },
+
+  /**
+   * Handles the category permission changing for this origin.
+   * @param {!settings.ContentSettingsTypes} category The permission category
+   *     that has changed default permission.
+   * @private
+   */
+  onDefaultSettingChanged_: function(category) {
+    if (category == this.category)
+      this.updateDefaultPermission_(this.site);
   },
 
   /**

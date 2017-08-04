@@ -200,9 +200,9 @@ suite('SiteDetails', function() {
     browserProxy.setPrefs(prefs);
     testElement = createSiteDetails('https://foo.com:443');
 
-    return browserProxy.whenCalled('getOriginPermissions').then(function() {
+    return browserProxy.whenCalled('getOriginPermissions').then(() => {
       testElement.root.querySelectorAll('site-details-permission')
-          .forEach(function(siteDetailsPermission) {
+          .forEach((siteDetailsPermission) => {
             // Verify settings match the values specified in |prefs|.
             var expectedSetting = settings.ContentSetting.ALLOW;
             var expectedSource = settings.SiteSettingSource.PREFERENCE;
@@ -253,7 +253,7 @@ suite('SiteDetails', function() {
     });
 
     // Accepting the dialog will make a call to setOriginPermissions.
-    return browserProxy.whenCalled('setOriginPermissions').then(function(args) {
+    return browserProxy.whenCalled('setOriginPermissions').then((args) => {
       assertEquals(testElement.origin, args[0]);
       assertDeepEquals(testElement.getCategoryList_(), args[1]);
       assertEquals(settings.ContentSetting.DEFAULT, args[2]);
@@ -269,7 +269,7 @@ suite('SiteDetails', function() {
 
     // Wait for all the permissions to be populated initially.
     return browserProxy.whenCalled('getOriginPermissions')
-        .then(function(result) {
+        .then(() => {
           // Make sure initial state is as expected.
           assertEquals(
               settings.ContentSetting.BLOCK,
@@ -289,11 +289,11 @@ suite('SiteDetails', function() {
             source: settings.SiteSettingSource.DEFAULT,
           };
           browserProxy.resetResolver('getOriginPermissions');
-          browserProxy.setSinglePref(
+          browserProxy.setSingleException(
               settings.ContentSettingsTypes.NOTIFICATIONS, newException);
           return browserProxy.whenCalled('getOriginPermissions');
         })
-        .then(function(args) {
+        .then((args) => {
           // The notification pref was just updated, so make sure the call to
           // getOriginPermissions was to check notifications.
           assertTrue(
