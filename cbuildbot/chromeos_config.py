@@ -326,6 +326,21 @@ class HWTestList(object):
                                           **default_dict)]
     return suite_list
 
+  def BluestreakPoolPreCQ(self, **kwargs):
+    """Return a list of HWTestConfigs which run bluestreak tests.
+
+    This should be used by the ChromeOS MRHW team to ensure changes pass the
+    CFM tests as a pre-cq sanity check.
+    """
+    default_dict = dict(pool=constants.HWTEST_BLUESTREAK_PRE_CQ_POOL,
+                        file_bugs=False,
+                        priority=constants.HWTEST_DEFAULT_PRIORITY,
+                        retry=False, max_retries=None, minimum_duts=1)
+    default_dict.update(kwargs)
+    suite_list = [config_lib.HWTestConfig(constants.BLUESTREAK_PRE_CQ,
+                                          **default_dict)]
+    return suite_list
+
   def AsanTest(self, **kwargs):
     """Return a list of HWTESTConfigs which run asan tests."""
     default_dict = dict(pool=constants.HWTEST_MACH_POOL, file_bugs=False,
@@ -1982,6 +1997,19 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
           'daisy-wificell-pre-cq',
           site_config.templates.wificell_pre_cq,
           board_configs['daisy']),
+  )
+
+  # Bluestreak specific PreCQ.
+  site_config.Add(
+      'bluestreak-pre-cq',
+      board_configs['guado'],
+      site_config.templates.pre_cq,
+      unittests=False,
+      hw_tests=hw_test_list.BluestreakPoolPreCQ(),
+      hw_tests_override=hw_test_list.BluestreakPoolPreCQ(),
+      archive=True,
+      image_test=False,
+      description='Bluestreak tests as pre-cq for CFM related changes',
   )
 
   site_config.Add(
