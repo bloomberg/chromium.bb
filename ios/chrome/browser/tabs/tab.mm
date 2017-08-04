@@ -285,6 +285,9 @@ class TabHistoryContext : public history::Context {
 
   // C++ observer used to trigger snapshots after the removal of InfoBars.
   std::unique_ptr<TabInfoBarObserver> _tabInfoBarObserver;
+
+  // View displayed upon PagePlaceholderTabHelperDelegate request.
+  UIImageView* _pagePlaceholder;
 }
 
 // Returns the tab's reader mode controller. May contain nil if the feature is
@@ -1589,6 +1592,13 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (void)webController:(CRWWebController*)webController
     retrievePlaceholderOverlayImage:(void (^)(UIImage*))block {
+  [self getPlaceholderOverlayImageWithCompletionHandler:block];
+}
+
+#pragma mark - PlaceholderOverlay
+
+- (void)getPlaceholderOverlayImageWithCompletionHandler:
+    (void (^)(UIImage*))completionHandler {
   NSString* sessionID = self.tabId;
   // The snapshot is always grey, even if |useGreyImageCache_| is NO, as this
   // overlay represents an out-of-date website and is shown only until the
@@ -1597,13 +1607,14 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // In other cases, such as during startup, either disk access or a greyspace
   // conversion is required, as there will be no grey snapshots in memory.
   if (useGreyImageCache_) {
-    [_snapshotManager greyImageForSessionID:sessionID callback:block];
+    [_snapshotManager greyImageForSessionID:sessionID
+                                   callback:completionHandler];
   } else {
     [_webControllerSnapshotHelper
-        retrieveGreySnapshotForWebController:webController
+        retrieveGreySnapshotForWebController:self.webController
                                    sessionID:sessionID
                                 withOverlays:[self snapshotOverlays]
-                                    callback:block];
+                                    callback:completionHandler];
   }
 }
 
@@ -1654,6 +1665,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   }
   [_overscrollActionsController clear];
 }
+
+#pragma mark - CRWWebDelegate and CRWWebStateObserver protocol methods
 
 - (void)webStateDidSuppressDialog:(web::WebState*)webState {
   DCHECK(_isPrerenderTab);
@@ -1812,6 +1825,43 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 - (BOOL)isTabVisibleForTabHelper:(SadTabTabHelper*)tabHelper {
   UIApplicationState state = UIApplication.sharedApplication.applicationState;
   return _visible && !IsApplicationStateNotActive(state);
+}
+
+#pragma mark - PagePlaceholderTabHelperDelegate
+
+- (void)displayPlaceholderForPagePlaceholderTabHelper:
+    (PagePlaceholderTabHelper*)tabHelper {
+  // Lazily create page placeholder view.
+  if (!_pagePlaceholder) {
+    _pagePlaceholder = [[UIImageView alloc] init];
+    _pagePlaceholder.autoresizingMask =
+        UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    _pagePlaceholder.contentMode = UIViewContentModeScaleAspectFill;
+  }
+
+  // Update page placeholder image.
+  _pagePlaceholder.image = [CRWWebController defaultSnapshotImage];
+  [self getPlaceholderOverlayImageWithCompletionHandler:^(UIImage* image) {
+    _pagePlaceholder.image = image;
+  }];
+
+  // Display the placeholder on top of WebState's view.
+  UIView* webStateView = self.webState->GetView();
+  _pagePlaceholder.frame = webStateView.bounds;
+  [webStateView addSubview:_pagePlaceholder];
+}
+
+// Removes page placeholder view with fade-out animation.
+- (void)removePlaceholderForPagePlaceholderTabHelper:
+    (PagePlaceholderTabHelper*)tabHelper {
+  __weak UIView* weakPagePlaceholder = _pagePlaceholder;
+  [UIView animateWithDuration:0.5
+      animations:^{
+        weakPagePlaceholder.alpha = 0.0f;
+      }
+      completion:^(BOOL finished) {
+        [weakPagePlaceholder removeFromSuperview];
+      }];
 }
 
 @end
