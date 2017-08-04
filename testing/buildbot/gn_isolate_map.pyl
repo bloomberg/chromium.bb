@@ -740,7 +740,7 @@
     "type": "windowed_test_launcher",
     "executable": "browser_tests",
     "args": [
-      "--run-in-mus",
+      "--mus",
       "--service-overrides=../../chrome/app/mash/mash_service_overrides.json",
     ],
   },

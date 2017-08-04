@@ -23,6 +23,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/app/mash/embedded_services.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_test_launcher.h"
 #include "chrome/test/base/chrome_test_suite.h"
 #include "chrome/test/base/mojo_test_connector.h"
@@ -47,6 +48,25 @@ const base::FilePath::CharType kMashCatalogFilename[] =
     FILE_PATH_LITERAL("mash_browser_tests_catalog.json");
 const base::FilePath::CharType kMusCatalogFilename[] =
     FILE_PATH_LITERAL("mus_browser_tests_catalog.json");
+
+// ChromeTestLauncherDelegate implementation used for '--mus' (ash runs in
+// process with chrome).
+class MusTestLauncherDelegate : public ChromeTestLauncherDelegate {
+ public:
+  explicit MusTestLauncherDelegate(ChromeTestSuiteRunner* runner)
+      : ChromeTestLauncherDelegate(runner) {}
+  ~MusTestLauncherDelegate() override {}
+
+ private:
+  // ChromeTestLauncherDelegate:
+  int RunTestSuite(int argc, char** argv) override {
+    content::GetContentMainParams()->env_mode = aura::Env::Mode::MUS;
+    content::GetContentMainParams()->create_discardable_memory = true;
+    return ChromeTestLauncherDelegate::RunTestSuite(argc, argv);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(MusTestLauncherDelegate);
+};
 
 class MashTestSuite : public ChromeTestSuite {
  public:
@@ -180,7 +200,7 @@ bool RunMashBrowserTests(int argc, char** argv, int* exit_code) {
   base::CommandLine::Init(argc, argv);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch("run-in-mash") &&
-      !command_line->HasSwitch("run-in-mus")) {
+      !command_line->HasSwitch(switches::kMus)) {
     // Currently launching content_package_services via the browser_tests binary
     // will lead to a nested test suite, trying to run all tests again. However
     // they will be in a strange mixed mode, of a local-Ash, but non-local Aura.
@@ -220,21 +240,35 @@ bool RunMashBrowserTests(int argc, char** argv, int* exit_code) {
   }
 
   size_t parallel_jobs = base::NumParallelJobs();
-  if (parallel_jobs > 1U) {
-    parallel_jobs /= 2U;
+  std::unique_ptr<ChromeTestSuiteRunner> chrome_test_suite_runner;
+  std::unique_ptr<MusTestLauncherDelegate> mus_test_launcher_delegate;
+  std::unique_ptr<MashTestLauncherDelegate> mash_test_launcher_delegate;
+  ChromeTestLauncherDelegate* test_launcher_delegate = nullptr;
+  if (command_line->HasSwitch(switches::kMus)) {
+    chrome_test_suite_runner = base::MakeUnique<ChromeTestSuiteRunner>();
+    mus_test_launcher_delegate = base::MakeUnique<MusTestLauncherDelegate>(
+        chrome_test_suite_runner.get());
+    test_launcher_delegate = mus_test_launcher_delegate.get();
+  } else {
+    if (parallel_jobs > 1U)
+      parallel_jobs /= 2U;
+    mash_test_launcher_delegate = base::MakeUnique<MashTestLauncherDelegate>();
+    test_launcher_delegate = mash_test_launcher_delegate.get();
   }
-  MashTestLauncherDelegate delegate;
+
   // --single_process and no service pipe token indicate we were run directly
   // from the command line. In this case we have to start up
   // ServiceManagerConnection as though we were embedded.
   content::ServiceManagerConnection::Factory service_manager_connection_factory;
   if (command_line->HasSwitch(content::kSingleProcessTestsFlag) &&
-      !command_line->HasSwitch(service_manager::switches::kServicePipeToken)) {
-    service_manager_connection_factory =
-        base::Bind(&CreateServiceManagerConnection, &delegate);
+      !command_line->HasSwitch(service_manager::switches::kServicePipeToken) &&
+      mash_test_launcher_delegate) {
+    service_manager_connection_factory = base::Bind(
+        &CreateServiceManagerConnection, mash_test_launcher_delegate.get());
     content::ServiceManagerConnection::SetFactoryForTest(
         &service_manager_connection_factory);
   }
-  *exit_code = LaunchChromeTests(parallel_jobs, &delegate, argc, argv);
+  *exit_code =
+      LaunchChromeTests(parallel_jobs, test_launcher_delegate, argc, argv);
   return true;
 }

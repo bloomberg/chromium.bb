@@ -31,6 +31,10 @@
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/constants.mojom.h"
 #include "services/service_manager/runner/common/client_util.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/env.h"
+#endif
+
 namespace content {
 
 BrowserGpuChannelHostFactory* BrowserGpuChannelHostFactory::instance_ = NULL;
@@ -251,7 +255,9 @@ BrowserGpuChannelHostFactory::AllocateSharedMemory(size_t size) {
 
 void BrowserGpuChannelHostFactory::EstablishGpuChannel(
     const gpu::GpuChannelEstablishedCallback& callback) {
-  DCHECK(!service_manager::ServiceManagerIsRemote());
+#if defined(USE_AURA)
+  DCHECK_EQ(aura::Env::Mode::LOCAL, aura::Env::GetInstance()->mode());
+#endif
   DCHECK(IsMainThread());
   if (gpu_channel_.get() && gpu_channel_->IsLost()) {
     DCHECK(!pending_request_.get());

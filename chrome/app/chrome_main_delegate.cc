@@ -1128,10 +1128,8 @@ service_manager::ProcessType ChromeMainDelegate::OverrideProcessType() {
   }
 
 #if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
-  if (command_line.HasSwitch(switches::kMus) ||
-      command_line.HasSwitch(switches::kMash)) {
+  if (command_line.HasSwitch(switches::kMash))
     return service_manager::ProcessType::kServiceManager;
-  }
 #endif
 
   return service_manager::ProcessType::kDefault;
