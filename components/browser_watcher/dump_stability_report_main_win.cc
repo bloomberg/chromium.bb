@@ -173,6 +173,19 @@ void PrintProcessState(FILE* out,
 
 // TODO(manzagop): flesh out as StabilityReport gets fleshed out.
 void PrintReport(FILE* out, const browser_watcher::StabilityReport& report) {
+  if (report.has_system_memory_state() &&
+      report.system_memory_state().has_windows_memory()) {
+    const auto& windows_memory = report.system_memory_state().windows_memory();
+
+    if (windows_memory.has_system_commit_limit()) {
+      fprintf(out, "system_commit_limit: %u pages\n",
+              windows_memory.system_commit_limit());
+    }
+    if (windows_memory.has_system_commit_remaining()) {
+      fprintf(out, "system_commit_remaining: %u pages\n",
+              windows_memory.system_commit_remaining());
+    }
+  }
   PrintUserData(out, 0, report.global_data());
   for (int i = 0; i < report.process_states_size(); ++i) {
     const browser_watcher::ProcessState process = report.process_states(i);
