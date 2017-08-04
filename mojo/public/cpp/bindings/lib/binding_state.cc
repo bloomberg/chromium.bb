@@ -74,6 +74,10 @@ void BindingStateBase::EnableTestingMode() {
   router_->EnableTestingMode();
 }
 
+scoped_refptr<internal::MultiplexRouter> BindingStateBase::RouterForTesting() {
+  return router_;
+}
+
 void BindingStateBase::BindInternal(
     ScopedMessagePipeHandle handle,
     scoped_refptr<base::SingleThreadTaskRunner> runner,
