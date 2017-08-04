@@ -278,6 +278,8 @@ test("app_shell_unittests") {
     "browser/shell_oauth2_token_service_unittest.cc",
     "browser/shell_prefs_unittest.cc",
     "common/shell_content_client_unittest.cc",
+    "test/shell_test_extensions_browser_client.cc",
+    "test/shell_test_extensions_browser_client.h",
   ]
 
   data = [
@@ -295,6 +297,8 @@ test("app_shell_unittests") {
     "//content/test:test_support",
     "//extensions:shell_and_test_pak",
     "//extensions:test_support",
+    "//extensions/browser",
+    "//extensions/common",
     "//testing/gtest",
   ]
 
@@ -308,8 +312,16 @@ test("app_shell_unittests") {
       "browser/shell_desktop_controller_aura_unittest.cc",
       "browser/shell_native_app_window_aura_unittest.cc",
       "browser/shell_screen_unittest.cc",
+      "test/shell_test_base_aura.cc",
+      "test/shell_test_base_aura.h",
+      "test/shell_test_helper_aura.cc",
+      "test/shell_test_helper_aura.h",
     ]
-    deps += [ "//ui/aura:test_support" ]
+    deps += [
+      "//ui/aura:test_support",
+      "//ui/base:test_support",
+      "//ui/compositor:test_support",
+    ]
   }
 
   if (is_chromeos) {

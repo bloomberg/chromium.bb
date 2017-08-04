@@ -98,14 +98,15 @@ class RestartAfterDelayApiTest : public ApiUnitTest {
   ~RestartAfterDelayApiTest() override {}
 
   void SetUp() override {
-    ApiUnitTest::SetUp();
-
     // Use our ExtensionsBrowserClient that returns our RuntimeAPIDelegate.
-    test_browser_client_.reset(
-        new DelayedRestartExtensionsBrowserClient(browser_context()));
-    test_browser_client_->set_extension_system_factory(
-        extensions_browser_client()->extension_system_factory());
-    ExtensionsBrowserClient::Set(test_browser_client_.get());
+    std::unique_ptr<DelayedRestartExtensionsBrowserClient> test_browser_client =
+        base::MakeUnique<DelayedRestartExtensionsBrowserClient>(
+            browser_context());
+
+    // ExtensionsTest takes ownership of the ExtensionsBrowserClient.
+    SetExtensionsBrowserClient(std::move(test_browser_client));
+
+    ApiUnitTest::SetUp();
 
     // The RuntimeAPI should only be accessed (i.e. constructed) after the above
     // ExtensionsBrowserClient has been setup.
@@ -116,11 +117,17 @@ class RestartAfterDelayApiTest : public ApiUnitTest {
     runtime_api->AllowNonKioskAppsInRestartAfterDelayForTesting();
 
     RuntimeAPI::RegisterPrefs(
-        test_browser_client_->testing_pref_service()->registry());
+        static_cast<DelayedRestartExtensionsBrowserClient*>(
+            extensions_browser_client())
+            ->testing_pref_service()
+            ->registry());
   }
 
   base::TimeTicks WaitForSuccessfulRestart() {
-    return test_browser_client_->api_delegate()->WaitForSuccessfulRestart();
+    return static_cast<DelayedRestartExtensionsBrowserClient*>(
+               extensions_browser_client())
+        ->api_delegate()
+        ->WaitForSuccessfulRestart();
   }
 
   bool IsDelayedRestartTimerRunning() {
@@ -165,8 +172,6 @@ class RestartAfterDelayApiTest : public ApiUnitTest {
     api_test_utils::RunFunction(function, args, browser_context());
     return function->GetError();
   }
-
-  std::unique_ptr<DelayedRestartExtensionsBrowserClient> test_browser_client_;
 
   DISALLOW_COPY_AND_ASSIGN(RestartAfterDelayApiTest);
 };

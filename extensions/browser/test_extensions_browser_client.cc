@@ -22,21 +22,32 @@ namespace extensions {
 
 TestExtensionsBrowserClient::TestExtensionsBrowserClient(
     BrowserContext* main_context)
-    : main_context_(main_context),
+    : main_context_(nullptr),
       incognito_context_(nullptr),
       lock_screen_context_(nullptr),
       process_manager_delegate_(nullptr),
       extension_system_factory_(nullptr),
       extension_cache_(new NullExtensionCache) {
-  DCHECK(main_context_);
-  DCHECK(!main_context_->IsOffTheRecord());
+  if (main_context)
+    SetMainContext(main_context);
 }
+
+TestExtensionsBrowserClient::TestExtensionsBrowserClient()
+    : TestExtensionsBrowserClient(nullptr) {}
 
 TestExtensionsBrowserClient::~TestExtensionsBrowserClient() {}
 
 void TestExtensionsBrowserClient::SetUpdateClientFactory(
     const base::Callback<update_client::UpdateClient*(void)>& factory) {
   update_client_factory_ = factory;
+}
+
+void TestExtensionsBrowserClient::SetMainContext(
+    content::BrowserContext* main_context) {
+  DCHECK(!main_context_);
+  DCHECK(main_context);
+  DCHECK(!main_context->IsOffTheRecord());
+  main_context_ = main_context;
 }
 
 void TestExtensionsBrowserClient::SetIncognitoContext(BrowserContext* context) {
