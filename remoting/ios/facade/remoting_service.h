@@ -23,8 +23,18 @@ typedef NS_ENUM(NSInteger, HostListState) {
   HostListStateFetched,
 };
 
+typedef NS_ENUM(NSInteger, HostListFetchFailureReason) {
+  HostListFetchFailureReasonNetworkError,
+  HostListFetchFailureReasonAuthError,
+  HostListFetchFailureReasonUnknown,
+};
+
 // Eventing related keys:
 
+// Host list fetch failed event.
+extern NSString* const kHostListFetchDidFail;
+// Map key for the host list fetch failure reason.
+extern NSString* const kHostListFetchFailureReasonKey;
 // Hosts did update event.
 extern NSString* const kHostListStateDidChange;
 // User did update event name.

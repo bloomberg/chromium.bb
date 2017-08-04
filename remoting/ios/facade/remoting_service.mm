@@ -32,6 +32,9 @@
 static NSString* const kCRDAuthenticatedUserEmailKey =
     @"kCRDAuthenticatedUserEmailKey";
 
+NSString* const kHostListFetchDidFail = @"kHostListFetchDidFail";
+NSString* const kHostListFetchFailureReasonKey = @"kHostListFetchFailureReason";
+
 NSString* const kHostListStateDidChange = @"kHostListStateDidChange";
 
 NSString* const kUserDidUpdate = @"kUserDidUpdate";
@@ -184,24 +187,28 @@ NSString* const kUserInfo = @"kUserInfo";
   [_authentication
       callbackWithAccessToken:^(RemotingAuthenticationStatus status,
                                 NSString* userEmail, NSString* accessToken) {
+        if (status == RemotingAuthenticationStatusSuccess) {
+          [self startHostListFetchWith:accessToken];
+          return;
+        }
+
+        HostListFetchFailureReason reason;
         switch (status) {
-          case RemotingAuthenticationStatusSuccess:
-            [self startHostListFetchWith:accessToken];
-            break;
           case RemotingAuthenticationStatusNetworkError:
-            [MDCSnackbarManager
-                showMessage:
-                    [MDCSnackbarMessage
-                        messageWithText:@"[Network Error] Please try again."]];
+            reason = HostListFetchFailureReasonNetworkError;
             break;
           case RemotingAuthenticationStatusAuthError:
-            [MDCSnackbarManager
-                showMessage:
-                    [MDCSnackbarMessage
-                        messageWithText:
-                            @"[Authentication Failed] Please login again."]];
+            reason = HostListFetchFailureReasonAuthError;
             break;
+          default:
+            reason = HostListFetchFailureReasonUnknown;
         }
+        [NSNotificationCenter.defaultCenter
+            postNotificationName:kHostListFetchDidFail
+                          object:self
+                        userInfo:@{
+                          kHostListFetchFailureReasonKey : @(reason)
+                        }];
       }];
 }
 
