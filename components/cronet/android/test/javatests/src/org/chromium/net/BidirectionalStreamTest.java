@@ -312,9 +312,17 @@ public class BidirectionalStreamTest extends CronetTestBase {
     // before it is called, and it doesn't flush buffers in mPendingQueue.
     public void testFlushData() throws Exception {
         String url = Http2TestServer.getEchoStreamUrl();
+        final ConditionVariable waitOnStreamReady = new ConditionVariable();
         TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback() {
             // Number of onWriteCompleted callbacks that have been invoked.
             private int mNumWriteCompleted = 0;
+
+            @Override
+            public void onStreamReady(BidirectionalStream stream) {
+                mResponseStep = ResponseStep.ON_STREAM_READY;
+                waitOnStreamReady.open();
+            }
+
             @Override
             public void onWriteCompleted(BidirectionalStream stream, UrlResponseInfo info,
                     ByteBuffer buffer, boolean endOfStream) {
@@ -365,9 +373,8 @@ public class BidirectionalStreamTest extends CronetTestBase {
                         .addHeader("empty", "")
                         .addHeader("Content-Type", "zebra")
                         .build();
-        callback.setAutoAdvance(false);
         stream.start();
-        callback.waitForNextWriteStep(); // onStreamReady
+        waitOnStreamReady.block();
 
         assertEquals(0, stream.getPendingDataForTesting().size());
         assertEquals(0, stream.getFlushDataForTesting().size());
@@ -379,7 +386,6 @@ public class BidirectionalStreamTest extends CronetTestBase {
         // Write 6, but do not flush. 6 will be in pending queue.
         callback.startNextWrite(stream);
 
-        callback.setAutoAdvance(true);
         callback.blockForDone();
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals("123456", callback.mResponseAsString);
