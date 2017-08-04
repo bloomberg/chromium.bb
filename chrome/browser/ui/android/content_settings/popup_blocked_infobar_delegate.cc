@@ -117,7 +117,8 @@ bool PopupBlockedInfoBarDelegate::Accept() {
       popup_blocker_helper->GetBlockedPopupRequests();
   for (PopupBlockerTabHelper::PopupIdMap::iterator it = blocked_popups.begin();
       it != blocked_popups.end(); ++it)
-    popup_blocker_helper->ShowBlockedPopup(it->first);
+    popup_blocker_helper->ShowBlockedPopup(it->first,
+                                           WindowOpenDisposition::CURRENT_TAB);
 
   content_settings::RecordPopupsAction(
       content_settings::POPUPS_ACTION_CLICKED_ALWAYS_SHOW_ON_MOBILE);
