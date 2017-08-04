@@ -617,7 +617,6 @@ void ServiceWorkerProviderHost::AssociateRegistration(
   DCHECK(CanAssociateRegistration(registration));
   associated_registration_ = registration;
   AddMatchingRegistration(registration);
-  SendAssociateRegistrationMessage();
   SetControllerVersionAttribute(registration->active_version(),
                                 notify_controllerchange);
 }
@@ -626,16 +625,8 @@ void ServiceWorkerProviderHost::DisassociateRegistration() {
   queued_events_.clear();
   if (!associated_registration_.get())
     return;
-  associated_registration_ = NULL;
-  SetControllerVersionAttribute(NULL, false /* notify_controllerchange */);
-
-  if (!dispatcher_host_)
-    return;
-
-  // Disassociation message should be sent only for controllees.
-  DCHECK(IsProviderForClient());
-  Send(new ServiceWorkerMsg_DisassociateRegistration(
-      render_thread_id_, provider_id()));
+  associated_registration_ = nullptr;
+  SetControllerVersionAttribute(nullptr, false /* notify_controllerchange */);
 }
 
 void ServiceWorkerProviderHost::AddMatchingRegistration(
@@ -833,8 +824,12 @@ ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
 
   if (associated_registration_.get()) {
     if (dispatcher_host_) {
-      Send(new ServiceWorkerMsg_DisassociateRegistration(
-          render_thread_id_, provider_id()));
+      ServiceWorkerMsg_SetControllerServiceWorker_Params params;
+      params.thread_id = render_thread_id_;
+      params.provider_id = provider_id();
+      params.object_info = ServiceWorkerObjectInfo();
+      params.should_notify_controllerchange = false;
+      Send(new ServiceWorkerMsg_SetControllerServiceWorker(params));
     }
   }
 
@@ -1044,28 +1039,6 @@ void ServiceWorkerProviderHost::SetReadyToSendMessagesToWorker(
   queued_events_.clear();
 }
 
-void ServiceWorkerProviderHost::SendAssociateRegistrationMessage() {
-  if (!dispatcher_host_)
-    return;
-
-  ServiceWorkerRegistrationHandle* handle =
-      dispatcher_host_->GetOrCreateRegistrationHandle(
-          AsWeakPtr(), associated_registration_.get());
-
-  ServiceWorkerVersionAttributes attrs;
-  attrs.installing = GetOrCreateServiceWorkerHandle(
-      associated_registration_->installing_version());
-  attrs.waiting = GetOrCreateServiceWorkerHandle(
-      associated_registration_->waiting_version());
-  attrs.active = GetOrCreateServiceWorkerHandle(
-      associated_registration_->active_version());
-
-  // Association message should be sent only for controllees.
-  DCHECK(IsProviderForClient());
-  dispatcher_host_->Send(new ServiceWorkerMsg_AssociateRegistration(
-      render_thread_id_, provider_id(), handle->GetObjectInfo(), attrs));
-}
-
 void ServiceWorkerProviderHost::SyncMatchingRegistrations() {
   DCHECK(context_);
   RemoveAllMatchingRegistrations();
@@ -1134,7 +1107,6 @@ void ServiceWorkerProviderHost::Send(IPC::Message* message) const {
 
 void ServiceWorkerProviderHost::NotifyControllerToAssociatedProvider() {
   if (associated_registration_.get()) {
-    SendAssociateRegistrationMessage();
     if (dispatcher_host_ && associated_registration_->active_version()) {
       ServiceWorkerMsg_SetControllerServiceWorker_Params params;
       params.thread_id = render_thread_id_;

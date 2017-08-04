@@ -43,13 +43,13 @@ class ThreadSafeSender;
 // to the corresponding ServiceWorkerNetworkProvider.
 //
 // The role of this class varies for controllees and controllers:
-//  - For controllees, this is used for keeping the associated registration and
-//    the controller alive to create controllee's ServiceWorkerContainer. The
-//    references to them are kept until OnDisassociateRegistration() is called
-//    or OnSetControllerServiceWorker() is called with an invalid worker info.
+//  - For controllees, this is used for keeping the controller alive to create
+//    controllee's ServiceWorkerContainer#controller.
+//    The reference to the controller is kept until
+//    OnSetControllerServiceWorker() is called with an invalid worker info.
 //  - For controllers, this is used for keeping the associated registration and
-//    its versions alive to create controller's ServiceWorkerGlobalScope. The
-//    references to them are kept until OnDisassociateRegistration() is called.
+//    its versions alive to create the controller's
+//    ServiceWorkerGlobalScope#registration.
 //
 // These operations are actually done in delegate classes owned by this class:
 // ControlleeDelegate and ControllerDelegate.
@@ -75,7 +75,6 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
       std::unique_ptr<ServiceWorkerHandleReference> installing,
       std::unique_ptr<ServiceWorkerHandleReference> waiting,
       std::unique_ptr<ServiceWorkerHandleReference> active);
-  void OnDisassociateRegistration();
   void OnSetControllerServiceWorker(
       std::unique_ptr<ServiceWorkerHandleReference> controller,
       const std::set<uint32_t>& used_features,

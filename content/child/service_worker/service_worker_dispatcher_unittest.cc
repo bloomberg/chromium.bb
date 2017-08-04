@@ -73,15 +73,11 @@ class ServiceWorkerDispatcherTest : public testing::Test {
     return ContainsKey(dispatcher_->registrations_, registration_handle_id);
   }
 
-  void OnAssociateRegistration(int thread_id,
-                               int provider_id,
-                               const ServiceWorkerRegistrationObjectInfo& info,
-                               const ServiceWorkerVersionAttributes& attrs) {
-    dispatcher_->OnAssociateRegistration(thread_id, provider_id, info, attrs);
-  }
-
-  void OnDisassociateRegistration(int thread_id, int provider_id) {
-    dispatcher_->OnDisassociateRegistration(thread_id, provider_id);
+  void OnAssociateRegistrationForController(
+      int provider_id,
+      const ServiceWorkerRegistrationObjectInfo& info,
+      const ServiceWorkerVersionAttributes& attrs) {
+    dispatcher_->OnAssociateRegistrationForController(provider_id, info, attrs);
   }
 
   void OnSetControllerServiceWorker(int thread_id,
@@ -177,7 +173,7 @@ TEST_F(ServiceWorkerDispatcherTest, OnAssociateRegistration_NoProviderContext) {
   // The passed references should be adopted but immediately released because
   // there is no provider context to own the references.
   const int kProviderId = 10;
-  OnAssociateRegistration(kDocumentMainThreadId, kProviderId, info, attrs);
+  OnAssociateRegistrationForController(kProviderId, info, attrs);
   ASSERT_EQ(4UL, ipc_sink()->message_count());
   EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
             ipc_sink()->GetMessageAt(0)->type());
@@ -206,7 +202,7 @@ TEST_F(ServiceWorkerDispatcherTest,
           thread_safe_sender()));
 
   // The passed references should be adopted and owned by the provider context.
-  OnAssociateRegistration(kDocumentMainThreadId, kProviderId, info, attrs);
+  OnAssociateRegistrationForController(kProviderId, info, attrs);
   EXPECT_EQ(0UL, ipc_sink()->message_count());
 
   // Destruction of the provider context should release references to the
@@ -221,42 +217,6 @@ TEST_F(ServiceWorkerDispatcherTest,
             ipc_sink()->GetMessageAt(2)->type());
   EXPECT_EQ(ServiceWorkerHostMsg_DecrementRegistrationRefCount::ID,
             ipc_sink()->GetMessageAt(3)->type());
-}
-
-TEST_F(ServiceWorkerDispatcherTest,
-       OnAssociateRegistration_ProviderContextForControllee) {
-  // Assume that these objects are passed from the browser process and own
-  // references to browser-side registration/worker representations.
-  ServiceWorkerRegistrationObjectInfo info;
-  ServiceWorkerVersionAttributes attrs;
-  CreateObjectInfoAndVersionAttributes(&info, &attrs);
-
-  // Set up ServiceWorkerProviderContext for a document context.
-  const int kProviderId = 10;
-  scoped_refptr<ServiceWorkerProviderContext> provider_context(
-      new ServiceWorkerProviderContext(
-          kProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-          mojom::ServiceWorkerProviderAssociatedRequest(),
-          thread_safe_sender()));
-
-  // The passed references should be adopted and only the registration reference
-  // should be owned by the provider context.
-  OnAssociateRegistration(kDocumentMainThreadId, kProviderId, info, attrs);
-  ASSERT_EQ(3UL, ipc_sink()->message_count());
-  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
-            ipc_sink()->GetMessageAt(0)->type());
-  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
-            ipc_sink()->GetMessageAt(1)->type());
-  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
-            ipc_sink()->GetMessageAt(2)->type());
-  ipc_sink()->ClearMessages();
-
-  // Disassociating the provider context from the registration should release
-  // the reference.
-  OnDisassociateRegistration(kDocumentMainThreadId, kProviderId);
-  ASSERT_EQ(1UL, ipc_sink()->message_count());
-  EXPECT_EQ(ServiceWorkerHostMsg_DecrementRegistrationRefCount::ID,
-            ipc_sink()->GetMessageAt(0)->type());
 }
 
 TEST_F(ServiceWorkerDispatcherTest, OnSetControllerServiceWorker) {
@@ -288,7 +248,6 @@ TEST_F(ServiceWorkerDispatcherTest, OnSetControllerServiceWorker) {
           kProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
           mojom::ServiceWorkerProviderAssociatedRequest(),
           thread_safe_sender()));
-  OnAssociateRegistration(kDocumentMainThreadId, kProviderId, info, attrs);
   ipc_sink()->ClearMessages();
   OnSetControllerServiceWorker(kDocumentMainThreadId, kProviderId, attrs.active,
                                should_notify_controllerchange,
@@ -298,11 +257,9 @@ TEST_F(ServiceWorkerDispatcherTest, OnSetControllerServiceWorker) {
   // Destruction of the provider context should release references to the
   // associated registration and the controller.
   provider_context = nullptr;
-  ASSERT_EQ(2UL, ipc_sink()->message_count());
+  ASSERT_EQ(1UL, ipc_sink()->message_count());
   EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
             ipc_sink()->GetMessageAt(0)->type());
-  EXPECT_EQ(ServiceWorkerHostMsg_DecrementRegistrationRefCount::ID,
-            ipc_sink()->GetMessageAt(1)->type());
   ipc_sink()->ClearMessages();
 
   // (3) In the case there is no SWProviderContext but WebSWProviderClient for
@@ -336,7 +293,6 @@ TEST_F(ServiceWorkerDispatcherTest, OnSetControllerServiceWorker) {
   provider_context = new ServiceWorkerProviderContext(
       kProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
       mojom::ServiceWorkerProviderAssociatedRequest(), thread_safe_sender());
-  OnAssociateRegistration(kDocumentMainThreadId, kProviderId, info, attrs);
   provider_client.reset(
       new MockWebServiceWorkerProviderClientImpl(kProviderId, dispatcher()));
   ASSERT_FALSE(provider_client->is_set_controlled_called());
@@ -369,8 +325,6 @@ TEST_F(ServiceWorkerDispatcherTest, OnSetControllerServiceWorker_Null) {
           kProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
           mojom::ServiceWorkerProviderAssociatedRequest(),
           thread_safe_sender()));
-
-  OnAssociateRegistration(kDocumentMainThreadId, kProviderId, info, attrs);
 
   // Set the controller to kInvalidServiceWorkerHandle.
   OnSetControllerServiceWorker(
