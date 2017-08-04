@@ -46,10 +46,8 @@ function test()
 
     function dumpDividers(calculator)
     {
-        var dividers = PerfUI.TimelineGrid.calculateDividerOffsets(calculator).offsets;
-        for (var i = 0; i < dividers.length; ++i)
-            dividers[i] -= calculator.zeroTime();
-        InspectorTest.addResult("divider offsets: [" + dividers.join(", ") + "]. We are expecting round numbers.");
+        var times = PerfUI.TimelineGrid.calculateDividerOffsets(calculator).offsets.map(offset => offset.time - calculator.zeroTime());
+        InspectorTest.addResult("divider offsets: [" + times.join(", ") + "]. We are expecting round numbers.");
     }
 }
 
