@@ -4,7 +4,7 @@
 
 typemaps = [
   "//cc/ipc/begin_frame_args_for_blink.typemap",
-  "//services/viz/public/cpp/compositing/compositor_frame_for_blink.typemap",
+  "//cc/ipc/compositor_frame_for_blink.typemap",
   "//cc/ipc/frame_sink_id.typemap",
   "//cc/ipc/local_surface_id.typemap",
   "//cc/ipc/returned_resource.typemap",
