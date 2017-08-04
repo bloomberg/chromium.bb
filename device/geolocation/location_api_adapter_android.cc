@@ -79,11 +79,6 @@ void LocationApiAdapterAndroid::Stop() {
 }
 
 // static
-bool LocationApiAdapterAndroid::RegisterGeolocationService(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 void LocationApiAdapterAndroid::OnNewLocationAvailable(double latitude,
                                                        double longitude,
                                                        double time_stamp,

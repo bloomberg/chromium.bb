@@ -41,9 +41,6 @@ class LocationApiAdapterAndroid {
   // Stops the underlying location provider. Called on |task_runner_|.
   void Stop();
 
-  // Called when initializing chrome_view to obtain a pointer to the java class.
-  static bool RegisterGeolocationService(JNIEnv* env);
-
   // Called by JNI on its thread looper.
   static void OnNewLocationAvailable(double latitude,
                                      double longitude,

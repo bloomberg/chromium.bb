@@ -47,12 +47,6 @@ BluetoothRemoteGattServiceAndroid::~BluetoothRemoteGattServiceAndroid() {
       AttachCurrentThread(), j_service_);
 }
 
-// static
-bool BluetoothRemoteGattServiceAndroid::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(
-      env);  // Generated in ChromeBluetoothRemoteGattService_jni.h
-}
-
 base::android::ScopedJavaLocalRef<jobject>
 BluetoothRemoteGattServiceAndroid::GetJavaObject() {
   return base::android::ScopedJavaLocalRef<jobject>(j_service_);

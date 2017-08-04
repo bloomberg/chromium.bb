@@ -22,9 +22,6 @@ class UsbDeviceAndroid;
 // does not return any devices.
 class UsbServiceAndroid : public UsbService {
  public:
-  // Register C++ methods exposed to Java using JNI.
-  static bool RegisterJNI(JNIEnv* env);
-
   UsbServiceAndroid();
   ~UsbServiceAndroid() override;
 

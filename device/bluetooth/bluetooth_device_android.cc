@@ -52,11 +52,6 @@ BluetoothDeviceAndroid::~BluetoothDeviceAndroid() {
       AttachCurrentThread(), j_device_);
 }
 
-// static
-bool BluetoothDeviceAndroid::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);  // Generated in ChromeBluetoothDevice_jni.h
-}
-
 base::android::ScopedJavaLocalRef<jobject>
 BluetoothDeviceAndroid::GetJavaObject() {
   return base::android::ScopedJavaLocalRef<jobject>(j_device_);

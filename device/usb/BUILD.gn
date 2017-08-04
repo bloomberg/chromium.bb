@@ -16,8 +16,6 @@ generated_ids = "$target_gen_dir/usb_ids_gen.cc"
 
 static_library("usb") {
   sources = [
-    "android/usb_jni_registrar.cc",
-    "android/usb_jni_registrar.h",
     "usb_configuration_android.cc",
     "usb_configuration_android.h",
     "usb_descriptors.cc",

@@ -14,8 +14,6 @@ component("geolocation") {
 
   sources = [
     "access_token_store.h",
-    "android/geolocation_jni_registrar.cc",
-    "android/geolocation_jni_registrar.h",
     "empty_wifi_data_provider.cc",
     "empty_wifi_data_provider.h",
     "geolocation_config.cc",

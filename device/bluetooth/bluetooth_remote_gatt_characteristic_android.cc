@@ -66,12 +66,6 @@ BluetoothRemoteGattCharacteristicAndroid::
   }
 }
 
-// static
-bool BluetoothRemoteGattCharacteristicAndroid::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(
-      env);  // Generated in ChromeBluetoothRemoteGattCharacteristic_jni.h
-}
-
 base::android::ScopedJavaLocalRef<jobject>
 BluetoothRemoteGattCharacteristicAndroid::GetJavaObject() {
   return base::android::ScopedJavaLocalRef<jobject>(j_characteristic_);

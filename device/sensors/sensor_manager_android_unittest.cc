@@ -70,7 +70,6 @@ class AndroidSensorManagerTest : public testing::Test {
 };
 
 TEST_F(AndroidSensorManagerTest, ThreeDeviceMotionSensorsActive) {
-  FakeSensorManagerAndroid::Register(base::android::AttachCurrentThread());
   FakeSensorManagerAndroid sensorManager;
   sensorManager.SetNumberActiveDeviceMotionSensors(3);
 
@@ -111,7 +110,6 @@ TEST_F(AndroidSensorManagerTest, ThreeDeviceMotionSensorsActive) {
 }
 
 TEST_F(AndroidSensorManagerTest, TwoDeviceMotionSensorsActive) {
-  FakeSensorManagerAndroid::Register(base::android::AttachCurrentThread());
   FakeSensorManagerAndroid sensorManager;
   sensorManager.SetNumberActiveDeviceMotionSensors(2);
 
@@ -131,7 +129,6 @@ TEST_F(AndroidSensorManagerTest, TwoDeviceMotionSensorsActive) {
 }
 
 TEST_F(AndroidSensorManagerTest, ZeroDeviceMotionSensorsActive) {
-  FakeSensorManagerAndroid::Register(base::android::AttachCurrentThread());
   FakeSensorManagerAndroid sensorManager;
   sensorManager.SetNumberActiveDeviceMotionSensors(0);
 
@@ -145,7 +142,6 @@ TEST_F(AndroidSensorManagerTest, ZeroDeviceMotionSensorsActive) {
 }
 
 TEST_F(AndroidSensorManagerTest, DeviceOrientationSensorsActive) {
-  FakeSensorManagerAndroid::Register(base::android::AttachCurrentThread());
   FakeSensorManagerAndroid sensorManager;
 
   sensorManager.StartFetchingDeviceOrientationData(orientation_buffer_.get());
@@ -159,7 +155,6 @@ TEST_F(AndroidSensorManagerTest, DeviceOrientationSensorsActive) {
 }
 
 TEST_F(AndroidSensorManagerTest, DeviceOrientationAbsoluteSensorsActive) {
-  FakeSensorManagerAndroid::Register(base::android::AttachCurrentThread());
   FakeSensorManagerAndroid sensorManager;
 
   sensorManager.StartFetchingDeviceOrientationAbsoluteData(

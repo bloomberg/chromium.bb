@@ -25,11 +25,6 @@ using base::android::ScopedJavaLocalRef;
 
 namespace device {
 
-bool GamepadPlatformDataFetcherAndroid::
-    RegisterGamepadPlatformDataFetcherAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 GamepadPlatformDataFetcherAndroid::GamepadPlatformDataFetcherAndroid() {
 }
 
