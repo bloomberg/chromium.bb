@@ -72,8 +72,9 @@ class CORE_EXPORT HTMLSelectElement final
   unsigned length() const;
   void setLength(unsigned, ExceptionState&);
 
+  // TODO(tkent): Rename |size| to |Size|. This is not an implementation of
+  // |size| IDL attribute.
   unsigned size() const { return size_; }
-  void setSize(unsigned);
   bool IsMultiple() const { return is_multiple_; }
 
   bool UsesMenuList() const;
