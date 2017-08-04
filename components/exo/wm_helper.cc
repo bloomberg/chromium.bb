@@ -5,6 +5,8 @@
 #include "components/exo/wm_helper.h"
 
 #include "base/memory/ptr_util.h"
+#include "ui/aura/client/drag_drop_delegate.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 
 namespace exo {
 namespace {
@@ -86,6 +88,22 @@ void WMHelper::RemoveDisplayConfigurationObserver(
   display_config_observers_.RemoveObserver(observer);
 }
 
+void WMHelper::AddDragDropObserver(DragDropObserver* observer) {
+  drag_drop_observers_.AddObserver(observer);
+}
+
+void WMHelper::RemoveDragDropObserver(DragDropObserver* observer) {
+  drag_drop_observers_.RemoveObserver(observer);
+}
+
+void WMHelper::SetDragDropDelegate(aura::Window* window) {
+  aura::client::SetDragDropDelegate(window, this);
+}
+
+void WMHelper::ResetDragDropDelegate(aura::Window* window) {
+  aura::client::SetDragDropDelegate(window, nullptr);
+}
+
 void WMHelper::NotifyWindowActivated(aura::Window* gained_active,
                                      aura::Window* lost_active) {
   for (ActivationObserver& observer : activation_observers_)
@@ -138,4 +156,28 @@ void WMHelper::NotifyDisplayConfigurationChanged() {
     observer.OnDisplayConfigurationChanged();
 }
 
+void WMHelper::OnDragEntered(const ui::DropTargetEvent& event) {
+  for (DragDropObserver& observer : drag_drop_observers_)
+    observer.OnDragEntered(event);
+}
+
+int WMHelper::OnDragUpdated(const ui::DropTargetEvent& event) {
+  int valid_operation = ui::DragDropTypes::DRAG_NONE;
+  for (DragDropObserver& observer : drag_drop_observers_)
+    valid_operation = valid_operation | observer.OnDragUpdated(event);
+  return valid_operation;
+}
+
+void WMHelper::OnDragExited() {
+  for (DragDropObserver& observer : drag_drop_observers_)
+    observer.OnDragExited();
+}
+
+int WMHelper::OnPerformDrop(const ui::DropTargetEvent& event) {
+  for (DragDropObserver& observer : drag_drop_observers_)
+    observer.OnPerformDrop(event);
+  // TODO(hirono): Return the correct result instead of always returning
+  // DRAG_MOVE.
+  return ui::DragDropTypes::DRAG_MOVE;
+}
 }  // namespace exo
