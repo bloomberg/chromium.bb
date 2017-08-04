@@ -10,7 +10,7 @@
 
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "third_party/WebKit/public/platform/modules/sensitive_input_visibility/sensitive_input_visibility_service.mojom.h"
+#include "third_party/WebKit/public/platform/modules/insecure_input/insecure_input_service.mojom.h"
 
 namespace content {
 class WebContents;
@@ -28,13 +28,12 @@ class InsecureSensitiveInputDriverFactory
 
   // Creates a factory for the |web_contents|, enumerates its current frames
   // and creates an |InsecureSensitiveInputDriver| for each.
-  static void BindDriver(
-      blink::mojom::SensitiveInputVisibilityServiceRequest request,
-      content::RenderFrameHost* render_frame_host);
+  static void BindDriver(blink::mojom::InsecureInputServiceRequest request,
+                         content::RenderFrameHost* render_frame_host);
 
   // Returns the |InsecureSensitiveInputDriver| previously created for the
-  // specified |render_frame_host| by |CreateForWebContents| or
-  // |RenderFrameCreated|. Returns nullptr if the driver is missing.
+  // specified |render_frame_host| by |BindDriver| or |RenderFrameCreated|.
+  // Returns nullptr if the driver is missing.
   InsecureSensitiveInputDriver* GetDriverForFrame(
       content::RenderFrameHost* render_frame_host);
 

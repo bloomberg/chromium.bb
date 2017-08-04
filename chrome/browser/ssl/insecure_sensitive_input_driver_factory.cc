@@ -18,7 +18,7 @@ InsecureSensitiveInputDriverFactory::~InsecureSensitiveInputDriverFactory() {}
 
 // static
 void InsecureSensitiveInputDriverFactory::BindDriver(
-    blink::mojom::SensitiveInputVisibilityServiceRequest request,
+    blink::mojom::InsecureInputServiceRequest request,
     content::RenderFrameHost* render_frame_host) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
@@ -38,7 +38,7 @@ void InsecureSensitiveInputDriverFactory::BindDriver(
   InsecureSensitiveInputDriver* driver =
       factory->GetDriverForFrame(render_frame_host);
   if (driver)
-    driver->BindSensitiveInputVisibilityServiceRequest(std::move(request));
+    driver->BindInsecureInputServiceRequest(std::move(request));
 }
 
 InsecureSensitiveInputDriver*
