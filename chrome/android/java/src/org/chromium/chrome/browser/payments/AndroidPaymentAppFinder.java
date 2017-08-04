@@ -232,34 +232,31 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
                     ? null
                     : app.activityInfo.metaData.getString(
                               META_DATA_NAME_OF_DEFAULT_PAYMENT_METHOD_NAME);
-            if (TextUtils.isEmpty(defaultMethod)) {
-                Log.e(TAG, "Skipping \"%s\" because of missing default payment method name.",
-                        app.activityInfo.packageName);
-                continue;
-            }
-
-            if (!methodToAppsMapping.containsKey(defaultMethod)) {
-                methodToAppsMapping.put(defaultMethod, new HashSet<ResolveInfo>());
-            }
-            methodToAppsMapping.get(defaultMethod).add(app);
 
             URI appOrigin = null;
-            if (UriUtils.looksLikeUriMethod(defaultMethod)) {
-                URI defaultUriMethod = UriUtils.parseUriFromString(defaultMethod);
-                if (defaultUriMethod != null) {
-                    uriMethods.add(defaultUriMethod);
+            if (!TextUtils.isEmpty(defaultMethod)) {
+                if (!methodToAppsMapping.containsKey(defaultMethod)) {
+                    methodToAppsMapping.put(defaultMethod, new HashSet<ResolveInfo>());
+                }
+                methodToAppsMapping.get(defaultMethod).add(app);
 
-                    if (!uriMethodToDefaultAppsMapping.containsKey(defaultUriMethod)) {
-                        uriMethodToDefaultAppsMapping.put(
-                                defaultUriMethod, new HashSet<ResolveInfo>());
-                    }
-                    uriMethodToDefaultAppsMapping.get(defaultUriMethod).add(app);
+                if (UriUtils.looksLikeUriMethod(defaultMethod)) {
+                    URI defaultUriMethod = UriUtils.parseUriFromString(defaultMethod);
+                    if (defaultUriMethod != null) {
+                        uriMethods.add(defaultUriMethod);
 
-                    appOrigin = UriUtils.getOrigin(defaultUriMethod);
-                    if (!mOriginToUriDefaultMethodsMapping.containsKey(appOrigin)) {
-                        mOriginToUriDefaultMethodsMapping.put(appOrigin, new HashSet<URI>());
+                        if (!uriMethodToDefaultAppsMapping.containsKey(defaultUriMethod)) {
+                            uriMethodToDefaultAppsMapping.put(
+                                    defaultUriMethod, new HashSet<ResolveInfo>());
+                        }
+                        uriMethodToDefaultAppsMapping.get(defaultUriMethod).add(app);
+
+                        appOrigin = UriUtils.getOrigin(defaultUriMethod);
+                        if (!mOriginToUriDefaultMethodsMapping.containsKey(appOrigin)) {
+                            mOriginToUriDefaultMethodsMapping.put(appOrigin, new HashSet<URI>());
+                        }
+                        mOriginToUriDefaultMethodsMapping.get(appOrigin).add(defaultUriMethod);
                     }
-                    mOriginToUriDefaultMethodsMapping.get(appOrigin).add(defaultUriMethod);
                 }
             }
 
