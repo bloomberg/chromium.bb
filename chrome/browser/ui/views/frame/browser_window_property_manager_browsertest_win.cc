@@ -163,8 +163,9 @@ class BrowserTestWithProfileShortcutManager : public InProcessBrowserTest {
 };
 
 // Check that the window properties on Windows are properly set.
+// http://crbug.com/752560.  See also crbug.com/396344 for additional context.
 IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
-                       WindowProperties) {
+                       DISABLED_WindowProperties) {
   // Single profile case. The profile name should not be shown.
   ValidateBrowserWindowProperties(browser(), base::string16());
 
