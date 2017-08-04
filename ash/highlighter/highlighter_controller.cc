@@ -4,18 +4,12 @@
 
 #include "ash/highlighter/highlighter_controller.h"
 
-#include "ash/ash_switches.h"
 #include "ash/highlighter/highlighter_gesture_util.h"
 #include "ash/highlighter/highlighter_result_view.h"
 #include "ash/highlighter/highlighter_selection_observer.h"
 #include "ash/highlighter/highlighter_view.h"
-#include "ash/shell.h"
-#include "ash/system/palette/palette_utils.h"
-#include "base/command_line.h"
-#include "base/strings/string_number_conversions.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/display/screen.h"
-#include "ui/events/base_event_utils.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -51,134 +45,79 @@ float GetScreenshotScale(aura::Window* window) {
   return (p2 - p1).Length();
 }
 
-// The default amount of time used to estimate time from VSYNC event to when
-// visible light can be noticed by the user. This is used when a device
-// specific estimate was not provided using --estimated-presentation-delay.
-const int kDefaultPresentationDelayMs = 18;
-
 }  // namespace
 
-HighlighterController::HighlighterController() : observer_(nullptr) {
-  Shell::Get()->AddPreTargetHandler(this);
+HighlighterController::HighlighterController() {}
 
-  // The code below is copied from laser_pointer_controller.cc
-  // TODO(kaznacheev) extract common base class (crbug.com/750235)
-  int64_t presentation_delay_ms;
-  // Use device specific presentation delay if specified.
-  std::string presentation_delay_string =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kAshEstimatedPresentationDelay);
-  if (!base::StringToInt64(presentation_delay_string, &presentation_delay_ms))
-    presentation_delay_ms = kDefaultPresentationDelayMs;
-  presentation_delay_ =
-      base::TimeDelta::FromMilliseconds(presentation_delay_ms);
-}
+HighlighterController::~HighlighterController() {}
 
-HighlighterController::~HighlighterController() {
-  Shell::Get()->RemovePreTargetHandler(this);
-}
-
-void HighlighterController::EnableHighlighter(
+void HighlighterController::SetObserver(
     HighlighterSelectionObserver* observer) {
   observer_ = observer;
 }
 
-void HighlighterController::DisableHighlighter() {
-  observer_ = nullptr;
-  DestroyHighlighterView();
+views::View* HighlighterController::GetPointerView() const {
+  return highlighter_view_.get();
 }
 
-void HighlighterController::OnTouchEvent(ui::TouchEvent* event) {
-  if (!observer_)
-    return;
+void HighlighterController::CreatePointerView(
+    base::TimeDelta presentation_delay,
+    aura::Window* root_window) {
+  highlighter_view_ =
+      base::MakeUnique<HighlighterView>(presentation_delay, root_window);
+  result_view_.reset();
+}
 
-  if (event->pointer_details().pointer_type !=
-      ui::EventPointerType::POINTER_TYPE_PEN)
-    return;
+void HighlighterController::UpdatePointerView(ui::TouchEvent* event) {
+  highlighter_view_->AddNewPoint(event->root_location_f(), event->time_stamp());
 
-  if (event->type() != ui::ET_TOUCH_MOVED &&
-      event->type() != ui::ET_TOUCH_PRESSED &&
-      event->type() != ui::ET_TOUCH_RELEASED)
-    return;
+  if (event->type() == ui::ET_TOUCH_RELEASED) {
+    aura::Window* current_window =
+        highlighter_view_->GetWidget()->GetNativeWindow()->GetRootWindow();
 
-  // Find the root window that the event was captured on. We never need to
-  // switch between different root windows because it is not physically possible
-  // to seamlessly drag a finger between two displays like it is with a mouse.
-  gfx::Point event_location = event->root_location();
-  aura::Window* current_window =
-      static_cast<aura::Window*>(event->target())->GetRootWindow();
-
-  // Start a new highlighter session if the stylus is pressed but not
-  // pressed over the palette.
-  if (event->type() == ui::ET_TOUCH_PRESSED &&
-      !palette_utils::PaletteContainsPointInScreen(event_location)) {
-    DestroyHighlighterView();
-    UpdateHighlighterView(current_window, event->root_location_f(), event);
-  }
-
-  if (event->type() == ui::ET_TOUCH_MOVED && highlighter_view_)
-    UpdateHighlighterView(current_window, event->root_location_f(), event);
-
-  if (event->type() == ui::ET_TOUCH_RELEASED && highlighter_view_) {
     const FastInkPoints& points = highlighter_view_->points();
-    const gfx::RectF box = points.GetBoundingBoxF();
-    const gfx::PointF pivot(box.CenterPoint());
+    gfx::RectF box = points.GetBoundingBoxF();
 
-    const float scale_factor = GetScreenshotScale(current_window);
-
+    HighlighterView::AnimationMode animation_mode;
     if (DetectHorizontalStroke(box, HighlighterView::kPenTipSize)) {
-      const gfx::RectF box_adjusted =
-          AdjustHorizontalStroke(box, HighlighterView::kPenTipSize);
-      observer_->HandleSelection(
-          gfx::ToEnclosingRect(gfx::ScaleRect(box_adjusted, scale_factor)));
-      highlighter_view_->Animate(pivot,
-                                 HighlighterView::AnimationMode::kFadeout);
-
-      result_view_ = base::MakeUnique<HighlighterResultView>(current_window);
-      result_view_->AnimateInPlace(box_adjusted, HighlighterView::kPenColor);
+      box = AdjustHorizontalStroke(box, HighlighterView::kPenTipSize);
+      animation_mode = HighlighterView::AnimationMode::kFadeout;
     } else if (DetectClosedShape(box, points)) {
-      observer_->HandleSelection(
-          gfx::ToEnclosingRect(gfx::ScaleRect(box, scale_factor)));
-      highlighter_view_->Animate(pivot,
-                                 HighlighterView::AnimationMode::kInflate);
+      animation_mode = HighlighterView::AnimationMode::kInflate;
+    } else {
+      animation_mode = HighlighterView::AnimationMode::kDeflate;
+    }
+
+    highlighter_view_->Animate(
+        box.CenterPoint(), animation_mode,
+        base::Bind(&HighlighterController::DestroyHighlighterView,
+                   base::Unretained(this)));
+
+    if (animation_mode != HighlighterView::AnimationMode::kDeflate) {
+      if (observer_) {
+        observer_->HandleSelection(gfx::ToEnclosingRect(
+            gfx::ScaleRect(box, GetScreenshotScale(current_window))));
+      }
 
       result_view_ = base::MakeUnique<HighlighterResultView>(current_window);
-      result_view_->AnimateDeflate(box);
-    } else {
-      highlighter_view_->Animate(pivot,
-                                 HighlighterView::AnimationMode::kDeflate);
+      result_view_->Animate(
+          box, animation_mode,
+          base::Bind(&HighlighterController::DestroyResultView,
+                     base::Unretained(this)));
     }
   }
 }
 
-void HighlighterController::OnWindowDestroying(aura::Window* window) {
-  SwitchTargetRootWindowIfNeeded(window);
-}
-
-void HighlighterController::SwitchTargetRootWindowIfNeeded(
-    aura::Window* root_window) {
-  if (!root_window) {
-    DestroyHighlighterView();
-  }
-
-  if (root_window && observer_ && !highlighter_view_) {
-    highlighter_view_ =
-        base::MakeUnique<HighlighterView>(presentation_delay_, root_window);
-  }
-}
-
-void HighlighterController::UpdateHighlighterView(
-    aura::Window* current_window,
-    const gfx::PointF& event_location,
-    ui::Event* event) {
-  SwitchTargetRootWindowIfNeeded(current_window);
-  DCHECK(highlighter_view_);
-  highlighter_view_->AddNewPoint(event_location, event->time_stamp());
-  event->StopPropagation();
+void HighlighterController::DestroyPointerView() {
+  DestroyHighlighterView();
+  DestroyResultView();
 }
 
 void HighlighterController::DestroyHighlighterView() {
   highlighter_view_.reset();
+}
+
+void HighlighterController::DestroyResultView() {
   result_view_.reset();
 }
 

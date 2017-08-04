@@ -12,15 +12,16 @@ namespace ash {
 
 HighlighterControllerTestApi::HighlighterControllerTestApi(
     HighlighterController* instance)
-    : instance_(instance) {}
+    : instance_(instance) {
+  instance_->SetObserver(this);
+}
 
-HighlighterControllerTestApi::~HighlighterControllerTestApi() {}
+HighlighterControllerTestApi::~HighlighterControllerTestApi() {
+  instance_->SetObserver(nullptr);
+}
 
 void HighlighterControllerTestApi::SetEnabled(bool enabled) {
-  if (enabled)
-    instance_->EnableHighlighter(this);
-  else
-    instance_->DisableHighlighter();
+  instance_->SetEnabled(enabled);
 }
 
 bool HighlighterControllerTestApi::IsShowingHighlighter() const {

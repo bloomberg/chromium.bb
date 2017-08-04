@@ -25,11 +25,8 @@ bool LaserPointerControllerTestApi::IsShowingLaserPointer() const {
 }
 
 bool LaserPointerControllerTestApi::IsFadingAway() const {
-  return IsShowingLaserPointer() && instance_->is_fading_away_;
-}
-
-void LaserPointerControllerTestApi::SetIsFadingAway(bool fading_away) {
-  instance_->is_fading_away_ = fading_away;
+  return IsShowingLaserPointer() &&
+         !instance_->laser_pointer_view_->fadeout_done_.is_null();
 }
 
 const FastInkPoints& LaserPointerControllerTestApi::laser_points() const {

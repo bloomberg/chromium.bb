@@ -7,15 +7,12 @@
 
 #include <memory>
 
+#include "ash/highlighter/highlighter_view.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
 
 namespace aura {
 class Window;
-}
-
-namespace base {
-class Timer;
 }
 
 namespace ui {
@@ -36,18 +33,17 @@ class HighlighterResultView : public views::View {
 
   ~HighlighterResultView() override;
 
-  void AnimateInPlace(const gfx::RectF& bounds, SkColor color);
-  void AnimateDeflate(const gfx::RectF& bounds);
+  void Animate(const gfx::RectF& bounds,
+               HighlighterView::AnimationMode animation_mode,
+               const base::Closure& done);
 
  private:
-  void ScheduleFadeIn(const base::TimeDelta& delay,
-                      const base::TimeDelta& duration);
-  void FadeIn(const base::TimeDelta& duration);
-  void FadeOut();
+  void FadeIn(const base::TimeDelta& duration, const base::Closure& done);
+  void FadeOut(const base::Closure& done);
 
   std::unique_ptr<views::Widget> widget_;
   std::unique_ptr<ui::Layer> result_layer_;
-  std::unique_ptr<base::Timer> animation_timer_;
+  std::unique_ptr<base::OneShotTimer> animation_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(HighlighterResultView);
 };

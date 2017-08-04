@@ -157,36 +157,38 @@ class LaserSegment {
 // LaserPointerView
 LaserPointerView::LaserPointerView(base::TimeDelta life_duration,
                                    base::TimeDelta presentation_delay,
+                                   base::TimeDelta stationary_point_delay,
                                    aura::Window* root_window)
     : FastInkView(root_window),
       laser_points_(life_duration),
       predicted_laser_points_(life_duration),
-      presentation_delay_(presentation_delay) {}
+      presentation_delay_(presentation_delay),
+      stationary_timer_(new base::Timer(
+          FROM_HERE,
+          stationary_point_delay,
+          base::Bind(&LaserPointerView::UpdateTime, base::Unretained(this)),
+          true /* is_repeating */)) {}
 
-LaserPointerView::~LaserPointerView() {
-}
-
-void LaserPointerView::Stop() {
-  UpdateDamageRect(GetBoundingBox());
-  laser_points_.Clear();
-  predicted_laser_points_.Clear();
-  RequestRedraw();
-}
+LaserPointerView::~LaserPointerView() {}
 
 void LaserPointerView::AddNewPoint(const gfx::PointF& new_point,
                                    const base::TimeTicks& new_time) {
   TRACE_EVENT1("ui", "LaserPointerView::AddNewPoint", "new_point",
                new_point.ToString());
-  TRACE_COUNTER1(
-      "ui", "LaserPointerPredictionError",
-      predicted_laser_points_.GetNumberOfPoints()
-          ? std::round(
-                (new_point - predicted_laser_points_.points().front().location)
-                    .Length())
-          : 0);
+  TRACE_COUNTER1("ui", "LaserPointerPredictionError",
+                 predicted_laser_points_.GetNumberOfPoints()
+                     ? std::round((new_point -
+                                   predicted_laser_points_.GetOldest().location)
+                                      .Length())
+                     : 0);
+  AddPoint(new_point, new_time);
+  stationary_timer_->Reset();
+}
 
+void LaserPointerView::AddPoint(const gfx::PointF& point,
+                                const base::TimeTicks& time) {
   UpdateDamageRect(GetBoundingBox());
-  laser_points_.AddPoint(new_point, new_time);
+  laser_points_.AddPoint(point, time);
 
   // Current time is needed to determine presentation time and the number of
   // predicted points to add.
@@ -204,7 +206,25 @@ void LaserPointerView::AddNewPoint(const gfx::PointF& new_point,
   RequestRedraw();
 }
 
+void LaserPointerView::FadeOut(const base::Closure& done) {
+  fadeout_done_ = done;
+}
+
 void LaserPointerView::UpdateTime() {
+  if (fadeout_done_.is_null()) {
+    // Pointer still active but stationary, repeat the most recent position.
+    DCHECK(!laser_points_.IsEmpty());
+    AddPoint(laser_points_.GetNewest().location, ui::EventTimeForNow());
+    return;
+  }
+
+  if (laser_points_.IsEmpty() && predicted_laser_points_.IsEmpty()) {
+    // No points left to show, complete the fadeout.
+    fadeout_done_.Run();  // this will delete this LaserPointerView instance.
+    return;
+  }
+
+  // Continue fading out the existing points
   UpdateDamageRect(GetBoundingBox());
   // Do not add the point but advance the time if the view is in process of
   // fading away.
