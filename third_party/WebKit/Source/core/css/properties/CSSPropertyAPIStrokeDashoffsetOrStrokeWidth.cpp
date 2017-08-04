@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/CSSPropertyAPIStrokeOrLength.h"
+#include "core/css/properties/CSSPropertyAPIStrokeDashoffsetOrStrokeWidth.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
 namespace blink {
 class CSSParserLocalContext;
 
-const CSSValue* CSSPropertyAPIStrokeOrLength::parseSingleValue(
+const CSSValue* CSSPropertyAPIStrokeDashoffsetOrStrokeWidth::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) {

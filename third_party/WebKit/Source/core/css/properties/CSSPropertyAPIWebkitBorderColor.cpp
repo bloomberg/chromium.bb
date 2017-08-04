@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/CSSPropertyAPIImage.h"
+#include "core/css/properties/CSSPropertyAPIWebkitBorderColor.h"
 
+#include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
 class CSSParserLocalContext;
 namespace blink {
 
-const CSSValue* CSSPropertyAPIImage::parseSingleValue(
+const CSSValue* CSSPropertyAPIWebkitBorderColor::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {
-  return CSSPropertyParserHelpers::ConsumeImageOrNone(range, &context);
+  return CSSPropertyParserHelpers::ConsumeColor(range, context.Mode());
 }
 
 }  // namespace blink

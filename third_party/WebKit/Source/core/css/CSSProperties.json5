@@ -410,7 +410,7 @@
     // Other properties can depend upon high priority properties (e.g. font-size / ems)
     {
       name: "color",
-      api_class: "CSSPropertyAPIColor",
+      api_class: true,
       api_methods: ["parseSingleValue"],
       custom_all: true,
       inherited: true,
@@ -716,7 +716,7 @@
     },
     {
       name: "background-color",
-      api_class: "CSSPropertyAPIColor",
+      api_class: true,
       api_methods: ["parseSingleValue"],
       custom_all: true,
       interpolable: true,
@@ -863,7 +863,7 @@
     },
     {
       name: "border-image-source",
-      api_class: "CSSPropertyAPIImage",
+      api_class: "CSSPropertyAPIImageSource",
       api_methods: ["parseSingleValue"],
       custom_value: true,
       interpolable: true,
@@ -1008,7 +1008,7 @@
     },
     {
       name: "bottom",
-      api_class: "CSSPropertyAPIMargin",
+      api_class: "CSSPropertyAPIOffset",
       api_methods: ["parseSingleValue"],
       converter: "ConvertLengthOrAuto",
       interpolable: true,
@@ -1213,7 +1213,7 @@
     },
     {
       name: "cx",
-      api_class: "CSSPropertyAPIStrokeOrLength",
+      api_class: "CSSPropertyAPILength",
       api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       interpolable: true,
@@ -1221,7 +1221,7 @@
     },
     {
       name: "cy",
-      api_class: "CSSPropertyAPIStrokeOrLength",
+      api_class: "CSSPropertyAPILength",
       api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       interpolable: true,
@@ -1270,7 +1270,7 @@
     },
     {
       name: "fill-opacity",
-      api_class: "CSSPropertyAPIOpacity",
+      api_class: "CSSPropertyAPIFillOrStrokeOpacity",
       api_methods: ["parseSingleValue"],
       converter: "ConvertNumberOrPercentage",
       inherited: true,
@@ -1579,7 +1579,7 @@
     },
     {
       name: "left",
-      api_class: "CSSPropertyAPIMargin",
+      api_class: "CSSPropertyAPIOffset",
       api_methods: ["parseSingleValue"],
       converter: "ConvertLengthOrAuto",
       interpolable: true,
@@ -1634,7 +1634,7 @@
     },
     {
       name: "list-style-image",
-      api_class: "CSSPropertyAPIImage",
+      api_class: true,
       api_methods: ["parseSingleValue"],
       custom_value: true,
       inherited: true,
@@ -1733,7 +1733,7 @@
     },
     {
       name: "mask",
-      api_class: "CSSPropertyAPIMarker",
+      api_class: true,
       api_methods: ["parseSingleValue"],
       converter: "ConvertFragmentIdentifier",
       name_for_methods: "MaskerResource",
@@ -1770,7 +1770,7 @@
     },
     {
       name: "min-height",
-      api_class: "CSSPropertyAPIWidthOrHeight",
+      api_class: "CSSPropertyAPIMinWidthOrHeight",
       converter: "ConvertLengthSizing",
       is_descriptor: true,
       interpolable: true,
@@ -1780,7 +1780,7 @@
     },
     {
       name: "min-width",
-      api_class: "CSSPropertyAPIWidthOrHeight",
+      api_class: "CSSPropertyAPIMinWidthOrHeight",
       converter: "ConvertLengthSizing",
       is_descriptor: true,
       interpolable: true,
@@ -1905,7 +1905,7 @@
     },
     {
       name: "orphans",
-      api_class: "CSSPropertyAPIFragmentation",
+      api_class: "CSSPropertyAPIOrphansOrWidows",
       api_methods: ["parseSingleValue"],
       inherited: true,
       interpolable: true,
@@ -2109,7 +2109,7 @@
     },
     {
       name: "right",
-      api_class: "CSSPropertyAPIMargin",
+      api_class: "CSSPropertyAPIOffset",
       api_methods: ["parseSingleValue"],
       converter: "ConvertLengthOrAuto",
       interpolable: true,
@@ -2121,7 +2121,7 @@
     },
     {
       name: "r",
-      api_class: "CSSPropertyAPIStrokeOrLength",
+      api_class: "CSSPropertyAPILength",
       api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       interpolable: true,
@@ -2471,7 +2471,7 @@
     },
     {
       name: "stroke-dashoffset",
-      api_class: "CSSPropertyAPIStrokeOrLength",
+      api_class: "CSSPropertyAPIStrokeDashoffsetOrStrokeWidth",
       api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       inherited: true,
@@ -2505,7 +2505,7 @@
     },
     {
       name: "stroke-opacity",
-      api_class: "CSSPropertyAPIOpacity",
+      api_class: "CSSPropertyAPIFillOrStrokeOpacity",
       api_methods: ["parseSingleValue"],
       converter: "ConvertNumberOrPercentage",
       inherited: true,
@@ -2514,7 +2514,7 @@
     },
     {
       name: "stroke-width",
-      api_class: "CSSPropertyAPIStrokeOrLength",
+      api_class: "CSSPropertyAPIStrokeDashoffsetOrStrokeWidth",
       api_methods: ["parseSingleValue"],
       converter: "ConvertUnzoomedLength",
       inherited: true,
@@ -2591,7 +2591,7 @@
     },
     {
       name: "text-decoration-line",
-      api_class: "CSSPropertyAPITextDecorationLine",
+      api_class: true,
       api_methods: ["parseSingleValue"],
       converter: "ConvertFlags<TextDecoration>",
       name_for_methods: "TextDecoration",
@@ -2704,7 +2704,7 @@
     },
     {
       name: "top",
-      api_class: "CSSPropertyAPIMargin",
+      api_class: "CSSPropertyAPIOffset",
       api_methods: ["parseSingleValue"],
       converter: "ConvertLengthOrAuto",
       interpolable: true,
@@ -2845,7 +2845,7 @@
     },
     {
       name: "x",
-      api_class: "CSSPropertyAPIStrokeOrLength",
+      api_class: "CSSPropertyAPILength",
       api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       interpolable: true,
@@ -2853,7 +2853,7 @@
     },
     {
       name: "y",
-      api_class: "CSSPropertyAPIStrokeOrLength",
+      api_class: "CSSPropertyAPILength",
       api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       interpolable: true,
@@ -2969,7 +2969,7 @@
     },
     {
       name: "-webkit-box-ordinal-group",
-      api_class: "CSSPropertyAPIFragmentation",
+      api_class: true,
       api_methods: ["parseSingleValue"],
       type_name: "unsigned",
       field_template: "storage_only",
@@ -3181,7 +3181,7 @@
     },
     {
       name: "-webkit-mask-box-image-source",
-      api_class: "CSSPropertyAPIImage",
+      api_class: "CSSPropertyAPIImageSource",
       api_methods: ["parseSingleValue"],
       custom_value: true,
       interpolable: true,
@@ -3283,7 +3283,7 @@
     },
     {
       name: "-webkit-tap-highlight-color",
-      api_class: "CSSPropertyAPIColorNoQuirks",
+      api_class: "CSSPropertyAPIWebkitColorNoQuirks",
       api_methods: ["parseSingleValue"],
       converter: "ConvertColor",
       inherited: true,
@@ -3300,7 +3300,7 @@
     },
     {
       name: "-webkit-text-emphasis-color",
-      api_class: "CSSPropertyAPIColorNoQuirks",
+      api_class: "CSSPropertyAPIWebkitColorNoQuirks",
       api_methods: ["parseSingleValue"],
       custom_all: true,
       inherited: true,
@@ -3328,7 +3328,7 @@
     },
     {
       name: "-webkit-text-fill-color",
-      api_class: "CSSPropertyAPIColorNoQuirks",
+      api_class: "CSSPropertyAPIWebkitColorNoQuirks",
       api_methods: ["parseSingleValue"],
       custom_all: true,
       inherited: true,
@@ -3348,7 +3348,7 @@
     },
     {
       name: "-webkit-text-stroke-color",
-      api_class: "CSSPropertyAPIColorNoQuirks",
+      api_class: true,
       api_methods: ["parseSingleValue"],
       custom_all: true,
       inherited: true,
@@ -3424,7 +3424,7 @@
     },
     {
       name: "widows",
-      api_class: "CSSPropertyAPIFragmentation",
+      api_class: "CSSPropertyAPIOrphansOrWidows",
       api_methods: ["parseSingleValue"],
       inherited: true,
       interpolable: true,
@@ -3530,7 +3530,7 @@
 
     {
       name: "-webkit-border-end-color",
-      api_class: "CSSPropertyAPIColorNoQuirks",
+      api_class: "CSSPropertyAPIWebkitBorderColor",
       api_methods: ["parseSingleValue"],
       direction_aware: true,
     },
@@ -3546,7 +3546,7 @@
     },
     {
       name: "-webkit-border-start-color",
-      api_class: "CSSPropertyAPIColorNoQuirks",
+      api_class: "CSSPropertyAPIWebkitBorderColor",
       api_methods: ["parseSingleValue"],
       direction_aware: true,
     },
@@ -3562,7 +3562,7 @@
     },
     {
       name: "-webkit-border-before-color",
-      api_class: "CSSPropertyAPIColorNoQuirks",
+      api_class: "CSSPropertyAPIWebkitBorderColor",
       api_methods: ["parseSingleValue"],
       direction_aware: true,
     },
@@ -3578,7 +3578,7 @@
     },
     {
       name: "-webkit-border-after-color",
-      api_class: "CSSPropertyAPIColorNoQuirks",
+      api_class: "CSSPropertyAPIWebkitBorderColor",
       api_methods: ["parseSingleValue"],
       direction_aware: true,
     },
@@ -3694,7 +3694,7 @@
     },
     {
       name: "-webkit-text-decorations-in-effect",
-      api_class: "CSSPropertyAPITextDecorationLine",
+      api_class: true,
       api_methods: ["parseSingleValue"],
       builder_skip: true,
       inherited: true,
