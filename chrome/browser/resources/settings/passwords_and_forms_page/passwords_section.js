@@ -304,9 +304,9 @@ Polymer({
     if (!filter)
       return savedPasswords;
 
-    return savedPasswords.filter(function(password) {
-      return password.loginPair.urls.shown.includes(filter) ||
-          password.loginPair.username.includes(filter);
+    return savedPasswords.filter(p => {
+      return [p.loginPair.urls.shown, p.loginPair.username].some(
+          term => term.toLowerCase().includes(filter.toLowerCase()));
     });
   },
 
@@ -317,7 +317,7 @@ Polymer({
    */
   passwordExceptionFilter_: function(filter) {
     return function(exception) {
-      return exception.urls.shown.includes(filter);
+      return exception.urls.shown.toLowerCase().includes(filter.toLowerCase());
     };
   },
 
