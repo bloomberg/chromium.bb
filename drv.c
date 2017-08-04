@@ -396,6 +396,8 @@ void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t
 	assert(x + width <= drv_bo_get_width(bo));
 	assert(y + height <= drv_bo_get_height(bo));
 	assert(BO_MAP_READ_WRITE & map_flags);
+	/* No CPU access for protected buffers. */
+	assert(!(bo->use_flags & BO_USE_PROTECTED));
 
 	pthread_mutex_lock(&bo->drv->driver_lock);
 
@@ -470,6 +472,7 @@ int drv_bo_flush(struct bo *bo, struct map_info *data)
 	int ret = 0;
 	assert(data);
 	assert(data->refcount >= 0);
+	assert(!(bo->use_flags & BO_USE_PROTECTED));
 
 	if (bo->drv->backend->bo_flush)
 		ret = bo->drv->backend->bo_flush(bo, data);

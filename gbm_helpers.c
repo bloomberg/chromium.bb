@@ -30,6 +30,8 @@ uint64_t gbm_convert_usage(uint32_t usage)
 		use_flags |= BO_USE_CAMERA_WRITE;
 	if (usage & GBM_BO_USE_CAMERA_READ)
 		use_flags |= BO_USE_CAMERA_READ;
+	if (usage & GBM_BO_USE_PROTECTED)
+		use_flags |= BO_USE_PROTECTED;
 
 	return use_flags;
 }

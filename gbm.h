@@ -251,6 +251,10 @@ enum gbm_bo_flags {
     * The buffer will be read from by a camera subsystem.
     */
    GBM_BO_USE_CAMERA_READ = (1 << 7),
+   /**
+    * Buffer inaccessible to unprivileged users.
+    */
+   GBM_BO_USE_PROTECTED = (1 << 8),
 };
 
 int
