@@ -36,7 +36,6 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
 
   static const FrameCoordinationUnitImpl* ToFrameCoordinationUnit(
       const CoordinationUnitImpl* coordination_unit);
-
   static const WebContentsCoordinationUnitImpl* ToWebContentsCoordinationUnit(
       const CoordinationUnitImpl* coordination_unit);
 
@@ -94,6 +93,8 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
  protected:
   friend class FrameCoordinationUnitImpl;
 
+  virtual void OnPropertyChanged(const mojom::PropertyType property_type,
+                                 const base::Value& value);
   // Propagate property change to relevant |CoordinationUnitImpl| instances.
   virtual void PropagateProperty(mojom::PropertyType property_type,
                                  const base::Value& value) {}
@@ -103,6 +104,10 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
       CoordinationUnitType type) const;
   std::set<CoordinationUnitImpl*> GetParentCoordinationUnitsOfType(
       CoordinationUnitType type) const;
+
+  const base::ObserverList<CoordinationUnitGraphObserver>& observers() const {
+    return observers_;
+  }
 
   const CoordinationUnitID id_;
   std::set<CoordinationUnitImpl*> children_;

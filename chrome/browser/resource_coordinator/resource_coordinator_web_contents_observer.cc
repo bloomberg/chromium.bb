@@ -38,6 +38,15 @@ ResourceCoordinatorWebContentsObserver::ResourceCoordinatorWebContentsObserver(
       base::MakeUnique<resource_coordinator::ResourceCoordinatorInterface>(
           connector, resource_coordinator::CoordinationUnitType::kWebContents);
 
+  // Make sure to set the visibility property when we create
+  // |tab_resource_coordinator_|.
+  tab_resource_coordinator_->SetProperty(
+      resource_coordinator::mojom::PropertyType::kVisible,
+      base::MakeUnique<base::Value>(web_contents->IsVisible()));
+
+  connector->BindInterface(resource_coordinator::mojom::kServiceName,
+                           mojo::MakeRequest(&service_callbacks_));
+
   if (base::FeatureList::IsEnabled(ukm::kUkmFeature)) {
     EnsureUkmRecorderInterface();
   }

@@ -31,19 +31,15 @@ class TabSignalGeneratorImpl : public CoordinationUnitGraphObserver,
 
   // CoordinationUnitGraphObserver implementation.
   bool ShouldObserve(const CoordinationUnitImpl* coordination_unit) override;
-  void OnPropertyChanged(const CoordinationUnitImpl* coordination_unit,
-                         const mojom::PropertyType property_type,
-                         const base::Value& value) override;
+  void OnFramePropertyChanged(
+      const FrameCoordinationUnitImpl* coordination_unit,
+      const mojom::PropertyType property_type,
+      const base::Value& value) override;
 
   void BindToInterface(
       resource_coordinator::mojom::TabSignalGeneratorRequest request);
 
  private:
-  void OnFramePropertyChanged(
-      const FrameCoordinationUnitImpl* coordination_unit,
-      const mojom::PropertyType property_type,
-      const base::Value& value);
-
   mojo::BindingSet<mojom::TabSignalGenerator> bindings_;
   mojo::InterfacePtrSet<mojom::TabSignalObserver> observers_;
 

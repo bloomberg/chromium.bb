@@ -50,7 +50,8 @@ void ResourceCoordinatorInterface::ConnectToService(
     service_manager::Connector* connector,
     const CoordinationUnitID& cu_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(connector);
+  if (!connector)
+    return;
   cu_id_ = cu_id;
   mojom::CoordinationUnitProviderPtr provider;
   connector->BindInterface(mojom::kServiceName, mojo::MakeRequest(&provider));
@@ -63,9 +64,11 @@ void ResourceCoordinatorInterface::ConnectToService(
 void ResourceCoordinatorInterface::SendEvent(
     const mojom::EventType& event_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (!service_)
+    return;
+
   mojom::EventPtr event = mojom::Event::New();
   event->type = event_type;
-
   service_->SendEvent(std::move(event));
 }
 
@@ -73,34 +76,45 @@ void ResourceCoordinatorInterface::SetProperty(
     mojom::PropertyType property_type,
     std::unique_ptr<base::Value> value) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (!service_)
+    return;
   service_->SetProperty(property_type, std::move(value));
+}
+
+void ResourceCoordinatorInterface::AddBinding(
+    mojom::CoordinationUnitRequest request) {
+  if (!service_)
+    return;
+  service_->AddBinding(std::move(request));
 }
 
 void ResourceCoordinatorInterface::AddChild(
     const ResourceCoordinatorInterface& child) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(service_);
+  if (!service_)
+    return;
   // We could keep the ID around ourselves, but this hop ensures that the child
   // has been created on the service-side.
   child.service()->GetID(base::Bind(&ResourceCoordinatorInterface::AddChildByID,
                                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ResourceCoordinatorInterface::AddChildByID(
-    const CoordinationUnitID& child_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  service_->AddChild(child_id);
-}
-
 void ResourceCoordinatorInterface::RemoveChild(
     const ResourceCoordinatorInterface& child) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(service_);
+  if (!service_)
+    return;
   // We could keep the ID around ourselves, but this hop ensures that the child
   // has been created on the service-side.
   child.service()->GetID(
       base::Bind(&ResourceCoordinatorInterface::RemoveChildByID,
                  weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ResourceCoordinatorInterface::AddChildByID(
+    const CoordinationUnitID& child_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  service_->AddChild(child_id);
 }
 
 void ResourceCoordinatorInterface::RemoveChildByID(
