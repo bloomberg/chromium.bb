@@ -158,15 +158,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
   if ([defaults boolForKey:@"TabStripAutoScrollNewTabsDisabled"])
     command_line->AppendSwitch(switches::kDisableTabStripAutoScrollNewTabs);
 
-  // Populate command line flags from PasswordGenerationEnabled.
-  NSString* enablePasswordGenerationValue =
-      [defaults stringForKey:@"PasswordGenerationEnabled"];
-  if ([enablePasswordGenerationValue isEqualToString:@"Enabled"]) {
-    command_line->AppendSwitch(switches::kEnableIOSPasswordGeneration);
-  } else if ([enablePasswordGenerationValue isEqualToString:@"Disabled"]) {
-    command_line->AppendSwitch(switches::kDisableIOSPasswordGeneration);
-  }
-
   // Populate command line flags from PhysicalWebEnabled.
   NSString* enablePhysicalWebValue =
       [defaults stringForKey:@"PhysicalWebEnabled"];
