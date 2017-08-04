@@ -49,6 +49,9 @@
 #include "av1/encoder/hash_motion.h"
 #endif
 #include "av1/encoder/mbgraph.h"
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
+#include "av1/common/ncobmc_kernels.h"
+#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 #include "av1/encoder/picklpf.h"
 #if CONFIG_LOOP_RESTORATION
 #include "av1/encoder/pickrst.h"
@@ -93,6 +96,7 @@ FRAME_COUNTS aggregate_fc_per_type[FRAME_CONTEXTS];
                                        // mv. Choose a very high value for
                                        // now so that HIGH_PRECISION is always
                                        // chosen.
+
 // #define OUTPUT_YUV_REC
 #ifdef OUTPUT_YUV_DENOISED
 FILE *yuv_denoised_file = NULL;
@@ -2401,6 +2405,10 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   cm->free_mi = av1_enc_free_mi;
   cm->setup_mi = av1_enc_setup_mi;
 
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
+  get_default_ncobmc_kernels(cm);
+#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
+
   CHECK_MEM_ERROR(cm, cm->fc,
                   (FRAME_CONTEXT *)aom_memalign(32, sizeof(*cm->fc)));
   CHECK_MEM_ERROR(cm, cm->frame_contexts,
@@ -2984,7 +2992,6 @@ void av1_remove_compressor(AV1_COMP *cpi) {
 #ifdef OUTPUT_YUV_REC
   fclose(yuv_rec_file);
 #endif
-
 #if 0
 
   if (keyfile)
@@ -3130,7 +3137,7 @@ static void check_show_existing_frame(AV1_COMP *cpi) {
 void aom_write_one_yuv_frame(AV1_COMMON *cm, YV12_BUFFER_CONFIG *s) {
   uint8_t *src = s->y_buffer;
   int h = cm->height;
-
+  if (yuv_rec_file == NULL) return;
 #if CONFIG_HIGHBITDEPTH
   if (s->flags & YV12_FLAG_HIGHBITDEPTH) {
     uint16_t *src16 = CONVERT_TO_SHORTPTR(s->y_buffer);
@@ -4988,6 +4995,10 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 
   // Pick the loop filter level for the frame.
   loopfilter_frame(cpi, cm);
+
+#ifdef OUTPUT_YUV_REC
+  aom_write_one_yuv_frame(cm, cm->frame_to_show);
+#endif
 
   // Build the bitstream
   av1_pack_bitstream(cpi, dest, size);
