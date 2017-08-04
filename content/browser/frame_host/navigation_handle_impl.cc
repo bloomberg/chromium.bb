@@ -44,6 +44,13 @@ namespace content {
 
 namespace {
 
+// Use this to get a new unique ID for a NavigationHandle during construction.
+// The returned ID is guaranteed to be nonzero (zero is the "no ID" indicator).
+int64_t GetUniqueIDInConstructor() {
+  static int64_t unique_id_counter = 0;
+  return ++unique_id_counter;
+}
+
 void UpdateThrottleCheckResult(
     NavigationThrottle::ThrottleCheckResult* to_update,
     NavigationThrottle::ThrottleCheckResult result) {
@@ -111,6 +118,7 @@ NavigationHandleImpl::NavigationHandleImpl(
       request_context_type_(REQUEST_CONTEXT_TYPE_UNSPECIFIED),
       mixed_content_context_type_(
           blink::WebMixedContentContextType::kBlockable),
+      navigation_id_(GetUniqueIDInConstructor()),
       should_replace_current_entry_(false),
       redirect_chain_(redirect_chain),
       is_download_(false),
@@ -217,6 +225,10 @@ NavigationHandleImpl::~NavigationHandleImpl() {
 
 NavigatorDelegate* NavigationHandleImpl::GetDelegate() const {
   return frame_tree_node_->navigator()->GetDelegate();
+}
+
+int64_t NavigationHandleImpl::GetNavigationId() const {
+  return navigation_id_;
 }
 
 const GURL& NavigationHandleImpl::GetURL() {

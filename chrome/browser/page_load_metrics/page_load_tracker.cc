@@ -23,6 +23,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/page_transition_types.h"
 
 // This macro invokes the specified method on each observer, passing the
@@ -178,7 +179,8 @@ PageLoadTracker::PageLoadTracker(
       aborted_chain_size_same_url_(aborted_chain_size_same_url),
       embedder_interface_(embedder_interface),
       metrics_update_dispatcher_(this, navigation_handle, embedder_interface),
-      source_id_(ukm::UkmRecorder::GetNewSourceID()) {
+      source_id_(ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
+                                        ukm::SourceIdType::NAVIGATION_ID)) {
   DCHECK(!navigation_handle->HasCommitted());
   embedder_interface_->RegisterObservers(this);
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnStart, navigation_handle,

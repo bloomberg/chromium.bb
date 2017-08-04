@@ -47,6 +47,9 @@ class CONTENT_EXPORT NavigationHandle {
   // These parameters are always available during the navigation. Note that
   // some may change during navigation (e.g. due to server redirects).
 
+  // Get a unique ID for this navigation.
+  virtual int64_t GetNavigationId() const = 0;
+
   // The URL the frame is navigating to. This may change during the navigation
   // when encountering a server redirect.
   // This URL may not be the same as the virtual URL returned from
