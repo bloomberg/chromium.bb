@@ -216,10 +216,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_DELTA_AA
 #endif
 
-#ifndef SK_JUMPER_LEGACY_LOWP
-#define SK_JUMPER_LEGACY_LOWP
-#endif
-
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
