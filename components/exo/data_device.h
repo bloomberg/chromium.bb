@@ -8,11 +8,6 @@
 #include <cstdint>
 
 #include "base/macros.h"
-#include "components/exo/wm_helper.h"
-
-namespace ui {
-class DropTargetEvent;
-}
 
 namespace exo {
 
@@ -24,10 +19,10 @@ enum class DndAction { kNone, kCopy, kMove, kAsk };
 
 // Data transfer device providing access to inter-client data transfer
 // mechanisms such as copy-and-paste and drag-and-drop.
-class DataDevice : public WMHelper::DragDropObserver {
+class DataDevice {
  public:
   explicit DataDevice(DataDeviceDelegate* delegate);
-  ~DataDevice() override;
+  ~DataDevice();
 
   // Starts drag-and-drop operation.
   // |source| is data source for the eventual transfer or null if data passing
@@ -44,15 +39,7 @@ class DataDevice : public WMHelper::DragDropObserver {
   // selection. |serial| is a unique number of event which tigers SetSelection.
   void SetSelection(const DataSource* source, uint32_t serial);
 
-  // Overridden from WMHelper::DragDropObserver:
-  void OnDragEntered(const ui::DropTargetEvent& event) override;
-  int OnDragUpdated(const ui::DropTargetEvent& event) override;
-  void OnDragExited() override;
-  int OnPerformDrop(const ui::DropTargetEvent& event) override;
-
  private:
-  Surface* GetEffectiveTargetForEvent(const ui::DropTargetEvent& event) const;
-
   DataDeviceDelegate* const delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DataDevice);
