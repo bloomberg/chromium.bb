@@ -700,6 +700,9 @@ void TestPlatformDisplay::SetCursor(const ui::CursorData& cursor) {
   *cursor_storage_ = cursor;
 }
 void TestPlatformDisplay::SetCursorSize(const ui::CursorSize& cursor_size) {}
+void TestPlatformDisplay::ConfineCursorToBounds(const gfx::Rect& pixel_bounds) {
+  confine_cursor_bounds_ = pixel_bounds;
+}
 void TestPlatformDisplay::MoveCursorTo(
     const gfx::Point& window_pixel_location) {}
 void TestPlatformDisplay::UpdateTextInputState(

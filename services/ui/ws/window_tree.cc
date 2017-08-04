@@ -2462,6 +2462,24 @@ void WindowTree::WmMoveCursorToDisplayLocation(const gfx::Point& display_pixels,
   window_manager_state_->SetCursorLocation(display_pixels, display_id);
 }
 
+void WindowTree::WmConfineCursorToBounds(const gfx::Rect& bounds_in_pixels,
+                                         int64_t display_id) {
+  DCHECK(window_manager_state_);
+  Display* display = display_manager()->GetDisplayById(display_id);
+  if (!display) {
+    DVLOG(1) << "WmConfineCursorToBounds failed (invalid display id)";
+    return;
+  }
+
+  PlatformDisplay* platform_display = display->platform_display();
+  if (!platform_display) {
+    DVLOG(1) << "WmConfineCursorToBounds failed (no platform display)";
+    return;
+  }
+
+  platform_display->ConfineCursorToBounds(bounds_in_pixels);
+}
+
 void WindowTree::WmSetCursorTouchVisible(bool enabled) {
   DCHECK(window_manager_state_);
   window_manager_state_->SetCursorTouchVisible(enabled);

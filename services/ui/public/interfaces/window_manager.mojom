@@ -355,6 +355,10 @@ interface WindowManagerClient {
   WmMoveCursorToDisplayLocation(gfx.mojom.Point display_pixels,
                                 int64 display_id);
 
+  // Confines the cursor to a rectangle in pixels on |display_id|.
+  WmConfineCursorToBounds(gfx.mojom.Rect bounds_in_pixels,
+                          int64 display_id);
+
   // The cursor is hidden and shown by touch events naturally, but the
   // window manager also can manually show/hide it for features.
   WmSetCursorTouchVisible(bool enabled);

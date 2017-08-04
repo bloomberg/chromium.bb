@@ -92,6 +92,10 @@ void TestWindowManagerClient::WmMoveCursorToDisplayLocation(
     const gfx::Point& display_pixels,
     int64_t display_id) {}
 
+void TestWindowManagerClient::WmConfineCursorToBounds(
+    const gfx::Rect& bounds_in_pixles,
+    int64_t display_id) {}
+
 void TestWindowManagerClient::WmSetCursorTouchVisible(bool enabled) {}
 
 void TestWindowManagerClient::OnWmCreatedTopLevelWindow(

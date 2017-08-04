@@ -27,9 +27,9 @@ AshWindowTreeHostMus::AshWindowTreeHostMus(
 AshWindowTreeHostMus::~AshWindowTreeHostMus() {}
 
 bool AshWindowTreeHostMus::ConfineCursorToRootWindow() {
-  // TODO: when implementing see implementation in AshWindowTreeHostPlatform
-  // for how it uses |transformer_helper_|. http://crbug.com/746054.
-  NOTIMPLEMENTED();
+  gfx::Rect confined_bounds(GetBoundsInPixels().size());
+  confined_bounds.Inset(transformer_helper_->GetHostInsets());
+  ConfineCursorToBounds(confined_bounds);
   return true;
 }
 

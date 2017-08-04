@@ -159,6 +159,11 @@ void PlatformDisplayDefault::SetCursorSize(const ui::CursorSize& cursor_size) {
   image_cursors_->SetCursorSize(cursor_size);
 }
 
+void PlatformDisplayDefault::ConfineCursorToBounds(
+    const gfx::Rect& pixel_bounds) {
+  platform_window_->ConfineCursorToBounds(pixel_bounds);
+}
+
 void PlatformDisplayDefault::UpdateTextInputState(
     const ui::TextInputState& state) {
   ui::PlatformImeController* ime = platform_window_->GetPlatformImeController();
