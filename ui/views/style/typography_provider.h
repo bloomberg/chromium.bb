@@ -37,13 +37,12 @@ class VIEWS_EXPORT TypographyProvider {
   // Gets the line spacing, or 0 if it should be provided by gfx::FontList.
   virtual int GetLineHeight(int context, int style) const = 0;
 
-  // The system may indicate a "bold" UI font is preferred (e.g. by selecting
-  // the "Bold" checkbox in Windows under "Change only the text size" in
-  // Control Panel). In this case, a user's gfx::Weight::NORMAL font will
-  // already be bold, and requesting a MEDIUM font will result in a font that is
-  // less bold. So this method returns NORMAL, if the NORMAL font is at least as
-  // bold as |weight|.
-  static gfx::Font::Weight WeightNotLighterThanNormal(gfx::Font::Weight weight);
+  // Returns the weight that will result in the ResourceBundle returning an
+  // appropriate "medium" weight for UI. This caters for systems that are known
+  // to be unable to provide a system font with weight other than NORMAL or BOLD
+  // and for user configurations where the NORMAL font is already BOLD. In both
+  // of these cases, NORMAL is returned instead.
+  static gfx::Font::Weight MediumWeightForUI();
 
  protected:
   TypographyProvider() = default;

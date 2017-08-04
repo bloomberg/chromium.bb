@@ -98,7 +98,7 @@ const gfx::FontList& HarmonyTypographyProvider::GetFont(int context,
 
   switch (context) {
     case views::style::CONTEXT_BUTTON_MD:
-      font_weight = WeightNotLighterThanNormal(gfx::Font::Weight::MEDIUM);
+      font_weight = MediumWeightForUI();
       break;
     case views::style::CONTEXT_DIALOG_TITLE:
       size_delta = kTitleSize - gfx::PlatformFont::kDefaultBaseFontSize;
