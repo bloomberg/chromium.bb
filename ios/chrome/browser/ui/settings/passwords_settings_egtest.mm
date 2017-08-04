@@ -564,18 +564,16 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
   [GetInteractionForPasswordDetailItem(DeleteButton())
       performAction:grey_tap()];
 
-  // Tap the alert's Delete... button to confirm. Check sufficient visibility in
-  // addition to interactability to differentiate against the above
-  // DeleteButton()-matching element, which is covered by the alert enought to
-  // prevent being sufficiently visible, but not enough to prevent
-  // interactability.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   ButtonWithAccessibilityLabel(
-                                       l10n_util::GetNSString(
-                                           IDS_IOS_CONFIRM_PASSWORD_DELETION)),
-                                   grey_interactable(),
-                                   grey_sufficientlyVisible(), nullptr)]
+  // Tap the alert's Delete button to confirm. Check accessibilityTrait to
+  // differentiate against the above DeleteButton()-matching element, which is
+  // has UIAccessibilityTraitSelected.
+  // TODO(crbug.com/751311): Revisit and check if there is a better solution to
+  // match the Delete button.
+  id<GREYMatcher> deleteConfirmationButton = grey_allOf(
+      ButtonWithAccessibilityLabel(
+          l10n_util::GetNSString(IDS_IOS_CONFIRM_PASSWORD_DELETION)),
+      grey_not(grey_accessibilityTrait(UIAccessibilityTraitSelected)), nil);
+  [[EarlGrey selectElementWithMatcher:deleteConfirmationButton]
       performAction:grey_tap()];
 
   // Wait until the alert and the detail view are dismissed.
