@@ -50,6 +50,7 @@
   const TypeError = global.TypeError;
   const RangeError = global.RangeError;
 
+  const Boolean = global.Boolean;
   const String = global.String;
 
   const Promise = global.Promise;
