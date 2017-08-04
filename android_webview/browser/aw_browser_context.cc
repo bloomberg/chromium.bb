@@ -18,7 +18,6 @@
 #include "android_webview/common/aw_content_client.h"
 #include "base/base_paths_android.h"
 #include "base/bind.h"
-#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/post_task.h"
@@ -68,14 +67,6 @@ namespace {
 void HandleReadError(PersistentPrefStore::PrefReadError error) {
 }
 
-void DeleteDirRecursively(const base::FilePath& path) {
-  if (!base::DeleteFile(path, true)) {
-    // Deleting a non-existent file is considered successful, so this will
-    // trigger only in case of real errors.
-    LOG(WARNING) << "Failed to delete " << path.AsUTF8Unsafe();
-  }
-}
-
 AwBrowserContext* g_browser_context = NULL;
 
 std::unique_ptr<net::ProxyConfigService> CreateProxyConfigService() {
@@ -123,9 +114,6 @@ CreateSafeBrowsingWhitelistManager() {
 
 }  // namespace
 
-// Delete the legacy cache dir (in the app data dir) in 10 seconds after init.
-int AwBrowserContext::legacy_cache_removal_delay_ms_ = 10000;
-
 AwBrowserContext::AwBrowserContext(const FilePath path)
     : context_storage_path_(path) {
   DCHECK(!g_browser_context);
@@ -156,28 +144,11 @@ AwBrowserContext* AwBrowserContext::FromWebContents(
   return static_cast<AwBrowserContext*>(web_contents->GetBrowserContext());
 }
 
-// static
-void AwBrowserContext::SetLegacyCacheRemovalDelayForTest(int delay_ms) {
-  legacy_cache_removal_delay_ms_ = delay_ms;
-}
-
 void AwBrowserContext::PreMainMessageLoopRun() {
   FilePath cache_path;
-  const FilePath fallback_cache_dir =
-      GetPath().Append(FILE_PATH_LITERAL("Cache"));
-  if (PathService::Get(base::DIR_CACHE, &cache_path)) {
-    cache_path = cache_path.Append(
-        FILE_PATH_LITERAL("org.chromium.android_webview"));
-    // Delay the legacy dir removal to not impact startup performance.
-    BrowserThread::PostDelayedTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&DeleteDirRecursively, fallback_cache_dir),
-        base::TimeDelta::FromMilliseconds(legacy_cache_removal_delay_ms_));
-  } else {
-    cache_path = fallback_cache_dir;
-    LOG(WARNING) << "Failed to get cache directory for Android WebView. "
-                 << "Using app data directory as a fallback.";
-  }
+  PathService::Get(base::DIR_CACHE, &cache_path);
+  cache_path =
+      cache_path.Append(FILE_PATH_LITERAL("org.chromium.android_webview"));
 
   browser_policy_connector_.reset(new AwBrowserPolicyConnector());
 

@@ -76,8 +76,6 @@ class AwBrowserContext : public content::BrowserContext,
   static AwBrowserContext* FromWebContents(
       content::WebContents* web_contents);
 
-  static void SetLegacyCacheRemovalDelayForTest(int delay_ms);
-
   // Maps to BrowserMainParts::PreMainMessageLoopRun.
   void PreMainMessageLoopRun();
 
@@ -128,11 +126,6 @@ class AwBrowserContext : public content::BrowserContext,
  private:
   void InitUserPrefService();
   void OnWebRestrictionsAuthorityChanged();
-
-
-  // Delay, in milliseconds, before removing the legacy cache dir.
-  // This is non-const for testing purposes.
-  static int legacy_cache_removal_delay_ms_;
 
   // The file path where data for this context is persisted.
   base::FilePath context_storage_path_;
