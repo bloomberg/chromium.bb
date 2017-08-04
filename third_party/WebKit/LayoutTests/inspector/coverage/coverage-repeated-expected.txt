@@ -1,10 +1,10 @@
 Tests the coverage list view after finishing recording in the Coverage view.
 
 Initial
-.../inspector/coverage/resources/coverage.js JS used: 241 unused: 161 total: 402
+.../inspector/coverage/resources/coverage.js JS used: 235 unused: 167 total: 402
 .../inspector/coverage/resources/highlight-in-source.css CSS used: 67 unused: 142 total: 209
 After second session
-.../inspector/coverage/resources/coverage.js JS used: 241 unused: 161 total: 402
+.../inspector/coverage/resources/coverage.js JS used: 235 unused: 167 total: 402
 .../inspector/coverage/resources/highlight-in-source.css CSS used: 67 unused: 142 total: 209
 After clear
 .../inspector/coverage/resources/highlight-in-source.css CSS used: 67 unused: 142 total: 209

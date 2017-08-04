@@ -1,12 +1,12 @@
 Tests the filter is properly applied to coverage list view.
 
 Filter: inspector
-.../inspector/coverage/resources/coverage.js JS used: 241 unused: 161 total: 402
+.../inspector/coverage/resources/coverage.js JS used: 235 unused: 167 total: 402
 .../inspector/coverage/resources/highlight-in-source.css CSS used: 67 unused: 142 total: 209
 Filter: CES/COV
-.../inspector/coverage/resources/coverage.js JS used: 241 unused: 161 total: 402
+.../inspector/coverage/resources/coverage.js JS used: 235 unused: 167 total: 402
 Filter: no pasaran
 Filter: 
-.../inspector/coverage/resources/coverage.js JS used: 241 unused: 161 total: 402
+.../inspector/coverage/resources/coverage.js JS used: 235 unused: 167 total: 402
 .../inspector/coverage/resources/highlight-in-source.css CSS used: 67 unused: 142 total: 209
 
