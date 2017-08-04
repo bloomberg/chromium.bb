@@ -50,6 +50,8 @@
   const TypeError = global.TypeError;
   const RangeError = global.RangeError;
 
+  const String = global.String;
+
   const Promise = global.Promise;
   const thenPromise = v8.uncurryThis(Promise.prototype.then);
   const Promise_resolve = v8.simpleBind(Promise.resolve, Promise);
