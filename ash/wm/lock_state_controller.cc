@@ -497,17 +497,11 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
 
   base::TimeDelta timeout =
       base::TimeDelta::FromMilliseconds(kLockFailTimeoutMs);
-  // Increase lock timeout for slower hardware, see http://crbug.com/350628
-  // The devices with boards "x86-mario", "daisy", "x86-alex" and "x86-zgb" have
-  // slower hardware. For "x86-alex" and "x86-zgb" there are some modifications
-  // like "x86-alex-he". Also there's "daisy", "daisy_spring" and "daisy_skate",
-  // but they are all different devices and only "daisy" has slower hardware.
-  const std::string board = base::SysInfo::GetStrippedReleaseBoard();
-  if (board == "x86-mario" || board == "daisy" ||
-      base::StartsWith(board, "x86-alex", base::CompareCase::SENSITIVE) ||
-      base::StartsWith(board, "x86-zgb", base::CompareCase::SENSITIVE)) {
+  // Increase lock timeout for "daisy", see http://crbug.com/350628. (The boards
+  // "daisy_spring" and "daisy_skate" are fast thus using an exact string match
+  // instead of base::StartsWith().)
+  if (base::SysInfo::GetStrippedReleaseBoard() == "daisy")
     timeout *= 2;
-  }
   lock_fail_timer_.Start(FROM_HERE, timeout, this,
                          &LockStateController::OnLockFailTimeout);
 
