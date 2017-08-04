@@ -102,7 +102,8 @@ void UserPolicyTestHelper::WaitForInitialPolicy(Profile* profile) {
   policy_manager->core()->client()->Register(
       registration_type,
       enterprise_management::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION,
-      "bogus", std::string(), std::string(), std::string());
+      enterprise_management::LicenseType::UNDEFINED, "bogus", std::string(),
+      std::string(), std::string());
 
   policy::ProfilePolicyConnector* const profile_connector =
       policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);

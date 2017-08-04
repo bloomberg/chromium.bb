@@ -413,8 +413,8 @@ void UserCloudPolicyManagerChromeOS::OnOAuth2PolicyTokenFetched(
     // OnClientError() will be called back.
     client()->Register(em::DeviceRegisterRequest::USER,
                        em::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION,
-                       policy_token, std::string(), std::string(),
-                       std::string());
+                       em::LicenseType::UNDEFINED, policy_token, std::string(),
+                       std::string(), std::string());
   } else {
     UMA_HISTOGRAM_ENUMERATION(kUMAInitialFetchOAuth2Error,
                               error.state(),

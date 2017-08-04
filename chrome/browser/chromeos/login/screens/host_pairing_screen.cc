@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/screens/host_pairing_screen.h"
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -184,6 +185,18 @@ void HostPairingScreen::OnAuthError(const GoogleServiceAuthError& error) {
   enrollment_error_code_ =
       GetEnrollmentErrorCode(HostPairingController::ErrorCode::AUTH_ERROR,
                              static_cast<int>(error.state()));
+  OnAnyEnrollmentError();
+}
+
+void HostPairingScreen::OnMultipleLicensesAvailable(
+    const EnrollmentLicenseMap& licenses) {
+  LOG(ERROR) << "Host-paired enrollment is not yet compatible "
+             << "with Mixed Licenses Enrollment Flow";
+  enrollment_error_string_ = view_->GetErrorStringFromOtherError(
+      EnterpriseEnrollmentHelper::OTHER_ERROR_FATAL);
+  enrollment_error_code_ = GetEnrollmentErrorCode(
+      HostPairingController::ErrorCode::OTHER_ERROR,
+      static_cast<int>(EnterpriseEnrollmentHelper::OTHER_ERROR_FATAL));
   OnAnyEnrollmentError();
 }
 

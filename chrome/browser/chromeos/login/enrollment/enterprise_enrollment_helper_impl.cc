@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper_impl.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -160,15 +162,40 @@ void EnterpriseEnrollmentHelperImpl::DoEnroll(const std::string& token) {
     return;
   }
 
+  bool check_license_type = false;
+  // The license selection dialog is not used when doing Zero Touch.
+  if (!enrollment_config_.is_mode_attestation()) {
+    check_license_type = base::CommandLine::ForCurrentProcess()->HasSwitch(
+        chromeos::switches::kEnterpriseEnableLicenseTypeSelection);
+  }
+
   connector->ScheduleServiceInitialization(0);
   policy::DeviceCloudPolicyInitializer* dcp_initializer =
       connector->GetDeviceCloudPolicyInitializer();
   CHECK(dcp_initializer);
-  dcp_initializer->StartEnrollment(
+  dcp_initializer->PrepareEnrollment(
       connector->device_management_service(), ad_join_delegate_,
       enrollment_config_, token,
       base::Bind(&EnterpriseEnrollmentHelperImpl::OnEnrollmentFinished,
                  weak_ptr_factory_.GetWeakPtr()));
+  if (check_license_type) {
+    dcp_initializer->CheckAvailableLicenses(
+        base::Bind(&EnterpriseEnrollmentHelperImpl::OnLicenseMapObtained,
+                   weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    dcp_initializer->StartEnrollment();
+  }
+}
+
+void EnterpriseEnrollmentHelperImpl::UseLicenseType(policy::LicenseType type) {
+  DCHECK(type != policy::LicenseType::UNKNOWN);
+  policy::DeviceCloudPolicyInitializer* dcp_initializer =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetDeviceCloudPolicyInitializer();
+
+  CHECK(dcp_initializer);
+  dcp_initializer->StartEnrollmentWithLicense(type);
 }
 
 void EnterpriseEnrollmentHelperImpl::GetDeviceAttributeUpdatePermission() {
@@ -247,6 +274,31 @@ void EnterpriseEnrollmentHelperImpl::OnEnrollmentFinished(
     status_consumer()->OnDeviceEnrolled(additional_token_);
   } else {
     status_consumer()->OnEnrollmentError(status);
+  }
+}
+
+void EnterpriseEnrollmentHelperImpl::OnLicenseMapObtained(
+    const EnrollmentLicenseMap& licenses) {
+  int count = 0;
+  policy::LicenseType license_type = policy::LicenseType::UNKNOWN;
+  for (const auto& it : licenses) {
+    if (it.second > 0) {
+      count++;
+      license_type = it.first;
+    }
+  }
+  if (count == 0) {
+    // No user license type selection allowed, start usual enrollment.
+    policy::BrowserPolicyConnectorChromeOS* connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
+    policy::DeviceCloudPolicyInitializer* dcp_initializer =
+        connector->GetDeviceCloudPolicyInitializer();
+    CHECK(dcp_initializer);
+    dcp_initializer->StartEnrollment();
+  } else if (count == 1) {
+    UseLicenseType(license_type);
+  } else {
+    status_consumer()->OnMultipleLicensesAvailable(licenses);
   }
 }
 
