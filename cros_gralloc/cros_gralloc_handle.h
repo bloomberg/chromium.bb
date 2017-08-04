@@ -26,7 +26,8 @@ struct cros_gralloc_handle {
 	uint32_t format_modifiers[2 * DRV_MAX_PLANES];
 	uint32_t width;
 	uint32_t height;
-	uint32_t format; /* DRM format */
+	uint32_t format;   /* DRM format */
+	uint32_t flags[2]; /* driver creation time flags */
 	uint32_t magic;
 	uint32_t pixel_stride;
 	int32_t droid_format;

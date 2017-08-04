@@ -26,6 +26,7 @@ struct bo {
 	uint32_t sizes[DRV_MAX_PLANES];
 	uint32_t strides[DRV_MAX_PLANES];
 	uint64_t format_modifiers[DRV_MAX_PLANES];
+	uint64_t flags;
 	size_t total_size;
 	void *priv;
 };

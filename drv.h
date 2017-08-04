@@ -76,6 +76,7 @@ struct drv_import_fd_data {
 	uint32_t width;
 	uint32_t height;
 	uint32_t format;
+	uint64_t flags;
 };
 
 struct map_info {
@@ -96,7 +97,8 @@ const char *drv_get_name(struct driver *drv);
 
 struct combination *drv_get_combination(struct driver *drv, uint32_t format, uint64_t usage);
 
-struct bo *drv_bo_new(struct driver *drv, uint32_t width, uint32_t height, uint32_t format);
+struct bo *drv_bo_new(struct driver *drv, uint32_t width, uint32_t height, uint32_t format,
+		      uint64_t flags);
 
 struct bo *drv_bo_create(struct driver *drv, uint32_t width, uint32_t height, uint32_t format,
 			 uint64_t flags);

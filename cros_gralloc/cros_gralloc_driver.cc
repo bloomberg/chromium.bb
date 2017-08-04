@@ -134,6 +134,8 @@ int32_t cros_gralloc_driver::allocate(const struct cros_gralloc_buffer_descripto
 	hnd->width = drv_bo_get_width(bo);
 	hnd->height = drv_bo_get_height(bo);
 	hnd->format = drv_bo_get_format(bo);
+	hnd->flags[0] = static_cast<uint32_t>(descriptor->drv_usage >> 32);
+	hnd->flags[1] = static_cast<uint32_t>(descriptor->drv_usage);
 	hnd->pixel_stride = drv_bo_get_stride_in_pixels(bo);
 	hnd->magic = cros_gralloc_magic;
 	hnd->droid_format = descriptor->droid_format;
@@ -181,6 +183,8 @@ int32_t cros_gralloc_driver::retain(buffer_handle_t handle)
 		data.format = hnd->format;
 		data.width = hnd->width;
 		data.height = hnd->height;
+		data.flags = static_cast<uint64_t>(hnd->flags[0]) << 32;
+		data.flags |= hnd->flags[1];
 
 		memcpy(data.fds, hnd->fds, sizeof(data.fds));
 		memcpy(data.strides, hnd->strides, sizeof(data.strides));
