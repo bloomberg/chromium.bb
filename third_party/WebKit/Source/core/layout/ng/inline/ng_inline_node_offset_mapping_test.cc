@@ -409,4 +409,39 @@ TEST_F(NGInlineNodeOffsetMappingTest, FirstLetterWithLeadingSpace) {
   EXPECT_EQ(2u, GetTextContentOffset(*foo_node, 4));
 }
 
+TEST_F(NGInlineNodeOffsetMappingTest, FirstLetterWithoutRemainingText) {
+  SetupHtml("t",
+            "<style>div:first-letter{color:red}</style>"
+            "<div id=t>  f</div>");
+  Element* div = GetDocument().getElementById("t");
+  const LayoutText* remaining_text =
+      ToLayoutText(div->firstChild()->GetLayoutObject());
+  const LayoutText* first_letter =
+      ToLayoutText(ToLayoutTextFragment(remaining_text)
+                       ->GetFirstLetterPseudoElement()
+                       ->GetLayoutObject()
+                       ->SlowFirstChild());
+  const Node* text_node = div->firstChild();
+  const NGOffsetMappingResult& result = GetOffsetMapping();
+
+  ASSERT_EQ(2u, result.GetUnits().size());
+  TEST_UNIT(result.GetUnits()[0], NGOffsetMappingUnitType::kCollapsed,
+            first_letter, 0u, 2u, 0u, 0u);
+  TEST_UNIT(result.GetUnits()[1], NGOffsetMappingUnitType::kIdentity,
+            first_letter, 2u, 3u, 0u, 1u);
+
+  ASSERT_EQ(1u, result.GetRanges().size());
+  TEST_RANGE(result.GetRanges(), first_letter, 0u, 2u);
+
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*text_node, 0));
+  EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*text_node, 1));
+  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*text_node, 2));
+  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*text_node, 3));
+
+  EXPECT_EQ(0u, GetTextContentOffset(*text_node, 0));
+  EXPECT_EQ(0u, GetTextContentOffset(*text_node, 1));
+  EXPECT_EQ(0u, GetTextContentOffset(*text_node, 2));
+  EXPECT_EQ(1u, GetTextContentOffset(*text_node, 3));
+}
+
 }  // namespace blink

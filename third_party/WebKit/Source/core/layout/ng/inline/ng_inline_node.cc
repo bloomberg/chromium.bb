@@ -239,6 +239,8 @@ void AppendTextTransformedOffsetMapping<NGOffsetMappingBuilder>(
     const String& text_transformed_string) {
   // TODO(xiaochengh): We are assuming that DOM data string and text-transformed
   // strings have the same length, which is incorrect.
+  if (text_transformed_string.IsEmpty())
+    return;
   NGOffsetMappingBuilder text_transformed_mapping_builder;
   text_transformed_mapping_builder.AppendIdentityMapping(
       text_transformed_string.length());
