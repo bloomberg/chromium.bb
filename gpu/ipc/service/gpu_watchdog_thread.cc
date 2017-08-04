@@ -394,7 +394,7 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   bool using_thread_ticks = base::ThreadTicks::IsSupported();
   base::debug::Alias(&using_thread_ticks);
 
-  bool using_high_res_timer = base::Time::IsHighResolutionTimerInUse();
+  bool using_high_res_timer = base::TimeTicks::IsHighResolution();
   base::debug::Alias(&using_high_res_timer);
 #endif
 
