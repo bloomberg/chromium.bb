@@ -704,7 +704,7 @@ css_properties("make_core_generated_css_property_names") {
   ]
 }
 
-process_in_files("make_core_generated_media_features") {
+process_json5_files("make_core_generated_media_features") {
   script = "../build/scripts/make_media_features.py"
   in_files = [ "css/MediaFeatureNames.json5" ]
   other_inputs = [
@@ -783,7 +783,7 @@ code_generator("make_core_generated_css_value_keywords") {
   ]
 }
 
-process_in_files("make_core_generated_html_element_factory") {
+process_json5_files("make_core_generated_html_element_factory") {
   script = "../build/scripts/make_element_factory.py"
 
   in_files = [
@@ -799,7 +799,7 @@ process_in_files("make_core_generated_html_element_factory") {
   ]
 }
 
-process_in_files("make_core_generated_html_element_type_helpers") {
+process_json5_files("make_core_generated_html_element_type_helpers") {
   script = "../build/scripts/make_element_type_helpers.py"
 
   in_files = [ "html/HTMLTagNames.json5" ]
@@ -810,7 +810,7 @@ process_in_files("make_core_generated_html_element_type_helpers") {
   ]
 }
 
-process_in_files("make_core_generated_svg_names") {
+process_json5_files("make_core_generated_svg_names") {
   script = "../build/scripts/make_element_factory.py"
 
   in_files = [
@@ -826,7 +826,7 @@ process_in_files("make_core_generated_svg_names") {
   ]
 }
 
-process_in_files("make_core_generated_svg_element_type_helpers") {
+process_json5_files("make_core_generated_svg_element_type_helpers") {
   script = "../build/scripts/make_element_type_helpers.py"
 
   in_files = [ "svg/SVGTagNames.json5" ]
@@ -851,7 +851,7 @@ make_event_factory("make_core_generated_event_factory") {
 
 # make_names -------------------------------------------------------------------
 
-process_in_files("make_core_generated_media_feature_names") {
+process_json5_files("make_core_generated_media_feature_names") {
   script = "../build/scripts/make_media_feature_names.py"
   in_files = [ "css/MediaFeatureNames.json5" ]
   other_inputs = make_names_files
