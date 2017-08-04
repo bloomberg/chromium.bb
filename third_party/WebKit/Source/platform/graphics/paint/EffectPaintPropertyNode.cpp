@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <inttypes.h>
-
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 
 #include "platform/graphics/paint/PropertyTreeState.h"
