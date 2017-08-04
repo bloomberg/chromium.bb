@@ -35,6 +35,7 @@ class BrowserContext;
 }
 
 namespace gfx {
+class Rect;
 class Size;
 }
 

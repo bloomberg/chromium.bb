@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -26,6 +27,7 @@
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/image_cursors.h"
@@ -33,6 +35,7 @@
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_sink.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/wm/core/base_focus_rules.h"
@@ -62,19 +65,26 @@
 namespace extensions {
 namespace {
 
-// A simple layout manager that makes each new window fill its parent.
+// A simple layout manager that makes each new window fill the root window.
 class FillLayout : public aura::LayoutManager {
  public:
-  FillLayout() {}
+  FillLayout(aura::Window* owner) : owner_(owner) { DCHECK(owner_); }
+
   ~FillLayout() override {}
 
  private:
   // aura::LayoutManager:
-  void OnWindowResized() override {}
+  void OnWindowResized() override {
+    // Size the owner's immediate child windows.
+    aura::WindowTracker children_tracker(owner_->children());
+    while (!children_tracker.windows().empty()) {
+      aura::Window* child = children_tracker.Pop();
+      child->SetBounds(gfx::Rect(owner_->bounds().size()));
+    }
+  }
 
   void OnWindowAddedToLayout(aura::Window* child) override {
-    if (!child->parent())
-      return;
+    DCHECK_EQ(owner_, child->parent());
 
     // Create a rect at 0,0 with the size of the parent.
     gfx::Size parent_size = child->parent()->bounds().size();
@@ -92,6 +102,8 @@ class FillLayout : public aura::LayoutManager {
                       const gfx::Rect& requested_bounds) override {
     SetChildBoundsDirect(child, requested_bounds);
   }
+
+  aura::Window* owner_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(FillLayout);
 };
@@ -289,7 +301,7 @@ void ShellDesktopControllerAura::InitWindowManager() {
       new aura::client::DefaultCaptureClient(host_->window()));
 
   // Ensure new windows fill the display.
-  host_->window()->SetLayoutManager(new FillLayout);
+  host_->window()->SetLayoutManager(new FillLayout(host_->window()));
 
   cursor_manager_.reset(
       new wm::CursorManager(std::unique_ptr<wm::NativeCursorManager>(

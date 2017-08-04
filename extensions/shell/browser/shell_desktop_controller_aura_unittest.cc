@@ -150,8 +150,8 @@ TEST_F(ShellDesktopControllerAuraTest, FillLayout) {
   // Test that reshaping the host window also resizes the child window.
   controller_->host()->SetBoundsInPixels(gfx::Rect(0, 0, 400, 300));
 
-  // TODO(michaelpg): Check the sizes of the window and its child after fixing
-  // crbug.com/750282.
+  EXPECT_EQ(400, root_window->bounds().width());
+  EXPECT_EQ(400, root_window->children()[0]->bounds().width());
 }
 
 }  // namespace extensions
