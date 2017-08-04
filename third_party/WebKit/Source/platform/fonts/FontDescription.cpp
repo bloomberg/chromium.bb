@@ -191,7 +191,8 @@ float FontDescription::EffectiveFontSize() const {
 }
 
 FontCacheKey FontDescription::CacheKey(
-    const FontFaceCreationParams& creation_params) const {
+    const FontFaceCreationParams& creation_params,
+    const FontSelectionRequest& font_selection_request) const {
   unsigned options =
       static_cast<unsigned>(fields_.synthetic_italic_) << 6 |  // bit 7
       static_cast<unsigned>(fields_.synthetic_bold_) << 5 |    // bit 6

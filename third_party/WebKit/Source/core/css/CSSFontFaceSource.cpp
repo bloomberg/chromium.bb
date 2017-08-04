@@ -38,14 +38,15 @@ CSSFontFaceSource::CSSFontFaceSource() : face_(nullptr) {}
 CSSFontFaceSource::~CSSFontFaceSource() {}
 
 RefPtr<SimpleFontData> CSSFontFaceSource::GetFontData(
-    const FontDescription& font_description) {
+    const FontDescription& font_description,
+    const FontSelectionCapabilities& font_selection_capabilities) {
   // If the font hasn't loaded or an error occurred, then we've got nothing.
   if (!IsValid())
     return nullptr;
 
   if (IsLocal()) {
     // We're local. Just return a SimpleFontData from the normal cache.
-    return CreateFontData(font_description);
+    return CreateFontData(font_description, font_selection_capabilities);
   }
 
   FontCacheKey key = font_description.CacheKey(FontFaceCreationParams());
@@ -53,7 +54,7 @@ RefPtr<SimpleFontData> CSSFontFaceSource::GetFontData(
   RefPtr<SimpleFontData>& font_data =
       font_data_table_.insert(key, nullptr).stored_value->value;
   if (!font_data)
-    font_data = CreateFontData(font_description);
+    font_data = CreateFontData(font_description, font_selection_capabilities);
   // No release, because fontData is a reference to a RefPtr that is held in the
   // font_data_table_.
   return font_data;

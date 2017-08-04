@@ -1362,6 +1362,10 @@ crbug.com/736319 [ Linux Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-c
 crbug.com/736319 [ Linux Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/text-combine-upright-compression-006a.html [ Failure Pass ]
 crbug.com/736319 [ Linux Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/text-combine-upright-compression-007.html [ Failure Pass ]
 
+crbug.com/752449 external/wpt/css-fonts/matching/fixed-stretch-style-over-weight.html [ Failure ]
+crbug.com/752449 external/wpt/css-fonts/matching/stretch-distance-over-weight-distance.html [ Failure ]
+crbug.com/752449 external/wpt/css-fonts/matching/style-ranges-over-weight-direction.html [ Failure ]
+
 # These need a rebaseline due crbug.com/504745 on Windows when they are activated again.
 crbug.com/521124 crbug.com/410145 [ Win7 ] fast/css/font-weight-1.html [ Pass Failure ]
 

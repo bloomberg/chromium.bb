@@ -31,10 +31,16 @@ class TestFontSelector : public FontSelector {
 
   RefPtr<FontData> GetFontData(const FontDescription& font_description,
                                const AtomicString& family_name) override {
+    FontSelectionCapabilities normal_capabilities(
+        {NormalWidthValue(), NormalWidthValue()},
+        {NormalSlopeValue(), NormalSlopeValue()},
+        {NormalWeightValue(), NormalWeightValue()});
     FontPlatformData platform_data = custom_platform_data_->GetFontPlatformData(
         font_description.EffectiveFontSize(),
         font_description.IsSyntheticBold(),
-        font_description.IsSyntheticItalic(), font_description.Orientation());
+        font_description.IsSyntheticItalic(),
+        font_description.GetFontSelectionRequest(), normal_capabilities,
+        font_description.Orientation());
     return SimpleFontData::Create(platform_data, CustomFontData::Create());
   }
 

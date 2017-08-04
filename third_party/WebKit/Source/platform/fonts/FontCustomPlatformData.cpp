@@ -62,6 +62,8 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
     float size,
     bool bold,
     bool italic,
+    const FontSelectionRequest& selection_request,
+    const FontSelectionCapabilities& selection_capabilities,
     FontOrientation orientation,
     const FontVariationSettings* variation_settings) {
   DCHECK(base_typeface_);
@@ -90,8 +92,25 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
 #endif
     Vector<SkFontMgr::FontParameters::Axis, 0> axes;
 
+    SkFontMgr::FontParameters::Axis weight_axis = {
+        SkSetFourByteTag('w', 'g', 'h', 't'),
+        SkFloatToScalar(selection_capabilities.weight.clampToRange(
+            selection_request.weight))};
+    SkFontMgr::FontParameters::Axis width_axis = {
+        SkSetFourByteTag('w', 'd', 't', 'h'),
+        SkFloatToScalar(selection_capabilities.width.clampToRange(
+            selection_request.width))};
+    SkFontMgr::FontParameters::Axis slant_axis = {
+        SkSetFourByteTag('s', 'l', 'n', 't'),
+        SkFloatToScalar(selection_capabilities.slope.clampToRange(
+            selection_request.slope))};
+
+    axes.push_back(weight_axis);
+    axes.push_back(width_axis);
+    axes.push_back(slant_axis);
+
     if (variation_settings && variation_settings->size() < UINT16_MAX) {
-      axes.ReserveCapacity(variation_settings->size());
+      axes.ReserveCapacity(variation_settings->size() + axes.size());
       for (size_t i = 0; i < variation_settings->size(); ++i) {
         SkFontMgr::FontParameters::Axis axis = {
             AtomicStringToFourByteTag(variation_settings->at(i).Tag()),

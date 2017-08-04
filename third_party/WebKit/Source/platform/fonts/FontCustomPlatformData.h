@@ -34,6 +34,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/fonts/FontOrientation.h"
+#include "platform/fonts/FontSelectionTypes.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Noncopyable.h"
@@ -63,6 +64,8 @@ class PLATFORM_EXPORT FontCustomPlatformData
       float size,
       bool bold,
       bool italic,
+      const FontSelectionRequest&,
+      const FontSelectionCapabilities&,
       FontOrientation = FontOrientation::kHorizontal,
       const FontVariationSettings* = nullptr);
 
