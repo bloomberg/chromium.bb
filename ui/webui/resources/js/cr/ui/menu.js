@@ -185,13 +185,29 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Returns whether the given menu item is visible.
+     * @param {!cr.ui.MenuItem} menuItem
+     * @return {boolean}
+     * @private
+     */
+    isItemVisible_: function(menuItem) {
+      if (menuItem.hidden)
+        return false;
+      if (!!menuItem.offsetParent)
+        return true;
+      // A "position: fixed" element won't have an offsetParent, so we have to
+      // do the full style computation.
+      return window.getComputedStyle(menuItem).display != 'none';
+    },
+
+    /**
      * Returns if the menu has any visible item.
      * @return {boolean} True if the menu has visible item. Otherwise, false.
      */
     hasVisibleItems: function() {
       var menuItems = this.menuItems;  // Cache.
       for (var i = 0, menuItem; menuItem = menuItems[i]; i++) {
-        if (!menuItem.isSeparator() && !menuItem.hidden)
+        if (!menuItem.isSeparator() && this.isItemVisible_(menuItem))
           return true;
       }
       return false;
@@ -207,7 +223,7 @@ cr.define('cr.ui', function() {
       var item = this.selectedItem;
 
       var self = this;
-      function selectNextAvailable(m) {
+      var selectNextAvailable = function(m) {
         var menuItems = self.menuItems;
         var len = menuItems.length;
         if (!len) {
@@ -234,12 +250,13 @@ cr.define('cr.ui', function() {
             break;
 
           item = menuItems[i];
-          if (item && !item.isSeparator() && !item.hidden && !item.disabled)
+          if (item && !item.isSeparator() && !item.disabled &&
+              this.isItemVisible_(item))
             break;
         }
         if (item && !item.disabled)
           self.selectedIndex = i;
-      }
+      }.bind(this);
 
       switch (e.key) {
         case 'ArrowDown':
