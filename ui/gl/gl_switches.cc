@@ -169,4 +169,8 @@ const base::Feature kDirectCompositionUnderlays{
 const base::Feature kDirectCompositionComplexOverlays{
     "DirectCompositionComplexOverlays", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allow using overlays for non-root render passes.
+const base::Feature kDirectCompositionNonrootOverlays{
+    "DirectCompositionNonrootOverlays", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
