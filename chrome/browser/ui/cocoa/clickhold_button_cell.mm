@@ -18,6 +18,7 @@ static const CGFloat kDragDistThreshold = 2.5;
 @interface ClickHoldButtonCell (Private)
 - (void)resetToDefaults;
 - (BOOL)shouldExposeAccessibilityShowMenu;
+- (id)accessibilityAttributeValue:(NSString*)attribute;
 @end  // @interface ClickHoldButtonCell (Private)
 
 @implementation ClickHoldButtonCell
@@ -218,6 +219,16 @@ static const CGFloat kDragDistThreshold = 2.5;
   return (enableRightClick_ ||
       (enableClickHold_ && clickHoldTimeout_ > kMinTimeout)) &&
       accessibilityShowMenuAction_ && accessibilityShowMenuTarget_;
+}
+
+- (id)accessibilityAttributeValue:(NSString*)attribute {
+  if ([attribute isEqual:NSAccessibilityRoleAttribute] &&
+      [self clickHoldTimeout] == 0.0) {
+    // When the delay is set to zero, this button operates like a popup button
+    // from a user perspective.
+    return NSAccessibilityPopUpButtonRole;
+  }
+  return [super accessibilityAttributeValue:attribute];
 }
 
 @end  // @implementation ClickHoldButtonCell (Private)
