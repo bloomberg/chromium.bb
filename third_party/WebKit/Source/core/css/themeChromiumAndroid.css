@@ -30,17 +30,6 @@
 
 /* These styles override other user-agent styles for Chromium on Android. */
 
-select[size],
-select[multiple],
-select[size][multiple] {
-    -webkit-appearance: menulist;
-    align-items: center;
-    background-color: ButtonFace;
-    border: 1px solid #a9a9a9;
-    border-radius: initial;
-    white-space: pre;
-}
-
 input[type="date" i]:disabled,
 input[type="datetime-local" i]:disabled,
 input[type="month" i]:disabled,

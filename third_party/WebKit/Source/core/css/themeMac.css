@@ -9,18 +9,9 @@ select, input[type="color" i][list] {
     border: 1px solid #a6a6a6;
 }
 
-select[size],
-select[multiple],
-select[size][multiple] {
+select:-internal-list-box  {
     background-color: white;
     border: 1px solid #999999;
-}
-
-select[size="0"],
-select[size="1"] {
-    /* TODO(tkent): Use ButtonFace and border same as buttons. */
-    background-color: #f8f8f8;
-    border: 1px solid #a6a6a6;
 }
 
 input::-webkit-inner-spin-button {
