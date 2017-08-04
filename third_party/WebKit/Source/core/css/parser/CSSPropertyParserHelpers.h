@@ -59,7 +59,7 @@ CSSPrimitiveValue* ConsumeLengthOrPercent(
     UnitlessQuirk = UnitlessQuirk::kForbid);
 
 CSSPrimitiveValue* ConsumeAngle(CSSParserTokenRange&,
-                                const CSSParserContext&,
+                                const CSSParserContext*,
                                 WTF::Optional<WebFeature> unitlessZeroFeature);
 CSSPrimitiveValue* ConsumeTime(CSSParserTokenRange&, ValueRange);
 CSSPrimitiveValue* ConsumeResolution(CSSParserTokenRange&);

@@ -12,7 +12,7 @@ CSSValue* CSSPropertyOffsetRotateUtils::ConsumeOffsetRotate(
     CSSParserTokenRange& range,
     const CSSParserContext& context) {
   CSSValue* angle = CSSPropertyParserHelpers::ConsumeAngle(
-      range, context, Optional<WebFeature>());
+      range, &context, Optional<WebFeature>());
   CSSValue* keyword =
       CSSPropertyParserHelpers::ConsumeIdent<CSSValueAuto, CSSValueReverse>(
           range);
@@ -20,7 +20,7 @@ CSSValue* CSSPropertyOffsetRotateUtils::ConsumeOffsetRotate(
     return nullptr;
 
   if (!angle) {
-    angle = CSSPropertyParserHelpers::ConsumeAngle(range, context,
+    angle = CSSPropertyParserHelpers::ConsumeAngle(range, &context,
                                                    Optional<WebFeature>());
   }
 

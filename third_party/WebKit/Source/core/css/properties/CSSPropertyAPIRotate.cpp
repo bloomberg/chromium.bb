@@ -36,7 +36,7 @@ const CSSValue* CSSPropertyAPIRotate::parseSingleValue(
   }
 
   CSSValue* rotation = CSSPropertyParserHelpers::ConsumeAngle(
-      range, context, WTF::Optional<WebFeature>());
+      range, &context, WTF::Optional<WebFeature>());
   if (!rotation)
     return nullptr;
   list->Append(*rotation);

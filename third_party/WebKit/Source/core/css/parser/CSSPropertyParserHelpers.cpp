@@ -338,8 +338,11 @@ CSSPrimitiveValue* ConsumeGradientLengthOrPercent(
 }
 
 CSSPrimitiveValue* ConsumeAngle(CSSParserTokenRange& range,
-                                const CSSParserContext& context,
+                                const CSSParserContext* context,
                                 WTF::Optional<WebFeature> unitlessZeroFeature) {
+  // Ensure that we have a context for counting the unitlessZeroFeature if it is
+  // requested.
+  DCHECK(context || !unitlessZeroFeature);
   const CSSParserToken& token = range.Peek();
   if (token.GetType() == kDimensionToken) {
     switch (token.GetUnitType()) {
@@ -357,7 +360,7 @@ CSSPrimitiveValue* ConsumeAngle(CSSParserTokenRange& range,
   if (token.GetType() == kNumberToken && token.NumericValue() == 0 &&
       unitlessZeroFeature) {
     range.ConsumeIncludingWhitespace();
-    context.Count(*unitlessZeroFeature);
+    context->Count(*unitlessZeroFeature);
     return CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kDegrees);
   }
   CalcParser calc_parser(range, kValueRangeAll);
@@ -982,7 +985,7 @@ static CSSPrimitiveValue* ConsumeGradientAngleOrPercent(
     UnitlessQuirk) {
   const CSSParserToken& token = range.Peek();
   if (token.GetType() == kDimensionToken || token.GetType() == kNumberToken) {
-    return ConsumeAngle(range, context, WTF::Optional<WebFeature>());
+    return ConsumeAngle(range, &context, WTF::Optional<WebFeature>());
   }
   if (token.GetType() == kPercentageToken)
     return ConsumePercent(range, value_range);
@@ -1185,7 +1188,7 @@ static CSSValue* ConsumeLinearGradient(CSSParserTokenRange& args,
                                        CSSGradientType gradient_type) {
   bool expect_comma = true;
   const CSSPrimitiveValue* angle =
-      ConsumeAngle(args, context, WebFeature::kUnitlessZeroAngleGradient);
+      ConsumeAngle(args, &context, WebFeature::kUnitlessZeroAngleGradient);
   const CSSIdentifierValue* end_x = nullptr;
   const CSSIdentifierValue* end_y = nullptr;
   if (!angle) {
@@ -1226,7 +1229,7 @@ static CSSValue* ConsumeConicGradient(CSSParserTokenRange& args,
   const CSSPrimitiveValue* from_angle = nullptr;
   if (ConsumeIdent<CSSValueFrom>(args)) {
     if (!(from_angle =
-              ConsumeAngle(args, context, WTF::Optional<WebFeature>())))
+              ConsumeAngle(args, &context, WTF::Optional<WebFeature>())))
       return nullptr;
   }
 
