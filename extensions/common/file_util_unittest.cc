@@ -13,6 +13,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -32,6 +33,13 @@
 namespace extensions {
 
 namespace {
+
+const char manifest_content[] =
+    "{\n"
+    "  \"name\": \"Underscore folder test\",\n"
+    "  \"version\": \"1.0\",\n"
+    "  \"manifest_version\": 2\n"
+    "}\n";
 
 scoped_refptr<Extension> LoadExtensionManifest(
     const base::DictionaryValue& manifest,
@@ -57,6 +65,36 @@ scoped_refptr<Extension> LoadExtensionManifest(
   CHECK_EQ(base::Value::Type::DICTIONARY, result->GetType());
   return LoadExtensionManifest(*base::DictionaryValue::From(std::move(result)),
                                manifest_dir, location, extra_flags, error);
+}
+
+void RunDirectoryTest(std::vector<std::string> extra_directories,
+                      base::Optional<std::string> expected_warning) {
+  base::ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+
+  base::FilePath ext_path = temp.GetPath();
+  ASSERT_TRUE(base::CreateDirectory(ext_path));
+
+  for (const auto& dir : extra_directories)
+    ASSERT_TRUE(base::CreateDirectory(ext_path.AppendASCII(dir)));
+
+  ASSERT_EQ(static_cast<int>(strlen(manifest_content)),
+            base::WriteFile(ext_path.AppendASCII("manifest.json"),
+                            manifest_content, strlen(manifest_content)));
+
+  std::string error;
+  scoped_refptr<Extension> extension = file_util::LoadExtension(
+      ext_path, Manifest::UNPACKED, Extension::NO_FLAGS, &error);
+  ASSERT_TRUE(extension) << error;
+
+  const std::vector<InstallWarning>& warnings = extension->install_warnings();
+  if (expected_warning) {
+    EXPECT_EQ(1u, warnings.size());
+    EXPECT_EQ(*expected_warning, warnings[0].message);
+  } else {
+    EXPECT_TRUE(warnings.empty());
+  }
+  EXPECT_TRUE(error.empty());
 }
 
 }  // namespace
@@ -120,6 +158,31 @@ TEST_F(FileUtilTest, InstallUninstallGarbageCollect) {
   ASSERT_FALSE(base::DirectoryExists(version_2.DirName()));
   ASSERT_FALSE(base::DirectoryExists(version_3.DirName()));
   ASSERT_TRUE(base::DirectoryExists(all_extensions));
+}
+
+TEST_F(FileUtilTest, LoadExtensionWithMetadataFolder) {
+  RunDirectoryTest(
+      {"_metadata"},
+      std::string("_metadata is a reserved directory that will "
+                  "not be allowed at the time of Chrome Web Store upload."));
+}
+
+TEST_F(FileUtilTest, LoadExtensionWithUnderscoreFolder) {
+  RunDirectoryTest(
+      {"_badfolder"},
+      std::string(
+          "Cannot load extension with file or directory"
+          " name _badfolder. Filenames starting with \"_\" are reserved for "
+          "use by the system."));
+}
+
+TEST_F(FileUtilTest, LoadExtensionWithMetadataAndUnderscoreFolders) {
+  RunDirectoryTest(
+      {"_metadata", "_badfolder"},
+      std::string(
+          "Cannot load extension with file or directory"
+          " name _badfolder. Filenames starting with \"_\" are reserved for "
+          "use by the system."));
 }
 
 TEST_F(FileUtilTest, LoadExtensionWithValidLocales) {
