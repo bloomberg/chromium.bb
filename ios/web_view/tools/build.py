@@ -21,7 +21,7 @@ def target_dir_name(build_config, target_device):
   """
   return '%s-iphone%s' % (build_config, target_device)
 
-def build(build_config, target_device, extra_gn_options):
+def build(build_config, target_device, extra_gn_options, extra_ninja_options):
   """Generates and builds CronetChromeWebView.framework.
 
   Args:
@@ -29,6 +29,8 @@ def build(build_config, target_device, extra_gn_options):
     target_device: A string describing the target device. Ex: 'simulator'
     extra_gn_options: A string of gn args (space separated key=value items) to
       be appended to the gn gen command.
+    extra_ninja_options: A string of gn options to be appended to the ninja
+      command.
 
   Returns:
     The return code of generating ninja if it is non-zero, else the return code
@@ -63,8 +65,11 @@ def build(build_config, target_device, extra_gn_options):
   if gn_result != 0:
     return gn_result
 
-  ninja_command = ('ninja -C %s ios/web_view:cronet_ios_web_view_package' %
-                   build_dir)
+  ninja_options = '-C %s' % build_dir
+  if extra_ninja_options:
+    ninja_options += ' %s' % extra_ninja_options
+  ninja_command = ('ninja %s ios/web_view:cronet_ios_web_view_package' %
+                   ninja_options)
   print ninja_command
   return os.system(ninja_command)
 
@@ -92,7 +97,11 @@ def copy_build_products(build_config, target_device, out_dir):
   print 'Copying %s to %s' % (symbols_source, symbols_dest)
   shutil.copytree(symbols_source, symbols_dest)
 
-def package_framework(build_config, target_device, out_dir, extra_gn_options):
+def package_framework(build_config,
+                      target_device,
+                      out_dir,
+                      extra_gn_options,
+                      extra_ninja_options):
   """Builds CronetChromeWebView.framework and copies the result to out_dir.
 
   Args:
@@ -101,13 +110,18 @@ def package_framework(build_config, target_device, out_dir, extra_gn_options):
     out_dir: A string to the path which all build products will be copied.
     extra_gn_options: A string of gn args (space separated key=value items) to
       be appended to the gn gen command.
+    extra_ninja_options: A string of gn options to be appended to the ninja
+      command.
 
   Returns:
     The return code of the build if it fails or 0 if the build was successful.
   """
   print '\nBuilding for %s (%s)' % (target_device, build_config)
 
-  build_result = build(build_config, target_device, extra_gn_options)
+  build_result = build(build_config,
+                       target_device,
+                       extra_gn_options,
+                       extra_ninja_options)
   if build_result != 0:
     error = 'Building %s/%s failed with code: ' % (build_config, target_device)
     print >>sys.stderr, error, build_result
@@ -115,7 +129,7 @@ def package_framework(build_config, target_device, out_dir, extra_gn_options):
   copy_build_products(build_config, target_device, out_dir)
   return 0
 
-def package_all_frameworks(out_dir, extra_gn_options):
+def package_all_frameworks(out_dir, extra_gn_options, extra_ninja_options):
   """Builds CronetChromeWebView.framework.
 
   Builds Release and Debug versions of CronetChromeWebView.framework for both
@@ -125,6 +139,8 @@ def package_all_frameworks(out_dir, extra_gn_options):
     out_dir: A string to the path which all build products will be copied.
     extra_gn_options: A string of gn args (space separated key=value items) to
       be appended to the gn gen command.
+    extra_ninja_options: A string of gn options to be appended to the ninja
+      command.
 
   Returns:
     0 if all builds are successful or 1 if any build fails.
@@ -134,14 +150,17 @@ def package_all_frameworks(out_dir, extra_gn_options):
   # Package all builds in the output directory
   os.makedirs(out_dir)
 
-  if package_framework('Debug', 'simulator', out_dir, extra_gn_options) != 0:
-    return 1
-  if package_framework('Debug', 'os', out_dir, extra_gn_options) != 0:
-    return 1
-  if package_framework('Release', 'simulator', out_dir, extra_gn_options) != 0:
-    return 1
-  if package_framework('Release', 'os', out_dir, extra_gn_options) != 0:
-    return 1
+  configurations = [('Debug', 'simulator'),
+                    ('Debug', 'os'),
+                    ('Release', 'simulator'),
+                    ('Release', 'os')]
+  for build_config, target_device in configurations:
+    if package_framework(build_config,
+                         target_device,
+                         out_dir,
+                         extra_gn_options,
+                         extra_ninja_options) != 0:
+      return 1
 
   # Copy common files from last built package to out_dir.
   build_dir = os.path.join("out", target_dir_name('Release', 'os'))
@@ -162,6 +181,8 @@ def main():
                       help='path to output directory')
   parser.add_argument('--no_goma', action='store_true',
                       help='Prevents adding use_goma=true to the gn args.')
+  parser.add_argument('--ninja_args',
+                      help='Additional gn args to pass through to ninja.')
 
   options, extra_options = parser.parse_known_args()
   print 'Options:', options
@@ -178,7 +199,7 @@ def main():
 
   gn_options = '' if options.no_goma else 'use_goma=true'
 
-  return package_all_frameworks(out_dir, gn_options)
+  return package_all_frameworks(out_dir, gn_options, options.ninja_args)
 
 
 if __name__ == '__main__':
