@@ -36,3 +36,21 @@ TEST_F(AppNapActivityTest, StoresAssertion) {
   EXPECT_OCMOCK_VERIFY(processInfoMock);
   [processInfoMock stopMocking];
 }
+
+TEST_F(AppNapActivityTest, EndsActivityOnDestruct) {
+  id processInfoMock =
+      [OCMockObject partialMockForObject:[NSProcessInfo processInfo]];
+  id assertion = @"An activity assertion";
+  [[[[processInfoMock stub] ignoringNonObjectArgs] andReturn:assertion]
+      beginActivityWithOptions:0
+                        reason:OCMOCK_ANY];
+
+  [[processInfoMock expect] endActivity:assertion];
+  {
+    content::AppNapActivity activity;
+    activity.Begin();
+  }
+
+  EXPECT_OCMOCK_VERIFY(processInfoMock);
+  [processInfoMock stopMocking];
+}
