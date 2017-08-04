@@ -16,6 +16,8 @@
 #include "core/timing/PerformanceEntry.h"
 #include "core/timing/PerformanceObserverEntryList.h"
 #include "core/timing/PerformanceObserverInit.h"
+#include "core/timing/WorkerGlobalScopePerformance.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "platform/Timer.h"
 
 namespace blink {
@@ -23,18 +25,24 @@ namespace blink {
 PerformanceObserver* PerformanceObserver::Create(
     ScriptState* script_state,
     PerformanceObserverCallback* callback) {
-  DCHECK(IsMainThread());
   LocalDOMWindow* window = ToLocalDOMWindow(script_state->GetContext());
-  if (!window) {
-    V8ThrowException::ThrowTypeError(
-        script_state->GetIsolate(),
-        ExceptionMessages::FailedToConstruct(
-            "PerformanceObserver", "No 'window' in current context."));
-    return nullptr;
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  if (window) {
+    return new PerformanceObserver(
+        context, DOMWindowPerformance::performance(*window), callback);
   }
-  return new PerformanceObserver(ExecutionContext::From(script_state),
-                                 DOMWindowPerformance::performance(*window),
-                                 callback);
+  if (context->IsWorkerGlobalScope()) {
+    return new PerformanceObserver(context,
+                                   WorkerGlobalScopePerformance::performance(
+                                       *ToWorkerGlobalScope(context)),
+                                   callback);
+  }
+  V8ThrowException::ThrowTypeError(
+      script_state->GetIsolate(),
+      ExceptionMessages::FailedToConstruct(
+          "PerformanceObserver",
+          "No 'worker' or 'window' in current context."));
+  return nullptr;
 }
 
 PerformanceObserver::PerformanceObserver(ExecutionContext* execution_context,
@@ -53,7 +61,7 @@ void PerformanceObserver::observe(const PerformanceObserverInit& observer_init,
                                   ExceptionState& exception_state) {
   if (!performance_) {
     exception_state.ThrowTypeError(
-        "Window may be destroyed? Performance target is invalid.");
+        "Window/worker may be destroyed? Performance target is invalid.");
     return;
   }
 
@@ -85,7 +93,6 @@ void PerformanceObserver::disconnect() {
 }
 
 void PerformanceObserver::EnqueuePerformanceEntry(PerformanceEntry& entry) {
-  DCHECK(IsMainThread());
   performance_entries_.push_back(&entry);
   if (performance_)
     performance_->ActivateObserver(*this);
