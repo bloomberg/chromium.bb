@@ -1341,6 +1341,10 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 
 #pragma mark - ApplicationCommands
 
+- (void)dismissModalDialogs {
+  [self dismissModalDialogsWithCompletion:nil];
+}
+
 - (void)switchModesAndOpenNewTab:(OpenNewTabCommand*)command {
   BrowserViewController* bvc = command.incognito ? self.otrBVC : self.mainBVC;
   DCHECK(bvc);
@@ -1450,9 +1454,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     }
     case IDC_SHOW_CLEAR_BROWSING_DATA_SETTINGS:
       [self showClearBrowsingDataSettingsController];
-      break;
-    case IDC_CLOSE_MODALS:
-      [self dismissModalDialogsWithCompletion:nil];
       break;
     case IDC_SHOW_ADD_ACCOUNT:
       [self showAddAccount];
