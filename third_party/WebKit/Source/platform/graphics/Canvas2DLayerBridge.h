@@ -232,9 +232,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge
   void ClearCHROMIUMImageCache();
 #endif  // USE_IOSURFACE_FOR_2D_CANVAS
 
-  // Prepends a new MailboxInfo object to |m_mailboxes|.
-  void CreateMailboxInfo();
-
   // Returns whether the mailbox was successfully prepared from the SkImage.
   // The mailbox is an out parameter only populated on success.
   bool PrepareMailboxFromImage(sk_sp<SkImage>,
