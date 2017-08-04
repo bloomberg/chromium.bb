@@ -784,6 +784,25 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         }
     }
 
+    /* package */ View getPaymentRequestView() throws Throwable {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
+            @Override
+            public View call() {
+                return mUI.getDialogForTest().findViewById(R.id.payment_request);
+            }
+        });
+    }
+
+    /* package */ View getCardUnmaskView() throws Throwable {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
+            @Override
+            public View call() {
+                return mCardUnmaskPrompt.getDialogForTest().findViewById(
+                        R.id.autofill_card_unmask_prompt);
+            }
+        });
+    }
+
     @Override
     public void onPaymentRequestReadyForInput(PaymentRequestUI ui) {
         ThreadUtils.assertOnUiThread();
