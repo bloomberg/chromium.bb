@@ -261,28 +261,6 @@ def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
     raise SystemExit(ret.returncode)
 
 
-def _FindChrootDevice(chroot_path):
-  """Find the VG and LV mounted on chroot_path.
-
-  Returns:
-    A tuple containing the VG and LV names, or (None, None) if an appropriately-
-    name device mounted on |chroot_path| isn't found.
-  """
-
-  mount = [m for m in osutils.IterateMountPoints()
-           if m.destination == chroot_path]
-  if not mount:
-    return (None, None)
-
-  # Take the last mount entry because it's the one currently visible.
-  mount_source = mount[-1].source
-  match = re.match(r'/dev.*/(cros[^-]*)-(.*)', mount_source)
-  if not match:
-    return (None, None)
-
-  return (match.group(1), match.group(2))
-
-
 def _FindSubmounts(*args):
   """Find all mounts matching each of the paths in |args| and any submounts.
 
@@ -843,7 +821,7 @@ def main(argv):
   # Remount the inner chroot mount back up to the original namespace.  See above
   # for details.
   if options.use_image and options.create:
-    vg, lv = _FindChrootDevice(chroot_temp_mount)
+    vg, lv = cros_build_lib.FindChrootMountSource(chroot_temp_mount)
 
     # Clean up inside the child mount namespace.  Normally these will disappear
     # as soon as the last process exits the mount namespace, but we want to be
