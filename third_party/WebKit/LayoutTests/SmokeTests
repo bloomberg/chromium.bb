@@ -460,7 +460,6 @@ fast/dom/getElementsByClassName/015.html
 fast/dom/HTMLAnchorElement/set-href-attribute-hostname.html
 fast/dom/HTMLAreaElement/area-download.html
 fast/dom/HTMLAreaElement/area-islink-focus-null-ptr-crash.html
-fast/dom/HTMLButtonElement/value/getset.html
 fast/dom/HTMLCollection/HTMLCollection-namedItem-invalidate-no-crash.html
 fast/dom/HTMLDivElement/align/getset.html
 fast/dom/HTMLDocument/document-all.html
@@ -469,14 +468,11 @@ fast/dom/HTMLDocument/url-getset.html
 fast/dom/HTMLDocument/writeln-multiple-calls.html
 fast/dom/HTMLDocument/write-multiple-calls.html
 fast/dom/HTMLElement/attr-dir-auto-change-before-text-node.html
-fast/dom/HTMLFormElement/adopt-assertion.html
 fast/dom/HTMLHrElement/hr-color-noshade-attribute.html
 fast/dom/HTMLHtmlElement/duplicate-html-element-crash.html
 fast/dom/HTMLHtmlElement/set-version.html
 fast/dom/HTMLImageElement/image-picture-source-src.html
-fast/dom/HTMLInputElement/clone-input-checked.html
 fast/dom/HTMLIsIndexElement/prototype-chain.html
-fast/dom/HTMLLabelElement/click-label.html
 fast/dom/HTMLLinkElement/cachedresource-types.html
 fast/dom/HTMLLinkElement/disabled-attribute.html
 fast/dom/HTMLLinkElement/link-onerror-stylesheet-with-existent-and-non-existent-import.html
@@ -485,8 +481,6 @@ fast/dom/HTMLMeterElement/meter-element-form.html
 fast/dom/HTMLMeterElement/meter-percent-size.html
 fast/dom/HTMLObjectElement/form/nested-form-element.html
 fast/dom/HTMLObjectElement/form/test1.html
-fast/dom/HTMLOutputElement/htmloutputelement-children-removed.html
-fast/dom/HTMLOutputElement/htmloutputelement-validity.html
 fast/dom/HTMLProgressElement/indeterminate-progress-002.html
 fast/dom/HTMLProgressElement/progress-element-form.html
 fast/dom/HTMLScriptElement/defer-script-invalid-url.html
@@ -530,6 +524,7 @@ fast/filesystem/filesystem-uri-origin.html
 fast/filesystem/simple-persistent.html
 fast/forms/button/button-baseline-and-collapsing.html
 fast/forms/button/button-click-DOM.html
+fast/forms/button/button-value.html
 fast/forms/checkbox/checkbox-checked-state-affected-by-default-state.html
 fast/forms/color/color-setrangetext.html
 fast/forms/datalist/slider-appearance-with-ticks-crash.html
@@ -540,11 +535,16 @@ fast/forms/datetimelocal/ValidityState-typeMismatch-datetimelocal.html
 fast/forms/document-write-empty.html
 fast/forms/fieldset/legend-absolute-position-auto-width.html
 fast/forms/file/sibling-of-disabled-file-input.html
+fast/forms/form/adopt-assertion.html
 fast/forms/label/label-assertion-with-active-style.html
+fast/forms/label/label-click-by-script.html
 fast/forms/mailto/get-multiple-items.html
 fast/forms/number/number-change-event-by-readonly.html
 fast/forms/number/number-content-url-crash.html
+fast/forms/output/htmloutputelement-children-removed.html
+fast/forms/output/htmloutputelement-validity.html
 fast/forms/radio/input-radio-checked-tab.html
+fast/forms/radio/radio-cloneNode-checked.html
 fast/forms/range/range-input-dynamic-oninput.html
 fast/forms/search/search-content-url-crash.html
 fast/forms/select/options-collection-detached.html
