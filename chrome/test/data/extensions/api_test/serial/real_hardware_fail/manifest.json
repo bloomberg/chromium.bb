@@ -1,0 +1,13 @@
+{
+  "name": "chrome.serial.getDevices failure test",
+  "version": "0.1",
+  "description": "end-to-end test getDevices returns empty list for failure",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "permissions": [
+    "serial"
+  ]
+}

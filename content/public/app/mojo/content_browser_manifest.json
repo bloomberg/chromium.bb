@@ -79,6 +79,7 @@
         "device": [
           "device:generic_sensor",
           "device:nfc",
+          "device:serial",
           "device:vibration",
           "device:wake_lock"
         ],

@@ -11,6 +11,8 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+is_serial_enabled_platform = is_win || (is_linux && use_udev) || is_mac
+
 source_set("lib") {
   # This should be visible only to embedders of the Device Service, and the
   # dependence should only be for the purpose of embedding the Device Service.
@@ -50,6 +52,10 @@ source_set("lib") {
       "//services/device/battery",
       "//services/device/vibration",
     ]
+  }
+
+  if (is_serial_enabled_platform) {
+    deps += [ "//services/device/serial" ]
   }
 }
 
@@ -117,6 +123,11 @@ source_set("tests") {
       "//services/device/battery",
       "//services/device/vibration",
     ]
+  }
+
+  if (is_serial_enabled_platform) {
+    sources += [ "serial/serial_device_enumerator_impl_unittest.cc" ]
+    deps += [ "//services/device/serial" ]
   }
 
   if (is_win) {
