@@ -595,6 +595,9 @@ static void update_sharpness(loop_filter_info_n *lfi, int sharpness_lvl) {
 #if CONFIG_EXT_DELTA_Q
 static uint8_t get_filter_level(const AV1_COMMON *cm,
                                 const loop_filter_info_n *lfi_n,
+#if CONFIG_UV_LVL
+                                const int dir_idx,
+#endif
                                 const MB_MODE_INFO *mbmi) {
 #if CONFIG_SUPERTX
   const int segment_id = AOMMIN(mbmi->segment_id, mbmi->segment_id_supertx);
@@ -606,8 +609,14 @@ static uint8_t get_filter_level(const AV1_COMMON *cm,
   const int segment_id = mbmi->segment_id;
 #endif  // CONFIG_SUPERTX
   if (cm->delta_lf_present_flag) {
+#if CONFIG_UV_LVL
+    int lvl_seg =
+        clamp(mbmi->current_delta_lf_from_base + cm->lf.filter_level[dir_idx],
+              0, MAX_LOOP_FILTER);
+#else
     int lvl_seg = clamp(mbmi->current_delta_lf_from_base + cm->lf.filter_level,
                         0, MAX_LOOP_FILTER);
+#endif
     const int scale = 1 << (lvl_seg >> 5);
     if (segfeature_active(&cm->seg, segment_id, SEG_LVL_ALT_LF)) {
       const int data = get_segdata(&cm->seg, segment_id, SEG_LVL_ALT_LF);
@@ -624,7 +633,12 @@ static uint8_t get_filter_level(const AV1_COMMON *cm,
     }
     return lvl_seg;
   } else {
+#if CONFIG_UV_LVL
+    return lfi_n
+        ->lvl[segment_id][dir_idx][mbmi->ref_frame[0]][mode_lf_lut[mbmi->mode]];
+#else
     return lfi_n->lvl[segment_id][mbmi->ref_frame[0]][mode_lf_lut[mbmi->mode]];
+#endif
   }
 }
 #else
@@ -658,12 +672,13 @@ void av1_loop_filter_init(AV1_COMMON *cm) {
     memset(lfi->lfthr[lvl].hev_thr, (lvl >> 4), SIMD_WIDTH);
 }
 
-void av1_loop_filter_frame_init(AV1_COMMON *cm, int default_filt_lvl) {
+void av1_loop_filter_frame_init(AV1_COMMON *cm, int default_filt_lvl,
+                                int default_filt_lvl_r) {
   int seg_id;
   // n_shift is the multiplier for lf_deltas
   // the multiplier is 1 for when filter_lvl is between 0 and 31;
   // 2 when filter_lvl is between 32 and 63
-  const int scale = 1 << (default_filt_lvl >> 5);
+  int scale = 1 << (default_filt_lvl >> 5);
   loop_filter_info_n *const lfi = &cm->lf_info;
   struct loopfilter *const lf = &cm->lf;
   const struct segmentation *const seg = &cm->seg;
@@ -689,6 +704,26 @@ void av1_loop_filter_frame_init(AV1_COMMON *cm, int default_filt_lvl) {
       memset(lfi->lvl[seg_id], lvl_seg, sizeof(lfi->lvl[seg_id]));
     } else {
       int ref, mode;
+#if CONFIG_UV_LVL
+      for (int dir = 0; dir < 2; ++dir) {
+        lvl_seg = (dir == 0) ? default_filt_lvl : default_filt_lvl_r;
+        scale = 1 << (lvl_seg >> 5);
+
+        const int intra_lvl = lvl_seg + lf->ref_deltas[INTRA_FRAME] * scale;
+        lfi->lvl[seg_id][dir][INTRA_FRAME][0] =
+            clamp(intra_lvl, 0, MAX_LOOP_FILTER);
+
+        for (ref = LAST_FRAME; ref < TOTAL_REFS_PER_FRAME; ++ref) {
+          for (mode = 0; mode < MAX_MODE_LF_DELTAS; ++mode) {
+            const int inter_lvl = lvl_seg + lf->ref_deltas[ref] * scale +
+                                  lf->mode_deltas[mode] * scale;
+            lfi->lvl[seg_id][dir][ref][mode] =
+                clamp(inter_lvl, 0, MAX_LOOP_FILTER);
+          }
+        }
+      }
+#else
+      (void)default_filt_lvl_r;
       const int intra_lvl = lvl_seg + lf->ref_deltas[INTRA_FRAME] * scale;
       lfi->lvl[seg_id][INTRA_FRAME][0] = clamp(intra_lvl, 0, MAX_LOOP_FILTER);
 
@@ -699,6 +734,7 @@ void av1_loop_filter_frame_init(AV1_COMMON *cm, int default_filt_lvl) {
           lfi->lvl[seg_id][ref][mode] = clamp(inter_lvl, 0, MAX_LOOP_FILTER);
         }
       }
+#endif
     }
   }
 }
@@ -1394,7 +1430,11 @@ static void build_masks(AV1_COMMON *const cm,
   const TX_SIZE tx_size_uv_above =
       txsize_vert_map[uv_txsize_lookup[block_size][mbmi->tx_size][1][1]];
 #if CONFIG_EXT_DELTA_Q
+#if CONFIG_UV_LVL
+  const int filter_level = get_filter_level(cm, lfi_n, 0, mbmi);
+#else
   const int filter_level = get_filter_level(cm, lfi_n, mbmi);
+#endif
 #else
   const int filter_level = get_filter_level(lfi_n, mbmi);
   (void)cm;
@@ -1488,7 +1528,11 @@ static void build_y_mask(AV1_COMMON *const cm,
   const BLOCK_SIZE block_size = mbmi->sb_type;
 #endif
 #if CONFIG_EXT_DELTA_Q
+#if CONFIG_UV_LVL
+  const int filter_level = get_filter_level(cm, lfi_n, 0, mbmi);
+#else
   const int filter_level = get_filter_level(cm, lfi_n, mbmi);
+#endif
 #else
   const int filter_level = get_filter_level(lfi_n, mbmi);
   (void)cm;
@@ -2093,7 +2137,12 @@ static void get_filter_level_and_masks_non420(
 
 // Filter level can vary per MI
 #if CONFIG_EXT_DELTA_Q
+#if CONFIG_UV_LVL
+    if (!(lfl_r[c_step] = get_filter_level(cm, &cm->lf_info, 0, mbmi)))
+      continue;
+#else
     if (!(lfl_r[c_step] = get_filter_level(cm, &cm->lf_info, mbmi))) continue;
+#endif
 #else
     if (!(lfl_r[c_step] = get_filter_level(&cm->lf_info, mbmi))) continue;
 #endif
@@ -2786,7 +2835,12 @@ static void set_lpf_parameters(
                                plane_ptr, scale_horz, scale_vert);
 
 #if CONFIG_EXT_DELTA_Q
+#if CONFIG_UV_LVL
+    const uint32_t curr_level =
+        get_filter_level(cm, &cm->lf_info, edge_dir, mbmi);
+#else
     const uint32_t curr_level = get_filter_level(cm, &cm->lf_info, mbmi);
+#endif
 #else
     const uint32_t curr_level = get_filter_level(&cm->lf_info, mbmi);
 #endif  // CONFIG_EXT_DELTA_Q
@@ -2818,8 +2872,13 @@ static void set_lpf_parameters(
                                      plane_ptr, scale_horz, scale_vert);
 
 #if CONFIG_EXT_DELTA_Q
+#if CONFIG_UV_LVL
+          const uint32_t pv_lvl =
+              get_filter_level(cm, &cm->lf_info, edge_dir, &mi_prev->mbmi);
+#else
           const uint32_t pv_lvl =
               get_filter_level(cm, &cm->lf_info, &mi_prev->mbmi);
+#endif
 #else
           const uint32_t pv_lvl =
               get_filter_level(&cm->lf_info, &mi_prev->mbmi);
@@ -3392,13 +3451,25 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
 }
 
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
-                           MACROBLOCKD *xd, int frame_filter_level, int y_only,
-                           int partial_frame) {
+                           MACROBLOCKD *xd, int frame_filter_level,
+#if CONFIG_UV_LVL
+                           int frame_filter_level_r,
+#endif
+                           int y_only, int partial_frame) {
   int start_mi_row, end_mi_row, mi_rows_to_filter;
 #if CONFIG_EXT_DELTA_Q
+#if CONFIG_UV_LVL
+  int orig_filter_level[2] = { cm->lf.filter_level[0], cm->lf.filter_level[1] };
+#else
   int orig_filter_level = cm->lf.filter_level;
 #endif
+#endif
+
+#if CONFIG_UV_LVL
+  if (!frame_filter_level && !frame_filter_level_r) return;
+#else
   if (!frame_filter_level) return;
+#endif
   start_mi_row = 0;
   mi_rows_to_filter = cm->mi_rows;
   if (partial_frame && cm->mi_rows > 8) {
@@ -3407,13 +3478,28 @@ void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
     mi_rows_to_filter = AOMMAX(cm->mi_rows / 8, 8);
   }
   end_mi_row = start_mi_row + mi_rows_to_filter;
-  av1_loop_filter_frame_init(cm, frame_filter_level);
+#if CONFIG_UV_LVL
+  av1_loop_filter_frame_init(cm, frame_filter_level, frame_filter_level_r);
+#else
+  av1_loop_filter_frame_init(cm, frame_filter_level, frame_filter_level);
+#endif
+
 #if CONFIG_EXT_DELTA_Q
+#if CONFIG_UV_LVL
+  cm->lf.filter_level[0] = frame_filter_level;
+  cm->lf.filter_level[1] = frame_filter_level_r;
+#else
   cm->lf.filter_level = frame_filter_level;
+#endif
 #endif
   av1_loop_filter_rows(frame, cm, xd->plane, start_mi_row, end_mi_row, y_only);
 #if CONFIG_EXT_DELTA_Q
+#if CONFIG_UV_LVL
+  cm->lf.filter_level[0] = orig_filter_level[0];
+  cm->lf.filter_level[1] = orig_filter_level[1];
+#else
   cm->lf.filter_level = orig_filter_level;
+#endif
 #endif
 }
 

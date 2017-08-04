@@ -4134,7 +4134,12 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 #endif  // CONFIG_EXT_TILE
 
   if (no_loopfilter) {
+#if CONFIG_UV_LVL
+    lf->filter_level[0] = 0;
+    lf->filter_level[1] = 0;
+#else
     lf->filter_level = 0;
+#endif
   } else {
     struct aom_usec_timer timer;
 
@@ -4148,12 +4153,21 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
     cpi->time_pick_lpf += aom_usec_timer_elapsed(&timer);
   }
 
-  if (lf->filter_level > 0) {
+#if CONFIG_UV_LVL
+  if (lf->filter_level[0] || lf->filter_level[1])
+#else
+  if (lf->filter_level > 0)
+#endif
+  {
 #if CONFIG_VAR_TX || CONFIG_EXT_PARTITION || CONFIG_CB4X4
 #if CONFIG_UV_LVL
-    av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level, 0, 0);
-    av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level_u, 1, 0);
-    av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level_v, 2, 0);
+    av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level[0],
+                          lf->filter_level[1], 0, 0);
+    av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level_u,
+                          lf->filter_level_u, 1, 0);
+    av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level_v,
+                          lf->filter_level_v, 2, 0);
+
 #else
     av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level, 0, 0);
 #endif  // CONFIG_UV_LVL

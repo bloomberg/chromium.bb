@@ -416,8 +416,11 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 
 void av1_loop_filter_frame_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                               struct macroblockd_plane planes[MAX_MB_PLANE],
-                              int frame_filter_level, int y_only,
-                              int partial_frame, AVxWorker *workers,
+                              int frame_filter_level,
+#if CONFIG_UV_LVL
+                              int frame_filter_level_r,
+#endif
+                              int y_only, int partial_frame, AVxWorker *workers,
                               int num_workers, AV1LfSync *lf_sync) {
   int start_mi_row, end_mi_row, mi_rows_to_filter;
 
@@ -431,8 +434,11 @@ void av1_loop_filter_frame_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
     mi_rows_to_filter = AOMMAX(cm->mi_rows / 8, 8);
   }
   end_mi_row = start_mi_row + mi_rows_to_filter;
-  av1_loop_filter_frame_init(cm, frame_filter_level);
-
+#if CONFIG_UV_LVL
+  av1_loop_filter_frame_init(cm, frame_filter_level, frame_filter_level_r);
+#else
+  av1_loop_filter_frame_init(cm, frame_filter_level, frame_filter_level);
+#endif  // CONFIG_UV_LVL
   loop_filter_rows_mt(frame, cm, planes, start_mi_row, end_mi_row, y_only,
                       workers, num_workers, lf_sync);
 }

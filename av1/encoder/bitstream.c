@@ -3418,13 +3418,16 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
   int i;
   struct loopfilter *lf = &cm->lf;
 
-  // Encode the loop filter level and type
-  aom_wb_write_literal(wb, lf->filter_level, 6);
+// Encode the loop filter level and type
 #if CONFIG_UV_LVL
-  if (lf->filter_level > 0) {
+  aom_wb_write_literal(wb, lf->filter_level[0], 6);
+  aom_wb_write_literal(wb, lf->filter_level[1], 6);
+  if (lf->filter_level[0] || lf->filter_level[1]) {
     aom_wb_write_literal(wb, lf->filter_level_u, 6);
     aom_wb_write_literal(wb, lf->filter_level_v, 6);
   }
+#else
+  aom_wb_write_literal(wb, lf->filter_level, 6);
 #endif
   aom_wb_write_literal(wb, lf->sharpness_level, 3);
 

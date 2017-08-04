@@ -2842,12 +2842,15 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
 
 static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   struct loopfilter *lf = &cm->lf;
-  lf->filter_level = aom_rb_read_literal(rb, 6);
 #if CONFIG_UV_LVL
-  if (lf->filter_level > 0) {
+  lf->filter_level[0] = aom_rb_read_literal(rb, 6);
+  lf->filter_level[1] = aom_rb_read_literal(rb, 6);
+  if (lf->filter_level[0] || lf->filter_level[1]) {
     lf->filter_level_u = aom_rb_read_literal(rb, 6);
     lf->filter_level_v = aom_rb_read_literal(rb, 6);
   }
+#else
+  lf->filter_level = aom_rb_read_literal(rb, 6);
 #endif
   lf->sharpness_level = aom_rb_read_literal(rb, 3);
 
@@ -3808,13 +3811,13 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_VAR_TX || CONFIG_CB4X4
 // Loopfilter the whole frame.
 #if CONFIG_UV_LVL
-  if (cm->lf.filter_level > 0) {
+  if (cm->lf.filter_level[0] || cm->lf.filter_level[1]) {
     av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
-                          cm->lf.filter_level, 0, 0);
+                          cm->lf.filter_level[0], cm->lf.filter_level[1], 0, 0);
     av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
-                          cm->lf.filter_level_u, 1, 0);
+                          cm->lf.filter_level_u, cm->lf.filter_level_u, 1, 0);
     av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
-                          cm->lf.filter_level_v, 2, 0);
+                          cm->lf.filter_level_v, cm->lf.filter_level_v, 2, 0);
   }
 #else
   av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
@@ -4340,7 +4343,12 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     ref_cnt_fb(frame_bufs, &cm->new_fb_idx, frame_to_show);
     unlock_buffer_pool(pool);
 
+#if CONFIG_UV_LVL
+    cm->lf.filter_level[0] = 0;
+    cm->lf.filter_level[1] = 0;
+#else
     cm->lf.filter_level = 0;
+#endif
     cm->show_frame = 1;
     pbi->refresh_frame_flags = 0;
 
@@ -5265,9 +5273,17 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Decode failed. Frame data header is corrupted.");
 
-  if (cm->lf.filter_level && !cm->skip_loop_filter) {
-    av1_loop_filter_frame_init(cm, cm->lf.filter_level);
+#if CONFIG_UV_LVL
+  if ((cm->lf.filter_level[0] || cm->lf.filter_level[1]) &&
+      !cm->skip_loop_filter) {
+    av1_loop_filter_frame_init(cm, cm->lf.filter_level[0],
+                               cm->lf.filter_level[1]);
   }
+#else
+  if (cm->lf.filter_level && !cm->skip_loop_filter) {
+    av1_loop_filter_frame_init(cm, cm->lf.filter_level, cm->lf.filter_level);
+  }
+#endif
 
   // If encoded in frame parallel mode, frame context is ready after decoding
   // the frame header.
@@ -5303,11 +5319,18 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
     *p_data_end = decode_tiles_mt(pbi, data + first_partition_size, data_end);
     if (!xd->corrupted) {
       if (!cm->skip_loop_filter) {
-        // If multiple threads are used to decode tiles, then we use those
-        // threads to do parallel loopfiltering.
+// If multiple threads are used to decode tiles, then we use those
+// threads to do parallel loopfiltering.
+#if CONFIG_UV_LVL
+        av1_loop_filter_frame_mt(new_fb, cm, pbi->mb.plane,
+                                 cm->lf.filter_level[0], cm->lf.filter_level[1],
+                                 0, 0, pbi->tile_workers, pbi->num_tile_workers,
+                                 &pbi->lf_row_sync);
+#else
         av1_loop_filter_frame_mt(new_fb, cm, pbi->mb.plane, cm->lf.filter_level,
                                  0, 0, pbi->tile_workers, pbi->num_tile_workers,
                                  &pbi->lf_row_sync);
+#endif  // CONFIG_UV_LVL
       }
     } else {
       aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,

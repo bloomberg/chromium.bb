@@ -51,7 +51,7 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
                                 int partial_frame
 #if CONFIG_UV_LVL
                                 ,
-                                int plane
+                                int plane, int dir
 #endif
                                 ) {
   AV1_COMMON *const cm = &cpi->common;
@@ -60,8 +60,12 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
 #if CONFIG_VAR_TX || CONFIG_EXT_PARTITION || CONFIG_CB4X4
 #if CONFIG_UV_LVL
   assert(plane >= 0 && plane <= 2);
-  av1_loop_filter_frame(cm->frame_to_show, cm, &cpi->td.mb.e_mbd, filt_level,
-                        plane, partial_frame);
+  int filter_level[2] = { filt_level, filt_level };
+  if (plane == 0 && dir == 0) filter_level[1] = cm->lf.filter_level[1];
+  if (plane == 0 && dir == 1) filter_level[0] = cm->lf.filter_level[0];
+
+  av1_loop_filter_frame(cm->frame_to_show, cm, &cpi->td.mb.e_mbd,
+                        filter_level[0], filter_level[1], plane, partial_frame);
 #else
   av1_loop_filter_frame(cm->frame_to_show, cm, &cpi->td.mb.e_mbd, filt_level, 1,
                         partial_frame);
@@ -100,7 +104,7 @@ int av1_search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
                             int partial_frame, double *best_cost_ret
 #if CONFIG_UV_LVL
                             ,
-                            int plane
+                            int plane, int dir
 #endif
                             ) {
   const AV1_COMMON *const cm = &cpi->common;
@@ -117,7 +121,7 @@ int av1_search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
 #if CONFIG_UV_LVL
   int lvl;
   switch (plane) {
-    case 0: lvl = lf->filter_level; break;
+    case 0: lvl = (dir == 1) ? lf->filter_level[1] : lf->filter_level[0]; break;
     case 1: lvl = lf->filter_level_u; break;
     case 2: lvl = lf->filter_level_v; break;
     default: assert(plane >= 0 && plane <= 2); return 0;
@@ -141,7 +145,7 @@ int av1_search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
 #endif  // CONFIG_UV_LVL
 
 #if CONFIG_UV_LVL
-  best_err = try_filter_frame(sd, cpi, filt_mid, partial_frame, plane);
+  best_err = try_filter_frame(sd, cpi, filt_mid, partial_frame, plane, dir);
 #else
   best_err = try_filter_frame(sd, cpi, filt_mid, partial_frame);
 #endif  // CONFIG_UV_LVL
@@ -166,7 +170,7 @@ int av1_search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
       if (ss_err[filt_low] < 0) {
 #if CONFIG_UV_LVL
         ss_err[filt_low] =
-            try_filter_frame(sd, cpi, filt_low, partial_frame, plane);
+            try_filter_frame(sd, cpi, filt_low, partial_frame, plane, dir);
 #else
         ss_err[filt_low] = try_filter_frame(sd, cpi, filt_low, partial_frame);
 #endif  // CONFIG_UV_LVL
@@ -187,7 +191,7 @@ int av1_search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
       if (ss_err[filt_high] < 0) {
 #if CONFIG_UV_LVL
         ss_err[filt_high] =
-            try_filter_frame(sd, cpi, filt_high, partial_frame, plane);
+            try_filter_frame(sd, cpi, filt_high, partial_frame, plane, dir);
 #else
         ss_err[filt_high] = try_filter_frame(sd, cpi, filt_high, partial_frame);
 #endif  // CONFIG_UV_LVL
@@ -224,8 +228,13 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
 
   lf->sharpness_level = cm->frame_type == KEY_FRAME ? 0 : cpi->oxcf.sharpness;
 
-  if (method == LPF_PICK_MINIMAL_LPF && lf->filter_level) {
+  if (method == LPF_PICK_MINIMAL_LPF) {
+#if CONFIG_UV_LVL
+    lf->filter_level[0] = 0;
+    lf->filter_level[1] = 0;
+#else
     lf->filter_level = 0;
+#endif
   } else if (method >= LPF_PICK_FROM_Q) {
     const int min_filter_level = 0;
     const int max_filter_level = av1_get_max_filter_level(cpi);
@@ -254,15 +263,25 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
     int filt_guess = ROUND_POWER_OF_TWO(q * 20723 + 1015158, 18);
 #endif  // CONFIG_HIGHBITDEPTH
     if (cm->frame_type == KEY_FRAME) filt_guess -= 4;
+#if CONFIG_UV_LVL
+    lf->filter_level[0] = clamp(filt_guess, min_filter_level, max_filter_level);
+    lf->filter_level[1] = clamp(filt_guess, min_filter_level, max_filter_level);
+#else
     lf->filter_level = clamp(filt_guess, min_filter_level, max_filter_level);
+#endif
   } else {
 #if CONFIG_UV_LVL
-    lf->filter_level = av1_search_filter_level(
-        sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 0);
+    lf->filter_level[0] = lf->filter_level[1] = av1_search_filter_level(
+        sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 0, 2);
+    lf->filter_level[0] = av1_search_filter_level(
+        sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 0, 0);
+    lf->filter_level[1] = av1_search_filter_level(
+        sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 0, 1);
+
     lf->filter_level_u = av1_search_filter_level(
-        sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 1);
+        sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 1, 0);
     lf->filter_level_v = av1_search_filter_level(
-        sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 2);
+        sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL, 2, 0);
 #else
     lf->filter_level = av1_search_filter_level(
         sd, cpi, method == LPF_PICK_FROM_SUBIMAGE, NULL);
