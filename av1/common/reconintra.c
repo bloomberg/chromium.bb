@@ -44,6 +44,11 @@ enum {
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE
 #endif  // CONFIG_INTRA_EDGE
 
+#define INTRA_USES_EXT_TRANSFORMS \
+  (CONFIG_EXT_INTER || (CONFIG_RECT_TX && (CONFIG_VAR_TX || CONFIG_EXT_TX)))
+#define INTRA_USES_RECT_TRANSFORMS \
+  (CONFIG_RECT_INTRA_PRED && CONFIG_RECT_TX && (CONFIG_VAR_TX || CONFIG_EXT_TX))
+
 static const uint8_t extend_modes[INTRA_MODES] = {
   NEED_ABOVE | NEED_LEFT,                   // DC
   NEED_ABOVE,                               // V
@@ -2450,11 +2455,9 @@ static void build_intra_predictors_high(
   uint16_t *const left_col = left_data + 16;
   const int txwpx = tx_size_wide[tx_size];
   const int txhpx = tx_size_high[tx_size];
-#if !(CONFIG_RECT_INTRA_PRED && CONFIG_RECT_TX && \
-      (CONFIG_VAR_TX || CONFIG_EXT_TX))
+#if !INTRA_USES_RECT_TRANSFORMS
   assert(txwpx == txhpx);
-#endif  // !(CONFIG_RECT_INTRA_PRED && CONFIG_RECT_TX &&
-        // (CONFIG_VAR_TX || CONFIG_EXT_TX))
+#endif  // !INTRA_USES_RECT_TRANSFORMS
   int need_left = extend_modes[mode] & NEED_LEFT;
   int need_above = extend_modes[mode] & NEED_ABOVE;
   int need_above_left = extend_modes[mode] & NEED_ABOVELEFT;
@@ -2696,11 +2699,9 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   uint8_t *const left_col = left_data + 16;
   const int txwpx = tx_size_wide[tx_size];
   const int txhpx = tx_size_high[tx_size];
-#if !(CONFIG_RECT_INTRA_PRED && CONFIG_RECT_TX && \
-      (CONFIG_VAR_TX || CONFIG_EXT_TX))
+#if !INTRA_USES_RECT_TRANSFORMS
   assert(txwpx == txhpx);
-#endif  // !(CONFIG_RECT_INTRA_PRED && CONFIG_RECT_TX &&
-        // (CONFIG_VAR_TX || CONFIG_EXT_TX))
+#endif  // !INTRA_USES_RECT_TRANSFORMS
   int need_left = extend_modes[mode] & NEED_LEFT;
   int need_above = extend_modes[mode] & NEED_ABOVE;
   int need_above_left = extend_modes[mode] & NEED_ABOVELEFT;
@@ -2949,11 +2950,9 @@ static void predict_intra_block_helper(const MACROBLOCKD *xd, int wpx, int hpx,
   const int mi_col = -xd->mb_to_left_edge >> (3 + MI_SIZE_LOG2);
   const int txwpx = tx_size_wide[tx_size];
   const int txhpx = tx_size_high[tx_size];
-#if !(CONFIG_RECT_INTRA_PRED && CONFIG_RECT_TX && \
-      (CONFIG_VAR_TX || CONFIG_EXT_TX))
+#if !INTRA_USES_RECT_TRANSFORMS
   assert(txwpx == txhpx);
-#endif  // !(CONFIG_RECT_INTRA_PRED && CONFIG_RECT_TX &&
-        // (CONFIG_VAR_TX || CONFIG_EXT_TX))
+#endif  // !INTRA_USES_RECT_TRANSFORMS
 #if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2 && !CONFIG_CHROMA_SUB8X8
   const int xr_chr_offset = (pd->subsampling_x && bsize < BLOCK_8X8) ? 2 : 0;
   const int yd_chr_offset = (pd->subsampling_y && bsize < BLOCK_8X8) ? 2 : 0;
@@ -3075,6 +3074,109 @@ void av1_predict_intra_block_facade(MACROBLOCKD *xd, int plane, int block_idx,
                           blk_row, plane);
 }
 
+// Copy the given row of dst into the equivalent row of ref, saving
+// the overwritten data to tmp. Returns zero if no copy happened (so
+// no restore is needed)
+//
+// Note that ref_row and dst_row follow the usual hibd convention
+// where you convert to a uint16_t* with CONVERT_TO_SHORTPTR(). tmp
+// does not follow that convention: it's a genuine pointer which is
+// correctly aligned and sized for either 8 or 16 bit data.
+//
+// matching_strides is a boolean flag which should be nonzero if ref
+// and dst have the same stride.
+static int overwrite_ref_row(int matching_strides, int buf_flags,
+                             int block_width, const uint8_t *dst_row,
+                             uint8_t *ref_row, uint8_t *tmp_row) {
+  if (ref_row == dst_row && matching_strides) return 0;
+
+  int row_bytes = block_width;
+
+#if CONFIG_HIGHBITDEPTH
+  if (buf_flags & YV12_FLAG_HIGHBITDEPTH) {
+    row_bytes *= 2;
+    ref_row = (uint8_t *)CONVERT_TO_SHORTPTR(ref_row);
+    dst_row = (const uint8_t *)CONVERT_TO_SHORTPTR(dst_row);
+  }
+#else
+  (void)buf_flags;
+#endif  // CONFIG_HIGHBITDEPTH
+
+  memcpy(tmp_row, ref_row, row_bytes);
+  memcpy(ref_row, dst_row, row_bytes);
+  return 1;
+}
+
+static void restore_ref_row(int buf_flags, int block_width,
+                            const uint8_t *tmp_row, uint8_t *ref_row) {
+  int row_bytes = block_width;
+#if CONFIG_HIGHBITDEPTH
+  if (buf_flags & YV12_FLAG_HIGHBITDEPTH) {
+    row_bytes *= 2;
+    ref_row = (uint8_t *)CONVERT_TO_SHORTPTR(ref_row);
+  }
+#else
+  (void)buf_flags;
+#endif  // CONFIG_HIGHBITDEPTH
+
+  memcpy(ref_row, tmp_row, row_bytes);
+}
+
+// The column equivalent of overwrite_ref_row. ref_row and dst_row
+// point at the relevant column of the first row of the block.
+static int overwrite_ref_col(int buf_flags, int block_height,
+                             const uint8_t *dst_row, int dst_stride,
+                             uint8_t *ref_row, int ref_stride,
+                             uint8_t *tmp_row) {
+  if (ref_row == dst_row && ref_stride == dst_stride) return 0;
+
+#if CONFIG_HIGHBITDEPTH
+  if (buf_flags & YV12_FLAG_HIGHBITDEPTH) {
+    uint16_t *tmp_16 = (uint16_t *)tmp_row;
+    uint16_t *ref_16 = CONVERT_TO_SHORTPTR(ref_row);
+    const uint16_t *dst_16 = CONVERT_TO_SHORTPTR(dst_row);
+
+    for (int i = 0; i < block_height; ++i) {
+      tmp_16[i] = ref_16[i * ref_stride];
+      ref_16[i * ref_stride] = dst_16[i * dst_stride];
+    }
+  } else {
+#endif  // CONFIG_HIGHBITDEPTH
+    for (int i = 0; i < block_height; ++i) {
+      tmp_row[i] = ref_row[i * ref_stride];
+      ref_row[i * ref_stride] = dst_row[i * dst_stride];
+    }
+#if CONFIG_HIGHBITDEPTH
+  }
+#else
+  (void)buf_flags;
+#endif  // CONFIG_HIGHBITDEPTH
+  return 1;
+}
+
+static void restore_ref_col(int buf_flags, int block_height,
+                            const uint8_t *tmp_row, uint8_t *ref_row,
+                            int ref_stride) {
+#if CONFIG_HIGHBITDEPTH
+  if (buf_flags & YV12_FLAG_HIGHBITDEPTH) {
+    const uint16_t *tmp_16 = (const uint16_t *)tmp_row;
+    uint16_t *ref_16 = CONVERT_TO_SHORTPTR(ref_row);
+
+    for (int i = 0; i < block_height; ++i) {
+      ref_16[i * ref_stride] = tmp_16[i];
+    }
+  } else {
+#endif  // CONFIG_HIGHBITDEPTH
+    for (int i = 0; i < block_height; ++i) {
+      ref_row[i * ref_stride] = tmp_row[i];
+    }
+#if CONFIG_HIGHBITDEPTH
+  }
+#else
+  (void)buf_flags;
+#endif  // CONFIG_HIGHBITDEPTH
+}
+
 void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
                              BLOCK_SIZE bsize, PREDICTION_MODE mode,
                              const uint8_t *ref, int ref_stride, uint8_t *dst,
@@ -3082,186 +3184,133 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
                              int plane) {
   const int block_width = block_size_wide[bsize];
   const int block_height = block_size_high[bsize];
-#if CONFIG_RECT_INTRA_PRED && CONFIG_RECT_TX && (CONFIG_VAR_TX || CONFIG_EXT_TX)
+#if INTRA_USES_RECT_TRANSFORMS
   const TX_SIZE tx_size = max_txsize_rect_lookup[bsize];
   assert(tx_size < TX_SIZES_ALL);
 #else
   const TX_SIZE tx_size = max_txsize_lookup[bsize];
   assert(tx_size < TX_SIZES);
-#endif  // CONFIG_RECT_INTRA_PRED && CONFIG_RECT_TX && (CONFIG_VAR_TX ||
-        // CONFIG_EXT_TX)
+#endif  // INTRA_USES_RECT_TRANSFORMS
 
-  if (block_width == block_height) {
-    predict_intra_block_helper(xd, wpx, hpx, tx_size, mode, ref, ref_stride,
-                               dst, dst_stride, col_off, row_off, plane);
-  } else {
-#if (CONFIG_RECT_TX && (CONFIG_VAR_TX || CONFIG_EXT_TX)) || (CONFIG_EXT_INTER)
-    assert((block_width == wpx && block_height == hpx) ||
-           (block_width == (wpx >> 1) && block_height == hpx) ||
-           (block_width == wpx && block_height == (hpx >> 1)));
-#if CONFIG_HIGHBITDEPTH
-    uint16_t tmp16[MAX_SB_SIZE];
-#endif  // CONFIG_HIGHBITDEPTH
-    uint8_t tmp[MAX_SB_SIZE];
+  // Start by running the helper to predict either the entire block
+  // (if the block is square or the same size as tx_size) or the top
+  // or left of the block if it's tall and thin or short and wide.
+  predict_intra_block_helper(xd, wpx, hpx, tx_size, mode, ref, ref_stride, dst,
+                             dst_stride, col_off, row_off, plane);
 
-    if (block_width < block_height) {
-      assert(block_height == (block_width << 1));
-      // Predict the top square sub-block.
-      predict_intra_block_helper(xd, wpx, hpx, tx_size, mode, ref, ref_stride,
-                                 dst, dst_stride, col_off, row_off, plane);
-#if CONFIG_RECT_INTRA_PRED && CONFIG_RECT_TX && (CONFIG_VAR_TX || CONFIG_EXT_TX)
-      if (block_width == tx_size_wide[tx_size] &&
-          block_height == tx_size_high[tx_size]) {  // Most common case.
-        return;                                     // We are done.
-      } else {
-// Can only happen for large rectangular block sizes as such large
-// transform sizes aren't available.
-#if CONFIG_EXT_PARTITION
-        assert(bsize == BLOCK_32X64 || bsize == BLOCK_64X128);
+// If we're not using extended transforms, this function should
+// always be called with a square block.
+#if !INTRA_USES_EXT_TRANSFORMS
+  assert(block_width == block_height);
+#endif  // !INTRA_USES_EXT_TRANSFORMS
+
+  // If the block is square, we're done.
+  if (block_width == block_height) return;
+
+#if INTRA_USES_EXT_TRANSFORMS
+// If we're using rectangular transforms, we might be done even
+// though the block isn't square.
+#if INTRA_USES_RECT_TRANSFORMS
+  if (block_width == tx_size_wide[tx_size] &&
+      block_height == tx_size_high[tx_size])
+    return;
+
+  // A block should only fail to have a matching transform if it's
+  // large and rectangular (such large transform sizes aren't
+  // available).
+  assert(block_width >= 32 && block_height >= 32);
+#endif  // INTRA_USES_RECT_TRANSFORMS
+
+  assert((block_width == wpx && block_height == hpx) ||
+         (block_width == (wpx >> 1) && block_height == hpx) ||
+         (block_width == wpx && block_height == (hpx >> 1)));
+
+// The tmp buffer needs to be big enough to hold MAX_SB_SIZE samples
+// from the image. If CONFIG_HIGHBITDEPTH is enabled, it also needs
+// to be big enough and correctly aligned to hold 16-bit entries.
+#if CONFIG_HIGHBITDEPTH
+  uint16_t tmp_buf[MAX_SB_SIZE];
 #else
-        assert(bsize == BLOCK_32X64);
-#endif  // CONFIG_EXT_PARTITION
-#if CONFIG_TX64X64
-        assert(tx_size == TX_32X32 || tx_size == TX_64X64);
-#else
-        assert(tx_size == TX_32X32);
-#endif  // CONFIG_TX64X64
-        // In this case, we continue to the bottom square sub-block.
-      }
-#endif  // CONFIG_RECT_INTRA_PRED && CONFIG_RECT_TX && (CONFIG_VAR_TX ||
-      // CONFIG_EXT_TX)
-      {
-        const int half_block_height = block_height >> 1;
-        const int half_block_height_unit =
-            half_block_height >> tx_size_wide_log2[0];
-        // Cast away const to modify 'ref' temporarily; will be restored later.
-        uint8_t *src_2 = (uint8_t *)ref + half_block_height * ref_stride;
-        uint8_t *dst_2 = dst + half_block_height * dst_stride;
-        const int row_off_2 = row_off + half_block_height_unit;
-        // Save the last row of top square sub-block as 'above' row for bottom
-        // square sub-block.
-        if (src_2 != dst_2 || ref_stride != dst_stride) {
-#if CONFIG_HIGHBITDEPTH
-          if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-            uint16_t *src_2_16 = CONVERT_TO_SHORTPTR(src_2);
-            uint16_t *dst_2_16 = CONVERT_TO_SHORTPTR(dst_2);
-            memcpy(tmp16, src_2_16 - ref_stride,
-                   block_width * sizeof(*src_2_16));
-            memcpy(src_2_16 - ref_stride, dst_2_16 - dst_stride,
-                   block_width * sizeof(*src_2_16));
-          } else {
+  uint8_t tmp_buf[MAX_SB_SIZE];
 #endif  // CONFIG_HIGHBITDEPTH
-            memcpy(tmp, src_2 - ref_stride, block_width * sizeof(*src_2));
-            memcpy(src_2 - ref_stride, dst_2 - dst_stride,
-                   block_width * sizeof(*src_2));
-#if CONFIG_HIGHBITDEPTH
-          }
-#endif  // CONFIG_HIGHBITDEPTH
-        }
-        // Predict the bottom square sub-block.
-        predict_intra_block_helper(xd, wpx, hpx, tx_size, mode, src_2,
-                                   ref_stride, dst_2, dst_stride, col_off,
-                                   row_off_2, plane);
-        // Restore the last row of top square sub-block.
-        if (src_2 != dst_2 || ref_stride != dst_stride) {
-#if CONFIG_HIGHBITDEPTH
-          if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-            uint16_t *src_2_16 = CONVERT_TO_SHORTPTR(src_2);
-            memcpy(src_2_16 - ref_stride, tmp16,
-                   block_width * sizeof(*src_2_16));
-          } else {
-#endif  // CONFIG_HIGHBITDEPTH
-            memcpy(src_2 - ref_stride, tmp, block_width * sizeof(*src_2));
-#if CONFIG_HIGHBITDEPTH
-          }
-#endif  // CONFIG_HIGHBITDEPTH
-        }
-      }
-    } else {  // block_width > block_height
-      assert(block_width == (block_height << 1));
-      // Predict the left square sub-block
-      predict_intra_block_helper(xd, wpx, hpx, tx_size, mode, ref, ref_stride,
-                                 dst, dst_stride, col_off, row_off, plane);
-#if CONFIG_RECT_INTRA_PRED && CONFIG_RECT_TX && (CONFIG_VAR_TX || CONFIG_EXT_TX)
-      if (block_width == tx_size_wide[tx_size] &&
-          block_height == tx_size_high[tx_size]) {  // Most common case.
-        return;                                     // We are done.
-      } else {
-// Can only happen for large rectangular block sizes as such large
-// transform sizes aren't available.
-#if CONFIG_EXT_PARTITION
-        assert(bsize == BLOCK_64X32 || bsize == BLOCK_128X64);
-#else
-        assert(bsize == BLOCK_64X32);
-#endif  // CONFIG_EXT_PARTITION
-#if CONFIG_TX64X64
-        assert(tx_size == TX_32X32 || tx_size == TX_64X64);
-#else
-        assert(tx_size == TX_32X32);
-#endif  // CONFIG_TX64X64
-        // In this case, we continue to the right square sub-block.
-      }
-#endif  // CONFIG_RECT_INTRA_PRED && CONFIG_RECT_TX && (CONFIG_VAR_TX ||
-      // CONFIG_EXT_TX)
-      {
-        int i;
-        const int half_block_width = block_width >> 1;
-        const int half_block_width_unit =
-            half_block_width >> tx_size_wide_log2[0];
-        // Cast away const to modify 'ref' temporarily; will be restored later.
-        uint8_t *src_2 = (uint8_t *)ref + half_block_width;
-        uint8_t *dst_2 = dst + half_block_width;
-        const int col_off_2 = col_off + half_block_width_unit;
-        // Save the last column of left square sub-block as 'left' column for
-        // right square sub-block.
-        const int save_src = src_2 != dst_2 || ref_stride != dst_stride;
-        if (save_src) {
-#if CONFIG_HIGHBITDEPTH
-          if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-            uint16_t *src_2_16 = CONVERT_TO_SHORTPTR(src_2);
-            uint16_t *dst_2_16 = CONVERT_TO_SHORTPTR(dst_2);
-            for (i = 0; i < block_height; ++i) {
-              tmp16[i] = src_2_16[i * ref_stride - 1];
-              src_2_16[i * ref_stride - 1] = dst_2_16[i * dst_stride - 1];
-            }
-          } else {
-#endif  // CONFIG_HIGHBITDEPTH
-            for (i = 0; i < block_height; ++i) {
-              tmp[i] = src_2[i * ref_stride - 1];
-              src_2[i * ref_stride - 1] = dst_2[i * dst_stride - 1];
-            }
-#if CONFIG_HIGHBITDEPTH
-          }
-#endif  // CONFIG_HIGHBITDEPTH
-        }
-        // Predict the right square sub-block.
-        predict_intra_block_helper(xd, wpx, hpx, tx_size, mode, src_2,
-                                   ref_stride, dst_2, dst_stride, col_off_2,
-                                   row_off, plane);
-        // Restore the last column of left square sub-block.
-        if (save_src) {
-#if CONFIG_HIGHBITDEPTH
-          if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-            uint16_t *src_2_16 = CONVERT_TO_SHORTPTR(src_2);
-            for (i = 0; i < block_height; ++i) {
-              src_2_16[i * ref_stride - 1] = tmp16[i];
-            }
-          } else {
-#endif  // CONFIG_HIGHBITDEPTH
-            for (i = 0; i < block_height; ++i) {
-              src_2[i * ref_stride - 1] = tmp[i];
-            }
-#if CONFIG_HIGHBITDEPTH
-          }
-#endif  // CONFIG_HIGHBITDEPTH
-        }
-      }
+  uint8_t *tmp = (uint8_t *)tmp_buf;
+
+  if (block_width < block_height) {
+    // The block is tall and thin. We've already done the top part,
+    // and need to repeat the prediction down the rest of the block.
+
+    const int tx_height = tx_size_high[tx_size];
+    const int tx_height_off = tx_height >> tx_size_wide_log2[0];
+    assert(tx_height_off << tx_size_wide_log2[0] == tx_height);
+
+    int next_row_off = row_off + tx_height_off;
+    int next_row_idx = tx_height;
+
+    while (next_row_idx < block_height) {
+      const int last_row_idx = next_row_idx - 1;
+
+      // Cast away the const to make a mutable pointer to the last
+      // row of ref. This will be snapshotted and restored later.
+      uint8_t *last_ref_row = (uint8_t *)ref + last_row_idx * ref_stride;
+      uint8_t *last_dst_row = dst + last_row_idx * dst_stride;
+
+      const int needs_restore =
+          overwrite_ref_row(ref_stride == dst_stride, xd->cur_buf->flags,
+                            block_width, last_dst_row, last_ref_row, tmp);
+
+      const uint8_t *next_ref_row = ref + next_row_idx * ref_stride;
+      uint8_t *next_dst_row = dst + next_row_idx * dst_stride;
+
+      predict_intra_block_helper(xd, wpx, hpx, tx_size, mode, next_ref_row,
+                                 ref_stride, next_dst_row, dst_stride, col_off,
+                                 next_row_off, plane);
+
+      if (needs_restore)
+        restore_ref_row(xd->cur_buf->flags, block_width, tmp, last_ref_row);
+
+      next_row_idx += tx_height;
+      next_row_off += tx_height_off;
     }
-#else
-    assert(0);
-#endif  // (CONFIG_RECT_TX && (CONFIG_VAR_TX || CONFIG_EXT_TX)) ||
-        // (CONFIG_EXT_INTER)
+  } else {
+    // The block is short and wide. We've already done the left part,
+    // and need to repeat the prediction to the right.
+
+    const int tx_width = tx_size_wide[tx_size];
+    const int tx_width_off = tx_width >> tx_size_wide_log2[0];
+    assert(tx_width_off << tx_size_wide_log2[0] == tx_width);
+
+    int next_col_off = col_off + tx_width_off;
+    int next_col_idx = tx_width;
+
+    while (next_col_idx < block_width) {
+      const int last_col_idx = next_col_idx - 1;
+
+      // Cast away the const to make a mutable pointer to ref,
+      // starting at the last column written. This will be
+      // snapshotted and restored later.
+      uint8_t *last_ref_col = (uint8_t *)ref + last_col_idx;
+      uint8_t *last_dst_col = dst + last_col_idx;
+
+      const int needs_restore =
+          overwrite_ref_col(xd->cur_buf->flags, block_height, last_dst_col,
+                            dst_stride, last_ref_col, ref_stride, tmp);
+
+      const uint8_t *next_ref_col = ref + next_col_idx;
+      uint8_t *next_dst_col = dst + next_col_idx;
+
+      predict_intra_block_helper(xd, wpx, hpx, tx_size, mode, next_ref_col,
+                                 ref_stride, next_dst_col, dst_stride,
+                                 next_col_off, row_off, plane);
+
+      if (needs_restore)
+        restore_ref_col(xd->cur_buf->flags, block_height, tmp, last_ref_col,
+                        ref_stride);
+
+      next_col_idx += tx_width;
+      next_col_off += tx_width_off;
+    }
   }
+#endif  // INTRA_USES_EXT_TRANSFORMS
 }
 
 void av1_init_intra_predictors(void) {
