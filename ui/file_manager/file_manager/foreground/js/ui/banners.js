@@ -22,7 +22,7 @@ function Banners(
   this.showWelcome_ = showWelcome;
   this.driveEnabled_ = false;
 
-  this.initializeWelcomeBanner_();
+  this.usePromoWelcomeBanner_ = true;
   this.privateOnDirectoryChangedBound_ =
       this.privateOnDirectoryChanged_.bind(this);
 
@@ -143,18 +143,6 @@ var DOWNLOADS_SPACE_WARNING_THRESHOLD_SIZE = 1 * 1024 * 1024 * 1024;
  * @const {number}
  */
 var DOWNLOADS_SPACE_WARNING_DISMISS_DURATION = 36 * 60 * 60 * 1000;
-
-/**
- * Initializes the banner to promote DRIVE.
- * This method must be called before any of showing banner functions, and
- * also before registering them as callbacks.
- * @private
- */
-Banners.prototype.initializeWelcomeBanner_ = function() {
-  this.usePromoWelcomeBanner_ = !util.boardIs('x86-mario') &&
-                                !util.boardIs('x86-zgb') &&
-                                !util.boardIs('x86-alex');
-};
 
 /**
  * @param {number} value How many times the Drive Welcome header banner
