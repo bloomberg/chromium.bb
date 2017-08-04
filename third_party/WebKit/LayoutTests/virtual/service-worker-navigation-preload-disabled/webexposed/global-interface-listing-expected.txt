@@ -5199,7 +5199,6 @@ interface RTCPeerConnection : EventTarget
     method getRemoteStreams
     method getSenders
     method getStats
-    method getStreamById
     method removeStream
     method removeTrack
     method setConfiguration
@@ -8849,7 +8848,6 @@ interface webkitRTCPeerConnection : EventTarget
     method getRemoteStreams
     method getSenders
     method getStats
-    method getStreamById
     method removeStream
     method removeTrack
     method setConfiguration

@@ -489,10 +489,6 @@ String Deprecation::DeprecationMessage(WebFeature feature) {
              "https://www.chromestatus.com/feature/5735596811091968 for more "
              "details.";
 
-    case WebFeature::kV8RTCPeerConnection_GetStreamById_Method:
-      return willBeRemoved("RTCPeerConnection.getStreamById()", M62,
-                           "5751819573657600");
-
     case WebFeature::kV8SVGPathElement_GetPathSegAtLength_Method:
       return willBeRemoved("SVGPathElement.getPathSegAtLength", M62,
                            "5638783282184192");
