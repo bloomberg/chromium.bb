@@ -5,6 +5,7 @@
 #ifndef CC_OUTPUT_DC_LAYER_OVERLAY_H_
 #define CC_OUTPUT_DC_LAYER_OVERLAY_H_
 
+#include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
 #include "cc/quads/render_pass.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -60,10 +61,13 @@ class CC_EXPORT DCLayerOverlay {
   // If |rpdq| is present, then the renderer must draw the filter effects and
   // copy the result into an IOSurface.
   const RenderPassDrawQuad* rpdq = nullptr;
+
   // This is the color-space the texture should be displayed as. If invalid,
   // then the default for the texture should be used. For YUV textures, that's
   // normally BT.709.
   gfx::ColorSpace color_space;
+
+  bool require_overlay = false;
 };
 
 typedef std::vector<DCLayerOverlay> DCLayerOverlayList;
@@ -82,8 +86,12 @@ class DCLayerOverlayProcessor {
     DC_LAYER_FAILED_COMPLEX_TRANSFORM,
     DC_LAYER_FAILED_TRANSPARENT,
     DC_LAYER_FAILED_NON_ROOT,
+    DC_LAYER_FAILED_TOO_MANY_OVERLAYS,
     DC_LAYER_FAILED_MAX,
   };
+
+  DCLayerOverlayProcessor();
+  ~DCLayerOverlayProcessor();
 
   void Process(ResourceProvider* resource_provider,
                const gfx::RectF& display_rect,
@@ -102,6 +110,10 @@ class DCLayerOverlayProcessor {
                              QuadList::ConstIterator quad_list_begin,
                              QuadList::ConstIterator quad,
                              DCLayerOverlay* ca_layer_overlay);
+  // Returns an iterator to the element after |it|.
+  QuadList::Iterator ProcessRenderPassDrawQuad(RenderPass* render_pass,
+                                               gfx::Rect* damage_rect,
+                                               QuadList::Iterator it);
   void ProcessRenderPass(ResourceProvider* resource_provider,
                          const gfx::RectF& display_rect,
                          RenderPass* render_pass,
@@ -113,7 +125,7 @@ class DCLayerOverlayProcessor {
                          QuadList* quad_list,
                          const gfx::Rect& quad_rectangle,
                          const gfx::RectF& occlusion_bounding_box,
-                         const QuadList::Iterator& it,
+                         QuadList::Iterator* it,
                          gfx::Rect* damage_rect);
   bool ProcessForUnderlay(const gfx::RectF& display_rect,
                           RenderPass* render_pass,
@@ -128,6 +140,18 @@ class DCLayerOverlayProcessor {
   gfx::Rect previous_frame_underlay_rect_;
   gfx::Rect previous_occlusion_bounding_box_;
   gfx::RectF previous_display_rect_;
+  bool processed_overlay_in_frame_ = false;
+
+  // Store information about punch-through rectangles for non-root
+  // RenderPasses. These rectangles are used to clear the corresponding areas
+  // in parent renderpasses.
+  struct PunchThroughRect {
+    gfx::Rect rect;
+    gfx::Transform transform_to_target;
+    float opacity;
+  };
+
+  base::flat_map<RenderPassId, std::vector<PunchThroughRect>> pass_info_;
 };
 
 }  // namespace cc

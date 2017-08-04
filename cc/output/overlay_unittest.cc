@@ -460,7 +460,6 @@ using SingleOverlayOnTopTest = OverlayTest<SingleOnTopOverlayValidator>;
 using UnderlayTest = OverlayTest<UnderlayOverlayValidator>;
 using UnderlayCastTest = OverlayTest<UnderlayCastOverlayValidator>;
 using CALayerOverlayTest = OverlayTest<CALayerValidator>;
-using DCLayerOverlayTest = OverlayTest<DCLayerValidator>;
 
 TEST(OverlayTest, NoOverlaysByDefault) {
   scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
@@ -1919,7 +1918,20 @@ TEST_F(CALayerOverlayTest, SkipTransparent) {
   EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
 }
 
-TEST_F(DCLayerOverlayTest, AllowNonAxisAlignedTransform) {
+class DCLayerOverlayTest : public OverlayTest<DCLayerValidator>,
+                           public ::testing::WithParamInterface<bool> {
+  void SetUp() override {
+    OverlayTest<DCLayerValidator>::SetUp();
+    if (GetParam())
+      feature_list_.InitAndEnableFeature(
+          features::kDirectCompositionNonrootOverlays);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_P(DCLayerOverlayTest, AllowNonAxisAlignedTransform) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       features::kDirectCompositionComplexOverlays);
@@ -1950,7 +1962,39 @@ TEST_F(DCLayerOverlayTest, AllowNonAxisAlignedTransform) {
   EXPECT_EQ(gfx::Rect(1, 1, 10, 10), damage_rect_);
 }
 
-TEST_F(DCLayerOverlayTest, Occluded) {
+TEST_P(DCLayerOverlayTest, AllowRequiredNonAxisAlignedTransform) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kDirectCompositionNonrootOverlays);
+  std::unique_ptr<RenderPass> pass = CreateRenderPass();
+  YUVVideoDrawQuad* yuv_quad = CreateFullscreenCandidateYUVVideoQuad(
+      resource_provider_.get(), pass->shared_quad_state_list.back(),
+      pass.get());
+  yuv_quad->require_overlay = true;
+  pass->shared_quad_state_list.back()
+      ->quad_to_target_transform.RotateAboutZAxis(45.f);
+
+  gfx::Rect damage_rect;
+  DCLayerOverlayList dc_layer_list;
+  OverlayCandidateList overlay_list;
+  OverlayProcessor::FilterOperationsMap render_pass_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  damage_rect_ = gfx::Rect(1, 1, 10, 10);
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(pass));
+  overlay_processor_->ProcessForOverlays(
+      resource_provider_.get(), &pass_list, render_pass_filters,
+      render_pass_background_filters, &overlay_list, nullptr, &dc_layer_list,
+      &damage_rect_, &content_bounds_);
+  EXPECT_EQ(gfx::Rect(), damage_rect);
+  EXPECT_EQ(0U, overlay_list.size());
+  ASSERT_EQ(1U, dc_layer_list.size());
+  EXPECT_EQ(1, dc_layer_list.back().shared_state->z_order);
+  EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
+  EXPECT_EQ(gfx::Rect(1, 1, 10, 10), damage_rect_);
+}
+
+TEST_P(DCLayerOverlayTest, Occluded) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kDirectCompositionUnderlays);
   {
@@ -2014,7 +2058,7 @@ TEST_F(DCLayerOverlayTest, Occluded) {
   }
 }
 
-TEST_F(DCLayerOverlayTest, DamageRect) {
+TEST_P(DCLayerOverlayTest, DamageRect) {
   for (int i = 0; i < 2; i++) {
     std::unique_ptr<RenderPass> pass = CreateRenderPass();
     CreateFullscreenCandidateYUVVideoQuad(resource_provider_.get(),
@@ -2048,7 +2092,75 @@ TEST_F(DCLayerOverlayTest, DamageRect) {
   }
 }
 
-TEST_F(DCLayerOverlayTest, ClipRect) {
+TEST_P(DCLayerOverlayTest, MultiplePassDamageRect) {
+  for (int i = 0; i < 2; i++) {
+    RenderPassId child_pass_id(5);
+    std::unique_ptr<RenderPass> pass1 = CreateRenderPass();
+    pass1->id = child_pass_id;
+    YUVVideoDrawQuad* yuv_quad = CreateFullscreenCandidateYUVVideoQuad(
+        resource_provider_.get(), pass1->shared_quad_state_list.back(),
+        pass1.get());
+    yuv_quad->require_overlay = true;
+    pass1->damage_rect = gfx::Rect();
+    pass1->transform_to_root_target.Translate(0, 100);
+    pass1->shared_quad_state_list.back()->opacity = 0.9f;
+
+    std::unique_ptr<RenderPass> pass2 = CreateRenderPass();
+
+    gfx::Rect rect(0, 0, 1, 1);
+    RenderPassDrawQuad* render_pass_quad =
+        pass2->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
+    render_pass_quad->SetNew(pass2->shared_quad_state_list.back(), rect, rect,
+                             child_pass_id, 0, gfx::RectF(), gfx::Size(),
+                             gfx::Vector2dF(), gfx::PointF(),
+                             gfx::RectF(0, 0, 1, 1));
+    pass2->shared_quad_state_list.back()->quad_to_target_transform =
+        pass1->transform_to_root_target;
+    pass2->shared_quad_state_list.back()->opacity = 0.8f;
+    pass2->damage_rect = gfx::Rect();
+
+    gfx::Rect damage_rect;
+    DCLayerOverlayList dc_layer_list;
+    OverlayCandidateList overlay_list;
+    OverlayProcessor::FilterOperationsMap render_pass_filters;
+    OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+    damage_rect_ = gfx::Rect();
+    RenderPassList pass_list;
+    pass_list.push_back(std::move(pass1));
+    pass_list.push_back(std::move(pass2));
+    overlay_processor_->ProcessForOverlays(
+        resource_provider_.get(), &pass_list, render_pass_filters,
+        render_pass_background_filters, &overlay_list, nullptr, &dc_layer_list,
+        &damage_rect_, &content_bounds_);
+    EXPECT_EQ(gfx::Rect(), damage_rect);
+    EXPECT_EQ(0U, overlay_list.size());
+    EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
+    if (GetParam()) {
+      // With nonroot overlays enabled, the portions of both RenderPasses
+      // corresponding to the overlay should always be damaged.
+      ASSERT_EQ(1U, dc_layer_list.size());
+      EXPECT_EQ(-1, dc_layer_list.back().shared_state->z_order);
+      EXPECT_EQ(gfx::Rect(0, 0, 256, 256), pass_list[0]->damage_rect);
+      EXPECT_EQ(gfx::Rect(0, 100, 256, 156), damage_rect_);
+      gfx::Rect overlay_damage = overlay_processor_->GetAndResetOverlayDamage();
+      EXPECT_EQ(gfx::Rect(0, 100, 256, 256), overlay_damage);
+
+      EXPECT_EQ(1u, pass_list[0]->quad_list.size());
+      EXPECT_EQ(0.9f,
+                pass_list[0]->quad_list.back()->shared_quad_state->opacity);
+      EXPECT_EQ(2u, pass_list[1]->quad_list.size());
+      EXPECT_EQ(0.9f * 0.8f,
+                pass_list[1]->quad_list.back()->shared_quad_state->opacity);
+    } else {
+      // Without nonroot overlays, no overlays should be created.
+      EXPECT_EQ(0U, dc_layer_list.size());
+      EXPECT_EQ(1u, pass_list[0]->quad_list.size());
+      EXPECT_EQ(1u, pass_list[1]->quad_list.size());
+    }
+  }
+}
+
+TEST_P(DCLayerOverlayTest, ClipRect) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kDirectCompositionUnderlays);
 
@@ -2094,7 +2206,7 @@ TEST_F(DCLayerOverlayTest, ClipRect) {
   }
 }
 
-TEST_F(DCLayerOverlayTest, TransparentOnTop) {
+TEST_P(DCLayerOverlayTest, TransparentOnTop) {
   base::test::ScopedFeatureList feature_list;
 
   // Process twice. The second time through the overlay list shouldn't change,
@@ -2125,6 +2237,8 @@ TEST_F(DCLayerOverlayTest, TransparentOnTop) {
     EXPECT_EQ(gfx::Rect(1, 1, 10, 10), damage_rect_);
   }
 }
+
+INSTANTIATE_TEST_CASE_P(, DCLayerOverlayTest, ::testing::Bool());
 
 class OverlayInfoRendererGL : public viz::GLRenderer {
  public:
