@@ -81,9 +81,9 @@ make_core_generated_deps = [
 
 # TODO(shend): Remove this once everything that uses this switches over to
 # the 'code_generator' template instead.
-# Template to run most of scripts that process "*.in" files.
+# Template to run most of scripts that process "*.json5" files.
 #   script: script to run.
-#   in_files: ".in" files to pass to the script
+#   in_files: input ".json5" files to pass to the script
 #   other_inputs: (optional) other input files the script depends on
 #                 defaults to "scripts_for_json5_files" (if specified, we assume
 #                 that the contents of "scripts_for_json5_files" are included in
@@ -93,7 +93,7 @@ make_core_generated_deps = [
 #   other_args: (optional) other arguments to pass to the script.
 #   deps [optional]:
 #     Depenendencies. If unspecified defaults to make_core_generated_deps.
-template("process_in_files") {
+template("process_json5_files") {
   action(target_name) {
     script = invoker.script
 
@@ -178,10 +178,10 @@ template("code_generator") {
 }
 
 # Template for scripts using css_properties.py. This is a special case of
-# process_in_files.
+# process_json5_files.
 #   outputs: expected results
 template("css_properties") {
-  process_in_files(target_name) {
+  process_json5_files(target_name) {
     script = invoker.script
     in_files = [ "css/CSSProperties.json5" ]
     if (defined(invoker.in_files)) {
@@ -200,13 +200,13 @@ template("css_properties") {
 }
 
 # Template to run the make_names script. This is a special case of
-# process_in_files.
-#   in_files: files to pass to the script
+# process_json5_files.
+#   in_files: input files to pass to the script
 #   outputs: expected results
 #   deps [optional]:
-#     Dependencies. See process_in_files for definition.
+#     Dependencies. See process_json5_files for definition.
 template("make_names") {
-  process_in_files(target_name) {
+  process_json5_files(target_name) {
     script = "//third_party/WebKit/Source/build/scripts/make_names.py"
     other_inputs = make_names_files
     forward_variables_from(invoker,
@@ -221,11 +221,11 @@ template("make_names") {
 }
 
 # Template to run the make_qualified_names script. This is a special case of
-# process_in_files.
-#   in_files: list of ".in" files to process.
+# process_json5_files.
+#   in_files: list of input ".json5" files to process.
 #   outputs: list of output files
 template("make_qualified_names") {
-  process_in_files(target_name) {
+  process_json5_files(target_name) {
     script = "//third_party/WebKit/Source/build/scripts/make_qualified_names.py"
     in_files = invoker.in_files
     other_inputs = make_qualified_names_files
@@ -234,13 +234,13 @@ template("make_qualified_names") {
 }
 
 # Calls the make_event_factory script. This is a special case of
-# process_in_files.
-#   in_files: list of ".in" files to process.
+# process_json5_files.
+#   in_files: list of input ".json5" files to process.
 #   outputs: list of output files
 #   deps [optional]
-#     Dependencies. See process_in_files for definition.
+#     Dependencies. See process_json5_files for definition.
 template("make_event_factory") {
-  process_in_files(target_name) {
+  process_json5_files(target_name) {
     script = "//third_party/WebKit/Source/build/scripts/make_event_factory.py"
     other_inputs = make_event_factory_files
     forward_variables_from(invoker,
