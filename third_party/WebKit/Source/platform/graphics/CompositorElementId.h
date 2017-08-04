@@ -63,11 +63,11 @@ CompositorElementIdFromRootEffectId(uint64_t id);
 // Blink's hash functions with Blink specific data structures.
 struct CompositorElementIdHash {
   static unsigned GetHash(const CompositorElementId& key) {
-    return WTF::HashInt(static_cast<cc::ElementIdType>(key.id_));
+    return WTF::HashInt(static_cast<cc::ElementIdType>(key.ToInternalValue()));
   }
   static bool Equal(const CompositorElementId& a,
                     const CompositorElementId& b) {
-    return a.id_ == b.id_;
+    return a == b;
   }
   static const bool safe_to_compare_to_empty_or_deleted = true;
 };

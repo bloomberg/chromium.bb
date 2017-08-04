@@ -4,9 +4,11 @@
 
 #include "cc/trees/element_id.h"
 
+#include <inttypes.h>
 #include <limits>
 #include <ostream>
 
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
 
@@ -33,7 +35,17 @@ ElementId LayerIdToElementIdForTesting(int layer_id) {
 }
 
 void ElementId::AddToTracedValue(base::trace_event::TracedValue* res) const {
+  res->BeginDictionary("element_id");
   res->SetInteger("id_", id_);
+  res->EndDictionary();
+}
+
+ElementIdType ElementId::ToInternalValue() const {
+  return id_;
+}
+
+std::string ElementId::ToString() const {
+  return base::StringPrintf("(%" PRIu64 ")", id_);
 }
 
 std::unique_ptr<base::Value> ElementId::AsValue() const {
@@ -47,7 +59,7 @@ size_t ElementIdHash::operator()(ElementId key) const {
 }
 
 std::ostream& operator<<(std::ostream& out, const ElementId& id) {
-  return out << "(" << id.id_ << ")";
+  return out << id.ToString();
 }
 
 }  // namespace cc

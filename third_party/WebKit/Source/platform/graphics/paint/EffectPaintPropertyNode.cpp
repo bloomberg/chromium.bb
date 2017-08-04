@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <inttypes.h>
+
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 
 #include "platform/graphics/paint/PropertyTreeState.h"
@@ -36,12 +38,12 @@ cc::Layer* EffectPaintPropertyNode::EnsureDummyLayer() const {
 String EffectPaintPropertyNode::ToString() const {
   return String::Format(
       "parent=%p localTransformSpace=%p outputClip=%p opacity=%f filter=%s "
-      "blendMode=%s directCompositingReasons=%s compositorElementId=%lu "
+      "blendMode=%s directCompositingReasons=%s compositorElementId=%s "
       "paintOffset=%s",
       Parent(), local_transform_space_.Get(), output_clip_.Get(), opacity_,
       filter_.ToString().Ascii().data(), SkBlendMode_Name(blend_mode_),
       CompositingReasonsAsString(direct_compositing_reasons_).Ascii().data(),
-      static_cast<unsigned long>(compositor_element_id_.id_),
+      compositor_element_id_.ToString().c_str(),
       paint_offset_.ToString().Ascii().data());
 }
 

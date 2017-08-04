@@ -692,7 +692,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectTreeConversion) {
 
   const cc::EffectNode& converted_root_effect = *effect_tree.Node(1);
   EXPECT_EQ(-1, converted_root_effect.parent_id);
-  EXPECT_EQ(CompositorElementIdFromRootEffectId(1).id_,
+  EXPECT_EQ(CompositorElementIdFromRootEffectId(1).ToInternalValue(),
             converted_root_effect.stable_id);
 
   const cc::EffectNode& converted_effect1 = *effect_tree.Node(2);

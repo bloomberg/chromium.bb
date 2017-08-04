@@ -103,7 +103,7 @@ void TransformNode::update_post_local_transform(
 void TransformNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("id", id);
   value->SetInteger("parent_id", parent_id);
-  value->SetInteger("element_id", element_id.id_);
+  element_id.AddToTracedValue(value);
   MathUtil::AddToTracedValue("pre_local", pre_local, value);
   MathUtil::AddToTracedValue("local", local, value);
   MathUtil::AddToTracedValue("post_local", post_local, value);

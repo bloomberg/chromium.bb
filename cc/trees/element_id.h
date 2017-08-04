@@ -61,6 +61,15 @@ struct CC_EXPORT ElementId {
   void AddToTracedValue(base::trace_event::TracedValue* res) const;
   std::unique_ptr<base::Value> AsValue() const;
 
+  // Returns the element id as its underlying representation.
+  // TODO(wkorman): Remove or rename this method. http://crbug.com/752327
+  ElementIdType ToInternalValue() const;
+
+  std::string ToString() const;
+
+ private:
+  friend struct ElementIdHash;
+
   // The compositor treats this as an opaque handle and should not know how to
   // interpret these bits. Non-blink cc clients typically operate in terms of
   // layers and may set this value to match the client's layer id.
