@@ -1322,13 +1322,6 @@ crbug.com/658304 [ Win Linux ] fast/forms/select/input-select-after-resize.html 
 crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 crbug.com/736052 virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 
-# We render the expectation incorrectly for these five tests
-crbug.com/310004 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-basic-canvas-vert-001.xhtml [ Failure ]
-crbug.com/310004 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-basic-iframe-vert-001.xhtml [ Failure ]
-crbug.com/310004 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-basic-img-vert-001.xhtml [ Failure ]
-crbug.com/310004 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-basic-textarea-vert-001.xhtml [ Failure ]
-crbug.com/310004 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-basic-video-vert-001.xhtml [ Failure ]
-
 # We don't support requesting flex line breaks and it is not clear that we should.
 # See https://lists.w3.org/Archives/Public/www-style/2015May/0065.html
 crbug.com/473481 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-break-request-horiz-001a.html [ Failure ]
@@ -1647,13 +1640,6 @@ crbug.com/694525 external/wpt/content-security-policy/reporting [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/script-src/script-src-1_10.html [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/script-src/script-src-strict_dynamic_in_img-src.html [ Skip ]
 
-# These wpt/mixed-content tests have console errors that are different on different test runs.
-crbug.com/679742 external/wpt/mixed-content/allowed/http-csp/same-host-wss/websocket-request/top-level/keep-scheme-redirect/websocket-allowed.https.html [ Failure ]
-crbug.com/679742 external/wpt/mixed-content/allowed/http-csp/same-host-wss/websocket-request/top-level/no-redirect/websocket-allowed.https.html [ Failure ]
-crbug.com/679742 external/wpt/mixed-content/allowed/meta-csp/same-host-wss/websocket-request/top-level/no-redirect/websocket-allowed.https.html [ Failure ]
-crbug.com/679742 external/wpt/mixed-content/allowed/no-opt-in/same-host-wss/websocket-request/top-level/keep-scheme-redirect/websocket-allowed.https.html [ Failure ]
-crbug.com/679742 external/wpt/mixed-content/allowed/no-opt-in/same-host-wss/websocket-request/top-level/no-redirect/websocket-allowed.https.html [ Failure ]
-
 # These wpt/mixed-content tests consistently time out.
 crbug.com/626703 external/wpt/mixed-content/blockable/http-csp/cross-origin-http/form-tag/top-level/keep-scheme-redirect/opt-in-blocks.https.html [ Timeout ]
 crbug.com/626703 external/wpt/mixed-content/blockable/http-csp/cross-origin-http/form-tag/top-level/no-redirect/opt-in-blocks.https.html [ Timeout ]
@@ -1860,7 +1846,6 @@ crbug.com/626703 external/wpt/cssom-view/matchMedia.xht [ Timeout ]
 crbug.com/626703 external/wpt/eventsource/eventsource-request-cancellation.htm [ Timeout ]
 crbug.com/626703 external/wpt/fullscreen/api/document-exit-fullscreen-nested-in-iframe-manual.html [ Timeout Pass ]
 crbug.com/626703 external/wpt/fullscreen/api/element-request-fullscreen-two-iframes-manual.html [ Timeout ]
-crbug.com/626703 external/wpt/html/browsers/offline/no-appcache-in-shared-workers-historical.html [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopener.html [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/windows/noreferrer-window-name.html [ Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-16be.html [ Timeout Crash ]
@@ -1885,7 +1870,6 @@ crbug.com/626703 external/wpt/html/webappapis/scripting/events/contextmenu-event
 crbug.com/626703 external/wpt/http/basic-auth-cache-test.html [ Timeout ]
 crbug.com/626703 external/wpt/IndexedDB/request-abort-ordering.html [ Pass Failure ]
 crbug.com/626703 external/wpt/media-source/mediasource-avtracks.html [ Failure Crash ]
-crbug.com/626703 external/wpt/media-source/mediasource-duration.html [ Failure ]
 crbug.com/626703 external/wpt/media-source/mediasource-getvideoplaybackquality.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/mediacapture-streams/MediaStreamTrack-end-manual.https.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/notifications/constructor-basic.html [ Timeout ]
@@ -2168,8 +2152,6 @@ crbug.com/626703 external/wpt/XMLHttpRequest/event-readystatechange-loaded.htm [
 crbug.com/626703 external/wpt/XMLHttpRequest/open-url-redirected-worker-origin.htm [ Failure ]
 crbug.com/626703 external/wpt/XMLHttpRequest/preserve-ua-header-on-redirect.htm [ Failure ]
 crbug.com/626703 external/wpt/XMLHttpRequest/send-entity-body-document.htm [ Failure ]
-crbug.com/626703 external/wpt/XMLHttpRequest/setrequestheader-allow-empty-value.htm [ Failure ]
-crbug.com/626703 external/wpt/XMLHttpRequest/setrequestheader-allow-whitespace-in-value.htm [ Failure ]
 crbug.com/626703 external/wpt/XMLHttpRequest/setrequestheader-header-allowed.htm [ Failure ]
 crbug.com/626703 virtual/off-main-thread-fetch/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
@@ -2179,7 +2161,6 @@ crbug.com/717157 external/wpt/fetch/api/basic/integrity-sharedworker.html [ Cras
 crbug.com/666993 external/wpt/html/webappapis/idle-callbacks/basic.html [ Timeout ]
 crbug.com/666993 external/wpt/html/webappapis/idle-callbacks/callback-idle-periods.html [ Timeout ]
 crbug.com/666993 external/wpt/html/webappapis/idle-callbacks/callback-timeout-with-raf.html [ Timeout ]
-crbug.com/698256 external/wpt/webvtt/rendering/cues-with-video/processing-model/dom_override_remove_cue_while_paused.html [ Failure ]
 
 crbug.com/713732 fast/dom/Window/dom-access-from-closure-iframe.html [ NeedsManualRebaseline ]
 crbug.com/713732 fast/dom/Window/dom-access-from-closure-window-with-gc.html [ NeedsManualRebaseline ]
@@ -2378,7 +2359,6 @@ crbug.com/508730 crbug.com/472300 external/wpt/html/semantics/embedded-content/m
 crbug.com/508730 crbug.com/472300 external/wpt/html/semantics/embedded-content/media-elements/interfaces/TextTrackCue/track.html [ Failure ]
 crbug.com/508730 crbug.com/472300 external/wpt/html/semantics/embedded-content/media-elements/interfaces/TextTrack/removeCue.html [ Failure ]
 crbug.com/508730 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/cloneNode.html [ Failure ]
-crbug.com/508730 external/wpt/html/browsers/browsing-the-web/read-media/pageload-image.html [ Failure ]
 
 # Fail when run with --enable-wptserve: (crbug.com/508734)
 crbug.com/508734 external/wpt/html/semantics/document-metadata/the-link-element/link-style-error-01.html [ Failure ]
@@ -2546,8 +2526,6 @@ crbug.com/709227 external/wpt/console/console-time-label-conversion.any.html [ F
 crbug.com/709227 external/wpt/console/console-time-label-conversion.any.worker.html [ Failure ]
 crbug.com/709227 external/wpt/console/console-timeline-timelineEnd-historical.any.html [ Failure ]
 crbug.com/709227 external/wpt/console/console-timeline-timelineEnd-historical.any.worker.html [ Failure ]
-crbug.com/709227 external/wpt/css/geometry-1/DOMMatrix-css-string.worker.html [ Failure ]
-crbug.com/709227 external/wpt/css/geometry-1/interfaces.worker.html [ Failure ]
 crbug.com/709227 external/wpt/html/browsers/history/the-location-interface/per-global.window.html [ Failure ]
 crbug.com/709227 external/wpt/html/syntax/parsing/html5lib_isindex.html?run_type=uri [ Failure ]
 crbug.com/709227 external/wpt/html/syntax/parsing/html5lib_isindex.html?run_type=write [ Failure ]
@@ -2604,7 +2582,6 @@ crbug.com/709227 external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.fillSty
 crbug.com/709227 external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.fillStyle.parse.css-color-4-rgba-4.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.fillStyle.parse.css-color-4-rgba-5.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.fillStyle.parse.css-color-4-rgba-6.worker.html [ Failure ]
-crbug.com/709227 external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.gradient.radial.outside3.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/path-objects/2d.path.stroke.prune.arc.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/path-objects/2d.path.stroke.prune.closed.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/path-objects/2d.path.stroke.prune.curve.worker.html [ Failure ]
