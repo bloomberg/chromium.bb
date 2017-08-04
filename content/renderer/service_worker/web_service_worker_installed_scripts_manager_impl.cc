@@ -41,8 +41,8 @@ class Receiver {
   void OnReadable(MojoResult /* unused */) {
     const void* buffer = nullptr;
     uint32_t bytes_read = 0;
-    MojoResult rv = mojo::BeginReadDataRaw(handle_.get(), &buffer, &bytes_read,
-                                           MOJO_READ_DATA_FLAG_NONE);
+    MojoResult rv =
+        handle_->BeginReadData(&buffer, &bytes_read, MOJO_READ_DATA_FLAG_NONE);
     switch (rv) {
       case MOJO_RESULT_BUSY:
       case MOJO_RESULT_INVALID_ARGUMENT:
@@ -65,7 +65,7 @@ class Receiver {
     if (bytes_read > 0)
       chunks_.emplace_back(static_cast<const char*>(buffer), bytes_read);
 
-    rv = mojo::EndReadDataRaw(handle_.get(), bytes_read);
+    rv = handle_->EndReadData(bytes_read);
     DCHECK_EQ(rv, MOJO_RESULT_OK);
     watcher_.ArmOrNotify();
   }

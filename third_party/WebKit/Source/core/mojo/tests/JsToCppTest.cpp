@@ -80,14 +80,14 @@ void CheckDataPipe(mojo::DataPipeConsumerHandle data_pipe_handle) {
 
   const void* buffer = nullptr;
   unsigned num_bytes = 0;
-  result = BeginReadDataRaw(data_pipe_handle, &buffer, &num_bytes,
-                            MOJO_READ_DATA_FLAG_NONE);
+  result = data_pipe_handle.BeginReadData(&buffer, &num_bytes,
+                                          MOJO_READ_DATA_FLAG_NONE);
   EXPECT_EQ(MOJO_RESULT_OK, result);
   EXPECT_EQ(64u, num_bytes);
   for (unsigned i = 0; i < num_bytes; ++i) {
     EXPECT_EQ(i, static_cast<unsigned>(static_cast<const char*>(buffer)[i]));
   }
-  EndReadDataRaw(data_pipe_handle, num_bytes);
+  data_pipe_handle.EndReadData(num_bytes);
 }
 
 void CheckMessagePipe(mojo::MessagePipeHandle message_pipe_handle) {
@@ -176,8 +176,8 @@ void CheckCorruptedStringArray(const Optional<Vector<String>>& string_array) {
 void CheckCorruptedDataPipe(mojo::DataPipeConsumerHandle data_pipe_handle) {
   unsigned char buffer[100];
   uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
-  MojoResult result = ReadDataRaw(data_pipe_handle, buffer, &buffer_size,
-                                  MOJO_READ_DATA_FLAG_NONE);
+  MojoResult result =
+      data_pipe_handle.ReadData(buffer, &buffer_size, MOJO_READ_DATA_FLAG_NONE);
   if (result != MOJO_RESULT_OK)
     return;
   for (uint32_t i = 0; i < buffer_size; ++i)

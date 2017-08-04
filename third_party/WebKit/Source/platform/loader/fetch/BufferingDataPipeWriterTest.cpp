@@ -60,7 +60,7 @@ TEST(BufferingDataPipeWriterTest, WriteMany) {
     constexpr auto kNone = MOJO_READ_DATA_FLAG_NONE;
     char buffer[reading_chunk_size] = {};
     uint32_t size = reading_chunk_size;
-    result = mojo::ReadDataRaw(consumer.get(), buffer, &size, kNone);
+    result = consumer->ReadData(buffer, &size, kNone);
 
     if (result == MOJO_RESULT_SHOULD_WAIT) {
       platform->RunUntilIdle();

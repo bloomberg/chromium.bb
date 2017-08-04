@@ -202,8 +202,8 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
   while (true) {
     char buffer[16];
     uint32_t read_size = sizeof(buffer);
-    MojoResult r = mojo::ReadDataRaw(client.response_body(), buffer, &read_size,
-                                     MOJO_READ_DATA_FLAG_NONE);
+    MojoResult r = client.response_body().ReadData(buffer, &read_size,
+                                                   MOJO_READ_DATA_FLAG_NONE);
     if (r == MOJO_RESULT_FAILED_PRECONDITION)
       break;
     if (r == MOJO_RESULT_SHOULD_WAIT)
@@ -498,8 +498,8 @@ TEST_P(URLLoaderFactoryImplTest, OnTransferSizeUpdated) {
   while (true) {
     char buffer[16];
     uint32_t read_size = sizeof(buffer);
-    MojoResult r = mojo::ReadDataRaw(client.response_body(), buffer, &read_size,
-                                     MOJO_READ_DATA_FLAG_NONE);
+    MojoResult r = client.response_body().ReadData(buffer, &read_size,
+                                                   MOJO_READ_DATA_FLAG_NONE);
     if (r == MOJO_RESULT_FAILED_PRECONDITION)
       break;
     if (r == MOJO_RESULT_SHOULD_WAIT)

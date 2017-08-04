@@ -152,9 +152,9 @@ void MojoDecoderBufferReader::ReadDecoderBufferData() {
   uint32_t num_bytes = buffer_size - bytes_read_;
   DCHECK_GT(num_bytes, 0u);
 
-  MojoResult result = ReadDataRaw(consumer_handle_.get(),
-                                  media_buffer_->writable_data() + bytes_read_,
-                                  &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+  MojoResult result =
+      consumer_handle_->ReadData(media_buffer_->writable_data() + bytes_read_,
+                                 &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
 
   if (IsPipeReadWriteError(result)) {
     OnPipeError(result);
@@ -271,9 +271,9 @@ MojoResult MojoDecoderBufferWriter::WriteDecoderBufferData() {
   uint32_t num_bytes = buffer_size - bytes_written_;
   DCHECK_GT(num_bytes, 0u);
 
-  MojoResult result = WriteDataRaw(producer_handle_.get(),
-                                   media_buffer_->data() + bytes_written_,
-                                   &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+  MojoResult result =
+      producer_handle_->WriteData(media_buffer_->data() + bytes_written_,
+                                  &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
 
   if (IsPipeReadWriteError(result)) {
     OnPipeError(result);

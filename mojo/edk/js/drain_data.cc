@@ -65,13 +65,13 @@ void DrainData::DataReady(MojoResult result) {
 MojoResult DrainData::ReadData() {
   const void* buffer;
   uint32_t num_bytes = 0;
-  MojoResult result = BeginReadDataRaw(
-      handle_.get(), &buffer, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
+  MojoResult result =
+      handle_->BeginReadData(&buffer, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
   if (result != MOJO_RESULT_OK)
     return result;
   const char* p = static_cast<const char*>(buffer);
   data_buffers_.push_back(base::MakeUnique<DataBuffer>(p, p + num_bytes));
-  return EndReadDataRaw(handle_.get(), num_bytes);
+  return handle_->EndReadData(num_bytes);
 }
 
 void DrainData::DeliverData(MojoResult result) {

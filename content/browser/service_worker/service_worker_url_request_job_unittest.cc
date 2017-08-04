@@ -936,9 +936,8 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse) {
   for (int i = 0; i < 1024; ++i) {
     expected_response += kTestData;
     uint32_t written_bytes = sizeof(kTestData) - 1;
-    MojoResult result =
-        mojo::WriteDataRaw(data_pipe.producer_handle.get(), kTestData,
-                           &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+    MojoResult result = data_pipe.producer_handle->WriteData(
+        kTestData, &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
     ASSERT_EQ(MOJO_RESULT_OK, result);
     EXPECT_EQ(sizeof(kTestData) - 1, written_bytes);
   }
@@ -989,9 +988,8 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_ConsecutiveRead) {
   for (int i = 0; i < 1024; ++i) {
     expected_response += kTestData;
     uint32_t written_bytes = sizeof(kTestData) - 1;
-    MojoResult result =
-        mojo::WriteDataRaw(data_pipe.producer_handle.get(), kTestData,
-                           &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+    MojoResult result = data_pipe.producer_handle->WriteData(
+        kTestData, &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
     ASSERT_EQ(MOJO_RESULT_OK, result);
     EXPECT_EQ(sizeof(kTestData) - 1, written_bytes);
     base::RunLoop().RunUntilIdle();
@@ -1041,9 +1039,8 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponseAndCancel) {
 
   for (int i = 0; i < 512; ++i) {
     uint32_t written_bytes = sizeof(kTestData) - 1;
-    MojoResult result =
-        mojo::WriteDataRaw(data_pipe.producer_handle.get(), kTestData,
-                           &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+    MojoResult result = data_pipe.producer_handle->WriteData(
+        kTestData, &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
     ASSERT_EQ(MOJO_RESULT_OK, result);
     EXPECT_EQ(sizeof(kTestData) - 1, written_bytes);
   }
@@ -1053,9 +1050,8 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponseAndCancel) {
 
   // Fail to write the data pipe because it's already canceled.
   uint32_t written_bytes = sizeof(kTestData) - 1;
-  MojoResult result =
-      mojo::WriteDataRaw(data_pipe.producer_handle.get(), kTestData,
-                         &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+  MojoResult result = data_pipe.producer_handle->WriteData(
+      kTestData, &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
   ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
 
   stream_callback->OnAborted();
@@ -1096,9 +1092,8 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_Abort) {
   for (int i = 0; i < 1024; ++i) {
     expected_response += kTestData;
     uint32_t written_bytes = sizeof(kTestData) - 1;
-    MojoResult result =
-        mojo::WriteDataRaw(data_pipe.producer_handle.get(), kTestData,
-                           &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+    MojoResult result = data_pipe.producer_handle->WriteData(
+        kTestData, &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
     ASSERT_EQ(MOJO_RESULT_OK, result);
     EXPECT_EQ(sizeof(kTestData) - 1, written_bytes);
   }
@@ -1155,9 +1150,8 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_AbortBeforeData) {
   for (int i = 0; i < 1024; ++i) {
     expected_response += kTestData;
     uint32_t written_bytes = sizeof(kTestData) - 1;
-    MojoResult result =
-        mojo::WriteDataRaw(data_pipe.producer_handle.get(), kTestData,
-                           &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+    MojoResult result = data_pipe.producer_handle->WriteData(
+        kTestData, &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
     ASSERT_EQ(MOJO_RESULT_OK, result);
     EXPECT_EQ(sizeof(kTestData) - 1, written_bytes);
     base::RunLoop().RunUntilIdle();
@@ -1243,9 +1237,8 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_ConsecutiveReadAndAbort) {
   for (int i = 0; i < 512; ++i) {
     expected_response += kTestData;
     uint32_t written_bytes = sizeof(kTestData) - 1;
-    MojoResult result =
-        mojo::WriteDataRaw(data_pipe.producer_handle.get(), kTestData,
-                           &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+    MojoResult result = data_pipe.producer_handle->WriteData(
+        kTestData, &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
     ASSERT_EQ(MOJO_RESULT_OK, result);
     EXPECT_EQ(sizeof(kTestData) - 1, written_bytes);
 

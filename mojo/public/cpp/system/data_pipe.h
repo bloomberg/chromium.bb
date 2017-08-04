@@ -28,6 +28,27 @@ class DataPipeProducerHandle : public Handle {
   DataPipeProducerHandle() {}
   explicit DataPipeProducerHandle(MojoHandle value) : Handle(value) {}
 
+  // Writes to a data pipe. See |MojoWriteData| for complete documentation.
+  MojoResult WriteData(const void* elements,
+                       uint32_t* num_bytes,
+                       MojoWriteDataFlags flags) const {
+    return MojoWriteData(value(), elements, num_bytes, flags);
+  }
+
+  // Begins a two-phase write to a data pipe. See |MojoBeginWriteData()| for
+  // complete documentation.
+  MojoResult BeginWriteData(void** buffer,
+                            uint32_t* buffer_num_bytes,
+                            MojoWriteDataFlags flags) const {
+    return MojoBeginWriteData(value(), buffer, buffer_num_bytes, flags);
+  }
+
+  // Completes a two-phase write to a data pipe. See |MojoEndWriteData()| for
+  // complete documentation.
+  MojoResult EndWriteData(uint32_t num_bytes_written) const {
+    return MojoEndWriteData(value(), num_bytes_written);
+  }
+
   // Copying and assignment allowed.
 };
 
@@ -45,6 +66,27 @@ class DataPipeConsumerHandle : public Handle {
  public:
   DataPipeConsumerHandle() {}
   explicit DataPipeConsumerHandle(MojoHandle value) : Handle(value) {}
+
+  // Reads from a data pipe. See |MojoReadData()| for complete documentation.
+  MojoResult ReadData(void* elements,
+                      uint32_t* num_bytes,
+                      MojoReadDataFlags flags) const {
+    return MojoReadData(value(), elements, num_bytes, flags);
+  }
+
+  // Begins a two-phase read from a data pipe. See |MojoBeginReadData()| for
+  // complete documentation.
+  MojoResult BeginReadData(const void** buffer,
+                           uint32_t* buffer_num_bytes,
+                           MojoReadDataFlags flags) const {
+    return MojoBeginReadData(value(), buffer, buffer_num_bytes, flags);
+  }
+
+  // Completes a two-phase read from a data pipe. See |MojoEndReadData()| for
+  // complete documentation.
+  MojoResult EndReadData(uint32_t num_bytes_read) const {
+    return MojoEndReadData(value(), num_bytes_read);
+  }
 
   // Copying and assignment allowed.
 };
@@ -75,56 +117,6 @@ inline MojoResult CreateDataPipe(
   data_pipe_producer->reset(producer_handle);
   data_pipe_consumer->reset(consumer_handle);
   return rv;
-}
-
-// Writes to a data pipe. See |MojoWriteData| for complete documentation.
-inline MojoResult WriteDataRaw(DataPipeProducerHandle data_pipe_producer,
-                               const void* elements,
-                               uint32_t* num_bytes,
-                               MojoWriteDataFlags flags) {
-  return MojoWriteData(data_pipe_producer.value(), elements, num_bytes, flags);
-}
-
-// Begins a two-phase write to a data pipe. See |MojoBeginWriteData()| for
-// complete documentation.
-inline MojoResult BeginWriteDataRaw(DataPipeProducerHandle data_pipe_producer,
-                                    void** buffer,
-                                    uint32_t* buffer_num_bytes,
-                                    MojoWriteDataFlags flags) {
-  return MojoBeginWriteData(
-      data_pipe_producer.value(), buffer, buffer_num_bytes, flags);
-}
-
-// Completes a two-phase write to a data pipe. See |MojoEndWriteData()| for
-// complete documentation.
-inline MojoResult EndWriteDataRaw(DataPipeProducerHandle data_pipe_producer,
-                                  uint32_t num_bytes_written) {
-  return MojoEndWriteData(data_pipe_producer.value(), num_bytes_written);
-}
-
-// Reads from a data pipe. See |MojoReadData()| for complete documentation.
-inline MojoResult ReadDataRaw(DataPipeConsumerHandle data_pipe_consumer,
-                              void* elements,
-                              uint32_t* num_bytes,
-                              MojoReadDataFlags flags) {
-  return MojoReadData(data_pipe_consumer.value(), elements, num_bytes, flags);
-}
-
-// Begins a two-phase read from a data pipe. See |MojoBeginReadData()| for
-// complete documentation.
-inline MojoResult BeginReadDataRaw(DataPipeConsumerHandle data_pipe_consumer,
-                                   const void** buffer,
-                                   uint32_t* buffer_num_bytes,
-                                   MojoReadDataFlags flags) {
-  return MojoBeginReadData(
-      data_pipe_consumer.value(), buffer, buffer_num_bytes, flags);
-}
-
-// Completes a two-phase read from a data pipe. See |MojoEndReadData()| for
-// complete documentation.
-inline MojoResult EndReadDataRaw(DataPipeConsumerHandle data_pipe_consumer,
-                                 uint32_t num_bytes_read) {
-  return MojoEndReadData(data_pipe_consumer.value(), num_bytes_read);
 }
 
 // A wrapper class that automatically creates a data pipe and owns both handles.

@@ -39,9 +39,9 @@ class BlobBytesStreamer {
     while (true) {
       uint32_t num_bytes = base::saturated_cast<uint32_t>(
           data_[current_item_]->length() - current_item_offset_);
-      MojoResult write_result = mojo::WriteDataRaw(
-          pipe_.get(), data_[current_item_]->data() + current_item_offset_,
-          &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+      MojoResult write_result =
+          pipe_->WriteData(data_[current_item_]->data() + current_item_offset_,
+                           &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
       if (write_result == MOJO_RESULT_OK) {
         current_item_offset_ += num_bytes;
         if (current_item_offset_ >= data_[current_item_]->length()) {

@@ -377,8 +377,8 @@ bool CastRemotingSender::TryConsumeDataChunk(uint32_t offset, uint32_t size,
     // If the data is to be discarded, do a data pipe read with the DISCARD flag
     // set.
     if (discard_data) {
-      const MojoResult result = mojo::ReadDataRaw(
-          pipe_.get(), nullptr, &size,
+      const MojoResult result = pipe_->ReadData(
+          nullptr, &size,
           MOJO_READ_DATA_FLAG_DISCARD | MOJO_READ_DATA_FLAG_ALL_OR_NONE);
       if (result == MOJO_RESULT_OK)
         return true;  // Successfully discarded data.
@@ -396,9 +396,9 @@ bool CastRemotingSender::TryConsumeDataChunk(uint32_t offset, uint32_t size,
     // not changed, the following statement will be a no-op.
     next_frame_data_.resize(total_payload_size);
 
-    const MojoResult result = mojo::ReadDataRaw(
-        pipe_.get(), base::string_as_array(&next_frame_data_) + offset, &size,
-        MOJO_READ_DATA_FLAG_ALL_OR_NONE);
+    const MojoResult result =
+        pipe_->ReadData(base::string_as_array(&next_frame_data_) + offset,
+                        &size, MOJO_READ_DATA_FLAG_ALL_OR_NONE);
     if (result == MOJO_RESULT_OK)
       return true;  // Successfully consumed data.
     if (result == MOJO_RESULT_OUT_OF_RANGE) {

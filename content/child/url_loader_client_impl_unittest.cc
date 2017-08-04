@@ -112,9 +112,8 @@ TEST_F(URLLoaderClientImplTest, ResponseBody) {
   url_loader_client_->OnStartLoadingResponseBody(
       std::move(data_pipe.consumer_handle));
   uint32_t size = 5;
-  MojoResult result =
-      mojo::WriteDataRaw(data_pipe.producer_handle.get(), "hello", &size,
-                         MOJO_WRITE_DATA_FLAG_NONE);
+  MojoResult result = data_pipe.producer_handle->WriteData(
+      "hello", &size, MOJO_WRITE_DATA_FLAG_NONE);
   ASSERT_EQ(MOJO_RESULT_OK, result);
   EXPECT_EQ(5u, size);
 
@@ -202,9 +201,8 @@ TEST_F(URLLoaderClientImplTest, OnCompleteWithResponseBody) {
   url_loader_client_->OnStartLoadingResponseBody(
       std::move(data_pipe.consumer_handle));
   uint32_t size = 5;
-  MojoResult result =
-      mojo::WriteDataRaw(data_pipe.producer_handle.get(), "hello", &size,
-                         MOJO_WRITE_DATA_FLAG_NONE);
+  MojoResult result = data_pipe.producer_handle->WriteData(
+      "hello", &size, MOJO_WRITE_DATA_FLAG_NONE);
   ASSERT_EQ(MOJO_RESULT_OK, result);
   EXPECT_EQ(5u, size);
   data_pipe.producer_handle.reset();
@@ -243,9 +241,8 @@ TEST_F(URLLoaderClientImplTest, OnCompleteShouldBeTheLastMessage) {
   EXPECT_FALSE(request_peer_context_.complete);
 
   uint32_t size = 5;
-  MojoResult result =
-      mojo::WriteDataRaw(data_pipe.producer_handle.get(), "hello", &size,
-                         MOJO_WRITE_DATA_FLAG_NONE);
+  MojoResult result = data_pipe.producer_handle->WriteData(
+      "hello", &size, MOJO_WRITE_DATA_FLAG_NONE);
   ASSERT_EQ(MOJO_RESULT_OK, result);
   EXPECT_EQ(5u, size);
 
@@ -289,9 +286,8 @@ TEST_F(URLLoaderClientImplTest, CancelOnReceiveData) {
 
   mojo::DataPipe data_pipe(DataPipeOptions());
   uint32_t size = 5;
-  MojoResult result =
-      mojo::WriteDataRaw(data_pipe.producer_handle.get(), "hello", &size,
-                         MOJO_WRITE_DATA_FLAG_NONE);
+  MojoResult result = data_pipe.producer_handle->WriteData(
+      "hello", &size, MOJO_WRITE_DATA_FLAG_NONE);
   ASSERT_EQ(MOJO_RESULT_OK, result);
   EXPECT_EQ(5u, size);
 
@@ -344,9 +340,8 @@ TEST_F(URLLoaderClientImplTest, DeferWithResponseBody) {
   url_loader_client_->OnReceiveResponse(response_head, base::nullopt, nullptr);
   mojo::DataPipe data_pipe(DataPipeOptions());
   uint32_t size = 5;
-  MojoResult result =
-      mojo::WriteDataRaw(data_pipe.producer_handle.get(), "hello", &size,
-                         MOJO_WRITE_DATA_FLAG_NONE);
+  MojoResult result = data_pipe.producer_handle->WriteData(
+      "hello", &size, MOJO_WRITE_DATA_FLAG_NONE);
   ASSERT_EQ(MOJO_RESULT_OK, result);
   EXPECT_EQ(5u, size);
   data_pipe.producer_handle.reset();
@@ -386,9 +381,8 @@ TEST_F(URLLoaderClientImplTest, DeferWithTransferSizeUpdated) {
   url_loader_client_->OnReceiveResponse(response_head, base::nullopt, nullptr);
   mojo::DataPipe data_pipe(DataPipeOptions());
   uint32_t size = 5;
-  MojoResult result =
-      mojo::WriteDataRaw(data_pipe.producer_handle.get(), "hello", &size,
-                         MOJO_WRITE_DATA_FLAG_NONE);
+  MojoResult result = data_pipe.producer_handle->WriteData(
+      "hello", &size, MOJO_WRITE_DATA_FLAG_NONE);
   ASSERT_EQ(MOJO_RESULT_OK, result);
   EXPECT_EQ(5u, size);
   data_pipe.producer_handle.reset();
@@ -435,9 +429,8 @@ TEST_F(URLLoaderClientImplTest, SetDeferredDuringFlushingDeferredMessage) {
   url_loader_client_->OnReceiveResponse(response_head, base::nullopt, nullptr);
   mojo::DataPipe data_pipe(DataPipeOptions());
   uint32_t size = 5;
-  MojoResult result =
-      mojo::WriteDataRaw(data_pipe.producer_handle.get(), "hello", &size,
-                         MOJO_WRITE_DATA_FLAG_NONE);
+  MojoResult result = data_pipe.producer_handle->WriteData(
+      "hello", &size, MOJO_WRITE_DATA_FLAG_NONE);
   ASSERT_EQ(MOJO_RESULT_OK, result);
   EXPECT_EQ(5u, size);
   data_pipe.producer_handle.reset();

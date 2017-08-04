@@ -322,10 +322,9 @@ void DemuxerStreamAdapter::TryWriteData(MojoResult result) {
   }
 
   uint32_t num_bytes = pending_frame_.size() - current_pending_frame_offset_;
-  MojoResult mojo_result =
-      WriteDataRaw(producer_handle_.get(),
-                   pending_frame_.data() + current_pending_frame_offset_,
-                   &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+  MojoResult mojo_result = producer_handle_->WriteData(
+      pending_frame_.data() + current_pending_frame_offset_, &num_bytes,
+      MOJO_WRITE_DATA_FLAG_NONE);
   if (mojo_result != MOJO_RESULT_OK && mojo_result != MOJO_RESULT_SHOULD_WAIT) {
     DEMUXER_VLOG(1) << "Pipe was closed unexpectedly (or a bug). result:"
                     << mojo_result;

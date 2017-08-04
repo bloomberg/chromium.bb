@@ -90,9 +90,8 @@ void FakeRemotingDataStreamSender::ConsumeDataChunk(
     uint32_t size,
     uint32_t total_payload_size) {
   next_frame_data_.resize(total_payload_size);
-  MojoResult result = mojo::ReadDataRaw(consumer_handle_.get(),
-                                        next_frame_data_.data() + offset, &size,
-                                        MOJO_READ_DATA_FLAG_ALL_OR_NONE);
+  MojoResult result = consumer_handle_->ReadData(
+      next_frame_data_.data() + offset, &size, MOJO_READ_DATA_FLAG_ALL_OR_NONE);
   CHECK(result == MOJO_RESULT_OK);
   ++consume_data_chunk_count_;
 }

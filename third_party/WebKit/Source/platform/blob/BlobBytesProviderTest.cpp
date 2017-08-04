@@ -295,16 +295,16 @@ TEST_F(BlobBytesProviderTest, RequestAsStream) {
             }
 
             uint32_t num_bytes = 0;
-            MojoResult query_result = mojo::ReadDataRaw(
-                pipe, nullptr, &num_bytes, MOJO_READ_DATA_FLAG_QUERY);
+            MojoResult query_result =
+                pipe.ReadData(nullptr, &num_bytes, MOJO_READ_DATA_FLAG_QUERY);
             if (query_result == MOJO_RESULT_SHOULD_WAIT)
               return;
             EXPECT_EQ(MOJO_RESULT_OK, query_result);
 
             Vector<uint8_t> bytes(num_bytes);
             EXPECT_EQ(MOJO_RESULT_OK,
-                      mojo::ReadDataRaw(pipe, bytes.data(), &num_bytes,
-                                        MOJO_READ_DATA_FLAG_ALL_OR_NONE));
+                      pipe.ReadData(bytes.data(), &num_bytes,
+                                    MOJO_READ_DATA_FLAG_ALL_OR_NONE));
             bytes_out->AppendVector(bytes);
           },
           pipe.consumer_handle.get(), loop.QuitClosure(), &received_data));
