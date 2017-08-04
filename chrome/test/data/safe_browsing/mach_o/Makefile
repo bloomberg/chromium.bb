@@ -65,6 +65,13 @@ signed-archive.dmg: test-bundle.app codesign.crt
 	codesign -s $(KEYCHAIN_IDENTITY) $@
 	$(call post-build)
 
+zipped-app-two-executables-one-signed.zip: executablefat signedexecutablefat
+	ditto base-bundle.app app-with-executables.app
+	ditto $< app-with-executables.app/Contents/MacOS/
+	ditto $(word 2,$^) app-with-executables.app/Contents/MacOS/
+	zip -r $@ app-with-executables.app
+	rm -r app-with-executables.app
+
 .PHONY: test-bundle.app
 test-bundle.app: signedexecutablefat libsigned64.dylib executable32
 	$(call pre-build)
