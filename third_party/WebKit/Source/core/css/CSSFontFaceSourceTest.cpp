@@ -15,7 +15,9 @@ namespace blink {
 
 class DummyFontFaceSource : public CSSFontFaceSource {
  public:
-  RefPtr<SimpleFontData> CreateFontData(const FontDescription&) override {
+  RefPtr<SimpleFontData> CreateFontData(
+      const FontDescription&,
+      const FontSelectionCapabilities&) override {
     return SimpleFontData::Create(
         FontPlatformData(SkTypeface::MakeDefault(), "", 0, false, false));
   }
@@ -26,7 +28,11 @@ class DummyFontFaceSource : public CSSFontFaceSource {
     FontDescription font_description;
     font_description.SetSizeAdjust(size);
     font_description.SetAdjustedSize(size);
-    return GetFontData(font_description);
+    FontSelectionCapabilities normal_capabilities(
+        {NormalWidthValue(), NormalWidthValue()},
+        {NormalSlopeValue(), NormalSlopeValue()},
+        {NormalWeightValue(), NormalWeightValue()});
+    return GetFontData(font_description, normal_capabilities);
   }
 };
 

@@ -95,7 +95,9 @@ RefPtr<SimpleFontData> CSSFontFace::GetFontData(
 
   while (!sources_.IsEmpty()) {
     Member<CSSFontFaceSource>& source = sources_.front();
-    if (RefPtr<SimpleFontData> result = source->GetFontData(font_description)) {
+    if (RefPtr<SimpleFontData> result = source->GetFontData(
+            font_description,
+            segmented_font_face_->GetFontSelectionCapabilities())) {
       if (LoadStatus() == FontFace::kUnloaded &&
           (source->IsLoading() || source->IsLoaded()))
         SetLoadStatus(FontFace::kLoading);

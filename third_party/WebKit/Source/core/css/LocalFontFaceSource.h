@@ -18,7 +18,9 @@ class LocalFontFaceSource final : public CSSFontFaceSource {
   bool IsLocalFontAvailable(const FontDescription&) override;
 
  private:
-  RefPtr<SimpleFontData> CreateFontData(const FontDescription&) override;
+  RefPtr<SimpleFontData> CreateFontData(
+      const FontDescription&,
+      const FontSelectionCapabilities&) override;
 
   class LocalFontHistograms {
     DISALLOW_NEW();
