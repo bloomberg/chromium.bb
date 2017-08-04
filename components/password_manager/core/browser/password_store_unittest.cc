@@ -727,6 +727,8 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
       store->GetAutofillableLogins(&mock_consumer);
       WaitForPasswordStore();
       store->ShutdownOnUIThread();
+      store = nullptr;
+      // Finish processing so that the database isn't locked next iteration.
       WaitForPasswordStore();
     }
   }
@@ -799,6 +801,9 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliationAndBrandingInformation) {
     // shutdown UI thread until there are no tasks in the UI queue.
     WaitForPasswordStore();
     store->ShutdownOnUIThread();
+    store = nullptr;
+    // Finish processing so that the database isn't locked next iteration.
+    WaitForPasswordStore();
   }
 }
 
