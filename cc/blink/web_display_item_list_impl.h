@@ -32,11 +32,11 @@ class PaintOpBuffer;
 
 namespace cc_blink {
 
-class WebDisplayItemListImpl : public blink::WebDisplayItemList {
+class CC_BLINK_EXPORT WebDisplayItemListImpl
+    : public blink::WebDisplayItemList {
  public:
-  CC_BLINK_EXPORT WebDisplayItemListImpl();
-  CC_BLINK_EXPORT explicit WebDisplayItemListImpl(
-      cc::DisplayItemList* display_list);
+  WebDisplayItemListImpl();
+  explicit WebDisplayItemListImpl(cc::DisplayItemList* display_list);
   ~WebDisplayItemListImpl() override;
 
   // blink::WebDisplayItemList implementation.
