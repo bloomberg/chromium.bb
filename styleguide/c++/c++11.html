@@ -795,10 +795,7 @@ codebase.
 
 <h3 id="blacklist_stdlib"><a name="library-blacklist-14"></a>C++14 Banned Library Features</h3>
 
-<p>Nothing yet. Suggest something!</p>
-
-<!--
-<p>This section lists C++11 library features that are not allowed in the Chromium codebase.</p>
+<p>This section lists C++14 library features that are not allowed in the Chromium codebase.</p>
 
 <table id="blacklist_lib_list" class="unlined striped">
 <tbody>
@@ -811,9 +808,16 @@ codebase.
 <th style='width:240px;'>Notes and Discussion Thread</th>
 </tr>
 
+<tr>
+<td><code>std::chrono</code> literals</td>
+<td><code>using namespace std::chrono_literals;<br>auto timeout = 30s;</code></td>
+<td>Allows <code>std::chrono</code> types to be more easily constructed.</td>
+<td><a href="http://en.cppreference.com/w/cpp/chrono/operator%22%22s">std::literals::chrono_literals::operator""s</a></td>
+<td>Banned because <code>&lt;chrono&gt;</code> is banned.</td>
+</tr>
+
 </tbody>
 </table>
--->
 
 <h3 id="blacklist_review"><a name="core-review"></a>C++11 Features To Be Discussed</h3>
 
@@ -883,12 +887,52 @@ something, remove all callers and remove the function instead.</td>
 </tr>
 
 <tr>
+<td>Aggregate member initialization</td>
+<td><code>struct Point { int x, y, z = 0; };<br>Point p = {2, 3};</code></td>
+<td>Allows classes with default member initializers to be initialized with aggregate initialization, optionally omitting data members with such initializers.</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/aggregate_initialization">aggregate initialization</a></td>
+<td></td>
+</tr>
+
+<tr>
 <td>Binary literals</td>
 <td><code>int i = 0b1001;</code></td>
 <td>Allows defining literals in base two.</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/integer_literal">Integer literals</a></td>
 <td>Might confuse syntax highlighting in editors. No standard library support
 for printing or reading in this format. Still seems useful in minor ways.</td>
+</tr>
+
+<tr>
+<td><code>decltype(auto)</code> variable declarations</td>
+<td><code>decltype(auto) x = 42;</code></td>
+<td>Allows deducing the type of a variable using <code>decltype</code> rules.</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/auto">auto specifier</a></td>
+<td>Often more surprising than <code>auto</code>. For instance, the <code>decltype</code> deduction rules do not remove references.</td>
+</tr>
+
+<tr>
+<td>Function return type deduction</td>
+<td><code>auto f() { return 42; }<br>decltype(auto) g() { return 42; }</code></td>
+<td>Allows the return type of a function to be automatically deduced from its return statements, according to either template or <code>decltype</code> rules.</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/function#Return_type_deduction">Return type deduction</a></td>
+<td>Likely to be primarily useful in abstract template code.</td>
+</tr>
+
+<tr>
+<td>Generic lambdas</td>
+<td><code>[](const auto&amp; x) { <i>...</i> }</code></td>
+<td>Allows lambda argument types to be deduced using <code>auto</code> (according to the rules that apply to templates).</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/lambda">lambda expressions</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Lambda capture expressions</td>
+<td><code>auto widget = base::MakeUnique&lt;Widget&gt;();<br>auto lambda = [widget = std::move(widget)]() {<br>&nbsp;&nbsp;SetWidget(std::move(widget));<br>}</code></td>
+<td>Allows lambda captures to be explicitly initialized with expressions.</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/lambda#Lambda_capture">Lambda capture</a></td>
+<td>Particularly useful to capture move-only types in a lambda when a reference would go out of scope. Less useful without allowing lambdas to outlive the scope.</td>
 </tr>
 
 <tr>
@@ -901,10 +945,21 @@ for printing or reading in this format. Seems less useful and harder on editors
 than binary literals.</td>
 </tr>
 
-<!--
-XXX: generic lambdas, lambda capture expressions, decltype(auto), auto f(),
-more constexpr, member initializers for aggregates, variable templates
--->
+<tr>
+<td>Relaxed constant expressions</td>
+<td><code>constexpr int Factorial(int n) {<br>&nbsp;&nbsp;int result = 1;<br>&nbsp;&nbsp;while (n > 0)<br>&nbsp;&nbsp;&nbsp;&nbsp;result *= n--;<br>&nbsp;&nbsp;return result;<br>}</code></td>
+<td>Allows use of more declarations, conditional statements and loops inside <code>constexpr</code> functions.</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/constexpr">constexpr specifier</a></td>
+<td>Likely to get used even without approval, since the C++11 rules were not trivial to remember.</td>
+</tr>
+
+<tr>
+<td>Variable templates</td>
+<td><code>template &lt;typename T&gt;<br>constexpr T tau = T(6.283185307179586476925286766559);</code></td>
+<td>Allows templates that declare variables, rather than functions or classes.</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/variable_template">Variable template</a></td>
+<td></td>
+</tr>
 
 </tbody>
 </table>
@@ -1104,6 +1159,46 @@ more constexpr, member initializers for aggregates, variable templates
 </tr>
 
 <tr>
+<td>Constant begin/end non-member functions</td>
+<td><code>std::cbegin(<i>container</i>)<br>std::cend(<i>container</i>)<br>std::crbegin(<i>container</i>)<br>std::crend(<i>container</i>)</br></code></td>
+<td>Constant counterparts to <code>std::begin</code> etc.</td>
+<td><a href="http://en.cppreference.com/w/cpp/iterator/begin">std::cbegin</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Heterogeneous lookup in associative containers</td>
+<td><code><i>// Does not construct an std::string to use as the lookup key.</i><br>std::map&lt;std::string, int, std::less&lt;&gt;&gt; map;<br>auto it = map.find("answer");</code></td>
+<td>Allows searching associative containers without converting the key to exactly match the stored key type, assuming a suitable comparator exists.</td>
+<td><a href="http://en.cppreference.com/w/cpp/utility/functional/less">std::less</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td><code>std::complex</code> literals</td>
+<td><code>using namespace std::complex_literals;<br>std::complex&lt;double&gt; c = 2.0 + 0.5i;</code></td>
+<td>Allows <code>std::chrono</code> objects to be more easily constructed.</td>
+<td><a href="http://en.cppreference.com/w/cpp/numeric/complex/operator%22%22i">std::literals::complex_literals</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td><code>std::integer_sequence</code></td>
+<td><code>template &lt;size_t... I&gt;<br>void CallFooImpl(std::index_sequence&lt;I...&gt;) {<br>&nbsp;&nbsp;Foo(I...);<br>}<br><br>template &lt;size_t N&gt;<br>void CallFoo() {<br>&nbsp;&nbsp;CallFooImpl(std::make_index_sequence&lt;N&gt;());<br>}</code></td>
+<td>Template metaprogramming utility for representing a sequence of integers as a type.</td>
+<td><a href="http://en.cppreference.com/w/cpp/utility/integer_sequence">std::integer_sequence</a></td>
+<td>This also includes the alias, <code>std::index_sequence</code>, which is the specialization for <code>size_t</code>. Should replace <code>base::IndexSequence</code>.</td>
+</tr>
+
+<tr>
+<td><code>std::make_unique</code></td>
+<td><code>auto widget = std::make_unique&lt;Widget&gt;();</code></td>
+<td>Allocates objects on the heap and immediately constructs an <code>std::unique_ptr</code> to assume ownership.</td>
+<td><a href="http://en.cppreference.com/w/cpp/memory/unique_ptr/make_unique">std::make_unique</a></td>
+<td>Should replace <code>base::MakeUnique</code> and <code>WTF::MakeUnique</code>.</td>
+</tr>
+
+<tr>
 <td><code>std::string</code> literals</td>
 <td><code>
 #include &lt;string&gt;<br>
@@ -1114,10 +1209,13 @@ auto s = "asdf"s;  // deduces to std::string</code></td>
 <td></td>
 </tr>
 
-<!--
-XXX: std::chrono literals, std::complex literals, std::make_unique,
-std::integer_sequence
--->
+<tr>
+<td>Tuple addressing by type</td>
+<td><code>std::tuple&lt;int, char&gt; enterprise(1701, 'D');<br>int n = std::get&lt;int&gt;(enterprise);</code></td>
+<td>Allows entries in a tuple to be accessed by type rather than entry, if it is not ambiguous.</td>
+<td><a href="http://en.cppreference.com/w/cpp/utility/tuple/get">std::get(std::tuple)</a></td>
+<td></td>
+</tr>
 
 </tbody>
 </table>
