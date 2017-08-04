@@ -2219,11 +2219,8 @@ FcFreeTypeCheckGlyph (FT_Face face,
     if (face->face_flags & FT_FACE_FLAG_SCALABLE)
 	load_flags |= FT_LOAD_NO_BITMAP;
 
-    if (advance)
-    {
-	*advance = 0;
-	FT_Get_Advance (face, glyph, load_flags, advance);
-    }
+    *advance = 0;
+    FT_Get_Advance (face, glyph, load_flags, advance);
 
     /* CID fonts built by Adobe used to make ASCII control chars to cid1
      * (space glyph). As such, always check contour for those characters. */
