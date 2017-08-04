@@ -2988,6 +2988,9 @@
     <message name="IDS_SETTINGS_KEYBOARD_KEY_SEARCH" desc="In Device Settings, the label and dropdown list item for the Search key.">
       Search
     </message>
+    <message name="IDS_SETTINGS_KEYBOARD_KEY_LAUNCHER" desc="In Device Settings, the label and dropdown list item for the Search key on keyboard layouts of newer Chromebooks.">
+      Launcher
+    </message>
     <message name="IDS_SETTINGS_KEYBOARD_KEY_LEFT_CTRL" desc="In Device Settings, the label and dropdown list item for the Ctrl key.">
       Ctrl
     </message>
@@ -3014,6 +3017,9 @@
     </message>
     <message name="IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS_DESCRIPTION" desc="In Device Settings, the label describing how to use the top-row keys' original actions when they are set to behave like function keys.">
       Hold the Search key to switch the behavior of the top-row keys
+    </message>
+    <message name="IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS_LAYOUT2_DESCRIPTION" desc="In Device Settings, when device uses 2017 keyboard layout, the label describing how to use the top-row keys' original actions when they are set to behave like function keys.">
+      Hold the Launcher key to switch the behavior of the top-row keys
     </message>
     <message name="IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_ENABLE" desc="The checkbox label for enabling keyboard auto-repeat.">
       Enable auto-repeat
