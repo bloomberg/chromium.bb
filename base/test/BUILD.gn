@@ -90,8 +90,6 @@ static_library("test_support") {
     "scoped_path_override.h",
     "scoped_task_environment.cc",
     "scoped_task_environment.h",
-    "scoped_task_scheduler.cc",
-    "scoped_task_scheduler.h",
     "sequenced_task_runner_test_template.cc",
     "sequenced_task_runner_test_template.h",
     "sequenced_worker_pool_owner.cc",
