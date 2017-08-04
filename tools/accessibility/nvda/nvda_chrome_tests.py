@@ -113,8 +113,8 @@ class NvdaChromeTest(unittest.TestCase):
     print('NVDA pid: %d' % self._nvda_proc.pid)
 
     app = pywinauto.application.Application()
-    app.connect_(process = self._chrome_proc.pid)
-    self._pywinauto_window = app.top_window_()
+    app.connect(process = self._chrome_proc.pid)
+    self._pywinauto_window = app.top_window()
     self.last_nvda_log_line = 0;
 
   def tearDown(self):
