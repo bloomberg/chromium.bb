@@ -34,11 +34,12 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8EventListener.h"
 #include "core/CoreExport.h"
-#include "platform/bindings/V8PrivateProperty.h"
 #include "platform/wtf/Allocator.h"
 #include "v8/include/v8.h"
 
 namespace blink {
+
+class V8EventListener;
 
 enum ListenerLookupType {
   kListenerFindOnly,
@@ -51,75 +52,14 @@ class V8EventListenerHelper {
   STATIC_ONLY(V8EventListenerHelper);
 
  public:
-  static V8EventListener* ExistingEventListener(v8::Local<v8::Value> value,
-                                                ScriptState* script_state) {
-    DCHECK(script_state->GetIsolate()->InContext());
-    if (!value->IsObject())
-      return nullptr;
+  CORE_EXPORT static V8EventListener* GetEventListener(ScriptState*,
+                                                       v8::Local<v8::Value>,
+                                                       bool is_attribute,
+                                                       ListenerLookupType);
 
-    return FindEventListener(v8::Local<v8::Object>::Cast(value), false,
-                             script_state);
-  }
-
-  template <typename ListenerType>
-  static V8EventListener* EnsureEventListener(v8::Local<v8::Value>,
-                                              bool is_attribute,
-                                              ScriptState*);
-
-  CORE_EXPORT static EventListener* GetEventListener(ScriptState*,
-                                                     v8::Local<v8::Value>,
-                                                     bool is_attribute,
-                                                     ListenerLookupType);
-
- private:
-  static V8EventListener* FindEventListener(v8::Local<v8::Object> object,
-                                            bool is_attribute,
-                                            ScriptState* script_state) {
-    v8::Isolate* isolate = script_state->GetIsolate();
-    v8::HandleScope scope(isolate);
-    DCHECK(isolate->InContext());
-
-    v8::Local<v8::Value> listener =
-        ListenerProperty(isolate, is_attribute).GetOrEmpty(object);
-    if (listener.IsEmpty())
-      return nullptr;
-    return static_cast<V8EventListener*>(
-        v8::External::Cast(*listener)->Value());
-  }
-
-  static V8PrivateProperty::Symbol ListenerProperty(v8::Isolate* isolate,
-                                                    bool is_attribute) {
-    return is_attribute
-               ? V8PrivateProperty::GetV8EventListenerAttributeListener(isolate)
-               : V8PrivateProperty::GetV8EventListenerListener(isolate);
-  }
+  CORE_EXPORT static V8EventListener* EnsureErrorHandler(ScriptState*,
+                                                         v8::Local<v8::Value>);
 };
-
-template <typename ListenerType>
-V8EventListener* V8EventListenerHelper::EnsureEventListener(
-    v8::Local<v8::Value> value,
-    bool is_attribute,
-    ScriptState* script_state) {
-  v8::Isolate* isolate = script_state->GetIsolate();
-  DCHECK(isolate->InContext());
-  if (!value->IsObject())
-    return nullptr;
-
-  v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
-
-  V8EventListener* listener =
-      FindEventListener(object, is_attribute, script_state);
-  if (listener)
-    return listener;
-
-  listener = ListenerType::Create(object, is_attribute, script_state);
-  if (listener) {
-    ListenerProperty(isolate, is_attribute)
-        .Set(object, v8::External::New(isolate, listener));
-  }
-
-  return listener;
-}
 
 }  // namespace blink
 
