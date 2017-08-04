@@ -8,10 +8,13 @@
 
 #import "remoting/ios/app/app_delegate.h"
 
+#import "ios/third_party/material_components_ios/src/components/Dialogs/src/ColorThemer/MDCAlertColorThemer.h"
+#import "ios/third_party/material_components_ios/src/components/Themes/src/MDCColorScheme.h"
 #import "remoting/ios/app/app_view_controller.h"
 #import "remoting/ios/app/first_launch_view_presenter.h"
 #import "remoting/ios/app/help_and_feedback.h"
 #import "remoting/ios/app/help_view_controller.h"
+#import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/app/remoting_view_controller.h"
 #import "remoting/ios/app/user_status_presenter.h"
 #import "remoting/ios/app/web_view_controller.h"
@@ -47,6 +50,13 @@ static NSString* const kFAQsUrl =
 - (BOOL)application:(UIApplication*)application
     didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
   [self launchRootViewController];
+
+  // TODO(yuweih): Follow up on this to see if it can be removed. There is a bug
+  // where the MDC alert is defaulting to white text on white background.
+  MDCBasicColorScheme* colorScheme = [[MDCBasicColorScheme alloc]
+      initWithPrimaryColor:RemotingTheme.flatButtonTextColor];
+  [MDCAlertColorThemer applyColorScheme:colorScheme];
+
   return YES;
 }
 

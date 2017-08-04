@@ -8,6 +8,9 @@
 
 #import "remoting/ios/app/remoting_view_controller.h"
 
+#include <SystemConfiguration/SystemConfiguration.h>
+#include <netinet/in.h>
+
 #import "base/mac/bind_objc_block.h"
 #import "ios/third_party/material_components_ios/src/components/AnimationTiming/src/MaterialAnimationTiming.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
@@ -33,6 +36,48 @@
 #include "ui/base/l10n/l10n_util.h"
 
 static CGFloat kHostInset = 5.f;
+
+namespace {
+
+#pragma mark - Network Reachability
+
+enum class ConnectionType {
+  UNKNOWN,
+  NONE,
+  WWAN,
+  WIFI,
+};
+
+ConnectionType GetConnectionType() {
+  // 0.0.0.0 is a special token that causes reachability to monitor the general
+  // routing status of the device, both IPv4 and IPv6.
+  struct sockaddr_in addr = {0};
+  addr.sin_len = sizeof(addr);
+  addr.sin_family = AF_INET;
+  SCNetworkReachabilityRef reachability =
+      SCNetworkReachabilityCreateWithAddress(
+          kCFAllocatorDefault, reinterpret_cast<struct sockaddr*>(&addr));
+  SCNetworkReachabilityFlags flags;
+  BOOL success = SCNetworkReachabilityGetFlags(reachability, &flags);
+  CFRelease(reachability);
+  if (!success) {
+    return ConnectionType::UNKNOWN;
+  }
+  BOOL isReachable = flags & kSCNetworkReachabilityFlagsReachable;
+  BOOL needsConnection = flags & kSCNetworkReachabilityFlagsConnectionRequired;
+  BOOL isNetworkReachable = isReachable && !needsConnection;
+
+  if (!isNetworkReachable) {
+    return ConnectionType::NONE;
+  } else if (flags & kSCNetworkReachabilityFlagsIsWWAN) {
+    return ConnectionType::WWAN;
+  }
+  return ConnectionType::WIFI;
+}
+
+}  // namespace
+
+#pragma mark - RemotingViewController
 
 @interface RemotingViewController ()<HostCollectionViewControllerDelegate,
                                      UIViewControllerAnimatedTransitioning,
@@ -171,11 +216,45 @@ static CGFloat kHostInset = 5.f;
     return;
   }
 
-  [MDCSnackbarManager dismissAndCallCompletionBlocksWithCategory:nil];
-  ClientConnectionViewController* clientConnectionViewController =
-      [[ClientConnectionViewController alloc] initWithHostInfo:cell.hostInfo];
-  [self.navigationController pushViewController:clientConnectionViewController
-                                       animated:YES];
+  void (^connectToHost)() = ^{
+    [MDCSnackbarManager dismissAndCallCompletionBlocksWithCategory:nil];
+    ClientConnectionViewController* clientConnectionViewController =
+        [[ClientConnectionViewController alloc] initWithHostInfo:cell.hostInfo];
+    [self.navigationController pushViewController:clientConnectionViewController
+                                         animated:YES];
+  };
+
+  switch (GetConnectionType()) {
+    case ConnectionType::WIFI:
+      connectToHost();
+      break;
+    case ConnectionType::WWAN: {
+      MDCAlertController* alert = [MDCAlertController
+          alertControllerWithTitle:nil
+                           message:l10n_util::GetNSString(
+                                       IDS_MOBILE_NETWORK_WARNING)];
+
+      MDCAlertAction* continueAction = [MDCAlertAction
+          actionWithTitle:l10n_util::GetNSString(IDS_IDLE_CONTINUE)
+                  handler:^(MDCAlertAction*) {
+                    connectToHost();
+                  }];
+      [alert addAction:continueAction];
+
+      MDCAlertAction* cancelAction =
+          [MDCAlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                                  handler:nil];
+      [alert addAction:cancelAction];
+
+      [self presentViewController:alert animated:YES completion:nil];
+      break;
+    }
+    default:
+      [MDCSnackbarManager
+          showMessage:[MDCSnackbarMessage
+                          messageWithText:l10n_util::GetNSString(
+                                              IDS_ERROR_NETWORK_ERROR)]];
+  }
   completionBlock();
 }
 
