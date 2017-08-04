@@ -41,6 +41,12 @@ class WindowTreeHostMus;
 
 struct WindowTreeHostMusInitParams;
 
+// This mirrors ui::mojom::BlockingContainers. See it for details.
+struct BlockingContainers {
+  aura::Window* system_modal_container = nullptr;
+  aura::Window* min_container = nullptr;
+};
+
 // See the mojom with the same name for details on the functions in this
 // interface.
 class AURA_EXPORT WindowManagerClient {
@@ -94,6 +100,11 @@ class AURA_EXPORT WindowManagerClient {
   // applicable to top-level windows. If a client is not embedded in |window|,
   // this does nothing.
   virtual void RequestClose(Window* window) = 0;
+
+  // See mojom::WindowManager::SetBlockingContainers() and
+  // mojom::BlockingContainers for details on what this does.
+  virtual void SetBlockingContainers(
+      const std::vector<BlockingContainers>& all_blocking_containers) = 0;
 
   // Blocks until the initial displays have been received, or if displays are
   // not automatically created until the connection to mus has been

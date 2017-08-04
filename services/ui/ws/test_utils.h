@@ -196,7 +196,7 @@ class ModalWindowControllerTestApi {
       : mwc_(mwc) {}
   ~ModalWindowControllerTestApi() {}
 
-  ServerWindow* GetActiveSystemModalWindow() const {
+  const ServerWindow* GetActiveSystemModalWindow() const {
     return mwc_->GetActiveSystemModalWindow();
   }
 

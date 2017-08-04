@@ -182,6 +182,10 @@ class ASH_EXPORT ShellPort {
   virtual void OnCreatedRootWindowContainers(
       RootWindowController* root_window_controller) = 0;
 
+  // Called any time the set up system modal and blocking containers needs to
+  // sent to the server.
+  virtual void UpdateSystemModalAndBlockingContainers() = 0;
+
  protected:
   ShellPort();
 

@@ -167,6 +167,8 @@ std::unique_ptr<AshWindowTreeHost> ShellPortClassic::CreateAshWindowTreeHost(
 void ShellPortClassic::OnCreatedRootWindowContainers(
     RootWindowController* root_window_controller) {}
 
+void ShellPortClassic::UpdateSystemModalAndBlockingContainers() {}
+
 void ShellPortClassic::OnHostsInitialized() {}
 
 std::unique_ptr<display::NativeDisplayDelegate>

@@ -322,6 +322,12 @@ interface WindowManagerClient {
   // Swaps the display roots of the two displays.
   SwapDisplayRoots(int64 display_id1, int64 display_id2) => (bool success);
 
+  // Sets the BlockingContainers; one per display. This should be called any
+  // time displays are added or removed. See description of BlockingContainers
+  // for details on what this does.
+  SetBlockingContainers(array<BlockingContainers> blocking_containers) =>
+      (bool success);
+
   // The window manager has completed a request with the specific change id.
   WmResponse(uint32 change_id, bool response);
 

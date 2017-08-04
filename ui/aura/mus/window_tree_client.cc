@@ -200,6 +200,10 @@ void OnAckMustSucceed(bool success) {
   CHECK(success);
 }
 
+Id GetServerIdForWindow(Window* window) {
+  return window ? WindowMus::Get(window)->server_id() : kInvalidServerId;
+}
+
 }  // namespace
 
 WindowTreeClient::WindowTreeClient(
@@ -1538,6 +1542,29 @@ void WindowTreeClient::OnChangeCompleted(uint32_t change_id, bool success) {
     on_current_move_finished_.Run(success);
     on_current_move_finished_.Reset();
   }
+}
+
+void WindowTreeClient::SetBlockingContainers(
+    const std::vector<BlockingContainers>& all_blocking_containers) {
+  std::vector<ui::mojom::BlockingContainersPtr>
+      transport_all_blocking_containers;
+  for (const BlockingContainers& blocking_containers :
+       all_blocking_containers) {
+    ui::mojom::BlockingContainersPtr transport_blocking_containers =
+        ui::mojom::BlockingContainers::New();
+    // The |system_modal_container| must be specified, |min_container| may be
+    // null.
+    DCHECK(blocking_containers.system_modal_container);
+    transport_blocking_containers->system_modal_container_id =
+        GetServerIdForWindow(blocking_containers.system_modal_container);
+    transport_blocking_containers->min_container_id =
+        GetServerIdForWindow(blocking_containers.min_container);
+    transport_all_blocking_containers.push_back(
+        std::move(transport_blocking_containers));
+  }
+  window_manager_client_->SetBlockingContainers(
+      std::move(transport_all_blocking_containers),
+      base::Bind(&OnAckMustSucceed));
 }
 
 void WindowTreeClient::GetWindowManager(

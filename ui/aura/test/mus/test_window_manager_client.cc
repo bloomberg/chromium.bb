@@ -64,6 +64,10 @@ void TestWindowManagerClient::SwapDisplayRoots(
     int64_t display_id2,
     const SwapDisplayRootsCallback& callback) {}
 
+void TestWindowManagerClient::SetBlockingContainers(
+    std::vector<ui::mojom::BlockingContainersPtr> blocking_containers,
+    const SetBlockingContainersCallback& callback) {}
+
 void TestWindowManagerClient::WmResponse(uint32_t change_id, bool response) {}
 
 void TestWindowManagerClient::WmSetBoundsResponse(uint32_t change_id) {}

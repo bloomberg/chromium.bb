@@ -7,13 +7,60 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
-#include "services/ui/ws/event_dispatcher.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_drawn_tracker.h"
 
 namespace ui {
 namespace ws {
 namespace {
+
+// This mirrors that of RootWindowController.
+bool IsWindowAboveContainer(const ServerWindow* window,
+                            const ServerWindow* blocking_container) {
+  std::vector<const ServerWindow*> target_path;
+  std::vector<const ServerWindow*> blocking_path;
+
+  while (window) {
+    target_path.push_back(window);
+    window = window->parent();
+  }
+
+  while (blocking_container) {
+    blocking_path.push_back(blocking_container);
+    blocking_container = blocking_container->parent();
+  }
+
+  // The root window is put at the end so that we compare windows at
+  // the same depth.
+  while (!blocking_path.empty()) {
+    if (target_path.empty())
+      return false;
+
+    const ServerWindow* target = target_path.back();
+    target_path.pop_back();
+    const ServerWindow* blocking = blocking_path.back();
+    blocking_path.pop_back();
+
+    // Still on the same path, continue.
+    if (target == blocking)
+      continue;
+
+    // This can happen only if unparented window is passed because
+    // first element must be the same root.
+    if (!target->parent() || !blocking->parent())
+      return false;
+
+    const ServerWindow* common_parent = target->parent();
+    DCHECK_EQ(common_parent, blocking->parent());
+    const ServerWindow::Windows& windows = common_parent->children();
+    auto blocking_iter = std::find(windows.begin(), windows.end(), blocking);
+    // If the target window is above blocking window, the window can handle
+    // events.
+    return std::find(blocking_iter, windows.end(), target) != windows.end();
+  }
+
+  return true;
+}
 
 const ServerWindow* GetModalChildForWindowAncestor(const ServerWindow* window) {
   for (const ServerWindow* ancestor = window; ancestor;
@@ -65,13 +112,80 @@ const ServerWindow* GetModalTransientChild(const ServerWindow* activatable,
 
 }  // namespace
 
-ModalWindowController::ModalWindowController(EventDispatcher* event_dispatcher)
-    : event_dispatcher_(event_dispatcher) {}
+class ModalWindowController::TrackedBlockingContainers
+    : public ServerWindowObserver {
+ public:
+  TrackedBlockingContainers(ModalWindowController* modal_window_controller,
+                            ServerWindow* system_modal_container,
+                            ServerWindow* min_container)
+      : modal_window_controller_(modal_window_controller),
+        system_modal_container_(system_modal_container),
+        min_container_(min_container) {
+    DCHECK(system_modal_container_);
+    system_modal_container_->AddObserver(this);
+    if (min_container_)
+      min_container_->AddObserver(this);
+  }
+
+  ~TrackedBlockingContainers() override {
+    if (system_modal_container_)
+      system_modal_container_->RemoveObserver(this);
+    if (min_container_)
+      min_container_->RemoveObserver(this);
+  }
+
+  bool IsInDisplayWithRoot(const ServerWindow* root) const {
+    return root->Contains(system_modal_container_);
+  }
+
+  ServerWindow* system_modal_container() { return system_modal_container_; }
+
+  ServerWindow* min_container() { return min_container_; }
+
+ private:
+  void Destroy() {
+    modal_window_controller_->DestroyTrackedBlockingContainers(this);
+  }
+
+  // ServerWindowObserver:
+  void OnWindowDestroying(ServerWindow* window) override {
+    if (window == min_container_) {
+      min_container_->RemoveObserver(this);
+      min_container_ = nullptr;
+      if (!system_modal_container_)
+        Destroy();
+    } else if (window == system_modal_container_) {
+      system_modal_container_->RemoveObserver(this);
+      system_modal_container_ = nullptr;
+      // The |system_modal_container_| should always be valid.
+      Destroy();
+    }
+  }
+
+  ModalWindowController* modal_window_controller_;
+  ServerWindow* system_modal_container_;
+  ServerWindow* min_container_;
+
+  DISALLOW_COPY_AND_ASSIGN(TrackedBlockingContainers);
+};
+
+ModalWindowController::ModalWindowController() {}
 
 ModalWindowController::~ModalWindowController() {
   for (auto it = system_modal_windows_.begin();
        it != system_modal_windows_.end(); it++) {
     (*it)->RemoveObserver(this);
+  }
+}
+
+void ModalWindowController::SetBlockingContainers(
+    const std::vector<BlockingContainers>& all_blocking_containers) {
+  all_blocking_containers_.clear();
+
+  for (const BlockingContainers& containers : all_blocking_containers) {
+    all_blocking_containers_.push_back(
+        base::MakeUnique<TrackedBlockingContainers>(
+            this, containers.system_modal_container, containers.min_container));
   }
 }
 
@@ -84,21 +198,26 @@ void ModalWindowController::AddSystemModalWindow(ServerWindow* window) {
   window_drawn_trackers_.insert(make_pair(
       window, base::MakeUnique<ServerWindowDrawnTracker>(window, this)));
   window->AddObserver(this);
+}
 
-  event_dispatcher_->ReleaseCaptureBlockedByAnyModalWindow();
+void ModalWindowController::DestroyTrackedBlockingContainers(
+    TrackedBlockingContainers* containers) {
+  for (auto iter = all_blocking_containers_.begin();
+       iter != all_blocking_containers_.end(); ++iter) {
+    if (iter->get() == containers) {
+      all_blocking_containers_.erase(iter);
+      return;
+    }
+  }
+  NOTREACHED();
 }
 
 bool ModalWindowController::IsWindowBlocked(const ServerWindow* window) const {
-  if (!window)
-    return false;
-
-  if (GetModalTransient(window))
+  if (!window || !window->IsDrawn())
     return true;
 
-  // TODO(sky): the checks here are not enough, need to match that of
-  // RootWindowController::CanWindowReceiveEvents().
-  ServerWindow* system_modal_window = GetActiveSystemModalWindow();
-  return system_modal_window ? !system_modal_window->Contains(window) : false;
+  return GetModalTransient(window) ||
+         IsWindowBlockedBySystemModalOrMinContainer(window);
 }
 
 const ServerWindow* ModalWindowController::GetModalTransient(
@@ -124,11 +243,59 @@ const ServerWindow* ModalWindowController::GetToplevelWindow(
   return nullptr;
 }
 
-ServerWindow* ModalWindowController::GetActiveSystemModalWindow() const {
+bool ModalWindowController::IsWindowBlockedBySystemModalOrMinContainer(
+    const ServerWindow* window) const {
+  const ServerWindow* system_modal_window = GetActiveSystemModalWindow();
+  const ServerWindow* min_container = nullptr;
+  if (system_modal_window) {
+    // If there is a system modal window, then |window| must be part of the
+    // system modal window.
+    const bool is_part_of_active_modal =
+        system_modal_window->Contains(window) ||
+        window->HasTransientAncestor(system_modal_window);
+    if (!is_part_of_active_modal)
+      return true;
+
+    // When there is a system modal window the |min_container| becomes the
+    // system modal container.
+    min_container = system_modal_window->parent();
+  } else {
+    min_container = GetMinContainer(window);
+  }
+  return min_container && !IsWindowAboveContainer(window, min_container);
+}
+
+bool ModalWindowController::IsWindowInSystemModalContainer(
+    const ServerWindow* window) const {
+  DCHECK(window->IsDrawn());
+  const ServerWindow* root = window->GetRoot();
+  DCHECK(root);
+  for (auto& blocking_containers : all_blocking_containers_) {
+    if (blocking_containers->IsInDisplayWithRoot(root))
+      return window->parent() == blocking_containers->system_modal_container();
+  }
+  // This means the window manager didn't set the blocking containers, assume
+  // the window is in a valid system modal container.
+  return true;
+}
+
+const ServerWindow* ModalWindowController::GetMinContainer(
+    const ServerWindow* window) const {
+  DCHECK(window->IsDrawn());
+  const ServerWindow* root = window->GetRoot();
+  DCHECK(root);
+  for (auto& blocking_containers : all_blocking_containers_) {
+    if (blocking_containers->IsInDisplayWithRoot(root))
+      return blocking_containers->min_container();
+  }
+  return nullptr;
+}
+
+const ServerWindow* ModalWindowController::GetActiveSystemModalWindow() const {
   for (auto it = system_modal_windows_.rbegin();
        it != system_modal_windows_.rend(); it++) {
     ServerWindow* modal = *it;
-    if (modal->IsDrawn())
+    if (modal->IsDrawn() && IsWindowInSystemModalContainer(modal))
       return modal;
   }
   return nullptr;

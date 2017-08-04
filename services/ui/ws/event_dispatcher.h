@@ -61,6 +61,10 @@ class EventDispatcher : public ServerWindowObserver,
 
   void set_fallback_to_root(bool value) { fallback_to_root_ = value; }
 
+  ModalWindowController* modal_window_controller() {
+    return &modal_window_controller_;
+  }
+
   // Cancels capture and stops tracking any pointer events. This does not send
   // any events to the delegate.
   void Reset();

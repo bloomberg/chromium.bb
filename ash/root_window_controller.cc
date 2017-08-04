@@ -403,16 +403,9 @@ bool RootWindowController::CanWindowReceiveEvents(aura::Window* window) {
     return false;
 
   aura::Window* blocking_container = nullptr;
-
-  int modal_container_id = 0;
-  if (Shell::Get()->session_controller()->IsUserSessionBlocked()) {
-    blocking_container =
-        GetContainer(kShellWindowId_LockScreenContainersContainer);
-    modal_container_id = kShellWindowId_LockSystemModalContainer;
-  } else {
-    modal_container_id = kShellWindowId_SystemModalContainer;
-  }
-  aura::Window* modal_container = GetContainer(modal_container_id);
+  aura::Window* modal_container = nullptr;
+  wm::GetBlockingContainersForRoot(GetRootWindow(), &blocking_container,
+                                   &modal_container);
   SystemModalContainerLayoutManager* modal_layout_manager = nullptr;
   modal_layout_manager = static_cast<SystemModalContainerLayoutManager*>(
       modal_container->layout_manager());

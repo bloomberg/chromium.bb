@@ -414,6 +414,8 @@ class WindowTree : public mojom::WindowTree,
       const ClientWindowId& client_window_id);
 
   bool ProcessSwapDisplayRoots(int64_t display_id1, int64_t display_id2);
+  bool ProcessSetBlockingContainers(std::vector<mojom::BlockingContainersPtr>
+                                        transport_all_blocking_containers);
 
   // WindowTree:
   void NewWindow(uint32_t change_id,
@@ -549,6 +551,9 @@ class WindowTree : public mojom::WindowTree,
   void SwapDisplayRoots(int64_t display_id1,
                         int64_t display_id2,
                         const SwapDisplayRootsCallback& callback) override;
+  void SetBlockingContainers(
+      std::vector<mojom::BlockingContainersPtr> blocking_containers,
+      const SetBlockingContainersCallback& callback) override;
   void WmResponse(uint32_t change_id, bool response) override;
   void WmSetBoundsResponse(uint32_t change_id) override;
   void WmRequestClose(Id transport_window_id) override;

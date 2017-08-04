@@ -95,6 +95,7 @@ class ShellPortMash : public ShellPort {
       const AshWindowTreeHostInitParams& init_params) override;
   void OnCreatedRootWindowContainers(
       RootWindowController* root_window_controller) override;
+  void UpdateSystemModalAndBlockingContainers() override;
   void OnHostsInitialized() override;
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override;

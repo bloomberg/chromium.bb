@@ -249,6 +249,7 @@ source_set("tests") {
     "focus_controller_unittest.cc",
     "frame_generator_unittest.cc",
     "gpu_host_unittest.cc",
+    "modal_window_controller_unittest.cc",
     "server_window_drawn_tracker_unittest.cc",
     "test_frame_sink_manager.h",
     "test_gpu_host.h",

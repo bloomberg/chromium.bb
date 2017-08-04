@@ -8,7 +8,9 @@
 
 #include "ash/ash_constants.h"
 #include "ash/public/cpp/config.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/wm/resize_handle_window_targeter.h"
@@ -88,6 +90,21 @@ aura::Window* GetFocusedWindow() {
 
 aura::Window* GetCaptureWindow() {
   return aura::client::GetCaptureWindow(Shell::GetPrimaryRootWindow());
+}
+
+void GetBlockingContainersForRoot(aura::Window* root_window,
+                                  aura::Window** min_container,
+                                  aura::Window** system_modal_container) {
+  if (Shell::Get()->session_controller()->IsUserSessionBlocked()) {
+    *min_container =
+        root_window->GetChildById(kShellWindowId_LockScreenContainersContainer);
+    *system_modal_container =
+        root_window->GetChildById(kShellWindowId_LockSystemModalContainer);
+  } else {
+    *min_container = nullptr;
+    *system_modal_container =
+        root_window->GetChildById(kShellWindowId_SystemModalContainer);
+  }
 }
 
 bool IsWindowUserPositionable(aura::Window* window) {
