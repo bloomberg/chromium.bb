@@ -2075,11 +2075,7 @@ FcFreeTypeCheckGlyph (FT_Face face,
 {
     FT_Int	    load_flags = FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH | FT_LOAD_NO_SCALE | FT_LOAD_NO_HINTING;
 
-    if (!glyph)
-	return FcFalse;
-
-    /*
-     * When using scalable fonts, only report those glyphs
+    /* When using scalable fonts, only report those glyphs
      * which can be scaled; otherwise those fonts will
      * only be available at some sizes, and never when
      * transformed.  Avoid this by simply reporting bitmap-only
