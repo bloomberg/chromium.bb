@@ -117,11 +117,6 @@ class NvdaChromeTest(unittest.TestCase):
     self._pywinauto_window = app.top_window_()
     self.last_nvda_log_line = 0;
 
-    try:
-      self._TestForSpeech(['Address and search bar edit', 'about:blank'])
-    except:
-      self.tearDown()
-
   def tearDown(self):
     print()
     print('Shutting down')
