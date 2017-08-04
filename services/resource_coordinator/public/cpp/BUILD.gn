@@ -17,8 +17,6 @@ component("resource_coordinator_cpp") {
     "memory_instrumentation/os_metrics_linux.cc",
     "memory_instrumentation/os_metrics_mac.cc",
     "memory_instrumentation/os_metrics_win.cc",
-    "memory_instrumentation/process_metrics_memory_dump_provider.cc",
-    "memory_instrumentation/process_metrics_memory_dump_provider.h",
     "memory_instrumentation/tracing_observer.cc",
     "memory_instrumentation/tracing_observer.h",
     "resource_coordinator_features.cc",

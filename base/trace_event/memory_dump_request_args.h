@@ -17,7 +17,6 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/process/process_handle.h"
-#include "base/trace_event/process_memory_totals.h"
 
 namespace base {
 namespace trace_event {

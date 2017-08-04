@@ -68,6 +68,8 @@ mojom::RawProcessMemoryDumpPtr CreateDumpSummary(
       result->chrome_dump->blink_gc_total_kb =
           GetDumpsSumKb("blink_gc", process_memory_dump);
       result->os_dump = mojom::RawOSMemDump::New();
+      result->os_dump->platform_private_footprint =
+          mojom::PlatformPrivateFootprint::New();
     }
   }
   return result;
@@ -77,6 +79,8 @@ mojom::RawProcessMemoryDumpPtr CreateEmptyDumpSummary() {
   mojom::RawProcessMemoryDumpPtr result = mojom::RawProcessMemoryDump::New();
   result->chrome_dump = mojom::ChromeMemDump::New();
   result->os_dump = mojom::RawOSMemDump::New();
+  result->os_dump->platform_private_footprint =
+      mojom::PlatformPrivateFootprint::New();
   return result;
 }
 
@@ -198,6 +202,7 @@ void ClientProcessImpl::RequestOSMemoryDump(
   std::unordered_map<base::ProcessId, mojom::RawOSMemDumpPtr> results;
   for (const base::ProcessId& pid : pids) {
     mojom::RawOSMemDumpPtr result = mojom::RawOSMemDump::New();
+    result->platform_private_footprint = mojom::PlatformPrivateFootprint::New();
     bool success = true;
     success = success && OSMetrics::FillOSMemoryDump(pid, result.get());
     if (want_mmaps)

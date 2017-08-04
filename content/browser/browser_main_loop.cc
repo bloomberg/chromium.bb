@@ -49,7 +49,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
-#include "components/tracing/common/process_metrics_memory_dump_provider.h"
 #include "components/tracing/common/trace_config_file.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
@@ -773,8 +772,6 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
 
   // Enable memory-infra dump providers.
   InitSkiaEventTracer();
-  tracing::ProcessMetricsMemoryDumpProvider::RegisterForProcess(
-      base::kNullProcessId);
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       viz::ServerSharedBitmapManager::current(),
       "viz::ServerSharedBitmapManager", nullptr);

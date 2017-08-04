@@ -5,7 +5,6 @@
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation_struct_traits.h"
 
 #include "base/trace_event/memory_dump_request_args.h"
-#include "base/trace_event/process_memory_totals.h"
 #include "mojo/common/common_custom_types_struct_traits.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 
@@ -108,22 +107,6 @@ bool StructTraits<memory_instrumentation::mojom::RequestArgsDataView,
     return false;
   if (!input.ReadLevelOfDetail(&out->level_of_detail))
     return false;
-  return true;
-}
-
-// static
-bool StructTraits<
-    memory_instrumentation::mojom::PlatformPrivateFootprintDataView,
-    base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint>::
-    Read(
-        memory_instrumentation::mojom::PlatformPrivateFootprintDataView input,
-        base::trace_event::ProcessMemoryTotals::PlatformPrivateFootprint* out) {
-  out->phys_footprint_bytes = input.phys_footprint_bytes();
-  out->internal_bytes = input.internal_bytes();
-  out->compressed_bytes = input.compressed_bytes();
-  out->rss_anon_bytes = input.rss_anon_bytes();
-  out->vm_swap_bytes = input.vm_swap_bytes();
-  out->private_bytes = input.private_bytes();
   return true;
 }
 

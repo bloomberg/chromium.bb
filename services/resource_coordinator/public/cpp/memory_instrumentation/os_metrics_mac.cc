@@ -239,9 +239,9 @@ bool OSMetrics::FillOSMemoryDump(base::ProcessId pid,
     return false;
   }
   base::ProcessMetrics::TaskVMInfo info = process_metrics->GetTaskVMInfo();
-  dump->platform_private_footprint.phys_footprint_bytes = info.phys_footprint;
-  dump->platform_private_footprint.internal_bytes = info.internal;
-  dump->platform_private_footprint.compressed_bytes = info.compressed;
+  dump->platform_private_footprint->phys_footprint_bytes = info.phys_footprint;
+  dump->platform_private_footprint->internal_bytes = info.internal;
+  dump->platform_private_footprint->compressed_bytes = info.compressed;
   dump->resident_set_kb = resident_bytes / 1024;
   return true;
 }

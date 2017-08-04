@@ -11,8 +11,6 @@ component("tracing") {
     "child/child_trace_message_filter.h",
     "common/graphics_memory_dump_provider_android.cc",
     "common/graphics_memory_dump_provider_android.h",
-    "common/process_metrics_memory_dump_provider.cc",
-    "common/process_metrics_memory_dump_provider.h",
     "common/tracing_messages.cc",
     "common/tracing_messages.h",
     "core/proto_utils.cc",
@@ -35,17 +33,11 @@ component("tracing") {
   deps = [
     "//base",
     "//ipc",
-    "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
   ]
 
   public_deps = [
     "//components/tracing/proto:protos",
   ]
-
-  if (is_nacl) {
-    sources -= [ "common/process_metrics_memory_dump_provider.cc" ]
-    deps -= [ "//services/resource_coordinator/public/cpp:resource_coordinator_cpp" ]
-  }
 }
 
 component("startup_tracing") {
