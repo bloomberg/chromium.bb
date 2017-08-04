@@ -2007,122 +2007,6 @@ static const FT_Encoding fcFontEncodings[] = {
 
 #define NUM_DECODE  (int) (sizeof (fcFontEncodings) / sizeof (fcFontEncodings[0]))
 
-#include "../fc-glyphname/fcglyphname.h"
-
-static FcChar32
-FcHashGlyphName (const FcChar8 *name)
-{
-    FcChar32	h = 0;
-    FcChar8	c;
-
-    while ((c = *name++))
-    {
-	h = ((h << 1) | (h >> 31)) ^ c;
-    }
-    return h;
-}
-
-#if HAVE_FT_HAS_PS_GLYPH_NAMES
-/*
- * Use Type1 glyph names for fonts which have reliable names
- * and which export an Adobe Custom mapping
- */
-static FcBool
-FcFreeTypeUseNames (FT_Face face)
-{
-    FT_Int  map;
-
-    if (!FT_Has_PS_Glyph_Names (face))
-	return FcFalse;
-    for (map = 0; map < face->num_charmaps; map++)
-	if (face->charmaps[map]->encoding == ft_encoding_adobe_custom)
-	    return FcTrue;
-    return FcFalse;
-}
-
-static const FcChar8 *
-FcUcs4ToGlyphName (FcChar32 ucs4)
-{
-    int		i = (int) (ucs4 % FC_GLYPHNAME_HASH);
-    int		r = 0;
-    FcGlyphId	gn;
-
-    while ((gn = _fc_ucs_to_name[i]) != -1)
-    {
-	if (_fc_glyph_names[gn].ucs == ucs4)
-	    return _fc_glyph_names[gn].name;
-	if (!r)
-	{
-	    r = (int) (ucs4 % FC_GLYPHNAME_REHASH);
-	    if (!r)
-		r = 1;
-	}
-	i += r;
-	if (i >= FC_GLYPHNAME_HASH)
-	    i -= FC_GLYPHNAME_HASH;
-    }
-    return 0;
-}
-
-static FcChar32
-FcGlyphNameToUcs4 (FcChar8 *name)
-{
-    FcChar32	h = FcHashGlyphName (name);
-    int		i = (int) (h % FC_GLYPHNAME_HASH);
-    int		r = 0;
-    FcGlyphId	gn;
-
-    while ((gn = _fc_name_to_ucs[i]) != -1)
-    {
-	if (!strcmp ((char *) name, (char *) _fc_glyph_names[gn].name))
-	    return _fc_glyph_names[gn].ucs;
-	if (!r)
-	{
-	    r = (int) (h % FC_GLYPHNAME_REHASH);
-	    if (!r)
-		r = 1;
-	}
-	i += r;
-	if (i >= FC_GLYPHNAME_HASH)
-	    i -= FC_GLYPHNAME_HASH;
-    }
-    return 0xffff;
-}
-
-/*
- * Work around a bug in some FreeType versions which fail
- * to correctly bounds check glyph name buffers and overwrite
- * the stack. As Postscript names have a limit of 127 characters,
- * this should be sufficient.
- */
-
-#if FC_GLYPHNAME_MAXLEN < 127
-# define FC_GLYPHNAME_BUFLEN 127
-#else
-# define FC_GLYPHNAME_BUFLEN FC_GLYPHNAME_MAXLEN
-#endif
-
-/*
- * Search through a font for a glyph by name.  This is
- * currently a linear search as there doesn't appear to be
- * any defined order within the font
- */
-static FT_UInt
-FcFreeTypeGlyphNameIndex (FT_Face face, const FcChar8 *name)
-{
-    FT_UInt gindex;
-    FcChar8 name_buf[FC_GLYPHNAME_BUFLEN + 2];
-
-    for (gindex = 0; gindex < (FT_UInt) face->num_glyphs; gindex++)
-    {
-	if (FT_Get_Glyph_Name (face, gindex, name_buf, FC_GLYPHNAME_BUFLEN+1) == 0)
-	    if (!strcmp ((char *) name, (char *) name_buf))
-		return gindex;
-    }
-    return 0;
-}
-#endif
-
 /*
  * Map a UCS4 glyph to a glyph index.  Use all available encoding
  * tables to try and find one that works.  This information is expected
@@ -2180,21 +2064,6 @@ FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4)
 		return glyphindex;
 	}
     }
-#if HAVE_FT_HAS_PS_GLYPH_NAMES
-    /*
-     * Check postscript name table if present
-     */
-    if (FcFreeTypeUseNames (face))
-    {
-	const FcChar8	*name = FcUcs4ToGlyphName (ucs4);
-	if (name)
-	{
-	    glyphindex = FcFreeTypeGlyphNameIndex (face, name);
-	    if (glyphindex)
-		return glyphindex;
-	}
-    }
-#endif
     return 0;
 }
 
@@ -2362,54 +2231,6 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 
        break;
     }
-#if HAVE_FT_HAS_PS_GLYPH_NAMES
-    /*
-     * Add mapping from PS glyph names if available
-     */
-    if (FcFreeTypeUseNames (face))
-    {
-	FcChar8 name_buf[FC_GLYPHNAME_BUFLEN + 2];
-
-	for (glyph = 0; glyph < (FT_UInt) face->num_glyphs; glyph++)
-	{
-	    if (FT_Get_Glyph_Name (face, glyph, name_buf, FC_GLYPHNAME_BUFLEN+1) == 0)
-	    {
-		ucs4 = FcGlyphNameToUcs4 (name_buf);
-		if (ucs4 != 0xffff &&
-		    FcFreeTypeCheckGlyph (face, ucs4, glyph, &advance))
-		{
-		    if (advance)
-		    {
-			if (!has_advance)
-			{
-			    has_advance = FcTrue;
-			    advance_one = advance;
-			}
-			else if (!APPROXIMATELY_EQUAL (advance, advance_one))
-			{
-			    if (fixed_advance)
-			    {
-				dual_advance = FcTrue;
-				fixed_advance = FcFalse;
-				advance_two = advance;
-			    }
-			    else if (!APPROXIMATELY_EQUAL (advance, advance_two))
-				dual_advance = FcFalse;
-			}
-		    }
-		    leaf = FcCharSetFindLeafCreate (fcs, ucs4);
-		    if (!leaf)
-			goto bail1;
-		    leaf->map[(ucs4 & 0xff) >> 5] |= (1 << (ucs4 & 0x1f));
-#ifdef CHECK
-		    if (ucs4 > font_max)
-			font_max = ucs4;
-#endif
-		}
-	    }
-	}
-    }
-#endif
     if (fixed_advance)
 	*spacing = FC_MONO;
     else if (dual_advance && APPROXIMATELY_EQUAL (2 * FC_MIN (advance_one, advance_two), FC_MAX (advance_one, advance_two)))
