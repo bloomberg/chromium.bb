@@ -331,10 +331,11 @@ TEST_F(PasswordStoreTest, RemoveLoginsCreatedBetweenCallbackIsCalled) {
   store->AddObserver(&mock_observer);
 
   EXPECT_CALL(mock_observer, OnLoginsChanged(testing::SizeIs(1u)));
-  store->RemoveLoginsCreatedBetween(
-      base::Time::FromDoubleT(0), base::Time::FromDoubleT(2),
-      base::MessageLoop::current()->QuitWhenIdleClosure());
-  WaitForPasswordStore();
+  base::RunLoop run_loop;
+  store->RemoveLoginsCreatedBetween(base::Time::FromDoubleT(0),
+                                    base::Time::FromDoubleT(2),
+                                    run_loop.QuitClosure());
+  run_loop.Run();
   testing::Mock::VerifyAndClearExpectations(&mock_observer);
 
   store->RemoveObserver(&mock_observer);
