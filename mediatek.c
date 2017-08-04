@@ -18,6 +18,11 @@
 #include "helpers.h"
 #include "util.h"
 
+struct mediatek_private_map_data {
+	void *cached_addr;
+	void *gem_addr;
+};
+
 static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMAT_ARGB8888,
 						  DRM_FORMAT_RGB565, DRM_FORMAT_XBGR8888,
 						  DRM_FORMAT_XRGB8888 };
@@ -77,6 +82,7 @@ static void *mediatek_bo_map(struct bo *bo, struct map_info *data, size_t plane,
 {
 	int ret;
 	struct drm_mtk_gem_map_off gem_map;
+	struct mediatek_private_map_data *priv;
 
 	memset(&gem_map, 0, sizeof(gem_map));
 	gem_map.handle = bo->handles[0].u32;
@@ -87,9 +93,34 @@ static void *mediatek_bo_map(struct bo *bo, struct map_info *data, size_t plane,
 		return MAP_FAILED;
 	}
 
+	void *addr = mmap(0, bo->total_size, prot, MAP_SHARED, bo->drv->fd, gem_map.offset);
+
 	data->length = bo->total_size;
 
-	return mmap(0, bo->total_size, prot, MAP_SHARED, bo->drv->fd, gem_map.offset);
+	if (bo->flags & BO_USE_RENDERSCRIPT) {
+		priv = calloc(1, sizeof(*priv));
+		priv->cached_addr = calloc(1, bo->total_size);
+		priv->gem_addr = addr;
+		memcpy(priv->cached_addr, priv->gem_addr, bo->total_size);
+		data->priv = priv;
+		addr = priv->cached_addr;
+	}
+
+	return addr;
+}
+
+static int mediatek_bo_unmap(struct bo *bo, struct map_info *data)
+{
+	if (data->priv) {
+		struct mediatek_private_map_data *priv = data->priv;
+		memcpy(priv->gem_addr, priv->cached_addr, bo->total_size);
+		data->addr = priv->gem_addr;
+		free(priv->cached_addr);
+		free(priv);
+		data->priv = NULL;
+	}
+
+	return munmap(data->addr, data->length);
 }
 
 static uint32_t mediatek_resolve_format(uint32_t format, uint64_t usage)
@@ -112,6 +143,7 @@ struct backend backend_mediatek = {
 	.bo_destroy = drv_gem_bo_destroy,
 	.bo_import = drv_prime_bo_import,
 	.bo_map = mediatek_bo_map,
+	.bo_unmap = mediatek_bo_unmap,
 	.resolve_format = mediatek_resolve_format,
 };
 
