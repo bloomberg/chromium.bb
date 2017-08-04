@@ -75,9 +75,6 @@ bool IsSafariVCSignInEnabled();
 // Whether startup crash is enabled.
 bool IsStartupCrashEnabled();
 
-// Whether or not the tab strip scrolls new tabs to be visible.
-bool IsTabStripAutoScrollNewTabsEnabled();
-
 // Whether viewing and copying passwords is enabled.
 bool IsViewCopyPasswordsEnabled();
 

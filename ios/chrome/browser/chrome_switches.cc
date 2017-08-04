@@ -24,10 +24,6 @@ const char kDisableIOSFeatures[] = "disable-features";
 const char kDisableIOSPasswordSuggestions[] =
     "disable-ios-password-suggestions";
 
-// Disables the tab strip auto scroll new tabs.
-const char kDisableTabStripAutoScrollNewTabs[] =
-    "disable-tab-strip-autoscroll-new-tabs";
-
 // Disables Physical Web scanning for nearby URLs.
 const char kDisableIOSPhysicalWeb[] = "disable-ios-physical-web";
 
