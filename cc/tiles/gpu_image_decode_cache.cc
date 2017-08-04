@@ -66,10 +66,10 @@ bool SkipImage(const DrawImage& draw_image) {
   return false;
 }
 
-// Returns the filter quality to use for scaling the image to upload scale. For
-// GPU raster, medium and high filter quality are identical for downscales.
-// Upload scaling is always a downscale, so cap our filter quality to medium.
-SkFilterQuality CalculateUploadScaleFilterQuality(const DrawImage& draw_image) {
+// Returns the filter quality to use for scaling the image to upload scale as
+// well as for using when passing the decoded image to skia. Due to parity with
+// SW and power impliciation, limit the filter quality to medium.
+SkFilterQuality CalculateDesiredFilterQuality(const DrawImage& draw_image) {
   return std::min(kMedium_SkFilterQuality, draw_image.filter_quality());
 }
 
@@ -121,7 +121,7 @@ bool DrawAndScaleImage(const DrawImage& draw_image, SkPixmap* target_pixmap) {
     // If no scaling is occurring, or if the target colortype is already N32,
     // just scale directly.
     return image->scalePixels(*target_pixmap,
-                              CalculateUploadScaleFilterQuality(draw_image),
+                              CalculateDesiredFilterQuality(draw_image),
                               SkImage::kDisallow_CachingHint);
   }
 
@@ -136,7 +136,7 @@ bool DrawAndScaleImage(const DrawImage& draw_image, SkPixmap* target_pixmap) {
   SkPixmap decode_pixmap(decode_bitmap.info(), decode_bitmap.getPixels(),
                          decode_bitmap.rowBytes());
   if (!image->scalePixels(decode_pixmap,
-                          CalculateUploadScaleFilterQuality(draw_image),
+                          CalculateDesiredFilterQuality(draw_image),
                           SkImage::kDisallow_CachingHint))
     return false;
   return decode_pixmap.readPixels(*target_pixmap);
@@ -155,7 +155,7 @@ GpuImageDecodeCache::InUseCacheKey::FromDrawImage(const DrawImage& draw_image) {
 GpuImageDecodeCache::InUseCacheKey::InUseCacheKey(const DrawImage& draw_image)
     : image_id(draw_image.image()->uniqueID()),
       mip_level(CalculateUploadScaleMipLevel(draw_image)),
-      filter_quality(CalculateUploadScaleFilterQuality(draw_image)),
+      filter_quality(CalculateDesiredFilterQuality(draw_image)),
       target_color_space(draw_image.target_color_space()) {}
 
 bool GpuImageDecodeCache::InUseCacheKey::operator==(
@@ -546,8 +546,9 @@ DecodedDrawImage GpuImageDecodeCache::GetDecodedImageForDraw(
   // acquired by the caller.
   context_->GetLock()->AssertAcquired();
 
+  // If we're skipping the image, then the filter quality doesn't matter.
   if (SkipImage(draw_image))
-    return DecodedDrawImage(nullptr, draw_image.filter_quality());
+    return DecodedDrawImage(nullptr, kNone_SkFilterQuality);
 
   base::AutoLock lock(lock_);
   ImageData* image_data = GetImageDataForDrawImage(draw_image);
@@ -582,8 +583,9 @@ DecodedDrawImage GpuImageDecodeCache::GetDecodedImageForDraw(
 
   SkSize scale_factor = CalculateScaleFactorForMipLevel(
       draw_image, image_data->upload_params.fPreScaleMipLevel);
-  DecodedDrawImage decoded_draw_image(std::move(image), SkSize(), scale_factor,
-                                      draw_image.filter_quality());
+  DecodedDrawImage decoded_draw_image(
+      std::move(image), SkSize(), scale_factor,
+      CalculateDesiredFilterQuality(draw_image));
   decoded_draw_image.set_at_raster_decode(image_data->is_at_raster);
   return decoded_draw_image;
 }
@@ -1280,7 +1282,7 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image) {
   DecodedDataMode mode;
   int upload_scale_mip_level = CalculateUploadScaleMipLevel(draw_image);
   auto params = SkImage::DeferredTextureImageUsageParams(
-      draw_image.matrix(), CalculateUploadScaleFilterQuality(draw_image),
+      draw_image.matrix(), CalculateDesiredFilterQuality(draw_image),
       upload_scale_mip_level);
   size_t data_size = draw_image.image()->getDeferredTextureImageData(
       *context_threadsafe_proxy_.get(), &params, 1, nullptr, nullptr,
@@ -1357,7 +1359,7 @@ bool GpuImageDecodeCache::IsCompatible(const ImageData* image_data,
   bool is_scaled = image_data->upload_params.fPreScaleMipLevel != 0;
   bool scale_is_compatible = CalculateUploadScaleMipLevel(draw_image) >=
                              image_data->upload_params.fPreScaleMipLevel;
-  bool quality_is_compatible = CalculateUploadScaleFilterQuality(draw_image) <=
+  bool quality_is_compatible = CalculateDesiredFilterQuality(draw_image) <=
                                image_data->upload_params.fQuality;
   bool color_is_compatible =
       image_data->target_color_space == draw_image.target_color_space();
