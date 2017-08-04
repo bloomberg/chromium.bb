@@ -293,8 +293,8 @@ class KeyboardControllerTest : public testing::TestWithParam<bool>,
       if (controller_->ui()->GetContentsWindow()->bounds().height() == 0) {
         // Set initial bounds for test keyboard window.
         controller_->ui()->GetContentsWindow()->SetBounds(
-            FullWidthKeyboardBoundsFromRootBounds(
-                root_window()->bounds(), kDefaultVirtualKeyboardHeight));
+            KeyboardBoundsFromRootBounds(root_window()->bounds(),
+                                         kDefaultVirtualKeyboardHeight));
       }
     }
   }

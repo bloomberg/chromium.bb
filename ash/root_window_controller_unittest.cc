@@ -963,8 +963,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
   keyboard::KeyboardController* controller =
       keyboard::KeyboardController::GetInstance();
   aura::Window* contents_window = controller->ui()->GetContentsWindow();
-  contents_window->SetBounds(keyboard::FullWidthKeyboardBoundsFromRootBounds(
-      root_window->bounds(), 100));
+  contents_window->SetBounds(
+      keyboard::KeyboardBoundsFromRootBounds(root_window->bounds(), 100));
   contents_window->Show();
 
   gfx::Rect before =
@@ -998,8 +998,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ClickWithActiveModalDialog) {
 
   aura::Window* contents_window =
       keyboard::KeyboardController::GetInstance()->ui()->GetContentsWindow();
-  contents_window->SetBounds(keyboard::FullWidthKeyboardBoundsFromRootBounds(
-      root_window->bounds(), 100));
+  contents_window->SetBounds(
+      keyboard::KeyboardBoundsFromRootBounds(root_window->bounds(), 100));
 
   ui::test::TestEventHandler handler;
   root_window->AddPreTargetHandler(&handler);
@@ -1046,7 +1046,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, EnsureCaretInWorkArea) {
 
   const int keyboard_height = 100;
   aura::Window* contents_window = ui->GetContentsWindow();
-  contents_window->SetBounds(keyboard::FullWidthKeyboardBoundsFromRootBounds(
+  contents_window->SetBounds(keyboard::KeyboardBoundsFromRootBounds(
       root_window->bounds(), keyboard_height));
   contents_window->Show();
 
@@ -1092,7 +1092,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   ASSERT_TRUE(keyboard_container);
   keyboard_container->Show();
   aura::Window* contents_window = ui->GetContentsWindow();
-  contents_window->SetBounds(keyboard::FullWidthKeyboardBoundsFromRootBounds(
+  contents_window->SetBounds(keyboard::KeyboardBoundsFromRootBounds(
       primary_root_window->bounds(), keyboard_height));
   contents_window->Show();
 
@@ -1107,7 +1107,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   // Move the keyboard into the secondary display and check that the keyboard
   // doesn't cover the window on the primary screen.
   keyboard_controller->ShowKeyboardInDisplay(secondary_display_id);
-  contents_window->SetBounds(keyboard::FullWidthKeyboardBoundsFromRootBounds(
+  contents_window->SetBounds(keyboard::KeyboardBoundsFromRootBounds(
       secondary_root_window->bounds(), keyboard_height));
 
   ui->EnsureCaretInWorkArea();
@@ -1138,7 +1138,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ZOrderTest) {
 
   const int keyboard_height = 200;
   aura::Window* contents_window = ui->GetContentsWindow();
-  gfx::Rect keyboard_bounds = keyboard::FullWidthKeyboardBoundsFromRootBounds(
+  gfx::Rect keyboard_bounds = keyboard::KeyboardBoundsFromRootBounds(
       root_window->bounds(), keyboard_height);
   contents_window->SetBounds(keyboard_bounds);
   contents_window->Show();
