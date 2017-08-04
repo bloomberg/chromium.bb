@@ -15,10 +15,30 @@ TEST_F(SelectionTest, defaultConstructor) {
   SelectionInDOMTree selection;
 
   EXPECT_EQ(TextAffinity::kDownstream, selection.Affinity());
+  EXPECT_TRUE(selection.IsBaseFirst());
   EXPECT_FALSE(selection.IsDirectional());
   EXPECT_TRUE(selection.IsNone());
   EXPECT_EQ(Position(), selection.Base());
   EXPECT_EQ(Position(), selection.Extent());
+}
+
+TEST_F(SelectionTest, IsBaseFirst) {
+  SetBodyContent("<div id='sample'>abcdef</div>");
+
+  Element* sample = GetDocument().getElementById("sample");
+  Position base(Position(sample->firstChild(), 4));
+  Position extent(Position(sample->firstChild(), 2));
+  SelectionInDOMTree::Builder builder;
+  builder.Collapse(base);
+  builder.Extend(extent);
+  const SelectionInDOMTree& selection = builder.Build();
+
+  EXPECT_EQ(TextAffinity::kDownstream, selection.Affinity());
+  EXPECT_FALSE(selection.IsBaseFirst());
+  EXPECT_FALSE(selection.IsDirectional());
+  EXPECT_FALSE(selection.IsNone());
+  EXPECT_EQ(base, selection.Base());
+  EXPECT_EQ(extent, selection.Extent());
 }
 
 TEST_F(SelectionTest, caret) {
@@ -31,6 +51,7 @@ TEST_F(SelectionTest, caret) {
   const SelectionInDOMTree& selection = builder.Build();
 
   EXPECT_EQ(TextAffinity::kDownstream, selection.Affinity());
+  EXPECT_TRUE(selection.IsBaseFirst());
   EXPECT_FALSE(selection.IsDirectional());
   EXPECT_FALSE(selection.IsNone());
   EXPECT_EQ(position, selection.Base());
@@ -49,6 +70,7 @@ TEST_F(SelectionTest, range) {
   const SelectionInDOMTree& selection = builder.Build();
 
   EXPECT_EQ(TextAffinity::kDownstream, selection.Affinity());
+  EXPECT_TRUE(selection.IsBaseFirst());
   EXPECT_FALSE(selection.IsDirectional());
   EXPECT_FALSE(selection.IsNone());
   EXPECT_EQ(base, selection.Base());
