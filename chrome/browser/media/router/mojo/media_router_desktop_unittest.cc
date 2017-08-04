@@ -155,7 +155,14 @@ TEST_F(MediaRouterDesktopTest, EnableMdnsAfterEachRegister) {
 }
 #endif
 
-TEST_F(MediaRouterDesktopTest, UpdateMediaSinksOnUserGesture) {
+// Flaky on Win.  http://crbug.com/752513
+#if defined(OS_WIN)
+#define MAYBE_UpdateMediaSinksOnUserGesture \
+  DISABLED_UpdateMediaSinksOnUserGesture
+#else
+#define MAYBE_UpdateMediaSinksOnUserGesture UpdateMediaSinksOnUserGesture
+#endif
+TEST_F(MediaRouterDesktopTest, MAYBE_UpdateMediaSinksOnUserGesture) {
 #if defined(OS_WIN)
   EXPECT_CALL(mock_media_route_provider_, EnableMdnsDiscovery());
 #endif
