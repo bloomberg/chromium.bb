@@ -1063,7 +1063,8 @@ void AppListView::OnDisplayMetricsChanged(const display::Display& display,
 }
 
 void AppListView::UpdateOpacity(float background_opacity, bool is_end_gesture) {
-  app_list_background_shield_->layer()->SetOpacity(background_opacity);
+  app_list_background_shield_->layer()->SetOpacity(
+      is_end_gesture ? kAppListOpacity : background_opacity);
   gfx::Rect work_area_bounds = fullscreen_widget_->GetWorkAreaBoundsInScreen();
   search_box_view_->UpdateOpacity(work_area_bounds.bottom(), is_end_gesture);
   app_list_main_view_->contents_view()
