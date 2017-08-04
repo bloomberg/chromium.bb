@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "net/http2/decoder/decode_buffer.h"
 #include "net/http2/decoder/decode_status.h"
+#include "net/http2/platform/api/http2_string_utils.h"
 #include "net/http2/tools/failure.h"
 #include "net/http2/tools/random_decoder_test.h"
-#include "net/spdy/core/spdy_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AssertionResult;
@@ -224,13 +224,13 @@ INSTANTIATE_TEST_CASE_P(AllDecoders,
 TEST_P(HpackHuffmanDecoderTest, SpecRequestExamples) {
   HpackHuffmanDecoder decoder;
   Http2String test_table[] = {
-      a2b_hex("f1e3c2e5f23a6ba0ab90f4ff"),
+      Http2HexDecode("f1e3c2e5f23a6ba0ab90f4ff"),
       "www.example.com",
-      a2b_hex("a8eb10649cbf"),
+      Http2HexDecode("a8eb10649cbf"),
       "no-cache",
-      a2b_hex("25a849e95ba97d7f"),
+      Http2HexDecode("25a849e95ba97d7f"),
       "custom-key",
-      a2b_hex("25a849e95bb8e8b4bf"),
+      Http2HexDecode("25a849e95bb8e8b4bf"),
       "custom-value",
   };
   for (size_t i = 0; i != arraysize(test_table); i += 2) {
@@ -248,17 +248,17 @@ TEST_P(HpackHuffmanDecoderTest, SpecResponseExamples) {
   HpackHuffmanDecoder decoder;
   // clang-format off
   Http2String test_table[] = {
-    a2b_hex("6402"),
+    Http2HexDecode("6402"),
     "302",
-    a2b_hex("aec3771a4b"),
+    Http2HexDecode("aec3771a4b"),
     "private",
-    a2b_hex("d07abe941054d444a8200595040b8166"
+    Http2HexDecode("d07abe941054d444a8200595040b8166"
             "e082a62d1bff"),
     "Mon, 21 Oct 2013 20:13:21 GMT",
-    a2b_hex("9d29ad171863c78f0b97c8e9ae82ae43"
+    Http2HexDecode("9d29ad171863c78f0b97c8e9ae82ae43"
             "d3"),
     "https://www.example.com",
-    a2b_hex("94e7821dd7f2e6c7b335dfdfcd5b3960"
+    Http2HexDecode("94e7821dd7f2e6c7b335dfdfcd5b3960"
             "d5af27087f3672c1ab270fb5291f9587"
             "316065c003ed4ee5b1063d5007"),
     "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age=3600; version=1",
