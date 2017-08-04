@@ -15,7 +15,6 @@ android_library("sync_java") {
     "//third_party/cacheinvalidation:cacheinvalidation_javalib",
     "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
     "//third_party/jsr-305:jsr_305_javalib",
-    google_play_services_library,
   ]
   srcjar_deps = [ ":java_enums" ]
   java_files = [

@@ -692,9 +692,11 @@ java_library("shadows_play_services_java") {
     ":robolectric_processor_java",
     ":robolectric_resources_java",
     ":robolectric_utils_java",
+    "$google_play_services_package:google_play_services_auth_base_java",
+    "$google_play_services_package:google_play_services_base_java",
+    "$google_play_services_package:google_play_services_basement_java",
     "//third_party/android_tools:android_support_v4_java",
     "//third_party/guava:guava_java",
-    google_play_services_library,
   ]
 
   # Work-around for gradle generator not yet supporting annotation processors.
