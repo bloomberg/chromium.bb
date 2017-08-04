@@ -4,8 +4,9 @@
 
 module blink.mojom;
 
-// SensitiveInputVisibilityService receives per-frame notifications about sensitive input fields (such as passwords) on the page.
-interface SensitiveInputVisibilityService {
+// InsecureInputService receives per-frame notifications about insecure input
+// operations (display of password fields) on the page.
+interface InsecureInputService {
   PasswordFieldVisibleInInsecureContext();
   AllPasswordFieldsInInsecureContextInvisible();
 };

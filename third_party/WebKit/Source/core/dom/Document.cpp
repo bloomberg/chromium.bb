@@ -256,7 +256,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebPrerenderingSupport.h"
-#include "public/platform/modules/sensitive_input_visibility/sensitive_input_visibility_service.mojom-blink.h"
+#include "public/platform/modules/insecure_input/insecure_input_service.mojom-blink.h"
 #include "public/platform/site_engagement.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -4762,14 +4762,14 @@ void Document::SendSensitiveInputVisibilityInternal() {
   if (!GetFrame())
     return;
 
-  mojom::blink::SensitiveInputVisibilityServicePtr sensitive_input_service_ptr;
+  mojom::blink::InsecureInputServicePtr insecure_input_service_ptr;
   GetFrame()->GetInterfaceProvider().GetInterface(
-      mojo::MakeRequest(&sensitive_input_service_ptr));
+      mojo::MakeRequest(&insecure_input_service_ptr));
   if (password_count_ > 0) {
-    sensitive_input_service_ptr->PasswordFieldVisibleInInsecureContext();
+    insecure_input_service_ptr->PasswordFieldVisibleInInsecureContext();
     return;
   }
-  sensitive_input_service_ptr->AllPasswordFieldsInInsecureContextInvisible();
+  insecure_input_service_ptr->AllPasswordFieldsInInsecureContextInvisible();
 }
 
 void Document::RegisterEventFactory(

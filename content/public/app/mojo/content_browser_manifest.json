@@ -118,11 +118,11 @@
           // impossible this week. Remove once sky/ken fix this.
           "autofill::mojom::AutofillDriver",
           "autofill::mojom::PasswordManagerDriver",
+          "blink::mojom::InsecureInputService",
           "blink::mojom::KeyboardLockService",
           "blink::mojom::MediaSessionService",
           "blink::mojom::PermissionService",
           "blink::mojom::PresentationService",
-          "blink::mojom::SensitiveInputVisibilityService",
           "blink::mojom::TextSuggestionHost",
           "blink::mojom::WebBluetoothService",
           "blink::mojom::WebSocket",
