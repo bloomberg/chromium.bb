@@ -159,4 +159,5 @@
     (sysctl-name "kern.osversion")
     (sysctl-name (string-append "kern.proc.pid." (param current-pid)))
     (sysctl-name "kern.usrstack64")
-    (sysctl-name "kern.version")))
+    (sysctl-name "kern.version")
+    (sysctl-name "sysctl.proc_cputype")))
