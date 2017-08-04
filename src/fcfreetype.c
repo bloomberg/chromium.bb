@@ -2349,7 +2349,7 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 		}
 	    }
 #ifdef CHECK
-	    for (ucs4 = 0; ucs4 < 0x10000; ucs4++)
+	    for (ucs4 = 0x0020; ucs4 < 0x10000; ucs4++)
 	    {
 		FcBool	    FT_Has, FC_Has;
 
@@ -2415,7 +2415,7 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 #endif
 #ifdef CHECK
     printf ("%d glyphs %d encoded\n", (int) face->num_glyphs, FcCharSetCount (fcs));
-    for (ucs4 = 0; ucs4 <= font_max; ucs4++)
+    for (ucs4 = 0x0020; ucs4 <= font_max; ucs4++)
     {
 	FcBool	has_char = (glyph = FcFreeTypeCharIndex (face, ucs4)) != 0;
 	FcBool	has_bit = FcCharSetHasChar (fcs, ucs4);
