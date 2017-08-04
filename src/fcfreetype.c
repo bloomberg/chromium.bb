@@ -2102,7 +2102,7 @@ FcFreeTypeCheckGlyph (FT_Face face,
     return FcTrue;
 }
 
-#define APPROXIMATELY_EQUAL(x,y) (FC_ABS ((x) - (y)) <= FC_MAX (FC_ABS (x), FC_ABS (y)) / 33)
+#define APPROXIMATELY_EQUAL(x,y) (FC_ABS ((x) - (y)) * 33 <= FC_MAX (FC_ABS (x), FC_ABS (y)))
 
 FcCharSet *
 FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spacing)
