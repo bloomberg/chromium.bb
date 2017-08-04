@@ -304,7 +304,7 @@ bool ReadFile(const base::FilePath& file_path,
 
   return ReadDataInternal(
       mapped_file.data(), mapped_file.length(), root, dict, status,
-      base::StringPrintf("file '%s'", file_path.value().c_str()));
+      base::StringPrintf("file '%" PRIsFP "'", file_path.value().c_str()));
 }
 
 POLICY_EXPORT bool ReadDataInternal(const uint8_t* preg_data,
