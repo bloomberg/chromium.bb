@@ -517,6 +517,9 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
     NOTIMPLEMENTED();
   }
   void OnCursorTouchVisibleChanged(bool enabled) override { NOTIMPLEMENTED(); }
+  void OnEventBlockedByModalWindow(uint32_t window_id) override {
+    NOTIMPLEMENTED();
+  }
 
   TestChangeTracker tracker_;
 

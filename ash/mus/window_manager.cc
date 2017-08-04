@@ -55,6 +55,7 @@
 #include "ui/views/mus/pointer_watcher_event_router.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/shadow_types.h"
+#include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/wm_state.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -485,6 +486,10 @@ bool WindowManager::IsWindowActive(aura::Window* window) {
 
 void WindowManager::OnWmDeactivateWindow(aura::Window* window) {
   Shell::Get()->activation_client()->DeactivateWindow(window);
+}
+
+void WindowManager::OnEventBlockedByModalWindow(aura::Window* window) {
+  AnimateWindow(window, ::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
 }
 
 }  // namespace mus

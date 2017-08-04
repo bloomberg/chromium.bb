@@ -281,6 +281,8 @@ void TestWindowManager::OnAccelerator(uint32_t ack_id,
 
 void TestWindowManager::OnCursorTouchVisibleChanged(bool enabled) {}
 
+void TestWindowManager::OnEventBlockedByModalWindow(uint32_t window_id) {}
+
 // TestWindowTreeClient -------------------------------------------------------
 
 TestWindowTreeClient::TestWindowTreeClient()

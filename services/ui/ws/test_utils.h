@@ -403,6 +403,7 @@ class TestWindowManager : public mojom::WindowManager {
                      uint32_t accelerator_id,
                      std::unique_ptr<ui::Event> event) override;
   void OnCursorTouchVisibleChanged(bool enabled) override;
+  void OnEventBlockedByModalWindow(uint32_t window_id) override;
 
   bool on_perform_move_loop_called_ = false;
   bool on_set_modal_type_called_ = false;

@@ -1856,6 +1856,15 @@ void WindowTreeClient::OnCursorTouchVisibleChanged(bool enabled) {
     window_manager_delegate_->OnCursorTouchVisibleChanged(enabled);
 }
 
+void WindowTreeClient::OnEventBlockedByModalWindow(Id window_id) {
+  if (!window_manager_delegate_)
+    return;
+
+  WindowMus* window = GetWindowByServerId(window_id);
+  if (window)
+    window_manager_delegate_->OnEventBlockedByModalWindow(window->GetWindow());
+}
+
 void WindowTreeClient::SetFrameDecorationValues(
     ui::mojom::FrameDecorationValuesPtr values) {
   if (window_manager_client_) {
