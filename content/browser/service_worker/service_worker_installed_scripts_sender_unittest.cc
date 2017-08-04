@@ -74,8 +74,8 @@ void ReadDataPipeInternal(mojo::DataPipeConsumerHandle handle,
   while (true) {
     uint32_t num_bytes;
     const void* buffer = nullptr;
-    MojoResult rv = mojo::BeginReadDataRaw(handle, &buffer, &num_bytes,
-                                           MOJO_READ_DATA_FLAG_NONE);
+    MojoResult rv =
+        handle.BeginReadData(&buffer, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
     switch (rv) {
       case MOJO_RESULT_BUSY:
       case MOJO_RESULT_INVALID_ARGUMENT:
@@ -97,7 +97,7 @@ void ReadDataPipeInternal(mojo::DataPipeConsumerHandle handle,
         result->append(static_cast<const char*>(buffer), num_bytes);
         uint32_t read_size = result->size() - before_size;
         EXPECT_EQ(num_bytes, read_size);
-        rv = mojo::EndReadDataRaw(handle, read_size);
+        rv = handle.EndReadData(read_size);
         EXPECT_EQ(MOJO_RESULT_OK, rv);
         break;
     }

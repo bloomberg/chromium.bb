@@ -90,7 +90,7 @@ void URLResponseBodyConsumer::ArmOrNotify() {
 }
 
 void URLResponseBodyConsumer::Reclaim(uint32_t size) {
-  MojoResult result = mojo::EndReadDataRaw(handle_.get(), size);
+  MojoResult result = handle_->EndReadData(size);
   DCHECK_EQ(MOJO_RESULT_OK, result);
 
   if (is_in_on_readable_)
@@ -113,8 +113,8 @@ void URLResponseBodyConsumer::OnReadable(MojoResult unused) {
   while (!has_been_cancelled_ && !is_deferred_) {
     const void* buffer = nullptr;
     uint32_t available = 0;
-    MojoResult result = mojo::BeginReadDataRaw(
-        handle_.get(), &buffer, &available, MOJO_READ_DATA_FLAG_NONE);
+    MojoResult result =
+        handle_->BeginReadData(&buffer, &available, MOJO_READ_DATA_FLAG_NONE);
     if (result == MOJO_RESULT_SHOULD_WAIT) {
       handle_watcher_.ArmOrNotify();
       return;
@@ -139,7 +139,7 @@ void URLResponseBodyConsumer::OnReadable(MojoResult unused) {
     if (available == 0) {
       // We've already consumed many bytes in this task. Defer the remaining
       // to the next task.
-      result = mojo::EndReadDataRaw(handle_.get(), 0);
+      result = handle_->EndReadData(0);
       DCHECK_EQ(result, MOJO_RESULT_OK);
       handle_watcher_.ArmOrNotify();
       return;

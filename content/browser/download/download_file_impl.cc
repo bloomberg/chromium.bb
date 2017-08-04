@@ -141,9 +141,8 @@ DownloadFileImpl::SourceStream::ReadResult DownloadFileImpl::SourceStream::Read(
   if (handle_watcher_) {
     *length = kBytesToRead;
     *data = new net::IOBuffer(kBytesToRead);
-    MojoResult mojo_result =
-        mojo::ReadDataRaw(consumer_handle_.get(), (*data)->data(),
-                          (uint32_t*)length, MOJO_READ_DATA_FLAG_NONE);
+    MojoResult mojo_result = consumer_handle_->ReadData(
+        (*data)->data(), (uint32_t*)length, MOJO_READ_DATA_FLAG_NONE);
     // TODO(qinmin): figure out when COMPLETE should be returned.
     switch (mojo_result) {
       case MOJO_RESULT_OK:

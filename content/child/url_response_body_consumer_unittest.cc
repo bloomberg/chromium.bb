@@ -170,8 +170,7 @@ TEST_F(URLResponseBodyConsumerTest, ReceiveData) {
       std::move(data_pipe.producer_handle);
   std::string buffer = "hello";
   uint32_t size = buffer.size();
-  MojoResult result =
-      mojo::WriteDataRaw(writer.get(), buffer.c_str(), &size, kNone);
+  MojoResult result = writer->WriteData(buffer.c_str(), &size, kNone);
   ASSERT_EQ(MOJO_RESULT_OK, result);
   ASSERT_EQ(buffer.size(), size);
 
@@ -197,8 +196,7 @@ TEST_F(URLResponseBodyConsumerTest, OnCompleteThenClose) {
       std::move(data_pipe.producer_handle);
   std::string buffer = "hello";
   uint32_t size = buffer.size();
-  MojoResult result =
-      mojo::WriteDataRaw(writer.get(), buffer.c_str(), &size, kNone);
+  MojoResult result = writer->WriteData(buffer.c_str(), &size, kNone);
   ASSERT_EQ(MOJO_RESULT_OK, result);
   ASSERT_EQ(buffer.size(), size);
 
@@ -233,8 +231,7 @@ TEST_F(URLResponseBodyConsumerTest, OnCompleteThenCloseWithAsyncRelease) {
       std::move(data_pipe.producer_handle);
   std::string buffer = "hello";
   uint32_t size = buffer.size();
-  MojoResult result =
-      mojo::WriteDataRaw(writer.get(), buffer.c_str(), &size, kNone);
+  MojoResult result = writer->WriteData(buffer.c_str(), &size, kNone);
   ASSERT_EQ(MOJO_RESULT_OK, result);
   ASSERT_EQ(buffer.size(), size);
 
@@ -287,8 +284,7 @@ TEST_F(URLResponseBodyConsumerTest, TooBigChunkShouldBeSplit) {
       std::move(data_pipe.producer_handle);
   void* buffer = nullptr;
   uint32_t size = 0;
-  MojoResult result =
-      mojo::BeginWriteDataRaw(writer.get(), &buffer, &size, kNone);
+  MojoResult result = writer->BeginWriteData(&buffer, &size, kNone);
 
   ASSERT_EQ(MOJO_RESULT_OK, result);
   ASSERT_EQ(options.capacity_num_bytes, size);
@@ -297,7 +293,7 @@ TEST_F(URLResponseBodyConsumerTest, TooBigChunkShouldBeSplit) {
   memset(static_cast<char*>(buffer) + kMaxNumConsumedBytesInTask, 'b',
          kMaxNumConsumedBytesInTask);
 
-  result = mojo::EndWriteDataRaw(writer.get(), size);
+  result = writer->EndWriteData(size);
   ASSERT_EQ(MOJO_RESULT_OK, result);
 
   scoped_refptr<URLResponseBodyConsumer> consumer(new URLResponseBodyConsumer(

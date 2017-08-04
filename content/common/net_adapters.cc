@@ -19,7 +19,7 @@ NetToMojoPendingBuffer::NetToMojoPendingBuffer(
 
 NetToMojoPendingBuffer::~NetToMojoPendingBuffer() {
   if (handle_.is_valid())
-    EndWriteDataRaw(handle_.get(), 0);
+    handle_->EndWriteData(0);
 }
 
 MojoResult NetToMojoPendingBuffer::BeginWrite(
@@ -28,8 +28,8 @@ MojoResult NetToMojoPendingBuffer::BeginWrite(
     uint32_t* num_bytes) {
   void* buf;
   *num_bytes = 0;
-  MojoResult result = BeginWriteDataRaw(handle->get(), &buf, num_bytes,
-                                        MOJO_WRITE_DATA_FLAG_NONE);
+  MojoResult result =
+      (*handle)->BeginWriteData(&buf, num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
   if (result == MOJO_RESULT_OK) {
     if (*num_bytes > kMaxBufSize)
       *num_bytes = kMaxBufSize;
@@ -40,7 +40,7 @@ MojoResult NetToMojoPendingBuffer::BeginWrite(
 
 mojo::ScopedDataPipeProducerHandle NetToMojoPendingBuffer::Complete(
     uint32_t num_bytes) {
-  EndWriteDataRaw(handle_.get(), num_bytes);
+  handle_->EndWriteData(num_bytes);
   buffer_ = NULL;
   return std::move(handle_);
 }

@@ -510,9 +510,8 @@ class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
       if (result == BytesConsumer::Result::kOk) {
         DCHECK_GT(available, 0UL);
         uint32_t num_bytes = available;
-        MojoResult mojo_result =
-            mojo::WriteDataRaw(out_data_pipe_.get(), buffer, &num_bytes,
-                               MOJO_WRITE_DATA_FLAG_NONE);
+        MojoResult mojo_result = out_data_pipe_->WriteData(
+            buffer, &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
         if (mojo_result == MOJO_RESULT_OK) {
           result = consumer_->EndRead(num_bytes);
         } else if (mojo_result == MOJO_RESULT_SHOULD_WAIT) {

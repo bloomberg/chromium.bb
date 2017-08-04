@@ -30,11 +30,11 @@ DataPipeDrainer::~DataPipeDrainer() {}
 void DataPipeDrainer::ReadData() {
   const void* buffer = nullptr;
   uint32_t num_bytes = 0;
-  MojoResult rv = BeginReadDataRaw(source_.get(), &buffer, &num_bytes,
-                                   MOJO_READ_DATA_FLAG_NONE);
+  MojoResult rv =
+      source_->BeginReadData(&buffer, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
   if (rv == MOJO_RESULT_OK) {
     client_->OnDataAvailable(buffer, num_bytes);
-    EndReadDataRaw(source_.get(), num_bytes);
+    source_->EndReadData(num_bytes);
   } else if (rv == MOJO_RESULT_FAILED_PRECONDITION) {
     client_->OnDataComplete();
   } else if (rv != MOJO_RESULT_SHOULD_WAIT) {

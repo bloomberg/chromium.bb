@@ -63,8 +63,8 @@ class BrowserSideSender {
     ASSERT_TRUE(handle.is_valid());
     // Send |data| with null terminator.
     uint32_t written_bytes = data.size() + 1;
-    MojoResult rv = mojo::WriteDataRaw(handle, data.c_str(), &written_bytes,
-                                       MOJO_WRITE_DATA_FLAG_NONE);
+    MojoResult rv = handle.WriteData(data.c_str(), &written_bytes,
+                                     MOJO_WRITE_DATA_FLAG_NONE);
     ASSERT_EQ(MOJO_RESULT_OK, rv);
     ASSERT_EQ(data.size() + 1, written_bytes);
   }

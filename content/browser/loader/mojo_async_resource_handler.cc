@@ -90,7 +90,7 @@ class MojoAsyncResourceHandler::SharedWriter final
 class MojoAsyncResourceHandler::WriterIOBuffer final
     : public net::IOBufferWithSize {
  public:
-  // |data| and |size| should be gotten from |writer| via BeginWriteDataRaw.
+  // |data| and |size| should be gotten from |writer| via BeginWriteData.
   // They will be accesible via IOBuffer methods. As |writer| is stored in this
   // instance, |data| will be kept valid as long as the following conditions
   // hold:
@@ -395,8 +395,8 @@ void MojoAsyncResourceHandler::SetAllocationSizeForTesting(size_t size) {
 
 MojoResult MojoAsyncResourceHandler::BeginWrite(void** data,
                                                 uint32_t* available) {
-  MojoResult result = mojo::BeginWriteDataRaw(
-      shared_writer_->writer(), data, available, MOJO_WRITE_DATA_FLAG_NONE);
+  MojoResult result = shared_writer_->writer().BeginWriteData(
+      data, available, MOJO_WRITE_DATA_FLAG_NONE);
   if (result == MOJO_RESULT_OK)
     *available = std::min(*available, static_cast<uint32_t>(kMaxChunkSize));
   else if (result == MOJO_RESULT_SHOULD_WAIT)
@@ -405,7 +405,7 @@ MojoResult MojoAsyncResourceHandler::BeginWrite(void** data,
 }
 
 MojoResult MojoAsyncResourceHandler::EndWrite(uint32_t written) {
-  MojoResult result = mojo::EndWriteDataRaw(shared_writer_->writer(), written);
+  MojoResult result = shared_writer_->writer().EndWriteData(written);
   if (result == MOJO_RESULT_OK) {
     total_written_bytes_ += written;
     handle_watcher_.ArmOrNotify();

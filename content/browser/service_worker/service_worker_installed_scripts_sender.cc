@@ -39,7 +39,7 @@ class MetaDataSender {
   void OnWritable(MojoResult result) {
     DCHECK_EQ(MOJO_RESULT_OK, result);
     uint32_t size = remaining_bytes_;
-    MojoResult rv = mojo::WriteDataRaw(handle_.get(), meta_data_->data(), &size,
+    MojoResult rv = handle_->WriteData(meta_data_->data(), &size,
                                        MOJO_WRITE_DATA_FLAG_NONE);
     switch (rv) {
       case MOJO_RESULT_INVALID_ARGUMENT:

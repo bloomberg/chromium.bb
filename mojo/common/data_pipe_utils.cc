@@ -18,11 +18,11 @@ bool BlockingCopyHelper(ScopedDataPipeConsumerHandle source,
   for (;;) {
     const void* buffer;
     uint32_t num_bytes;
-    MojoResult result = BeginReadDataRaw(
-        source.get(), &buffer, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
+    MojoResult result =
+        source->BeginReadData(&buffer, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
     if (result == MOJO_RESULT_OK) {
       size_t bytes_written = write_bytes.Run(buffer, num_bytes);
-      result = EndReadDataRaw(source.get(), num_bytes);
+      result = source->EndReadData(num_bytes);
       if (bytes_written < num_bytes || result != MOJO_RESULT_OK)
         return false;
     } else if (result == MOJO_RESULT_SHOULD_WAIT) {
@@ -67,16 +67,15 @@ bool MOJO_COMMON_EXPORT BlockingCopyFromString(
   for (;;) {
     void* buffer = nullptr;
     uint32_t buffer_num_bytes = 0;
-    MojoResult result =
-        BeginWriteDataRaw(destination.get(), &buffer, &buffer_num_bytes,
-                          MOJO_WRITE_DATA_FLAG_NONE);
+    MojoResult result = destination->BeginWriteData(&buffer, &buffer_num_bytes,
+                                                    MOJO_WRITE_DATA_FLAG_NONE);
     if (result == MOJO_RESULT_OK) {
       char* char_buffer = static_cast<char*>(buffer);
       uint32_t byte_index = 0;
       while (it != source.end() && byte_index < buffer_num_bytes) {
         char_buffer[byte_index++] = *it++;
       }
-      EndWriteDataRaw(destination.get(), byte_index);
+      destination->EndWriteData(byte_index);
       if (it == source.end())
         return true;
     } else if (result == MOJO_RESULT_SHOULD_WAIT) {

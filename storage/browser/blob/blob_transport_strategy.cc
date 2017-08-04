@@ -177,9 +177,8 @@ class DataPipeTransportStrategy : public BlobTransportStrategy {
     while (true) {
       uint32_t num_bytes = 0;
       const void* source_buffer;
-      MojoResult read_result =
-          mojo::BeginReadDataRaw(consumer_handle_.get(), &source_buffer,
-                                 &num_bytes, MOJO_READ_DATA_FLAG_NONE);
+      MojoResult read_result = consumer_handle_->BeginReadData(
+          &source_buffer, &num_bytes, MOJO_READ_DATA_FLAG_NONE);
       if (read_result == MOJO_RESULT_SHOULD_WAIT)
         return;
       if (read_result != MOJO_RESULT_OK) {
@@ -206,7 +205,7 @@ class DataPipeTransportStrategy : public BlobTransportStrategy {
       DCHECK(output_buffer);
 
       std::memcpy(output_buffer, source_buffer, num_bytes);
-      read_result = mojo::EndReadDataRaw(consumer_handle_.get(), num_bytes);
+      read_result = consumer_handle_->EndReadData(num_bytes);
       DCHECK_EQ(read_result, MOJO_RESULT_OK);
 
       current_source_offset_ += num_bytes;

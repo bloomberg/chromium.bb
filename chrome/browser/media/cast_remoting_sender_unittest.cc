@@ -173,9 +173,9 @@ class CastRemotingSenderTest : public ::testing::Test {
     for (size_t i = 0; i < size; ++i)
       fake_chunk[i] = static_cast<uint8_t>(offset + i);
     uint32_t num_bytes = fake_chunk.size();
-    return mojo::WriteDataRaw(
-        producer_end_.get(), fake_chunk.data(), &num_bytes,
-        MOJO_WRITE_DATA_FLAG_ALL_OR_NONE) == MOJO_RESULT_OK;
+    return producer_end_->WriteData(fake_chunk.data(), &num_bytes,
+                                    MOJO_WRITE_DATA_FLAG_ALL_OR_NONE) ==
+           MOJO_RESULT_OK;
   }
 
   void PostMojoCallTask_ConsumeDataChunk(size_t offset, size_t size,
