@@ -977,6 +977,9 @@ extern const char kEnableNtpForeignSessionsSuggestionsDescription[];
 extern const char kEnableNtpMostLikelyFaviconsFromServerName[];
 extern const char kEnableNtpMostLikelyFaviconsFromServerDescription[];
 
+extern const char kNtpTilesLowerResolutionFaviconsName[];
+extern const char kNtpTilesLowerResolutionFaviconsDescription[];
+
 extern const char kEnableNtpOfflinePageDownloadSuggestionsName[];
 extern const char kEnableNtpOfflinePageDownloadSuggestionsDescription[];
 

@@ -60,7 +60,8 @@ import java.util.List;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 @Features({@Features.Register(ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME),
-        @Features.Register(ChromeFeatureList.SUGGESTIONS_HOME_MODERN_LAYOUT)})
+        @Features.Register(ChromeFeatureList.SUGGESTIONS_HOME_MODERN_LAYOUT),
+        @Features.Register(ChromeFeatureList.NTP_TILES_LOWER_RESOLUTION_FAVICONS)})
 public class TileGroupUnitTest {
     private static final int MAX_COLUMNS_TO_FETCH = 4;
     private static final int MAX_ROWS_TO_FETCH = 1;
