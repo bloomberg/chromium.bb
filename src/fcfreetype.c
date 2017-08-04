@@ -2077,7 +2077,7 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spac
 {
     FcCharSet	    *fcs;
     int		    o;
-    FT_Pos	    advance, advances[3];
+    FT_Pos	    advances[3];
     unsigned int    num_advances = 0;
 
     fcs = FcCharSetCreate ();
@@ -2133,9 +2133,6 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spac
 	    if (face->face_flags & FT_FACE_FLAG_SCALABLE)
 		load_flags |= FT_LOAD_NO_BITMAP;
 
-	    advance = 0;
-	    FT_Get_Advance (face, glyph, load_flags, &advance);
-
 	    /* CID fonts built by Adobe used to make ASCII control chars to cid1
 	     * (space glyph). As such, always check contour for those characters. */
 	    if (ucs4 <= 0x001F)
@@ -2148,14 +2145,18 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spac
 
 	    if (good)
 	    {
-		if (num_advances < 3 && advance)
+		if (num_advances < 3)
 		{
-		    unsigned int i;
-		    for (i = 0; i < num_advances; i++)
-		      if (fc_approximately_equal (advance, advances[i]))
-		        break;
-		    if (i == num_advances)
-		      advances[num_advances++] = advance;
+		    FT_Pos advance = 0;
+		    if (!FT_Get_Advance (face, glyph, load_flags, &advance) && advance)
+		    {
+			unsigned int i;
+			for (i = 0; i < num_advances; i++)
+			  if (fc_approximately_equal (advance, advances[i]))
+			    break;
+			if (i == num_advances)
+			  advances[num_advances++] = advance;
+		    }
 		}
 
 		if ((ucs4 >> 8) != page)
