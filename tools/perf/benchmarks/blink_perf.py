@@ -140,6 +140,7 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
     with open(os.path.join(os.path.dirname(__file__),
                            'blink_perf.js'), 'r') as f:
       self._blink_perf_js = f.read()
+    self._extra_chrome_categories = None
 
   def WillNavigateToPage(self, page, tab):
     del tab  # unused
@@ -168,6 +169,8 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
     browser_type = options.browser_options.browser_type
     if browser_type and 'content-shell' in browser_type:
       options.AppendExtraBrowserArgs('--expose-internals-for-testing')
+    if options.extra_chrome_categories:
+      self._extra_chrome_categories = options.extra_chrome_categories
 
   def _ContinueTestRunWithTracing(self, tab):
     tracing_categories = tab.EvaluateJavaScript(
@@ -178,6 +181,9 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
         'blink.console')  # This is always required for js land trace event
     config.chrome_trace_config.category_filter.AddFilterString(
         tracing_categories)
+    if self._extra_chrome_categories:
+      config.chrome_trace_config.category_filter.AddFilterString(
+          self._extra_chrome_categories)
     tab.browser.platform.tracing_controller.StartTracing(config)
     tab.EvaluateJavaScript('testRunner.scheduleTestRun()')
     tab.WaitForJavaScriptCondition('testRunner.isDone')
