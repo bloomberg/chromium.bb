@@ -89,7 +89,7 @@ void BreakingNewsSuggestionsProvider::FetchSuggestionImage(
 void BreakingNewsSuggestionsProvider::Fetch(
     const Category& category,
     const std::set<std::string>& known_suggestion_ids,
-    const FetchDoneCallback& callback) {
+    FetchDoneCallback callback) {
   // TODO(jkrcal): Make Fetch method optional.
 }
 
@@ -109,7 +109,7 @@ void BreakingNewsSuggestionsProvider::ClearCachedSuggestions(
 
 void BreakingNewsSuggestionsProvider::GetDismissedSuggestionsForDebugging(
     Category category,
-    const DismissedSuggestionsCallback& callback) {
+    DismissedSuggestionsCallback callback) {
   // TODO(mamir): implement.
 }
 

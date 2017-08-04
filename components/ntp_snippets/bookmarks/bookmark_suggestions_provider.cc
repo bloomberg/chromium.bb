@@ -117,15 +117,15 @@ void BookmarkSuggestionsProvider::FetchSuggestionImage(
 void BookmarkSuggestionsProvider::Fetch(
     const Category& category,
     const std::set<std::string>& known_suggestion_ids,
-    const FetchDoneCallback& callback) {
+    FetchDoneCallback callback) {
   LOG(DFATAL) << "BookmarkSuggestionsProvider has no |Fetch| functionality!";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(
-          callback,
+      base::BindOnce(
+          std::move(callback),
           Status(StatusCode::PERMANENT_ERROR,
                  "BookmarkSuggestionsProvider has no |Fetch| functionality!"),
-          base::Passed(std::vector<ContentSuggestion>())));
+          std::vector<ContentSuggestion>()));
 }
 
 void BookmarkSuggestionsProvider::ClearHistory(
@@ -150,7 +150,7 @@ void BookmarkSuggestionsProvider::ClearCachedSuggestions(Category category) {
 
 void BookmarkSuggestionsProvider::GetDismissedSuggestionsForDebugging(
     Category category,
-    const DismissedSuggestionsCallback& callback) {
+    DismissedSuggestionsCallback callback) {
   DCHECK_EQ(category, provided_category_);
   std::vector<const BookmarkNode*> bookmarks =
       GetDismissedBookmarksForDebugging(bookmark_model_);
@@ -159,7 +159,7 @@ void BookmarkSuggestionsProvider::GetDismissedSuggestionsForDebugging(
   for (const BookmarkNode* bookmark : bookmarks) {
     ConvertBookmark(*bookmark, &suggestions);
   }
-  callback.Run(std::move(suggestions));
+  std::move(callback).Run(std::move(suggestions));
 }
 
 void BookmarkSuggestionsProvider::ClearDismissedSuggestionsForDebugging(

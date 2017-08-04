@@ -47,20 +47,27 @@ class MockContentSuggestionsProvider : public ContentSuggestionsProvider {
                void(base::Time begin,
                     base::Time end,
                     const base::Callback<bool(const GURL& url)>& filter));
-  MOCK_METHOD3(Fetch,
+  // Gmock cannot mock methods that have movable-only type callbacks as
+  // parameters such as FetchDoneCallback, DismissedSuggestionsCallback,
+  // ImageFetchedCallback. As a work-around, Fetch calls the mock method
+  // FetchMock, which may then be checked with EXPECT_CALL.
+  void Fetch(const Category&,
+             const std::set<std::string>&,
+             FetchDoneCallback) override;
+  MOCK_METHOD3(FetchMock,
                void(const Category&,
                     const std::set<std::string>&,
                     const FetchDoneCallback&));
   MOCK_METHOD1(ClearCachedSuggestions, void(Category category));
-  MOCK_METHOD2(GetDismissedSuggestionsForDebugging,
+  void GetDismissedSuggestionsForDebugging(
+      Category category,
+      DismissedSuggestionsCallback callback) override;
+  MOCK_METHOD2(GetDismissedSuggestionsForDebuggingMock,
                void(Category category,
                     const DismissedSuggestionsCallback& callback));
   MOCK_METHOD1(ClearDismissedSuggestionsForDebugging, void(Category category));
   MOCK_METHOD1(DismissSuggestion,
                void(const ContentSuggestion::ID& suggestion_id));
-  // Because gmock cannot mock the movable-type callback ImageFetchedCallback,
-  // FetchSuggestionImage calls the mock method FetchSuggestionImageMock,
-  // which may then be checked with EXPECT_CALL.
   void FetchSuggestionImage(const ContentSuggestion::ID& id,
                             ImageFetchedCallback callback) override;
   MOCK_METHOD2(FetchSuggestionImageMock,

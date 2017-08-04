@@ -337,12 +337,13 @@ void ContentSuggestionsService::ClearCachedSuggestions(Category category) {
 
 void ContentSuggestionsService::GetDismissedSuggestionsForDebugging(
     Category category,
-    const DismissedSuggestionsCallback& callback) {
+    DismissedSuggestionsCallback callback) {
   auto iterator = providers_by_category_.find(category);
   if (iterator != providers_by_category_.end()) {
-    iterator->second->GetDismissedSuggestionsForDebugging(category, callback);
+    iterator->second->GetDismissedSuggestionsForDebugging(category,
+                                                          std::move(callback));
   } else {
-    callback.Run(std::vector<ContentSuggestion>());
+    std::move(callback).Run(std::vector<ContentSuggestion>());
   }
 }
 
@@ -418,7 +419,7 @@ void ContentSuggestionsService::RegisterProvider(
 void ContentSuggestionsService::Fetch(
     const Category& category,
     const std::set<std::string>& known_suggestion_ids,
-    const FetchDoneCallback& callback) {
+    FetchDoneCallback callback) {
   auto providers_it = providers_by_category_.find(category);
   if (providers_it == providers_by_category_.end()) {
     return;
@@ -426,7 +427,8 @@ void ContentSuggestionsService::Fetch(
 
   metrics::RecordFetchAction();
 
-  providers_it->second->Fetch(category, known_suggestion_ids, callback);
+  providers_it->second->Fetch(category, known_suggestion_ids,
+                              std::move(callback));
 }
 
 void ContentSuggestionsService::ReloadSuggestions() {

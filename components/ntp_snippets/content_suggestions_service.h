@@ -174,7 +174,7 @@ class ContentSuggestionsService : public KeyedService,
   // to get suggestions to just this async Fetch() API.
   void Fetch(const Category& category,
              const std::set<std::string>& known_suggestion_ids,
-             const FetchDoneCallback& callback);
+             FetchDoneCallback callback);
 
   // Reloads suggestions from all categories, from all providers. If a provider
   // naturally has some ability to generate fresh suggestions, it may provide a
@@ -223,7 +223,7 @@ class ContentSuggestionsService : public KeyedService,
   // empty vector. The callback may be called synchronously.
   void GetDismissedSuggestionsForDebugging(
       Category category,
-      const DismissedSuggestionsCallback& callback);
+      DismissedSuggestionsCallback callback);
 
   // Only for debugging use through the internals page. Some providers
   // internally store a list of dismissed suggestions to prevent them from

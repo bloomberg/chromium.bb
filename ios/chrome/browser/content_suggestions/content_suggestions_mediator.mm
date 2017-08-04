@@ -289,7 +289,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
           }));
 
       self.contentService->Fetch([wrapper category], known_suggestion_ids,
-                                 serviceCallback);
+                                 std::move(serviceCallback));
 
       break;
     }

@@ -437,7 +437,8 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
     EXPECT_CALL(*scheduler(), AcquireQuotaForInteractiveFetch())
         .WillOnce(Return(true))
         .RetiresOnSaturation();
-    provider->Fetch(category, known_suggestion_ids, fetch_done_callback);
+    provider->Fetch(category, known_suggestion_ids,
+                    std::move(fetch_done_callback));
     std::move(snippets_callback)
         .Run(Status::Success(), std::move(fetched_categories));
   }

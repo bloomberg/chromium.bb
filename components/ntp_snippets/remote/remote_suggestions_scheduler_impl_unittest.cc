@@ -88,7 +88,16 @@ class MockRemoteSuggestionsProvider : public RemoteSuggestionsProvider {
                void(base::Time begin,
                     base::Time end,
                     const base::Callback<bool(const GURL& url)>& filter));
-  MOCK_METHOD3(Fetch,
+  // Gmock cannot mock methods that have movable-only type callbacks as
+  // parameters such as FetchDoneCallback, DismissedSuggestionsCallback,
+  // ImageFetchedCallback. As a work-around, Fetch calls the mock method
+  // FetchMock, which may then be checked with EXPECT_CALL.
+  void Fetch(const Category& category,
+             const std::set<std::string>& set,
+             FetchDoneCallback callback) override {
+    FetchMock(category, set, callback);
+  }
+  MOCK_METHOD3(FetchMock,
                void(const Category&,
                     const std::set<std::string>&,
                     const FetchDoneCallback&));
@@ -96,17 +105,20 @@ class MockRemoteSuggestionsProvider : public RemoteSuggestionsProvider {
   MOCK_METHOD1(ClearCachedSuggestions, void(Category));
   MOCK_METHOD1(ClearDismissedSuggestionsForDebugging, void(Category));
   MOCK_METHOD1(DismissSuggestion, void(const ContentSuggestion::ID&));
-  // Because gmock cannot mock the movable-type callback ImageFetchedCallback,
-  // FetchSuggestionImage calls the mock method FetchSuggestionImageMock,
-  // which may then be checked with EXPECT_CALL.
   void FetchSuggestionImage(const ContentSuggestion::ID& id,
                             ImageFetchedCallback callback) override {
     FetchSuggestionImageMock(id, callback);
   }
   MOCK_METHOD2(FetchSuggestionImageMock,
                void(const ContentSuggestion::ID&, const ImageFetchedCallback&));
-  MOCK_METHOD2(GetDismissedSuggestionsForDebugging,
-               void(Category, const DismissedSuggestionsCallback&));
+  void GetDismissedSuggestionsForDebugging(
+      Category category,
+      DismissedSuggestionsCallback callback) override {
+    GetDismissedSuggestionsForDebuggingMock(category, callback);
+  }
+  MOCK_METHOD2(GetDismissedSuggestionsForDebuggingMock,
+               void(Category category,
+                    const DismissedSuggestionsCallback& callback));
   MOCK_METHOD0(OnSignInStateChanged, void());
 };
 
