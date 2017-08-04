@@ -1833,10 +1833,6 @@ void Editor::ReplaceSelection(const String& text) {
                            InputEvent::InputType::kInsertReplacementText);
 }
 
-TypingCommand* Editor::LastTypingCommandIfStillOpenForTyping() const {
-  return TypingCommand::LastTypingCommandIfStillOpenForTyping(&GetFrame());
-}
-
 DEFINE_TRACE(Editor) {
   visitor->Trace(frame_);
   visitor->Trace(last_edit_command_);
