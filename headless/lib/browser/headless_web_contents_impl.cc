@@ -125,6 +125,63 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
     headless_contents->SetBounds(rect);
   }
 
+  content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) override {
+    DCHECK_EQ(source, headless_web_contents_->web_contents());
+    content::WebContents* target = nullptr;
+    switch (params.disposition) {
+      case WindowOpenDisposition::CURRENT_TAB:
+        target = source;
+        break;
+
+      case WindowOpenDisposition::NEW_POPUP:
+      case WindowOpenDisposition::NEW_WINDOW:
+      case WindowOpenDisposition::NEW_BACKGROUND_TAB:
+      case WindowOpenDisposition::NEW_FOREGROUND_TAB: {
+        HeadlessWebContentsImpl* child_contents = HeadlessWebContentsImpl::From(
+            headless_web_contents_->browser_context()
+                ->CreateWebContentsBuilder()
+                .SetAllowTabSockets(
+                    !!headless_web_contents_->GetHeadlessTabSocket())
+                .SetWindowSize(source->GetContainerBounds().size())
+                .Build());
+        headless_web_contents_->browser_context()->NotifyChildContentsCreated(
+            headless_web_contents_, child_contents);
+        target = child_contents->web_contents();
+        break;
+      }
+
+      // TODO(veluca): add support for other disposition types.
+      case WindowOpenDisposition::SINGLETON_TAB:
+      case WindowOpenDisposition::OFF_THE_RECORD:
+      case WindowOpenDisposition::SAVE_TO_DISK:
+      case WindowOpenDisposition::IGNORE_ACTION:
+      default:
+        return nullptr;
+    }
+
+    content::NavigationController::LoadURLParams load_url_params(params.url);
+    load_url_params.source_site_instance = params.source_site_instance;
+    load_url_params.transition_type = params.transition;
+    load_url_params.frame_tree_node_id = params.frame_tree_node_id;
+    load_url_params.referrer = params.referrer;
+    load_url_params.redirect_chain = params.redirect_chain;
+    load_url_params.extra_headers = params.extra_headers;
+    load_url_params.is_renderer_initiated = params.is_renderer_initiated;
+    load_url_params.should_replace_current_entry =
+        params.should_replace_current_entry;
+
+    if (params.uses_post) {
+      load_url_params.load_type =
+          content::NavigationController::LOAD_TYPE_HTTP_POST;
+      load_url_params.post_data = params.post_data;
+    }
+
+    target->GetController().LoadURLWithParams(load_url_params);
+    return target;
+  }
+
  private:
   HeadlessBrowserImpl* browser() { return headless_web_contents_->browser(); }
 
