@@ -2116,12 +2116,58 @@ TEST_F(ExtensionServiceTest, UnpackedExtensionMayContainSymlinkedFiles) {
 }
 #endif
 
+TEST_F(ExtensionServiceTest, UnpackedExtensionMayHaveMetadataFolder) {
+  InitializeEmptyExtensionService();
+  base::FilePath extension_path = data_dir().AppendASCII("metadata_folder");
+  extensions::UnpackedInstaller::Create(service())->Load(extension_path);
+  content::RunAllBlockingPoolTasksUntilIdle();
+  EXPECT_EQ(0u, GetErrors().size());
+  EXPECT_EQ(1u, registry()->enabled_extensions().size());
+}
+
+TEST_F(ExtensionServiceTest,
+       UnpackedExtensionWithMetadataAndUnderscoreFolders) {
+  InitializeEmptyExtensionService();
+  base::FilePath extension_path =
+      data_dir().AppendASCII("underscore_metadata_folders");
+  extensions::UnpackedInstaller::Create(service())->Load(extension_path);
+  content::RunAllBlockingPoolTasksUntilIdle();
+  EXPECT_EQ(1u, GetErrors().size());
+
+  // Format expected error string.
+  std::string expected("Failed to load extension from: ");
+  expected.append(extension_path.MaybeAsASCII())
+      .append(
+          ". Cannot load "
+          "extension with file or directory name _badfolder. Filenames "
+          "starting "
+          "with \"_\" are reserved for use by the system.");
+
+  EXPECT_EQ(
+      base::UTF8ToUTF16(base::StringPiece(expected.c_str(), expected.size())),
+      GetErrors()[0]);
+  EXPECT_EQ(0u, registry()->enabled_extensions().size());
+}
+
 TEST_F(ExtensionServiceTest, UnpackedExtensionMayNotHaveUnderscore) {
   InitializeEmptyExtensionService();
   base::FilePath extension_path = data_dir().AppendASCII("underscore_name");
   extensions::UnpackedInstaller::Create(service())->Load(extension_path);
   content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(1u, GetErrors().size());
+
+  // Format expected error string.
+  std::string expected("Failed to load extension from: ");
+  expected.append(extension_path.MaybeAsASCII())
+      .append(
+          ". Cannot load "
+          "extension with file or directory name _badfolder. Filenames "
+          "starting "
+          "with \"_\" are reserved for use by the system.");
+
+  EXPECT_EQ(
+      base::UTF8ToUTF16(base::StringPiece(expected.c_str(), expected.size())),
+      GetErrors()[0]);
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
 }
 
