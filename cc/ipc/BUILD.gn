@@ -40,7 +40,6 @@ cc_component("ipc") {
 mojom("interfaces") {
   sources = [
     "begin_frame_args.mojom",
-    "compositor_frame.mojom",
     "compositor_frame_metadata.mojom",
     "copy_output_request.mojom",
     "copy_output_result.mojom",

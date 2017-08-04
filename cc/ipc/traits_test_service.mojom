@@ -5,7 +5,6 @@
 module cc.mojom;
 
 import "cc/ipc/begin_frame_args.mojom";
-import "cc/ipc/compositor_frame.mojom";
 import "cc/ipc/compositor_frame_metadata.mojom";
 import "cc/ipc/copy_output_request.mojom";
 import "cc/ipc/copy_output_result.mojom";
@@ -29,9 +28,6 @@ interface TraitsTestService {
 
   [Sync]
   EchoBeginFrameAck(BeginFrameAck b) => (BeginFrameAck pass);
-
-  [Sync]
-  EchoCompositorFrame(CompositorFrame c) => (CompositorFrame pass);
 
   [Sync]
   EchoCompositorFrameMetadata(CompositorFrameMetadata c) =>

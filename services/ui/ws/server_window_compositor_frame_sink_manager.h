@@ -6,12 +6,12 @@
 #define SERVICES_UI_WS_SERVER_WINDOW_COMPOSITOR_FRAME_SINK_MANAGER_H_
 
 #include "base/macros.h"
-#include "cc/ipc/compositor_frame.mojom.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/viz/compositing/privileged/interfaces/frame_sink_manager.mojom.h"
+#include "services/viz/public/interfaces/compositing/compositor_frame.mojom.h"
 
 namespace ui {
 namespace ws {
