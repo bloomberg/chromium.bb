@@ -2102,7 +2102,10 @@ FcFreeTypeCheckGlyph (FT_Face face,
     return FcTrue;
 }
 
-#define APPROXIMATELY_EQUAL(x,y) (FC_ABS ((x) - (y)) * 33 <= FC_MAX (FC_ABS (x), FC_ABS (y)))
+static inline int fc_min (int a, int b) { return a <= b ? a : b; }
+static inline int fc_max (int a, int b) { return a >= b ? a : b; }
+static inline FcBool fc_approximately_equal (int x, int y)
+{ return abs (x - y) * 33 <= fc_max (abs (x), abs (y)); }
 
 FcCharSet *
 FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spacing)
@@ -2161,7 +2164,7 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spac
 			has_advance = FcTrue;
 			advance_one = advance;
 		    }
-		    else if (!APPROXIMATELY_EQUAL (advance, advance_one))
+		    else if (!fc_approximately_equal (advance, advance_one))
 		    {
 			if (fixed_advance)
 			{
@@ -2169,7 +2172,7 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spac
 			    fixed_advance = FcFalse;
 			    advance_two = advance;
 			}
-			else if (!APPROXIMATELY_EQUAL (advance, advance_two))
+			else if (!fc_approximately_equal (advance, advance_two))
 			    dual_advance = FcFalse;
 		    }
 		}
@@ -2220,7 +2223,7 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spac
     }
     if (fixed_advance)
 	*spacing = FC_MONO;
-    else if (dual_advance && APPROXIMATELY_EQUAL (2 * FC_MIN (advance_one, advance_two), FC_MAX (advance_one, advance_two)))
+    else if (dual_advance && fc_approximately_equal (2 * fc_min (advance_one, advance_two), fc_max (advance_one, advance_two)))
         *spacing = FC_DUAL;
     else
 	*spacing = FC_PROPORTIONAL;

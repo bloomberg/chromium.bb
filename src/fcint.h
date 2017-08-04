@@ -101,7 +101,6 @@ extern pfnSHGetFolderPathA pSHGetFolderPathA;
 
 #define FC_MIN(a,b) ((a) < (b) ? (a) : (b))
 #define FC_MAX(a,b) ((a) > (b) ? (a) : (b))
-#define FC_ABS(a)   ((a) < 0 ? -(a) : (a))
 
 /* slim_internal.h */
 #if (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 3)) && defined(__ELF__) && !defined(__sun)
