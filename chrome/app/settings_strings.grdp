@@ -3312,4 +3312,17 @@
     </message>
   </if>
 
+  <!-- Password protection -->
+  <message name="IDS_SETTINGS_CHANGE_PASSWORD_TITLE" desc="Title of the reset password warning.">
+    A site may have stolen your password
+  </message>
+  <message name="IDS_SETTINGS_CHANGE_PASSWORD_TITLE_SOFTER" desc="Title of the reset password warning.">
+    Your password may be compromised
+  </message>
+  <message name="IDS_SETTINGS_CHANGE_PASSWORD_DETAIL" desc="Detailed description of the reset password warning.">
+    To protect your personal information, change your password now. Before you can change your password, you’ll be asked to sign in.
+  </message>
+  <message name="IDS_SETTINGS_CHANGE_PASSWORD_BUTTON" desc="Label on button that takes user to change password page.">
+    Change Password
+  </message>
 </grit-part>
