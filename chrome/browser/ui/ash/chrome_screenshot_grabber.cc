@@ -38,6 +38,9 @@
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/data_decoder/public/cpp/decode_image.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -282,6 +285,14 @@ std::string GetScreenshotBaseFilename() {
   return file_name;
 }
 
+// Read a file to a string and return.
+std::string ReadFileToString(const base::FilePath& path) {
+  std::string data;
+  // It may fail, but it doesn't matter for our purpose.
+  base::ReadFileToString(path, &data);
+  return data;
+}
+
 }  // namespace
 
 ChromeScreenshotGrabber::ChromeScreenshotGrabber()
@@ -290,7 +301,8 @@ ChromeScreenshotGrabber::ChromeScreenshotGrabber()
           base::CreateTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}))),
-      profile_for_test_(NULL) {
+      profile_for_test_(NULL),
+      weak_factory_(this) {
   screenshot_grabber_->AddObserver(this);
 }
 
@@ -416,16 +428,138 @@ void ChromeScreenshotGrabber::OnScreenshotCompleted(
   if (notifier_state_tracker->IsNotifierEnabled(message_center::NotifierId(
           message_center::NotifierId::SYSTEM_COMPONENT,
           ash::system_notifier::kNotifierScreenshot))) {
-    std::unique_ptr<Notification> notification(
-        CreateNotification(result, screenshot_path));
-    g_browser_process->notification_ui_manager()->Add(*notification,
-                                                      GetProfile());
+    if (result != ui::ScreenshotGrabberObserver::SCREENSHOT_SUCCESS) {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI, FROM_HERE,
+          base::BindOnce(
+              &ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted,
+              weak_factory_.GetWeakPtr(), result, screenshot_path,
+              gfx::Image()));
+      return;
+    }
+
+    if (drive::util::IsUnderDriveMountPoint(screenshot_path)) {
+      drive::FileSystemInterface* file_system =
+          drive::util::GetFileSystemByProfile(GetProfile());
+      if (!file_system) {
+        LOG(ERROR) << "Failed to get file system of current profile";
+
+        content::BrowserThread::PostTask(
+            content::BrowserThread::UI, FROM_HERE,
+            base::BindOnce(&ChromeScreenshotGrabber::
+                               OnReadScreenshotFileForPreviewCompleted,
+                           weak_factory_.GetWeakPtr(), result, screenshot_path,
+                           gfx::Image()));
+        return;
+      }
+      file_system->GetFile(
+          drive::util::ExtractDrivePath(screenshot_path),
+          base::BindRepeating(
+              &ChromeScreenshotGrabber::ReadScreenshotFileForPreviewDrive,
+              weak_factory_.GetWeakPtr(), screenshot_path));
+    } else {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI, FROM_HERE,
+          base::BindOnce(
+              &ChromeScreenshotGrabber::ReadScreenshotFileForPreviewLocal,
+              weak_factory_.GetWeakPtr(), screenshot_path, screenshot_path));
+    }
   }
+}
+
+void ChromeScreenshotGrabber::ReadScreenshotFileForPreviewLocal(
+    const base::FilePath& screenshot_path,
+    const base::FilePath& screenshot_cache_path) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, kBlockingTaskTraits,
+      base::BindOnce(&ReadFileToString, screenshot_cache_path),
+      base::BindOnce(&ChromeScreenshotGrabber::DecodeScreenshotFileForPreview,
+                     weak_factory_.GetWeakPtr(), screenshot_path));
+}
+
+void ChromeScreenshotGrabber::ReadScreenshotFileForPreviewDrive(
+    const base::FilePath& screenshot_path,
+    drive::FileError error,
+    const base::FilePath& screenshot_cache_path,
+    std::unique_ptr<drive::ResourceEntry> entry) {
+  if (error != drive::FILE_ERROR_OK) {
+    LOG(ERROR) << "Failed to read the screenshot path on drive: "
+               << drive::FileErrorToString(error);
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(
+            &ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted,
+            weak_factory_.GetWeakPtr(),
+            ui::ScreenshotGrabberObserver::SCREENSHOT_SUCCESS, screenshot_path,
+            gfx::Image()));
+    return;
+  }
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          &ChromeScreenshotGrabber::ReadScreenshotFileForPreviewLocal,
+          weak_factory_.GetWeakPtr(), screenshot_path, screenshot_cache_path));
+}
+
+void ChromeScreenshotGrabber::DecodeScreenshotFileForPreview(
+    const base::FilePath& screenshot_path,
+    std::string image_data) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (image_data.empty()) {
+    LOG(ERROR) << "Failed to read the screenshot file: "
+               << screenshot_path.value();
+    OnReadScreenshotFileForPreviewCompleted(
+        ui::ScreenshotGrabberObserver::SCREENSHOT_SUCCESS, screenshot_path,
+        gfx::Image());
+    return;
+  }
+
+  service_manager::mojom::ConnectorRequest connector_request;
+  std::unique_ptr<service_manager::Connector> connector =
+      service_manager::Connector::Create(&connector_request);
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindConnectorRequest(std::move(connector_request));
+
+  // Decode the image in sandboxed process becuase decode image_data comes from
+  // external storage.
+  data_decoder::DecodeImage(
+      connector.get(),
+      std::vector<uint8_t>(image_data.begin(), image_data.end()),
+      data_decoder::mojom::ImageCodec::DEFAULT, false,
+      data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
+      base::BindOnce(
+          &ChromeScreenshotGrabber::OnScreenshotFileForPreviewDecoded,
+          weak_factory_.GetWeakPtr(), screenshot_path));
+}
+
+void ChromeScreenshotGrabber::OnScreenshotFileForPreviewDecoded(
+    const base::FilePath& screenshot_path,
+    const SkBitmap& decoded_image) {
+  OnReadScreenshotFileForPreviewCompleted(
+      ui::ScreenshotGrabberObserver::SCREENSHOT_SUCCESS, screenshot_path,
+      gfx::Image::CreateFrom1xBitmap(decoded_image));
+}
+
+void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
+    ui::ScreenshotGrabberObserver::Result result,
+    const base::FilePath& screenshot_path,
+    gfx::Image image) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  std::unique_ptr<Notification> notification(
+      CreateNotification(result, screenshot_path, image));
+  g_browser_process->notification_ui_manager()->Add(*notification,
+                                                    GetProfile());
 }
 
 Notification* ChromeScreenshotGrabber::CreateNotification(
     ui::ScreenshotGrabberObserver::Result screenshot_result,
-    const base::FilePath& screenshot_path) {
+    const base::FilePath& screenshot_path,
+    gfx::Image image) {
   const std::string notification_id(kNotificationId);
   // We cancel a previous screenshot notification, if any, to ensure we get
   // a fresh notification pop-up.
@@ -453,10 +587,14 @@ Notification* ChromeScreenshotGrabber::CreateNotification(
               IDR_NOTIFICATION_SCREENSHOT_ANNOTATE);
       optional_field.buttons.push_back(annotate_button);
     }
+
+    // Assign image for notification preview. It might be empty.
+    optional_field.image = image;
   }
 
   return new Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
+      image.IsEmpty() ? message_center::NOTIFICATION_TYPE_SIMPLE
+                      : message_center::NOTIFICATION_TYPE_IMAGE,
       l10n_util::GetStringUTF16(
           GetScreenshotNotificationTitle(screenshot_result)),
       l10n_util::GetStringUTF16(
