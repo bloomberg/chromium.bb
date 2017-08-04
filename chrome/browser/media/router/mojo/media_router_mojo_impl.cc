@@ -74,6 +74,8 @@ MediaRouterMojoImpl::~MediaRouterMojoImpl() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (dial_media_sink_service_proxy_)
     dial_media_sink_service_proxy_->Stop();
+  if (cast_media_sink_service_)
+    cast_media_sink_service_->Stop();
 }
 
 void MediaRouterMojoImpl::OnConnectionError() {
