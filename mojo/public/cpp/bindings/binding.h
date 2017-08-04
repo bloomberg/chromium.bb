@@ -225,6 +225,10 @@ class Binding {
   // Exposed for testing, should not generally be used.
   void EnableTestingMode() { internal_state_.EnableTestingMode(); }
 
+  scoped_refptr<internal::MultiplexRouter> RouterForTesting() {
+    return internal_state_.RouterForTesting();
+  }
+
  private:
   internal::BindingState<Interface, ImplRefTraits> internal_state_;
 

@@ -75,6 +75,8 @@ class MOJO_CPP_BINDINGS_EXPORT BindingStateBase {
 
   void EnableTestingMode();
 
+  scoped_refptr<internal::MultiplexRouter> RouterForTesting();
+
  protected:
   void BindInternal(ScopedMessagePipeHandle handle,
                     scoped_refptr<base::SingleThreadTaskRunner> runner,
