@@ -8,13 +8,8 @@
 #include <atk/atk.h>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/platform/ax_platform_node_base.h"
-
-namespace base {
-class TaskRunner;
-}
 
 namespace ui {
 
@@ -28,9 +23,8 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   AX_EXPORT static void SetApplication(AXPlatformNode* application);
   static AXPlatformNode* application() { return application_; }
 
-  // Do static initialization using the given task runner for file operations.
-  AX_EXPORT static void StaticInitialize(
-      scoped_refptr<base::TaskRunner> init_task_runner);
+  // Do asynchronous static initialization.
+  AX_EXPORT static void StaticInitialize();
 
   AtkRole GetAtkRole();
   void GetAtkState(AtkStateSet* state_set);

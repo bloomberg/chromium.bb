@@ -136,8 +136,4 @@ int ViewsDelegate::GetAppbarAutohideEdges(HMONITOR monitor,
 }
 #endif
 
-scoped_refptr<base::TaskRunner> ViewsDelegate::GetBlockingPoolTaskRunner() {
-  return nullptr;
-}
-
 }  // namespace views
