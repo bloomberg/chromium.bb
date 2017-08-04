@@ -43,6 +43,11 @@ When installing the 14393 Windows SDK choose Debugging Tools For Windows in
 order to get windbg and cdb. The latter is required for the build to succeed as
 some tests use it for symbolizing crash dumps.
 
+If the Windows SDK was installed via the Visual Studio installer, the Debugging
+Tools can be installed by going to: Control Panel → Programs →
+Programs and Features → Select the "Windows Software Development Kit" v14393 →
+Change → Change → Check "Debugging Tools For Windows" → Change.
+
 ## Install `depot_tools`
 
 Download the [depot_tools bundle](https://storage.googleapis.com/chrome-infra/depot_tools.zip)
