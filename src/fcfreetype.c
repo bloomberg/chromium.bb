@@ -2067,41 +2067,6 @@ FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4)
     return 0;
 }
 
-static FcBool
-FcFreeTypeCheckGlyph (FT_Face face,
-		      FcChar32 ucs4,
-		      FT_UInt glyph,
-		      FT_Pos *advance)
-{
-    FT_Int	    load_flags = FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH | FT_LOAD_NO_SCALE | FT_LOAD_NO_HINTING;
-
-    /* When using scalable fonts, only report those glyphs
-     * which can be scaled; otherwise those fonts will
-     * only be available at some sizes, and never when
-     * transformed.  Avoid this by simply reporting bitmap-only
-     * glyphs as missing
-     */
-    if (face->face_flags & FT_FACE_FLAG_SCALABLE)
-	load_flags |= FT_LOAD_NO_BITMAP;
-
-    *advance = 0;
-    FT_Get_Advance (face, glyph, load_flags, advance);
-
-    /* CID fonts built by Adobe used to make ASCII control chars to cid1
-     * (space glyph). As such, always check contour for those characters. */
-    if (ucs4 <= 0x001F)
-    {
-      if (FT_Load_Glyph (face, glyph, load_flags))
-	  return FcFalse;
-
-      if (face->glyph->format == FT_GLYPH_FORMAT_OUTLINE &&
-	  face->glyph->outline.n_contours == 0)
-	  return FcFalse;
-    }
-
-    return FcTrue;
-}
-
 static inline int fc_min (int a, int b) { return a <= b ? a : b; }
 static inline int fc_max (int a, int b) { return a >= b ? a : b; }
 static inline FcBool fc_approximately_equal (int x, int y)
@@ -2155,7 +2120,33 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spac
 	ucs4 = FT_Get_First_Char (face, &glyph);
 	while (glyph != 0)
 	{
-	    if (FcFreeTypeCheckGlyph (face, ucs4, glyph, &advance))
+	    FcBool good = FcTrue;
+
+	    FT_Int	    load_flags = FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH | FT_LOAD_NO_SCALE | FT_LOAD_NO_HINTING;
+
+	    /* When using scalable fonts, only report those glyphs
+	     * which can be scaled; otherwise those fonts will
+	     * only be available at some sizes, and never when
+	     * transformed.  Avoid this by simply reporting bitmap-only
+	     * glyphs as missing
+	     */
+	    if (face->face_flags & FT_FACE_FLAG_SCALABLE)
+		load_flags |= FT_LOAD_NO_BITMAP;
+
+	    advance = 0;
+	    FT_Get_Advance (face, glyph, load_flags, &advance);
+
+	    /* CID fonts built by Adobe used to make ASCII control chars to cid1
+	     * (space glyph). As such, always check contour for those characters. */
+	    if (ucs4 <= 0x001F)
+	    {
+		if (FT_Load_Glyph (face, glyph, load_flags) ||
+		    (face->glyph->format == FT_GLYPH_FORMAT_OUTLINE &&
+		     face->glyph->outline.n_contours == 0))
+		    good = FcFalse;
+	    }
+
+	    if (good)
 	    {
 		if (num_advances < 3 && advance)
 		{
@@ -2177,6 +2168,7 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spac
 		off = ucs4 & 0xff;
 		leaf->map[off >> 5] |= (1 << (off & 0x1f));
 	    }
+
 	    ucs4 = FT_Get_Next_Char (face, ucs4, &glyph);
 	}
 	if (fcFontEncodings[o] == FT_ENCODING_MS_SYMBOL)
