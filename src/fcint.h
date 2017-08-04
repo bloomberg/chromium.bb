@@ -471,12 +471,6 @@ struct _FcAtomic {
     FcChar8	*tmp;		/* tmpfile name (used for locking) */
 };
 
-struct _FcBlanks {
-    int		nblank;
-    int		sblank;
-    FcChar32	*blanks;
-};
-
 struct _FcConfig {
     /*
      * File names loaded from the configuration -- saved here as the
@@ -484,11 +478,6 @@ struct _FcConfig {
      * and those directives may occur in any order
      */
     FcStrSet	*configDirs;	    /* directories to scan for fonts */
-    /*
-     * Set of allowed blank chars -- used to
-     * trim fonts of bogus glyphs
-     */
-    FcBlanks	*blanks;
     /*
      * List of directories containing fonts,
      * built by recursively scanning the set
@@ -567,8 +556,6 @@ struct _FcValuePromotionBuffer {
     char c[256]; /* Enlarge as needed */
   } u;
 };
-
-/* fcblanks.c */
 
 /* fccache.c */
 
@@ -841,14 +828,12 @@ FcFileIsFile (const FcChar8 *file);
 FcPrivate FcBool
 FcFileScanConfig (FcFontSet	*set,
 		  FcStrSet	*dirs,
-		  FcBlanks	*blanks,
 		  const FcChar8 *file,
 		  FcConfig	*config);
 
 FcPrivate FcBool
 FcDirScanConfig (FcFontSet	*set,
 		 FcStrSet	*dirs,
-		 FcBlanks	*blanks,
 		 const FcChar8	*dir,
 		 FcBool		force,
 		 FcConfig	*config);
