@@ -77,6 +77,11 @@ struct PPP_Pdf_1_1 {
   // is when focus is within an editable form text area (a form text field
   // or user-editable form combobox text field).
   PP_Bool (*CanEditText)(PP_Instance instance);
+
+  // Replace the plugin's selected text (if focus is in an editable text area).
+  // If there is no selected text, append the replacement text after the current
+  // caret position.
+  void (*ReplaceSelection)(PP_Instance instance, const char* text);
 };
 
 typedef PPP_Pdf_1_1 PPP_Pdf;

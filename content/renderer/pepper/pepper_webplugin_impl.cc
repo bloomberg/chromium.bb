@@ -19,8 +19,10 @@
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/v8object_var.h"
 #include "content/renderer/render_frame_impl.h"
+#include "content/renderer/renderer_blink_platform_impl.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var_tracker.h"
+#include "third_party/WebKit/public/platform/WebClipboard.h"
 #include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -287,6 +289,28 @@ WebString PepperWebPluginImpl::SelectionAsMarkup() const {
 
 bool PepperWebPluginImpl::CanEditText() const {
   return instance_ && instance_->CanEditText();
+}
+
+bool PepperWebPluginImpl::ExecuteEditCommand(const blink::WebString& name) {
+  return ExecuteEditCommand(name, WebString());
+}
+
+bool PepperWebPluginImpl::ExecuteEditCommand(const blink::WebString& name,
+                                             const blink::WebString& value) {
+  if (!instance_)
+    return false;
+
+  if (name == "Cut") {
+    if (!HasSelection() || !CanEditText())
+      return false;
+
+    blink::Platform::Current()->Clipboard()->WriteHTML(
+        SelectionAsMarkup(), WebURL(), SelectionAsText(), false);
+
+    instance_->ReplaceSelection("");
+    return true;
+  }
+  return false;
 }
 
 WebURL PepperWebPluginImpl::LinkAtPosition(const WebPoint& position) const {

@@ -82,6 +82,7 @@ class OutOfProcessInstance : public pp::Instance,
   void SetSelectionBounds(const pp::FloatPoint& base,
                           const pp::FloatPoint& extent);
   bool CanEditText();
+  void ReplaceSelection(const std::string& text);
 
   void FlushCallback(int32_t result);
   void DidOpen(int32_t result);

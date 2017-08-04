@@ -1507,6 +1507,13 @@ bool PepperPluginInstanceImpl::CanEditText() {
              : false;
 }
 
+void PepperPluginInstanceImpl::ReplaceSelection(const std::string& text) {
+  if (!LoadPdfInterface())
+    return;
+
+  plugin_pdf_interface_->ReplaceSelection(pp_instance(), text.c_str());
+}
+
 void PepperPluginInstanceImpl::RequestSurroundingText(
     size_t desired_number_of_characters) {
   // Keep a reference on the stack. See NOTE above.

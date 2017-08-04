@@ -261,10 +261,20 @@ PP_Bool CanEditText(PP_Instance instance) {
   return PP_FromBool(obj_instance->CanEditText());
 }
 
+void ReplaceSelection(PP_Instance instance, const char* text) {
+  void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
+  if (!object)
+    return;
+
+  OutOfProcessInstance* obj_instance =
+      static_cast<OutOfProcessInstance*>(object);
+  obj_instance->ReplaceSelection(text);
+}
+
 const PPP_Pdf ppp_private = {
     &GetLinkAtPosition,   &Transform,        &GetPrintPresetOptionsFromDocument,
     &EnableAccessibility, &SetCaretPosition, &MoveRangeSelectionExtent,
-    &SetSelectionBounds,  &CanEditText,
+    &SetSelectionBounds,  &CanEditText,      &ReplaceSelection,
 };
 
 int ExtractPrintPreviewPageIndex(base::StringPiece src_url) {
@@ -938,6 +948,10 @@ pp::Var OutOfProcessInstance::GetLinkAtPosition(const pp::Point& point) {
 
 bool OutOfProcessInstance::CanEditText() {
   return engine_->CanEditText();
+}
+
+void OutOfProcessInstance::ReplaceSelection(const std::string& text) {
+  engine_->ReplaceSelection(text);
 }
 
 uint32_t OutOfProcessInstance::QuerySupportedPrintOutputFormats() {
