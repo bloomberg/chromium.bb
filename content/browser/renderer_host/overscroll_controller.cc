@@ -349,9 +349,10 @@ bool OverscrollController::ProcessEventForOverscroll(
 bool OverscrollController::ProcessOverscroll(float delta_x,
                                              float delta_y,
                                              bool is_touchpad) {
-  if (scroll_state_ != STATE_CONTENT_SCROLLING)
+  if (scroll_state_ != STATE_CONTENT_SCROLLING) {
     overscroll_delta_x_ += delta_x;
-  overscroll_delta_y_ += delta_y;
+    overscroll_delta_y_ += delta_y;
+  }
 
   const float horiz_threshold = GetOverscrollConfig(
       is_touchpad ? OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHPAD

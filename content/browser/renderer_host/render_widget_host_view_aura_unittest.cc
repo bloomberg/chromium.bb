@@ -4443,7 +4443,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, GestureScrollOverscrolls) {
   EXPECT_EQ(55.f, overscroll_delta_x());
   EXPECT_EQ(-5.f, overscroll_delta_y());
   EXPECT_EQ(5.f, overscroll_delegate()->delta_x());
-  EXPECT_EQ(-5.f, overscroll_delegate()->delta_y());
+  EXPECT_EQ(0.f, overscroll_delegate()->delta_y());
   EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
 
   // Send another gesture update event. This event should be consumed by the
@@ -4456,7 +4456,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, GestureScrollOverscrolls) {
   EXPECT_EQ(65.f, overscroll_delta_x());
   EXPECT_EQ(-10.f, overscroll_delta_y());
   EXPECT_EQ(15.f, overscroll_delegate()->delta_x());
-  EXPECT_EQ(-10.f, overscroll_delegate()->delta_y());
+  EXPECT_EQ(0.f, overscroll_delegate()->delta_y());
   EXPECT_EQ(0U, sink_->message_count());
 
   // Now send a scroll end. This should cancel the overscroll gesture, and send
@@ -4495,7 +4495,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollDeltaCap) {
   EXPECT_EQ(55.f, overscroll_delta_x());
   EXPECT_EQ(-5.f, overscroll_delta_y());
   EXPECT_EQ(5.f, overscroll_delegate()->delta_x());
-  EXPECT_EQ(-5.f, overscroll_delegate()->delta_y());
+  EXPECT_EQ(0.f, overscroll_delegate()->delta_y());
   EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
 
   // Scroll beyond overscroll cap. Overscroll delta should not surpass the cap.
@@ -4506,7 +4506,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollDeltaCap) {
   EXPECT_EQ(100.f, overscroll_delta_x());
   EXPECT_EQ(-10.f, overscroll_delta_y());
   EXPECT_EQ(50.f, overscroll_delegate()->delta_x());
-  EXPECT_EQ(-10.f, overscroll_delegate()->delta_y());
+  EXPECT_EQ(0.f, overscroll_delegate()->delta_y());
   EXPECT_EQ(0U, sink_->message_count());
 
   // Scroll back a bit. Since the extra scroll after cap in previous step is
@@ -4518,7 +4518,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollDeltaCap) {
   EXPECT_EQ(90.f, overscroll_delta_x());
   EXPECT_EQ(-15.f, overscroll_delta_y());
   EXPECT_EQ(40.f, overscroll_delegate()->delta_x());
-  EXPECT_EQ(-15.f, overscroll_delegate()->delta_y());
+  EXPECT_EQ(0.f, overscroll_delegate()->delta_y());
   EXPECT_EQ(0U, sink_->message_count());
 
   // End overscrolling.
@@ -4819,7 +4819,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_delegate()->current_mode());
   EXPECT_EQ(55.f, overscroll_delta_x());
   EXPECT_EQ(5.f, overscroll_delegate()->delta_x());
-  EXPECT_EQ(-5.f, overscroll_delegate()->delta_y());
+  EXPECT_EQ(0.f, overscroll_delegate()->delta_y());
 
   // Send end event.
   SimulateGestureEvent(blink::WebInputEvent::kGestureScrollEnd,
@@ -4859,7 +4859,7 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_delegate()->current_mode());
   EXPECT_EQ(235.f, overscroll_delta_x());
   EXPECT_EQ(185.f, overscroll_delegate()->delta_x());
-  EXPECT_EQ(-5.f, overscroll_delegate()->delta_y());
+  EXPECT_EQ(0.f, overscroll_delegate()->delta_y());
 
   // Send end event.
   SimulateGestureEvent(blink::WebInputEvent::kGestureScrollEnd,

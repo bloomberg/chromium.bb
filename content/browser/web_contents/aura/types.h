@@ -9,7 +9,13 @@
 
 namespace content {
 
-enum class NavigationDirection { NONE, FORWARD, BACK, NAVIGATION_COUNT };
+enum class NavigationDirection {
+  NONE,
+  FORWARD,
+  BACK,
+  RELOAD,
+  NAVIGATION_COUNT,
+};
 
 // Note that this enum is used to back an UMA histogram, so it should be
 // treated as append-only.
@@ -19,6 +25,8 @@ enum UmaNavigationType {
   BACK_TOUCHPAD,
   FORWARD_TOUCHSCREEN,
   BACK_TOUCHSCREEN,
+  RELOAD_TOUCHPAD,
+  RELOAD_TOUCHSCREEN,
   NAVIGATION_TYPE_COUNT,
 };
 

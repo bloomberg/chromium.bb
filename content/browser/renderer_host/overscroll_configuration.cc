@@ -16,7 +16,7 @@ const float kVertThresholdComplete = 0.20f;
 
 const float kHorizThresholdStartTouchscreen = 50.f;
 const float kHorizThresholdStartTouchpad = 50.f;
-const float kVertThresholdStart = 0.f;
+const float kVertThresholdStart = 50.f;
 
 float GetHorizontalStartThresholdMultiplier() {
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();

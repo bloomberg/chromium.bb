@@ -17,10 +17,15 @@ UmaNavigationType GetUmaNavigationType(NavigationDirection direction,
                ? UmaNavigationType::BACK_TOUCHPAD
                : UmaNavigationType::BACK_TOUCHSCREEN;
   }
-  DCHECK_EQ(direction, NavigationDirection::FORWARD);
+  if (direction == NavigationDirection::FORWARD) {
+    return source == OverscrollSource::TOUCHPAD
+               ? UmaNavigationType::FORWARD_TOUCHPAD
+               : UmaNavigationType::FORWARD_TOUCHSCREEN;
+  }
+  DCHECK_EQ(direction, NavigationDirection::RELOAD);
   return source == OverscrollSource::TOUCHPAD
-             ? UmaNavigationType::FORWARD_TOUCHPAD
-             : UmaNavigationType::FORWARD_TOUCHSCREEN;
+             ? UmaNavigationType::RELOAD_TOUCHPAD
+             : UmaNavigationType::RELOAD_TOUCHSCREEN;
 }
 
 }  // namespace content
