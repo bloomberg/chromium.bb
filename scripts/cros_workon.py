@@ -19,30 +19,23 @@ from chromite.lib import workon_helper
 
 
 def main(argv):
-  shared = commandline.SharedParser()
-  shared.add_argument('--board', default=cros_build_lib.GetDefaultBoard(),
+  parser = commandline.ArgumentParser(description=__doc__)
+  parser.add_argument('--board', default=cros_build_lib.GetDefaultBoard(),
                       help='The board to set package keywords for.')
-  shared.add_argument('--host', default=False, action='store_true',
+  parser.add_argument('--host', default=False, action='store_true',
                       help='Uses the host instead of board')
-  shared.add_argument('--remote', default='',
+  parser.add_argument('--remote', default='',
                       help='For non-workon projects, the git remote to use.')
-  shared.add_argument('--revision', default='',
+  parser.add_argument('--revision', default='',
                       help='Use to override the manifest defined default '
                            'revision used for a project')
-  shared.add_argument('--command', default='git status', dest='iterate_command',
+  parser.add_argument('--command', default='git status', dest='iterate_command',
                       help='The command to be run by forall.')
-  shared.add_argument('--workon_only', default=False, action='store_true',
+  parser.add_argument('--workon_only', default=False, action='store_true',
                       help='Apply to packages that have a workon ebuild only')
-  shared.add_argument('--all', default=False, action='store_true',
+  parser.add_argument('--all', default=False, action='store_true',
                       help='Apply to all possible packages for the '
                            'given command (overrides workon_only)')
-
-  parser = commandline.ArgumentParser(description=__doc__, parents=[shared,])
-
-  # Add the shared 'packages' argument after creating the main parser so that
-  # it is only bound/shared with the subcommands and doesn't confuse argparse.
-  shared.add_argument('packages', nargs='*',
-                      help='The packages to run command against.')
 
   commands = [
       ('start', 'Moves an ebuild to live (intended to support development)'),
@@ -54,8 +47,10 @@ def main(argv):
   ]
   command_parsers = parser.add_subparsers(dest='command', title='commands')
   for command, description in commands:
-    command_parsers.add_parser(command, parents=(shared,), help=description,
-                               description=description)
+    sub_parser = command_parsers.add_parser(command, description=description,
+                                            help=description)
+    sub_parser.add_argument('packages', nargs='*',
+                            help='The packages to run command against.')
 
   options = parser.parse_args(argv)
   options.Freeze()
