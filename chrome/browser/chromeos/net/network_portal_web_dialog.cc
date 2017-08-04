@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/net/network_portal_web_dialog.h"
 
-#include "chrome/grit/generated_resources.h"
 #include "components/captive_portal/captive_portal_detector.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/display.h"
