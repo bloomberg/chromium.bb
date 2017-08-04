@@ -16,8 +16,8 @@ const NSInteger kFramedWindowButtonsWithTabStripOffsetFromLeft = 11;
 
 // Offsets from the top/left of the window frame to the top of the window
 // controls (zoom, close, miniaturize) for a window without a tabstrip.
-const NSInteger kFramedWindowButtonsWithoutTabStripOffsetFromTop = 4;
-const NSInteger kFramedWindowButtonsWithoutTabStripOffsetFromLeft = 8;
+const NSInteger kFramedWindowButtonsWithoutTabStripOffsetFromTop = 3;
+const NSInteger kFramedWindowButtonsWithoutTabStripOffsetFromLeft = 7;
 
 // Cocoa class representing a framed browser window.
 // We need to override NSWindow with our own class since we need access to all
