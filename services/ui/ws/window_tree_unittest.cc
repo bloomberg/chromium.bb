@@ -1605,6 +1605,17 @@ TEST_F(WindowTreeTest, TestWindowManagerSettingCursorLocation) {
   EXPECT_EQ(ui::CursorType::kIBeam, cursor_type());
 }
 
+TEST_F(WindowTreeTest, TestWindowManagerConfineCursor) {
+  const gfx::Rect bounds(10, 10, 100, 100);
+  const int64_t display_id = display()->GetId();
+  static_cast<mojom::WindowManagerClient*>(wm_tree())->WmConfineCursorToBounds(
+      bounds, display_id);
+
+  PlatformDisplay* platform_display = display()->platform_display();
+  EXPECT_EQ(bounds, static_cast<TestPlatformDisplay*>(platform_display)
+                        ->confine_cursor_bounds());
+}
+
 using WindowTreeShutdownTest = testing::Test;
 
 // Makes sure WindowTreeClient doesn't get any messages during shutdown.

@@ -151,6 +151,12 @@ void WindowTreeHostMus::CancelWindowMove() {
   delegate_->OnWindowTreeHostCancelWindowMove(this);
 }
 
+void WindowTreeHostMus::ConfineCursorToBounds(
+    const gfx::Rect& bounds_in_pixels) {
+  delegate_->OnWindowTreeHostConfineCursorToBounds(bounds_in_pixels,
+                                                   display_id_);
+}
+
 display::Display WindowTreeHostMus::GetDisplay() const {
   display::Display display;
   display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id_, &display);

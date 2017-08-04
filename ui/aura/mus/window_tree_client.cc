@@ -2126,6 +2126,16 @@ void WindowTreeClient::OnWindowTreeHostMoveCursorToDisplayLocation(
   }
 }
 
+void WindowTreeClient::OnWindowTreeHostConfineCursorToBounds(
+    const gfx::Rect& bounds_in_pixels,
+    int64_t display_id) {
+  DCHECK(window_manager_client_);
+  if (window_manager_client_) {
+    window_manager_client_->WmConfineCursorToBounds(bounds_in_pixels,
+                                                    display_id);
+  }
+}
+
 std::unique_ptr<WindowPortMus> WindowTreeClient::CreateWindowPortForTopLevel(
     const std::map<std::string, std::vector<uint8_t>>* properties) {
   std::unique_ptr<WindowPortMus> window_port =

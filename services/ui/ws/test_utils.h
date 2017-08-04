@@ -748,6 +748,8 @@ class TestPlatformDisplay : public PlatformDisplay {
   }
   float cursor_scale() const { return cursor_scale_; }
 
+  gfx::Rect confine_cursor_bounds() const { return confine_cursor_bounds_; }
+
   // PlatformDisplay:
   void Init(PlatformDisplayDelegate* delegate) override;
   void SetViewportSize(const gfx::Size& size) override;
@@ -756,6 +758,7 @@ class TestPlatformDisplay : public PlatformDisplay {
   void ReleaseCapture() override;
   void SetCursor(const ui::CursorData& cursor) override;
   void SetCursorSize(const ui::CursorSize& cursor_size) override;
+  void ConfineCursorToBounds(const gfx::Rect& pixel_bounds) override;
   void MoveCursorTo(const gfx::Point& window_pixel_location) override;
   void UpdateTextInputState(const ui::TextInputState& state) override;
   void SetImeVisibility(bool visible) override;
@@ -772,6 +775,7 @@ class TestPlatformDisplay : public PlatformDisplay {
   display::Display::Rotation cursor_rotation_ =
       display::Display::Rotation::ROTATE_0;
   float cursor_scale_ = 1.0f;
+  gfx::Rect confine_cursor_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPlatformDisplay);
 };

@@ -534,6 +534,8 @@ class AURA_EXPORT WindowTreeClient
   void OnWindowTreeHostMoveCursorToDisplayLocation(
       const gfx::Point& location_in_pixels,
       int64_t display_id) override;
+  void OnWindowTreeHostConfineCursorToBounds(const gfx::Rect& bounds_in_pixels,
+                                             int64_t display_id) override;
   std::unique_ptr<WindowPortMus> CreateWindowPortForTopLevel(
       const std::map<std::string, std::vector<uint8_t>>* properties) override;
   void OnWindowTreeHostCreated(WindowTreeHostMus* window_tree_host) override;

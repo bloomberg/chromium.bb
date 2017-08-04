@@ -56,6 +56,8 @@ class PlatformDisplay : public ui::EventSource {
 
   virtual void SetCursorSize(const ui::CursorSize& cursor_size) = 0;
 
+  virtual void ConfineCursorToBounds(const gfx::Rect& pixel_bounds) = 0;
+
   virtual void UpdateTextInputState(const ui::TextInputState& state) = 0;
   virtual void SetImeVisibility(bool visible) = 0;
 
