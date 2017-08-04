@@ -14,6 +14,18 @@ Please do not add tests unrelated to DOM standard.
 
     For [ChildNode mixin](https://dom.spec.whatwg.org/#interface-childnode)
 
+*   comment/
+
+    For [Comment interface](https://dom.spec.whatwg.org/#interface-comment)
+
+*   document_fragment/
+
+    For [DocumentFragment interface](https://dom.spec.whatwg.org/#interface-documentfragment)
+
+*   document_type/
+
+    For [DocumentType interface](https://dom.spec.whatwg.org/#interface-documenttype)
+
 *   domparsing/
 
     See [domparsing/README.md](domparsing/README.md)
@@ -33,3 +45,7 @@ Please do not add tests unrelated to DOM standard.
 *   parent_node/
 
     For [ParentNode mixin](https://dom.spec.whatwg.org/#interface-parentnode)
+
+*   text/
+
+    For [Text interface](https://dom.spec.whatwg.org/#interface-text)
