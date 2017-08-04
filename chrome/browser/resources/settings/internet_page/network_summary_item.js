@@ -75,8 +75,12 @@ Polymer({
     if (deviceState) {
       if (deviceState.State == CrOnc.DeviceState.ENABLING)
         return this.i18n('internetDeviceEnabling');
-      if (deviceState.Type == CrOnc.Type.CELLULAR && this.deviceState.Scanning)
+      if (deviceState.Type == CrOnc.Type.CELLULAR && deviceState.Scanning)
         return this.i18n('internetMobileSearching');
+      if (deviceState.Type == CrOnc.Type.TETHER &&
+          deviceState.State == CrOnc.DeviceState.UNINITIALIZED) {
+        return this.i18n('tetherEnableBluetooth');
+      }
       if (deviceState.State == CrOnc.DeviceState.ENABLED)
         return CrOncStrings.networkListItemNotConnected;
     }
