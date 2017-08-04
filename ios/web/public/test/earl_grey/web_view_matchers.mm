@@ -219,11 +219,6 @@ id<GREYMatcher> WebViewContainingText(std::string text, WebState* web_state) {
   return WebViewWithText(text, web_state, true);
 }
 
-id<GREYMatcher> WebViewNotContainingText(std::string text,
-                                         WebState* web_state) {
-  return WebViewWithText(text, web_state, false);
-}
-
 id<GREYMatcher> WebViewContainingBlockedImage(std::string image_id,
                                               WebState* web_state) {
   return WebViewContainingImage(image_id, web_state, IMAGE_STATE_BLOCKED);
