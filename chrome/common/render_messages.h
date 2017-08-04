@@ -287,12 +287,6 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedUnauthorizedPlugin,
 IPC_MESSAGE_ROUTED1(ChromeFrameHostMsg_DidGetWebApplicationInfo,
                     WebApplicationInfo)
 
-// Tells the renderer a list of URLs which should be bounced back to the browser
-// process so that they can be assigned to an Instant renderer.
-IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetSearchURLs,
-                     std::vector<GURL> /* search_urls */,
-                     GURL /* new_tab_page_url */)
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Sent by the renderer to check if crash reporting is enabled.
 IPC_SYNC_MESSAGE_CONTROL0_1(ChromeViewHostMsg_IsCrashReportingEnabled,
