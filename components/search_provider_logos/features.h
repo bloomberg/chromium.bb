@@ -10,7 +10,13 @@
 namespace search_provider_logos {
 namespace features {
 
+// If enabled, Google Doodles are fetched from the newer /ddljson API instead of
+// the /newtab_mobile API.
 extern const base::Feature kUseDdljsonApi;
+
+// This parameter can be used to override the URL of the /ddljson API. Useful
+// for testing.
+extern const char kDdljsonOverrideUrlParam[];
 
 }  // namespace features
 }  // namespace search_provider_logos
