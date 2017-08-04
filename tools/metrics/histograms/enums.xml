@@ -22741,6 +22741,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1802502753" label="enable-manual-password-generation:enabled"/>
   <int value="-1798337879" label="enable-md-downloads"/>
   <int value="-1797739460" label="brotli-encoding:disabled"/>
+  <int value="-1791226955" label="BreakingNewsPush:enabled"/>
   <int value="-1790227231" label="show-autofill-signatures"/>
   <int value="-1784788154" label="NewRemotePlaybackPipeline:disabled"/>
   <int value="-1780306716"
@@ -22975,6 +22976,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1028733699" label="MacViewsWebUIDialogs:disabled"/>
   <int value="-1027022706" label="ContentSuggestionsVideoOverlay:disabled"/>
   <int value="-1022971520" label="enable-search-button-in-omnibox-for-str"/>
+  <int value="-1022165708" label="BreakingNewsPush:disabled"/>
   <int value="-1020450980" label="gesture-deletion"/>
   <int value="-1016202433" label="disable-add-to-shelf"/>
   <int value="-1015006759" label="ImportantSitesInCBD:disabled"/>

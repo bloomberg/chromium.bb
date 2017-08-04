@@ -181,6 +181,9 @@ extern const char kEnableAutofillCreditCardLastUsedDateDisplayDescription[];
 extern const char kEnableAutofillCreditCardUploadCvcPromptName[];
 extern const char kEnableAutofillCreditCardUploadCvcPromptDescription[];
 
+extern const char kEnableBreakingNewsPushName[];
+extern const char kEnableBreakingNewsPushDescription[];
+
 extern const char kEnableBrotliName[];
 extern const char kEnableBrotliDescription[];
 
