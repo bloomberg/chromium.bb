@@ -8,6 +8,7 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "ash/wm/lock_state_controller.h"
 #include "ash/wm/power_button_controller.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/aura/window.h"
@@ -97,11 +98,12 @@ void PowerEventObserver::SuspendImminent() {
                                 ->GetPowerManagerClient()
                                 ->GetSuspendReadinessCallback();
     VLOG(1) << "Requesting screen lock from PowerEventObserver";
-    chromeos::DBusThreadManager::Get()
-        ->GetSessionManagerClient()
-        ->RequestLockScreen();
+    // TODO(warx): once crbug.com/748732 is fixed, we probably can treat
+    // auto-screen-lock pref set and not set cases as the same. Also remove
+    // |waiting_for_lock_screen_animations_|.
+    Shell::Get()->lock_state_controller()->LockWithoutAnimation();
   } else if (waiting_for_lock_screen_animations_) {
-    // The lock-before-suspending pref has been set and the lock screen is ready
+    // The auto-screen-lock pref has been set and the lock screen is ready
     // but the animations have not completed yet.  This can happen if a suspend
     // request is canceled after the lock screen is ready but before the
     // animations have completed and then another suspend request is immediately
@@ -112,7 +114,7 @@ void PowerEventObserver::SuspendImminent() {
                                 ->GetPowerManagerClient()
                                 ->GetSuspendReadinessCallback();
   } else {
-    // The lock-before-suspending pref is not set or the screen has already been
+    // The auto-screen-lock pref is not set or the screen has already been
     // locked and the animations have completed.  Rendering can be stopped now.
     StopRenderingRequests();
   }
