@@ -16,6 +16,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_propvariant.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
@@ -193,7 +194,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTestWithProfileShortcutManager,
   ValidateBrowserWindowProperties(profile2_browser, entry->GetName());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserWindowPropertyManagerTest, HostedApp) {
+// Flaky on Win. https://crbug.com/396344
+#if defined(OS_WIN)
+#define MAYBE_HostedApp DISABLED_HostedApp
+#else
+#define MAYBE_HostedApp HostedApp
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserWindowPropertyManagerTest, MAYBE_HostedApp) {
   // Load an app.
   const extensions::Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("app/"));
