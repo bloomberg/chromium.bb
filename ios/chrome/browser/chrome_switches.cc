@@ -19,9 +19,6 @@ const char kDisableContextualSearch[] = "disable-contextual-search";
 // See base::FeatureList::InitializeFromCommandLine for details.
 const char kDisableIOSFeatures[] = "disable-features";
 
-// Disable password generation for iOS.
-const char kDisableIOSPasswordGeneration[] = "disable-ios-password-generation";
-
 // Disable showing available password credentials in the keyboard accessory
 // view when focused on form fields.
 const char kDisableIOSPasswordSuggestions[] =
@@ -58,9 +55,6 @@ const char kEnableIOSFeatures[] = "enable-features";
 // other Apple devices.
 const char kEnableIOSHandoffToOtherDevices[] =
     "enable-ios-handoff-to-other-devices";
-
-// Enable password generation for iOS.
-const char kEnableIOSPasswordGeneration[] = "enable-ios-password-generation";
 
 // Enables context-sensitive reader mode button in the toolbar.
 const char kEnableReaderModeToolbarIcon[] = "enable-reader-mode-toolbar-icon";
