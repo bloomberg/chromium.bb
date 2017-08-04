@@ -39,11 +39,6 @@ class CONTENT_EXPORT ServiceWorkerMessageFilter
   void OnStaleMessageReceived(const IPC::Message& msg) override;
 
   // Message handlers for stale messages.
-  void OnStaleAssociateRegistration(
-      int thread_id,
-      int provider_id,
-      const ServiceWorkerRegistrationObjectInfo& info,
-      const ServiceWorkerVersionAttributes& attrs);
   void OnStaleGetRegistration(int thread_id,
                               int request_id,
                               const ServiceWorkerRegistrationObjectInfo& info,

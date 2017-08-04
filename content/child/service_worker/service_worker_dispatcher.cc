@@ -68,10 +68,6 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
   // handler in ServiceWorkerMessageFilter to release references passed from
   // the browser process in case we fail to post task to the thread.
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerDispatcher, msg)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_AssociateRegistration,
-                        OnAssociateRegistration)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DisassociateRegistration,
-                        OnDisassociateRegistration)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerRegistered, OnRegistered)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerUpdated, OnUpdated)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerUnregistered,
@@ -390,8 +386,7 @@ ServiceWorkerDispatcher::GetOrAdoptRegistration(
   return registration;
 }
 
-void ServiceWorkerDispatcher::OnAssociateRegistration(
-    int thread_id,
+void ServiceWorkerDispatcher::OnAssociateRegistrationForController(
     int provider_id,
     const ServiceWorkerRegistrationObjectInfo& info,
     const ServiceWorkerVersionAttributes& attrs) {
@@ -409,15 +404,6 @@ void ServiceWorkerDispatcher::OnAssociateRegistration(
         std::move(registration), std::move(installing), std::move(waiting),
         std::move(active));
   }
-}
-
-void ServiceWorkerDispatcher::OnDisassociateRegistration(
-    int thread_id,
-    int provider_id) {
-  ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
-  if (provider == provider_contexts_.end())
-    return;
-  provider->second->OnDisassociateRegistration();
 }
 
 void ServiceWorkerDispatcher::OnRegistered(
