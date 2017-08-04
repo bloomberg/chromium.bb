@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<div id=result>NOTHING</div>
+<script>
+// Test that ReadableStream and WritableStream still work correctly when the
+// global object has been interfered with.
+//
+// This test cannot use testharness.js because it doesn't work when you remove
+// all the global objects.
+const testRunner = self.testRunner;
+if (testRunner) {
+  testRunner.dumpAsText();
+  testRunner.waitUntilDone();
+}
+
+async function runTest() {
+  const ReadableStream = self.ReadableStream;
+  const WritableStream = self.WritableStream;
+  const ByteLengthQueuingStrategy = self.ByteLengthQueuingStrategy;
+  const CountQueuingStrategy = self.CountQueuingStrategy;
+  const Error = self.Error;
+  const Promise = self.Promise;
+  const undefined = self.undefined;
+  const document = self.document;
+
+  function assert(pred, message) {
+    if (pred) {
+      return;
+    }
+    throw new Error(message);
+  }
+
+  async function testReadAndPipeTo() {
+    let done;
+    const rs = new ReadableStream({
+      pull(controller) {
+        if (done) {
+          controller.close();
+        }
+        assert(controller.desiredSize > 0, 'desiredSize must be greater than 0');
+        controller.enqueue('tree');
+      }
+    });
+    const reader = rs.getReader();
+    assert(rs.locked, 'ReadableStream should be locked');
+    await reader.read();
+    reader.releaseLock();
+    await rs.pipeTo(new WritableStream({
+      write() {
+        done = true;
+      }
+    }));
+  }
+
+  async function testReadableStreamClosed() {
+    const rs = new ReadableStream({
+      pull(controller) {
+        controller.close();
+      }
+    });
+    const reader = rs.getReader();
+    await reader.read();
+    await reader.closed
+  }
+
+  async function testPipeThrough() {
+    const emptyRS = new ReadableStream({
+      pull(controller) {
+        controller.close();
+      }
+    });
+    let resolve;
+    const p = new Promise(r => {resolve = r});
+    const closeResolvesWS = new WritableStream({
+      close() {
+        resolve();
+      }
+    }, new CountQueuingStrategy(10));
+    emptyRS.pipeThrough({
+      writable: closeResolvesWS,
+      readable: new ReadableStream()
+    }, {
+      preventClose: 0,
+      preventAbort: true,
+      preventCancel: 'yes'
+    });
+    await p;
+  }
+
+  async function testReadableStreamError() {
+    const rs = new ReadableStream({
+      pull(controller) {
+        controller.error('my error');
+      }
+    });
+    const reader = rs.getReader();
+    try {
+      await reader.read();
+    } catch (e) {
+      assert(e === 'my error', 'my error should be thrown');
+    }
+  }
+
+  async function testTee() {
+    const rs = new ReadableStream({
+      start(controller) {
+        controller.enqueue('beef');
+      }
+    }, { size: () => 1, highWaterMark: 19 });
+    const [left, right] = rs.tee();
+    const cancellations = [ left.cancel() ];
+    const reader = right.getReader();
+    const { value, done } = await reader.read();
+    assert(value === 'beef', 'value should be beef');
+    assert(done === false, 'done should be false');
+    cancellations.push(reader.cancel());
+    await Promise.all(cancellations);
+  }
+
+  async function testWritableStreamWriteAndReleaseLock() {
+    const ws = new WritableStream({}, {highWaterMark: 7});
+    assert(!ws.locked, 'ws should not be locked');
+    const writer = ws.getWriter();
+    assert(writer.desiredSize > 0, 'desiredSize should be positive');
+    await writer.ready;
+    await writer.write('something');
+    writer.releaseLock();
+    await ws.abort();
+  }
+
+  async function testWritableStreamClose() {
+    const ws = new WritableStream({}, new ByteLengthQueuingStrategy(1024));
+    const writer = ws.getWriter();
+    await writer.close();
+    await writer.closed;
+  }
+
+  async function testWritableStreamDefaultControllerError() {
+    const ws = new WritableStream({
+      start(controller) {
+        controller.error('something bad');
+      }
+    });
+    try {
+      await ws.getWriter().closed;
+    } catch (e) {
+      assert(e === 'something bad', 'e should be something bad');
+    }
+  }
+
+  // Undefine (almost) everything on the global object.
+  const doNotSet = new Set(['location', 'window', 'self']);
+  for (const key of Object.getOwnPropertyNames(self)) {
+    if (doNotSet.has(key)) {
+      continue;
+    }
+    self[key] = undefined;
+  }
+
+  // Make undefined be defined.
+  self['undefined'] = {};
+
+  await testReadAndPipeTo();
+  await testReadableStreamClosed();
+  await testPipeThrough();
+  await testReadableStreamError();
+  await testTee();
+  await testWritableStreamWriteAndReleaseLock();
+  await testWritableStreamClose();
+  await testWritableStreamDefaultControllerError();
+
+  document.querySelector('#result').textContent = 'PASS';
+  if (testRunner) {
+    testRunner.notifyDone();
+  }
+}
+
+runTest();
+</script>
