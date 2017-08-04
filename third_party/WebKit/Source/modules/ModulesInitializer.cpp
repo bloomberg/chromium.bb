@@ -50,7 +50,7 @@
 #include "modules/filesystem/LocalFileSystemClient.h"
 #include "modules/gamepad/NavigatorGamepad.h"
 #include "modules/imagebitmap/ImageBitmapRenderingContext.h"
-#include "modules/indexeddb/IndexedDBClientImpl.h"
+#include "modules/indexeddb/IndexedDBClient.h"
 #include "modules/indexeddb/InspectorIndexedDBAgent.h"
 #include "modules/installation/InstallationServiceImpl.h"
 #include "modules/installedapp/InstalledAppController.h"
@@ -157,7 +157,7 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   ProvidePushControllerTo(frame, client->PushClient());
   ProvideUserMediaTo(frame,
                      UserMediaClientImpl::Create(client->UserMediaClient()));
-  ProvideIndexedDBClientTo(frame, IndexedDBClientImpl::Create(frame));
+  ProvideIndexedDBClientTo(frame, IndexedDBClient::Create(frame));
   ProvideLocalFileSystemTo(frame, LocalFileSystemClient::Create());
   NavigatorContentUtils::ProvideTo(
       *frame.DomWindow()->navigator(),
@@ -183,7 +183,7 @@ void ModulesInitializer::ProvideLocalFileSystemToWorker(
 void ModulesInitializer::ProvideIndexedDBClientToWorker(
     WorkerClients& worker_clients) const {
   ::blink::ProvideIndexedDBClientToWorker(
-      &worker_clients, IndexedDBClientImpl::Create(worker_clients));
+      &worker_clients, IndexedDBClient::Create(worker_clients));
 }
 
 MediaControls* ModulesInitializer::CreateMediaControls(
