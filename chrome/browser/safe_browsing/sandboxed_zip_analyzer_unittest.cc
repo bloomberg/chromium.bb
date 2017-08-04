@@ -66,7 +66,6 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
   void SetUp() override {
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &dir_test_data_));
     dir_test_data_ = dir_test_data_.AppendASCII("safe_browsing");
-    dir_test_data_ = dir_test_data_.AppendASCII("download_protection");
   }
 
   // Runs a sandboxed zip analyzer on |file_path|, writing its results into
@@ -99,6 +98,20 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
   }
 #endif
 
+#if defined(OS_MACOSX)
+  void ExpectMachOHeaders(const BinaryData& data,
+                          const ClientDownloadRequest_ArchivedBinary& binary) {
+    EXPECT_EQ(data.is_signed, binary.has_signature());
+    if (data.is_signed) {
+      ASSERT_LT(0, binary.signature().signed_data_size());
+      EXPECT_NE(0U, binary.signature().signed_data(0).size());
+    }
+    EXPECT_TRUE(binary.has_image_headers());
+    ASSERT_LT(0, binary.image_headers().mach_o_headers_size());
+    EXPECT_LT(0, binary.image_headers().mach_o_headers(0).load_commands_size());
+  }
+#endif
+
   // Verifies expectations about a binary found by the analyzer.
   void ExpectBinary(const BinaryData& data,
                     const ClientDownloadRequest_ArchivedBinary& binary) {
@@ -116,13 +129,23 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
     ASSERT_TRUE(binary.has_length());
     EXPECT_EQ(data.length, binary.length());
 #if defined(OS_WIN)
-    // ExtractImageFeatures only implemented for Windows, and only works on PE
+    // ExtractImageFeatures for Windows, which only works on PE
     // files.
     if (binary.file_basename().find(".exe") != std::string::npos) {
       ExpectPEHeaders(data, binary);
       return;
     }
 #endif  // OS_WIN
+#if defined(OS_MACOSX)
+    // ExtractImageFeatures for Mac, which only works on MachO
+    // files.
+    if (binary.file_basename().find("executablefat") != std::string::npos) {
+      ExpectMachOHeaders(data, binary);
+      return;
+    }
+#endif  // OS_MACOSX
+    // No signature/image headers should be extracted on the wrong platform
+    // (e.g. analyzing .exe on Mac).
     ASSERT_FALSE(binary.has_signature());
     ASSERT_FALSE(binary.has_image_headers());
   }
@@ -133,6 +156,13 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
   static const BinaryData kUnsignedExe;
   static const BinaryData kSignedExe;
   static const BinaryData kJSEFile;
+
+#if defined(OS_MACOSX)
+  static const uint8_t kUnsignedMachODigest[];
+  static const uint8_t kSignedMachODigest[];
+  static const BinaryData kUnsignedMachO;
+  static const BinaryData kSignedMachO;
+#endif  // OS_MACOSX
 
   base::FilePath dir_test_data_;
   content::TestBrowserThreadBundle browser_thread_bundle_;
@@ -177,9 +207,38 @@ const SandboxedZipAnalyzerTest::BinaryData SandboxedZipAnalyzerTest::kJSEFile =
         false,  // is_signed
 };
 
+#if defined(OS_MACOSX)
+const uint8_t SandboxedZipAnalyzerTest::kUnsignedMachODigest[] = {
+    0xe4, 0x62, 0xff, 0x75, 0x2f, 0xf9, 0xd8, 0x4e, 0x34, 0xd8, 0x43,
+    0xe5, 0xd4, 0x6e, 0x20, 0x12, 0xad, 0xcb, 0xd4, 0x85, 0x40, 0xa8,
+    0x47, 0x3f, 0xb7, 0x94, 0xb2, 0x86, 0xa3, 0x89, 0xb9, 0x45};
+const SandboxedZipAnalyzerTest::BinaryData
+    SandboxedZipAnalyzerTest::kUnsignedMachO = {
+        "executablefat",
+        ClientDownloadRequest_DownloadType_WIN_EXECUTABLE,
+        &kUnsignedMachODigest[0],
+        16640,
+        false,  // !is_signed
+};
+const uint8_t SandboxedZipAnalyzerTest::kSignedMachODigest[] = {
+    0x59, 0x0b, 0xc9, 0xc8, 0xee, 0x6c, 0xec, 0x94, 0x46, 0xc1, 0x44,
+    0xd8, 0xea, 0x2b, 0x10, 0x85, 0xb1, 0x5b, 0x5c, 0x68, 0x80, 0x9b,
+    0x2c, 0x27, 0x48, 0xad, 0x04, 0x0c, 0x2a, 0x1e, 0xf8, 0x29};
+const SandboxedZipAnalyzerTest::BinaryData
+    SandboxedZipAnalyzerTest::kSignedMachO = {
+        "signedexecutablefat",
+        ClientDownloadRequest_DownloadType_WIN_EXECUTABLE,
+        &kSignedMachODigest[0],
+        34176,
+        true,  // !is_signed
+};
+#endif  // OS_MACOSX
+
 TEST_F(SandboxedZipAnalyzerTest, NoBinaries) {
   ArchiveAnalyzerResults results;
-  RunAnalyzer(dir_test_data_.AppendASCII("zipfile_no_binaries.zip"), &results);
+  RunAnalyzer(
+      dir_test_data_.AppendASCII("download_protection/zipfile_no_binaries.zip"),
+      &results);
   ASSERT_TRUE(results.success);
   EXPECT_FALSE(results.has_executable);
   EXPECT_FALSE(results.has_archive);
@@ -188,7 +247,8 @@ TEST_F(SandboxedZipAnalyzerTest, NoBinaries) {
 
 TEST_F(SandboxedZipAnalyzerTest, OneUnsignedBinary) {
   ArchiveAnalyzerResults results;
-  RunAnalyzer(dir_test_data_.AppendASCII("zipfile_one_unsigned_binary.zip"),
+  RunAnalyzer(dir_test_data_.AppendASCII(
+                  "download_protection/zipfile_one_unsigned_binary.zip"),
               &results);
   ASSERT_TRUE(results.success);
   EXPECT_TRUE(results.has_executable);
@@ -199,7 +259,8 @@ TEST_F(SandboxedZipAnalyzerTest, OneUnsignedBinary) {
 
 TEST_F(SandboxedZipAnalyzerTest, TwoBinariesOneSigned) {
   ArchiveAnalyzerResults results;
-  RunAnalyzer(dir_test_data_.AppendASCII("zipfile_two_binaries_one_signed.zip"),
+  RunAnalyzer(dir_test_data_.AppendASCII(
+                  "download_protection/zipfile_two_binaries_one_signed.zip"),
               &results);
   ASSERT_TRUE(results.success);
   EXPECT_TRUE(results.has_executable);
@@ -211,7 +272,8 @@ TEST_F(SandboxedZipAnalyzerTest, TwoBinariesOneSigned) {
 
 TEST_F(SandboxedZipAnalyzerTest, ZippedArchiveNoBinaries) {
   ArchiveAnalyzerResults results;
-  RunAnalyzer(dir_test_data_.AppendASCII("zipfile_archive_no_binaries.zip"),
+  RunAnalyzer(dir_test_data_.AppendASCII(
+                  "download_protection/zipfile_archive_no_binaries.zip"),
               &results);
   ASSERT_TRUE(results.success);
   EXPECT_FALSE(results.has_executable);
@@ -224,7 +286,8 @@ TEST_F(SandboxedZipAnalyzerTest, ZippedArchiveNoBinaries) {
 
 TEST_F(SandboxedZipAnalyzerTest, ZippedRarArchiveNoBinaries) {
   ArchiveAnalyzerResults results;
-  RunAnalyzer(dir_test_data_.AppendASCII("zipfile_rar_archive_no_binaries.zip"),
+  RunAnalyzer(dir_test_data_.AppendASCII(
+                  "download_protection/zipfile_rar_archive_no_binaries.zip"),
               &results);
   ASSERT_TRUE(results.success);
   EXPECT_FALSE(results.has_executable);
@@ -237,7 +300,8 @@ TEST_F(SandboxedZipAnalyzerTest, ZippedRarArchiveNoBinaries) {
 
 TEST_F(SandboxedZipAnalyzerTest, ZippedArchiveAndBinaries) {
   ArchiveAnalyzerResults results;
-  RunAnalyzer(dir_test_data_.AppendASCII("zipfile_archive_and_binaries.zip"),
+  RunAnalyzer(dir_test_data_.AppendASCII(
+                  "download_protection/zipfile_archive_and_binaries.zip"),
               &results);
   ASSERT_TRUE(results.success);
   EXPECT_TRUE(results.has_executable);
@@ -252,8 +316,9 @@ TEST_F(SandboxedZipAnalyzerTest, ZippedArchiveAndBinaries) {
 TEST_F(SandboxedZipAnalyzerTest,
        ZippedArchiveAndBinariesWithTrailingSpaceAndPeriodChars) {
   ArchiveAnalyzerResults results;
-  RunAnalyzer(dir_test_data_.AppendASCII("zipfile_two_binaries_one_archive_"
-                                         "trailing_space_and_period_chars.zip"),
+  RunAnalyzer(dir_test_data_.AppendASCII(
+                  "download_protection/zipfile_two_binaries_one_archive_"
+                  "trailing_space_and_period_chars.zip"),
               &results);
   ASSERT_TRUE(results.success);
   EXPECT_TRUE(results.has_executable);
@@ -273,7 +338,9 @@ TEST_F(SandboxedZipAnalyzerTest,
 
 TEST_F(SandboxedZipAnalyzerTest, ZippedJSEFile) {
   ArchiveAnalyzerResults results;
-  RunAnalyzer(dir_test_data_.AppendASCII("zipfile_one_jse_file.zip"), &results);
+  RunAnalyzer(dir_test_data_.AppendASCII(
+                  "download_protection/zipfile_one_jse_file.zip"),
+              &results);
   ASSERT_TRUE(results.success);
   EXPECT_TRUE(results.has_executable);
   EXPECT_FALSE(results.has_archive);
@@ -281,5 +348,20 @@ TEST_F(SandboxedZipAnalyzerTest, ZippedJSEFile) {
   ExpectBinary(kJSEFile, results.archived_binary.Get(0));
   EXPECT_TRUE(results.archived_archive_filenames.empty());
 }
+
+#if defined(OS_MACOSX)
+TEST_F(SandboxedZipAnalyzerTest, ZippedAppWithUnsignedAndSignedExecutable) {
+  ArchiveAnalyzerResults results;
+  RunAnalyzer(dir_test_data_.AppendASCII(
+                  "mach_o/zipped-app-two-executables-one-signed.zip"),
+              &results);
+  ASSERT_TRUE(results.success);
+  EXPECT_TRUE(results.has_executable);
+  EXPECT_FALSE(results.has_archive);
+  ASSERT_EQ(2, results.archived_binary.size());
+  ExpectBinary(kUnsignedMachO, results.archived_binary.Get(0));
+  ExpectBinary(kSignedMachO, results.archived_binary.Get(1));
+}
+#endif  // OS_MACOSX
 
 }  // namespace safe_browsing
