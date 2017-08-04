@@ -131,13 +131,32 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   }
 
   /**
+   * Sets the default prefs only. Use this only when there is a need to
+   * distinguish between the callback for permissions changing and the callback
+   * for default permissions changing.
+   * TODO(https://crbug.com/742706): This function is a hack and should be
+   * removed.
+   * @param {!Map<string, !DefaultContentSetting>} defaultPrefs The new
+   *     default prefs to set.
+   */
+  setDefaultPrefs(defaultPrefs) {
+    this.prefs_.defaults = defaultPrefs;
+
+    // Notify all listeners that their data may be out of date.
+    for (var type in settings.ContentSettingsTypes) {
+      cr.webUIListenerCallback(
+          'contentSettingCategoryChanged', settings.ContentSettingsTypes[type]);
+    }
+  }
+
+  /**
    * Sets one exception for a given category, replacing any existing exceptions
    * for the same origin. Note this ignores embedding origins.
    * @param {!settings.ContentSettingsTypes} category The category the new
    *     exception belongs to.
    * @param {!RawSiteException} newException The new preference to add/replace.
    */
-  setSinglePref(category, newException) {
+  setSingleException(category, newException) {
     // Remove entries from the current prefs which have the same origin.
     var newPrefs = /** @type {!Array<RawSiteException>} */
         (this.prefs_.exceptions[category].filter((categoryException) => {
