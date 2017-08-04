@@ -3,15 +3,9 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<org.chromium.chrome.browser.signin.SigninPromoView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/signin_promo_view_container"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="?android:attr/selectableItemBackground"
-    android:gravity="center_horizontal"
-    android:orientation="vertical"
-    android:padding="16dp">
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+       xmlns:tools="http://schemas.android.com/tools"
+       tools:showIn="@layout/signin_promo_view_settings">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -71,4 +65,4 @@
         android:layout_marginEnd="24dp"
         android:layout_marginStart="24dp"
         android:text="@string/signin_promo_choose_account" />
-</org.chromium.chrome.browser.signin.SigninPromoView>
+</merge>
