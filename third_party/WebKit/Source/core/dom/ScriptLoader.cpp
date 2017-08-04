@@ -902,6 +902,8 @@ void ScriptLoader::ExecuteScriptBlock(PendingScript* pending_script,
   Script* script = pending_script->GetSource(document_url, error_occurred);
   const bool was_canceled = pending_script->WasCanceled();
   const bool is_external = pending_script->IsExternal();
+  const double parser_blocking_load_start_time =
+      pending_script->ParserBlockingLoadStartTime();
   pending_script->Dispose();
 
   // Do not execute module scripts if they are moved between documents.
@@ -917,6 +919,13 @@ void ScriptLoader::ExecuteScriptBlock(PendingScript* pending_script,
   if (error_occurred) {
     DispatchErrorEvent();
     return;
+  }
+
+  if (parser_blocking_load_start_time > 0.0) {
+    DocumentParserTiming::From(element_->GetDocument())
+        .RecordParserBlockedOnScriptLoadDuration(
+            MonotonicallyIncreasingTime() - parser_blocking_load_start_time,
+            WasCreatedDuringDocumentWrite());
   }
 
   if (was_canceled)
