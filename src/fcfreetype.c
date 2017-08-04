@@ -2112,8 +2112,8 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spac
 {
     FcCharSet	    *fcs;
     int		    o;
-    FT_Pos	    advance, advance_one = 0, advance_two = 0;
-    FcBool	    has_advance = FcFalse, fixed_advance = FcTrue, dual_advance = FcFalse;
+    FT_Pos	    advance, advances[3];
+    unsigned int    num_advances = 0;
 
     fcs = FcCharSetCreate ();
     if (!fcs)
@@ -2157,24 +2157,14 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spac
 	{
 	    if (FcFreeTypeCheckGlyph (face, ucs4, glyph, &advance))
 	    {
-		if (advance)
+		if (num_advances < 3 && advance)
 		{
-		    if (!has_advance)
-		    {
-			has_advance = FcTrue;
-			advance_one = advance;
-		    }
-		    else if (!fc_approximately_equal (advance, advance_one))
-		    {
-			if (fixed_advance)
-			{
-			    dual_advance = FcTrue;
-			    fixed_advance = FcFalse;
-			    advance_two = advance;
-			}
-			else if (!fc_approximately_equal (advance, advance_two))
-			    dual_advance = FcFalse;
-		    }
+		    unsigned int i;
+		    for (i = 0; i < num_advances; i++)
+		      if (fc_approximately_equal (advance, advances[i]))
+		        break;
+		    if (i == num_advances)
+		      advances[num_advances++] = advance;
 		}
 
 		if ((ucs4 >> 8) != page)
@@ -2221,9 +2211,11 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spac
 #endif
 	break;
     }
-    if (fixed_advance)
+    if (num_advances <= 1)
 	*spacing = FC_MONO;
-    else if (dual_advance && fc_approximately_equal (2 * fc_min (advance_one, advance_two), fc_max (advance_one, advance_two)))
+    else if (num_advances == 2 &&
+	     fc_approximately_equal (fc_min (advances[0], advances[1]) * 2,
+				     fc_max (advances[0], advances[1])))
         *spacing = FC_DUAL;
     else
 	*spacing = FC_PROPORTIONAL;
