@@ -26,6 +26,7 @@ import android.view.View;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseActivityInstrumentationTestCase;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -238,7 +239,8 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
         signinController.setSignedInAccountName(null);
     }
 
-    @SmallTest
+    // @SmallTest
+    @FlakyTest
     public void testPrivacyDisclaimers_SignedInSyncedAndOtherForms() {
         ChromeSigninController signinController = ChromeSigninController.get();
         signinController.setSignedInAccountName("test@gmail.com");
@@ -253,7 +255,8 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
         signinController.setSignedInAccountName(null);
     }
 
-    @SmallTest
+    // @SmallTest
+    @FlakyTest
     public void testOpenItem() throws Exception {
         IntentFilter filter = new IntentFilter(Intent.ACTION_VIEW);
         filter.addDataPath(mItem1.getUrl(), PatternMatcher.PATTERN_LITERAL);
@@ -299,7 +302,8 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
         });
     }
 
-    @SmallTest
+    // @SmallTest
+    @FlakyTest
     public void testOpenItemIntent() {
         Intent intent = mHistoryManager.getOpenUrlIntent(mItem1.getUrl(), null, false);
         assertEquals(mItem1.getUrl(), intent.getDataString());
@@ -312,7 +316,8 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
         assertTrue(intent.getBooleanExtra(Browser.EXTRA_CREATE_NEW_TAB, false));
     }
 
-    @SmallTest
+    // @SmallTest
+    @FlakyTest
     public void testOnHistoryDeleted() throws Exception {
         toggleItemSelection(2);
 
@@ -533,7 +538,8 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
         signinController.setSignedInAccountName(null);
     }
 
-    @SmallTest
+    // @SmallTest
+    @FlakyTest
     public void testInvisibleHeader() throws Exception {
         assertTrue(mAdapter.hasListHeader());
 
