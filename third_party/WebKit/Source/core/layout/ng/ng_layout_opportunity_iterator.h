@@ -38,6 +38,12 @@ class CORE_EXPORT NGLayoutOpportunityIterator final {
                               const NGLogicalSize& available_size,
                               const NGLogicalOffset& offset);
 
+  // @return If there is no more opportunities to iterate.
+  //         This also means that the last returned opportunity does not have
+  //         exclusions, because the iterator adds an opportunity of the
+  //         initial available size at the end.
+  bool IsAtEnd() const { return opportunity_iter_ == opportunities_.end(); }
+
   // Gets the next Layout Opportunity or empty one if the search is exhausted.
   // TODO(chrome-layout-team): Refactor with using C++ <iterator> library.
   // TODO(glebl): Refactor the iterator to return unique_ptr here.
