@@ -331,7 +331,7 @@
     },
     {
       name: "CSSVariableFonts",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSVariables2",
