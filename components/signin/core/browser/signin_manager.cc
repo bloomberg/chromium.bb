@@ -376,8 +376,11 @@ void SigninManager::OnExternalSigninCompleted(const std::string& username) {
 }
 
 void SigninManager::OnSignedIn() {
+  bool reauth_in_progress = IsAuthenticated();
+
   client_->GetPrefs()->SetInt64(prefs::kSignedInTime,
                                 base::Time::Now().ToInternalValue());
+
   SetAuthenticatedAccountInfo(possibly_invalid_gaia_id_,
                               possibly_invalid_email_);
   const std::string gaia_id = possibly_invalid_gaia_id_;
@@ -387,14 +390,8 @@ void SigninManager::OnSignedIn() {
   possibly_invalid_email_.clear();
   signin_manager_signed_in_ = true;
 
-  for (auto& observer : observer_list_) {
-    observer.GoogleSigninSucceeded(GetAuthenticatedAccountId(),
-                                   GetAuthenticatedAccountInfo().email);
-
-    observer.GoogleSigninSucceededWithPassword(
-        GetAuthenticatedAccountId(), GetAuthenticatedAccountInfo().email,
-        password_);
-  }
+  if (!reauth_in_progress)
+    FireGoogleSigninSucceeded();
 
   client_->OnSignedIn(GetAuthenticatedAccountId(), gaia_id,
                       GetAuthenticatedAccountInfo().email, password_);
@@ -405,6 +402,15 @@ void SigninManager::OnSignedIn() {
   DisableOneClickSignIn(client_->GetPrefs());  // Don't ever offer again.
 
   PostSignedIn();
+}
+
+void SigninManager::FireGoogleSigninSucceeded() {
+  std::string account_id = GetAuthenticatedAccountId();
+  std::string email = GetAuthenticatedAccountInfo().email;
+  for (auto& observer : observer_list_) {
+    observer.GoogleSigninSucceeded(account_id, email);
+    observer.GoogleSigninSucceededWithPassword(account_id, email, password_);
+  }
 }
 
 void SigninManager::PostSignedIn() {

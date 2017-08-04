@@ -184,9 +184,9 @@ void SigninManagerBase::SetAuthenticatedAccountId(
     const std::string& account_id) {
   DCHECK(!account_id.empty());
   if (!authenticated_account_id_.empty()) {
-    DLOG_IF(ERROR, account_id != authenticated_account_id_)
-        << "Tried to change the authenticated id to something different: "
-        << "Current: " << authenticated_account_id_ << ", New: " << account_id;
+    DCHECK_EQ(account_id, authenticated_account_id_)
+        << "Changing the authenticated account while authenticated is not "
+           "allowed.";
     return;
   }
 

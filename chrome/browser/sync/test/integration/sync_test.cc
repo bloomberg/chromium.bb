@@ -598,11 +598,9 @@ void SyncTest::InitializeProfile(int index, Profile* profile) {
           : ProfileSyncServiceHarness::SigninType::FAKE_SIGNIN;
 
   DCHECK(!clients_[index]);
-  clients_[index] =
-      ProfileSyncServiceHarness::Create(GetProfile(index),
-                                        username_,
-                                        password_,
-                                        singin_type);
+  clients_[index] = ProfileSyncServiceHarness::Create(
+      GetProfile(index), username_, "gaia-id-" + username_, password_,
+      singin_type);
   EXPECT_NE(nullptr, GetClient(index)) << "Could not create Client " << index;
   InitializeInvalidations(index);
 }

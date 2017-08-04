@@ -59,6 +59,7 @@ class SigninManagerBase : public KeyedService {
     virtual void GoogleSigninFailed(const GoogleServiceAuthError& error) {}
 
     // Called when a user signs into Google services such as sync.
+    // This method is not called during a reauth.
     virtual void GoogleSigninSucceeded(const std::string& account_id,
                                        const std::string& username) {}
 
@@ -81,6 +82,7 @@ class SigninManagerBase : public KeyedService {
 
     // Called when a user signs into Google services such as sync. Also passes
     // the password of the Google account that was used to sign in.
+    // This method is not called during a reauth.
     //
     // Observers should override |GoogleSigninSucceeded| if they are not
     // interested in the password thas was used during the sign-in.
@@ -175,6 +177,10 @@ class SigninManagerBase : public KeyedService {
   }
 
   // Sets the authenticated user's account id.
+  // If the user is already authenticated with the same account id, then this
+  // method is a no-op.
+  // It is forbidden to call this method if the user is already authenticated
+  // with a different account (this method will DCHECK in that case).
   void SetAuthenticatedAccountId(const std::string& account_id);
 
   // Used by subclass to clear the authenticated user instead of using

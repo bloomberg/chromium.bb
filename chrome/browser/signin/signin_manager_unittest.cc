@@ -423,6 +423,30 @@ TEST_F(SigninManagerTest, ExternalSignIn) {
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
 }
 
+TEST_F(SigninManagerTest, ExternalSignIn_ReauthShouldNotSendNotification) {
+  CreateNakedSigninManager();
+  manager_->Initialize(g_browser_process->local_state());
+  EXPECT_EQ("", manager_->GetAuthenticatedAccountInfo().email);
+  EXPECT_EQ("", manager_->GetAuthenticatedAccountId());
+  EXPECT_EQ(0, test_observer_.num_successful_signins_);
+  EXPECT_EQ(0, test_observer_.num_successful_signins_with_password_);
+
+  std::string account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
+  manager_->OnExternalSigninCompleted("user@gmail.com");
+  EXPECT_EQ(1, test_observer_.num_successful_signins_);
+  EXPECT_EQ(1, test_observer_.num_successful_signins_with_password_);
+  EXPECT_EQ(0, test_observer_.num_failed_signins_);
+  EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
+  EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
+
+  manager_->OnExternalSigninCompleted("user@gmail.com");
+  EXPECT_EQ(1, test_observer_.num_successful_signins_);
+  EXPECT_EQ(1, test_observer_.num_successful_signins_with_password_);
+  EXPECT_EQ(0, test_observer_.num_failed_signins_);
+  EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
+  EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
+}
+
 TEST_F(SigninManagerTest, SigninNotAllowed) {
   std::string user("user@google.com");
   profile()->GetPrefs()->SetString(prefs::kGoogleServicesAccountId, user);
