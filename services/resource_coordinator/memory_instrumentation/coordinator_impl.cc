@@ -42,25 +42,27 @@ memory_instrumentation::CoordinatorImpl* g_coordinator_impl;
 // - Mac OS: https://crbug.com/707021 .
 // - Win: https://crbug.com/707022 .
 uint32_t CalculatePrivateFootprintKb(const mojom::RawOSMemDump& os_dump) {
+  DCHECK(os_dump.platform_private_footprint);
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-  uint64_t rss_anon_bytes = os_dump.platform_private_footprint.rss_anon_bytes;
-  uint64_t vm_swap_bytes = os_dump.platform_private_footprint.vm_swap_bytes;
+  uint64_t rss_anon_bytes = os_dump.platform_private_footprint->rss_anon_bytes;
+  uint64_t vm_swap_bytes = os_dump.platform_private_footprint->vm_swap_bytes;
   return (rss_anon_bytes + vm_swap_bytes) / 1024;
 #elif defined(OS_MACOSX)
   // TODO(erikchen): This calculation is close, but not fully accurate. It
   // overcounts by anonymous shared memory.
   if (base::mac::IsAtLeastOS10_12()) {
     uint64_t phys_footprint_bytes =
-        os_dump.platform_private_footprint.phys_footprint_bytes;
+        os_dump.platform_private_footprint->phys_footprint_bytes;
     return phys_footprint_bytes / 1024;
   } else {
-    uint64_t internal_bytes = os_dump.platform_private_footprint.internal_bytes;
+    uint64_t internal_bytes =
+        os_dump.platform_private_footprint->internal_bytes;
     uint64_t compressed_bytes =
-        os_dump.platform_private_footprint.compressed_bytes;
+        os_dump.platform_private_footprint->compressed_bytes;
     return (internal_bytes + compressed_bytes) / 1024;
   }
 #elif defined(OS_WIN)
-  return os_dump.platform_private_footprint.private_bytes / 1024;
+  return os_dump.platform_private_footprint->private_bytes / 1024;
 #else
   return 0;
 #endif
@@ -462,6 +464,8 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
     // replying.
     if (!response.second.dump_ptr || !os_dumps[pid])
       continue;
+
+    DCHECK(os_dumps[pid]->platform_private_footprint);
 
     mojom::ProcessMemoryDumpPtr& pmd = finalized_pmds[pid];
     pmd = mojom::ProcessMemoryDump::New();

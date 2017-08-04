@@ -73,17 +73,25 @@ struct VmRegion {
   uint64 byte_stats_proportional_resident;
 };
 
-// Keep this in sync with ProcessMemoryTotals::PlatformPrivateFootprint
-// in base/trace_event/process_memory_totals.h.
-//
-// See that header for explanation of the fields.
+// Platform-specific data that will be used to compute the
+// PrivateMemoryFootprint.
 struct PlatformPrivateFootprint {
   uint64 phys_footprint_bytes = 0;
+  // macOS 10.12+
   uint64 internal_bytes = 0;
+
+  // macOS [all versions]
   uint64 compressed_bytes = 0;
   uint64 rss_anon_bytes = 0;
+
+  // Linux, Android, ChromeOS
   uint64 vm_swap_bytes = 0;
+
+  // On Windows,
   uint64 private_bytes = 0;
+
+  // On iOS,
+  //   TBD: https://crbug.com/714961
 };
 
 struct RawOSMemDump {

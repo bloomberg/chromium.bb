@@ -1,7 +1,0 @@
-specific_include_rules = {
-  # TODO(hjd): crbug.com/728199 Remove once service knows which
-  # processes to collect OS dumps.
-  'process_metrics_memory_dump_provider\.cc': [
-    "+services/resource_coordinator/public/cpp/memory_instrumentation",
-  ],
-}

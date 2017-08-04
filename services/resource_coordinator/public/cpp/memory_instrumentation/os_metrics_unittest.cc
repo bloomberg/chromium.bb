@@ -125,90 +125,76 @@ void CreateTempFileWithContents(const char* contents, base::ScopedFILE* file) {
 TEST(OSMetricsTest, GivesNonZeroResults) {
   base::ProcessId pid = base::kNullProcessId;
   mojom::RawOSMemDump dump;
+  dump.platform_private_footprint = mojom::PlatformPrivateFootprint::New();
   EXPECT_TRUE(OSMetrics::FillOSMemoryDump(pid, &dump));
+  EXPECT_TRUE(dump.platform_private_footprint);
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-  EXPECT_GT(dump.platform_private_footprint.rss_anon_bytes, 0u);
+  EXPECT_GT(dump.platform_private_footprint->rss_anon_bytes, 0u);
 #elif defined(OS_WIN)
-  EXPECT_GT(dump.platform_private_footprint.private_bytes, 0u);
+  EXPECT_GT(dump.platform_private_footprint->private_bytes, 0u);
 #elif defined(OS_MACOSX)
-  EXPECT_GT(dump.platform_private_footprint.internal_bytes, 0u);
+  EXPECT_GT(dump.platform_private_footprint->internal_bytes, 0u);
 #endif
 }
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 TEST(OSMetricsTest, ParseProcSmaps) {
-  const uint32_t kProtR =
-      base::trace_event::ProcessMemoryMaps::VMRegion::kProtectionFlagsRead;
-  const uint32_t kProtW =
-      base::trace_event::ProcessMemoryMaps::VMRegion::kProtectionFlagsWrite;
-  const uint32_t kProtX =
-      base::trace_event::ProcessMemoryMaps::VMRegion::kProtectionFlagsExec;
-  const base::trace_event::MemoryDumpArgs dump_args = {
-      base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
+  const uint32_t kProtR = mojom::VmRegion::kProtectionFlagsRead;
+  const uint32_t kProtW = mojom::VmRegion::kProtectionFlagsWrite;
+  const uint32_t kProtX = mojom::VmRegion::kProtectionFlagsExec;
 
   // Emulate an empty /proc/self/smaps.
-  base::trace_event::ProcessMemoryDump pmd_invalid(nullptr /* session_state */,
-                                                   dump_args);
   base::ScopedFILE empty_file(OpenFile(base::FilePath("/dev/null"), "r"));
   ASSERT_TRUE(empty_file.get());
   OSMetrics::SetProcSmapsForTesting(empty_file.get());
-  OSMetrics::FillProcessMemoryMapsDeprecated(base::kNullProcessId,
-                                             &pmd_invalid);
-  ASSERT_FALSE(pmd_invalid.has_process_mmaps());
+  auto no_maps = OSMetrics::GetProcessMemoryMaps(base::kNullProcessId);
+  ASSERT_TRUE(no_maps.empty());
 
   // Parse the 1st smaps file.
-  base::trace_event::ProcessMemoryDump pmd_1(nullptr /* session_state */,
-                                             dump_args);
   base::ScopedFILE temp_file1;
   CreateTempFileWithContents(kTestSmaps1, &temp_file1);
   OSMetrics::SetProcSmapsForTesting(temp_file1.get());
-  OSMetrics::FillProcessMemoryMapsDeprecated(base::kNullProcessId, &pmd_1);
-  ASSERT_TRUE(pmd_1.has_process_mmaps());
-  const auto& regions_1 = pmd_1.process_mmaps()->vm_regions();
-  ASSERT_EQ(2UL, regions_1.size());
+  auto maps_1 = OSMetrics::GetProcessMemoryMaps(base::kNullProcessId);
+  ASSERT_EQ(2UL, maps_1.size());
 
-  EXPECT_EQ(0x00400000UL, regions_1[0].start_address);
-  EXPECT_EQ(0x004be000UL - 0x00400000UL, regions_1[0].size_in_bytes);
-  EXPECT_EQ(kProtR | kProtX, regions_1[0].protection_flags);
-  EXPECT_EQ("/file/1", regions_1[0].mapped_file);
-  EXPECT_EQ(162 * 1024UL, regions_1[0].byte_stats_proportional_resident);
-  EXPECT_EQ(228 * 1024UL, regions_1[0].byte_stats_shared_clean_resident);
-  EXPECT_EQ(0UL, regions_1[0].byte_stats_shared_dirty_resident);
-  EXPECT_EQ(0UL, regions_1[0].byte_stats_private_clean_resident);
-  EXPECT_EQ(68 * 1024UL, regions_1[0].byte_stats_private_dirty_resident);
-  EXPECT_EQ(4 * 1024UL, regions_1[0].byte_stats_swapped);
+  EXPECT_EQ(0x00400000UL, maps_1[0]->start_address);
+  EXPECT_EQ(0x004be000UL - 0x00400000UL, maps_1[0]->size_in_bytes);
+  EXPECT_EQ(kProtR | kProtX, maps_1[0]->protection_flags);
+  EXPECT_EQ("/file/1", maps_1[0]->mapped_file);
+  EXPECT_EQ(162 * 1024UL, maps_1[0]->byte_stats_proportional_resident);
+  EXPECT_EQ(228 * 1024UL, maps_1[0]->byte_stats_shared_clean_resident);
+  EXPECT_EQ(0UL, maps_1[0]->byte_stats_shared_dirty_resident);
+  EXPECT_EQ(0UL, maps_1[0]->byte_stats_private_clean_resident);
+  EXPECT_EQ(68 * 1024UL, maps_1[0]->byte_stats_private_dirty_resident);
+  EXPECT_EQ(4 * 1024UL, maps_1[0]->byte_stats_swapped);
 
-  EXPECT_EQ(0xff000000UL, regions_1[1].start_address);
-  EXPECT_EQ(0xff800000UL - 0xff000000UL, regions_1[1].size_in_bytes);
-  EXPECT_EQ(kProtW, regions_1[1].protection_flags);
-  EXPECT_EQ("/file/name with space", regions_1[1].mapped_file);
-  EXPECT_EQ(128 * 1024UL, regions_1[1].byte_stats_proportional_resident);
-  EXPECT_EQ(120 * 1024UL, regions_1[1].byte_stats_shared_clean_resident);
-  EXPECT_EQ(4 * 1024UL, regions_1[1].byte_stats_shared_dirty_resident);
-  EXPECT_EQ(60 * 1024UL, regions_1[1].byte_stats_private_clean_resident);
-  EXPECT_EQ(8 * 1024UL, regions_1[1].byte_stats_private_dirty_resident);
-  EXPECT_EQ(0 * 1024UL, regions_1[1].byte_stats_swapped);
+  EXPECT_EQ(0xff000000UL, maps_1[1]->start_address);
+  EXPECT_EQ(0xff800000UL - 0xff000000UL, maps_1[1]->size_in_bytes);
+  EXPECT_EQ(kProtW, maps_1[1]->protection_flags);
+  EXPECT_EQ("/file/name with space", maps_1[1]->mapped_file);
+  EXPECT_EQ(128 * 1024UL, maps_1[1]->byte_stats_proportional_resident);
+  EXPECT_EQ(120 * 1024UL, maps_1[1]->byte_stats_shared_clean_resident);
+  EXPECT_EQ(4 * 1024UL, maps_1[1]->byte_stats_shared_dirty_resident);
+  EXPECT_EQ(60 * 1024UL, maps_1[1]->byte_stats_private_clean_resident);
+  EXPECT_EQ(8 * 1024UL, maps_1[1]->byte_stats_private_dirty_resident);
+  EXPECT_EQ(0 * 1024UL, maps_1[1]->byte_stats_swapped);
 
   // Parse the 2nd smaps file.
-  base::trace_event::ProcessMemoryDump pmd_2(nullptr /* session_state */,
-                                             dump_args);
   base::ScopedFILE temp_file2;
   CreateTempFileWithContents(kTestSmaps2, &temp_file2);
   OSMetrics::SetProcSmapsForTesting(temp_file2.get());
-  OSMetrics::FillProcessMemoryMapsDeprecated(base::kNullProcessId, &pmd_2);
-  ASSERT_TRUE(pmd_2.has_process_mmaps());
-  const auto& regions_2 = pmd_2.process_mmaps()->vm_regions();
-  ASSERT_EQ(1UL, regions_2.size());
-  EXPECT_EQ(0x7fe7ce79c000UL, regions_2[0].start_address);
-  EXPECT_EQ(0x7fe7ce7a8000UL - 0x7fe7ce79c000UL, regions_2[0].size_in_bytes);
-  EXPECT_EQ(0U, regions_2[0].protection_flags);
-  EXPECT_EQ("", regions_2[0].mapped_file);
-  EXPECT_EQ(32 * 1024UL, regions_2[0].byte_stats_proportional_resident);
-  EXPECT_EQ(16 * 1024UL, regions_2[0].byte_stats_shared_clean_resident);
-  EXPECT_EQ(12 * 1024UL, regions_2[0].byte_stats_shared_dirty_resident);
-  EXPECT_EQ(8 * 1024UL, regions_2[0].byte_stats_private_clean_resident);
-  EXPECT_EQ(4 * 1024UL, regions_2[0].byte_stats_private_dirty_resident);
-  EXPECT_EQ(0 * 1024UL, regions_2[0].byte_stats_swapped);
+  auto maps_2 = OSMetrics::GetProcessMemoryMaps(base::kNullProcessId);
+  ASSERT_EQ(1UL, maps_2.size());
+  EXPECT_EQ(0x7fe7ce79c000UL, maps_2[0]->start_address);
+  EXPECT_EQ(0x7fe7ce7a8000UL - 0x7fe7ce79c000UL, maps_2[0]->size_in_bytes);
+  EXPECT_EQ(0U, maps_2[0]->protection_flags);
+  EXPECT_EQ("", maps_2[0]->mapped_file);
+  EXPECT_EQ(32 * 1024UL, maps_2[0]->byte_stats_proportional_resident);
+  EXPECT_EQ(16 * 1024UL, maps_2[0]->byte_stats_shared_clean_resident);
+  EXPECT_EQ(12 * 1024UL, maps_2[0]->byte_stats_shared_dirty_resident);
+  EXPECT_EQ(8 * 1024UL, maps_2[0]->byte_stats_private_clean_resident);
+  EXPECT_EQ(4 * 1024UL, maps_2[0]->byte_stats_private_dirty_resident);
+  EXPECT_EQ(0 * 1024UL, maps_2[0]->byte_stats_swapped);
 }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
@@ -216,13 +202,7 @@ TEST(OSMetricsTest, ParseProcSmaps) {
 void DummyFunction() {}
 
 TEST(OSMetricsTest, TestWinModuleReading) {
-  using VMRegion = base::trace_event::ProcessMemoryMaps::VMRegion;
-
-  base::trace_event::MemoryDumpArgs args;
-  base::trace_event::ProcessMemoryDump dump(nullptr, args);
-  ASSERT_TRUE(
-      OSMetrics::FillProcessMemoryMapsDeprecated(base::kNullProcessId, &dump));
-  ASSERT_TRUE(dump.has_process_mmaps());
+  auto maps = OSMetrics::GetProcessMemoryMaps(base::kNullProcessId);
 
   wchar_t module_name[MAX_PATH];
   DWORD result = GetModuleFileName(nullptr, module_name, MAX_PATH);
@@ -243,24 +223,25 @@ TEST(OSMetricsTest, TestWinModuleReading) {
 
   bool found_executable = false;
   bool found_region_with_dummy = false;
-  for (const VMRegion& region : dump.process_mmaps()->vm_regions()) {
+  for (const mojom::VmRegionPtr& region : maps) {
     // We add a region just for byte_stats_proportional_resident which
     // is empty other than that one stat.
-    if (region.byte_stats_proportional_resident > 0) {
-      EXPECT_EQ(0u, region.start_address);
-      EXPECT_EQ(0u, region.size_in_bytes);
+    if (region->byte_stats_proportional_resident > 0) {
+      EXPECT_EQ(0u, region->start_address);
+      EXPECT_EQ(0u, region->size_in_bytes);
       continue;
     }
-    EXPECT_NE(0u, region.start_address);
-    EXPECT_NE(0u, region.size_in_bytes);
+    EXPECT_NE(0u, region->start_address);
+    EXPECT_NE(0u, region->size_in_bytes);
 
-    if (region.mapped_file.find(executable_name) != std::string::npos)
+    if (region->mapped_file.find(executable_name) != std::string::npos)
       found_executable = true;
 
-    if (dummy_function_address >= region.start_address &&
-        dummy_function_address < region.start_address + region.size_in_bytes) {
+    if (dummy_function_address >= region->start_address &&
+        dummy_function_address <
+            region->start_address + region->size_in_bytes) {
       found_region_with_dummy = true;
-      EXPECT_EQ(module_containing_dummy_name, region.mapped_file);
+      EXPECT_EQ(module_containing_dummy_name, region->mapped_file);
     }
   }
   EXPECT_TRUE(found_executable);
@@ -270,12 +251,7 @@ TEST(OSMetricsTest, TestWinModuleReading) {
 
 #if defined(OS_MACOSX)
 TEST(OSMetricsTest, TestMachOReading) {
-  using VMRegion = base::trace_event::ProcessMemoryMaps::VMRegion;
-  base::trace_event::MemoryDumpArgs args;
-  base::trace_event::ProcessMemoryDump dump(nullptr, args);
-  ASSERT_TRUE(
-      OSMetrics::FillProcessMemoryMapsDeprecated(base::kNullProcessId, &dump));
-  ASSERT_TRUE(dump.has_process_mmaps());
+  auto maps = OSMetrics::GetProcessMemoryMaps(base::kNullProcessId);
   uint32_t size = 100;
   char full_path[size];
   int result = _NSGetExecutablePath(full_path, &size);
@@ -284,23 +260,23 @@ TEST(OSMetricsTest, TestMachOReading) {
 
   uint64_t components_unittests_resident_pages = 0;
   bool found_appkit = false;
-  for (const VMRegion& region : dump.process_mmaps()->vm_regions()) {
-    EXPECT_NE(0u, region.start_address);
-    EXPECT_NE(0u, region.size_in_bytes);
+  for (const mojom::VmRegionPtr& region : maps) {
+    EXPECT_NE(0u, region->start_address);
+    EXPECT_NE(0u, region->size_in_bytes);
 
-    EXPECT_LT(region.size_in_bytes, 1ull << 32);
-    uint32_t required_protection_flags =
-        VMRegion::kProtectionFlagsRead | VMRegion::kProtectionFlagsExec;
-    if (region.mapped_file.find(name) != std::string::npos &&
-        region.protection_flags == required_protection_flags) {
+    EXPECT_LT(region->size_in_bytes, 1ull << 32);
+    uint32_t required_protection_flags = mojom::VmRegion::kProtectionFlagsRead |
+                                         mojom::VmRegion::kProtectionFlagsExec;
+    if (region->mapped_file.find(name) != std::string::npos &&
+        region->protection_flags == required_protection_flags) {
       components_unittests_resident_pages +=
-          region.byte_stats_private_dirty_resident +
-          region.byte_stats_shared_dirty_resident +
-          region.byte_stats_private_clean_resident +
-          region.byte_stats_shared_clean_resident;
+          region->byte_stats_private_dirty_resident +
+          region->byte_stats_shared_dirty_resident +
+          region->byte_stats_private_clean_resident +
+          region->byte_stats_shared_clean_resident;
     }
 
-    if (region.mapped_file.find("AppKit") != std::string::npos) {
+    if (region->mapped_file.find("AppKit") != std::string::npos) {
       found_appkit = true;
     }
   }

@@ -205,6 +205,8 @@ TEST_F(CoordinatorImplTest, MissingChromeDump) {
             auto dump = mojom::RawProcessMemoryDump::New();
             dump->chrome_dump = mojom::ChromeMemDump::New();
             dump->os_dump = mojom::RawOSMemDump::New();
+            dump->os_dump->platform_private_footprint =
+                mojom::PlatformPrivateFootprint::New();
             callback.Run(true, args.dump_guid, std::move(dump));
           }));
 
@@ -337,6 +339,8 @@ TEST_F(CoordinatorImplTest, GlobalMemoryDumpStruct) {
             auto dump = mojom::RawProcessMemoryDump::New();
             dump->chrome_dump = mojom::ChromeMemDump::New();
             dump->os_dump = mojom::RawOSMemDump::New();
+            dump->os_dump->platform_private_footprint =
+                mojom::PlatformPrivateFootprint::New();
             dump->chrome_dump->malloc_total_kb = 1;
             dump->os_dump->resident_set_kb = 1;
             callback.Run(true, args.dump_guid, std::move(dump));
@@ -350,6 +354,8 @@ TEST_F(CoordinatorImplTest, GlobalMemoryDumpStruct) {
             auto dump = mojom::RawProcessMemoryDump::New();
             dump->chrome_dump = mojom::ChromeMemDump::New();
             dump->os_dump = mojom::RawOSMemDump::New();
+            dump->os_dump->platform_private_footprint =
+                mojom::PlatformPrivateFootprint::New();
             dump->chrome_dump->malloc_total_kb = 2;
             dump->os_dump->resident_set_kb = 2;
             callback.Run(true, args.dump_guid, std::move(dump));
@@ -397,6 +403,8 @@ TEST_F(CoordinatorImplTest, OsDumps) {
             auto dump = mojom::RawProcessMemoryDump::New();
             dump->chrome_dump = mojom::ChromeMemDump::New();
             dump->os_dump = mojom::RawOSMemDump::New();
+            dump->os_dump->platform_private_footprint =
+                mojom::PlatformPrivateFootprint::New();
             dump->chrome_dump->malloc_total_kb = 1;
             callback.Run(args.dump_guid, true, std::move(dump));
           }));
@@ -408,6 +416,8 @@ TEST_F(CoordinatorImplTest, OsDumps) {
             auto dump = mojom::RawProcessMemoryDump::New();
             dump->chrome_dump = mojom::ChromeMemDump::New();
             dump->os_dump = mojom::RawOSMemDump::New();
+            dump->os_dump->platform_private_footprint =
+                mojom::PlatformPrivateFootprint::New();
             dump->chrome_dump->malloc_total_kb = 2;
             callback.Run(args.dump_guid, true, std::move(dump));
           }));
@@ -420,7 +430,11 @@ TEST_F(CoordinatorImplTest, OsDumps) {
             std::unordered_map<base::ProcessId, mojom::RawOSMemDumpPtr> results;
             results[1] = mojom::RawOSMemDump::New();
             results[1]->resident_set_kb = 1;
+            results[1]->platform_private_footprint =
+                mojom::PlatformPrivateFootprint::New();
             results[2] = mojom::RawOSMemDump::New();
+            results[2]->platform_private_footprint =
+                mojom::PlatformPrivateFootprint::New();
             results[2]->resident_set_kb = 2;
             callback.Run(true, std::move(results));
           }));
@@ -432,6 +446,8 @@ TEST_F(CoordinatorImplTest, OsDumps) {
              const MockClientProcess::RequestOSMemoryDumpCallback& callback) {
             std::unordered_map<base::ProcessId, mojom::RawOSMemDumpPtr> results;
             results[0] = mojom::RawOSMemDump::New();
+            results[0]->platform_private_footprint =
+                mojom::PlatformPrivateFootprint::New();
             results[0]->resident_set_kb = 1;
             callback.Run(true, std::move(results));
           }));
@@ -441,6 +457,8 @@ TEST_F(CoordinatorImplTest, OsDumps) {
              const MockClientProcess::RequestOSMemoryDumpCallback& callback) {
             std::unordered_map<base::ProcessId, mojom::RawOSMemDumpPtr> results;
             results[0] = mojom::RawOSMemDump::New();
+            results[0]->platform_private_footprint =
+                mojom::PlatformPrivateFootprint::New();
             results[0]->resident_set_kb = 2;
             callback.Run(true, std::move(results));
           }));

@@ -24,7 +24,6 @@
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/tracing/common/process_metrics_memory_dump_provider.h"
 #include "content/browser/tracing/file_tracing_provider_impl.h"
 #include "content/browser/tracing/trace_message_filter.h"
 #include "content/browser/tracing/tracing_ui.h"
@@ -410,13 +409,6 @@ void TracingControllerImpl::AddTraceMessageFilter(
     TraceMessageFilter* trace_message_filter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-#if defined(OS_LINUX)
-  // On Linux the browser process dumps process metrics for child process due to
-  // sandbox.
-  tracing::ProcessMetricsMemoryDumpProvider::RegisterForProcess(
-      trace_message_filter->peer_pid());
-#endif
-
   trace_message_filters_.insert(trace_message_filter);
   if (can_stop_tracing()) {
     trace_message_filter->SendBeginTracing(
@@ -427,11 +419,6 @@ void TracingControllerImpl::AddTraceMessageFilter(
 void TracingControllerImpl::RemoveTraceMessageFilter(
     TraceMessageFilter* trace_message_filter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-#if defined(OS_LINUX)
-  tracing::ProcessMetricsMemoryDumpProvider::UnregisterForProcess(
-      trace_message_filter->peer_pid());
-#endif
 
   // If a filter is removed while a response from that filter is pending then
   // simulate the response. Otherwise the response count will be wrong and the
