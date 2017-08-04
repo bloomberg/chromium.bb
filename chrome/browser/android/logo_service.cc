@@ -8,97 +8,110 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/image_decoder.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/image_fetcher/core/image_decoder.h"
+#include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_provider_logos/fixed_logo_api.h"
 #include "components/search_provider_logos/google_logo_api.h"
 #include "components/search_provider_logos/logo_tracker.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ui/gfx/image/image.h"
 
 using search_provider_logos::LogoDelegate;
 using search_provider_logos::LogoTracker;
 
 namespace {
 
-const char kCachedLogoDirectory[] = "Search Logo";
 const int kDecodeLogoTimeoutSeconds = 30;
 
-class LogoDecoderDelegate : public ImageDecoder::ImageRequest {
+// Implements a callback for image_fetcher::ImageDecoder. If Run() is called on
+// a callback returned by GetCallback() within 30 seconds, forwards the decoded
+// image to the wrapped callback. If not, sends an empty image to the wrapped
+// callback instead. Either way, deletes the object and prevents further calls.
+//
+// TODO(sfiera): find a more idiomatic way of setting a deadline on the
+// callback. This is implemented as a self-deleting object in part because it
+// needed to when it used to be a delegate and in part because I couldn't figure
+// out a better way, now that it isn't.
+class ImageDecodedHandlerWithTimeout {
  public:
-  LogoDecoderDelegate(
-      const base::Callback<void(const SkBitmap&)>& image_decoded_callback)
-      : image_decoded_callback_(image_decoded_callback),
-        weak_ptr_factory_(this) {
-    // If the ImageDecoder crashes or otherwise never completes, call
-    // OnImageDecodeTimedOut() eventually to ensure that image_decoded_callback_
-    // is run.
-    task_runner()->PostDelayedTask(
+  static base::Callback<void(const gfx::Image&)> Wrap(
+      const base::Callback<void(const SkBitmap&)>& image_decoded_callback) {
+    auto* handler = new ImageDecodedHandlerWithTimeout(image_decoded_callback);
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&LogoDecoderDelegate::OnDecodeImageFailed,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&ImageDecodedHandlerWithTimeout::OnImageDecoded,
+                   handler->weak_ptr_factory_.GetWeakPtr(), gfx::Image()),
         base::TimeDelta::FromSeconds(kDecodeLogoTimeoutSeconds));
-  }
-
-  ~LogoDecoderDelegate() override {}
-
-  // ImageDecoder::ImageRequest:
-  void OnImageDecoded(const SkBitmap& decoded_image) override {
-    image_decoded_callback_.Run(decoded_image);
-    delete this;
-  }
-
-  void OnDecodeImageFailed() override {
-    image_decoded_callback_.Run(SkBitmap());
-    delete this;
+    return base::Bind(&ImageDecodedHandlerWithTimeout::OnImageDecoded,
+                      handler->weak_ptr_factory_.GetWeakPtr());
   }
 
  private:
-  base::Callback<void(const SkBitmap&)> image_decoded_callback_;
-  base::WeakPtrFactory<LogoDecoderDelegate> weak_ptr_factory_;
+  explicit ImageDecodedHandlerWithTimeout(
+      const base::Callback<void(const SkBitmap&)>& image_decoded_callback)
+      : image_decoded_callback_(image_decoded_callback),
+        weak_ptr_factory_(this) {}
 
-  DISALLOW_COPY_AND_ASSIGN(LogoDecoderDelegate);
+  void OnImageDecoded(const gfx::Image& decoded_image) {
+    image_decoded_callback_.Run(decoded_image.AsBitmap());
+    delete this;
+  }
+
+  base::Callback<void(const SkBitmap&)> image_decoded_callback_;
+  base::WeakPtrFactory<ImageDecodedHandlerWithTimeout> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageDecodedHandlerWithTimeout);
 };
 
-class ChromeLogoDelegate : public search_provider_logos::LogoDelegate {
+class LogoDelegateImpl : public search_provider_logos::LogoDelegate {
  public:
-  ChromeLogoDelegate() {}
-  ~ChromeLogoDelegate() override {}
+  explicit LogoDelegateImpl(
+      std::unique_ptr<image_fetcher::ImageDecoder> image_decoder)
+      : image_decoder_(std::move(image_decoder)) {}
+
+  ~LogoDelegateImpl() override = default;
 
   // search_provider_logos::LogoDelegate:
   void DecodeUntrustedImage(
       const scoped_refptr<base::RefCountedString>& encoded_image,
       base::Callback<void(const SkBitmap&)> image_decoded_callback) override {
-    // TODO(bauerb): Switch to the components/image_fetcher implementation.
-    auto delegate =
-        base::MakeUnique<LogoDecoderDelegate>(image_decoded_callback);
-    ImageDecoder::Start(delegate.release(), encoded_image->data());
+    image_decoder_->DecodeImage(
+        encoded_image->data(),
+        gfx::Size(),  // No particular size desired.
+        ImageDecodedHandlerWithTimeout::Wrap(image_decoded_callback));
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeLogoDelegate);
+  const std::unique_ptr<image_fetcher::ImageDecoder> image_decoder_;
+
+  DISALLOW_COPY_AND_ASSIGN(LogoDelegateImpl);
 };
 
 }  // namespace
 
-LogoService::LogoService(Profile* profile, bool use_gray_background)
-    : profile_(profile), use_gray_background_(use_gray_background) {}
+LogoService::LogoService(
+    const base::FilePath& cache_directory,
+    TemplateURLService* template_url_service,
+    std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    bool use_gray_background)
+    : cache_directory_(cache_directory),
+      template_url_service_(template_url_service),
+      request_context_getter_(request_context_getter),
+      use_gray_background_(use_gray_background),
+      image_decoder_(std::move(image_decoder)) {}
 
 LogoService::~LogoService() = default;
 
 void LogoService::GetLogo(search_provider_logos::LogoObserver* observer) {
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
-  if (!template_url_service)
+  if (!template_url_service_)
     return;
 
   const TemplateURL* template_url =
-      template_url_service->GetDefaultSearchProvider();
+      template_url_service_->GetDefaultSearchProvider();
   if (!template_url)
     return;
 
@@ -113,15 +126,15 @@ void LogoService::GetLogo(search_provider_logos::LogoObserver* observer) {
   const bool use_fixed_logo = logo_url.is_valid();
 
   if (!template_url->url_ref().HasGoogleBaseURLs(
-          template_url_service->search_terms_data()) &&
+          template_url_service_->search_terms_data()) &&
       !use_fixed_logo) {
     return;
   }
 
   if (!logo_tracker_) {
     logo_tracker_ = base::MakeUnique<LogoTracker>(
-        profile_->GetPath().Append(kCachedLogoDirectory),
-        profile_->GetRequestContext(), base::MakeUnique<ChromeLogoDelegate>());
+        cache_directory_, request_context_getter_,
+        base::MakeUnique<LogoDelegateImpl>(std::move(image_decoder_)));
   }
 
   if (use_fixed_logo) {
@@ -130,7 +143,7 @@ void LogoService::GetLogo(search_provider_logos::LogoObserver* observer) {
         base::Bind(&search_provider_logos::UseFixedLogoUrl));
   } else {
     GURL google_base_url =
-        GURL(UIThreadSearchTermsData(profile_).GoogleBaseURLValue());
+        GURL(template_url_service_->search_terms_data().GoogleBaseURLValue());
 
     logo_tracker_->SetServerAPI(
         search_provider_logos::GetGoogleDoodleURL(google_base_url),
