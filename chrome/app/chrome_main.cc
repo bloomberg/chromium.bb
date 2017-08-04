@@ -113,8 +113,10 @@ int ChromeMain(int argc, const char** argv) {
   // this avoids lifetime issues when internal implementation details of
   // DiscardableSharedMemoryManager assume DiscardableSharedMemoryManager is
   // long lived.
-  if (command_line->GetSwitchValueASCII(switches::kMusConfig) == switches::kMus)
+  if (command_line->HasSwitch(switches::kMus)) {
     params.create_discardable_memory = true;
+    params.env_mode = aura::Env::Mode::MUS;
+  }
 #endif  // BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
 
   int rv = content::ContentMain(params);

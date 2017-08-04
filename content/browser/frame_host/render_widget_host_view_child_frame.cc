@@ -43,7 +43,22 @@
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/touch_selection/touch_selection_controller.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/env.h"
+#endif
+
 namespace content {
+namespace {
+
+bool IsUsingMus() {
+#if defined(USE_AURA)
+  return aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS;
+#else
+  return false;
+#endif
+}
+
+}  // namespace
 
 // static
 RenderWidgetHostViewChildFrame* RenderWidgetHostViewChildFrame::Create(
@@ -65,14 +80,14 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       frame_connector_(nullptr),
       background_color_(SK_ColorWHITE),
       weak_factory_(this) {
-  if (!service_manager::ServiceManagerIsRemote()) {
+  if (!IsUsingMus()) {
     GetHostFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_, this);
     CreateCompositorFrameSinkSupport();
   }
 }
 
 RenderWidgetHostViewChildFrame::~RenderWidgetHostViewChildFrame() {
-  if (!service_manager::ServiceManagerIsRemote()) {
+  if (!IsUsingMus()) {
     ResetCompositorFrameSinkSupport();
     if (GetHostFrameSinkManager())
       GetHostFrameSinkManager()->InvalidateFrameSinkId(frame_sink_id_);
@@ -106,8 +121,7 @@ void RenderWidgetHostViewChildFrame::SetCrossProcessFrameConnector(
     return;
 
   if (frame_connector_) {
-    if (parent_frame_sink_id_.is_valid() &&
-        !service_manager::ServiceManagerIsRemote()) {
+    if (parent_frame_sink_id_.is_valid() && !IsUsingMus()) {
       GetHostFrameSinkManager()->UnregisterFrameSinkHierarchy(
           parent_frame_sink_id_, frame_sink_id_);
     }
@@ -125,7 +139,7 @@ void RenderWidgetHostViewChildFrame::SetCrossProcessFrameConnector(
     if (parent_view) {
       parent_frame_sink_id_ = parent_view->GetFrameSinkId();
       DCHECK(parent_frame_sink_id_.is_valid());
-      if (!service_manager::ServiceManagerIsRemote()) {
+      if (!IsUsingMus()) {
         GetHostFrameSinkManager()->RegisterFrameSinkHierarchy(
             parent_frame_sink_id_, frame_sink_id_);
       }
@@ -481,7 +495,7 @@ void RenderWidgetHostViewChildFrame::ProcessCompositorFrame(
 }
 
 void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder() {
-  if (service_manager::ServiceManagerIsRemote())
+  if (IsUsingMus())
     return;
   // TODO(kylechar): Remove sequence generation and only send surface info.
   // See https://crbug.com/676384.
@@ -845,7 +859,7 @@ viz::SurfaceId RenderWidgetHostViewChildFrame::SurfaceIdForTesting() const {
 }
 
 void RenderWidgetHostViewChildFrame::CreateCompositorFrameSinkSupport() {
-  if (service_manager::ServiceManagerIsRemote())
+  if (IsUsingMus())
     return;
 
   DCHECK(!support_);

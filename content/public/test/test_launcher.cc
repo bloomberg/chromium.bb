@@ -496,9 +496,9 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
     return 0;
   }
 
-  std::unique_ptr<ContentMainDelegate> chrome_main_delegate(
+  std::unique_ptr<ContentMainDelegate> content_main_delegate(
       launcher_delegate->CreateContentMainDelegate());
-  ContentMainParams params(chrome_main_delegate.get());
+  ContentMainParams params(content_main_delegate.get());
 
 #if defined(OS_WIN)
   sandbox::SandboxInterfaceInfo sandbox_info = {0};

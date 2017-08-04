@@ -70,6 +70,7 @@
 
 #if defined(USE_AURA)
 #include "content/public/common/service_manager_connection.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
 #endif
 
@@ -279,7 +280,7 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
     return base::WrapUnique(new cc::SoftwareOutputDevice);
 
 #if defined(USE_AURA)
-  if (service_manager::ServiceManagerIsRemote()) {
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS) {
     NOTREACHED();
     return nullptr;
   }
