@@ -73,6 +73,9 @@ addSuggestionsToModel:
 // Returns whether |section| contains the Most Visited tiles.
 - (BOOL)isMostVisitedSection:(NSInteger)section;
 
+// Returns whether |section| contains the What's New promo.
+- (BOOL)isPromoSection:(NSInteger)section;
+
 // Returns whether |section| contains the promo if there is one and with a
 // header containing the fake omnibox and the logo.
 - (BOOL)isHeaderSection:(NSInteger)section;

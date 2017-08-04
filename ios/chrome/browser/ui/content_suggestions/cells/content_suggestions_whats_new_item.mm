@@ -16,12 +16,12 @@
 
 namespace {
 
-const CGFloat kLabelMargin = 16;
+const CGFloat kLabelMargin = 14;
 const CGFloat kLabelLineSpacing = 4;
 const CGFloat kLabelIconMargin = 8;
 const CGFloat kLabelFontSize = 14;
 const CGFloat kIconSize = 24;
-const CGFloat kIconTopMargin = 12;
+const CGFloat kIconTopMargin = 10;
 
 const int kTextColorRGB = 0x333333;
 const int kLinkColorRGB = 0x5595FE;
