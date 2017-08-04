@@ -1,40 +1,31 @@
-<html>
-<head>
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/console-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function log() {
-    // Fill console.
-    console.log("one");
-    console.log("two");
-    console.log("three");
-}
+(async function() {
+  TestRunner.addResult(`Tests that console is cleared upon clear() eval in console.\n`);
 
-log();
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.showPanel('console');
 
-function test()
-{
-
-    InspectorTest.addResult("=== Before clear ==="); 
-    InspectorTest.dumpConsoleMessages();
-
-    function callback()
-    {
-        InspectorTest.addResult("=== After clear ==="); 
-        InspectorTest.dumpConsoleMessages();
-        InspectorTest.completeTest();
+  await TestRunner.evaluateInPagePromise(`
+     function log() {
+        // Fill console.
+        console.log("one");
+        console.log("two");
+        console.log("three");
     }
-    InspectorTest.evaluateInConsole("clear()", callback);
-}
+    log();
+  `);
 
-</script>
-</head>
+  TestRunner.addResult('=== Before clear ===');
+  ConsoleTestRunner.dumpConsoleMessages();
 
-<body onload="runTest()">
-<p>
-    Tests that console is cleared upon clear() eval in console.
-</p>
+  function callback() {
+    TestRunner.addResult('=== After clear ===');
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
 
-</body>
-</html>
+  ConsoleTestRunner.evaluateInConsole('clear()', callback);
+})();
