@@ -2944,8 +2944,8 @@ static void combine_interintra_highbd(
       const int subh = 2 * num_4x4_blocks_high_lookup[bsize] == bh;
       const int subw = 2 * num_4x4_blocks_wide_lookup[bsize] == bw;
       aom_highbd_blend_a64_mask(comppred8, compstride, intrapred8, intrastride,
-                                interpred8, interstride, mask, bw, bh, bw, subh,
-                                subw, bd);
+                                interpred8, interstride, mask,
+                                block_size_wide[bsize], bh, bw, subh, subw, bd);
     }
     return;
   }
