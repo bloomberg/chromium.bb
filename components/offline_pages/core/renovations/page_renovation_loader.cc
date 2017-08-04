@@ -8,6 +8,8 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/grit/components_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace offline_pages {
 
@@ -20,16 +22,10 @@ std::vector<std::unique_ptr<PageRenovation>> makeRenovationList() {
   return std::vector<std::unique_ptr<PageRenovation>>();
 }
 
-// "Null" script placeholder until we load scripts from storage.
-// TODO(collinbaker): remove this after implmenting loading.
-const char kEmptyScript[] = "function run_renovations(flist){}";
-
 }  // namespace
 
 PageRenovationLoader::PageRenovationLoader()
-    : renovations_(makeRenovationList()),
-      is_loaded_(false),
-      combined_source_(base::UTF8ToUTF16(kEmptyScript)) {}
+    : renovations_(makeRenovationList()), is_loaded_(false) {}
 
 PageRenovationLoader::~PageRenovationLoader() {}
 
@@ -66,10 +62,14 @@ bool PageRenovationLoader::LoadSource() {
     return true;
   }
 
-  // TODO(collinbaker): Load file with renovations using
-  // ui::ResourceBundle. For now, using temporary script that does
-  // nothing.
-  combined_source_ = base::UTF8ToUTF16(kEmptyScript);
+  // Our script file is stored in the resource bundle. Get this script.
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  combined_source_ = base::UTF8ToUTF16(
+      rb.GetRawDataResource(IDR_OFFLINE_PAGES_RENOVATIONS_JS).as_string());
+
+  // If built correctly, IDR_OFFLINE_PAGES_RENOVATIONS_JS should
+  // always exist in the resource pack and loading should never fail.
+  DCHECK_GT(combined_source_.size(), 0U);
 
   is_loaded_ = true;
   return true;

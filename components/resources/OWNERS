@@ -18,6 +18,7 @@ per-file gcm_driver_resources.grdp=zea@chromium.org
 per-file neterror*=juliatuttle@chromium.org
 per-file neterror*=mmenke@chromium.org
 per-file ntp_tiles_resources.grdp=file://components/ntp_tiles/OWNERS
+per-file offline_pages_resources.grdp=file://components/offline_pages/OWNERS
 per-file proximity_auth*=tengs@chromium.org
 per-file security_interstitials_resources.grdp=file://components/security_interstitials/OWNERS
 per-file supervised_user_error_page_resources.grdp=file://components/supervised_user_error_page/OWNERS

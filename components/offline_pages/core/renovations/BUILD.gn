@@ -19,6 +19,8 @@ static_library("renovations") {
   deps = [
     "//base",
     "//components/offline_pages/core",
+    "//components/resources:components_resources",
+    "//ui/base",
     "//url",
   ]
 }
