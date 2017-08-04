@@ -124,7 +124,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest2, ChangeWorkAreaInNonStickyMode) {
   // Open keyboard in non-sticky mode.
   kb_controller->ShowKeyboard(false);
   kb_controller->ui()->GetContentsWindow()->SetBounds(
-      keyboard::FullWidthKeyboardBoundsFromRootBounds(
+      keyboard::KeyboardBoundsFromRootBounds(
           Shell::GetPrimaryRootWindow()->bounds(), 100));
 
   int shift =
@@ -173,7 +173,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest2,
   // Open keyboard in non-sticky mode.
   kb_controller->ShowKeyboard(false);
   kb_controller->ui()->GetContentsWindow()->SetBounds(
-      keyboard::FullWidthKeyboardBoundsFromRootBounds(
+      keyboard::KeyboardBoundsFromRootBounds(
           Shell::GetPrimaryRootWindow()->bounds(), 100));
 
   // Window should not be shifted up.
