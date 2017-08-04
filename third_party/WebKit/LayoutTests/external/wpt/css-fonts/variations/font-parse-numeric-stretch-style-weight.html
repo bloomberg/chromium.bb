@@ -21,15 +21,12 @@ var styleValidTests = {
     'calc(100 + 300)',
     'calc(0.2 + 205.5)',
   ],
-  'stretch': ['51%', '199%', 'calc(10% + 20%)'],
-  'style' : [ 'normal', 'italic', 'oblique', 'oblique 50deg', 'oblique -90deg', 'oblique 90deg',
-              'oblique calc(30deg + 20deg)' ]
+  'stretch': ['51%', '199%', 'calc(10% + 20%)']
 };
 
 var styleInvalidTests = {
   'weight': ['100 400', 'calc(0 - 100)', 'calc(200 + 801)'],
-  'stretch': ['100% 110%', '0%', '100% 150%', 'calc(1 + 10%)'],
-  'style' : [ 'normal 10deg', 'italic 10deg', 'oblique -91deg', 'oblique 91deg', 'oblique calc(90deg + 20deg)']
+  'stretch': ['100% 110%', '0%', '100% 150%', 'calc(1 + 10%)']
 };
 
 function testParseStyle() {
@@ -73,13 +70,6 @@ var faceTests = {
     ['ultra-condensed', 'ultra-condensed'],
     ['ultra-expanded', 'ultra-expanded'],
   ],
-  'style' : [
-    [ "normal", "normal" ],
-    [ "italic", "italic" ],
-    [ "oblique", "oblique" ],
-    [ "oblique 10deg", "oblique 10deg" ],
-    [ "oblique 10deg 20deg", "oblique 10deg 20deg" ]
-  ]
 };
 
 var faceInvalidTests = {
@@ -100,8 +90,6 @@ var faceInvalidTests = {
     '0%', '60% 70% 80%', 'a%', 'a b c', '0.1', '-60% 80%', 'ultra-expannnned',
     '50% 0'
   ],
-  'style' : [ 'oblique 100deg', 'oblique italic', 'oblique -91deg', 'oblique 0',
-              'oblique 10', 'iiitalic', '90deg', '11', 'italic 90deg' ]
 };
 
 function testParseFace() {
