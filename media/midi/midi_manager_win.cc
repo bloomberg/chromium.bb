@@ -289,7 +289,7 @@ class Port {
   void set_index(size_t index) {
     index_ = index;
     // TODO(toyoshim): Use hashed ID.
-    info_.id = base::StringPrintf("%s-%d", type_.c_str(), index_);
+    info_.id = base::StringPrintf("%s-%zd", type_.c_str(), index_);
   }
   size_t index() { return index_; }
   void set_device_id(uint32_t device_id) { device_id_ = device_id; }
