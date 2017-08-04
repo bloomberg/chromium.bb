@@ -57,6 +57,10 @@ class DataDeviceDelegate {
   // Called when the data is pasted on the DataDevice.
   virtual void OnSelection(const DataOffer& data_offer) = 0;
 
+  // This should return true if |surface| is a valid target for this data
+  // device. E.g. the surface is owned by the same client as the data device.
+  virtual bool CanAcceptDataEventsForSurface(Surface* surface);
+
  protected:
   virtual ~DataDeviceDelegate() {}
 };
