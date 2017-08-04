@@ -341,6 +341,39 @@ public class BidirectionalStreamQuicTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
+    public void testStreamFailWithQuicDetailedErrorCode() throws Exception {
+        setUp(QuicBidirectionalStreams.ENABLED);
+        String path = "/simple.txt";
+        String quicURL = QuicTestServer.getServerURL() + path;
+        TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback() {
+            @Override
+            public void onStreamReady(BidirectionalStream stream) {
+                // Shut down the server, and the stream should error out.
+                // The second call to shutdownQuicTestServer is no-op.
+                QuicTestServer.shutdownQuicTestServer();
+            }
+        };
+        BidirectionalStream stream =
+                mCronetEngine
+                        .newBidirectionalStreamBuilder(quicURL, callback, callback.getExecutor())
+                        .setHttpMethod("GET")
+                        .delayRequestHeadersUntilFirstFlush(true)
+                        .addHeader("Content-Type", "zebra")
+                        .build();
+        stream.start();
+        callback.blockForDone();
+        assertTrue(stream.isDone());
+        assertNotNull(callback.mError);
+        assertTrue(callback.mError instanceof QuicException);
+        QuicException quicException = (QuicException) callback.mError;
+        // Checks that detailed quic error code is not QUIC_NO_ERROR == 0.
+        assertTrue("actual error " + quicException.getQuicDetailedErrorCode(),
+                0 < quicException.getQuicDetailedErrorCode());
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet
     // Test that certificate verify results are serialized and deserialized correctly.
     public void testSerializeDeserialize() throws Exception {
         setUp(QuicBidirectionalStreams.ENABLED);
