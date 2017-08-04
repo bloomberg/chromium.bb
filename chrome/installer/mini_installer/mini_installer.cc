@@ -193,14 +193,40 @@ ProcessExitResult GetPreviousSetupExePath(const Configuration& configuration,
 }
 
 // Calls CreateProcess with good default parameters and waits for the process to
-// terminate returning the process exit code. |exit_code|, if non-NULL, is
-// populated with the process exit code.
-ProcessExitResult RunProcessAndWait(const wchar_t* exe_path, wchar_t* cmdline) {
+// terminate returning the process exit code. In case of CreateProcess failure,
+// returns a results object with the provided codes as follows:
+// - ERROR_FILE_NOT_FOUND: (file_not_found_code, attributes of setup.exe).
+// - ERROR_PATH_NOT_FOUND: (path_not_found_code, attributes of setup.exe).
+// - Otherwise: (generic_failure_code, CreateProcess error code).
+// In case of error waiting for the process to exit, returns a results object
+// with (WAIT_FOR_PROCESS_FAILED, last error code). Otherwise, returns a results
+// object with the subprocess's exit code.
+ProcessExitResult RunProcessAndWait(const wchar_t* exe_path,
+                                    wchar_t* cmdline,
+                                    DWORD file_not_found_code,
+                                    DWORD path_not_found_code,
+                                    DWORD generic_failure_code) {
   STARTUPINFOW si = {sizeof(si)};
   PROCESS_INFORMATION pi = {0};
   if (!::CreateProcess(exe_path, cmdline, NULL, NULL, FALSE, CREATE_NO_WINDOW,
                        NULL, NULL, &si, &pi)) {
-    return ProcessExitResult(COULD_NOT_CREATE_PROCESS, ::GetLastError());
+    // Split specific failure modes. If setup.exe couldn't be launched because
+    // its file/path couldn't be found, report its attributes in ExtraCode1.
+    // This will help diagnose the prevalence of launch failures due to Image
+    // File Execution Options tampering. See https://crbug.com/672813 for more
+    // details.
+    const DWORD last_error = ::GetLastError();
+    const DWORD attributes = ::GetFileAttributes(exe_path);
+    switch (last_error) {
+      case ERROR_FILE_NOT_FOUND:
+        return ProcessExitResult(file_not_found_code, attributes);
+      case ERROR_PATH_NOT_FOUND:
+        return ProcessExitResult(path_not_found_code, attributes);
+      default:
+        break;
+    }
+    // Lump all other errors into a distinct failure bucket.
+    return ProcessExitResult(generic_failure_code, last_error);
   }
 
   ::CloseHandle(pi.hThread);
@@ -387,8 +413,12 @@ ProcessExitResult UnpackBinaryResources(const Configuration& configuration,
     // on to setup.exe.
     AppendCommandLineFlags(configuration.command_line(), &cmd_line);
 
-    if (exit_code.IsSuccess())
-      exit_code = RunProcessAndWait(exe_path.get(), cmd_line.get());
+    if (exit_code.IsSuccess()) {
+      exit_code = RunProcessAndWait(
+          exe_path.get(), cmd_line.get(), SETUP_PATCH_FAILED_FILE_NOT_FOUND,
+          SETUP_PATCH_FAILED_PATH_NOT_FOUND,
+          SETUP_PATCH_FAILED_COULD_NOT_CREATE_PROCESS);
+    }
 
     if (!exit_code.IsSuccess())
       DeleteFile(setup_path->get());
@@ -486,7 +516,10 @@ ProcessExitResult RunSetup(const Configuration& configuration,
   // on to setup.exe
   AppendCommandLineFlags(configuration.command_line(), &cmd_line);
 
-  return RunProcessAndWait(NULL, cmd_line.get());
+  return RunProcessAndWait(NULL, cmd_line.get(),
+                           RUN_SETUP_FAILED_FILE_NOT_FOUND,
+                           RUN_SETUP_FAILED_PATH_NOT_FOUND,
+                           RUN_SETUP_FAILED_COULD_NOT_CREATE_PROCESS);
 }
 
 // Deletes given files and working dir.
