@@ -47,7 +47,15 @@ class VrShellRenderer : public vr::UiElementRenderer {
   void DrawGradientQuad(const gfx::Transform& view_proj_matrix,
                         const SkColor edge_color,
                         const SkColor center_color,
-                        float opacity) override;
+                        float opacity,
+                        gfx::SizeF element_size,
+                        float corner_radius) override;
+  void DrawGradientGridQuad(const gfx::Transform& view_proj_matrix,
+                            const SkColor edge_color,
+                            const SkColor center_color,
+                            const SkColor grid_color,
+                            int gridline_count,
+                            float opacity) override;
 
   // VrShell's internal GL rendering API.
   ExternalTexturedQuadRenderer* GetExternalTexturedQuadRenderer();
@@ -107,7 +115,7 @@ class BaseQuadRenderer : public BaseRenderer {
   BaseQuadRenderer(const char* vertex_src, const char* fragment_src);
   ~BaseQuadRenderer() override;
 
-  static void SetVertexBuffer();
+  static void CreateBuffers();
 
  protected:
   void PrepareToDraw(GLuint view_proj_matrix_handle,
@@ -131,13 +139,13 @@ class TexturedQuadRenderer : public BaseRenderer {
                const gfx::Transform& view_proj_matrix,
                const gfx::RectF& copy_rect,
                float opacity,
-               gfx::Size surface_texture_size,
-               gfx::SizeF element_size,
+               const gfx::Size& surface_texture_size,
+               const gfx::SizeF& element_size,
                float corner_radius);
 
   void Flush() override;
 
-  static void SetVertexBuffer();
+  static void CreateBuffers();
 
  protected:
   virtual GLenum TextureType() const;
@@ -152,8 +160,6 @@ class TexturedQuadRenderer : public BaseRenderer {
     gfx::SizeF element_size;
     float corner_radius;
   };
-
-  float ComputePhysicalPixelWidth(const QuadData& quad) const;
 
   static GLuint vertex_buffer_;
   static GLuint index_buffer_;
@@ -275,7 +281,7 @@ class ControllerRenderer : public BaseRenderer {
   DISALLOW_COPY_AND_ASSIGN(ControllerRenderer);
 };
 
-class GradientQuadRenderer : public BaseQuadRenderer {
+class GradientQuadRenderer : public BaseRenderer {
  public:
   GradientQuadRenderer();
   ~GradientQuadRenderer() override;
@@ -283,14 +289,25 @@ class GradientQuadRenderer : public BaseQuadRenderer {
   void Draw(const gfx::Transform& view_proj_matrix,
             SkColor edge_color,
             SkColor center_color,
-            float opacity);
+            float opacity,
+            const gfx::Size& surface_texture_size,
+            const gfx::SizeF& element_size,
+            float corner_radius);
+
+  static void CreateBuffers();
 
  private:
+  static GLuint vertex_buffer_;
+  static GLuint index_buffer_;
+
   GLuint model_view_proj_matrix_handle_;
-  GLuint scene_radius_handle_;
+  GLuint corner_offset_handle_;
+  GLuint corner_position_handle_;
+  GLuint offset_scale_handle_;
+  GLuint corner_scale_handle_;
+  GLuint opacity_handle_;
   GLuint center_color_handle_;
   GLuint edge_color_handle_;
-  GLuint opacity_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(GradientQuadRenderer);
 };
@@ -306,6 +323,8 @@ class GradientGridRenderer : public BaseQuadRenderer {
             SkColor grid_color,
             int gridline_count,
             float opacity);
+
+  static void CreateBuffers();
 
  private:
   GLuint model_view_proj_matrix_handle_;

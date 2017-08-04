@@ -25,7 +25,6 @@ void TexturedElement::Initialize() {
   texture_size_ = GetTexture()->GetPreferredTextureSize(maximum_width_);
   initialized_ = true;
   UpdateTexture();
-  set_fill(Fill::SELF);
 }
 
 void TexturedElement::UpdateTexture() {

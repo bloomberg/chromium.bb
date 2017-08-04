@@ -13,8 +13,10 @@
 #include "chrome/browser/vr/elements/exclusive_screen_toast.h"
 #include "chrome/browser/vr/elements/exit_prompt.h"
 #include "chrome/browser/vr/elements/exit_prompt_backplane.h"
+#include "chrome/browser/vr/elements/grid.h"
 #include "chrome/browser/vr/elements/linear_layout.h"
 #include "chrome/browser/vr/elements/loading_indicator.h"
+#include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/screen_dimmer.h"
 #include "chrome/browser/vr/elements/splash_screen_icon.h"
 #include "chrome/browser/vr/elements/system_indicator.h"
@@ -176,7 +178,6 @@ void UiSceneManager::CreateScreenDimmer() {
   element->set_debug_id(kScreenDimmer);
   element->set_id(AllocateId());
   element->set_draw_phase(kPhaseForeground);
-  element->set_fill(vr::Fill::NONE);
   element->SetVisible(false);
   element->set_hit_testable(false);
   element->set_is_overlay(true);
@@ -193,7 +194,6 @@ void UiSceneManager::CreateSecurityWarnings() {
   element->set_debug_id(kWebVrPermanentHttpSecurityWarning);
   element->set_id(AllocateId());
   element->set_draw_phase(kPhaseForeground);
-  element->set_fill(vr::Fill::NONE);
   element->SetSize(kPermanentWarningWidthDMM, kPermanentWarningHeightDMM);
   element->SetTranslate(0, kWarningDistance * sin(kWarningAngleRadians),
                         -kWarningDistance * cos(kWarningAngleRadians));
@@ -212,7 +212,6 @@ void UiSceneManager::CreateSecurityWarnings() {
   element->set_debug_id(kWebVrTransientHttpSecurityWarning);
   element->set_id(AllocateId());
   element->set_draw_phase(kPhaseForeground);
-  element->set_fill(vr::Fill::NONE);
   element->SetSize(kTransientWarningWidthDMM, kTransientWarningHeightDMM);
   element->SetTranslate(0, 0, -kWarningDistance);
   element->SetScale(kWarningDistance, kWarningDistance, 1);
@@ -225,7 +224,6 @@ void UiSceneManager::CreateSecurityWarnings() {
   element->set_debug_id(kExitWarning);
   element->set_id(AllocateId());
   element->set_draw_phase(kPhaseForeground);
-  element->set_fill(vr::Fill::NONE);
   element->SetSize(kExitWarningWidth, kExitWarningHeight);
   element->SetTranslate(0, 0, -kExitWarningDistance);
   element->SetScale(kExitWarningDistance, kExitWarningDistance, 1);
@@ -308,7 +306,6 @@ void UiSceneManager::CreateContentQuad(ContentInputDelegate* delegate) {
   hit_plane->set_debug_id(kBackplane);
   hit_plane->set_id(AllocateId());
   hit_plane->set_draw_phase(kPhaseForeground);
-  hit_plane->set_fill(vr::Fill::NONE);
   hit_plane->SetSize(kBackplaneSize, kBackplaneSize);
   hit_plane->SetTranslate(0, 0, -kTextureOffset);
   main_content_->AddChild(hit_plane.get());
@@ -337,7 +334,6 @@ void UiSceneManager::CreateSplashScreen() {
 }
 
 void UiSceneManager::CreateBackground() {
-  std::unique_ptr<UiElement> element;
 
   // Background solid-color panels.
   struct Panel {
@@ -358,47 +354,43 @@ void UiSceneManager::CreateBackground() {
       {kBackgroundBottom, 0, -1, 0, 1, 0, -1},
   };
   for (auto& panel : panels) {
-    element = base::MakeUnique<UiElement>();
-    element->set_debug_id(panel.debug_id);
-    element->set_id(AllocateId());
-    element->set_draw_phase(kPhaseBackground);
-    element->SetSize(kSceneSize, kSceneSize);
-    element->set_fill(vr::Fill::OPAQUE_GRADIENT);
-    element->SetTranslate(panel.x_offset * kSceneSize / 2,
-                          panel.y_offset * kSceneSize / 2,
-                          panel.z_offset * kSceneSize / 2);
-    element->SetRotate(panel.x_rotation, panel.y_rotation, 0,
-                       M_PI_2 * panel.angle);
-    element->set_fill(vr::Fill::OPAQUE_GRADIENT);
-    element->set_hit_testable(false);
-    background_panels_.push_back(element.get());
-    scene_->AddUiElement(std::move(element));
+    auto panel_element = base::MakeUnique<Rect>();
+    panel_element->set_debug_id(panel.debug_id);
+    panel_element->set_id(AllocateId());
+    panel_element->set_draw_phase(kPhaseBackground);
+    panel_element->SetSize(kSceneSize, kSceneSize);
+    panel_element->SetTranslate(panel.x_offset * kSceneSize / 2,
+                                panel.y_offset * kSceneSize / 2,
+                                panel.z_offset * kSceneSize / 2);
+    panel_element->SetRotate(panel.x_rotation, panel.y_rotation, 0,
+                             M_PI_2 * panel.angle);
+    panel_element->set_hit_testable(false);
+    background_panels_.push_back(panel_element.get());
+    scene_->AddUiElement(std::move(panel_element));
   }
 
   // Floor.
-  element = base::MakeUnique<UiElement>();
-  element->set_debug_id(kFloor);
-  element->set_id(AllocateId());
-  element->set_draw_phase(kPhaseFloorCeiling);
-  element->SetSize(kSceneSize, kSceneSize);
-  element->SetTranslate(0.0, -kSceneHeight / 2, 0.0);
-  element->SetRotate(1, 0, 0, -M_PI_2);
-  element->set_fill(vr::Fill::GRID_GRADIENT);
-  element->set_gridline_count(kFloorGridlineCount);
-  floor_ = element.get();
-  scene_->AddUiElement(std::move(element));
+  auto floor = base::MakeUnique<Grid>();
+  floor->set_debug_id(kFloor);
+  floor->set_id(AllocateId());
+  floor->set_draw_phase(kPhaseFloorCeiling);
+  floor->SetSize(kSceneSize, kSceneSize);
+  floor->SetTranslate(0.0, -kSceneHeight / 2, 0.0);
+  floor->SetRotate(1, 0, 0, -M_PI_2);
+  floor->set_gridline_count(kFloorGridlineCount);
+  floor_ = floor.get();
+  scene_->AddUiElement(std::move(floor));
 
   // Ceiling.
-  element = base::MakeUnique<UiElement>();
-  element->set_debug_id(kCeiling);
-  element->set_id(AllocateId());
-  element->set_draw_phase(kPhaseFloorCeiling);
-  element->SetSize(kSceneSize, kSceneSize);
-  element->SetTranslate(0.0, kSceneHeight / 2, 0.0);
-  element->SetRotate(1, 0, 0, M_PI_2);
-  element->set_fill(vr::Fill::OPAQUE_GRADIENT);
-  ceiling_ = element.get();
-  scene_->AddUiElement(std::move(element));
+  auto ceiling = base::MakeUnique<Rect>();
+  ceiling->set_debug_id(kCeiling);
+  ceiling->set_id(AllocateId());
+  ceiling->set_draw_phase(kPhaseFloorCeiling);
+  ceiling->SetSize(kSceneSize, kSceneSize);
+  ceiling->SetTranslate(0.0, kSceneHeight / 2, 0.0);
+  ceiling->SetRotate(1, 0, 0, M_PI_2);
+  ceiling_ = ceiling.get();
+  scene_->AddUiElement(std::move(ceiling));
 
   scene_->set_first_foreground_draw_phase(kPhaseForeground);
 }
@@ -460,7 +452,6 @@ void UiSceneManager::CreateCloseButton() {
   element->set_debug_id(kCloseButton);
   element->set_id(AllocateId());
   element->set_draw_phase(kPhaseForeground);
-  element->set_fill(vr::Fill::NONE);
   element->SetTranslate(0, kContentVerticalOffset - (kContentHeight / 2) - 0.3,
                         -kCloseButtonDistance);
   element->SetSize(kCloseButtonWidth, kCloseButtonHeight);
@@ -482,7 +473,6 @@ void UiSceneManager::CreateExitPrompt() {
   element->set_debug_id(kExitPrompt);
   element->set_id(AllocateId());
   element->set_draw_phase(kPhaseForeground);
-  element->set_fill(vr::Fill::NONE);
   element->SetSize(kExitPromptWidth, kExitPromptHeight);
   element->SetTranslate(0.0, kExitPromptVerticalOffset, kTextureOffset);
   element->SetVisible(false);
@@ -498,7 +488,6 @@ void UiSceneManager::CreateExitPrompt() {
   element->set_debug_id(kExitPromptBackplane);
   element->set_id(AllocateId());
   element->set_draw_phase(kPhaseForeground);
-  element->set_fill(vr::Fill::NONE);
   element->SetSize(kExitPromptBackplaneSize, kExitPromptBackplaneSize);
   element->SetTranslate(0.0, 0.0, -kTextureOffset);
   exit_prompt_->AddChild(element.get());
@@ -513,7 +502,6 @@ void UiSceneManager::CreateToasts() {
   element->set_debug_id(kExclusiveScreenToast);
   element->set_id(AllocateId());
   element->set_draw_phase(kPhaseForeground);
-  element->set_fill(vr::Fill::NONE);
   element->SetSize(kToastWidthDMM, kToastHeightDMM);
   element->SetVisible(false);
   element->set_hit_testable(false);
@@ -638,15 +626,15 @@ void UiSceneManager::ConfigureScene() {
 void UiSceneManager::ConfigureBackgroundColor() {
   // TODO(vollick): it would be nice if ceiling, floor and the grid were
   // UiElement subclasses and could respond to the OnSetMode signal.
-  for (UiElement* panel : background_panels_) {
-    panel->set_center_color(color_scheme().world_background);
-    panel->set_edge_color(color_scheme().world_background);
+  for (Rect* panel : background_panels_) {
+    panel->SetCenterColor(color_scheme().world_background);
+    panel->SetEdgeColor(color_scheme().world_background);
   }
-  ceiling_->set_center_color(color_scheme().ceiling);
-  ceiling_->set_edge_color(color_scheme().world_background);
-  floor_->set_center_color(color_scheme().floor);
-  floor_->set_edge_color(color_scheme().world_background);
-  floor_->set_grid_color(color_scheme().floor_grid);
+  ceiling_->SetCenterColor(color_scheme().ceiling);
+  ceiling_->SetEdgeColor(color_scheme().world_background);
+  floor_->SetCenterColor(color_scheme().floor);
+  floor_->SetEdgeColor(color_scheme().world_background);
+  floor_->SetGridColor(color_scheme().floor_grid);
 }
 
 void UiSceneManager::SetSplashScreenIcon(const SkBitmap& bitmap) {

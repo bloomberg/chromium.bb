@@ -36,7 +36,16 @@ class UiElementRenderer {
   virtual void DrawGradientQuad(const gfx::Transform& view_proj_matrix,
                                 const SkColor edge_color,
                                 const SkColor center_color,
-                                float opacity) = 0;
+                                float opacity,
+                                gfx::SizeF element_size,
+                                float corner_radius) = 0;
+
+  virtual void DrawGradientGridQuad(const gfx::Transform& view_proj_matrix,
+                                    const SkColor edge_color,
+                                    const SkColor center_color,
+                                    const SkColor grid_color,
+                                    int gridline_count,
+                                    float opacity) = 0;
 };
 
 }  // namespace vr

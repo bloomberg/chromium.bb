@@ -20,10 +20,6 @@ ScreenDimmer::ScreenDimmer() {}
 
 ScreenDimmer::~ScreenDimmer() = default;
 
-void ScreenDimmer::Initialize() {
-  set_fill(Fill::SELF);
-}
-
 void ScreenDimmer::Render(UiElementRenderer* renderer,
                           const gfx::Transform& view_proj_matrix) const {
   gfx::Transform m;
@@ -33,7 +29,8 @@ void ScreenDimmer::Render(UiElementRenderer* renderer,
   const ColorScheme& color_scheme =
       ColorScheme::GetColorScheme(ColorScheme::kModeNormal);
   renderer->DrawGradientQuad(m, color_scheme.dimmer_outer,
-                             color_scheme.dimmer_inner, kDimmerOpacity);
+                             color_scheme.dimmer_inner, kDimmerOpacity, size(),
+                             corner_radius());
 }
 
 }  // namespace vr

@@ -20,7 +20,9 @@ namespace vr {
 class ContentElement;
 class ContentInputDelegate;
 class ExclusiveScreenToast;
+class Grid;
 class LoadingIndicator;
+class Rect;
 class SplashScreenIcon;
 class TransientUrlBar;
 class UiBrowserInterface;
@@ -114,8 +116,8 @@ class UiSceneManager {
   UiElement* screen_capture_indicator_ = nullptr;
   UiElement* location_access_indicator_ = nullptr;
   UiElement* screen_dimmer_ = nullptr;
-  UiElement* ceiling_ = nullptr;
-  UiElement* floor_ = nullptr;
+  Rect* ceiling_ = nullptr;
+  Grid* floor_ = nullptr;
   UiElement* close_button_ = nullptr;
   SplashScreenIcon* splash_screen_icon_ = nullptr;
   UrlBar* url_bar_ = nullptr;
@@ -147,7 +149,7 @@ class UiSceneManager {
 
   int next_available_id_ = 1;
 
-  std::vector<UiElement*> background_panels_;
+  std::vector<Rect*> background_panels_;
   std::vector<UiElement*> content_elements_;
   std::vector<UiElement*> control_elements_;
 
