@@ -556,6 +556,14 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         mTestCommon.installPaymentApp(methodName, instrumentPresence, responseSpeed, creationSpeed);
     }
 
+    /* package */ View getPaymentRequestView() throws Throwable {
+        return mTestCommon.getPaymentRequestView();
+    }
+
+    /* package */ View getCardUnmaskView() throws Throwable {
+        return mTestCommon.getCardUnmaskView();
+    }
+
     @Override
     public void onMainActivityStarted()
             throws InterruptedException, ExecutionException, TimeoutException {
