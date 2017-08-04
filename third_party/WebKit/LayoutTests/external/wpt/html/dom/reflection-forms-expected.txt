@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 7074 tests; 6624 PASS, 450 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 7074 tests; 6670 PASS, 404 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS form.title: 32 tests
 PASS form.lang: 32 tests
 PASS form.dir: 62 tests
@@ -255,57 +255,7 @@ PASS select.disabled: 33 tests
 PASS select.multiple: 33 tests
 PASS select.name: 32 tests
 PASS select.required: 33 tests
-PASS select.size: 2 tests
-FAIL select.size: setAttribute() to -2147483649 assert_equals: getAttribute() expected "-2147483649" but got "0"
-FAIL select.size: setAttribute() to -2147483648 assert_equals: getAttribute() expected "-2147483648" but got "0"
-FAIL select.size: setAttribute() to -36 assert_equals: getAttribute() expected "-36" but got "0"
-FAIL select.size: setAttribute() to -1 assert_equals: getAttribute() expected "-1" but got "0"
-PASS select.size: 4 tests
-FAIL select.size: setAttribute() to 2147483648 assert_equals: IDL get expected 0 but got 2147483648
-FAIL select.size: setAttribute() to 4294967295 assert_equals: IDL get expected 0 but got 4294967295
-FAIL select.size: setAttribute() to 4294967296 assert_equals: getAttribute() expected "4294967296" but got "0"
-FAIL select.size: setAttribute() to "" assert_equals: getAttribute() expected "" but got "0"
-FAIL select.size: setAttribute() to "-1" assert_equals: getAttribute() expected "-1" but got "0"
-FAIL select.size: setAttribute() to "-0" assert_equals: getAttribute() expected "-0" but got "0"
-PASS select.size: 2 tests
-FAIL select.size: setAttribute() to "\t7" assert_equals: getAttribute() expected "\t7" but got "7"
-FAIL select.size: setAttribute() to "\v7" assert_equals: getAttribute() expected "\v7" but got "7"
-FAIL select.size: setAttribute() to "\f7" assert_equals: getAttribute() expected "\f7" but got "7"
-FAIL select.size: setAttribute() to " 7" assert_equals: getAttribute() expected " 7" but got "7"
-FAIL select.size: setAttribute() to " 7" assert_equals: getAttribute() expected " 7" but got "0"
-FAIL select.size: setAttribute() to "﻿7" assert_equals: getAttribute() expected "﻿7" but got "0"
-FAIL select.size: setAttribute() to "\n7" assert_equals: getAttribute() expected "\n7" but got "7"
-FAIL select.size: setAttribute() to "\r7" assert_equals: getAttribute() expected "\r7" but got "7"
-FAIL select.size: setAttribute() to " 7" assert_equals: getAttribute() expected " 7" but got "7"
-FAIL select.size: setAttribute() to " 7" assert_equals: getAttribute() expected " 7" but got "0"
-FAIL select.size: setAttribute() to " 7" assert_equals: getAttribute() expected " 7" but got "7"
-FAIL select.size: setAttribute() to "᠎7" assert_equals: getAttribute() expected "᠎7" but got "0"
-FAIL select.size: setAttribute() to " 7" assert_equals: getAttribute() expected " 7" but got "7"
-FAIL select.size: setAttribute() to " 7" assert_equals: getAttribute() expected " 7" but got "7"
-FAIL select.size: setAttribute() to " 7" assert_equals: getAttribute() expected " 7" but got "7"
-FAIL select.size: setAttribute() to " 7" assert_equals: getAttribute() expected " 7" but got "7"
-FAIL select.size: setAttribute() to " 7" assert_equals: getAttribute() expected " 7" but got "7"
-FAIL select.size: setAttribute() to " 7" assert_equals: getAttribute() expected " 7" but got "7"
-FAIL select.size: setAttribute() to " 7" assert_equals: getAttribute() expected " 7" but got "7"
-FAIL select.size: setAttribute() to " 7" assert_equals: getAttribute() expected " 7" but got "7"
-FAIL select.size: setAttribute() to " 7" assert_equals: getAttribute() expected " 7" but got "7"
-FAIL select.size: setAttribute() to " 7" assert_equals: getAttribute() expected " 7" but got "7"
-FAIL select.size: setAttribute() to " 7" assert_equals: getAttribute() expected " 7" but got "7"
-FAIL select.size: setAttribute() to " 7" assert_equals: getAttribute() expected " 7" but got "0"
-FAIL select.size: setAttribute() to "　7" assert_equals: getAttribute() expected "　7" but got "7"
-FAIL select.size: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "0"
-FAIL select.size: setAttribute() to undefined assert_equals: getAttribute() expected "undefined" but got "0"
-FAIL select.size: setAttribute() to 1.5 assert_equals: getAttribute() expected "1.5" but got "1"
-FAIL select.size: setAttribute() to true assert_equals: getAttribute() expected "true" but got "0"
-FAIL select.size: setAttribute() to false assert_equals: getAttribute() expected "false" but got "0"
-FAIL select.size: setAttribute() to object "[object Object]" assert_equals: getAttribute() expected "[object Object]" but got "0"
-FAIL select.size: setAttribute() to NaN assert_equals: getAttribute() expected "NaN" but got "0"
-FAIL select.size: setAttribute() to Infinity assert_equals: getAttribute() expected "Infinity" but got "0"
-FAIL select.size: setAttribute() to -Infinity assert_equals: getAttribute() expected "-Infinity" but got "0"
-FAIL select.size: setAttribute() to "\0" assert_equals: getAttribute() expected "\0" but got "0"
-PASS select.size: setAttribute() to object "2" 
-FAIL select.size: setAttribute() to object "3" assert_equals: getAttribute() expected "[object Object]" but got "0"
-PASS select.size: 7 tests
+PASS select.size: 62 tests
 PASS datalist.title: 32 tests
 PASS datalist.lang: 32 tests
 PASS datalist.dir: 62 tests
