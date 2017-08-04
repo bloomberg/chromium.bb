@@ -40,26 +40,3 @@ IPC_STRUCT_TRAITS_BEGIN(content::StreamDeviceInfo)
   IPC_STRUCT_TRAITS_MEMBER(device.camera_calibration)
   IPC_STRUCT_TRAITS_MEMBER(session_id)
 IPC_STRUCT_TRAITS_END()
-
-// Message sent from the browser to the renderer
-
-// The browser has generated a stream successfully.
-IPC_MESSAGE_ROUTED4(MediaStreamMsg_StreamGenerated,
-                    int /* request id */,
-                    std::string /* label */,
-                    content::StreamDeviceInfoArray /* audio_device_list */,
-                    content::StreamDeviceInfoArray /* video_device_list */)
-
-// The browser reports that a media device has been stopped. Stopping was
-// triggered from the browser process.
-IPC_MESSAGE_ROUTED2(MediaStreamMsg_DeviceStopped,
-                    std::string /* label */,
-                    content::StreamDeviceInfo /* the device */)
-
-// TODO(wjia): should DeviceOpen* messages be merged with
-// StreamGenerat* ones?
-// The browser has opened a device successfully.
-IPC_MESSAGE_ROUTED3(MediaStreamMsg_DeviceOpened,
-                    int /* request id */,
-                    std::string /* label */,
-                    content::StreamDeviceInfo /* the device */)

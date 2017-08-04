@@ -9,7 +9,10 @@ public_headers = [
   "//content/public/common/media_stream_request.h",
 ]
 
-traits_headers = [ "//content/common/media/media_stream_typemap_traits.h" ]
+traits_headers = [
+  "//content/common/media/media_stream_messages.h",
+  "//content/common/media/media_stream_typemap_traits.h",
+]
 
 sources = [
   "//content/common/media/media_stream_typemap_traits.cc",
@@ -23,5 +26,6 @@ type_mappings = [
   "content.mojom.MediaStreamRequestResult=content::MediaStreamRequestResult",
   "content.mojom.MediaStreamType=content::MediaStreamType",
   "content.mojom.StreamControls=content::StreamControls",
+  "content.mojom.StreamDeviceInfo=content::StreamDeviceInfo",
   "content.mojom.TrackControls=content::TrackControls",
 ]

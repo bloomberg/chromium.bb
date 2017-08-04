@@ -41,6 +41,7 @@
 #include "media/audio/test_audio_thread.h"
 #include "media/base/media_switches.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -95,18 +96,16 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       MediaStreamManager* manager)
       : MediaStreamDispatcherHost(kProcessId, salt, manager),
-        binding_(this),
-        task_runner_(task_runner),
-        current_ipc_(NULL) {}
+        task_runner_(task_runner) {}
 
   // A list of mock methods.
-  MOCK_METHOD4(OnStreamGenerated,
-               void(int routing_id, int request_id, int audio_array_size,
+  MOCK_METHOD3(OnStreamGenerationSuccess,
+               void(int request_id,
+                    int audio_array_size,
                     int video_array_size));
   MOCK_METHOD2(OnStreamGenerationFailure,
                void(int request_id, MediaStreamRequestResult result));
-  MOCK_METHOD1(OnDeviceStopped, void(int routing_id));
-  MOCK_METHOD2(OnDeviceOpened, void(int routing_id, int request_id));
+  MOCK_METHOD0(OnDeviceStopSuccess, void());
 
   // Accessor to private functions.
   void OnGenerateStream(int render_frame_id,
@@ -140,16 +139,34 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
   }
 
   // mojom::MediaStreamDispatcher implementation.
+  void OnStreamGenerated(int32_t request_id,
+                         const std::string& label,
+                         const StreamDeviceInfoArray& audio_array,
+                         const StreamDeviceInfoArray& video_array) override {
+    OnStreamGeneratedInternal(request_id, label, audio_array, video_array);
+  }
+
   void OnStreamGenerationFailed(int32_t request_id,
                                 MediaStreamRequestResult result) override {
     OnStreamGenerationFailedInternal(request_id, result);
   }
 
+  void OnDeviceOpened(int32_t request_id,
+                      const std::string& label,
+                      const StreamDeviceInfo& device_info) override {
+    OnDeviceOpenedInternal(request_id, label, device_info);
+  }
+
   void OnDeviceOpenFailed(int32_t request_id) override {}
+
+  void OnDeviceStopped(const std::string& label,
+                       const StreamDeviceInfo& device_info) override {
+    OnDeviceStoppedInternal(label, device_info);
+  }
 
   mojom::MediaStreamDispatcherPtr CreateInterfacePtrAndBind() {
     mojom::MediaStreamDispatcherPtr dispatcher;
-    binding_.Bind(mojo::MakeRequest(&dispatcher));
+    bindings_.AddBinding(this, mojo::MakeRequest(&dispatcher));
     return dispatcher;
   }
 
@@ -161,38 +178,14 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
  private:
   ~MockMediaStreamDispatcherHost() override {}
 
-  // This method is used to dispatch IPC messages to the renderer. We intercept
-  // these messages here and dispatch to our mock methods to verify the
-  // conversation between this object and the renderer.
-  bool Send(IPC::Message* message) override {
-    CHECK(message);
-    current_ipc_ = message;
-
-    // In this method we dispatch the messages to the corresponding handlers as
-    // if we are the renderer.
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(MockMediaStreamDispatcherHost, *message)
-      IPC_MESSAGE_HANDLER(MediaStreamMsg_StreamGenerated,
-                          OnStreamGeneratedInternal)
-      IPC_MESSAGE_HANDLER(MediaStreamMsg_DeviceStopped, OnDeviceStoppedInternal)
-      IPC_MESSAGE_HANDLER(MediaStreamMsg_DeviceOpened, OnDeviceOpenedInternal)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    EXPECT_TRUE(handled);
-
-    delete message;
-    current_ipc_ = NULL;
-    return true;
-  }
-
   // These handler methods do minimal things and delegate to the mock methods.
   void OnStreamGeneratedInternal(
       int request_id,
       std::string label,
       StreamDeviceInfoArray audio_device_list,
       StreamDeviceInfoArray video_device_list) {
-    OnStreamGenerated(current_ipc_->routing_id(), request_id,
-                      audio_device_list.size(), video_device_list.size());
+    OnStreamGenerationSuccess(request_id, audio_device_list.size(),
+                              video_device_list.size());
     // Simulate the stream started event back to host for UI testing.
     OnStreamStarted(label);
 
@@ -225,7 +218,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     if (IsAudioInputMediaType(device.device.type))
       EXPECT_TRUE(StreamDeviceInfo::IsEqual(device, audio_devices_[0]));
 
-    OnDeviceStopped(current_ipc_->routing_id());
+    OnDeviceStopSuccess();
   }
 
   void OnDeviceOpenedInternal(int request_id,
@@ -238,9 +231,8 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     opened_device_ = device;
   }
 
-  mojo::Binding<mojom::MediaStreamDispatcher> binding_;
+  mojo::BindingSet<mojom::MediaStreamDispatcher> bindings_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  IPC::Message* current_ipc_;
   std::queue<base::Closure> quit_closures_;
 };
 
@@ -359,10 +351,9 @@ class MediaStreamDispatcherHostTest : public testing::Test {
                                                                           : 0;
     int expected_video_array_size =
         (controls.video.requested && !stub_video_device_ids_.empty()) ? 1 : 0;
-    EXPECT_CALL(*host_.get(), OnStreamGenerated(render_frame_id,
-                                                page_request_id,
-                                                expected_audio_array_size,
-                                                expected_video_array_size));
+    EXPECT_CALL(*host_.get(), OnStreamGenerationSuccess(
+                                  page_request_id, expected_audio_array_size,
+                                  expected_video_array_size));
     host_->OnGenerateStream(render_frame_id, page_request_id, controls, origin_,
                             run_loop.QuitClosure());
     run_loop.Run();
@@ -622,6 +613,10 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsDifferentRenderId) {
   const int session_id1 = host_->video_devices_.front().session_id;
 
   // Generate second stream from another render frame.
+  mojom::MediaStreamDispatcherPtr dispatcher =
+      host_->CreateInterfacePtrAndBind();
+  host_->SetMediaStreamDispatcherForTesting(kRenderId + 1,
+                                            std::move(dispatcher));
   SetupFakeUI(true);
   GenerateStreamAndWaitForResult(kRenderId + 1, kPageRequestId + 1, controls);
 
@@ -646,12 +641,11 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithoutWaiting) {
   SetupFakeUI(true);
   {
     InSequence s;
-    EXPECT_CALL(*host_.get(),
-                OnStreamGenerated(kRenderId, kPageRequestId, 0, 1));
+    EXPECT_CALL(*host_.get(), OnStreamGenerationSuccess(kPageRequestId, 0, 1));
 
     // Generate second stream.
     EXPECT_CALL(*host_.get(),
-                OnStreamGenerated(kRenderId, kPageRequestId + 1, 0, 1));
+                OnStreamGenerationSuccess(kPageRequestId + 1, 0, 1));
   }
   base::RunLoop run_loop1;
   base::RunLoop run_loop2;
@@ -796,7 +790,7 @@ TEST_F(MediaStreamDispatcherHostTest,
 
   // Generate a second stream.
   EXPECT_CALL(*host_.get(),
-              OnStreamGenerated(kRenderId, kPageRequestId + 1, 0, 1));
+              OnStreamGenerationSuccess(kPageRequestId + 1, 0, 1));
 
   base::RunLoop run_loop1;
   host_->OnGenerateStream(kRenderId, kPageRequestId + 1, controls, origin_,
@@ -857,7 +851,7 @@ TEST_F(MediaStreamDispatcherHostTest, CloseFromUI) {
   EXPECT_EQ(host_->video_devices_.size(), 1u);
 
   ASSERT_FALSE(close_callback.is_null());
-  EXPECT_CALL(*host_.get(), OnDeviceStopped(kRenderId));
+  EXPECT_CALL(*host_.get(), OnDeviceStopSuccess());
   close_callback.Run();
   base::RunLoop().RunUntilIdle();
 }
@@ -874,7 +868,7 @@ TEST_F(MediaStreamDispatcherHostTest, VideoDeviceUnplugged) {
   stub_video_device_ids_.clear();
 
   base::RunLoop run_loop;
-  EXPECT_CALL(*host_.get(), OnDeviceStopped(kRenderId))
+  EXPECT_CALL(*host_.get(), OnDeviceStopSuccess())
       .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   media_stream_manager_->media_devices_manager()->OnDevicesChanged(
       base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE);

@@ -393,7 +393,7 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
 class UserMediaClientImplTest : public ::testing::TestWithParam<bool> {
  public:
   UserMediaClientImplTest()
-      : binding_user_media(&media_devices_dispatcher_),
+      : binding_user_media_(&media_devices_dispatcher_),
         binding_event_dispatcher_(&media_devices_dispatcher_) {
     if (GetParam()) {
       scoped_feature_list_.InitAndEnableFeature(
@@ -414,7 +414,7 @@ class UserMediaClientImplTest : public ::testing::TestWithParam<bool> {
         dependency_factory_.get(),
         std::unique_ptr<MediaStreamDispatcher>(ms_dispatcher_)));
     ::mojom::MediaDevicesDispatcherHostPtr user_media_host_proxy;
-    binding_user_media.Bind(mojo::MakeRequest(&user_media_host_proxy));
+    binding_user_media_.Bind(mojo::MakeRequest(&user_media_host_proxy));
     user_media_client_impl_->SetMediaDevicesDispatcherForTesting(
         std::move(user_media_host_proxy));
     base::WeakPtr<MediaDevicesEventDispatcher> event_dispatcher =
@@ -533,7 +533,7 @@ class UserMediaClientImplTest : public ::testing::TestWithParam<bool> {
   MockMediaStreamDispatcher* ms_dispatcher_;  // Owned by |used_media_impl_|.
   MockMojoMediaStreamDispatcherHost mock_dispatcher_host_;
   MockMediaDevicesDispatcherHost media_devices_dispatcher_;
-  mojo::Binding<::mojom::MediaDevicesDispatcherHost> binding_user_media;
+  mojo::Binding<::mojom::MediaDevicesDispatcherHost> binding_user_media_;
   mojo::Binding<::mojom::MediaDevicesDispatcherHost> binding_event_dispatcher_;
 
   std::unique_ptr<UserMediaClientImplUnderTest> user_media_client_impl_;

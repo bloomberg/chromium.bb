@@ -93,14 +93,29 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
                                bool is_secure) override;
   void StreamStarted(const std::string& label) override;
 
+  void OnStreamGenerated(int render_frame_id,
+                         int page_request_id,
+                         const std::string& label,
+                         const StreamDeviceInfoArray& audio_devices,
+                         const StreamDeviceInfoArray& video_devices,
+                         mojom::MediaStreamDispatcherPtrInfo dispatcher_info);
   void OnStreamGenerationFailed(
       int render_frame_id,
       int page_request_id,
       MediaStreamRequestResult result,
       mojom::MediaStreamDispatcherPtrInfo dispatcher_info);
+  void OnDeviceOpened(int render_frame_id,
+                      int page_request_id,
+                      const std::string& label,
+                      const StreamDeviceInfo& video_device,
+                      mojom::MediaStreamDispatcherPtrInfo dispatcher_info);
   void OnDeviceOpenFailed(int render_frame_id,
                           int page_request_id,
                           mojom::MediaStreamDispatcherPtrInfo dispatcher_info);
+  void OnDeviceStopped(int render_frame_id,
+                       const std::string& label,
+                       const StreamDeviceInfo& device,
+                       mojom::MediaStreamDispatcherPtrInfo dispatcher_info);
 
   std::map<int, mojom::MediaStreamDispatcherPtr> dispatchers_;
 
