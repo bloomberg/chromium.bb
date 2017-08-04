@@ -38,6 +38,10 @@ const char kMarkHttpAsNonSecureWhileIncognito[] =
 const char kMarkHttpAsNonSecureWhileIncognitoOrEditing[] =
     "Warn on HTTP while in Incognito mode or after editing forms";
 
+const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
+const char kUseDdljsonApiDescription[] =
+    "Enables the new ddljson API to fetch Doodles for the NTP.";
+
 const char kWebPaymentsName[] = "Web Payments";
 
 const char kWebPaymentsDescription[] =

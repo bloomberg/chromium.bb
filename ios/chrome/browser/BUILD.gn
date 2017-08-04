@@ -102,6 +102,7 @@ source_set("browser") {
     "//components/proxy_config/ios",
     "//components/reading_list/ios",
     "//components/search_engines",
+    "//components/search_provider_logos",
     "//components/security_state/core",
     "//components/signin/core/browser",
     "//components/ssl_config",
