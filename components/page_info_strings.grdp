@@ -328,5 +328,34 @@
     <message name="IDS_PAGE_INFO_INSECURE_WEBVR_CONTENT_PERMANENT" desc="Text that is displayed in a small permanent notification on a WebVR page loaded over non-secure transport. (Should be short, does not need to be a complete sentence.)">
       Not secure
     </message>
+
+    <!-- Password Protection -->
+    <if expr="not is_android">
+      <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY" desc="A one-line summary at the top of the Page Info bubble (which shows when you click the security indicator) if user has reuse their google password on current website.">
+        This site may have just stolen your password
+      </message>
+      <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY_SOFTER" desc="A one-line summary at the top of the Page Info bubble (which shows when you click the security indicator) if user has reuse their google password on current website.">
+        Your password may be compromised
+      </message>
+      <if expr="_google_chrome">
+        <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS" desc="A short paragraph explaining to the user that they has reuse their google password on current website.">
+          You could lose access to your Google Account or experience identity theft. Chrome recommends changing your password now.
+        </message>
+      </if>
+      <if expr="not _google_chrome">
+        <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS" desc="A short paragraph explaining to the user that they has reuse their google password on current website.">
+          You could lose access to your Google Account or experience identity theft. Chromium recommends changing your password now.
+        </message>
+      </if>
+      <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON" desc="The string used in the page info change password button.">
+        Help me fix this
+      </message>
+      <message name="IDS_PAGE_INFO_IGNORE_PASSWORD_WARNING_BUTTON" desc="The string used in the page info ignore password warning button.">
+        Ignore
+      </message>
+      <message name="IDS_PAGE_INFO_WHITELIST_PASSWORD_REUSE_BUTTON" desc="The string used in the page info whitelist password reuse button.">
+        Site is legitimate
+      </message>
+    </if>
   </if>
 </grit-part>
