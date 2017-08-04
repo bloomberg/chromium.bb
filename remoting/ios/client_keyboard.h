@@ -13,6 +13,8 @@
 - (void)clientKeyboardShouldDelete;
 @end
 
+// A class for capturing keyboard inputs and forwarding them to the delegate.
+// It should remain first responder in order to capture all key inputs.
 @interface ClientKeyboard : UIView<UIKeyInput, UITextInputTraits>
 
 @property(nonatomic) UIKeyboardAppearance keyboardAppearance;
@@ -21,9 +23,8 @@
 @property(nonatomic) UITextAutocorrectionType autocorrectionType;
 @property(nonatomic) UITextSpellCheckingType spellCheckingType;
 
-// This determines whether or how the soft keyboard should be shown. The default
-// value is NO.
-@property(nonatomic) BOOL hasPhysicalKeyboard;
+// Set to true to show the soft keyboard. Default value is NO.
+@property(nonatomic) BOOL showsSoftKeyboard;
 
 // This delegate is used to call back to handler key entry.
 @property(weak, nonatomic) id<ClientKeyboardDelegate> delegate;
