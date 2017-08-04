@@ -14,6 +14,7 @@ SelectionTemplate<Strategy>::SelectionTemplate(const SelectionTemplate& other)
     : base_(other.base_),
       extent_(other.extent_),
       affinity_(other.affinity_),
+      direction_(other.direction_),
       is_directional_(other.is_directional_)
 #if DCHECK_IS_ON()
       ,
@@ -136,17 +137,21 @@ void SelectionTemplate<Strategy>::ShowTreeForThis() const {
 template <typename Strategy>
 const PositionTemplate<Strategy>&
 SelectionTemplate<Strategy>::ComputeEndPosition() const {
-  if (base_ == extent_)
-    return base_;
-  return base_ < extent_ ? extent_ : base_;
+  return IsBaseFirst() ? extent_ : base_;
 }
 
 template <typename Strategy>
 const PositionTemplate<Strategy>&
 SelectionTemplate<Strategy>::ComputeStartPosition() const {
-  if (base_ == extent_)
-    return base_;
-  return base_ < extent_ ? base_ : extent_;
+  return IsBaseFirst() ? base_ : extent_;
+}
+
+template <typename Strategy>
+bool SelectionTemplate<Strategy>::IsBaseFirst() const {
+  DCHECK(AssertValid());
+  if (direction_ == Direction::kNotComputed)
+    direction_ = base_ <= extent_ ? Direction::kForward : Direction::kBackward;
+  return direction_ == Direction::kForward;
 }
 
 template <typename Strategy>
@@ -201,6 +206,8 @@ template <typename Strategy>
 SelectionTemplate<Strategy> SelectionTemplate<Strategy>::Builder::Build()
     const {
   DCHECK(selection_.AssertValid());
+  selection_.direction_ =
+      selection_.IsNone() ? Direction::kForward : Direction::kNotComputed;
   return selection_;
 }
 

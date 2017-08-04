@@ -82,6 +82,7 @@ class CORE_EXPORT SelectionTemplate final {
   const PositionTemplate<Strategy>& Base() const;
   const PositionTemplate<Strategy>& Extent() const;
   TextAffinity Affinity() const { return affinity_; }
+  bool IsBaseFirst() const;
   bool IsCaret() const;
   bool IsDirectional() const { return is_directional_; }
   bool IsNone() const { return base_.IsNull(); }
@@ -108,11 +109,18 @@ class CORE_EXPORT SelectionTemplate final {
  private:
   friend class SelectionEditor;
 
+  enum class Direction {
+    kNotComputed,
+    kForward,   // base <= extent
+    kBackward,  // base > extent
+  };
+
   Document* GetDocument() const;
 
   PositionTemplate<Strategy> base_;
   PositionTemplate<Strategy> extent_;
   TextAffinity affinity_ = TextAffinity::kDownstream;
+  mutable Direction direction_ = Direction::kForward;
   bool is_directional_ = false;
 #if DCHECK_IS_ON()
   uint64_t dom_tree_version_;
