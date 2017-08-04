@@ -1084,7 +1084,7 @@ bool ProcessSingleton::IsSameChromeInstance(pid_t pid) {
   pid_t cur_pid = current_pid_;
   while (pid != cur_pid) {
     pid = base::GetParentProcessId(pid);
-    if (pid < 0)
+    if (pid <= 0)
       return false;
     if (!IsChromeProcess(pid))
       return false;
