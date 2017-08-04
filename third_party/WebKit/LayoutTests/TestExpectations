@@ -1787,6 +1787,27 @@ crbug.com/626703 virtual/threaded/inspector/tracing/timeline-js/timeline-runtime
 crbug.com/626703 virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Win ] external/wpt/css/css-ui-3/outline-004.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-ui-3/text-overflow-001.html [ Pass Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-ui-3/text-overflow-002.html [ Pass Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-ui-3/text-overflow-003.html [ Pass Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-ui-3/text-overflow-004.html [ Pass Failure ]
+crbug.com/626703 external/wpt/css/css-ui-3/text-overflow-006.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-ui-3/text-overflow-007.html [ Pass Failure ]
+crbug.com/626703 external/wpt/css/css-ui-3/text-overflow-010.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-ui-3/text-overflow-013.html [ Pass Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-ui-3/text-overflow-014.html [ Pass Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-ui-3/text-overflow-015.html [ Pass Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-ui-3/text-overflow-016.html [ Pass Failure ]
+crbug.com/626703 external/wpt/css/css-ui-3/text-overflow-017.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-ui-3/text-overflow-018.html [ Skip ]
+crbug.com/626703 external/wpt/css/css-ui-3/text-overflow-019.html [ Skip ]
+crbug.com/626703 [ Win ] external/wpt/css/css-ui-3/text-overflow-020.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui-3/text-overflow-021.html [ Failure ]
+crbug.com/626703 external/wpt/encoding/eof-utf-8-three.html [ Failure ]
+crbug.com/626703 external/wpt/encoding/eof-utf-8-two.html [ Failure ]
+crbug.com/626703 external/wpt/fetch/api/abort/general.html [ Timeout ]
+crbug.com/626703 virtual/mojo-blobs/external/wpt/fetch/api/abort/general.html [ Timeout ]
 crbug.com/626703 external/wpt/page-visibility/onvisibilitychange.html [ Timeout ]
 crbug.com/626703 external/wpt/webrtc/RTCIceTransport.html [ Timeout ]
 crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setLocalDescription-answer.html [ Timeout ]
@@ -2160,6 +2181,7 @@ crbug.com/713732 virtual/off-main-thread-fetch/http/tests/serviceworker/chromium
 crbug.com/713732 virtual/service-worker-script-streaming/http/tests/serviceworker/chromium/frame-detached-by-navigation.html [ NeedsManualRebaseline ]
 
 # Crashes with DCHECK enabled, but not on normal Release builds.
+crbug.com/626703 external/wpt/css/css-ui-3/text-overflow-011.html [ Failure Crash Pass ]
 crbug.com/626703 external/wpt/workers/opaque-origin.html [ Failure Crash Timeout ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collapsing-quirks/multicol-quirks-mode.html [ Pass Crash ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collapsing-quirks/multicol-standards-mode.html [ Pass Crash ]
@@ -2338,7 +2360,6 @@ crbug.com/664450 http/tests/inspector/console/console-on-animation-worklet.html 
 crbug.com/664450 virtual/mojo-loading/http/tests/inspector/console/console-on-animation-worklet.html [ Skip ]
 
 # Fail when run with --enable-wptserve due to data: URLs treated as cross-origin: (crbug.com/508730)
-crbug.com/508730 external/wpt/dom/nodes/Document-contentType/contentType/contenttype_datauri_01.html [ Failure ]
 crbug.com/508730 external/wpt/dom/nodes/Document-contentType/contentType/contenttype_datauri_02.html [ Failure ]
 crbug.com/508730 crbug.com/472300 external/wpt/html/semantics/embedded-content/media-elements/interfaces/TextTrack/addCue.html [ Failure ]
 crbug.com/508730 crbug.com/472300 external/wpt/html/semantics/embedded-content/media-elements/interfaces/TextTrackCue/endTime.html [ Failure ]

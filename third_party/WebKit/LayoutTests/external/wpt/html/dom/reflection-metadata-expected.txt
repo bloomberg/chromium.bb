@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 2458 tests; 2344 PASS, 114 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 2552 tests; 2376 PASS, 176 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS head.title: 32 tests
 PASS head.lang: 32 tests
 PASS head.dir: 62 tests
@@ -98,6 +98,69 @@ PASS link.as: IDL set to "worKer"
 FAIL link.as: IDL set to "xslt" assert_equals: IDL get expected "xslt" but got ""
 PASS link.as: 3 tests
 FAIL link.as: IDL set to "XSLT" assert_equals: IDL get expected "xslt" but got ""
+PASS link.scope: 32 tests
+FAIL link.updateViaCache: typeof IDL attribute assert_equals: expected "string" but got "undefined"
+FAIL link.updateViaCache: IDL get with DOM attribute unset assert_equals: expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to "" assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to undefined assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to 7 assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to 1.5 assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to true assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to false assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to object "[object Object]" assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to NaN assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to Infinity assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to -Infinity assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to "\0" assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to null assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to object "test-toString" assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to "imports" assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to "ximports" assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to "imports\0" assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to "mports" assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to "IMPORTS" assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to "all" assert_equals: IDL get expected (string) "all" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to "xall" assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to "all\0" assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to "ll" assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to "ALL" assert_equals: IDL get expected (string) "all" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to "none" assert_equals: IDL get expected (string) "none" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to "xnone" assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to "none\0" assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to "one" assert_equals: IDL get expected (string) "imports" but got (undefined) undefined
+FAIL link.updateViaCache: setAttribute() to "NONE" assert_equals: IDL get expected (string) "none" but got (undefined) undefined
+FAIL link.updateViaCache: IDL set to "" assert_equals: getAttribute() expected "" but got "NONE"
+FAIL link.updateViaCache: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "NONE"
+FAIL link.updateViaCache: IDL set to undefined assert_equals: getAttribute() expected "undefined" but got "NONE"
+FAIL link.updateViaCache: IDL set to 7 assert_equals: getAttribute() expected "7" but got "NONE"
+FAIL link.updateViaCache: IDL set to 1.5 assert_equals: getAttribute() expected "1.5" but got "NONE"
+FAIL link.updateViaCache: IDL set to true assert_equals: getAttribute() expected "true" but got "NONE"
+FAIL link.updateViaCache: IDL set to false assert_equals: getAttribute() expected "false" but got "NONE"
+FAIL link.updateViaCache: IDL set to object "[object Object]" assert_equals: getAttribute() expected "[object Object]" but got "NONE"
+FAIL link.updateViaCache: IDL set to NaN assert_equals: getAttribute() expected "NaN" but got "NONE"
+FAIL link.updateViaCache: IDL set to Infinity assert_equals: getAttribute() expected "Infinity" but got "NONE"
+FAIL link.updateViaCache: IDL set to -Infinity assert_equals: getAttribute() expected "-Infinity" but got "NONE"
+FAIL link.updateViaCache: IDL set to "\0" assert_equals: getAttribute() expected "\0" but got "NONE"
+FAIL link.updateViaCache: IDL set to null assert_equals: IDL get expected (string) "imports" but got (object) null
+FAIL link.updateViaCache: IDL set to object "test-toString" assert_equals: getAttribute() expected "test-toString" but got "NONE"
+FAIL link.updateViaCache: IDL set to object "test-valueOf" assert_equals: getAttribute() expected "test-valueOf" but got "NONE"
+FAIL link.updateViaCache: IDL set to "imports" assert_equals: getAttribute() expected "imports" but got "NONE"
+FAIL link.updateViaCache: IDL set to "ximports" assert_equals: getAttribute() expected "ximports" but got "NONE"
+FAIL link.updateViaCache: IDL set to "imports\0" assert_equals: getAttribute() expected "imports\0" but got "NONE"
+FAIL link.updateViaCache: IDL set to "mports" assert_equals: getAttribute() expected "mports" but got "NONE"
+FAIL link.updateViaCache: IDL set to "IMPORTS" assert_equals: getAttribute() expected "IMPORTS" but got "NONE"
+FAIL link.updateViaCache: IDL set to "all" assert_equals: getAttribute() expected "all" but got "NONE"
+FAIL link.updateViaCache: IDL set to "xall" assert_equals: getAttribute() expected "xall" but got "NONE"
+FAIL link.updateViaCache: IDL set to "all\0" assert_equals: getAttribute() expected "all\0" but got "NONE"
+FAIL link.updateViaCache: IDL set to "ll" assert_equals: getAttribute() expected "ll" but got "NONE"
+FAIL link.updateViaCache: IDL set to "ALL" assert_equals: getAttribute() expected "ALL" but got "NONE"
+FAIL link.updateViaCache: IDL set to "none" assert_equals: getAttribute() expected "none" but got "NONE"
+FAIL link.updateViaCache: IDL set to "xnone" assert_equals: getAttribute() expected "xnone" but got "NONE"
+FAIL link.updateViaCache: IDL set to "none\0" assert_equals: getAttribute() expected "none\0" but got "NONE"
+FAIL link.updateViaCache: IDL set to "one" assert_equals: getAttribute() expected "one" but got "NONE"
+FAIL link.updateViaCache: IDL set to "NONE" assert_equals: IDL get expected "none" but got "NONE"
 PASS link.media: 32 tests
 PASS link.nonce: 17 tests
 FAIL link.nonce: IDL set to "" assert_equals: getAttribute() expected "" but got "test-valueOf"

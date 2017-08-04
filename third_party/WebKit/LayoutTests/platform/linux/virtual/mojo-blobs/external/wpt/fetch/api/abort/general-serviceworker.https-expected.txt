@@ -1,0 +1,33 @@
+This is a testharness.js-based test.
+FAIL ServiceWorkerGlobalScope: Aborting rejects with AbortError promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Aborting rejects with AbortError - no-cors promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Request objects have a signal property assert_true: Signal member is present & truthy expected true got false
+FAIL ServiceWorkerGlobalScope: Signal on request object promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Signal on request object created from request object promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Signal on request object created from request object, with signal on second request promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Signal on request object created from request object, with signal on second request overriding another promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Signal retained after unrelated properties are overridden by fetch promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Signal removed by setting to null promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Already aborted signal rejects immediately promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Request is still 'used' if signal is aborted before fetching promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: response.arrayBuffer() rejects if already aborted promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: response.blob() rejects if already aborted promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: response.formData() rejects if already aborted promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: response.json() rejects if already aborted promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: response.text() rejects if already aborted promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Already aborted signal does not make request promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Already aborted signal can be used for many fetches promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Signal can be used to abort other fetches, even if another fetch succeeded before aborting promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Underlying connection is closed when aborting after receiving response promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Underlying connection is closed when aborting after receiving response - no-cors promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Fetch aborted & connection closed when aborted after calling response.arrayBuffer() promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Fetch aborted & connection closed when aborted after calling response.blob() promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Fetch aborted & connection closed when aborted after calling response.formData() promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Fetch aborted & connection closed when aborted after calling response.json() promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Fetch aborted & connection closed when aborted after calling response.text() promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Stream errors once aborted. Underlying connection closed. promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Stream errors once aborted, after reading. Underlying connection closed. promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Stream will not error if body is empty. It's closed with an empty queue before it errors. promise_test: Unhandled rejection with value: object "ReferenceError: AbortController is not defined"
+FAIL ServiceWorkerGlobalScope: Readable stream synchronously cancels with AbortError if aborted before reading AbortController is not defined
+Harness: the test ran to completion.
+
