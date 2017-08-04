@@ -9,7 +9,7 @@ var testGetAvailableSinks = function() {
     chrome.test.assertEq(1, sink.id);
     chrome.test.assertEq("Disconnected", sink.state);
     chrome.test.assertEq("sink 1", sink.name);
-    chrome.test.succeed("GetAvailableSinks succeded");
+    chrome.test.succeed("GetAvailableSinks succeeded");
   };
   chrome.displaySource.getAvailableSinks(callback);
 };
@@ -30,7 +30,7 @@ var testRequestAuthentication = function() {
   var callback = function(auth_info) {
     chrome.test.assertEq("PIN", auth_info.method);
     chrome.test.assertEq(undefined, auth_info.data);
-    chrome.test.succeed("RequestAuthentication succeded");
+    chrome.test.succeed("RequestAuthentication succeeded");
   };
   chrome.displaySource.requestAuthentication(1, callback);
 };

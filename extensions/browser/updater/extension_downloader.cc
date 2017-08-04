@@ -501,7 +501,7 @@ void ExtensionDownloader::CreateManifestFetcher() {
           cookies_allowed: NO
           setting:
             "This feature cannot be disabled. It is only enabled when the user "
-            "has installed extentions."
+            "has installed extensions."
           chrome_policy {
             ExtensionInstallBlacklist {
               policy_options {mode: MANDATORY}
@@ -821,7 +821,7 @@ void ExtensionDownloader::CreateExtensionFetcher() {
           trigger:
             "An update check indicates an extension update is available."
           data:
-            "URL and required data to specify the extention to download. "
+            "URL and required data to specify the extension to download. "
             "OAuth2 token is also sent if connection is secure and to Google."
           destination: WEBSITE
         }
@@ -830,7 +830,7 @@ void ExtensionDownloader::CreateExtensionFetcher() {
           cookies_store: "user"
           setting:
             "This feature cannot be disabled. It is only enabled when the user "
-            "has installed extentions and it needs updating."
+            "has installed extensions and it needs updating."
           chrome_policy {
             ExtensionInstallBlacklist {
               policy_options {mode: MANDATORY}
