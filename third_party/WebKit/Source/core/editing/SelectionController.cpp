@@ -51,8 +51,10 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/wtf/Assertions.h"
 #include "platform/wtf/AutoReset.h"
 #include "public/platform/WebMenuSourceType.h"
+#include "public/web/WebSelection.h"
 
 namespace blink {
 SelectionController* SelectionController::Create(LocalFrame& frame) {
@@ -1258,5 +1260,9 @@ bool IsExtendingSelection(const MouseEventWithHitTestResults& event) {
              0 &&
          !is_mouse_down_on_link_or_image;
 }
+
+STATIC_ASSERT_ENUM(WebSelection::kNoSelection, kNoSelection);
+STATIC_ASSERT_ENUM(WebSelection::kCaretSelection, kCaretSelection);
+STATIC_ASSERT_ENUM(WebSelection::kRangeSelection, kRangeSelection);
 
 }  // namespace blink

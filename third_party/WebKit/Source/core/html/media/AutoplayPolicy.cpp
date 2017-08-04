@@ -13,7 +13,9 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/media/AutoplayUmaHelper.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/wtf/Assertions.h"
 #include "public/platform/WebMediaPlayer.h"
+#include "public/web/WebSettings.h"
 
 namespace blink {
 
@@ -337,5 +339,15 @@ DEFINE_TRACE(AutoplayPolicy) {
   visitor->Trace(autoplay_visibility_observer_);
   visitor->Trace(autoplay_uma_helper_);
 }
+
+STATIC_ASSERT_ENUM(WebSettings::AutoplayPolicy::kNoUserGestureRequired,
+                   AutoplayPolicy::Type::kNoUserGestureRequired);
+STATIC_ASSERT_ENUM(WebSettings::AutoplayPolicy::kUserGestureRequired,
+                   AutoplayPolicy::Type::kUserGestureRequired);
+STATIC_ASSERT_ENUM(
+    WebSettings::AutoplayPolicy::kUserGestureRequiredForCrossOrigin,
+    AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin);
+STATIC_ASSERT_ENUM(WebSettings::AutoplayPolicy::kDocumentUserActivationRequired,
+                   AutoplayPolicy::Type::kDocumentUserActivationRequired);
 
 }  // namespace blink
