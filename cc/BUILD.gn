@@ -853,7 +853,6 @@ cc_test("cc_perftests") {
     "//media",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
-    "//services/viz/public/interfaces/compositing",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

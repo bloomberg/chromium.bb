@@ -10,6 +10,7 @@
 #include "cc/ipc/cc_param_traits.h"
 #include "cc/ipc/compositor_frame.mojom.h"
 #include "cc/ipc/compositor_frame_metadata_struct_traits.h"
+#include "cc/ipc/compositor_frame_struct_traits.h"
 #include "cc/ipc/render_pass_struct_traits.h"
 #include "cc/ipc/selection_struct_traits.h"
 #include "cc/ipc/shared_quad_state_struct_traits.h"
@@ -22,8 +23,6 @@
 #include "gpu/ipc/common/sync_token_struct_traits.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "services/viz/public/cpp/compositing/compositor_frame_struct_traits.h"
-#include "services/viz/public/interfaces/compositing/compositor_frame.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
@@ -142,11 +141,10 @@ class CCSerializationPerfTest : public testing::Test {
       const std::string& test_name,
       const CompositorFrame& frame,
       UseSingleSharedQuadState single_sqs) {
-    mojo::Message message =
-        viz::mojom::CompositorFrame::SerializeAsMessage(&frame);
+    mojo::Message message = mojom::CompositorFrame::SerializeAsMessage(&frame);
     for (int i = 0; i < kNumWarmupRuns; ++i) {
       CompositorFrame compositor_frame;
-      viz::mojom::CompositorFrame::Deserialize(
+      mojom::CompositorFrame::Deserialize(
           message.payload(), message.payload_num_bytes(), &compositor_frame);
     }
 
@@ -159,7 +157,7 @@ class CCSerializationPerfTest : public testing::Test {
     while (start < end) {
       for (int i = 0; i < kTimeCheckInterval; ++i) {
         CompositorFrame compositor_frame;
-        viz::mojom::CompositorFrame::Deserialize(
+        mojom::CompositorFrame::Deserialize(
             message.payload(), message.payload_num_bytes(), &compositor_frame);
         now = base::TimeTicks::Now();
         // We don't count iterations after the end time.
@@ -193,7 +191,7 @@ class CCSerializationPerfTest : public testing::Test {
       UseSingleSharedQuadState single_sqs) {
     for (int i = 0; i < kNumWarmupRuns; ++i) {
       mojo::Message message =
-          viz::mojom::CompositorFrame::SerializeAsMessage(&frame);
+          mojom::CompositorFrame::SerializeAsMessage(&frame);
     }
 
     base::TimeTicks start = base::TimeTicks::Now();
@@ -205,7 +203,7 @@ class CCSerializationPerfTest : public testing::Test {
     while (start < end) {
       for (int i = 0; i < kTimeCheckInterval; ++i) {
         mojo::Message message =
-            viz::mojom::CompositorFrame::SerializeAsMessage(&frame);
+            mojom::CompositorFrame::SerializeAsMessage(&frame);
         now = base::TimeTicks::Now();
         // We don't count iterations after the end time.
         if (now < end)
