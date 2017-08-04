@@ -13,7 +13,6 @@ extern const char kDisableContextualSearch[];
 extern const char kDisableIOSFeatures[];
 extern const char kDisableIOSPasswordSuggestions[];
 extern const char kDisableNTPFavicons[];
-extern const char kDisableTabStripAutoScrollNewTabs[];
 extern const char kDisableIOSPhysicalWeb[];
 extern const char kDisableSuggestionsUI[];
 extern const char kDisableBookmarkReordering[];

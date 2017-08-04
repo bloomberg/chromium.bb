@@ -1205,7 +1205,7 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
                               isNewTab:(BOOL)isNewTab {
   DCHECK_NE(NSNotFound, static_cast<NSInteger>(tabIndex));
 
-  if (experimental_flags::IsTabStripAutoScrollNewTabsEnabled() && isNewTab) {
+  if (isNewTab) {
     [self autoScrollForNewTab:tabIndex];
     return;
   }

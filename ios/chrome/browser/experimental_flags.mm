@@ -172,11 +172,6 @@ bool IsStartupCrashEnabled() {
   return [[NSUserDefaults standardUserDefaults] boolForKey:kEnableStartupCrash];
 }
 
-bool IsTabStripAutoScrollNewTabsEnabled() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return !command_line->HasSwitch(switches::kDisableTabStripAutoScrollNewTabs);
-}
-
 // This feature is on by default. Finch and experimental settings can be used to
 // disable it.
 // TODO(crbug.com/739404): Remove this method and the experimental flag once the
