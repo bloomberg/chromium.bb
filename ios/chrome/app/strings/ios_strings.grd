@@ -810,7 +810,7 @@ To adjust your search term, long press to select. To refine your search, slide t
         Advanced
       </message>
       <message name="IDS_IOS_OPTIONS_CONTENT_SUGGESTIONS" desc="Title for the option to turn on/off content suggestions. [Length: 20em] [iOS only]">
-        Show Content Suggestions
+        Article suggestions
       </message>
       <message name="IDS_IOS_OPTIONS_CONTINUITY_LABEL" desc="Title for group of items in the Privacy settings table, including Handoff. [Length: 10em] [iOS only]">
         Other Devices
@@ -877,7 +877,7 @@ Handoff must also be enabled in the General section of Settings, and your device
         Report an Issue
       </message>
       <message name="IDS_IOS_OPTIONS_SEARCH_URL_SUGGESTIONS" desc="Title for the option to turn on/off search and URL suggestions. [Length: 18em] [iOS only]">
-        Show Suggestions
+        Search and site suggestions
       </message>
       <message name="IDS_IOS_OPTIONS_SEND_USAGE_DATA" desc="Title for opening the setting for if/when to send usage data and crash reports. [Length: 20em] [iOS only]">
         Send Usage Data
