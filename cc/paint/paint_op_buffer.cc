@@ -2051,4 +2051,49 @@ void PaintOpBuffer::ShrinkToFit() {
   }
 }
 
+PaintOpBuffer::FlatteningIterator::FlatteningIterator(
+    const PaintOpBuffer* buffer,
+    const std::vector<size_t>* offsets)
+    : top_level_iter_(buffer, offsets) {
+  FlattenCurrentOpIfNeeded();
+}
+
+void PaintOpBuffer::FlatteningIterator::FlattenCurrentOpIfNeeded() {
+  // At the top of the loop, the last nested iterator (or the top if no
+  // nested) is pointing at the current op.  Advance through iterators,
+  // flattening draw record ops as we go until this gets to a non
+  // DrawRecordOp (which could be the current op).
+  while (true) {
+    // If there aren't nested iterators and the top level iterator is
+    // at its end, then we're done with all ops.
+    if (nested_iter_.empty() && !top_level_iter_)
+      return;
+
+    // If the nested iterator is not valid, then we've reached the end of
+    // whatever current iterator we're looping through.
+    if (!nested_iter_.empty() && !nested_iter_.back()) {
+      // Pop the current iterator.  Now, the last iterator is currently
+      // pointing at whatever DrawRecordOp created the iterator that was
+      // just popped, so increment it to go to the next op.
+      nested_iter_.pop_back();
+      if (nested_iter_.empty())
+        ++top_level_iter_;
+      else
+        ++nested_iter_.back();
+      continue;
+    }
+
+    PaintOp* op = **this;
+    DCHECK(op);
+    if (op->GetType() != PaintOpType::DrawRecord)
+      return;
+    // If the current op is a draw record, then push another iterator for that
+    // record on the stack, and loop again to see what's in this new record.
+    auto* record_op = static_cast<DrawRecordOp*>(op);
+    nested_iter_.push_back(Iterator(record_op->record.get()));
+  }
+}
+
+PaintOpBuffer::FlatteningIterator::~FlatteningIterator() = default;
+
 }  // namespace cc
