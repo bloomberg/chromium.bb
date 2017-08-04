@@ -54,7 +54,8 @@ namespace payments {
 // {
 //   "short_name": "Bobpay",
 //   "icons": [{
-//     "src": "images/touch/homescreen48.png"
+//     "src": "images/touch/homescreen32.png",
+//     "sizes": "32x32"
 //   }],
 //   "related_applications": [{
 //     "platform": "itunes",
@@ -109,35 +110,34 @@ class IOSPaymentInstrumentFinder {
   void OnPaymentManifestDownloaded(const GURL& method,
                                    const std::string& content);
 
-  // Parses a payment method manifest for its default applications and gets the
-  // first valid one. |input| is the json encoded payment method manfiest to
-  // parse. |out_web_app_manifest_url| is set equal to the web app manifest URL
-  // of the first valid payment app if one exists.
-  bool GetWebAppManifestURLFromPaymentManifest(const std::string& input,
-                                               GURL* out_web_app_manifest_url);
+  // Parses a payment method manifest for its default applications and gets all
+  // the valid ones. |input| is the json encoded payment method manifest to
+  // parse. |out_web_app_manifest_urls| is a vector of the web app manifest
+  // URLs of valid payment apps if any exist.
+  bool GetWebAppManifestURLsFromPaymentManifest(
+      const std::string& input,
+      std::vector<GURL>* out_web_app_manifest_urls);
 
   // Callback for when the web app manifest is retrieved for a payment method
   // identifier. |content| is the json encoded web app manifest and |method| is
   // the url payment method that corresponds with this manifest.
-  // |web_app_manifest_origin| is the origin of the web app manifest URL which
-  // and is passed to GetPaymentAppDetailsFromWebAppManifest for validating
-  // an icon source path.
+  // |web_app_manifest_url| is the web app manifest url. This is passed to
+  // GetPaymentAppDetailsFromWebAppManifest for validating an icon source path.
   void OnWebAppManifestDownloaded(const GURL& method,
-                                  const GURL& web_app_manifest_origin,
+                                  const GURL& web_app_manifest_url,
                                   const std::string& content);
 
   // Parses a web app manifest for its name, icon, and universal link. |input|
-  // is the json encoded web app manifest to parse. |web_app_manifest_origin| is
-  // the origin of the web app manifest URL which is needed for determining if
-  // the relative path to an icon image source is valid. |out_app_name|,
-  // |out_app_icon_url|, and |out_universal_link| are set to the name,
-  // icon url, and universal link of a payment app.
-  bool GetPaymentAppDetailsFromWebAppManifest(
-      const std::string& input,
-      const GURL& web_app_manifest_origin,
-      std::string* out_app_name,
-      GURL* out_app_icon_url,
-      GURL* out_universal_link);
+  // is the json encoded web app manifest to parse. |web_app_manifest_url|
+  // is the web app manifest url which is needed for determining if the relative
+  // path to an icon image source is valid. |out_app_name|, |out_app_icon_url|,
+  // and |out_universal_link| are set to the name, icon url, and universal link
+  // of a payment app.
+  bool GetPaymentAppDetailsFromWebAppManifest(const std::string& input,
+                                              const GURL& web_app_manifest_url,
+                                              std::string* out_app_name,
+                                              GURL* out_app_icon_url,
+                                              GURL* out_universal_link);
 
   // Creates an instance of IOSPaymentInstrument and appends it to
   // |instruments_found_|.
@@ -146,18 +146,19 @@ class IOSPaymentInstrumentFinder {
                                   GURL& app_icon_url,
                                   GURL& universal_link);
 
-  // Whenever a valid IOSPaymentInstrument is found, we use this method to
-  // decrease the number of payment methods that still need to be addressed
-  // which is tracked with |num_payment_methods_remaining_|. When this number
-  // reaches 0 the class calls the IOSPaymentInstrumentsFound callback.
-  void OnPaymentMethodProcessed();
+  // Whenever the class attempts to find an instrument for a given method it
+  // will either succeed or fail; in either scenario this method will decrease
+  // the number of payment instruments that still need to be addressed which
+  // is tracked with |num_instruments_to_find_|. When this number reaches 0 the
+  // class calls the IOSPaymentInstrumentsFound callback.
+  void OnPaymentInstrumentProcessed();
 
   PaymentManifestDownloader downloader_;
   image_fetcher::IOSImageDataFetcherWrapper image_fetcher_;
 
   __weak id<PaymentRequestUIDelegate> payment_request_ui_delegate_;
 
-  size_t num_payment_methods_remaining_;
+  size_t num_instruments_to_find_;
   std::vector<std::unique_ptr<IOSPaymentInstrument>> instruments_found_;
   IOSPaymentInstrumentsFoundCallback callback_;
 

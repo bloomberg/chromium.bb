@@ -44,8 +44,8 @@ class IOSPaymentInstrumentFinderTest : public testing::Test {
 
   ~IOSPaymentInstrumentFinderTest() override {}
 
-  size_t num_payment_methods_remaining() {
-    return ios_payment_instrument_finder_->num_payment_methods_remaining_;
+  size_t num_instruments_to_find() {
+    return ios_payment_instrument_finder_->num_instruments_to_find_;
   }
 
   const std::vector<std::unique_ptr<IOSPaymentInstrument>>& result() {
@@ -53,26 +53,27 @@ class IOSPaymentInstrumentFinderTest : public testing::Test {
   }
 
   void ExpectUnableToParsePaymentMethodManifest(const std::string& input) {
-    GURL actual_web_app_url;
+    std::vector<GURL> actual_web_app_urls;
 
-    bool success =
-        ios_payment_instrument_finder_->GetWebAppManifestURLFromPaymentManifest(
-            input, &actual_web_app_url);
+    bool success = ios_payment_instrument_finder_
+                       ->GetWebAppManifestURLsFromPaymentManifest(
+                           input, &actual_web_app_urls);
 
     EXPECT_FALSE(success);
-    EXPECT_TRUE(actual_web_app_url.is_empty());
+    EXPECT_TRUE(actual_web_app_urls.empty());
   }
 
-  void ExpectParsedPaymentMethodManifest(const std::string& input,
-                                         const GURL& expected_web_app_url) {
-    GURL actual_web_app_url;
+  void ExpectParsedPaymentMethodManifest(
+      const std::string& input,
+      const std::vector<GURL>& expected_web_app_url) {
+    std::vector<GURL> actual_web_app_urls;
 
-    bool success =
-        ios_payment_instrument_finder_->GetWebAppManifestURLFromPaymentManifest(
-            input, &actual_web_app_url);
+    bool success = ios_payment_instrument_finder_
+                       ->GetWebAppManifestURLsFromPaymentManifest(
+                           input, &actual_web_app_urls);
 
     EXPECT_TRUE(success);
-    EXPECT_EQ(expected_web_app_url, actual_web_app_url);
+    EXPECT_EQ(expected_web_app_url, actual_web_app_urls);
   }
 
   void ExpectUnableToParseWebAppManifest(const std::string& input) {
@@ -82,8 +83,8 @@ class IOSPaymentInstrumentFinderTest : public testing::Test {
 
     bool success =
         ios_payment_instrument_finder_->GetPaymentAppDetailsFromWebAppManifest(
-            input, GURL("https://bobpay.xyz/"), &actual_app_name,
-            &actual_app_icon, &actual_universal_link);
+            input, GURL("https://bobpay.xyz/bob/manifest.json"),
+            &actual_app_name, &actual_app_icon, &actual_universal_link);
 
     EXPECT_FALSE(success);
     EXPECT_TRUE(actual_app_name.empty() || actual_app_icon.is_empty() ||
@@ -100,8 +101,8 @@ class IOSPaymentInstrumentFinderTest : public testing::Test {
 
     bool success =
         ios_payment_instrument_finder_->GetPaymentAppDetailsFromWebAppManifest(
-            input, GURL("https://bobpay.xyz/"), &actual_app_name,
-            &actual_app_icon, &actual_universal_link);
+            input, GURL("https://bobpay.xyz/bob/manifest.json"),
+            &actual_app_name, &actual_app_icon, &actual_universal_link);
 
     EXPECT_TRUE(success);
     EXPECT_EQ(expected_app_name, actual_app_name);
@@ -131,9 +132,9 @@ class IOSPaymentInstrumentFinderTest : public testing::Test {
     ios_payment_instrument_finder_->callback_ = base::BindOnce(
         &IOSPaymentInstrumentFinderTest::InstrumentsFoundCallback,
         base::Unretained(this));
-    ios_payment_instrument_finder_->num_payment_methods_remaining_ = 1;
+    ios_payment_instrument_finder_->num_instruments_to_find_ = 1;
     ios_payment_instrument_finder_->OnWebAppManifestDownloaded(
-        method, GURL("https://bobpay.xyz/"), content);
+        method, GURL("https://bobpay.xyz/bob/manifest.json"), content);
   }
 
   void RunLoop() {
@@ -229,7 +230,19 @@ TEST_F(IOSPaymentInstrumentFinderTest,
       "{\"default_applications\": ["
       "\"https://bobpay.com/app.json\","
       "\"https://alicepay.com/app.json\"]}",
-      GURL("https://bobpay.com/app.json"));
+      {GURL("https://bobpay.com/app.json"),
+       GURL("https://alicepay.com/app.json")});
+}
+
+TEST_F(IOSPaymentInstrumentFinderTest,
+       WellFormedPaymentMethodManifestWithDuplicateApps) {
+  ExpectParsedPaymentMethodManifest(
+      "{\"default_applications\": ["
+      "\"https://bobpay.com/app.json\","
+      "\"https://bobpay.com/app.json\","
+      "\"https://alicepay.com/app.json\"]}",
+      {GURL("https://bobpay.com/app.json"),
+       GURL("https://alicepay.com/app.json")});
 }
 
 // Web app manifest parsing:
@@ -256,7 +269,8 @@ TEST_F(IOSPaymentInstrumentFinderTest,
       "{"
       "  \"short_name\": \"Bobpay\", "
       "  \"icons\": [{"
-      "    \"src\": \"https://bobpay.xyz/images/touch/homescreen48.png\""
+      "    \"src\": \"https://bobpay.xyz/bob/images/homescreen32.png\", "
+      "    \"sizes\": \"32x32\""
       "  }], "
       "  \"related_applications\": null");
 }
@@ -267,7 +281,8 @@ TEST_F(IOSPaymentInstrumentFinderTest,
       "{"
       "  \"short_name\": \"Bobpay\", "
       "  \"icons\": [{"
-      "    \"src\": \"https://bobpay.xyz/images/touch/homescreen48.png\""
+      "    \"src\": \"https://bobpay.xyz/bob/images/homescreen32.png\", "
+      "    \"sizes\": \"32x32\""
       "  }], "
       "  \"related_applications\": 0"
       "}");
@@ -279,7 +294,8 @@ TEST_F(IOSPaymentInstrumentFinderTest,
       "{"
       "  \"short_name\": \"Bobpay\", "
       "  \"icons\": [{"
-      "    \"src\": \"https://bobpay.xyz/images/touch/homescreen48.png\""
+      "    \"src\": \"https://bobpay.xyz/bob/images/homescreen32.png\", "
+      "    \"sizes\": \"32x32\""
       "  }], "
       "  \"related_applications\": [0]"
       "}");
@@ -291,7 +307,8 @@ TEST_F(IOSPaymentInstrumentFinderTest,
       "{"
       "  \"short_name\": \"Bobpay\", "
       "  \"icons\": [{"
-      "    \"src\": \"https://bobpay.xyz/images/touch/homescreen48.png\""
+      "    \"src\": \"https://bobpay.xyz/bob/images/homescreen32.png\", "
+      "    \"sizes\": \"32x32\""
       "  }], "
       "  \"related_applications\": []"
       "}");
@@ -303,7 +320,8 @@ TEST_F(IOSPaymentInstrumentFinderTest,
       "{"
       "  \"short_name\": \"Bobpay\", "
       "  \"icons\": [{"
-      "    \"src\": \"https://bobpay.xyz/images/touch/homescreen48.png\""
+      "    \"src\": \"https://bobpay.xyz/bob/images/homescreen32.png\", "
+      "    \"sizes\": \"32x32\""
       "  }], "
       "  \"related_applications\": [{}]"
       "}");
@@ -314,7 +332,8 @@ TEST_F(IOSPaymentInstrumentFinderTest, NoItunesPlatformIsMalformed) {
       "{"
       "  \"short_name\": \"Bobpay\", "
       "  \"icons\": [{"
-      "    \"src\": \"https://bobpay.xyz/images/touch/homescreen48.png\""
+      "    \"src\": \"https://bobpay.xyz/bob/images/homescreen32.png\", "
+      "    \"sizes\": \"32x32\""
       "  }], "
       "  \"related_applications\": [{"
       "    \"url\": \"https://bobpay.xyz/pay\""
@@ -327,7 +346,8 @@ TEST_F(IOSPaymentInstrumentFinderTest, NoUniversalLinkIsMalformed) {
       "{"
       "  \"short_name\": \"Bobpay\", "
       "  \"icons\": [{"
-      "    \"src\": \"https://bobpay.xyz/images/touch/homescreen48.png\""
+      "    \"src\": \"https://bobpay.xyz/bob/images/homescreen32.png\", "
+      "    \"sizes\": \"32x32\""
       "  }], "
       "  \"related_applications\": [{"
       "    \"platform\": \"itunes\""
@@ -339,7 +359,8 @@ TEST_F(IOSPaymentInstrumentFinderTest, NoShortNameIsMalformed) {
   ExpectUnableToParseWebAppManifest(
       "{"
       "  \"icons\": [{"
-      "    \"src\": \"https://bobpay.xyz/images/touch/homescreen48.png\""
+      "    \"src\": \"https://bobpay.xyz/bob/images/homescreen32.png\", "
+      "    \"sizes\": \"32x32\""
       "  }], "
       "  \"related_applications\": [{"
       "    \"platform\": \"itunes\""
@@ -352,7 +373,7 @@ TEST_F(IOSPaymentInstrumentFinderTest, PlatformShouldNotHaveNullCharacters) {
       "{"
       "  \"short_name\": \"Bobpay\", "
       "  \"icons\": [{"
-      "    \"src\": \"https://bobpay.xyz/images/touch/homescreen48.png\""
+      "    \"src\": \"https://bobpay.xyz/bob/images/homescreen32.png\""
       "  }], "
       "  \"related_applications\": [{"
       "    \"platform\": \"it\0unes\", "
@@ -367,7 +388,8 @@ TEST_F(IOSPaymentInstrumentFinderTest,
       "{"
       "  \"short_name\": \"Bobpay\", "
       "  \"icons\": [{"
-      "    \"src\": \"https://bobpay.xyz/images/touch/homescreen48.png\""
+      "    \"src\": \"https://bobpay.xyz/bob/images/homescreen32.png\", "
+      "    \"sizes\": \"32x32\""
       "  }], "
       "  \"related_applications\": [{"
       "    \"platform\": \"itunes\", "
@@ -381,7 +403,23 @@ TEST_F(IOSPaymentInstrumentFinderTest, IconSourceShouldNotHaveNullCharacters) {
       "{"
       "  \"short_name\": \"Bobpay\", "
       "  \"icons\": [{"
-      "    \"src\": \"https://bobpay.xyz/images/to\0uch/homescreen48.png\""
+      "    \"src\": \"https://bobpay.xyz/bob/ima\0ges/homescreen32.png\", "
+      "    \"sizes\": \"32x32\""
+      "  }], "
+      "  \"related_applications\": [{"
+      "    \"platform\": \"itunes\", "
+      "    \"url\": \"https://bobpay.xyz/pay\""
+      "  }]"
+      "}");
+}
+
+TEST_F(IOSPaymentInstrumentFinderTest, IconSizesShouldNotHaveNullCharacters) {
+  ExpectUnableToParseWebAppManifest(
+      "{"
+      "  \"short_name\": \"Bobpay\", "
+      "  \"icons\": [{"
+      "    \"src\": \"https://bobpay.xyz/bob/images/homescreen32.png\", "
+      "    \"sizes\": \"32x\032\""
       "  }], "
       "  \"related_applications\": [{"
       "    \"platform\": \"itunes\", "
@@ -395,7 +433,8 @@ TEST_F(IOSPaymentInstrumentFinderTest, ShortNameShouldNotHaveNullCharacters) {
       "{"
       "  \"short_name\": \"Bob\0pay\", "
       "  \"icons\": [{"
-      "    \"src\": \"https://bobpay.xyz/images/touch/homescreen48.png\""
+      "    \"src\": \"https://bobpay.xyz/bob/images/homescreen32.png\", "
+      "    \"sizes\": \"32x32\""
       "  }], "
       "  \"related_applications\": [{"
       "    \"platform\": \"itunes\", "
@@ -409,7 +448,8 @@ TEST_F(IOSPaymentInstrumentFinderTest, KeysShouldBeLowerCase) {
       "{"
       "  \"Short_name\": \"Bobpay\", "
       "  \"Icons\": [{"
-      "    \"Src\": \"https://bobpay.xyz/images/touch/homescreen48.png\""
+      "    \"Src\": \"https://bobpay.xyz/bob/images/homescreen32.png\", "
+      "    \"Sizes\": \"32x32\""
       "  }], "
       "  \"Related_applications\": [{"
       "    \"Platform\": \"itunes\", "
@@ -423,7 +463,8 @@ TEST_F(IOSPaymentInstrumentFinderTest, UniversalLinkShouldHaveAbsoluteUrl) {
       "{"
       "  \"short_name\": \"Bobpay\", "
       "  \"icons\": [{"
-      "    \"src\": \"https://bobpay.xyz/images/touch/homescreen48.png\""
+      "    \"src\": \"https://bobpay.xyz/bob/images/homescreen32.png\", "
+      "    \"sizes\": \"32x32\""
       "  }], "
       "  \"related_applications\": [{"
       "    \"platform\": \"itunes\", "
@@ -437,7 +478,8 @@ TEST_F(IOSPaymentInstrumentFinderTest, UniversalLinkShouldBeHttps) {
       "{"
       "  \"short_name\": \"Bobpay\", "
       "  \"icons\": [{"
-      "    \"src\": \"https://bobpay.xyz/images/touch/homescreen48.png\""
+      "    \"src\": \"https://bobpay.xyz/bob/images/homescreen32.png\", "
+      "    \"sizes\": \"32x32\""
       "  }], "
       "  \"related_applications\": [{"
       "    \"platform\": \"itunes\", "
@@ -451,14 +493,15 @@ TEST_F(IOSPaymentInstrumentFinderTest, WellFormed) {
       "{"
       "  \"short_name\": \"Bobpay\", "
       "  \"icons\": [{"
-      "    \"src\": \"https://bobpay.xyz/images/touch/homescreen48.png\""
+      "    \"src\": \"https://bobpay.xyz/bob/images/homescreen32.png\", "
+      "    \"sizes\": \"32x32\""
       "  }], "
       "  \"related_applications\": [{"
       "    \"platform\": \"itunes\", "
       "    \"url\": \"https://bobpay.xyz/pay\""
       "  }]"
       "}",
-      "Bobpay", GURL("https://bobpay.xyz/images/touch/homescreen48.png"),
+      "Bobpay", GURL("https://bobpay.xyz/bob/images/homescreen32.png"),
       GURL("https://bobpay.xyz/pay"));
 }
 
@@ -467,14 +510,32 @@ TEST_F(IOSPaymentInstrumentFinderTest, RelativeIconPathWellFormed) {
       "{"
       "  \"short_name\": \"Bobpay\", "
       "  \"icons\": [{"
-      "    \"src\": \"images/touch/homescreen48.png\""
+      "    \"src\": \"images/homescreen32.png\", "
+      "    \"sizes\": \"32x32\""
       "  }], "
       "  \"related_applications\": [{"
       "    \"platform\": \"itunes\", "
       "    \"url\": \"https://bobpay.xyz/pay\""
       "  }]"
       "}",
-      "Bobpay", GURL("https://bobpay.xyz/images/touch/homescreen48.png"),
+      "Bobpay", GURL("https://bobpay.xyz/bob/images/homescreen32.png"),
+      GURL("https://bobpay.xyz/pay"));
+}
+
+TEST_F(IOSPaymentInstrumentFinderTest, RelativeIconPathForwardSlashWellFormed) {
+  ExpectParsedWebAppManifest(
+      "{"
+      "  \"short_name\": \"Bobpay\", "
+      "  \"icons\": [{"
+      "    \"src\": \"/bob2/images/homescreen32.png\", "
+      "    \"sizes\": \"32x32\""
+      "  }], "
+      "  \"related_applications\": [{"
+      "    \"platform\": \"itunes\", "
+      "    \"url\": \"https://bobpay.xyz/pay\""
+      "  }]"
+      "}",
+      "Bobpay", GURL("https://bobpay.xyz/bob2/images/homescreen32.png"),
       GURL("https://bobpay.xyz/pay"));
 }
 
@@ -484,7 +545,8 @@ TEST_F(IOSPaymentInstrumentFinderTest,
       "{"
       "  \"short_name\": \"Bobpay\", "
       "  \"icons\": [{"
-      "    \"src\": \"https://bobpay.xyz/images/touch/homescreen48.png\""
+      "    \"src\": \"https://bobpay.xyz/bob/images/homescreen32.png\", "
+      "    \"sizes\": \"32x32\""
       "  }], "
       "  \"related_applications\": [{"
       "    \"platform\": \"play\", "
@@ -494,7 +556,7 @@ TEST_F(IOSPaymentInstrumentFinderTest,
       "    \"url\": \"https://bobpay.xyz/pay\""
       "  }]"
       "}",
-      "Bobpay", GURL("https://bobpay.xyz/images/touch/homescreen48.png"),
+      "Bobpay", GURL("https://bobpay.xyz/bob/images/homescreen32.png"),
       GURL("https://bobpay.xyz/pay"));
 }
 
@@ -506,7 +568,7 @@ TEST_F(IOSPaymentInstrumentFinderTest, NoMethodsSuppliedNoInstruments) {
 
   FindInstrumentsWithMethods(url_methods);
 
-  EXPECT_EQ(0u, num_payment_methods_remaining());
+  EXPECT_EQ(0u, num_instruments_to_find());
   EXPECT_EQ(0u, result().size());
 }
 
@@ -523,7 +585,7 @@ TEST_F(IOSPaymentInstrumentFinderTest,
   FindInstrumentsWithMethods(url_methods);
   RunLoop();
 
-  EXPECT_EQ(0u, num_payment_methods_remaining());
+  EXPECT_EQ(0u, num_instruments_to_find());
   EXPECT_EQ(0u, result().size());
 }
 
@@ -536,7 +598,8 @@ TEST_F(IOSPaymentInstrumentFinderTest, OneValidMethodSuppliedOneInstrument) {
       "{"
       "  \"short_name\": \"Bobpay\", "
       "  \"icons\": [{"
-      "    \"src\": \"https://bobpay.xyz/images/touch/homescreen48.png\""
+      "    \"src\": \"https://bobpay.xyz/bob/images/homescreen32.png\", "
+      "    \"sizes\": \"32x32\""
       "  }], "
       "  \"related_applications\": [{"
       "    \"platform\": \"play\", "
@@ -548,7 +611,7 @@ TEST_F(IOSPaymentInstrumentFinderTest, OneValidMethodSuppliedOneInstrument) {
       "}");
   RunLoop();
 
-  EXPECT_EQ(0u, num_payment_methods_remaining());
+  EXPECT_EQ(0u, num_instruments_to_find());
   EXPECT_EQ(1u, result().size());
   EXPECT_EQ("Bobpay", base::UTF16ToASCII(result()[0]->GetLabel()));
   EXPECT_EQ("emerald-eon.appspot.com",

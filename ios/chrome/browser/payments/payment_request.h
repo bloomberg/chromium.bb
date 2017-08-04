@@ -23,6 +23,7 @@
 #include "components/payments/core/payments_profile_comparator.h"
 #import "ios/chrome/browser/payments/payment_response_helper.h"
 #include "ios/web/public/payments/payment_request.h"
+#include "url/gurl.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -186,7 +187,7 @@ class PaymentRequest : public PaymentOptionsProvider,
     return supported_card_networks_;
   }
 
-  const std::vector<std::string>& url_payment_method_identifiers() const {
+  const std::vector<GURL>& url_payment_method_identifiers() const {
     return url_payment_method_identifiers_;
   }
 
@@ -334,7 +335,7 @@ class PaymentRequest : public PaymentOptionsProvider,
   // A vector of url-based payment method identifiers supported by the merchant
   // which encompasses one of the two types of payment method identifiers, the
   // other being standardized payment method identifiers i.e., basic-card.
-  std::vector<std::string> url_payment_method_identifiers_;
+  std::vector<GURL> url_payment_method_identifiers_;
 
   // A mapping of the payment method names to the corresponding JSON-stringified
   // payment method specific data.

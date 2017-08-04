@@ -19,7 +19,6 @@
 #include "components/payments/core/payment_address.h"
 #include "components/payments/core/payment_method_data.h"
 #include "third_party/libphonenumber/phonenumber_api.h"
-#include "url/gurl.h"
 #include "url/url_constants.h"
 
 namespace payments {
@@ -94,7 +93,7 @@ void ParseSupportedMethods(
     const std::vector<PaymentMethodData>& method_data,
     std::vector<std::string>* out_supported_networks,
     std::set<std::string>* out_basic_card_specified_networks,
-    std::vector<std::string>* out_url_payment_method_identifiers) {
+    std::vector<GURL>* out_url_payment_method_identifiers) {
   DCHECK(out_supported_networks->empty());
   DCHECK(out_basic_card_specified_networks->empty());
   DCHECK(out_url_payment_method_identifiers->empty());
@@ -165,7 +164,7 @@ void ParseSupportedMethods(
             !url.has_username() && !url.has_password()) {
           const auto result = url_payment_method_identifiers.insert(url);
           if (result.second)
-            out_url_payment_method_identifiers->push_back(method);
+            out_url_payment_method_identifiers->push_back(url);
         }
       }
     }
