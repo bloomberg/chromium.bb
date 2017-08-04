@@ -59,6 +59,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCCTRedirectPreconnect,
     &kChromeHomeFeature,
     &kChromeHomeExpandButton,
+    &kChromeHomeModernLayout,
     &kChromeHomeSwipeLogic,
     &kContentSuggestionsLargeThumbnail,
     &kContentSuggestionsVideoOverlay,
@@ -93,7 +94,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kSpannableInlineAutocomplete,
     &kSpecialLocaleFeature,
     &kSpecialLocaleWrapper,
-    &kSuggestionsHomeModernLayout,
     &kTabReparenting,
     &kVideoPersistence,
     &kVrBrowsingFeedback,
@@ -260,8 +260,8 @@ const base::Feature kSpecialLocaleFeature{"SpecialLocale",
 const base::Feature kSpecialLocaleWrapper{"SpecialLocaleWrapper",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kSuggestionsHomeModernLayout{
-    "SuggestionsHomeModernLayout", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kChromeHomeModernLayout{"ChromeHomeModernLayout",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTabReparenting{"TabReparenting",
                                     base::FEATURE_ENABLED_BY_DEFAULT};

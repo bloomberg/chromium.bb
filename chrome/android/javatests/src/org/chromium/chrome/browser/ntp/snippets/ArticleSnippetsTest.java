@@ -120,8 +120,7 @@ public class ArticleSnippetsTest {
     @Test
     @MediumTest
     @Feature({"ArticleSnippets", "RenderTest"})
-    @CommandLineParameter(
-            {"", "enable-features=" + ChromeFeatureList.SUGGESTIONS_HOME_MODERN_LAYOUT})
+    @CommandLineParameter({"", "enable-features=" + ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT})
     @RetryOnFailure
     public void testSnippetAppearance() throws IOException {
         // Don't load the Bitmap on the UI thread - this is a StrictModeViolation.
@@ -454,6 +453,6 @@ public class ArticleSnippetsTest {
      * with Modern.
      */
     private boolean isModern() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.SUGGESTIONS_HOME_MODERN_LAYOUT);
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT);
     }
 }

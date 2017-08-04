@@ -6,20 +6,26 @@
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingTop="@dimen/bottom_control_container_height" >
+    android:layout_height="match_parent">
 
-    <!-- TODO(twellington): move padding to the recycler view and set
-         android:cliptoPadding="false" to draw beneath the toolbar. -->
+    <org.chromium.chrome.browser.ntp.LogoView
+        android:id="@+id/search_provider_logo"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/ntp_logo_height_modern"
+        android:layout_marginTop="@dimen/ntp_logo_margin_top_modern"
+        android:layout_marginBottom="@dimen/ntp_logo_margin_bottom_modern" />
+
     <org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/bottom_control_container_height" />
 
     <org.chromium.chrome.browser.widget.FadingShadowView
         android:id="@+id/shadow"
         android:layout_width="match_parent"
         android:layout_height="@dimen/action_bar_shadow_height"
+        android:layout_marginTop="@dimen/bottom_control_container_height"
         android:visibility="gone" />
 
 </FrameLayout>
