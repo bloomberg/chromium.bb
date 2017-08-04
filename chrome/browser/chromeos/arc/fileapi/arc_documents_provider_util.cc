@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -214,6 +215,41 @@ std::vector<base::FilePath::StringType> GetExtensionsForArcMimeType(
   }
 
   return std::vector<base::FilePath::StringType>();
+}
+
+// TODO(crbug.com/675868): Consolidate with the similar logic for Drive.
+base::FilePath::StringType GetFileNameForDocument(
+    const mojom::DocumentPtr& document) {
+  base::FilePath::StringType filename = document->display_name;
+
+  // Replace path separators appearing in the file name.
+  // Chrome OS is POSIX and kSeparators is "/".
+  base::ReplaceChars(filename, base::FilePath::kSeparators, "_", &filename);
+
+  // Do not allow an empty file name and all-dots file names.
+  if (filename.empty() ||
+      filename.find_first_not_of('.', 0) == std::string::npos) {
+    filename = "_";
+  }
+
+  // Since Chrome detects MIME type from file name extensions, we need to change
+  // the file name extension of the document if it does not match with its MIME
+  // type.
+  // For example, Audio Media Provider presents a music file with its title as
+  // the file name.
+  base::FilePath::StringType extension =
+      base::ToLowerASCII(base::FilePath(filename).Extension());
+  if (!extension.empty())
+    extension = extension.substr(1);  // Strip the leading dot.
+  std::vector<base::FilePath::StringType> possible_extensions =
+      GetExtensionsForArcMimeType(document->mime_type);
+  if (!possible_extensions.empty() &&
+      !base::ContainsValue(possible_extensions, extension)) {
+    filename =
+        base::FilePath(filename).AddExtension(possible_extensions[0]).value();
+  }
+
+  return filename;
 }
 
 }  // namespace arc

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "components/arc/common/file_system.mojom.h"
 
 class GURL;
 
@@ -69,6 +70,10 @@ GURL BuildDocumentUrl(const std::string& authority,
 // extension.
 std::vector<base::FilePath::StringType> GetExtensionsForArcMimeType(
     const std::string& mime_type);
+
+// Computes a file name for a document.
+base::FilePath::StringType GetFileNameForDocument(
+    const mojom::DocumentPtr& document);
 
 }  // namespace arc
 
