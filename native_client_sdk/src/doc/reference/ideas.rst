@@ -141,7 +141,7 @@ Julia
 
 * **Project:** Support the Julia programming language.
 * **Brief explanation:** Julia_ targets LLVM, but it does so through LLVM's
-  Just-in-Time compiler which PNaCl doens't support. The aim of this project is
+  Just-in-Time compiler which PNaCl doesn't support. The aim of this project is
   to allow it to deliver PNaCl ``.pexe`` files.
 * **Expected results:** The Julia test suite passes within the browser. How to
   use Julia to target PNaCl is well documented and easy to do.
@@ -181,7 +181,7 @@ Mono
 
 * **Project:** Support C# running inside Mono.
 * **Brief explanation:** C# is traditionally a Just-in-Time compiled language,
-  the aim of this project is to be able to run C# code withing Mono_ while
+  the aim of this project is to be able to run C# code within Mono_ while
   compiling ahead-of-time.
 * **Expected results:** The Mono test suite passes within the browser. How to
   use Mono to target PNaCl is well documented and easy to do.

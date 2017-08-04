@@ -296,7 +296,7 @@ int _real_fstat(int fd, struct stat* buf) {
 int _real_isatty(int fd, int* result) {
   CHECK_REAL(isatty);
   // The real isatty function can be NULL (for example if we are running
-  // withing chrome).
+  // within chrome).
   if (REAL(isatty) == NULL) {
     *result = 0;
     return ENOTTY;

@@ -9,8 +9,8 @@
 Pepper C API Reference (Dev)
 ##########################################
 
-This page lists the C API for Pepper 60. Apps that use this API can
-run in Chrome 60 or higher.
+This page lists the C API for Pepper 61. Apps that use this API can
+run in Chrome 61 or higher.
 
 `Interfaces <pepper_dev/c/group___interfaces.html>`__
 =============================================================
@@ -114,7 +114,7 @@ run in Chrome 60 or higher.
 
   * `PPB_TextInputController <pepper_dev/c/struct_p_p_b___text_input_controller__1__0.html>`__
 
-  * `PPB_TouchInputEvent <pepper_dev/c/struct_p_p_b___touch_input_event__1__0.html>`__
+  * `PPB_TouchInputEvent <pepper_dev/c/struct_p_p_b___touch_input_event__1__4.html>`__
 
   * `PPB_UDPSocket <pepper_dev/c/struct_p_p_b___u_d_p_socket__1__2.html>`__
 

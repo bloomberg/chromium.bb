@@ -858,7 +858,7 @@ int KernelProxy::rename(const char* path, const char* newpath) {
   }
 
   if (newfs.get() != fs.get()) {
-    // Renaming accross mountpoints is not allowed
+    // Renaming across mountpoints is not allowed
     errno = EXDEV;
     return -1;
   }

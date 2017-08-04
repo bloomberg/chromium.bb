@@ -15,7 +15,7 @@ require you to agree to allow the page unlimited storage
 
 The first run requires a large download. Please be patient.
 Also, as PNaCl translates executables to native code on demand,
-each program will also have a noticable load delay on first run.
+each program will also have a noticeable load delay on first run.
 We're actively working to improve this.
 
 NOTE: This environment will leave a substantial (800MB) payload in your

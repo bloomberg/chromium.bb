@@ -28,7 +28,7 @@ class TestCreateHtml(unittest.TestCase):
       shutil.rmtree(self.tempdir)
 
   def testBadInput(self):
-    # Non-existant file
+    # Non-existent file
     self.assertRaises(create_html.Error, create_html.main, ['foo.nexe'])
     # Existing file with wrong extension
     self.assertRaises(create_html.Error, create_html.main, [__file__])

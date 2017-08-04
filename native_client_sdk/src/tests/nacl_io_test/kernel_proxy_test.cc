@@ -349,7 +349,7 @@ TEST_F(KernelProxyTest, BasicReadWrite) {
   int fd1, fd2, fd3;
   int len;
 
-  // Fail to delete non existant "/foo"
+  // Fail to delete non existent "/foo"
   EXPECT_EQ(-1, ki_rmdir("/foo"));
   EXPECT_EQ(ENOENT, errno);
 

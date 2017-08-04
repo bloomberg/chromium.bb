@@ -58,7 +58,7 @@ HOST_CFLAGS = -fPIC -pthread $(HOST_WARNINGS) -I$(NACL_SDK_ROOT)/include
 ifneq ($(OSNAME),mac)
 # Adding -Wl,-Bsymbolic means that symbols defined within the module are always
 # used by the module, and not shadowed by symbols already loaded in, for
-# exmaple, libc.  Without this the libc symbols (or anything injected with
+# example, libc.  Without this the libc symbols (or anything injected with
 # LD_PRELOAD will take precedence).
 # -pthread is not needed on mac (libpthread is a symlink to libSystem) and
 # in fact generated a warning if passed at link time.

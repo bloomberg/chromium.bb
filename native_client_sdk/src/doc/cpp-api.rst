@@ -9,8 +9,8 @@
 Pepper C++ API Reference (Stable)
 ############################################
 
-This page lists the C++ API for Pepper 58. Apps that use this API can
-run in Chrome 58 or higher.
+This page lists the C++ API for Pepper 60. Apps that use this API can
+run in Chrome 60 or higher.
 
 `Classes <pepper_stable/cpp/inherits.html>`__
 ==================================================

@@ -417,7 +417,7 @@ How do I build x86-32, x86-64 or ARM ``.nexes``?
 
 By default, the applications in the ``/examples`` folder create
 architecture-independent ``.pexe`` for Portable Native Client. To
-generate a ``.nexe`` targetting one specific architecture using the
+generate a ``.nexe`` targeting one specific architecture using the
 Native Client or Portable Native Client toolchains, see the
 :doc:`Building instructions <devguide/devcycle/building>`.
 

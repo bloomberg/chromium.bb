@@ -63,7 +63,7 @@ void *EHRequestExceptionStackOnThread(size_t stack_size);
  * Returns non-zero if a hander has been installed and exceptions will
  * be forwarded.
  *
- * NOTE: Exception handling is not guarenteed to be available so it should
+ * NOTE: Exception handling is not guaranteed to be available so it should
  * not be considered an error if the request fails.
  */
 int EHHanderInstalled();

@@ -10,8 +10,8 @@
 Pepper API Reference (Dev)
 ########################################
 
-This page lists the API for Pepper 60. Apps that use this API can
-run in Chrome 60 or higher.
+This page lists the API for Pepper 61. Apps that use this API can
+run in Chrome 61 or higher.
 
 :ref:`Pepper C API Reference <pepper_dev_c_index>`
 ===========================================================
