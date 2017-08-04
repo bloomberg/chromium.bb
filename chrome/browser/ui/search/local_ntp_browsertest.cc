@@ -20,7 +20,7 @@
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/search/instant_test_base.h"
@@ -35,7 +35,6 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -398,10 +397,11 @@ class LocalNTPOneGoogleBarSmokeTest : public InProcessBrowserTest {
  private:
   static std::unique_ptr<KeyedService> CreateOneGoogleBarService(
       content::BrowserContext* context) {
-    SigninManagerBase* signin_manager = SigninManagerFactory::GetForProfile(
-        Profile::FromBrowserContext(context));
+    GaiaCookieManagerService* cookie_service =
+        GaiaCookieManagerServiceFactory::GetForProfile(
+            Profile::FromBrowserContext(context));
     return base::MakeUnique<OneGoogleBarService>(
-        signin_manager, base::MakeUnique<FakeOneGoogleBarFetcher>());
+        cookie_service, base::MakeUnique<FakeOneGoogleBarFetcher>());
   }
 
   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
