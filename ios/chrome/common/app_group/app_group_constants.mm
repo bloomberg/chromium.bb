@@ -107,7 +107,8 @@ NSURL* LegacyShareExtensionItemsFolder() {
 
 NSURL* ExternalCommandsItemsFolder() {
   NSURL* groupURL = [[NSFileManager defaultManager]
-      containerURLForSecurityApplicationGroupIdentifier:ApplicationGroup()];
+      containerURLForSecurityApplicationGroupIdentifier:
+          CommonApplicationGroup()];
   NSURL* chromeURL =
       [groupURL URLByAppendingPathComponent:@"Chrome" isDirectory:YES];
   NSURL* externalCommandsURL =
