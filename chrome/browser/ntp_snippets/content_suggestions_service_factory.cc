@@ -14,6 +14,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/time/default_clock.h"
+#include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/favicon/large_icon_service_factory.h"
@@ -40,10 +42,6 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/language/core/browser/url_language_histogram.h"
 #include "components/ntp_snippets/bookmarks/bookmark_suggestions_provider.h"
-#include "components/ntp_snippets/breaking_news/breaking_news_gcm_app_handler.h"
-#include "components/ntp_snippets/breaking_news/breaking_news_suggestions_provider.h"
-#include "components/ntp_snippets/breaking_news/subscription_manager.h"
-#include "components/ntp_snippets/breaking_news/subscription_manager_impl.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/contextual_suggestions_source.h"
@@ -79,6 +77,10 @@
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/ntp_snippets/download_suggestions_provider.h"
+#include "components/ntp_snippets/breaking_news/breaking_news_gcm_app_handler.h"
+#include "components/ntp_snippets/breaking_news/breaking_news_suggestions_provider.h"
+#include "components/ntp_snippets/breaking_news/subscription_manager.h"
+#include "components/ntp_snippets/breaking_news/subscription_manager_impl.h"
 #include "components/ntp_snippets/physical_web_pages/physical_web_page_suggestions_provider.h"
 #include "components/physical_web/data_source/physical_web_data_source.h"
 #endif
@@ -103,16 +105,12 @@ using history::HistoryService;
 using image_fetcher::ImageFetcherImpl;
 using language::UrlLanguageHistogram;
 using ntp_snippets::BookmarkSuggestionsProvider;
-using ntp_snippets::BreakingNewsGCMAppHandler;
-using ntp_snippets::BreakingNewsSuggestionsProvider;
 using ntp_snippets::CategoryRanker;
 using ntp_snippets::ContentSuggestionsService;
 using ntp_snippets::ContextualSuggestionsFetcherImpl;
 using ntp_snippets::ContextualSuggestionsSource;
 using ntp_snippets::ForeignSessionsSuggestionsProvider;
 using ntp_snippets::GetFetchEndpoint;
-using ntp_snippets::GetPushUpdatesSubscriptionEndpoint;
-using ntp_snippets::GetPushUpdatesUnsubscriptionEndpoint;
 using ntp_snippets::PersistentScheduler;
 using ntp_snippets::PrefetchedPagesTracker;
 using ntp_snippets::RemoteSuggestionsDatabase;
@@ -120,7 +118,6 @@ using ntp_snippets::RemoteSuggestionsFetcherImpl;
 using ntp_snippets::RemoteSuggestionsProviderImpl;
 using ntp_snippets::RemoteSuggestionsSchedulerImpl;
 using ntp_snippets::RemoteSuggestionsStatusService;
-using ntp_snippets::SubscriptionManagerImpl;
 using ntp_snippets::TabDelegateSyncAdapter;
 using ntp_snippets::UserClassifier;
 using suggestions::ImageDecoderImpl;
@@ -128,7 +125,12 @@ using syncer::SyncService;
 
 #if defined(OS_ANDROID)
 using content::DownloadManager;
+using ntp_snippets::BreakingNewsGCMAppHandler;
+using ntp_snippets::BreakingNewsSuggestionsProvider;
+using ntp_snippets::GetPushUpdatesSubscriptionEndpoint;
+using ntp_snippets::GetPushUpdatesUnsubscriptionEndpoint;
 using ntp_snippets::PhysicalWebPageSuggestionsProvider;
+using ntp_snippets::SubscriptionManagerImpl;
 using physical_web::PhysicalWebDataSource;
 #endif  // OS_ANDROID
 
@@ -428,10 +430,20 @@ void RegisterForeignSessionsProviderIfEnabled(
   service->RegisterProvider(std::move(provider));
 }
 
-void SubscribeForGCMPushUpdates(
+#if defined(OS_ANDROID)
+
+bool IsGCMPushUpdatesEnabled() {
+  return base::FeatureList::IsEnabled(ntp_snippets::kBreakingNewsPushFeature);
+}
+
+void SubscribeForGCMPushUpdatesIfEnabled(
     PrefService* pref_service,
     ContentSuggestionsService* content_suggestions_service,
     Profile* profile) {
+  if (!IsGCMPushUpdatesEnabled()) {
+    return;
+  }
+
   // TODO(mamir): Either pass all params from outside or pass only profile and
   // create them inside the method, but be consistent.
   gcm::GCMDriver* gcm_driver =
@@ -469,7 +481,9 @@ void SubscribeForGCMPushUpdates(
   auto handler = base::MakeUnique<BreakingNewsGCMAppHandler>(
       gcm_driver, instance_id_profile_service->driver(), pref_service,
       std::move(subscription_manager),
-      base::Bind(&safe_json::SafeJsonParser::Parse));
+      base::Bind(&safe_json::SafeJsonParser::Parse),
+      base::MakeUnique<base::DefaultClock>(),
+      /*token_validation_timer=*/base::MakeUnique<base::OneShotTimer>());
 
   scoped_refptr<base::SequencedTaskRunner> task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
@@ -486,6 +500,8 @@ void SubscribeForGCMPushUpdates(
       base::MakeUnique<RemoteSuggestionsDatabase>(database_dir, task_runner));
   content_suggestions_service->RegisterProvider(std::move(provider));
 }
+
+#endif  // OS_ANDROID
 
 }  // namespace
 
@@ -587,6 +603,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 #if defined(OS_ANDROID)
   RegisterDownloadsProviderIfEnabled(service, profile, offline_page_model);
   RegisterPhysicalWebPageProviderIfEnabled(service, profile);
+  SubscribeForGCMPushUpdatesIfEnabled(pref_service, service, profile);
 #endif  // OS_ANDROID
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -594,9 +611,6 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   RegisterPrefetchingObserver(service, profile);
 #endif
 
-  if (base::FeatureList::IsEnabled(ntp_snippets::kBreakingNewsPushFeature)) {
-    SubscribeForGCMPushUpdates(pref_service, service, profile);
-  }
   return service;
 
 #else
