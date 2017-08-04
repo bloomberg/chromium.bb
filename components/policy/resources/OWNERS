@@ -9,7 +9,6 @@ per-file policy_templates.json=set noparent
 per-file policy_templates.json=atwilson@chromium.org
 per-file policy_templates.json=emaxx@chromium.org
 per-file policy_templates.json=bartfab@chromium.org
-per-file policy_templates.json=tnagel@chromium.org
 per-file policy_templates.json=pastarmovj@chromium.org
 
 # COMPONENT: Enterprise
