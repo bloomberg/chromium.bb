@@ -163,7 +163,7 @@ const CGFloat kWindowGradientHeight = 24.0;
       // highlights the buttons on mouse enter event. That rect is added where
       // buttons used to be previously.
       [self forbidAddingWindowButtonsTrackingArea];
-    } else if (hasTabStrip_) {
+    } else {
       // If Chrome does not use a full sized content view then AppKit adds the
       // window buttons to the root view, where they must be manually
       // re-positioned.
