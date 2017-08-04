@@ -5,10 +5,15 @@
 #include "ui/views/style/typography_provider.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "ui/base/default_style.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/style/typography.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
 
 using gfx::Font;
 
@@ -30,13 +35,27 @@ Font::Weight GetValueBolderThan(Font::Weight weight) {
 }  // namespace
 
 // static
-Font::Weight TypographyProvider::WeightNotLighterThanNormal(
-    Font::Weight weight) {
+Font::Weight TypographyProvider::MediumWeightForUI() {
+#if defined(OS_MACOSX)
+  // System fonts are not user-configurable on Mac, so there's a simpler check.
+  // However, 10.9 and 10.11 do not ship with a MEDIUM weight system font.  In
+  // that case, trying to use MEDIUM there will give a bold font, which will
+  // look worse with the surrounding NORMAL text than just using NORMAL.
+  return (base::mac::IsOS10_9() || base::mac::IsOS10_11())
+             ? Font::Weight::NORMAL
+             : Font::Weight::MEDIUM;
+#else
+  // NORMAL may already have at least MEDIUM weight. Return NORMAL in that case
+  // since trying to return MEDIUM would actually make the font lighter-weight
+  // than the surrounding text. For example, Windows can be configured to use a
+  // BOLD font for dialog text; deriving MEDIUM from that would replace the BOLD
+  // attribute with something lighter.
   if (ResourceBundle::GetSharedInstance()
           .GetFontListWithDelta(0, Font::NORMAL, Font::Weight::NORMAL)
-          .GetFontWeight() < weight)
-    return weight;
+          .GetFontWeight() < Font::Weight::MEDIUM)
+    return Font::Weight::MEDIUM;
   return Font::Weight::NORMAL;
+#endif
 }
 
 const gfx::FontList& DefaultTypographyProvider::GetFont(int context,
@@ -90,7 +109,7 @@ void DefaultTypographyProvider::GetDefaultFont(int context,
   switch (context) {
     case style::CONTEXT_BUTTON_MD:
       *size_delta = ui::kLabelFontSizeDelta;
-      *font_weight = WeightNotLighterThanNormal(Font::Weight::MEDIUM);
+      *font_weight = MediumWeightForUI();
       break;
     case style::CONTEXT_DIALOG_TITLE:
       *size_delta = ui::kTitleFontSizeDelta;
