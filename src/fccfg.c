@@ -572,35 +572,35 @@ FcBlanksCreate (void)
 }
 
 void
-FcBlanksDestroy (FcBlanks *b)
+FcBlanksDestroy (FcBlanks *b FC_UNUSED)
 {
     /* Deprecated. */
 }
 
 FcBool
-FcBlanksAdd (FcBlanks *b, FcChar32 ucs4)
+FcBlanksAdd (FcBlanks *b FC_UNUSED, FcChar32 ucs4 FC_UNUSED)
 {
     /* Deprecated. */
     return FcFalse;
 }
 
 FcBool
-FcBlanksIsMember (FcBlanks *b, FcChar32 ucs4)
+FcBlanksIsMember (FcBlanks *b FC_UNUSED, FcChar32 ucs4 FC_UNUSED)
 {
     /* Deprecated. */
     return FcFalse;
 }
 
 FcBlanks *
-FcConfigGetBlanks (FcConfig	*config)
+FcConfigGetBlanks (FcConfig	*config FC_UNUSED)
 {
     /* Deprecated. */
     return NULL;
 }
 
 FcBool
-FcConfigAddBlank (FcConfig	*config,
-		  FcChar32    	blank)
+FcConfigAddBlank (FcConfig	*config FC_UNUSED,
+		  FcChar32    	blank FC_UNUSED)
 {
     /* Deprecated. */
     return FcFalse;

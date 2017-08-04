@@ -1158,7 +1158,7 @@ FcPattern *
 FcFreeTypeQueryFace (const FT_Face  face,
 		     const FcChar8  *file,
 		     int	    id,
-		     FcBlanks	    *blanks)
+		     FcBlanks	    *blanks FC_UNUSED)
 {
     FcPattern	    *pat;
     int		    slant = -1;
@@ -2109,7 +2109,7 @@ FcFreeTypeCheckGlyph (FT_Face face,
 #define APPROXIMATELY_EQUAL(x,y) (FC_ABS ((x) - (y)) <= FC_MAX (FC_ABS (x), FC_ABS (y)) / 33)
 
 FcCharSet *
-FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
+FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks FC_UNUSED, int *spacing)
 {
     FcChar32	    page, off, ucs4;
     FcCharSet	    *fcs;
@@ -2238,7 +2238,7 @@ bail0:
 }
 
 FcCharSet *
-FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks)
+FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks FC_UNUSED)
 {
     int spacing;
 
