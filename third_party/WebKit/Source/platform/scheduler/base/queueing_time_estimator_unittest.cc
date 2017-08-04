@@ -232,7 +232,7 @@ TEST_F(QueueingTimeEstimatorTest, IgnoresTasksWithNestedMessageLoops) {
   estimator.OnTopLevelTaskStarted(time);
   estimator.OnTopLevelTaskCompleted(time);
 
-  time += base::TimeDelta::FromMilliseconds(3000);
+  time += base::TimeDelta::FromMilliseconds(5000);
 
   estimator.OnTopLevelTaskStarted(time);
   time += base::TimeDelta::FromMilliseconds(20000);
@@ -253,9 +253,6 @@ TEST_F(QueueingTimeEstimatorTest, IgnoresTasksWithNestedMessageLoops) {
 
   EXPECT_THAT(client.expected_queueing_times(),
               ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(0),
-                                     base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(100)));
 }
 

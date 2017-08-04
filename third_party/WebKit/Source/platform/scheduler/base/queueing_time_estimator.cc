@@ -131,9 +131,6 @@ void QueueingTimeEstimator::State::OnRendererStateChanged(
 void QueueingTimeEstimator::State::AdvanceTime(
     QueueingTimeEstimator::Client* client,
     base::TimeTicks current_time) {
-  if (in_nested_message_loop_)
-    return;
-
   if (step_start_time.is_null()) {
     // Ignore any time before the first task.
     if (!processing_task)
@@ -141,9 +138,9 @@ void QueueingTimeEstimator::State::AdvanceTime(
 
     step_start_time = current_task_start_time;
   }
-  if (renderer_backgrounded) {
-    // Skip steps when the renderer was backgrounded. May cause
-    // |step_start_time| to go slightly into the future.
+  if (in_nested_message_loop_ || renderer_backgrounded) {
+    // Skip steps when the renderer was backgrounded or when we are at a nested
+    // message loop. May cause |step_start_time| to go slightly into the future.
     step_start_time =
         current_time.SnappedToNextTick(step_start_time, window_step_width);
     step_expected_queueing_time = base::TimeDelta();
