@@ -1,7 +1,7 @@
 
 Tests the coverage list view after finishing recording in the Coverage view.
 
-.../inspector/coverage/resources/coverage.js JS used: 277 unused: 125 total: 402
+.../inspector/coverage/resources/coverage.js JS used: 270 unused: 132 total: 402
 .../inspector/coverage/resources/highlight-in-source.css CSS used: 90 unused: 119 total: 209
 0: + body {
 1: +     background-color: lightblue;
