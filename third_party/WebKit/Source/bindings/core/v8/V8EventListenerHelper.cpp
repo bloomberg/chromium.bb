@@ -31,29 +31,87 @@
 #include "bindings/core/v8/V8EventListenerHelper.h"
 
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "bindings/core/v8/V8ErrorHandler.h"
+#include "bindings/core/v8/V8EventListener.h"
 #include "bindings/core/v8/V8Window.h"
 #include "bindings/core/v8/V8WorkerGlobalScopeEventListener.h"
+#include "platform/bindings/V8PrivateProperty.h"
 
 namespace blink {
+namespace {
 
-EventListener* V8EventListenerHelper::GetEventListener(
+template <typename ListenerType, typename ListenerFactory>
+ListenerType* GetEventListenerInternal(
+    v8::Isolate* isolate,
+    v8::Local<v8::Object> object,
+    const V8PrivateProperty::Symbol& listener_property,
+    ListenerLookupType lookup,
+    const ListenerFactory& listener_factory) {
+  DCHECK(isolate->InContext());
+  v8::Local<v8::Value> listener_value = listener_property.GetOrEmpty(object);
+  ListenerType* listener =
+      listener_value.IsEmpty()
+          ? nullptr
+          : static_cast<ListenerType*>(
+                listener_value.As<v8::External>()->Value());
+  if (listener || lookup == kListenerFindOnly)
+    return listener;
+
+  listener = listener_factory();
+  if (listener)
+    listener_property.Set(object, v8::External::New(isolate, listener));
+
+  return listener;
+}
+
+}  // namespace
+
+// static
+V8EventListener* V8EventListenerHelper::GetEventListener(
     ScriptState* script_state,
     v8::Local<v8::Value> value,
     bool is_attribute,
     ListenerLookupType lookup) {
   RUNTIME_CALL_TIMER_SCOPE(script_state->GetIsolate(),
                            RuntimeCallStats::CounterId::kGetEventListener);
-  if (lookup == kListenerFindOnly) {
-    // Used by EventTarget::removeEventListener, specifically
-    // EventTargetV8Internal::removeEventListenerMethod
-    DCHECK(!is_attribute);
-    return V8EventListenerHelper::ExistingEventListener(value, script_state);
-  }
-  if (ToLocalDOMWindow(script_state->GetContext()))
-    return V8EventListenerHelper::EnsureEventListener<V8EventListener>(
-        value, is_attribute, script_state);
-  return V8EventListenerHelper::EnsureEventListener<
-      V8WorkerGlobalScopeEventListener>(value, is_attribute, script_state);
+
+  if (!value->IsObject())
+    return nullptr;
+  v8::Local<v8::Object> object = value.As<v8::Object>();
+  v8::Isolate* isolate = script_state->GetIsolate();
+  V8PrivateProperty::Symbol listener_property =
+      is_attribute
+          ? V8PrivateProperty::GetV8EventListenerAttributeListener(isolate)
+          : V8PrivateProperty::GetV8EventListenerListener(isolate);
+
+  return GetEventListenerInternal<V8EventListener>(
+      isolate, object, listener_property, lookup,
+      [object, is_attribute, script_state]() {
+        return !ToLocalDOMWindow(script_state->GetContext())
+                   ? V8WorkerGlobalScopeEventListener::Create(
+                         object, is_attribute, script_state)
+                   : V8EventListener::Create(object, is_attribute,
+                                             script_state);
+      });
+}
+
+// static
+V8EventListener* V8EventListenerHelper::EnsureErrorHandler(
+    ScriptState* script_state,
+    v8::Local<v8::Value> value) {
+  if (!value->IsObject())
+    return nullptr;
+  v8::Local<v8::Object> object = value.As<v8::Object>();
+  v8::Isolate* isolate = script_state->GetIsolate();
+  V8PrivateProperty::Symbol listener_property =
+      V8PrivateProperty::GetV8EventListenerAttributeListener(isolate);
+
+  return GetEventListenerInternal<V8EventListener>(
+      isolate, object, listener_property, kListenerFindOrCreate,
+      [object, script_state]() {
+        const bool is_attribute = true;
+        return V8ErrorHandler::Create(object, is_attribute, script_state);
+      });
 }
 
 }  // namespace blink

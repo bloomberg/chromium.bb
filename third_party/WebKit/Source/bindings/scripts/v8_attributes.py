@@ -485,8 +485,8 @@ def setter_expression(interface, attribute, context):
                 attribute.name == 'onerror'):
             includes.add('bindings/core/v8/V8ErrorHandler.h')
             arguments.append(
-                'V8EventListenerHelper::EnsureEventListener<V8ErrorHandler>(' +
-                'v8Value, true, ScriptState::ForReceiverObject(info))')
+                'V8EventListenerHelper::EnsureErrorHandler(' +
+                'ScriptState::ForReceiverObject(info), v8Value)')
         else:
             arguments.append(
                 'V8EventListenerHelper::GetEventListener(' +
