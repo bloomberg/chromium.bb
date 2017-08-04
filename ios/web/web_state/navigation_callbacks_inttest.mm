@@ -87,9 +87,15 @@ ACTION_P3(VerifyPostStartedContext, web_state, url, context) {
   EXPECT_FALSE((*context)->GetError());
   ASSERT_FALSE((*context)->GetResponseHeaders());
   ASSERT_TRUE(web_state->IsLoading());
-  NavigationManager* navigation_manager = web_state->GetNavigationManager();
-  NavigationItem* item = navigation_manager->GetPendingItem();
-  EXPECT_EQ(url, item->GetURL());
+  // TODO(crbug.com/676129): Reload does not create a pending item. Remove this
+  // workaround once the bug is fixed.
+  if (!ui::PageTransitionTypeIncludingQualifiersIs(
+          ui::PageTransition::PAGE_TRANSITION_RELOAD,
+          (*context)->GetPageTransition())) {
+    NavigationManager* navigation_manager = web_state->GetNavigationManager();
+    NavigationItem* item = navigation_manager->GetPendingItem();
+    EXPECT_EQ(url, item->GetURL());
+  }
 }
 
 // Verifies correctness of |NavigationContext| (|arg0|) for navigations via POST
@@ -211,8 +217,9 @@ ACTION_P3(VerifyReloadStartedContext, web_state, url, context) {
   EXPECT_FALSE((*context)->IsSameDocument());
   EXPECT_FALSE((*context)->GetError());
   EXPECT_FALSE((*context)->GetResponseHeaders());
-  EXPECT_EQ(web_state->GetNavigationManager()->GetPendingItem(),
-            web_state->GetNavigationManager()->GetLastCommittedItem());
+  // TODO(crbug.com/676129): Reload does not create a pending item. Check
+  // pending item once the bug is fixed.
+  EXPECT_FALSE(web_state->GetNavigationManager()->GetPendingItem());
 }
 
 // Verifies correctness of |NavigationContext| (|arg0|) for reload navigation
