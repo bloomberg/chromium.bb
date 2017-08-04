@@ -7,13 +7,16 @@
 
 #include <vector>
 
+#include "cc/paint/paint_export.h"
 #include "cc/paint/paint_op_writer.h"
 
 namespace cc {
 
+class PaintShader;
+
 // PaintOpReader takes garbage |memory| and clobbers it with successive
 // read functions.
-class PaintOpReader {
+class CC_PAINT_EXPORT PaintOpReader {
  public:
   PaintOpReader(const void* memory, size_t size)
       : memory_(static_cast<const char*>(memory) +
@@ -40,6 +43,7 @@ class PaintOpReader {
   void Read(PaintImage* image);
   void Read(sk_sp<SkData>* data);
   void Read(sk_sp<SkTextBlob>* blob);
+  void Read(sk_sp<PaintShader>* shader);
 
   void Read(SkClipOp* op) {
     uint8_t value = 0u;
@@ -68,6 +72,10 @@ class PaintOpReader {
 
   template <typename T>
   void ReadFlattenable(sk_sp<T>* val);
+
+  // Attempts to align the memory to the given alignment. Returns false if there
+  // is unsufficient bytes remaining to do this padding.
+  bool AlignMemory(size_t alignment);
 
   const char* memory_ = nullptr;
   size_t remaining_bytes_ = 0u;

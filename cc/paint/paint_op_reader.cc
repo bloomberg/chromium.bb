@@ -7,15 +7,35 @@
 #include <stddef.h>
 
 #include "cc/paint/paint_flags.h"
+#include "cc/paint/paint_shader.h"
 #include "third_party/skia/include/core/SkFlattenableSerialization.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 
 namespace cc {
+namespace {
+
+bool IsValidPaintShaderType(PaintShader::Type type) {
+  return static_cast<uint8_t>(type) <
+         static_cast<uint8_t>(PaintShader::Type::kShaderCount);
+}
+
+bool IsValidSkShaderTileMode(SkShader::TileMode mode) {
+  return mode < SkShader::kTileModeCount;
+}
+
+bool IsValidPaintShaderScalingBehavior(PaintShader::ScalingBehavior behavior) {
+  return behavior == PaintShader::ScalingBehavior::kRasterAtScale ||
+         behavior == PaintShader::ScalingBehavior::kFixedScale;
+}
+
+}  // namespace
 
 template <typename T>
 void PaintOpReader::ReadSimple(T* val) {
+  if (!AlignMemory(alignof(T)))
+    valid_ = false;
   if (remaining_bytes_ < sizeof(T))
     valid_ = false;
   if (!valid_)
@@ -32,6 +52,8 @@ void PaintOpReader::ReadFlattenable(sk_sp<T>* val) {
   size_t bytes = 0;
   ReadSimple(&bytes);
   if (remaining_bytes_ < bytes)
+    valid_ = false;
+  if (!SkIsAlign4(reinterpret_cast<uintptr_t>(memory_)))
     valid_ = false;
   if (!valid_)
     return;
@@ -123,12 +145,16 @@ void PaintOpReader::Read(PaintFlags* flags) {
   ReadSimple(&flags->bitfields_uint_);
 
   // TODO(enne): ReadTypeface, http://crbug.com/737629
+
+  // Flattenables must be read at 4-byte boundary, which should be the case
+  // here.
   ReadFlattenable(&flags->path_effect_);
-  // TODO(enne): ReadPaintShader, http://crbug.com/737629
   ReadFlattenable(&flags->mask_filter_);
   ReadFlattenable(&flags->color_filter_);
   ReadFlattenable(&flags->draw_looper_);
   ReadFlattenable(&flags->image_filter_);
+
+  Read(&flags->shader_);
 }
 
 void PaintOpReader::Read(PaintImage* image) {
@@ -159,6 +185,87 @@ void PaintOpReader::Read(sk_sp<SkData>* data) {
 
 void PaintOpReader::Read(sk_sp<SkTextBlob>* blob) {
   // TODO(enne): implement SkTextBlob serialization: http://crbug.com/737629
+}
+
+void PaintOpReader::Read(sk_sp<PaintShader>* shader) {
+  bool has_shader = false;
+  ReadSimple(&has_shader);
+  if (!has_shader) {
+    *shader = nullptr;
+    return;
+  }
+  PaintShader::Type shader_type;
+  ReadSimple(&shader_type);
+  // Avoid creating a shader if something is invalid.
+  if (!valid_ || !IsValidPaintShaderType(shader_type)) {
+    valid_ = false;
+    return;
+  }
+
+  *shader = sk_sp<PaintShader>(new PaintShader(shader_type));
+  PaintShader& ref = **shader;
+  ReadSimple(&ref.flags_);
+  ReadSimple(&ref.end_radius_);
+  ReadSimple(&ref.start_radius_);
+  ReadSimple(&ref.tx_);
+  ReadSimple(&ref.ty_);
+  if (!IsValidSkShaderTileMode(ref.tx_) || !IsValidSkShaderTileMode(ref.ty_))
+    valid_ = false;
+  ReadSimple(&ref.fallback_color_);
+  ReadSimple(&ref.scaling_behavior_);
+  if (!IsValidPaintShaderScalingBehavior(ref.scaling_behavior_))
+    valid_ = false;
+  bool has_local_matrix = false;
+  ReadSimple(&has_local_matrix);
+  if (has_local_matrix) {
+    ref.local_matrix_.emplace();
+    ReadSimple(&*ref.local_matrix_);
+  }
+  ReadSimple(&ref.center_);
+  ReadSimple(&ref.tile_);
+  ReadSimple(&ref.start_point_);
+  ReadSimple(&ref.end_point_);
+  // TODO(vmpstr): Read PaintImage image_. http://crbug.com/737629
+  // TODO(vmpstr): Read sk_sp<PaintRecord> record_. http://crbug.com/737629
+  decltype(ref.colors_)::size_type colors_size = 0;
+  ReadSimple(&colors_size);
+  size_t colors_bytes = colors_size * sizeof(SkColor);
+  if (colors_bytes > remaining_bytes_) {
+    valid_ = false;
+    return;
+  }
+  ref.colors_.resize(colors_size);
+  ReadData(colors_bytes, ref.colors_.data());
+
+  decltype(ref.positions_)::size_type positions_size = 0;
+  ReadSimple(&positions_size);
+  size_t positions_bytes = positions_size * sizeof(SkScalar);
+  if (positions_bytes > remaining_bytes_) {
+    valid_ = false;
+    return;
+  }
+  ref.positions_.resize(positions_size);
+  ReadData(positions_size * sizeof(SkScalar), ref.positions_.data());
+  // We don't write the cached shader, so don't attempt to read it either.
+}
+
+bool PaintOpReader::AlignMemory(size_t alignment) {
+  // Due to the math below, alignment must be a power of two.
+  DCHECK_GT(alignment, 0u);
+  DCHECK_EQ(alignment & (alignment - 1), 0u);
+
+  uintptr_t memory = reinterpret_cast<uintptr_t>(memory_);
+  // The following is equivalent to:
+  //   padding = (alignment - memory % alignment) % alignment;
+  // because alignment is a power of two. This doesn't use modulo operator
+  // however, since it can be slow.
+  size_t padding = ((memory + alignment - 1) & ~(alignment - 1)) - memory;
+  if (padding > remaining_bytes_)
+    return false;
+
+  memory_ += padding;
+  remaining_bytes_ -= padding;
+  return true;
 }
 
 }  // namespace cc

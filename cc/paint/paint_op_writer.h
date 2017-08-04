@@ -6,6 +6,7 @@
 #define CC_PAINT_PAINT_OP_WRITER_H_
 
 #include "cc/paint/paint_canvas.h"
+#include "cc/paint/paint_export.h"
 
 struct SkRect;
 struct SkIRect;
@@ -14,8 +15,9 @@ class SkRRect;
 namespace cc {
 
 class ImageDecodeCache;
+class PaintShader;
 
-class PaintOpWriter {
+class CC_PAINT_EXPORT PaintOpWriter {
  public:
   PaintOpWriter(void* memory, size_t size)
       : memory_(static_cast<char*>(memory) + HeaderBytes()),
@@ -46,6 +48,7 @@ class PaintOpWriter {
   void Write(const PaintImage& image, ImageDecodeCache* cache);
   void Write(const sk_sp<SkData>& data);
   void Write(const sk_sp<SkTextBlob>& blob);
+  void Write(const PaintShader* shader);
 
   void Write(SkClipOp op) { Write(static_cast<uint8_t>(op)); }
   void Write(PaintCanvas::AnnotationType type) {
@@ -61,6 +64,10 @@ class PaintOpWriter {
   void WriteSimple(const T& val);
 
   void WriteFlattenable(const SkFlattenable* val);
+
+  // Attempts to align the memory to the given alignment. Returns false if there
+  // is unsufficient bytes remaining to do this padding.
+  bool AlignMemory(size_t alignment);
 
   char* memory_ = nullptr;
   size_t size_ = 0u;

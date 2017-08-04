@@ -8,6 +8,8 @@
 #include "cc/paint/decoded_draw_image.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/image_provider.h"
+#include "cc/paint/paint_op_reader.h"
+#include "cc/paint/paint_op_writer.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/test_skcanvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,49 +27,110 @@ using testing::Mock;
 
 namespace cc {
 namespace {
-
 // An arbitrary size guaranteed to fit the size of any serialized op in this
 // unit test.  This can also be used for deserialized op size safely in this
 // unit test suite as generally deserialized ops are smaller.
 static constexpr size_t kBufferBytesPerOp = 1000 + sizeof(LargestPaintOp);
-
-void ExpectFlattenableEqual(SkFlattenable* expected, SkFlattenable* actual) {
-  sk_sp<SkData> expected_data(SkValidatingSerializeFlattenable(expected));
-  sk_sp<SkData> actual_data(SkValidatingSerializeFlattenable(actual));
-  ASSERT_EQ(expected_data->size(), actual_data->size());
-  EXPECT_TRUE(expected_data->equals(actual_data.get()));
-}
-
-void ExpectPaintFlagsEqual(const PaintFlags& expected,
-                           const PaintFlags& actual) {
-  // Can't just ToSkPaint and operator== here as SkPaint does pointer
-  // comparisons on all the ref'd skia objects on the SkPaint, which
-  // is not true after serialization.
-  EXPECT_EQ(expected.getTextSize(), actual.getTextSize());
-  EXPECT_EQ(expected.getColor(), actual.getColor());
-  EXPECT_EQ(expected.getStrokeWidth(), actual.getStrokeWidth());
-  EXPECT_EQ(expected.getStrokeMiter(), actual.getStrokeMiter());
-  EXPECT_EQ(expected.getBlendMode(), actual.getBlendMode());
-  EXPECT_EQ(expected.getStrokeCap(), actual.getStrokeCap());
-  EXPECT_EQ(expected.getStrokeJoin(), actual.getStrokeJoin());
-  EXPECT_EQ(expected.getStyle(), actual.getStyle());
-  EXPECT_EQ(expected.getTextEncoding(), actual.getTextEncoding());
-  EXPECT_EQ(expected.getHinting(), actual.getHinting());
-  EXPECT_EQ(expected.getFilterQuality(), actual.getFilterQuality());
-
-  // TODO(enne): compare typeface and shader too
-  ExpectFlattenableEqual(expected.getPathEffect().get(),
-                         actual.getPathEffect().get());
-  ExpectFlattenableEqual(expected.getMaskFilter().get(),
-                         actual.getMaskFilter().get());
-  ExpectFlattenableEqual(expected.getColorFilter().get(),
-                         actual.getColorFilter().get());
-  ExpectFlattenableEqual(expected.getLooper().get(), actual.getLooper().get());
-  ExpectFlattenableEqual(expected.getImageFilter().get(),
-                         actual.getImageFilter().get());
-}
-
 }  // namespace
+
+class PaintOpSerializationTestUtils {
+ public:
+  static void ExpectFlattenableEqual(SkFlattenable* expected,
+                                     SkFlattenable* actual) {
+    sk_sp<SkData> expected_data(SkValidatingSerializeFlattenable(expected));
+    sk_sp<SkData> actual_data(SkValidatingSerializeFlattenable(actual));
+    ASSERT_EQ(expected_data->size(), actual_data->size());
+    EXPECT_TRUE(expected_data->equals(actual_data.get()));
+  }
+
+  static void ExpectPaintShadersEqual(const PaintShader* one,
+                                      const PaintShader* two) {
+    if (!one) {
+      EXPECT_FALSE(two);
+      return;
+    }
+
+    ASSERT_TRUE(one);
+    ASSERT_TRUE(two);
+
+    EXPECT_EQ(one->shader_type_, two->shader_type_);
+    EXPECT_EQ(one->flags_, two->flags_);
+    EXPECT_EQ(one->end_radius_, two->end_radius_);
+    EXPECT_EQ(one->start_radius_, two->start_radius_);
+    EXPECT_EQ(one->tx_, two->tx_);
+    EXPECT_EQ(one->ty_, two->ty_);
+    EXPECT_EQ(one->fallback_color_, two->fallback_color_);
+    EXPECT_EQ(one->scaling_behavior_, two->scaling_behavior_);
+    if (one->local_matrix_) {
+      EXPECT_TRUE(two->local_matrix_.has_value());
+      EXPECT_TRUE(*one->local_matrix_ == *two->local_matrix_);
+    } else {
+      EXPECT_FALSE(two->local_matrix_.has_value());
+    }
+    EXPECT_EQ(one->center_, two->center_);
+    EXPECT_EQ(one->tile_, two->tile_);
+    EXPECT_EQ(one->start_point_, two->start_point_);
+    EXPECT_EQ(one->end_point_, two->end_point_);
+    EXPECT_THAT(one->colors_, testing::ElementsAreArray(two->colors_));
+    EXPECT_THAT(one->positions_, testing::ElementsAreArray(two->positions_));
+  }
+
+  static void ExpectPaintFlagsEqual(const PaintFlags& expected,
+                                    const PaintFlags& actual) {
+    // Can't just ToSkPaint and operator== here as SkPaint does pointer
+    // comparisons on all the ref'd skia objects on the SkPaint, which
+    // is not true after serialization.
+    EXPECT_EQ(expected.getTextSize(), actual.getTextSize());
+    EXPECT_EQ(expected.getColor(), actual.getColor());
+    EXPECT_EQ(expected.getStrokeWidth(), actual.getStrokeWidth());
+    EXPECT_EQ(expected.getStrokeMiter(), actual.getStrokeMiter());
+    EXPECT_EQ(expected.getBlendMode(), actual.getBlendMode());
+    EXPECT_EQ(expected.getStrokeCap(), actual.getStrokeCap());
+    EXPECT_EQ(expected.getStrokeJoin(), actual.getStrokeJoin());
+    EXPECT_EQ(expected.getStyle(), actual.getStyle());
+    EXPECT_EQ(expected.getTextEncoding(), actual.getTextEncoding());
+    EXPECT_EQ(expected.getHinting(), actual.getHinting());
+    EXPECT_EQ(expected.getFilterQuality(), actual.getFilterQuality());
+
+    // TODO(enne): compare typeface too
+    ExpectFlattenableEqual(expected.getPathEffect().get(),
+                           actual.getPathEffect().get());
+    ExpectFlattenableEqual(expected.getMaskFilter().get(),
+                           actual.getMaskFilter().get());
+    ExpectFlattenableEqual(expected.getColorFilter().get(),
+                           actual.getColorFilter().get());
+    ExpectFlattenableEqual(expected.getLooper().get(),
+                           actual.getLooper().get());
+    ExpectFlattenableEqual(expected.getImageFilter().get(),
+                           actual.getImageFilter().get());
+
+    ExpectPaintShadersEqual(expected.getShader(), actual.getShader());
+  }
+
+  static void FillArbitraryShaderValues(PaintShader* shader, bool use_matrix) {
+    shader->shader_type_ = PaintShader::Type::kTwoPointConicalGradient;
+    shader->flags_ = 12345;
+    shader->end_radius_ = 12.3f;
+    shader->start_radius_ = 13.4f;
+    shader->tx_ = SkShader::kRepeat_TileMode;
+    shader->ty_ = SkShader::kMirror_TileMode;
+    shader->fallback_color_ = SkColorSetARGB(254, 252, 250, 248);
+    shader->scaling_behavior_ = PaintShader::ScalingBehavior::kRasterAtScale;
+    if (use_matrix) {
+      shader->local_matrix_.emplace(SkMatrix::I());
+      shader->local_matrix_->setSkewX(10);
+      shader->local_matrix_->setSkewY(20);
+    }
+    shader->center_ = SkPoint::Make(50, 40);
+    shader->tile_ = SkRect::MakeXYWH(7, 77, 777, 7777);
+    shader->start_point_ = SkPoint::Make(-1, -5);
+    shader->end_point_ = SkPoint::Make(13, -13);
+    // TODO(vmpstr): Add PaintImage/PaintRecord.
+    shader->colors_ = {SkColorSetARGB(1, 2, 3, 4), SkColorSetARGB(5, 6, 7, 8),
+                       SkColorSetARGB(9, 0, 1, 2)};
+    shader->positions_ = {0.f, 0.4f, 1.f};
+  }
+};
 
 TEST(PaintOpBufferTest, Empty) {
   PaintOpBuffer buffer;
@@ -112,7 +175,8 @@ class PaintOpAppendTest : public ::testing::Test {
     ASSERT_EQ(iter->GetType(), PaintOpType::SaveLayer);
     SaveLayerOp* save_op = static_cast<SaveLayerOp*>(*iter);
     EXPECT_EQ(save_op->bounds, rect_);
-    ExpectPaintFlagsEqual(save_op->flags, flags_);
+    PaintOpSerializationTestUtils::ExpectPaintFlagsEqual(save_op->flags,
+                                                         flags_);
     ++iter;
 
     ASSERT_EQ(iter->GetType(), PaintOpType::Save);
@@ -1117,6 +1181,7 @@ std::vector<PaintFlags> test_flags = {
       flags.setTextEncoding(PaintFlags::kGlyphID_TextEncoding);
       flags.setHinting(PaintFlags::kNormal_Hinting);
       flags.setFilterQuality(SkFilterQuality::kMedium_SkFilterQuality);
+      flags.setShader(PaintShader::MakeColor(SkColorSetARGB(1, 2, 3, 4)));
       return flags;
     }(),
     [] {
@@ -1153,6 +1218,38 @@ std::vector<PaintFlags> test_flags = {
       flags.setLooper(looper_builder.detach());
 
       flags.setImageFilter(SkOffsetImageFilter::Make(10, 11, nullptr));
+
+      sk_sp<PaintShader> shader = PaintShader::MakeColor(SK_ColorTRANSPARENT);
+      PaintOpSerializationTestUtils::FillArbitraryShaderValues(shader.get(),
+                                                               true);
+      flags.setShader(std::move(shader));
+
+      return flags;
+    }(),
+    [] {
+      PaintFlags flags;
+      flags.setShader(PaintShader::MakeColor(SkColorSetARGB(12, 34, 56, 78)));
+
+      return flags;
+    }(),
+    [] {
+      PaintFlags flags;
+      sk_sp<PaintShader> shader = PaintShader::MakeColor(SK_ColorTRANSPARENT);
+      PaintOpSerializationTestUtils::FillArbitraryShaderValues(shader.get(),
+                                                               false);
+      flags.setShader(std::move(shader));
+
+      return flags;
+    }(),
+    [] {
+      PaintFlags flags;
+      SkPoint points[2] = {SkPoint::Make(1, 2), SkPoint::Make(3, 4)};
+      SkColor colors[3] = {SkColorSetARGB(1, 2, 3, 4),
+                           SkColorSetARGB(4, 3, 2, 1),
+                           SkColorSetARGB(0, 10, 20, 30)};
+      SkScalar positions[3] = {0.f, 0.3f, 1.f};
+      flags.setShader(PaintShader::MakeLinearGradient(
+          points, colors, positions, 3, SkShader::kMirror_TileMode));
 
       return flags;
     }(),
@@ -1596,7 +1693,7 @@ void PushTranslateOps(PaintOpBuffer* buffer) {
 }
 
 void CompareFlags(const PaintFlags& original, const PaintFlags& written) {
-  ExpectPaintFlagsEqual(original, written);
+  PaintOpSerializationTestUtils::ExpectPaintFlagsEqual(original, written);
 }
 
 void CompareImages(const PaintImage& original, const PaintImage& written) {}
