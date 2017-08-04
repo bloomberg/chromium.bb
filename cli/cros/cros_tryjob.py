@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import argparse
+import os
 
 from chromite.lib import constants
 from chromite.cli import command
@@ -49,8 +50,6 @@ def CbuildbotArgs(options):
   for r in options.rietveld_patches:
     args.extend(('-G', r))
 
-  # TODO: local_patches ???
-
   # Specialty options.
   if options.version:
     args.extend(('--version', options.version))
@@ -66,13 +65,25 @@ def CbuildbotArgs(options):
 
 def RunLocal(options):
   """Run a local tryjob."""
-  if len(options.build_configs) != 1:
-    cros_build_lib.Die('Local tryjobs only support a single config. Got: %s',
-                       ', '.join(options.build_configs))
+  # Create the buildroot, if needed.
+  if not os.path.exists(options.buildroot):
+    prompt = 'Create %s as buildroot' % options.buildroot
+    if not cros_build_lib.BooleanPrompt(prompt=prompt, default=False):
+      print('Please specify a different buildroot via the --buildroot option.')
+      return 1
+    os.makedirs(options.buildroot)
 
-  build_config = options.build_configs[0]
-  logging.info('Running local tryjob: %s', build_config)
-  assert False, 'TODO: Local tryjobs aren\'t yet supported.'
+  # Define the command to run.
+  launcher = os.path.join(constants.CHROMITE_DIR, 'scripts', 'cbuildbot_launch')
+  args = CbuildbotArgs(options)  # The requested build arguments.
+  cmd = ([launcher, '--buildroot', options.buildroot] +
+         args +
+         options.build_configs)
+
+  # Run the tryjob.
+  result = cros_build_lib.RunCommand(cmd, debug_level=logging.CRITICAL,
+                                     error_code_ok=True, cwd=options.buildroot)
+  return result.returncode
 
 
 def RunRemote(options, patch_pool):
@@ -108,12 +119,18 @@ class TryjobCommand(command.CliCommand):
   """Schedule a tryjob."""
 
   EPILOG = """
-Examples:
+Remote Examples:
   cros tryjob -g 123 lumpy-compile-only-pre-cq
   cros tryjob -g 123 -g 456 lumpy-compile-only-pre-cq daisy-pre-cq
   cros tryjob -g 123 --hwtest daisy-paladin
-  cros tryjob --branch release-R61-9765.B asuka-paladin
-  cros tryjob --version 9795.0.0 --channel canary  lumpy-payloads
+
+Local Examples:
+  cros tryjob --local -g 123 daisy-paladin
+  cros tryjob --local --buildroot /my/cool/path -g 123 daisy-paladin
+
+Production Examples (danger, can break production if misused):
+  cros tryjob --production --branch release-R61-9765.B asuka-release
+  cros tryjob --production --version 9795.0.0 --channel canary  lumpy-payloads
 """
 
   @classmethod
@@ -153,6 +170,7 @@ Examples:
         help='Run the tryjob on a remote builder. (default)')
     where_group.add_argument(
         '-r', '--buildroot', type='path', dest='buildroot',
+        default=os.path.join(os.path.dirname(constants.SOURCE_ROOT), 'tryjob'),
         help='Root directory to use for the local tryjob. '
              'NOT the current checkout.')
 
@@ -231,7 +249,7 @@ Examples:
         sourceroot=constants.SOURCE_ROOT,
         remote_patches=[])
 
-    if not self.options.remote:
-      RunLocal(self.options)
+    if self.options.remote:
+      return RunRemote(self.options, patch_pool)
     else:
-      RunRemote(self.options, patch_pool)
+      return RunLocal(self.options)
