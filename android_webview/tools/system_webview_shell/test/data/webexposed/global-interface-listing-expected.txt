@@ -5567,7 +5567,6 @@ interface webkitRTCPeerConnection : EventTarget
     method getLocalStreams
     method getRemoteStreams
     method getStats
-    method getStreamById
     method removeStream
     method setLocalDescription
     method setRemoteDescription

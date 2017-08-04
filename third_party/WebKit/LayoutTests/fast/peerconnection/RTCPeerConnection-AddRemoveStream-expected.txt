@@ -1,5 +1,0 @@
-CONSOLE WARNING: line 22: RTCPeerConnection.getStreamById() is deprecated and will be removed in M62, around October 2017. See https://www.chromestatus.com/features/5751819573657600 for more details.
-This is a testharness.js-based test.
-PASS Tests RTCPeerConnection [add|remove]Stream. 
-Harness: the test ran to completion.
-

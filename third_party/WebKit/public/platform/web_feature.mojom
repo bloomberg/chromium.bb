@@ -1193,7 +1193,6 @@ enum WebFeature {
   kV8RTCPeerConnection_CreateDTMFSender_Method = 1642,
   kV8RTCPeerConnection_GetLocalStreams_Method = 1643,
   kV8RTCPeerConnection_GetRemoteStreams_Method = 1644,
-  kV8RTCPeerConnection_GetStreamById_Method = 1645,
   kV8RTCPeerConnection_RemoveStream_Method = 1646,
   kRTCPeerConnectionCreateDataChannelMaxRetransmitTime = 1648,
   kRTCPeerConnectionCreateDataChannelMaxRetransmits = 1649,

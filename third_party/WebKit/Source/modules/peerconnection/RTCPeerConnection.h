@@ -140,8 +140,6 @@ class MODULES_EXPORT RTCPeerConnection final
 
   MediaStreamVector getRemoteStreams() const;
 
-  MediaStream* getStreamById(const String& stream_id);
-
   void addStream(ScriptState*,
                  MediaStream*,
                  const Dictionary& media_constraints,

@@ -1143,22 +1143,6 @@ MediaStreamVector RTCPeerConnection::getRemoteStreams() const {
   return remote_streams_;
 }
 
-MediaStream* RTCPeerConnection::getStreamById(const String& stream_id) {
-  for (MediaStreamVector::iterator iter = local_streams_.begin();
-       iter != local_streams_.end(); ++iter) {
-    if ((*iter)->id() == stream_id)
-      return iter->Get();
-  }
-
-  for (MediaStreamVector::iterator iter = remote_streams_.begin();
-       iter != remote_streams_.end(); ++iter) {
-    if ((*iter)->id() == stream_id)
-      return iter->Get();
-  }
-
-  return 0;
-}
-
 ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state,
                                           RTCStatsCallback* success_callback,
                                           MediaStreamTrack* selector) {
