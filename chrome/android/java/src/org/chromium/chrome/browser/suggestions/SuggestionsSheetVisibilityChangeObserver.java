@@ -112,6 +112,13 @@ public abstract class SuggestionsSheetVisibilityChangeObserver
     }
 
     /**
+     * @return Whether the observed sheet content is currently visible.
+     */
+    boolean isVisible() {
+        return mCurrentVisibility;
+    }
+
+    /**
      * Compares the current state of the bottom sheet and activity with the ones recorded at the
      * previous call and generates events based on the difference.
      * @see #onContentShown(boolean)

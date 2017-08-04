@@ -34,7 +34,7 @@ public final class SuggestionsConfig {
      * @return Whether to use the modern layout for suggestions in Chrome Home.
      */
     public static boolean useModern() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.SUGGESTIONS_HOME_MODERN_LAYOUT);
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT);
     }
 
     /**

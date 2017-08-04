@@ -7,9 +7,11 @@ package org.chromium.chrome.browser.ntp;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
-import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.util.concurrent.TimeUnit;
 
@@ -31,7 +33,7 @@ public class LogoDelegateImpl implements LogoView.Delegate {
     private static final int CTA_IMAGE_CLICKED = 1;
     private static final int ANIMATED_LOGO_CLICKED = 2;
 
-    private final Tab mTab;
+    private final SuggestionsNavigationDelegate mNavigationDelegate;
     private LogoView mLogoView;
 
     private LogoBridge mLogoBridge;
@@ -44,13 +46,15 @@ public class LogoDelegateImpl implements LogoView.Delegate {
 
     /**
      * Construct a new {@link LogoDelegateImpl}.
-     * @param tab The tab showing the logo view.
+     * @param navigationDelegate The delegate for loading the URL when the logo is clicked.
      * @param logoView The view that shows the search provider logo.
+     * @param profile The profile to show the logo for.
      */
-    public LogoDelegateImpl(Tab tab, LogoView logoView) {
-        mTab = tab;
+    public LogoDelegateImpl(
+            SuggestionsNavigationDelegate navigationDelegate, LogoView logoView, Profile profile) {
+        mNavigationDelegate = navigationDelegate;
         mLogoView = logoView;
-        mLogoBridge = new LogoBridge(tab.getProfile());
+        mLogoBridge = new LogoBridge(profile);
     }
 
     public void destroy() {
@@ -74,7 +78,8 @@ public class LogoDelegateImpl implements LogoView.Delegate {
         } else if (mOnLogoClickUrl != null) {
             RecordHistogram.recordSparseSlowlyHistogram(LOGO_CLICK_UMA_NAME,
                     isAnimatedLogoShowing ? ANIMATED_LOGO_CLICKED : STATIC_LOGO_CLICKED);
-            mTab.loadUrl(new LoadUrlParams(mOnLogoClickUrl, PageTransition.LINK));
+            mNavigationDelegate.openUrl(WindowOpenDisposition.CURRENT_TAB,
+                    new LoadUrlParams(mOnLogoClickUrl, PageTransition.LINK));
         }
     }
 

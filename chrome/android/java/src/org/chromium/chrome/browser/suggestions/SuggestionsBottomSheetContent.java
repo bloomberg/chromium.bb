@@ -13,6 +13,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
@@ -21,11 +22,17 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.TouchEnabledDelegate;
+import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
+import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
+import org.chromium.chrome.browser.ntp.LogoDelegateImpl;
+import org.chromium.chrome.browser.ntp.LogoView;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.FadingShadow;
@@ -42,8 +49,9 @@ import java.util.Locale;
 /**
  * Provides content to be displayed inside of the Home tab of bottom sheet.
  */
-public class SuggestionsBottomSheetContent
-        implements BottomSheet.BottomSheetContent, BottomSheetNewTabController.Observer {
+public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetContent,
+                                                      BottomSheetNewTabController.Observer,
+                                                      TemplateUrlServiceObserver {
     private final View mView;
     private final FadingShadowView mShadowView;
     private final SuggestionsRecyclerView mRecyclerView;
@@ -54,6 +62,19 @@ public class SuggestionsBottomSheetContent
     private final SuggestionsCarousel mSuggestionsCarousel;
     private final SuggestionsSheetVisibilityChangeObserver mBottomSheetObserver;
     private final BottomSheet mSheet;
+    private final LogoView mLogoView;
+    private final LogoDelegateImpl mLogoDelegate;
+    private final View mToolbarView;
+
+    private boolean mNewTabShown;
+    private boolean mSearchProviderHasLogo = true;
+    private float mLastSheetHeightFraction = 1f;
+
+    // The sheet height fractions at which the logo transitions start and end.
+    private static final float LOGO_TRANSITION_BOTTOM_START = 0.3f;
+    private static final float LOGO_TRANSITION_BOTTOM_END = 0.1f;
+    private static final float LOGO_TRANSITION_TOP_START = 0.75f;
+    private static final float LOGO_TRANSITION_TOP_END = 0.95f;
 
     public SuggestionsBottomSheetContent(final ChromeActivity activity, final BottomSheet sheet,
             TabModelSelector tabModelSelector, SnackbarManager snackbarManager) {
@@ -136,12 +157,19 @@ public class SuggestionsBottomSheetContent
                     SuggestionsMetrics.recordSurfaceFullyVisible();
                     mRecyclerView.setScrollEnabled(true);
                 }
+                updateLogoTransition();
             }
 
             @Override
             public void onSheetClosed() {
                 super.onSheetClosed();
                 mRecyclerView.setAdapter(null);
+            }
+
+            @Override
+            public void onSheetOffsetChanged(float heightFraction) {
+                mLastSheetHeightFraction = heightFraction;
+                updateLogoTransition();
             }
         };
 
@@ -171,6 +199,15 @@ public class SuggestionsBottomSheetContent
             }
         });
 
+        mLogoView = mView.findViewById(R.id.search_provider_logo);
+        mToolbarView = activity.findViewById(R.id.control_container);
+        mLogoDelegate = new LogoDelegateImpl(navigationDelegate, mLogoView, profile);
+        updateSearchProviderHasLogo();
+        if (mSearchProviderHasLogo) {
+            mLogoView.showSearchProviderInitialView();
+            loadSearchProviderLogo();
+        }
+        TemplateUrlService.getInstance().addObserver(this);
         sheet.getNewTabController().addObserver(this);
     }
 
@@ -204,6 +241,7 @@ public class SuggestionsBottomSheetContent
         mBottomSheetObserver.onDestroy();
         mSuggestionsUiDelegate.onDestroy();
         mTileGroupDelegate.destroy();
+        TemplateUrlService.getInstance().removeObserver(this);
     }
 
     @Override
@@ -217,10 +255,21 @@ public class SuggestionsBottomSheetContent
     }
 
     @Override
-    public void onNewTabShown() {}
+    public void onNewTabShown() {
+        mNewTabShown = true;
+    }
 
     @Override
-    public void onNewTabHidden() {}
+    public void onNewTabHidden() {
+        mNewTabShown = false;
+    }
+
+    @Override
+    public void onTemplateURLServiceChanged() {
+        updateSearchProviderHasLogo();
+        loadSearchProviderLogo();
+        updateLogoTransition();
+    }
 
     private void maybeUpdateContextualSuggestions() {
         if (mSuggestionsCarousel == null) return;
@@ -246,5 +295,66 @@ public class SuggestionsBottomSheetContent
                                 url, contextualSuggestions);
                     }
                 });
+    }
+
+    private void updateSearchProviderHasLogo() {
+        mSearchProviderHasLogo = TemplateUrlService.getInstance().doesDefaultSearchEngineHaveLogo();
+    }
+
+    /**
+     * Loads the search provider logo (e.g. Google doodle), if any.
+     */
+    private void loadSearchProviderLogo() {
+        if (!mSearchProviderHasLogo) return;
+
+        mLogoView.showSearchProviderInitialView();
+
+        mLogoDelegate.getSearchProviderLogo(new LogoObserver() {
+            @Override
+            public void onLogoAvailable(Logo logo, boolean fromCache) {
+                if (logo == null && fromCache) return;
+
+                mLogoView.setDelegate(mLogoDelegate);
+                mLogoView.updateLogo(logo);
+            }
+        });
+    }
+
+    private void updateLogoTransition() {
+        boolean showLogo = mSearchProviderHasLogo && mNewTabShown && SuggestionsConfig.useModern()
+                && mBottomSheetObserver.isVisible();
+
+        if (!showLogo) {
+            mLogoView.setVisibility(View.GONE);
+            mToolbarView.setTranslationY(0);
+            mRecyclerView.setTranslationY(0);
+            return;
+        }
+
+        mLogoView.setVisibility(View.VISIBLE);
+
+        // TODO(mvanouwerkerk): Consider using Material animation curves.
+        final float transitionFraction;
+        if (mLastSheetHeightFraction > LOGO_TRANSITION_TOP_START) {
+            float range = LOGO_TRANSITION_TOP_END - LOGO_TRANSITION_TOP_START;
+            transitionFraction =
+                    Math.min((mLastSheetHeightFraction - LOGO_TRANSITION_TOP_START) / range, 1.0f);
+        } else if (mLastSheetHeightFraction < LOGO_TRANSITION_BOTTOM_START) {
+            float range = LOGO_TRANSITION_BOTTOM_START - LOGO_TRANSITION_BOTTOM_END;
+            transitionFraction = Math.min(
+                    (LOGO_TRANSITION_BOTTOM_START - mLastSheetHeightFraction) / range, 1.0f);
+        } else {
+            transitionFraction = 0.0f;
+        }
+
+        ViewGroup.MarginLayoutParams logoParams =
+                (ViewGroup.MarginLayoutParams) mLogoView.getLayoutParams();
+        mLogoView.setTranslationY(logoParams.topMargin * -transitionFraction);
+        mLogoView.setAlpha(Math.max(0.0f, 1.0f - (transitionFraction * 3.0f)));
+
+        float maxToolbarOffset = logoParams.height + logoParams.topMargin + logoParams.bottomMargin;
+        float toolbarOffset = maxToolbarOffset * (1.0f - transitionFraction);
+        mToolbarView.setTranslationY(toolbarOffset);
+        mRecyclerView.setTranslationY(toolbarOffset);
     }
 }

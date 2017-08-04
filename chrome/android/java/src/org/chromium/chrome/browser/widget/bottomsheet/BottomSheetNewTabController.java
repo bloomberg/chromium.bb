@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.widget.bottomsheet;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
@@ -168,7 +169,8 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
         return mIsShowingNewTabUi
                 && mBottomSheet.getTargetSheetState() != BottomSheet.SHEET_STATE_PEEK
                 && !mTabModelSelector.isIncognitoSelected()
-                && TemplateUrlService.getInstance().isDefaultSearchEngineGoogle();
+                && TemplateUrlService.getInstance().isDefaultSearchEngineGoogle()
+                && !ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT);
     }
 
     @Override

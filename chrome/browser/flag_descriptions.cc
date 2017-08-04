@@ -390,11 +390,6 @@ const char kEnablePictureInPictureName[] = "Enable picture in picture.";
 const char kEnablePictureInPictureDescription[] =
     "Enable the picture in picture feature for videos.";
 
-const char kEnableSuggestionsHomeModernLayoutName[] =
-    "Enable modern layout for suggestions.";
-const char kEnableSuggestionsHomeModernLayoutDescription[] =
-    "Enable modern layout for suggestions in Chrome Home.";
-
 const char kEnableTokenBindingName[] = "Token Binding.";
 const char kEnableTokenBindingDescription[] = "Enable Token Binding support.";
 
@@ -1432,6 +1427,10 @@ const char kBackgroundLoaderForDownloadsDescription[] =
 const char kChromeHomeExpandButtonName[] = "Chrome Home Expand Button";
 const char kChromeHomeExpandButtonDescription[] =
     "Enables the expand button for Chrome Home.";
+
+const char kChromeHomeModernLayoutName[] = "Modern layout for Chrome Home.";
+const char kChromeHomeModernLayoutDescription[] =
+    "Enables the modern layout for Chrome Home.";
 
 const char kChromeHomeSwipeLogicName[] = "Chrome Home Swipe Logic";
 const char kChromeHomeSwipeLogicDescription[] =

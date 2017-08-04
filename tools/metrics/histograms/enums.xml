@@ -22782,6 +22782,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1653838003" label="PauseBackgroundTabs:enabled"/>
   <int value="-1649778035" label="disable-clear-browsing-data-counters"/>
   <int value="-1648216169" label="NewOmniboxAnswerTypes:disabled"/>
+  <int value="-1634878515" label="ChromeHomeModernLayout:enabled"/>
   <int value="-1634154256" label="ZeroSuggestRedirectToChrome:enabled"/>
   <int value="-1631329950" label="ssl-version-max"/>
   <int value="-1630419335" label="enable-download-notification"/>
@@ -22793,7 +22794,6 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1616855537" label="enable-manual-password-generation:disabled"/>
   <int value="-1614912400" label="enable-link-disambiguation-popup"/>
   <int value="-1611305202" label="KeepPrefetchedContentSuggestions:disabled"/>
-  <int value="-1608108774" label="SuggestionsHomeModernLayout:enabled"/>
   <int value="-1607691647" label="MojoVideoEncodeAccelerator:disabled"/>
   <int value="-1605567628" label="disable-overlay-scrollbar"/>
   <int value="-1604051051" label="SpecialLocale:disabled"/>
@@ -23295,7 +23295,6 @@ from previous Chrome versions.
   <int value="7533886" label="disable-offer-store-unmasked-wallet-cards"/>
   <int value="10458238" label="disable-print-preview-simplify"/>
   <int value="11698808" label="enable-dom-distiller-button-animation"/>
-  <int value="21963384" label="SuggestionsHomeModernLayout:disabled"/>
   <int value="27507364" label="apps-keep-chrome-alive"/>
   <int value="31848187" label="ViewsTaskManager:disabled"/>
   <int value="33778663" label="OriginTrials:enabled"/>
@@ -23557,6 +23556,7 @@ from previous Chrome versions.
   <int value="943319566" label="enable-intent-picker"/>
   <int value="946688335" label="OmniboxSpareRenderer:disabled"/>
   <int value="952558794" label="enable-remote-assistance"/>
+  <int value="963457392" label="ChromeHomeModernLayout:disabled"/>
   <int value="979445973" label="OmniboxSpareRenderer:enabled"/>
   <int value="980396200" label="enable-new-korean-ime"/>
   <int value="981818901" label="AppBanners:enabled"/>
