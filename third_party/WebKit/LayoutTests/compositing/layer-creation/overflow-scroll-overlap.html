@@ -3,13 +3,12 @@
 <html>
 <head>
   <style type="text/css" media="screen">
-    
     .composited {
       height: 30px;
       width: 30px;
       transform:translateZ(0);
     }
-    
+
     .overflow {
       position: absolute;
       top: 20px;
@@ -29,13 +28,12 @@
       font-size: 18pt;
       text-align: center;
     }
-    
+
     #results {
       margin-top: 200px;
     }
   </style>
   <script type="text/javascript" charset="utf-8">
-    
     if (window.testRunner) {
       testRunner.dumpAsText();
       testRunner.waitUntilDone();
@@ -45,16 +43,15 @@
     {
       window.setTimeout(function() {
         var scrollDiv = document.getElementById('scroller');
-        scrollDiv.scrollTop = 200;
+        scrollDiv.scrollTop = 49;
 
-        
         if (window.testRunner) {
           document.getElementById('results').innerText = window.internals.layerTreeAsText(document);
           testRunner.notifyDone();
         }
       }, 150);
     }
-    
+
     window.addEventListener('load', doTest, false);
   </script>
 </head>

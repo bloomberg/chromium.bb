@@ -1729,6 +1729,174 @@ TEST_P(CompositedLayerMappingTest,
   EXPECT_FALSE(child_mapping->AncestorClippingMaskLayer());
 }
 
+TEST_P(CompositedLayerMappingTest, AncestorClipMaskRequiredDueToScaleUp) {
+  // Verify that we include the mask when the untransformed child does not
+  // intersect the border radius but the transformed child does. Here the
+  // child is inside the parent and scaled to expand to be clipped.
+  SetBodyInnerHTML(
+      "<style>"
+      "  #parent { position: relative; left: 40px; top: 40px; width: 120px;"
+      "           height: 120px; overflow: hidden; border-radius: 10px"
+      "  }"
+      "  #child { position: relative; left: 32px; top: 32px; width: 56px;"
+      "           height: 56px; background-color: green;"
+      "           transform: scale3d(2, 2, 1);"
+      "           will-change: transform;"
+      "  }"
+      "</style>"
+      "<div id='parent'>"
+      "  <div id='child'></div>"
+      "</div>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* child = GetDocument().getElementById("child");
+  ASSERT_TRUE(child);
+  PaintLayer* child_paint_layer =
+      ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
+  ASSERT_TRUE(child_paint_layer);
+  CompositedLayerMapping* child_mapping =
+      child_paint_layer->GetCompositedLayerMapping();
+  ASSERT_TRUE(child_mapping);
+  EXPECT_TRUE(child_mapping->AncestorClippingLayer());
+  EXPECT_TRUE(child_mapping->AncestorClippingLayer()->MaskLayer());
+  EXPECT_TRUE(child_mapping->AncestorClippingMaskLayer());
+}
+
+TEST_P(CompositedLayerMappingTest, AncestorClipMaskNotRequiredDueToScaleDown) {
+  // Verify that we exclude the mask when the untransformed child does
+  // intersect the border radius but the transformed child does not. Here the
+  // child is bigger than the parent and scaled down such that it does not
+  // need a mask.
+  SetBodyInnerHTML(
+      "<style>"
+      "  #parent { position: relative; left: 40px; top: 40px; width: 120px;"
+      "           height: 120px; overflow: hidden; border-radius: 10px"
+      "  }"
+      "  #child { position: relative; left: -10px; top: -10px; width: 140px;"
+      "           height: 140px; background-color: green;"
+      "           transform: scale3d(0.5, 0.5, 1);"
+      "           will-change: transform;"
+      "  }"
+      "</style>"
+      "<div id='parent'>"
+      "  <div id='child'></div>"
+      "</div>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* child = GetDocument().getElementById("child");
+  ASSERT_TRUE(child);
+  PaintLayer* child_paint_layer =
+      ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
+  ASSERT_TRUE(child_paint_layer);
+  CompositedLayerMapping* child_mapping =
+      child_paint_layer->GetCompositedLayerMapping();
+  ASSERT_TRUE(child_mapping);
+  EXPECT_TRUE(child_mapping->AncestorClippingLayer());
+  EXPECT_FALSE(child_mapping->AncestorClippingLayer()->MaskLayer());
+  EXPECT_FALSE(child_mapping->AncestorClippingMaskLayer());
+}
+
+TEST_P(CompositedLayerMappingTest, AncestorClipMaskRequiredDueToTranslateInto) {
+  // Verify that we include the mask when the untransformed child does not
+  // intersect the border radius but the transformed child does. Here the
+  // child is outside the parent and translated to be clipped.
+  SetBodyInnerHTML(
+      "<style>"
+      "  #parent { position: relative; left: 40px; top: 40px; width: 120px;"
+      "           height: 120px; overflow: hidden; border-radius: 10px"
+      "  }"
+      "  #child { position: relative; left: 140px; top: 140px; width: 100px;"
+      "           height: 100px; background-color: green;"
+      "           transform: translate(-120px, -120px);"
+      "           will-change: transform;"
+      "  }"
+      "</style>"
+      "<div id='parent'>"
+      "  <div id='child'></div>"
+      "</div>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* child = GetDocument().getElementById("child");
+  ASSERT_TRUE(child);
+  PaintLayer* child_paint_layer =
+      ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
+  ASSERT_TRUE(child_paint_layer);
+  CompositedLayerMapping* child_mapping =
+      child_paint_layer->GetCompositedLayerMapping();
+  ASSERT_TRUE(child_mapping);
+  EXPECT_TRUE(child_mapping->AncestorClippingLayer());
+  EXPECT_TRUE(child_mapping->AncestorClippingLayer()->MaskLayer());
+  EXPECT_TRUE(child_mapping->AncestorClippingMaskLayer());
+}
+
+TEST_P(CompositedLayerMappingTest,
+       AncestorClipMaskNotRequiredDueToTranslateOut) {
+  // Verify that we exclude the mask when the untransformed child does
+  // intersect the border radius but the transformed child does not. Here the
+  // child is inside the parent and translated outside.
+  SetBodyInnerHTML(
+      "<style>"
+      "  #parent { position: relative; left: 40px; top: 40px; width: 120px;"
+      "           height: 120px; overflow: hidden; border-radius: 10px"
+      "  }"
+      "  #child { position: relative; left: 15px; top: 15px; width: 100px;"
+      "           height: 100px; background-color: green;"
+      "           transform: translate(110px, 110px);"
+      "           will-change: transform;"
+      "  }"
+      "</style>"
+      "<div id='parent'>"
+      "  <div id='child'></div>"
+      "</div>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* child = GetDocument().getElementById("child");
+  ASSERT_TRUE(child);
+  PaintLayer* child_paint_layer =
+      ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
+  ASSERT_TRUE(child_paint_layer);
+  CompositedLayerMapping* child_mapping =
+      child_paint_layer->GetCompositedLayerMapping();
+  ASSERT_TRUE(child_mapping);
+  EXPECT_TRUE(child_mapping->AncestorClippingLayer());
+  EXPECT_FALSE(child_mapping->AncestorClippingLayer()->MaskLayer());
+  EXPECT_FALSE(child_mapping->AncestorClippingMaskLayer());
+}
+
+TEST_P(CompositedLayerMappingTest, AncestorClipMaskRequiredDueToRotation) {
+  // Verify that we include the mask when the untransformed child does not
+  // intersect the border radius but the transformed child does. Here the
+  // child is just within the mask-not-required area but when rotated requires
+  // a mask.
+  SetBodyInnerHTML(
+      "<style>"
+      "  #parent { position: relative; left: 40px; top: 40px; width: 120px;"
+      "           height: 120px; overflow: hidden; border-radius: 10px"
+      "  }"
+      "  #child { position: relative; left: 11px; top: 11px; width: 98px;"
+      "           height: 98px; background-color: green;"
+      "           transform: rotate3d(0, 0, 1, 5deg);"
+      "           will-change: transform;"
+      "  }"
+      "</style>"
+      "<div id='parent'>"
+      "  <div id='child'></div>"
+      "</div>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* child = GetDocument().getElementById("child");
+  ASSERT_TRUE(child);
+  PaintLayer* child_paint_layer =
+      ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
+  ASSERT_TRUE(child_paint_layer);
+  CompositedLayerMapping* child_mapping =
+      child_paint_layer->GetCompositedLayerMapping();
+  ASSERT_TRUE(child_mapping);
+  EXPECT_TRUE(child_mapping->AncestorClippingLayer());
+  EXPECT_TRUE(child_mapping->AncestorClippingLayer()->MaskLayer());
+  EXPECT_TRUE(child_mapping->AncestorClippingMaskLayer());
+}
+
 TEST_P(CompositedLayerMappingTest, StickyPositionMainThreadOffset) {
   SetBodyInnerHTML(
       "<style>.composited { backface-visibility: hidden; }"
