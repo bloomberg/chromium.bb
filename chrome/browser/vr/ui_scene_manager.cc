@@ -260,6 +260,7 @@ void UiSceneManager::CreateSystemIndicators() {
 
   std::unique_ptr<LinearLayout> indicator_layout =
       base::MakeUnique<LinearLayout>(LinearLayout::kHorizontal);
+  indicator_layout->set_draw_phase(kPhaseForeground);
   indicator_layout->set_id(AllocateId());
   indicator_layout->set_y_anchoring(YAnchoring::YTOP);
   indicator_layout->SetTranslate(0, kIndicatorVerticalOffset,
