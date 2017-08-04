@@ -12,6 +12,7 @@ mojom("interfaces") {
     "nfc.mojom",
     "nfc_provider.mojom",
     "power_monitor.mojom",
+    "serial.mojom",
     "time_zone_monitor.mojom",
     "vibration_manager.mojom",
     "wake_lock.mojom",
@@ -21,6 +22,10 @@ mojom("interfaces") {
 
   public_deps = [
     ":constants",
+  ]
+
+  deps = [
+    "//device/serial:serial_mojo",
   ]
 
   # TODO(crbug.com/699569): Convert to use the new JS bindings.

@@ -4,10 +4,9 @@
 
 var testGetDevices = function() {
   var onGetDevices = function(devices) {
-    // Any length is potentially valid, because we're on unknown hardware. But
-    // we are testing at least that the devices member was filled in, so it's
-    // still a somewhat meaningful test.
-    chrome.test.assertTrue(devices.length >= 0);
+    chrome.test.assertTrue(devices.length == 2);
+    chrome.test.assertEq('/dev/fakeserialmojo', devices[0].path);
+    chrome.test.assertEq('\\\\COM800\\', devices[1].path);
     chrome.test.succeed();
   }
 

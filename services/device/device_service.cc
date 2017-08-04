@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "device/sensors/device_sensor_host.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/device/fingerprint/fingerprint.h"
@@ -19,6 +20,7 @@
 #include "services/device/power_monitor/power_monitor_message_broadcaster.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/device/public/interfaces/battery_monitor.mojom.h"
+#include "services/device/serial/serial_device_enumerator_impl.h"
 #include "services/device/time_zone_monitor/time_zone_monitor.h"
 #include "services/device/wake_lock/wake_lock_provider.h"
 #include "ui/gfx/native_widget_types.h"
@@ -109,6 +111,9 @@ void DeviceService::OnStart() {
       &DeviceService::BindTimeZoneMonitorRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::WakeLockProvider>(base::Bind(
       &DeviceService::BindWakeLockProviderRequest, base::Unretained(this)));
+  registry_.AddInterface<mojom::SerialDeviceEnumerator>(
+      base::Bind(&DeviceService::BindSerialDeviceEnumeratorRequest,
+                 base::Unretained(this)));
 
 #if defined(OS_ANDROID)
   registry_.AddInterface(GetJavaInterfaceProvider()
@@ -246,6 +251,14 @@ void DeviceService::BindWakeLockProviderRequest(
     mojom::WakeLockProviderRequest request) {
   WakeLockProvider::Create(std::move(request), file_task_runner_,
                            wake_lock_context_callback_);
+}
+
+void DeviceService::BindSerialDeviceEnumeratorRequest(
+    mojom::SerialDeviceEnumeratorRequest request) {
+#if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
+    defined(OS_MACOSX)
+  SerialDeviceEnumeratorImpl::Create(std::move(request));
+#endif
 }
 
 #if defined(OS_ANDROID)

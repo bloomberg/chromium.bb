@@ -15,6 +15,7 @@
 #include "services/device/public/interfaces/nfc_provider.mojom.h"
 #include "services/device/public/interfaces/power_monitor.mojom.h"
 #include "services/device/public/interfaces/sensor_provider.mojom.h"
+#include "services/device/public/interfaces/serial.mojom.h"
 #include "services/device/public/interfaces/time_zone_monitor.mojom.h"
 #include "services/device/public/interfaces/vibration_manager.mojom.h"
 #include "services/device/public/interfaces/wake_lock_provider.mojom.h"
@@ -96,6 +97,9 @@ class DeviceService : public service_manager::Service {
   void BindTimeZoneMonitorRequest(mojom::TimeZoneMonitorRequest request);
 
   void BindWakeLockProviderRequest(mojom::WakeLockProviderRequest request);
+
+  void BindSerialDeviceEnumeratorRequest(
+      mojom::SerialDeviceEnumeratorRequest request);
 
   std::unique_ptr<PowerMonitorMessageBroadcaster>
       power_monitor_message_broadcaster_;
