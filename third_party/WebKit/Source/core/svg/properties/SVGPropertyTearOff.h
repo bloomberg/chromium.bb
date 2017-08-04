@@ -68,7 +68,7 @@ class SVGPropertyTearOffBase
     context_element_ = context_element;
     // Requires SVGPropertyTearOffBase to be the left-most class in the
     // inheritance hierarchy.
-    ScriptWrappableVisitor::WriteBarrier(this, context_element_.Get());
+    ScriptWrappableVisitor::WriteBarrier(context_element_.Get());
     attribute_name_ = attribute_name;
   }
 

@@ -224,18 +224,14 @@ void ScriptWrappableVisitor::MarkWrappersInAllWorlds(
 
 void ScriptWrappableVisitor::WriteBarrier(
     v8::Isolate* isolate,
-    const void* src_object,
     const TraceWrapperV8Reference<v8::Value>* dst_object) {
-  if (!src_object || !dst_object || dst_object->IsEmpty() ||
+  if (!dst_object || dst_object->IsEmpty() ||
       !ThreadState::Current()->WrapperTracingInProgress()) {
     return;
   }
-  // We only require a write barrier if |srcObject|  is already marked. Note
-  // that this implicitly disables the write barrier when the GC is not
-  // active as object will not be marked in this case.
-  if (!HeapObjectHeader::FromPayload(src_object)->IsWrapperHeaderMarked()) {
-    return;
-  }
+
+  // Conservatively assume that the source object containing |dst_object| is
+  // marked.
   CurrentVisitor(isolate)->MarkWrapper(
       &(const_cast<TraceWrapperV8Reference<v8::Value>*>(dst_object)->Get()));
 }

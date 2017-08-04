@@ -77,7 +77,7 @@ class ElementRareData : public NodeRareData {
   ElementShadow& EnsureShadow() {
     if (!shadow_) {
       shadow_ = ElementShadow::Create();
-      ScriptWrappableVisitor::WriteBarrier(this, shadow_);
+      ScriptWrappableVisitor::WriteBarrier(shadow_);
     }
     return *shadow_;
   }
@@ -85,7 +85,7 @@ class ElementRareData : public NodeRareData {
   NamedNodeMap* AttributeMap() const { return attribute_map_.Get(); }
   void SetAttributeMap(NamedNodeMap* attribute_map) {
     attribute_map_ = attribute_map;
-    ScriptWrappableVisitor::WriteBarrier(this, attribute_map_);
+    ScriptWrappableVisitor::WriteBarrier(attribute_map_);
   }
 
   ComputedStyle* GetComputedStyle() const { return computed_style_.Get(); }
@@ -97,13 +97,13 @@ class ElementRareData : public NodeRareData {
   DOMTokenList* GetClassList() const { return class_list_.Get(); }
   void SetClassList(DOMTokenList* class_list) {
     class_list_ = class_list;
-    ScriptWrappableVisitor::WriteBarrier(this, class_list_);
+    ScriptWrappableVisitor::WriteBarrier(class_list_);
   }
 
   DatasetDOMStringMap* Dataset() const { return dataset_.Get(); }
   void SetDataset(DatasetDOMStringMap* dataset) {
     dataset_ = dataset;
-    ScriptWrappableVisitor::WriteBarrier(this, dataset_);
+    ScriptWrappableVisitor::WriteBarrier(dataset_);
   }
 
   ScrollOffset SavedLayerScrollOffset() const {
@@ -141,7 +141,7 @@ class ElementRareData : public NodeRareData {
   AccessibleNode* EnsureAccessibleNode(Element* owner_element) {
     if (!accessible_node_) {
       accessible_node_ = new AccessibleNode(owner_element);
-      ScriptWrappableVisitor::WriteBarrier(this, accessible_node_);
+      ScriptWrappableVisitor::WriteBarrier(accessible_node_);
     }
     return accessible_node_;
   }
@@ -151,7 +151,7 @@ class ElementRareData : public NodeRareData {
   void RemoveAttrNodeList() { attr_node_list_.Clear(); }
   void AddAttr(Attr* attr) {
     EnsureAttrNodeList().push_back(attr);
-    ScriptWrappableVisitor::WriteBarrier(this, attr);
+    ScriptWrappableVisitor::WriteBarrier(attr);
   }
 
   ElementIntersectionObserverData* IntersectionObserverData() const {
@@ -160,7 +160,7 @@ class ElementRareData : public NodeRareData {
   ElementIntersectionObserverData& EnsureIntersectionObserverData() {
     if (!intersection_observer_data_) {
       intersection_observer_data_ = new ElementIntersectionObserverData();
-      ScriptWrappableVisitor::WriteBarrier(this, intersection_observer_data_);
+      ScriptWrappableVisitor::WriteBarrier(intersection_observer_data_);
     }
     return *intersection_observer_data_;
   }

@@ -66,7 +66,7 @@ template <typename NodeType>
 StaticNodeTypeList<NodeType>* StaticNodeTypeList<NodeType>::Adopt(
     HeapVector<Member<NodeType>>& nodes) {
   StaticNodeTypeList<NodeType>* node_list = new StaticNodeTypeList<NodeType>;
-  swap(node_list->nodes_, nodes, node_list);
+  swap(node_list->nodes_, nodes);
   return node_list;
 }
 

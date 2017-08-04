@@ -383,11 +383,11 @@ class CORE_EXPORT Node : public EventTarget {
   // integrity of the tree.
   void SetPreviousSibling(Node* previous) {
     previous_ = previous;
-    ScriptWrappableVisitor::WriteBarrier(this, previous_);
+    ScriptWrappableVisitor::WriteBarrier(previous_);
   }
   void SetNextSibling(Node* next) {
     next_ = next;
-    ScriptWrappableVisitor::WriteBarrier(this, next_);
+    ScriptWrappableVisitor::WriteBarrier(next_);
   }
 
   virtual bool CanContainRangeEndPoint() const { return false; }
@@ -996,7 +996,7 @@ inline void Node::SetParentOrShadowHostNode(ContainerNode* parent) {
   DCHECK(IsMainThread());
   parent_or_shadow_host_node_ = parent;
   ScriptWrappableVisitor::WriteBarrier(
-      this, reinterpret_cast<Node*>(parent_or_shadow_host_node_.Get()));
+      reinterpret_cast<Node*>(parent_or_shadow_host_node_.Get()));
 }
 
 inline ContainerNode* Node::ParentOrShadowHostNode() const {

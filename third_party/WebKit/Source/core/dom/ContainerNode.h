@@ -348,11 +348,11 @@ class CORE_EXPORT ContainerNode : public Node {
 
   void SetFirstChild(Node* child) {
     first_child_ = child;
-    ScriptWrappableVisitor::WriteBarrier(this, first_child_);
+    ScriptWrappableVisitor::WriteBarrier(first_child_);
   }
   void SetLastChild(Node* child) {
     last_child_ = child;
-    ScriptWrappableVisitor::WriteBarrier(this, last_child_);
+    ScriptWrappableVisitor::WriteBarrier(last_child_);
   }
 
   // Utility functions for NodeListsNodeData API.

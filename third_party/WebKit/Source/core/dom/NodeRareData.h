@@ -111,7 +111,7 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
     DCHECK(ThreadState::Current()->IsGCForbidden());
     if (!node_lists_) {
       node_lists_ = NodeListsNodeData::Create();
-      ScriptWrappableVisitor::WriteBarrier(this, node_lists_);
+      ScriptWrappableVisitor::WriteBarrier(node_lists_);
     }
     return *node_lists_;
   }
@@ -122,7 +122,7 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
   NodeMutationObserverData& EnsureMutationObserverData() {
     if (!mutation_observer_data_) {
       mutation_observer_data_ = NodeMutationObserverData::Create();
-      ScriptWrappableVisitor::WriteBarrier(this, mutation_observer_data_);
+      ScriptWrappableVisitor::WriteBarrier(mutation_observer_data_);
     }
     return *mutation_observer_data_;
   }
