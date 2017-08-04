@@ -422,6 +422,13 @@ void Shell::UpdateShelfVisibility() {
     Shelf::ForWindow(root)->UpdateVisibilityState();
 }
 
+PrefService* Shell::GetActiveUserPrefService() const {
+  if (shell_port_->GetAshConfig() == Config::MASH)
+    return profile_pref_service_.get();
+
+  return shell_delegate_->GetActiveUserPrefService();
+}
+
 PrefService* Shell::GetLocalStatePrefService() const {
   if (shell_port_->GetAshConfig() == Config::MASH)
     return local_state_.get();
@@ -1242,15 +1249,8 @@ void Shell::OnWindowActivated(
 
 void Shell::OnActiveUserSessionChanged(const AccountId& account_id) {
   if (GetAshConfig() == Config::MASH && shell_delegate_->GetShellConnector()) {
-    // Profile pref service is null while connecting after profile switch.
-    if (profile_pref_service_) {
-      for (auto& observer : shell_observers_)
-        observer.OnActiveUserPrefServiceChanged(nullptr);
-      // Reset after notification so clients can unregister pref observers on
-      // the old PrefService.
-      profile_pref_service_.reset();
-    }
-
+    // NOTE: |profile_pref_service_| will point to the previous user's profile
+    // while the connection is being made.
     auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
     RegisterProfilePrefs(pref_registry.get());
     prefs::ConnectToPrefService(
