@@ -137,6 +137,9 @@ class ServerWindow {
 
   const Windows& transient_children() const { return transient_children_; }
 
+  // Returns true if |this| is a transient descendant of |window|.
+  bool HasTransientAncestor(const ServerWindow* window) const;
+
   ModalType modal_type() const { return modal_type_; }
   void SetModalType(ModalType modal_type);
 

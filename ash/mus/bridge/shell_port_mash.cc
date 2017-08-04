@@ -342,6 +342,23 @@ void ShellPortMash::OnCreatedRootWindowContainers(
     window_manager_->window_manager_client()->AddActivationParent(
         root_window->GetChildById(kActivatableShellWindowIds[i]));
   }
+
+  UpdateSystemModalAndBlockingContainers();
+}
+
+void ShellPortMash::UpdateSystemModalAndBlockingContainers() {
+  std::vector<aura::BlockingContainers> all_blocking_containers;
+  for (RootWindowController* root_window_controller :
+       Shell::GetAllRootWindowControllers()) {
+    aura::BlockingContainers blocking_containers;
+    wm::GetBlockingContainersForRoot(
+        root_window_controller->GetRootWindow(),
+        &blocking_containers.min_container,
+        &blocking_containers.system_modal_container);
+    all_blocking_containers.push_back(blocking_containers);
+  }
+  window_manager_->window_manager_client()->SetBlockingContainers(
+      all_blocking_containers);
 }
 
 void ShellPortMash::OnHostsInitialized() {

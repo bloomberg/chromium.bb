@@ -57,6 +57,9 @@ class TestWindowManagerClient : public ui::mojom::WindowManagerClient {
   void SwapDisplayRoots(int64_t display_id1,
                         int64_t display_id2,
                         const SwapDisplayRootsCallback& callback) override;
+  void SetBlockingContainers(
+      std::vector<ui::mojom::BlockingContainersPtr> blocking_containers,
+      const SetBlockingContainersCallback& callback) override;
   void WmResponse(uint32_t change_id, bool response) override;
   void WmSetBoundsResponse(uint32_t change_id) override;
   void WmRequestClose(Id transport_window_id) override;

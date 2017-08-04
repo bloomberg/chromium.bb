@@ -18,9 +18,11 @@
 #include "services/ui/ws/default_access_policy.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_manager.h"
+#include "services/ui/ws/event_dispatcher.h"
 #include "services/ui/ws/event_matcher.h"
 #include "services/ui/ws/focus_controller.h"
 #include "services/ui/ws/frame_generator.h"
+#include "services/ui/ws/modal_window_controller.h"
 #include "services/ui/ws/operation.h"
 #include "services/ui/ws/platform_display.h"
 #include "services/ui/ws/server_window.h"
@@ -393,6 +395,30 @@ bool WindowTree::ProcessSwapDisplayRoots(int64_t display_id1,
   if (frame_generator1 && frame_generator2)
     frame_generator1->SwapSurfaceWith(frame_generator2);
 
+  return true;
+}
+
+bool WindowTree::ProcessSetBlockingContainers(
+    std::vector<mojom::BlockingContainersPtr>
+        transport_all_blocking_containers) {
+  DCHECK(window_manager_state_);  // Can only be called by the window manager.
+
+  std::vector<BlockingContainers> all_containers;
+  for (auto& transport_container : transport_all_blocking_containers) {
+    BlockingContainers blocking_containers;
+    blocking_containers.system_modal_container = GetWindowByClientId(
+        ClientWindowId(transport_container->system_modal_container_id));
+    if (!blocking_containers.system_modal_container) {
+      DVLOG(1) << "SetBlockingContainers called with unknown modal container";
+      return false;
+    }
+    blocking_containers.min_container = GetWindowByClientId(
+        ClientWindowId(transport_container->min_container_id));
+    all_containers.push_back(blocking_containers);
+  }
+  window_manager_state_->event_dispatcher()
+      ->modal_window_controller()
+      ->SetBlockingContainers(all_containers);
   return true;
 }
 
@@ -2376,6 +2402,13 @@ void WindowTree::SwapDisplayRoots(int64_t display_id1,
                                   const SwapDisplayRootsCallback& callback) {
   DCHECK(window_manager_state_);  // Only applicable to the window manager.
   callback.Run(ProcessSwapDisplayRoots(display_id1, display_id2));
+}
+
+void WindowTree::SetBlockingContainers(
+    std::vector<::ui::mojom::BlockingContainersPtr> blocking_containers,
+    const SetBlockingContainersCallback& callback) {
+  DCHECK(window_manager_state_);  // Only applicable to the window manager.
+  callback.Run(ProcessSetBlockingContainers(std::move(blocking_containers)));
 }
 
 void WindowTree::WmResponse(uint32_t change_id, bool response) {

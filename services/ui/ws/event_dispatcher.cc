@@ -45,7 +45,6 @@ EventDispatcher::EventDispatcher(EventDispatcherDelegate* delegate)
     : delegate_(delegate),
       capture_window_(nullptr),
       capture_window_client_id_(kInvalidClientId),
-      modal_window_controller_(this),
       event_targeter_(base::MakeUnique<EventTargeter>(this)),
       mouse_button_down_(false),
       mouse_cursor_source_window_(nullptr),
@@ -181,6 +180,7 @@ void EventDispatcher::OnWillDestroyDragTargetConnection(
 
 void EventDispatcher::AddSystemModalWindow(ServerWindow* window) {
   modal_window_controller_.AddSystemModalWindow(window);
+  ReleaseCaptureBlockedByAnyModalWindow();
 }
 
 void EventDispatcher::ReleaseCaptureBlockedByAnyModalWindow() {

@@ -269,6 +269,13 @@ void ServerWindow::RemoveTransientWindow(ServerWindow* child) {
     observer.OnTransientWindowRemoved(this, child);
 }
 
+bool ServerWindow::HasTransientAncestor(const ServerWindow* window) const {
+  const ServerWindow* transient_ancestor = this;
+  while (transient_ancestor && transient_ancestor != window)
+    transient_ancestor = transient_ancestor->transient_parent_;
+  return transient_ancestor == window;
+}
+
 void ServerWindow::SetModalType(ModalType modal_type) {
   if (modal_type_ == modal_type)
     return;
