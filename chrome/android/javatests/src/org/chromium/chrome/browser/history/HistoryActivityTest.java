@@ -559,7 +559,8 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
         assertEquals(3, firstGroup.size());
     }
 
-    @SmallTest
+    // @SmallTest
+    @FlakyTest
     public void testCopyLink() throws Exception {
         final ClipboardManager clipboardManager = (ClipboardManager)
                 getActivity().getSystemService(getActivity().CLIPBOARD_SERVICE);
