@@ -86,6 +86,7 @@
                      transition:(ui::PageTransition)transition {
   web::WebState* webState = _webStateList->GetActiveWebState();
   DCHECK(webState);
+  webState->SetWebUsageEnabled(true);
 
   if (url.SchemeIs(url::kJavaScriptScheme)) {
     // TODO(crbug.com/708341): Percent-unescape the url content first.

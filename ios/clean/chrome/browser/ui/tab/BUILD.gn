@@ -39,6 +39,7 @@ source_set("tab_ui") {
     "tab_container_view_controller.mm",
   ]
   deps = [
+    "//base",
     "//ios/clean/chrome/browser/ui",
     "//ios/clean/chrome/browser/ui/transitions",
     "//ios/clean/chrome/browser/ui/transitions/animators",
