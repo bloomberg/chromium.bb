@@ -4,7 +4,6 @@
 
 typemaps = [
   "//cc/ipc/begin_frame_args.typemap",
-  "//cc/ipc/compositor_frame.typemap",
   "//cc/ipc/compositor_frame_metadata.typemap",
   "//cc/ipc/copy_output_request.typemap",
   "//cc/ipc/copy_output_result.typemap",
