@@ -119,6 +119,11 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
   SelectionPaintRange paint_range_;
 };
 
+#ifndef NDEBUG
+void CORE_EXPORT PrintLayoutObjectForSelection(std::ostream&, LayoutObject*);
+void ShowLayoutObjectForSelection(LayoutObject*);
+#endif
+
 }  // namespace blink
 
 #endif
