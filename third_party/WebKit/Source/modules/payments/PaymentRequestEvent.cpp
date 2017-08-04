@@ -80,8 +80,6 @@ ScriptPromise PaymentRequestEvent::openWindow(ScriptState* script_state,
     return promise;
   }
 
-  // TODO(gogerald): Once the issue of the spec is resolved, we should apply the
-  // changes. Refer https://github.com/w3c/payment-handler/issues/168.
   if (!context->GetSecurityOrigin()->IsSameSchemeHostPortAndSuborigin(
           SecurityOrigin::Create(parsed_url_to_open).Get())) {
     resolver->Reject(DOMException::Create(
@@ -90,8 +88,6 @@ ScriptPromise PaymentRequestEvent::openWindow(ScriptState* script_state,
     return promise;
   }
 
-  // TODO(gogerald): Once the issue of the spec is resolved, we should apply the
-  // changes. Refer https://github.com/w3c/payment-handler/issues/169.
   if (!context->IsWindowInteractionAllowed()) {
     resolver->Reject(DOMException::Create(kInvalidAccessError,
                                           "Not allowed to open a window."));
