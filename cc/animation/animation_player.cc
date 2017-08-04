@@ -4,6 +4,7 @@
 
 #include "cc/animation/animation_player.h"
 
+#include <inttypes.h>
 #include <algorithm>
 
 #include "base/stl_util.h"
@@ -1205,9 +1206,8 @@ void AnimationPlayer::PushPropertiesToImplThread(
 
 std::string AnimationPlayer::ToString() const {
   return base::StringPrintf(
-      "AnimationPlayer{id=%d, element_id=(%lu), animations=[%s]}", id_,
-      static_cast<unsigned long>(element_id_.id_),
-      AnimationsToString().c_str());
+      "AnimationPlayer{id=%d, element_id=%s, animations=[%s]}", id_,
+      element_id_.ToString().c_str(), AnimationsToString().c_str());
 }
 
 std::string AnimationPlayer::AnimationsToString() const {

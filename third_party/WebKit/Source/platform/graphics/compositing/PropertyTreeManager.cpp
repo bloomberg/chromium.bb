@@ -120,7 +120,8 @@ void PropertyTreeManager::SetupRootEffectNode() {
       *effect_tree.Node(effect_tree.Insert(cc::EffectNode(), kInvalidNodeId));
   DCHECK_EQ(effect_node.id, kSecondaryRootNodeId);
   effect_node.stable_id =
-      CompositorElementIdFromRootEffectId(kSecondaryRootNodeId).id_;
+      CompositorElementIdFromRootEffectId(kSecondaryRootNodeId)
+          .ToInternalValue();
   effect_node.transform_id = kRealRootNodeId;
   effect_node.clip_id = kSecondaryRootNodeId;
   effect_node.has_render_surface = true;
@@ -389,7 +390,8 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
 
   cc::EffectNode& effect_node = *GetEffectTree().Node(GetEffectTree().Insert(
       cc::EffectNode(), GetCurrentCompositorEffectNodeIndex()));
-  effect_node.stable_id = next_effect->GetCompositorElementId().id_;
+  effect_node.stable_id =
+      next_effect->GetCompositorElementId().ToInternalValue();
   effect_node.clip_id = output_clip_id;
   // Every effect is supposed to have render surface enabled for grouping,
   // but we can get away without one if the effect is opacity-only and has only
