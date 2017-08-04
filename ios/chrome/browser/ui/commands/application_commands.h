@@ -28,6 +28,9 @@
 
 @protocol ApplicationCommands<NSObject, ApplicationSettingsCommands>
 
+// Dismisses all modal dialogs.
+- (void)dismissModalDialogs;
+
 // Shows the Settings UI.
 - (void)showSettings;
 

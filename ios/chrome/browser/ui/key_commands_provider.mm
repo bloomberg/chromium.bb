@@ -210,7 +210,7 @@
                            modifierFlags:Cr_UIKeyModifierNone
                                    title:nil
                                   action:^{
-                                    execute(IDC_CLOSE_MODALS);
+                                    [weakDispatcher dismissModalDialogs];
                                   }],
     [UIKeyCommand cr_keyCommandWithInput:@"n"
                            modifierFlags:UIKeyModifierCommand
