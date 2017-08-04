@@ -50,11 +50,13 @@ namespace {
 constexpr gfx::Insets kContentRowPadding(4, 12, 12, 12);
 constexpr gfx::Insets kActionsRowPadding(8, 8, 8, 8);
 constexpr int kActionsRowHorizontalSpacing = 8;
-constexpr gfx::Insets kImageContainerPadding(0, 12, 12, 12);
 constexpr gfx::Insets kActionButtonPadding(0, 12, 0, 12);
 constexpr gfx::Insets kStatusTextPadding(4, 0, 0, 0);
 constexpr gfx::Size kActionButtonMinSize(88, 32);
 constexpr gfx::Size kIconViewSize(30, 30);
+constexpr gfx::Insets kLargeImageContainerPadding(0, 12, 12, 12);
+constexpr gfx::Size kLargeImageMinSize(328, 0);
+constexpr gfx::Size kLargeImageMaxSize(328, 218);
 
 // Foreground of small icon image.
 constexpr SkColor kSmallImageBackgroundColor = SK_ColorWHITE;
@@ -70,6 +72,8 @@ const float kActionButtonInkDropRippleVisibleOpacity = 0.08f;
 const float kActionButtonInkDropHighlightVisibleOpacity = 0.08f;
 // Text color of action button.
 const SkColor kActionButtonTextColor = SkColorSetRGB(0x33, 0x67, 0xD6);
+// Background color of the large image.
+const SkColor kLargeImageBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
 
 // Max number of lines for message_view_.
 constexpr int kMaxLinesForMessageView = 1;
@@ -289,6 +293,119 @@ NotificationButtonMD::CreateInkDropHighlight() const {
       views::LabelButton::CreateInkDropHighlight();
   highlight->set_visible_opacity(kActionButtonInkDropHighlightVisibleOpacity);
   return highlight;
+}
+
+// LargeImageView //////////////////////////////////////////////////////////////
+
+class LargeImageView : public views::View {
+ public:
+  LargeImageView();
+  ~LargeImageView() override;
+
+  void SetImage(const gfx::ImageSkia& image);
+
+  void OnPaint(gfx::Canvas* canvas) override;
+  const char* GetClassName() const override;
+
+ private:
+  gfx::Size GetResizedImageSize();
+
+  gfx::ImageSkia image_;
+
+  DISALLOW_COPY_AND_ASSIGN(LargeImageView);
+};
+
+LargeImageView::LargeImageView() {
+  SetBackground(views::CreateSolidBackground(kLargeImageBackgroundColor));
+}
+
+LargeImageView::~LargeImageView() = default;
+
+void LargeImageView::SetImage(const gfx::ImageSkia& image) {
+  image_ = image;
+  gfx::Size preferred_size = GetResizedImageSize();
+  preferred_size.SetToMax(kLargeImageMinSize);
+  preferred_size.SetToMin(kLargeImageMaxSize);
+  SetPreferredSize(preferred_size);
+  SchedulePaint();
+  Layout();
+}
+
+void LargeImageView::OnPaint(gfx::Canvas* canvas) {
+  views::View::OnPaint(canvas);
+
+  gfx::Size resized_size = GetResizedImageSize();
+  gfx::Size drawn_size = resized_size;
+  drawn_size.SetToMin(kLargeImageMaxSize);
+  gfx::Rect drawn_bounds = GetContentsBounds();
+  drawn_bounds.ClampToCenteredSize(drawn_size);
+
+  gfx::ImageSkia resized_image = gfx::ImageSkiaOperations::CreateResizedImage(
+      image_, skia::ImageOperations::RESIZE_BEST, resized_size);
+
+  // Cut off the overflown part.
+  gfx::ImageSkia drawn_image = gfx::ImageSkiaOperations::ExtractSubset(
+      resized_image, gfx::Rect(drawn_size));
+
+  canvas->DrawImageInt(drawn_image, drawn_bounds.x(), drawn_bounds.y());
+}
+
+const char* LargeImageView::GetClassName() const {
+  return "LargeImageView";
+}
+
+// Returns expected size of the image right after resizing.
+// The GetResizedImageSize().width() <= kLargeImageMaxSize.width() holds, but
+// GetResizedImageSize().height() may be larger than kLargeImageMaxSize.height()
+// In this case, the overflown part will be just cutted off from the view.
+gfx::Size LargeImageView::GetResizedImageSize() {
+  gfx::Size original_size = image_.size();
+  if (original_size.width() <= kLargeImageMaxSize.width())
+    return image_.size();
+
+  const double proportion =
+      original_size.height() / static_cast<double>(original_size.width());
+  gfx::Size resized_size;
+  resized_size.SetSize(kLargeImageMaxSize.width(),
+                       kLargeImageMaxSize.width() * proportion);
+  return resized_size;
+}
+
+// LargeImageContainerView /////////////////////////////////////////////////////
+
+// We have a container view outside LargeImageView, because we want to fill
+// area that is not coverted by the image by background color.
+class LargeImageContainerView : public views::View {
+ public:
+  LargeImageContainerView();
+  ~LargeImageContainerView() override;
+
+  void SetImage(const gfx::ImageSkia& image);
+  const char* GetClassName() const override;
+
+ private:
+  LargeImageView* const image_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(LargeImageContainerView);
+};
+
+LargeImageContainerView::LargeImageContainerView()
+    : image_view_(new LargeImageView()) {
+  SetLayoutManager(new views::FillLayout());
+  SetBorder(views::CreateEmptyBorder(kLargeImageContainerPadding));
+  SetBackground(
+      views::CreateSolidBackground(message_center::kImageBackgroundColor));
+  AddChildView(image_view_);
+}
+
+LargeImageContainerView::~LargeImageContainerView() = default;
+
+void LargeImageContainerView::SetImage(const gfx::ImageSkia& image) {
+  image_view_->SetImage(image);
+}
+
+const char* LargeImageContainerView::GetClassName() const {
+  return "LargeImageContainerView";
 }
 
 }  // anonymous namespace
@@ -669,7 +786,8 @@ void NotificationViewMD::CreateOrUpdateListItemViews(
 void NotificationViewMD::CreateOrUpdateIconView(
     const Notification& notification) {
   if (notification.type() == NOTIFICATION_TYPE_PROGRESS ||
-      notification.type() == NOTIFICATION_TYPE_MULTIPLE) {
+      notification.type() == NOTIFICATION_TYPE_MULTIPLE ||
+      notification.type() == NOTIFICATION_TYPE_IMAGE) {
     DCHECK(!icon_view_ || right_content_->Contains(icon_view_));
     delete icon_view_;
     icon_view_ = nullptr;
@@ -696,43 +814,22 @@ void NotificationViewMD::CreateOrUpdateSmallIconView(
 
 void NotificationViewMD::CreateOrUpdateImageView(
     const Notification& notification) {
-  // |image_view_| is the view representing the area covered by the
-  // notification's image, including background and border.  Its size can be
-  // specified in advance and images will be scaled to fit including a border if
-  // necessary.
   if (notification.image().IsEmpty()) {
-    if (image_container_) {
-      DCHECK(image_view_);
-      DCHECK(Contains(image_container_));
-      delete image_container_;
-      image_container_ = NULL;
-      image_view_ = NULL;
-    } else {
-      DCHECK(!image_view_);
+    if (image_container_view_) {
+      DCHECK(Contains(image_container_view_));
+      delete image_container_view_;
+      image_container_view_ = nullptr;
     }
     return;
   }
 
-  gfx::Size ideal_size(kNotificationPreferredImageWidth,
-                       kNotificationPreferredImageHeight);
-
-  if (!image_container_) {
-    image_container_ = new views::View();
-    image_container_->SetLayoutManager(new views::FillLayout());
-    image_container_->SetBorder(
-        views::CreateEmptyBorder(kImageContainerPadding));
-    image_container_->SetBackground(
-        views::CreateSolidBackground(message_center::kImageBackgroundColor));
-
-    DCHECK(!image_view_);
-    image_view_ = new message_center::ProportionalImageView(ideal_size);
-    image_container_->AddChildView(image_view_);
+  if (!image_container_view_) {
+    image_container_view_ = new LargeImageContainerView();
     // Insert the created image container just after the |content_row_|.
-    AddChildViewAt(image_container_, GetIndexOf(content_row_) + 1);
+    AddChildViewAt(image_container_view_, GetIndexOf(content_row_) + 1);
   }
 
-  DCHECK(image_view_);
-  image_view_->SetImage(notification.image().AsImageSkia(), ideal_size);
+  image_container_view_->SetImage(notification.image().AsImageSkia());
 }
 
 void NotificationViewMD::CreateOrUpdateActionButtonViews(
@@ -805,7 +902,7 @@ bool NotificationViewMD::IsExpandable() {
     return true;
 
   // Expandable if the notification has image.
-  if (image_view_)
+  if (image_container_view_)
     return true;
 
   // Expandable if there are multiple list items.
@@ -831,8 +928,8 @@ void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
     message_view_->SetLineLimit(expanded ? kMaxLinesForExpandedMessageView
                                          : kMaxLinesForMessageView);
   }
-  if (image_container_)
-    image_container_->SetVisible(expanded);
+  if (image_container_view_)
+    image_container_view_->SetVisible(expanded);
   actions_row_->SetVisible(expanded && actions_row_->has_children());
   for (size_t i = kMaxLinesForMessageView; i < item_views_.size(); ++i) {
     item_views_[i]->SetVisible(expanded);
