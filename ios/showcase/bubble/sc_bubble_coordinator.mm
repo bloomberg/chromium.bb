@@ -6,7 +6,6 @@
 
 #include "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_controller.h"
-#import "ios/chrome/browser/ui/rtl_geometry.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -42,19 +41,16 @@
                                20.0f, 20.0f, 20.0f)];
   elementView.backgroundColor = [UIColor grayColor];
   [containerView addSubview:elementView];
+  CGPoint anchorPoint = bubble_util::AnchorPoint(elementView.frame, direction);
   // Maximum width of the bubble such that it stays within |containerView|.
-  CGFloat maxBubbleWidth = bubble_util::MaxWidth(
-      elementView.frame, alignment, containerView.frame.size.width);
-  CGSize maxSize =
-      CGSizeMake(maxBubbleWidth, containerView.frame.size.height -
-                                     CGRectGetMaxY(elementView.frame));
-  CGSize bubbleSize = [self.bubbleViewController.view sizeThatFits:maxSize];
+  CGSize maxBubbleSize = bubble_util::BubbleMaxSize(
+      anchorPoint, direction, alignment, containerView.frame.size);
+
+  CGSize bubbleSize =
+      [self.bubbleViewController.view sizeThatFits:maxBubbleSize];
   CGRect bubbleFrame =
-      [self bubbleFrameWithTargetFrame:elementView.frame
-                            bubbleSize:bubbleSize
-                        arrowDirection:direction
-                             alignment:alignment
-                         boundingWidth:containerView.frame.size.width];
+      bubble_util::BubbleFrame(anchorPoint, bubbleSize, direction, alignment,
+                               containerView.frame.size.width);
 
   [self addBubbleViewControllerWithFrame:bubbleFrame];
   [self.baseViewController pushViewController:self.containerViewController
@@ -73,23 +69,6 @@
   [self.containerViewController.view addSubview:self.bubbleViewController.view];
   [self.bubbleViewController
       didMoveToParentViewController:self.containerViewController];
-}
-
-// Calculate the bubble's frame using bubble_util methods. Depends on the target
-// view, bubble size, arrow direction, alignment, and the width of the
-// containing view.
-- (CGRect)bubbleFrameWithTargetFrame:(CGRect)targetFrame
-                          bubbleSize:(CGSize)size
-                      arrowDirection:(BubbleArrowDirection)direction
-                           alignment:(BubbleAlignment)alignment
-                       boundingWidth:(CGFloat)boundingWidth {
-  CGFloat leading =
-      bubble_util::LeadingDistance(targetFrame, alignment, size.width);
-  CGFloat originY = bubble_util::OriginY(targetFrame, direction, size.height);
-  // Use a |LayoutRect| to ensure that the bubble is mirrored in RTL contexts.
-  CGRect bubbleFrame = LayoutRectGetRect(
-      LayoutRectMake(leading, boundingWidth, originY, size.width, size.height));
-  return bubbleFrame;
 }
 
 @end

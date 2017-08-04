@@ -8,7 +8,6 @@ source_set("bubble") {
     "sc_bubble_coordinator.mm",
   ]
   deps = [
-    "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/bubble",
     "//ios/showcase/common",
   ]

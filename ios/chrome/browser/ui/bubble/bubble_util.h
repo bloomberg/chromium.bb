@@ -9,40 +9,34 @@
 
 namespace bubble_util {
 
-// Calculate the distance from the bubble's leading edge to the leading edge of
-// its bounding coordinate system. In LTR contexts, the returned float is the
-// x-coordinate of the bubble's origin. This calculation is based on
-// |targetFrame|, which is the frame of the target UI element, and the bubble's
-// alignment, direction, and size. The returned float is in the same coordinate
-// system as |targetFrame|, which should be the coordinate system in which the
-// bubble is drawn.
-CGFloat LeadingDistance(CGRect targetFrame,
-                        BubbleAlignment alignment,
-                        CGFloat bubbleWidth);
+// Calculate the coordinates of the point of the bubble's arrow based on the
+// |targetFrame| of the target UI element and the bubble's |arrowDirection|. The
+// returned point is in the same coordinate system as |targetFrame|.
+CGPoint AnchorPoint(CGRect targetFrame, BubbleArrowDirection arrowDirection);
 
-// Calculate the y-coordinate of the bubble's origin based on |targetFrame|, and
-// the bubble's arrow direction and size. The returned float is in the same
-// coordinate system as |targetFrame|, which should be the coordinate system in
-// which the bubble is drawn.
-CGFloat OriginY(CGRect targetFrame,
-                BubbleArrowDirection arrowDirection,
-                CGFloat bubbleHeight);
+// Calculate the maximum size of the bubble such that it stays within its
+// superview's bounding coordinate space and does not overlap the other side of
+// the anchor point. |anchorPoint| is the point on the target UI element the
+// bubble is anchored at in the bubble's superview's coordinate system.
+// |direction| is the bubble's direction. |alignment| is the bubble's alignment.
+// |boundingSize| is the size of the superview. Uses the ICU default locale of
+// the device to determine whether the language is RTL.
+CGSize BubbleMaxSize(CGPoint anchorPoint,
+                     BubbleArrowDirection direction,
+                     BubbleAlignment alignment,
+                     CGSize boundingSize);
 
-// Calculate the maximum width of the bubble such that it stays within its
-// bounding coordinate space. |targetFrame| is the frame the target UI element
-// in the coordinate system in which the bubble is drawn. |alignment| is the
-// bubble's alignment, |boundingWidth| is the width of the coordinate space
-// in which the bubble is drawn, and |isRTL| is true if the language is RTL.
-CGFloat MaxWidth(CGRect targetFrame,
-                 BubbleAlignment alignment,
-                 CGFloat boundingWidth,
-                 bool isRTL);
-
-// Convenience method for calculating the maximum width of the bubble. Uses the
-// ICU default locale of the device to determine whether the language is RTL.
-CGFloat MaxWidth(CGRect targetFrame,
-                 BubbleAlignment alignment,
-                 CGFloat boundingWidth);
+// Calculate the bubble's frame. |anchorPoint| is the point on the UI element
+// the bubble is pointing to. |size| is the size of the bubble. |direction| is
+// the direction the bubble's arrow is pointing. |alignment| is the alignment of
+// the anchor (either leading, centered, or trailing). |boundingWidth| is the
+// width of the bubble's superview. Uses the ICU default locale of the device to
+// determine whether the language is RTL.
+CGRect BubbleFrame(CGPoint anchorPoint,
+                   CGSize size,
+                   BubbleArrowDirection direction,
+                   BubbleAlignment alignment,
+                   CGFloat boundingWidth);
 
 }  // namespace bubble_util
 

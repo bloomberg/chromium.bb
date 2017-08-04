@@ -15,6 +15,7 @@ source_set("bubble") {
   deps = [
     "//base",
     "//base:i18n",
+    "//ios/chrome/browser/ui",
   ]
   libs = [ "UIKit.framework" ]
 }
@@ -32,4 +33,5 @@ source_set("unit_tests") {
     "//base:i18n",
     "//testing/gtest",
   ]
+  libs = [ "CoreGraphics.framework" ]
 }
