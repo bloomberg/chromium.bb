@@ -198,44 +198,6 @@ int GetBufferSize(const char* field_trial) {
   return buffer_size;
 }
 
-scoped_refptr<X509Certificate> OSChainFromBuffers(STACK_OF(CRYPTO_BUFFER) *
-                                                  openssl_chain) {
-  if (sk_CRYPTO_BUFFER_num(openssl_chain) == 0) {
-    NOTREACHED();
-    return nullptr;
-  }
-
-#if BUILDFLAG(USE_BYTE_CERTS)
-  std::vector<CRYPTO_BUFFER*> intermediate_chain;
-  for (size_t i = 1; i < sk_CRYPTO_BUFFER_num(openssl_chain); ++i)
-    intermediate_chain.push_back(sk_CRYPTO_BUFFER_value(openssl_chain, i));
-  return X509Certificate::CreateFromHandle(
-      sk_CRYPTO_BUFFER_value(openssl_chain, 0), intermediate_chain);
-#else
-  // Convert the certificate chains to a platform certificate handle.
-  std::vector<base::StringPiece> der_chain;
-  der_chain.reserve(sk_CRYPTO_BUFFER_num(openssl_chain));
-  for (size_t i = 0; i < sk_CRYPTO_BUFFER_num(openssl_chain); ++i) {
-    const CRYPTO_BUFFER* cert = sk_CRYPTO_BUFFER_value(openssl_chain, i);
-    base::StringPiece der;
-    der_chain.push_back(base::StringPiece(
-        reinterpret_cast<const char*>(CRYPTO_BUFFER_data(cert)),
-        CRYPTO_BUFFER_len(cert)));
-  }
-  return X509Certificate::CreateFromDERCertChain(der_chain);
-#endif
-}
-
-#if !defined(OS_IOS) && !BUILDFLAG(USE_BYTE_CERTS)
-bssl::UniquePtr<CRYPTO_BUFFER> OSCertHandleToBuffer(
-    X509Certificate::OSCertHandle os_handle) {
-  std::string der_encoded;
-  if (!X509Certificate::GetDEREncoded(os_handle, &der_encoded))
-    return nullptr;
-  return x509_util::CreateCryptoBuffer(der_encoded);
-}
-#endif
-
 std::unique_ptr<base::Value> NetLogSSLAlertCallback(
     const void* bytes,
     size_t len,
@@ -1244,7 +1206,8 @@ int SSLClientSocketImpl::DoChannelIDLookupComplete(int result) {
 int SSLClientSocketImpl::DoVerifyCert(int result) {
   DCHECK(start_cert_verification_time_.is_null());
 
-  server_cert_ = OSChainFromBuffers(SSL_get0_peer_certificates(ssl_.get()));
+  server_cert_ = x509_util::CreateX509CertificateFromBuffers(
+      SSL_get0_peer_certificates(ssl_.get()));
 
   // OpenSSL decoded the certificate, but the platform certificate
   // implementation could not. This is treated as a fatal SSL-level protocol
@@ -1659,42 +1622,9 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
       return -1;
     }
 
-#if BUILDFLAG(USE_BYTE_CERTS)
-    std::vector<CRYPTO_BUFFER*> chain_raw;
-    chain_raw.push_back(ssl_config_.client_cert->os_cert_handle());
-    for (X509Certificate::OSCertHandle cert :
-         ssl_config_.client_cert->GetIntermediateCertificates()) {
-      chain_raw.push_back(cert);
-    }
-#else
-    std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> chain;
-    std::vector<CRYPTO_BUFFER*> chain_raw;
-    bssl::UniquePtr<CRYPTO_BUFFER> buf =
-        OSCertHandleToBuffer(ssl_config_.client_cert->os_cert_handle());
-    if (!buf) {
-      LOG(WARNING) << "Failed to import certificate";
+    if (!SetSSLChainAndKey(ssl_.get(), ssl_config_.client_cert.get(), nullptr,
+                           &SSLContext::kPrivateKeyMethod)) {
       OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_CERT_BAD_FORMAT);
-      return -1;
-    }
-    chain_raw.push_back(buf.get());
-    chain.push_back(std::move(buf));
-
-    for (X509Certificate::OSCertHandle cert :
-         ssl_config_.client_cert->GetIntermediateCertificates()) {
-      bssl::UniquePtr<CRYPTO_BUFFER> buf = OSCertHandleToBuffer(cert);
-      if (!buf) {
-        LOG(WARNING) << "Failed to import intermediate";
-        OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_CERT_BAD_FORMAT);
-        return -1;
-      }
-      chain_raw.push_back(buf.get());
-      chain.push_back(std::move(buf));
-    }
-#endif
-
-    if (!SSL_set_chain_and_key(ssl_.get(), chain_raw.data(), chain_raw.size(),
-                               nullptr, &SSLContext::kPrivateKeyMethod)) {
-      LOG(WARNING) << "Failed to set client certificate";
       return -1;
     }
 
@@ -1726,8 +1656,11 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
     SSL_set_private_key_digest_prefs(ssl_.get(), digests.data(),
                                      digests.size());
 
-    net_log_.AddEvent(NetLogEventType::SSL_CLIENT_CERT_PROVIDED,
-                      NetLog::IntCallback("cert_count", chain_raw.size()));
+    net_log_.AddEvent(
+        NetLogEventType::SSL_CLIENT_CERT_PROVIDED,
+        NetLog::IntCallback(
+            "cert_count",
+            1 + ssl_config_.client_cert->GetIntermediateCertificates().size()));
     return 1;
   }
 #endif  // defined(OS_IOS)

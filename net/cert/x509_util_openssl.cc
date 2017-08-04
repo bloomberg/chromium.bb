@@ -8,12 +8,14 @@
 
 #include <algorithm>
 #include <memory>
+#include <vector>
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/openssl_util.h"
 #include "crypto/rsa_private_key.h"
@@ -26,6 +28,7 @@
 #include "third_party/boringssl/src/include/openssl/digest.h"
 #include "third_party/boringssl/src/include/openssl/mem.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
+#include "third_party/boringssl/src/include/openssl/stack.h"
 
 namespace net {
 
@@ -390,6 +393,33 @@ bssl::UniquePtr<CRYPTO_BUFFER> CreateCryptoBuffer(
   return bssl::UniquePtr<CRYPTO_BUFFER>(
       CRYPTO_BUFFER_new(reinterpret_cast<const uint8_t*>(data.data()),
                         data.size(), GetBufferPool()));
+}
+
+scoped_refptr<X509Certificate> CreateX509CertificateFromBuffers(
+    STACK_OF(CRYPTO_BUFFER) * buffers) {
+  if (sk_CRYPTO_BUFFER_num(buffers) == 0) {
+    NOTREACHED();
+    return nullptr;
+  }
+
+#if BUILDFLAG(USE_BYTE_CERTS)
+  std::vector<CRYPTO_BUFFER*> intermediate_chain;
+  for (size_t i = 1; i < sk_CRYPTO_BUFFER_num(buffers); ++i)
+    intermediate_chain.push_back(sk_CRYPTO_BUFFER_value(buffers, i));
+  return X509Certificate::CreateFromHandle(sk_CRYPTO_BUFFER_value(buffers, 0),
+                                           intermediate_chain);
+#else
+  // Convert the certificate chains to a platform certificate handle.
+  std::vector<base::StringPiece> der_chain;
+  der_chain.reserve(sk_CRYPTO_BUFFER_num(buffers));
+  for (size_t i = 0; i < sk_CRYPTO_BUFFER_num(buffers); ++i) {
+    const CRYPTO_BUFFER* cert = sk_CRYPTO_BUFFER_value(buffers, i);
+    der_chain.push_back(base::StringPiece(
+        reinterpret_cast<const char*>(CRYPTO_BUFFER_data(cert)),
+        CRYPTO_BUFFER_len(cert)));
+  }
+  return X509Certificate::CreateFromDERCertChain(der_chain);
+#endif
 }
 
 }  // namespace x509_util
