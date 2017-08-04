@@ -34,13 +34,6 @@ const int kInvalidHandle = -1;
 const int kDummyHandleForForcedInvocation = -2;
 const double kForcedInvocationDeadlineSeconds = 10;
 
-Position CorrectedReferencePosition(const Position& position,
-                                    const Document& document) {
-  if (!position.IsConnected() || position.GetDocument() != document)
-    return Position();
-  return CreateVisiblePosition(position).DeepEquivalent();
-}
-
 }  // namespace
 
 IdleSpellCheckCallback::~IdleSpellCheckCallback() {}
@@ -162,13 +155,12 @@ void IdleSpellCheckCallback::HotModeInvocation(IdleDeadline* deadline) {
         std::max(step->SequenceNumber(), last_processed_undo_step_sequence_);
     if (deadline->timeRemaining() == 0)
       break;
-    // The reference position stored in undo stack can be invalid, disconnected
-    // or have been moved to another document, in which case it should be
-    // corrected.
-    const Position& stored_position = step->EndingSelection().Extent();
-    const Position& corrected_position =
-        CorrectedReferencePosition(stored_position, *GetFrame().GetDocument());
-    requester.CheckSpellingAt(corrected_position);
+    // The ending selection stored in undo stack can be invalid, disconnected
+    // or have been moved to another document, so we should check its validity
+    // before using it.
+    if (!step->EndingSelection().IsValidFor(*GetFrame().GetDocument()))
+      continue;
+    requester.CheckSpellingAt(step->EndingSelection().Extent());
   }
 }
 
