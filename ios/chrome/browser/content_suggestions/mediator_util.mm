@@ -19,6 +19,20 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+ContentSuggestionsSectionInformation* EmptySectionInfo(
+    ContentSuggestionsSectionID sectionID) {
+  ContentSuggestionsSectionInformation* sectionInfo = [
+      [ContentSuggestionsSectionInformation alloc] initWithSectionID:sectionID];
+  sectionInfo.title = nil;
+  sectionInfo.footerTitle = nil;
+  sectionInfo.showIfEmpty = NO;
+  sectionInfo.layout = ContentSuggestionsSectionLayoutCustom;
+
+  return sectionInfo;
+}
+}  // namespace
+
 void BindWrapper(
     base::Callback<void(ntp_snippets::Status status_code,
                         const std::vector<ntp_snippets::ContentSuggestion>&
@@ -109,28 +123,16 @@ ContentSuggestionsSectionInformation* LogoSectionInformation() {
   return sectionInfo;
 }
 
-ContentSuggestionsSectionInformation* MostVisitedSectionInformation() {
-  ContentSuggestionsSectionInformation* sectionInfo =
-      [[ContentSuggestionsSectionInformation alloc]
-          initWithSectionID:ContentSuggestionsSectionMostVisited];
-  sectionInfo.title = nil;
-  sectionInfo.footerTitle = nil;
-  sectionInfo.showIfEmpty = NO;
-  sectionInfo.layout = ContentSuggestionsSectionLayoutCustom;
+ContentSuggestionsSectionInformation* PromoSectionInformation() {
+  return EmptySectionInfo(ContentSuggestionsSectionPromo);
+}
 
-  return sectionInfo;
+ContentSuggestionsSectionInformation* MostVisitedSectionInformation() {
+  return EmptySectionInfo(ContentSuggestionsSectionMostVisited);
 }
 
 ContentSuggestionsSectionInformation* LearnMoreSectionInformation() {
-  ContentSuggestionsSectionInformation* sectionInfo =
-      [[ContentSuggestionsSectionInformation alloc]
-          initWithSectionID:ContentSuggestionsSectionLearnMore];
-  sectionInfo.title = nil;
-  sectionInfo.footerTitle = nil;
-  sectionInfo.showIfEmpty = NO;
-  sectionInfo.layout = ContentSuggestionsSectionLayoutCustom;
-
-  return sectionInfo;
+  return EmptySectionInfo(ContentSuggestionsSectionLearnMore);
 }
 
 ContentSuggestionsMostVisitedItem* ConvertNTPTile(

@@ -15,10 +15,11 @@ typedef NS_ENUM(NSInteger, ContentSuggestionsSectionLayout) {
   ContentSuggestionsSectionLayoutCustom,
 };
 
-// This enum is used for identifying the section. All section should have a
+// This enum is used for identifying the section. All sections should have a
 // different ID.
 typedef NS_ENUM(NSInteger, ContentSuggestionsSectionID) {
   ContentSuggestionsSectionLogo = 0,
+  ContentSuggestionsSectionPromo,
   ContentSuggestionsSectionMostVisited,
   ContentSuggestionsSectionArticles,
   ContentSuggestionsSectionReadingList,

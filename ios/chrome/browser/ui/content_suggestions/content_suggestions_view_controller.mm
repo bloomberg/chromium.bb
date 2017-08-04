@@ -275,13 +275,6 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
     sizeForItemAtIndexPath:(NSIndexPath*)indexPath {
   if ([self.collectionUpdater isMostVisitedSection:indexPath.section]) {
     return [ContentSuggestionsMostVisitedCell defaultSize];
-  } else if ([self.collectionUpdater isHeaderSection:indexPath.section]) {
-    CGFloat height =
-        [self collectionView:collectionView cellHeightAtIndexPath:indexPath];
-    CGFloat width = collectionView.frame.size.width -
-                    2 * content_suggestions::centeredTilesMarginForWidth(
-                            collectionView.frame.size.width);
-    return CGSizeMake(width, height);
   }
   return [super collectionView:collectionView
                         layout:collectionViewLayout
@@ -297,7 +290,8 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   if ([self.collectionUpdater isHeaderSection:section]) {
     return parentInset;
   }
-  if ([self.collectionUpdater isMostVisitedSection:section]) {
+  if ([self.collectionUpdater isMostVisitedSection:section] ||
+      [self.collectionUpdater isPromoSection:section]) {
     CGFloat margin = content_suggestions::centeredTilesMarginForWidth(
         collectionView.frame.size.width);
     parentInset.left = margin;
@@ -337,14 +331,6 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
     return [UIColor clearColor];
   }
   return nil;
-}
-
-- (MDCCollectionViewCellStyle)collectionView:(UICollectionView*)collectionView
-                         cellStyleForSection:(NSInteger)section {
-  if ([self.collectionUpdater isHeaderSection:section]) {
-    return MDCCollectionViewCellStyleDefault;
-  }
-  return [super collectionView:collectionView cellStyleForSection:section];
 }
 
 - (UIColor*)collectionView:(nonnull UICollectionView*)collectionView
@@ -415,7 +401,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
   return ![self.collectionUpdater isMostVisitedSection:indexPath.section] &&
-         ![self.collectionUpdater isHeaderSection:indexPath.section] &&
+         ![self.collectionUpdater isPromoSection:indexPath.section] &&
          [self.collectionUpdater contentSuggestionTypeForItem:item] !=
              ContentSuggestionTypeLearnMore &&
          [self.collectionUpdater contentSuggestionTypeForItem:item] !=
