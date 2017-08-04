@@ -362,6 +362,12 @@ class BlinkPerfPaint(_BlinkPerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
+        self.DisableStory(
+            'large-table-repaint.html',
+            [story.expectations.ANDROID_NEXUS7], 'crbug.com/752579')
+        self.DisableStory(
+            'appending-text.html',
+            [story.expectations.ANDROID_NEXUS7], 'crbug.com/752579')
         self.PermanentlyDisableBenchmark(
             [story.expectations.ANDROID_SVELTE], 'crbug.com/574483')
     return StoryExpectations()
