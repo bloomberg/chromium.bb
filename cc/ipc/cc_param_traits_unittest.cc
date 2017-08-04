@@ -291,6 +291,8 @@ TEST_F(CCParamTraitsTest, AllQuads) {
   FilterOperations arbitrary_filters1;
   arbitrary_filters1.Append(
       FilterOperation::CreateGrayscaleFilter(arbitrary_float1));
+  arbitrary_filters1.Append(
+      FilterOperation::CreateBlurFilter(arbitrary_float2));
   arbitrary_filters1.Append(cc::FilterOperation::CreateReferenceFilter(
       SkBlurImageFilter::Make(arbitrary_sigma, arbitrary_sigma, nullptr)));
 
