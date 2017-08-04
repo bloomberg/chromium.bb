@@ -162,7 +162,7 @@ TEST_F(PaymentRequestTest, SupportedMethods) {
   EXPECT_EQ("visa", payment_request.supported_card_networks()[0]);
   EXPECT_EQ("mastercard", payment_request.supported_card_networks()[1]);
   ASSERT_EQ(1U, payment_request.url_payment_method_identifiers().size());
-  EXPECT_EQ("https://bobpay.com",
+  EXPECT_EQ(GURL("https://bobpay.com"),
             payment_request.url_payment_method_identifiers()[0]);
 }
 
@@ -195,7 +195,7 @@ TEST_F(PaymentRequestTest, SupportedMethods_MultipleEntries) {
   EXPECT_EQ("visa", payment_request.supported_card_networks()[0]);
   EXPECT_EQ("mastercard", payment_request.supported_card_networks()[1]);
   ASSERT_EQ(1U, payment_request.url_payment_method_identifiers().size());
-  EXPECT_EQ("https://bobpay.com",
+  EXPECT_EQ(GURL("https://bobpay.com"),
             payment_request.url_payment_method_identifiers()[0]);
 }
 
