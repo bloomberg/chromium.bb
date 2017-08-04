@@ -9,9 +9,11 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/offline_pages/content/renovations/render_frame_script_injector.h"
 #include "components/offline_pages/core/renovations/page_renovation_loader.h"
 #include "content/public/browser/browser_thread.h"
@@ -23,6 +25,7 @@
 #include "content/shell/browser/shell.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
@@ -100,6 +103,20 @@ class PageRenovatorBrowserTest : public content::ContentBrowserTest {
 };
 
 void PageRenovatorBrowserTest::SetUpOnMainThread() {
+  // Add resources pack to resource bundle so PageRenovationLoader can
+  // load our renovation script.
+  base::FilePath pak_dir;
+#if defined(OS_ANDROID)
+  PathService::Get(base::DIR_ANDROID_APP_DATA, &pak_dir);
+  pak_dir = pak_dir.Append(FILE_PATH_LITERAL("paks"));
+#else
+  PathService::Get(base::DIR_MODULE, &pak_dir);
+#endif  // OS_ANDROID
+  base::FilePath pak_file =
+      pak_dir.Append(FILE_PATH_LITERAL("components_tests_resources.pak"));
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      pak_file, ui::SCALE_FACTOR_NONE);
+
   // Serve our test HTML.
   test_server_.ServeFilesFromSourceDirectory(kDocRoot);
   ASSERT_TRUE(test_server_.Start());
