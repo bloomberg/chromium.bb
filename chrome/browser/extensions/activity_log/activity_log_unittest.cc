@@ -21,7 +21,6 @@
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
-#include "chrome/browser/prerender/prerender_test_utils.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -243,9 +242,6 @@ TEST_F(ActivityLogTest, LogPrerender) {
   ASSERT_TRUE(GetDatabaseEnabled());
   GURL url("http://www.google.com");
 
-  prerender::test_utils::RestorePrerenderMode restore_prerender_mode;
-  prerender::PrerenderManager::SetMode(
-      prerender::PrerenderManager::PRERENDER_MODE_ENABLED);
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForBrowserContext(profile());
 
