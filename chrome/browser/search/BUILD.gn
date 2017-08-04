@@ -2,14 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-input_path = "//chrome/browser/resources/local_ntp/local_ntp.js"
-header_path = "$target_gen_dir/local_ntp_js_integrity.h"
+local_ntp_resources = "//chrome/browser/resources/local_ntp"
 
 action("local_ntp_code_generate") {
   script = "tools/generate_integrity_header.py"
+  header_path = "$target_gen_dir/local_ntp_js_integrity.h"
+  local_ntp_js = local_ntp_resources + "/local_ntp.js"
 
   inputs = [
-    input_path,
+    local_ntp_js,
   ]
 
   outputs = [
@@ -17,8 +18,8 @@ action("local_ntp_code_generate") {
   ]
 
   args = [
-    rebase_path(input_path, root_build_dir),
-    rebase_path(header_path, root_build_dir),
+    "--output_path=" + rebase_path(header_path, root_build_dir),
+    rebase_path(local_ntp_js, root_build_dir),
   ]
 }
 
