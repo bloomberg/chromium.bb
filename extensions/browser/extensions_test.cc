@@ -51,13 +51,24 @@ ExtensionsTest::~ExtensionsTest() {
   content::SetUtilityClientForTesting(nullptr);
 }
 
+void ExtensionsTest::SetExtensionsBrowserClient(
+    std::unique_ptr<TestExtensionsBrowserClient> extensions_browser_client) {
+  DCHECK(extensions_browser_client);
+  DCHECK(!extensions_browser_client_);
+  extensions_browser_client_ = std::move(extensions_browser_client);
+}
+
 void ExtensionsTest::SetUp() {
   content_browser_client_ = base::MakeUnique<TestContentBrowserClient>();
   content_utility_client_ = base::MakeUnique<TestContentUtilityClient>();
   browser_context_ = base::MakeUnique<content::TestBrowserContext>();
   incognito_context_ = CreateTestIncognitoContext();
-  extensions_browser_client_ =
-      base::MakeUnique<TestExtensionsBrowserClient>(browser_context_.get());
+
+  if (!extensions_browser_client_) {
+    extensions_browser_client_ =
+        base::MakeUnique<TestExtensionsBrowserClient>();
+  }
+  extensions_browser_client_->SetMainContext(browser_context_.get());
 
   BrowserContextDependencyManager::GetInstance()->MarkBrowserContextLive(
       browser_context_.get());
