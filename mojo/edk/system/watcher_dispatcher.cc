@@ -147,6 +147,22 @@ MojoResult WatcherDispatcher::WatchDispatcher(
     return rv;
   }
 
+  // TODO(crbug.com/740044): Perhaps the crash is caused by a racy use of
+  // watchers, which - while incorrect - should not in fact be able to crash at
+  // this layer.
+  //
+  // Hypothesis is that two threads are racing with one adding a watch and one
+  // closing the watcher handle. If the watcher handle is closed immediately
+  // before the AddWatcherRef() call above, |dispatcher| can retain an invalid
+  // pointer to this WatcherDispatcher indefinitely, leading to an eventual UAF
+  // if and when it tries to dispatch a notification.
+  //
+  // If such a race is indeed the sole source of crashes, all subsequent crash
+  // reports which would have come from Watch::NotifyState etc should instead
+  // fail the CHECK below.
+  base::AutoLock lock(lock_);
+  CHECK(!closed_);
+
   return MOJO_RESULT_OK;
 }
 
