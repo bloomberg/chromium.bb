@@ -4,12 +4,13 @@
 
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service.h"
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/common/media_router/discovery/media_sink_internal.h"
+#include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
+#include "chrome/browser/media/router/discovery/mdns/dns_sd_delegate.h"
+#include "chrome/browser/media/router/discovery/mdns/dns_sd_registry.h"
+#include "chrome/common/media_router/media_sink.h"
 #include "components/cast_channel/cast_socket_service.h"
-#include "components/net_log/chrome_net_log.h"
-#include "content/public/common/content_client.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 
@@ -25,8 +26,6 @@ enum ErrorType {
 };
 
 ErrorType CreateCastMediaSink(const media_router::DnsSdService& service,
-                              int channel_id,
-                              bool audio_only,
                               media_router::MediaSinkInternal* cast_sink) {
   DCHECK(cast_sink);
   if (service.service_name.find(
@@ -65,11 +64,8 @@ ErrorType CreateCastMediaSink(const media_router::DnsSdService& service,
 
   media_router::CastSinkExtraData extra_data;
   extra_data.ip_address = ip_address;
+  extra_data.port = service.service_host_port.port();
   extra_data.model_name = service_data["md"];
-  extra_data.capabilities = cast_channel::CastDeviceCapability::AUDIO_OUT;
-  if (!audio_only)
-    extra_data.capabilities |= cast_channel::CastDeviceCapability::VIDEO_OUT;
-  extra_data.cast_channel_id = channel_id;
 
   cast_sink->set_sink(sink);
   cast_sink->set_cast_data(extra_data);
@@ -87,43 +83,60 @@ const char CastMediaSinkService::kCastServiceType[] = "_googlecast._tcp.local";
 CastMediaSinkService::CastMediaSinkService(
     const OnSinksDiscoveredCallback& callback,
     content::BrowserContext* browser_context)
-    : MediaSinkServiceBase(callback),
-      cast_socket_service_(cast_channel::CastSocketService::GetInstance()) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(cast_socket_service_);
+    : MediaSinkService(callback) {
+  // TODO(crbug.com/749305): Migrate the discovery code to use sequences.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 CastMediaSinkService::CastMediaSinkService(
     const OnSinksDiscoveredCallback& callback,
-    cast_channel::CastSocketService* cast_socket_service)
-    : MediaSinkServiceBase(callback),
-      cast_socket_service_(cast_socket_service) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(cast_socket_service_);
-}
+    std::unique_ptr<CastMediaSinkServiceImpl,
+                    content::BrowserThread::DeleteOnIOThread>
+        cast_media_sink_service_impl)
+    : MediaSinkService(callback),
+      cast_media_sink_service_impl_(std::move(cast_media_sink_service_impl)) {}
 
 CastMediaSinkService::~CastMediaSinkService() {}
 
 void CastMediaSinkService::Start() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  // TODO(crbug.com/749305): Migrate the discovery code to use sequences.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (dns_sd_registry_)
     return;
+
+  if (!cast_media_sink_service_impl_) {
+    cast_media_sink_service_impl_.reset(new CastMediaSinkServiceImpl(
+        base::BindRepeating(&CastMediaSinkService::OnSinksDiscoveredOnIOThread,
+                            this),
+        cast_channel::CastSocketService::GetInstance()));
+  }
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&CastMediaSinkServiceImpl::Start,
+                     cast_media_sink_service_impl_->AsWeakPtr()));
 
   dns_sd_registry_ = DnsSdRegistry::GetInstance();
   dns_sd_registry_->AddObserver(this);
   dns_sd_registry_->RegisterDnsSdListener(kCastServiceType);
-  MediaSinkServiceBase::StartTimer();
 }
 
 void CastMediaSinkService::Stop() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  // TODO(crbug.com/749305): Migrate the discovery code to use sequences.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!dns_sd_registry_)
     return;
 
   dns_sd_registry_->UnregisterDnsSdListener(kCastServiceType);
   dns_sd_registry_->RemoveObserver(this);
   dns_sd_registry_ = nullptr;
-  MediaSinkServiceBase::StopTimer();
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&CastMediaSinkServiceImpl::Stop,
+                     cast_media_sink_service_impl_->AsWeakPtr()));
+
+  cast_media_sink_service_impl_.reset();
 }
 
 void CastMediaSinkService::SetDnsSdRegistryForTest(DnsSdRegistry* registry) {
@@ -131,103 +144,44 @@ void CastMediaSinkService::SetDnsSdRegistryForTest(DnsSdRegistry* registry) {
   dns_sd_registry_ = registry;
   dns_sd_registry_->AddObserver(this);
   dns_sd_registry_->RegisterDnsSdListener(kCastServiceType);
-  MediaSinkServiceBase::StartTimer();
 }
 
 void CastMediaSinkService::OnDnsSdEvent(
     const std::string& service_type,
     const DnsSdRegistry::DnsSdServiceList& services) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  // TODO(crbug.com/749305): Migrate the discovery code to use sequences.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG(2) << "CastMediaSinkService::OnDnsSdEvent found " << services.size()
            << " services";
 
-  current_sinks_.clear();
-  current_services_ = services;
+  std::vector<MediaSinkInternal> cast_sinks;
 
   for (const auto& service : services) {
-    net::IPAddress ip_address;
-    if (!ip_address.AssignFromIPLiteral(service.ip_address)) {
-      DVLOG(2) << "Invalid ip_addresss: " << service.ip_address;
+    // Create Cast sink from mDNS service description.
+    MediaSinkInternal cast_sink;
+    ErrorType error = CreateCastMediaSink(service, &cast_sink);
+    if (error != ErrorType::NONE) {
+      DVLOG(2) << "Fail to create Cast device [error]: " << error;
       continue;
     }
 
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::Bind(
-            &CastMediaSinkService::OpenChannelOnIOThread, this, service,
-            net::IPEndPoint(ip_address, service.service_host_port.port())));
-  }
-
-  MediaSinkServiceBase::RestartTimer();
-}
-
-void CastMediaSinkService::OpenChannelOnIOThread(
-    const DnsSdService& service,
-    const net::IPEndPoint& ip_endpoint) {
-  if (!observer_)
-    observer_.reset(new CastSocketObserver());
-
-  cast_socket_service_->OpenSocket(
-      ip_endpoint, g_browser_process->net_log(),
-      base::Bind(&CastMediaSinkService::OnChannelOpenedOnIOThread, this,
-                 service),
-      observer_.get());
-}
-
-void CastMediaSinkService::OnChannelOpenedOnIOThread(
-    const DnsSdService& service,
-    cast_channel::CastSocket* socket) {
-  DCHECK(socket);
-  if (socket->error_state() != cast_channel::ChannelError::NONE) {
-    DVLOG(2) << "Fail to open channel " << service.ip_address << ": "
-             << service.service_host_port.ToString() << " [ChannelError]: "
-             << cast_channel::ChannelErrorToString(socket->error_state());
-    return;
+    cast_sinks.push_back(std::move(cast_sink));
   }
 
   content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&CastMediaSinkServiceImpl::OpenChannels,
+                     cast_media_sink_service_impl_->AsWeakPtr(),
+                     std::move(cast_sinks)));
+}
+
+void CastMediaSinkService::OnSinksDiscoveredOnIOThread(
+    std::vector<MediaSinkInternal> sinks) {
+  // TODO(crbug.com/749305): Migrate the discovery code to use sequences.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&CastMediaSinkService::OnChannelOpenedOnUIThread, this,
-                 service, socket->id(), socket->audio_only()));
+      base::BindOnce(sink_discovery_callback_, std::move(sinks)));
 }
-
-void CastMediaSinkService::OnChannelOpenedOnUIThread(
-    const DnsSdService& service,
-    int channel_id,
-    bool audio_only) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  MediaSinkInternal sink;
-  ErrorType error = CreateCastMediaSink(service, channel_id, audio_only, &sink);
-  if (error != ErrorType::NONE) {
-    DVLOG(2) << "Fail to create Cast device [error]: " << error;
-    return;
-  }
-
-  if (!base::ContainsValue(current_services_, service)) {
-    DVLOG(2) << "Service data not found in current service data list...";
-    return;
-  }
-
-  DVLOG(2) << "Ading sink to current_sinks_ [id]: " << sink.sink().id();
-  current_sinks_.insert(sink);
-  MediaSinkServiceBase::RestartTimer();
-}
-
-CastMediaSinkService::CastSocketObserver::CastSocketObserver() {}
-CastMediaSinkService::CastSocketObserver::~CastSocketObserver() {
-  cast_channel::CastSocketService::GetInstance()->RemoveObserver(this);
-}
-
-void CastMediaSinkService::CastSocketObserver::OnError(
-    const cast_channel::CastSocket& socket,
-    cast_channel::ChannelError error_state) {
-  DVLOG(1) << "OnError [ip_endpoint]: " << socket.ip_endpoint().ToString()
-           << " [error_state]: "
-           << cast_channel::ChannelErrorToString(error_state);
-}
-
-void CastMediaSinkService::CastSocketObserver::OnMessage(
-    const cast_channel::CastSocket& socket,
-    const cast_channel::CastMessage& message) {}
 
 }  // namespace media_router

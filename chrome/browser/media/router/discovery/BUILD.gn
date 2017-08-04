@@ -39,6 +39,8 @@ static_library("discovery") {
     "dial/safe_dial_device_description_parser.h",
     "mdns/cast_media_sink_service.cc",
     "mdns/cast_media_sink_service.h",
+    "mdns/cast_media_sink_service_impl.cc",
+    "mdns/cast_media_sink_service_impl.h",
     "mdns/dns_sd_delegate.cc",
     "mdns/dns_sd_delegate.h",
     "mdns/dns_sd_device_lister.cc",

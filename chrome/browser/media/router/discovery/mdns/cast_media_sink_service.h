@@ -6,22 +6,15 @@
 #define CHROME_BROWSER_MEDIA_ROUTER_DISCOVERY_MDNS_CAST_MEDIA_SINK_SERVICE_H_
 
 #include <memory>
-#include <set>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/thread_checker.h"
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_delegate.h"
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_registry.h"
-#include "chrome/browser/media/router/discovery/media_sink_service_base.h"
-#include "components/cast_channel/cast_channel_enum.h"
-#include "components/cast_channel/cast_socket.h"
+#include "chrome/common/media_router/discovery/media_sink_internal.h"
+#include "chrome/common/media_router/discovery/media_sink_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/ip_endpoint.h"
-
-namespace cast_channel {
-class CastSocketService;
-}  // namespace cast_channel
 
 namespace content {
 class BrowserContext;
@@ -29,11 +22,13 @@ class BrowserContext;
 
 namespace media_router {
 
+class CastMediaSinkServiceImpl;
+
 // A service which can be used to start background discovery and resolution of
 // Cast devices.
 // Public APIs should be invoked on the UI thread.
 class CastMediaSinkService
-    : public MediaSinkServiceBase,
+    : public MediaSinkService,
       public DnsSdRegistry::DnsSdObserver,
       public base::RefCountedThreadSafe<CastMediaSinkService> {
  public:
@@ -42,7 +37,9 @@ class CastMediaSinkService
 
   // Used by unit tests.
   CastMediaSinkService(const OnSinksDiscoveredCallback& callback,
-                       cast_channel::CastSocketService* cast_socket_service);
+                       std::unique_ptr<CastMediaSinkServiceImpl,
+                                       content::BrowserThread::DeleteOnIOThread>
+                           cast_media_sink_service_impl);
 
   // mDNS service types.
   static const char kCastServiceType[];
@@ -51,83 +48,37 @@ class CastMediaSinkService
   void Start() override;
   void Stop() override;
 
- protected:
-  // Used to mock out the DnsSdRegistry for testing.
   void SetDnsSdRegistryForTest(DnsSdRegistry* registry);
 
+ protected:
   ~CastMediaSinkService() override;
 
  private:
-  // Receives incoming messages and errors and provides additional API context.
-  class CastSocketObserver : public cast_channel::CastSocket::Observer {
-   public:
-    CastSocketObserver();
-    ~CastSocketObserver() override;
-
-    // CastSocket::Observer implementation.
-    void OnError(const cast_channel::CastSocket& socket,
-                 cast_channel::ChannelError error_state) override;
-    void OnMessage(const cast_channel::CastSocket& socket,
-                   const cast_channel::CastMessage& message) override;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(CastSocketObserver);
-  };
 
   friend class base::RefCountedThreadSafe<CastMediaSinkService>;
   friend class CastMediaSinkServiceTest;
 
-  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceTest, TestReStartAfterStop);
+  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceTest, TestRestartAfterStop);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceTest, TestMultipleStartAndStop);
-  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceTest,
-                           TestOnChannelOpenedOnIOThread);
-  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceTest,
-                           TestMultipleOnChannelOpenedOnIOThread);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceTest, TestOnDnsSdEvent);
-  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceTest, TestMultipleOnDnsSdEvent);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceTest, TestTimer);
+
+  // Callback passed to CastMediaSinkServiceImpl class to be invoked when timer
+  // expires.
+  void OnSinksDiscoveredOnIOThread(std::vector<MediaSinkInternal> sinks);
 
   // DnsSdRegistry::DnsSdObserver implementation
   void OnDnsSdEvent(const std::string& service_type,
                     const DnsSdRegistry::DnsSdServiceList& services) override;
 
-  // Opens cast channel on IO thread.
-  // |service|: mDNS service description.
-  // |ip_endpoint|: cast channel's target IP endpoint.
-  void OpenChannelOnIOThread(const DnsSdService& service,
-                             const net::IPEndPoint& ip_endpoint);
-
-  // Invoked when opening cast channel on IO thread completes.
-  // |service|: mDNS service description.
-  // |socket|: raw pointer of newly created cast channel. Does not take
-  // ownership of |socket|.
-  void OnChannelOpenedOnIOThread(const DnsSdService& service,
-                                 cast_channel::CastSocket* socket);
-
-  // Invoked by |OnChannelOpenedOnIOThread| to post task on UI thread.
-  // |service|: mDNS service description.
-  // |channel_id|: channel id of newly created cast channel.
-  // |audio_only|: if cast channel is audio only or not.
-  void OnChannelOpenedOnUIThread(const DnsSdService& service,
-                                 int channel_id,
-                                 bool audio_only);
-
   // Raw pointer to DnsSdRegistry instance, which is a global leaky singleton
   // and lives as long as the browser process.
   DnsSdRegistry* dns_sd_registry_ = nullptr;
 
-  // Service list from current round of discovery.
-  DnsSdRegistry::DnsSdServiceList current_services_;
-
-  // Raw pointer of leaky singleton CastSocketService, which manages creating
-  // and removing Cast sockets.
-  cast_channel::CastSocketService* const cast_socket_service_;
-
-  std::unique_ptr<cast_channel::CastSocket::Observer,
+  // Created on the UI thread and destroyed on the IO thread.
+  std::unique_ptr<CastMediaSinkServiceImpl,
                   content::BrowserThread::DeleteOnIOThread>
-      observer_;
-
-  THREAD_CHECKER(thread_checker_);
+      cast_media_sink_service_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(CastMediaSinkService);
 };
