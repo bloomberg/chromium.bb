@@ -123,6 +123,10 @@ void WebDisplayItemListImpl::AppendCompositingItem(
   if (xfermode == SkBlendMode::kSrcOver && !color_filter) {
     display_item_list_->StartPaint();
     display_item_list_->push<cc::SaveLayerAlphaOp>(bounds, alpha, false);
+    if (bounds) {
+      display_item_list_->push<cc::ClipRectOp>(*bounds, SkClipOp::kIntersect,
+                                               false);
+    }
     display_item_list_->EndPaintOfPairedBegin();
     return;
   }
@@ -134,6 +138,10 @@ void WebDisplayItemListImpl::AppendCompositingItem(
 
   display_item_list_->StartPaint();
   display_item_list_->push<cc::SaveLayerOp>(bounds, &flags);
+  if (bounds) {
+    display_item_list_->push<cc::ClipRectOp>(*bounds, SkClipOp::kIntersect,
+                                             false);
+  }
   display_item_list_->EndPaintOfPairedBegin();
 }
 

@@ -1756,6 +1756,11 @@ Bug(none) paint/invalidation/trailing-floats-root-line-box-overflow.html [ Failu
 Bug(none) compositing/overflow/ancestor-overflow-layer-of-sticky-child-of-compositing-container.html [ Failure ]
 Bug(none) fast/block/float/float-change-composited-scrolling.html [ Failure ]
 
+Bug(none) compositing/sibling-positioning.html [ Failure ]
+Bug(none) fast/dynamic/anonymous-block-layer-lost.html [ Failure ]
+Bug(none) fast/layers/opacity-stacking.html [ Failure ]
+Bug(none) paint/invalidation/column-float-under-stacked-inline.html [ Failure ]
+
 # See comment regarding this test in NeverFixTests. It also fails for other
 # reasons, in particular that the composited layerization algorithm provides
 # different results.

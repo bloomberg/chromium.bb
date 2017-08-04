@@ -49,6 +49,8 @@ class WebDisplayItemList {
   virtual void AppendEndFloatClipItem() {}
   virtual void AppendTransformItem(const SkMatrix44&) {}
   virtual void AppendEndTransformItem() {}
+  // If bounds is provided, the content will be explicitly clipped to those
+  // bounds.
   virtual void AppendCompositingItem(float opacity,
                                      SkBlendMode,
                                      SkRect* bounds,
