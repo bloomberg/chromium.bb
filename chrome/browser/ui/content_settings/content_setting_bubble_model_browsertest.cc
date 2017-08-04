@@ -26,6 +26,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/event_constants.h"
 
 const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data");
@@ -265,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelPopupTest,
         "ContentSettings.Popups",
         content_settings::POPUPS_ACTION_DISPLAYED_BUBBLE, 1);
 
-  model->OnListItemClicked(0);
+  model->OnListItemClicked(0, ui::EF_LEFT_MOUSE_BUTTON);
   histograms.ExpectBucketCount(
         "ContentSettings.Popups",
         content_settings::POPUPS_ACTION_CLICKED_LIST_ITEM_CLICKED, 1);

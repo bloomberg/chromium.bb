@@ -153,7 +153,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
                const content::NotificationDetails& details) override;
 
   virtual void OnRadioClicked(int radio_index) {}
-  virtual void OnListItemClicked(int index) {}
+  virtual void OnListItemClicked(int index, int event_flags) {}
   virtual void OnCustomLinkClicked() {}
   virtual void OnManageLinkClicked() {}
   virtual void OnManageCheckboxChecked(bool is_checked) {}
@@ -207,6 +207,10 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   }
   void add_list_item(const ListItem& item) {
     bubble_content_.list_items.push_back(item);
+  }
+  void remove_list_item(int index) {
+    bubble_content_.list_items.erase(
+        bubble_content_.list_items.begin() + index);
   }
   void set_radio_group(const RadioGroup& radio_group) {
     bubble_content_.radio_group = radio_group;
