@@ -73,6 +73,7 @@ class SecurityStateBubbleDecoration : public BubbleDecoration,
   bool AcceptsMousePress() override;
   NSPoint GetBubblePointInFrame(NSRect frame) override;
   NSString* GetToolTip() override;
+  NSString* GetAccessibilityLabel() override;
   NSRect GetRealFocusRingBounds(NSRect apparent_frame) const override;
 
   // BubbleDecoration:
