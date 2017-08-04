@@ -386,7 +386,7 @@ class MenuManager : public content::NotificationObserver,
   // If there are no radio items selected, then the first item in the run
   // will get selected. If there are multiple radio items selected, then only
   // the last one will get selected.
-  void SanitizeRadioList(const MenuItem::OwnedList& item_list);
+  void SanitizeRadioListsInMenu(const MenuItem::OwnedList& item_list);
 
   // Returns true if item is a descendant of an item with id |ancestor_id|.
   bool DescendantOf(MenuItem* item, const MenuItem::Id& ancestor_id);

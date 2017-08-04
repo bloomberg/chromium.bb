@@ -745,6 +745,50 @@ TEST_F(MenuManagerTest, SanitizeRadioButtons) {
   ASSERT_TRUE(child1_ptr->checked());
 }
 
+// If a context menu has multiple radio lists, then they should all be properly
+// sanitized. More specifically, on initialization of the context menu, the
+// first item of each list should be checked.
+TEST_F(MenuManagerTest, SanitizeContextMenuWithMultipleRadioLists) {
+  Extension* extension = AddExtension("test");
+
+  // Create a radio list with two radio buttons.
+  // Create first radio button.
+  std::unique_ptr<MenuItem> radio1 = CreateTestItem(extension);
+  MenuItem* radio1_ptr = radio1.get();
+  radio1_ptr->set_type(MenuItem::RADIO);
+  manager_.AddContextItem(extension, std::move(radio1));
+  // Create second radio button.
+  std::unique_ptr<MenuItem> radio2 = CreateTestItem(extension);
+  MenuItem* radio2_ptr = radio2.get();
+  radio2_ptr->set_type(MenuItem::RADIO);
+  manager_.AddContextItem(extension, std::move(radio2));
+  // Ensure that in the first radio list, only radio1 is checked.
+  ASSERT_TRUE(radio1_ptr->checked());
+  ASSERT_FALSE(radio2_ptr->checked());
+
+  // Add a normal item to separate the first radio list from the second radio
+  // list to created next.
+  std::unique_ptr<MenuItem> normal_item1 = CreateTestItem(extension);
+  normal_item1->set_type(MenuItem::NORMAL);
+  manager_.AddContextItem(extension, std::move(normal_item1));
+
+  // Create another radio list of two radio items.
+  // Create first radio button.
+  std::unique_ptr<MenuItem> radio3 = CreateTestItem(extension);
+  MenuItem* radio3_ptr = radio3.get();
+  radio3_ptr->set_type(MenuItem::RADIO);
+  manager_.AddContextItem(extension, std::move(radio3));
+  // Create second radio button.
+  std::unique_ptr<MenuItem> radio4 = CreateTestItem(extension);
+  MenuItem* radio4_ptr = radio4.get();
+  radio4_ptr->set_type(MenuItem::RADIO);
+  manager_.AddContextItem(extension, std::move(radio4));
+
+  // Ensure that in the second radio list, only radio3 is checked.
+  ASSERT_TRUE(radio3_ptr->checked());
+  ASSERT_FALSE(radio4_ptr->checked());
+}
+
 // Tests the RemoveAllIncognitoContextItems functionality.
 TEST_F(MenuManagerTest, RemoveAllIncognito) {
   Extension* extension1 = AddExtension("1111");
