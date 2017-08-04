@@ -8,27 +8,21 @@
 
 #include <algorithm>
 #include <memory>
-#include <vector>
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "build/build_config.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/openssl_util.h"
 #include "crypto/rsa_private_key.h"
-#include "net/cert/internal/parse_certificate.h"
-#include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "third_party/boringssl/src/include/openssl/asn1.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
 #include "third_party/boringssl/src/include/openssl/mem.h"
-#include "third_party/boringssl/src/include/openssl/pool.h"
-#include "third_party/boringssl/src/include/openssl/stack.h"
 
 namespace net {
 
@@ -194,19 +188,6 @@ class DERCacheInitSingleton {
 base::LazyInstance<DERCacheInitSingleton>::Leaky g_der_cache_singleton =
     LAZY_INSTANCE_INITIALIZER;
 
-class BufferPoolSingleton {
- public:
-  BufferPoolSingleton() : pool_(CRYPTO_BUFFER_POOL_new()) {}
-  CRYPTO_BUFFER_POOL* pool() { return pool_; }
-
- private:
-  // The singleton is leaky, so there is no need to use a smart pointer.
-  CRYPTO_BUFFER_POOL* pool_;
-};
-
-base::LazyInstance<BufferPoolSingleton>::Leaky g_buffer_pool_singleton =
-    LAZY_INSTANCE_INITIALIZER;
-
 }  // namespace
 
 bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
@@ -316,110 +297,6 @@ bool GetDER(X509* x509, base::StringPiece* der_cache) {
   }
   *der_cache = base::StringPiece(internal_cache->data);
   return true;
-}
-
-bool GetTLSServerEndPointChannelBinding(const X509Certificate& certificate,
-                                        std::string* token) {
-  static const char kChannelBindingPrefix[] = "tls-server-end-point:";
-
-  std::string der_encoded_certificate;
-  if (!X509Certificate::GetDEREncoded(certificate.os_cert_handle(),
-                                      &der_encoded_certificate))
-    return false;
-
-  der::Input tbs_certificate_tlv;
-  der::Input signature_algorithm_tlv;
-  der::BitString signature_value;
-  if (!ParseCertificate(der::Input(&der_encoded_certificate),
-                        &tbs_certificate_tlv, &signature_algorithm_tlv,
-                        &signature_value, nullptr))
-    return false;
-
-  std::unique_ptr<SignatureAlgorithm> signature_algorithm =
-      SignatureAlgorithm::Create(signature_algorithm_tlv, nullptr);
-  if (!signature_algorithm)
-    return false;
-
-  const EVP_MD* digest_evp_md = nullptr;
-  switch (signature_algorithm->digest()) {
-    case net::DigestAlgorithm::Md2:
-    case net::DigestAlgorithm::Md4:
-      // Shouldn't be reachable.
-      digest_evp_md = nullptr;
-      break;
-
-    // Per RFC 5929 section 4.1, MD5 and SHA1 map to SHA256.
-    case net::DigestAlgorithm::Md5:
-    case net::DigestAlgorithm::Sha1:
-    case net::DigestAlgorithm::Sha256:
-      digest_evp_md = EVP_sha256();
-      break;
-
-    case net::DigestAlgorithm::Sha384:
-      digest_evp_md = EVP_sha384();
-      break;
-
-    case net::DigestAlgorithm::Sha512:
-      digest_evp_md = EVP_sha512();
-      break;
-  }
-  if (!digest_evp_md)
-    return false;
-
-  uint8_t digest[EVP_MAX_MD_SIZE];
-  unsigned int out_size;
-  if (!EVP_Digest(der_encoded_certificate.data(),
-                  der_encoded_certificate.size(), digest, &out_size,
-                  digest_evp_md, nullptr))
-    return false;
-
-  token->assign(kChannelBindingPrefix);
-  token->append(digest, digest + out_size);
-  return true;
-}
-
-CRYPTO_BUFFER_POOL* GetBufferPool() {
-  return g_buffer_pool_singleton.Get().pool();
-}
-
-bssl::UniquePtr<CRYPTO_BUFFER> CreateCryptoBuffer(const uint8_t* data,
-                                                  size_t length) {
-  return bssl::UniquePtr<CRYPTO_BUFFER>(
-      CRYPTO_BUFFER_new(data, length, GetBufferPool()));
-}
-
-bssl::UniquePtr<CRYPTO_BUFFER> CreateCryptoBuffer(
-    const base::StringPiece& data) {
-  return bssl::UniquePtr<CRYPTO_BUFFER>(
-      CRYPTO_BUFFER_new(reinterpret_cast<const uint8_t*>(data.data()),
-                        data.size(), GetBufferPool()));
-}
-
-scoped_refptr<X509Certificate> CreateX509CertificateFromBuffers(
-    STACK_OF(CRYPTO_BUFFER) * buffers) {
-  if (sk_CRYPTO_BUFFER_num(buffers) == 0) {
-    NOTREACHED();
-    return nullptr;
-  }
-
-#if BUILDFLAG(USE_BYTE_CERTS)
-  std::vector<CRYPTO_BUFFER*> intermediate_chain;
-  for (size_t i = 1; i < sk_CRYPTO_BUFFER_num(buffers); ++i)
-    intermediate_chain.push_back(sk_CRYPTO_BUFFER_value(buffers, i));
-  return X509Certificate::CreateFromHandle(sk_CRYPTO_BUFFER_value(buffers, 0),
-                                           intermediate_chain);
-#else
-  // Convert the certificate chains to a platform certificate handle.
-  std::vector<base::StringPiece> der_chain;
-  der_chain.reserve(sk_CRYPTO_BUFFER_num(buffers));
-  for (size_t i = 0; i < sk_CRYPTO_BUFFER_num(buffers); ++i) {
-    const CRYPTO_BUFFER* cert = sk_CRYPTO_BUFFER_value(buffers, i);
-    der_chain.push_back(base::StringPiece(
-        reinterpret_cast<const char*>(CRYPTO_BUFFER_data(cert)),
-        CRYPTO_BUFFER_len(cert)));
-  }
-  return X509Certificate::CreateFromDERCertChain(der_chain);
-#endif
 }
 
 }  // namespace x509_util
