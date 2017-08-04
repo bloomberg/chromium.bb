@@ -1126,6 +1126,31 @@ const FeatureEntry::Choice kAsyncImageDecodingChoices[] = {
      cc::switches::kDisableCheckerImaging, ""},
 };
 
+#if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kUseDdljsonApiTest1[] = {
+    {search_provider_logos::features::kDdljsonOverrideUrlParam,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android1.json"}};
+const FeatureEntry::FeatureParam kUseDdljsonApiTest2[] = {
+    {search_provider_logos::features::kDdljsonOverrideUrlParam,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android2.json"}};
+const FeatureEntry::FeatureParam kUseDdljsonApiTest3[] = {
+    {search_provider_logos::features::kDdljsonOverrideUrlParam,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android3.json"}};
+const FeatureEntry::FeatureParam kUseDdljsonApiTest4[] = {
+    {search_provider_logos::features::kDdljsonOverrideUrlParam,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android4.json"}};
+
+const FeatureEntry::FeatureVariation kUseDdljsonApiVariations[] = {
+    {"(force test doodle 1)", kUseDdljsonApiTest1,
+     arraysize(kUseDdljsonApiTest1), nullptr},
+    {"(force test doodle 2)", kUseDdljsonApiTest2,
+     arraysize(kUseDdljsonApiTest2), nullptr},
+    {"(force test doodle 3)", kUseDdljsonApiTest3,
+     arraysize(kUseDdljsonApiTest3), nullptr},
+    {"(force test doodle 4)", kUseDdljsonApiTest4,
+     arraysize(kUseDdljsonApiTest4), nullptr}};
+#endif  // OS_ANDROID
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -3203,7 +3228,10 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_ANDROID)
     {"use-ddljson-api", flag_descriptions::kUseDdljsonApiName,
      flag_descriptions::kUseDdljsonApiDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(search_provider_logos::features::kUseDdljsonApi)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         search_provider_logos::features::kUseDdljsonApi,
+         kUseDdljsonApiVariations,
+         search_provider_logos::features::kUseDdljsonApi.name)},
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)

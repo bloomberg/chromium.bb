@@ -16,6 +16,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -25,6 +26,11 @@
 namespace search_provider_logos {
 
 GURL GetGoogleDoodleURL(const GURL& google_base_url) {
+  std::string override_url = base::GetFieldTrialParamValueByFeature(
+      features::kUseDdljsonApi, features::kDdljsonOverrideUrlParam);
+  if (!override_url.empty()) {
+    return GURL(override_url);
+  }
   GURL::Replacements replacements;
   replacements.SetPathStr(base::FeatureList::IsEnabled(features::kUseDdljsonApi)
                               ? "async/ddljson"
