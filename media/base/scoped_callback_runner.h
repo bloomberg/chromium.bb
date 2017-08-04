@@ -23,6 +23,14 @@
 //     ScopedCallbackRunner(base::BindOnce(&Foo::OnResult, this), false));
 //
 // If the callback is destructed without running, it'll be run with "false".
+//
+// If you want to make sure a base::RepeatingCallback is always run, consider
+// switching to use base::OnceCallback. If that is not possible, you can use
+// ToOnceCallback() to convert it to a OnceCallback.
+//
+// Example:
+//   foo->DoWorkAndReturnResult(
+//     ScopedCallbackRunner(ToOnceCallback(repeating_cb), false));
 
 namespace media {
 namespace internal {
@@ -70,8 +78,6 @@ class ScopedCallbackRunnerHelper<void(Args...)> {
 
 }  // namespace internal
 
-// Currently ScopedCallbackRunner only supports base::OnceCallback. If needed,
-// we can easily add a specialization to support base::RepeatingCallback too.
 template <typename T, typename... Args>
 inline base::OnceCallback<T> ScopedCallbackRunner(base::OnceCallback<T> cb,
                                                   Args&&... args) {
@@ -79,6 +85,13 @@ inline base::OnceCallback<T> ScopedCallbackRunner(base::OnceCallback<T> cb,
       &internal::ScopedCallbackRunnerHelper<T>::Run,
       base::MakeUnique<internal::ScopedCallbackRunnerHelper<T>>(
           std::move(cb), std::forward<Args>(args)...));
+}
+
+// Converts a repeating callback to a once callback with the same signature so
+// that it can be used with ScopedCallbackRunner.
+template <typename T>
+base::OnceCallback<T> ToOnceCallback(const base::RepeatingCallback<T>& cb) {
+  return static_cast<base::OnceCallback<T>>(cb);
 }
 
 }  // namespace media

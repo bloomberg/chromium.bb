@@ -51,17 +51,28 @@ class MojoDecryptor : public Decryptor {
   void OnKeyAdded();
 
  private:
+  // These are once callbacks corresponding to repeating callbacks DecryptCB,
+  // DecoderInitCB, AudioDecodeCB and VideoDecodeCB. They are needed so that we
+  // can use ScopedCallbackRunner to make sure callbacks always run.
+  // TODO(xhwang): Update Decryptor to use OnceCallback. The change is easy,
+  // but updating tests is hard given gmock doesn't support move-only types.
+  // See http://crbug.com/751838
+  using DecryptOnceCB = base::OnceCallback<DecryptCB::RunType>;
+  using DecoderInitOnceCB = base::OnceCallback<DecoderInitCB::RunType>;
+  using AudioDecodeOnceCB = base::OnceCallback<AudioDecodeCB::RunType>;
+  using VideoDecodeOnceCB = base::OnceCallback<VideoDecodeCB::RunType>;
+
   // Called when a buffer is decrypted.
-  void OnBufferDecrypted(const DecryptCB& decrypt_cb,
+  void OnBufferDecrypted(DecryptOnceCB decrypt_cb,
                          Status status,
                          mojom::DecoderBufferPtr buffer);
-  void OnBufferRead(const DecryptCB& decrypt_cb,
+  void OnBufferRead(DecryptOnceCB decrypt_cb,
                     Status status,
                     scoped_refptr<DecoderBuffer> buffer);
-  void OnAudioDecoded(const AudioDecodeCB& audio_decode_cb,
+  void OnAudioDecoded(AudioDecodeOnceCB audio_decode_cb,
                       Status status,
                       std::vector<mojom::AudioBufferPtr> audio_buffers);
-  void OnVideoDecoded(const VideoDecodeCB& video_decode_cb,
+  void OnVideoDecoded(VideoDecodeOnceCB video_decode_cb,
                       Status status,
                       const scoped_refptr<VideoFrame>& video_frame,
                       mojom::FrameResourceReleaserPtr releaser);
