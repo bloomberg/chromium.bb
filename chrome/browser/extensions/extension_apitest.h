@@ -58,6 +58,10 @@ class ExtensionApiTest : public ExtensionBrowserTest {
     // Allow manifest versions older that Extension::kModernManifestVersion.
     // Used to test old manifest features.
     kFlagAllowOldManifestVersions = 1 << 6,
+
+    // Load the extension using //extensions/test/data/ as the root path instead
+    // of loading from //chrome/test/data/extensions/api_test/.
+    kFlagUseRootExtensionsDir = 1 << 7,
   };
 
   ExtensionApiTest();
@@ -68,9 +72,13 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
 
-  // Load |extension_name| and wait for pass / fail notification.
-  // |extension_name| is a directory in "test/data/extensions/api_test".
+  // Loads |extension_name| and waits for pass / fail notification.
+  // |extension_name| is a directory in "chrome/test/data/extensions/api_test".
   bool RunExtensionTest(const std::string& extension_name);
+
+  // Same as RunExtensionTest, except run with the specific |flags| (as defined
+  // in the Flags enum).
+  bool RunExtensionTestWithFlags(const std::string& extension_name, int flags);
 
   // Similar to RunExtensionTest, except sets an additional string argument
   // |customArg| to the test config object.
@@ -188,6 +196,10 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   // All extensions tested by ExtensionApiTest are in the "api_test" dir.
   void SetUpCommandLine(base::CommandLine* command_line) override;
 
+  const base::FilePath& shared_test_data_dir() const {
+    return shared_test_data_dir_;
+  }
+
   // If it failed, what was the error message?
   std::string message_;
 
@@ -206,6 +218,9 @@ class ExtensionApiTest : public ExtensionBrowserTest {
 
   // Hold the test FTP server.
   std::unique_ptr<net::SpawnedTestServer> ftp_server_;
+
+  // Test data directory shared with //extensions.
+  base::FilePath shared_test_data_dir_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_APITEST_H_

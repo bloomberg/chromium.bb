@@ -2016,6 +2016,8 @@ test("browser_tests") {
         "//extensions:chrome_extensions_browsertests",
         "//extensions/common/api",
       ]
+
+      data += [ "//extensions/test/data/" ]
     }
 
     if (use_ash) {

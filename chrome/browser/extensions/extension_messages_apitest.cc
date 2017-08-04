@@ -164,12 +164,11 @@ IN_PROC_BROWSER_TEST_F(MessagingApiTest, MessagingCrash) {
 // Tests that message passing from one extension to another works.
 IN_PROC_BROWSER_TEST_F(MessagingApiTest, MessagingExternal) {
   ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("..").AppendASCII("good")
-                    .AppendASCII("Extensions")
-                    .AppendASCII("bjafgdebaacbbbecmhlhpofkepfkgcpa")
-                    .AppendASCII("1.0")));
+      shared_test_data_dir().AppendASCII("messaging").AppendASCII("receiver")));
 
-  ASSERT_TRUE(RunExtensionTest("messaging/connect_external")) << message_;
+  ASSERT_TRUE(RunExtensionTestWithFlags("messaging/connect_external",
+                                        kFlagUseRootExtensionsDir))
+      << message_;
 }
 
 // Tests that a content script can exchange messages with a tab even if there is
