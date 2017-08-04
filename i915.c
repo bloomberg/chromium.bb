@@ -124,10 +124,12 @@ static int i915_add_combinations(struct driver *drv)
 	drv_modify_combination(drv, DRM_FORMAT_R8, &metadata,
 			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
 
+	render_flags &= ~BO_USE_RENDERSCRIPT;
 	render_flags &= ~BO_USE_SW_WRITE_OFTEN;
 	render_flags &= ~BO_USE_SW_READ_OFTEN;
 	render_flags &= ~BO_USE_LINEAR;
 
+	texture_flags &= ~BO_USE_RENDERSCRIPT;
 	texture_flags &= ~BO_USE_SW_WRITE_OFTEN;
 	texture_flags &= ~BO_USE_SW_READ_OFTEN;
 	texture_flags &= ~BO_USE_LINEAR;

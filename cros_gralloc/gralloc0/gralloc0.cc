@@ -73,8 +73,7 @@ static int64_t gralloc0_convert_flags(int flags)
 	if (flags & GRALLOC_USAGE_HW_CAMERA_READ)
 		usage |= BO_USE_CAMERA_READ;
 	if (flags & GRALLOC_USAGE_RENDERSCRIPT)
-		/* We use CPU for compute. */
-		usage |= BO_USE_LINEAR;
+		usage |= BO_USE_RENDERSCRIPT;
 
 	return usage;
 }
