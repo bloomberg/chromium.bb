@@ -47,7 +47,7 @@ class CreditCard;
 class AutofillWalletMetadataSyncableService
     : public base::SupportsUserData::Data,
       public syncer::SyncableService,
-      public AutofillWebDataServiceObserverOnDBThread {
+      public AutofillWebDataServiceObserverOnDBSequence {
  public:
   ~AutofillWalletMetadataSyncableService() override;
 
@@ -63,15 +63,15 @@ class AutofillWalletMetadataSyncableService
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& changes_from_sync) override;
 
-  // AutofillWebDataServiceObserverOnDBThread implementation.
+  // AutofillWebDataServiceObserverOnDBSequence implementation.
   void AutofillProfileChanged(const AutofillProfileChange& change) override;
   void CreditCardChanged(const CreditCardChange& change) override;
   void AutofillMultipleChanged() override;
 
   // Creates a new AutofillWalletMetadataSyncableService and hangs it off of
   // |web_data_service|, which takes ownership. This method should only be
-  // called on |web_data_service|'s DB thread. |web_data_backend| is expected to
-  // outlive this object.
+  // called on |web_data_service|'s DB sequence. |web_data_backend| is expected
+  // to outlive this object.
   static void CreateForWebDataServiceAndBackend(
       AutofillWebDataService* web_data_service,
       AutofillWebDataBackend* web_data_backend,

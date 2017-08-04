@@ -42,9 +42,11 @@ class NoOpAutofillBackend : public AutofillWebDataBackend {
   ~NoOpAutofillBackend() override {}
   WebDatabase* GetDatabase() override { return NULL; }
   void AddObserver(
-      autofill::AutofillWebDataServiceObserverOnDBThread* observer) override {}
+      autofill::AutofillWebDataServiceObserverOnDBSequence* observer) override {
+  }
   void RemoveObserver(
-      autofill::AutofillWebDataServiceObserverOnDBThread* observer) override {}
+      autofill::AutofillWebDataServiceObserverOnDBSequence* observer) override {
+  }
   void RemoveExpiredFormElements() override {}
   void NotifyOfMultipleAutofillChanges() override {}
   void NotifyThatSyncHasStarted(syncer::ModelType /* model_type */) override {}
@@ -83,7 +85,7 @@ class FakeWebDataService : public AutofillWebDataService {
 
   void StartSyncableService() {
     // The |autofill_profile_syncable_service_| must be constructed on the DB
-    // thread.
+    // sequence.
     base::RunLoop run_loop;
     db_task_runner_->PostTaskAndReply(
         FROM_HERE, base::Bind(&FakeWebDataService::CreateSyncableService,
@@ -96,7 +98,7 @@ class FakeWebDataService : public AutofillWebDataService {
   ~FakeWebDataService() override {}
 
   void CreateSyncableService() {
-    ASSERT_TRUE(db_task_runner_->BelongsToCurrentThread());
+    ASSERT_TRUE(db_task_runner_->RunsTasksInCurrentSequence());
     // These services are deleted in DestroySyncableService().
     autofill::AutocompleteSyncableService::CreateForWebDataServiceAndBackend(
         this, &autofill_backend_);
@@ -128,7 +130,7 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
   }
 
   void TearDown() override {
-    web_data_service_->ShutdownOnUIThread();
+    web_data_service_->ShutdownOnUISequence();
 
     // Make sure WebDataService is shutdown properly on DB thread before we
     // destroy it.
@@ -171,9 +173,8 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
   base::WeakPtrFactory<SyncAutofillDataTypeControllerTest> weak_ptr_factory_;
 };
 
-// Load the WDS's database, then start the Autofill DTC.  It should
-// immediately try to start association and fail (due to missing DB
-// thread).
+// Load the WDS's database, then start the Autofill DTC.  It should immediately
+// try to start association and fail (due to missing DB thread).
 TEST_F(SyncAutofillDataTypeControllerTest, StartWDSReady) {
   web_data_service_->LoadDatabase();
   autofill_dtc_->LoadModels(

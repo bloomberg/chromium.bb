@@ -129,10 +129,10 @@ class PasswordStoreWinTest : public testing::Test {
     base::FilePath path = temp_dir_.GetPath().AppendASCII("web_data_test");
     // TODO(pkasting): http://crbug.com/740773 This should likely be sequenced,
     // not single-threaded.
-    auto db_thread =
+    auto db_task_runner =
         base::CreateSingleThreadTaskRunnerWithTraits({base::MayBlock()});
     wdbs_ = new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
-                                   db_thread);
+                                   db_task_runner);
     // Need to add at least one table so the database gets created.
     wdbs_->AddTable(std::unique_ptr<WebDatabaseTable>(new LoginsTable()));
     wdbs_->LoadDatabase();
@@ -146,7 +146,7 @@ class PasswordStoreWinTest : public testing::Test {
     if (store_.get())
       store_->ShutdownOnUIThread();
     if (wds_) {
-      wds_->ShutdownOnUIThread();
+      wds_->ShutdownOnUISequence();
       wds_ = nullptr;
     }
     if (wdbs_) {
@@ -311,7 +311,7 @@ TEST_F(PasswordStoreWinTest, OutstandingWDSQueries) {
   // Release the PSW and the WDS before the query can return.
   store_->ShutdownOnUIThread();
   store_ = nullptr;
-  wds_->ShutdownOnUIThread();
+  wds_->ShutdownOnUISequence();
   wds_ = nullptr;
   wdbs_->ShutdownDatabase();
   wdbs_ = nullptr;
@@ -319,7 +319,7 @@ TEST_F(PasswordStoreWinTest, OutstandingWDSQueries) {
   content::RunAllBlockingPoolTasksUntilIdle();
 }
 
-TEST_F(PasswordStoreWinTest, MultipleWDSQueriesOnDifferentThreads) {
+TEST_F(PasswordStoreWinTest, MultipleWDSQueriesOnDifferentSequences) {
   IE7PasswordInfo password_info;
   ASSERT_TRUE(CreateIE7PasswordInfo(L"http://example.com/origin",
                                     base::Time::FromDoubleT(1),

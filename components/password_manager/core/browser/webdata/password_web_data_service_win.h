@@ -37,9 +37,10 @@ class PasswordWebDataService : public WebDataServiceBase {
   static scoped_refptr<PasswordWebDataService> FromBrowserContext(
       content::BrowserContext* context);
 
-  PasswordWebDataService(scoped_refptr<WebDatabaseService> wdbs,
-                         scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
-                         const ProfileErrorCallback& callback);
+  PasswordWebDataService(
+      scoped_refptr<WebDatabaseService> wdbs,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      const ProfileErrorCallback& callback);
 
   // Adds |info| to the list of imported passwords from ie7/ie8.
   void AddIE7Login(const IE7PasswordInfo& info);
@@ -57,12 +58,13 @@ class PasswordWebDataService : public WebDataServiceBase {
 
  protected:
   // For unit tests, passes a null callback.
-  PasswordWebDataService(scoped_refptr<base::SingleThreadTaskRunner> ui_thread);
+  PasswordWebDataService(
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   ~PasswordWebDataService() override;
 
  private:
-  // The following methods are only invoked on the DB thread.
+  // The following methods are only invoked on the DB sequence.
   WebDatabase::State AddIE7LoginImpl(const IE7PasswordInfo& info,
                                      WebDatabase* db);
   WebDatabase::State RemoveIE7LoginImpl(const IE7PasswordInfo& info,

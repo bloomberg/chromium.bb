@@ -80,7 +80,7 @@ ACTION_P(SignalEvent, event) {
 }
 
 class MockAutofillWebDataServiceObserver
-    : public AutofillWebDataServiceObserverOnDBThread {
+    : public AutofillWebDataServiceObserverOnDBSequence {
  public:
   MOCK_METHOD1(AutofillEntriesChanged,
                void(const AutofillChangeList& changes));
@@ -102,21 +102,21 @@ class WebDataServiceTest : public testing::Test {
     // TODO(pkasting): http://crbug.com/740773 This should likely be sequenced,
     // not single-threaded; it's also possible the various uses of this below
     // should each use their own sequences instead of sharing this one.
-    auto db_thread =
+    auto db_task_runner =
         base::CreateSingleThreadTaskRunnerWithTraits({base::MayBlock()});
     wdbs_ = new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
-                                   db_thread);
+                                   db_task_runner);
     wdbs_->AddTable(base::WrapUnique(new AutofillTable));
     wdbs_->LoadDatabase();
 
     wds_ = new AutofillWebDataService(
-        wdbs_, base::ThreadTaskRunnerHandle::Get(), db_thread,
+        wdbs_, base::ThreadTaskRunnerHandle::Get(), db_task_runner,
         WebDataServiceBase::ProfileErrorCallback());
     wds_->Init();
   }
 
   void TearDown() override {
-    wds_->ShutdownOnUIThread();
+    wds_->ShutdownOnUISequence();
     wdbs_->ShutdownDatabase();
     wds_ = NULL;
     wdbs_ = NULL;
@@ -148,8 +148,8 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
     value1_ = ASCIIToUTF16("value1");
     value2_ = ASCIIToUTF16("value2");
 
-    void(AutofillWebDataService::*add_observer_func)(
-        AutofillWebDataServiceObserverOnDBThread*) =
+    void (AutofillWebDataService::*add_observer_func)(
+        AutofillWebDataServiceObserverOnDBSequence*) =
         &AutofillWebDataService::AddObserver;
     wds_->GetDBTaskRunner()->PostTask(
         FROM_HERE, base::Bind(add_observer_func, wds_, &observer_));
@@ -157,8 +157,8 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
   }
 
   virtual void TearDown() {
-    void(AutofillWebDataService::*remove_observer_func)(
-        AutofillWebDataServiceObserverOnDBThread*) =
+    void (AutofillWebDataService::*remove_observer_func)(
+        AutofillWebDataServiceObserverOnDBSequence*) =
         &AutofillWebDataService::RemoveObserver;
     wds_->GetDBTaskRunner()->PostTask(
         FROM_HERE, base::Bind(remove_observer_func, wds_, &observer_));

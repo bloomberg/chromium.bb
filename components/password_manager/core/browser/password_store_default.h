@@ -20,7 +20,7 @@ namespace password_manager {
 class PasswordStoreDefault : public PasswordStore {
  public:
   // The |login_db| must not have been Init()-ed yet. It will be initialized in
-  // a deferred manner on the background thread.
+  // a deferred manner on the background sequence.
   explicit PasswordStoreDefault(std::unique_ptr<LoginDatabase> login_db);
 
   void ShutdownOnUIThread() override;
@@ -31,8 +31,8 @@ class PasswordStoreDefault : public PasswordStore {
  protected:
   ~PasswordStoreDefault() override;
 
-  // Opens |login_db_| on the background thread.
-  void InitOnBackgroundThread(
+  // Opens |login_db_| on the background sequence.
+  void InitOnBackgroundSequence(
       const syncer::SyncableService::StartSyncFlare& flare) override;
 
   // Implements PasswordStore interface.
@@ -79,12 +79,12 @@ class PasswordStoreDefault : public PasswordStore {
   }
 
  private:
-  // Resets |login_db_| on the background thread.
+  // Resets |login_db_| on the background sequence.
   void ResetLoginDB();
 
   // The login SQL database. The LoginDatabase instance is received via the
   // in an uninitialized state, so as to allow injecting mocks, then Init() is
-  // called on the background thread in a deferred manner. If opening the DB
+  // called on the background sequence in a deferred manner. If opening the DB
   // fails, |login_db_| will be reset and stay NULL for the lifetime of |this|.
   std::unique_ptr<LoginDatabase> login_db_;
 

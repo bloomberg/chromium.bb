@@ -182,33 +182,36 @@ class MockAutofillBackend : public autofill::AutofillWebDataBackend {
       WebDatabase* web_database,
       const base::Closure& on_changed,
       const base::Callback<void(syncer::ModelType)>& on_sync_started,
-      const scoped_refptr<base::SequencedTaskRunner>& ui_thread)
+      const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner)
       : web_database_(web_database),
         on_changed_(on_changed),
         on_sync_started_(on_sync_started),
-        ui_thread_(ui_thread) {}
+        ui_task_runner_(ui_task_runner) {}
 
   ~MockAutofillBackend() override {}
   WebDatabase* GetDatabase() override { return web_database_; }
   void AddObserver(
-      autofill::AutofillWebDataServiceObserverOnDBThread* observer) override {}
+      autofill::AutofillWebDataServiceObserverOnDBSequence* observer) override {
+  }
   void RemoveObserver(
-      autofill::AutofillWebDataServiceObserverOnDBThread* observer) override {}
+      autofill::AutofillWebDataServiceObserverOnDBSequence* observer) override {
+  }
   void RemoveExpiredFormElements() override {}
   void NotifyOfMultipleAutofillChanges() override {
-    DCHECK(!ui_thread_->RunsTasksInCurrentSequence());
-    ui_thread_->PostTask(FROM_HERE, on_changed_);
+    DCHECK(!ui_task_runner_->RunsTasksInCurrentSequence());
+    ui_task_runner_->PostTask(FROM_HERE, on_changed_);
   }
   void NotifyThatSyncHasStarted(syncer::ModelType model_type) override {
-    DCHECK(!ui_thread_->RunsTasksInCurrentSequence());
-    ui_thread_->PostTask(FROM_HERE, base::Bind(on_sync_started_, model_type));
+    DCHECK(!ui_task_runner_->RunsTasksInCurrentSequence());
+    ui_task_runner_->PostTask(FROM_HERE,
+                              base::Bind(on_sync_started_, model_type));
   }
 
  private:
   WebDatabase* web_database_;
   base::Closure on_changed_;
   base::Callback<void(syncer::ModelType)> on_sync_started_;
-  const scoped_refptr<base::SequencedTaskRunner> ui_thread_;
+  const scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 };
 
 class ProfileSyncServiceAutofillTest;
@@ -231,9 +234,9 @@ syncer::ModelType GetModelType<AutofillProfile>() {
 class TokenWebDataServiceFake : public TokenWebData {
  public:
   TokenWebDataServiceFake(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread)
-      : TokenWebData(ui_thread, db_thread) {}
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& db_task_runner)
+      : TokenWebData(ui_task_runner, db_task_runner) {}
 
   bool IsDatabaseLoaded() override { return true; }
 
@@ -258,43 +261,43 @@ class TokenWebDataServiceFake : public TokenWebData {
 class WebDataServiceFake : public AutofillWebDataService {
  public:
   WebDataServiceFake(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread)
-      : AutofillWebDataService(ui_thread, db_thread),
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& db_task_runner)
+      : AutofillWebDataService(ui_task_runner, db_task_runner),
         web_database_(nullptr),
         autocomplete_syncable_service_(nullptr),
         autofill_profile_syncable_service_(nullptr),
         syncable_service_created_or_destroyed_(
             base::WaitableEvent::ResetPolicy::AUTOMATIC,
             base::WaitableEvent::InitialState::NOT_SIGNALED),
-        db_thread_(db_thread),
-        ui_thread_(ui_thread) {}
+        db_task_runner_(db_task_runner),
+        ui_task_runner_(ui_task_runner) {}
 
   void SetDatabase(WebDatabase* web_database) { web_database_ = web_database; }
 
   void StartSyncableService() {
     // The |autofill_profile_syncable_service_| must be constructed on the DB
-    // thread.
-    const base::Closure& on_changed_callback =
-        base::Bind(&WebDataServiceFake::NotifyAutofillMultipleChangedOnUIThread,
-                   AsWeakPtr());
+    // sequence.
+    const base::Closure& on_changed_callback = base::Bind(
+        &WebDataServiceFake::NotifyAutofillMultipleChangedOnUISequence,
+        AsWeakPtr());
     const base::Callback<void(syncer::ModelType)> on_sync_started_callback =
-        base::Bind(&WebDataServiceFake::NotifySyncStartedOnUIThread,
+        base::Bind(&WebDataServiceFake::NotifySyncStartedOnUISequence,
                    AsWeakPtr());
 
-    db_thread_->PostTask(FROM_HERE,
-                         base::Bind(&WebDataServiceFake::CreateSyncableService,
-                                    base::Unretained(this), on_changed_callback,
-                                    on_sync_started_callback));
+    db_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&WebDataServiceFake::CreateSyncableService,
+                              base::Unretained(this), on_changed_callback,
+                              on_sync_started_callback));
     syncable_service_created_or_destroyed_.Wait();
   }
 
   void ShutdownSyncableService() {
     // The |autofill_profile_syncable_service_| must be destructed on the DB
-    // thread.
-    db_thread_->PostTask(FROM_HERE,
-                         base::Bind(&WebDataServiceFake::DestroySyncableService,
-                                    base::Unretained(this)));
+    // sequence.
+    db_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&WebDataServiceFake::DestroySyncableService,
+                              base::Unretained(this)));
     syncable_service_created_or_destroyed_.Wait();
   }
 
@@ -309,8 +312,8 @@ class WebDataServiceFake : public AutofillWebDataService {
     base::Closure notify_cb =
         base::Bind(&AutocompleteSyncableService::AutofillEntriesChanged,
                    base::Unretained(autocomplete_syncable_service_), changes);
-    db_thread_->PostTask(FROM_HERE,
-                         base::Bind(&RunAndSignal, notify_cb, &event));
+    db_task_runner_->PostTask(FROM_HERE,
+                              base::Bind(&RunAndSignal, notify_cb, &event));
     event.Wait();
   }
 
@@ -321,8 +324,8 @@ class WebDataServiceFake : public AutofillWebDataService {
     base::Closure notify_cb = base::Bind(
         &AutocompleteSyncableService::AutofillProfileChanged,
         base::Unretained(autofill_profile_syncable_service_), changes);
-    db_thread_->PostTask(FROM_HERE,
-                         base::Bind(&RunAndSignal, notify_cb, &event));
+    db_task_runner_->PostTask(FROM_HERE,
+                              base::Bind(&RunAndSignal, notify_cb, &event));
     event.Wait();
   }
 
@@ -332,10 +335,11 @@ class WebDataServiceFake : public AutofillWebDataService {
   void CreateSyncableService(
       const base::Closure& on_changed_callback,
       const base::Callback<void(syncer::ModelType)>& on_sync_started) {
-    ASSERT_TRUE(db_thread_->RunsTasksInCurrentSequence());
+    ASSERT_TRUE(db_task_runner_->RunsTasksInCurrentSequence());
     // These services are deleted in DestroySyncableService().
     backend_ = base::MakeUnique<MockAutofillBackend>(
-        GetDatabase(), on_changed_callback, on_sync_started, ui_thread_.get());
+        GetDatabase(), on_changed_callback, on_sync_started,
+        ui_task_runner_.get());
     AutocompleteSyncableService::CreateForWebDataServiceAndBackend(
         this, backend_.get());
     AutofillProfileSyncableService::CreateForWebDataServiceAndBackend(
@@ -350,7 +354,7 @@ class WebDataServiceFake : public AutofillWebDataService {
   }
 
   void DestroySyncableService() {
-    ASSERT_TRUE(db_thread_->RunsTasksInCurrentSequence());
+    ASSERT_TRUE(db_task_runner_->RunsTasksInCurrentSequence());
     autocomplete_syncable_service_ = nullptr;
     autofill_profile_syncable_service_ = nullptr;
     backend_.reset();
@@ -364,8 +368,8 @@ class WebDataServiceFake : public AutofillWebDataService {
 
   WaitableEvent syncable_service_created_or_destroyed_;
 
-  const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
-  const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
+  const scoped_refptr<base::SingleThreadTaskRunner> db_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDataServiceFake);
 };
@@ -452,7 +456,7 @@ class ProfileSyncServiceAutofillTest
   }
 
   ~ProfileSyncServiceAutofillTest() override {
-    web_data_service_->ShutdownOnUIThread();
+    web_data_service_->ShutdownOnUISequence();
     web_data_service_->ShutdownSyncableService();
     web_data_wrapper_->Shutdown();
     web_data_service_ = nullptr;
@@ -729,18 +733,18 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
   FakeServerUpdater(TestProfileSyncService* service,
                     WaitableEvent* wait_for_start,
                     WaitableEvent* wait_for_syncapi,
-                    scoped_refptr<base::SequencedTaskRunner> db_thread)
+                    scoped_refptr<base::SequencedTaskRunner> db_task_runner)
       : entry_(MakeAutofillEntry("0", "0", 0)),
         service_(service),
         wait_for_start_(wait_for_start),
         wait_for_syncapi_(wait_for_syncapi),
         is_finished_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                      base::WaitableEvent::InitialState::NOT_SIGNALED),
-        db_thread_(db_thread) {}
+        db_task_runner_(db_task_runner) {}
 
   void Update() {
     // This gets called in a modelsafeworker thread.
-    ASSERT_TRUE(db_thread_->RunsTasksInCurrentSequence());
+    ASSERT_TRUE(db_task_runner_->RunsTasksInCurrentSequence());
 
     syncer::UserShare* user_share = service_->GetUserShare();
     syncer::syncable::Directory* directory = user_share->directory.get();
@@ -789,10 +793,10 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
 
   void CreateNewEntry(const AutofillEntry& entry) {
     entry_ = entry;
-    ASSERT_FALSE(db_thread_->RunsTasksInCurrentSequence());
-    if (!db_thread_->PostTask(FROM_HERE,
-                              base::Bind(&FakeServerUpdater::Update, this))) {
-      NOTREACHED() << "Failed to post task to the db thread.";
+    ASSERT_FALSE(db_task_runner_->RunsTasksInCurrentSequence());
+    if (!db_task_runner_->PostTask(
+            FROM_HERE, base::Bind(&FakeServerUpdater::Update, this))) {
+      NOTREACHED() << "Failed to post task to the db sequence.";
       return;
     }
   }
@@ -809,7 +813,7 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
   WaitableEvent* const wait_for_syncapi_;
   WaitableEvent is_finished_;
   syncer::syncable::Id parent_id_;
-  scoped_refptr<base::SequencedTaskRunner> db_thread_;
+  scoped_refptr<base::SequencedTaskRunner> db_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeServerUpdater);
 };
@@ -1545,7 +1549,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ServerChangeRace) {
   updater->CreateNewEntry(MakeAutofillEntry("server2", "entry2", 3));
   updater->WaitForUpdateCompletion();
 
-  // Let callbacks posted on UI thread execute.
+  // Let callbacks posted on UI sequence execute.
   base::RunLoop().RunUntilIdle();
 
   std::vector<AutofillEntry> sync_entries;

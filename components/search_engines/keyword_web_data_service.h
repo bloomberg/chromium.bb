@@ -61,12 +61,13 @@ class KeywordWebDataService : public WebDataServiceBase {
     DISALLOW_COPY_AND_ASSIGN(BatchModeScoper);
   };
 
-  KeywordWebDataService(scoped_refptr<WebDatabaseService> wdbs,
-                        scoped_refptr<base::SingleThreadTaskRunner> ui_thread,
-                        const ProfileErrorCallback& callback);
+  KeywordWebDataService(
+      scoped_refptr<WebDatabaseService> wdbs,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      const ProfileErrorCallback& callback);
 
-  // As the database processes requests at a later date, all deletion is
-  // done on the background thread.
+  // As the database processes requests at a later date, all deletion is done on
+  // the background sequence.
   //
   // Many of the keyword related methods do not return a handle. This is because
   // the caller (TemplateURLService) does not need to know when the request is
@@ -95,7 +96,7 @@ class KeywordWebDataService : public WebDataServiceBase {
 
   //////////////////////////////////////////////////////////////////////////////
   //
-  // The following methods are only invoked on the DB thread.
+  // The following methods are only invoked on the DB sequence.
   //
   //////////////////////////////////////////////////////////////////////////////
   WebDatabase::State PerformKeywordOperationsImpl(

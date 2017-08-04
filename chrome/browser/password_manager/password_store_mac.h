@@ -16,7 +16,7 @@ namespace password_manager {
 class LoginDatabase;
 }
 
-// Password store for Mac. It creates a dedicated background thread
+// Password store for Mac.
 class PasswordStoreMac : public password_manager::PasswordStoreDefault {
  public:
   PasswordStoreMac(std::unique_ptr<password_manager::LoginDatabase> login_db,
@@ -35,7 +35,7 @@ class PasswordStoreMac : public password_manager::PasswordStoreDefault {
   ~PasswordStoreMac() override;
 
   // PasswordStore:
-  void InitOnBackgroundThread(
+  void InitOnBackgroundSequence(
       const syncer::SyncableService::StartSyncFlare& flare) override;
 
   // Writes status to the prefs.

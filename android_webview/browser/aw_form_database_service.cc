@@ -33,20 +33,21 @@ AwFormDatabaseService::AwFormDatabaseService(const base::FilePath path)
       has_form_data_completion_(
           base::WaitableEvent::ResetPolicy::AUTOMATIC,
           base::WaitableEvent::InitialState::NOT_SIGNALED) {
-  auto ui_thread = base::ThreadTaskRunnerHandle::Get();
+  auto ui_task_runner = base::ThreadTaskRunnerHandle::Get();
   // TODO(pkasting): http://crbug.com/740773 This should likely be sequenced,
   // not single-threaded; it's also possible these objects can each use their
   // own sequences instead of sharing this one.
-  auto db_thread = base::CreateSingleThreadTaskRunnerWithTraits(
+  auto db_task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   web_database_ = new WebDatabaseService(path.Append(kWebDataFilename),
-                                         ui_thread, db_thread);
+                                         ui_task_runner, db_task_runner);
   web_database_->AddTable(base::WrapUnique(new autofill::AutofillTable));
   web_database_->LoadDatabase();
 
   autofill_data_ = new autofill::AutofillWebDataService(
-      web_database_, ui_thread, db_thread, base::Bind(&DatabaseErrorCallback));
+      web_database_, ui_task_runner, db_task_runner,
+      base::Bind(&DatabaseErrorCallback));
   autofill_data_->Init();
 }
 
@@ -55,10 +56,9 @@ AwFormDatabaseService::~AwFormDatabaseService() {
 }
 
 void AwFormDatabaseService::Shutdown() {
-  // TODO(sgurun) we don't run into this logic right now,
-  // but if we do, then we need to implement cancellation
-  // of pending queries.
-  autofill_data_->ShutdownOnUIThread();
+  // TODO(sgurun) we don't run into this logic right now, but if we do, then we
+  // need to implement cancellation of pending queries.
+  autofill_data_->ShutdownOnUISequence();
   web_database_->ShutdownDatabase();
 }
 
