@@ -1131,14 +1131,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   _containerView.reset();
 }
 
-- (void)handleLowMemory {
-  [self removeWebViewAllowingCachedReconstruction:YES];
-  _touchTrackingRecognizer.get().touchTrackingDelegate = nil;
-  _touchTrackingRecognizer.reset();
-  [self resetContainerView];
-  _usePlaceholderOverlay = YES;
-}
-
 - (void)reinitializeWebViewAndReload:(BOOL)reload {
   if (_webView) {
     [self removeWebViewAllowingCachedReconstruction:NO];

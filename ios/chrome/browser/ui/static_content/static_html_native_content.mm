@@ -132,10 +132,6 @@
   [_staticHTMLViewController reload];
 }
 
-- (void)handleLowMemory {
-  [_staticHTMLViewController handleLowMemory];
-}
-
 - (BOOL)isViewAlive {
   return [_staticHTMLViewController isViewAlive];
 }

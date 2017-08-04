@@ -132,9 +132,6 @@ class WebStateImpl;
 // before calling.
 - (void)close;
 
-// Call when there is a need to free up memory.
-- (void)handleLowMemory;
-
 // Returns YES if there is currently a live view in the tab (e.g., the view
 // hasn't been discarded due to low memory).
 // NOTE: This should be used for metrics-gathering only; for any other purpose
