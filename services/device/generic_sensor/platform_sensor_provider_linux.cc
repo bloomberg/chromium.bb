@@ -4,13 +4,21 @@
 
 #include "services/device/generic_sensor/platform_sensor_provider_linux.h"
 
+#include <utility>
+#include <vector>
+
+#include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "services/device/generic_sensor/linux/sensor_data_linux.h"
+#include "services/device/generic_sensor/orientation_quaternion_fusion_algorithm_using_euler_angles.h"
+#include "services/device/generic_sensor/platform_sensor_fusion.h"
 #include "services/device/generic_sensor/platform_sensor_linux.h"
 #include "services/device/generic_sensor/platform_sensor_reader_linux.h"
+#include "services/device/generic_sensor/relative_orientation_euler_angles_fusion_algorithm_using_accelerometer.h"
 
 namespace device {
 
@@ -45,6 +53,17 @@ void PlatformSensorProviderLinux::CreateSensorInternal(
                      base::Unretained(sensor_device_manager_.get()), this));
     }
     return;
+  }
+
+  switch (type) {
+    case mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES:
+      CreateRelativeOrientationEulerAnglesSensor(std::move(mapping), callback);
+      return;
+    case mojom::SensorType::RELATIVE_ORIENTATION_QUATERNION:
+      CreateRelativeOrientationQuaternionSensor(std::move(mapping), callback);
+      return;
+    default:
+      break;
   }
 
   SensorInfoLinux* sensor_device = GetSensorDevice(type);
@@ -209,6 +228,47 @@ void PlatformSensorProviderLinux::OnDeviceRemoved(
   if (it != sensor_devices_by_type_.end() &&
       it->second->device_node == device_node)
     sensor_devices_by_type_.erase(it);
+}
+
+// For RELATIVE_ORIENTATION_EULER_ANGLES we use a 2-way fallback approach
+// where up to 2 different sets of sensors are attempted if necessary. The
+// sensors to be used are determined in the following order:
+//   A: TODO(juncai): Combination of ACCELEROMETER and GYROSCOPE
+//   B: ACCELEROMETER
+void PlatformSensorProviderLinux::CreateRelativeOrientationEulerAnglesSensor(
+    mojo::ScopedSharedBufferMapping mapping,
+    const CreateSensorCallback& callback) {
+  std::vector<mojom::SensorType> source_sensor_types = {
+      mojom::SensorType::ACCELEROMETER};
+
+  auto sensor_fusion_algorithm = base::MakeUnique<
+      RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer>();
+
+  // If this PlatformSensorFusion object is successfully initialized,
+  // |callback| will be run with a reference to this object.
+  base::MakeRefCounted<PlatformSensorFusion>(
+      std::move(mapping), this, callback, source_sensor_types,
+      mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES,
+      std::move(sensor_fusion_algorithm));
+}
+
+// For RELATIVE_ORIENTATION_QUATERNION we use the following fallback approach:
+//   A: RELATIVE_ORIENTATION_EULER_ANGLES
+void PlatformSensorProviderLinux::CreateRelativeOrientationQuaternionSensor(
+    mojo::ScopedSharedBufferMapping mapping,
+    const CreateSensorCallback& callback) {
+  std::vector<mojom::SensorType> source_sensor_types = {
+      mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES};
+
+  auto sensor_fusion_algorithm =
+      base::MakeUnique<OrientationQuaternionFusionAlgorithmUsingEulerAngles>();
+
+  // If this PlatformSensorFusion object is successfully initialized,
+  // |callback| will be run with a reference to this object.
+  base::MakeRefCounted<PlatformSensorFusion>(
+      std::move(mapping), this, callback, source_sensor_types,
+      mojom::SensorType::RELATIVE_ORIENTATION_QUATERNION,
+      std::move(sensor_fusion_algorithm));
 }
 
 }  // namespace device
