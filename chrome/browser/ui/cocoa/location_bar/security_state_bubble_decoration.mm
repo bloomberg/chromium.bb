@@ -275,6 +275,10 @@ NSPoint SecurityStateBubbleDecoration::GetBubblePointInFrame(NSRect frame) {
 }
 
 NSString* SecurityStateBubbleDecoration::GetToolTip() {
+  return l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_LOCATION_ICON);
+}
+
+NSString* SecurityStateBubbleDecoration::GetAccessibilityLabel() {
   NSString* tooltip_icon_text =
       l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_LOCATION_ICON);
   if ([full_label_ length] == 0)
