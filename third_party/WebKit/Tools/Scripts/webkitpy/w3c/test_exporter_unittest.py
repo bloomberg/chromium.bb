@@ -40,9 +40,9 @@ class TestExporterTest(unittest.TestCase):
         test_exporter.run()
 
         self.assertEqual(test_exporter.wpt_github.calls, [
-            'pr_for_chromium_commit',
-            'pr_for_chromium_commit',
-            'pr_for_chromium_commit',
+            'pr_with_change_id',
+            'pr_with_change_id',
+            'pr_with_change_id',
         ])
 
     def test_creates_pull_request_for_all_exportable_commits(self):
@@ -78,16 +78,16 @@ class TestExporterTest(unittest.TestCase):
         test_exporter.run()
 
         self.assertEqual(test_exporter.wpt_github.calls, [
-            'pr_for_chromium_commit',
-            'pr_for_chromium_commit',
-            'pr_for_chromium_commit',
-            'pr_for_chromium_commit',
+            'pr_with_change_id',
+            'pr_with_change_id',
+            'pr_with_change_id',
+            'pr_with_change_id',
             'create_pr',
             'add_label "chromium-export"',
-            'pr_for_chromium_commit',
+            'pr_with_change_id',
             'create_pr',
             'add_label "chromium-export"',
-            'pr_for_chromium_commit',
+            'pr_with_change_id',
             'create_pr',
             'add_label "chromium-export"',
         ])
@@ -141,15 +141,15 @@ class TestExporterTest(unittest.TestCase):
         ]
         test_exporter.run()
         self.assertEqual(test_exporter.wpt_github.calls, [
-            'pr_for_chromium_commit',
+            'pr_with_change_id',
             'remove_label "do not merge yet"',
             'get_pr_branch',
             'merge_pull_request',
-            'pr_for_chromium_commit',
+            'pr_with_change_id',
             'create_pr',
             'add_label "chromium-export"',
-            'pr_for_chromium_commit',
-            'pr_for_chromium_commit',
+            'pr_with_change_id',
+            'pr_with_change_id',
             # Testing the lack of remove_label here. The exporter should not
             # try to remove the provisional label from PRs it has already
             # removed it from.
@@ -291,7 +291,7 @@ class TestExporterTest(unittest.TestCase):
         test_exporter.run()
 
         self.assertEqual(test_exporter.wpt_github.calls, [
-            'pr_for_chromium_commit',
+            'pr_with_change_id',
             'remove_label "do not merge yet"',
             'get_pr_branch',
             'merge_pull_request',

@@ -36,7 +36,9 @@ class CommonTest(unittest.TestCase):
             'diff': 'fake diff',
             'diff-tree': 'some\nfiles',
             'format-patch': 'hey I\'m a patch',
-            'footers': 'cr-rev-position',
+            # TODO(robertma): Currently mock_git_command only supports subcommand lookup,
+            # so both position and change-id queries will get this dummy footer.
+            'footers': 'dummy-footer',
         })
 
         commits = _exportable_commits_since(
@@ -52,6 +54,7 @@ class CommonTest(unittest.TestCase):
             ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'add087a97844f4b9e307d9a216940582d96db306', '--',
              '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'],
             ['git', 'format-patch', '-1', '--stdout', 'add087a97844f4b9e307d9a216940582d96db306', '--', 'some', 'files'],
+            ['git', 'footers', '--key', 'Change-Id', 'add087a97844f4b9e307d9a216940582d96db306'],
         ])
 
     def test_is_exportable(self):

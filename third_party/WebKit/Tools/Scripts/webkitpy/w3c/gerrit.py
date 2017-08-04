@@ -6,7 +6,7 @@ import base64
 import json
 import logging
 import os
-import urllib
+import re
 
 from webkitpy.w3c.common import CHROMIUM_WPT_DIR
 
@@ -92,7 +92,16 @@ class GerritCL(object):
         return self._data.get('has_review_started')
 
     def latest_commit_message_with_footers(self):
-        return self.current_revision['commit_with_footers']
+        return self.strip_commit_positions(self.current_revision['commit_with_footers'])
+
+    @staticmethod
+    def strip_commit_positions(commit_with_footers):
+        """Strips Cr-{Original-}Commit-Position from the footers.
+
+        Commit positions are incorrect for in-progress CLs, which causes
+        confusions. See crbug.com/737178 for more context.
+        """
+        return re.sub(r'\nCr-(Original-)?Commit-Position:.*', '', commit_with_footers)
 
     @property
     def current_revision_description(self):
