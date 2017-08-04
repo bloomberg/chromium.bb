@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/renderer/searchbox/search_bouncer.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -68,8 +69,8 @@ TEST_F(InstantProcessNavigationTest, ForkForNavigationsToSearchURLs) {
   client->RenderThreadStarted();
   std::vector<GURL> search_urls;
   search_urls.push_back(GURL("http://example.com/search"));
-  chrome_render_thread_->Send(new ChromeViewMsg_SetSearchURLs(
-      search_urls, GURL("http://example.com/newtab")));
+  SearchBouncer::GetInstance()->SetSearchURLs(
+      search_urls, GURL("http://example.com/newtab"));
   bool unused;
   EXPECT_TRUE(client->ShouldFork(
       GetMainFrame(), GURL("http://example.com/newtab"), "GET", false, false,

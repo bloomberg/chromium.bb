@@ -27,7 +27,7 @@
 #include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/search.mojom.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
@@ -207,8 +207,12 @@ void InstantService::UpdateMostVisitedItemsInfo() {
 }
 
 void InstantService::SendSearchURLsToRenderer(content::RenderProcessHost* rph) {
-  rph->Send(new ChromeViewMsg_SetSearchURLs(
-      search::GetSearchURLs(profile_), search::GetNewTabPageURL(profile_)));
+  if (auto* channel = rph->GetChannel()) {
+    chrome::mojom::SearchBouncerAssociatedPtr client;
+    channel->GetRemoteAssociatedInterface(&client);
+    client->SetSearchURLs(search::GetSearchURLs(profile_),
+                          search::GetNewTabPageURL(profile_));
+  }
 }
 
 InstantSearchPrerenderer* InstantService::GetInstantSearchPrerenderer() {

@@ -5,6 +5,7 @@
       "provides": {
         "browser": [
           "chrome::mojom::ResourceUsageReporter",
+          "chrome::mojom::SearchBouncer",
           "spellcheck::mojom::SpellChecker"
         ]
       },

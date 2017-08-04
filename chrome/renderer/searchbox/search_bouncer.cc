@@ -15,15 +15,19 @@ base::LazyInstance<SearchBouncer>::Leaky g_search_bouncer =
     LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
-SearchBouncer::SearchBouncer() {
-}
+SearchBouncer::SearchBouncer() : search_bouncer_binding_(this) {}
 
-SearchBouncer::~SearchBouncer() {
-}
+SearchBouncer::~SearchBouncer() = default;
 
 // static
 SearchBouncer* SearchBouncer::GetInstance() {
   return g_search_bouncer.Pointer();
+}
+
+void SearchBouncer::RegisterMojoInterfaces(
+    content::AssociatedInterfaceRegistry* associated_interfaces) {
+  associated_interfaces->AddInterface(base::Bind(
+      &SearchBouncer::OnSearchBouncerRequest, base::Unretained(this)));
 }
 
 bool SearchBouncer::ShouldFork(const GURL& url) const {
@@ -42,19 +46,13 @@ bool SearchBouncer::IsNewTabPage(const GURL& url) const {
   return url.is_valid() && url == new_tab_page_url_;
 }
 
-bool SearchBouncer::OnControlMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(SearchBouncer, message)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetSearchURLs, OnSetSearchURLs)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
-}
-
-void SearchBouncer::OnSetSearchURLs(
-    std::vector<GURL> search_urls,
-    GURL new_tab_page_url) {
+void SearchBouncer::SetSearchURLs(const std::vector<GURL>& search_urls,
+                                  const GURL& new_tab_page_url) {
   search_urls_ = search_urls;
   new_tab_page_url_ = new_tab_page_url;
+}
+
+void SearchBouncer::OnSearchBouncerRequest(
+    chrome::mojom::SearchBouncerAssociatedRequest request) {
+  search_bouncer_binding_.Bind(std::move(request));
 }

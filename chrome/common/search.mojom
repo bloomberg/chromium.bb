@@ -118,3 +118,12 @@ interface EmbeddedSearchClient {
   ChromeIdentityCheckResult(mojo.common.mojom.String16 identity,
                             bool identity_match);
 };
+
+// SearchBouncer tracks a set of URLs that should be transferred back to the
+// browser process for potential reassignment to an Instant renderer process.
+interface SearchBouncer {
+  // Sets the URLs that the renderer should send back to the browser process for
+  // reassignment to an Instant renderer.
+  SetSearchURLs(array<url.mojom.Url> search_urls,
+                url.mojom.Url new_tab_page_url);
+};
