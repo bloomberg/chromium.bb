@@ -879,26 +879,34 @@ void BrowserView::ExitFullscreen() {
 
 void BrowserView::UpdateExclusiveAccessExitBubbleContent(
     const GURL& url,
-    ExclusiveAccessBubbleType bubble_type) {
+    ExclusiveAccessBubbleType bubble_type,
+    ExclusiveAccessBubbleHideCallback bubble_first_hide_callback) {
   // Immersive mode has no exit bubble because it has a visible strip at the
   // top that gives the user a hover target.
   // TODO(jamescook): Figure out what to do with mouse-lock.
   if (bubble_type == EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE ||
       ShouldUseImmersiveFullscreenForUrl(url)) {
+    // |exclusive_access_bubble_.reset()| will trigger callback for current
+    // bubble with |ExclusiveAccessBubbleHideReason::kInterrupted| if available.
     exclusive_access_bubble_.reset();
+    if (bubble_first_hide_callback) {
+      std::move(bubble_first_hide_callback)
+          .Run(ExclusiveAccessBubbleHideReason::kNotShown);
+    }
     return;
   }
 
   if (exclusive_access_bubble_) {
-    exclusive_access_bubble_->UpdateContent(url, bubble_type);
+    exclusive_access_bubble_->UpdateContent(
+        url, bubble_type, std::move(bubble_first_hide_callback));
     return;
   }
 
   // Hide the backspace shortcut bubble, to avoid overlapping.
   new_back_shortcut_bubble_.reset();
 
-  exclusive_access_bubble_.reset(
-      new ExclusiveAccessBubbleViews(this, url, bubble_type));
+  exclusive_access_bubble_.reset(new ExclusiveAccessBubbleViews(
+      this, url, bubble_type, std::move(bubble_first_hide_callback)));
 }
 
 void BrowserView::OnExclusiveAccessUserInput() {
@@ -2394,7 +2402,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   browser_->WindowFullscreenStateChanged();
 
   if (fullscreen && !chrome::IsRunningInAppMode()) {
-    UpdateExclusiveAccessExitBubbleContent(url, bubble_type);
+    UpdateExclusiveAccessExitBubbleContent(url, bubble_type,
+                                           ExclusiveAccessBubbleHideCallback());
   }
 
   // Undo our anti-jankiness hacks and force a re-layout. We also need to

@@ -97,6 +97,8 @@ class ExclusiveAccessBubble : public gfx::AnimationDelegate {
   // |accelerator| is the name of the key to exit fullscreen mode.
   base::string16 GetInstructionText(const base::string16& accelerator) const;
 
+  bool IsHideTimeoutRunning() const;
+
   // The Manager associated with this bubble.
   ExclusiveAccessManager* const manager_;
 

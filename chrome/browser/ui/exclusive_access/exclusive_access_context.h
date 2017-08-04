@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_EXCLUSIVE_ACCESS_CONTEXT_H_
 
 #include "build/build_config.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_hide_callback.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
 
 class GURL;
@@ -53,7 +54,8 @@ class ExclusiveAccessContext {
   // Updates the content of exclusive access exit bubble content.
   virtual void UpdateExclusiveAccessExitBubbleContent(
       const GURL& url,
-      ExclusiveAccessBubbleType bubble_type) = 0;
+      ExclusiveAccessBubbleType bubble_type,
+      ExclusiveAccessBubbleHideCallback bubble_first_hide_callback) = 0;
 
   // Informs the exclusive access system of some user input, which may update
   // internal timers and/or re-display the bubble.

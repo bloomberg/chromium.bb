@@ -754,6 +754,7 @@ split_static_library("ui") {
       "content_settings/content_setting_image_model.h",
       "exclusive_access/exclusive_access_bubble.cc",
       "exclusive_access/exclusive_access_bubble.h",
+      "exclusive_access/exclusive_access_bubble_hide_callback.h",
       "exclusive_access/exclusive_access_bubble_type.cc",
       "exclusive_access/exclusive_access_bubble_type.h",
       "exclusive_access/exclusive_access_context.cc",

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -41,4 +42,62 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, FullscreenOnFileURL) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       file_url.GetOrigin());
   ASSERT_TRUE(IsFullscreenBubbleDisplayed());
+}
+
+IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
+                       MouseLockBubbleHideCallbackReject) {
+  mouse_lock_bubble_hide_reason_recorder_.clear();
+  RequestToLockMouse(false, false);
+
+  EXPECT_EQ(0ul, mouse_lock_bubble_hide_reason_recorder_.size());
+}
+
+IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
+                       MouseLockBubbleHideCallbackSilentLock) {
+  mouse_lock_bubble_hide_reason_recorder_.clear();
+  RequestToLockMouse(false, true);
+
+  EXPECT_EQ(1ul, mouse_lock_bubble_hide_reason_recorder_.size());
+  EXPECT_EQ(ExclusiveAccessBubbleHideReason::kNotShown,
+            mouse_lock_bubble_hide_reason_recorder_[0]);
+}
+
+IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
+                       MouseLockBubbleHideCallbackUnlock) {
+  mouse_lock_bubble_hide_reason_recorder_.clear();
+  RequestToLockMouse(true, false);
+  EXPECT_EQ(0ul, mouse_lock_bubble_hide_reason_recorder_.size());
+
+  LostMouseLock();
+  EXPECT_EQ(1ul, mouse_lock_bubble_hide_reason_recorder_.size());
+  EXPECT_EQ(ExclusiveAccessBubbleHideReason::kInterrupted,
+            mouse_lock_bubble_hide_reason_recorder_[0]);
+}
+
+IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
+                       MouseLockBubbleHideCallbackLockThenFullscreen) {
+  mouse_lock_bubble_hide_reason_recorder_.clear();
+  RequestToLockMouse(true, false);
+  EXPECT_EQ(0ul, mouse_lock_bubble_hide_reason_recorder_.size());
+
+  EnterActiveTabFullscreen();
+  EXPECT_EQ(1ul, mouse_lock_bubble_hide_reason_recorder_.size());
+  EXPECT_EQ(ExclusiveAccessBubbleHideReason::kInterrupted,
+            mouse_lock_bubble_hide_reason_recorder_[0]);
+}
+
+IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
+                       MouseLockBubbleHideCallbackTimeout) {
+  base::ScopedMockTimeMessageLoopTaskRunner mock_time_task_runner;
+
+  mouse_lock_bubble_hide_reason_recorder_.clear();
+  RequestToLockMouse(true, false);
+  EXPECT_EQ(0ul, mouse_lock_bubble_hide_reason_recorder_.size());
+
+  EXPECT_TRUE(mock_time_task_runner->HasPendingTask());
+  // Must fast forward at least |ExclusiveAccessBubble::kInitialDelayMs|.
+  mock_time_task_runner->FastForwardBy(base::TimeDelta::FromMilliseconds(4000));
+  EXPECT_EQ(1ul, mouse_lock_bubble_hide_reason_recorder_.size());
+  EXPECT_EQ(ExclusiveAccessBubbleHideReason::kTimeout,
+            mouse_lock_bubble_hide_reason_recorder_[0]);
 }
