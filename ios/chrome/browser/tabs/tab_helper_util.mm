@@ -33,6 +33,7 @@
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
 #import "ios/chrome/browser/web/network_activity_indicator_tab_helper.h"
+#import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
@@ -63,6 +64,7 @@ void AttachTabHelpers(web::WebState* web_state) {
   FindTabHelper::CreateForWebState(web_state, tab.findInPageControllerDelegate);
   StoreKitTabHelper::CreateForWebState(web_state);
   SadTabTabHelper::CreateForWebState(web_state, tab);
+  PagePlaceholderTabHelper::CreateForWebState(web_state, tab);
 
   ReadingListModel* model =
       ReadingListModelFactory::GetForBrowserState(browser_state);
