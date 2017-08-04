@@ -43,7 +43,7 @@ class BreakingNewsSuggestionsProvider final
                             ImageFetchedCallback callback) override;
   void Fetch(const Category& category,
              const std::set<std::string>& known_suggestion_ids,
-             const FetchDoneCallback& callback) override;
+             FetchDoneCallback callback) override;
   void ClearHistory(
       base::Time begin,
       base::Time end,
@@ -51,7 +51,7 @@ class BreakingNewsSuggestionsProvider final
   void ClearCachedSuggestions(Category category) override;
   void GetDismissedSuggestionsForDebugging(
       Category category,
-      const DismissedSuggestionsCallback& callback) override;
+      DismissedSuggestionsCallback callback) override;
   void ClearDismissedSuggestionsForDebugging(Category category) override;
 
  private:

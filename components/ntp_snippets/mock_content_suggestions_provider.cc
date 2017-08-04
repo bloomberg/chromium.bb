@@ -43,6 +43,12 @@ CategoryInfo MockContentSuggestionsProvider::GetCategoryInfo(
                       base::ASCIIToUTF16("No suggestions message"));
 }
 
+void MockContentSuggestionsProvider::Fetch(const Category& category,
+                                           const std::set<std::string>& set,
+                                           FetchDoneCallback callback) {
+  FetchMock(category, set, callback);
+}
+
 void MockContentSuggestionsProvider::FetchSuggestionImage(
     const ContentSuggestion::ID& id,
     ImageFetchedCallback callback) {
@@ -70,6 +76,12 @@ void MockContentSuggestionsProvider::FireCategoryStatusChangedWithCurrentStatus(
 void MockContentSuggestionsProvider::FireSuggestionInvalidated(
     const ContentSuggestion::ID& suggestion_id) {
   observer()->OnSuggestionInvalidated(this, suggestion_id);
+}
+
+void MockContentSuggestionsProvider::GetDismissedSuggestionsForDebugging(
+    Category category,
+    DismissedSuggestionsCallback callback) {
+  GetDismissedSuggestionsForDebuggingMock(category, callback);
 }
 
 }  // namespace ntp_snippets

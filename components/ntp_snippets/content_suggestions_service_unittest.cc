@@ -649,7 +649,7 @@ TEST_F(ContentSuggestionsServiceTest, ShouldForwardFetch) {
   MockContentSuggestionsProvider* provider =
       MakeRegisteredMockProvider(category);
   provider->FireCategoryStatusChangedWithCurrentStatus(category);
-  EXPECT_CALL(*provider, Fetch(category, known_suggestions, _));
+  EXPECT_CALL(*provider, FetchMock(category, known_suggestions, _));
   service()->Fetch(category, known_suggestions, FetchDoneCallback());
 }
 

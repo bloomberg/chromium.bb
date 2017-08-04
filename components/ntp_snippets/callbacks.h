@@ -20,12 +20,10 @@ class ContentSuggestion;
 
 struct Status;
 
-// TODO(http://crbug.com/752051): All these should probably be OnceCallback.
-
 // Returns the result of a |Fetch| call by a ContentSuggestionsProvider.
 using FetchDoneCallback =
-    base::Callback<void(Status status_code,
-                        std::vector<ContentSuggestion> suggestions)>;
+    base::OnceCallback<void(Status status_code,
+                            std::vector<ContentSuggestion> suggestions)>;
 
 // Returns the resulting image of a |FetchSuggestionImage| call by a
 // ContentSuggestionsProvider.
@@ -33,8 +31,8 @@ using ImageFetchedCallback = base::OnceCallback<void(const gfx::Image&)>;
 
 // Returns the list of dismissed suggestions when invoked. Currently only used
 // for debugging methods to check the internal state of a provider.
-using DismissedSuggestionsCallback =
-    base::Callback<void(std::vector<ContentSuggestion> dismissed_suggestions)>;
+using DismissedSuggestionsCallback = base::OnceCallback<void(
+    std::vector<ContentSuggestion> dismissed_suggestions)>;
 
 }  // namespace ntp_snippets
 

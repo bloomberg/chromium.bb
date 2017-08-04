@@ -248,12 +248,12 @@ void DownloadSuggestionsProvider::FetchSuggestionImage(
 void DownloadSuggestionsProvider::Fetch(
     const ntp_snippets::Category& category,
     const std::set<std::string>& known_suggestion_ids,
-    const ntp_snippets::FetchDoneCallback& callback) {
+    ntp_snippets::FetchDoneCallback callback) {
   LOG(DFATAL) << "DownloadSuggestionsProvider has no |Fetch| functionality!";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(
-          callback,
+          std::move(callback),
           ntp_snippets::Status(
               ntp_snippets::StatusCode::PERMANENT_ERROR,
               "DownloadSuggestionsProvider has no |Fetch| functionality!"),
@@ -279,7 +279,7 @@ void DownloadSuggestionsProvider::ClearCachedSuggestions(Category category) {
 
 void DownloadSuggestionsProvider::GetDismissedSuggestionsForDebugging(
     Category category,
-    const ntp_snippets::DismissedSuggestionsCallback& callback) {
+    ntp_snippets::DismissedSuggestionsCallback callback) {
   DCHECK_EQ(provided_category_, category);
 
   if (offline_page_model_) {
@@ -291,10 +291,11 @@ void DownloadSuggestionsProvider::GetDismissedSuggestionsForDebugging(
         query_builder.Build(offline_page_model_->GetPolicyController()),
         base::Bind(&DownloadSuggestionsProvider::
                        GetPagesMatchingQueryCallbackForGetDismissedSuggestions,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+                   weak_ptr_factory_.GetWeakPtr(),
+                   base::Passed(std::move(callback))));
   } else {
     GetPagesMatchingQueryCallbackForGetDismissedSuggestions(
-        callback, std::vector<OfflinePageItem>());
+        std::move(callback), std::vector<OfflinePageItem>());
   }
 }
 
@@ -318,7 +319,7 @@ void DownloadSuggestionsProvider::RegisterProfilePrefs(
 
 void DownloadSuggestionsProvider::
     GetPagesMatchingQueryCallbackForGetDismissedSuggestions(
-        const ntp_snippets::DismissedSuggestionsCallback& callback,
+        ntp_snippets::DismissedSuggestionsCallback callback,
         const std::vector<OfflinePageItem>& offline_pages) const {
   std::set<std::string> dismissed_ids = ReadOfflinePageDismissedIDsFromPrefs();
   std::vector<ContentSuggestion> suggestions;
@@ -341,7 +342,7 @@ void DownloadSuggestionsProvider::
     }
   }
 
-  callback.Run(std::move(suggestions));
+  std::move(callback).Run(std::move(suggestions));
 }
 
 void DownloadSuggestionsProvider::OfflinePageModelLoaded(
