@@ -4,6 +4,7 @@
 
 #import "ios/clean/chrome/browser/ui/tab/tab_container_view_controller.h"
 
+#import "base/logging.h"
 #import "ios/clean/chrome/browser/ui/transitions/animators/swap_from_above_animator.h"
 #import "ios/clean/chrome/browser/ui/transitions/containment_transition_context.h"
 #import "ios/clean/chrome/browser/ui/transitions/containment_transitioning_delegate.h"
@@ -31,10 +32,6 @@ CGFloat kTabStripHeight = 120.0f;
 @property(nonatomic, strong) NSLayoutConstraint* tabStripHeightConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* toolbarHeightConstraint;
 
-// Cache for forwarding methods to child view controllers.
-@property(nonatomic, assign) SEL actionToForward;
-@property(nonatomic, weak) UIResponder* forwardingTarget;
-
 // Abstract base method for subclasses to implement.
 // Returns constraints for tabStrip, toolbar, and content subviews.
 - (Constraints*)subviewConstraints;
@@ -54,8 +51,6 @@ CGFloat kTabStripHeight = 120.0f;
 @synthesize contentView = _contentView;
 @synthesize tabStripHeightConstraint = _tabStripHeightConstraint;
 @synthesize toolbarHeightConstraint = _toolbarHeightConstraint;
-@synthesize actionToForward = _actionToForward;
-@synthesize forwardingTarget = _forwardingTarget;
 @synthesize containmentTransitioningDelegate =
     _containmentTransitioningDelegate;
 
@@ -225,33 +220,6 @@ CGFloat kTabStripHeight = 120.0f;
   return CGRectNull;
 }
 
-#pragma mark - UIResponder
-
-// Before forwarding actions up the responder chain, give both contained
-// view controllers a chance to handle them.
-- (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
-  self.actionToForward = nullptr;
-  self.forwardingTarget = nil;
-  for (UIResponder* responder in
-       @[ self.contentViewController, self.toolbarViewController ]) {
-    if ([responder canPerformAction:action withSender:sender]) {
-      self.actionToForward = action;
-      self.forwardingTarget = responder;
-      return YES;
-    }
-  }
-  return [super canPerformAction:action withSender:sender];
-}
-
-#pragma mark - NSObject method forwarding
-
-- (id)forwardingTargetForSelector:(SEL)aSelector {
-  if (aSelector == self.actionToForward) {
-    return self.forwardingTarget;
-  }
-  return nil;
-}
-
 #pragma mark - Tab Strip actions.
 
 - (void)hideTabStrip:(id)sender {
@@ -261,9 +229,7 @@ CGFloat kTabStripHeight = 120.0f;
 #pragma mark - Abstract methods to be overriden by subclass
 
 - (Constraints*)subviewConstraints {
-  [NSException
-       raise:NSInternalInconsistencyException
-      format:@"You must override %@ in a subclass", NSStringFromSelector(_cmd)];
+  NOTREACHED() << "You must override -subviewConstraints in a subclass";
   return nil;
 }
 
