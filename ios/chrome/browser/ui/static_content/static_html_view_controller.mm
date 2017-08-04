@@ -133,10 +133,6 @@
 }
 
 - (void)dealloc {
-  [self removeWebViewObservers];
-}
-
-- (void)removeWebViewObservers {
   [webView_ removeObserver:self forKeyPath:@"title"];
 }
 
@@ -158,11 +154,6 @@
 - (WKWebView*)webView {
   [self ensureWebViewCreated];
   return webView_;
-}
-
-- (void)handleLowMemory {
-  [self removeWebViewObservers];
-  webView_ = nil;
 }
 
 - (BOOL)isViewAlive {

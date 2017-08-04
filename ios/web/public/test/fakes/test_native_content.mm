@@ -46,9 +46,6 @@
   return nil;
 }
 
-- (void)handleLowMemory {
-}
-
 - (BOOL)isViewAlive {
   return YES;
 }

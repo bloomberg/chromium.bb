@@ -44,12 +44,7 @@
 
 #pragma mark CRWNativeContent
 
-- (void)handleLowMemory {
-  // TODO(pinkerton): What should this do? Toss the view?
-}
-
 - (BOOL)isViewAlive {
-  // TODO(pinkerton): See handleLowMemory above.
   return YES;
 }
 

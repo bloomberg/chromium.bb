@@ -30,10 +30,6 @@ struct ContextMenuParams;
 // The view to insert into the content area displayed to the user.
 - (UIView*)view;
 
-// Called when memory is low. Release anything (such as views) that can be
-// easily re-created to free up RAM.
-- (void)handleLowMemory;
-
 // Returns YES if there is currently a live view in the tab (e.g., the view
 // hasn't been discarded due to low memory).
 // NOTE: This should be used for metrics-gathering only; for any other purpose
