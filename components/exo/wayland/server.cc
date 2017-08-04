@@ -2843,10 +2843,6 @@ class WaylandDataDeviceDelegate : public DataDeviceDelegate {
 
   // Overridden from DataDeviceDelegate:
   void OnDataDeviceDestroying(DataDevice* device) override { delete this; }
-  bool CanAcceptDataEventsForSurface(Surface* surface) override {
-    return surface &&
-           wl_resource_get_client(GetSurfaceResource(surface)) == client_;
-  }
   class DataOffer* OnDataOffer(const std::vector<std::string>& mime_types,
                                const base::flat_set<DndAction>& source_actions,
                                DndAction dnd_action) override {
