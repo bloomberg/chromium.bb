@@ -274,6 +274,14 @@ class WebMediaPlayerImplTest : public testing::Test {
     wmpi_->SetReadyState(state);
   }
 
+  void SetDuration(base::TimeDelta value) {
+    wmpi_->SetPipelineMediaDurationForTest(value);
+  }
+
+  base::TimeDelta GetCurrentTimeInternal() {
+    return wmpi_->GetCurrentTimeInternal();
+  }
+
   void SetPaused(bool is_paused) { wmpi_->paused_ = is_paused; }
   void SetSeeking(bool is_seeking) { wmpi_->seeking_ = is_seeking; }
   void SetEnded(bool is_ended) { wmpi_->ended_ = is_ended; }
@@ -840,6 +848,32 @@ TEST_F(WebMediaPlayerImplTest, BackgroundIdlePauseTimerDependsOnAudio) {
   EXPECT_TRUE(IsIdlePauseTimerRunning());
 }
 
+// Verifies that an infinite duration doesn't muck up GetCurrentTimeInternal.
+TEST_F(WebMediaPlayerImplTest, InfiniteDuration) {
+  InitializeWebMediaPlayerImpl();
+  SetDuration(kInfiniteDuration);
+
+  // Send metadata so we have a watch time reporter created.
+  PipelineMetadata metadata;
+  metadata.has_video = true;
+  metadata.has_audio = true;
+  metadata.natural_size = gfx::Size(400, 400);
+  OnMetadata(metadata);
+
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), wmpi_->Duration());
+  EXPECT_EQ(0, wmpi_->CurrentTime());
+  EXPECT_EQ(base::TimeDelta(), GetCurrentTimeInternal());
+
+  SetEnded(true);
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), wmpi_->CurrentTime());
+  EXPECT_EQ(base::TimeDelta(), GetCurrentTimeInternal());
+
+  // Pause should not pick up infinity for the current time.
+  wmpi_->Pause();
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), wmpi_->CurrentTime());
+  EXPECT_EQ(base::TimeDelta(), GetCurrentTimeInternal());
+}
+
 class WebMediaPlayerImplBackgroundBehaviorTest
     : public WebMediaPlayerImplTest,
       public ::testing::WithParamInterface<
@@ -897,10 +931,6 @@ class WebMediaPlayerImplBackgroundBehaviorTest
         base::TimeDelta::FromSeconds(GetAverageKeyframeDistanceSec()));
     SetDuration(base::TimeDelta::FromSeconds(GetDurationSec()));
     BackgroundPlayer();
-  }
-
-  void SetDuration(base::TimeDelta value) {
-    wmpi_->SetPipelineMediaDurationForTest(value);
   }
 
   void SetVideoKeyframeDistanceAverage(base::TimeDelta value) {

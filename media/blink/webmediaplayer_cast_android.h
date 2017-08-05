@@ -47,7 +47,7 @@ class WebMediaPlayerCast : public RendererMediaPlayerInterface {
   bool isRemote() const { return is_remote_; }
   bool IsPaused() const { return paused_; }
 
-  double currentTime() const;
+  base::TimeDelta currentTime() const;
   void play();
   void pause();
   void seek(base::TimeDelta t);
