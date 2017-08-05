@@ -34,6 +34,7 @@
 #include "core/editing/TextAffinity.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
+#include "core/html/TextControlElement.h"
 #include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/compositing/CompositedSelectionBound.h"
 #include "core/paint/PaintLayer.h"
@@ -292,6 +293,33 @@ FloatPoint RenderedPosition::LocalToInvalidationBackingPoint(
   return container_point;
 }
 
+void RenderedPosition::GetLocalSelectionEndpoints(
+    bool selection_start,
+    LayoutPoint& edge_top_in_layer,
+    LayoutPoint& edge_bottom_in_layer,
+    bool& is_text_direction_rtl) const {
+  const LayoutRect rect = layout_object_->LocalCaretRect(inline_box_, offset_);
+  if (layout_object_->Style()->IsHorizontalWritingMode()) {
+    edge_top_in_layer = rect.MinXMinYCorner();
+    edge_bottom_in_layer = rect.MinXMaxYCorner();
+    return;
+  }
+  edge_top_in_layer = rect.MinXMinYCorner();
+  edge_bottom_in_layer = rect.MaxXMinYCorner();
+
+  // When text is vertical, it looks better for the start handle baseline to
+  // be at the starting edge, to enclose the selection fully between the
+  // handles.
+  if (selection_start) {
+    LayoutUnit x_swap = edge_bottom_in_layer.X();
+    edge_bottom_in_layer.SetX(edge_top_in_layer.X());
+    edge_top_in_layer.SetX(x_swap);
+  }
+
+  // Flipped blocks writing mode is not only vertical but also right to left.
+  is_text_direction_rtl = layout_object_->HasFlippedBlocksWritingMode();
+}
+
 void RenderedPosition::PositionInGraphicsLayerBacking(
     CompositedSelectionBound& bound,
     bool selection_start) const {
@@ -301,30 +329,48 @@ void RenderedPosition::PositionInGraphicsLayerBacking(
   if (IsNull())
     return;
 
-  LayoutRect rect = layout_object_->LocalCaretRect(inline_box_, offset_);
-  if (layout_object_->Style()->IsHorizontalWritingMode()) {
-    bound.edge_top_in_layer =
-        LocalToInvalidationBackingPoint(rect.MinXMinYCorner(), &bound.layer);
-    bound.edge_bottom_in_layer =
-        LocalToInvalidationBackingPoint(rect.MinXMaxYCorner(), nullptr);
-  } else {
-    bound.edge_top_in_layer =
-        LocalToInvalidationBackingPoint(rect.MinXMinYCorner(), &bound.layer);
-    bound.edge_bottom_in_layer =
-        LocalToInvalidationBackingPoint(rect.MaxXMinYCorner(), nullptr);
+  LayoutPoint edge_top_in_layer;
+  LayoutPoint edge_bottom_in_layer;
+  GetLocalSelectionEndpoints(selection_start, edge_top_in_layer,
+                             edge_bottom_in_layer, bound.is_text_direction_rtl);
 
-    // When text is vertical, it looks better for the start handle baseline to
-    // be at the starting edge, to enclose the selection fully between the
-    // handles.
-    if (selection_start) {
-      float x_swap = bound.edge_bottom_in_layer.X();
-      bound.edge_bottom_in_layer.SetX(bound.edge_top_in_layer.X());
-      bound.edge_top_in_layer.SetX(x_swap);
-    }
+  bound.edge_top_in_layer =
+      LocalToInvalidationBackingPoint(edge_top_in_layer, &bound.layer);
+  bound.edge_bottom_in_layer =
+      LocalToInvalidationBackingPoint(edge_bottom_in_layer, nullptr);
+}
 
-    // Flipped blocks writing mode is not only vertical but also right to left.
-    bound.is_text_direction_rtl = layout_object_->HasFlippedBlocksWritingMode();
-  }
+bool RenderedPosition::IsVisible(bool selection_start) {
+  if (IsNull())
+    return false;
+
+  Node* node = layout_object_->GetNode();
+  if (!node)
+    return true;
+  TextControlElement* text_control = EnclosingTextControl(node);
+  if (!text_control)
+    return true;
+  if (!isHTMLInputElement(text_control))
+    return true;
+
+  LayoutObject* layout_object = text_control->GetLayoutObject();
+  if (!layout_object || !layout_object->IsBox())
+    return true;
+
+  LayoutPoint edge_top_in_layer;
+  LayoutPoint ignored1;
+  bool ignored2;
+  GetLocalSelectionEndpoints(selection_start, edge_top_in_layer, ignored1,
+                             ignored2);
+
+  LayoutBox* text_control_object = ToLayoutBox(layout_object);
+  LayoutPoint position_in_input(layout_object_->LocalToAncestorPoint(
+      FloatPoint(edge_top_in_layer), text_control_object,
+      kTraverseDocumentBoundaries));
+  if (!text_control_object->BorderBoxRect().Contains(position_in_input))
+    return false;
+
+  return true;
 }
 
 bool LayoutObjectContainsPosition(LayoutObject* target,

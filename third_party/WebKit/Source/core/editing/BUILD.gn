@@ -321,6 +321,7 @@ source_set("unit_tests") {
     "PositionIteratorTest.cpp",
     "PositionTest.cpp",
     "RelocatablePositionTest.cpp",
+    "RenderedPositionTest.cpp",
     "SelectionControllerTest.cpp",
     "SelectionModifierTest.cpp",
     "SelectionTemplateTest.cpp",
