@@ -86,7 +86,8 @@ AC_ARG_VAR([WESTON_SHELL_CLIENT],
 
 PKG_PROG_PKG_CONFIG()
 
-WESTON_SEARCH_LIBS([DLOPEN], [dl], [dlopen])
+# Check for dlsym instead of dlopen because ASAN hijacks the latter
+WESTON_SEARCH_LIBS([DL], [dl], [dlsym])
 
 # In old glibc versions (< 2.17) clock_gettime() and clock_getres() are in librt
 WESTON_SEARCH_LIBS([CLOCK_GETTIME], [rt], [clock_gettime])
