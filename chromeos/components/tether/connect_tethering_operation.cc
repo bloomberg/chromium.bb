@@ -170,10 +170,10 @@ void ConnectTetheringOperation::NotifyObserversOfConnectionFailure(
   }
 }
 
-uint32_t ConnectTetheringOperation::GetResponseTimeoutSeconds() {
+uint32_t ConnectTetheringOperation::GetTimeoutSeconds() {
   return (setup_required_)
              ? ConnectTetheringOperation::kSetupRequiredResponseTimeoutSeconds
-             : MessageTransferOperation::GetResponseTimeoutSeconds();
+             : MessageTransferOperation::GetTimeoutSeconds();
 }
 
 }  // namespace tether

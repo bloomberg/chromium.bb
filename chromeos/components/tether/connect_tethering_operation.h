@@ -81,7 +81,7 @@ class ConnectTetheringOperation : public MessageTransferOperation {
   void NotifyObserversOfConnectionFailure(
       ConnectTetheringResponse_ResponseCode error_code);
 
-  uint32_t GetResponseTimeoutSeconds() override;
+  uint32_t GetTimeoutSeconds() override;
 
  private:
   friend class ConnectTetheringOperationTest;

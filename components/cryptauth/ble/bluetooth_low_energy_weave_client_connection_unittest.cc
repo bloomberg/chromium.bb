@@ -41,84 +41,17 @@ using testing::StrictMock;
 using testing::SaveArg;
 
 namespace cryptauth {
-namespace {
-
-const std::string kTestFeature = "testFeature";
-
-class MockBluetoothThrottler : public BluetoothThrottler {
- public:
-  MockBluetoothThrottler() {}
-  ~MockBluetoothThrottler() override {}
-
-  MOCK_CONST_METHOD0(GetDelay, base::TimeDelta());
-  MOCK_METHOD1(OnConnection, void(Connection* connection));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockBluetoothThrottler);
-};
-
-class MockBluetoothLowEnergyCharacteristicsFinder
-    : public BluetoothLowEnergyCharacteristicsFinder {
- public:
-  MockBluetoothLowEnergyCharacteristicsFinder() {}
-  ~MockBluetoothLowEnergyCharacteristicsFinder() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockBluetoothLowEnergyCharacteristicsFinder);
-};
-
-class MockConnectionObserver : public ConnectionObserver {
- public:
-  MockConnectionObserver()
-      : num_send_completed_(0), delete_on_disconnect_(false) {}
-
-  void OnConnectionStatusChanged(Connection* connection,
-                                 Connection::Status old_status,
-                                 Connection::Status new_status) override {
-    if (new_status == Connection::Status::DISCONNECTED && delete_on_disconnect_)
-      delete connection;
-  }
-
-  void OnMessageReceived(const Connection& connection,
-                         const WireMessage& message) override {}
-
-  void OnSendCompleted(const Connection& conenction,
-                       const WireMessage& message,
-                       bool success) override {
-    last_deserialized_message_ = message.payload();
-    last_send_success_ = success;
-    num_send_completed_++;
-  }
-
-  std::string GetLastDeserializedMessage() {
-    return last_deserialized_message_;
-  }
-
-  bool GetLastSendSuccess() { return last_send_success_; }
-
-  int GetNumSendCompleted() { return num_send_completed_; }
-
-  bool delete_on_disconnect() { return delete_on_disconnect_; }
-  void set_delete_on_disconnect(bool delete_on_disconnect) {
-    delete_on_disconnect_ = delete_on_disconnect;
-  }
-
- private:
-  std::string last_deserialized_message_;
-  bool last_send_success_;
-  int num_send_completed_;
-  bool delete_on_disconnect_;
-};
-
-}  // namespace
 
 namespace weave {
+
 namespace {
 
 typedef BluetoothLowEnergyWeaveClientConnection::SubStatus SubStatus;
 typedef BluetoothLowEnergyWeavePacketReceiver::State ReceiverState;
 typedef BluetoothLowEnergyWeavePacketReceiver::ReceiverError ReceiverError;
 typedef BluetoothLowEnergyWeavePacketReceiver::ReceiverType ReceiverType;
+
+const char kTestFeature[] = "testFeature";
 
 const char kServiceUUID[] = "DEADBEEF-CAFE-FEED-FOOD-D15EA5EBEEEF";
 const char kTXCharacteristicUUID[] = "977c6674-1239-4e72-993b-502369b8bb5a";
@@ -190,11 +123,11 @@ class MockBluetoothLowEnergyWeavePacketGenerator
   void SetMaxPacketSize(uint16_t size) override { max_packet_size_ = size; }
 
   std::vector<Packet> EncodeDataMessage(std::string message) override {
-    if (message == (kTestFeature + "," + kSmallMessage)
-        && max_packet_size_ == kDefaultMaxPacketSize) {
+    if (message == (std::string(kTestFeature) + "," + kSmallMessage) &&
+        max_packet_size_ == kDefaultMaxPacketSize) {
       return kSmallPackets;
-    } else if (message == (kTestFeature + "," + kLargeMessage)
-          && max_packet_size_ == kLargeMaxPacketSize) {
+    } else if (message == (std::string(kTestFeature) + "," + kLargeMessage) &&
+               max_packet_size_ == kLargeMaxPacketSize) {
       return kLargePackets;
     } else {
       NOTREACHED();
@@ -370,6 +303,84 @@ class TestBluetoothLowEnergyWeaveClientConnection
   DISALLOW_COPY_AND_ASSIGN(TestBluetoothLowEnergyWeaveClientConnection);
 };
 
+class MockBluetoothThrottler : public BluetoothThrottler {
+ public:
+  MockBluetoothThrottler() {}
+  ~MockBluetoothThrottler() override {}
+
+  MOCK_CONST_METHOD0(GetDelay, base::TimeDelta());
+  MOCK_METHOD1(OnConnection, void(Connection* connection));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockBluetoothThrottler);
+};
+
+class MockBluetoothLowEnergyCharacteristicsFinder
+    : public BluetoothLowEnergyCharacteristicsFinder {
+ public:
+  MockBluetoothLowEnergyCharacteristicsFinder() {}
+  ~MockBluetoothLowEnergyCharacteristicsFinder() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockBluetoothLowEnergyCharacteristicsFinder);
+};
+
+class MockConnectionObserver : public ConnectionObserver {
+ public:
+  MockConnectionObserver(Connection* connection)
+      : connection_(connection),
+        num_send_completed_(0),
+        delete_on_disconnect_(false),
+        delete_on_message_sent_(false) {}
+
+  void OnConnectionStatusChanged(Connection* connection,
+                                 Connection::Status old_status,
+                                 Connection::Status new_status) override {
+    if (new_status == Connection::Status::DISCONNECTED && delete_on_disconnect_)
+      delete connection_;
+  }
+
+  void OnMessageReceived(const Connection& connection,
+                         const WireMessage& message) override {}
+
+  void OnSendCompleted(const Connection& conenction,
+                       const WireMessage& message,
+                       bool success) override {
+    last_deserialized_message_ = message.payload();
+    last_send_success_ = success;
+    num_send_completed_++;
+
+    if (delete_on_message_sent_)
+      delete connection_;
+  }
+
+  std::string GetLastDeserializedMessage() {
+    return last_deserialized_message_;
+  }
+
+  bool GetLastSendSuccess() { return last_send_success_; }
+
+  int GetNumSendCompleted() { return num_send_completed_; }
+
+  bool delete_on_disconnect() { return delete_on_disconnect_; }
+
+  void set_delete_on_disconnect(bool delete_on_disconnect) {
+    delete_on_disconnect_ = delete_on_disconnect;
+  }
+
+  void set_delete_on_message_sent(bool delete_on_message_sent) {
+    delete_on_message_sent_ = delete_on_message_sent;
+  }
+
+ private:
+  Connection* connection_;
+  std::string last_deserialized_message_;
+  bool last_send_success_;
+  int num_send_completed_;
+  bool delete_on_disconnect_;
+  bool delete_on_message_sent_;
+};
+
 }  // namespace
 
 class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
@@ -437,6 +448,8 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
         .WillByDefault(Return(tx_characteristic_.get()));
   }
 
+  void TearDown() override { connection_observer_.reset(); }
+
   // Creates a BluetoothLowEnergyWeaveClientConnection and verifies it's in
   // DISCONNECTED state.
   std::unique_ptr<TestBluetoothLowEnergyWeaveClientConnection>
@@ -454,7 +467,9 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
     EXPECT_EQ(connection->status(), Connection::DISCONNECTED);
 
     // Add the mock observer to observe on OnDidMessageSend.
-    connection->AddObserver(&connection_observer_);
+    connection_observer_ =
+        base::WrapUnique(new MockConnectionObserver(connection.get()));
+    connection->AddObserver(connection_observer_.get());
 
     connection->SetTaskRunnerForTesting(task_runner_);
 
@@ -563,7 +578,7 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
     EXPECT_EQ(last_value_written_on_tx_characteristic_, kConnectionRequest);
 
     // OnDidSendMessage is not called.
-    EXPECT_EQ(0, connection_observer_.GetNumSendCompleted());
+    EXPECT_EQ(0, connection_observer_->GetNumSendCompleted());
 
     RunWriteCharacteristicSuccessCallback();
 
@@ -654,7 +669,7 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
       generator_factory_;
   std::unique_ptr<MockBluetoothLowEnergyWeavePacketReceiverFactory>
       receiver_factory_;
-  MockConnectionObserver connection_observer_;
+  std::unique_ptr<MockConnectionObserver> connection_observer_;
 
   // Callbacks
   base::Closure connection_latency_callback_;
@@ -790,7 +805,7 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
   // message |kMaxNumberOfTries| times. There is alredy one EXPECT_CALL for
   // WriteRemoteCharacteristic(_,_,_) in NotifySessionStated, that's why we use
   // |kMaxNumberOfTries-1| in the EXPECT_CALL statement.
-  EXPECT_EQ(0, connection_observer_.GetNumSendCompleted());
+  EXPECT_EQ(0, connection_observer_->GetNumSendCompleted());
   EXPECT_CALL(*tx_characteristic_, WriteRemoteCharacteristic(_, _, _))
       .Times(kMaxNumberOfTries - 1)
       .WillRepeatedly(
@@ -867,9 +882,9 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
 
   RunWriteCharacteristicSuccessCallback();
 
-  EXPECT_EQ(1, connection_observer_.GetNumSendCompleted());
-  EXPECT_EQ(kSmallMessage, connection_observer_.GetLastDeserializedMessage());
-  EXPECT_TRUE(connection_observer_.GetLastSendSuccess());
+  EXPECT_EQ(1, connection_observer_->GetNumSendCompleted());
+  EXPECT_EQ(kSmallMessage, connection_observer_->GetLastDeserializedMessage());
+  EXPECT_TRUE(connection_observer_->GetLastSendSuccess());
 }
 
 TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
@@ -911,9 +926,9 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
 
   RunWriteCharacteristicSuccessCallback();
 
-  EXPECT_EQ(1, connection_observer_.GetNumSendCompleted());
-  EXPECT_EQ(kLargeMessage, connection_observer_.GetLastDeserializedMessage());
-  EXPECT_TRUE(connection_observer_.GetLastSendSuccess());
+  EXPECT_EQ(1, connection_observer_->GetNumSendCompleted());
+  EXPECT_EQ(kLargeMessage, connection_observer_->GetLastDeserializedMessage());
+  EXPECT_TRUE(connection_observer_->GetLastSendSuccess());
 }
 
 TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
@@ -939,12 +954,12 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
     write_remote_characteristic_error_callback_.Run(
         device::BluetoothRemoteGattService::GATT_ERROR_UNKNOWN);
     if (i == kMaxNumberOfTries - 1) {
-      EXPECT_EQ(1, connection_observer_.GetNumSendCompleted());
+      EXPECT_EQ(1, connection_observer_->GetNumSendCompleted());
       EXPECT_EQ(kSmallMessage,
-                connection_observer_.GetLastDeserializedMessage());
-      EXPECT_FALSE(connection_observer_.GetLastSendSuccess());
+                connection_observer_->GetLastDeserializedMessage());
+      EXPECT_FALSE(connection_observer_->GetLastSendSuccess());
     } else {
-      EXPECT_EQ(0, connection_observer_.GetNumSendCompleted());
+      EXPECT_EQ(0, connection_observer_->GetNumSendCompleted());
     }
   }
 
@@ -1034,11 +1049,10 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
 
 // Test for fix to crbug.com/708744. Without the fix, this test will crash.
 TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
-       ReceiverErrorAndConnectionDeletedTest) {
-  connection_observer_.set_delete_on_disconnect(true);
-
+       ObserverDeletesConnectionOnDisconnect) {
   TestBluetoothLowEnergyWeaveClientConnection* connection =
       CreateConnection().release();
+  connection_observer_->set_delete_on_disconnect(true);
 
   InitializeConnection(connection, kDefaultMaxPacketSize);
 
@@ -1057,6 +1071,34 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
             ReasonForClose::APPLICATION_ERROR);
 
   RunWriteCharacteristicSuccessCallback();
+
+  // We cannot check if connection's status and sub_status are DISCONNECTED
+  // because it has been deleted.
+}
+
+// Test for fix to crbug.com/ 751884. Without the fix, this test will crash.
+TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+       ObserverDeletesConnectionOnMessageSent) {
+  TestBluetoothLowEnergyWeaveClientConnection* connection =
+      CreateConnection().release();
+  connection_observer_->set_delete_on_message_sent(true);
+
+  InitializeConnection(connection, kDefaultMaxPacketSize);
+
+  EXPECT_CALL(*tx_characteristic_, WriteRemoteCharacteristic(_, _, _))
+      .WillOnce(
+          DoAll(SaveArg<0>(&last_value_written_on_tx_characteristic_),
+                SaveArg<1>(&write_remote_characteristic_success_callback_),
+                SaveArg<2>(&write_remote_characteristic_error_callback_)));
+
+  connection->SendMessage(
+      base::MakeUnique<FakeWireMessage>(kSmallMessage, kTestFeature));
+  EXPECT_EQ(last_value_written_on_tx_characteristic_, kSmallPackets0);
+
+  RunWriteCharacteristicSuccessCallback();
+  EXPECT_EQ(1, connection_observer_->GetNumSendCompleted());
+  EXPECT_EQ(kSmallMessage, connection_observer_->GetLastDeserializedMessage());
+  EXPECT_TRUE(connection_observer_->GetLastSendSuccess());
 
   // We cannot check if connection's status and sub_status are DISCONNECTED
   // because it has been deleted.

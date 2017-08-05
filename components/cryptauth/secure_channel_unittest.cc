@@ -89,6 +89,34 @@ class TestObserver : public SecureChannel::Observer {
   std::vector<int> sent_sequence_numbers_;
 };
 
+// Observer used in the ObserverDeletesChannel test. This Observer deletes the
+// SecureChannel when it receives an OnMessageSent() call.
+class DeletingObserver : public SecureChannel::Observer {
+ public:
+  DeletingObserver(std::unique_ptr<SecureChannel>* secure_channel)
+      : secure_channel_(secure_channel) {}
+
+  // SecureChannel::Observer:
+  void OnSecureChannelStatusChanged(
+      SecureChannel* secure_channel,
+      const SecureChannel::Status& old_status,
+      const SecureChannel::Status& new_status) override {}
+
+  void OnMessageReceived(SecureChannel* secure_channel,
+                         const std::string& feature,
+                         const std::string& payload) override {}
+
+  void OnMessageSent(SecureChannel* secure_channel,
+                     int sequence_number) override {
+    DCHECK(secure_channel == secure_channel_->get());
+    // Delete the channel when an OnMessageSent() call occurs.
+    secure_channel_->reset();
+  }
+
+ private:
+  std::unique_ptr<SecureChannel>* secure_channel_;
+};
+
 class TestAuthenticatorFactory : public DeviceToDeviceAuthenticator::Factory {
  public:
   TestAuthenticatorFactory() : last_instance_(nullptr) {}
@@ -116,13 +144,6 @@ RemoteDevice CreateTestRemoteDevice() {
   return remote_device;
 }
 
-class TestSecureChannel : public SecureChannel {
- public:
-  TestSecureChannel(std::unique_ptr<Connection> connection,
-                    CryptAuthService* cryptauth_service)
-      : SecureChannel(std::move(connection), cryptauth_service) {}
-};
-
 }  // namespace
 
 class CryptAuthSecureChannelTest : public testing::Test {
@@ -144,8 +165,8 @@ class CryptAuthSecureChannelTest : public testing::Test {
         new FakeConnection(test_device_, /* should_auto_connect */ false);
 
     EXPECT_FALSE(fake_connection_->observers().size());
-    secure_channel_ = base::MakeUnique<TestSecureChannel>(
-        base::WrapUnique(fake_connection_), fake_cryptauth_service_.get());
+    secure_channel_ = base::WrapUnique(new SecureChannel(
+        base::WrapUnique(fake_connection_), fake_cryptauth_service_.get()));
     EXPECT_EQ(static_cast<size_t>(1), fake_connection_->observers().size());
     EXPECT_EQ(secure_channel_.get(), fake_connection_->observers()[0]);
 
@@ -162,7 +183,8 @@ class CryptAuthSecureChannelTest : public testing::Test {
     VerifyReceivedMessages(std::vector<ReceivedMessage>());
 
     // Same with messages being sent.
-    VerifyNoMessageBeingSent();
+    if (secure_channel_)
+      VerifyNoMessageBeingSent();
   }
 
   void VerifyConnectionStateChanges(
@@ -557,6 +579,22 @@ TEST_F(CryptAuthSecureChannelTest, SendAndReceiveMessages) {
   VerifyReceivedMessages(std::vector<ReceivedMessage> {
       {"feature", "response2"}
   });
+}
+
+TEST_F(CryptAuthSecureChannelTest, ObserverDeletesChannel) {
+  // Add a special Observer which deletes |secure_channel_| once it receives an
+  // OnMessageSent() call.
+  std::unique_ptr<DeletingObserver> deleting_observer =
+      base::WrapUnique(new DeletingObserver(&secure_channel_));
+  secure_channel_->AddObserver(deleting_observer.get());
+
+  ConnectAndAuthenticate();
+
+  // Send a message successfully; this triggers an OnMessageSent() call which
+  // deletes the channel. Note that this would have caused a crash before the
+  // fix for crbug.com/751884.
+  StartAndFinishSendingMessage("feature", "request1", /* success */ true);
+  EXPECT_FALSE(secure_channel_);
 }
 
 }  // namespace cryptauth

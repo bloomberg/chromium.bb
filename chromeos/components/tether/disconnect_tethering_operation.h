@@ -58,7 +58,6 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
       const cryptauth::RemoteDevice& remote_device) override;
   void OnOperationFinished() override;
   MessageType GetMessageTypeForConnection() override;
-  bool ShouldWaitForResponse() override;
   void OnMessageSent(int sequence_number) override;
 
  private:
@@ -67,7 +66,7 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
   base::ObserverList<Observer> observer_list_;
   cryptauth::RemoteDevice remote_device_;
   int disconnect_message_sequence_number_ = -1;
-  bool has_authenticated_;
+  bool has_sent_message_;
 
   DISALLOW_COPY_AND_ASSIGN(DisconnectTetheringOperation);
 };

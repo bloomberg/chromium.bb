@@ -94,7 +94,8 @@ int SecureChannel::SendMessage(const std::string& feature,
   int sequence_number = next_sequence_number_;
   next_sequence_number_++;
 
-  queued_messages_.push_back(PendingMessage(feature, payload, sequence_number));
+  queued_messages_.emplace(
+      base::MakeUnique<PendingMessage>(feature, payload, sequence_number));
   ProcessMessageQueue();
 
   return sequence_number;
@@ -161,10 +162,23 @@ void SecureChannel::OnSendCompleted(const cryptauth::Connection& connection,
   if (success && status_ != Status::DISCONNECTED) {
     pending_message_.reset();
 
-    for (auto& observer : observer_list_)
-      observer.OnMessageSent(this, wire_message.sequence_number());
+    // Create a WeakPtr to |this| before invoking observer callbacks. It is
+    // possible that an Observer will respond to the OnMessageSent() call by
+    // destroying the connection (e.g., if the client only wanted to send one
+    // message and destroyed the connection after the message was sent).
+    base::WeakPtr<SecureChannel> weak_this = weak_ptr_factory_.GetWeakPtr();
 
-    ProcessMessageQueue();
+    if (wire_message.sequence_number() != -1) {
+      for (auto& observer : observer_list_)
+        observer.OnMessageSent(this, wire_message.sequence_number());
+    }
+
+    // Process the next message if possible. Note that if the SecureChannel was
+    // deleted by the OnMessageSent() callback, this will be a no-op since
+    // |weak_this| will have been invalidated in that case.
+    if (weak_this.get())
+      weak_this->ProcessMessageQueue();
+
     return;
   }
 
@@ -214,8 +228,8 @@ void SecureChannel::ProcessMessageQueue() {
 
   DCHECK(!connection_->is_sending_message());
 
-  pending_message_.reset(new PendingMessage(queued_messages_.front()));
-  queued_messages_.pop_front();
+  pending_message_ = std::move(queued_messages_.front());
+  queued_messages_.pop();
 
   PA_LOG(INFO) << "Sending message to " << connection_->GetDeviceAddress()
                << ": {"
