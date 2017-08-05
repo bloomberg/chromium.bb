@@ -915,8 +915,8 @@ void SetProxyForScheme(const net::ProxyConfig::ProxyRules& proxy_rules,
   if (server.scheme() != default_scheme)
     host = SchemeToString(server.scheme()) + "://" + host;
   url_dict->SetStringWithoutPathExpansion(::onc::proxy::kHost, host);
-  url_dict->SetIntegerWithoutPathExpansion(::onc::proxy::kPort,
-                                           server.host_port_pair().port());
+  url_dict->SetKey(::onc::proxy::kPort,
+                   base::Value(server.host_port_pair().port()));
   dict->SetWithoutPathExpansion(onc_scheme, std::move(url_dict));
 }
 

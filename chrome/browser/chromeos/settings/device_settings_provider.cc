@@ -194,8 +194,8 @@ void DecodeLoginPolicies(
         entry_dict->SetStringWithoutPathExpansion(
             kAccountsPrefDeviceLocalAccountsKeyId, entry->account_id());
       }
-      entry_dict->SetIntegerWithoutPathExpansion(
-          kAccountsPrefDeviceLocalAccountsKeyType, entry->type());
+      entry_dict->SetKey(kAccountsPrefDeviceLocalAccountsKeyType,
+                         base::Value(entry->type()));
       if (entry->kiosk_app().has_app_id()) {
         entry_dict->SetStringWithoutPathExpansion(
             kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
@@ -231,9 +231,9 @@ void DecodeLoginPolicies(
       entry_dict->SetStringWithoutPathExpansion(
           kAccountsPrefDeviceLocalAccountsKeyId,
           entry->deprecated_public_session_id());
-      entry_dict->SetIntegerWithoutPathExpansion(
+      entry_dict->SetKey(
           kAccountsPrefDeviceLocalAccountsKeyType,
-          policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION);
+          base::Value(policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION));
     }
     account_list->Append(std::move(entry_dict));
   }

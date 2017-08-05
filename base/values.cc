@@ -803,11 +803,6 @@ Value* DictionaryValue::SetWithoutPathExpansion(
   return ((*dict_)[key.as_string()] = std::move(in_value)).get();
 }
 
-Value* DictionaryValue::SetIntegerWithoutPathExpansion(StringPiece path,
-                                                       int in_value) {
-  return SetWithoutPathExpansion(path, MakeUnique<Value>(in_value));
-}
-
 Value* DictionaryValue::SetDoubleWithoutPathExpansion(StringPiece path,
                                                       double in_value) {
   return SetWithoutPathExpansion(path, MakeUnique<Value>(in_value));

@@ -318,9 +318,9 @@ void ChromeSSLHostStateDelegate::AllowCert(const std::string& host,
   if (!cert_dict)
     return;
 
-  dict->SetIntegerWithoutPathExpansion(kSSLCertDecisionVersionKey,
-                                       kDefaultSSLCertDecisionVersion);
-  cert_dict->SetIntegerWithoutPathExpansion(GetKey(cert, error), ALLOWED);
+  dict->SetKey(kSSLCertDecisionVersionKey,
+               base::Value(kDefaultSSLCertDecisionVersion));
+  cert_dict->SetKey(GetKey(cert, error), base::Value(ALLOWED));
 
   // The map takes ownership of the value, so it is released in the call to
   // SetWebsiteSettingDefaultScope.

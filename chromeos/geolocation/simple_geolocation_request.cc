@@ -310,8 +310,8 @@ std::unique_ptr<base::DictionaryValue> CreateAccessPointDictionary(
 
   access_point_dictionary->SetStringWithoutPathExpansion(
       kMacAddress, access_point.mac_address);
-  access_point_dictionary->SetIntegerWithoutPathExpansion(
-      kSignalStrength, access_point.signal_strength);
+  access_point_dictionary->SetKey(kSignalStrength,
+                                  base::Value(access_point.signal_strength));
   if (!access_point.timestamp.is_null()) {
     access_point_dictionary->SetStringWithoutPathExpansion(
         kAge,
@@ -319,10 +319,9 @@ std::unique_ptr<base::DictionaryValue> CreateAccessPointDictionary(
             (base::Time::Now() - access_point.timestamp).InMilliseconds()));
   }
 
-  access_point_dictionary->SetIntegerWithoutPathExpansion(kChannel,
-                                                          access_point.channel);
-  access_point_dictionary->SetIntegerWithoutPathExpansion(
-      kSignalToNoiseRatio, access_point.signal_to_noise);
+  access_point_dictionary->SetKey(kChannel, base::Value(access_point.channel));
+  access_point_dictionary->SetKey(kSignalToNoiseRatio,
+                                  base::Value(access_point.signal_to_noise));
 
   return access_point_dictionary;
 }

@@ -191,8 +191,8 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
               chromeos::kAccountsPrefDeviceLocalAccountsKeyId,
               entry.account_id());
         }
-        entry_dict->SetIntegerWithoutPathExpansion(
-            chromeos::kAccountsPrefDeviceLocalAccountsKeyType, entry.type());
+        entry_dict->SetKey(chromeos::kAccountsPrefDeviceLocalAccountsKeyType,
+                           base::Value(entry.type()));
         if (entry.kiosk_app().has_app_id()) {
           entry_dict->SetStringWithoutPathExpansion(
               chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
@@ -228,9 +228,9 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
         entry_dict->SetStringWithoutPathExpansion(
             chromeos::kAccountsPrefDeviceLocalAccountsKeyId,
             entry.deprecated_public_session_id());
-        entry_dict->SetIntegerWithoutPathExpansion(
+        entry_dict->SetKey(
             chromeos::kAccountsPrefDeviceLocalAccountsKeyType,
-            DeviceLocalAccount::TYPE_PUBLIC_SESSION);
+            base::Value(DeviceLocalAccount::TYPE_PUBLIC_SESSION));
       }
       account_list->Append(std::move(entry_dict));
     }

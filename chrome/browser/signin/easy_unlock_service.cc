@@ -739,8 +739,8 @@ void EasyUnlockService::SetHardlockStateForUser(
   }
 
   DictionaryPrefUpdate update(local_state, prefs::kEasyUnlockHardlockState);
-  update->SetIntegerWithoutPathExpansion(account_id.GetUserEmail(),
-                                         static_cast<int>(state));
+  update->SetKey(account_id.GetUserEmail(),
+                 base::Value(static_cast<int>(state)));
 
   if (GetAccountId() == account_id)
     SetScreenlockHardlockedState(state);

@@ -130,7 +130,7 @@ TEST_F(PersistentPrefStoreClientTest,
        SubPrefUpdates_BasicWithoutPathExpansion) {
   {
     ScopedDictionaryPrefUpdate update(pref_service(), kDictionaryKey);
-    update->SetIntegerWithoutPathExpansion("key.for.integer", 1);
+    update->SetKey("key.for.integer", base::Value(1));
   }
   auto update = WaitForUpdate();
   ASSERT_TRUE(update->is_split_updates());
@@ -165,8 +165,8 @@ TEST_F(PersistentPrefStoreClientTest,
        SubPrefUpdates_RemoveWithoutPathExpansion) {
   {
     ScopedDictionaryPrefUpdate update(pref_service(), kDictionaryKey);
-    update->SetIntegerWithoutPathExpansion("path.to.another_integer", 1);
-    update->SetIntegerWithoutPathExpansion("path.to.integer", 1);
+    update->SetKey("path.to.another_integer", base::Value(1));
+    update->SetKey("path.to.integer", base::Value(1));
   }
   WaitForUpdate();
   {

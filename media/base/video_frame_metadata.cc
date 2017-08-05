@@ -35,7 +35,7 @@ void VideoFrameMetadata::SetBoolean(Key key, bool value) {
 }
 
 void VideoFrameMetadata::SetInteger(Key key, int value) {
-  dictionary_.SetIntegerWithoutPathExpansion(ToInternalKey(key), value);
+  dictionary_.SetKey(ToInternalKey(key), base::Value(value));
 }
 
 void VideoFrameMetadata::SetDouble(Key key, double value) {
@@ -44,7 +44,7 @@ void VideoFrameMetadata::SetDouble(Key key, double value) {
 
 void VideoFrameMetadata::SetRotation(Key key, VideoRotation value) {
   DCHECK_EQ(ROTATION, key);
-  dictionary_.SetIntegerWithoutPathExpansion(ToInternalKey(key), value);
+  dictionary_.SetKey(ToInternalKey(key), base::Value(value));
 }
 
 void VideoFrameMetadata::SetString(Key key, const std::string& value) {

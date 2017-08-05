@@ -107,12 +107,6 @@ void DictionaryValueUpdate::SetWithoutPathExpansion(
   value_->SetWithoutPathExpansion(key, std::move(in_value));
 }
 
-void DictionaryValueUpdate::SetIntegerWithoutPathExpansion(
-    base::StringPiece path,
-    int in_value) {
-  SetWithoutPathExpansion(path, base::MakeUnique<base::Value>(in_value));
-}
-
 void DictionaryValueUpdate::SetDoubleWithoutPathExpansion(
     base::StringPiece path,
     double in_value) {

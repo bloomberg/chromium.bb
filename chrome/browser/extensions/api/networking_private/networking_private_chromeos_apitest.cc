@@ -380,7 +380,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     base::DictionaryValue ipconfig;
     ipconfig.SetStringWithoutPathExpansion(shill::kAddressProperty, "0.0.0.0");
     ipconfig.SetStringWithoutPathExpansion(shill::kGatewayProperty, "0.0.0.1");
-    ipconfig.SetIntegerWithoutPathExpansion(shill::kPrefixlenProperty, 0);
+    ipconfig.SetKey(shill::kPrefixlenProperty, base::Value(0));
     ipconfig.SetStringWithoutPathExpansion(shill::kMethodProperty,
                                            shill::kTypeIPv4);
     ip_config_test->AddIPConfig(kIPConfigPath, ipconfig);

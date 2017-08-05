@@ -135,11 +135,11 @@ bool SupervisedUserAuthentication::FillDataForNewUser(
     return false;
 
   if (schema == SCHEMA_SALT_HASHED) {
-    password_data->SetIntegerWithoutPathExpansion(kSchemaVersion, schema);
+    password_data->SetKey(kSchemaVersion, base::Value(schema));
     std::string salt = CreateSalt();
     password_data->SetStringWithoutPathExpansion(kSalt, salt);
     int revision = kMinPasswordRevision;
-    password_data->SetIntegerWithoutPathExpansion(kPasswordRevision, revision);
+    password_data->SetKey(kPasswordRevision, base::Value(revision));
     Key key(password);
     key.Transform(Key::KEY_TYPE_SALTED_PBKDF2_AES256_1234, salt);
     const std::string salted_password = key.GetSecret();

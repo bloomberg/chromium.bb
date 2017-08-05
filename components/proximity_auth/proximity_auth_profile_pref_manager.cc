@@ -81,8 +81,8 @@ void ProximityAuthProfilePrefManager::SyncPrefsToLocalState() {
 
   user_prefs_dict->SetKey(prefs::kEasyUnlockAllowed,
                           base::Value(IsEasyUnlockAllowed()));
-  user_prefs_dict->SetIntegerWithoutPathExpansion(
-      prefs::kEasyUnlockProximityThreshold, GetProximityThreshold());
+  user_prefs_dict->SetKey(prefs::kEasyUnlockProximityThreshold,
+                          base::Value(GetProximityThreshold()));
   user_prefs_dict->SetKey(prefs::kProximityAuthIsChromeOSLoginEnabled,
                           base::Value(IsChromeOSLoginEnabled()));
 

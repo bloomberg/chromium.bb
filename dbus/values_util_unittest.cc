@@ -340,7 +340,7 @@ TEST(ValuesUtilTest, PopDictionaryWithDottedStringKey) {
   // Create the expected value.
   base::DictionaryValue dictionary_value;
   dictionary_value.SetKey(kKey1, base::Value(kBoolValue));
-  dictionary_value.SetIntegerWithoutPathExpansion(kKey2, kInt32Value);
+  dictionary_value.SetKey(kKey2, base::Value(kInt32Value));
   dictionary_value.SetDoubleWithoutPathExpansion(kKey3, kDoubleValue);
 
   // Pop a dictinoary.
@@ -377,7 +377,7 @@ TEST(ValuesUtilTest, PopDoubleToIntDictionary) {
   for (size_t i = 0; i != values.size(); ++i) {
     std::string key_string;
     base::JSONWriter::Write(base::Value(keys[i]), &key_string);
-    dictionary_value.SetIntegerWithoutPathExpansion(key_string, values[i]);
+    dictionary_value.SetKey(key_string, base::Value(values[i]));
   }
 
   // Pop a dictionary.

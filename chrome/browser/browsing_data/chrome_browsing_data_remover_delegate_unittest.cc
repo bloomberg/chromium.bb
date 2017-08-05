@@ -2397,7 +2397,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, AllTypesAreGettingDeleted) {
     } else {
       // Other website settings only allow dictionaries.
       base::DictionaryValue dict;
-      dict.SetIntegerWithoutPathExpansion("foo", 42);
+      dict.SetKey("foo", base::Value(42));
       some_value = std::move(dict);
     }
     // Create an exception.
