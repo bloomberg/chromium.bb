@@ -20,6 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/network_service.mojom.h"
 #include "content/public/common/resource_response.h"
@@ -54,9 +55,9 @@ class ProfileNetworkContextServiceBrowsertest
   }
 
   void SetUpOnMainThread() override {
-    network_context_ = ProfileNetworkContextServiceFactory::GetInstance()
-                           ->GetForContext(browser()->profile())
-                           ->MainContext();
+    network_context_ = content::BrowserContext::GetDefaultStoragePartition(
+                           browser()->profile())
+                           ->GetNetworkContext();
     network_context_->CreateURLLoaderFactory(MakeRequest(&loader_factory_), 0);
   }
 

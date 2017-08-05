@@ -491,7 +491,8 @@ mojom::NetworkContextPtr ContentBrowserClient::CreateNetworkContext(
     BrowserContext* context,
     bool in_memory,
     const base::FilePath& relative_partition_path) {
-  DCHECK(base::FeatureList::IsEnabled(features::kNetworkService));
+  if (!base::FeatureList::IsEnabled(features::kNetworkService))
+    return nullptr;
 
   mojom::NetworkContextPtr network_context;
   mojom::NetworkContextParamsPtr context_params =

@@ -23,41 +23,33 @@ class ProfileNetworkContextService : public KeyedService {
   explicit ProfileNetworkContextService(Profile* profile);
   ~ProfileNetworkContextService() override;
 
+  // Creates the main NetworkContext for the BrowserContext.  Uses the network
+  // service if enabled. Otherwise creates one that will use the IOThread's
+  // NetworkService. This may be called either before or after
+  // SetUpProfileIODataMainContext.
+  content::mojom::NetworkContextPtr CreateMainNetworkContext();
+
   // Initializes |*network_context_params| to set up the ProfileIOData's
   // main URLRequestContext and |*network_context_request| to be one end of a
   // Mojo pipe to be bound to the NetworkContext for that URLRequestContext.
   // The caller will need to send these parameters to the IOThread's in-process
-  // NetworkService. This class retains the NetworkContext at the other end of
-  // the |*network_context_request| pipe for later vending.
+  // NetworkService.
   //
-  // If the network service is disabled, MainContext() will return that end of
-  // the pipe.  In this case, all requests associated with this profile will use
-  // the associated URLRequestContext (either through MainContext() or
-  // directly).
+  // If the network service is disabled, CreateMainNetworkContext(), which is
+  // called first, will return the other end of the pipe.  In this case, all
+  // requests associated with this Profile will use the associated
+  // URLRequestContext (either accessed through the StoragePartition's
+  // GetURLRequestContext() or directly).
   //
-  // If the network service is enabled, MainContext() will instead return a
-  // network context vended by the network service's NetworkService (Instead of
-  // the IOThread's in-process one).  In this case, the ProfileIOData's
-  // URLRequest context will be configured not to use on-disk storage (so as not
-  // to conflict with the network service vended context), and will only be used
-  // for legacy requests that use it directly.
-  //
-  // Must be called before anything uses the NetworkContext vended by this
-  // class.
+  // If the network service is enabled, CreateMainNetworkContext() will instead
+  // return a NetworkContext vended by the network service's NetworkService
+  // (Instead of the IOThread's in-process one).  In this case, the
+  // ProfileIOData's URLRequest context will be configured not to use on-disk
+  // storage (so as not to conflict with the network service vended context),
+  // and will only be used for legacy requests that use it directly.
   void SetUpProfileIODataMainContext(
       content::mojom::NetworkContextRequest* network_context_request,
       content::mojom::NetworkContextParamsPtr* network_context_params);
-
-  // Returns the main NetworkContext for the BrowserContext. If the network
-  // service is disabled, this will be the
-  // ProfileIOData NetworkContext set up above.  Otherwise, it will be a
-  // NetworkContext vended from the network service.
-  content::mojom::NetworkContext* MainContext();
-
-  // Creates the main NetworkContext for the BrowserContext, using the network
-  // service. May only be called when the network service is enabled. Must only
-  // be called once for a profile, from the ChromeContentBrowserClient.
-  content::mojom::NetworkContextPtr CreateMainNetworkContext();
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -67,10 +59,15 @@ class ProfileNetworkContextService : public KeyedService {
 
   Profile* const profile_;
 
-  // This is a NetworkContext that wraps ProfileIOData's main URLRequestContext.
-  // Always initialized in SetUpProfileIODataMainContext, but it's only returned
-  // by Context() when the network service is disabled.
+  // This is a NetworkContext interface that uses ProfileIOData's
+  // NetworkContext. If the network service is disabled, ownership is passed to
+  // StoragePartition when CreateMainNetworkContext is called.  Otherwise,
+  // retains ownership, though nothing uses it after construction.
   content::mojom::NetworkContextPtr profile_io_data_main_network_context_;
+
+  // Request corresponding to |profile_io_data_main_network_context_|. Ownership
+  // is passed to ProfileIOData when SetUpProfileIODataMainContext() is called.
+  content::mojom::NetworkContextRequest profile_io_data_context_request_;
 
   BooleanPrefMember quic_allowed_;
 

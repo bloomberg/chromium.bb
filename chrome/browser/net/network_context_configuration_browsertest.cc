@@ -18,6 +18,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service.mojom.h"
@@ -84,16 +86,16 @@ class NetworkContextConfigurationBrowserTest
         break;
       }
       case NetworkContextType::kProfile: {
-        network_context_ = ProfileNetworkContextServiceFactory::GetInstance()
-                               ->GetForContext(browser()->profile())
-                               ->MainContext();
+        network_context_ = content::BrowserContext::GetDefaultStoragePartition(
+                               browser()->profile())
+                               ->GetNetworkContext();
         break;
       }
       case NetworkContextType::kIncognitoProfile: {
         Browser* incognito = CreateIncognitoBrowser();
-        network_context_ = ProfileNetworkContextServiceFactory::GetInstance()
-                               ->GetForContext(incognito->profile())
-                               ->MainContext();
+        network_context_ = content::BrowserContext::GetDefaultStoragePartition(
+                               incognito->profile())
+                               ->GetNetworkContext();
         break;
       }
     }

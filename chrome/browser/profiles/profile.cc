@@ -9,6 +9,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/net/profile_network_context_service.h"
+#include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/features.h"
@@ -243,6 +245,11 @@ bool Profile::IsGuestSession() const {
 
 bool Profile::IsSystemProfile() const {
   return is_system_profile_;
+}
+
+content::mojom::NetworkContextPtr Profile::CreateMainNetworkContext() {
+  return ProfileNetworkContextServiceFactory::GetForContext(this)
+      ->CreateMainNetworkContext();
 }
 
 bool Profile::IsNewProfile() {
