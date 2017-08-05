@@ -12,6 +12,7 @@ mojom("compositing") {
 
   public_deps = [
     "//cc/ipc:interfaces",
+    "//services/viz/public/interfaces/hit_test",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
   ]

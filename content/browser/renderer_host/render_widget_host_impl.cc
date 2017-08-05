@@ -2571,7 +2571,9 @@ void RenderWidgetHostImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
 
 void RenderWidgetHostImpl::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
-    cc::CompositorFrame frame) {
+    cc::CompositorFrame frame,
+    viz::mojom::HitTestRegionListPtr hit_test_region_list) {
+  // TODO(gklassen): Route hit-test data to appropriate HitTestAggregator.
   auto new_surface_properties =
       RenderWidgetSurfaceProperties::FromCompositorFrame(frame);
 
@@ -2596,6 +2598,7 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
     saved_frame_.frame = std::move(frame);
     saved_frame_.local_surface_id = local_surface_id;
     saved_frame_.max_shared_bitmap_sequence_number = max_sequence_number;
+    // TODO(gklassen): save hit-test data and restore on use.
     TRACE_EVENT_ASYNC_BEGIN2("renderer_host", "PauseCompositorFrameSink", this,
                              "LastRegisteredSequenceNumber",
                              last_registered_sequence_number,
@@ -2707,7 +2710,7 @@ void RenderWidgetHostImpl::DidAllocateSharedBitmap(uint32_t sequence_number) {
   if (saved_frame_.local_surface_id.is_valid() &&
       sequence_number >= saved_frame_.max_shared_bitmap_sequence_number) {
     SubmitCompositorFrame(saved_frame_.local_surface_id,
-                          std::move(saved_frame_.frame));
+                          std::move(saved_frame_.frame), nullptr);
     saved_frame_.local_surface_id = viz::LocalSurfaceId();
     compositor_frame_sink_binding_.ResumeIncomingMethodCallProcessing();
     TRACE_EVENT_ASYNC_END0("renderer_host", "PauseCompositorFrameSink", this);

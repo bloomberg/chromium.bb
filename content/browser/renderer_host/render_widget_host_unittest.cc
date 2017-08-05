@@ -1435,7 +1435,7 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
   host_->StartNewContentRenderingTimeout(5);
   cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
   frame.metadata.content_source_id = 5;
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMicroseconds(20));
@@ -1449,7 +1449,7 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
   host_->StartNewContentRenderingTimeout(10);
   frame = MakeCompositorFrame(1.f, frame_size);
   frame.metadata.content_source_id = 9;
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMicroseconds(20));
@@ -1462,7 +1462,7 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
   // attempt to start the timer. The timer shouldn't fire.
   frame = MakeCompositorFrame(1.f, frame_size);
   frame.metadata.content_source_id = 7;
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr);
   host_->StartNewContentRenderingTimeout(7);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
@@ -1498,7 +1498,7 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
     cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
     frame.metadata.begin_frame_ack = viz::BeginFrameAck(0, 1, true);
     frame.metadata.content_source_id = 99;
-    host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr);
     EXPECT_FALSE(
         static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
     static_cast<TestView*>(host_->GetView())->reset_did_swap_compositor_frame();
@@ -1508,7 +1508,7 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
     // Test with a valid content ID as a control.
     cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
     frame.metadata.content_source_id = 100;
-    host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr);
     EXPECT_TRUE(
         static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
     static_cast<TestView*>(host_->GetView())->reset_did_swap_compositor_frame();
@@ -1520,7 +1520,7 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
     // the corresponding DidCommitProvisionalLoad (it's a race).
     cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
     frame.metadata.content_source_id = 101;
-    host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr);
     EXPECT_TRUE(
         static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
   }
@@ -2034,7 +2034,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_MessageThenFrame) {
 
   cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
   frame.metadata.frame_token = frame_token;
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr);
   EXPECT_EQ(0u, host_->queued_messages_.size());
   EXPECT_EQ(1u, host_->processed_frame_messages_count());
 }
@@ -2054,7 +2054,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_FrameThenMessage) {
 
   cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
   frame.metadata.frame_token = frame_token;
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr);
   EXPECT_EQ(0u, host_->queued_messages_.size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
@@ -2092,13 +2092,13 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleMessagesThenTokens) {
 
   cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
   frame.metadata.frame_token = frame_token1;
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr);
   EXPECT_EQ(1u, host_->queued_messages_.size());
   EXPECT_EQ(1u, host_->processed_frame_messages_count());
 
   frame = MakeCompositorFrame(1.f, frame_size);
   frame.metadata.frame_token = frame_token2;
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr);
   EXPECT_EQ(0u, host_->queued_messages_.size());
   EXPECT_EQ(2u, host_->processed_frame_messages_count());
 }
@@ -2121,13 +2121,13 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleTokensThenMessages) {
 
   cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
   frame.metadata.frame_token = frame_token1;
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr);
   EXPECT_EQ(0u, host_->queued_messages_.size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
   frame = MakeCompositorFrame(1.f, frame_size);
   frame.metadata.frame_token = frame_token2;
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr);
   EXPECT_EQ(0u, host_->queued_messages_.size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
@@ -2170,7 +2170,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_DroppedFrame) {
 
   cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
   frame.metadata.frame_token = frame_token2;
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr);
   EXPECT_EQ(0u, host_->queued_messages_.size());
   EXPECT_EQ(2u, host_->processed_frame_messages_count());
 }
@@ -2205,7 +2205,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
 
   cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
   frame.metadata.frame_token = frame_token2;
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr);
   EXPECT_EQ(0u, host_->queued_messages_.size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
@@ -2221,7 +2221,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
 
   frame = MakeCompositorFrame(1.f, frame_size);
   frame.metadata.frame_token = frame_token3;
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr);
   EXPECT_EQ(0u, host_->queued_messages_.size());
   EXPECT_EQ(1u, host_->processed_frame_messages_count());
 }

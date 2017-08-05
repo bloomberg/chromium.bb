@@ -12,6 +12,7 @@ import "cc/ipc/local_surface_id.mojom";
 import "cc/ipc/surface_id.mojom";
 import "cc/ipc/returned_resource.mojom";
 import "cc/ipc/surface_sequence.mojom";
+import "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // A CompositorFrameSink is an interface for receiving CompositorFrame
@@ -33,7 +34,8 @@ interface CompositorFrameSink {
   // DidReceiveCompositorFrameAck() asynchronously when the frame has been
   // processed in order to unthrottle the next frame.
   SubmitCompositorFrame(cc.mojom.LocalSurfaceId local_surface_id,
-                        cc.mojom.CompositorFrame frame);
+                        cc.mojom.CompositorFrame frame,
+                        viz.mojom.HitTestRegionList? hit_test_region_list);
 
   // Notifies the frame sink that a BeginFrame was completed, but that no
   // CompositorFrame was produced as a result of it.

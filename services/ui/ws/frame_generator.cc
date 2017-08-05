@@ -108,7 +108,7 @@ void FrameGenerator::OnBeginFrame(const viz::BeginFrameArgs& begin_frame_args) {
     local_surface_id_ = id_allocator_.GenerateId();
   }
   compositor_frame_sink_->SubmitCompositorFrame(local_surface_id_,
-                                                std::move(frame));
+                                                std::move(frame), nullptr);
   SetNeedsBeginFrame(false);
 }
 
