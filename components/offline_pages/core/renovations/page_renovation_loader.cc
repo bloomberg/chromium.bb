@@ -4,6 +4,8 @@
 
 #include "components/offline_pages/core/renovations/page_renovation_loader.h"
 
+#include <algorithm>
+#include <string>
 #include <utility>
 
 #include "base/logging.h"
@@ -15,17 +17,35 @@ namespace offline_pages {
 
 namespace {
 
+// Helper function used in WikipediaPageRenovation::ShouldRun.
+bool EndsWith(const std::string& host, const std::string& suffix) {
+  if (suffix.size() > host.size())
+    return false;
+
+  return std::equal(suffix.rbegin(), suffix.rend(), host.rbegin());
+}
+
+// Concrete PageRenovation instances
+class WikipediaPageRenovation : public PageRenovation {
+ public:
+  bool ShouldRun(const GURL& url) const override {
+    return EndsWith(url.host(), "m.wikipedia.org");
+  }
+
+  std::string GetID() const override { return "wikipedia"; }
+};
+
 // Construct list of implemented renovations
-std::vector<std::unique_ptr<PageRenovation>> makeRenovationList() {
-  // TODO(collinbaker): Create PageRenovation instances and put them
-  // in this list.
-  return std::vector<std::unique_ptr<PageRenovation>>();
+std::vector<std::unique_ptr<PageRenovation>> MakeRenovationList() {
+  std::vector<std::unique_ptr<PageRenovation>> list;
+  list.emplace_back(new WikipediaPageRenovation);
+  return list;
 }
 
 }  // namespace
 
 PageRenovationLoader::PageRenovationLoader()
-    : renovations_(makeRenovationList()), is_loaded_(false) {}
+    : renovations_(MakeRenovationList()), is_loaded_(false) {}
 
 PageRenovationLoader::~PageRenovationLoader() {}
 
