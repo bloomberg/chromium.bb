@@ -52,13 +52,18 @@ class CONTENT_EXPORT NetworkContext : public mojom::NetworkContext {
                  mojom::NetworkContextParamsPtr params,
                  std::unique_ptr<net::URLRequestContextBuilder> builder);
 
+  // Creates a NetworkContext that wraps a consumer-provided URLRequestContext
+  // that the NetworkContext does not own. In this case, there is no
+  // NetworkService object.
+  // TODO(mmenke):  Remove this constructor when the network service ships.
+  NetworkContext(mojom::NetworkContextRequest request,
+                 net::URLRequestContext* url_request_context);
+
   ~NetworkContext() override;
 
   static std::unique_ptr<NetworkContext> CreateForTesting();
 
-  net::URLRequestContext* url_request_context() {
-    return url_request_context_.get();
-  }
+  net::URLRequestContext* url_request_context() { return url_request_context_; }
 
   // These are called by individual url loaders as they are being created and
   // destroyed.
@@ -86,7 +91,11 @@ class CONTENT_EXPORT NetworkContext : public mojom::NetworkContext {
 
   NetworkServiceImpl* const network_service_;
 
-  std::unique_ptr<net::URLRequestContext> url_request_context_;
+  // Owning pointer to |url_request_context_|. nullptr when the
+  // NetworkContextImpl doesn't own its own URLRequestContext.
+  std::unique_ptr<net::URLRequestContext> owned_url_request_context_;
+
+  net::URLRequestContext* url_request_context_ = nullptr;
 
   // Put it below |url_request_context_| so that it outlives all the
   // NetworkServiceURLLoaderFactoryImpl instances.

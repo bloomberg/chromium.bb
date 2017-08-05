@@ -26,6 +26,10 @@ source_set("network_sources") {
     "//content/app:*",
     "//content/public/network/*",
     "//content/utility:utility",
+
+    # For use by StoragePartition.
+    # TODO(mmenke): Remove when network service ships.
+    "//content/browser",
   ]
 
   sources = [

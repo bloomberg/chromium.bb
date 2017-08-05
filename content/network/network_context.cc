@@ -119,8 +119,9 @@ NetworkContext::NetworkContext(NetworkServiceImpl* network_service,
                                mojom::NetworkContextRequest request,
                                mojom::NetworkContextParamsPtr params)
     : network_service_(network_service),
-      url_request_context_(
+      owned_url_request_context_(
           MakeURLRequestContext(params.get(), network_service)),
+      url_request_context_(owned_url_request_context_.get()),
       params_(std::move(params)),
       binding_(this, std::move(request)) {
   network_service_->RegisterNetworkContext(this);
@@ -141,7 +142,14 @@ NetworkContext::NetworkContext(
       binding_(this, std::move(request)) {
   network_service_->RegisterNetworkContext(this);
   ApplyContextParamsToBuilder(builder.get(), params_.get(), network_service);
-  url_request_context_ = builder->Build();
+  owned_url_request_context_ = builder->Build();
+  url_request_context_ = owned_url_request_context_.get();
+}
+
+NetworkContext::NetworkContext(mojom::NetworkContextRequest request,
+                               net::URLRequestContext* url_request_context)
+    : network_service_(nullptr), binding_(this, std::move(request)) {
+  url_request_context_ = url_request_context;
 }
 
 NetworkContext::~NetworkContext() {
@@ -181,7 +189,7 @@ void NetworkContext::CreateURLLoaderFactory(
 
 void NetworkContext::HandleViewCacheRequest(const GURL& url,
                                             mojom::URLLoaderClientPtr client) {
-  StartCacheURLLoader(url, url_request_context_.get(), std::move(client));
+  StartCacheURLLoader(url, url_request_context_, std::move(client));
 }
 
 void NetworkContext::DisableQuic() {
@@ -198,7 +206,9 @@ NetworkContext::NetworkContext()
     : network_service_(nullptr),
       params_(mojom::NetworkContextParams::New()),
       binding_(this) {
-  url_request_context_ = MakeURLRequestContext(params_.get(), network_service_);
+  owned_url_request_context_ =
+      MakeURLRequestContext(params_.get(), network_service_);
+  url_request_context_ = owned_url_request_context_.get();
 }
 
 void NetworkContext::OnConnectionError() {

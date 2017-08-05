@@ -24,6 +24,7 @@
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
+#include "content/network/network_context.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -242,6 +243,38 @@ base::WeakPtr<storage::BlobStorageContext> BlobStorageContextGetter(
 
 }  // namespace
 
+// Class to own the NetworkContext wrapping a storage partitions
+// URLRequestContext, when the ContentBrowserClient doesn't provide a
+// NetworkContext itself.
+//
+// Createdd on the UI thread, but must be initialized and destroyed on the IO
+// thread.
+class StoragePartitionImpl::NetworkContextOwner {
+ public:
+  NetworkContextOwner() { DCHECK_CURRENTLY_ON(BrowserThread::UI); }
+
+  ~NetworkContextOwner() { DCHECK_CURRENTLY_ON(BrowserThread::IO); }
+
+  void Initialize(mojom::NetworkContextRequest network_context_request,
+                  scoped_refptr<net::URLRequestContextGetter> context_getter) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    context_getter_ = std::move(context_getter);
+    network_context_ = base::MakeUnique<NetworkContext>(
+        std::move(network_context_request),
+        context_getter_->GetURLRequestContext());
+  }
+
+ private:
+  // Reference to the URLRequestContextGetter for the URLRequestContext used by
+  // NetworkContext. Depending on the embedder's implementation, this may be
+  // needed to keep the URLRequestContext alive until the NetworkContext is
+  // destroyed.
+  scoped_refptr<net::URLRequestContextGetter> context_getter_;
+  std::unique_ptr<mojom::NetworkContext> network_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkContextOwner);
+};
+
 // Static.
 int StoragePartitionImpl::GenerateQuotaClientMask(uint32_t remove_mask) {
   int quota_client_mask = 0;
@@ -419,6 +452,9 @@ StoragePartitionImpl::~StoragePartitionImpl() {
 
   if (GetPaymentAppContext())
     GetPaymentAppContext()->Shutdown();
+
+  BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
+                            std::move(network_context_owner_));
 }
 
 // static
@@ -507,11 +543,11 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   scoped_refptr<ChromeBlobStorageContext> blob_context =
       ChromeBlobStorageContext::GetFor(context);
 
-  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-    partition->network_context_ =
-        GetContentClient()->browser()->CreateNetworkContext(
-            context, in_memory, relative_partition_path);
+  partition->network_context_ =
+      GetContentClient()->browser()->CreateNetworkContext(
+          context, in_memory, relative_partition_path);
 
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     BlobURLLoaderFactory::BlobContextGetter blob_getter =
         base::BindOnce(&BlobStorageContextGetter, blob_context);
     partition->blob_url_loader_factory_ = BlobURLLoaderFactory::Create(
@@ -547,7 +583,17 @@ StoragePartitionImpl::GetMediaURLRequestContext() {
 }
 
 mojom::NetworkContext* StoragePartitionImpl::GetNetworkContext() {
-  DCHECK(base::FeatureList::IsEnabled(features::kNetworkService));
+  // Create the NetworkContext as needed, when the network service is disabled.
+  if (!network_context_.get()) {
+    DCHECK(!base::FeatureList::IsEnabled(features::kNetworkService));
+    DCHECK(!network_context_owner_);
+    network_context_owner_ = base::MakeUnique<NetworkContextOwner>();
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&NetworkContextOwner::Initialize,
+                       base::Unretained(network_context_owner_.get()),
+                       MakeRequest(&network_context_), url_request_context_));
+  }
   return network_context_.get();
 }
 
