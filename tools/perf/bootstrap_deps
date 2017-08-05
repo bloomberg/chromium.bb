@@ -21,6 +21,5 @@ deps = {
     "src/testing/variations": "",
     "src/tools/telemetry": "",
     "src/third_party/catapult": "",
-    "src/third_party/WebKit/PerformanceTests/TestData": "",
-    "src/third_party/WebKit/PerformanceTests/SVG": "",
+    "src/third_party/WebKit/PerformanceTests": "",
 }
