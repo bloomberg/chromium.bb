@@ -172,6 +172,13 @@ class CC_PAINT_EXPORT PaintOp {
            static_cast<uint32_t>(SkClipOp::kMax_EnumValue);
   }
 
+  static bool IsUnsetRect(const SkRect& rect) {
+    return rect.fLeft == SK_ScalarInfinity;
+  }
+  static bool IsValidOrUnsetRect(const SkRect& rect) {
+    return IsUnsetRect(rect) || rect.isFinite();
+  }
+
   static constexpr bool kIsDrawOp = false;
   static constexpr bool kHasPaintFlags = false;
   // Since skip and type fit in a uint32_t, this is the max size of skip.
@@ -333,7 +340,7 @@ class CC_PAINT_EXPORT AnnotateOp final : public PaintOp {
   static void Raster(const AnnotateOp* op,
                      SkCanvas* canvas,
                      const PlaybackParams& params);
-  bool IsValid() const { return true; }
+  bool IsValid() const { return rect.isFinite(); }
   HAS_SERIALIZATION_FUNCTIONS();
 
   PaintCanvas::AnnotationType annotation_type;
@@ -391,7 +398,7 @@ class CC_PAINT_EXPORT ClipRectOp final : public PaintOp {
   static void Raster(const ClipRectOp* op,
                      SkCanvas* canvas,
                      const PlaybackParams& params);
-  bool IsValid() const { return IsValidSkClipOp(op); }
+  bool IsValid() const { return IsValidSkClipOp(op) && rect.isFinite(); }
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkRect rect;
@@ -410,7 +417,7 @@ class CC_PAINT_EXPORT ClipRRectOp final : public PaintOp {
   static void Raster(const ClipRRectOp* op,
                      SkCanvas* canvas,
                      const PlaybackParams& params);
-  bool IsValid() const { return IsValidSkClipOp(op); }
+  bool IsValid() const { return IsValidSkClipOp(op) && rrect.isValid(); }
   bool HasNonAAPaint() const { return !antialias; }
   HAS_SERIALIZATION_FUNCTIONS();
 
@@ -456,7 +463,7 @@ class CC_PAINT_EXPORT DrawArcOp final : public PaintOpWithFlags {
                               const PaintFlags* flags,
                               SkCanvas* canvas,
                               const PlaybackParams& params);
-  bool IsValid() const { return flags.IsValid(); }
+  bool IsValid() const { return flags.IsValid() && oval.isFinite(); }
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkRect oval;
@@ -574,7 +581,9 @@ class CC_PAINT_EXPORT DrawImageRectOp final : public PaintOpWithFlags {
                               const PaintFlags* flags,
                               SkCanvas* canvas,
                               const PlaybackParams& params);
-  bool IsValid() const { return flags.IsValid(); }
+  bool IsValid() const {
+    return flags.IsValid() && src.isFinite() && dst.isFinite();
+  }
   bool HasDiscardableImages() const;
   HAS_SERIALIZATION_FUNCTIONS();
 
@@ -645,7 +654,7 @@ class CC_PAINT_EXPORT DrawOvalOp final : public PaintOpWithFlags {
                               const PaintFlags* flags,
                               SkCanvas* canvas,
                               const PlaybackParams& params);
-  bool IsValid() const { return flags.IsValid(); }
+  bool IsValid() const { return flags.IsValid() && oval.isFinite(); }
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkRect oval;
@@ -728,7 +737,7 @@ class CC_PAINT_EXPORT DrawRectOp final : public PaintOpWithFlags {
                               const PaintFlags* flags,
                               SkCanvas* canvas,
                               const PlaybackParams& params);
-  bool IsValid() const { return flags.IsValid(); }
+  bool IsValid() const { return flags.IsValid() && rect.isFinite(); }
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkRect rect;
@@ -859,7 +868,7 @@ class CC_PAINT_EXPORT SaveLayerOp final : public PaintOpWithFlags {
                               const PaintFlags* flags,
                               SkCanvas* canvas,
                               const PlaybackParams& params);
-  bool IsValid() const { return flags.IsValid(); }
+  bool IsValid() const { return flags.IsValid() && IsValidOrUnsetRect(bounds); }
   bool HasNonAAPaint() const { return false; }
   HAS_SERIALIZATION_FUNCTIONS();
 
@@ -881,7 +890,7 @@ class CC_PAINT_EXPORT SaveLayerAlphaOp final : public PaintOp {
   static void Raster(const SaveLayerAlphaOp* op,
                      SkCanvas* canvas,
                      const PlaybackParams& params);
-  bool IsValid() const { return true; }
+  bool IsValid() const { return IsValidOrUnsetRect(bounds); }
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkRect bounds;

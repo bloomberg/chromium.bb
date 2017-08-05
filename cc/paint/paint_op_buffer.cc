@@ -132,8 +132,8 @@ void RasterWithAlpha(const PaintOp* op,
     }
 
     if (!decoded_flags->SupportsFoldingAlpha()) {
-      bool unset = bounds.x() == PaintOp::kUnsetRect.x();
-      canvas->saveLayerAlpha(unset ? nullptr : &bounds, alpha);
+      canvas->saveLayerAlpha(PaintOp::IsUnsetRect(bounds) ? nullptr : &bounds,
+                             alpha);
       flags_op->RasterWithFlags(canvas, decoded_flags, params);
       canvas->restore();
     } else if (alpha == 255) {
@@ -164,8 +164,8 @@ void RasterWithAlpha(const PaintOp* op,
                        SkColorGetB(color)),
         draw_color_op->mode);
   } else {
-    bool unset = bounds.x() == PaintOp::kUnsetRect.x();
-    canvas->saveLayerAlpha(unset ? nullptr : &bounds, alpha);
+    canvas->saveLayerAlpha(PaintOp::IsUnsetRect(bounds) ? nullptr : &bounds,
+                           alpha);
     op->Raster(canvas, params);
     canvas->restore();
   }
