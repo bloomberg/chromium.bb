@@ -96,7 +96,6 @@ include_rules = [
   "+crypto",
   "+google_apis",
   "+ios/chrome/app",
-  "+ios/components/captive_portal",
   "+ios/components/io_thread",
   "+ios/net",
   "+ios/public/provider/chrome",

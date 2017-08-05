@@ -44,8 +44,8 @@ extern const char kWebPaymentsName[];
 extern const char kWebPaymentsDescription[];
 
 // Title and description for the flag to enable Captive Portal Login.
-extern const char kIosCaptivePortalName[];
-extern const char kIosCaptivePortalDescription[];
+extern const char kCaptivePortalName[];
+extern const char kCaptivePortalDescription[];
 
 // Title and description for the flag to enable feature_engagement::Tracker
 // demo mode.
