@@ -48,9 +48,10 @@ ListenerType* GetEventListenerInternal(
     ListenerLookupType lookup,
     const ListenerFactory& listener_factory) {
   DCHECK(isolate->InContext());
-  v8::Local<v8::Value> listener_value = listener_property.GetOrEmpty(object);
+  v8::Local<v8::Value> listener_value =
+      listener_property.GetOrUndefined(object);
   ListenerType* listener =
-      listener_value.IsEmpty()
+      listener_value->IsUndefined()
           ? nullptr
           : static_cast<ListenerType*>(
                 listener_value.As<v8::External>()->Value());
