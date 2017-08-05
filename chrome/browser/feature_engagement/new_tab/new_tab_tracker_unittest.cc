@@ -30,9 +30,9 @@ namespace {
 const char kGroupName[] = "Enabled";
 const char kNewTabTrialName[] = "NewTabTrial";
 
-class MockFeatureEngagementTracker : public Tracker {
+class MockTracker : public Tracker {
  public:
-  MockFeatureEngagementTracker() = default;
+  MockTracker() = default;
   MOCK_METHOD1(NotifyEvent, void(const std::string& event));
   MOCK_METHOD1(ShouldTriggerHelpUI, bool(const base::Feature& feature));
   MOCK_METHOD1(GetTriggerState,
@@ -71,10 +71,8 @@ class NewTabTrackerEventTest : public testing::Test {
   void SetUp() override {
     // Start the DesktopSessionDurationTracker to track active session time.
     metrics::DesktopSessionDurationTracker::Initialize();
-    mock_feature_tracker_ =
-        base::MakeUnique<testing::StrictMock<MockFeatureEngagementTracker>>();
-    new_tab_tracker_ =
-        base::MakeUnique<FakeNewTabTracker>(mock_feature_tracker_.get());
+    mock_tracker_ = base::MakeUnique<testing::StrictMock<MockTracker>>();
+    new_tab_tracker_ = base::MakeUnique<FakeNewTabTracker>(mock_tracker_.get());
   }
 
   void TearDown() override {
@@ -84,7 +82,7 @@ class NewTabTrackerEventTest : public testing::Test {
 
  protected:
   std::unique_ptr<FakeNewTabTracker> new_tab_tracker_;
-  std::unique_ptr<MockFeatureEngagementTracker> mock_feature_tracker_;
+  std::unique_ptr<MockTracker> mock_tracker_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -99,30 +97,30 @@ class NewTabTrackerEventTest : public testing::Test {
 // If OnNewTabOpened() is called, the feature_engagement::Tracker
 // receives the kNewTabOpenedEvent.
 TEST_F(NewTabTrackerEventTest, TestOnNewTabOpened) {
-  EXPECT_CALL(*mock_feature_tracker_, NotifyEvent(events::kNewTabOpened));
+  EXPECT_CALL(*mock_tracker_, NotifyEvent(events::kNewTabOpened));
   new_tab_tracker_->OnNewTabOpened();
 }
 
 // If OnOmniboxNavigation() is called, the feature_engagement::Tracker
 // receives the kOmniboxInteraction event.
 TEST_F(NewTabTrackerEventTest, TestOnOmniboxNavigation) {
-  EXPECT_CALL(*mock_feature_tracker_, NotifyEvent(events::kOmniboxInteraction));
+  EXPECT_CALL(*mock_tracker_, NotifyEvent(events::kOmniboxInteraction));
   new_tab_tracker_->OnOmniboxNavigation();
 }
 
 // If OnSessionTimeMet() is called, the feature_engagement::Tracker
 // receives the kSessionTime event.
 TEST_F(NewTabTrackerEventTest, TestOnSessionTimeMet) {
-  EXPECT_CALL(*mock_feature_tracker_, NotifyEvent(events::kSessionTime));
+  EXPECT_CALL(*mock_tracker_, NotifyEvent(events::kSessionTime));
   new_tab_tracker_->OnSessionTimeMet();
 }
 
 namespace {
 
-class NewTabTrackerFeatureEngagementTest : public testing::Test {
+class NewTabTrackerTest : public testing::Test {
  public:
-  NewTabTrackerFeatureEngagementTest() = default;
-  ~NewTabTrackerFeatureEngagementTest() override = default;
+  NewTabTrackerTest() = default;
+  ~NewTabTrackerTest() override = default;
 
   // testing::Test:
   void SetUp() override {
@@ -200,16 +198,16 @@ class NewTabTrackerFeatureEngagementTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   std::map<std::string, base::FieldTrial*> trials_;
 
-  DISALLOW_COPY_AND_ASSIGN(NewTabTrackerFeatureEngagementTest);
+  DISALLOW_COPY_AND_ASSIGN(NewTabTrackerTest);
 };
 
 }  // namespace
 
-// Tests to verify NewTabFeatureEngagementTracker functional expectations:
+// Tests to verify NewTabTracker functional expectations:
 
 // Test that a promo is not shown if the user uses a New Tab.
 // If OnNewTabOpened() is called, the ShouldShowPromo() should return false.
-TEST_F(NewTabTrackerFeatureEngagementTest, TestShouldNotShowPromo) {
+TEST_F(NewTabTrackerTest, TestShouldNotShowPromo) {
   EXPECT_FALSE(new_tab_tracker_->ShouldShowPromo());
 
   new_tab_tracker_->OnSessionTimeMet();
@@ -225,7 +223,7 @@ TEST_F(NewTabTrackerFeatureEngagementTest, TestShouldNotShowPromo) {
 // Test that a promo is shown if the session time is met and an omnibox
 // navigation occurs. If OnSessionTimeMet() and OnOmniboxNavigation()
 // are called, ShouldShowPromo() should return true.
-TEST_F(NewTabTrackerFeatureEngagementTest, TestShouldShowPromo) {
+TEST_F(NewTabTrackerTest, TestShouldShowPromo) {
   EXPECT_FALSE(new_tab_tracker_->ShouldShowPromo());
 
   new_tab_tracker_->OnSessionTimeMet();
@@ -234,21 +232,8 @@ TEST_F(NewTabTrackerFeatureEngagementTest, TestShouldShowPromo) {
   EXPECT_TRUE(new_tab_tracker_->ShouldShowPromo());
 }
 
-// Test that the prefs for session time is being correctly set.
-TEST_F(NewTabTrackerFeatureEngagementTest, TestPrefs) {
-  EXPECT_FALSE(
-      new_tab_tracker_->GetPrefs()->GetBoolean(prefs::kNewTabInProductHelp));
-
-  new_tab_tracker_->OnSessionTimeMet();
-  new_tab_tracker_->OnOmniboxNavigation();
-  new_tab_tracker_->OnOmniboxFocused();
-
-  EXPECT_TRUE(
-      new_tab_tracker_->GetPrefs()->GetBoolean(prefs::kNewTabInProductHelp));
-}
-
 // Test that the correct duration of session is being recorded.
-TEST_F(NewTabTrackerFeatureEngagementTest, TestOnSessionEnded) {
+TEST_F(NewTabTrackerTest, TestOnSessionEnded) {
   metrics::DesktopSessionDurationTracker::Observer* observer =
       dynamic_cast<FakeNewTabTracker*>(new_tab_tracker_.get());
 
