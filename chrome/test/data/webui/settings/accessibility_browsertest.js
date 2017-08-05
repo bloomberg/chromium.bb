@@ -13,6 +13,7 @@ var ROOT_PATH = '../../../../../';
 // Polymer BrowserTest fixture and aXe-core accessibility audit.
 GEN_INCLUDE([
   ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js',
+  ROOT_PATH + 'chrome/test/data/webui/settings/accessibility_audit_rules.js',
   ROOT_PATH + 'third_party/axe-core/axe.js',
 ]);
 
@@ -39,7 +40,7 @@ function SettingsAccessibilityTest() {}
  * of violations to console, and fail the test if there are audit failures.
  * @param {AccessibilityAuditConfig} options Dictionary disabling specific
  *    audit rules.
- * @return {Promise} A promise resolved if the accessibility audit completes
+ * @return {Promise} A promise resolved when the accessibility audit completes
  *    with no issues, or rejected if the audit finds any accessibility issues.
  */
 SettingsAccessibilityTest.runAudit = function(options) {
@@ -86,10 +87,23 @@ SettingsAccessibilityTest.prototype = {
   },
 };
 
-// TODO(quacht): Enable in separate CL.
-// Test disabled since it doesn't work on all platforms.
-// TEST_F('SettingsAccessibilityTest', 'All', function() {
-//   mocha.run();
-// });
+// TODO(quacht): Enable the audit rules failed in a separate CL after
+// resolving the violation or after adding the violation exception framework.
+// http://crbug.com/748608
+// http://crbug.com/748632
+var rulesToSkip = ['aria-valid-attr', 'color-contrast', 'region', 'skip-link'];
+
+// Define a unit test for every audit rule.
+AccessibilityAudit.ruleIds.forEach(function(ruleId) {
+  if (rulesToSkip.indexOf(ruleId) == -1) {
+    // Replace hyphens, which break the build.
+    var ruleName = ruleId.replace(new RegExp('-', 'g'), '_');
+    TEST_F(
+        'SettingsAccessibilityTest', 'MANAGE_PASSWORDS_' + ruleName,
+        function() {
+          mocha.grep('MANAGE_PASSWORDS_' + ruleId).run();
+        });
+  }
+})
 
 GEN('#endif  // defined(NDEBUG)');
