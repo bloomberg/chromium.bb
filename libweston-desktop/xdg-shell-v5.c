@@ -745,6 +745,8 @@ weston_desktop_xdg_shell_protocol_get_xdg_surface(struct wl_client *wl_client,
 		wl_event_loop_add_idle(loop,
 				       weston_desktop_xdg_surface_add_idle_callback,
 				       surface);
+
+	wl_list_init(&surface->configure_list);
 }
 
 static void
