@@ -7,18 +7,9 @@ suite('toolbar tests', function() {
   let toolbar;
 
   setup(function() {
-    /**
-     * @constructor
-     * @extends {downloads.ActionService}
-     */
-    function TestActionService() {
-      downloads.ActionService.call(this);
+    class TestActionService extends downloads.ActionService {
+      loadMore() { /* Prevent chrome.send(). */ }
     }
-
-    TestActionService.prototype = {
-      __proto__: downloads.ActionService.prototype,
-      loadMore: function() { /* Prevent chrome.send(). */ },
-    };
 
     toolbar = document.createElement('downloads-toolbar');
     downloads.ActionService.instance_ = new TestActionService;
