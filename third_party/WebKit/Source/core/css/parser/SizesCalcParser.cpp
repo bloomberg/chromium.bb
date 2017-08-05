@@ -163,12 +163,12 @@ bool SizesCalcParser::CalcToReversePolishNotation(CSSParserTokenRange range) {
   // While there are still operator tokens in the stack:
   while (!stack.IsEmpty()) {
     // If the operator token on the top of the stack is a parenthesis, then
-    // there are mismatched parentheses.
+    // there are unclosed parentheses.
     CSSParserTokenType type = stack.back().GetType();
-    if (type == kLeftParenthesisToken || type == kFunctionToken)
-      return false;
-    // Pop the operator onto the output queue.
-    AppendOperator(stack.back());
+    if (type != kLeftParenthesisToken && type != kFunctionToken) {
+      // Pop the operator onto the output queue.
+      AppendOperator(stack.back());
+    }
     stack.pop_back();
   }
   return true;
