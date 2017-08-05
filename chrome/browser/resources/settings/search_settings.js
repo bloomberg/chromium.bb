@@ -205,7 +205,7 @@ cr.define('settings', function() {
     searchBubble = document.createElement('div');
     searchBubble.classList.add(SEARCH_BUBBLE_CSS_CLASS);
     var innards = document.createElement('div');
-    innards.classList.add('search-bubble-innards');
+    innards.classList.add('search-bubble-innards', 'text-elide');
     innards.textContent = rawQuery;
     searchBubble.appendChild(innards);
     element.appendChild(searchBubble);
