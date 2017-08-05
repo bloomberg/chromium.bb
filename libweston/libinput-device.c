@@ -33,7 +33,6 @@
 #include <linux/input.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <mtdev.h>
 #include <assert.h>
 #include <libinput.h>
 
