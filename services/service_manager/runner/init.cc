@@ -57,7 +57,7 @@ void WaitForDebuggerIfNecessary() {
 #if defined(OS_WIN)
       base::string16 appw = base::UTF8ToUTF16(app);
       base::string16 message = base::UTF8ToUTF16(
-          base::StringPrintf("%s - %d", app.c_str(), GetCurrentProcessId()));
+          base::StringPrintf("%s - %ld", app.c_str(), GetCurrentProcessId()));
       MessageBox(NULL, message.c_str(), appw.c_str(), MB_OK | MB_SETFOREGROUND);
 #else
       LOG(ERROR) << app << " waiting for GDB. pid: " << getpid();
