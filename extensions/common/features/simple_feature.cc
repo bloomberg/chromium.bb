@@ -30,9 +30,17 @@ namespace extensions {
 
 namespace {
 
+struct WhitelistInfo {
+  WhitelistInfo()
+      : extension_id(
+            base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                switches::kWhitelistedExtensionID)) {}
+  std::string extension_id;
+};
 // A singleton copy of the --whitelisted-extension-id so that we don't need to
 // copy it from the CommandLine each time.
-std::string* g_whitelisted_extension_id = NULL;
+base::LazyInstance<WhitelistInfo>::Leaky g_whitelist_info =
+    LAZY_INSTANCE_INITIALIZER;
 
 Feature::Availability IsAvailableToManifestForBind(
     const std::string& extension_id,
@@ -180,26 +188,23 @@ bool IsWhitelistedForTest(const std::string& extension_id) {
   // Since it is only used it tests, ideally it should not be set via the
   // commandline. At the moment the commandline is used as a mechanism to pass
   // the id to the renderer process.
-  if (!g_whitelisted_extension_id) {
-    g_whitelisted_extension_id = new std::string(
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kWhitelistedExtensionID));
-  }
-  return !g_whitelisted_extension_id->empty() &&
-         *g_whitelisted_extension_id == extension_id;
+  const std::string& whitelisted_extension_id =
+      g_whitelist_info.Get().extension_id;
+  return !whitelisted_extension_id.empty() &&
+         whitelisted_extension_id == extension_id;
 }
 
 }  // namespace
 
-SimpleFeature::ScopedWhitelistForTest::ScopedWhitelistForTest(
-    const std::string& id)
-    : previous_id_(g_whitelisted_extension_id) {
-  g_whitelisted_extension_id = new std::string(id);
+SimpleFeature::ScopedThreadUnsafeWhitelistForTest::
+    ScopedThreadUnsafeWhitelistForTest(const std::string& id)
+    : previous_id_(g_whitelist_info.Get().extension_id) {
+  g_whitelist_info.Get().extension_id = id;
 }
 
-SimpleFeature::ScopedWhitelistForTest::~ScopedWhitelistForTest() {
-  delete g_whitelisted_extension_id;
-  g_whitelisted_extension_id = previous_id_;
+SimpleFeature::ScopedThreadUnsafeWhitelistForTest::
+    ~ScopedThreadUnsafeWhitelistForTest() {
+  g_whitelist_info.Get().extension_id = previous_id_;
 }
 
 SimpleFeature::SimpleFeature()

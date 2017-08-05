@@ -23,7 +23,7 @@ const char kWhitelistID[] = "lmadimbbgapmngbiclpjjngmdickadpl";
 typedef ChromeManifestTest LauncherPageManifestTest;
 
 TEST_F(LauncherPageManifestTest, ValidLauncherPage) {
-  extensions::SimpleFeature::ScopedWhitelistForTest whitelist(kWhitelistID);
+  SimpleFeature::ScopedThreadUnsafeWhitelistForTest whitelist(kWhitelistID);
   scoped_refptr<extensions::Extension> extension(
       LoadAndExpectSuccess("init_valid_launcher_page.json"));
   ASSERT_TRUE(extension.get());

@@ -262,7 +262,7 @@ TEST_F(ExtensionSyncTypeTest, DontSyncExtensionInDoNotSyncList) {
                             base::FilePath(), Extension::NO_FLAGS));
   EXPECT_TRUE(extension->is_extension());
   EXPECT_TRUE(sync_helper::IsSyncable(extension.get()));
-  SimpleFeature::ScopedWhitelistForTest whitelist(extension->id());
+  SimpleFeature::ScopedThreadUnsafeWhitelistForTest whitelist(extension->id());
   EXPECT_FALSE(sync_helper::IsSyncable(extension.get()));
 }
 
