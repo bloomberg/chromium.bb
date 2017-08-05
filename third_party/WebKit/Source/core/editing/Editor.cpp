@@ -187,26 +187,25 @@ Editor::RevealSelectionScope::~RevealSelectionScope() {
 // TODO(yosin): We should make |Editor::selectionForCommand()| to return
 // |SelectionInDOMTree| instead of |VisibleSelection|.
 VisibleSelection Editor::SelectionForCommand(Event* event) {
-  VisibleSelection selection =
+  const VisibleSelection selection =
       GetFrame().Selection().ComputeVisibleSelectionInDOMTree();
   if (!event)
     return selection;
   // If the target is a text control, and the current selection is outside of
   // its shadow tree, then use the saved selection for that text control.
+  if (!IsTextControlElement(*event->target()->ToNode()))
+    return selection;
   TextControlElement* text_control_of_selection_start =
       EnclosingTextControl(selection.Start());
   TextControlElement* text_control_of_target =
-      IsTextControlElement(*event->target()->ToNode())
-          ? ToTextControlElement(event->target()->ToNode())
-          : nullptr;
-  if (text_control_of_target &&
-      (selection.Start().IsNull() ||
-       text_control_of_target != text_control_of_selection_start)) {
-    const SelectionInDOMTree& select = text_control_of_target->Selection();
-    if (!select.IsNone())
-      return CreateVisibleSelection(select);
-  }
-  return selection;
+      ToTextControlElement(event->target()->ToNode());
+  if (selection.Start().IsNotNull() &&
+      text_control_of_target == text_control_of_selection_start)
+    return selection;
+  const SelectionInDOMTree& select = text_control_of_target->Selection();
+  if (select.IsNone())
+    return selection;
+  return CreateVisibleSelection(select);
 }
 
 // Function considers Mac editing behavior a fallback when Page or Settings is
