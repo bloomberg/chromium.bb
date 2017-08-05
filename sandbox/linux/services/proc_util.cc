@@ -51,15 +51,14 @@ int ProcUtil::CountOpenFds(int proc_fd) {
   CHECK(dir);
 
   int count = 0;
-  struct dirent e;
   struct dirent* de;
-  while (!readdir_r(dir.get(), &e, &de) && de) {
-    if (strcmp(e.d_name, ".") == 0 || strcmp(e.d_name, "..") == 0) {
+  while ((de = readdir(dir.get()))) {
+    if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0) {
       continue;
     }
 
     int fd_num;
-    CHECK(base::StringToInt(e.d_name, &fd_num));
+    CHECK(base::StringToInt(de->d_name, &fd_num));
     if (fd_num == proc_fd || fd_num == proc_self_fd) {
       continue;
     }
@@ -81,22 +80,21 @@ bool ProcUtil::HasOpenDirectory(int proc_fd) {
   ScopedDIR dir(fdopendir(proc_self_fd));
   CHECK(dir);
 
-  struct dirent e;
   struct dirent* de;
-  while (!readdir_r(dir.get(), &e, &de) && de) {
-    if (strcmp(e.d_name, ".") == 0 || strcmp(e.d_name, "..") == 0) {
+  while ((de = readdir(dir.get()))) {
+    if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0) {
       continue;
     }
 
     int fd_num;
-    CHECK(base::StringToInt(e.d_name, &fd_num));
+    CHECK(base::StringToInt(de->d_name, &fd_num));
     if (fd_num == proc_fd || fd_num == proc_self_fd) {
       continue;
     }
 
     struct stat s;
     // It's OK to use proc_self_fd here, fstatat won't modify it.
-    CHECK(fstatat(proc_self_fd, e.d_name, &s, 0) == 0);
+    CHECK(fstatat(proc_self_fd, de->d_name, &s, 0) == 0);
     if (S_ISDIR(s.st_mode)) {
       return true;
     }
