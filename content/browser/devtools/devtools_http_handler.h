@@ -113,6 +113,7 @@ class DevToolsHttpHandler {
   std::string frontend_url_;
   std::string product_name_;
   std::string user_agent_;
+  std::string browser_guid_;
   std::unique_ptr<ServerWrapper> server_wrapper_;
   std::unique_ptr<net::IPEndPoint> server_ip_address_;
   using ConnectionToClientMap =

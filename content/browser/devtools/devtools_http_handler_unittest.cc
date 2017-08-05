@@ -16,6 +16,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "content/public/browser/content_browser_client.h"
@@ -191,8 +192,10 @@ TEST_F(DevToolsHttpHandlerTest, TestDevToolsActivePort) {
   EXPECT_TRUE(base::PathExists(active_port_file));
   std::string file_contents;
   EXPECT_TRUE(base::ReadFileToString(active_port_file, &file_contents));
+  std::vector<std::string> tokens = base::SplitString(
+      file_contents, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   int port = 0;
-  EXPECT_TRUE(base::StringToInt(file_contents, &port));
+  EXPECT_TRUE(base::StringToInt(tokens[0], &port));
   EXPECT_EQ(static_cast<int>(kDummyPort), port);
 }
 

@@ -46,8 +46,6 @@ enum {
 
 namespace tethering = ::chrome::devtools::Tethering;
 
-static const char kDevToolsRemoteBrowserTarget[] = "/devtools/browser";
-
 class SocketTunnel {
  public:
   static void StartTunnel(const std::string& host,
@@ -259,9 +257,8 @@ PortForwardingController::Connection::Connection(
       forwarding_map_(forwarding_map) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   (*registry_)[device_->serial()] = this;
-  web_socket_.reset(
-      device_->CreateWebSocket(browser->socket(),
-                               kDevToolsRemoteBrowserTarget, this));
+  web_socket_.reset(device_->CreateWebSocket(
+      browser->socket(), browser->browser_target_id(), this));
 }
 
 PortForwardingController::Connection::~Connection() {

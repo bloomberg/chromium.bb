@@ -31,6 +31,7 @@ class DevToolsManagerDelegateAndroid :
   scoped_refptr<content::DevToolsAgentHost> CreateNewTarget(
       const GURL& url) override;
   std::string GetDiscoveryPageHTML() override;
+  bool IsBrowserTargetDiscoverable() override;
 
   // content::DevToolsAgentHostObserver overrides.
   void DevToolsAgentHostAttached(

@@ -55,4 +55,8 @@ std::string AwDevToolsManagerDelegate::GetDiscoveryPageHTML() {
   return html;
 }
 
+bool AwDevToolsManagerDelegate::IsBrowserTargetDiscoverable() {
+  return true;
+}
+
 }  // namespace android_webview

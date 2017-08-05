@@ -47,10 +47,9 @@ BrowserDevToolsAgentHost::~BrowserDevToolsAgentHost() {
 }
 
 void BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session) {
-  if (only_discovery_) {
-    session->AddHandler(base::WrapUnique(new protocol::TargetHandler()));
+  session->AddHandler(base::WrapUnique(new protocol::TargetHandler()));
+  if (only_discovery_)
     return;
-  }
 
   session->AddHandler(base::WrapUnique(new protocol::IOHandler(
       GetIOContext())));
