@@ -461,6 +461,10 @@ void AutocompleteController::UpdateMatchDestinationURL(
       search_terms_args, template_url_service_->search_terms_data()));
 }
 
+void AutocompleteController::InlineTailPrefixes() {
+  result_.InlineTailPrefixes();
+}
+
 void AutocompleteController::UpdateResult(
     bool regenerate_result,
     bool force_notify_default_match_changed) {

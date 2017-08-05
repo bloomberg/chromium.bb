@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
@@ -338,6 +339,27 @@ void AutocompleteResult::SortAndDedupMatches(
   matches->erase(std::unique(matches->begin(), matches->end(),
                              &AutocompleteMatch::DestinationsEqual),
                  matches->end());
+}
+
+void AutocompleteResult::InlineTailPrefixes() {
+  base::string16 common_prefix;
+
+  for (const auto& match : matches_) {
+    if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
+      int common_length;
+      base::StringToInt(
+          match.GetAdditionalInfo(kACMatchPropertyContentsStartIndex),
+          &common_length);
+      common_prefix = base::UTF8ToUTF16(match.GetAdditionalInfo(
+                                            kACMatchPropertySuggestionText))
+                          .substr(0, common_length);
+      break;
+    }
+  }
+  if (common_prefix.size()) {
+    for (auto& match : matches_)
+      match.InlineTailPrefix(common_prefix);
+  }
 }
 
 void AutocompleteResult::CopyFrom(const AutocompleteResult& rhs) {

@@ -137,6 +137,9 @@ class AutocompleteResult {
       metrics::OmniboxEventProto::PageClassification page_classification,
       ACMatches* matches);
 
+  // Prepend missing tail suggestion prefixes in results, if present.
+  void InlineTailPrefixes();
+
  private:
   friend class AutocompleteProviderTest;
 

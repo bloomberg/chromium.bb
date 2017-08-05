@@ -151,13 +151,6 @@ class OmniboxResultView : public views::View,
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
 
-  // Returns the offset at which the contents of the |match| should be displayed
-  // within the text bounds. The directionality of UI and match contents is used
-  // to determine the offset relative to the correct edge.
-  int GetDisplayOffset(const AutocompleteMatch& match,
-                       bool is_ui_rtl,
-                       bool is_match_contents_rtl) const;
-
   // Returns the font to use for the description section of answer suggestions.
   const gfx::FontList& GetAnswerFont() const;
 

@@ -20,7 +20,6 @@
 #include "base/feature_list.h"
 #include "base/i18n/bidi_line_iterator.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
@@ -427,65 +426,7 @@ int OmniboxResultView::DrawRenderText(
     int max_width) const {
   DCHECK(!render_text->text().empty());
 
-  const int remaining_width = mirroring_context_->remaining_width(x);
   int right_x = x + max_width;
-
-  // Tail suggestions should appear with the leading ellipses vertically
-  // stacked.
-  if (render_text_type == CONTENTS &&
-      match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
-    // When the directionality of suggestion doesn't match the UI, we try to
-    // vertically stack the ellipsis by restricting the end edge (right_x).
-    const bool is_ui_rtl = base::i18n::IsRTL();
-    const bool is_match_contents_rtl =
-        (render_text->GetDisplayTextDirection() == base::i18n::RIGHT_TO_LEFT);
-    const int offset =
-        GetDisplayOffset(match, is_ui_rtl, is_match_contents_rtl);
-
-    std::unique_ptr<gfx::RenderText> prefix_render_text(
-        CreateRenderText(base::UTF8ToUTF16(
-            match.GetAdditionalInfo(kACMatchPropertyContentsPrefix))));
-    const int prefix_width = prefix_render_text->GetContentWidth();
-    int prefix_x = x;
-
-    const int max_match_contents_width = model_->max_match_contents_width();
-
-    if (is_ui_rtl != is_match_contents_rtl) {
-      // RTL tail suggestions appear near the left edge in LTR UI, while LTR
-      // tail suggestions appear near the right edge in RTL UI. This is
-      // against the natural horizontal alignment of the text. We reduce the
-      // width of the box for suggestion display, so that the suggestions appear
-      // in correct confines.  This reduced width allows us to modify the text
-      // alignment (see below).
-      right_x = x + std::min(remaining_width - prefix_width,
-                             std::max(offset, max_match_contents_width));
-      prefix_x = right_x;
-      // We explicitly set the horizontal alignment so that when LTR suggestions
-      // show in RTL UI (or vice versa), their ellipses appear stacked in a
-      // single column.
-      render_text->SetHorizontalAlignment(
-          is_match_contents_rtl ? gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT);
-    } else {
-      // If the dropdown is wide enough, place the ellipsis at the position
-      // where the omitted text would have ended. Otherwise reduce the offset of
-      // the ellipsis such that the widest suggestion reaches the end of the
-      // dropdown.
-      const int start_offset = std::max(prefix_width,
-          std::min(remaining_width - max_match_contents_width, offset));
-      right_x = x + std::min(remaining_width, start_offset + max_width);
-      x += start_offset;
-      prefix_x = x - prefix_width;
-    }
-    prefix_render_text->SetDirectionalityMode(is_match_contents_rtl ?
-        gfx::DIRECTIONALITY_FORCE_RTL : gfx::DIRECTIONALITY_FORCE_LTR);
-    prefix_render_text->SetHorizontalAlignment(
-          is_match_contents_rtl ? gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT);
-    prefix_render_text->SetDisplayRect(
-        gfx::Rect(mirroring_context_->mirrored_left_coord(
-                      prefix_x, prefix_x + prefix_width),
-                  y, prefix_width, GetTextHeight()));
-    prefix_render_text->Draw(canvas);
-  }
 
   // Set the display rect to trigger elision.
   int height = (render_text_type == DESCRIPTION && match.answer)
@@ -563,33 +504,6 @@ int OmniboxResultView::GetMatchContentsWidth() const {
 void OmniboxResultView::SetAnswerImage(const gfx::ImageSkia& image) {
   answer_image_ = image;
   SchedulePaint();
-}
-
-// TODO(skanuj): This is probably identical across all OmniboxResultView rows in
-// the omnibox dropdown. Consider sharing the result.
-int OmniboxResultView::GetDisplayOffset(
-    const AutocompleteMatch& match,
-    bool is_ui_rtl,
-    bool is_match_contents_rtl) const {
-  if (match.type != AutocompleteMatchType::SEARCH_SUGGEST_TAIL)
-    return 0;
-
-  const base::string16& input_text = base::UTF8ToUTF16(
-      match.GetAdditionalInfo(kACMatchPropertySuggestionText));
-  int contents_start_index = 0;
-  base::StringToInt(match.GetAdditionalInfo(kACMatchPropertyContentsStartIndex),
-                    &contents_start_index);
-
-  std::unique_ptr<gfx::RenderText> input_render_text(
-      CreateRenderText(input_text));
-  const gfx::Range& glyph_bounds =
-      input_render_text->GetGlyphBounds(contents_start_index);
-  const int start_padding = is_match_contents_rtl ?
-      std::max(glyph_bounds.start(), glyph_bounds.end()) :
-      std::min(glyph_bounds.start(), glyph_bounds.end());
-
-  return is_ui_rtl ?
-      (input_render_text->GetContentWidth() - start_padding) : start_padding;
 }
 
 const char* OmniboxResultView::GetClassName() const {

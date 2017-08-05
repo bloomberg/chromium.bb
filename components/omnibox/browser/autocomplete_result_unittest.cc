@@ -673,3 +673,71 @@ TEST_F(AutocompleteResultTest, TopMatchIsStandaloneVerbatimMatch) {
   result.Reset();
   matches.clear();
 }
+
+namespace {
+
+bool EqualClassifications(const std::vector<ACMatchClassification>& lhs,
+                          const std::vector<ACMatchClassification>& rhs) {
+  if (lhs.size() != rhs.size())
+    return false;
+  for (size_t n = 0; n < lhs.size(); ++n)
+    if (lhs[n].style != rhs[n].style || lhs[n].offset != rhs[n].offset)
+      return false;
+  return true;
+}
+
+}  // namespace
+
+TEST_F(AutocompleteResultTest, InlineTailPrefixes) {
+  struct TestData {
+    AutocompleteMatchType::Type type;
+    std::string before_contents, after_contents;
+    std::vector<ACMatchClassification> before_contents_class;
+    std::vector<ACMatchClassification> after_contents_class;
+  } cases[] = {
+      // It should fix-up this match, since prefix matches.
+      {
+          AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+          "superman",
+          "superman",
+          {{0, ACMatchClassification::NONE}, {5, ACMatchClassification::MATCH}},
+          {{0, ACMatchClassification::DIM}, {5, ACMatchClassification::MATCH}},
+      },
+      // Make sure it finds this tail suggestion, and prepends appropriately.
+      {
+          AutocompleteMatchType::SEARCH_SUGGEST_TAIL,
+          "star",
+          "superstar",
+          {{0, ACMatchClassification::MATCH}},
+          {{0, ACMatchClassification::DIM}, {5, ACMatchClassification::MATCH}},
+      },
+      // It should not touch this one, since prefix doesn't match.
+      {
+          AutocompleteMatchType::SEARCH_SUGGEST,
+          "suppertime",
+          "suppertime",
+          {{0, ACMatchClassification::NONE}, {3, ACMatchClassification::MATCH}},
+          {{0, ACMatchClassification::NONE}, {3, ACMatchClassification::MATCH}},
+      }};
+  ACMatches matches;
+  for (const auto& test_case : cases) {
+    AutocompleteMatch match;
+    match.type = test_case.type;
+    match.contents = base::UTF8ToUTF16(test_case.before_contents);
+    for (const auto& classification : test_case.before_contents_class)
+      match.contents_class.push_back(classification);
+    matches.push_back(match);
+  }
+  // Tail suggestion needs one-off initialization.
+  matches[1].RecordAdditionalInfo(kACMatchPropertyContentsStartIndex, "5");
+  matches[1].RecordAdditionalInfo(kACMatchPropertySuggestionText, "superstar");
+  AutocompleteResult result;
+  result.AppendMatches(AutocompleteInput(), matches);
+  result.InlineTailPrefixes();
+  for (size_t i = 0; i < arraysize(cases); ++i) {
+    EXPECT_EQ(result.match_at(i)->contents,
+              base::UTF8ToUTF16(cases[i].after_contents));
+    EXPECT_TRUE(EqualClassifications(result.match_at(i)->contents_class,
+                                     cases[i].after_contents_class));
+  }
+}
