@@ -88,7 +88,7 @@ V8EventListener* V8EventListenerHelper::GetEventListener(
   return GetEventListenerInternal<V8EventListener>(
       isolate, object, listener_property, lookup,
       [object, is_attribute, script_state]() {
-        return !ToLocalDOMWindow(script_state->GetContext())
+        return script_state->World().IsWorkerWorld()
                    ? V8WorkerGlobalScopeEventListener::Create(
                          object, is_attribute, script_state)
                    : V8EventListener::Create(object, is_attribute,
