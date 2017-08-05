@@ -265,6 +265,7 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
       VisualRectFlags = kDefaultVisualRectFlags) const override;
 
   bool IsRepeatingHeaderGroup() const { return is_repeating_header_group_; };
+  bool IsRepeatingFooterGroup() const { return is_repeating_footer_group_; };
 
   void UpdateLayout() override;
 
@@ -279,6 +280,10 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   // Check whether row or row group has visibility:collapse.
   bool RowHasVisibilityCollapse(unsigned row) const;
+
+  void DetermineIfFooterGroupShouldRepeat() {
+    is_repeating_footer_group_ = FooterGroupShouldRepeat();
+  }
 
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
@@ -369,7 +374,15 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
 
-  bool HeaderGroupShouldRepeat() const;
+  bool HeaderGroupShouldRepeat() const {
+    return Table()->Header() == this && GroupShouldRepeat();
+  }
+
+  bool FooterGroupShouldRepeat() const {
+    return Table()->Footer() == this && GroupShouldRepeat();
+  }
+
+  bool GroupShouldRepeat() const;
 
   struct TableGridRow {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -440,6 +453,9 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   // Header group should be painted on every page.
   bool is_repeating_header_group_;
+
+  // Footer group should be painted on every page.
+  bool is_repeating_footer_group_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableSection, IsTableSection());

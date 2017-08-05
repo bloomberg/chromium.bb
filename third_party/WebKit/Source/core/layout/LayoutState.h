@@ -90,6 +90,13 @@ class LayoutState {
     height_offset_for_table_headers_ = offset;
   }
 
+  LayoutUnit HeightOffsetForTableFooters() const {
+    return height_offset_for_table_footers_;
+  }
+  void SetHeightOffsetForTableFooters(LayoutUnit offset) {
+    height_offset_for_table_footers_ = offset;
+  }
+
   const LayoutSize& PaginationOffset() const { return pagination_offset_; }
   bool ContainingBlockLogicalWidthChanged() const {
     return containing_block_logical_width_changed_;
@@ -123,6 +130,10 @@ class LayoutState {
   // The height we need to make available for repeating table headers in
   // paginated layout.
   LayoutUnit height_offset_for_table_headers_;
+
+  // The height we need to make available for repeating table footers in
+  // paginated layout.
+  LayoutUnit height_offset_for_table_footers_;
 
   LayoutObject& layout_object_;
 };

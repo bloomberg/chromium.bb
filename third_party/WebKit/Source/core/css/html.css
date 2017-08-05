@@ -1118,6 +1118,7 @@ slot {
 /* Allows thead sections to print at the top of each page. */
 @media print {
     thead { break-inside:avoid; }
+    tfoot { break-inside:avoid; }
 }
 
 /* noscript is handled internally, as it depends on settings. */

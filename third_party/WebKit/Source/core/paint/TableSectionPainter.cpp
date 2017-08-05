@@ -43,9 +43,9 @@ void TableSectionPainter::PaintRepeatingHeaderGroup(
   header_group_offset += strut_on_first_row;
   LayoutUnit offset_to_next_page =
       page_height - IntMod(header_group_offset, page_height);
-  // Move paginationOffset to the top of the next page.
+  // Move pagination_offset to the top of the next page.
   pagination_offset.Move(LayoutUnit(), offset_to_next_page);
-  // Now move paginationOffset to the top of the page the cull rect starts on.
+  // Now move pagination_offset to the top of the page the cull rect starts on.
   if (paint_info.GetCullRect().rect_.Y() > pagination_offset.Y()) {
     pagination_offset.Move(LayoutUnit(),
                            page_height * ((paint_info.GetCullRect().rect_.Y() -
@@ -79,14 +79,80 @@ void TableSectionPainter::PaintRepeatingHeaderGroup(
   }
 }
 
+void TableSectionPainter::PaintRepeatingFooterGroup(
+    const PaintInfo& paint_info,
+    const LayoutPoint& paint_offset,
+    ItemToPaint item_to_paint) {
+  if (!layout_table_section_.IsRepeatingFooterGroup())
+    return;
+
+  // Work out the top position of the table so we can decide
+  // which page to paint the first footer on.
+  LayoutTable* table = layout_table_section_.Table();
+  LayoutRect sections_rect(LayoutPoint(), table->Size());
+  table->SubtractCaptionRect(sections_rect);
+  LayoutUnit page_height = table->PageLogicalHeightForOffset(LayoutUnit());
+  LayoutUnit height_of_previous_footers = table->RowOffsetFromRepeatingFooter();
+  LayoutUnit offset_for_footer = page_height - height_of_previous_footers;
+  // TODO: Accounting for the border-spacing here is wrong.
+  LayoutUnit header_group_offset =
+      table->BlockOffsetToFirstRepeatableHeader() + table->VBorderSpacing();
+  // The first row in the table may have a pagination strut before it so we need
+  // to account for that when establishing its position.
+  LayoutUnit strut_on_first_row;
+  LayoutTableSection* top_section = table->TopSection();
+  if (top_section) {
+    if (LayoutTableRow* row = top_section->FirstRow())
+      strut_on_first_row = row->PaginationStrut();
+  }
+  header_group_offset += strut_on_first_row;
+  LayoutUnit total_height_of_rows =
+      sections_rect.Height() + IntMod(header_group_offset, page_height);
+  total_height_of_rows -= (layout_table_section_.LogicalHeight() -
+                           layout_table_section_.FirstRow()->PaginationStrut());
+
+  // Move the offset to the top of the page the table starts on.
+  LayoutPoint pagination_offset = paint_offset;
+  pagination_offset.Move(LayoutUnit(), -total_height_of_rows);
+
+  // Paint up to the last page that needs painting.
+  LayoutUnit bottom_bound =
+      std::min(LayoutUnit(paint_info.GetCullRect().rect_.MaxY()),
+               pagination_offset.Y() + total_height_of_rows - page_height);
+
+  // If the first row in the table would overlap with the footer on the first
+  // page then don't repeat the footer there.
+  if (top_section && top_section->FirstRow() &&
+      IntMod(header_group_offset, page_height) +
+              top_section->FirstRow()->LogicalHeight() >
+          offset_for_footer) {
+    pagination_offset.Move(LayoutUnit(), page_height);
+  }
+
+  // Paint a footer on each page from first to next-to-last.
+  while (pagination_offset.Y() < bottom_bound) {
+    LayoutPoint nested_offset = pagination_offset;
+    nested_offset.Move(LayoutUnit(), offset_for_footer);
+    if (item_to_paint == kPaintCollapsedBorders) {
+      PaintCollapsedSectionBorders(paint_info, nested_offset);
+    } else {
+      PaintSection(paint_info, nested_offset);
+    }
+    pagination_offset.Move(0, page_height.ToInt());
+  }
+}
+
 void TableSectionPainter::Paint(const PaintInfo& paint_info,
                                 const LayoutPoint& paint_offset) {
   ObjectPainter(layout_table_section_)
       .CheckPaintOffset(paint_info, paint_offset);
   PaintSection(paint_info, paint_offset);
   LayoutTable* table = layout_table_section_.Table();
-  if (table->Header() == layout_table_section_)
+  if (table->Header() == layout_table_section_) {
     PaintRepeatingHeaderGroup(paint_info, paint_offset, kPaintSection);
+  } else if (table->Footer() == layout_table_section_) {
+    PaintRepeatingFooterGroup(paint_info, paint_offset, kPaintSection);
+  }
 }
 
 void TableSectionPainter::PaintSection(const PaintInfo& paint_info,
@@ -123,8 +189,11 @@ void TableSectionPainter::PaintCollapsedBorders(
     const LayoutPoint& paint_offset) {
   PaintCollapsedSectionBorders(paint_info, paint_offset);
   LayoutTable* table = layout_table_section_.Table();
-  if (table->Header() == layout_table_section_)
+  if (table->Header() == layout_table_section_) {
     PaintRepeatingHeaderGroup(paint_info, paint_offset, kPaintCollapsedBorders);
+  } else if (table->Footer() == layout_table_section_) {
+    PaintRepeatingFooterGroup(paint_info, paint_offset, kPaintCollapsedBorders);
+  }
 }
 
 void TableSectionPainter::PaintCollapsedSectionBorders(

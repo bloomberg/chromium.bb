@@ -44,6 +44,9 @@ class TableSectionPainter {
       const PaintInfo&,
       const LayoutPoint& paint_offset,
       ItemToPaint);
+  void PaintRepeatingFooterGroup(const PaintInfo&,
+                                 const LayoutPoint& paint_offset,
+                                 ItemToPaint);
   void PaintSection(const PaintInfo&, const LayoutPoint&);
   void PaintCollapsedSectionBorders(const PaintInfo&, const LayoutPoint&);
 

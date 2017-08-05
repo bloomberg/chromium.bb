@@ -5835,10 +5835,13 @@ LayoutUnit LayoutBox::PageRemainingLogicalHeightForOffset(
   LayoutView* layout_view = View();
   offset += OffsetFromLogicalTopOfFirstPage();
 
+  LayoutUnit footer_height =
+      View()->GetLayoutState()->HeightOffsetForTableFooters();
   LayoutFlowThread* flow_thread = FlowThreadContainingBlock();
+  LayoutUnit remaining_height;
   if (!flow_thread) {
     LayoutUnit page_logical_height = layout_view->PageLogicalHeight();
-    LayoutUnit remaining_height =
+    remaining_height =
         page_logical_height - IntMod(offset, page_logical_height);
     if (page_boundary_rule == kAssociateWithFormerPage) {
       // An offset exactly at a page boundary will act as being part of the
@@ -5846,11 +5849,11 @@ LayoutUnit LayoutBox::PageRemainingLogicalHeightForOffset(
       // part of the latter (i.e. one whole page length of remaining space).
       remaining_height = IntMod(remaining_height, page_logical_height);
     }
-    return remaining_height;
+  } else {
+    remaining_height = flow_thread->PageRemainingLogicalHeightForOffset(
+        offset, page_boundary_rule);
   }
-
-  return flow_thread->PageRemainingLogicalHeightForOffset(offset,
-                                                          page_boundary_rule);
+  return remaining_height - footer_height;
 }
 
 bool LayoutBox::CrossesPageBoundary(LayoutUnit offset,
@@ -5867,11 +5870,12 @@ LayoutUnit LayoutBox::CalculatePaginationStrutToFitContent(
   LayoutUnit strut_to_next_page =
       PageRemainingLogicalHeightForOffset(offset, kAssociateWithLatterPage);
 
+  LayoutState* layout_state = View()->GetLayoutState();
+  strut_to_next_page += layout_state->HeightOffsetForTableFooters();
   // If we're inside a cell in a row that straddles a page then avoid the
   // repeating header group if necessary. If we're a table section we're
   // already accounting for it.
   if (!IsTableSection()) {
-    LayoutState* layout_state = View()->GetLayoutState();
     strut_to_next_page += layout_state->HeightOffsetForTableHeaders();
   }
 

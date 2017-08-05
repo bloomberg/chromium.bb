@@ -234,6 +234,13 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
     return row_offset_from_repeating_header_;
   }
 
+  void SetRowOffsetFromRepeatingFooter(LayoutUnit offset) {
+    row_offset_from_repeating_footer_ = offset;
+  }
+  LayoutUnit RowOffsetFromRepeatingFooter() const {
+    return row_offset_from_repeating_footer_;
+  }
+
   // These functions return nullptr if the table has no sections.
   LayoutTableSection* TopSection() const;
   LayoutTableSection* BottomSection() const;
@@ -600,6 +607,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
 
   LayoutUnit block_offset_to_first_repeatable_header_;
   LayoutUnit row_offset_from_repeating_header_;
+  LayoutUnit row_offset_from_repeating_footer_;
   LayoutUnit old_available_logical_height_;
 };
 

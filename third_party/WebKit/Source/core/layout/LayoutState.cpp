@@ -54,6 +54,7 @@ LayoutState::LayoutState(LayoutBox& layout_object,
     flow_thread_ = next_->FlowThread();
   pagination_state_changed_ = next_->pagination_state_changed_;
   height_offset_for_table_headers_ = next_->HeightOffsetForTableHeaders();
+  height_offset_for_table_footers_ = next_->HeightOffsetForTableFooters();
   layout_object.View()->PushLayoutState(*this);
 
   if (layout_object.IsLayoutFlowThread()) {
