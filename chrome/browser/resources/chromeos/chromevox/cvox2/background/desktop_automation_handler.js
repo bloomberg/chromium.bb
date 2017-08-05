@@ -265,9 +265,6 @@ DesktopAutomationHandler.prototype = {
     if (!this.shouldOutput_(evt))
       return;
 
-    if (evt.target.state.richlyEditable)
-      return;
-
     var curRange = ChromeVoxState.instance.currentRange;
 
     // Always refresh the braille contents.
