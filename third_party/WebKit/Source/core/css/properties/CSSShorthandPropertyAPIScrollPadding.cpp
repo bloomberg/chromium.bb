@@ -9,7 +9,7 @@
 
 namespace blink {
 
-bool CSSShorthandPropertyAPIScrollPadding::parseShorthand(
+bool CSSShorthandPropertyAPIScrollPadding::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,

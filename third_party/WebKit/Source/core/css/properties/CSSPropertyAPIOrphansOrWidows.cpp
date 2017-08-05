@@ -4,12 +4,16 @@
 #include "core/css/properties/CSSPropertyAPIOrphansOrWidows.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-class CSSParserLocalContext;
+
 namespace blink {
-const CSSValue* CSSPropertyAPIOrphansOrWidows::parseSingleValue(
+
+class CSSParserLocalContext;
+
+const CSSValue* CSSPropertyAPIOrphansOrWidows::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {
   return CSSPropertyParserHelpers::ConsumePositiveInteger(range);
 }
+
 }  // namespace blink

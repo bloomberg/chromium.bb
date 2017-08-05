@@ -9,7 +9,7 @@
 
 namespace blink {
 
-const CSSValue* CSSPropertyAPIScrollSnapAlign::parseSingleValue(
+const CSSValue* CSSPropertyAPIScrollSnapAlign::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {

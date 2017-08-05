@@ -8,7 +8,7 @@
 
 namespace blink {
 
-const CSSValue* CSSPropertyAPIWebkitBorderImage::parseSingleValue(
+const CSSValue* CSSPropertyAPIWebkitBorderImage::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {

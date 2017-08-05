@@ -24,7 +24,7 @@ CSSValue* ConsumeClipComponent(CSSParserTokenRange& range,
 
 }  // namespace
 
-const CSSValue* CSSPropertyAPIClip::parseSingleValue(
+const CSSValue* CSSPropertyAPIClip::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {

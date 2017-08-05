@@ -10,7 +10,7 @@
 class CSSParserLocalContext;
 namespace blink {
 
-const CSSValue* CSSPropertyAPIWebkitColorNoQuirks::parseSingleValue(
+const CSSValue* CSSPropertyAPIWebkitColorNoQuirks::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {

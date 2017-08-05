@@ -27,13 +27,13 @@
   },
   data: [
     {
-      name: "parseSingleValue",
+      name: "ParseSingleValue",
       return_type: "const CSSValue*",
       parameters: "(CSSParserTokenRange&, const CSSParserContext&, const CSSParserLocalContext&)",
       description: "Parses a single CSS property and returns the corresponding CSSValue. If the input is invalid it returns nullptr.",
     },
     {
-      name: "parseShorthand",
+      name: "ParseShorthand",
       return_type: "bool",
       parameters: "(bool, CSSParserTokenRange&, const CSSParserContext&, bool, HeapVector<CSSProperty, 256>&)",
       description: "Returns true if the property can be parsed as a shorthand.",

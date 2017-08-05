@@ -41,7 +41,7 @@ CSSValue* ConsumeTransitionValue(CSSPropertyID property,
 
 }  // namespace
 
-bool CSSShorthandPropertyAPITransition::parseShorthand(
+bool CSSShorthandPropertyAPITransition::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,

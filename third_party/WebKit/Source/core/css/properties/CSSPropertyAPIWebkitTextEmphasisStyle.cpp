@@ -11,7 +11,7 @@
 class CSSParserLocalContext;
 namespace blink {
 
-const CSSValue* CSSPropertyAPIWebkitTextEmphasisStyle::parseSingleValue(
+const CSSValue* CSSPropertyAPIWebkitTextEmphasisStyle::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {

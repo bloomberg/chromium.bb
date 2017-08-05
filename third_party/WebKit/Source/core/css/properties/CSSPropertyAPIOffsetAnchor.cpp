@@ -14,7 +14,7 @@ namespace blink {
 
 using namespace CSSPropertyParserHelpers;
 
-const CSSValue* CSSPropertyAPIOffsetAnchor::parseSingleValue(
+const CSSValue* CSSPropertyAPIOffsetAnchor::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {

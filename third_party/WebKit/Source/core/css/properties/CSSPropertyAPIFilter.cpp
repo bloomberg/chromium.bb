@@ -78,7 +78,7 @@ static CSSFunctionValue* ConsumeFilterFunction(
 
 }  // namespace
 
-const CSSValue* CSSPropertyAPIFilter::parseSingleValue(
+const CSSValue* CSSPropertyAPIFilter::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {

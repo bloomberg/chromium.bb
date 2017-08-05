@@ -8,7 +8,7 @@
 
 namespace blink {
 
-const CSSValue* CSSPropertyAPIBorderImageRepeat::parseSingleValue(
+const CSSValue* CSSPropertyAPIBorderImageRepeat::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) {

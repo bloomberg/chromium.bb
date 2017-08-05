@@ -70,7 +70,7 @@ CSSValue* ConsumeCounterContent(CSSParserTokenRange args, bool counters) {
 
 }  // namespace
 
-const CSSValue* CSSPropertyAPIContent::parseSingleValue(
+const CSSValue* CSSPropertyAPIContent::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {

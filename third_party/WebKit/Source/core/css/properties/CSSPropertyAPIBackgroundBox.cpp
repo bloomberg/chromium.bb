@@ -9,7 +9,7 @@
 
 namespace blink {
 
-const CSSValue* CSSPropertyAPIBackgroundBox::parseSingleValue(
+const CSSValue* CSSPropertyAPIBackgroundBox::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) {

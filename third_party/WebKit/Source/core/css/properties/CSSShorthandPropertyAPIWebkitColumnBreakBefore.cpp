@@ -9,7 +9,7 @@
 
 namespace blink {
 
-bool CSSShorthandPropertyAPIWebkitColumnBreakBefore::parseShorthand(
+bool CSSShorthandPropertyAPIWebkitColumnBreakBefore::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext&,

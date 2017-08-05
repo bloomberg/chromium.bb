@@ -11,7 +11,7 @@
 class CSSParserLocalContext;
 namespace blink {
 
-const CSSValue* CSSPropertyAPIOutlineColor::parseSingleValue(
+const CSSValue* CSSPropertyAPIOutlineColor::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {

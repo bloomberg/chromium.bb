@@ -35,7 +35,7 @@ static bool ConsumePan(CSSParserTokenRange& range,
 
 }  // namespace
 
-const CSSValue* CSSPropertyAPITouchAction::parseSingleValue(
+const CSSValue* CSSPropertyAPITouchAction::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {
