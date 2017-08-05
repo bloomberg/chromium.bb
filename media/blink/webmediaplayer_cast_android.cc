@@ -255,12 +255,11 @@ void WebMediaPlayerCast::OnConnectedToRemoteDevice(
   client_->ConnectedToRemoteDevice();
 }
 
-double WebMediaPlayerCast::currentTime() const {
+base::TimeDelta WebMediaPlayerCast::currentTime() const {
   base::TimeDelta ret = remote_time_;
-  if (!paused_ && !initializing_) {
+  if (!paused_ && !initializing_)
     ret += base::TimeTicks::Now() - remote_time_at_;
-  }
-  return ret.InSecondsF();
+  return ret;
 }
 
 void WebMediaPlayerCast::play() {
@@ -283,15 +282,16 @@ void WebMediaPlayerCast::seek(base::TimeDelta t) {
 
 void WebMediaPlayerCast::OnDisconnectedFromRemoteDevice() {
   DVLOG(1) << __func__;
-  if (!paused_) {
+  if (!paused_)
     paused_ = true;
-  }
+
   is_remote_ = false;
-  double t = currentTime();
-  if (t + media::kTimeUpdateInterval * 2 / 1000 > webmediaplayer_->Duration()) {
-    t = webmediaplayer_->Duration();
-  }
-  webmediaplayer_->OnDisconnectedFromRemoteDevice(t);
+  auto t = currentTime();
+  auto d = base::TimeDelta::FromSecondsD(webmediaplayer_->Duration());
+  if (t + base::TimeDelta::FromMilliseconds(media::kTimeUpdateInterval * 2) > d)
+    t = d;
+
+  webmediaplayer_->OnDisconnectedFromRemoteDevice(t.InSecondsF());
 }
 
 void WebMediaPlayerCast::OnCancelledRemotePlaybackRequest() {

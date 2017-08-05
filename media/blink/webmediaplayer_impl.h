@@ -498,6 +498,12 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Takes ownership of |tick_clock|
   void SetTickClockForTest(base::TickClock* tick_clock);
 
+  // Returns the current time without clamping to Duration() as required by
+  // HTMLMediaElement for handling ended. This method will never return a
+  // negative or kInfiniteDuration value. See http://crbug.com/409280,
+  // http://crbug.com/645998, and http://crbug.com/751823 for reasons why.
+  base::TimeDelta GetCurrentTimeInternal() const;
+
   blink::WebLocalFrame* frame_;
 
   // The playback state last reported to |delegate_|, to avoid setting duplicate
