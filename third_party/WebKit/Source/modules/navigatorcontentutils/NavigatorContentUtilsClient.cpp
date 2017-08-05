@@ -5,9 +5,7 @@
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
 
 #include "core/frame/WebLocalFrameBase.h"
-#include "platform/wtf/Assertions.h"
 #include "public/web/WebFrameClient.h"
-#include "public/web/WebNavigatorContentUtilsClient.h"
 
 namespace blink {
 
@@ -42,12 +40,5 @@ void NavigatorContentUtilsClient::UnregisterProtocolHandler(
     const KURL& url) {
   web_frame_->Client()->UnregisterProtocolHandler(scheme, url);
 }
-
-STATIC_ASSERT_ENUM(kWebCustomHandlersNew,
-                   NavigatorContentUtilsClient::kCustomHandlersNew);
-STATIC_ASSERT_ENUM(kWebCustomHandlersRegistered,
-                   NavigatorContentUtilsClient::kCustomHandlersRegistered);
-STATIC_ASSERT_ENUM(kWebCustomHandlersDeclined,
-                   NavigatorContentUtilsClient::kCustomHandlersDeclined);
 
 }  // namespace blink

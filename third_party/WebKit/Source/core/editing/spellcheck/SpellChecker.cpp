@@ -58,10 +58,8 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextCheckerClient.h"
-#include "platform/wtf/Assertions.h"
 #include "public/platform/WebSpellCheckPanelHostClient.h"
 #include "public/platform/WebString.h"
-#include "public/web/WebTextDecorationType.h"
 
 namespace blink {
 
@@ -1299,8 +1297,5 @@ bool SpellChecker::IsSpellCheckingEnabledAt(const Position& position) {
       Traversal<HTMLElement>::FirstAncestorOrSelf(*position.AnchorNode());
   return element && element->IsSpellCheckingEnabled();
 }
-
-STATIC_ASSERT_ENUM(kWebTextDecorationTypeSpelling, kTextDecorationTypeSpelling);
-STATIC_ASSERT_ENUM(kWebTextDecorationTypeGrammar, kTextDecorationTypeGrammar);
 
 }  // namespace blink

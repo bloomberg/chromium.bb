@@ -29,9 +29,7 @@
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/wtf/Assertions.h"
 #include "platform/wtf/text/StringBuilder.h"
-#include "public/web/WebSandboxFlags.h"
 
 namespace blink {
 
@@ -95,22 +93,5 @@ SandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
 
   return flags;
 }
-
-STATIC_ASSERT_ENUM(WebSandboxFlags::kNone, kSandboxNone);
-STATIC_ASSERT_ENUM(WebSandboxFlags::kNavigation, kSandboxNavigation);
-STATIC_ASSERT_ENUM(WebSandboxFlags::kPlugins, kSandboxPlugins);
-STATIC_ASSERT_ENUM(WebSandboxFlags::kOrigin, kSandboxOrigin);
-STATIC_ASSERT_ENUM(WebSandboxFlags::kForms, kSandboxForms);
-STATIC_ASSERT_ENUM(WebSandboxFlags::kScripts, kSandboxScripts);
-STATIC_ASSERT_ENUM(WebSandboxFlags::kTopNavigation, kSandboxTopNavigation);
-STATIC_ASSERT_ENUM(WebSandboxFlags::kPopups, kSandboxPopups);
-STATIC_ASSERT_ENUM(WebSandboxFlags::kAutomaticFeatures,
-                   kSandboxAutomaticFeatures);
-STATIC_ASSERT_ENUM(WebSandboxFlags::kPointerLock, kSandboxPointerLock);
-STATIC_ASSERT_ENUM(WebSandboxFlags::kDocumentDomain, kSandboxDocumentDomain);
-STATIC_ASSERT_ENUM(WebSandboxFlags::kOrientationLock, kSandboxOrientationLock);
-STATIC_ASSERT_ENUM(WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts,
-                   kSandboxPropagatesToAuxiliaryBrowsingContexts);
-STATIC_ASSERT_ENUM(WebSandboxFlags::kModals, kSandboxModals);
 
 }  // namespace blink

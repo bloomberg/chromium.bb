@@ -31,8 +31,9 @@
 #include "core/exported/WebSettingsImpl.h"
 
 #include "core/frame/Settings.h"
-#include "core/inspector/DevToolsEmulator.h"
 #include "platform/graphics/DeferredImageDecoder.h"
+
+#include "core/inspector/DevToolsEmulator.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 
