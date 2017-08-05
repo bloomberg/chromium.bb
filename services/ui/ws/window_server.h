@@ -14,6 +14,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "components/viz/host/hit_test/hit_test_query.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -66,6 +67,12 @@ class WindowServer : public ServerWindowDelegate,
   DisplayManager* display_manager() { return display_manager_.get(); }
   const DisplayManager* display_manager() const {
     return display_manager_.get();
+  }
+
+  using DisplayHitTestQueryMap =
+      std::map<viz::FrameSinkId, std::unique_ptr<viz::HitTestQuery>>;
+  const DisplayHitTestQueryMap& display_hit_test_query() const {
+    return display_hit_test_query_;
   }
 
   GpuHost* gpu_host() { return gpu_host_.get(); }
@@ -367,6 +374,15 @@ class WindowServer : public ServerWindowDelegate,
   // viz::mojom::FrameSinkManagerClient:
   void OnSurfaceCreated(const viz::SurfaceInfo& surface_info) override;
   void OnClientConnectionClosed(const viz::FrameSinkId& frame_sink_id) override;
+  void OnAggregatedHitTestRegionListUpdated(
+      const viz::FrameSinkId& frame_sink_id,
+      mojo::ScopedSharedBufferHandle active_handle,
+      uint32_t active_handle_size,
+      mojo::ScopedSharedBufferHandle idle_handle,
+      uint32_t idle_handle_size) override;
+  void SwitchActiveAggregatedHitTestRegionList(
+      const viz::FrameSinkId& frame_sink_id,
+      uint8_t active_handle_index) override;
 
   // UserIdTrackerObserver:
   void OnActiveUserIdChanged(const UserId& previously_active_id,
@@ -382,6 +398,8 @@ class WindowServer : public ServerWindowDelegate,
   ClientSpecificId next_client_id_;
 
   std::unique_ptr<DisplayManager> display_manager_;
+
+  DisplayHitTestQueryMap display_hit_test_query_;
 
   std::unique_ptr<CurrentDragLoopState> current_drag_loop_;
   std::unique_ptr<CurrentMoveLoopState> current_move_loop_;

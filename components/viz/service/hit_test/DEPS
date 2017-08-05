@@ -5,6 +5,6 @@ include_rules = [
 
 specific_include_rules = {
   "hit_test_aggregator_unittest.cc": [
-    "+components/viz/host/hit_test/hit_test_query.h",
+    "+components/viz/host/host_frame_sink_manager.h",
   ]
 }

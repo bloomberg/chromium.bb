@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "components/viz/common/hit_test/aggregated_hit_test_region.h"
+#include "mojo/public/cpp/system/buffer.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace viz {
@@ -30,16 +31,22 @@ class HitTestQuery {
   HitTestQuery();
   ~HitTestQuery();
 
-  // TODO(riajiang): Read from shmem directly once it's set up and delete this
-  // function. For now, use fake data. Also need to validate the data received.
+  // TODO(riajiang): Need to validate the data received.
   // http://crbug.com/746470
-  void set_aggregated_hit_test_region_list(
-      AggregatedHitTestRegion* aggregated_hit_test_region_list,
-      uint32_t aggregated_hit_test_region_list_size) {
-    aggregated_hit_test_region_list_ = aggregated_hit_test_region_list;
-    aggregated_hit_test_region_list_size_ =
-        aggregated_hit_test_region_list_size;
-  }
+  // HitTestAggregator should only send new active_handle and idle_handle when
+  // they are initialized or replaced with OnAggregatedHitTestRegionListUpdated.
+  // Both handles must be valid. HitTestQuery would store and update these two
+  // handles received.
+  // HitTestAggregator would tell HitTestQuery to update its active hit test
+  // list based on |active_handle_index| with
+  // SwitchActiveAggregatedHitTestRegionList if HitTestAggregator only swapped
+  // handles.
+  void OnAggregatedHitTestRegionListUpdated(
+      mojo::ScopedSharedBufferHandle active_handle,
+      uint32_t active_handle_size,
+      mojo::ScopedSharedBufferHandle idle_handle,
+      uint32_t idle_handle_size);
+  void SwitchActiveAggregatedHitTestRegionList(uint8_t active_handle_index);
 
   // Finds Target for |location_in_root|, including the FrameSinkId of the
   // target, updated location in the coordinate system of the target and
@@ -73,8 +80,11 @@ class HitTestQuery {
                                      AggregatedHitTestRegion* region,
                                      Target* target) const;
 
-  AggregatedHitTestRegion* aggregated_hit_test_region_list_ = nullptr;
-  uint32_t aggregated_hit_test_region_list_size_ = 0;
+  uint32_t handle_buffer_sizes_[2];
+  mojo::ScopedSharedBufferMapping handle_buffers_[2];
+
+  AggregatedHitTestRegion* active_hit_test_list_ = nullptr;
+  uint32_t active_hit_test_list_size_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(HitTestQuery);
 };
