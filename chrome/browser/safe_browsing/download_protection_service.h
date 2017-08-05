@@ -185,6 +185,14 @@ class DownloadProtectionService {
 
   static std::string GetDownloadPingToken(const content::DownloadItem* item);
 
+  // Sends dangerous download opened report when download is opened or
+  // shown in folder, and if the following conditions are met:
+  // (1) it is a dangerous download.
+  // (2) user is NOT in incognito mode.
+  // (3) user is opted-in for extended reporting.
+  void MaybeSendDangerousDownloadOpenedReport(const content::DownloadItem* item,
+                                              bool show_download_in_folder);
+
  protected:
   // Enum to keep track why a particular download verdict was chosen.
   // Used for UMA metrics. Do not reorder.
@@ -257,6 +265,8 @@ class DownloadProtectionService {
                            VerifyReferrerChainWithEmptyNavigationHistory);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceFlagTest,
                            CheckClientDownloadOverridenByFlag);
+  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
+                           VerifyMaybeSendDangerousDownloadOpenedReport);
 
   static const char kDownloadRequestUrl[];
 
@@ -315,6 +325,7 @@ class DownloadProtectionService {
       bool has_user_gesture,
       ClientDownloadRequest* out_request);
 
+  SafeBrowsingService* sb_service_;
   // These pointers may be NULL if SafeBrowsing is disabled.
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;

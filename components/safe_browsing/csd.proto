@@ -911,7 +911,7 @@ message DownloadMetadata {
 // A Detailed Safebrowsing Report from clients. Chrome safebrowsing reports are
 // only sent by Chrome users who have opted into extended Safe Browsing.
 // This proto is replacing ClientMalwareReportRequest.
-// Next tag: 17
+// Next tag: 19
 message ClientSafeBrowsingReportRequest {
   // Note: A lot of the "optional" fields would make sense to be
   // "required" instead.  However, having them as optional allows the
@@ -929,6 +929,7 @@ message ClientSafeBrowsingReportRequest {
     DANGEROUS_DOWNLOAD_WARNING = 7;
     DANGEROUS_DOWNLOAD_BY_API = 10;
     URL_PASSWORD_PROTECTION_PHISHING = 12;
+    DANGEROUS_DOWNLOAD_OPENED = 13;
   }
 
   message HTTPHeader {
@@ -1011,8 +1012,8 @@ message ClientSafeBrowsingReportRequest {
 
   // The same token in ClientDownloadResponse or LoginReputationClientResponse.
   // This field is only set if its report type is DANGEROUS_DOWNLOAD_RECOVERY,
-  // DANGEROUS_DOWNLOAD_WARNING, DANGEROUS_DOWNLOAD_BY_API or
-  // PASSWORD_PROTECTION_PHISHING_URL.
+  // DANGEROUS_DOWNLOAD_WARNING, DANGEROUS_DOWNLOAD_BY_API,
+  // URL_PASSWORD_PROTECTION_PHISHING, or DANGEROUS_DOWNLOAD_OPENED.
   optional bytes token = 15;
 
   enum SafeBrowsingUrlApiType {
@@ -1037,6 +1038,12 @@ message ClientSafeBrowsingReportRequest {
     optional SafeBrowsingUrlApiType url_api_type = 4;
   }
   optional SafeBrowsingClientProperties client_properties = 17;
+
+  // Only set if report type is DANGEROUS_DOWNLOAD_EXECUTION.
+  // True means user opened the folder where this download is in via browser.
+  // False means user directly executed this download via download shelf or
+  // other download UIs.
+  optional bool show_download_in_folder = 18;
 }
 
 // An HTML Element on the page (eg: iframe, div, script, etc).
