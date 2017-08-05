@@ -570,6 +570,7 @@ function showPage(pageDivId) {
   }
 
   hideOverlay();
+  appWindow.contentWindow.stopProgressAnimation();
   var doc = appWindow.contentWindow.document;
   // If the request is lso-loading and arc-loading page is currently shown,
   // then we do not switch the view. This is because both pages are saying
@@ -593,6 +594,13 @@ function showPage(pageDivId) {
   appWindow.show();
   if (pageDivId == 'terms') {
     termsPage.onShow();
+  }
+
+  // Start progress bar animation for the page that has the dynamic progress
+  // bar. 'error' page has the static progress bar that no need to be animated.
+  if (pageDivId == 'terms' || pageDivId == 'arc-loading' ||
+      pageDivId == 'lso-loading') {
+    appWindow.contentWindow.startProgressAnimation(pageDivId);
   }
 }
 

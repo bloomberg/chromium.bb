@@ -7,25 +7,8 @@
   <link rel="stylesheet" href="chrome://resources/css/controlled_indicator.css">
   <link rel="stylesheet" href="chrome://resources/css/overlay.css">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
   <style is="custom-style" include="iron-flex iron-flex-alignment">
-    paper-progress {
-      display: block;
-      margin: auto;
-      padding: 112px 0 0 0;
-      width: 360px;
-    }
-    paper-progress.red {
-      --paper-progress-active-color: rgb(255, 55, 79);
-      --paper-progress-container-color: rgb(200, 189, 212);
-      --paper-progress-secondary-color: rgb(255, 55, 79);
-    }
-    paper-progress.blue {
-      --paper-progress-active-color: rgb(66, 133, 244);
-      --paper-progress-container-color: #e6e6e6;
-      --paper-progress-secondary-color: rgb(66, 133, 244);
-    }
     paper-button {
       font-size: 13px;
       font-weight: 500;
@@ -41,6 +24,7 @@
     }
   </style>
   <link rel="stylesheet" href="main.css">
+  <link rel="stylesheet" href="progressbar.css">
   <script src="chrome://resources/js/load_time_data.js"></script>
   <script src="chrome://resources/js/util.js"></script>
   <script src="chrome://resources/js/i18n_template_no_process.js"></script>
@@ -51,6 +35,7 @@
   <script src="chrome://resources/js/cr/ui/bubble_button.js"></script>
   <script src="chrome://resources/js/cr/ui/controlled_indicator.js"></script>
   <script src="chrome://resources/js/cr/ui/overlay.js"></script>
+  <script src="progressbar.js"></script>
 </head>
 <body>
   <div id="terms" class="section">
@@ -59,7 +44,10 @@
       <div class="content">
         <p class="text-title" i18n-content="greetingHeader"></p>
         <p class="text-desc" i18n-content="greetingDescription"></p>
-        <paper-progress class="blue" indeterminate></paper-progress>
+        <div class="progress-container">
+          <div class="progress-primary"></div>
+          <div class="progress-secondary"></div>
+        </div>
       </div>
     </div>
     <div class="scrollable" id="terms-of-service-content" hidden>
@@ -133,7 +121,10 @@
     <img class="image-header" src="images/header.png">
     <div class="scrollable">
       <div class="content">
-        <paper-progress class="blue" indeterminate></paper-progress>
+        <div class="progress-container">
+          <div class="progress-primary"></div>
+          <div class="progress-secondary"></div>
+        </div>
         <p class="text-status" i18n-content="progressLsoLoading"
             aria-live="polite"></p>
       </div>
@@ -147,7 +138,10 @@
     <img class="image-header" src="images/header.png">
     <div class="scrollable">
       <div class="content">
-        <paper-progress class="blue" indeterminate></paper-progress>
+        <div class="progress-container">
+          <div class="progress-primary"></div>
+          <div class="progress-secondary"></div>
+        </div>
         <p class="text-status" i18n-content="progressAndroidLoading"
             aria-live="polite"></p>
       </div>
@@ -157,7 +151,9 @@
     <img class="image-header" src="images/header.png">
     <div class="scrollable">
       <div class="content">
-        <paper-progress class="red" value="100" max="100" ></paper-progress>
+        <div class="progress-container">
+          <div class="progress-primary red"></div>
+        </div>
         <p class="text-status" id="error-message" aria-live="polite"></p>
         <paper-button class="blue" id="button-send-feedback"
             i18n-content="buttonSendFeedback">
