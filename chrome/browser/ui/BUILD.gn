@@ -1811,6 +1811,8 @@ split_static_library("ui") {
         "views/dropdown_bar_host.cc",
         "views/dropdown_bar_host.h",
         "views/dropdown_bar_host_delegate.h",
+        "views/feature_promos/bookmark_promo_bubble_view.cc",
+        "views/feature_promos/bookmark_promo_bubble_view.h",
         "views/feature_promos/feature_promo_bubble_view.cc",
         "views/feature_promos/feature_promo_bubble_view.h",
         "views/feature_promos/new_tab_promo_bubble_view.cc",
