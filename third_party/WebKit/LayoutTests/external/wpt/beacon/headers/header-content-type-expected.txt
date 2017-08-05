@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+PASS Test content-type header for a body string 
+FAIL Test content-type header for a body ArrayBuffer assert_equals: Correct Content-Type header result expected "" but got "application/octet-stream"
+PASS Test content-type header for a body FormData 
+Harness: the test ran to completion.
+
