@@ -596,7 +596,7 @@ struct FuzzTraits<base::DictionaryValue> {
         case base::Value::Type::INTEGER: {
           int tmp;
           fuzzer->FuzzInt(&tmp);
-          p->SetIntegerWithoutPathExpansion(property, tmp);
+          p->SetKey(property, base::Value(tmp));
           break;
         }
         case base::Value::Type::DOUBLE: {

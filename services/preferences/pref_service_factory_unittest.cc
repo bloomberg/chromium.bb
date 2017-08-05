@@ -393,7 +393,7 @@ TEST_F(PrefServiceFactoryTest, MultipleClients_SubPrefUpdates_Basic) {
         EXPECT_EQ(1, out);
       },
       [](ScopedDictionaryPrefUpdate* update) {
-        (*update)->SetIntegerWithoutPathExpansion("key.for.integer", 2);
+        (*update)->SetKey("key.for.integer", base::Value(2));
         int out = 0;
         ASSERT_TRUE(
             (*update)->GetIntegerWithoutPathExpansion("key.for.integer", &out));

@@ -60,8 +60,8 @@ void Registry::RememberFileSystem(
                       base::Value(file_system_info.writable()));
   file_system->SetKey(kPrefKeySupportsNotifyTag,
                       base::Value(file_system_info.supports_notify_tag()));
-  file_system->SetIntegerWithoutPathExpansion(
-      kPrefKeyOpenedFilesLimit, file_system_info.opened_files_limit());
+  file_system->SetKey(kPrefKeyOpenedFilesLimit,
+                      base::Value(file_system_info.opened_files_limit()));
 
   auto watchers_value = base::MakeUnique<base::DictionaryValue>();
 

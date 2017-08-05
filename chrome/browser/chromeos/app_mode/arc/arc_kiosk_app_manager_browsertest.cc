@@ -101,9 +101,9 @@ class ArcKioskAppManagerTest : public InProcessBrowserTest {
       entry->SetStringWithoutPathExpansion(
           kAccountsPrefDeviceLocalAccountsKeyId,
           GenerateAccountId(app.package_name()));
-      entry->SetIntegerWithoutPathExpansion(
+      entry->SetKey(
           kAccountsPrefDeviceLocalAccountsKeyType,
-          policy::DeviceLocalAccount::TYPE_ARC_KIOSK_APP);
+          base::Value(policy::DeviceLocalAccount::TYPE_ARC_KIOSK_APP));
       entry->SetStringWithoutPathExpansion(
           kAccountsPrefDeviceLocalAccountsKeyArcKioskPackage,
           app.package_name());

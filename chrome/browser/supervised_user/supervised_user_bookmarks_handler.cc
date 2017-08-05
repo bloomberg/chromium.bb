@@ -171,7 +171,7 @@ void SupervisedUserBookmarksHandler::AddFoldersToTree() {
     folders_failed.clear();
     for (const auto& folder : folders) {
       std::unique_ptr<base::DictionaryValue> node(new base::DictionaryValue);
-      node->SetIntegerWithoutPathExpansion(kId, folder.id);
+      node->SetKey(kId, base::Value(folder.id));
       node->SetStringWithoutPathExpansion(kName, folder.name);
       node->SetWithoutPathExpansion(kChildren,
                                     base::MakeUnique<base::ListValue>());

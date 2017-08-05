@@ -891,13 +891,6 @@ TEST(ValuesTest, DictionarySetReturnsPointer) {
 
   {
     DictionaryValue dict;
-    Value* int_ptr = dict.SetIntegerWithoutPathExpansion("foo.bar", 123);
-    EXPECT_EQ(Value::Type::INTEGER, int_ptr->type());
-    EXPECT_EQ(123, int_ptr->GetInt());
-  }
-
-  {
-    DictionaryValue dict;
     Value* double_ptr = dict.SetDouble("foo.bar", 3.142);
     EXPECT_EQ(Value::Type::DOUBLE, double_ptr->type());
     EXPECT_EQ(3.142, double_ptr->GetDouble());

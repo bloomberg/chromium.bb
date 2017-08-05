@@ -630,7 +630,7 @@ void UserManagerScreenHandler::RemoveUserDialogLoadStatsCallback(
   base::DictionaryValue return_value;
   for (const auto& item : result) {
     auto stat = base::MakeUnique<base::DictionaryValue>();
-    stat->SetIntegerWithoutPathExpansion("count", item.count);
+    stat->SetKey("count", base::Value(item.count));
     return_value.SetWithoutPathExpansion(item.category, std::move(stat));
   }
   if (result.size() == profiles::kProfileStatisticsCategories.size()) {

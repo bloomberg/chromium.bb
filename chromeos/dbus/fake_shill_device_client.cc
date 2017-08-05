@@ -502,8 +502,8 @@ void FakeShillDeviceClient::SetSimLockStatus(const std::string& device_path,
   simlock_dict->Clear();
   simlock_dict->SetStringWithoutPathExpansion(shill::kSIMLockTypeProperty,
                                               status.type);
-  simlock_dict->SetIntegerWithoutPathExpansion(
-      shill::kSIMLockRetriesLeftProperty, status.retries_left);
+  simlock_dict->SetKey(shill::kSIMLockRetriesLeftProperty,
+                       base::Value(status.retries_left));
   simlock_dict->SetKey(shill::kSIMLockEnabledProperty,
                        base::Value(status.lock_enabled));
   NotifyObserversPropertyChanged(dbus::ObjectPath(device_path),

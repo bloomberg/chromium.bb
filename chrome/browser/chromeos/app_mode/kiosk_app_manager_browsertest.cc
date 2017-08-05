@@ -327,9 +327,8 @@ class KioskAppManagerTest : public InProcessBrowserTest {
     // existing app entry created here.
     entry->SetStringWithoutPathExpansion(kAccountsPrefDeviceLocalAccountsKeyId,
                                          app_id + "@kiosk-apps");
-    entry->SetIntegerWithoutPathExpansion(
-        kAccountsPrefDeviceLocalAccountsKeyType,
-        policy::DeviceLocalAccount::TYPE_KIOSK_APP);
+    entry->SetKey(kAccountsPrefDeviceLocalAccountsKeyType,
+                  base::Value(policy::DeviceLocalAccount::TYPE_KIOSK_APP));
     entry->SetStringWithoutPathExpansion(
         kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
         app_id);

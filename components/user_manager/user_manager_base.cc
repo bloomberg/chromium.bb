@@ -374,8 +374,9 @@ void UserManagerBase::SaveUserOAuthStatus(
   {
     DictionaryPrefUpdate oauth_status_update(GetLocalState(),
                                              kUserOAuthTokenStatus);
-    oauth_status_update->SetIntegerWithoutPathExpansion(
-        account_id.GetUserEmail(), static_cast<int>(oauth_token_status));
+    oauth_status_update->SetKey(
+        account_id.GetUserEmail(),
+        base::Value(static_cast<int>(oauth_token_status)));
   }
   GetLocalState()->CommitPendingWrite();
 }
@@ -470,8 +471,8 @@ void UserManagerBase::SaveUserType(const AccountId& account_id,
     return;
 
   DictionaryPrefUpdate user_type_update(GetLocalState(), kUserType);
-  user_type_update->SetIntegerWithoutPathExpansion(account_id.GetUserEmail(),
-                                                   static_cast<int>(user_type));
+  user_type_update->SetKey(account_id.GetUserEmail(),
+                           base::Value(static_cast<int>(user_type)));
   GetLocalState()->CommitPendingWrite();
 }
 

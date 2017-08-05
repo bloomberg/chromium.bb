@@ -272,9 +272,9 @@ void SupervisedUserManagerImpl::GetPasswordInformation(
     base::DictionaryValue* result) {
   int value;
   if (GetUserIntegerValue(user_id, kSupervisedUserPasswordSchema, &value))
-    result->SetIntegerWithoutPathExpansion(kSchemaVersion, value);
+    result->SetKey(kSchemaVersion, base::Value(value));
   if (GetUserIntegerValue(user_id, kSupervisedUserPasswordRevision, &value))
-    result->SetIntegerWithoutPathExpansion(kPasswordRevision, value);
+    result->SetKey(kPasswordRevision, base::Value(value));
 
   bool flag;
   if (GetUserBooleanValue(user_id, kSupervisedUserNeedPasswordUpdate, &flag))
@@ -351,7 +351,7 @@ void SupervisedUserManagerImpl::SetUserIntegerValue(
     const int value) {
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate update(local_state, key);
-  update->SetIntegerWithoutPathExpansion(user_id, value);
+  update->SetKey(user_id, base::Value(value));
 }
 
 void SupervisedUserManagerImpl::SetUserBooleanValue(const std::string& user_id,

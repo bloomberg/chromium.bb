@@ -64,8 +64,8 @@ void RememberFakeFileSystem(TestingProfile* profile,
   file_system->SetKey(kPrefKeyWritable, base::Value(writable));
   file_system->SetKey(kPrefKeySupportsNotifyTag,
                       base::Value(supports_notify_tag));
-  file_system->SetIntegerWithoutPathExpansion(kPrefKeyOpenedFilesLimit,
-                                              opened_files_limit);
+  file_system->SetKey(kPrefKeyOpenedFilesLimit,
+                      base::Value(opened_files_limit));
 
   // Remember watchers.
   auto watcher_value = base::MakeUnique<base::DictionaryValue>();

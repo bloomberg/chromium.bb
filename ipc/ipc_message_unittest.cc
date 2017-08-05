@@ -92,7 +92,7 @@ TEST(IPCMessageTest, DictionaryValue) {
   input.Set("null", base::MakeUnique<base::Value>());
   input.SetBoolean("bool", true);
   input.SetInteger("int", 42);
-  input.SetIntegerWithoutPathExpansion("int.with.dot", 43);
+  input.SetKey("int.with.dot", base::Value(43));
 
   auto subdict = base::MakeUnique<base::DictionaryValue>();
   subdict->SetString("str", "forty two");

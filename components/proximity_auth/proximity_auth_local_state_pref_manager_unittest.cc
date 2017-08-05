@@ -55,9 +55,8 @@ class ProximityAuthLocalStatePrefManagerTest : public testing::Test {
     // ProximityAuthProfilePrefService.
     std::unique_ptr<base::DictionaryValue> user1_prefs(
         new base::DictionaryValue());
-    user1_prefs->SetIntegerWithoutPathExpansion(
-        proximity_auth::prefs::kEasyUnlockProximityThreshold,
-        kProximityThreshold1);
+    user1_prefs->SetKey(proximity_auth::prefs::kEasyUnlockProximityThreshold,
+                        base::Value(kProximityThreshold1));
     user1_prefs->SetKey(
         proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
         base::Value(kIsChromeOSLoginEnabled1));
@@ -70,9 +69,8 @@ class ProximityAuthLocalStatePrefManagerTest : public testing::Test {
 
     std::unique_ptr<base::DictionaryValue> user2_prefs(
         new base::DictionaryValue());
-    user2_prefs->SetIntegerWithoutPathExpansion(
-        proximity_auth::prefs::kEasyUnlockProximityThreshold,
-        kProximityThreshold2);
+    user2_prefs->SetKey(proximity_auth::prefs::kEasyUnlockProximityThreshold,
+                        base::Value(kProximityThreshold2));
     user2_prefs->SetKey(
         proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
         base::Value(kIsChromeOSLoginEnabled2));

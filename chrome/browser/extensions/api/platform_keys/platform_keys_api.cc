@@ -58,8 +58,8 @@ void BuildWebCryptoRSAAlgorithmDictionary(const PublicKeyInfo& key_info,
                                           base::DictionaryValue* algorithm) {
   CHECK_EQ(net::X509Certificate::kPublicKeyTypeRSA, key_info.key_type);
   algorithm->SetStringWithoutPathExpansion("name", kWebCryptoRSASSA_PKCS1_v1_5);
-  algorithm->SetIntegerWithoutPathExpansion("modulusLength",
-                                            key_info.key_size_bits);
+  algorithm->SetKey("modulusLength",
+                    base::Value(static_cast<int>(key_info.key_size_bits)));
 
   // Equals 65537.
   const unsigned char defaultPublicExponent[] = {0x01, 0x00, 0x01};

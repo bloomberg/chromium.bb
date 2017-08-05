@@ -242,8 +242,7 @@ void NetworkState::GetStateProperties(base::DictionaryValue* dictionary) const {
                                             security_class());
   dictionary->SetStringWithoutPathExpansion(shill::kProfileProperty,
                                             profile_path());
-  dictionary->SetIntegerWithoutPathExpansion(shill::kPriorityProperty,
-                                             priority_);
+  dictionary->SetKey(shill::kPriorityProperty, base::Value(priority_));
 
   if (visible()) {
     dictionary->SetStringWithoutPathExpansion(shill::kStateProperty,
@@ -268,13 +267,12 @@ void NetworkState::GetStateProperties(base::DictionaryValue* dictionary) const {
 
   // Tether properties
   if (NetworkTypePattern::Tether().MatchesType(type())) {
-    dictionary->SetIntegerWithoutPathExpansion(kTetherBatteryPercentage,
-                                               battery_percentage());
+    dictionary->SetKey(kTetherBatteryPercentage,
+                       base::Value(battery_percentage()));
     dictionary->SetStringWithoutPathExpansion(kTetherCarrier, carrier());
     dictionary->SetKey(kTetherHasConnectedToHost,
                        base::Value(tether_has_connected_to_host()));
-    dictionary->SetIntegerWithoutPathExpansion(kTetherSignalStrength,
-                                               signal_strength());
+    dictionary->SetKey(kTetherSignalStrength, base::Value(signal_strength()));
 
     // Tether networks do not share some of the wireless/mobile properties added
     // below; exit early to avoid having these properties applied.
@@ -287,8 +285,8 @@ void NetworkState::GetStateProperties(base::DictionaryValue* dictionary) const {
 
   if (visible()) {
     dictionary->SetKey(shill::kConnectableProperty, base::Value(connectable()));
-    dictionary->SetIntegerWithoutPathExpansion(shill::kSignalStrengthProperty,
-                                               signal_strength());
+    dictionary->SetKey(shill::kSignalStrengthProperty,
+                       base::Value(signal_strength()));
   }
 
   // Wifi properties
@@ -296,8 +294,7 @@ void NetworkState::GetStateProperties(base::DictionaryValue* dictionary) const {
     dictionary->SetStringWithoutPathExpansion(shill::kWifiBSsid, bssid_);
     dictionary->SetStringWithoutPathExpansion(shill::kEapMethodProperty,
                                               eap_method());
-    dictionary->SetIntegerWithoutPathExpansion(shill::kWifiFrequency,
-                                               frequency_);
+    dictionary->SetKey(shill::kWifiFrequency, base::Value(frequency_));
   }
 
   // Mobile properties

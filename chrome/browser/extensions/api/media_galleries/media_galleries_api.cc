@@ -585,7 +585,7 @@ void MediaGalleriesAddUserSelectedFolderFunction::ReturnGalleriesAndId(
   }
   std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue);
   results->SetWithoutPathExpansion("mediaFileSystems", std::move(list));
-  results->SetIntegerWithoutPathExpansion("selectedFileSystemIndex", index);
+  results->SetKey("selectedFileSystemIndex", base::Value(index));
   SetResult(std::move(results));
   SendResponse(true);
 }

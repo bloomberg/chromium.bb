@@ -149,9 +149,8 @@ void SetDeviceLocalAccounts(chromeos::OwnerSettingsServiceChromeOS* service,
     entry->SetStringWithoutPathExpansion(
         chromeos::kAccountsPrefDeviceLocalAccountsKeyId,
         it->account_id);
-    entry->SetIntegerWithoutPathExpansion(
-        chromeos::kAccountsPrefDeviceLocalAccountsKeyType,
-        it->type);
+    entry->SetKey(chromeos::kAccountsPrefDeviceLocalAccountsKeyType,
+                  base::Value(it->type));
     if (it->type == DeviceLocalAccount::TYPE_KIOSK_APP) {
       entry->SetStringWithoutPathExpansion(
           chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppId,

@@ -624,8 +624,7 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
       shill::kAddressProperty, "100.0.0.1");
   ipconfig_v4_dictionary.SetStringWithoutPathExpansion(
       shill::kGatewayProperty, "100.0.0.2");
-  ipconfig_v4_dictionary.SetIntegerWithoutPathExpansion(
-      shill::kPrefixlenProperty, 1);
+  ipconfig_v4_dictionary.SetKey(shill::kPrefixlenProperty, base::Value(1));
   ipconfig_v4_dictionary.SetStringWithoutPathExpansion(
       shill::kMethodProperty, shill::kTypeIPv4);
   ipconfig_v4_dictionary.SetStringWithoutPathExpansion(
