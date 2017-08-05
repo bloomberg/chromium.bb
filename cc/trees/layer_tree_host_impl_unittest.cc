@@ -9416,7 +9416,58 @@ TEST_F(LayerTreeHostImplTest, SelectionBoundsPassedToCompositorFrameMetadata) {
   EXPECT_EQ(gfx::PointF(selection_bottom), selection_after.start.edge_bottom());
   EXPECT_EQ(gfx::PointF(selection_top), selection_after.start.edge_top());
   EXPECT_TRUE(selection_after.start.visible());
-  EXPECT_TRUE(selection_after.start.visible());
+  EXPECT_TRUE(selection_after.end.visible());
+}
+
+TEST_F(LayerTreeHostImplTest, HiddenSelectionBoundsStayHidden) {
+  int root_layer_id = 1;
+  std::unique_ptr<SolidColorLayerImpl> root =
+      SolidColorLayerImpl::Create(host_impl_->active_tree(), root_layer_id);
+  root->SetPosition(gfx::PointF());
+  root->SetBounds(gfx::Size(10, 10));
+  root->SetDrawsContent(true);
+  root->test_properties()->force_render_surface = true;
+
+  host_impl_->active_tree()->SetRootLayerForTesting(std::move(root));
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+
+  // Ensure the default frame selection bounds are empty.
+  auto* fake_layer_tree_frame_sink =
+      static_cast<FakeLayerTreeFrameSink*>(host_impl_->layer_tree_frame_sink());
+
+  // Plumb the layer-local selection bounds.
+  gfx::Point selection_top(5, 0);
+  gfx::Point selection_bottom(5, 5);
+  LayerSelection selection;
+
+  // Mark the start as hidden.
+  selection.start.hidden = true;
+
+  selection.start.type = gfx::SelectionBound::CENTER;
+  selection.start.layer_id = root_layer_id;
+  selection.start.edge_bottom = selection_bottom;
+  selection.start.edge_top = selection_top;
+  selection.end = selection.start;
+  host_impl_->active_tree()->RegisterSelection(selection);
+
+  // Trigger a draw-swap sequence.
+  host_impl_->SetNeedsRedraw();
+
+  gfx::Rect full_frame_damage(host_impl_->DeviceViewport().size());
+  TestFrameData frame;
+  EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
+  EXPECT_TRUE(host_impl_->DrawLayers(&frame));
+  host_impl_->DidDrawAllLayers(frame);
+
+  // Ensure the selection bounds have propagated to the frame metadata.
+  const Selection<gfx::SelectionBound>& selection_after =
+      fake_layer_tree_frame_sink->last_sent_frame()->metadata.selection;
+  EXPECT_EQ(selection.start.type, selection_after.start.type());
+  EXPECT_EQ(selection.end.type, selection_after.end.type());
+  EXPECT_EQ(gfx::PointF(selection_bottom), selection_after.start.edge_bottom());
+  EXPECT_EQ(gfx::PointF(selection_top), selection_after.start.edge_top());
+  EXPECT_FALSE(selection_after.start.visible());
+  EXPECT_FALSE(selection_after.end.visible());
 }
 
 class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
