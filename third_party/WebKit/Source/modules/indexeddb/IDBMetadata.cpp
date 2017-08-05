@@ -4,7 +4,6 @@
 
 #include "modules/indexeddb/IDBMetadata.h"
 
-#include "platform/wtf/Assertions.h"
 #include "public/platform/modules/indexeddb/WebIDBMetadata.h"
 
 namespace blink {
@@ -96,7 +95,5 @@ void IDBDatabaseMetadata::CopyFrom(const IDBDatabaseMetadata& metadata) {
   version = metadata.version;
   max_object_store_id = metadata.max_object_store_id;
 }
-
-STATIC_ASSERT_ENUM(WebIDBMetadata::kNoVersion, IDBDatabaseMetadata::kNoVersion);
 
 }  // namespace blink

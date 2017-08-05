@@ -58,13 +58,11 @@
 #include "platform/Histogram.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Assertions.h"
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/StringExtras.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/StringBuilder.h"
-#include "public/web/WebSettings.h"
 
 namespace blink {
 
@@ -376,14 +374,5 @@ PassRefPtr<DOMWrapperWorld> ScriptController::CreateNewInspectorIsolatedWorld(
   WindowProxy(*world);
   return world;
 }
-
-STATIC_ASSERT_ENUM(WebSettings::V8CacheStrategiesForCacheStorage::kDefault,
-                   V8CacheStrategiesForCacheStorage::kDefault);
-STATIC_ASSERT_ENUM(WebSettings::V8CacheStrategiesForCacheStorage::kNone,
-                   V8CacheStrategiesForCacheStorage::kNone);
-STATIC_ASSERT_ENUM(WebSettings::V8CacheStrategiesForCacheStorage::kNormal,
-                   V8CacheStrategiesForCacheStorage::kNormal);
-STATIC_ASSERT_ENUM(WebSettings::V8CacheStrategiesForCacheStorage::kAggressive,
-                   V8CacheStrategiesForCacheStorage::kAggressive);
 
 }  // namespace blink

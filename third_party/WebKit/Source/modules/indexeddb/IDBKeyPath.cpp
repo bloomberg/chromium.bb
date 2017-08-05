@@ -26,11 +26,9 @@
 #include "modules/indexeddb/IDBKeyPath.h"
 
 #include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/Assertions.h"
 #include "platform/wtf/dtoa.h"
 #include "platform/wtf/text/CharacterNames.h"
 #include "platform/wtf/text/Unicode.h"
-#include "public/platform/modules/indexeddb/WebIDBTypes.h"
 
 namespace blink {
 
@@ -200,9 +198,5 @@ bool IDBKeyPath::operator==(const IDBKeyPath& other) const {
   NOTREACHED();
   return false;
 }
-
-STATIC_ASSERT_ENUM(kWebIDBKeyPathTypeNull, IDBKeyPath::kNullType);
-STATIC_ASSERT_ENUM(kWebIDBKeyPathTypeString, IDBKeyPath::kStringType);
-STATIC_ASSERT_ENUM(kWebIDBKeyPathTypeArray, IDBKeyPath::kArrayType);
 
 }  // namespace blink

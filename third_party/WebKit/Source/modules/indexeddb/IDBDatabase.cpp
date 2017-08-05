@@ -43,9 +43,7 @@
 #include "modules/indexeddb/IDBVersionChangeEvent.h"
 #include "modules/indexeddb/WebIDBDatabaseCallbacksImpl.h"
 #include "platform/Histogram.h"
-#include "platform/wtf/Assertions.h"
 #include "platform/wtf/Atomics.h"
-#include "public/platform/modules/indexeddb/WebIDBDatabaseException.h"
 #include "public/platform/modules/indexeddb/WebIDBKeyPath.h"
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
 
@@ -597,13 +595,5 @@ void IDBDatabase::RecordApiCallsHistogram(IndexedDatabaseMethods method) {
       ("WebCore.IndexedDB.FrontEndAPICalls", kIDBMethodsMax));
   api_calls_histogram.Count(method);
 }
-
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionUnknownError, kUnknownError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionConstraintError, kConstraintError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionDataError, kDataError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionVersionError, kVersionError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionAbortError, kAbortError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionQuotaError, kQuotaExceededError);
-STATIC_ASSERT_ENUM(kWebIDBDatabaseExceptionTimeoutError, kTimeoutError);
 
 }  // namespace blink

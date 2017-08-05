@@ -49,9 +49,6 @@
 #include "platform/InstanceCounters.h"
 #include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/loader/fetch/ResourceError.h"
-#include "platform/wtf/Assertions.h"
-#include "public/web/WebFrameClient.h"
-#include "public/web/WebRemoteFrameClient.h"
 
 namespace blink {
 
@@ -226,13 +223,5 @@ Frame::Frame(FrameClient* client,
   else
     page_->SetMainFrame(this);
 }
-
-STATIC_ASSERT_ENUM(FrameDetachType::kRemove,
-                   WebFrameClient::DetachType::kRemove);
-STATIC_ASSERT_ENUM(FrameDetachType::kSwap, WebFrameClient::DetachType::kSwap);
-STATIC_ASSERT_ENUM(FrameDetachType::kRemove,
-                   WebRemoteFrameClient::DetachType::kRemove);
-STATIC_ASSERT_ENUM(FrameDetachType::kSwap,
-                   WebRemoteFrameClient::DetachType::kSwap);
 
 }  // namespace blink

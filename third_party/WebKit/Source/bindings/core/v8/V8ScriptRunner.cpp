@@ -44,10 +44,8 @@
 #include "platform/bindings/V8ThrowException.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/CachedMetadata.h"
-#include "platform/wtf/Assertions.h"
 #include "platform/wtf/CurrentTime.h"
 #include "public/platform/Platform.h"
-#include "public/web/WebSettings.h"
 
 #if defined(OS_WIN)
 #include <malloc.h>
@@ -791,10 +789,5 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallExtraHelper(
   return V8ScriptRunner::CallInternalFunction(function, v8::Undefined(isolate),
                                               num_args, args, isolate);
 }
-
-STATIC_ASSERT_ENUM(WebSettings::kV8CacheOptionsDefault, kV8CacheOptionsDefault);
-STATIC_ASSERT_ENUM(WebSettings::kV8CacheOptionsNone, kV8CacheOptionsNone);
-STATIC_ASSERT_ENUM(WebSettings::kV8CacheOptionsParse, kV8CacheOptionsParse);
-STATIC_ASSERT_ENUM(WebSettings::kV8CacheOptionsCode, kV8CacheOptionsCode);
 
 }  // namespace blink

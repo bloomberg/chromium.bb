@@ -94,15 +94,12 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/weborigin/Suborigin.h"
-#include "platform/wtf/Assertions.h"
 #include "platform/wtf/AutoReset.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
-#include "public/web/WebFrameLoadType.h"
-#include "public/web/WebHistoryItem.h"
 
 using blink::WebURLRequest;
 
@@ -1775,25 +1772,5 @@ DocumentLoader* FrameLoader::CreateDocumentLoader(
   loader->SetReplacesCurrentHistoryItem(replace_current_item);
   return loader;
 }
-
-STATIC_ASSERT_ENUM(kWebHistorySameDocumentLoad, kHistorySameDocumentLoad);
-STATIC_ASSERT_ENUM(kWebHistoryDifferentDocumentLoad,
-                   kHistoryDifferentDocumentLoad);
-
-STATIC_ASSERT_ENUM(kWebHistoryScrollRestorationManual,
-                   kScrollRestorationManual);
-STATIC_ASSERT_ENUM(kWebHistoryScrollRestorationAuto, kScrollRestorationAuto);
-
-STATIC_ASSERT_ENUM(WebFrameLoadType::kStandard, kFrameLoadTypeStandard);
-STATIC_ASSERT_ENUM(WebFrameLoadType::kBackForward, kFrameLoadTypeBackForward);
-STATIC_ASSERT_ENUM(WebFrameLoadType::kReload, kFrameLoadTypeReload);
-STATIC_ASSERT_ENUM(WebFrameLoadType::kReplaceCurrentItem,
-                   kFrameLoadTypeReplaceCurrentItem);
-STATIC_ASSERT_ENUM(WebFrameLoadType::kInitialInChildFrame,
-                   kFrameLoadTypeInitialInChildFrame);
-STATIC_ASSERT_ENUM(WebFrameLoadType::kInitialHistoryLoad,
-                   kFrameLoadTypeInitialHistoryLoad);
-STATIC_ASSERT_ENUM(WebFrameLoadType::kReloadBypassingCache,
-                   kFrameLoadTypeReloadBypassingCache);
 
 }  // namespace blink

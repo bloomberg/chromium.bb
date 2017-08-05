@@ -33,8 +33,10 @@ component("web") {
     "//third_party/WebKit/Source/core:blink_core_pch",
   ]
 
+  defines = [ "BLINK_WEB_IMPLEMENTATION=1" ]
+
   sources = [
-    "Empty.cpp",
+    "AssertMatchingEnums.cpp",
   ]
 
   if (is_mac) {

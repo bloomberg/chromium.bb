@@ -88,7 +88,6 @@
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
-#include "public/web/WebHistoryCommitType.h"
 
 namespace blink {
 
@@ -1164,10 +1163,5 @@ void DocumentLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(DocumentLoader);
-
-STATIC_ASSERT_ENUM(kWebStandardCommit, kStandardCommit);
-STATIC_ASSERT_ENUM(kWebBackForwardCommit, kBackForwardCommit);
-STATIC_ASSERT_ENUM(kWebInitialCommitInChildFrame, kInitialCommitInChildFrame);
-STATIC_ASSERT_ENUM(kWebHistoryInertCommit, kHistoryInertCommit);
 
 }  // namespace blink

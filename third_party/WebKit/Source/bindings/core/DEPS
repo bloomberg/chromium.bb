@@ -8,6 +8,4 @@ include_rules = [
     "+public/platform",
     "-web",
     "+web/tests",
-    "+public/web/WebSerializedScriptValueVersion.h",
-    "+public/web/WebSettings.h",
 ]
