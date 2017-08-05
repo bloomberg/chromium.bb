@@ -857,3 +857,18 @@ SYNC_TEST_F('OutputE2ETest', 'ValidateCommonProperties', function() {
   // In such cases, you are responsible for ensuring you include all states and
   // descriptions somewhere in the output.
 });
+
+TEST_F('OutputE2ETest', 'InlineBraille', function() {
+  this.runWithLoadedTree(function(root) {/*!
+    <table border=1>
+      <tr><td>Name</td><td id="active">Age</td><td>Address</td></tr>
+    </table>
+  */}, function(root) {
+    var obj = root.find({role: RoleType.CELL});
+    var o = new Output().withRichSpeechAndBraille(cursors.Range.fromNode(obj));
+    assertEquals('Name|row 1 column 1|Table , 1 by 3',
+                 o.speechOutputForTest.string_);
+    assertEquals('Name r1c1 Age r1c2 Address r1c3',
+                 o.brailleOutputForTest.string_);
+  });
+});
