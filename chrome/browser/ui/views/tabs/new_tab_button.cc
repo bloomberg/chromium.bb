@@ -7,8 +7,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/views/feature_promos/new_tab_promo_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
-#include "chrome/browser/ui/views/tabs/new_tab_promo.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkLayerDrawLooper.h"
@@ -79,7 +79,7 @@ int NewTabButton::GetTopOffset() {
 
 void NewTabButton::ShowPromo() {
   // Owned by its native widget. Will be destroyed as its widget is destroyed.
-  new_tab_promo_ = NewTabPromo::Create(GetVisibleBounds());
+  new_tab_promo_ = NewTabPromoBubbleView::CreateOwned(GetVisibleBounds());
   new_tab_promo_observer_.Add(new_tab_promo_->GetWidget());
   NewTabButton::SchedulePaint();
 }
