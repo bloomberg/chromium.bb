@@ -128,8 +128,6 @@ VideoCaptureSettings::VideoCaptureSettings(
             capture_params.requested_format.frame_size.width());
   DCHECK_LE(track_adapter_settings.max_height,
             capture_params.requested_format.frame_size.height());
-  DCHECK_LT(track_adapter_settings.max_frame_rate,
-            capture_params.requested_format.frame_rate);
 }
 
 VideoCaptureSettings::VideoCaptureSettings(const VideoCaptureSettings& other) =
@@ -282,14 +280,18 @@ VideoTrackAdapterSettings SelectVideoTrackAdapterSettings(
       std::min(resolution_set.max_aspect_ratio(),
                static_cast<double>(resolution_set.max_width()) /
                    static_cast<double>(resolution_set.min_height()));
-  double track_max_frame_rate = frame_rate_set.Max();
-  if (basic_constraint_set.frame_rate.HasIdeal()) {
-    track_max_frame_rate = std::min(
-        track_max_frame_rate, std::max(basic_constraint_set.frame_rate.Ideal(),
-                                       frame_rate_set.Min()));
-  }
   // VideoTrackAdapter uses a frame rate of 0.0 to disable frame-rate
   // adjustment.
+  double track_max_frame_rate = frame_rate_set.Max().value_or(0.0);
+  if (basic_constraint_set.frame_rate.HasIdeal()) {
+    track_max_frame_rate = basic_constraint_set.frame_rate.Ideal();
+    if (frame_rate_set.Min() && track_max_frame_rate < *frame_rate_set.Min())
+      track_max_frame_rate = *frame_rate_set.Min();
+    if (frame_rate_set.Max() && track_max_frame_rate > *frame_rate_set.Max())
+      track_max_frame_rate = *frame_rate_set.Max();
+  }
+  // Disable frame-rate adjustment if the requested rate is greater than the
+  // source rate.
   if (track_max_frame_rate >= source_format.frame_rate)
     track_max_frame_rate = 0.0;
 

@@ -919,7 +919,7 @@ TEST_P(UserMediaClientImplTest, DefaultConstraintsPropagate) {
   EXPECT_EQ(video_capture_settings.PowerLineFrequency(),
             media::PowerLineFrequency::FREQUENCY_DEFAULT);
   EXPECT_FALSE(video_capture_settings.noise_reduction());
-  EXPECT_EQ(video_capture_settings.min_frame_rate(), 1.0);
+  EXPECT_FALSE(video_capture_settings.min_frame_rate().has_value());
 
   const VideoTrackAdapterSettings& track_settings =
       video_capture_settings.track_adapter_settings();

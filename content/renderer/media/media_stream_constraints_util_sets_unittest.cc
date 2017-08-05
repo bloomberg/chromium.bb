@@ -1122,18 +1122,18 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, ResolutionVertices) {
 
 TEST_F(MediaStreamConstraintsUtilSetsTest, NumericRangeSetDouble) {
   using DoubleRangeSet = NumericRangeSet<double>;
-  // Set with maximum supported range.
+  // Open set.
   DoubleRangeSet set;
-  EXPECT_EQ(0.0, set.Min());
-  EXPECT_EQ(HUGE_VAL, set.Max());
+  EXPECT_FALSE(set.Min().has_value());
+  EXPECT_FALSE(set.Max().has_value());
   EXPECT_FALSE(set.IsEmpty());
 
   // Constrained set.
   const double kMin = 1.0;
   const double kMax = 10.0;
   set = DoubleRangeSet(kMin, kMax);
-  EXPECT_EQ(kMin, set.Min());
-  EXPECT_EQ(kMax, set.Max());
+  EXPECT_EQ(kMin, *set.Min());
+  EXPECT_EQ(kMax, *set.Max());
   EXPECT_FALSE(set.IsEmpty());
 
   // Empty set.
@@ -1147,6 +1147,14 @@ TEST_F(MediaStreamConstraintsUtilSetsTest, NumericRangeSetDouble) {
   auto intersection = set.Intersection(DoubleRangeSet(kMin2, kMax2));
   EXPECT_EQ(kMin2, intersection.Min());
   EXPECT_EQ(kMax, intersection.Max());
+  EXPECT_FALSE(intersection.IsEmpty());
+
+  // Intersection with partially open sets.
+  set = DoubleRangeSet(base::Optional<double>(), kMax);
+  intersection =
+      set.Intersection(DoubleRangeSet(kMin2, base::Optional<double>()));
+  EXPECT_EQ(kMin2, *intersection.Min());
+  EXPECT_EQ(kMax, *intersection.Max());
   EXPECT_FALSE(intersection.IsEmpty());
 
   // Empty intersection.
