@@ -136,6 +136,8 @@
         <include name="IDR_ARC_SUPPORT_PLAYSTORE_CSS" file="chromeos/arc_support/playstore.css" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_PLAYSTORE_JS" file="chromeos/arc_support/playstore.js" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_PLAYSTORE_LOGO" file="chromeos/arc_support/icon/playstore.svg" type="BINDATA" />
+        <include name="IDR_ARC_SUPPORT_PROGRESSBAR_CSS" file="chromeos/arc_support/progressbar.css" type="BINDATA" />
+        <include name="IDR_ARC_SUPPORT_PROGRESSBAR_JS" file="chromeos/arc_support/progressbar.js" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_MAIN" file="chromeos/arc_support/main.html" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_ICON_48" file="chromeos/arc_support/icon/48.png" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_ICON_96" file="chromeos/arc_support/icon/96.png" type="BINDATA" />
