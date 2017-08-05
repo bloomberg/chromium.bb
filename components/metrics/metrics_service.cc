@@ -266,9 +266,11 @@ void MetricsService::InitializeMetricsRecordingState() {
 }
 
 void MetricsService::Start() {
+  base::StatisticsRecorder::ValidateAllHistograms();
   HandleIdleSinceLastTransmission(false);
   EnableRecording();
   EnableReporting();
+  base::StatisticsRecorder::ValidateAllHistograms();
 }
 
 void MetricsService::StartRecordingForTests() {
@@ -278,9 +280,11 @@ void MetricsService::StartRecordingForTests() {
 }
 
 void MetricsService::Stop() {
+  base::StatisticsRecorder::ValidateAllHistograms();
   HandleIdleSinceLastTransmission(false);
   DisableReporting();
   DisableRecording();
+  base::StatisticsRecorder::ValidateAllHistograms();
 }
 
 void MetricsService::EnableReporting() {
@@ -366,8 +370,10 @@ bool MetricsService::has_unsent_logs() const {
 
 void MetricsService::RecordDelta(const base::HistogramBase& histogram,
                                  const base::HistogramSamples& snapshot) {
+  histogram.ValidateHistogramContents(true, -1);
   log_manager_.current_log()->RecordHistogramDelta(histogram.histogram_name(),
                                                    snapshot);
+  histogram.ValidateHistogramContents(true, -2);
 }
 
 void MetricsService::HandleIdleSinceLastTransmission(bool in_idle) {
@@ -394,6 +400,7 @@ void MetricsService::RecordCompletedSessionEnd() {
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 void MetricsService::OnAppEnterBackground() {
+  base::StatisticsRecorder::ValidateAllHistograms();
   rotation_scheduler_->Stop();
   reporting_service_.Stop();
 
@@ -415,12 +422,15 @@ void MetricsService::OnAppEnterBackground() {
     // process is killed.
     OpenNewLog();
   }
+  base::StatisticsRecorder::ValidateAllHistograms();
 }
 
 void MetricsService::OnAppEnterForeground() {
+  base::StatisticsRecorder::ValidateAllHistograms();
   state_manager_->clean_exit_beacon()->WriteBeaconValue(false);
   ExecutionPhaseManager(local_state_).OnAppEnterForeground();
   StartSchedulerIfNecessary();
+  base::StatisticsRecorder::ValidateAllHistograms();
 }
 #else
 void MetricsService::LogNeedForCleanShutdown() {
@@ -598,6 +608,7 @@ void MetricsService::GetUptimes(PrefService* pref,
 
 void MetricsService::OpenNewLog() {
   DCHECK(!log_manager_.current_log());
+  base::StatisticsRecorder::ValidateAllHistograms();
 
   log_manager_.BeginLoggingWithLog(CreateLog(MetricsLog::ONGOING_LOG));
   delegating_provider_.OnDidCreateMetricsLog();
@@ -616,6 +627,8 @@ void MetricsService::OpenNewLog() {
                    self_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(2 * kInitializationDelaySeconds));
   }
+
+  base::StatisticsRecorder::ValidateAllHistograms();
 }
 
 void MetricsService::StartInitTask() {
@@ -624,6 +637,8 @@ void MetricsService::StartInitTask() {
 }
 
 void MetricsService::CloseCurrentLog() {
+  base::StatisticsRecorder::ValidateAllHistograms();
+
   if (!log_manager_.current_log())
     return;
 
@@ -650,6 +665,8 @@ void MetricsService::CloseCurrentLog() {
   current_log->TruncateEvents();
   DVLOG(1) << "Generated an ongoing log.";
   log_manager_.FinishCurrentLog(log_store());
+
+  base::StatisticsRecorder::ValidateAllHistograms();
 }
 
 void MetricsService::PushPendingLogsToPersistentStorage() {
@@ -681,6 +698,7 @@ void MetricsService::StartSchedulerIfNecessary() {
 void MetricsService::StartScheduledUpload() {
   DVLOG(1) << "StartScheduledUpload";
   DCHECK(state_ >= INIT_TASK_DONE);
+  base::StatisticsRecorder::ValidateAllHistograms();
   // If we're getting no notifications, then the log won't have much in it, and
   // it's possible the computer is about to go to sleep, so don't upload and
   // stop the scheduler.
@@ -708,10 +726,13 @@ void MetricsService::StartScheduledUpload() {
         base::Bind(&MetricsService::OnFinalLogInfoCollectionDone,
                    self_ptr_factory_.GetWeakPtr()));
   }
+
+  base::StatisticsRecorder::ValidateAllHistograms();
 }
 
 void MetricsService::OnFinalLogInfoCollectionDone() {
   DVLOG(1) << "OnFinalLogInfoCollectionDone";
+  base::StatisticsRecorder::ValidateAllHistograms();
   // Abort if metrics were turned off during the final info gathering.
   if (!recording_active()) {
     rotation_scheduler_->Stop();
@@ -729,6 +750,7 @@ void MetricsService::OnFinalLogInfoCollectionDone() {
   reporting_service_.Start();
   rotation_scheduler_->RotationFinished();
   HandleIdleSinceLastTransmission(true);
+  base::StatisticsRecorder::ValidateAllHistograms();
 }
 
 bool MetricsService::PrepareInitialStabilityLog(
