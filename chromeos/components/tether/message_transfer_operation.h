@@ -74,15 +74,11 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
   // Returns the type of message that this operation intends to send.
   virtual MessageType GetMessageTypeForConnection() = 0;
 
-  // Returns true if we should wait for a response from host devices. Note
-  // that if ShouldWaitForResponse() returns true and a response is not received
-  // within the amount of time returned by GetResponseTimeoutSeconds() after a
-  // host device authenticates, that host device will be unregistered.
-  virtual bool ShouldWaitForResponse();
-
-  // The number of seconds that we should wait for a response from the host. If
-  // ShouldWaitForResponse() returns false, this method is never used.
-  virtual uint32_t GetResponseTimeoutSeconds();
+  // The number of seconds that this operation should wait before unregistering
+  // a device after it has been authenticated if it has not been explicitly
+  // unregistered. If ShouldOperationUseTimeout() returns false, this method is
+  // never used.
+  virtual uint32_t GetTimeoutSeconds();
 
   std::vector<cryptauth::RemoteDevice>& remote_devices() {
     return remote_devices_;
@@ -96,20 +92,18 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
 
   static uint32_t kMaxConnectionAttemptsPerDevice;
 
-  // The default number of seconds the client should generally wait for a
-  // response from the host once an authenticated connection is established.
-  // Once this amount of time passes, the connection will be closed. Subclasses
-  // of MessageTransferOperation should override GetResponseTimeoutSeconds()
-  // if they desire a different duration.
-  static uint32_t kDefaultResponseTimeoutSeconds;
+  // The default number of seconds an operation should wait before a timeout
+  // occurs. Once this amount of time passes, the connection will be closed.
+  // Classes deriving from MessageTransferOperation should override
+  // GetTimeoutSeconds() if they desire a different duration.
+  static uint32_t kDefaultTimeoutSeconds;
 
   void SetTimerFactoryForTest(
       std::unique_ptr<TimerFactory> timer_factory_for_test);
-  void StartResponseTimerForDevice(
+  void StartTimerForDevice(const cryptauth::RemoteDevice& remote_device);
+  void StopTimerForDeviceIfRunning(
       const cryptauth::RemoteDevice& remote_device);
-  void StopResponseTimerForDeviceIfRunning(
-      const cryptauth::RemoteDevice& remote_device);
-  void OnResponseTimeout(const cryptauth::RemoteDevice& remote_device);
+  void OnTimeout(const cryptauth::RemoteDevice& remote_device);
 
   std::vector<cryptauth::RemoteDevice> remote_devices_;
   BleConnectionManager* connection_manager_;

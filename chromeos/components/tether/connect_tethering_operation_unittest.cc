@@ -160,10 +160,10 @@ class ConnectTetheringOperationTest : public testing::Test {
     uint32_t expected_response_timeout_seconds =
         setup_required
             ? ConnectTetheringOperation::kSetupRequiredResponseTimeoutSeconds
-            : MessageTransferOperation::kDefaultResponseTimeoutSeconds;
+            : MessageTransferOperation::kDefaultTimeoutSeconds;
 
     EXPECT_EQ(expected_response_timeout_seconds,
-              operation_->GetResponseTimeoutSeconds());
+              operation_->GetTimeoutSeconds());
   }
 
   const std::string connect_tethering_request_string_;

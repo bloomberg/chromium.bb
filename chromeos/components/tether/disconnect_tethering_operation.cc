@@ -49,7 +49,7 @@ DisconnectTetheringOperation::DisconnectTetheringOperation(
           std::vector<cryptauth::RemoteDevice>{device_to_connect},
           connection_manager),
       remote_device_(device_to_connect),
-      has_authenticated_(false) {}
+      has_sent_message_(false) {}
 
 DisconnectTetheringOperation::~DisconnectTetheringOperation() {}
 
@@ -71,7 +71,6 @@ void DisconnectTetheringOperation::NotifyObserversOperationFinished(
 void DisconnectTetheringOperation::OnDeviceAuthenticated(
     const cryptauth::RemoteDevice& remote_device) {
   DCHECK(remote_devices().size() == 1u && remote_devices()[0] == remote_device);
-  has_authenticated_ = true;
 
   disconnect_message_sequence_number_ = SendMessageToDevice(
       remote_device,
@@ -79,21 +78,18 @@ void DisconnectTetheringOperation::OnDeviceAuthenticated(
 }
 
 void DisconnectTetheringOperation::OnOperationFinished() {
-  NotifyObserversOperationFinished(has_authenticated_);
+  NotifyObserversOperationFinished(has_sent_message_);
 }
 
 MessageType DisconnectTetheringOperation::GetMessageTypeForConnection() {
   return MessageType::DISCONNECT_TETHERING_REQUEST;
 }
 
-bool DisconnectTetheringOperation::ShouldWaitForResponse() {
-  return false;
-}
-
 void DisconnectTetheringOperation::OnMessageSent(int sequence_number) {
   if (sequence_number != disconnect_message_sequence_number_)
     return;
 
+  has_sent_message_ = true;
   UnregisterDevice(remote_device_);
 }
 

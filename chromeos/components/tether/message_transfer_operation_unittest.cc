@@ -23,7 +23,7 @@ namespace {
 // except that it must be consistent throughout the test.
 const MessageType kTestMessageType = MessageType::TETHER_AVAILABILITY_REQUEST;
 
-const uint32_t kTestResponseTimeoutSeconds = 5;
+const uint32_t kTestTimeoutSeconds = 5;
 
 // A test double for MessageTransferOperation is needed because
 // MessageTransferOperation has pure virtual methods which must be overridden in
@@ -78,18 +78,10 @@ class TestOperation : public MessageTransferOperation {
     return kTestMessageType;
   }
 
-  bool ShouldWaitForResponse() override { return should_wait_for_response_; }
+  uint32_t GetTimeoutSeconds() override { return timeout_seconds_; }
 
-  uint32_t GetResponseTimeoutSeconds() override {
-    return response_timeout_seconds_;
-  }
-
-  void set_should_wait_for_response(bool should_wait_for_response) {
-    should_wait_for_response_ = should_wait_for_response;
-  }
-
-  void set_response_timeout_seconds(uint32_t response_timeout_seconds) {
-    response_timeout_seconds_ = response_timeout_seconds;
+  void set_timeout_seconds(uint32_t timeout_seconds) {
+    timeout_seconds_ = timeout_seconds;
   }
 
   void set_should_unregister_device_on_message_received(
@@ -113,8 +105,7 @@ class TestOperation : public MessageTransferOperation {
 
   std::map<cryptauth::RemoteDevice, DeviceMapValue> device_map_;
 
-  bool should_wait_for_response_ = true;
-  uint32_t response_timeout_seconds_ = kTestResponseTimeoutSeconds;
+  uint32_t timeout_seconds_ = kTestTimeoutSeconds;
   bool should_unregister_device_on_message_received_ = false;
   bool has_operation_started_ = false;
   bool has_operation_finished_ = false;
@@ -133,7 +124,7 @@ class TestTimerFactory : public TimerFactory {
     return base::WrapUnique(mock_timer);
   }
 
-  base::MockTimer* GetResponseTimerForDeviceId(const std::string& device_id) {
+  base::MockTimer* GetTimerForDeviceId(const std::string& device_id) {
     return device_id_to_timer_map_[device_id_for_next_timer_];
   }
 
@@ -216,22 +207,22 @@ class MessageTransferOperationTest : public testing::Test {
         remote_device, cryptauth::SecureChannel::Status::AUTHENTICATED);
   }
 
-  base::MockTimer* GetResponseTimerForDevice(
+  base::MockTimer* GetTimerForDevice(
       const cryptauth::RemoteDevice& remote_device) {
-    return test_timer_factory_->GetResponseTimerForDeviceId(
+    return test_timer_factory_->GetTimerForDeviceId(
         remote_device.GetDeviceId());
   }
 
   void VerifyDefaultTimerCreatedForDevice(
       const cryptauth::RemoteDevice& remote_device) {
-    VerifyTimerCreatedForDevice(remote_device, kTestResponseTimeoutSeconds);
+    VerifyTimerCreatedForDevice(remote_device, kTestTimeoutSeconds);
   }
 
   void VerifyTimerCreatedForDevice(const cryptauth::RemoteDevice& remote_device,
-                                   uint32_t response_timeout_seconds) {
-    EXPECT_TRUE(GetResponseTimerForDevice(remote_device));
-    EXPECT_EQ(base::TimeDelta::FromSeconds(response_timeout_seconds),
-              GetResponseTimerForDevice(remote_device)->GetCurrentDelay());
+                                   uint32_t timeout_seconds) {
+    EXPECT_TRUE(GetTimerForDevice(remote_device));
+    EXPECT_EQ(base::TimeDelta::FromSeconds(timeout_seconds),
+              GetTimerForDevice(remote_device)->GetCurrentDelay());
   }
 
   const std::vector<cryptauth::RemoteDevice> test_devices_;
@@ -351,51 +342,22 @@ TEST_F(MessageTransferOperationTest,
 }
 
 TEST_F(MessageTransferOperationTest,
-       TestSuccessfulConnectionAndReceiveMessage_ResponseTimeoutSeconds) {
-  const uint32_t response_timeout_seconds = 90;
+       TestSuccessfulConnectionAndReceiveMessage_TimeoutSeconds) {
+  const uint32_t timeout_seconds = 90;
 
   ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
   InitializeOperation();
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
 
-  operation_->set_response_timeout_seconds(response_timeout_seconds);
+  operation_->set_timeout_seconds(timeout_seconds);
 
   TransitionDeviceStatusFromDisconnectedToAuthenticated(test_devices_[0]);
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
   EXPECT_TRUE(operation_->HasDeviceAuthenticated(test_devices_[0]));
-  VerifyTimerCreatedForDevice(test_devices_[0], response_timeout_seconds);
+  VerifyTimerCreatedForDevice(test_devices_[0], timeout_seconds);
 
-  EXPECT_EQ(base::TimeDelta::FromSeconds(response_timeout_seconds),
-            GetResponseTimerForDevice(test_devices_[0])->GetCurrentDelay());
-
-  fake_ble_connection_manager_->ReceiveMessage(
-      test_devices_[0],
-      MessageWrapper(CreateTetherAvailabilityResponse()).ToRawMessage());
-
-  EXPECT_EQ(1u, operation_->GetReceivedMessages(test_devices_[0]).size());
-  std::shared_ptr<MessageWrapper> message =
-      operation_->GetReceivedMessages(test_devices_[0])[0];
-  EXPECT_EQ(MessageType::TETHER_AVAILABILITY_RESPONSE,
-            message->GetMessageType());
-  EXPECT_EQ(CreateTetherAvailabilityResponse().SerializeAsString(),
-            message->GetProto()->SerializeAsString());
-}
-
-TEST_F(MessageTransferOperationTest,
-       TestSuccessfulConnectionAndReceiveMessage_ShouldNotWaitForResponse) {
-  ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
-  InitializeOperation();
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
-
-  operation_->set_should_wait_for_response(false);
-
-  TransitionDeviceStatusFromDisconnectedToAuthenticated(test_devices_[0]);
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
-  EXPECT_TRUE(operation_->HasDeviceAuthenticated(test_devices_[0]));
-
-  // A Timer should not have been created because the operation should not wait
-  // for a response.
-  EXPECT_FALSE(GetResponseTimerForDevice(test_devices_[0]));
+  EXPECT_EQ(base::TimeDelta::FromSeconds(timeout_seconds),
+            GetTimerForDevice(test_devices_[0])->GetCurrentDelay());
 
   fake_ble_connection_manager_->ReceiveMessage(
       test_devices_[0],
@@ -420,7 +382,7 @@ TEST_F(MessageTransferOperationTest, TestAuthenticatesButTimesOut) {
   EXPECT_TRUE(operation_->HasDeviceAuthenticated(test_devices_[0]));
   VerifyDefaultTimerCreatedForDevice(test_devices_[0]);
 
-  GetResponseTimerForDevice(test_devices_[0])->Fire();
+  GetTimerForDevice(test_devices_[0])->Fire();
 
   EXPECT_FALSE(IsDeviceRegistered(test_devices_[0]));
   EXPECT_TRUE(operation_->has_operation_finished());
@@ -509,7 +471,7 @@ TEST_F(MessageTransferOperationTest,
 }
 
 TEST_F(MessageTransferOperationTest,
-       AlreadyAuthenticatedBeforeInitialization_TimesOutWaitingForResponse) {
+       AlreadyAuthenticatedBeforeInitialization_TimesOut) {
   ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
 
   // Simulate the authentication of |test_devices_[0]|'s channel before
@@ -524,7 +486,7 @@ TEST_F(MessageTransferOperationTest,
   EXPECT_TRUE(operation_->HasDeviceAuthenticated(test_devices_[0]));
   VerifyDefaultTimerCreatedForDevice(test_devices_[0]);
 
-  GetResponseTimerForDevice(test_devices_[0])->Fire();
+  GetTimerForDevice(test_devices_[0])->Fire();
 
   EXPECT_FALSE(IsDeviceRegistered(test_devices_[0]));
   EXPECT_TRUE(operation_->has_operation_finished());
@@ -563,7 +525,7 @@ TEST_F(MessageTransferOperationTest, MultipleDevices) {
       test_devices_[1], cryptauth::SecureChannel::Status::DISCONNECTED);
   EXPECT_FALSE(operation_->HasDeviceAuthenticated(test_devices_[1]));
   EXPECT_FALSE(IsDeviceRegistered(test_devices_[1]));
-  EXPECT_FALSE(GetResponseTimerForDevice(test_devices_[1]));
+  EXPECT_FALSE(GetTimerForDevice(test_devices_[1]));
 
   // Authenticate |test_devices_[2]|'s channel.
   fake_ble_connection_manager_->RegisterRemoteDevice(
@@ -588,7 +550,7 @@ TEST_F(MessageTransferOperationTest, MultipleDevices) {
       test_devices_[3], cryptauth::SecureChannel::Status::DISCONNECTED);
   EXPECT_FALSE(operation_->HasDeviceAuthenticated(test_devices_[3]));
   EXPECT_FALSE(IsDeviceRegistered(test_devices_[3]));
-  EXPECT_FALSE(GetResponseTimerForDevice(test_devices_[3]));
+  EXPECT_FALSE(GetTimerForDevice(test_devices_[3]));
 }
 
 }  // namespace tether

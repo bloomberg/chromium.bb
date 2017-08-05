@@ -525,9 +525,23 @@ void BluetoothLowEnergyWeaveClientConnection::OnRemoteCharacteristicWritten() {
     case WriteRequestType::REGULAR:
     case WriteRequestType::CONNECTION_REQUEST:
       break;
-    case WriteRequestType::MESSAGE_COMPLETE:
+    case WriteRequestType::MESSAGE_COMPLETE: {
+      // Create a WeakPtr to |this| before invoking observer callbacks. It is
+      // possible that an Observer will respond to the OnSendCompleted() call
+      // by destroying the connection (e.g., if the client only wanted to send
+      // one message and destroyed the connection after the message was sent).
+      base::WeakPtr<BluetoothLowEnergyWeaveClientConnection> weak_this =
+          weak_ptr_factory_.GetWeakPtr();
+
       OnDidSendMessage(*request.message, true);
+
+      if (!weak_this.get()) {
+        // If |weak_this| has been invalidated, |this| has been deleted, and
+        // the connection should no longer continue processing messages.
+        return;
+      }
       break;
+    }
     case WriteRequestType::CONNECTION_CLOSE:
       DestroyConnection();
       return;

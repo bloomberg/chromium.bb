@@ -170,6 +170,9 @@ void BleConnectionManager::ConnectionMetadata::OnMessageSent(
     cryptauth::SecureChannel* secure_channel,
     int sequence_number) {
   DCHECK(secure_channel_.get() == secure_channel);
+  PA_LOG(INFO) << "Message sent successfully to device with ID \""
+               << remote_device_.GetTruncatedDeviceIdForLogs() << "\"; "
+               << "message sequence number: " << sequence_number;
   manager_->SendMessageSentEvent(sequence_number);
 }
 
@@ -515,8 +518,6 @@ void BleConnectionManager::SendSecureChannelStatusChangeEvent(
 }
 
 void BleConnectionManager::SendMessageSentEvent(int sequence_number) {
-  PA_LOG(INFO) << "Message sent successfully; sequence number: "
-               << sequence_number;
   for (auto& observer : observer_list_) {
     observer.OnMessageSent(sequence_number);
   }

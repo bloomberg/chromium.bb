@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_CRYPTAUTH_SECURE_CHANNEL_H_
 #define COMPONENTS_CRYPTAUTH_SECURE_CHANNEL_H_
 
-#include <deque>
+#include <queue>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -119,6 +119,8 @@ class SecureChannel : public ConnectionObserver {
   Status status_;
 
  private:
+  friend class CryptAuthSecureChannelTest;
+
   // Message waiting to be sent. Note that this is *not* the message that will
   // end up being sent over the wire; before that can be done, the payload must
   // be encrypted.
@@ -149,7 +151,7 @@ class SecureChannel : public ConnectionObserver {
   CryptAuthService* cryptauth_service_;  // Outlives this instance.
   std::unique_ptr<Authenticator> authenticator_;
   std::unique_ptr<SecureContext> secure_context_;
-  std::deque<PendingMessage> queued_messages_;
+  std::queue<std::unique_ptr<PendingMessage>> queued_messages_;
   std::unique_ptr<PendingMessage> pending_message_;
   int next_sequence_number_ = 0;
   base::ObserverList<Observer> observer_list_;
