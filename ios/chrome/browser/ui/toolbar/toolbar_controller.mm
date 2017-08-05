@@ -15,6 +15,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/animation_util.h"
+#include "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
@@ -121,6 +122,10 @@ const LayoutRect kToolsMenuButtonFrame[INTERFACE_IDIOM_COUNT] = {
 
 // Distance to shift buttons when fading out.
 const LayoutOffset kButtonFadeOutXOffset = 10;
+
+// The amount of horizontal padding removed from a view's frame when presenting
+// a popover anchored to it.
+const CGFloat kPopoverAnchorHorizontalPadding = 10.0;
 
 }  // namespace
 
@@ -577,7 +582,7 @@ const LayoutOffset kButtonFadeOutXOffset = 10;
 - (CGRect)shareButtonAnchorRect {
   // Shrink the padding around the shareButton so the popovers are anchored
   // correctly.
-  return CGRectInset([shareButton_ bounds], 10, 0);
+  return CGRectInset([shareButton_ bounds], kPopoverAnchorHorizontalPadding, 0);
 }
 
 - (UIView*)shareButtonView {
@@ -1049,6 +1054,29 @@ const LayoutOffset kButtonFadeOutXOffset = 10;
   if ([controller isKindOfClass:[ToolsPopupController class]] &&
       (ToolsPopupController*)controller == toolsPopupController_)
     [self dismissToolsMenuPopup];
+}
+
+#pragma mark -
+#pragma mark BubbleViewAnchorPointProvider methods.
+
+- (CGPoint)anchorPointForTabSwitcherButton:(BubbleArrowDirection)direction {
+  // Shrink the padding around the tab switcher button so popovers are anchored
+  // correctly.
+  CGRect unpaddedRect =
+      CGRectInset(stackButton_.frame, kPopoverAnchorHorizontalPadding, 0.0);
+  CGPoint anchorPoint = bubble_util::AnchorPoint(unpaddedRect, direction);
+  return [stackButton_.superview convertPoint:anchorPoint
+                                       toView:stackButton_.window];
+}
+
+- (CGPoint)anchorPointForToolsMenuButton:(BubbleArrowDirection)direction {
+  // Shrink the padding around the tools menu button so popovers are anchored
+  // correctly.
+  CGRect unpaddedRect =
+      CGRectInset(toolsMenuButton_.frame, kPopoverAnchorHorizontalPadding, 0.0);
+  CGPoint anchorPoint = bubble_util::AnchorPoint(unpaddedRect, direction);
+  return [toolsMenuButton_.superview convertPoint:anchorPoint
+                                           toView:toolsMenuButton_.window];
 }
 
 @end

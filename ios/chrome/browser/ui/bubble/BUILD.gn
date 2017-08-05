@@ -9,6 +9,7 @@ source_set("bubble") {
     "bubble_util.mm",
     "bubble_view.h",
     "bubble_view.mm",
+    "bubble_view_anchor_point_provider.h",
     "bubble_view_controller.h",
     "bubble_view_controller.mm",
   ]
