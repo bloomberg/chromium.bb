@@ -14,7 +14,7 @@ namespace blink {
 
 using namespace CSSPropertyParserHelpers;
 
-const CSSValue* CSSPropertyAPIShapeOutside::parseSingleValue(
+const CSSValue* CSSPropertyAPIShapeOutside::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {

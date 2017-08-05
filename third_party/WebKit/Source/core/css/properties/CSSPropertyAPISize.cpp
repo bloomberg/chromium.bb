@@ -17,7 +17,7 @@ static CSSValue* ConsumePageSize(CSSParserTokenRange& range) {
       CSSValueLedger, CSSValueLegal, CSSValueLetter>(range);
 }
 
-const CSSValue* CSSPropertyAPISize::parseSingleValue(
+const CSSValue* CSSPropertyAPISize::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {

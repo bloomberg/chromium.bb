@@ -15,14 +15,14 @@
 
 namespace blink {
 
-bool CSSShorthandPropertyAPIOffset::parseShorthand(
+bool CSSShorthandPropertyAPIOffset::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     bool,
     HeapVector<CSSProperty, 256>& properties) {
   const CSSValue* offset_position =
-      CSSPropertyAPIOffsetPosition::parseSingleValue(range, context,
+      CSSPropertyAPIOffsetPosition::ParseSingleValue(range, context,
                                                      CSSParserLocalContext());
   const CSSValue* offset_path =
       CSSPropertyOffsetPathUtils::ConsumeOffsetPath(range, context);
@@ -40,7 +40,7 @@ bool CSSShorthandPropertyAPIOffset::parseShorthand(
   }
   const CSSValue* offset_anchor = nullptr;
   if (CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range)) {
-    offset_anchor = CSSPropertyAPIOffsetAnchor::parseSingleValue(
+    offset_anchor = CSSPropertyAPIOffsetAnchor::ParseSingleValue(
         range, context, CSSParserLocalContext());
     if (!offset_anchor)
       return false;

@@ -32,12 +32,12 @@ has a property API called CSSShorthandPropertyAPI<ShorthandProperty>.
 
 1.  CSSPropertyAPI<LonghandProperty>
     Aims to implement all property-specific logic for this longhand property. Currently(7/6/2017) it implements:
-    1. static const CSSValue* parseSingleValue(CSSParserTokenRange&, const CSSParserContext&, const CSSParserLocalContext&);
+    1. static const CSSValue* ParseSingleValue(CSSParserTokenRange&, const CSSParserContext&, const CSSParserLocalContext&);
        - Parses a single CSS property and returns the corresponding CSSValue. If the input is invalid it returns nullptr.
 
 2.  CSSShorthandPropertyAPI<ShorthandProperty>
     Aims to implement all property-specific logic for this shorthand property. Currently(7/6/2017) it implements:
-    1. static bool parseShorthand(bool important, CSSParserTokenRange&, const CSSParserContext*, HeapVector<CSSProperty, 256>& properties);
+    1. static bool ParseShorthand(bool important, CSSParserTokenRange&, const CSSParserContext*, HeapVector<CSSProperty, 256>& properties);
        - Returns true if the property can be parsed as a shorthand. It also adds parsed properties to the `properties` set.
 
 
@@ -66,7 +66,7 @@ has a property API called CSSShorthandPropertyAPI<ShorthandProperty>.
 
 See [this example CL](https://codereview.chromium.org/2735093005), which
 converts the existing line-height property to use the CSSPropertyAPI design.
-This new line-height property API only implements the parseSingleValue method,
+This new line-height property API only implements the ParseSingleValue method,
 using
 [CSSPropertyFontUtils.cpp](https://cs.chromium.org/chromium/src/third_party/WebKit/Source/core/css/properties/CSSPropertyFontUtils.h)
 to access shared font logic.

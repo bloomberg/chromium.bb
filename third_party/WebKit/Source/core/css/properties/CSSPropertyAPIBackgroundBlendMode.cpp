@@ -8,7 +8,7 @@
 
 namespace blink {
 
-const CSSValue* CSSPropertyAPIBackgroundBlendMode::parseSingleValue(
+const CSSValue* CSSPropertyAPIBackgroundBlendMode::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) {

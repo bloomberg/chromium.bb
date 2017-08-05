@@ -10,7 +10,7 @@
 
 namespace blink {
 
-const CSSValue* CSSPropertyAPIAnimationIterationCount::parseSingleValue(
+const CSSValue* CSSPropertyAPIAnimationIterationCount::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) {

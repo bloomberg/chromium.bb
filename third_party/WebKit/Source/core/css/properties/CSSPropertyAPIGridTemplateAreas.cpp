@@ -15,7 +15,7 @@
 
 namespace blink {
 
-const CSSValue* CSSPropertyAPIGridTemplateAreas::parseSingleValue(
+const CSSValue* CSSPropertyAPIGridTemplateAreas::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) {

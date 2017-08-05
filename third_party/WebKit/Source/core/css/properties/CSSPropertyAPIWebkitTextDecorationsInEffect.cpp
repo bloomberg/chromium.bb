@@ -8,7 +8,7 @@
 
 namespace blink {
 
-const CSSValue* CSSPropertyAPIWebkitTextDecorationsInEffect::parseSingleValue(
+const CSSValue* CSSPropertyAPIWebkitTextDecorationsInEffect::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) {

@@ -916,8 +916,8 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
   // statement.
   const CSSPropertyDescriptor& css_property_desc =
       CSSPropertyDescriptor::Get(property);
-  if (css_property_desc.parseShorthand) {
-    return css_property_desc.parseShorthand(
+  if (css_property_desc.ParseShorthand) {
+    return css_property_desc.ParseShorthand(
         important, range_, *context_, isPropertyAlias(unresolved_property),
         *parsed_properties_);
   }

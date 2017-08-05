@@ -10,7 +10,7 @@
 namespace blink {
 class CSSParserLocalContext;
 
-const CSSValue* CSSPropertyAPILogicalWidthOrHeight::parseSingleValue(
+const CSSValue* CSSPropertyAPILogicalWidthOrHeight::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) {

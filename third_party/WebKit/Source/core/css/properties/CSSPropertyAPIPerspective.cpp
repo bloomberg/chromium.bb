@@ -11,7 +11,7 @@
 
 namespace blink {
 
-const CSSValue* CSSPropertyAPIPerspective::parseSingleValue(
+const CSSValue* CSSPropertyAPIPerspective::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext& localContext) {

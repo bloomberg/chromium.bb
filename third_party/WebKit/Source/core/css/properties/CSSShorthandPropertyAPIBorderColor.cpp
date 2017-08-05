@@ -9,7 +9,7 @@
 
 namespace blink {
 
-bool CSSShorthandPropertyAPIBorderColor::parseShorthand(
+bool CSSShorthandPropertyAPIBorderColor::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
