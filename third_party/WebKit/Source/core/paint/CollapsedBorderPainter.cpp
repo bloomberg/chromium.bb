@@ -86,14 +86,21 @@ void CollapsedBorderPainter::SetupBorders() {
 
   // Skip painting the before border if it will be painted by the above cell
   // as its after border. If we break page before the row with non-zero strut
-  // (which means a gap between this row and the row above), we need to paint
+  // (which means a gap between this row and the row above), or if we are
+  // painting the top row of a footer that repeats on each page we need to paint
   // the before border separately.
+  // TODO(crbug.com/751177) : This will double-paint the top border of the
+  // footer on the last page.
   if (before_.value && !cell_.Row()->PaginationStrut()) {
     const auto* cell_above = table_.CellAbove(cell_);
     if (cell_.StartsAtSameColumn(cell_above) &&
         cell_above->ColSpan() >= cell_.ColSpan() &&
         cell_above->Row()->HasSameDirectionAs(&table_)) {
-      before_.value = nullptr;
+      bool cell_is_top_of_repeating_footer =
+          cell_.Section()->IsRepeatingFooterGroup() &&
+          (!cell_above || cell_above->Section() != cell_.Section());
+      if (!cell_is_top_of_repeating_footer)
+        before_.value = nullptr;
       // Otherwise we'll still paint the shared border twice which may cause
       // incorrect border conflict resolution for row/col spanning cells.
       // TODO(crbug.com/2902 etc.): Paint collapsed borders by grid cells.

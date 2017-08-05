@@ -650,6 +650,23 @@ void LayoutTable::UpdateLayout() {
             : kTableHeightNotChanging;
     old_available_logical_height_ = current_available_logical_height;
 
+    // Lay out table footer to get its raw height. This will help us decide
+    // if we can repeat it in each page/column.
+    if (LayoutTableSection* section = Footer()) {
+      if (section->GetPaginationBreakability() != kAllowAnyBreaks) {
+        section->LayoutIfNeeded();
+        int section_logical_height = section->CalcRowLogicalHeight();
+        section->SetLogicalHeight(LayoutUnit(section_logical_height));
+      }
+      section->DetermineIfFooterGroupShouldRepeat();
+      if (section->IsRepeatingFooterGroup()) {
+        LayoutUnit offset_for_table_footers =
+            state.HeightOffsetForTableFooters();
+        offset_for_table_footers += section->LogicalHeight();
+        SetRowOffsetFromRepeatingFooter(offset_for_table_footers);
+      }
+    }
+
     // Lay out table header group.
     if (LayoutTableSection* section = Header()) {
       LayoutSection(*section, layouter, section_logical_left,
@@ -666,12 +683,13 @@ void LayoutTable::UpdateLayout() {
           // height from its content.
           if (LayoutTableRow* row = section->FirstRow())
             offset_for_table_headers -= row->PaginationStrut();
-          state.SetHeightOffsetForTableHeaders(offset_for_table_headers);
           SetRowOffsetFromRepeatingHeader(offset_for_table_headers);
         }
       }
     }
 
+    state.SetHeightOffsetForTableHeaders(RowOffsetFromRepeatingHeader());
+    state.SetHeightOffsetForTableFooters(RowOffsetFromRepeatingFooter());
     // Lay out table body groups, and column groups.
     for (LayoutObject* child = FirstChild(); child;
          child = child->NextSibling()) {
@@ -687,6 +705,9 @@ void LayoutTable::UpdateLayout() {
         DCHECK(child->IsTableCaption());
       }
     }
+    // Reset these so they don't affect the layout of footers or captions.
+    state.SetHeightOffsetForTableHeaders(LayoutUnit());
+    state.SetHeightOffsetForTableFooters(LayoutUnit());
 
     // Lay out table footer.
     if (LayoutTableSection* section = Footer()) {

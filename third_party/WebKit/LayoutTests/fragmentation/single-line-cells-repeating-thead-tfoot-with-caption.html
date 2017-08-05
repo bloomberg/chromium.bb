@@ -1,19 +1,21 @@
 <!DOCTYPE html>
 <style>
 table {
+    font-size: 16px;
     border-collapse: collapse;
 }
 td, th {
     background-color: #ddd;
     border: 1px solid black;
 }
-thead, tfoot, tr {
+thead, tr , tfoot{
     break-inside: avoid;
 }
 </style>
-<p>crbug.com/675453: Content of a cell that spans multiple pages should avoid the repeating header.</p>
-<div style="columns:3; line-height: 20px; column-fill: auto; height:100px; background-color: yellow;">
+<p>crbug.com/656232: Rows and headers should repeat correctly in the presence of a top caption.</p>
+<div style="columns:3; line-height: 18px; column-fill: auto; height:91px; background-color: yellow;">
     <table>
+        <caption>Caption</caption>
         <thead>
             <tr>
                 <th>Col 1</th>
@@ -23,18 +25,9 @@ thead, tfoot, tr {
         <tbody>
         <tr><td>Te</td><td>xt</td></tr>
         <tr><td>Te</td><td>xt</td></tr>
-        <tr><td>
-            Te<br>
-            Te<br>
-            Te<br>
-            Te<br>
-          </td>
-          <td>
-            xt<br>
-            xt<br>
-            xt<br>
-            xt<br>
-          </td></tr>
+        <tr><td>Te</td><td>xt</td></tr>
+        <tr><td>Te</td><td>xt</td></tr>
+        <tr><td>Te</td><td>xt</td></tr>
         </tbody>
         <tfoot>
             <tr>

@@ -96,7 +96,8 @@ LayoutTableSection::LayoutTableSection(Element* element)
       force_full_paint_(false),
       has_multiple_cell_levels_(false),
       has_spanning_cells_(false),
-      is_repeating_header_group_(false) {
+      is_repeating_header_group_(false),
+      is_repeating_footer_group_(false) {
   // init LayoutObject attributes
   SetInline(false);  // our object is not Inline
 }
@@ -1275,7 +1276,11 @@ void LayoutTableSection::LayoutRows() {
 int LayoutTableSection::PaginationStrutForRow(LayoutTableRow* row,
                                               LayoutUnit logical_offset) const {
   DCHECK(row);
-  if (row->GetPaginationBreakability() == kAllowAnyBreaks)
+  const LayoutTableSection* footer = Table()->Footer();
+  bool make_room_for_repeating_footer =
+      footer && footer->IsRepeatingFooterGroup() && row->RowIndex();
+  if (!make_room_for_repeating_footer &&
+      row->GetPaginationBreakability() == kAllowAnyBreaks)
     return 0;
   if (!IsPageLogicalHeightKnown())
     return 0;
@@ -1970,15 +1975,15 @@ void LayoutTableSection::AdjustRowForPagination(LayoutTableRow& row_object,
   row_object.SetLogicalHeight(LayoutUnit(LogicalHeightForRow(row_object)));
 }
 
-bool LayoutTableSection::HeaderGroupShouldRepeat() const {
-  if (Table()->Header() != this)
-    return false;
-
+bool LayoutTableSection::GroupShouldRepeat() const {
+  DCHECK(Table()->Header() == this || Table()->Footer() == this);
   if (GetPaginationBreakability() == kAllowAnyBreaks)
     return false;
+
   // TODO(rhogan): Sections can be self-painting.
   if (HasSelfPaintingLayer())
     return false;
+
   // If we don't know the page height yet, just assume we fit.
   if (!IsPageLogicalHeightKnown())
     return true;
@@ -2001,17 +2006,21 @@ bool LayoutTableSection::MapToVisualRectInAncestorSpaceInternal(
     VisualRectFlags flags) const {
   if (ancestor == this)
     return true;
-  // Repeating table headers are painted once per fragmentation page/column.
+  // Repeating table headers and footers are painted once per
+  // page/column. So we need to use the rect for the entire table because
+  // the repeating headers/footers will appear throughout it.
   // This does not go through the regular fragmentation machinery, so we need
   // special code to expand the invalidation rect to contain all positions of
   // the header in all columns.
   // Note that this is in flow thread coordinates, not visual coordinates. The
   // enclosing LayoutFlowThread will convert to visual coordinates.
-  if (IsRepeatingHeaderGroup()) {
+  if (IsRepeatingHeaderGroup() || IsRepeatingFooterGroup()) {
     transform_state.Flatten();
     FloatRect rect = transform_state.LastPlanarQuad().BoundingBox();
     rect.SetHeight(Table()->LogicalHeight());
     transform_state.SetQuad(FloatQuad(rect));
+    return Table()->MapToVisualRectInAncestorSpaceInternal(
+        ancestor, transform_state, flags);
   }
   return LayoutTableBoxComponent::MapToVisualRectInAncestorSpaceInternal(
       ancestor, transform_state, flags);
