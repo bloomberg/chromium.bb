@@ -337,6 +337,7 @@ dmabuf_image_destroy(struct dmabuf_image *image)
 		linux_dmabuf_buffer_set_user_data(image->dmabuf, NULL, NULL);
 
 	wl_list_remove(&image->link);
+	free(image);
 }
 
 static const char *
