@@ -25,6 +25,7 @@ class AwDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
   // content::DevToolsManagerDelegate implementation.
   std::string GetTargetDescription(content::WebContents* web_contents) override;
   std::string GetDiscoveryPageHTML() override;
+  bool IsBrowserTargetDiscoverable() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AwDevToolsManagerDelegate);

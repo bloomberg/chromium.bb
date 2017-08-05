@@ -250,6 +250,10 @@ std::string DevToolsManagerDelegateAndroid::GetDiscoveryPageHTML() {
       IDR_DEVTOOLS_DISCOVERY_PAGE_HTML).as_string();
 }
 
+bool DevToolsManagerDelegateAndroid::IsBrowserTargetDiscoverable() {
+  return true;
+}
+
 void DevToolsManagerDelegateAndroid::DevToolsAgentHostAttached(
     content::DevToolsAgentHost* agent_host) {
   network_protocol_handler_->DevToolsAgentStateChanged(agent_host, true);

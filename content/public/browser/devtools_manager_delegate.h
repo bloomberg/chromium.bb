@@ -59,6 +59,10 @@ class CONTENT_EXPORT DevToolsManagerDelegate {
   // Returns frontend resource data by |path|.
   virtual std::string GetFrontendResource(const std::string& path);
 
+  // Returns true for browsers running in the controlled environment that allow
+  // remote debugging.
+  virtual bool IsBrowserTargetDiscoverable();
+
   virtual ~DevToolsManagerDelegate();
 };
 

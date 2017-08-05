@@ -463,6 +463,9 @@ void DevToolsDeviceDiscovery::DiscoveryRequest::ReceivedVersion(
       else
         browser->version_ = browser_name;
     }
+    browser->browser_target_id_ = GetTargetPath(dict);
+    if (browser->browser_target_id_.empty())
+      browser->browser_target_id_ = kBrowserTargetSocket;
     std::string package;
     if (dict->GetString("Android-Package", &package)) {
       browser->display_name_ =
@@ -602,10 +605,9 @@ DevToolsDeviceDiscovery::CreateBrowserAgentHost(
     scoped_refptr<AndroidDeviceManager::Device> device,
     scoped_refptr<RemoteBrowser> browser) {
   return AgentHostDelegate::GetOrCreateAgentHost(
-      device,
-      browser->browser_id_,
+      device, browser->browser_id_,
       "adb:" + browser->serial() + ":" + browser->socket(),
-      kBrowserTargetSocket, DevToolsAgentHost::kTypeBrowser, nullptr);
+      browser->browser_target_id(), DevToolsAgentHost::kTypeBrowser, nullptr);
 }
 
 void DevToolsDeviceDiscovery::RequestDeviceList() {
