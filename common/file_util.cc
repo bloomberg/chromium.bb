@@ -65,6 +65,15 @@ uint64_t GetFileSize(const std::string& file_name) {
   return file_size;
 }
 
+bool GetFileContents(const std::string& file_name, std::string* contents) {
+  std::ifstream file(file_name.c_str());
+  *contents = std::string(static_cast<size_t>(GetFileSize(file_name)), 0);
+  if (file.good() && contents->size()) {
+    file.read(&(*contents)[0], contents->size());
+  }
+  return !file.fail();
+}
+
 TempFileDeleter::TempFileDeleter() { file_name_ = GetTempFileName(); }
 
 TempFileDeleter::~TempFileDeleter() {
