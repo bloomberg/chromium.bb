@@ -70,8 +70,8 @@ void InitFonts(const char* fontconfig_path) {
   // stable across runs, otherwise replacement font picks are random
   // and cause flakiness.
   std::set<std::string> fonts;
-  struct dirent entry, *result;
-  while (readdir_r(fc_dir, &entry, &result) == 0 && result != NULL) {
+  struct dirent *result;
+  while ((result = readdir(fc_dir))) {
     fonts.insert(result->d_name);
   }
   for (const std::string& font : fonts) {

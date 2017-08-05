@@ -93,17 +93,16 @@ static base::File::Error GetDirectoryEntries(const FilePath& dir_param,
   DIR* dir = opendir(dir_string.c_str());
   if (!dir)
     return base::File::OSErrorToFileError(errno);
-  struct dirent dent_buf;
   struct dirent* dent;
-  int readdir_result;
-  while ((readdir_result = readdir_r(dir, &dent_buf, &dent)) == 0 && dent) {
+  errno = 0;
+  while ((dent = readdir(dir))) {
     if (strcmp(dent->d_name, ".") == 0 || strcmp(dent->d_name, "..") == 0)
       continue;
     result->push_back(FilePath::FromUTF8Unsafe(dent->d_name));
   }
   int saved_errno = errno;
   closedir(dir);
-  if (readdir_result != 0)
+  if (errno != 0)
     return base::File::OSErrorToFileError(saved_errno);
   return base::File::FILE_OK;
 #endif

@@ -39,6 +39,12 @@ if (!use_system_libdrm) {
     ]
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
+    cflags = [
+      # xf86drm.c uses readdir_r, which has been deprecated as of
+      # glibc-2.24.  This causes a build error when using the Debian
+      # Stretch sysroot.
+      "-Wno-deprecated-declarations",
+    ]
 
     public_configs = [ ":libdrm_config" ]
   }
