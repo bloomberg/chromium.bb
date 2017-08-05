@@ -168,6 +168,9 @@ class ChromeDownloadManagerDelegate
   // download restriction pref and |danger_type|.
   bool ShouldBlockFile(content::DownloadDangerType danger_type) const;
 
+  void MaybeSendDangerousDownloadOpenedReport(content::DownloadItem* download,
+                                              bool show_download_in_folder);
+
   Profile* profile_;
   uint32_t next_download_id_;
   IdCallbackVector id_callbacks_;

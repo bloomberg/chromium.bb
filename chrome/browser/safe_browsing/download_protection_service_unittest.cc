@@ -103,7 +103,7 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
 class FakeSafeBrowsingService : public SafeBrowsingService,
                                 public ServicesDelegate::ServicesCreator {
  public:
-  FakeSafeBrowsingService() {
+  FakeSafeBrowsingService() : download_report_count_(0) {
     services_delegate_ = ServicesDelegate::CreateForTest(this, this);
   }
 
@@ -113,8 +113,14 @@ class FakeSafeBrowsingService : public SafeBrowsingService,
     return mock_database_manager_;
   }
 
+  void SendSerializedDownloadReport(const std::string& unused_report) override {
+    download_report_count_++;
+  }
+
+  int download_report_count() { return download_report_count_; }
+
  protected:
-  ~FakeSafeBrowsingService() override {}
+  ~FakeSafeBrowsingService() override { mock_database_manager_ = nullptr; }
 
   SafeBrowsingDatabaseManager* CreateDatabaseManager() override {
     mock_database_manager_ = new MockSafeBrowsingDatabaseManager();
@@ -146,6 +152,7 @@ class FakeSafeBrowsingService : public SafeBrowsingService,
   }
 
   MockSafeBrowsingDatabaseManager* mock_database_manager_;
+  int download_report_count_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingService);
 };
@@ -2507,6 +2514,42 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_Payload) {
   EXPECT_EQ(".txt", request.alternate_extensions(0));
   EXPECT_EQ(".abc", request.alternate_extensions(1));
   EXPECT_EQ(".sdF", request.alternate_extensions(2));
+}
+
+TEST_F(DownloadProtectionServiceTest,
+       VerifyMaybeSendDangerousDownloadOpenedReport) {
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItem(&item,
+                           std::vector<std::string>(),   // empty url_chain
+                           "http://www.google.com/",     // referrer
+                           FILE_PATH_LITERAL("a.tmp"),   // tmp_path
+                           FILE_PATH_LITERAL("a.exe"));  // final_path
+  ASSERT_EQ(0, sb_service_->download_report_count());
+
+  // No report sent if download item without token field.
+  download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
+  EXPECT_EQ(0, sb_service_->download_report_count());
+
+  // No report sent if user is in incognito mode.
+  DownloadProtectionService::SetDownloadPingToken(&item, "token");
+  EXPECT_CALL(item, GetBrowserContext())
+      .WillRepeatedly(Return(profile_->GetOffTheRecordProfile()));
+  download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
+  EXPECT_EQ(0, sb_service_->download_report_count());
+
+  // No report sent if user is not in extended reporting group.
+  EXPECT_CALL(item, GetBrowserContext()).WillRepeatedly(Return(profile_.get()));
+  SetExtendedReportingPreference(false);
+  download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
+  EXPECT_EQ(0, sb_service_->download_report_count());
+
+  // Report successfully sent if user opted-in extended reporting, not in
+  // incognito, and download item has a token stored.
+  SetExtendedReportingPreference(true);
+  download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
+  EXPECT_EQ(1, sb_service_->download_report_count());
+  download_service_->MaybeSendDangerousDownloadOpenedReport(&item, true);
+  EXPECT_EQ(2, sb_service_->download_report_count());
 }
 
 TEST_F(DownloadProtectionServiceTest,

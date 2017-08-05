@@ -1722,7 +1722,8 @@ class DownloadProtectionService::PPAPIDownloadRequest
 
 DownloadProtectionService::DownloadProtectionService(
     SafeBrowsingService* sb_service)
-    : navigation_observer_manager_(nullptr),
+    : sb_service_(sb_service),
+      navigation_observer_manager_(nullptr),
       request_context_getter_(sb_service ? sb_service->url_request_context()
                                          : nullptr),
       enabled_(false),
@@ -1916,6 +1917,33 @@ std::string DownloadProtectionService::GetDownloadPingToken(
     return static_cast<DownloadPingToken*>(token_data)->token_string();
   else
     return std::string();
+}
+
+void DownloadProtectionService::MaybeSendDangerousDownloadOpenedReport(
+    const content::DownloadItem* item,
+    bool show_download_in_folder) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  std::string token = GetDownloadPingToken(item);
+  content::BrowserContext* browser_context = item->GetBrowserContext();
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  if (sb_service_ &&
+      !token.empty() &&  // Only dangerous downloads have token stored.
+      !browser_context->IsOffTheRecord() && profile &&
+      IsExtendedReportingEnabled(*profile->GetPrefs())) {
+    safe_browsing::ClientSafeBrowsingReportRequest report;
+    report.set_url(item->GetURL().spec());
+    report.set_type(safe_browsing::ClientSafeBrowsingReportRequest::
+                        DANGEROUS_DOWNLOAD_OPENED);
+    report.set_token(token);
+    report.set_show_download_in_folder(show_download_in_folder);
+    std::string serialized_report;
+    if (report.SerializeToString(&serialized_report)) {
+      sb_service_->SendSerializedDownloadReport(serialized_report);
+    } else {
+      DCHECK(false)
+          << "Unable to serialize the dangerous download opened report.";
+    }
+  }
 }
 
 namespace {
