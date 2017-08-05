@@ -3,17 +3,19 @@
 // found in the LICENSE file.
 
 #include "components/viz/service/hit_test/hit_test_aggregator.h"
+
 #include "components/viz/common/hit_test/aggregated_hit_test_region.h"
+#include "components/viz/service/hit_test/hit_test_aggregator_delegate.h"
 
 namespace viz {
 
 namespace {
 // TODO(gklassen): Review and select appropriate sizes based on
 // telemetry / UMA.
-constexpr int kInitialSize = 1024;
-constexpr int kIncrementalSize = 1024;
-constexpr int kMaxRegionsPerSurface = 1024;
-constexpr int kMaxSize = 100 * 1024;
+constexpr uint32_t kInitialSize = 1024;
+constexpr uint32_t kIncrementalSize = 1024;
+constexpr uint32_t kMaxRegionsPerSurface = 1024;
+constexpr uint32_t kMaxSize = 100 * 1024;
 
 bool ValidateHitTestRegion(const mojom::HitTestRegionPtr& hit_test_region) {
   if (hit_test_region->flags == mojom::kHitTestChildSurface) {
@@ -37,7 +39,8 @@ bool ValidateHitTestRegionList(
 
 }  // namespace
 
-HitTestAggregator::HitTestAggregator() : weak_ptr_factory_(this) {
+HitTestAggregator::HitTestAggregator(HitTestAggregatorDelegate* delegate)
+    : delegate_(delegate), weak_ptr_factory_(this) {
   AllocateHitTestRegionArray();
 }
 
@@ -52,6 +55,44 @@ void HitTestAggregator::SubmitHitTestRegionList(
   pending_[hit_test_region_list->surface_id] = std::move(hit_test_region_list);
 }
 
+void HitTestAggregator::PostTaskAggregate(SurfaceId display_surface_id) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&HitTestAggregator::Aggregate,
+                     weak_ptr_factory_.GetWeakPtr(), display_surface_id));
+}
+
+void HitTestAggregator::Aggregate(const SurfaceId& display_surface_id) {
+  // Check to ensure that enough memory has been allocated.
+  uint32_t size = write_size_;
+  uint32_t max_size = active_region_count_ + active_.size() + 1;
+  if (max_size > kMaxSize)
+    max_size = kMaxSize;
+
+  if (max_size > size) {
+    size = (1 + max_size / kIncrementalSize) * kIncrementalSize;
+    AllocateHitTestRegionArray(size);
+  }
+
+  AppendRoot(display_surface_id);
+}
+
+void HitTestAggregator::Swap() {
+  SwapHandles();
+  if (!handle_replaced_) {
+    delegate_->SwitchActiveAggregatedHitTestRegionList(active_handle_index_);
+    return;
+  }
+
+  delegate_->OnAggregatedHitTestRegionListUpdated(
+      read_handle_->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY),
+      read_size_,
+      write_handle_->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY),
+      write_size_);
+  active_handle_index_ = 0;
+  handle_replaced_ = false;
+}
+
 bool HitTestAggregator::OnSurfaceDamaged(const SurfaceId& surface_id,
                                          const BeginFrameAck& ack) {
   return false;
@@ -64,7 +105,7 @@ void HitTestAggregator::OnSurfaceDiscarded(const SurfaceId& surface_id) {
     mojom::HitTestRegionList* old_hit_test_data = active_search->second.get();
     active_region_count_ -= old_hit_test_data->regions.size();
   }
-  DCHECK_GE(active_region_count_, 0);
+  DCHECK_GE(active_region_count_, 0u);
 
   pending_.erase(surface_id);
   active_.erase(surface_id);
@@ -86,7 +127,7 @@ void HitTestAggregator::OnSurfaceWillDraw(const SurfaceId& surface_id) {
     active_region_count_ -= old_hit_test_data->regions.size();
   }
   active_region_count_ += hit_test_region_list->regions.size();
-  DCHECK_GE(active_region_count_, 0);
+  DCHECK_GE(active_region_count_, 0u);
 
   active_[surface_id] = std::move(pending_[surface_id]);
   pending_.erase(surface_id);
@@ -94,41 +135,29 @@ void HitTestAggregator::OnSurfaceWillDraw(const SurfaceId& surface_id) {
 
 void HitTestAggregator::AllocateHitTestRegionArray() {
   AllocateHitTestRegionArray(kInitialSize);
-  Swap();
+  SwapHandles();
   AllocateHitTestRegionArray(kInitialSize);
 }
 
-void HitTestAggregator::AllocateHitTestRegionArray(int size) {
+void HitTestAggregator::AllocateHitTestRegionArray(uint32_t size) {
   size_t num_bytes = size * sizeof(AggregatedHitTestRegion);
   write_handle_ = mojo::SharedBufferHandle::Create(num_bytes);
   write_size_ = size;
   write_buffer_ = write_handle_->Map(num_bytes);
+  handle_replaced_ = true;
 
   AggregatedHitTestRegion* region =
       (AggregatedHitTestRegion*)write_buffer_.get();
   region[0].child_count = kEndOfList;
 }
 
-void HitTestAggregator::PostTaskAggregate(SurfaceId display_surface_id) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&HitTestAggregator::Aggregate,
-                     weak_ptr_factory_.GetWeakPtr(), display_surface_id));
-}
+void HitTestAggregator::SwapHandles() {
+  using std::swap;
 
-void HitTestAggregator::Aggregate(const SurfaceId& display_surface_id) {
-  // Check to ensure that enough memory has been allocated.
-  int size = write_size_;
-  int max_size = active_region_count_ + active_.size() + 1;
-  if (max_size > kMaxSize)
-    max_size = kMaxSize;
-
-  if (max_size > size) {
-    size = (1 + max_size / kIncrementalSize) * kIncrementalSize;
-    AllocateHitTestRegionArray(size);
-  }
-
-  AppendRoot(display_surface_id);
+  swap(read_handle_, write_handle_);
+  swap(read_size_, write_size_);
+  swap(read_buffer_, write_buffer_);
+  active_handle_index_ = !active_handle_index_;
 }
 
 void HitTestAggregator::AppendRoot(const SurfaceId& surface_id) {
@@ -146,21 +175,21 @@ void HitTestAggregator::AppendRoot(const SurfaceId& surface_id) {
   regions[0].rect = hit_test_region_list->bounds;
   regions[0].transform = hit_test_region_list->transform;
 
-  int region_index = 1;
+  size_t region_index = 1;
   for (const auto& region : hit_test_region_list->regions) {
     if (region_index >= write_size_ - 1)
       break;
     region_index = AppendRegion(regions, region_index, region);
   }
 
-  DCHECK_GE(region_index, 1);
+  DCHECK_GE(region_index, 1u);
   regions[0].child_count = region_index - 1;
   regions[region_index].child_count = kEndOfList;
 }
 
-int HitTestAggregator::AppendRegion(AggregatedHitTestRegion* regions,
-                                    int region_index,
-                                    const mojom::HitTestRegionPtr& region) {
+size_t HitTestAggregator::AppendRegion(AggregatedHitTestRegion* regions,
+                                       size_t region_index,
+                                       const mojom::HitTestRegionPtr& region) {
   AggregatedHitTestRegion* element = &regions[region_index];
 
   element->frame_sink_id = region->surface_id.frame_sink_id();
@@ -168,7 +197,7 @@ int HitTestAggregator::AppendRegion(AggregatedHitTestRegion* regions,
   element->rect = region->rect;
   element->transform = region->transform;
 
-  int parent_index = region_index++;
+  size_t parent_index = region_index++;
   if (region_index >= write_size_ - 1) {
     element->child_count = 0;
     return region_index;
@@ -197,17 +226,9 @@ int HitTestAggregator::AppendRegion(AggregatedHitTestRegion* regions,
         break;
     }
   }
-  DCHECK_GE(region_index - parent_index - 1, 0);
+  DCHECK_GE(region_index - parent_index - 1, 0u);
   element->child_count = region_index - parent_index - 1;
   return region_index;
-}
-
-void HitTestAggregator::Swap() {
-  using std::swap;
-
-  swap(read_handle_, write_handle_);
-  swap(read_size_, write_size_);
-  swap(read_buffer_, write_buffer_);
 }
 
 }  // namespace viz

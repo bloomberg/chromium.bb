@@ -12,6 +12,7 @@
 #include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
 
 namespace viz {
+class HitTestAggregatorDelegate;
 
 // HitTestAggregator collects HitTestRegionList objects from surfaces and
 // aggregates them into a DisplayHitTesData structue made available in
@@ -21,7 +22,8 @@ namespace viz {
 // will be true after the mus process split.
 class VIZ_SERVICE_EXPORT HitTestAggregator : public SurfaceObserver {
  public:
-  HitTestAggregator();
+  // |delegate| owns and outlives HitTestAggregator.
+  explicit HitTestAggregator(HitTestAggregatorDelegate* delegate);
   ~HitTestAggregator();
 
   // Called when HitTestRegionList is submitted along with every call
@@ -30,17 +32,18 @@ class VIZ_SERVICE_EXPORT HitTestAggregator : public SurfaceObserver {
   void SubmitHitTestRegionList(
       mojom::HitTestRegionListPtr hit_test_region_list);
 
+  // Performs the work of Aggregate by creating a PostTask so that
+  // the work is not directly on the call.
+  void PostTaskAggregate(SurfaceId display_surface_id);
+
   // Called after surfaces have been aggregated into the DisplayFrame.
   // In this call HitTestRegionList structures received from active surfaces
   // are aggregated into the HitTestRegionList structure in
   // shared memory used for event targetting.
   void Aggregate(const SurfaceId& display_surface_id);
 
-  // Performs the work of Aggregate by creating a PostTask so that
-  // the work is not directly on the call.
-  void PostTaskAggregate(SurfaceId display_surface_id);
-
-  // Called at BeginFrame. Swaps buffers in shared memory.
+  // Called at BeginFrame. Swaps buffers in shared memory and tells its
+  // delegate.
   void Swap();
 
  protected:
@@ -69,31 +72,40 @@ class VIZ_SERVICE_EXPORT HitTestAggregator : public SurfaceObserver {
 
   // Keeps track of the number of regions in the active list
   // so that we know when we exceed the available length.
-  int active_region_count_ = 0;
+  uint32_t active_region_count_ = 0;
 
   mojo::ScopedSharedBufferHandle read_handle_;
   mojo::ScopedSharedBufferHandle write_handle_;
 
   // The number of elements allocated.
-  int read_size_ = 0;
-  int write_size_ = 0;
+  uint32_t read_size_ = 0;
+  uint32_t write_size_ = 0;
 
   mojo::ScopedSharedBufferMapping read_buffer_;
   mojo::ScopedSharedBufferMapping write_buffer_;
 
+  bool handle_replaced_ = false;
+
+  // Can only be 0 or 1 when we only have two buffers.
+  uint8_t active_handle_index_ = 0;
+
+  HitTestAggregatorDelegate* const delegate_;
+
  private:
   // Allocates memory for the AggregatedHitTestRegion array.
   void AllocateHitTestRegionArray();
-  void AllocateHitTestRegionArray(int length);
+  void AllocateHitTestRegionArray(uint32_t length);
+
+  void SwapHandles();
 
   // Appends the root element to the AggregatedHitTestRegion array.
   void AppendRoot(const SurfaceId& surface_id);
 
   // Appends a region to the HitTestRegionList structure to recursively
   // build the tree.
-  int AppendRegion(AggregatedHitTestRegion* regions,
-                   int region_index,
-                   const mojom::HitTestRegionPtr& region);
+  size_t AppendRegion(AggregatedHitTestRegion* regions,
+                      size_t region_index,
+                      const mojom::HitTestRegionPtr& region);
 
   // Handles the case when this object is deleted after
   // the PostTaskAggregation call is scheduled but before invocation.

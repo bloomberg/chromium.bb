@@ -561,6 +561,8 @@ WindowTree* WindowServer::GetCurrentDragLoopInitiator() {
 }
 
 void WindowServer::OnDisplayReady(Display* display, bool is_first) {
+  display_hit_test_query_[display->root_window()->frame_sink_id()] =
+      base::MakeUnique<viz::HitTestQuery>();
   if (is_first)
     delegate_->OnFirstDisplayReady();
   gpu_host_->OnAcceleratedWidgetAvailable(
@@ -568,6 +570,9 @@ void WindowServer::OnDisplayReady(Display* display, bool is_first) {
 }
 
 void WindowServer::OnDisplayDestroyed(Display* display) {
+  DCHECK(
+      display_hit_test_query_.count(display->root_window()->frame_sink_id()));
+  display_hit_test_query_.erase(display->root_window()->frame_sink_id());
   if (gpu_host_) {
     gpu_host_->OnAcceleratedWidgetDestroyed(
         display->platform_display()->GetAcceleratedWidget());
@@ -950,6 +955,39 @@ void WindowServer::OnSurfaceCreated(const viz::SurfaceInfo& surface_info) {
 void WindowServer::OnClientConnectionClosed(
     const viz::FrameSinkId& frame_sink_id) {
   // TODO(kylechar): Notify observers
+}
+
+void WindowServer::OnAggregatedHitTestRegionListUpdated(
+    const viz::FrameSinkId& frame_sink_id,
+    mojo::ScopedSharedBufferHandle active_handle,
+    uint32_t active_handle_size,
+    mojo::ScopedSharedBufferHandle idle_handle,
+    uint32_t idle_handle_size) {
+  if (!display_hit_test_query_.count(frame_sink_id)) {
+    // TODO(riajiang): Report security fault. http://crbug.com/746470
+    // Or verify if it is the case that display got destroyed, but viz doesn't
+    // know it yet.
+    NOTREACHED();
+    return;
+  }
+  display_hit_test_query_[frame_sink_id]->OnAggregatedHitTestRegionListUpdated(
+      std::move(active_handle), active_handle_size, std::move(idle_handle),
+      idle_handle_size);
+}
+
+void WindowServer::SwitchActiveAggregatedHitTestRegionList(
+    const viz::FrameSinkId& frame_sink_id,
+    uint8_t active_handle_index) {
+  if (!display_hit_test_query_.count(frame_sink_id) ||
+      (active_handle_index != 0u && active_handle_index != 1u)) {
+    // TODO(riajiang): Report security fault. http://crbug.com/746470
+    // Or verify if it is the case that display got destroyed, but viz doesn't
+    // know it yet.
+    NOTREACHED();
+    return;
+  }
+  display_hit_test_query_[frame_sink_id]
+      ->SwitchActiveAggregatedHitTestRegionList(active_handle_index);
 }
 
 void WindowServer::OnActiveUserIdChanged(const UserId& previously_active_id,

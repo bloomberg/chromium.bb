@@ -24,6 +24,17 @@ constexpr int32_t kEndOfList = -1;
 // write the hit_test data, and the viz host can read without
 // process hops.
 struct AggregatedHitTestRegion {
+  AggregatedHitTestRegion(FrameSinkId frame_sink_id,
+                          uint32_t flags,
+                          gfx::Rect rect,
+                          gfx::Transform transform,
+                          int32_t child_count)
+      : frame_sink_id(frame_sink_id),
+        flags(flags),
+        rect(rect),
+        transform(transform),
+        child_count(child_count) {}
+
   // The FrameSinkId corresponding to this region.  Events that match
   // are routed to this surface.
   FrameSinkId frame_sink_id;

@@ -19,13 +19,28 @@ class HitTestQueryTest : public testing::Test {
 
  protected:
   HitTestQuery& hit_test_query() { return hit_test_query_; }
+  AggregatedHitTestRegion* aggregated_hit_test_region() {
+    return static_cast<AggregatedHitTestRegion*>(active_buffer_.get());
+  }
 
  private:
   // testing::Test:
-  void SetUp() override {}
+  void SetUp() override {
+    uint32_t handle_size = 100;
+    size_t num_bytes = handle_size * sizeof(AggregatedHitTestRegion);
+    mojo::ScopedSharedBufferHandle active_handle =
+        mojo::SharedBufferHandle::Create(num_bytes);
+    mojo::ScopedSharedBufferHandle idle_handle =
+        mojo::SharedBufferHandle::Create(num_bytes);
+    active_buffer_ = active_handle->Map(num_bytes);
+    hit_test_query_.OnAggregatedHitTestRegionListUpdated(
+        std::move(active_handle), handle_size, std::move(idle_handle),
+        handle_size);
+  }
   void TearDown() override {}
 
   HitTestQuery hit_test_query_;
+  mojo::ScopedSharedBufferMapping active_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(HitTestQueryTest);
 };
@@ -42,11 +57,10 @@ TEST_F(HitTestQueryTest, OneSurface) {
   FrameSinkId e_id = FrameSinkId(1, 1);
   gfx::Rect e_bounds = gfx::Rect(0, 0, 600, 600);
   gfx::Transform transform_e_to_e;
-  AggregatedHitTestRegion aggregated_hit_test_region_list[1] = {
-      {e_id, mojom::kHitTestMine, e_bounds, transform_e_to_e, 0}  // e
-  };
-  hit_test_query().set_aggregated_hit_test_region_list(
-      aggregated_hit_test_region_list, 1);
+  AggregatedHitTestRegion* aggregated_hit_test_region_list =
+      aggregated_hit_test_region();
+  aggregated_hit_test_region_list[0] = AggregatedHitTestRegion(
+      e_id, mojom::kHitTestMine, e_bounds, transform_e_to_e, 0);  // e
 
   // All points are in e's coordinate system when we reach this case.
   gfx::Point point1(1, 1);
@@ -90,13 +104,14 @@ TEST_F(HitTestQueryTest, OneEmbedderTwoChildren) {
   gfx::Transform transform_e_to_e, transform_e_to_c1, transform_e_to_c2;
   transform_e_to_c1.Translate(-100, -100);
   transform_e_to_c2.Translate(-300, -300);
-  AggregatedHitTestRegion aggregated_hit_test_region_list[3] = {
-      {e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 2},     // e
-      {c1_id, mojom::kHitTestMine, c1_bounds_in_e, transform_e_to_c1, 0},  // c1
-      {c2_id, mojom::kHitTestMine, c2_bounds_in_e, transform_e_to_c2, 0}   // c2
-  };
-  hit_test_query().set_aggregated_hit_test_region_list(
-      aggregated_hit_test_region_list, 3);
+  AggregatedHitTestRegion* aggregated_hit_test_region_list =
+      aggregated_hit_test_region();
+  aggregated_hit_test_region_list[0] = AggregatedHitTestRegion(
+      e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 2);  // e
+  aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
+      c1_id, mojom::kHitTestMine, c1_bounds_in_e, transform_e_to_c1, 0);  // c1
+  aggregated_hit_test_region_list[2] = AggregatedHitTestRegion(
+      c2_id, mojom::kHitTestMine, c2_bounds_in_e, transform_e_to_c2, 0);  // c2
 
   // All points are in e's coordinate system when we reach this case.
   gfx::Point point1(99, 200);
@@ -135,14 +150,13 @@ TEST_F(HitTestQueryTest, OneEmbedderRotatedChild) {
   transform_e_to_c.Translate(-100, -100);
   transform_e_to_c.Skew(2, 3);
   transform_e_to_c.Scale(.5f, .7f);
-
-  AggregatedHitTestRegion aggregated_hit_test_region_list[2] = {
-      {e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 1},  // e
-      {c_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, c_bounds_in_e,
-       transform_e_to_c, 0}  // c
-  };
-  hit_test_query().set_aggregated_hit_test_region_list(
-      aggregated_hit_test_region_list, 2);
+  AggregatedHitTestRegion* aggregated_hit_test_region_list =
+      aggregated_hit_test_region();
+  aggregated_hit_test_region_list[0] = AggregatedHitTestRegion(
+      e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 1);  // e
+  aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
+      c_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, c_bounds_in_e,
+      transform_e_to_c, 0);  // c
 
   // All points are in e's coordinate system when we reach this case.
   gfx::Point point1(150, 120);  // Point(-22, -12) after transform.
@@ -183,17 +197,19 @@ TEST_F(HitTestQueryTest, ClippedChildWithTabAndTransparentBackground) {
       transform_c_to_b;
   transform_e_to_c.Translate(-200, -100);
   transform_c_to_b.Translate(0, -100);
-  AggregatedHitTestRegion aggregated_hit_test_region_list[4] = {
-      {e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 3},  // e
-      {c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
-       transform_e_to_c, 2},  // c
-      {a_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, a_bounds_in_c,
-       transform_c_to_a, 0},  // a
-      {b_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, b_bounds_in_c,
-       transform_c_to_b, 0}  // b
-  };
-  hit_test_query().set_aggregated_hit_test_region_list(
-      aggregated_hit_test_region_list, 4);
+  AggregatedHitTestRegion* aggregated_hit_test_region_list =
+      aggregated_hit_test_region();
+  aggregated_hit_test_region_list[0] = AggregatedHitTestRegion(
+      e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 3);  // e
+  aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
+      c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
+      transform_e_to_c, 2);  // c
+  aggregated_hit_test_region_list[2] = AggregatedHitTestRegion(
+      a_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, a_bounds_in_c,
+      transform_c_to_a, 0);  // a
+  aggregated_hit_test_region_list[3] = AggregatedHitTestRegion(
+      b_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, b_bounds_in_c,
+      transform_c_to_b, 0);  // b
 
   // All points are in e's coordinate system when we reach this case.
   gfx::Point point1(1, 1);
@@ -251,19 +267,22 @@ TEST_F(HitTestQueryTest, ClippedChildWithChildUnderneath) {
   transform_e_to_c.Translate(-200, -100);
   transform_c_to_b.Translate(0, -100);
   transform_e_to_d.Translate(-400, -50);
-  AggregatedHitTestRegion aggregated_hit_test_region_list[5] = {
-      {e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 4},  // e
-      {c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
-       transform_e_to_c, 2},  // c
-      {a_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, a_bounds_in_c,
-       transform_c_to_a, 0},  // a
-      {b_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, b_bounds_in_c,
-       transform_c_to_b, 0},  // b
-      {d_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, d_bounds_in_e,
-       transform_e_to_d, 0}  // d
-  };
-  hit_test_query().set_aggregated_hit_test_region_list(
-      aggregated_hit_test_region_list, 5);
+  AggregatedHitTestRegion* aggregated_hit_test_region_list =
+      aggregated_hit_test_region();
+  aggregated_hit_test_region_list[0] = AggregatedHitTestRegion(
+      e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 4);  // e
+  aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
+      c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
+      transform_e_to_c, 2);  // c
+  aggregated_hit_test_region_list[2] = AggregatedHitTestRegion(
+      a_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, a_bounds_in_c,
+      transform_c_to_a, 0);  // a
+  aggregated_hit_test_region_list[3] = AggregatedHitTestRegion(
+      b_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, b_bounds_in_c,
+      transform_c_to_b, 0);  // b
+  aggregated_hit_test_region_list[4] = AggregatedHitTestRegion(
+      d_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, d_bounds_in_e,
+      transform_e_to_d, 0);  // d
 
   // All points are in e's coordinate system when we reach this case.
   gfx::Point point1(1, 1);
@@ -332,23 +351,28 @@ TEST_F(HitTestQueryTest, ClippedChildrenWithTabAndTransparentBackground) {
   transform_c1_to_b.Translate(0, -100);
   transform_e_to_c2.Translate(-200, -700);
   transform_c2_to_h.Translate(0, -100);
-  AggregatedHitTestRegion aggregated_hit_test_region_list[7] = {
-      {e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 6},  // e
-      {c1_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore,
-       c1_bounds_in_e, transform_e_to_c1, 2},  // c1
-      {a_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, a_bounds_in_c1,
-       transform_c1_to_a, 0},  // a
-      {b_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, b_bounds_in_c1,
-       transform_c1_to_b, 0},  // b
-      {c2_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore,
-       c2_bounds_in_e, transform_e_to_c2, 2},  // c2
-      {g_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, g_bounds_in_c2,
-       transform_c2_to_g, 0},  // g
-      {h_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, h_bounds_in_c2,
-       transform_c2_to_h, 0}  // h
-  };
-  hit_test_query().set_aggregated_hit_test_region_list(
-      aggregated_hit_test_region_list, 7);
+  AggregatedHitTestRegion* aggregated_hit_test_region_list =
+      aggregated_hit_test_region();
+  aggregated_hit_test_region_list[0] = AggregatedHitTestRegion(
+      e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 6);  // e
+  aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
+      c1_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore,
+      c1_bounds_in_e, transform_e_to_c1, 2);  // c1
+  aggregated_hit_test_region_list[2] = AggregatedHitTestRegion(
+      a_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, a_bounds_in_c1,
+      transform_c1_to_a, 0);  // a
+  aggregated_hit_test_region_list[3] = AggregatedHitTestRegion(
+      b_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, b_bounds_in_c1,
+      transform_c1_to_b, 0);  // b
+  aggregated_hit_test_region_list[4] = AggregatedHitTestRegion(
+      c2_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore,
+      c2_bounds_in_e, transform_e_to_c2, 2);  // c2
+  aggregated_hit_test_region_list[5] = AggregatedHitTestRegion(
+      g_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, g_bounds_in_c2,
+      transform_c2_to_g, 0);  // g
+  aggregated_hit_test_region_list[6] = AggregatedHitTestRegion(
+      h_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, h_bounds_in_c2,
+      transform_c2_to_h, 0);  // h
 
   // All points are in e's coordinate system when we reach this case.
   gfx::Point point1(1, 1);
@@ -429,21 +453,25 @@ TEST_F(HitTestQueryTest, MultipleLayerChild) {
   transform_a_to_b.Translate(-50, -30);
   transform_b_to_g.Translate(-150, -200);
   transform_e_to_c2.Translate(-400, -50);
-  AggregatedHitTestRegion aggregated_hit_test_region_list[6] = {
-      {e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 5},  // e
-      {c1_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore,
-       c1_bounds_in_e, transform_e_to_c1, 3},  // c1
-      {a_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, a_bounds_in_c1,
-       transform_c1_to_a, 2},  // a
-      {b_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, b_bounds_in_a,
-       transform_a_to_b, 1},  // b
-      {g_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, g_bounds_in_b,
-       transform_b_to_g, 0},  // g
-      {c2_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, c2_bounds_in_e,
-       transform_e_to_c2, 0}  // c2
-  };
-  hit_test_query().set_aggregated_hit_test_region_list(
-      aggregated_hit_test_region_list, 6);
+  AggregatedHitTestRegion* aggregated_hit_test_region_list =
+      aggregated_hit_test_region();
+  aggregated_hit_test_region_list[0] = AggregatedHitTestRegion(
+      e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 5),  // e
+      aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
+          c1_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore,
+          c1_bounds_in_e, transform_e_to_c1, 3);  // c1
+  aggregated_hit_test_region_list[2] = AggregatedHitTestRegion(
+      a_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, a_bounds_in_c1,
+      transform_c1_to_a, 2);  // a
+  aggregated_hit_test_region_list[3] = AggregatedHitTestRegion(
+      b_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, b_bounds_in_a,
+      transform_a_to_b, 1);  // b
+  aggregated_hit_test_region_list[4] = AggregatedHitTestRegion(
+      g_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, g_bounds_in_b,
+      transform_b_to_g, 0);  // g
+  aggregated_hit_test_region_list[5] = AggregatedHitTestRegion(
+      c2_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, c2_bounds_in_e,
+      transform_e_to_c2, 0);  // c2
 
   // All points are in e's coordinate system when we reach this case.
   gfx::Point point1(1, 1);
@@ -506,21 +534,25 @@ TEST_F(HitTestQueryTest, MultipleLayerTransparentChild) {
   transform_a_to_b.Translate(-50, -30);
   transform_b_to_g.Translate(-150, -200);
   transform_e_to_c2.Translate(-400, -50);
-  AggregatedHitTestRegion aggregated_hit_test_region_list[6] = {
-      {e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 5},  // e
-      {c1_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore,
-       c1_bounds_in_e, transform_e_to_c1, 3},  // c1
-      {a_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore,
-       a_bounds_in_c1, transform_c1_to_a, 2},  // a
-      {b_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, b_bounds_in_a,
-       transform_a_to_b, 1},  // b
-      {g_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, g_bounds_in_b,
-       transform_b_to_g, 0},  // g
-      {c2_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, c2_bounds_in_e,
-       transform_e_to_c2, 0}  // c2
-  };
-  hit_test_query().set_aggregated_hit_test_region_list(
-      aggregated_hit_test_region_list, 6);
+  AggregatedHitTestRegion* aggregated_hit_test_region_list =
+      aggregated_hit_test_region();
+  aggregated_hit_test_region_list[0] = AggregatedHitTestRegion(
+      e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 5);  // e
+  aggregated_hit_test_region_list[1] = AggregatedHitTestRegion(
+      c1_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore,
+      c1_bounds_in_e, transform_e_to_c1, 3);  // c1
+  aggregated_hit_test_region_list[2] = AggregatedHitTestRegion(
+      a_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, a_bounds_in_c1,
+      transform_c1_to_a, 2);  // a
+  aggregated_hit_test_region_list[3] = AggregatedHitTestRegion(
+      b_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, b_bounds_in_a,
+      transform_a_to_b, 1);  // b
+  aggregated_hit_test_region_list[4] = AggregatedHitTestRegion(
+      g_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, g_bounds_in_b,
+      transform_b_to_g, 0);  // g
+  aggregated_hit_test_region_list[5] = AggregatedHitTestRegion(
+      c2_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, c2_bounds_in_e,
+      transform_e_to_c2, 0);  // c2
 
   // All points are in e's coordinate system when we reach this case.
   gfx::Point point1(1, 1);
@@ -562,17 +594,19 @@ TEST_F(HitTestQueryTest, InvalidAggregatedHitTestRegionData) {
       transform_c_to_b;
   transform_e_to_c.Translate(-200, -100);
   transform_c_to_b.Translate(0, -100);
-  AggregatedHitTestRegion aggregated_hit_test_region_list_min[4] = {
-      {e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 3},  // e
-      {c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
-       transform_e_to_c, INT32_MIN},  // c
-      {a_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, a_bounds_in_c,
-       transform_c_to_a, 0},  // a
-      {b_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, b_bounds_in_c,
-       transform_c_to_b, 0}  // b
-  };
-  hit_test_query().set_aggregated_hit_test_region_list(
-      aggregated_hit_test_region_list_min, 4);
+  AggregatedHitTestRegion* aggregated_hit_test_region_list_min =
+      aggregated_hit_test_region();
+  aggregated_hit_test_region_list_min[0] = AggregatedHitTestRegion(
+      e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 3);  // e
+  aggregated_hit_test_region_list_min[1] = AggregatedHitTestRegion(
+      c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
+      transform_e_to_c, INT32_MIN);  // c
+  aggregated_hit_test_region_list_min[2] = AggregatedHitTestRegion(
+      a_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, a_bounds_in_c,
+      transform_c_to_a, 0);  // a
+  aggregated_hit_test_region_list_min[3] = AggregatedHitTestRegion(
+      b_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, b_bounds_in_c,
+      transform_c_to_b, 0);  // b
 
   // All points are in e's coordinate system when we reach this case.
   gfx::Point point1(1, 1);
@@ -590,35 +624,39 @@ TEST_F(HitTestQueryTest, InvalidAggregatedHitTestRegionData) {
   EXPECT_EQ(target2.location_in_target, gfx::Point());
   EXPECT_FALSE(target2.flags);
 
-  AggregatedHitTestRegion aggregated_hit_test_region_list_max[4] = {
-      {e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e,
-       INT32_MAX},  // e
-      {c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
-       transform_e_to_c, 2},  // c
-      {a_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, a_bounds_in_c,
-       transform_c_to_a, 0},  // a
-      {b_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, b_bounds_in_c,
-       transform_c_to_b, 0}  // b
-  };
-  hit_test_query().set_aggregated_hit_test_region_list(
-      aggregated_hit_test_region_list_max, 4);
+  AggregatedHitTestRegion* aggregated_hit_test_region_list_max =
+      aggregated_hit_test_region();
+  aggregated_hit_test_region_list_max[0] =
+      AggregatedHitTestRegion(e_id, mojom::kHitTestMine, e_bounds_in_e,
+                              transform_e_to_e, INT32_MAX);  // e
+  aggregated_hit_test_region_list_max[1] = AggregatedHitTestRegion(
+      c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
+      transform_e_to_c, 2);  // c
+  aggregated_hit_test_region_list_max[2] = AggregatedHitTestRegion(
+      a_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, a_bounds_in_c,
+      transform_c_to_a, 0);  // a
+  aggregated_hit_test_region_list_max[3] = AggregatedHitTestRegion(
+      b_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, b_bounds_in_c,
+      transform_c_to_b, 0);  // b
 
   Target target3 = hit_test_query().FindTargetForLocation(point1);
   EXPECT_EQ(target3.frame_sink_id, FrameSinkId());
   EXPECT_EQ(target3.location_in_target, gfx::Point());
   EXPECT_FALSE(target3.flags);
 
-  AggregatedHitTestRegion aggregated_hit_test_region_list_bigger[4] = {
-      {e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 3},  // e
-      {c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
-       transform_e_to_c, 3},  // c
-      {a_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, a_bounds_in_c,
-       transform_c_to_a, 0},  // a
-      {b_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, b_bounds_in_c,
-       transform_c_to_b, 0}  // b
-  };
-  hit_test_query().set_aggregated_hit_test_region_list(
-      aggregated_hit_test_region_list_bigger, 4);
+  AggregatedHitTestRegion* aggregated_hit_test_region_list_bigger =
+      aggregated_hit_test_region();
+  aggregated_hit_test_region_list_bigger[0] = AggregatedHitTestRegion(
+      e_id, mojom::kHitTestMine, e_bounds_in_e, transform_e_to_e, 3);  // e
+  aggregated_hit_test_region_list_bigger[1] = AggregatedHitTestRegion(
+      c_id, mojom::kHitTestChildSurface | mojom::kHitTestIgnore, c_bounds_in_e,
+      transform_e_to_c, 3);  // c
+  aggregated_hit_test_region_list_bigger[2] = AggregatedHitTestRegion(
+      a_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, a_bounds_in_c,
+      transform_c_to_a, 0);  // a
+  aggregated_hit_test_region_list_bigger[3] = AggregatedHitTestRegion(
+      b_id, mojom::kHitTestChildSurface | mojom::kHitTestMine, b_bounds_in_c,
+      transform_c_to_b, 0);  // b
 
   Target target4 = hit_test_query().FindTargetForLocation(point1);
   EXPECT_EQ(target4.frame_sink_id, FrameSinkId());

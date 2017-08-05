@@ -190,6 +190,23 @@ void HostFrameSinkManager::OnClientConnectionClosed(
   // TODO(kylechar): Notify observers.
 }
 
+void HostFrameSinkManager::OnAggregatedHitTestRegionListUpdated(
+    const FrameSinkId& frame_sink_id,
+    mojo::ScopedSharedBufferHandle active_handle,
+    uint32_t active_handle_size,
+    mojo::ScopedSharedBufferHandle idle_handle,
+    uint32_t idle_handle_size) {
+  // TODO(riajiang): Refactor content to use the hit test component.
+  // http://crbug.com/750755.
+}
+
+void HostFrameSinkManager::SwitchActiveAggregatedHitTestRegionList(
+    const FrameSinkId& frame_sink_id,
+    uint8_t active_handle_index) {
+  // TODO(riajiang): Refactor content to use the hit test component.
+  // http://crbug.com/750755.
+}
+
 HostFrameSinkManager::FrameSinkData::FrameSinkData() = default;
 
 HostFrameSinkManager::FrameSinkData::FrameSinkData(FrameSinkData&& other) =

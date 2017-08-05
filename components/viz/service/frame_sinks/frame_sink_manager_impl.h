@@ -123,6 +123,15 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
   void OnClientConnectionLost(const FrameSinkId& frame_sink_id);
 
+  void OnAggregatedHitTestRegionListUpdated(
+      const FrameSinkId& frame_sink_id,
+      mojo::ScopedSharedBufferHandle active_handle,
+      uint32_t active_handle_size,
+      mojo::ScopedSharedBufferHandle idle_handle,
+      uint32_t idle_handle_size);
+  void SwitchActiveAggregatedHitTestRegionList(const FrameSinkId& frame_sink_id,
+                                               uint8_t active_handle_index);
+
   // It is necessary to pass |frame_sink_id| by value because the id
   // is owned by the GpuCompositorFrameSink in the map. When the sink is
   // removed from the map, |frame_sink_id| would also be destroyed if it were a

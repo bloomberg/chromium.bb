@@ -58,6 +58,8 @@ void EventTargeter::ProcessFindTarget(EventSource event_source,
   // hit-test for most cases using shared memory and only ask Blink
   // asynchronously for hard cases. For now, assume all synchronous hit-tests
   // failed if the "enable-async-event-targeting" flag is turned on.
+  // Get display id this EventTargeter is associated with in WindowTree and
+  // get the HitTestQuery that display id is associated with in WindowServer.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           "enable-async-event-targeting")) {
     DCHECK(!hit_test_in_flight_);

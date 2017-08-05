@@ -102,4 +102,16 @@ interface FrameSinkManagerClient {
   // The CompositorFrameSink pipe for |frame_sink_id| was closed. The client
   // cannot submit any CompositorFrames to viz after this occurs.
   OnClientConnectionClosed(cc.mojom.FrameSinkId frame_sink_id);
+
+  // Sends |active_handle| and |idle_handle| along with their sizes to the
+  // client when they are allocated or resized.
+  OnAggregatedHitTestRegionListUpdated(cc.mojom.FrameSinkId frame_sink_id,
+                                       handle<shared_buffer> active_handle,
+                                       uint32 active_handle_size,
+                                       handle<shared_buffer> idle_handle,
+                                       uint32 idle_handle_size);
+
+  // Tells the client to update the currently active handle.
+  SwitchActiveAggregatedHitTestRegionList(cc.mojom.FrameSinkId frame_sink_id,
+                                          uint8 active_handle_index);
 };

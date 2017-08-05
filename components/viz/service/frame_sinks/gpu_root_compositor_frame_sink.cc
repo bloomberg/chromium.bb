@@ -21,17 +21,18 @@ GpuRootCompositorFrameSink::GpuRootCompositorFrameSink(
     mojom::CompositorFrameSinkAssociatedRequest request,
     mojom::CompositorFrameSinkClientPtr client,
     mojom::DisplayPrivateAssociatedRequest display_private_request)
-    : support_(CompositorFrameSinkSupport::Create(
-          this,
-          frame_sink_manager,
-          frame_sink_id,
-          true /* is_root */,
-          true /* needs_sync_points */)),
+    : support_(
+          CompositorFrameSinkSupport::Create(this,
+                                             frame_sink_manager,
+                                             frame_sink_id,
+                                             true /* is_root */,
+                                             true /* needs_sync_points */)),
       display_begin_frame_source_(std::move(begin_frame_source)),
       display_(std::move(display)),
       client_(std::move(client)),
       compositor_frame_sink_binding_(this, std::move(request)),
-      display_private_binding_(this, std::move(display_private_request)) {
+      display_private_binding_(this, std::move(display_private_request)),
+      hit_test_aggregator_(this) {
   DCHECK(display_begin_frame_source_);
   compositor_frame_sink_binding_.set_connection_error_handler(
       base::Bind(&GpuRootCompositorFrameSink::OnClientConnectionLost,
@@ -89,6 +90,22 @@ void GpuRootCompositorFrameSink::SubmitCompositorFrame(
 void GpuRootCompositorFrameSink::DidNotProduceFrame(
     const BeginFrameAck& begin_frame_ack) {
   support_->DidNotProduceFrame(begin_frame_ack);
+}
+
+void GpuRootCompositorFrameSink::OnAggregatedHitTestRegionListUpdated(
+    mojo::ScopedSharedBufferHandle active_handle,
+    uint32_t active_handle_size,
+    mojo::ScopedSharedBufferHandle idle_handle,
+    uint32_t idle_handle_size) {
+  support_->frame_sink_manager()->OnAggregatedHitTestRegionListUpdated(
+      support_->frame_sink_id(), std::move(active_handle), active_handle_size,
+      std::move(idle_handle), idle_handle_size);
+}
+
+void GpuRootCompositorFrameSink::SwitchActiveAggregatedHitTestRegionList(
+    uint8_t active_handle_index) {
+  support_->frame_sink_manager()->SwitchActiveAggregatedHitTestRegionList(
+      support_->frame_sink_id(), active_handle_index);
 }
 
 void GpuRootCompositorFrameSink::DisplayOutputSurfaceLost() {
