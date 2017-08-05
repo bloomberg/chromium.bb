@@ -97,7 +97,7 @@ V8EventListener* V8EventListenerHelper::GetEventListener(
 }
 
 // static
-V8EventListener* V8EventListenerHelper::EnsureErrorHandler(
+V8ErrorHandler* V8EventListenerHelper::EnsureErrorHandler(
     ScriptState* script_state,
     v8::Local<v8::Value> value) {
   if (!value->IsObject())
@@ -105,9 +105,9 @@ V8EventListener* V8EventListenerHelper::EnsureErrorHandler(
   v8::Local<v8::Object> object = value.As<v8::Object>();
   v8::Isolate* isolate = script_state->GetIsolate();
   V8PrivateProperty::Symbol listener_property =
-      V8PrivateProperty::GetV8EventListenerAttributeListener(isolate);
+      V8PrivateProperty::GetV8ErrorHandlerErrorHandler(isolate);
 
-  return GetEventListenerInternal<V8EventListener>(
+  return GetEventListenerInternal<V8ErrorHandler>(
       isolate, object, listener_property, kListenerFindOrCreate,
       [object, script_state]() {
         const bool is_attribute = true;

@@ -40,6 +40,7 @@
 namespace blink {
 
 class V8EventListener;
+class V8ErrorHandler;
 
 enum ListenerLookupType {
   kListenerFindOnly,
@@ -57,8 +58,8 @@ class V8EventListenerHelper {
                                                        bool is_attribute,
                                                        ListenerLookupType);
 
-  CORE_EXPORT static V8EventListener* EnsureErrorHandler(ScriptState*,
-                                                         v8::Local<v8::Value>);
+  CORE_EXPORT static V8ErrorHandler* EnsureErrorHandler(ScriptState*,
+                                                        v8::Local<v8::Value>);
 };
 
 }  // namespace blink
