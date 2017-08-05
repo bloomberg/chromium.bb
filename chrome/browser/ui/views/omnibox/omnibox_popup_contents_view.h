@@ -72,8 +72,6 @@ class OmniboxPopupContentsView : public views::View,
   gfx::Image GetIconIfExtensionMatch(size_t index) const;
   bool IsStarredMatch(const AutocompleteMatch& match) const;
 
-  int max_match_contents_width() const { return max_match_contents_width_; }
-
  protected:
   OmniboxPopupContentsView(const gfx::FontList& font_list,
                            OmniboxView* omnibox_view,
@@ -157,11 +155,6 @@ class OmniboxPopupContentsView : public views::View,
 
   int start_margin_;
   int end_margin_;
-
-  // When the dropdown is not wide enough while displaying tail suggestions,
-  // we use the width of widest match contents to shift the suggestions so that
-  // the widest suggestion just reaches the end edge.
-  int max_match_contents_width_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupContentsView);
 };

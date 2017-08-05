@@ -303,6 +303,11 @@ struct AutocompleteMatch {
   // it is true.
   void PossiblySwapContentsAndDescriptionForDisplay();
 
+  // If this match is a tail suggestion, prepends the passed |common_prefix|.
+  // If not, but the prefix matches the beginning of the suggestion, dims that
+  // portion in the classification.
+  void InlineTailPrefix(const base::string16& common_prefix);
+
   // The provider of this match, used to remember which provider the user had
   // selected when the input changes. This may be NULL, in which case there is
   // no provider (or memory of the user's selection).

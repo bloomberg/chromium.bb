@@ -121,6 +121,9 @@ class AutocompleteController : public AutocompleteProviderListener {
       const TemplateURLRef::SearchTermsArgs& search_terms_args,
       AutocompleteMatch* match) const;
 
+  // Prepend missing tail suggestion prefixes in results, if present.
+  void InlineTailPrefixes();
+
   HistoryURLProvider* history_url_provider() const {
     return history_url_provider_;
   }

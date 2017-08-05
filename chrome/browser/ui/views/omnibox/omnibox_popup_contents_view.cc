@@ -210,10 +210,12 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     return;
   }
 
+  // Fix-up any matches due to tail suggestions, before display below.
+  model_->autocomplete_controller()->InlineTailPrefixes();
+
   // Update the match cached by each row, in the process of doing so make sure
   // we have enough row views.
   const size_t result_size = model_->result().size();
-  max_match_contents_width_ = 0;
   for (size_t i = 0; i < result_size; ++i) {
     OmniboxResultView* view = result_view_at(i);
     const AutocompleteMatch& match = GetMatchAtIndex(i);
@@ -222,10 +224,6 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     if (match.answer && !model_->answer_bitmap().isNull()) {
       view->SetAnswerImage(
           gfx::ImageSkia::CreateFrom1xBitmap(model_->answer_bitmap()));
-    }
-    if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
-      max_match_contents_width_ = std::max(
-          max_match_contents_width_, view->GetMatchContentsWidth());
     }
   }
 
