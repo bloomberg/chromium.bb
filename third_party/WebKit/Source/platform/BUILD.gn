@@ -1572,6 +1572,14 @@ component("platform") {
     sources -= [ "scroll/ScrollbarThemeAndroid.cpp" ]
   }
 
+  if (is_fuchsia) {
+    sources += [
+      "fonts/fuchsia/FontCacheFuchsia.cpp",
+      "fonts/fuchsia/FontPlatformDataFuchsia.cpp",
+      "text/fuchsia/HyphenationFuchsia.cpp",
+    ]
+  }
+
   if (use_minikin_hyphenation) {
     sources += [
       "text/hyphenation/HyphenationMinikin.cpp",
