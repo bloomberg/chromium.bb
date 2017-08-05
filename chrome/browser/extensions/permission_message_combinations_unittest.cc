@@ -202,7 +202,7 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
   scoped_refptr<const Extension> app_;
   // Whitelist a known extension id so we can test all permissions. This ID
   // will be used for each test app.
-  extensions::SimpleFeature::ScopedWhitelistForTest whitelisted_extension_id_;
+  SimpleFeature::ScopedThreadUnsafeWhitelistForTest whitelisted_extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionMessageCombinationsUnittest);
 };

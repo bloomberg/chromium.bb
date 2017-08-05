@@ -38,15 +38,17 @@ class SimpleFeatureTest;
 class SimpleFeature : public Feature {
  public:
   // Used by tests to override the cached --whitelisted-extension-id.
-  class ScopedWhitelistForTest {
+  // NOTE: Not thread-safe! This is because it sets extension id on global
+  // singleton during its construction and destruction.
+  class ScopedThreadUnsafeWhitelistForTest {
    public:
-    explicit ScopedWhitelistForTest(const std::string& id);
-    ~ScopedWhitelistForTest();
+    explicit ScopedThreadUnsafeWhitelistForTest(const std::string& id);
+    ~ScopedThreadUnsafeWhitelistForTest();
 
    private:
-    std::string* previous_id_;
+    std::string previous_id_;
 
-    DISALLOW_COPY_AND_ASSIGN(ScopedWhitelistForTest);
+    DISALLOW_COPY_AND_ASSIGN(ScopedThreadUnsafeWhitelistForTest);
   };
 
   SimpleFeature();

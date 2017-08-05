@@ -86,7 +86,7 @@ TEST_F(PlatformAppsManifestTest, PlatformAppContentSecurityPolicy) {
 
   // Whitelisted ones can (this is the ID corresponding to the base 64 encoded
   // key in the init_platform_app_csp.json manifest.)
-  extensions::SimpleFeature::ScopedWhitelistForTest whitelist(
+  SimpleFeature::ScopedThreadUnsafeWhitelistForTest whitelist(
       "ahplfneplbnjcflhdgkkjeiglkkfeelb");
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("init_platform_app_csp.json");

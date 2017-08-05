@@ -35,7 +35,7 @@ class InitValueManifestTest : public ChromeManifestTest {
 };
 
 TEST_F(InitValueManifestTest, InitFromValueInvalid) {
-  extensions::SimpleFeature::ScopedWhitelistForTest whitelist(kWhitelistID);
+  SimpleFeature::ScopedThreadUnsafeWhitelistForTest whitelist(kWhitelistID);
   Testcase testcases[] = {
       Testcase("init_invalid_version_missing.json", errors::kInvalidVersion),
       Testcase("init_invalid_version_invalid.json", errors::kInvalidVersion),
