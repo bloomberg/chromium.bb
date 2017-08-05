@@ -257,8 +257,9 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
   DCHECK_EQ(planes[0].offset, 0);
 
   // Try to use scanout if supported.
-  bool try_scanout = gbm_device_is_format_supported(
-      gbm->device(), format, GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+  int gbm_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING;
+  bool try_scanout =
+      gbm_device_is_format_supported(gbm->device(), format, gbm_flags);
 
   gbm_bo* bo = nullptr;
   if (try_scanout) {
@@ -278,18 +279,18 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
     // The fd passed to gbm_bo_import is not ref-counted and need to be
     // kept open for the lifetime of the buffer.
     bo = gbm_bo_import(gbm->device(), GBM_BO_IMPORT_FD_PLANAR, &fd_data,
-                       GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+                       gbm_flags);
     if (!bo) {
       LOG(ERROR) << "nullptr returned from gbm_bo_import";
       return nullptr;
     }
+  } else {
+    gbm_flags &= ~GBM_BO_USE_SCANOUT;
   }
 
-  uint32_t flags = GBM_BO_USE_RENDERING;
-  if (try_scanout)
-    flags |= GBM_BO_USE_SCANOUT;
-  scoped_refptr<GbmBuffer> buffer(new GbmBuffer(
-      gbm, bo, format, flags, 0, 0, std::move(fds), size, std::move(planes)));
+  scoped_refptr<GbmBuffer> buffer(new GbmBuffer(gbm, bo, format, gbm_flags, 0,
+                                                0, std::move(fds), size,
+                                                std::move(planes)));
 
   return buffer;
 }
