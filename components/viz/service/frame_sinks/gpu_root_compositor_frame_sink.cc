@@ -80,7 +80,11 @@ void GpuRootCompositorFrameSink::SetNeedsBeginFrame(bool needs_begin_frame) {
 
 void GpuRootCompositorFrameSink::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
-    cc::CompositorFrame frame) {
+    cc::CompositorFrame frame,
+    mojom::HitTestRegionListPtr hit_test_region_list) {
+  // This call to SubmitCompositorFrame is only used for CompositorFrames
+  // created by FrameGenerator that do not require hit test information.
+  DCHECK(!hit_test_region_list);
   if (!support_->SubmitCompositorFrame(local_surface_id, std::move(frame))) {
     compositor_frame_sink_binding_.Close();
     OnClientConnectionLost();
