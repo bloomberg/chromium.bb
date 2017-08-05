@@ -89,6 +89,7 @@ TEST(ModalWindowControllerTest, SystemModalContainer) {
   EXPECT_FALSE(modal_window_controller.IsWindowBlocked(&window));
 
   ServerWindow modal_window(&window_delegate, WindowId(1, 6));
+  modal_window.SetModalType(MODAL_TYPE_SYSTEM);
   modal_window_controller.AddSystemModalWindow(&modal_window);
 
   // |window| should still not be blocked as the system modal window isn't
