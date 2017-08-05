@@ -122,8 +122,11 @@ inline void NGInlineNode::AssertEndOffset(unsigned index,
   Data().items_[index].AssertEndOffset(offset);
 }
 
-// If the given Node is laid out as an inline, returns the NGInlineNode that
+// If the given position is laid out as an inline, returns the NGInlineNode that
 // encloses it. Otherwise, returns null.
+CORE_EXPORT Optional<NGInlineNode> GetNGInlineNodeFor(const Node&, unsigned);
+
+// Short hand of the above function with offset 0.
 CORE_EXPORT Optional<NGInlineNode> GetNGInlineNodeFor(const Node&);
 
 DEFINE_TYPE_CASTS(NGInlineNode,

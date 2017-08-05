@@ -444,4 +444,67 @@ TEST_F(NGInlineNodeOffsetMappingTest, FirstLetterWithoutRemainingText) {
   EXPECT_EQ(1u, GetTextContentOffset(*text_node, 3));
 }
 
+TEST_F(NGInlineNodeOffsetMappingTest, FirstLetterInDifferentBlock) {
+  SetupHtml("t",
+            "<style>:first-letter{float:right}</style><div id=t>foo</div>");
+  Element* div = GetDocument().getElementById("t");
+  const LayoutText* remaining_text =
+      ToLayoutText(div->firstChild()->GetLayoutObject());
+  const LayoutText* first_letter =
+      ToLayoutText(ToLayoutTextFragment(remaining_text)
+                       ->GetFirstLetterPseudoElement()
+                       ->GetLayoutObject()
+                       ->SlowFirstChild());
+  const Node* text_node = div->firstChild();
+
+  Optional<NGInlineNode> inline_node0 = GetNGInlineNodeFor(*text_node, 0);
+  Optional<NGInlineNode> inline_node1 = GetNGInlineNodeFor(*text_node, 1);
+  Optional<NGInlineNode> inline_node2 = GetNGInlineNodeFor(*text_node, 2);
+  Optional<NGInlineNode> inline_node3 = GetNGInlineNodeFor(*text_node, 3);
+
+  ASSERT_TRUE(inline_node0.has_value());
+  ASSERT_TRUE(inline_node1.has_value());
+  ASSERT_TRUE(inline_node2.has_value());
+  ASSERT_TRUE(inline_node3.has_value());
+
+  // GetNGInlineNodeFor() returns different inline nodes for offset 0 and other
+  // offsets, because first-letter is laid out in a different block.
+  EXPECT_NE(inline_node0->GetLayoutBlockFlow(),
+            inline_node1->GetLayoutBlockFlow());
+  EXPECT_EQ(inline_node1->GetLayoutBlockFlow(),
+            inline_node2->GetLayoutBlockFlow());
+  EXPECT_EQ(inline_node2->GetLayoutBlockFlow(),
+            inline_node3->GetLayoutBlockFlow());
+
+  const NGOffsetMappingResult& first_letter_result =
+      inline_node0->ComputeOffsetMappingIfNeeded();
+  ASSERT_EQ(1u, first_letter_result.GetUnits().size());
+  TEST_UNIT(first_letter_result.GetUnits()[0],
+            NGOffsetMappingUnitType::kIdentity, first_letter, 0u, 1u, 0u, 1u);
+  ASSERT_EQ(1u, first_letter_result.GetRanges().size());
+  TEST_RANGE(first_letter_result.GetRanges(), first_letter, 0u, 1u);
+
+  const NGOffsetMappingResult& remaining_text_result =
+      inline_node1->ComputeOffsetMappingIfNeeded();
+  ASSERT_EQ(1u, remaining_text_result.GetUnits().size());
+  TEST_UNIT(remaining_text_result.GetUnits()[0],
+            NGOffsetMappingUnitType::kIdentity, remaining_text, 1u, 3u, 1u, 3u);
+  ASSERT_EQ(1u, remaining_text_result.GetRanges().size());
+  TEST_RANGE(remaining_text_result.GetRanges(), remaining_text, 0u, 1u);
+
+  EXPECT_EQ(&first_letter_result.GetUnits()[0],
+            inline_node0->GetMappingUnitForDOMOffset(*text_node, 0));
+  EXPECT_EQ(&remaining_text_result.GetUnits()[0],
+            inline_node1->GetMappingUnitForDOMOffset(*text_node, 1));
+  EXPECT_EQ(&remaining_text_result.GetUnits()[0],
+            inline_node1->GetMappingUnitForDOMOffset(*text_node, 2));
+  EXPECT_EQ(&remaining_text_result.GetUnits()[0],
+            inline_node1->GetMappingUnitForDOMOffset(*text_node, 3));
+
+  EXPECT_EQ(0u, inline_node0->GetTextContentOffset(*text_node, 0));
+  EXPECT_EQ(1u, inline_node1->GetTextContentOffset(*text_node, 1));
+  EXPECT_EQ(2u, inline_node1->GetTextContentOffset(*text_node, 2));
+  EXPECT_EQ(3u, inline_node1->GetTextContentOffset(*text_node, 3));
+}
+
 }  // namespace blink

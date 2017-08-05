@@ -679,7 +679,13 @@ String NGInlineNode::ToString() const {
 
 // static
 Optional<NGInlineNode> GetNGInlineNodeFor(const Node& node) {
-  LayoutObject* layout_object = node.GetLayoutObject();
+  return GetNGInlineNodeFor(node, 0);
+}
+
+// static
+Optional<NGInlineNode> GetNGInlineNodeFor(const Node& node, unsigned offset) {
+  // TODO(xiaochengh): Move/Reimplement AssociatedLayoutObjectOf in core/layout.
+  LayoutObject* layout_object = AssociatedLayoutObjectOf(node, offset);
   if (!layout_object || !layout_object->IsInline())
     return WTF::nullopt;
   LayoutBox* box = layout_object->EnclosingBox();
