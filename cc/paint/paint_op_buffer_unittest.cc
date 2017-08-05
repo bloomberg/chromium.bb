@@ -2230,6 +2230,8 @@ class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
     // Verify test data.
     for (size_t i = 0; i < test_rrects.size(); ++i)
       EXPECT_TRUE(test_rrects[i].isValid());
+    for (size_t i = 0; i < test_rects.size(); ++i)
+      EXPECT_TRUE(test_rects[i].isFinite());
   }
 
   PaintOpType GetParamType() const {
@@ -2791,6 +2793,52 @@ TEST(PaintOpBufferTest, ValidateSkBlendMode) {
       EXPECT_FALSE(written) << "op: " << op_idx;
     }
 
+    ++op_idx;
+  }
+}
+
+TEST(PaintOpBufferTest, ValidateRects) {
+  size_t buffer_size = kBufferBytesPerOp;
+  std::unique_ptr<char, base::AlignedFreeDeleter> serialized(static_cast<char*>(
+      base::AlignedAlloc(buffer_size, PaintOpBuffer::PaintOpAlign)));
+  std::unique_ptr<char, base::AlignedFreeDeleter> deserialized(
+      static_cast<char*>(
+          base::AlignedAlloc(buffer_size, PaintOpBuffer::PaintOpAlign)));
+
+  SkRect bad_rect = SkRect::MakeEmpty();
+  bad_rect.fBottom = std::numeric_limits<float>::quiet_NaN();
+  EXPECT_FALSE(bad_rect.isFinite());
+
+  // Push all op variations that take rects.
+  PaintOpBuffer buffer;
+  buffer.push<AnnotateOp>(PaintCanvas::AnnotationType::URL, bad_rect,
+                          SkData::MakeWithCString("test1"));
+  buffer.push<ClipRectOp>(bad_rect, SkClipOp::kDifference, true);
+
+  buffer.push<DrawArcOp>(bad_rect, test_floats[0], test_floats[1], true,
+                         test_flags[0]);
+  buffer.push<DrawImageRectOp>(test_images[0], bad_rect, test_rects[1], nullptr,
+                               PaintCanvas::kStrict_SrcRectConstraint);
+  buffer.push<DrawImageRectOp>(test_images[0], test_rects[0], bad_rect, nullptr,
+                               PaintCanvas::kStrict_SrcRectConstraint);
+  buffer.push<DrawOvalOp>(bad_rect, test_flags[0]);
+  buffer.push<DrawRectOp>(bad_rect, test_flags[0]);
+  buffer.push<SaveLayerOp>(&bad_rect, nullptr);
+  buffer.push<SaveLayerOp>(&bad_rect, &test_flags[0]);
+  buffer.push<SaveLayerAlphaOp>(&bad_rect, test_uint8s[0], true);
+
+  PaintOp::SerializeOptions options;
+
+  // Every op should serialize but fail to deserialize due to the bad rect.
+  int op_idx = 0;
+  for (PaintOpBuffer::Iterator iter(&buffer); iter; ++iter) {
+    const PaintOp* op = *iter;
+    size_t bytes_written =
+        op->Serialize(serialized.get(), buffer_size, options);
+    ASSERT_GT(bytes_written, 0u);
+    PaintOp* written = PaintOp::Deserialize(serialized.get(), bytes_written,
+                                            deserialized.get(), buffer_size);
+    EXPECT_FALSE(written) << "op: " << op_idx;
     ++op_idx;
   }
 }
