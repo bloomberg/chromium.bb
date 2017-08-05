@@ -326,6 +326,25 @@ void EventDispatcher::ProcessNextAvailableEvent() {
   delegate_->ProcessNextAvailableEvent();
 }
 
+LocationTarget EventDispatcher::AdjustLocationTargetForModal(
+    const LocationTarget& location_target) const {
+  const ServerWindow* modal_transient =
+      modal_window_controller_.GetModalTransient(
+          location_target.deepest_window.window);
+  if (!modal_transient && !modal_window_controller_.IsWindowBlocked(
+                              location_target.deepest_window.window)) {
+    return location_target;
+  }
+
+  LocationTarget updated_target = location_target;
+  updated_target.deepest_window.in_non_client_area = true;
+  updated_target.deepest_window.window =
+      (fallback_to_root_ && location_target.deepest_window.window)
+          ? location_target.deepest_window.window->GetRoot()
+          : nullptr;
+  return updated_target;
+}
+
 void EventDispatcher::SetMouseCursorSourceWindow(ServerWindow* window) {
   if (mouse_cursor_source_window_ == window)
     return;
@@ -396,28 +415,14 @@ void EventDispatcher::HideCursorOnMatchedKeyEvent(const ui::KeyEvent& event) {
 
 void EventDispatcher::ProcessPointerEventOnFoundTarget(
     const ui::PointerEvent& event,
-    const LocationTarget& location_target) {
+    const LocationTarget& found_location_target) {
+  const LocationTarget location_target =
+      AdjustLocationTargetForModal(found_location_target);
   PointerTarget pointer_target;
-  ServerWindow* modal_transient = modal_window_controller_.GetModalTransient(
-      location_target.deepest_window.window);
   pointer_target.is_mouse_event = event.IsMousePointerEvent();
-  if (!modal_transient && !modal_window_controller_.IsWindowBlocked(
-                              location_target.deepest_window.window)) {
-    pointer_target.window = location_target.deepest_window.window;
-    pointer_target.in_nonclient_area =
-        location_target.deepest_window.window != pointer_target.window ||
-        !pointer_target.window ||
-        location_target.deepest_window.in_non_client_area;
-  } else {
-    // The event is blocked by a modal window.
-    pointer_target.in_nonclient_area = true;
-    if (fallback_to_root_) {
-      pointer_target.window =
-          location_target.deepest_window.window
-              ? location_target.deepest_window.window->GetRoot()
-              : nullptr;
-    }
-  }
+  pointer_target.window = location_target.deepest_window.window;
+  pointer_target.in_nonclient_area =
+      location_target.deepest_window.in_non_client_area;
   pointer_target.is_pointer_down = event.type() == ui::ET_POINTER_DOWN;
 
   std::unique_ptr<ui::Event> cloned_event = ui::Event::Clone(event);
@@ -510,7 +515,7 @@ void EventDispatcher::ProcessPointerEventOnFoundTarget(
   // before we perform dispatch because the Delegate is going to read this
   // information from us.
   if (is_pointer_going_up && is_mouse_event)
-    UpdateCursorProviderByLastKnownLocationOnFoundWindow(location_target);
+    UpdateCursorProvider(location_target);
 
   DispatchToPointerTarget(pointer_targets_[pointer_id],
                           *cloned_event->AsPointerEvent());
@@ -524,32 +529,43 @@ void EventDispatcher::ProcessPointerEventOnFoundTarget(
       delegate_->ReleaseNativeCapture();
   }
 
-  if (modal_transient && event.type() == ET_POINTER_DOWN) {
-    ServerWindow* toplevel = modal_window_controller_.GetToplevelWindow(
-        location_target.deepest_window.window);
-    DCHECK(toplevel);
-    delegate_->SetFocusedWindowFromEventDispatcher(toplevel);
-    delegate_->OnEventOccurredOutsideOfModalWindow(modal_transient);
+  if (event.type() == ET_POINTER_DOWN) {
+    // Use |found_location_target| as |location_target| has already been
+    // adjusted for the modal window.
+    ServerWindow* modal_transient = modal_window_controller_.GetModalTransient(
+        found_location_target.deepest_window.window);
+    if (modal_transient) {
+      ServerWindow* toplevel = modal_window_controller_.GetToplevelWindow(
+          found_location_target.deepest_window.window);
+      DCHECK(toplevel);
+      delegate_->SetFocusedWindowFromEventDispatcher(toplevel);
+      delegate_->OnEventOccurredOutsideOfModalWindow(modal_transient);
+    }
   }
 }
 
 void EventDispatcher::UpdateNonClientAreaForCurrentWindowOnFoundWindow(
-    const LocationTarget& location_target) {
+    const LocationTarget& found_location_target) {
   if (!mouse_cursor_source_window_)
     return;
 
+  const LocationTarget location_target =
+      AdjustLocationTargetForModal(found_location_target);
   if (location_target.deepest_window.window == mouse_cursor_source_window_) {
     mouse_cursor_in_non_client_area_ =
         mouse_cursor_source_window_
             ? location_target.deepest_window.in_non_client_area
             : false;
   }
-  SetMousePointerLocation(location_target.location_in_root,
-                          location_target.display_id);
   delegate_->UpdateNativeCursorFromDispatcher();
 }
 
 void EventDispatcher::UpdateCursorProviderByLastKnownLocationOnFoundWindow(
+    const LocationTarget& location_target) {
+  UpdateCursorProvider(AdjustLocationTargetForModal(location_target));
+}
+
+void EventDispatcher::UpdateCursorProvider(
     const LocationTarget& location_target) {
   if (mouse_button_down_)
     return;
@@ -563,8 +579,6 @@ void EventDispatcher::UpdateCursorProviderByLastKnownLocationOnFoundWindow(
         &mouse_pointer_last_location_, &mouse_pointer_display_id_));
     mouse_cursor_in_non_client_area_ = true;
   }
-  SetMousePointerLocation(location_target.location_in_root,
-                          location_target.display_id);
   delegate_->UpdateNativeCursorFromDispatcher();
 }
 

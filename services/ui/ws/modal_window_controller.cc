@@ -192,8 +192,8 @@ void ModalWindowController::SetBlockingContainers(
 void ModalWindowController::AddSystemModalWindow(ServerWindow* window) {
   DCHECK(window);
   DCHECK(!base::ContainsValue(system_modal_windows_, window));
+  DCHECK_EQ(MODAL_TYPE_SYSTEM, window->modal_type());
 
-  window->SetModalType(ui::MODAL_TYPE_SYSTEM);
   system_modal_windows_.push_back(window);
   window_drawn_trackers_.insert(make_pair(
       window, base::MakeUnique<ServerWindowDrawnTracker>(window, this)));

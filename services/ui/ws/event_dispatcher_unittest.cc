@@ -278,13 +278,13 @@ class EventDispatcherTest : public testing::TestWithParam<bool>,
   // testing::TestWithParam<bool>:
   void SetUp() override;
 
+  void RunTasks();
+
  private:
   // TestEventDispatcherDelegate::Delegate:
   void ReleaseCapture() override {
     event_dispatcher_->SetCaptureWindow(nullptr, kInvalidClientId);
   }
-
-  void RunTasks();
 
   std::unique_ptr<TestServerWindowDelegate> window_delegate_;
   std::unique_ptr<ServerWindow> root_window_;
@@ -1856,6 +1856,7 @@ TEST_P(EventDispatcherTest, ModalWindowSystemSetCapture) {
   w1->SetBounds(gfx::Rect(10, 10, 30, 30));
   w2->SetBounds(gfx::Rect(50, 10, 10, 10));
 
+  w2->SetModalType(MODAL_TYPE_SYSTEM);
   event_dispatcher()->AddSystemModalWindow(w2.get());
 
   EXPECT_FALSE(event_dispatcher()->SetCaptureWindow(w1.get(), kClientAreaId));
@@ -1874,14 +1875,17 @@ TEST_P(EventDispatcherTest, ModalWindowMultipleSystemModals) {
   EXPECT_EQ(nullptr, GetActiveSystemModalWindow());
 
   // Add a visible system modal window. It should become the active one.
+  w1->SetModalType(MODAL_TYPE_SYSTEM);
   event_dispatcher()->AddSystemModalWindow(w1.get());
   EXPECT_EQ(w1.get(), GetActiveSystemModalWindow());
 
   // Add an invisible system modal window. It should not change the active one.
+  w2->SetModalType(MODAL_TYPE_SYSTEM);
   event_dispatcher()->AddSystemModalWindow(w2.get());
   EXPECT_EQ(w1.get(), GetActiveSystemModalWindow());
 
   // Add another visible system modal window. It should become the active one.
+  w3->SetModalType(MODAL_TYPE_SYSTEM);
   event_dispatcher()->AddSystemModalWindow(w3.get());
   EXPECT_EQ(w3.get(), GetActiveSystemModalWindow());
 
@@ -2191,6 +2195,38 @@ TEST_P(EventDispatcherTest, ChildModal) {
   EXPECT_FALSE(test_event_dispatcher_delegate()->has_queued_events());
   EXPECT_EQ(child_modal_window.get(),
             test_event_dispatcher_delegate()->window_that_blocked_event());
+}
+
+// Tests that setting capture to a window unrelated to a modal parent works.
+TEST_P(EventDispatcherTest, MouseCursorSourceWindowChangesWithSystemModal) {
+  BlockingContainers blocking_containers;
+  blocking_containers.system_modal_container = root_window();
+  event_dispatcher()->modal_window_controller()->SetBlockingContainers(
+      {blocking_containers});
+
+  std::unique_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
+  std::unique_ptr<ServerWindow> w2 = CreateChildWindow(WindowId(1, 4));
+
+  root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
+  root_window()->set_is_activation_parent(true);
+  w1->SetBounds(gfx::Rect(10, 10, 30, 30));
+  w2->SetBounds(gfx::Rect(50, 10, 10, 10));
+  w2->SetModalType(MODAL_TYPE_SYSTEM);
+  event_dispatcher()->modal_window_controller()->AddSystemModalWindow(w2.get());
+
+  // Move the mouse over |w1|.
+  const ui::PointerEvent move(
+      ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(11, 11), gfx::Point(11, 11),
+                     base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+  DispatchEvent(event_dispatcher(), move, 0,
+                EventDispatcher::AcceleratorMatchPhase::ANY);
+
+  EXPECT_EQ(nullptr, event_dispatcher()->mouse_cursor_source_window());
+
+  event_dispatcher()->UpdateCursorProviderByLastKnownLocation();
+  RunTasks();
+  // EventDispatcher fallsback to the root incase of invalid window.
+  EXPECT_EQ(root_window(), event_dispatcher()->mouse_cursor_source_window());
 }
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */, EventDispatcherTest, testing::Bool());

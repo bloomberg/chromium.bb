@@ -191,6 +191,12 @@ class EventDispatcher : public ServerWindowObserver,
     bool is_pointer_down;
   };
 
+  // EventTargeter returns the deepest window based on hit-test data. If the
+  // target is blocked by a modal window this returns a different target,
+  // otherwise the supplied target is returned.
+  LocationTarget AdjustLocationTargetForModal(
+      const LocationTarget& location_target) const;
+
   void SetMouseCursorSourceWindow(ServerWindow* window);
 
   // Called after we found the target for the current mouse cursor to see if
@@ -224,17 +230,21 @@ class EventDispatcher : public ServerWindowObserver,
   //   when no buttons on the mouse are down.
   // This also generates exit events as appropriate. For example, if the mouse
   // moves between one window to another an exit is generated on the first.
-  // |pointer_target| is the PointerTarget for |event| based on the
-  // |deepest_window|, the deepest visible window for the root_location
-  // of the |event|. |location_in_display| and |display_id| are updated values
-  // for root_location and |event_display_id_| (e.g. during drag-n-drop).
-  void ProcessPointerEventOnFoundTarget(const ui::PointerEvent& event,
-                                        const LocationTarget& location_target);
+  void ProcessPointerEventOnFoundTarget(
+      const ui::PointerEvent& event,
+      const LocationTarget& found_location_target);
 
   void UpdateNonClientAreaForCurrentWindowOnFoundWindow(
-      const LocationTarget& location_target);
+      const LocationTarget& found_location_target);
+
+  // This callback is triggered by UpdateCursorProviderByLastKnownLocation().
+  // It calls UpdateCursorProvider() as appropriate.
   void UpdateCursorProviderByLastKnownLocationOnFoundWindow(
       const LocationTarget& location_target);
+
+  // Immediatley updates the cursor provider (|mouse_cursor_source_window_|)
+  // as appropriate.
+  void UpdateCursorProvider(const LocationTarget& location_target);
 
   // Adds |pointer_target| to |pointer_targets_|.
   void StartTrackingPointer(int32_t pointer_id,
