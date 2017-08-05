@@ -33,7 +33,19 @@ namespace offline_pages {
 namespace {
 
 const char kDocRoot[] = "components/test/data/offline_pages";
-const char kTestPageURL[] = "/renovator_test_page.html";
+
+// For testing real renovations.
+const char kWikipediaTestPagePath[] = "/wikipedia_renovation_test_page.html";
+
+const char kCheckUnfoldBlockScript[] =
+    "document.getElementById('block1').classList.contains('open-block') && "
+    "document.getElementById('block2').classList.contains('open-block')";
+const char kCheckUnfoldHeadingScript[] =
+    "document.getElementById('heading1').classList.contains('open-block') && "
+    "document.getElementById('heading2').classList.contains('open-block')";
+
+// For running against the test renovations.
+const char kTestPagePath[] = "/renovator_test_page.html";
 const char kTestRenovationScript[] =
     R"*(function foo() {
       var node = document.getElementById('foo');
@@ -91,6 +103,20 @@ class PageRenovatorBrowserTest : public content::ContentBrowserTest {
  public:
   void SetUpOnMainThread() override;
 
+  // Navigates the content shell to the path indicated. This path is
+  // relative to the Chromium source root.
+  void Navigate(const std::string& test_page_path);
+
+  // These functions initialize the PageRenovator and dependencies
+  // with either testing renovations defined above, or with production
+  // renovations. |fake_url| is the URL passed to the PageRenovator
+  // and determines which renovations should be run.
+  //
+  // Only one of these should be called, and |Navigate| should be called
+  // beforehand.
+  void InitializeWithTestingRenovations(const GURL& fake_url);
+  void InitializeWithRealRenovations(const GURL& fake_url);
+
   void QuitRunLoop();
 
  protected:
@@ -121,12 +147,19 @@ void PageRenovatorBrowserTest::SetUpOnMainThread() {
   test_server_.ServeFilesFromSourceDirectory(kDocRoot);
   ASSERT_TRUE(test_server_.Start());
 
-  // Navigate to test page.
-  GURL url = test_server_.GetURL(kTestPageURL);
+  run_loop_.reset(new base::RunLoop);
+}
+
+void PageRenovatorBrowserTest::Navigate(const std::string& test_page_path) {
+  GURL url = test_server_.GetURL(test_page_path);
   content::NavigateToURL(shell(), url);
   render_frame_ = shell()->web_contents()->GetMainFrame();
+}
 
-  // Initialize renovations.
+void PageRenovatorBrowserTest::InitializeWithTestingRenovations(
+    const GURL& fake_url) {
+  ASSERT_TRUE(render_frame_) << "Navigate should have been called.";
+
   std::vector<std::unique_ptr<PageRenovation>> renovations;
   renovations.push_back(base::MakeUnique<FooPageRenovation>());
   renovations.push_back(base::MakeUnique<BarPageRenovation>());
@@ -139,11 +172,20 @@ void PageRenovatorBrowserTest::SetUpOnMainThread() {
 
   auto script_injector = base::MakeUnique<RenderFrameScriptInjector>(
       render_frame_, content::ISOLATED_WORLD_ID_CONTENT_END);
-  GURL fake_url("http://foo.bar/");
   page_renovator_.reset(new PageRenovator(
       page_renovation_loader_.get(), std::move(script_injector), fake_url));
+}
 
-  run_loop_.reset(new base::RunLoop);
+void PageRenovatorBrowserTest::InitializeWithRealRenovations(
+    const GURL& fake_url) {
+  ASSERT_TRUE(render_frame_) << "Navigate should have been called.";
+
+  page_renovation_loader_.reset(new PageRenovationLoader);
+
+  auto script_injector = base::MakeUnique<RenderFrameScriptInjector>(
+      render_frame_, content::ISOLATED_WORLD_ID_CONTENT_END);
+  page_renovator_.reset(new PageRenovator(
+      page_renovation_loader_.get(), std::move(script_injector), fake_url));
 }
 
 void PageRenovatorBrowserTest::QuitRunLoop() {
@@ -154,6 +196,8 @@ void PageRenovatorBrowserTest::QuitRunLoop() {
 }
 
 IN_PROC_BROWSER_TEST_F(PageRenovatorBrowserTest, CorrectRenovationsRun) {
+  Navigate(kTestPagePath);
+  InitializeWithTestingRenovations(GURL("http://foo.bar/"));
   // This should run FooPageRenovation and AlwaysRenovation, but not
   // BarPageRenovation.
   page_renovator_->RunRenovations(base::Bind(
@@ -176,6 +220,23 @@ IN_PROC_BROWSER_TEST_F(PageRenovatorBrowserTest, CorrectRenovationsRun) {
   EXPECT_TRUE(alwaysResult->GetBool());
 }
 
-// TODO(collinbaker): add test for Wikipedia renovation here.
+IN_PROC_BROWSER_TEST_F(PageRenovatorBrowserTest, WikipediaRenovationRuns) {
+  Navigate(kWikipediaTestPagePath);
+  InitializeWithRealRenovations(GURL("http://en.m.wikipedia.org/"));
+  page_renovator_->RunRenovations(base::Bind(
+      &PageRenovatorBrowserTest::QuitRunLoop, base::Unretained(this)));
+  content::RunThisRunLoop(run_loop_.get());
+
+  std::unique_ptr<base::Value> unfoldBlockResult =
+      content::ExecuteScriptAndGetValue(render_frame_, kCheckUnfoldBlockScript);
+  std::unique_ptr<base::Value> unfoldHeadingResult =
+      content::ExecuteScriptAndGetValue(render_frame_,
+                                        kCheckUnfoldHeadingScript);
+
+  ASSERT_TRUE(unfoldBlockResult.get() != nullptr);
+  ASSERT_TRUE(unfoldHeadingResult.get() != nullptr);
+  EXPECT_TRUE(unfoldBlockResult->GetBool());
+  EXPECT_TRUE(unfoldHeadingResult->GetBool());
+}
 
 }  // namespace offline_pages
