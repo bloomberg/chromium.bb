@@ -128,6 +128,7 @@ executable("wayland_rects_client") {
   deps = [
     ":client_lib",
     "//base",
+    "//build/config:exe_and_shlib_deps",
     "//skia",
     "//third_party/wayland:wayland_client",
     "//third_party/wayland-protocols:linux_dmabuf_protocol",
@@ -154,6 +155,7 @@ executable("wayland_simple_client") {
   deps = [
     ":client_lib",
     "//base",
+    "//build/config:exe_and_shlib_deps",
     "//skia",
     "//third_party/wayland:wayland_client",
     "//third_party/wayland-protocols:linux_dmabuf_protocol",
