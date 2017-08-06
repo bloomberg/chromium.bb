@@ -11,8 +11,15 @@
 
 namespace gfx {
 
+// Return the parameterized function in |fn|, evaluated at |x|. Note that this
+// will clamp output values to the range [0, 1].
 float COLOR_SPACE_EXPORT SkTransferFnEval(const SkColorSpaceTransferFn& fn,
                                           float x);
+
+// Return the parameterized function in |fn|, evaluated at |x|. This will not
+// clamp output values.
+float COLOR_SPACE_EXPORT
+SkTransferFnEvalUnclamped(const SkColorSpaceTransferFn& fn, float x);
 
 SkColorSpaceTransferFn COLOR_SPACE_EXPORT
 SkTransferFnInverse(const SkColorSpaceTransferFn& fn);

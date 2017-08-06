@@ -359,12 +359,15 @@ bool SkApproximateTransferFnInternal(const float* x,
 
 }  // namespace
 
-float SkTransferFnEval(const SkColorSpaceTransferFn& fn, float x) {
-  if (x < 0.f)
-    return 0.f;
+float SkTransferFnEvalUnclamped(const SkColorSpaceTransferFn& fn, float x) {
   if (x < fn.fD)
     return fn.fC * x + fn.fF;
   return std::pow(fn.fA * x + fn.fB, fn.fG) + fn.fE;
+}
+
+float SkTransferFnEval(const SkColorSpaceTransferFn& fn, float x) {
+  float fn_at_x_unclamped = SkTransferFnEvalUnclamped(fn, x);
+  return std::min(std::max(fn_at_x_unclamped, 0.f), 1.f);
 }
 
 SkColorSpaceTransferFn SkTransferFnInverse(const SkColorSpaceTransferFn& fn) {
