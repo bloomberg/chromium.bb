@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "components/security_state/core/insecure_input_event_data.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/sct_status_flags.h"
 #include "net/cert/x509_certificate.h"
@@ -144,6 +145,9 @@ struct SecurityInfo {
   // True if the |security_level| was downgraded to HTTP_SHOW_WARNING because
   // the page was loaded while Incognito.
   bool incognito_downgraded_security_level;
+  // Contains information about input events that may impact the security
+  // level of the page.
+  InsecureInputEventData insecure_input_events;
 };
 
 // Contains the security state relevant to computing the SecurityInfo
@@ -186,6 +190,9 @@ struct VisibleSecurityState {
   bool displayed_credit_card_field_on_http;
   // True if the page was displayed in an Incognito context.
   bool is_incognito;
+  // Contains information about input events that may impact the security
+  // level of the page.
+  InsecureInputEventData insecure_input_events;
 };
 
 // These security levels describe the treatment given to pages that

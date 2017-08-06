@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/security_state/content/ssl_status_input_event_data.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
@@ -381,6 +382,12 @@ std::unique_ptr<security_state::VisibleSecurityState> GetVisibleSecurityState(
   state->displayed_credit_card_field_on_http =
       !!(ssl.content_status &
          content::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
+
+  SSLStatusInputEventData* input_events =
+      static_cast<SSLStatusInputEventData*>(ssl.user_data.get());
+
+  if (input_events)
+    state->insecure_input_events = *input_events->input_events();
 
   return state;
 }

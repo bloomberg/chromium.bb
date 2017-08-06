@@ -265,6 +265,9 @@ void SecurityInfoForRequest(
       (visible_security_state.is_incognito &&
        security_info->security_level == HTTP_SHOW_WARNING &&
        security_state::IsHttpWarningForIncognitoEnabled());
+
+  security_info->insecure_input_events =
+      visible_security_state.insecure_input_events;
 }
 
 }  // namespace
@@ -347,27 +350,5 @@ VisibleSecurityState::VisibleSecurityState()
       is_incognito(false) {}
 
 VisibleSecurityState::~VisibleSecurityState() {}
-
-bool VisibleSecurityState::operator==(const VisibleSecurityState& other) const {
-  return (url == other.url &&
-          malicious_content_status == other.malicious_content_status &&
-          !!certificate == !!other.certificate &&
-          (certificate ? certificate->Equals(other.certificate.get()) : true) &&
-          connection_status == other.connection_status &&
-          key_exchange_group == other.key_exchange_group &&
-          security_bits == other.security_bits &&
-          displayed_mixed_content == other.displayed_mixed_content &&
-          ran_mixed_content == other.ran_mixed_content &&
-          displayed_content_with_cert_errors ==
-              other.displayed_content_with_cert_errors &&
-          ran_content_with_cert_errors == other.ran_content_with_cert_errors &&
-          pkp_bypassed == other.pkp_bypassed &&
-          displayed_password_field_on_http ==
-              other.displayed_password_field_on_http &&
-          displayed_credit_card_field_on_http ==
-              other.displayed_credit_card_field_on_http &&
-          contained_mixed_form == other.contained_mixed_form &&
-          is_incognito == other.is_incognito);
-}
 
 }  // namespace security_state
