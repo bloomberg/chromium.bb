@@ -441,7 +441,12 @@ class ColorTransformSkTransferFn : public ColorTransformPerChannelTransferFn {
   bool IsNull() override { return SkTransferFnIsApproximatelyIdentity(fn_); }
 
   // ColorTransformPerChannelTransferFn implementation:
-  float Evaluate(float v) const override { return SkTransferFnEval(fn_, v); }
+  float Evaluate(float v) const override {
+    // Note that the sign-extension is performed by the caller.
+    if (v < 0.f)
+      return 0.f;
+    return SkTransferFnEvalUnclamped(fn_, v);
+  }
   void AppendTransferShaderSource(std::stringstream* result) const override {
     const float kEpsilon = 1.f / 1024.f;
 
