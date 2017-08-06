@@ -29,6 +29,7 @@ class InsecureSensitiveInputDriver : public blink::mojom::InsecureInputService {
   // blink::mojom::InsecureInputService:
   void PasswordFieldVisibleInInsecureContext() override;
   void AllPasswordFieldsInInsecureContextInvisible() override;
+  void DidEditFieldInInsecureContext() override;
 
  private:
   content::RenderFrameHost* render_frame_host_;

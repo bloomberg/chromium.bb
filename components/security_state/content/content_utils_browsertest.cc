@@ -8,6 +8,8 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "components/security_state/content/ssl_status_input_event_data.h"
+#include "components/security_state/core/insecure_input_event_data.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -25,6 +27,8 @@ namespace {
 
 using content::NavigateToURL;
 using security_state::GetVisibleSecurityState;
+using security_state::InsecureInputEventData;
+using security_state::SSLStatusInputEventData;
 
 const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("components/security_state/content/testdata");
@@ -83,6 +87,43 @@ IN_PROC_BROWSER_TEST_F(SecurityStateContentUtilsBrowserTest,
                   ->displayed_password_field_on_http);
   EXPECT_TRUE(visible_security_state_sensitive_inputs
                   ->displayed_credit_card_field_on_http);
+}
+
+// Tests that the flags for nonsecure editing are set correctly.
+IN_PROC_BROWSER_TEST_F(SecurityStateContentUtilsBrowserTest,
+                       VisibleSecurityStateInsecureFieldEdit) {
+  ASSERT_TRUE(https_server_.Start());
+  EXPECT_TRUE(NavigateToURL(shell(), https_server_.GetURL("/hello.html")));
+
+  content::WebContents* contents = shell()->web_contents();
+  ASSERT_TRUE(contents);
+
+  // First, ensure the flag is not set prematurely.
+  content::SSLStatus& ssl_status =
+      contents->GetController().GetVisibleEntry()->GetSSL();
+  SSLStatusInputEventData* ssl_status_input_events =
+      static_cast<SSLStatusInputEventData*>(ssl_status.user_data.get());
+  InsecureInputEventData events;
+  if (ssl_status_input_events)
+    events = *ssl_status_input_events->input_events();
+  EXPECT_FALSE(events.insecure_field_edited);
+
+  std::unique_ptr<security_state::VisibleSecurityState> visible_state =
+      GetVisibleSecurityState(contents);
+  EXPECT_FALSE(visible_state->insecure_input_events.insecure_field_edited);
+
+  // Simulate a field edit and update the SSLStatus' |user_data|.
+  events.insecure_field_edited = true;
+  ssl_status.user_data =
+      base::MakeUnique<security_state::SSLStatusInputEventData>(events);
+
+  // Verify the field edit was recorded properly in the |user_data|.
+  ssl_status_input_events =
+      static_cast<SSLStatusInputEventData*>(ssl_status.user_data.get());
+  EXPECT_TRUE(ssl_status_input_events->input_events()->insecure_field_edited);
+  // Verify the field edit was propagated to the VisibleSecurityState.
+  visible_state = GetVisibleSecurityState(contents);
+  EXPECT_TRUE(visible_state->insecure_input_events.insecure_field_edited);
 }
 
 }  // namespace

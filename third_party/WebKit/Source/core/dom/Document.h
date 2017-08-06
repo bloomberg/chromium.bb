@@ -31,6 +31,9 @@
 #define Document_h
 
 #include <memory>
+#include <string>
+#include <utility>
+
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/CoreExport.h"
@@ -1326,9 +1329,12 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Document maintains a counter of visible non-secure password
   // fields in the page. Used to notify the embedder when all visible
-  // non-secure passwords fields are no longer visible.
+  // non-secure password fields are no longer visible.
   void IncrementPasswordCount();
   void DecrementPasswordCount();
+  // Used to notify the embedder when the user edits the value of a
+  // text field in a non-secure context.
+  void MaybeQueueSendDidEditFieldInInsecureContext();
 
   CoreProbeSink* GetProbeSink() final;
 
@@ -1452,6 +1458,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void SendSensitiveInputVisibility();
   void SendSensitiveInputVisibilityInternal();
+  void SendDidEditFieldInInsecureContext();
 
   bool HaveImportsLoaded() const;
   void ViewportDefiningElementDidChange();
@@ -1698,7 +1705,11 @@ class CORE_EXPORT Document : public ContainerNode,
 
   unsigned password_count_;
 
+  bool logged_field_edit_;
+
   TaskHandle sensitive_input_visibility_task_;
+
+  TaskHandle sensitive_input_edited_task_;
 
   mojom::EngagementLevel engagement_level_;
 

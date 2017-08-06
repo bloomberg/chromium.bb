@@ -1,6 +1,8 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+#include <memory>
+#include <utility>
 
 #include "core/html/forms/PasswordInputType.h"
 
@@ -17,7 +19,7 @@ namespace blink {
 
 class MockInsecureInputService : public mojom::blink::InsecureInputService {
  public:
-  MockInsecureInputService(LocalFrame& frame) {
+  explicit MockInsecureInputService(LocalFrame& frame) {
     service_manager::InterfaceProvider::TestApi test_api(
         &frame.GetInterfaceProvider());
     test_api.SetBinderForName(
@@ -32,6 +34,8 @@ class MockInsecureInputService : public mojom::blink::InsecureInputService {
     binding_set_.AddBinding(
         this, mojom::blink::InsecureInputServiceRequest(std::move(handle)));
   }
+
+  unsigned DidEditFieldCalls() const { return num_did_edit_field_calls_; }
 
   bool PasswordFieldVisibleCalled() const {
     return password_field_visible_called_;
@@ -51,9 +55,12 @@ class MockInsecureInputService : public mojom::blink::InsecureInputService {
     ++num_password_fields_invisible_calls_;
   }
 
+  void DidEditFieldInInsecureContext() override { ++num_did_edit_field_calls_; }
+
   mojo::BindingSet<InsecureInputService> binding_set_;
 
   bool password_field_visible_called_ = false;
+  unsigned num_did_edit_field_calls_ = 0;
   unsigned num_password_fields_invisible_calls_ = 0;
 };
 
@@ -292,6 +299,44 @@ TEST(PasswordInputTypeTest, MultipleEventsInSameTask) {
   // the page (which is that no password fields are visible).
   EXPECT_EQ(1u, mock_service.NumPasswordFieldsInvisibleCalls());
   EXPECT_FALSE(mock_service.PasswordFieldVisibleCalled());
+}
+
+// Tests that a Mojo message is sent when a password field is edited
+// on the page.
+TEST(PasswordInputTypeTest, DidEditFieldEvent) {
+  std::unique_ptr<DummyPageHolder> page_holder =
+      DummyPageHolder::Create(IntSize(2000, 2000), nullptr, nullptr, nullptr);
+  MockInsecureInputService mock_service(page_holder->GetFrame());
+  page_holder->GetDocument().body()->setInnerHTML("<input type='password'>");
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  blink::testing::RunPendingTasks();
+  EXPECT_EQ(0u, mock_service.DidEditFieldCalls());
+  // Simulate a text field edit.
+  page_holder->GetDocument().MaybeQueueSendDidEditFieldInInsecureContext();
+  blink::testing::RunPendingTasks();
+  EXPECT_EQ(1u, mock_service.DidEditFieldCalls());
+  // Ensure additional edits do not trigger additional notifications.
+  page_holder->GetDocument().MaybeQueueSendDidEditFieldInInsecureContext();
+  blink::testing::RunPendingTasks();
+  EXPECT_EQ(1u, mock_service.DidEditFieldCalls());
+}
+
+// Tests that a Mojo message is not sent when a password field is edited
+// in a secure context.
+TEST(PasswordInputTypeTest, DidEditFieldEventNotSentFromSecureContext) {
+  std::unique_ptr<DummyPageHolder> page_holder =
+      DummyPageHolder::Create(IntSize(2000, 2000), nullptr, nullptr, nullptr);
+  MockInsecureInputService mock_service(page_holder->GetFrame());
+  page_holder->GetDocument().SetURL(KURL(NullURL(), "https://example.test"));
+  page_holder->GetDocument().SetSecurityOrigin(
+      SecurityOrigin::Create(KURL(NullURL(), "https://example.test")));
+  page_holder->GetDocument().body()->setInnerHTML("<input type='password'>");
+  page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
+  // Simulate a text field edit.
+  page_holder->GetDocument().MaybeQueueSendDidEditFieldInInsecureContext();
+  // No message should have been sent from a secure context.
+  blink::testing::RunPendingTasks();
+  EXPECT_EQ(0u, mock_service.DidEditFieldCalls());
 }
 
 }  // namespace blink
