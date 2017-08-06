@@ -2247,27 +2247,31 @@ void av1_inverse_transform_block(const MACROBLOCKD *xd,
   txfm_param.mode = mode;
 #endif
 
-#if CONFIG_TXMG
-  DECLARE_ALIGNED(16, uint16_t, tmp[MAX_TX_SQUARE]);
-  int tmp_stride = MAX_TX_SIZE;
-  int w = tx_size_wide[tx_size];
-  int h = tx_size_high[tx_size];
-  for (int r = 0; r < h; ++r) {
-    for (int c = 0; c < w; ++c) {
-      tmp[r * tmp_stride + c] = dst[r * stride + c];
-    }
-  }
-
-  av1_highbd_inv_txfm_add(dqcoeff, CONVERT_TO_BYTEPTR(tmp), tmp_stride,
-                          &txfm_param);
-
-  for (int r = 0; r < h; ++r) {
-    for (int c = 0; c < w; ++c) {
-      dst[r * stride + c] = tmp[r * tmp_stride + c];
-    }
-  }
-#else   // CONFIG_TXMG
   const int is_hbd = get_bitdepth_data_path_index(xd);
+#if CONFIG_TXMG
+  if (is_hbd) {
+    av1_highbd_inv_txfm_add(dqcoeff, dst, stride, &txfm_param);
+  } else {
+    DECLARE_ALIGNED(16, uint16_t, tmp[MAX_TX_SQUARE]);
+    int tmp_stride = MAX_TX_SIZE;
+    int w = tx_size_wide[tx_size];
+    int h = tx_size_high[tx_size];
+    for (int r = 0; r < h; ++r) {
+      for (int c = 0; c < w; ++c) {
+        tmp[r * tmp_stride + c] = dst[r * stride + c];
+      }
+    }
+
+    av1_highbd_inv_txfm_add(dqcoeff, CONVERT_TO_BYTEPTR(tmp), tmp_stride,
+                            &txfm_param);
+
+    for (int r = 0; r < h; ++r) {
+      for (int c = 0; c < w; ++c) {
+        dst[r * stride + c] = tmp[r * tmp_stride + c];
+      }
+    }
+  }
+#else  // CONFIG_TXMG
   inv_txfm_func[is_hbd](dqcoeff, dst, stride, &txfm_param);
 #endif  // CONFIG_TXMG
 }
