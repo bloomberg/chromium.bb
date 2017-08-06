@@ -1,7 +1,12 @@
 # Bluetooth Testing
 
 Implementation of the Bluetooth component is tested via unittests. Client code
-uses Mock Bluetooth objects:
+uses Mock Bluetooth objects. These are described in sections below.
+
+There are also notable higher level bluetooth tests:
+
+*   [Extensions](/extensions/browser/api/bluetooth/)
+*   [Web Bluetooth](/third_party/WebKit/Source/modules/bluetooth/README.md)
 
 
 ## Mojo Testing Interface Implementation
