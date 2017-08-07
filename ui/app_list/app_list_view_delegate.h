@@ -39,9 +39,6 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // of AppListModel.
   virtual void StartSearch() = 0;
 
-  // Invoked to stop the current search.
-  virtual void StopSearch() = 0;
-
   // Invoked to open the search result.
   virtual void OpenSearchResult(SearchResult* result,
                                 bool auto_launch,

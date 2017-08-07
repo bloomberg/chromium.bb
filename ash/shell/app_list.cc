@@ -265,10 +265,6 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     }
   }
 
-  void StopSearch() override {
-    // Nothing needs to be done.
-  }
-
   void ViewInitialized() override {
     // Nothing needs to be done.
   }

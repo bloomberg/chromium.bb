@@ -306,11 +306,6 @@ void AppListViewDelegate::StartSearch() {
   }
 }
 
-void AppListViewDelegate::StopSearch() {
-  if (search_controller_)
-    search_controller_->Stop();
-}
-
 void AppListViewDelegate::OpenSearchResult(
     app_list::SearchResult* result,
     bool auto_launch,

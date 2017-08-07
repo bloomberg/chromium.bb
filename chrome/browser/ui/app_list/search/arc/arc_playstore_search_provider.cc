@@ -44,7 +44,6 @@ void ArcPlayStoreSearchProvider::Start(bool is_voice_query,
   if (app_instance == nullptr || query.empty())
     return;
 
-  ClearResults();
   app_instance->GetRecentAndSuggestedAppsFromPlayStore(
       UTF16ToUTF8(query), max_results_,
       base::Bind(&ArcPlayStoreSearchProvider::OnResults,
@@ -59,16 +58,19 @@ void ArcPlayStoreSearchProvider::OnResults(
     std::vector<arc::mojom::AppDiscoveryResultPtr> results) {
   if (state != arc::mojom::AppDiscoveryRequestState::SUCCESS) {
     DCHECK(results.empty());
+    ClearResults();
     return;
   }
 
+  SearchProvider::Results new_results;
   size_t instant_app_count = 0;
   for (auto& result : results) {
     if (result->is_instant_app)
       ++instant_app_count;
-    Add(base::MakeUnique<ArcPlayStoreSearchResult>(std::move(result), profile_,
-                                                   list_controller_));
+    new_results.emplace_back(base::MakeUnique<ArcPlayStoreSearchResult>(
+        std::move(result), profile_, list_controller_));
   }
+  SwapResults(&new_results);
 
   // Record user metrics.
   UMA_HISTOGRAM_TIMES("Arc.PlayStoreSearch.QueryTime",
