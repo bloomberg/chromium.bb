@@ -28,8 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediastream/UserMediaClientImpl.h"
+#include "modules/mediastream/UserMediaClient.h"
 
+#include "modules/mediastream/UserMediaRequest.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebMediaDeviceChangeObserver.h"
@@ -39,27 +40,27 @@
 
 namespace blink {
 
-UserMediaClientImpl::UserMediaClientImpl(WebUserMediaClient* client)
+UserMediaClient::UserMediaClient(WebUserMediaClient* client)
     : client_(client) {}
 
-void UserMediaClientImpl::RequestUserMedia(UserMediaRequest* request) {
+void UserMediaClient::RequestUserMedia(UserMediaRequest* request) {
   if (client_)
     client_->RequestUserMedia(request);
   else
     request->FailUASpecific("NotSupportedError", String(), String());
 }
 
-void UserMediaClientImpl::CancelUserMediaRequest(UserMediaRequest* request) {
+void UserMediaClient::CancelUserMediaRequest(UserMediaRequest* request) {
   if (client_)
     client_->CancelUserMediaRequest(WebUserMediaRequest(request));
 }
 
-void UserMediaClientImpl::RequestMediaDevices(MediaDevicesRequest* request) {
+void UserMediaClient::RequestMediaDevices(MediaDevicesRequest* request) {
   if (client_)
     client_->RequestMediaDevices(request);
 }
 
-void UserMediaClientImpl::SetMediaDeviceChangeObserver(MediaDevices* observer) {
+void UserMediaClient::SetMediaDeviceChangeObserver(MediaDevices* observer) {
   if (client_) {
     client_->SetMediaDeviceChangeObserver(
         WebMediaDeviceChangeObserver(observer));
