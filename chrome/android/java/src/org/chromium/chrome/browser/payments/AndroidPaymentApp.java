@@ -252,6 +252,11 @@ public class AndroidPaymentApp
     }
 
     @Override
+    public Set<String> getPreferredRelatedApplicationIds() {
+        return null;
+    }
+
+    @Override
     public String getAppIdentifier() {
         return getIdentifier();
     }

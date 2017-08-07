@@ -712,6 +712,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         assert mPendingApps == null;
 
+        dedupePaymentApps();
+
         mPendingApps = new ArrayList<>(mApps);
         mPendingInstruments = new ArrayList<>();
 
@@ -741,6 +743,30 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             q.getKey().getInstruments(
                     q.getValue(), mTopLevelOrigin, mPaymentRequestOrigin, mCertificateChain, this);
         }
+    }
+
+    // Dedupe payment apps if the preferred related applications exist.
+    // Note that this is only work for deduping service worker based payment app from native Android
+    // payment app for now and the identifier of a native Android payment app is its package name.
+    private void dedupePaymentApps() {
+        Set<String> appIdentifiers = new HashSet<>();
+        for (int i = 0; i < mApps.size(); i++) {
+            appIdentifiers.add(mApps.get(i).getAppIdentifier());
+        }
+
+        List<PaymentApp> appsToDedupe = new ArrayList<>();
+        for (int i = 0; i < mApps.size(); i++) {
+            Set<String> applicationIds = mApps.get(i).getPreferredRelatedApplicationIds();
+            if (applicationIds == null || applicationIds.isEmpty()) continue;
+            for (String id : applicationIds) {
+                if (appIdentifiers.contains(id)) {
+                    appsToDedupe.add(mApps.get(i));
+                    break;
+                }
+            }
+        }
+
+        if (!appsToDedupe.isEmpty()) mApps.removeAll(appsToDedupe);
     }
 
     /** Filter out merchant method data that's not relevant to a payment app. Can return null. */

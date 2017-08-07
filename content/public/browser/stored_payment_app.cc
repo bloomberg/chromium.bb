@@ -6,6 +6,10 @@
 
 namespace content {
 
+StoredRelatedApplication::StoredRelatedApplication() = default;
+
+StoredRelatedApplication::~StoredRelatedApplication() = default;
+
 StoredPaymentApp::StoredPaymentApp() = default;
 
 StoredPaymentApp::~StoredPaymentApp() = default;
