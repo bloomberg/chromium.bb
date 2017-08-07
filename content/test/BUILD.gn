@@ -124,6 +124,8 @@ static_library("test_support") {
     "../public/test/test_launcher.h",
     "../public/test/test_navigation_observer.cc",
     "../public/test/test_navigation_observer.h",
+    "../public/test/test_navigation_throttle_inserter.cc",
+    "../public/test/test_navigation_throttle_inserter.h",
     "../public/test/test_notification_tracker.cc",
     "../public/test/test_notification_tracker.h",
     "../public/test/test_renderer_host.cc",
