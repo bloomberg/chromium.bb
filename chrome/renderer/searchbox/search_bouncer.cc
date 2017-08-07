@@ -26,6 +26,8 @@ SearchBouncer* SearchBouncer::GetInstance() {
 
 void SearchBouncer::RegisterMojoInterfaces(
     content::AssociatedInterfaceRegistry* associated_interfaces) {
+  // Note: Unretained is safe here because this class is a leaky LazyInstance.
+  // For the same reason, UnregisterMojoInterfaces isn't required.
   associated_interfaces->AddInterface(base::Bind(
       &SearchBouncer::OnSearchBouncerRequest, base::Unretained(this)));
 }
