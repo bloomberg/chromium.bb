@@ -831,9 +831,6 @@ const char kNtpSwitchToExistingTab[] = "ntp-switch-to-existing-tab";
 // Specifies Android phone page loading progress bar animation.
 const char kProgressBarAnimation[]          = "progress-bar-animation";
 
-// Use a static URL for the logo of the default search engine.
-const char kSearchProviderLogoURL[] = "search-provider-logo-url";
-
 // Specifies a particular tab management experiment to enable.
 const char kTabManagementExperimentTypeDisabled[] =
     "tab-management-experiment-type-disabled";

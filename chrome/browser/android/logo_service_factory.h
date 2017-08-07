@@ -9,13 +9,16 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-class LogoService;
 class Profile;
+
+namespace search_provider_logos {
+class LogoService;
+}  // namespace search_provider_logos
 
 // Singleton that owns all LogoServices and associates them with Profiles.
 class LogoServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static LogoService* GetForProfile(Profile* profile);
+  static search_provider_logos::LogoService* GetForProfile(Profile* profile);
 
   static LogoServiceFactory* GetInstance();
 

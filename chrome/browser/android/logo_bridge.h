@@ -13,7 +13,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
+namespace search_provider_logos {
 class LogoService;
+}  // namespace search_provider_logos
 
 // The C++ counterpart to LogoBridge.java. Enables Java code to access the
 // default search provider's logo.
@@ -48,7 +50,7 @@ class LogoBridge {
 
   virtual ~LogoBridge();
 
-  LogoService* logo_service_;
+  search_provider_logos::LogoService* logo_service_;
 
   std::unique_ptr<AnimatedLogoFetcher> animated_logo_fetcher_;
 

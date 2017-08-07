@@ -1,5 +1,8 @@
 include_rules = [
   "+components/data_use_measurement/core",
+  "+components/image_fetcher/core",
+  "+components/keyed_service/core",
+  "+components/search_engines",
   "+net",
   "+third_party/skia/include/core/SkBitmap.h",
   "+ui/gfx/image",

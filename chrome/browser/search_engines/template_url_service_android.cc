@@ -14,13 +14,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/util.h"
+#include "components/search_provider_logos/switches.h"
 #include "jni/TemplateUrlService_jni.h"
 #include "net/base/url_util.h"
 
@@ -124,7 +124,7 @@ jboolean TemplateUrlServiceAndroid::DoesDefaultSearchEngineHaveLogo(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSearchProviderLogoURL)) {
+          search_provider_logos::switches::kSearchProviderLogoURL)) {
     return true;
   }
 
