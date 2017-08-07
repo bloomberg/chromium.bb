@@ -3233,7 +3233,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          search_provider_logos::features::kUseDdljsonApi,
          kUseDdljsonApiVariations,
-         search_provider_logos::features::kUseDdljsonApi.name)},
+         "NTPUseDdljsonApi")},
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
