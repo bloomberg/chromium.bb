@@ -386,6 +386,10 @@ const char kEnableNightLightDescription[] =
     "Enable the Night Light feature which controls the color temperature of "
     "the screen.";
 
+const char kEnableOutOfBlinkCORSName[] = "Out of blink CORS";
+const char kEnableOutOfBlinkCORSDescription[] =
+    "CORS handling logic is moved out of blink.";
+
 const char kEnablePictureInPictureName[] = "Enable picture in picture.";
 const char kEnablePictureInPictureDescription[] =
     "Enable the picture in picture feature for videos.";

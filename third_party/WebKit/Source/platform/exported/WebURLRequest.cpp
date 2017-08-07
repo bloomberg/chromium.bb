@@ -427,10 +427,6 @@ void WebURLRequest::SetNavigationStartTime(double navigation_start_seconds) {
   resource_request_->SetNavigationStartTime(navigation_start_seconds);
 }
 
-bool WebURLRequest::ShouldProcessCORSOutOfBlink() const {
-  return RuntimeEnabledFeatures::OutOfBlinkCORSEnabled();
-}
-
 void WebURLRequest::SetIsSameDocumentNavigation(bool is_same_document) {
   resource_request_->SetIsSameDocumentNavigation(is_same_document);
 }

@@ -184,6 +184,10 @@ const base::Feature kOffMainThreadFetch{"OffMainThreadFetch",
 const base::Feature kOriginTrials{"OriginTrials",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Out of Blink CORS
+const base::Feature kOutOfBlinkCORS{"OutOfBlinkCORS",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Whether a download can be handled by parallel jobs.
 const base::Feature kParallelDownloading{
     "ParallelDownloading", base::FEATURE_DISABLED_BY_DEFAULT};
