@@ -43,21 +43,6 @@
 #define MSVC_DISABLE_OPTIMIZE() __pragma(optimize("", off))
 #define MSVC_ENABLE_OPTIMIZE() __pragma(optimize("", on))
 
-// Allows exporting a class that inherits from a non-exported base class.
-// This uses suppress instead of push/pop because the delimiter after the
-// declaration (either "," or "{") has to be placed before the pop macro.
-//
-// Example usage:
-// class EXPORT_API Foo : NON_EXPORTED_BASE(public Bar) {
-//
-// MSVC Compiler warning C4275:
-// non dll-interface class 'Bar' used as base for dll-interface class 'Foo'.
-// Note that this is intended to be used only when no access to the base class'
-// static data is done through derived classes or inline methods. For more info,
-// see http://msdn.microsoft.com/en-us/library/3tdb471s(VS.80).aspx
-#define NON_EXPORTED_BASE(code) MSVC_SUPPRESS_WARNING(4275) \
-                                code
-
 #else  // Not MSVC
 
 #define _Printf_format_string_
@@ -67,9 +52,11 @@
 #define MSVC_POP_WARNING()
 #define MSVC_DISABLE_OPTIMIZE()
 #define MSVC_ENABLE_OPTIMIZE()
-#define NON_EXPORTED_BASE(code) code
 
 #endif  // COMPILER_MSVC
+
+// TODO(crbug.com/752837): Remove this, it's a no-op.
+#define NON_EXPORTED_BASE(code) code
 
 // Annotate a variable indicating it's ok if the variable is not used.
 // (Typically used to silence a compiler warning when the assignment
