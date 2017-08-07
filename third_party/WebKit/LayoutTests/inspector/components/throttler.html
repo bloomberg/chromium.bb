@@ -5,6 +5,49 @@
 
 function test()
 {
+    class TimeoutMock {
+        constructor() {
+            this._timeoutId = 0;
+            this._timeoutIdToProcess = {};
+            this._timeoutIdToMillis = {};
+            this.setTimeout = this.setTimeout.bind(this);
+            this.clearTimeout = this.clearTimeout.bind(this);
+        }
+
+        /**
+         * @param {!Function} operation
+         * @param {number} timeout
+         */
+        setTimeout(operation, timeout) {
+            this._timeoutIdToProcess[++this._timeoutId] = operation;
+            this._timeoutIdToMillis[this._timeoutId] = timeout;
+            return this._timeoutId;
+        }
+
+        /**
+            *
+            * @param {number} timeoutId
+            */
+        clearTimeout(timeoutId) {
+            delete this._timeoutIdToProcess[timeoutId];
+            delete this._timeoutIdToMillis[timeoutId];
+        }
+
+        /**
+            * @return {!Array<number>}
+            */
+        activeTimersTimeouts() {
+            return Object.values(this._timeoutIdToMillis);
+        }
+
+        fireAllTimers() {
+            for (const timeoutId in this._timeoutIdToProcess)
+                this._timeoutIdToProcess[timeoutId].call(window);
+            this._timeoutIdToProcess = {};
+            this._timeoutIdToMillis = {};
+        }
+    };
+
     var ProcessMock = function(name, runnable)
     {
         this._runnable = runnable;
@@ -54,7 +97,7 @@ function test()
     }
 
     var throttler = new Common.Throttler(1989);
-    var timeoutMock = new InspectorTest.TimeoutMock();
+    var timeoutMock = new TimeoutMock();
     throttler._setTimeout = timeoutMock.setTimeout;
     throttler._clearTimeout = timeoutMock.clearTimeout;
     InspectorTest.addSniffer(throttler, "schedule", logSchedule, true);
