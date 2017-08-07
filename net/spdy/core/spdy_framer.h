@@ -401,11 +401,6 @@ class SPDY_EXPORT_PRIVATE SpdyFramer {
     send_frame_size_limit_ = send_frame_size_limit;
   }
 
-  size_t recv_frame_size_limit() const { return recv_frame_size_limit_; }
-  void set_recv_frame_size_limit(size_t recv_frame_size_limit) {
-    recv_frame_size_limit_ = recv_frame_size_limit;
-  }
-
   void SetDecoderHeaderTableDebugVisitor(
       std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor);
 
@@ -633,10 +628,6 @@ class SPDY_EXPORT_PRIVATE SpdyFramer {
   // The limit on the size of sent HTTP/2 payloads as specified in the
   // SETTINGS_MAX_FRAME_SIZE received from peer.
   size_t send_frame_size_limit_ = kSpdyInitialFrameSizeLimit;
-
-  // The limit on the size of received HTTP/2 payloads as specified in the
-  // SETTINGS_MAX_FRAME_SIZE advertised to peer.
-  size_t recv_frame_size_limit_ = kSpdyInitialFrameSizeLimit;
 
   std::unique_ptr<HpackEncoder> hpack_encoder_;
 
