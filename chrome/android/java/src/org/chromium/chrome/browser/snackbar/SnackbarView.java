@@ -53,6 +53,7 @@ class SnackbarView {
     // Variables used to calculate the virtual keyboard's height.
     private Rect mCurrentVisibleRect = new Rect();
     private Rect mPreviousVisibleRect = new Rect();
+    private int[] mTempLocation = new int[2];
 
     private OnLayoutChangeListener mLayoutListener = new OnLayoutChangeListener() {
         @Override
@@ -143,9 +144,15 @@ class SnackbarView {
         if (!mCurrentVisibleRect.equals(mPreviousVisibleRect)) {
             mPreviousVisibleRect.set(mCurrentVisibleRect);
 
-            int keyboardHeight = mParent.getHeight() - mCurrentVisibleRect.bottom
-                    + mCurrentVisibleRect.top;
+            mParent.getLocationInWindow(mTempLocation);
+            int keyboardHeight =
+                    mParent.getHeight() + mTempLocation[1] - mCurrentVisibleRect.bottom;
             FrameLayout.LayoutParams lp = getLayoutParams();
+
+            int prevBottomMargin = lp.bottomMargin;
+            int prevWidth = lp.width;
+            int prevGravity = lp.gravity;
+
             lp.bottomMargin = keyboardHeight;
             if (mIsTablet) {
                 int margin = mParent.getResources()
@@ -155,7 +162,11 @@ class SnackbarView {
                 lp.width = Math.min(width, mParent.getWidth() - 2 * margin);
                 lp.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
             }
-            mView.setLayoutParams(lp);
+
+            if (prevBottomMargin != lp.bottomMargin || prevWidth != lp.width
+                    || prevGravity != lp.gravity) {
+                mView.setLayoutParams(lp);
+            }
         }
     }
 
