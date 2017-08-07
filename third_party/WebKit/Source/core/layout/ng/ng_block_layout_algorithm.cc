@@ -494,6 +494,10 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
     //
     // This behaviour is similar to if we had block-start border or padding.
     if (positioned_direct_child_floats && updated) {
+      // We must have no border/scrollbar/padding here otherwise our BFC offset
+      // would already be resolved.
+      DCHECK_EQ(border_scrollbar_padding_.block_start, LayoutUnit());
+
       previous_inflow_position->bfc_block_offset =
           container_builder_.BfcOffset()->block_offset;
       previous_inflow_position->margin_strut = NGMarginStrut();
@@ -802,11 +806,8 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionWithParentBfc(
       child_data.bfc_offset_estimate.block_offset +
           layout_result.EndMarginStrut().Sum()};
 
-  bool affected_by_clearance =
+  *empty_block_affected_by_clearance =
       AdjustToClearance(space.ClearanceOffset(), &child_bfc_offset);
-
-  if (IsEmptyBlock(child, layout_result))
-    *empty_block_affected_by_clearance = affected_by_clearance;
 
   return child_bfc_offset;
 }
