@@ -125,8 +125,9 @@ base::string16 AutofillPaymentInstrument::GetSublabel() const {
 
 bool AutofillPaymentInstrument::IsValidForModifier(
     const std::vector<std::string>& method,
+    const std::vector<std::string>& supported_networks,
     const std::set<autofill::CreditCard::CardType>& supported_types,
-    const std::vector<std::string>& supported_networks) const {
+    bool supported_types_specified) const {
   // This instrument only matches basic-card.
   if (std::find(method.begin(), method.end(), "basic-card") == method.end())
     return false;
@@ -136,16 +137,16 @@ bool AutofillPaymentInstrument::IsValidForModifier(
   // contain this card's type to be applicable. The same is true for
   // supported_networks.
   bool is_supported_type =
-      supported_types.empty() ||
       std::find(supported_types.begin(), supported_types.end(),
                 credit_card_.card_type()) != supported_types.end();
 
   // supported_types may contain CARD_TYPE_UNKNOWN because of the parsing
-  // function but the modifiers shouldn't be applied since the website can't be
-  // sure that the instrument is an applicable card.
+  // function so the local card only matches if it's because the website didn't
+  // specify types (meaning they don't care).
   if (is_supported_type &&
       credit_card_.card_type() ==
-          autofill::CreditCard::CardType::CARD_TYPE_UNKNOWN)
+          autofill::CreditCard::CardType::CARD_TYPE_UNKNOWN &&
+      supported_types_specified)
     return false;
 
   bool is_supported_network = supported_networks.empty();

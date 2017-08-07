@@ -284,8 +284,8 @@ PaymentRequestSpec::GetApplicableModifier(
         &stringified_method_data);
 
     if (selected_instrument->IsValidForModifier(
-            modifier->method_data->supported_methods, supported_types,
-            supported_networks)) {
+            modifier->method_data->supported_methods, supported_networks,
+            supported_types, !modifier->method_data->supported_types.empty())) {
       return &modifier;
     }
   }

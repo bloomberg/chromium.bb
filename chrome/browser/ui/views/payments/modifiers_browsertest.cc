@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestModifiersTest,
-                       ModifierNotAppliedToUnknownType) {
+                       ModifierAppliedToBasicCardWithoutTypeOrNetwork) {
   autofill::AutofillProfile profile(autofill::test::GetFullProfile());
   AddAutofillProfile(profile);
   autofill::CreditCard card(autofill::test::GetCreditCard());  // Visa card.
@@ -237,10 +237,46 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestModifiersTest,
   InvokePaymentRequestUI();
   OpenOrderSummaryScreen();
 
-  EXPECT_EQ(base::ASCIIToUTF16("$5.00"),
+  EXPECT_EQ(base::ASCIIToUTF16("$4.00"),
             GetLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
-  // There's only the total line.
-  EXPECT_EQ(1, dialog_view()
+  // There's the total line and the discount line.
+  EXPECT_EQ(2, dialog_view()
+                   ->view_stack_for_testing()
+                   ->top()
+                   ->GetViewByID(static_cast<int>(DialogViewID::CONTENT_VIEW))
+                   ->child_count());
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestModifiersTest,
+                       ModifierAppliedToUnknownTypeWithMatchingNetwork) {
+  autofill::AutofillProfile profile(autofill::test::GetFullProfile());
+  AddAutofillProfile(profile);
+  autofill::CreditCard card(autofill::test::GetCreditCard());  // Visa card.
+  // Change to Mastercard to match the test case.
+  card.SetRawInfo(autofill::CREDIT_CARD_NUMBER,
+                  base::ASCIIToUTF16("5555555555554444"));
+  card.set_billing_address_id(profile.guid());
+  AddCreditCard(card);
+
+  ResetEventObserver(DialogEvent::DIALOG_OPENED);
+  content::WebContents* web_contents = GetActiveWebContents();
+  const std::string click_buy_button_js =
+      "(function() { "
+      "document.getElementById('mastercard_any_supported_type')."
+      "click(); })();";
+  ASSERT_TRUE(content::ExecuteScript(web_contents, click_buy_button_js));
+  WaitForObservedEvent();
+  // The web-modal dialog should be open.
+  web_modal::WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);
+  EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
+
+  OpenOrderSummaryScreen();
+
+  EXPECT_EQ(base::ASCIIToUTF16("$4.00"),
+            GetLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
+  // There's the total line and the discount line.
+  EXPECT_EQ(2, dialog_view()
                    ->view_stack_for_testing()
                    ->top()
                    ->GetViewByID(static_cast<int>(DialogViewID::CONTENT_VIEW))

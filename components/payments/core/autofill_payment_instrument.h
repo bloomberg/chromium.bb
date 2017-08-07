@@ -50,8 +50,9 @@ class AutofillPaymentInstrument
   base::string16 GetSublabel() const override;
   bool IsValidForModifier(
       const std::vector<std::string>& method,
+      const std::vector<std::string>& supported_networks,
       const std::set<autofill::CreditCard::CardType>& supported_types,
-      const std::vector<std::string>& supported_networks) const override;
+      bool supported_types_specified) const override;
 
   // autofill::payments::FullCardRequest::ResultDelegate:
   void OnFullCardRequestSucceeded(
