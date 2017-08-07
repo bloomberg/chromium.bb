@@ -343,7 +343,7 @@ TEST_F(SuggestionsServiceTest, BuildUrlWithDefaultMinZeroParamForFewFeature) {
   ASSERT_TRUE(GetCurrentlyQueriedUrl().is_valid());
   EXPECT_EQ(GetCurrentlyQueriedUrl().path(), kSuggestionsUrlPath);
   std::string min_suggestions;
-  EXPECT_TRUE(net::GetValueForKeyInQuery(GetCurrentlyQueriedUrl(), "min",
+  EXPECT_TRUE(net::GetValueForKeyInQuery(GetCurrentlyQueriedUrl(), "num",
                                          &min_suggestions));
   EXPECT_EQ(min_suggestions, "0");
   RespondToFetchWithProfile(CreateSuggestionsProfile());
