@@ -57,6 +57,15 @@ class MODULES_EXPORT AudioBuffer final : public GarbageCollected<AudioBuffer>,
                              ExceptionState&);
   static AudioBuffer* Create(const AudioBufferOptions&, ExceptionState&);
 
+  // Creates an AudioBuffer with uninitialized contents.  This should
+  // only be used where we are guaranteed to initialize the contents
+  // with valid data and where JS cannot access until initializations
+  // is done.  |OfflineAudioContext::startRendering()| is one such
+  // place.
+  static AudioBuffer* CreateUninitialized(unsigned number_of_channels,
+                                          size_t number_of_frames,
+                                          float sample_rate);
+
   // Returns 0 if data is not a valid audio file.
   static AudioBuffer* CreateFromAudioFileData(const void* data,
                                               size_t data_size,
@@ -97,13 +106,21 @@ class MODULES_EXPORT AudioBuffer final : public GarbageCollected<AudioBuffer>,
   DEFINE_INLINE_TRACE() { visitor->Trace(channels_); }
 
  private:
+  // How to initialize the contents of an AudioBuffer.  Default is to
+  // zero-initialize (|kZeroInitialize|).  Otherwise, leave the array
+  // uninitialized (|kDontInitialize|).
+  enum InitializationPolicy { kZeroInitialize, kDontInitialize };
+
   explicit AudioBuffer(AudioBus*);
 
-  static DOMFloat32Array* CreateFloat32ArrayOrNull(size_t length);
+  static DOMFloat32Array* CreateFloat32ArrayOrNull(
+      size_t length,
+      InitializationPolicy allocation_policy = kZeroInitialize);
 
   AudioBuffer(unsigned number_of_channels,
               size_t number_of_frames,
-              float sample_rate);
+              float sample_rate,
+              InitializationPolicy allocation_policy = kZeroInitialize);
   bool CreatedSuccessfully(unsigned desired_number_of_channels) const;
 
   float sample_rate_;

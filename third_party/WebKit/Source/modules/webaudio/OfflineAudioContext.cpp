@@ -202,7 +202,7 @@ ScriptPromise OfflineAudioContext::startOfflineRendering(
   float sample_rate = DestinationHandler().SampleRate();
   unsigned number_of_channels = DestinationHandler().NumberOfChannels();
 
-  AudioBuffer* render_target = AudioBuffer::Create(
+  AudioBuffer* render_target = AudioBuffer::CreateUninitialized(
       number_of_channels, total_render_frames_, sample_rate);
 
   if (!render_target) {

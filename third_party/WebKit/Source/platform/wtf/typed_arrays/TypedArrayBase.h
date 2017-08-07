@@ -99,6 +99,15 @@ class TypedArrayBase : public ArrayBufferView {
     return Create<Subclass>(std::move(buffer), 0, length);
   }
 
+  template <class Subclass>
+  static RefPtr<Subclass> CreateUninitializedOrNull(unsigned length) {
+    RefPtr<ArrayBuffer> buffer =
+        ArrayBuffer::CreateUninitializedOrNull(length, sizeof(T));
+    if (!buffer)
+      return nullptr;
+    return Create<Subclass>(std::move(buffer), 0, length);
+  }
+
   void Neuter() final {
     ArrayBufferView::Neuter();
     length_ = 0;
