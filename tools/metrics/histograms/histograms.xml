@@ -80170,7 +80170,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="TabManager.SessionRestore.DecompressedPagesPerSecond"
     units="pages/s">
-  <owner>fmweawad@chromium.org</owner>
+  <owner>fmeawad@chromium.org</owner>
   <summary>
     The number of pages decompressed per second during session restore. Recorded
     at the end of session restore as an average over the entire period, defined
@@ -80196,7 +80196,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="TabManager.SessionRestore.SwapOutPerSecond" units="swaps/s">
   <owner>fmeawad@chromium.org</owner>
   <summary>
-    The number of swap-ins per second during session restore. Recorded at the
+    The number of swap-outs per second during session restore. Recorded at the
     end of session restore as an average over the entire period, defined as the
     period of time when session restore is actively loading tabs, which ends
     when either all tabs have been loaded and their pages rendered, or tab
