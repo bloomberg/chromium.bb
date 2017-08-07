@@ -4,12 +4,17 @@
 
 #import "chrome/browser/ui/cocoa/passwords/pending_password_view_controller.h"
 
+#include <Carbon/Carbon.h>  // kVK_Return
+
+#include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #import "chrome/browser/ui/cocoa/bubble_combobox.h"
 #include "chrome/browser/ui/cocoa/passwords/base_passwords_controller_test.h"
+#import "chrome/browser/ui/cocoa/passwords/password_item_views.h"
 #import "chrome/browser/ui/cocoa/passwords/save_pending_password_view_controller.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
@@ -19,6 +24,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#import "ui/events/test/cocoa_test_event_utils.h"
 // Gmock matcher
 using testing::_;
 
@@ -72,6 +78,72 @@ TEST_F(SavePendingPasswordViewControllerTest,
        EditButtonShouldNotExistByDefault) {
   SetUpSavePendingState(false);
   EXPECT_FALSE(controller().editButton);
+}
+
+TEST_F(SavePendingPasswordViewControllerTest,
+       ShouldMakeUsernameFieldEditableWhenEditClicked) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      password_manager::features::kEnableUsernameCorrection);
+  SetUpSavePendingState(false);
+  EXPECT_TRUE([controller().editButton isEnabled]);
+  [controller().editButton performClick:nil];
+  EXPECT_FALSE([controller().editButton isEnabled]);
+
+  // Container only contains current version of the row.
+  EXPECT_TRUE([controller().passwordItemContainer subviews].count == 1);
+
+  // The username field is editable and contains the initial username.
+  PendingPasswordItemView* row =
+      [[controller().passwordItemContainer subviews] objectAtIndex:0];
+  EXPECT_TRUE([[row usernameField] isEditable]);
+  EXPECT_TRUE([[row usernameField] isSelectable]);
+  EXPECT_NSEQ(base::SysUTF16ToNSString(
+                  [delegate() model]->pending_password().username_value),
+              [[row usernameField] stringValue]);
+  EXPECT_FALSE([controller().editButton isEnabled]);
+}
+
+TEST_F(SavePendingPasswordViewControllerTest,
+       EditableUsernameFieldBecomesLabelAfterLosingFocus) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      password_manager::features::kEnableUsernameCorrection);
+  SetUpSavePendingState(false);
+  [controller().editButton performClick:nil];
+  PendingPasswordItemView* row =
+      [[controller().passwordItemContainer subviews] objectAtIndex:0];
+
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:NSControlTextDidEndEditingNotification
+                    object:[row usernameField]];
+
+  row = [[controller().passwordItemContainer subviews] objectAtIndex:0];
+  EXPECT_FALSE([[row usernameField] isEditable]);
+  EXPECT_FALSE([[row usernameField] isSelectable]);
+  EXPECT_TRUE([controller().editButton isEnabled]);
+}
+
+TEST_F(SavePendingPasswordViewControllerTest,
+       EditableUsernameFieldBecomesLabelAfterEscKey) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      password_manager::features::kEnableUsernameCorrection);
+  SetUpSavePendingState(false);
+  [controller().editButton performClick:nil];
+  PendingPasswordItemView* row =
+      [[controller().passwordItemContainer subviews] objectAtIndex:0];
+
+  [[test_window() contentView] addSubview:[row usernameField]];
+  [test_window() makePretendKeyWindowAndSetFirstResponder:[row usernameField]];
+  [[[row usernameField] currentEditor]
+      keyDown:cocoa_test_event_utils::KeyEventWithKeyCode(kVK_Escape, '\e',
+                                                          NSKeyDown, 0)];
+
+  row = [[controller().passwordItemContainer subviews] objectAtIndex:0];
+  EXPECT_FALSE([[row usernameField] isEditable]);
+  EXPECT_FALSE([[row usernameField] isSelectable]);
+  EXPECT_TRUE([controller().editButton isEnabled]);
 }
 
 TEST_F(SavePendingPasswordViewControllerTest,
