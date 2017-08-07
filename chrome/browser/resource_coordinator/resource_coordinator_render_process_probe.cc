@@ -52,9 +52,10 @@ class ResourceCoordinatorRenderProcessMetricsHandler
       const RenderProcessInfoMap& render_process_info_map) override {
     for (auto& render_process_info_map_entry : render_process_info_map) {
       auto& render_process_info = render_process_info_map_entry.second;
+      // TODO(oysteine): Move the multiplier used to avoid precision loss
+      // into a shared location, when this property gets used.
       render_process_info.host->GetProcessResourceCoordinator()->SetProperty(
-          mojom::PropertyType::kCPUUsage,
-          base::MakeUnique<base::Value>(render_process_info.cpu_usage));
+          mojom::PropertyType::kCPUUsage, render_process_info.cpu_usage * 1000);
     }
 
     return true;

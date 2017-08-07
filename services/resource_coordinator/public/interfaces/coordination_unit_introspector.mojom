@@ -9,7 +9,7 @@ import "mojo/common/process_id.mojom";
 
 struct ProcessInfo {
   mojo.common.mojom.ProcessId pid;
-  array<string> urls;
+  array<int64> ukm_source_ids;
 };
 
 interface CoordinationUnitIntrospector {

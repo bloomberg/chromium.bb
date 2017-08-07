@@ -74,18 +74,18 @@ class CoordinationUnitGraphObserver {
   // |coordination_unit| doesn't implement its own PropertyChanged handler.
   virtual void OnPropertyChanged(const CoordinationUnitImpl* coordination_unit,
                                  const mojom::PropertyType property_type,
-                                 const base::Value& value) {}
+                                 int64_t value) {}
 
   // Called whenever a property of the FrameCoordinationUnit is changed.
   virtual void OnFramePropertyChanged(
       const FrameCoordinationUnitImpl* coordination_unit,
       const mojom::PropertyType property_type,
-      const base::Value& value) {}
+      int64_t value) {}
   // Called whenever a property of the WebContentsCoordinationUnit is changed.
   virtual void OnWebContentsPropertyChanged(
       const WebContentsCoordinationUnitImpl* coordination_unit,
       const mojom::PropertyType property_type,
-      const base::Value& value) {}
+      int64_t value) {}
 
   void set_coordination_unit_manager(
       CoordinationUnitManager* coordination_unit_manager) {

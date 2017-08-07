@@ -80,7 +80,7 @@ bool FrameCoordinationUnitImpl::IsMainFrame() const {
 
 void FrameCoordinationUnitImpl::OnPropertyChanged(
     const mojom::PropertyType property_type,
-    const base::Value& value) {
+    int64_t value) {
   for (auto& observer : observers())
     observer.OnFramePropertyChanged(this, property_type, value);
 }

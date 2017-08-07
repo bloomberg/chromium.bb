@@ -33,11 +33,11 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
   void OnFramePropertyChanged(
       const FrameCoordinationUnitImpl* frame_coordination_unit,
       const mojom::PropertyType property_type,
-      const base::Value& value) override;
+      int64_t value) override;
   void OnWebContentsPropertyChanged(
       const WebContentsCoordinationUnitImpl* web_contents_coordination_unit,
       const mojom::PropertyType property_type,
-      const base::Value& value) override;
+      int64_t value) override;
 
  private:
   friend class MetricsCollectorTest;

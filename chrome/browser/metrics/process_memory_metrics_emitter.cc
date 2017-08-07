@@ -158,15 +158,13 @@ void ProcessMemoryMetricsEmitter::MarkServiceRequestsInProgress() {
 ProcessMemoryMetricsEmitter::~ProcessMemoryMetricsEmitter() {}
 
 std::unique_ptr<ukm::UkmEntryBuilder>
-ProcessMemoryMetricsEmitter::CreateUkmBuilder(const GURL& url) {
+ProcessMemoryMetricsEmitter::CreateUkmBuilder(int64_t ukm_source_id) {
   static const char event_name[] = "Memory.Experimental";
   ukm::UkmRecorder* ukm_recorder = GetUkmRecorder();
   if (!ukm_recorder)
     return nullptr;
 
-  const int32_t source = ukm_recorder->GetNewSourceID();
-  ukm_recorder->UpdateSourceURL(source, url);
-  return ukm_recorder->GetEntryBuilder(source, event_name);
+  return ukm_recorder->GetEntryBuilder(ukm_source_id, event_name);
 }
 
 void ProcessMemoryMetricsEmitter::ReceivedMemoryDump(
@@ -216,29 +214,30 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
     switch (pmd->process_type) {
       case memory_instrumentation::mojom::ProcessType::BROWSER: {
         std::unique_ptr<ukm::UkmEntryBuilder> builder =
-            CreateUkmBuilder(GURL());
+            CreateUkmBuilder(ukm::UkmRecorder::GetNewSourceID());
         EmitBrowserMemoryMetrics(pmd, builder.get());
         break;
       }
       case memory_instrumentation::mojom::ProcessType::RENDERER: {
-        GURL gurl;
+        ukm::SourceId ukm_source_id = ukm::UkmRecorder::GetNewSourceID();
         // If there is more than one frame being hosted in a renderer, don't
         // emit any URLs. This is not ideal, but UKM does not support
         // multiple-URLs per entry, and we must have one entry per process.
         if (process_infos_.find(pmd->pid) != process_infos_.end()) {
           const resource_coordinator::mojom::ProcessInfoPtr& process_info =
               process_infos_[pmd->pid];
-          if (process_info->urls.size() == 1) {
-            gurl = GURL(process_info->urls[0]);
+          if (process_info->ukm_source_ids.size() == 1) {
+            ukm_source_id = process_info->ukm_source_ids[0];
           }
         }
-        std::unique_ptr<ukm::UkmEntryBuilder> builder = CreateUkmBuilder(gurl);
+        std::unique_ptr<ukm::UkmEntryBuilder> builder =
+            CreateUkmBuilder(ukm_source_id);
         EmitRendererMemoryMetrics(pmd, builder.get());
         break;
       }
       case memory_instrumentation::mojom::ProcessType::GPU: {
         std::unique_ptr<ukm::UkmEntryBuilder> builder =
-            CreateUkmBuilder(GURL());
+            CreateUkmBuilder(ukm::UkmRecorder::GetNewSourceID());
         EmitGpuMemoryMetrics(pmd, builder.get());
         break;
       }
@@ -254,7 +253,8 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.PrivateMemoryFootprint",
                                 private_footprint_total_kb / 1024);
 
-  std::unique_ptr<ukm::UkmEntryBuilder> builder = CreateUkmBuilder(GURL());
+  std::unique_ptr<ukm::UkmEntryBuilder> builder =
+      CreateUkmBuilder(ukm::UkmRecorder::GetNewSourceID());
   TryAddMetric(builder.get(), "Total2.PrivateMemoryFootprint",
                private_footprint_total_kb / 1024);
 }

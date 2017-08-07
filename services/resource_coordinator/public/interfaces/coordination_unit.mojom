@@ -38,8 +38,7 @@ enum PropertyType {
   kCPUUsage,
   kNetworkIdle,
   kVisible,
-  kURL,
-  kUkmSourceId,
+  kUKMSourceId,
 };
 
 interface CoordinationUnit {
@@ -63,5 +62,5 @@ interface CoordinationUnit {
   SetCoordinationPolicyCallback(CoordinationPolicyCallback callback);
 
   // Sets a property on the CoordinationUnitImpl's internal key-value store.
-  SetProperty(PropertyType property_type, mojo.common.mojom.Value value);
+  SetProperty(PropertyType property_type, int64 value);
 };

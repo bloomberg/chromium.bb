@@ -39,8 +39,8 @@ FrameResourceCoordinator::~FrameResourceCoordinator() = default;
 
 void FrameResourceCoordinator::SetProperty(
     const resource_coordinator::mojom::blink::PropertyType property_type,
-    const bool value) {
-  service_->SetProperty(property_type, base::MakeUnique<base::Value>(value));
+    const int64_t value) {
+  service_->SetProperty(property_type, value);
 }
 
 DEFINE_TRACE(FrameResourceCoordinator) {}

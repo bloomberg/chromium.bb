@@ -369,24 +369,27 @@ CoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
   return std::set<CoordinationUnitImpl*>();
 }
 
-base::Value CoordinationUnitImpl::GetProperty(
-    const mojom::PropertyType property_type) const {
+bool CoordinationUnitImpl::GetProperty(const mojom::PropertyType property_type,
+                                       int64_t* result) const {
   auto value_it = properties_.find(property_type);
 
-  return value_it != properties_.end() ? base::Value(*value_it->second)
-                                       : base::Value();
+  if (value_it != properties_.end()) {
+    *result = value_it->second;
+    return true;
+  }
+
+  return false;
 }
 
 void CoordinationUnitImpl::SetProperty(mojom::PropertyType property_type,
-                                       std::unique_ptr<base::Value> value) {
+                                       int64_t value) {
   // The |CoordinationUnitGraphObserver| API specification dictates that
   // the property is guarranteed to be set on the |CoordinationUnitImpl|
   // and propagated to the appropriate associated |CoordianationUnitImpl|
   // before |OnPropertyChanged| is invoked on all of the registered observers.
-  const base::Value& property =
-      *(properties_[property_type] = std::move(value));
-  PropagateProperty(property_type, property);
-  OnPropertyChanged(property_type, property);
+  properties_[property_type] = value;
+  PropagateProperty(property_type, value);
+  OnPropertyChanged(property_type, value);
 }
 
 void CoordinationUnitImpl::BeforeDestroyed() {
@@ -406,7 +409,7 @@ void CoordinationUnitImpl::RemoveObserver(
 
 void CoordinationUnitImpl::OnPropertyChanged(
     const mojom::PropertyType property_type,
-    const base::Value& value) {
+    int64_t value) {
   for (auto& observer : observers_)
     observer.OnPropertyChanged(this, property_type, value);
 }
