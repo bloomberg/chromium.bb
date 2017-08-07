@@ -106,11 +106,6 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
 WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl() {
   // TerminateWorkerContext() must be called before the destructor.
   DCHECK(asked_to_terminate_);
-
-  if (worker_global_scope_proxy_) {
-    worker_global_scope_proxy_->Detach();
-    worker_global_scope_proxy_.Clear();
-  }
 }
 
 void WebEmbeddedWorkerImpl::StartWorkerContext(
@@ -435,10 +430,9 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options));
   }
 
-  worker_global_scope_proxy_ =
-      ServiceWorkerGlobalScopeProxy::Create(*this, *worker_context_client_);
   worker_thread_ = WTF::MakeUnique<ServiceWorkerThread>(
-      ThreadableLoadingContext::Create(*document), *worker_global_scope_proxy_,
+      ThreadableLoadingContext::Create(*document),
+      ServiceWorkerGlobalScopeProxy::Create(*this, *worker_context_client_),
       std::move(installed_scripts_manager_));
 
   // We have a dummy document here for loading but it doesn't really represent
