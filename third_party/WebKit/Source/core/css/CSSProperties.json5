@@ -3816,44 +3816,37 @@
 
     {
       name: "font-display",
-      api_class: "CSSPropertyAPIDescriptorOnly",
       is_descriptor: true,
       is_property: false,
       runtime_flag: "CSSFontDisplay",
     },
     {
       name: "max-zoom",
-      api_class: "CSSPropertyAPIDescriptorOnly",
       is_descriptor: true,
       is_property: false,
     },
     {
       name: "min-zoom",
-      api_class: "CSSPropertyAPIDescriptorOnly",
       is_descriptor: true,
       is_property: false,
     },
     {
       name: "orientation",
-      api_class: "CSSPropertyAPIDescriptorOnly",
       is_descriptor: true,
       is_property: false,
     },
     {
       name: "src",
-      api_class: "CSSPropertyAPIDescriptorOnly",
       is_descriptor: true,
       is_property: false,
     },
     {
       name: "unicode-range",
-      api_class: "CSSPropertyAPIDescriptorOnly",
       is_descriptor: true,
       is_property: false,
     },
     {
       name: "user-zoom",
-      api_class: "CSSPropertyAPIDescriptorOnly",
       is_descriptor: true,
       is_property: false,
     },
