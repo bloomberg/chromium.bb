@@ -370,6 +370,56 @@ class ParseArgsTest(cros_test_lib.TestCase):
   def testArgumentParser(self):
     self._TestParser(self._CreateArgumentParser(commandline.ArgumentParser))
 
+  def testDisableCommonLogging(self):
+    """Verify we can elide common logging options."""
+    parser = commandline.ArgumentParser(logging=False)
+
+    # Sanity check it first.
+    opts = parser.parse_args([])
+    self.assertFalse(hasattr(opts, 'log_level'))
+
+    # Now add our own logging options.  If the options were added,
+    # argparse would throw duplicate flag errors for us.
+    parser.add_argument('--log-level')
+    parser.add_argument('--nocolor')
+
+  def testCommonBaseDefaults(self):
+    """Make sure common options work with just a base parser."""
+    parser = commandline.ArgumentParser(logging=True, default_log_level='info')
+
+    # Make sure the default works.
+    opts = parser.parse_args([])
+    self.assertEqual(opts.log_level, 'info')
+    self.assertEqual(opts.color, None)
+
+    # Then we can set up our own values.
+    opts = parser.parse_args(['--nocolor', '--log-level=notice'])
+    self.assertEqual(opts.log_level, 'notice')
+    self.assertEqual(opts.color, False)
+
+  def testCommonBaseAndSubDefaults(self):
+    """Make sure common options work between base & sub parsers."""
+    parser = commandline.ArgumentParser(logging=True, default_log_level='info')
+
+    sub_parsers = parser.add_subparsers(title='Subs')
+    sub_parsers.add_parser('cmd1')
+    sub_parsers.add_parser('cmd2')
+
+    # Make sure the default works.
+    opts = parser.parse_args(['cmd1'])
+    self.assertEqual(opts.log_level, 'info')
+    self.assertEqual(opts.color, None)
+
+    # Make sure options passed to base parser work.
+    opts = parser.parse_args(['--nocolor', '--log-level=notice', 'cmd2'])
+    self.assertEqual(opts.log_level, 'notice')
+    self.assertEqual(opts.color, False)
+
+    # Make sure options passed to sub parser work.
+    opts = parser.parse_args(['cmd2', '--nocolor', '--log-level=notice'])
+    self.assertEqual(opts.log_level, 'notice')
+    self.assertEqual(opts.color, False)
+
 
 class ScriptWrapperMainTest(cros_test_lib.MockTestCase):
   """Test the behavior of the ScriptWrapperMain function."""
