@@ -143,7 +143,7 @@ layer at (8,103) size 133x59 clip at (9,104) size 120x57 scrollY 99.00 scrollHei
     LayoutBlockFlow {OPTION} at (1,185.44) size 119.55x14.19
       LayoutText {#text} at (2,0) size 17x13
         text run at (2,0) width 17: "opt"
-layer at (8,180) size 133x58 clip at (9,181) size 120x56 scrollY 43.00 scrollHeight 113
+layer at (8,180) size 133x58 clip at (9,181) size 120x56 scrollY 42.00 scrollHeight 113
   LayoutListBox {SELECT} at (0,171.50) size 132.55x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 119.55x14.19
       LayoutText {#text} at (2,0) size 17x13

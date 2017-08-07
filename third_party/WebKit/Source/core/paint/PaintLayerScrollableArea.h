@@ -296,16 +296,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() const override;
   void GetTickmarks(Vector<IntRect>&) const override;
 
-  // These are temporary convenience methods.  They delegate to Box() methods,
-  // which will be up-to-date when UpdateAfterLayout runs.  By contrast,
-  // VisibleContentRect() is based on layer_.Size(), which isn't updated
-  // until later, when UpdateLayerPosition runs.  A future patch will cause
-  // layer_.Size() to be updated effectively simultaneously with Box()
-  // sizing.  When that lands, these methods should be removed in favor of
-  // using VisibleContentRect() and/or layer_.Size() everywhere.
-  LayoutSize ClientSize() const;
-  IntSize PixelSnappedClientSize() const;
-
   void VisibleSizeChanged();
 
   // FIXME: We shouldn't allow access to m_overflowRect outside this class.

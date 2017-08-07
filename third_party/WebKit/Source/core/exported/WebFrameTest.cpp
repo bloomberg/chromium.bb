@@ -2002,7 +2002,8 @@ TEST_P(ParameterizedWebFrameTest, FrameOwnerPropertiesMargin) {
                     HTMLNames::marginheightAttr));
 
   LocalFrameView* frame_view = local_frame->GetFrameView();
-  frame_view->SetLayoutSize(IntSize(800, 600));
+  frame_view->Resize(800, 600);
+  frame_view->SetNeedsLayout();
   frame_view->UpdateAllLifecyclePhases();
   // Expect scrollbars to be enabled by default.
   EXPECT_NE(nullptr,
