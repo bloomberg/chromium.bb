@@ -178,40 +178,38 @@ class MemoryTracingIntegrationTest : public testing::Test {
 
   // Blocks the current thread (spinning a nested message loop) until the
   // memory dump is complete. Returns:
-  // - return value: the |success| from the RequestProcessMemoryDump() callback.
-  bool RequestProcessDumpAndWait(
+  // - return value: the |success| from the RequestChromeMemoryDump() callback.
+  bool RequestChromeDumpAndWait(
       MemoryDumpType dump_type,
       MemoryDumpLevelOfDetail level_of_detail,
-      base::Optional<mojom::RawProcessMemoryDumpPtr>* result = nullptr) {
+      base::Optional<mojom::ChromeMemDumpPtr>* result = nullptr) {
     base::RunLoop run_loop;
     bool success = false;
     MemoryDumpRequestArgs request_args{kTestGuid, dump_type, level_of_detail};
-    ClientProcessImpl::RequestProcessMemoryDumpCallback callback = base::Bind(
+    ClientProcessImpl::RequestChromeMemoryDumpCallback callback = base::Bind(
         [](bool* curried_success, base::Closure curried_quit_closure,
-           base::Optional<mojom::RawProcessMemoryDumpPtr>* curried_result,
-           bool success, uint64_t dump_guid,
-           mojom::RawProcessMemoryDumpPtr result) {
+           base::Optional<mojom::ChromeMemDumpPtr>* curried_result,
+           bool success, uint64_t dump_guid, mojom::ChromeMemDumpPtr result) {
           EXPECT_EQ(kTestGuid, dump_guid);
           *curried_success = success;
           if (curried_result) {
-            EXPECT_TRUE(result->extra_processes_dumps.empty());
             *curried_result = std::move(result);
           }
           curried_quit_closure.Run();
         },
         &success, run_loop.QuitClosure(), result);
-    client_process_->RequestProcessMemoryDump(request_args, callback);
+    client_process_->RequestChromeMemoryDump(request_args, callback);
     run_loop.Run();
     return success;
   }
 
-  void RequestProcessDump(MemoryDumpType dump_type,
-                          MemoryDumpLevelOfDetail level_of_detail) {
+  void RequestChromeDump(MemoryDumpType dump_type,
+                         MemoryDumpLevelOfDetail level_of_detail) {
     MemoryDumpRequestArgs request_args{kTestGuid, dump_type, level_of_detail};
-    ClientProcessImpl::RequestProcessMemoryDumpCallback callback =
+    ClientProcessImpl::RequestChromeMemoryDumpCallback callback =
         base::Bind([](bool success, uint64_t dump_guid,
-                      mojom::RawProcessMemoryDumpPtr result) {});
-    client_process_->RequestProcessMemoryDump(request_args, callback);
+                      mojom::ChromeMemDumpPtr result) {});
+    client_process_->RequestChromeMemoryDump(request_args, callback);
   }
 
  protected:
@@ -260,7 +258,7 @@ class MemoryTracingIntegrationTest : public testing::Test {
 void MockCoordinator::RequestGlobalMemoryDump(
     const MemoryDumpRequestArgs& args,
     const RequestGlobalMemoryDumpCallback& callback) {
-  client_->RequestProcessDump(args.dump_type, args.level_of_detail);
+  client_->RequestChromeDump(args.dump_type, args.level_of_detail);
   callback.Run(args.dump_guid, true, mojom::GlobalMemoryDumpPtr());
 }
 
@@ -276,8 +274,8 @@ TEST_F(MemoryTracingIntegrationTest, DumpWithoutInitializingTracing) {
   for (int i = 0; i < 3; ++i) {
     // A non-SUMMARY_ONLY dump was requested when tracing was not enabled. So,
     // the request should fail because dump was not added to the trace.
-    EXPECT_FALSE(RequestProcessDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                                           MemoryDumpLevelOfDetail::DETAILED));
+    EXPECT_FALSE(RequestChromeDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                                          MemoryDumpLevelOfDetail::DETAILED));
   }
   mdm_->UnregisterDumpProvider(&mdp);
 }
@@ -304,8 +302,8 @@ TEST_F(MemoryTracingIntegrationTest,
   for (int i = 0; i < 3; ++i) {
     // Same as the above. Even if the MDP(s) are invoked, this will return false
     // while attempting to add the dump into the trace.
-    EXPECT_FALSE(RequestProcessDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                                           MemoryDumpLevelOfDetail::DETAILED));
+    EXPECT_FALSE(RequestChromeDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                                          MemoryDumpLevelOfDetail::DETAILED));
   }
   mdm_->TeardownForTracing();
   mdm_->UnregisterDumpProvider(&mdp);
@@ -327,10 +325,10 @@ TEST_F(MemoryTracingIntegrationTest, SummaryOnlyDumpsArentAddedToTrace) {
   EnableMemoryInfraTracing();
 
   EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(2);
-  EXPECT_TRUE(RequestProcessDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                                        MemoryDumpLevelOfDetail::BACKGROUND));
-  EXPECT_TRUE(RequestProcessDumpAndWait(MemoryDumpType::SUMMARY_ONLY,
-                                        MemoryDumpLevelOfDetail::BACKGROUND));
+  EXPECT_TRUE(RequestChromeDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                                       MemoryDumpLevelOfDetail::BACKGROUND));
+  EXPECT_TRUE(RequestChromeDumpAndWait(MemoryDumpType::SUMMARY_ONLY,
+                                       MemoryDumpLevelOfDetail::BACKGROUND));
   DisableTracing();
 
   std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer =
@@ -360,8 +358,8 @@ TEST_F(MemoryTracingIntegrationTest, InitializedAfterStartOfTracing) {
   MockMemoryDumpProvider mdp;
   RegisterDumpProvider(&mdp, nullptr, MemoryDumpProvider::Options());
   EXPECT_CALL(mdp, OnMemoryDump(_, _)).Times(1);
-  EXPECT_TRUE(RequestProcessDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                                        MemoryDumpLevelOfDetail::DETAILED));
+  EXPECT_TRUE(RequestChromeDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                                       MemoryDumpLevelOfDetail::DETAILED));
   DisableTracing();
 }
 
@@ -403,12 +401,12 @@ TEST_F(MemoryTracingIntegrationTest, TestBackgroundTracingSetup) {
   // When requesting non-BACKGROUND dumps the MDP will be invoked but the
   // data is expected to be dropped on the floor, hence the EXPECT_FALSE.
   EXPECT_CALL(*mdp, OnMemoryDump(IsLightDump(), _));
-  EXPECT_FALSE(RequestProcessDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                                         MemoryDumpLevelOfDetail::LIGHT));
+  EXPECT_FALSE(RequestChromeDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                                        MemoryDumpLevelOfDetail::LIGHT));
 
   EXPECT_CALL(*mdp, OnMemoryDump(IsDetailedDump(), _));
-  EXPECT_FALSE(RequestProcessDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                                         MemoryDumpLevelOfDetail::DETAILED));
+  EXPECT_FALSE(RequestChromeDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                                        MemoryDumpLevelOfDetail::DETAILED));
 
   ASSERT_TRUE(IsPeriodicDumpingEnabled());
   DisableTracing();
@@ -529,8 +527,8 @@ TEST_F(MemoryTracingIntegrationTest, TestWhitelistingMDP) {
 
   EnableMemoryInfraTracing();
   EXPECT_FALSE(IsPeriodicDumpingEnabled());
-  EXPECT_TRUE(RequestProcessDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                                        MemoryDumpLevelOfDetail::BACKGROUND));
+  EXPECT_TRUE(RequestChromeDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                                       MemoryDumpLevelOfDetail::BACKGROUND));
   DisableTracing();
 }
 
@@ -576,26 +574,26 @@ TEST_F(MemoryTracingIntegrationTest, TestSummaryComputation) {
       }));
 
   EnableMemoryInfraTracing();
-  base::Optional<mojom::RawProcessMemoryDumpPtr> result;
-  EXPECT_TRUE(RequestProcessDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                                        MemoryDumpLevelOfDetail::LIGHT,
-                                        &result));
+  base::Optional<mojom::ChromeMemDumpPtr> result;
+  EXPECT_TRUE(RequestChromeDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                                       MemoryDumpLevelOfDetail::LIGHT,
+                                       &result));
   DisableTracing();
 
   ASSERT_TRUE(result);
 
   // For malloc we only count the root "malloc" not children "malloc/*".
-  EXPECT_EQ(1u, (*result)->chrome_dump->malloc_total_kb);
+  EXPECT_EQ(1u, (*result)->malloc_total_kb);
 
   // For blink_gc we only count the root "blink_gc" not children "blink_gc/*".
-  EXPECT_EQ(2u, (*result)->chrome_dump->blink_gc_total_kb);
+  EXPECT_EQ(2u, (*result)->blink_gc_total_kb);
 
   // For v8 we count the children ("v8/*") as the root total is not given.
-  EXPECT_EQ(3u, (*result)->chrome_dump->v8_total_kb);
+  EXPECT_EQ(3u, (*result)->v8_total_kb);
 
   // partition_alloc has partition_alloc/allocated_objects/* which is a subset
   // of partition_alloc/partitions/* so we only count the latter.
-  EXPECT_EQ(4u, (*result)->chrome_dump->partition_alloc_total_kb);
+  EXPECT_EQ(4u, (*result)->partition_alloc_total_kb);
 };
 
 TEST_F(MemoryTracingIntegrationTest, DumpOnBehalfOfOtherProcess) {
@@ -621,8 +619,8 @@ TEST_F(MemoryTracingIntegrationTest, DumpOnBehalfOfOtherProcess) {
   EXPECT_CALL(mdp1, OnMemoryDump(_, _)).Times(1);
   EXPECT_CALL(mdp2, OnMemoryDump(_, _)).Times(1);
   EXPECT_CALL(mdp3, OnMemoryDump(_, _)).Times(1);
-  EXPECT_TRUE(RequestProcessDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                                        MemoryDumpLevelOfDetail::DETAILED));
+  EXPECT_TRUE(RequestChromeDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                                       MemoryDumpLevelOfDetail::DETAILED));
   DisableTracing();
 
   std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer =

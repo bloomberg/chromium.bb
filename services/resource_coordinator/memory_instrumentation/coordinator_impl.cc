@@ -254,10 +254,10 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
     }
     request->responses[client].process_id = pid;
     request->responses[client].process_type = kv.second->process_type;
-    request->pending_responses.insert({client, ResponseType::kProcessDump});
-    auto callback = base::Bind(&CoordinatorImpl::OnProcessMemoryDumpResponse,
+    request->pending_responses.insert({client, ResponseType::kChromeDump});
+    auto callback = base::Bind(&CoordinatorImpl::OnChromeMemoryDumpResponse,
                                base::Unretained(this), client);
-    client->RequestProcessMemoryDump(request->args, callback);
+    client->RequestChromeMemoryDump(request->args, callback);
 
 // On most platforms each process can dump data about their own process
 // so ask each process to do so Linux is special see below.
@@ -313,11 +313,11 @@ CoordinatorImpl::QueuedMemoryDumpRequest* CoordinatorImpl::GetCurrentRequest() {
   return &queued_memory_dump_requests_.front();
 }
 
-void CoordinatorImpl::OnProcessMemoryDumpResponse(
+void CoordinatorImpl::OnChromeMemoryDumpResponse(
     mojom::ClientProcess* client,
     bool success,
     uint64_t dump_guid,
-    mojom::RawProcessMemoryDumpPtr process_memory_dump) {
+    mojom::ChromeMemDumpPtr chrome_memory_dump) {
   using ResponseType = QueuedMemoryDumpRequest::PendingResponse::Type;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   QueuedMemoryDumpRequest* request = GetCurrentRequest();
@@ -326,14 +326,14 @@ void CoordinatorImpl::OnProcessMemoryDumpResponse(
     return;
   }
 
-  RemovePendingResponse(client, ResponseType::kProcessDump);
+  RemovePendingResponse(client, ResponseType::kChromeDump);
 
   if (!clients_.count(client)) {
     VLOG(1) << "Received a memory dump response from an unregistered client";
     return;
   }
 
-  request->responses[client].dump_ptr = std::move(process_memory_dump);
+  request->responses[client].chrome_dump_ptr = std::move(chrome_memory_dump);
 
   if (!success) {
     request->failed_memory_dump_count++;
@@ -402,30 +402,6 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
 
   std::map<base::ProcessId, mojom::RawOSMemDumpPtr> os_dumps;
   for (auto& response : request->responses) {
-    const base::ProcessId pid = response.second.process_id;
-    const mojom::RawProcessMemoryDumpPtr& dump_ptr = response.second.dump_ptr;
-
-    // The dump might be nullptr if the client crashed / disconnected before
-    // replying.
-    if (!dump_ptr)
-      continue;
-    mojom::RawOSMemDumpPtr dump = std::move(response.second.dump_ptr->os_dump);
-
-    // TODO(hjd): We should have a better way to tell if os_dump is filled.
-    // TODO(hjd): Remove this if when we collect OS dumps separately.
-    if (dump && dump->resident_set_kb > 0) {
-      DCHECK_EQ(0u, os_dumps.count(pid));
-      os_dumps[pid] = std::move(dump);
-    }
-
-    // TODO(hjd): Remove this for loop when we collect OS dumps separately.
-    for (auto& extra : dump_ptr->extra_processes_dumps) {
-      const base::ProcessId extra_pid = extra.first;
-      mojom::RawOSMemDumpPtr extra_dump = std::move(extra.second);
-      DCHECK_EQ(0u, os_dumps.count(extra_pid));
-      os_dumps[extra_pid] = std::move(extra_dump);
-    }
-
     // |response| accumulates the replies received by each client process.
     // Depending on the OS each client process might return 1 chrome + 1 OS
     // dump each or, in the case of Linux, only 1 chrome dump each % the
@@ -438,14 +414,17 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
     OSMemDumpMap& extra_os_dumps = response.second.os_dumps;
 #if defined(OS_LINUX)
     for (auto& kv : extra_os_dumps) {
-      const base::ProcessId pid = kv.first;
+      base::ProcessId pid = kv.first;
       mojom::RawOSMemDumpPtr dump = std::move(kv.second);
+      if (pid == base::kNullProcessId)
+        pid = response.second.process_id;
       DCHECK_EQ(0u, os_dumps.count(pid));
       os_dumps[pid] = std::move(dump);
     }
 #else
     // This can be empty if the client disconnects before providing both
     // dumps. See UnregisterClientProcess().
+    const base::ProcessId pid = response.second.process_id;
     DCHECK_LE(extra_os_dumps.size(), 1u);
     if (extra_os_dumps.size() == 1u) {
       DCHECK_EQ(base::kNullProcessId, extra_os_dumps.begin()->first);
@@ -462,7 +441,7 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
 
     // The dump might be nullptr if the client crashed / disconnected before
     // replying.
-    if (!response.second.dump_ptr || !os_dumps[pid])
+    if (!response.second.chrome_dump_ptr || !os_dumps[pid])
       continue;
 
     DCHECK(os_dumps[pid]->platform_private_footprint);
@@ -470,7 +449,7 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
     mojom::ProcessMemoryDumpPtr& pmd = finalized_pmds[pid];
     pmd = mojom::ProcessMemoryDump::New();
     pmd->process_type = response.second.process_type;
-    pmd->chrome_dump = std::move(response.second.dump_ptr->chrome_dump);
+    pmd->chrome_dump = std::move(response.second.chrome_dump_ptr);
     pmd->os_dump = CreatePublicOSDump(*os_dumps[pid]);
     pmd->pid = pid;
     tracing_observer_->AddOsDumpToTraceIfEnabled(

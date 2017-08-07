@@ -100,17 +100,6 @@ struct RawOSMemDump {
   array<VmRegion> memory_maps;
 };
 
-// This struct is used for internal communication between the memory
-// service (Coordinator) and the client library (ClientProcessImpl).
-struct RawProcessMemoryDump {
-  RawOSMemDump os_dump;
-  ChromeMemDump chrome_dump;
-
-  // This is used only on Linux/CrOS to get around sandboxing.
-  // See crbug.com/461788.
-  map<mojo.common.mojom.ProcessId, RawOSMemDump> extra_processes_dumps;
-};
-
 // These structs are public:
 
 struct OSMemDump {
@@ -150,8 +139,8 @@ interface ClientProcess {
   // When |success| == true the dump is appended in the process-local trace
   // buffer of the target process and an ACK. A summary of the dump is also
   // returned in case of success.
-  RequestProcessMemoryDump(RequestArgs args) =>
-      (bool success, uint64 dump_id, RawProcessMemoryDump? process_memory_dump);
+  RequestChromeMemoryDump(RequestArgs args) =>
+      (bool success, uint64 dump_id, ChromeMemDump? chrome_memory_dump);
 
   // Requests an OSMemDump for each pid in |pids|.
   // The Memory-infra service deals with two kinds of information:
