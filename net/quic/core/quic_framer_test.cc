@@ -23,6 +23,7 @@
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/quic_framer_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
+#include "net/quic/test_tools/simple_data_producer.h"
 
 using std::string;
 using testing::Return;
@@ -5441,6 +5442,26 @@ TEST_P(QuicFramerTest, FramerFuzzTest) {
     p = packet39;
   }
   QuicFramerFuzzFunc(p, arraysize(packet));
+}
+
+TEST_P(QuicFramerTest, StartsWithChlo) {
+  EXPECT_FALSE(framer_.HasDataProducer());
+  SimpleDataProducer producer;
+  framer_.set_data_producer(&producer);
+  EXPECT_TRUE(framer_.HasDataProducer());
+  QuicStringPiece data("CHLOCHLO");
+  struct iovec iovec;
+  iovec.iov_base = const_cast<char*>(data.data());
+  iovec.iov_len = data.length();
+  QuicIOVector iov(&iovec, 1, iovec.iov_len);
+  producer.SaveStreamData(kCryptoStreamId, iov, 0, 0, data.length());
+  for (size_t offset = 0; offset < 5; ++offset) {
+    if (offset == 0 || offset == 4) {
+      EXPECT_TRUE(framer_.StartsWithChlo(kCryptoStreamId, offset));
+    } else {
+      EXPECT_FALSE(framer_.StartsWithChlo(kCryptoStreamId, offset));
+    }
+  }
 }
 
 }  // namespace

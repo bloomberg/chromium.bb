@@ -72,16 +72,13 @@ class PacketCollector : public QuicPacketCreator::DelegateInterface,
                             const string& error_details,
                             ConnectionCloseSource source) override {}
 
-  // QuicStreamFrameDataProducer methods:
-  void SaveStreamData(QuicStreamId id,
-                      QuicIOVector iov,
-                      size_t iov_offset,
-                      QuicStreamOffset offset,
-                      QuicByteCount data_length) override {
-    DCHECK_EQ(kCryptoStreamId, id);
-    send_buffer_.SaveStreamData(iov, iov_offset, offset, data_length);
+  void SaveStatelessRejectFrameData(QuicIOVector iov,
+                                    size_t iov_offset,
+                                    QuicByteCount data_length) {
+    send_buffer_.SaveStreamData(iov, iov_offset, data_length);
   }
 
+  // QuicStreamFrameDataProducer
   bool WriteStreamData(QuicStreamId id,
                        QuicStreamOffset offset,
                        QuicByteCount data_length,
@@ -112,13 +109,13 @@ class StatelessConnectionTerminator {
                                 QuicTimeWaitListManager* time_wait_list_manager)
       : connection_id_(connection_id),
         framer_(framer),
-        collector_(helper->GetBufferAllocator()),
+        collector_(helper->GetStreamSendBufferAllocator()),
         creator_(connection_id,
                  framer,
-                 helper->GetBufferAllocator(),
+                 helper->GetStreamFrameBufferAllocator(),
                  &collector_),
         time_wait_list_manager_(time_wait_list_manager) {
-    if (FLAGS_quic_reloadable_flag_quic_stream_owns_data) {
+    if (FLAGS_quic_reloadable_flag_quic_save_data_before_consumption) {
       framer_->set_data_producer(&collector_);
     }
   }
@@ -158,6 +155,9 @@ class StatelessConnectionTerminator {
     iovec.iov_len = reject.length();
     QuicIOVector iov(&iovec, 1, iovec.iov_len);
     QuicStreamOffset offset = 0;
+    if (framer_->HasDataProducer()) {
+      collector_.SaveStatelessRejectFrameData(iov, 0, reject.length());
+    }
     while (offset < iovec.iov_len) {
       QuicFrame frame;
       UniqueStreamBuffer data;
