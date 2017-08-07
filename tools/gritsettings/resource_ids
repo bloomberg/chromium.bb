@@ -318,6 +318,10 @@
   "third_party/WebKit/public/blink_resources.grd": {
     "includes": [25400],
   },
+  "third_party/WebKit/Source/modules/media_controls/resources/media_controls_resources.grd": {
+    "includes": [25500],
+    "structures": [25600],
+  },
 
   "ui/app_list/resources/app_list_resources.grd": {
     "structures": [25800],

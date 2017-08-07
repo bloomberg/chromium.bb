@@ -8,6 +8,7 @@ import("//third_party/WebKit/public/public_features.gni")
 import("//third_party/WebKit/Source/config.gni")
 import("//third_party/WebKit/Source/core/core.gni")
 import("//tools/grit/grit_rule.gni")
+import("//tools/grit/repack.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -678,8 +679,10 @@ group("blink_generate_devtools_grd") {
   ]
 }
 
+resources_out_dir = "$root_gen_dir/blink/public/resources"
+
 grit("resources") {
-  output_dir = "$root_gen_dir/blink/public/resources"
+  output_dir = resources_out_dir
   source = "blink_resources.grd"
   outputs = [
     "grit/blink_resources.h",
@@ -702,6 +705,48 @@ grit("image_resources") {
     "grit/blink_image_resources.h",
     "blink_image_resources_100_percent.pak",
     "blink_image_resources_200_percent.pak",
+  ]
+}
+
+group("scaled_resources") {
+  public_deps = [
+    ":image_resources",
+    ":media_controls_resources_header",
+    "//third_party/WebKit/Source/modules/media_controls:media_controls_resources",
+  ]
+}
+
+copy("media_controls_resources_header") {
+  sources = [
+    "$root_gen_dir/blink/modules/media_controls/resources/grit/media_controls_resources.h",
+  ]
+  outputs = [
+    "$resources_out_dir/grit/media_controls_resources.h",
+  ]
+  deps = [
+    "//third_party/WebKit/Source/modules/media_controls:media_controls_resources",
+  ]
+}
+
+repack("scaled_resources_100_percent") {
+  output = "$root_gen_dir/blink/public/resources/blink_scaled_resources_100_percent.pak"
+  sources = [
+    "$root_gen_dir/blink/modules/media_controls/resources/media_controls_resources_100_percent.pak",
+    "$root_gen_dir/blink/public/resources/blink_image_resources_100_percent.pak",
+  ]
+  deps = [
+    ":scaled_resources",
+  ]
+}
+
+repack("scaled_resources_200_percent") {
+  output = "$root_gen_dir/blink/public/resources/blink_scaled_resources_200_percent.pak"
+  sources = [
+    "$root_gen_dir/blink/modules/media_controls/resources/media_controls_resources_200_percent.pak",
+    "$root_gen_dir/blink/public/resources/blink_image_resources_200_percent.pak",
+  ]
+  deps = [
+    ":scaled_resources",
   ]
 }
 
