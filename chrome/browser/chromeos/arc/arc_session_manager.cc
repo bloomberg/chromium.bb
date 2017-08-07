@@ -235,6 +235,11 @@ void ArcSessionManager::OnSessionStopped(ArcStopReason reason,
   MaybeStartArcDataRemoval();
 }
 
+void ArcSessionManager::OnSessionRestarting() {
+  for (auto& observer : observer_list_)
+    observer.OnArcSessionRestarting();
+}
+
 void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

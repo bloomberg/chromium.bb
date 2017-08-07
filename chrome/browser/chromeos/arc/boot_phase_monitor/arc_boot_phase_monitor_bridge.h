@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "components/arc/common/boot_phase_monitor.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -25,10 +26,12 @@ class ArcBridgeService;
 class ArcInstanceThrottle;
 
 // Receives boot phase notifications from ARC.
+// TODO(yusukes): Add unit tests for this.
 class ArcBootPhaseMonitorBridge
     : public KeyedService,
       public InstanceHolder<mojom::BootPhaseMonitorInstance>::Observer,
-      public mojom::BootPhaseMonitorHost {
+      public mojom::BootPhaseMonitorHost,
+      public ArcSessionManager::Observer {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -41,10 +44,14 @@ class ArcBootPhaseMonitorBridge
 
   // InstanceHolder<mojom::BootPhaseMonitorInstance>::Observer
   void OnInstanceReady() override;
-  void OnInstanceClosed() override;
 
   // mojom::BootPhaseMonitorHost
   void OnBootCompleted() override;
+
+  // ArcSessionManager::Observer
+  void OnArcInitialStart() override;
+  void OnArcSessionStopped(ArcStopReason stop_reason) override;
+  void OnArcSessionRestarting() override;
 
  private:
   THREAD_CHECKER(thread_checker_);
