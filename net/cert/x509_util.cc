@@ -7,9 +7,10 @@
 #include <memory>
 
 #include "base/lazy_instance.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "crypto/ec_private_key.h"
+#include "crypto/openssl_util.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/hash_value.h"
 #include "net/cert/internal/cert_errors.h"
@@ -18,9 +19,13 @@
 #include "net/cert/internal/parse_name.h"
 #include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/x509_certificate.h"
+#include "net/der/encode_values.h"
 #include "net/der/input.h"
 #include "net/der/parse_values.h"
+#include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
+#include "third_party/boringssl/src/include/openssl/mem.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
 #include "third_party/boringssl/src/include/openssl/stack.h"
 
@@ -29,6 +34,94 @@ namespace net {
 namespace x509_util {
 
 namespace {
+
+bool AddRSASignatureAlgorithm(CBB* cbb, DigestAlgorithm algorithm) {
+  // See RFC 3279.
+  static const uint8_t kSHA1WithRSAEncryption[] = {0x2a, 0x86, 0x48, 0x86, 0xf7,
+                                                   0x0d, 0x01, 0x01, 0x05};
+  // See RFC 4055.
+  static const uint8_t kSHA256WithRSAEncryption[] = {
+      0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x0b};
+
+  // An AlgorithmIdentifier is described in RFC 5280, 4.1.1.2.
+  CBB sequence, oid, params;
+  if (!CBB_add_asn1(cbb, &sequence, CBS_ASN1_SEQUENCE) ||
+      !CBB_add_asn1(&sequence, &oid, CBS_ASN1_OBJECT)) {
+    return false;
+  }
+
+  switch (algorithm) {
+    case DIGEST_SHA1:
+      if (!CBB_add_bytes(&oid, kSHA1WithRSAEncryption,
+                         sizeof(kSHA1WithRSAEncryption)))
+        return false;
+      break;
+    case DIGEST_SHA256:
+      if (!CBB_add_bytes(&oid, kSHA256WithRSAEncryption,
+                         sizeof(kSHA256WithRSAEncryption)))
+        return false;
+      break;
+  }
+
+  // All supported algorithms use null parameters.
+  if (!CBB_add_asn1(&sequence, &params, CBS_ASN1_NULL) || !CBB_flush(cbb)) {
+    return false;
+  }
+
+  return true;
+}
+
+const EVP_MD* ToEVP(DigestAlgorithm alg) {
+  switch (alg) {
+    case DIGEST_SHA1:
+      return EVP_sha1();
+    case DIGEST_SHA256:
+      return EVP_sha256();
+  }
+  return nullptr;
+}
+
+// Adds an X.509 Name with the specified common name to |cbb|.
+bool AddNameWithCommonName(CBB* cbb, base::StringPiece common_name) {
+  // See RFC 4519.
+  static const uint8_t kCommonName[] = {0x55, 0x04, 0x03};
+
+  // See RFC 5280, section 4.1.2.4.
+  CBB rdns, rdn, attr, type, value;
+  if (!CBB_add_asn1(cbb, &rdns, CBS_ASN1_SEQUENCE) ||
+      !CBB_add_asn1(&rdns, &rdn, CBS_ASN1_SET) ||
+      !CBB_add_asn1(&rdn, &attr, CBS_ASN1_SEQUENCE) ||
+      !CBB_add_asn1(&attr, &type, CBS_ASN1_OBJECT) ||
+      !CBB_add_bytes(&type, kCommonName, sizeof(kCommonName)) ||
+      !CBB_add_asn1(&attr, &value, CBS_ASN1_UTF8STRING) ||
+      !CBB_add_bytes(&value,
+                     reinterpret_cast<const uint8_t*>(common_name.data()),
+                     common_name.size()) ||
+      !CBB_flush(cbb)) {
+    return false;
+  }
+  return true;
+}
+
+bool AddTime(CBB* cbb, base::Time time) {
+  der::GeneralizedTime generalized_time;
+  if (!der::EncodeTimeAsGeneralizedTime(time, &generalized_time))
+    return false;
+
+  // Per RFC 5280, 4.1.2.5, times which fit in UTCTime must be encoded as
+  // UTCTime rather than GeneralizedTime.
+  CBB child;
+  uint8_t* out;
+  if (generalized_time.InUTCTimeRange()) {
+    return CBB_add_asn1(cbb, &child, CBS_ASN1_UTCTIME) &&
+           CBB_add_space(&child, &out, der::kUTCTimeLength) &&
+           der::EncodeUTCTime(generalized_time, out) && CBB_flush(cbb);
+  }
+
+  return CBB_add_asn1(cbb, &child, CBS_ASN1_GENERALIZEDTIME) &&
+         CBB_add_space(&child, &out, der::kGeneralizedTimeLength) &&
+         der::EncodeGeneralizedTime(generalized_time, out) && CBB_flush(cbb);
+}
 
 bool GetCommonName(const der::Input& tlv, std::string* common_name) {
   RDNSequence rdn_sequence;
@@ -161,6 +254,81 @@ bool CreateKeyAndSelfSignedCert(const std::string& subject,
     *key = std::move(new_key);
 
   return success;
+}
+
+bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
+                          DigestAlgorithm alg,
+                          const std::string& subject,
+                          uint32_t serial_number,
+                          base::Time not_valid_before,
+                          base::Time not_valid_after,
+                          std::string* der_encoded) {
+  crypto::EnsureOpenSSLInit();
+  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
+
+  // Because |subject| only contains a common name and starts with 'CN=', there
+  // is no need for a full RFC 2253 parser here. Do some sanity checks though.
+  static const char kCommonNamePrefix[] = "CN=";
+  if (!base::StartsWith(subject, kCommonNamePrefix,
+                        base::CompareCase::SENSITIVE)) {
+    LOG(ERROR) << "Subject must begin with " << kCommonNamePrefix;
+    return false;
+  }
+  base::StringPiece common_name = subject;
+  common_name.remove_prefix(sizeof(kCommonNamePrefix) - 1);
+
+  // See RFC 5280, section 4.1. First, construct the TBSCertificate.
+  bssl::ScopedCBB cbb;
+  CBB tbs_cert, version, validity;
+  uint8_t* tbs_cert_bytes;
+  size_t tbs_cert_len;
+  if (!CBB_init(cbb.get(), 64) ||
+      !CBB_add_asn1(cbb.get(), &tbs_cert, CBS_ASN1_SEQUENCE) ||
+      !CBB_add_asn1(&tbs_cert, &version,
+                    CBS_ASN1_CONTEXT_SPECIFIC | CBS_ASN1_CONSTRUCTED | 0) ||
+      !CBB_add_asn1_uint64(&version, 2) ||
+      !CBB_add_asn1_uint64(&tbs_cert, serial_number) ||
+      !AddRSASignatureAlgorithm(&tbs_cert, alg) ||       // signature
+      !AddNameWithCommonName(&tbs_cert, common_name) ||  // issuer
+      !CBB_add_asn1(&tbs_cert, &validity, CBS_ASN1_SEQUENCE) ||
+      !AddTime(&validity, not_valid_before) ||
+      !AddTime(&validity, not_valid_after) ||
+      !AddNameWithCommonName(&tbs_cert, common_name) ||  // subject
+      !EVP_marshal_public_key(&tbs_cert, key->key()) ||  // subjectPublicKeyInfo
+      !CBB_finish(cbb.get(), &tbs_cert_bytes, &tbs_cert_len)) {
+    return false;
+  }
+  bssl::UniquePtr<uint8_t> delete_tbs_cert_bytes(tbs_cert_bytes);
+
+  // Sign the TBSCertificate and write the entire certificate.
+  CBB cert, signature;
+  bssl::ScopedEVP_MD_CTX ctx;
+  uint8_t* sig_out;
+  size_t sig_len;
+  uint8_t* cert_bytes;
+  size_t cert_len;
+  if (!CBB_init(cbb.get(), tbs_cert_len) ||
+      !CBB_add_asn1(cbb.get(), &cert, CBS_ASN1_SEQUENCE) ||
+      !CBB_add_bytes(&cert, tbs_cert_bytes, tbs_cert_len) ||
+      !AddRSASignatureAlgorithm(&cert, alg) ||
+      !CBB_add_asn1(&cert, &signature, CBS_ASN1_BITSTRING) ||
+      !CBB_add_u8(&signature, 0 /* no unused bits */) ||
+      !EVP_DigestSignInit(ctx.get(), nullptr, ToEVP(alg), nullptr,
+                          key->key()) ||
+      // Compute the maximum signature length.
+      !EVP_DigestSign(ctx.get(), nullptr, &sig_len, tbs_cert_bytes,
+                      tbs_cert_len) ||
+      !CBB_reserve(&signature, &sig_out, sig_len) ||
+      // Actually sign the TBSCertificate.
+      !EVP_DigestSign(ctx.get(), sig_out, &sig_len, tbs_cert_bytes,
+                      tbs_cert_len) ||
+      !CBB_did_write(&signature, sig_len) ||
+      !CBB_finish(cbb.get(), &cert_bytes, &cert_len)) {
+    return false;
+  }
+  bssl::UniquePtr<uint8_t> delete_cert_bytes(cert_bytes);
+  der_encoded->assign(reinterpret_cast<char*>(cert_bytes), cert_len);
+  return true;
 }
 
 bool ParseCertificateSandboxed(const base::StringPiece& certificate,

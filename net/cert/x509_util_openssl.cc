@@ -14,113 +14,17 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "crypto/ec_private_key.h"
 #include "crypto/openssl_util.h"
-#include "crypto/rsa_private_key.h"
 #include "net/cert/x509_cert_types.h"
-#include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "third_party/boringssl/src/include/openssl/asn1.h"
-#include "third_party/boringssl/src/include/openssl/digest.h"
 #include "third_party/boringssl/src/include/openssl/mem.h"
 
 namespace net {
 
-namespace {
-
-const EVP_MD* ToEVP(x509_util::DigestAlgorithm alg) {
-  switch (alg) {
-    case x509_util::DIGEST_SHA1:
-      return EVP_sha1();
-    case x509_util::DIGEST_SHA256:
-      return EVP_sha256();
-  }
-  return NULL;
-}
-
-}  // namespace
-
 namespace x509_util {
 
 namespace {
-
-bssl::UniquePtr<X509> CreateCertificate(EVP_PKEY* key,
-                                        DigestAlgorithm alg,
-                                        const std::string& common_name,
-                                        uint32_t serial_number,
-                                        base::Time not_valid_before,
-                                        base::Time not_valid_after) {
-  // Put the serial number into an OpenSSL-friendly object.
-  bssl::UniquePtr<ASN1_INTEGER> asn1_serial(ASN1_INTEGER_new());
-  if (!asn1_serial.get() ||
-      !ASN1_INTEGER_set(asn1_serial.get(), static_cast<long>(serial_number))) {
-    LOG(ERROR) << "Invalid serial number " << serial_number;
-    return nullptr;
-  }
-
-  // Do the same for the time stamps.
-  bssl::UniquePtr<ASN1_TIME> asn1_not_before_time(
-      ASN1_TIME_set(nullptr, not_valid_before.ToTimeT()));
-  if (!asn1_not_before_time.get()) {
-    LOG(ERROR) << "Invalid not_valid_before time: "
-               << not_valid_before.ToTimeT();
-    return nullptr;
-  }
-
-  bssl::UniquePtr<ASN1_TIME> asn1_not_after_time(
-      ASN1_TIME_set(nullptr, not_valid_after.ToTimeT()));
-  if (!asn1_not_after_time.get()) {
-    LOG(ERROR) << "Invalid not_valid_after time: " << not_valid_after.ToTimeT();
-    return nullptr;
-  }
-
-  // Because |common_name| only contains a common name and starts with 'CN=',
-  // there is no need for a full RFC 2253 parser here. Do some sanity checks
-  // though.
-  static const char kCommonNamePrefix[] = "CN=";
-  const size_t kCommonNamePrefixLen = sizeof(kCommonNamePrefix) - 1;
-  if (common_name.size() < kCommonNamePrefixLen ||
-      strncmp(common_name.c_str(), kCommonNamePrefix, kCommonNamePrefixLen)) {
-    LOG(ERROR) << "Common name must begin with " << kCommonNamePrefix;
-    return nullptr;
-  }
-  if (common_name.size() > INT_MAX) {
-    LOG(ERROR) << "Common name too long";
-    return nullptr;
-  }
-  unsigned char* common_name_str =
-      reinterpret_cast<unsigned char*>(const_cast<char*>(common_name.data())) +
-      kCommonNamePrefixLen;
-  int common_name_len =
-      static_cast<int>(common_name.size() - kCommonNamePrefixLen);
-
-  bssl::UniquePtr<X509_NAME> name(X509_NAME_new());
-  if (!name.get() || !X509_NAME_add_entry_by_NID(name.get(),
-                                                 NID_commonName,
-                                                 MBSTRING_ASC,
-                                                 common_name_str,
-                                                 common_name_len,
-                                                 -1,
-                                                 0)) {
-    LOG(ERROR) << "Can't parse common name: " << common_name.c_str();
-    return nullptr;
-  }
-
-  // Now create certificate and populate it.
-  bssl::UniquePtr<X509> cert(X509_new());
-  if (!cert.get() || !X509_set_version(cert.get(), 2L) /* i.e. version 3 */ ||
-      !X509_set_pubkey(cert.get(), key) ||
-      !X509_set_serialNumber(cert.get(), asn1_serial.get()) ||
-      !X509_set_notBefore(cert.get(), asn1_not_before_time.get()) ||
-      !X509_set_notAfter(cert.get(), asn1_not_after_time.get()) ||
-      !X509_set_subject_name(cert.get(), name.get()) ||
-      !X509_set_issuer_name(cert.get(), name.get())) {
-    LOG(ERROR) << "Could not create certificate";
-    return nullptr;
-  }
-
-  return cert;
-}
 
 // DER-encodes |x509|. On success, returns true and writes the
 // encoding to |*out_der|.
@@ -136,27 +40,6 @@ bool DerEncodeCert(X509* x509, std::string* out_der) {
     return false;
   }
   return true;
-}
-
-bool SignAndDerEncodeCert(X509* cert,
-                          EVP_PKEY* key,
-                          DigestAlgorithm alg,
-                          std::string* der_encoded) {
-  // Get the message digest algorithm
-  const EVP_MD* md = ToEVP(alg);
-  if (!md) {
-    LOG(ERROR) << "Unrecognized hash algorithm.";
-    return false;
-  }
-
-  // Sign it with the private key.
-  if (!X509_sign(cert, key, md)) {
-    LOG(ERROR) << "Could not sign certificate with key.";
-    return false;
-  }
-
-  // Convert it into a DER-encoded string copied to |der_encoded|.
-  return DerEncodeCert(cert, der_encoded);
 }
 
 struct DERCache {
@@ -189,23 +72,6 @@ base::LazyInstance<DERCacheInitSingleton>::Leaky g_der_cache_singleton =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
-
-bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
-                          DigestAlgorithm alg,
-                          const std::string& common_name,
-                          uint32_t serial_number,
-                          base::Time not_valid_before,
-                          base::Time not_valid_after,
-                          std::string* der_encoded) {
-  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  bssl::UniquePtr<X509> cert =
-      CreateCertificate(key->key(), alg, common_name, serial_number,
-                        not_valid_before, not_valid_after);
-  if (!cert)
-    return false;
-
-  return SignAndDerEncodeCert(cert.get(), key->key(), alg, der_encoded);
-}
 
 bool ParsePrincipalKeyAndValue(X509_NAME_ENTRY* entry,
                                std::string* key,
