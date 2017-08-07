@@ -360,6 +360,78 @@ dropped.
 
 ---
 
+## Array Static & Prototype Methods
+
+**Usage Example:**
+
+```js
+// Static methods
+let a1 = Array.from(document.querySelectorAll('div'));
+let a2 = Array.of(7);
+
+// Prototype methods
+['a', 'b', 'c', 'd'].copyWithin(2, 0);  // Returns ['a', 'b', 'a', 'b']
+[2, 4, 6, 8].find(i => i == 6);  // Returns 6
+[2, 4, 6, 8].findIndex(i => i == 6); // Returns 2
+[2, 4, 6, 8].fill(1);  // Returns [1, 1, 1, 1]
+
+[2, 4, 6, 8].keys();  // Returns an Array iterator
+[2, 4, 6, 8].entries();  // Returns an Array iterator
+```
+
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-properties-of-the-array-constructor)
+
+**Discussion Notes / Link to Thread:** [link](https://groups.google.com/a/chromium.org/d/msg/chromium-dev/d_2zUYQZJTg/-_PSji_OAQAJ)
+
+**Note**: `Array.prototype.values` is [not implemented in Chrome](https://kangax.github.io/compat-table/es6/#test-Array.prototype_methods) and should not be used. If the code in question is Closure compiled, a compile-time error will be thrown.
+
+---
+
+## Number Properties
+
+**Usage Example:**
+
+```js
+// Number.isFinite
+// Number.isInteger
+// Number.isSafeInteger
+// Number.isNaN
+// Number.EPSILON
+// Number.MIN_SAFE_INTEGER
+// Number.MAX_SAFE_INTEGER
+```
+
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-isfinite-number)
+
+**Discussion Notes / Link to Thread:** [link](https://groups.google.com/a/chromium.org/d/msg/chromium-dev/d_2zUYQZJTg/-_PSji_OAQAJ)
+
+---
+
+## Object Static Methods
+
+**Usage Example:**
+
+```js
+// Object.assign
+var o = Object.assign({a:true}, {b:true}, {c:true});  // {a: true, b: true, c: true}
+'a' in o && 'b' in o && 'c' in o;  // true
+
+// Object.setPrototypeOf
+Object.setPrototypeOf({}, Array.prototype) instanceof Array;  // true
+
+// Object.is
+Object.is(null, null)  // true
+Object.is(NaN, NaN)  // true
+Object.is(-0, +0)  // false, btw: -0 === +0 is true
+
+```
+
+**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-properties-of-the-object-constructor)
+
+**Discussion Notes / Link to Thread:** [link](https://groups.google.com/a/chromium.org/d/msg/chromium-dev/d_2zUYQZJTg/-_PSji_OAQAJ)
+
+---
+
 # Banned Features
 
 The following features are banned for Chromium development.
@@ -705,32 +777,6 @@ for (var n of fibonacci) {
 
 ---
 
-## Object Static Methods
-
-**Usage Example:**
-
-```js
-// Object.assign
-var o = Object.assign({a:true}, {b:true}, {c:true});  // {a: true, b: true, c: true}
-'a' in o && 'b' in o && 'c' in o;  // true
-
-// Object.setPrototypeOf
-Object.setPrototypeOf({}, Array.prototype) instanceof Array;  // true
-
-// Object.is
-Object.is(null, null)  // true
-Object.is(NaN, NaN)  // true
-Object.is(-0, +0)  // false, btw: -0 === +0 is true
-
-// Object.getOwnPropertySymbols
-```
-
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-properties-of-the-object-constructor)
-
-**Discussion Notes / Link to Thread:**
-
----
-
 ## String Static & Prototype methods
 
 **Usage Example:**
@@ -748,49 +794,6 @@ Object.is(-0, +0)  // false, btw: -0 === +0 is true
 ```
 
 **Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-properties-of-the-string-constructor)
-
-**Discussion Notes / Link to Thread:**
-
----
-
-## Array Static & Prototype Methods
-
-**Usage Example:**
-
-```js
-// Array.from
-// Array.of
-
-// Array.prototype.copyWithin
-// Array.prototype.find
-// Array.prototype.findIndex
-// Array.prototype.fill
-// Array.prototype.keys
-// Array.prototype.values
-// Array.prototype.entries
-```
-
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-properties-of-the-array-constructor)
-
-**Discussion Notes / Link to Thread:**
-
----
-
-## Number Properties
-
-**Usage Example:**
-
-```js
-// Number.isFinite
-// Number.isInteger
-// Number.isSafeInteger
-// Number.isNaN
-// Number.EPSILON
-// Number.MIN_SAFE_INTEGER
-// Number.MAX_SAFE_INTEGER
-```
-
-**Documentation:** [link](http://www.ecma-international.org/ecma-262/6.0/#sec-isfinite-number)
 
 **Discussion Notes / Link to Thread:**
 
