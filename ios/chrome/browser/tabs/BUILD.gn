@@ -161,6 +161,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/sessions:test_support",
+    "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/ui:ui_internal",
     "//ios/chrome/browser/web",
     "//ios/chrome/browser/web:web_internal",
