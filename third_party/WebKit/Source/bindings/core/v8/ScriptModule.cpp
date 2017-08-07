@@ -185,6 +185,13 @@ v8::Local<v8::Value> ScriptModule::ErrorCompletion(ScriptState* script_state) {
   return module->GetException();
 }
 
+v8::Local<v8::Value> ScriptModule::V8Namespace(v8::Isolate* isolate) {
+  DCHECK(!IsNull());
+  v8::Local<v8::Module> module = module_->NewLocal(isolate);
+  DCHECK_EQ(ScriptModuleState::kEvaluated, module->GetStatus());
+  return module->GetModuleNamespace();
+}
+
 v8::MaybeLocal<v8::Module> ScriptModule::ResolveModuleCallback(
     v8::Local<v8::Context> context,
     v8::Local<v8::String> specifier,
