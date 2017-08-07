@@ -68,6 +68,7 @@
 #include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/contextual_search/renderer/overlay_js_render_frame_observer.h"
+#include "components/data_reduction_proxy/content/renderer/content_previews_render_frame_observer.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/dom_distiller/content/renderer/distillability_agent.h"
 #include "components/dom_distiller/content/renderer/distiller_js_render_frame_observer.h"
@@ -612,6 +613,9 @@ void ChromeContentRendererClient::RenderFrameCreated(
   new SpellCheckPanel(render_frame, registry);
 #endif  // BUILDFLAG(HAS_SPELLCHECK_PANEL)
 #endif
+
+  if (render_frame->IsMainFrame())
+    new data_reduction_proxy::ContentPreviewsRenderFrameObserver(render_frame);
 }
 
 void ChromeContentRendererClient::RenderViewCreated(
