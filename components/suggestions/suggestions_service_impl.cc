@@ -92,7 +92,7 @@ const char kSuggestionsBlacklistClearURLFormat[] =
 
 const char kSuggestionsBlacklistURLParam[] = "url";
 const char kSuggestionsDeviceParam[] = "t=%s";
-const char kSuggestionsMinParam[] = "min=%i";
+const char kSuggestionsMinParam[] = "num=%i";
 
 const char kSuggestionsMinVariationName[] = "min_suggestions";
 const int kSuggestionsMinVariationDefault = 0;
