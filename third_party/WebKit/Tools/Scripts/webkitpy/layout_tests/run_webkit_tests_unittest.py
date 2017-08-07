@@ -43,7 +43,6 @@ from webkitpy.common.system.system_host import SystemHost
 from webkitpy.layout_tests import run_webkit_tests
 from webkitpy.layout_tests.models import test_expectations
 from webkitpy.layout_tests.models import test_failures
-from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port import test
 
 
@@ -267,12 +266,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         details, regular_output, _ = logging_run(['failures/expected/device_failure.html'], tests_included=True)
         self.assertEqual(details.exit_code, 0)
         self.assertTrue('worker/0 has failed' in regular_output.getvalue())
-
-    def test_full_results_html(self):
-        host = MockHost()
-        details, _, _ = logging_run(['--full-results-html', '--order=natural'], host=host)
-        self.assertEqual(details.exit_code, 0)
-        self.assertEqual(len(host.user.opened_urls), 1)
 
     def test_keyboard_interrupt(self):
         # Note that this also tests running a test marked as SKIP if
@@ -758,7 +751,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertFalse(host.filesystem.exists('/tmp/layout-test-results/retry_1/failures/flaky/text-actual.txt'))
         self.assertFalse(host.filesystem.exists('/tmp/layout-test-results/retry_2/failures/flaky/text-actual.txt'))
         self.assertFalse(host.filesystem.exists('/tmp/layout-test-results/retry_3/failures/flaky/text-actual.txt'))
-        self.assertEqual(len(host.user.opened_urls), 0)
 
         # Now we test that --clobber-old-results does remove the old entries and the old retries,
         # and that we don't retry again.
