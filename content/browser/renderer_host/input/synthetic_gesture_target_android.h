@@ -5,20 +5,24 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_GESTURE_TARGET_ANDROID_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_GESTURE_TARGET_ANDROID_H_
 
-#include <stdint.h>
-
 #include "base/android/jni_android.h"
-#include "base/macros.h"
-#include "base/time/time.h"
+#include "base/android/scoped_java_ref.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
+#include "content/public/browser/android/motion_event_action.h"
+
+namespace ui {
+class LatencyInfo;
+class ViewAndroid;
+}  // namespace ui
 
 namespace content {
 
+// Owned by |SyntheticGestureController|. Keeps a strong pointer to Java object,
+// which get destroyed together with the controller.
 class SyntheticGestureTargetAndroid : public SyntheticGestureTargetBase {
  public:
-  SyntheticGestureTargetAndroid(
-      RenderWidgetHostImpl* host,
-      base::android::ScopedJavaLocalRef<jobject> touch_event_synthesizer);
+  SyntheticGestureTargetAndroid(RenderWidgetHostImpl* host,
+                                ui::ViewAndroid* view);
   ~SyntheticGestureTargetAndroid() override;
 
   // SyntheticGestureTargetBase:
@@ -35,30 +39,18 @@ class SyntheticGestureTargetAndroid : public SyntheticGestureTargetBase {
   // SyntheticGestureTarget:
   SyntheticGestureParams::GestureSourceType
   GetDefaultSyntheticGestureSourceType() const override;
-
   float GetTouchSlopInDips() const override;
-
   float GetMinScalingSpanInDips() const override;
 
  private:
-  // Enum values below need to be kept in sync with MotionEventSynthesizer.java.
-  enum Action {
-    ActionInvalid = -1,
-    ActionStart = 0,
-    ActionMove = 1,
-    ActionCancel = 2,
-    ActionEnd = 3,
-    ActionScroll = 4
-  };
-
-  void TouchSetPointer(JNIEnv* env, int index, int x, int y, int id);
-  void TouchSetScrollDeltas(JNIEnv* env, int x, int y, int dx, int dy);
-  void TouchInject(JNIEnv* env,
-                   Action action,
+  void TouchSetPointer(int index, int x, int y, int id);
+  void TouchSetScrollDeltas(int x, int y, int dx, int dy);
+  void TouchInject(MotionEventAction action,
                    int pointer_count,
                    int64_t time_in_ms);
 
-  base::android::ScopedJavaGlobalRef<jobject> touch_event_synthesizer_;
+  ui::ViewAndroid* const view_;
+  base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticGestureTargetAndroid);
 };

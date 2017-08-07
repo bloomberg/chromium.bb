@@ -49,9 +49,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.MotionEventSynthesizer;
-import org.chromium.content.browser.WindowAndroidChangedObserver;
-import org.chromium.content.browser.WindowAndroidProvider;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.UiUtils;
@@ -63,8 +60,7 @@ import org.chromium.ui.display.VirtualDisplayAndroid;
  * This view extends from GvrLayout which wraps a GLSurfaceView that renders VR shell.
  */
 @JNINamespace("vr_shell")
-public class VrShellImpl
-        extends GvrLayout implements VrShell, SurfaceHolder.Callback, WindowAndroidProvider {
+public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Callback {
     private static final String TAG = "VrShellImpl";
 
     // TODO(mthiesse): These values work well for Pixel/Pixel XL in VR, but we need to come up with
@@ -121,7 +117,7 @@ public class VrShellImpl
     private float mLastContentDpr;
     private Boolean mPaused;
 
-    private MotionEventSynthesizer mMotionEventSynthesizer;
+    private AndroidUiGestureTarget mAndroidUiGestureTarget;
 
     private OnDispatchTouchEventCallback mOnDispatchTouchEventForTesting;
 
@@ -191,7 +187,7 @@ public class VrShellImpl
                 if (mNativePage != null) {
                     UiUtils.removeViewFromParent(mNativePage.getView());
                     mNativePage = null;
-                    mMotionEventSynthesizer = null;
+                    mAndroidUiGestureTarget = null;
                     if (tab.getNativePage() == null) {
                         nativeRestoreContentSurface(mNativeVrShell);
                         mRenderToSurfaceLayoutParent.setVisibility(View.INVISIBLE);
@@ -206,8 +202,9 @@ public class VrShellImpl
                             new FrameLayout.LayoutParams(
                                     LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
                     mNativePage.getView().invalidate();
-                    mMotionEventSynthesizer =
-                            new MotionEventSynthesizer(mRenderToSurfaceLayout, VrShellImpl.this);
+                    mAndroidUiGestureTarget = new AndroidUiGestureTarget(mRenderToSurfaceLayout,
+                            mContentVrWindowAndroid.getDisplay().getDipScale(),
+                            getNativePageScrollRatio());
                 }
                 setContentCssSize(mLastContentWidth, mLastContentHeight, mLastContentDpr);
                 if (tab.getNativePage() == null && tab.getContentViewCore() != null) {
@@ -219,7 +216,7 @@ public class VrShellImpl
                     mContentViewCore.onWindowFocusChanged(true);
                     nativeSwapContents(mNativeVrShell, mContentViewCore.getWebContents(), null);
                 } else {
-                    nativeSwapContents(mNativeVrShell, null, mMotionEventSynthesizer);
+                    nativeSwapContents(mNativeVrShell, null, mAndroidUiGestureTarget);
                 }
                 updateHistoryButtonsVisibility();
             }
@@ -748,22 +745,10 @@ public class VrShellImpl
         mTab.reload();
     }
 
-    @CalledByNative
-    public float getNativePageScrollRatio() {
+    private float getNativePageScrollRatio() {
         return mActivity.getWindowAndroid().getDisplay().getDipScale()
                 / mContentVrWindowAndroid.getDisplay().getDipScale();
     }
-
-    @Override
-    public WindowAndroid getWindowAndroid() {
-        return mContentVrWindowAndroid;
-    }
-
-    @Override
-    public void addWindowAndroidChangedObserver(WindowAndroidChangedObserver observer) {}
-
-    @Override
-    public void removeWindowAndroidChangedObserver(WindowAndroidChangedObserver observer) {}
 
     /**
      * Sets the callback that will be run when VrShellImpl's dispatchTouchEvent
@@ -786,8 +771,8 @@ public class VrShellImpl
             boolean reprojectedRendering);
     private native void nativeSetSurface(long nativeVrShell, Surface surface);
     private native void nativeSetSplashScreenIcon(long nativeVrShell, Bitmap bitmap);
-    private native void nativeSwapContents(
-            long nativeVrShell, WebContents webContents, MotionEventSynthesizer eventSynthesizer);
+    private native void nativeSwapContents(long nativeVrShell, WebContents webContents,
+            AndroidUiGestureTarget androidUiGestureTarget);
     private native void nativeDestroy(long nativeVrShell);
     private native void nativeOnTriggerEvent(long nativeVrShell, boolean touched);
     private native void nativeOnPause(long nativeVrShell);
