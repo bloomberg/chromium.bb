@@ -17,19 +17,15 @@
 namespace blink {
 
 // TODO(ikilpatrick): Make writing mode and direction be in the constructor.
-NGFragmentBuilder::NGFragmentBuilder(NGPhysicalFragment::NGFragmentType type,
-                                     NGLayoutInputNode node)
-    : type_(type),
-      writing_mode_(kHorizontalTopBottom),
+NGFragmentBuilder::NGFragmentBuilder(NGLayoutInputNode node)
+    : writing_mode_(kHorizontalTopBottom),
       direction_(TextDirection::kLtr),
       node_(node),
       layout_object_(node.GetLayoutObject()),
       did_break_(false) {}
 
-NGFragmentBuilder::NGFragmentBuilder(NGPhysicalFragment::NGFragmentType type,
-                                     LayoutObject* layout_object)
-    : type_(type),
-      writing_mode_(kHorizontalTopBottom),
+NGFragmentBuilder::NGFragmentBuilder(LayoutObject* layout_object)
+    : writing_mode_(kHorizontalTopBottom),
       direction_(TextDirection::kLtr),
       node_(nullptr),
       layout_object_(layout_object),
@@ -70,9 +66,6 @@ NGFragmentBuilder& NGFragmentBuilder::SetBlockOverflow(LayoutUnit size) {
 NGFragmentBuilder& NGFragmentBuilder::AddChild(
     RefPtr<NGLayoutResult> child,
     const NGLogicalOffset& child_offset) {
-  DCHECK_EQ(type_, NGPhysicalFragment::kFragmentBox)
-      << "Only box fragments can have children";
-
   // Collect child's out of flow descendants.
   for (const NGOutOfFlowPositionedDescendant& descendant :
        child->OutOfFlowPositionedDescendants()) {
@@ -86,9 +79,6 @@ NGFragmentBuilder& NGFragmentBuilder::AddChild(
 NGFragmentBuilder& NGFragmentBuilder::AddChild(
     RefPtr<NGPhysicalFragment> child,
     const NGLogicalOffset& child_offset) {
-  DCHECK_EQ(type_, NGPhysicalFragment::kFragmentBox)
-      << "Only box fragments can have children";
-
   switch (child->Type()) {
     case NGPhysicalBoxFragment::kFragmentBox:
       // Update if we have fragmented in this flow.
@@ -189,7 +179,6 @@ void NGFragmentBuilder::AddBaseline(NGBaselineRequest request,
 }
 
 RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
-  DCHECK_EQ(type_, NGPhysicalFragment::kFragmentBox);
   DCHECK_EQ(offsets_.size(), children_.size());
 
   NGPhysicalSize physical_size = size_.ConvertToPhysical(writing_mode_);

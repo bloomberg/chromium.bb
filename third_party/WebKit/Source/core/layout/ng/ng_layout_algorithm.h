@@ -29,7 +29,7 @@ class CORE_EXPORT NGLayoutAlgorithm {
       : node_(node),
         constraint_space_(space),
         break_token_(break_token),
-        container_builder_(NGPhysicalFragment::kFragmentBox, node) {}
+        container_builder_(node) {}
 
   virtual ~NGLayoutAlgorithm() {}
 

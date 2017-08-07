@@ -234,8 +234,7 @@ void NGInlineLayoutStateStack::CreateBoxFragments(
   // |  0  |  1  |  2  |  3  |  4  |  5  |
   // |text0|text1|null |null | box |text5|
   for (const BoxFragmentPlaceholder& placeholder : box_placeholders_) {
-    NGFragmentBuilder box(NGPhysicalFragment::kFragmentBox,
-                          placeholder.item->GetLayoutObject());
+    NGFragmentBuilder box(placeholder.item->GetLayoutObject());
     const NGLogicalOffset& box_offset = offsets[placeholder.fragment_end];
     for (unsigned i = placeholder.fragment_start; i < placeholder.fragment_end;
          i++) {
