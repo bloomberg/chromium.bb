@@ -1167,9 +1167,9 @@ class CONTENT_EXPORT WebContentsImpl
                                const gfx::Rect& anchor_in_root_view);
 
   // Called by derived classes to indicate that we're no longer waiting for a
-  // response. This won't actually update the throbber, but it will get picked
-  // up at the next animation step if the throbber is going.
-  void SetNotWaitingForResponse() { waiting_for_response_ = false; }
+  // response. Will inform |delegate_| of the change in status so that it may,
+  // for example, update the throbber.
+  void SetNotWaitingForResponse();
 
   // Inner WebContents Helpers -------------------------------------------------
   //

@@ -2742,6 +2742,15 @@ void WebContentsImpl::OnMoveValidationMessage(
     delegate_->MoveValidationMessage(this, anchor_in_root_view);
 }
 
+void WebContentsImpl::SetNotWaitingForResponse() {
+  if (waiting_for_response_ == false)
+    return;
+
+  waiting_for_response_ = false;
+  if (delegate_)
+    delegate_->LoadingStateChanged(this, is_load_to_different_document_);
+}
+
 void WebContentsImpl::SendScreenRects() {
   for (FrameTreeNode* node : frame_tree_.Nodes()) {
     if (node->current_frame_host()->is_local_root())

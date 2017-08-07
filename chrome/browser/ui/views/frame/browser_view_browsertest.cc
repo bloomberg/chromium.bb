@@ -5,12 +5,14 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view_observer.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -19,6 +21,8 @@
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 
 class BrowserViewTest : public InProcessBrowserTest {
  public:
@@ -242,4 +246,36 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, AvoidUnnecessaryVisibilityChanges) {
   observer.clear_change_count();
 
   browser_view()->bookmark_bar()->RemoveObserver(&observer);
+}
+
+// Launch the app, navigate to a page with a title, check that the tab title
+// is set before load finishes and the throbber state updates when the title
+// changes. Regression test for crbug.com/752266
+IN_PROC_BROWSER_TEST_F(BrowserViewTest, TitleAndLoadState) {
+  const base::string16 test_title(base::ASCIIToUTF16("Title Of Awesomeness"));
+  auto* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  content::TitleWatcher title_watcher(contents, test_title);
+  content::TestNavigationObserver navigation_watcher(
+      contents, 1, content::MessageLoopRunner::QuitMode::DEFERRED);
+
+  // Navigate without blocking.
+  ui_test_utils::NavigateToURLWithDispositionBlockUntilNavigationsComplete(
+      browser(),
+      ui_test_utils::GetTestUrl(
+          base::FilePath(base::FilePath::kCurrentDirectory),
+          base::FilePath(FILE_PATH_LITERAL("title2.html"))),
+      0, WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+  EXPECT_TRUE(browser()->tab_strip_model()->TabsAreLoading());
+  EXPECT_EQ(TabRendererData::NETWORK_STATE_WAITING,
+            browser_view()->tabstrip()->tab_at(0)->data().network_state);
+  EXPECT_EQ(test_title, title_watcher.WaitAndGetTitle());
+  EXPECT_TRUE(browser()->tab_strip_model()->TabsAreLoading());
+  EXPECT_EQ(TabRendererData::NETWORK_STATE_LOADING,
+            browser_view()->tabstrip()->tab_at(0)->data().network_state);
+
+  // Now block for the navigation to complete.
+  navigation_watcher.Wait();
+  EXPECT_FALSE(browser()->tab_strip_model()->TabsAreLoading());
+  EXPECT_EQ(TabRendererData::NETWORK_STATE_NONE,
+            browser_view()->tabstrip()->tab_at(0)->data().network_state);
 }
