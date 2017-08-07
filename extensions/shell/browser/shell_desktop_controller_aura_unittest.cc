@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/app_window/test_app_window_contents.h"
 #include "extensions/common/test_util.h"
 #include "extensions/shell/browser/shell_app_delegate.h"
@@ -72,6 +73,30 @@ class ShellDesktopControllerAuraTest : public ShellTestBaseAura {
   }
 
  protected:
+  // Creates an AppWindow, which should delete itself when closed.
+  AppWindow* CreateAppWindow(Extension* extension) {
+    AppWindow* app_window =
+        controller_->CreateAppWindow(browser_context(), extension);
+
+    std::unique_ptr<content::WebContents> web_contents(
+        content::WebContents::Create(
+            content::WebContents::CreateParams(browser_context())));
+    std::unique_ptr<TestAppWindowContents> app_window_contents =
+        base::MakeUnique<TestAppWindowContents>(std::move(web_contents));
+
+    // Init the ShellExtensionsWebContentsObserver.
+    app_window->app_delegate()->InitWebContents(
+        app_window_contents->GetWebContents());
+
+    content::RenderFrameHost* main_frame =
+        app_window_contents->GetWebContents()->GetMainFrame();
+    EXPECT_TRUE(main_frame);
+
+    app_window->Init(GURL(std::string()), app_window_contents.release(),
+                     main_frame, AppWindow::CreateParams());
+    return app_window;
+  }
+
   std::unique_ptr<ShellDesktopControllerAura> controller_;
 
 #if defined(OS_CHROMEOS)
@@ -128,21 +153,7 @@ TEST_F(ShellDesktopControllerAuraTest, FillLayout) {
   controller_->host()->SetBoundsInPixels(gfx::Rect(0, 0, 500, 700));
 
   scoped_refptr<Extension> extension = test_util::CreateEmptyExtension();
-  AppWindow* app_window =
-      controller_->CreateAppWindow(browser_context(), extension.get());
-
-  content::WebContents* web_contents = content::WebContents::Create(
-      content::WebContents::CreateParams(browser_context()));
-  TestAppWindowContents* app_window_contents =
-      new TestAppWindowContents(web_contents);
-  DCHECK_EQ(web_contents, app_window_contents->GetWebContents());
-
-  // Init the ShellExtensionsWebContentsObserver.
-  app_window->app_delegate()->InitWebContents(web_contents);
-  EXPECT_TRUE(web_contents->GetMainFrame());
-
-  app_window->Init(GURL(std::string()), app_window_contents,
-                   web_contents->GetMainFrame(), AppWindow::CreateParams());
+  CreateAppWindow(extension.get());
 
   aura::Window* root_window = controller_->host()->window();
   EXPECT_EQ(1u, root_window->children().size());
@@ -152,6 +163,43 @@ TEST_F(ShellDesktopControllerAuraTest, FillLayout) {
 
   EXPECT_EQ(400, root_window->bounds().width());
   EXPECT_EQ(400, root_window->children()[0]->bounds().width());
+
+  // The AppWindow will close on shutdown.
+}
+
+// Tests that the AppWindows are removed when closed.
+TEST_F(ShellDesktopControllerAuraTest, OnAppWindowClose) {
+  scoped_refptr<Extension> extension = test_util::CreateEmptyExtension();
+  AppWindow* app_window1 = CreateAppWindow(extension.get());
+
+  aura::Window* root_window = controller_->host()->window();
+  EXPECT_EQ(1u, root_window->children().size());
+
+  AppWindow* app_window2 = CreateAppWindow(extension.get());
+  EXPECT_EQ(2u, root_window->children().size());
+
+  app_window1->GetBaseWindow()->Close();
+  app_window1 = nullptr;  // Close() deletes the AppWindow.
+  // The second window is still open.
+  EXPECT_EQ(1u, root_window->children().size());
+
+  app_window2->GetBaseWindow()->Close();
+  app_window2 = nullptr;  // Close() deletes the AppWindow.
+  EXPECT_EQ(0u, root_window->children().size());
+}
+
+// Tests closing all AppWindows.
+TEST_F(ShellDesktopControllerAuraTest, CloseAppWindows) {
+  scoped_refptr<Extension> extension = test_util::CreateEmptyExtension();
+  CreateAppWindow(extension.get());
+  CreateAppWindow(extension.get());
+  CreateAppWindow(extension.get());
+
+  aura::Window* root_window = controller_->host()->window();
+  EXPECT_EQ(3u, root_window->children().size());
+
+  controller_->CloseAppWindows();
+  EXPECT_EQ(0u, root_window->children().size());
 }
 
 }  // namespace extensions

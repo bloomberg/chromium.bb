@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_APP_WINDOW_TEST_APP_WINDOW_CONTENTS_H_
 
 #include <stdint.h>
+#include <memory>
 
 #include "base/macros.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -20,7 +21,8 @@ namespace extensions {
 // Best used with AppWindow::SetAppWindowContentsForTesting().
 class TestAppWindowContents : public AppWindowContents {
  public:
-  explicit TestAppWindowContents(content::WebContents* web_contents);
+  explicit TestAppWindowContents(
+      std::unique_ptr<content::WebContents> web_contents);
   ~TestAppWindowContents() override;
 
   // apps:AppWindowContents:

@@ -18,7 +18,6 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/common/result_codes.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
-#include "extensions/browser/app_window/app_window_client.h"
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/updater/update_service.h"
