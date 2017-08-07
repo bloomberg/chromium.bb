@@ -40,6 +40,19 @@ void OnGotAllPaymentApps(const JavaRef<jobject>& jweb_contents,
   JNIEnv* env = AttachCurrentThread();
 
   for (const auto& app_info : apps) {
+    // Sends related application Ids to java side if the app prefers related
+    // applications.
+    std::vector<std::string> preferred_related_application_ids;
+    if (app_info.second->prefer_related_applications) {
+      for (const auto& related_application :
+           app_info.second->related_applications) {
+        // Only consider related applications on Google play for Android.
+        if (related_application.platform == "play")
+          preferred_related_application_ids.emplace_back(
+              related_application.id);
+      }
+    }
+
     Java_ServiceWorkerPaymentAppBridge_onPaymentAppCreated(
         env, app_info.second->registration_id,
         ConvertUTF8ToJavaString(env, app_info.second->name),
@@ -51,6 +64,7 @@ void OnGotAllPaymentApps(const JavaRef<jobject>& jweb_contents,
             ? nullptr
             : gfx::ConvertToJavaBitmap(app_info.second->icon.get()),
         ToJavaArrayOfStrings(env, app_info.second->enabled_methods),
+        ToJavaArrayOfStrings(env, preferred_related_application_ids),
         jweb_contents, jcallback);
   }
   Java_ServiceWorkerPaymentAppBridge_onAllPaymentAppsCreated(env, jcallback);

@@ -27,9 +27,16 @@ message StoredPaymentInstrumentProto {
   optional string decoded_instrument_icon = 7;
 }
 
+message StoredRelatedApplicationProto {
+  optional string platform = 1;
+  optional string id = 2;
+}
+
 message StoredPaymentAppProto {
   optional int64 registration_id = 1;
   optional string origin = 2;
   optional string name = 3;
   optional string icon = 4;
+  optional bool prefer_related_applications = 5;
+  repeated StoredRelatedApplicationProto related_applications = 6;
 }

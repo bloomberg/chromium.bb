@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/public/browser/stored_payment_app.h"
 #include "content/public/common/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -20,8 +21,17 @@ class PaymentAppInfoFetcher
  public:
   PaymentAppInfoFetcher();
 
+  struct PaymentAppInfo {
+    PaymentAppInfo();
+    ~PaymentAppInfo();
+
+    std::string name;
+    std::string icon;
+    bool prefer_related_applications = false;
+    std::vector<StoredRelatedApplication> related_applications;
+  };
   using PaymentAppInfoFetchCallback =
-      base::OnceCallback<void(const std::string&, const std::string&)>;
+      base::OnceCallback<void(std::unique_ptr<PaymentAppInfo> app_info)>;
   void Start(const GURL& context_url,
              scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
              PaymentAppInfoFetchCallback callback);
@@ -46,8 +56,7 @@ class PaymentAppInfoFetcher
 
   int context_process_id_;
   int context_frame_id_;
-  std::string fetched_payment_app_name_;
-  std::string fetched_payment_app_icon_;
+  std::unique_ptr<PaymentAppInfo> fetched_payment_app_info_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentAppInfoFetcher);
 };

@@ -36,21 +36,26 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     private final Drawable mIcon;
     private final Set<String> mMethodNames;
     private final boolean mCanPreselect;
+    private final Set<String> mPreferredRelatedApplicationIds;
 
     /**
      * Build a service worker payment app instance per origin.
      *
      * @see https://w3c.github.io/webpayments-payment-handler/#structure-of-a-web-payment-app
      *
-     * @param webContents       The web contents where PaymentRequest was invoked.
-     * @param registrationId    The registration id of the corresponding service worker payment app.
-     * @param label             The label of the payment app.
-     * @param sublabel          The sublabel of the payment app.
-     * @param icon              The drawable icon of the payment app.
-     * @param methodNames       A set of payment method names supported by the payment app.
+     * @param webContents                    The web contents where PaymentRequest was invoked.
+     * @param registrationId                 The registration id of the corresponding service worker
+     *                                       payment app.
+     * @param label                          The label of the payment app.
+     * @param sublabel                       The sublabel of the payment app.
+     * @param icon                           The drawable icon of the payment app.
+     * @param methodNames                    A set of payment method names supported by the payment
+     *                                       app.
+     * @param preferredRelatedApplicationIds A set of preferred related application Ids.
      */
     public ServiceWorkerPaymentApp(WebContents webContents, long registrationId, String label,
-            @Nullable String sublabel, @Nullable Drawable icon, String[] methodNames) {
+            @Nullable String sublabel, @Nullable Drawable icon, String[] methodNames,
+            String[] preferredRelatedApplicationIds) {
         super(label + sublabel, label, sublabel, icon);
         mWebContents = webContents;
         mRegistrationId = registrationId;
@@ -64,6 +69,9 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
         for (int i = 0; i < methodNames.length; i++) {
             mMethodNames.add(methodNames[i]);
         }
+
+        mPreferredRelatedApplicationIds = new HashSet<>();
+        Collections.addAll(mPreferredRelatedApplicationIds, preferredRelatedApplicationIds);
     }
 
     @Override
@@ -90,6 +98,11 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
         Set<String> methodNames = new HashSet<>(methodsAndData.keySet());
         methodNames.retainAll(mMethodNames);
         return !methodNames.isEmpty();
+    }
+
+    @Override
+    public Set<String> getPreferredRelatedApplicationIds() {
+        return Collections.unmodifiableSet(mPreferredRelatedApplicationIds);
     }
 
     @Override

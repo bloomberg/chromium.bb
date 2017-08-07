@@ -15,6 +15,15 @@
 
 namespace content {
 
+// This class represents the stored related application of the StoredPaymentApp.
+struct CONTENT_EXPORT StoredRelatedApplication {
+  StoredRelatedApplication();
+  ~StoredRelatedApplication();
+
+  std::string platform;
+  std::string id;
+};
+
 // This class represents the stored payment app.
 struct CONTENT_EXPORT StoredPaymentApp {
   StoredPaymentApp();
@@ -34,6 +43,12 @@ struct CONTENT_EXPORT StoredPaymentApp {
 
   // A list of one or more enabled payment methods in this payment app.
   std::vector<std::string> enabled_methods;
+
+  // A flag indicates whether the app prefers the related applications.
+  bool prefer_related_applications = false;
+
+  // A list of stored related applications.
+  std::vector<StoredRelatedApplication> related_applications;
 };
 
 }  // namespace content
