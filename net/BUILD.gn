@@ -4908,6 +4908,7 @@ test("net_unittests") {
     "nqe/socket_watcher_unittest.cc",
     "nqe/throughput_analyzer_unittest.cc",
     "ntlm/des_unittest.cc",
+    "ntlm/md4_unittest.cc",
     "ntlm/ntlm_buffer_reader_unittest.cc",
     "ntlm/ntlm_buffer_writer_unittest.cc",
     "ntlm/ntlm_client_unittest.cc",
@@ -5327,6 +5328,7 @@ test("net_unittests") {
     sources -= [
       "http/http_auth_handler_ntlm_portable_unittest.cc",
       "ntlm/des_unittest.cc",
+      "ntlm/md4_unittest.cc",
       "ntlm/ntlm_buffer_reader_unittest.cc",
       "ntlm/ntlm_buffer_writer_unittest.cc",
       "ntlm/ntlm_client_unittest.cc",
