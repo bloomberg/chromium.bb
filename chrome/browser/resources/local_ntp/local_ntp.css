@@ -115,7 +115,7 @@ html[dir=rtl] #fakebox-text {
   right: 13px;
 }
 
-#cursor {
+#fakebox-cursor {
   background: #333;
   bottom: 12px;
   left: 13px;
@@ -125,9 +125,25 @@ html[dir=rtl] #fakebox-text {
   width: 1px;
 }
 
-html[dir=rtl] #cursor {
+html[dir=rtl] #fakebox-cursor {
   left: auto;
   right: 13px;
+}
+
+#fakebox-speech {
+  background: url(googlemic_clr_24px.svg) no-repeat center;
+  background-size: 24px 24px;
+  cursor: pointer;
+  height: 21px;
+  padding: 22px 12px 0;
+  position: absolute;
+  right: 0;
+  width: 17px;
+}
+
+html[dir=rtl] #fakebox-speech {
+  left: 0;
+  right: auto;
 }
 
 @keyframes blink {

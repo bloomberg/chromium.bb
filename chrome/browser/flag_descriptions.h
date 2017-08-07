@@ -1493,6 +1493,9 @@ extern const char kAccountConsistencyDescription[];
 extern const char kAccountConsistencyChoiceMirror[];
 extern const char kAccountConsistencyChoiceDice[];
 
+extern const char kVoiceSearchOnLocalNtpName[];
+extern const char kVoiceSearchOnLocalNtpDescription[];
+
 #endif
 
 // Random platform combinations -----------------------------------------------
