@@ -42,6 +42,7 @@ class Float32Array final : public TypedArrayBase<float> {
                                             unsigned length);
 
   static inline RefPtr<Float32Array> CreateOrNull(unsigned length);
+  static inline RefPtr<Float32Array> CreateUninitializedOrNull(unsigned length);
 
   using TypedArrayBase<float>::Set;
 
@@ -78,6 +79,10 @@ RefPtr<Float32Array> Float32Array::Create(RefPtr<ArrayBuffer> buffer,
 
 RefPtr<Float32Array> Float32Array::CreateOrNull(unsigned length) {
   return TypedArrayBase<float>::CreateOrNull<Float32Array>(length);
+}
+
+RefPtr<Float32Array> Float32Array::CreateUninitializedOrNull(unsigned length) {
+  return TypedArrayBase<float>::CreateUninitializedOrNull<Float32Array>(length);
 }
 
 Float32Array::Float32Array(RefPtr<ArrayBuffer> buffer,
