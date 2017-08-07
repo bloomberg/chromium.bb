@@ -234,7 +234,9 @@ void NGInlineLayoutStateStack::CreateBoxFragments(
   // |  0  |  1  |  2  |  3  |  4  |  5  |
   // |text0|text1|null |null | box |text5|
   for (const BoxFragmentPlaceholder& placeholder : box_placeholders_) {
-    NGFragmentBuilder box(placeholder.item->GetLayoutObject());
+    NGFragmentBuilder box(placeholder.item->GetLayoutObject(),
+                          *placeholder.item->Style(), line_box->WritingMode(),
+                          placeholder.item->Direction());
     const NGLogicalOffset& box_offset = offsets[placeholder.fragment_end];
     for (unsigned i = placeholder.fragment_start; i < placeholder.fragment_end;
          i++) {
@@ -244,8 +246,6 @@ void NGInlineLayoutStateStack::CreateBoxFragments(
       }
     }
 
-    box.SetWritingMode(line_box->WritingMode());
-    box.SetDirection(placeholder.item->Direction());
     // Inline boxes have block start/end borders, even when its containing block
     // was fragmented. Fragmenting a line box in block direction is not
     // supported today.

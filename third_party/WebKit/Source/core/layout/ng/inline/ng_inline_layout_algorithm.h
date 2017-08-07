@@ -26,7 +26,6 @@ class NGInlineBreakToken;
 class NGInlineNode;
 class NGInlineItem;
 class NGLineBoxFragmentBuilder;
-class NGTextFragmentBuilder;
 
 // A class for inline layout (e.g. a <span> with no special style).
 //
@@ -57,8 +56,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                                       NGInlineItemResult*,
                                       const NGLineInfo&,
                                       LayoutUnit position,
-                                      NGLineBoxFragmentBuilder*,
-                                      NGTextFragmentBuilder*);
+                                      NGLineBoxFragmentBuilder*);
 
   void ApplyTextAlign(ETextAlign,
                       LayoutUnit* line_left,

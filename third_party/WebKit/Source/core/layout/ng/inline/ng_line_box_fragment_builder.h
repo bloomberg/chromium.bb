@@ -8,6 +8,7 @@
 #include "core/layout/ng/geometry/ng_logical_offset.h"
 #include "core/layout/ng/inline/ng_inline_break_token.h"
 #include "core/layout/ng/inline/ng_line_height_metrics.h"
+#include "core/layout/ng/ng_base_fragment_builder.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
@@ -16,16 +17,12 @@ class NGInlineNode;
 class NGPhysicalFragment;
 class NGPhysicalLineBoxFragment;
 
-class CORE_EXPORT NGLineBoxFragmentBuilder final {
+class CORE_EXPORT NGLineBoxFragmentBuilder final
+    : public NGBaseFragmentBuilder {
   STACK_ALLOCATED();
 
  public:
-  explicit NGLineBoxFragmentBuilder(NGInlineNode);
-
-  NGLineBoxFragmentBuilder& SetWritingMode(NGWritingMode);
-  NGWritingMode WritingMode() const { return writing_mode_; }
-
-  NGLineBoxFragmentBuilder& SetDirection(TextDirection);
+  NGLineBoxFragmentBuilder(NGInlineNode, const ComputedStyle&, NGWritingMode);
 
   NGLineBoxFragmentBuilder& SetInlineSize(LayoutUnit);
 
@@ -52,9 +49,6 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final {
   RefPtr<NGPhysicalLineBoxFragment> ToLineBoxFragment();
 
  private:
-  NGWritingMode writing_mode_;
-  TextDirection direction_;
-
   NGInlineNode node_;
 
   LayoutUnit inline_size_;

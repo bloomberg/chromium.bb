@@ -8,7 +8,7 @@
 #include "core/layout/ng/geometry/ng_logical_size.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/inline/ng_line_height_metrics.h"
-#include "platform/text/TextDirection.h"
+#include "core/layout/ng/ng_base_fragment_builder.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
@@ -16,11 +16,12 @@ namespace blink {
 class NGPhysicalTextFragment;
 class ShapeResult;
 
-class CORE_EXPORT NGTextFragmentBuilder final {
+class CORE_EXPORT NGTextFragmentBuilder final : public NGBaseFragmentBuilder {
   STACK_ALLOCATED();
 
  public:
-  NGTextFragmentBuilder(NGInlineNode);
+  NGTextFragmentBuilder(NGInlineNode, const ComputedStyle&, NGWritingMode);
+  NGTextFragmentBuilder(NGInlineNode, NGWritingMode);
 
   NGTextFragmentBuilder& SetSize(const NGLogicalSize&);
 
@@ -38,7 +39,6 @@ class CORE_EXPORT NGTextFragmentBuilder final {
 
   RefPtr<const ShapeResult> shape_result_;
 
-  NGWritingMode writing_mode_;
 };
 
 }  // namespace blink

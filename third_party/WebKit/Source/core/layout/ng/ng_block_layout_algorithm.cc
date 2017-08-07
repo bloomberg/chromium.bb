@@ -215,8 +215,6 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   child_available_size_ = adjusted_size;
   child_percentage_size_ = adjusted_size;
 
-  container_builder_.SetDirection(constraint_space_->Direction());
-  container_builder_.SetWritingMode(constraint_space_->WritingMode());
   container_builder_.SetSize(size);
 
   // If we have a list of unpositioned floats as input to this layout, we'll

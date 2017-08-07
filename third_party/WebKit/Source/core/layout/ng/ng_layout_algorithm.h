@@ -25,11 +25,20 @@ class CORE_EXPORT NGLayoutAlgorithm {
  public:
   NGLayoutAlgorithm(NGInputNodeType node,
                     NGConstraintSpace* space,
+                    TextDirection direction,
                     NGBreakTokenType* break_token)
       : node_(node),
         constraint_space_(space),
         break_token_(break_token),
-        container_builder_(node) {}
+        container_builder_(node,
+                           node.Style(),
+                           space->WritingMode(),
+                           direction) {}
+
+  NGLayoutAlgorithm(NGInputNodeType node,
+                    NGConstraintSpace* space,
+                    NGBreakTokenType* break_token)
+      : NGLayoutAlgorithm(node, space, space->Direction(), break_token) {}
 
   virtual ~NGLayoutAlgorithm() {}
 
