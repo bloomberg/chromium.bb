@@ -38,8 +38,8 @@ void MessageCenter::Shutdown() {
 
 // static
 bool MessageCenter::IsNewStyleNotificationEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableMessageCenterNewStyleNotification);
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableMessageCenterNewStyleNotification);
 }
 
 MessageCenter::MessageCenter() {
