@@ -7,7 +7,7 @@
 #include "core/animation/CompositorMutatorImpl.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -52,10 +52,10 @@ bool AnimationWorkletProxyClientImpl::Mutate(double monotonic_time_now) {
 // static
 AnimationWorkletProxyClientImpl* AnimationWorkletProxyClientImpl::FromDocument(
     Document* document) {
-  WebLocalFrameBase* local_frame_base =
-      WebLocalFrameBase::FromFrame(document->GetFrame());
+  WebLocalFrameImpl* local_frame =
+      WebLocalFrameImpl::FromFrame(document->GetFrame());
   return new AnimationWorkletProxyClientImpl(
-      local_frame_base->LocalRootFrameWidget()->CompositorMutator());
+      local_frame->LocalRootFrameWidget()->CompositorMutator());
 }
 
 }  // namespace blink

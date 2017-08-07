@@ -153,7 +153,7 @@ WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
     const WebParsedFeaturePolicy& container_policy,
     const WebFrameOwnerProperties& frame_owner_properties,
     WebFrame* opener) {
-  WebLocalFrameBase* child =
+  WebLocalFrameImpl* child =
       WebLocalFrameImpl::Create(scope, client, interface_registry, opener);
   InsertAfter(child, previous_sibling);
   RemoteFrameOwner* owner =
@@ -303,8 +303,8 @@ void WebRemoteFrameImpl::DidStartLoading() {
 void WebRemoteFrameImpl::DidStopLoading() {
   GetFrame()->SetIsLoading(false);
   if (Parent() && Parent()->IsWebLocalFrame()) {
-    WebLocalFrameBase* parent_frame =
-        ToWebLocalFrameBase(Parent()->ToWebLocalFrame());
+    WebLocalFrameImpl* parent_frame =
+        ToWebLocalFrameImpl(Parent()->ToWebLocalFrame());
     parent_frame->GetFrame()->GetDocument()->CheckCompleted();
   }
 }

@@ -33,7 +33,7 @@
 #include "core/editing/SurroundingText.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/layout/LayoutObject.h"
 #include "public/platform/WebPoint.h"
 #include "public/web/WebHitTestResult.h"
@@ -71,7 +71,7 @@ void WebSurroundingText::Initialize(const WebNode& web_node,
 
 void WebSurroundingText::InitializeFromCurrentSelection(WebLocalFrame* frame,
                                                         size_t max_length) {
-  LocalFrame* web_frame = ToWebLocalFrameBase(frame)->GetFrame();
+  LocalFrame* web_frame = ToWebLocalFrameImpl(frame)->GetFrame();
 
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.

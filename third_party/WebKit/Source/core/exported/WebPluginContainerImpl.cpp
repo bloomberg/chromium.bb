@@ -56,7 +56,7 @@
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/fullscreen/Fullscreen.h"
 #include "core/html/HTMLFormElement.h"
@@ -863,8 +863,8 @@ void WebPluginContainerImpl::HandleKeyboardEvent(KeyboardEvent* event) {
   }
 
   // Give the client a chance to issue edit comamnds.
-  WebLocalFrameBase* web_frame =
-      WebLocalFrameBase::FromFrame(element_->GetDocument().GetFrame());
+  WebLocalFrameImpl* web_frame =
+      WebLocalFrameImpl::FromFrame(element_->GetDocument().GetFrame());
   if (web_plugin_->SupportsEditCommands())
     web_frame->Client()->HandleCurrentKeyboardEvent();
 

@@ -36,7 +36,7 @@
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/layout/LayoutBox.h"
@@ -92,8 +92,8 @@ bool ExternalPopupMenu::ShowInternal() {
   GetPopupMenuInfo(info, *owner_element_);
   if (info.items.empty())
     return false;
-  WebLocalFrameBase* webframe =
-      WebLocalFrameBase::FromFrame(local_frame_.Get());
+  WebLocalFrameImpl* webframe =
+      WebLocalFrameImpl::FromFrame(local_frame_.Get());
   web_external_popup_menu_ =
       webframe->Client()->CreateExternalPopupMenu(info, this);
   if (web_external_popup_menu_) {

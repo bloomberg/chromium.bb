@@ -5,7 +5,7 @@
 #include "modules/encryptedmedia/MediaKeysController.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/web/WebFrameClient.h"
 
@@ -20,8 +20,8 @@ MediaKeysController::MediaKeysController() {}
 WebEncryptedMediaClient* MediaKeysController::EncryptedMediaClient(
     ExecutionContext* context) {
   Document* document = ToDocument(context);
-  WebLocalFrameBase* web_frame =
-      WebLocalFrameBase::FromFrame(document->GetFrame());
+  WebLocalFrameImpl* web_frame =
+      WebLocalFrameImpl::FromFrame(document->GetFrame());
   return web_frame->Client()->EncryptedMediaClient();
 }
 

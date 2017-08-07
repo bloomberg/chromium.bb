@@ -13,7 +13,7 @@
 #include "core/exported/WebSharedWorkerImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/inspector/InspectorSession.h"
@@ -151,7 +151,7 @@ void ModulesInitializer::InitLocalFrame(LocalFrame& frame) const {
 }
 
 void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
-  WebLocalFrameBase* web_frame = WebLocalFrameBase::FromFrame(&frame);
+  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(&frame);
   WebFrameClient* client = web_frame->Client();
   DCHECK(client);
   ProvidePushControllerTo(frame, client->PushClient());

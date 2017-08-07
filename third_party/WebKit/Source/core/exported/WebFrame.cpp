@@ -15,7 +15,7 @@
 #include "core/frame/OpenedFrameTracker.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameOwner.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/Page.h"
@@ -48,7 +48,7 @@ bool WebFrame::Swap(WebFrame* frame) {
   std::unique_ptr<IncrementLoadEventDelayCount> delay_parent_load =
       parent_ && parent_->IsWebLocalFrame()
           ? IncrementLoadEventDelayCount::Create(
-                *ToWebLocalFrameBase(parent_)->GetFrame()->GetDocument())
+                *ToWebLocalFrameImpl(parent_)->GetFrame()->GetDocument())
           : nullptr;
 
   if (parent_) {
@@ -101,7 +101,7 @@ bool WebFrame::Swap(WebFrame* frame) {
     // placeholder for loading state when swapping to a local frame.
     // In this case, the core LocalFrame is already initialized, so just
     // update a bit of state.
-    LocalFrame& local_frame = *ToWebLocalFrameBase(frame)->GetFrame();
+    LocalFrame& local_frame = *ToWebLocalFrameImpl(frame)->GetFrame();
     DCHECK_EQ(owner, local_frame.Owner());
     if (owner) {
       owner->SetContentFrame(local_frame);
@@ -304,7 +304,7 @@ WebFrame* WebFrame::FromFrame(Frame* frame) {
     return 0;
 
   if (frame->IsLocalFrame())
-    return WebLocalFrameBase::FromFrame(ToLocalFrame(*frame));
+    return WebLocalFrameImpl::FromFrame(ToLocalFrame(*frame));
   return WebRemoteFrameImpl::FromFrame(ToRemoteFrame(*frame));
 }
 
@@ -327,7 +327,7 @@ void WebFrame::TraceFrame(Visitor* visitor, WebFrame* frame) {
     return;
 
   if (frame->IsWebLocalFrame())
-    visitor->Trace(ToWebLocalFrameBase(frame));
+    visitor->Trace(ToWebLocalFrameImpl(frame));
   else
     visitor->Trace(ToWebRemoteFrameImpl(frame));
 }
@@ -355,7 +355,7 @@ void WebFrame::DetachFromParent() {
 
 Frame* WebFrame::ToCoreFrame(const WebFrame& frame) {
   if (frame.IsWebLocalFrame())
-    return ToWebLocalFrameBase(frame).GetFrame();
+    return ToWebLocalFrameImpl(frame).GetFrame();
   if (frame.IsWebRemoteFrame())
     return ToWebRemoteFrameImpl(frame).GetFrame();
   NOTREACHED();

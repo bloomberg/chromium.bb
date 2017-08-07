@@ -8,7 +8,6 @@
 #include "core/dom/AnimationWorkletProxyClient.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/WebLocalFrameBase.h"
 #include "core/page/ChromeClient.h"
 #include "core/workers/WorkerClients.h"
 #include "modules/compositorworker/AnimationWorkletMessagingProxy.h"

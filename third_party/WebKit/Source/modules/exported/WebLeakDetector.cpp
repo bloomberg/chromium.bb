@@ -32,7 +32,7 @@
 
 #include "bindings/core/v8/V8GCController.h"
 #include "core/editing/spellcheck/SpellChecker.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/workers/InProcessWorkerMessagingProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/compositorworker/AbstractAnimationWorkletThread.h"
@@ -100,7 +100,7 @@ void WebLeakDetectorImpl::PrepareForLeakDetection(WebFrame* frame) {
   //
   // Stop the spellchecker to prevent this.
   if (frame->IsWebLocalFrame()) {
-    WebLocalFrameBase* local_frame = ToWebLocalFrameBase(frame);
+    WebLocalFrameImpl* local_frame = ToWebLocalFrameImpl(frame);
     local_frame->GetFrame()->GetSpellChecker().PrepareForLeakDetection();
   }
 

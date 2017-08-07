@@ -32,7 +32,7 @@
 
 #include "core/exported/WebPluginContainerImpl.h"
 #include "core/frame/LocalFrameClient.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/html/HTMLObjectElement.h"
 #include "public/web/WebPlugin.h"
 
@@ -44,7 +44,7 @@ WebHelperPlugin* WebHelperPlugin::Create(const WebString& plugin_type,
                                          WebLocalFrame* frame) {
   WebHelperPluginUniquePtr plugin(new WebHelperPluginImpl());
   if (!ToWebHelperPluginImpl(plugin.get())
-           ->Initialize(plugin_type, ToWebLocalFrameBase(frame)))
+           ->Initialize(plugin_type, ToWebLocalFrameImpl(frame)))
     return 0;
   return plugin.release();
 }
@@ -53,7 +53,7 @@ WebHelperPluginImpl::WebHelperPluginImpl()
     : destruction_timer_(this, &WebHelperPluginImpl::ReallyDestroy) {}
 
 bool WebHelperPluginImpl::Initialize(const String& plugin_type,
-                                     WebLocalFrameBase* frame) {
+                                     WebLocalFrameImpl* frame) {
   DCHECK(!object_element_ && !plugin_container_);
   if (!frame->GetFrame()->Client())
     return false;

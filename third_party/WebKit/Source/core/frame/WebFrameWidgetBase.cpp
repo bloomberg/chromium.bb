@@ -9,7 +9,7 @@
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/VisualViewport.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/input/ContextMenuAllowedScope.h"
 #include "core/input/EventHandler.h"
 #include "core/page/ContextMenuController.h"
@@ -30,7 +30,7 @@ namespace {
 // Helper to get LocalFrame* from WebLocalFrame*.
 // TODO(dcheng): This should be moved into WebLocalFrame.
 LocalFrame* ToCoreFrame(WebLocalFrame* frame) {
-  return ToWebLocalFrameBase(frame)->GetFrame();
+  return ToWebLocalFrameImpl(frame)->GetFrame();
 }
 
 }  // namespace
@@ -226,7 +226,7 @@ WebPoint WebFrameWidgetBase::ViewportToRootFrame(
 }
 
 WebViewBase* WebFrameWidgetBase::View() const {
-  return ToWebLocalFrameBase(LocalRoot())->ViewImpl();
+  return ToWebLocalFrameImpl(LocalRoot())->ViewImpl();
 }
 
 Page* WebFrameWidgetBase::GetPage() const {
@@ -268,7 +268,7 @@ void WebFrameWidgetBase::PointerLockMouseEvent(
   const WebMouseEvent& mouse_event =
       static_cast<const WebMouseEvent&>(input_event);
   WebMouseEvent transformed_event = TransformWebMouseEvent(
-      ToWebLocalFrameBase(LocalRoot())->GetFrameView(), mouse_event);
+      ToWebLocalFrameImpl(LocalRoot())->GetFrameView(), mouse_event);
 
   LocalFrame* focusedFrame = FocusedLocalFrameInWidget();
   if (focusedFrame) {

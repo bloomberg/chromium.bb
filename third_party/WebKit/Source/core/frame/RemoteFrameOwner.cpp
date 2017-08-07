@@ -5,7 +5,7 @@
 #include "core/frame/RemoteFrameOwner.h"
 
 #include "core/frame/LocalFrame.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "public/web/WebFrameClient.h"
 
 namespace blink {
@@ -47,8 +47,8 @@ void RemoteFrameOwner::ClearContentFrame() {
 }
 
 void RemoteFrameOwner::DispatchLoad() {
-  WebLocalFrameBase* web_frame =
-      WebLocalFrameBase::FromFrame(ToLocalFrame(*frame_));
+  WebLocalFrameImpl* web_frame =
+      WebLocalFrameImpl::FromFrame(ToLocalFrame(*frame_));
   web_frame->Client()->DispatchLoad();
 }
 

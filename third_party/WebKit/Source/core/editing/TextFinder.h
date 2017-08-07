@@ -43,7 +43,7 @@ namespace blink {
 
 class LocalFrame;
 class Range;
-class WebLocalFrameBase;
+class WebLocalFrameImpl;
 class WebString;
 struct WebFindOptions;
 struct WebFloatPoint;
@@ -58,7 +58,7 @@ class CORE_EXPORT TextFinder final
   WTF_MAKE_NONCOPYABLE(TextFinder);
 
  public:
-  static TextFinder* Create(WebLocalFrameBase& owner_frame);
+  static TextFinder* Create(WebLocalFrameImpl& owner_frame);
 
   bool Find(int identifier,
             const WebString& search_text,
@@ -134,7 +134,7 @@ class CORE_EXPORT TextFinder final
   class DeferredScopeStringMatches;
   friend class DeferredScopeStringMatches;
 
-  explicit TextFinder(WebLocalFrameBase& owner_frame);
+  explicit TextFinder(WebLocalFrameImpl& owner_frame);
 
   // Notifies the delegate about a new selection rect.
   void ReportFindInPageSelection(const WebRect& selection_rect,
@@ -209,12 +209,12 @@ class CORE_EXPORT TextFinder final
 
   LocalFrame* GetFrame() const;
 
-  WebLocalFrameBase& OwnerFrame() const {
+  WebLocalFrameImpl& OwnerFrame() const {
     DCHECK(owner_frame_);
     return *owner_frame_;
   }
 
-  Member<WebLocalFrameBase> owner_frame_;
+  Member<WebLocalFrameImpl> owner_frame_;
 
   // Indicates whether this frame currently has the active match.
   bool current_active_match_frame_;

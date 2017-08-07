@@ -47,7 +47,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLFrameElementBase.h"
@@ -213,8 +213,8 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
   r.SetToShadowHostIfInRestrictedShadowRoot();
 
   LocalFrame* selected_frame = r.InnerNodeFrame();
-  WebLocalFrameBase* selected_web_frame =
-      WebLocalFrameBase::FromFrame(selected_frame);
+  WebLocalFrameImpl* selected_web_frame =
+      WebLocalFrameImpl::FromFrame(selected_frame);
 
   WebContextMenuData data;
   data.mouse_position = selected_frame->View()->ContentsToViewport(
@@ -467,8 +467,8 @@ void ContextMenuClient::ClearContextMenu() {
   if (!selected_frame)
     return;
 
-  WebLocalFrameBase* selected_web_frame =
-      WebLocalFrameBase::FromFrame(selected_frame);
+  WebLocalFrameImpl* selected_web_frame =
+      WebLocalFrameImpl::FromFrame(selected_frame);
   selected_web_frame->ClearContextMenuNode();
 }
 

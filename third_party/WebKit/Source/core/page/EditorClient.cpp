@@ -29,7 +29,7 @@
 #include "core/editing/SelectionType.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/ContentSettingsClient.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebViewClient.h"
 
@@ -41,7 +41,7 @@ EditorClient::~EditorClient() {}
 
 void EditorClient::RespondToChangedSelection(LocalFrame* frame,
                                              SelectionType selection_type) {
-  WebLocalFrameBase* web_frame = WebLocalFrameBase::FromFrame(frame);
+  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
   if (web_frame->Client())
     web_frame->Client()->DidChangeSelection(selection_type != kRangeSelection);
 }
@@ -66,7 +66,7 @@ bool EditorClient::CanPaste(LocalFrame* frame, bool default_value) const {
 }
 
 bool EditorClient::HandleKeyboardEvent(LocalFrame* frame) {
-  WebLocalFrameBase* web_frame = WebLocalFrameBase::FromFrame(frame);
+  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
   return web_frame->Client()->HandleCurrentKeyboardEvent();
 }
 

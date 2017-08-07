@@ -37,7 +37,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -1117,7 +1117,7 @@ void AXObjectCacheImpl::PostPlatformNotification(AXObject* obj,
       !obj->DocumentFrameView()->GetFrame().GetPage())
     return;
   // Send via WebFrameClient
-  WebLocalFrameBase* webframe = WebLocalFrameBase::FromFrame(
+  WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(
       obj->GetDocument()->AxObjectCacheOwner().GetFrame());
   if (webframe && webframe->Client()) {
     webframe->Client()->PostAccessibilityEvent(

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/frame/LocalFrameView.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/geometry/DOMRect.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutView.h"

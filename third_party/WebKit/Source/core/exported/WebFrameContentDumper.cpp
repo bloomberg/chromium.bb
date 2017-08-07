@@ -9,7 +9,7 @@
 #include "core/editing/serializers/Serialization.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -100,7 +100,7 @@ WebString WebFrameContentDumper::DeprecatedDumpFrameTreeAsText(
   if (!frame)
     return WebString();
   StringBuilder text;
-  FrameContentAsPlainText(max_chars, ToWebLocalFrameBase(frame)->GetFrame(),
+  FrameContentAsPlainText(max_chars, ToWebLocalFrameImpl(frame)->GetFrame(),
                           text);
   return text.ToString();
 }
@@ -116,7 +116,7 @@ WebString WebFrameContentDumper::DumpWebViewAsText(WebView* web_view,
 WebString WebFrameContentDumper::DumpAsMarkup(WebLocalFrame* frame) {
   if (!frame)
     return WebString();
-  return CreateMarkup(ToWebLocalFrameBase(frame)->GetFrame()->GetDocument());
+  return CreateMarkup(ToWebLocalFrameImpl(frame)->GetFrame()->GetDocument());
 }
 
 WebString WebFrameContentDumper::DumpLayoutTreeAsText(
@@ -137,7 +137,7 @@ WebString WebFrameContentDumper::DumpLayoutTreeAsText(
   if (to_show & kLayoutAsTextPrinting)
     behavior |= kLayoutAsTextPrintingMode;
 
-  return ExternalRepresentation(ToWebLocalFrameBase(frame)->GetFrame(),
+  return ExternalRepresentation(ToWebLocalFrameImpl(frame)->GetFrame(),
                                 behavior);
 }
 }

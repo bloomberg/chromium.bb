@@ -25,7 +25,7 @@
 
 #include "core/html/forms/ColorChooserUIController.h"
 
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/html/forms/ColorChooserClient.h"
 #include "platform/graphics/Color.h"
 #include "platform/wtf/PtrUtil.h"
@@ -83,7 +83,7 @@ void ColorChooserUIController::DidEndChooser() {
 
 void ColorChooserUIController::OpenColorChooser() {
   DCHECK(!chooser_);
-  WebLocalFrameBase* frame = WebLocalFrameBase::FromFrame(frame_);
+  WebLocalFrameImpl* frame = WebLocalFrameImpl::FromFrame(frame_);
   WebFrameClient* web_frame_client = frame->Client();
   if (!web_frame_client)
     return;

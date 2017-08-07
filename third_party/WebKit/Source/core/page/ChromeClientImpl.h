@@ -230,8 +230,6 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
 
   WebLayerTreeView* GetWebLayerTreeView(LocalFrame*) override;
 
-  WebLocalFrameBase* GetWebLocalFrameBase(LocalFrame*) override;
-
   void RequestDecode(LocalFrame*,
                      const PaintImage&,
                      WTF::Function<void(bool)> callback) override;

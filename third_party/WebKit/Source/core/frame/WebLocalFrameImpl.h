@@ -442,6 +442,9 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   WebFrameWidgetBase* LocalRootFrameWidget() override;
 
+  // Sets the local core frame and registers destruction observers.
+  void SetCoreFrame(LocalFrame*) override;
+
   DECLARE_VIRTUAL_TRACE();
 
  private:
@@ -458,9 +461,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebLocalFrame* ToWebLocalFrame() override;
   bool IsWebRemoteFrame() const override;
   WebRemoteFrame* ToWebRemoteFrame() override;
-
-  // Sets the local core frame and registers destruction observers.
-  void SetCoreFrame(LocalFrame*) override;
 
   void LoadJavaScriptURL(const KURL&);
 
