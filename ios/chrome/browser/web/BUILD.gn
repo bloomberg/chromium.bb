@@ -32,7 +32,6 @@ source_set("web") {
   ]
   deps = [
     ":placeholder_overlay_tab_helper_delegate",
-    ":sad_tab_tab_helper_delegate",
     "//base",
     "//components/strings",
     "//ios/chrome/app/strings:ios_strings_grit",
@@ -56,13 +55,6 @@ source_set("placeholder_overlay_tab_helper_delegate") {
   ]
 }
 
-source_set("sad_tab_tab_helper_delegate") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "sad_tab_tab_helper_delegate.h",
-  ]
-}
-
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
@@ -80,7 +72,6 @@ source_set("unit_tests") {
   ]
   deps = [
     ":placeholder_overlay_tab_helper_delegate",
-    ":sad_tab_tab_helper_delegate",
     ":test_support",
     ":web",
     "//base:base",

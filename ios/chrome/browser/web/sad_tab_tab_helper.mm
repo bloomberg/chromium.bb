@@ -10,7 +10,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_view.h"
-#import "ios/chrome/browser/web/sad_tab_tab_helper_delegate.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/ui/crw_generic_content_view.h"
@@ -25,45 +24,53 @@ namespace {
 // The default window of time a failure of the same URL needs to occur
 // to be considered a repeat failure.
 NSTimeInterval const kDefaultRepeatFailureInterval = 60.0f;
+
+// Returns true if the application is in UIApplicationStateActive state.
+bool IsApplicationStateActive() {
+  return UIApplication.sharedApplication.applicationState ==
+         UIApplicationStateActive;
+}
 }
 
-SadTabTabHelper::SadTabTabHelper(web::WebState* web_state,
-                                 id<SadTabTabHelperDelegate> delegate)
-    : SadTabTabHelper(web_state, delegate, kDefaultRepeatFailureInterval) {}
+SadTabTabHelper::SadTabTabHelper(web::WebState* web_state)
+    : SadTabTabHelper(web_state, kDefaultRepeatFailureInterval) {}
 
 SadTabTabHelper::SadTabTabHelper(web::WebState* web_state,
-                                 id<SadTabTabHelperDelegate> delegate,
                                  double repeat_failure_interval)
     : web::WebStateObserver(web_state),
-      delegate_(delegate),
       repeat_failure_interval_(repeat_failure_interval) {
-  DCHECK(delegate_);
 }
 
 SadTabTabHelper::~SadTabTabHelper() = default;
 
-void SadTabTabHelper::CreateForWebState(web::WebState* web_state,
-                                        id<SadTabTabHelperDelegate> delegate) {
+void SadTabTabHelper::CreateForWebState(web::WebState* web_state) {
   DCHECK(web_state);
   if (!FromWebState(web_state)) {
-    web_state->SetUserData(UserDataKey(), base::WrapUnique(new SadTabTabHelper(
-                                              web_state, delegate)));
+    web_state->SetUserData(UserDataKey(),
+                           base::WrapUnique(new SadTabTabHelper(web_state)));
   }
 }
 
 void SadTabTabHelper::CreateForWebState(web::WebState* web_state,
-                                        id<SadTabTabHelperDelegate> delegate,
                                         double repeat_failure_interval) {
   DCHECK(web_state);
   if (!FromWebState(web_state)) {
     web_state->SetUserData(UserDataKey(),
                            base::WrapUnique(new SadTabTabHelper(
-                               web_state, delegate, repeat_failure_interval)));
+                               web_state, repeat_failure_interval)));
   }
 }
 
+void SadTabTabHelper::WasShown() {
+  is_visible_ = true;
+}
+
+void SadTabTabHelper::WasHidden() {
+  is_visible_ = false;
+}
+
 void SadTabTabHelper::RenderProcessGone() {
-  if (!delegate_ || [delegate_ isTabVisibleForTabHelper:this]) {
+  if (is_visible_ && IsApplicationStateActive()) {
     PresentSadTab(web_state()->GetLastCommittedURL());
   }
 }
