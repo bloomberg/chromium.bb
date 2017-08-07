@@ -39,9 +39,6 @@ AppWindow* ShellDesktopControllerMac::CreateAppWindow(
 void ShellDesktopControllerMac::AddAppWindow(gfx::NativeWindow window) {
 }
 
-void ShellDesktopControllerMac::RemoveAppWindow(AppWindow* window) {
-}
-
 void ShellDesktopControllerMac::CloseAppWindows() {
   if (app_window_) {
     ui::BaseWindow* window = app_window_->GetBaseWindow();

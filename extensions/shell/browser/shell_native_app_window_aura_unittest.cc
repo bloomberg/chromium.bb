@@ -47,10 +47,12 @@ TEST_F(ShellNativeAppWindowAuraTest, Bounds) {
 
   AppWindow* app_window =
       new AppWindow(browser_context(), new ShellAppDelegate, extension.get());
-  content::WebContents* web_contents = content::WebContents::Create(
-      content::WebContents::CreateParams(browser_context()));
+
+  std::unique_ptr<content::WebContents> web_contents(
+      content::WebContents::Create(
+          content::WebContents::CreateParams(browser_context())));
   app_window->SetAppWindowContentsForTesting(
-      base::MakeUnique<TestAppWindowContents>(web_contents));
+      base::MakeUnique<TestAppWindowContents>(std::move(web_contents)));
 
   AppWindow::BoundsSpecification window_spec;
   window_spec.bounds = gfx::Rect(100, 200, 300, 400);

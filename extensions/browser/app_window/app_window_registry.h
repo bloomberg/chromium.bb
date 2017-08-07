@@ -72,6 +72,7 @@ class AppWindowRegistry : public KeyedService,
   void RemoveAppWindow(AppWindow* app_window);
 
   void AddObserver(Observer* observer);
+  bool HasObserver(const Observer* observer) const;
   void RemoveObserver(Observer* observer);
 
   // Returns a set of windows owned by the application identified by app_id.

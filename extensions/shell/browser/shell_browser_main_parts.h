@@ -24,7 +24,6 @@ struct MainFunctionParams;
 
 namespace extensions {
 
-class AppWindowClient;
 class DesktopController;
 class ExtensionsBrowserClient;
 class ExtensionsClient;
@@ -75,14 +74,20 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<ShellNetworkController> network_controller_;
-  std::unique_ptr<ShellAudioController> audio_controller_;
 #endif
-  std::unique_ptr<DesktopController> desktop_controller_;
+
   std::unique_ptr<ShellBrowserContext> browser_context_;
   std::unique_ptr<PrefService> local_state_;
   std::unique_ptr<PrefService> user_pref_service_;
+
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<ShellAudioController> audio_controller_;
+#endif
+
+  // The DesktopController outlives ExtensionSystem and context-keyed services.
+  std::unique_ptr<DesktopController> desktop_controller_;
+
   std::unique_ptr<ShellDeviceClient> device_client_;
-  std::unique_ptr<AppWindowClient> app_window_client_;
   std::unique_ptr<ExtensionsClient> extensions_client_;
   std::unique_ptr<ExtensionsBrowserClient> extensions_browser_client_;
   std::unique_ptr<ShellUpdateQueryParamsDelegate> update_query_params_delegate_;

@@ -8,9 +8,9 @@
 
 namespace extensions {
 
-TestAppWindowContents::TestAppWindowContents(content::WebContents* web_contents)
-    : web_contents_(web_contents) {
-}
+TestAppWindowContents::TestAppWindowContents(
+    std::unique_ptr<content::WebContents> web_contents)
+    : web_contents_(std::move(web_contents)) {}
 
 TestAppWindowContents::~TestAppWindowContents() {
 }

@@ -90,6 +90,10 @@ void AppWindowRegistry::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
+bool AppWindowRegistry::HasObserver(const Observer* observer) const {
+  return observers_.HasObserver(observer);
+}
+
 void AppWindowRegistry::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
