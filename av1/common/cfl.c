@@ -21,7 +21,7 @@ void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm) {
     aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                        "Only 4:4:4 and 4:2:0 are currently supported by CfL");
   }
-  memset(&cfl->y_pix, 0, sizeof(uint8_t) * MAX_SB_SQUARE);
+  memset(&cfl->y_pix, 0, sizeof(cfl->y_pix));
   cfl->subsampling_x = cm->subsampling_x;
   cfl->subsampling_y = cm->subsampling_y;
   cfl->are_parameters_computed = 0;
