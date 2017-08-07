@@ -415,6 +415,12 @@ void HTMLInputElement::UpdateType() {
   input_type_view_->DestroyShadowSubtree();
   LazyReattachIfAttached();
 
+  if (input_type_->SupportsRequired() != new_type->SupportsRequired() &&
+      IsRequired()) {
+    PseudoStateChanged(CSSSelector::kPseudoRequired);
+    PseudoStateChanged(CSSSelector::kPseudoOptional);
+  }
+
   input_type_ = new_type;
   input_type_view_ = input_type_->CreateView();
   input_type_view_->CreateShadowSubtree();
