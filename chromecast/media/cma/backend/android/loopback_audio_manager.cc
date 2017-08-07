@@ -37,7 +37,6 @@ namespace media {
 
 namespace {
 
-const int kMaxI2sNameLen = 32;
 const int kBufferLenMs = 20;
 const int kMsPerSecond = 1000;
 const int64_t kNsecPerSecond = 1000000000LL;
@@ -63,24 +62,27 @@ LoopbackAudioManager::LoopbackAudioManager()
       last_frame_position_(0),
       frame_count_(0),
       feeder_thread_("CMA_Backend_Loopback"),
-      loopback_running_(false) {
-  // Open I2S device.
-  APeripheralManagerClient* client = APeripheralManagerClient_new();
-  DCHECK(client);
-
-  char i2s_name[kMaxI2sNameLen];
+      loopback_running_(false),
+      loopback_disabled_(false) {
+  std::string i2s_name;
   AI2sEncoding i2s_encoding;
-  GetI2sFlags(i2s_name, &i2s_encoding);
+  GetI2sFlags(&i2s_name, &i2s_encoding);
 
-  int err = APeripheralManagerClient_openI2sDevice(
-      client, i2s_name, i2s_encoding, i2s_channels_, i2s_rate_,
-      AI2S_FLAG_DIRECTION_IN, &i2s_);
-  DCHECK_EQ(err, 0);
+  if (!loopback_disabled_) {
+    // Open I2S device.
+    APeripheralManagerClient* client = APeripheralManagerClient_new();
+    DCHECK(client);
 
-  // Spin up loopback thread.
-  base::Thread::Options options;
-  options.priority = base::ThreadPriority::REALTIME_AUDIO;
-  CHECK(feeder_thread_.StartWithOptions(options));
+    int err = APeripheralManagerClient_openI2sDevice(
+        client, i2s_name.c_str(), i2s_encoding, i2s_channels_, i2s_rate_,
+        AI2S_FLAG_DIRECTION_IN, &i2s_);
+    DCHECK_EQ(err, 0);
+
+    // Spin up loopback thread.
+    base::Thread::Options options;
+    options.priority = base::ThreadPriority::REALTIME_AUDIO;
+    CHECK(feeder_thread_.StartWithOptions(options));
+  }
 }
 
 LoopbackAudioManager::~LoopbackAudioManager() {
@@ -89,7 +91,6 @@ LoopbackAudioManager::~LoopbackAudioManager() {
 
   // thread_.Stop() makes sure the thread is stopped before return.
   // It's okay to clean up after feeder_thread_ is stopped.
-  StopLoopback();
   AI2sDevice_delete(i2s_);
 }
 
@@ -145,49 +146,59 @@ int64_t LoopbackAudioManager::GetInterpolatedTimestamp(int64_t frame_position) {
   return last_timestamp_nsec_ + delta_nsecs;
 }
 
-void LoopbackAudioManager::GetI2sFlags(char* i2s_name,
+void LoopbackAudioManager::GetI2sFlags(std::string* i2s_name,
                                        AI2sEncoding* i2s_encoding) {
-  int i2s_number = GetSwitchValueInt(switches::kLoopbackI2sBusNumber, -1);
-  LOG_IF(DFATAL, i2s_number == -1)
-      << "Flag --" << switches::kLoopbackI2sBusNumber << " is required.";
+  DCHECK(i2s_name);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  *i2s_name = command_line->GetSwitchValueNative(switches::kLoopbackI2sBusName);
+  i2s_rate_ = GetSwitchValueInt(switches::kLoopbackI2sRateHz, -1);
+  i2s_channels_ = GetSwitchValueInt(switches::kLoopbackI2sChannels, -1);
+  int i2s_bits = GetSwitchValueInt(switches::kLoopbackI2sBits, -1);
 
-  sprintf(i2s_name, "I2S%d", i2s_number);
-  i2s_rate_ = GetSwitchValueNonNegativeInt(switches::kLoopbackI2sRateHz, 0);
-  LOG_IF(DFATAL, !i2s_rate_)
-      << "Flag --" << switches::kLoopbackI2sRateHz << " is required.";
+  // If all loopback configuration flags are unset, assume loopback should be
+  // disabled.
+  if (i2s_name->empty() && i2s_rate_ == -1 && i2s_bits == -1 &&
+      i2s_channels_ == -1) {
+    loopback_disabled_ = true;
+  } else {
+    LOG_IF(DFATAL, i2s_name->empty())
+        << "Flag --" << switches::kLoopbackI2sBusName << " is required.";
+    LOG_IF(DFATAL, i2s_rate_ == -1)
+        << "Flag --" << switches::kLoopbackI2sRateHz << " is required.";
+    LOG_IF(DFATAL, i2s_bits == -1)
+        << "Flag --" << switches::kLoopbackI2sBits << " is required.";
+    LOG_IF(DFATAL, i2s_channels_ == -1)
+        << "Flag --" << switches::kLoopbackI2sChannels << " is required.";
 
-  int i2s_bits = GetSwitchValueNonNegativeInt(switches::kLoopbackI2sBits, 0);
-  LOG_IF(DFATAL, !i2s_bits)
-      << "Flag --" << switches::kLoopbackI2sBits << " is required.";
-  switch (i2s_bits) {
-    case 16:
-      *i2s_encoding = AI2S_ENCODING_PCM_16_BIT;
-      cast_audio_format_ = kSampleFormatS16;
-      bytes_per_sample_ = 2;
-      break;
-    case 24:
-      *i2s_encoding = AI2S_ENCODING_PCM_24_BIT;
-      cast_audio_format_ = kSampleFormatS24;
-      bytes_per_sample_ = 4;  // 24-bits algined to 32 bits
-      break;
-    case 32:
-      *i2s_encoding = AI2S_ENCODING_PCM_32_BIT;
-      cast_audio_format_ = kSampleFormatS32;
-      bytes_per_sample_ = 4;
-      break;
-    default:
-      LOG(FATAL)
-          << "Invalid number of bits specified.  Must be one of {16, 24, 32}";
+    switch (i2s_bits) {
+      case 16:
+        *i2s_encoding = AI2S_ENCODING_PCM_16_BIT;
+        cast_audio_format_ = kSampleFormatS16;
+        bytes_per_sample_ = 2;
+        break;
+      case 24:
+        *i2s_encoding = AI2S_ENCODING_PCM_24_BIT;
+        cast_audio_format_ = kSampleFormatS24;
+        bytes_per_sample_ = 4;  // 24-bits algined to 32 bits
+        break;
+      case 32:
+        *i2s_encoding = AI2S_ENCODING_PCM_32_BIT;
+        cast_audio_format_ = kSampleFormatS32;
+        bytes_per_sample_ = 4;
+        break;
+      default:
+        LOG(FATAL)
+            << "Invalid number of bits specified.  Must be one of {16, 24, 32}";
+    }
   }
-
-  i2s_channels_ =
-      GetSwitchValueNonNegativeInt(switches::kLoopbackI2sChannels, 0);
-  LOG_IF(DFATAL, !i2s_channels_)
-      << "Flag --" << switches::kLoopbackI2sChannels << " is required.";
 
   // 20ms of audio
   audio_buffer_size_ =
       i2s_rate_ * bytes_per_sample_ * i2s_channels_ * kBufferLenMs / kMsPerSecond;
+}
+
+void LoopbackAudioManager::StopLoopback() {
+  loopback_running_ = false;
 }
 
 void LoopbackAudioManager::StartLoopback() {
@@ -199,11 +210,6 @@ void LoopbackAudioManager::StartLoopback() {
   frame_count_ = 0;
   loopback_running_ = true;
   RunLoopback();
-}
-
-void LoopbackAudioManager::StopLoopback() {
-  DCHECK(loopback_running_);
-  loopback_running_ = false;
 }
 
 void LoopbackAudioManager::RunLoopback() {
@@ -239,6 +245,9 @@ void LoopbackAudioManager::RunLoopback() {
 
 void LoopbackAudioManager::AddLoopbackAudioObserver(
     CastMediaShlib::LoopbackAudioObserver* observer) {
+  if (loopback_disabled_) {
+    return;
+  }
   DCHECK(observer);
   RUN_ON_FEEDER_THREAD(AddLoopbackAudioObserver, observer);
 
@@ -252,6 +261,9 @@ void LoopbackAudioManager::AddLoopbackAudioObserver(
 
 void LoopbackAudioManager::RemoveLoopbackAudioObserver(
     CastMediaShlib::LoopbackAudioObserver* observer) {
+  if (loopback_disabled_) {
+    return;
+  }
   DCHECK(observer);
   RUN_ON_FEEDER_THREAD(RemoveLoopbackAudioObserver, observer);
 

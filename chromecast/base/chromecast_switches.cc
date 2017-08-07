@@ -112,7 +112,7 @@ const char kUseDoubleBuffering[] = "use-double-buffering";
 // Used to pass configuration for the I2S input to enable loopback for AEC.
 const char kLoopbackI2sBits[] = "loopback-i2s-bits";
 const char kLoopbackI2sChannels[] = "loopback-i2s-channels";
-const char kLoopbackI2sBusNumber[] = "loopback-i2s-bus-number";
+const char kLoopbackI2sBusName[] = "loopback-i2s-bus-name";
 const char kLoopbackI2sRateHz[] = "loopback-i2s-rate-hz";
 
 // When present, desktop cast_shell will create 1080p window (provided display
