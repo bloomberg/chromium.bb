@@ -9,10 +9,16 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/exo/buffer.h"
+#include "components/exo/notification_surface.h"
+#include "components/exo/surface.h"
+#include "components/exo/test/exo_test_helper.h"
+#include "components/exo/wm_helper_ash.h"
 #include "ui/arc/notification/arc_notification_content_view.h"
 #include "ui/arc/notification/arc_notification_delegate.h"
 #include "ui/arc/notification/arc_notification_item.h"
 #include "ui/arc/notification/arc_notification_surface.h"
+#include "ui/arc/notification/arc_notification_surface_manager_impl.h"
 #include "ui/arc/notification/arc_notification_view.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
@@ -29,82 +35,37 @@ namespace {
 
 constexpr char kNotificationIdPrefix[] = "ARC_NOTIFICATION_";
 
-class MockNotificationSurface : public ArcNotificationSurface {
+class TestWMHelper : public exo::WMHelper {
  public:
-  MockNotificationSurface(const std::string& notification_key,
-                          std::unique_ptr<aura::Window> window)
-      : notification_key_(notification_key), window_(std::move(window)) {}
+  TestWMHelper() = default;
+  ~TestWMHelper() override = default;
 
-  gfx::Size GetSize() const override { return gfx::Size(100, 200); }
-
-  void Attach(views::NativeViewHost* nvh) override {
-    native_view_host_ = nvh;
-    nvh->Attach(window_.get());
+  const display::ManagedDisplayInfo& GetDisplayInfo(
+      int64_t display_id) const override {
+    static const display::ManagedDisplayInfo info;
+    return info;
   }
-
-  void Detach() override {
-    EXPECT_TRUE(native_view_host_);
-    EXPECT_EQ(window_.get(), native_view_host_->native_view());
-    native_view_host_->Detach();
-    native_view_host_ = nullptr;
-  }
-
-  bool IsAttached() const override { return native_view_host_; }
-  views::NativeViewHost* GetAttachedHost() const override {
-    return native_view_host_;
-  }
-
-  aura::Window* GetWindow() const override { return window_.get(); }
-  aura::Window* GetContentWindow() const override { return window_.get(); }
-
-  const std::string& GetNotificationKey() const override {
-    return notification_key_;
-  }
-
- private:
-  std::string notification_key_;
-  std::unique_ptr<aura::Window> window_;
-  views::NativeViewHost* native_view_host_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(MockNotificationSurface);
-};
-
-class TestNotificationSurfaceManager : public ArcNotificationSurfaceManager {
- public:
-  TestNotificationSurfaceManager() = default;
-
-  void PrepareSurface(std::string& notification_key) {
-    auto surface_window = base::MakeUnique<aura::Window>(&window_delegate_);
-    surface_window->SetType(aura::client::WINDOW_TYPE_CONTROL);
-    surface_window->Init(ui::LAYER_NOT_DRAWN);
-    surface_window->set_owned_by_parent(false);
-    surface_window->SetBounds(gfx::Rect(0, 0, 100, 200));
-
-    surface_map_[notification_key] = base::MakeUnique<MockNotificationSurface>(
-        notification_key, std::move(surface_window));
-  }
-  size_t surface_found_count() const { return surface_found_count_; }
-
-  ArcNotificationSurface* GetArcSurface(
-      const std::string& notification_key) const override {
-    auto it = surface_map_.find(notification_key);
-    if (it != surface_map_.end()) {
-      ++surface_found_count_;
-      return it->second.get();
-    }
+  aura::Window* GetPrimaryDisplayContainer(int container_id) override {
     return nullptr;
   }
-  void AddObserver(Observer* observer) override {}
-  void RemoveObserver(Observer* observer) override {}
+  aura::Window* GetActiveWindow() const override { return nullptr; }
+  aura::Window* GetFocusedWindow() const override { return nullptr; }
+  ui::CursorSize GetCursorSize() const override {
+    return ui::CursorSize::kNormal;
+  }
+  const display::Display& GetCursorDisplay() const override {
+    static const display::Display display;
+    return display;
+  }
+  void AddPreTargetHandler(ui::EventHandler* handler) override {}
+  void PrependPreTargetHandler(ui::EventHandler* handler) override {}
+  void RemovePreTargetHandler(ui::EventHandler* handler) override {}
+  void AddPostTargetHandler(ui::EventHandler* handler) override {}
+  void RemovePostTargetHandler(ui::EventHandler* handler) override {}
+  bool IsTabletModeWindowManagerEnabled() const override { return false; }
 
  private:
-  // Mutable for modifying in const method.
-  mutable int surface_found_count_ = 0;
-
-  aura::test::TestWindowDelegate window_delegate_;
-  std::map<std::string, std::unique_ptr<ArcNotificationSurface>> surface_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestNotificationSurfaceManager);
+  DISALLOW_COPY_AND_ASSIGN(TestWMHelper);
 };
 
 }  // anonymous namespace
@@ -230,7 +191,9 @@ class ArcNotificationContentViewTest : public views::ViewsTestBase {
   void SetUp() override {
     views::ViewsTestBase::SetUp();
 
-    surface_manager_ = base::MakeUnique<TestNotificationSurfaceManager>();
+    exo::WMHelper::SetInstance(&wm_helper_);
+
+    surface_manager_ = base::MakeUnique<ArcNotificationSurfaceManagerImpl>();
   }
 
   void TearDown() override {
@@ -238,7 +201,14 @@ class ArcNotificationContentViewTest : public views::ViewsTestBase {
     EXPECT_FALSE(wrapper_widget_);
     EXPECT_FALSE(notification_view_);
 
+    // These may have been initialized in PrepareSurface().
+    notification_surface_.reset();
+    surface_.reset();
+    surface_buffer_.reset();
+
     surface_manager_.reset();
+
+    exo::WMHelper::SetInstance(nullptr);
 
     views::ViewsTestBase::TearDown();
   }
@@ -292,6 +262,20 @@ class ArcNotificationContentViewTest : public views::ViewsTestBase {
     notification_view_.reset();
   }
 
+  void PrepareSurface(const std::string& notification_key) {
+    surface_ = base::MakeUnique<exo::Surface>();
+    notification_surface_ = base::MakeUnique<exo::NotificationSurface>(
+        surface_manager(), surface_.get(), notification_key);
+
+    exo::test::ExoTestHelper exo_test_helper;
+    const gfx::Rect bounds(100, 100, 300, 300);
+    surface_buffer_ = base::MakeUnique<exo::Buffer>(
+        exo_test_helper.CreateGpuMemoryBuffer(bounds.size()));
+    surface_->Attach(surface_buffer_.get());
+
+    surface_->Commit();
+  }
+
   message_center::Notification CreateNotification(
       MockArcNotificationItem* notification_item) {
     return message_center::Notification(
@@ -306,10 +290,11 @@ class ArcNotificationContentViewTest : public views::ViewsTestBase {
   }
 
   TestMessageCenterController* controller() { return &controller_; }
-  TestNotificationSurfaceManager* surface_manager() {
+  ArcNotificationSurfaceManagerImpl* surface_manager() {
     return surface_manager_.get();
   }
   views::Widget* widget() { return notification_view_->GetWidget(); }
+  exo::Surface* surface() { return surface_.get(); }
 
   ArcNotificationContentView* GetArcNotificationContentView() {
     views::View* view = notification_view_->contents_view_;
@@ -317,13 +302,13 @@ class ArcNotificationContentViewTest : public views::ViewsTestBase {
     return static_cast<ArcNotificationContentView*>(view);
   }
 
-  TestNotificationSurfaceManager* surface_manager() const {
-    return surface_manager_.get();
-  }
-
  private:
   TestMessageCenterController controller_;
-  std::unique_ptr<TestNotificationSurfaceManager> surface_manager_;
+  TestWMHelper wm_helper_;
+  std::unique_ptr<ArcNotificationSurfaceManagerImpl> surface_manager_;
+  std::unique_ptr<exo::Buffer> surface_buffer_;
+  std::unique_ptr<exo::Surface> surface_;
+  std::unique_ptr<exo::NotificationSurface> notification_surface_;
   std::unique_ptr<ArcNotificationView> notification_view_;
   std::unique_ptr<views::Widget> wrapper_widget_;
 
@@ -338,7 +323,7 @@ TEST_F(ArcNotificationContentViewTest, CreateSurfaceAfterNotification) {
   message_center::Notification notification =
       CreateNotification(notification_item.get());
 
-  surface_manager()->PrepareSurface(notification_key);
+  PrepareSurface(notification_key);
 
   CreateAndShowNotificationView(notification);
   CloseNotificationView();
@@ -347,7 +332,7 @@ TEST_F(ArcNotificationContentViewTest, CreateSurfaceAfterNotification) {
 TEST_F(ArcNotificationContentViewTest, CreateSurfaceBeforeNotification) {
   std::string notification_key("notification id");
 
-  surface_manager()->PrepareSurface(notification_key);
+  PrepareSurface(notification_key);
 
   auto notification_item =
       base::MakeUnique<MockArcNotificationItem>(notification_key);
@@ -375,12 +360,11 @@ TEST_F(ArcNotificationContentViewTest, CloseButton) {
 
   auto notification_item =
       base::MakeUnique<MockArcNotificationItem>(notification_key);
-  surface_manager()->PrepareSurface(notification_key);
+  PrepareSurface(notification_key);
   message_center::Notification notification =
       CreateNotification(notification_item.get());
   CreateAndShowNotificationView(notification);
 
-  EXPECT_EQ(1u, surface_manager()->surface_found_count());
   EXPECT_FALSE(controller()->IsRemoved(notification_item->GetNotificationId()));
   PressCloseButton();
   EXPECT_TRUE(controller()->IsRemoved(notification_item->GetNotificationId()));
@@ -396,7 +380,7 @@ TEST_F(ArcNotificationContentViewTest, ReuseSurfaceAfterClosing) {
   message_center::Notification notification =
       CreateNotification(notification_item.get());
 
-  surface_manager()->PrepareSurface(notification_key);
+  PrepareSurface(notification_key);
 
   // Use the created surface.
   CreateAndShowNotificationView(notification);
@@ -419,7 +403,7 @@ TEST_F(ArcNotificationContentViewTest, ReuseAndCloseSurfaceBeforeClosing) {
   message_center::Notification notification =
       CreateNotification(notification_item.get());
 
-  surface_manager()->PrepareSurface(notification_key);
+  PrepareSurface(notification_key);
 
   // Create the first view.
   auto result = CreateNotificationView(notification);
@@ -446,7 +430,7 @@ TEST_F(ArcNotificationContentViewTest, ReuseSurfaceBeforeClosing) {
   message_center::Notification notification =
       CreateNotification(notification_item.get());
 
-  surface_manager()->PrepareSurface(notification_key);
+  PrepareSurface(notification_key);
 
   // Create the first view.
   auto result = CreateNotificationView(notification);
