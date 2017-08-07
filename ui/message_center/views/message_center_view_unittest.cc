@@ -458,10 +458,7 @@ TEST_F(MessageCenterViewTest, Size) {
           GetMessageListView()->GetInsets().height());
 }
 
-// TODO(tetsui): The test is broken because there's no guarantee anymore that
-// height would change after setting longer message, as NotificationViewMD
-// implements collapse / expand functionality of long message.
-TEST_F(MessageCenterViewTest, DISABLED_SizeAfterUpdate) {
+TEST_F(MessageCenterViewTest, SizeAfterUpdate) {
   EXPECT_EQ(2, GetMessageListView()->child_count());
   int width =
       GetMessageListView()->width() - GetMessageListView()->GetInsets().width();
