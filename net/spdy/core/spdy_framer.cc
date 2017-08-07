@@ -100,7 +100,7 @@ SpdyFramer::SpdyFramer(CompressionOption option)
   static_assert(
       kMaxControlFrameSize <= kSpdyInitialFrameSizeLimit + kFrameHeaderSize,
       "Our send limit should be at most our receive limit");
-  decoder_adapter_ = CreateHttp2FrameDecoderAdapter(this);
+  decoder_adapter_ = CreateHttp2FrameDecoderAdapter();
 }
 
 SpdyFramer::~SpdyFramer() {}

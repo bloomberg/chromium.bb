@@ -11,13 +11,11 @@
 
 #include <memory>
 
-#include "net/spdy/core/spdy_framer.h"
 #include "net/spdy/core/spdy_framer_decoder_adapter.h"
 
 namespace net {
 
-std::unique_ptr<SpdyFramerDecoderAdapter> CreateHttp2FrameDecoderAdapter(
-    SpdyFramer* outer_framer);
+std::unique_ptr<SpdyFramerDecoderAdapter> CreateHttp2FrameDecoderAdapter();
 
 }  // namespace net
 

@@ -82,9 +82,8 @@ class Http2DecoderAdapter : public SpdyFramerDecoderAdapter,
   typedef SpdyFramer::SpdyFramerError SpdyFramerError;
 
  public:
-  explicit Http2DecoderAdapter(SpdyFramer* outer_framer)
-      : SpdyFramerDecoderAdapter(), outer_framer_(outer_framer) {
-    DVLOG(1) << "Http2DecoderAdapter ctor, outer_framer=" << outer_framer;
+  Http2DecoderAdapter() : SpdyFramerDecoderAdapter() {
+    DVLOG(1) << "Http2DecoderAdapter ctor";
     ResetInternal();
   }
   ~Http2DecoderAdapter() override {}
@@ -106,7 +105,7 @@ class Http2DecoderAdapter : public SpdyFramerDecoderAdapter,
   }
 
   size_t ProcessInput(const char* data, size_t len) override {
-    size_t limit = outer_framer_->recv_frame_size_limit();
+    size_t limit = recv_frame_size_limit_;
     frame_decoder_->set_maximum_payload_size(limit);
 
     size_t total_processed = 0;
@@ -571,7 +570,7 @@ class Http2DecoderAdapter : public SpdyFramerDecoderAdapter,
 
   void OnFrameSizeError(const Http2FrameHeader& header) override {
     DVLOG(1) << "OnFrameSizeError: " << header;
-    size_t recv_limit = outer_framer_->recv_frame_size_limit();
+    size_t recv_limit = recv_frame_size_limit_;
     if (header.payload_length > recv_limit) {
       SetSpdyErrorAndNotify(SpdyFramerError::SPDY_OVERSIZED_PAYLOAD);
       return;
@@ -911,9 +910,6 @@ class Http2DecoderAdapter : public SpdyFramerDecoderAdapter,
     }
   }
 
-  // The SpdyFramer that created this Http2FrameDecoderAdapter.
-  SpdyFramer* const outer_framer_;
-
   // If non-null, unknown frames and settings are passed to the extension.
   ExtensionVisitorInterface* extension_ = nullptr;
 
@@ -957,6 +953,10 @@ class Http2DecoderAdapter : public SpdyFramerDecoderAdapter,
   SpdyState spdy_state_;
   SpdyFramerError spdy_framer_error_;
 
+  // The limit on the size of received HTTP/2 payloads as specified in the
+  // SETTINGS_MAX_FRAME_SIZE advertised to peer.
+  size_t recv_frame_size_limit_ = kSpdyInitialFrameSizeLimit;
+
   // Has OnFrameHeader been called?
   bool decoded_frame_header_ = false;
 
@@ -993,9 +993,8 @@ class Http2DecoderAdapter : public SpdyFramerDecoderAdapter,
 
 }  // namespace
 
-std::unique_ptr<SpdyFramerDecoderAdapter> CreateHttp2FrameDecoderAdapter(
-    SpdyFramer* outer_framer) {
-  return SpdyMakeUnique<Http2DecoderAdapter>(outer_framer);
+std::unique_ptr<SpdyFramerDecoderAdapter> CreateHttp2FrameDecoderAdapter() {
+  return SpdyMakeUnique<Http2DecoderAdapter>();
 }
 
 }  // namespace net
