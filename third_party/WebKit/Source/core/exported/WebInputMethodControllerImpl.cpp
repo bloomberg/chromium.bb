@@ -16,7 +16,7 @@
 #include "core/editing/PlainTextRange.h"
 #include "core/exported/WebPluginContainerImpl.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "public/platform/WebString.h"
@@ -26,7 +26,7 @@
 namespace blink {
 
 WebInputMethodControllerImpl::WebInputMethodControllerImpl(
-    WebLocalFrameBase& web_frame)
+    WebLocalFrameImpl& web_frame)
     : web_frame_(&web_frame) {}
 
 WebInputMethodControllerImpl::~WebInputMethodControllerImpl() {}

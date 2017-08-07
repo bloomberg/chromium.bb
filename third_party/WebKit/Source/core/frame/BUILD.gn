@@ -137,7 +137,6 @@ blink_core_sources("frame") {
     "WebFrameWidgetBase.h",
     "WebFrameWidgetImpl.cpp",
     "WebFrameWidgetImpl.h",
-    "WebLocalFrameBase.cpp",
     "WebLocalFrameBase.h",
     "WebLocalFrameImpl.cpp",
     "WebLocalFrameImpl.h",

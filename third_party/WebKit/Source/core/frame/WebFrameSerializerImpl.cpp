@@ -83,7 +83,7 @@
 #include "core/dom/Element.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/frame/FrameSerializer.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFormElement.h"
@@ -446,7 +446,7 @@ WebFrameSerializerImpl::WebFrameSerializerImpl(
       xml_entities_(true) {
   // Must specify available webframe.
   DCHECK(frame);
-  specified_web_local_frame_impl_ = ToWebLocalFrameBase(frame);
+  specified_web_local_frame_impl_ = ToWebLocalFrameImpl(frame);
   // Make sure we have non null client and delegate.
   DCHECK(client);
   DCHECK(delegate);

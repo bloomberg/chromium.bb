@@ -35,7 +35,7 @@
 #include "bindings/modules/v8/V8FileEntry.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/FileEntry.h"
@@ -67,9 +67,9 @@ WebDOMFileSystem WebDOMFileSystem::Create(WebLocalFrame* frame,
                                           const WebURL& root_url,
                                           SerializableType serializable_type) {
   DCHECK(frame);
-  DCHECK(ToWebLocalFrameBase(frame)->GetFrame());
+  DCHECK(ToWebLocalFrameImpl(frame)->GetFrame());
   DOMFileSystem* dom_file_system = DOMFileSystem::Create(
-      ToWebLocalFrameBase(frame)->GetFrame()->GetDocument(), name,
+      ToWebLocalFrameImpl(frame)->GetFrame()->GetDocument(), name,
       static_cast<FileSystemType>(type), root_url);
   if (serializable_type == kSerializableTypeSerializable)
     dom_file_system->MakeClonable();

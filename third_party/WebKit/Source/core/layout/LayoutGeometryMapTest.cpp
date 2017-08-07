@@ -34,7 +34,6 @@
 #include "core/dom/Document.h"
 #include "core/exported/WebViewImpl.h"
 #include "core/frame/FrameTestHelpers.h"
-#include "core/frame/WebLocalFrameBase.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutView.h"

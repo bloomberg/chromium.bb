@@ -41,7 +41,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/StyleEngine.h"
 #include "core/events/Event.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLCollection.h"
@@ -103,7 +103,7 @@ WebURL WebDocument::OpenSearchDescriptionURL() const {
 }
 
 WebLocalFrame* WebDocument::GetFrame() const {
-  return WebLocalFrameBase::FromFrame(ConstUnwrap<Document>()->GetFrame());
+  return WebLocalFrameImpl::FromFrame(ConstUnwrap<Document>()->GetFrame());
 }
 
 bool WebDocument::IsHTMLDocument() const {

@@ -7,7 +7,7 @@
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/inspector/DevToolsEmulator.h"
 #include "core/inspector/protocol/DOM.h"
 #include "core/page/Page.h"
@@ -33,13 +33,13 @@ static const char kDefaultBackgroundColorOverrideRGBA[] =
 }
 
 InspectorEmulationAgent* InspectorEmulationAgent::Create(
-    WebLocalFrameBase* web_local_frame_impl,
+    WebLocalFrameImpl* web_local_frame_impl,
     Client* client) {
   return new InspectorEmulationAgent(web_local_frame_impl, client);
 }
 
 InspectorEmulationAgent::InspectorEmulationAgent(
-    WebLocalFrameBase* web_local_frame_impl,
+    WebLocalFrameImpl* web_local_frame_impl,
     Client* client)
     : web_local_frame_(web_local_frame_impl), client_(client) {}
 

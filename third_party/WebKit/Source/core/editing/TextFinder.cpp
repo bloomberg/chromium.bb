@@ -43,7 +43,7 @@
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrameView.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/page/Page.h"
@@ -641,7 +641,7 @@ void TextFinder::UpdateFindMatchRects() {
   if (!find_match_rects_are_valid_) {
     for (WebFrame* child = OwnerFrame().FirstChild(); child;
          child = child->NextSibling()) {
-      ToWebLocalFrameBase(child)
+      ToWebLocalFrameImpl(child)
           ->EnsureTextFinder()
           .find_match_rects_are_valid_ = false;
     }
@@ -757,11 +757,11 @@ int TextFinder::SelectFindMatch(unsigned index, WebRect* selection_rect) {
   return active_match_index_ + 1;
 }
 
-TextFinder* TextFinder::Create(WebLocalFrameBase& owner_frame) {
+TextFinder* TextFinder::Create(WebLocalFrameImpl& owner_frame) {
   return new TextFinder(owner_frame);
 }
 
-TextFinder::TextFinder(WebLocalFrameBase& owner_frame)
+TextFinder::TextFinder(WebLocalFrameImpl& owner_frame)
     : owner_frame_(&owner_frame),
       current_active_match_frame_(false),
       active_match_index_(-1),

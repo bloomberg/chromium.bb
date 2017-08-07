@@ -33,7 +33,7 @@
 #define LocalFrameClientImpl_h
 
 #include "core/frame/LocalFrameClient.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/RefPtr.h"
@@ -44,18 +44,18 @@
 namespace blink {
 
 class WebDevToolsAgentImpl;
-class WebLocalFrameBase;
+class WebLocalFrameImpl;
 class WebSpellCheckPanelHostClient;
 
 class LocalFrameClientImpl final : public LocalFrameClient {
  public:
-  static LocalFrameClientImpl* Create(WebLocalFrameBase*);
+  static LocalFrameClientImpl* Create(WebLocalFrameImpl*);
 
   ~LocalFrameClientImpl() override;
 
   DECLARE_VIRTUAL_TRACE();
 
-  WebLocalFrameBase* GetWebFrame() const override;
+  WebLocalFrameImpl* GetWebFrame() const override;
 
   // LocalFrameClient ----------------------------------------------
 
@@ -246,14 +246,14 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DidBlockFramebust(const KURL&) override;
 
  private:
-  explicit LocalFrameClientImpl(WebLocalFrameBase*);
+  explicit LocalFrameClientImpl(WebLocalFrameImpl*);
 
   bool IsLocalFrameClientImpl() const override { return true; }
   WebDevToolsAgentImpl* DevToolsAgent();
 
   // The WebFrame that owns this object and manages its lifetime. Therefore,
   // the web frame object is guaranteed to exist.
-  Member<WebLocalFrameBase> web_frame_;
+  Member<WebLocalFrameImpl> web_frame_;
 
   String user_agent_;
 };

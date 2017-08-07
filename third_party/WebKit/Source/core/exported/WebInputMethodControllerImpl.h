@@ -15,7 +15,7 @@ namespace blink {
 
 class InputMethodController;
 class LocalFrame;
-class WebLocalFrameBase;
+class WebLocalFrameImpl;
 class WebPlugin;
 class WebRange;
 class WebString;
@@ -26,7 +26,7 @@ class CORE_EXPORT WebInputMethodControllerImpl
   DISALLOW_NEW();
 
  public:
-  explicit WebInputMethodControllerImpl(WebLocalFrameBase& web_frame);
+  explicit WebInputMethodControllerImpl(WebLocalFrameImpl& web_frame);
   ~WebInputMethodControllerImpl() override;
 
   // WebInputMethodController overrides.
@@ -52,7 +52,7 @@ class CORE_EXPORT WebInputMethodControllerImpl
   InputMethodController& GetInputMethodController() const;
   WebPlugin* FocusedPluginIfInputMethodSupported() const;
 
-  const Member<WebLocalFrameBase> web_frame_;
+  const Member<WebLocalFrameImpl> web_frame_;
 };
 }  // namespace blink
 

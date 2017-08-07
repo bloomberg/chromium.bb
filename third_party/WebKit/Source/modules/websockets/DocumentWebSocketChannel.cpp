@@ -35,7 +35,7 @@
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/BaseFetchContext.h"
 #include "core/loader/DocumentLoader.h"
@@ -259,8 +259,7 @@ bool DocumentWebSocketChannel::Connect(const KURL& url,
     // TODO(ricea): Figure out who owns this WebFrame object and how long it can
     // be expected to live.
     LocalFrame* frame = GetDocument()->GetFrame();
-    WebLocalFrame* web_frame =
-        frame->GetPage()->GetChromeClient().GetWebLocalFrameBase(frame);
+    WebLocalFrame* web_frame = WebLocalFrameImpl::FromFrame(frame);
     handshake_throttle_->ThrottleHandshake(url, web_frame, this);
   } else {
     // Treat no throttle as success.

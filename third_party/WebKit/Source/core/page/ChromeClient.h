@@ -79,7 +79,6 @@ class WebFrameScheduler;
 class WebImage;
 class WebLayer;
 class WebLayerTreeView;
-class WebLocalFrameBase;
 class WebViewBase;
 
 struct CompositedSelection;
@@ -349,10 +348,6 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   virtual void InstallSupplements(LocalFrame&);
 
   virtual WebLayerTreeView* GetWebLayerTreeView(LocalFrame*) { return nullptr; }
-
-  virtual WebLocalFrameBase* GetWebLocalFrameBase(LocalFrame*) {
-    return nullptr;
-  }
 
   virtual void RequestDecode(LocalFrame*,
                              const PaintImage& image,

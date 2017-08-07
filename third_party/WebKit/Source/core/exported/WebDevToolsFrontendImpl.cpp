@@ -35,7 +35,7 @@
 #include "bindings/core/v8/V8DevToolsHost.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "core/inspector/DevToolsHost.h"
 #include "core/page/Page.h"
 #include "public/platform/WebSecurityOrigin.h"
@@ -47,11 +47,11 @@ namespace blink {
 WebDevToolsFrontend* WebDevToolsFrontend::Create(
     WebLocalFrame* frame,
     WebDevToolsFrontendClient* client) {
-  return new WebDevToolsFrontendImpl(ToWebLocalFrameBase(frame), client);
+  return new WebDevToolsFrontendImpl(ToWebLocalFrameImpl(frame), client);
 }
 
 WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
-    WebLocalFrameBase* web_frame,
+    WebLocalFrameImpl* web_frame,
     WebDevToolsFrontendClient* client)
     : web_frame_(web_frame), client_(client) {
   web_frame_->SetDevToolsFrontend(this);
@@ -63,7 +63,7 @@ WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl() {
     devtools_host_->DisconnectClient();
 }
 
-void WebDevToolsFrontendImpl::DidClearWindowObject(WebLocalFrameBase* frame) {
+void WebDevToolsFrontendImpl::DidClearWindowObject(WebLocalFrameImpl* frame) {
   if (web_frame_ != frame)
     return;
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
@@ -98,7 +98,7 @@ void WebDevToolsFrontendImpl::ShowContextMenu(
     float x,
     float y,
     ContextMenuProvider* menu_provider) {
-  WebLocalFrameBase::FromFrame(target_frame)
+  WebLocalFrameImpl::FromFrame(target_frame)
       ->ViewImpl()
       ->ShowContextMenuAtPoint(x, y, menu_provider);
 }

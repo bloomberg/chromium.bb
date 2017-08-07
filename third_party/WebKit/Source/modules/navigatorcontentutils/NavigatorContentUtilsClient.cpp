@@ -4,18 +4,18 @@
 
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
 
-#include "core/frame/WebLocalFrameBase.h"
+#include "core/frame/WebLocalFrameImpl.h"
 #include "public/web/WebFrameClient.h"
 
 namespace blink {
 
 NavigatorContentUtilsClient* NavigatorContentUtilsClient::Create(
-    WebLocalFrameBase* web_frame) {
+    WebLocalFrameImpl* web_frame) {
   return new NavigatorContentUtilsClient(web_frame);
 }
 
 NavigatorContentUtilsClient::NavigatorContentUtilsClient(
-    WebLocalFrameBase* web_frame)
+    WebLocalFrameImpl* web_frame)
     : web_frame_(web_frame) {}
 
 DEFINE_TRACE(NavigatorContentUtilsClient) {

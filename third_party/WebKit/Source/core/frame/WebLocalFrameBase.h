@@ -39,9 +39,6 @@ class WebViewBase;
 class WebLocalFrameBase : public GarbageCollectedFinalized<WebLocalFrameBase>,
                           public WebLocalFrame {
  public:
-  CORE_EXPORT static WebLocalFrameBase* FromFrame(LocalFrame*);
-  CORE_EXPORT static WebLocalFrameBase* FromFrame(LocalFrame&);
-
   virtual WebViewBase* ViewImpl() const = 0;
   virtual WebFrameClient* Client() const = 0;
   virtual void SetClient(WebFrameClient*) = 0;
