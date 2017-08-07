@@ -1601,6 +1601,7 @@ enum WebFeature {
   kPresentationRequestStartInsecureOrigin = 2064,
   kPersistentClientHintHeader = 2065,
   kStyleSheetListNonNullAnonymousNamedGetter = 2066,
+  kOffMainThreadFetch = 2067,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

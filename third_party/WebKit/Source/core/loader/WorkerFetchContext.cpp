@@ -216,6 +216,7 @@ SecurityOrigin* WorkerFetchContext::GetSecurityOrigin() const {
 
 std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader(
     const ResourceRequest& request) {
+  CountUsage(WebFeature::kOffMainThreadFetch);
   WrappedResourceRequest wrapped(request);
   return web_context_->CreateURLLoader(
       wrapped, loading_task_runner_->ToSingleThreadTaskRunner());
