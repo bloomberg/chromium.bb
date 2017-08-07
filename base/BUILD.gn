@@ -1836,19 +1836,6 @@ if (!is_ios) {
   }
 }
 
-source_set("message_loop_tests") {
-  testonly = true
-  sources = [
-    "message_loop/message_loop_test.cc",
-    "message_loop/message_loop_test.h",
-  ]
-
-  deps = [
-    ":base",
-    "//testing/gtest",
-  ]
-}
-
 if (is_win) {
   # Target to manually rebuild pe_image_test.dll which is checked into
   # base/test/data/pe_image.
@@ -2265,7 +2252,6 @@ test("base_unittests") {
   deps = [
     ":base",
     ":i18n",
-    ":message_loop_tests",
     "//base/allocator:features",
     "//base/test:native_library_test_utils",
     "//base/test:run_all_base_unittests",
