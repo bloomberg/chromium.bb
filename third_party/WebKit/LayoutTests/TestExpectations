@@ -3053,5 +3053,5 @@ crbug.com/750310 [ Win7 Debug ] virtual/off-main-thread-fetch/http/tests/inspect
 crbug.com/626703 [ Win7 ] external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Timeout ]
 
 # Sheriff failure 2017-08-07
-crbug.com/708499 [ Mac10.11 Retina Debug ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Failure Pass ]
+crbug.com/708499 [ Win7 Mac10.11 Retina Debug ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Failure Pass ]
 crbug.com/752845 [ Win7 Debug ] inspector/sha1.html [ Crash ]
