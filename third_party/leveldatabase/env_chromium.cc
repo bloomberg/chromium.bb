@@ -102,7 +102,7 @@ static base::File::Error GetDirectoryEntries(const FilePath& dir_param,
   }
   int saved_errno = errno;
   closedir(dir);
-  if (errno != 0)
+  if (saved_errno != 0)
     return base::File::OSErrorToFileError(saved_errno);
   return base::File::FILE_OK;
 #endif
