@@ -80,8 +80,7 @@ class ASH_EXPORT ShellObserver {
 
   // Called when the user profile pref service is available. Also called after
   // multiprofile user switch. Never called with the login screen profile.
-  // On mash will be called with null at the start of user switch then again
-  // with a pref service once the connection to the mojo pref service is made.
+  // May be called with null in tests.
   // TODO(jamescook): Either maintain pref service connections for all multiuser
   // profiles or make the pref service switch atomic with active user switch.
   // http://crbug.com/705347
