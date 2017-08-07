@@ -104,5 +104,5 @@ class VMInformationalBuilder(simple_builders.SimpleBuilder):
     self._RunStage(android_stages.UprevAndroidStage)
     self._RunStage(android_stages.AndroidMetadataStage)
     self._RunStage(build_stages.BuildPackagesStage, board)
-    self._RunStage(build_stages.BuildImage, board)
+    self._RunStage(build_stages.BuildImageStage, board)
     self._RunStage(test_stages.VMTestStage, board)
