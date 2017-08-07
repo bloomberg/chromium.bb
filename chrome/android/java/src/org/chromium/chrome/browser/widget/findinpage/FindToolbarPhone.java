@@ -66,8 +66,8 @@ public class FindToolbarPhone extends FindToolbar {
     @Override
     protected int getStatusColor(boolean failed, boolean incognito) {
         if (!failed && incognito) {
-            return ApiCompatibilityUtils.getColor(getContext().getResources(),
-                    R.color.find_in_page_results_status_white_color);
+            return ApiCompatibilityUtils.getColor(
+                    getContext().getResources(), R.color.white_alpha_50);
         }
 
         return super.getStatusColor(failed, incognito);

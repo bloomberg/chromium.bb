@@ -107,7 +107,6 @@
     <!-- Contextual search dimensions -->
     <dimen name="contextual_search_peek_promo_height">48dp</dimen>
     <dimen name="contextual_search_peek_promo_padding">12dp</dimen>
-    <dimen name="contextual_search_caption_text_size">14sp</dimen>
     <dimen name="contextual_search_bar_image_size">36dp</dimen>
     <!-- The following two dimensions were taking from the UI specs for contextual search, where
     they were 36dp and 3dp respectively, but have been updated to allow for padding around
@@ -121,7 +120,6 @@
 
     <!-- Overlay panel dimensions -->
     <dimen name="overlay_panel_bar_height">56dp</dimen>
-    <dimen name="overlay_panel_text_size">18sp</dimen>
     <dimen name="overlay_panel_bar_handle_offset_y">6dp</dimen>
     <dimen name="overlay_panel_bar_padding_bottom">4dp</dimen>
 
@@ -175,9 +173,6 @@
     <dimen name="fre_button_bar_height">52dp</dimen>
     <dimen name="fre_button_padding">12dp</dimen>
     <dimen name="fre_margin">24dp</dimen>
-    <dimen name="fre_title_text_size">24sp</dimen>
-    <dimen name="fre_button_text_size">14sp</dimen>
-    <dimen name="fre_normal_text_size">14sp</dimen>
     <dimen name="fre_image_height">120dp</dimen>
     <dimen name="fre_tos_checkbox_padding">12dp</dimen>
 

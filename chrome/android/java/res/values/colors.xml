@@ -15,9 +15,6 @@
     <color name="dark_action_bar_color">#263238</color>
     <color name="descriptive_text_color">#646464</color>
     <color name="error_text_color">#c53929</color>
-    <color name="google_blue_300">#7BAAF7</color>
-    <color name="google_blue_500">#4285f4</color>
-    <color name="google_blue_700">#3367d6</color>
     <color name="google_blue_grey_500">#607D8B</color>
     <color name="google_red_700">#c53929</color>
     <color name="google_green_700">#0b8043</color>
@@ -29,7 +26,6 @@
     <color name="google_grey_600">#757575</color>
     <color name="toolbar_shadow_color">#1d000000</color>
     <color name="white_alpha_50">#80ffffff</color>
-    <color name="white_alpha_70">#B3FFFFFF</color>
     <color name="toolbar_light_tint">#A3000000</color>
     <color name="light_grey">#ccc</color>
     <color name="modal_dialog_scrim_color">#7f000000</color>
@@ -37,10 +33,7 @@
     <!-- New list of common text colors -->
     <color name="black_alpha_20">#33000000</color>
     <color name="black_alpha_30">#4d000000</color>
-    <color name="black_alpha_38">#61000000</color>
     <color name="black_alpha_40">#66000000</color>
-    <color name="black_alpha_54">#8a000000</color>
-    <color name="black_alpha_87">#de000000</color>
 
     <!-- Infobar colors -->
     <color name="infobar_accent_blue">#4285f4</color>
@@ -91,7 +84,6 @@
 
     <!-- Preferences Colors -->
     <color name="pref_accent_color">@color/light_active_color</color>
-    <color name="expandable_group_dark_gray">#484848</color>
 
     <!-- Data Saver Colors -->
     <color name="data_reduction_compressed_color">@color/pref_accent_color</color>
@@ -106,7 +98,6 @@
 
     <!-- First Run Experience Colors -->
     <color name="fre_text_color">#000000</color>
-    <color name="fre_title_color">#161616</color>
 
     <!-- Account Signin Colors -->
     <!-- As in dimens.xml, signin uses values from the First Run Experience -->
@@ -174,8 +165,6 @@
     <color name="find_result_bar_active_border_color">#c37e3b</color>
     <color name="find_in_page_query_color">#333333</color>
     <color name="find_in_page_query_white_color">#ffffff</color>
-    <color name="find_in_page_results_status_color">#969696</color>
-    <color name="find_in_page_results_status_white_color">#7f7f7f</color>
     <color name="find_in_page_failed_results_status_color">#db4437</color>
 
     <!-- App Background Colors -->
