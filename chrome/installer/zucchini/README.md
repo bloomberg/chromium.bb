@@ -111,3 +111,8 @@ and given the following association of targets between "old" and "new":
   - 0x1111 <=> 0x6666,  0x3333 <=> 0x2222.
 then we could assign indices for "new" Labels as:
   - (0x2222, 4}, (0x4444, 8), (0x6666, 0), (0x8888, 2)
+
+**Encoded Image**: The result of projecting the content of an image to scalar
+values that describe content on a higher level of abstraction, masking away
+undesirable noise in raw content. Notably, the projection encodes references
+based on their associated label.

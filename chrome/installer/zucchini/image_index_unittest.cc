@@ -90,7 +90,7 @@ TEST_F(ImageIndexTest, GetType) {
       0,  0,         // ref 0
       2,  2,  2,     // ref 2
       -1, -1,        // raw
-      2,  2,  2,     // ref 0
+      2,  2,  2,     // ref 2
   };
 
   for (offset_t i = 0; i < image_index_.size(); ++i)
@@ -109,7 +109,7 @@ TEST_F(ImageIndexTest, IsToken) {
       1, 0,        // ref 0
       1, 0, 0,     // ref 2
       1, 1,        // raw
-      1, 0, 0,     // ref 0
+      1, 0, 0,     // ref 2
   };
 
   for (offset_t i = 0; i < image_index_.size(); ++i)
@@ -128,7 +128,7 @@ TEST_F(ImageIndexTest, IsReference) {
       1, 1,        // ref 0
       1, 1, 1,     // ref 2
       0, 0,        // raw
-      1, 1, 1,     // ref 0
+      1, 1, 1,     // ref 2
   };
 
   for (offset_t i = 0; i < image_index_.size(); ++i) {
