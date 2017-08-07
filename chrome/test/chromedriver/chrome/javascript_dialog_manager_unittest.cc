@@ -9,13 +9,15 @@
 
 #include "base/callback.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/chrome/browser_info.h"
 #include "chrome/test/chromedriver/chrome/recorder_devtools_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(JavaScriptDialogManager, NoDialog) {
   StubDevToolsClient client;
-  JavaScriptDialogManager manager(&client);
+  BrowserInfo browser_info;
+  JavaScriptDialogManager manager(&client, &browser_info);
   std::string message("HI");
   ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
   ASSERT_FALSE(manager.IsDialogOpen());
@@ -25,10 +27,12 @@ TEST(JavaScriptDialogManager, NoDialog) {
 
 TEST(JavaScriptDialogManager, HandleDialogPassesParams) {
   RecorderDevToolsClient client;
-  JavaScriptDialogManager manager(&client);
+  BrowserInfo browser_info;
+  JavaScriptDialogManager manager(&client, &browser_info);
   base::DictionaryValue params;
   params.SetString("message", "hi");
   params.SetString("type", "prompt");
+  params.SetString("defaultPrompt", "This is a default text");
   ASSERT_EQ(
       kOk,
       manager.OnEvent(&client, "Page.javascriptDialogOpening", params).code());
@@ -42,24 +46,28 @@ TEST(JavaScriptDialogManager, HandleDialogPassesParams) {
 
 TEST(JavaScriptDialogManager, HandleDialogNullPrompt) {
   RecorderDevToolsClient client;
-  JavaScriptDialogManager manager(&client);
+  BrowserInfo browser_info;
+  JavaScriptDialogManager manager(&client, &browser_info);
   base::DictionaryValue params;
   params.SetString("message", "hi");
   params.SetString("type", "prompt");
+  params.SetString("defaultPrompt", "");
   ASSERT_EQ(
       kOk,
       manager.OnEvent(&client, "Page.javascriptDialogOpening", params).code());
   ASSERT_EQ(kOk, manager.HandleDialog(false, NULL).code());
-  ASSERT_FALSE(client.commands_[0].params.HasKey("promptText"));
+  ASSERT_TRUE(client.commands_[0].params.HasKey("promptText"));
   ASSERT_TRUE(client.commands_[0].params.HasKey("accept"));
 }
 
 TEST(JavaScriptDialogManager, ReconnectClearsStateAndSendsEnable) {
   RecorderDevToolsClient client;
-  JavaScriptDialogManager manager(&client);
+  BrowserInfo browser_info;
+  JavaScriptDialogManager manager(&client, &browser_info);
   base::DictionaryValue params;
   params.SetString("message", "hi");
   params.SetString("type", "alert");
+  params.SetString("defaultPrompt", "");
   ASSERT_EQ(
       kOk,
       manager.OnEvent(&client, "Page.javascriptDialogOpening", params).code());
@@ -113,10 +121,12 @@ class FakeDevToolsClient : public StubDevToolsClient {
 
 TEST(JavaScriptDialogManager, OneDialog) {
   FakeDevToolsClient client;
-  JavaScriptDialogManager manager(&client);
+  BrowserInfo browser_info;
+  JavaScriptDialogManager manager(&client, &browser_info);
   base::DictionaryValue params;
   params.SetString("message", "hi");
   params.SetString("type", "alert");
+  params.SetString("defaultPrompt", "");
   ASSERT_FALSE(manager.IsDialogOpen());
   std::string message;
   ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
@@ -140,10 +150,12 @@ TEST(JavaScriptDialogManager, OneDialog) {
 
 TEST(JavaScriptDialogManager, TwoDialogs) {
   FakeDevToolsClient client;
-  JavaScriptDialogManager manager(&client);
+  BrowserInfo browser_info;
+  JavaScriptDialogManager manager(&client, &browser_info);
   base::DictionaryValue params;
   params.SetString("message", "1");
   params.SetString("type", "confirm");
+  params.SetString("defaultPrompt", "");
   ASSERT_EQ(
       kOk,
       manager.OnEvent(&client, "Page.javascriptDialogOpening", params).code());
@@ -177,10 +189,12 @@ TEST(JavaScriptDialogManager, TwoDialogs) {
 
 TEST(JavaScriptDialogManager, OneDialogManualClose) {
   StubDevToolsClient client;
-  JavaScriptDialogManager manager(&client);
+  BrowserInfo browser_info;
+  JavaScriptDialogManager manager(&client, &browser_info);
   base::DictionaryValue params;
   params.SetString("message", "hi");
   params.SetString("type", "alert");
+  params.SetString("defaultPrompt", "");
   ASSERT_FALSE(manager.IsDialogOpen());
   std::string message;
   ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
