@@ -14,6 +14,7 @@
 
 #include "./aom_dsp_rtcd.h"
 #include "./av1_rtcd.h"
+#include "av1/common/blockd.h"
 #include "av1/common/convolve.h"
 #include "av1/common/filter.h"
 #include "av1/common/onyxc_int.h"
@@ -422,24 +423,6 @@ void av1_convolve_2d_c(const uint8_t *src, int src_stride, CONV_BUF_TYPE *dst,
 }
 #endif
 
-static INLINE void transpose_uint8(uint8_t *dst, int dst_stride,
-                                   const uint8_t *src, int src_stride, int w,
-                                   int h) {
-  int r, c;
-  for (r = 0; r < h; ++r)
-    for (c = 0; c < w; ++c)
-      dst[c * (dst_stride) + r] = src[r * (src_stride) + c];
-}
-
-static INLINE void transpose_int32(int32_t *dst, int dst_stride,
-                                   const int32_t *src, int src_stride, int w,
-                                   int h) {
-  int r, c;
-  for (r = 0; r < h; ++r)
-    for (c = 0; c < w; ++c)
-      dst[c * (dst_stride) + r] = src[r * (src_stride) + c];
-}
-
 void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
                             int dst_stride, int w, int h,
                             const InterpFilter *interp_filter,
@@ -500,14 +483,6 @@ void av1_convolve_2d_facade(const uint8_t *src, int src_stride, uint8_t *dst,
 }
 
 #if CONFIG_HIGHBITDEPTH
-static INLINE void transpose_uint16(uint16_t *dst, int dst_stride,
-                                    const uint16_t *src, int src_stride, int w,
-                                    int h) {
-  int r, c;
-  for (r = 0; r < h; ++r)
-    for (c = 0; c < w; ++c) dst[c * dst_stride + r] = src[r * src_stride + c];
-}
-
 void av1_highbd_convolve_rounding_c(const int32_t *src, int src_stride,
                                     uint8_t *dst8, int dst_stride, int w, int h,
                                     int bits, int bd) {
