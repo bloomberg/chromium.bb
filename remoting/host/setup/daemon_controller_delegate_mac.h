@@ -5,8 +5,6 @@
 #ifndef REMOTING_HOST_SETUP_DAEMON_CONTROLLER_DELEGATE_MAC_H_
 #define REMOTING_HOST_SETUP_DAEMON_CONTROLLER_DELEGATE_MAC_H_
 
-#include <CoreFoundation/CoreFoundation.h>
-
 #include <memory>
 
 #include "base/macros.h"
@@ -33,22 +31,6 @@ class DaemonControllerDelegateMac : public DaemonController::Delegate {
   DaemonController::UsageStatsConsent GetUsageStatsConsent() override;
 
  private:
-  void ShowPreferencePane(const std::string& config_data,
-                          const DaemonController::CompletionCallback& done);
-  void RegisterForPreferencePaneNotifications(
-      const DaemonController::CompletionCallback &done);
-  void DeregisterForPreferencePaneNotifications();
-  void PreferencePaneCallbackDelegate(CFStringRef name);
-
-  static bool DoShowPreferencePane(const std::string& config_data);
-  static void PreferencePaneCallback(CFNotificationCenterRef center,
-                                     void* observer,
-                                     CFStringRef name,
-                                     const void* object,
-                                     CFDictionaryRef user_info);
-
-  DaemonController::CompletionCallback current_callback_;
-
   DISALLOW_COPY_AND_ASSIGN(DaemonControllerDelegateMac);
 };
 
