@@ -55,7 +55,7 @@
 #include "modules/installation/InstallationServiceImpl.h"
 #include "modules/installedapp/InstalledAppController.h"
 #include "modules/media_controls/MediaControlsImpl.h"
-#include "modules/mediastream/UserMediaClientImpl.h"
+#include "modules/mediastream/UserMediaClient.h"
 #include "modules/mediastream/UserMediaController.h"
 #include "modules/navigatorcontentutils/NavigatorContentUtils.h"
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
@@ -155,8 +155,7 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   WebFrameClient* client = web_frame->Client();
   DCHECK(client);
   ProvidePushControllerTo(frame, client->PushClient());
-  ProvideUserMediaTo(frame,
-                     UserMediaClientImpl::Create(client->UserMediaClient()));
+  ProvideUserMediaTo(frame, UserMediaClient::Create(client->UserMediaClient()));
   ProvideIndexedDBClientTo(frame, IndexedDBClient::Create(frame));
   ProvideLocalFileSystemTo(frame, LocalFileSystemClient::Create());
   NavigatorContentUtils::ProvideTo(
