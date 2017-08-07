@@ -39,9 +39,11 @@
 #include "platform/instrumentation/PlatformInstrumentation.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/scheduler/child/web_scheduler.h"
+#include "platform/wtf/Assertions.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/web/WebSettings.h"
 
 namespace blink {
 
@@ -650,5 +652,12 @@ void BitmapImage::NotifyObserversOfAnimationAdvance(TimerBase*) {
   if (GetImageObserver())
     GetImageObserver()->AnimationAdvanced(this);
 }
+
+STATIC_ASSERT_ENUM(WebSettings::kImageAnimationPolicyAllowed,
+                   kImageAnimationPolicyAllowed);
+STATIC_ASSERT_ENUM(WebSettings::kImageAnimationPolicyAnimateOnce,
+                   kImageAnimationPolicyAnimateOnce);
+STATIC_ASSERT_ENUM(WebSettings::kImageAnimationPolicyNoAnimation,
+                   kImageAnimationPolicyNoAnimation);
 
 }  // namespace blink

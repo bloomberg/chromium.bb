@@ -36,9 +36,11 @@
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceResponse.h"
+#include "platform/wtf/Assertions.h"
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/CString.h"
+#include "public/web/WebSettings.h"
 
 namespace blink {
 
@@ -253,5 +255,15 @@ void ProgressTracker::CompleteProgress(unsigned long identifier) {
   item->estimated_length = item->bytes_received;
   MaybeSendProgress();
 }
+
+STATIC_ASSERT_ENUM(WebSettings::ProgressBarCompletion::kLoadEvent,
+                   ProgressBarCompletion::kLoadEvent);
+STATIC_ASSERT_ENUM(WebSettings::ProgressBarCompletion::kResourcesBeforeDCL,
+                   ProgressBarCompletion::kResourcesBeforeDCL);
+STATIC_ASSERT_ENUM(WebSettings::ProgressBarCompletion::kDOMContentLoaded,
+                   ProgressBarCompletion::kDOMContentLoaded);
+STATIC_ASSERT_ENUM(
+    WebSettings::ProgressBarCompletion::kResourcesBeforeDCLAndSameOriginIFrames,
+    ProgressBarCompletion::kResourcesBeforeDCLAndSameOriginIFrames);
 
 }  // namespace blink
