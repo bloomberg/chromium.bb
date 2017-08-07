@@ -82,9 +82,9 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
   DOMWindow* parent() const;
   DOMWindow* top() const;
 
-  void focus(ExecutionContext*);
+  void focus(LocalDOMWindow* incumbent_window);
   virtual void blur() = 0;
-  void close(ExecutionContext*);
+  void close(LocalDOMWindow* incumbent_window);
 
   // Indexed properties
   DOMWindow* AnonymousIndexedGetter(uint32_t index) const;

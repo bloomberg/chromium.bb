@@ -29,6 +29,7 @@
 #define ExecutionContext_h
 
 #include <memory>
+
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleNotifier.h"
 #include "core/dom/ContextLifecycleObserver.h"
@@ -40,6 +41,7 @@
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebTraceLocation.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -69,6 +71,13 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   DECLARE_VIRTUAL_TRACE();
 
   static ExecutionContext* From(const ScriptState*);
+
+  // Returns the ExecutionContext of the current realm.
+  static ExecutionContext* ForCurrentRealm(
+      const v8::FunctionCallbackInfo<v8::Value>&);
+  // Returns the ExecutionContext of the relevant realm for the receiver object.
+  static ExecutionContext* ForRelevantRealm(
+      const v8::FunctionCallbackInfo<v8::Value>&);
 
   virtual bool IsDocument() const { return false; }
   virtual bool IsWorkerOrWorkletGlobalScope() const { return false; }

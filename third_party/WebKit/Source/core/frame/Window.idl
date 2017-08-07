@@ -48,10 +48,22 @@
     [Replaceable, MeasureAs=BarPropStatusbar] readonly attribute BarProp statusbar;
     [Replaceable, MeasureAs=BarPropToolbar] readonly attribute BarProp toolbar;
     attribute DOMString status;
-    [CrossOrigin, CallWith=ExecutionContext] void close();
+    // https://html.spec.whatwg.org/multipage/window-object.html#dom-window-close
+    // TODO(yukishiino): Replace |CurrentWindow| with the incumbent window or
+    // something once the incumbent realm is implemented.  Currently,
+    // OriginSafeMethodGetter + CurrentWindow are used instead of the incumbent
+    // one.
+    [CrossOrigin, CallWith=CurrentWindow] void close();
     [CrossOrigin] readonly attribute boolean closed;
     void stop();
-    [CrossOrigin, CallWith=ExecutionContext] void focus();
+    // https://html.spec.whatwg.org/multipage/interaction.html#dom-window-focus
+    // https://html.spec.whatwg.org/multipage/interaction.html#focusing-steps
+    // TODO(yukishiino): Remove [CallWith=CurrentWindow] or clarify why
+    // we need it.  focus() is not supposed to use the incumbent realm.
+    // So, we shouldn't need to use CurrentWindow here, however, somehow
+    // DOMWindow::focus() is checking if the incumbent window is eligible to
+    // focus another window.
+    [CrossOrigin, CallWith=CurrentWindow] void focus();
     [CrossOrigin] void blur();
 
     // other browsing contexts

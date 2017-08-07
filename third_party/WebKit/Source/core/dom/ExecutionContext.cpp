@@ -27,7 +27,6 @@
 
 #include "core/dom/ExecutionContext.h"
 
-#include <memory>
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/SuspendableObject.h"
@@ -56,9 +55,22 @@ ExecutionContext::ExecutionContext()
 
 ExecutionContext::~ExecutionContext() {}
 
+// static
 ExecutionContext* ExecutionContext::From(const ScriptState* script_state) {
   v8::HandleScope scope(script_state->GetIsolate());
   return ToExecutionContext(script_state->GetContext());
+}
+
+// static
+ExecutionContext* ExecutionContext::ForCurrentRealm(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  return ToExecutionContext(info.GetIsolate()->GetCurrentContext());
+}
+
+// static
+ExecutionContext* ExecutionContext::ForRelevantRealm(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  return ToExecutionContext(info.Holder()->CreationContext());
 }
 
 void ExecutionContext::SuspendSuspendableObjects() {

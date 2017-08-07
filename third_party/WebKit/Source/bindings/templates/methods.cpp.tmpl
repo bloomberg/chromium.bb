@@ -153,7 +153,7 @@ if (UNLIKELY(numArgsPassed <= {{argument.index}})) {
 {% endif %}{# method.name #}
 {% elif argument.idl_type == 'NodeFilter' %}
 {{argument.name}} = V8NodeFilterCondition::CreateOrNull(info[{{argument.index}}], ScriptState::Current(info.GetIsolate()));
-{% else %}{# argument.idl_type == 'EventListener'/'NodeFilter #}
+{% else %}{# argument.idl_type == 'EventListener'/'NodeFilter' #}
 {# Callback functions must be functions:
    http://www.w3.org/TR/WebIDL/#es-callback-function #}
 {% if argument.is_optional %}
@@ -241,9 +241,15 @@ if (!{{argument.name}}.IsUndefinedOrNull() && !{{argument.name}}.IsObject()) {
 {% endif %}
 {# Local variables #}
 {% if method.is_call_with_execution_context %}
-{# [ConstructorCallWith=ExecutionContext] #}
-{# [CallWith=ExecutionContext] #}
-ExecutionContext* executionContext = CurrentExecutionContext(info.GetIsolate());
+{# [ConstructorCallWith=ExecutionContext] or [CallWith=ExecutionContext] #}
+{% if method.is_constructor %}
+ExecutionContext* executionContext = ToExecutionContext(
+    info.NewTarget().As<v8::Object>()->CreationContext());
+{% elif method.is_static %}
+ExecutionContext* executionContext = ExecutionContext::ForCurrentRealm(info);
+{% else %}
+ExecutionContext* executionContext = ExecutionContext::ForRelevantRealm(info);
+{% endif %}
 {% endif %}
 {% if method.is_call_with_script_arguments %}
 {# [CallWith=ScriptArguments] #}
@@ -251,7 +257,8 @@ ScriptArguments* scriptArguments(ScriptArguments::Create(scriptState, info, {{me
 {% endif %}
 {% if method.is_call_with_document %}
 {# [ConstructorCallWith=Document] #}
-Document& document = *ToDocument(CurrentExecutionContext(info.GetIsolate()));
+Document& document = *ToDocument(ToExecutionContext(
+    info.NewTarget().As<v8::Object>()->CreationContext()));
 {% endif %}
 {# Call #}
 {% if method.idl_type == 'void' %}
