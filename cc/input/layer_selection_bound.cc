@@ -8,15 +8,14 @@
 namespace cc {
 
 LayerSelectionBound::LayerSelectionBound()
-    : type(gfx::SelectionBound::EMPTY), layer_id(0), hidden(false) {}
+    : type(gfx::SelectionBound::EMPTY), layer_id(0) {}
 
 LayerSelectionBound::~LayerSelectionBound() {
 }
 
 bool LayerSelectionBound::operator==(const LayerSelectionBound& other) const {
   return type == other.type && layer_id == other.layer_id &&
-         edge_top == other.edge_top && edge_bottom == other.edge_bottom &&
-         hidden == other.hidden;
+         edge_top == other.edge_top && edge_bottom == other.edge_bottom;
 }
 
 bool LayerSelectionBound::operator!=(const LayerSelectionBound& other) const {
