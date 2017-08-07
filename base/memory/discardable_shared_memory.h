@@ -58,6 +58,7 @@ class BASE_EXPORT DiscardableSharedMemory {
   bool Map(size_t size);
 
   // Unmaps the discardable shared memory from the caller's address space.
+  // Unmapping won't unlock previously locked range.
   // Returns true if successful; returns false on error or if the memory is
   // not mapped.
   bool Unmap();
