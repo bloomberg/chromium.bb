@@ -45,6 +45,7 @@
 @synthesize anchorPoint = anchor_;
 @synthesize bubble = bubble_;
 @synthesize shouldOpenAsKeyWindow = shouldOpenAsKeyWindow_;
+@synthesize shouldActivateOnOpen = shouldActivateOnOpen_;
 @synthesize shouldCloseOnResignKey = shouldCloseOnResignKey_;
 @synthesize bubbleReference = bubbleReference_;
 
@@ -57,6 +58,7 @@
     [self setParentWindow:parentWindow];
     anchor_ = anchoredAt;
     shouldOpenAsKeyWindow_ = YES;
+    shouldActivateOnOpen_ = YES;
     shouldCloseOnResignKey_ = YES;
   }
   return self;
@@ -83,6 +85,7 @@
   if ((self = [super initWithWindow:theWindow])) {
     [self setParentWindow:parentWindow];
     shouldOpenAsKeyWindow_ = YES;
+    shouldActivateOnOpen_ = YES;
     shouldCloseOnResignKey_ = YES;
 
     DCHECK(![[self window] delegate]);
@@ -291,10 +294,15 @@
   NSWindow* window = [self window];  // Completes nib load.
   [self updateOriginFromAnchor];
   [parentWindow_ addChildWindow:window ordered:NSWindowAbove];
-  if (shouldOpenAsKeyWindow_)
-    [window makeKeyAndOrderFront:self];
-  else
-    [window orderFront:nil];
+  if (parentWindow_ == [NSApp mainWindow] || shouldActivateOnOpen_) {
+    if (shouldOpenAsKeyWindow_) {
+      [window makeKeyAndOrderFront:self];
+    } else {
+      [window orderFront:nil];
+    }
+  } else {
+    [window orderWindow:NSWindowAbove relativeTo:[parentWindow_ windowNumber]];
+  }
   [self registerKeyStateEventTap];
   [self recordAnchorOffset];
 }

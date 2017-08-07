@@ -139,6 +139,9 @@ const NSSize kPermissionIconSize = {18, 18};
                        parentWindow:[self getExpectedParentWindow]
                          anchoredAt:NSZeroPoint])) {
     [self setShouldCloseOnResignKey:NO];
+    // The permission bubble should never force a window to activate, but if the
+    // window is already active, it should be made key.
+    [self setShouldActivateOnOpen:NO];
     [self setShouldOpenAsKeyWindow:YES];
     [[self bubble] setArrowLocation:[self getExpectedArrowLocation]];
     bridge_ = bridge;

@@ -59,6 +59,8 @@ class TabStripModelObserverBridge;
 @property(nonatomic, assign) NSPoint anchorPoint;
 @property(nonatomic, readonly) InfoBubbleView* bubble;
 @property(nonatomic, assign) BOOL shouldOpenAsKeyWindow;
+// Controls whether, when opening, the bubble should become the active window.
+@property(nonatomic, assign) BOOL shouldActivateOnOpen;
 // Controls if the bubble auto-closes if the user clicks outside the bubble.
 @property(nonatomic, assign) BOOL shouldCloseOnResignKey;
 // A reference for bubbles that are managed by the BubbleManager.
