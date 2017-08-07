@@ -1046,8 +1046,8 @@ be describing additional metrics about the same event.
   <metric name="IgnoreCount"/>
   <metric name="RankerResponse"/>
   <metric name="RankerVersion"/>
-  <metric name="SourceLanguage"/>
-  <metric name="TargetLanguage"/>
+  <metric name="SourceLanguage" semantic_type="ST_DEMOGRAPHIC_INFO"/>
+  <metric name="TargetLanguage" semantic_type="ST_DEMOGRAPHIC_INFO"/>
 </event>
 
 <event name="CPUUsageMeasurement">
