@@ -11,7 +11,6 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "ui/base/window_open_disposition.h"
 
 namespace safe_browsing {
@@ -44,30 +43,14 @@ void RecordPromptDialogResponseHistogram(
 
 }  // namespace
 
-ChromeCleanerPromptDelegate::~ChromeCleanerPromptDelegate() = default;
-
-class ChromeCleanerPromptDelegateImpl : public ChromeCleanerPromptDelegate {
- public:
-  void ShowChromeCleanerPrompt(
-      Browser* browser,
-      ChromeCleanerDialogController* dialog_controller,
-      ChromeCleanerController* cleaner_controller) override {
-    chrome::ShowChromeCleanerPrompt(browser, dialog_controller,
-                                    cleaner_controller);
-  }
-};
-
 ChromeCleanerDialogControllerImpl::ChromeCleanerDialogControllerImpl(
     ChromeCleanerController* cleaner_controller)
-    : cleaner_controller_(cleaner_controller),
-      prompt_delegate_impl_(
-          base::MakeUnique<ChromeCleanerPromptDelegateImpl>()) {
+    : cleaner_controller_(cleaner_controller) {
   DCHECK(cleaner_controller_);
   DCHECK_EQ(ChromeCleanerController::State::kScanning,
             cleaner_controller_->state());
 
   cleaner_controller_->AddObserver(this);
-  prompt_delegate_ = prompt_delegate_impl_.get();
 }
 
 ChromeCleanerDialogControllerImpl::~ChromeCleanerDialogControllerImpl() =
@@ -190,15 +173,18 @@ void ChromeCleanerDialogControllerImpl::OnInfected(
 
   browser_ = chrome_cleaner_util::FindBrowser();
   if (!browser_) {
+    // TODO(alito): Register with chrome::BrowserListObserver to get notified
+    // later if a suitable browser window becomes available to show the
+    // prompt. http://crbug.com/734677
     RecordPromptNotShownWithReasonHistogram(
-        NO_PROMPT_REASON_WAITING_FOR_BROWSER);
-    prompt_pending_ = true;
-    BrowserList::AddObserver(this);
+        NO_PROMPT_REASON_BROWSER_NOT_AVAILABLE);
+    OnInteractionDone();
     return;
   }
-  ShowChromeCleanerPrompt();
-  RecordPromptShownWithTypeHistogram(
-      PromptTypeHistogramValue::PROMPT_TYPE_ON_TRANSITION_TO_INFECTED_STATE);
+
+  chrome::ShowChromeCleanerPrompt(browser_, this, cleaner_controller_);
+  RecordPromptShownHistogram();
+  dialog_shown_ = true;
 }
 
 void ChromeCleanerDialogControllerImpl::OnCleaning(
@@ -212,37 +198,7 @@ void ChromeCleanerDialogControllerImpl::OnRebootRequired() {
     OnInteractionDone();
 }
 
-void ChromeCleanerDialogControllerImpl::OnBrowserSetLastActive(
-    Browser* browser) {
-  DCHECK(prompt_pending_);
-  DCHECK(browser);
-  DCHECK(!browser_);
-
-  browser_ = browser;
-  ShowChromeCleanerPrompt();
-  RecordPromptShownWithTypeHistogram(
-      PromptTypeHistogramValue::PROMPT_TYPE_ON_BROWSER_WINDOW_AVAILABLE);
-  prompt_pending_ = false;
-  BrowserList::RemoveObserver(this);
-}
-
-void ChromeCleanerDialogControllerImpl::SetPromptDelegateForTests(
-    ChromeCleanerPromptDelegate* delegate) {
-  prompt_delegate_ = delegate;
-}
-
-void ChromeCleanerDialogControllerImpl::ShowChromeCleanerPrompt() {
-  prompt_delegate_->ShowChromeCleanerPrompt(browser_, this,
-                                            cleaner_controller_);
-  dialog_shown_ = true;
-}
-
 void ChromeCleanerDialogControllerImpl::OnInteractionDone() {
-  if (prompt_pending_) {
-    BrowserList::RemoveObserver(this);
-    prompt_pending_ = false;
-  }
-
   cleaner_controller_->RemoveObserver(this);
   delete this;
 }

@@ -75108,23 +75108,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SoftwareReporter.PromptShown" enum="Boolean">
-  <obsolete>
-    Replaced 2017-08-01 with SoftwareReporter.PromptShownWithType.
-  </obsolete>
   <owner>ftirelo@chromium.org</owner>
   <summary>
     Whether the user has been prompted to run the Chrome Cleanup Tool.
-  </summary>
-</histogram>
-
-<histogram name="SoftwareReporter.PromptShownWithType"
-    enum="SoftwareReporterPromptShownWithType">
-  <owner>ftirelo@chromium.org</owner>
-  <summary>
-    Whether the user has been prompted to run the Chrome Cleanup Tool and which
-    type of prompt has been shown.
-
-    This is logged once a prompt is presented to the user.
   </summary>
 </histogram>
 

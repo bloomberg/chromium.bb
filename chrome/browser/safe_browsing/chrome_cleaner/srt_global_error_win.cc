@@ -137,8 +137,7 @@ void SRTGlobalError::ExecuteMenuItem(Browser* browser) {
 
 void SRTGlobalError::ShowBubbleView(Browser* browser) {
   RecordSRTPromptHistogram(SRT_PROMPT_SHOWN);
-  RecordPromptShownWithTypeHistogram(
-      PromptTypeHistogramValue::PROMPT_TYPE_LEGACY_PROMPT_SHOWN);
+  RecordPromptShownHistogram();
   GlobalErrorWithStandardBubble::ShowBubbleView(browser);
 }
 
