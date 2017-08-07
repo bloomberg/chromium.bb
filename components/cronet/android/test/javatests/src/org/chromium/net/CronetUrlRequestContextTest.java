@@ -610,6 +610,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         urlRequestBuilder.build().start();
         callback.blockForDone();
         assertTrue(thrown.get() instanceof RuntimeException);
+        cronetEngine.shutdown();
     }
 
     @SmallTest
@@ -935,6 +936,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         checkRequestCaching(cronetEngine, url, false);
         checkRequestCaching(cronetEngine, url, false);
         checkRequestCaching(cronetEngine, url, false);
+        cronetEngine.shutdown();
     }
 
     @SmallTest
@@ -947,6 +949,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         checkRequestCaching(cronetEngine, url, true);
         NativeTestServer.shutdownNativeTestServer();
         checkRequestCaching(cronetEngine, url, true);
+        cronetEngine.shutdown();
     }
 
     @SmallTest
@@ -954,6 +957,26 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     public void testEnableHttpCacheDisk() throws Exception {
         CronetEngine cronetEngine =
                 createCronetEngineWithCache(CronetEngine.Builder.HTTP_CACHE_DISK);
+        String url = NativeTestServer.getFileURL("/cacheable.txt");
+        checkRequestCaching(cronetEngine, url, false);
+        checkRequestCaching(cronetEngine, url, true);
+        NativeTestServer.shutdownNativeTestServer();
+        checkRequestCaching(cronetEngine, url, true);
+        cronetEngine.shutdown();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet
+    public void testNoConcurrentDiskUsage() throws Exception {
+        CronetEngine cronetEngine =
+                createCronetEngineWithCache(CronetEngine.Builder.HTTP_CACHE_DISK);
+        try {
+            createCronetEngineWithCache(CronetEngine.Builder.HTTP_CACHE_DISK);
+            fail();
+        } catch (IllegalStateException e) {
+            assertEquals("Disk cache storage path already in use", e.getMessage());
+        }
         String url = NativeTestServer.getFileURL("/cacheable.txt");
         checkRequestCaching(cronetEngine, url, false);
         checkRequestCaching(cronetEngine, url, true);
@@ -980,6 +1003,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         checkRequestCaching(cronetEngine, url, false);
         checkRequestCaching(cronetEngine, url, false);
         checkRequestCaching(cronetEngine, url, false);
+        cronetEngine.shutdown();
     }
 
     @SmallTest
@@ -1043,6 +1067,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         urlRequestBuilder.build().start();
         callback.blockForDone();
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        cronetEngine.shutdown();
     }
 
     @SmallTest
@@ -1067,6 +1092,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         // Because mUrl is http, getCertVerifierData() will return empty data.
         String data = cronetEngine.getCertVerifierData(100);
         assertTrue(data.isEmpty());
+        cronetEngine.shutdown();
     }
 
     @SmallTest
@@ -1086,6 +1112,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         }
         assertEquals(200, statusCodes[0]);
         assertEquals(404, statusCodes[1]);
+        cronetEngine.shutdown();
     }
 
     @SmallTest

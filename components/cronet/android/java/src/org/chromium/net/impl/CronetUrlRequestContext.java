@@ -32,6 +32,7 @@ import java.net.URLStreamHandlerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -141,6 +142,13 @@ public class CronetUrlRequestContext extends CronetEngineBase {
 
     private volatile ConditionVariable mStopNetLogCompleted;
 
+    /** Set of storage paths currently in use. */
+    @GuardedBy("sInUseStoragePaths")
+    private static final HashSet<String> sInUseStoragePaths = new HashSet<String>();
+
+    /** Storage path used by this context. */
+    private final String mInUseStoragePath;
+
     /**
      * True if a NetLog observer is active.
      */
@@ -153,6 +161,16 @@ public class CronetUrlRequestContext extends CronetEngineBase {
         mNetworkThreadPriority = builder.threadPriority(Process.THREAD_PRIORITY_BACKGROUND);
         CronetLibraryLoader.ensureInitialized(builder.getContext(), builder);
         nativeSetMinLogLevel(getLoggingLevel());
+        if (builder.httpCacheMode() == HttpCacheType.DISK) {
+            mInUseStoragePath = builder.storagePath();
+            synchronized (sInUseStoragePaths) {
+                if (!sInUseStoragePaths.add(mInUseStoragePath)) {
+                    throw new IllegalStateException("Disk cache storage path already in use");
+                }
+            }
+        } else {
+            mInUseStoragePath = null;
+        }
         synchronized (mLock) {
             mUrlRequestContextAdapter =
                     nativeCreateRequestContextAdapter(createNativeUrlRequestContextConfig(builder));
@@ -234,6 +252,11 @@ public class CronetUrlRequestContext extends CronetEngineBase {
 
     @Override
     public void shutdown() {
+        if (mInUseStoragePath != null) {
+            synchronized (sInUseStoragePaths) {
+                sInUseStoragePaths.remove(mInUseStoragePath);
+            }
+        }
         synchronized (mLock) {
             checkHaveAdapter();
             if (mActiveRequestCount.get() != 0) {

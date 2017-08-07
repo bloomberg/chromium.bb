@@ -133,6 +133,7 @@ public class QuicTest extends CronetTestBase {
         // The total received bytes should be larger than the content length, to account for
         // headers.
         assertTrue(callback2.mResponseInfo.getReceivedByteCount() > expectedContent.length());
+        cronetEngine.shutdown();
     }
 
     // Returns whether a file contains a particular string.
