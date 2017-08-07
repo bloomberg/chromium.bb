@@ -381,7 +381,7 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterIntegerPref(prefs::kEolStatus,
                                 update_engine::EndOfLifeStatus::kSupported);
 
-  registry->RegisterBooleanPref(prefs::kCastReceiverEnabled, true);
+  registry->RegisterBooleanPref(prefs::kCastReceiverEnabled, false);
 }
 
 void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
