@@ -4,20 +4,11 @@
 
 #include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
 
-#include <stddef.h>
-
-#include <algorithm>
 #include <memory>
-#include <set>
-#include <string>
-#include <utility>
-#include <vector>
 
 #include "ash/login_status.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/system/date/clock_observer.h"
-#include "ash/system/power/power_status.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray_accessibility.h"
 #include "base/callback.h"
@@ -28,27 +19,20 @@
 #include "base/sys_info.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
-#include "chrome/browser/chromeos/events/system_key_event_listener.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/networking_config_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/login/login_state.h"
-#include "chromeos/network/portal_detector/network_portal_detector.h"
-#include "components/google/core/browser/google_util.h"
 #include "components/prefs/pref_service.h"
-#include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
-#include "ui/chromeos/events/pref_names.h"
 
 namespace chromeos {
 
@@ -104,10 +88,6 @@ void SystemTrayDelegateChromeOS::ActiveUserWasChanged() {
   SetProfile(ProfileManager::GetActiveUserProfile());
 }
 
-bool SystemTrayDelegateChromeOS::IsSearchKeyMappedToCapsLock() {
-  return search_key_mapped_to_ == input_method::kCapsLockKey;
-}
-
 ash::SystemTrayNotifier* SystemTrayDelegateChromeOS::GetSystemTrayNotifier() {
   return ash::Shell::Get()->system_tray_notifier();
 }
@@ -127,10 +107,6 @@ void SystemTrayDelegateChromeOS::SetProfile(Profile* profile) {
   user_pref_registrar_.reset(new PrefChangeRegistrar);
   user_pref_registrar_->Init(prefs);
   user_pref_registrar_->Add(
-      prefs::kLanguageRemapSearchKeyTo,
-      base::Bind(&SystemTrayDelegateChromeOS::OnLanguageRemapSearchKeyToChanged,
-                 base::Unretained(this)));
-  user_pref_registrar_->Add(
       prefs::kAccessibilityLargeCursorEnabled,
       base::Bind(&SystemTrayDelegateChromeOS::OnAccessibilityModeChanged,
                  base::Unretained(this), ash::A11Y_NOTIFICATION_NONE));
@@ -142,9 +118,6 @@ void SystemTrayDelegateChromeOS::SetProfile(Profile* profile) {
       prefs::kShouldAlwaysShowAccessibilityMenu,
       base::Bind(&SystemTrayDelegateChromeOS::OnAccessibilityModeChanged,
                  base::Unretained(this), ash::A11Y_NOTIFICATION_NONE));
-
-  search_key_mapped_to_ =
-      profile->GetPrefs()->GetInteger(prefs::kLanguageRemapSearchKeyTo);
 }
 
 bool SystemTrayDelegateChromeOS::UnsetProfile(Profile* profile) {
@@ -217,11 +190,6 @@ void SystemTrayDelegateChromeOS::Observe(
     default:
       NOTREACHED();
   }
-}
-
-void SystemTrayDelegateChromeOS::OnLanguageRemapSearchKeyToChanged() {
-  search_key_mapped_to_ = user_pref_registrar_->prefs()->GetInteger(
-      prefs::kLanguageRemapSearchKeyTo);
 }
 
 void SystemTrayDelegateChromeOS::OnAccessibilityModeChanged(

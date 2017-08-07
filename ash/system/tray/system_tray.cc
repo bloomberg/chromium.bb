@@ -269,7 +269,8 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(base::WrapUnique(tray_scale_));
   AddTrayItem(base::MakeUnique<TrayBrightness>(this));
   AddTrayItem(base::MakeUnique<TrayKeyboardBrightness>(this));
-  AddTrayItem(base::MakeUnique<TrayCapsLock>(this));
+  tray_caps_lock_ = new TrayCapsLock(this);
+  AddTrayItem(base::WrapUnique(tray_caps_lock_));
   if (NightLightController::IsFeatureEnabled()) {
     tray_night_light_ = new TrayNightLight(this);
     AddTrayItem(base::WrapUnique(tray_night_light_));

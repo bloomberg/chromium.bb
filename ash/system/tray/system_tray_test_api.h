@@ -17,6 +17,7 @@ class SystemTrayTestApi {
   ~SystemTrayTestApi() = default;
 
   TrayAccessibility* tray_accessibility() { return tray_->tray_accessibility_; }
+  TrayCapsLock* tray_caps_lock() { return tray_->tray_caps_lock_; }
   TrayCast* tray_cast() { return tray_->tray_cast_; }
   TrayEnterprise* tray_enterprise() { return tray_->tray_enterprise_; }
   TrayNetwork* tray_network() { return tray_->tray_network_; }

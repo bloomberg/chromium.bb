@@ -5,11 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_DELEGATE_CHROMEOS_H_
 #define CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_DELEGATE_CHROMEOS_H_
 
-#include <stdint.h>
-
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "ash/accessibility_types.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -22,7 +18,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/app_window/app_window_registry.h"
-#include "ui/base/ime/chromeos/ime_keyboard.h"
 
 namespace ash {
 class SystemTrayNotifier;
@@ -47,7 +42,6 @@ class SystemTrayDelegateChromeOS
   void Initialize() override;
   ash::NetworkingConfigDelegate* GetNetworkingConfigDelegate() const override;
   void ActiveUserWasChanged() override;
-  bool IsSearchKeyMappedToCapsLock() override;
 
  private:
   ash::SystemTrayNotifier* GetSystemTrayNotifier();
@@ -71,8 +65,6 @@ class SystemTrayDelegateChromeOS
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  void OnLanguageRemapSearchKeyToChanged();
-
   void OnAccessibilityModeChanged(
       ash::AccessibilityNotificationVisibility notify);
 
@@ -88,7 +80,6 @@ class SystemTrayDelegateChromeOS
   std::unique_ptr<content::NotificationRegistrar> registrar_;
   std::unique_ptr<PrefChangeRegistrar> user_pref_registrar_;
   Profile* user_profile_ = nullptr;
-  int search_key_mapped_to_ = input_method::kSearchKey;
 
   std::unique_ptr<ash::NetworkingConfigDelegate> networking_config_delegate_;
   std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;

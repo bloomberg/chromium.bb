@@ -19,8 +19,4 @@ NetworkingConfigDelegate* SystemTrayDelegate::GetNetworkingConfigDelegate()
 
 void SystemTrayDelegate::ActiveUserWasChanged() {}
 
-bool SystemTrayDelegate::IsSearchKeyMappedToCapsLock() {
-  return false;
-}
-
 }  // namespace ash

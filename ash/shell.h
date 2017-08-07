@@ -257,6 +257,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
   // Registers all ash related user profile prefs to the given |registry|.
+  // Can be called before Shell is initialized.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Creates a default views::NonClientFrameView for use by windows in the
@@ -662,6 +663,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Finalizes the shelf state. Called after the user session is active and
   // the profile is available.
   void InitializeShelf();
+
+  // Registers preferences owned by other services (e.g. chrome). Used in mash.
+  static void RegisterForeignPrefs(PrefRegistrySimple* registry);
 
   // Callbacks for prefs::ConnectToPrefService.
   void OnProfilePrefServiceInitialized(

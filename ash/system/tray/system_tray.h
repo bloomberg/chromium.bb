@@ -25,6 +25,7 @@ class SystemTrayDelegate;
 class SystemTrayItem;
 class TrayAccessibility;
 class TrayAudio;
+class TrayCapsLock;
 class TrayCast;
 class TrayEnterprise;
 class TrayNetwork;
@@ -213,6 +214,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
   // These objects are not owned by this class.
   TrayAccessibility* tray_accessibility_ = nullptr;
   TrayAudio* tray_audio_ = nullptr;
+  TrayCapsLock* tray_caps_lock_ = nullptr;
   TrayCast* tray_cast_ = nullptr;
   TrayEnterprise* tray_enterprise_ = nullptr;
   TrayNetwork* tray_network_ = nullptr;

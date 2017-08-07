@@ -33,9 +33,6 @@ class ASH_EXPORT SystemTrayDelegate {
   // to be switched to the new user.
   // Note: This will happen after SessionObserver::ActiveUserChanged fires.
   virtual void ActiveUserWasChanged();
-
-  // Returns true when the Search key is configured to be treated as Caps Lock.
-  virtual bool IsSearchKeyMappedToCapsLock();
 };
 
 }  // namespace ash
