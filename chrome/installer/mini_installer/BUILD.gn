@@ -73,6 +73,8 @@ source_set("unit_tests") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//chrome/install_static:install_static_util",
+    "//chrome/installer/util:with_no_strings",
     "//testing/gtest",
   ]
 }
