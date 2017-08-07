@@ -115,7 +115,8 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   void OnMouseDragTimer();
 
   // Invoked when |touch_drag_timer_| fires to show dragging UI.
-  void OnTouchDragTimer();
+  void OnTouchDragTimer(const gfx::Point& tap_down_location,
+                        const gfx::Point& tap_down_root_location);
 
   // views::ContextMenuController overrides:
   void ShowContextMenuForView(views::View* source,

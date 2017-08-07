@@ -423,17 +423,18 @@ bool AppsGridView::IsSelectedView(const AppListItemView* view) const {
 
 void AppsGridView::InitiateDrag(AppListItemView* view,
                                 Pointer pointer,
-                                const ui::LocatedEvent& event) {
+                                const gfx::Point& location,
+                                const gfx::Point& root_location) {
   DCHECK(view);
   if (drag_view_ || pulsing_blocks_model_.view_size())
     return;
 
   drag_view_ = view;
   drag_view_init_index_ = GetIndexOfView(drag_view_);
-  drag_view_offset_ = event.location();
+  drag_view_offset_ = location;
   drag_start_page_ = pagination_model_.selected_page();
   reorder_placeholder_ = drag_view_init_index_;
-  ExtractDragLocation(event, &drag_start_grid_view_);
+  ExtractDragLocation(root_location, &drag_start_grid_view_);
   drag_view_start_ = gfx::Point(drag_view_->x(), drag_view_->y());
 }
 
@@ -463,7 +464,7 @@ bool AppsGridView::UpdateDragFromItem(Pointer pointer,
     return false;  // Drag canceled.
 
   gfx::Point drag_point_in_grid_view;
-  ExtractDragLocation(event, &drag_point_in_grid_view);
+  ExtractDragLocation(event.root_location(), &drag_point_in_grid_view);
   UpdateDrag(pointer, drag_point_in_grid_view);
   if (!dragging())
     return false;
@@ -1433,12 +1434,12 @@ void AppsGridView::AnimationBetweenRows(AppListItemView* view,
           new RowMoveAnimationDelegate(view, layer.release(), current_out)));
 }
 
-void AppsGridView::ExtractDragLocation(const ui::LocatedEvent& event,
+void AppsGridView::ExtractDragLocation(const gfx::Point& root_location,
                                        gfx::Point* drag_point) {
   // Use root location of |event| instead of location in |drag_view_|'s
   // coordinates because |drag_view_| has a scale transform and location
   // could have integer round error and causes jitter.
-  *drag_point = event.root_location();
+  *drag_point = root_location;
 
   DCHECK(GetWidget());
   aura::Window::ConvertPointToTarget(

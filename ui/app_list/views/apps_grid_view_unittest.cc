@@ -194,10 +194,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
         gfx::PointAtOffsetFromOrigin(from - view->origin());
     gfx::Point translated_to =
         gfx::PointAtOffsetFromOrigin(to - view->origin());
-
-    ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED, translated_from, from,
-                                 ui::EventTimeForNow(), 0, 0);
-    apps_grid_view_->InitiateDrag(view, pointer, pressed_event);
+    apps_grid_view_->InitiateDrag(view, pointer, translated_from, from);
 
     ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, translated_to, to,
                               ui::EventTimeForNow(), 0, 0);
