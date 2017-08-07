@@ -4292,6 +4292,9 @@ static int mov_read_trun(MOVContext *c, AVIOContext *pb, MOVAtom atom)
      *  3) in the subsequent movie fragments, there are samples with composition time offset. */
     if (!sc->ctts_count && sc->sample_count)
     {
+        /* ctts relies on being 1:1 with sample entries. */
+        if (sc->sample_count != st->nb_index_entries)
+            return AVERROR_INVALIDDATA;
         /* Complement ctts table if moov atom doesn't have ctts atom. */
         ctts_data = av_fast_realloc(NULL, &sc->ctts_allocated_size, sizeof(*sc->ctts_data) * sc->sample_count);
         if (!ctts_data)
