@@ -755,6 +755,7 @@ mojom("mojo_bindings") {
   visibility_blink = [
     "//content/common:mojo_bindings_blink",
     "//third_party/WebKit/Source/platform",
+    "//third_party/WebKit/Source/platform/loader",
   ]
   sources = [
     "platform/display_mode.mojom",
