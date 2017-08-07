@@ -25,6 +25,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
+#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -130,6 +131,9 @@ BOOL IsFromContentSuggestions(NSInteger sectionIdentifier) {
 }
 
 const CGFloat kNumberOfMostVisitedLines = 2;
+
+NSString* const kContentSuggestionsCollectionUpdaterSnackbarCategory =
+    @"ContentSuggestionsCollectionUpdaterSnackbarCategory";
 
 }  // namespace
 
@@ -513,9 +517,12 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
     ContentSuggestionsFooterItem* footer = [[ContentSuggestionsFooterItem alloc]
         initWithType:ItemTypeFooter
                title:sectionInfo.footerTitle
-               block:^{
-                 [weakSelf runAdditionalActionForSection:sectionInfo];
-               }];
+            callback:^(ContentSuggestionsFooterItem* item,
+                       ContentSuggestionsFooterCell* cell) {
+              [weakSelf runAdditionalActionForSection:sectionInfo
+                                             withItem:item
+                                                 cell:cell];
+            }];
 
     [self.collectionViewController.collectionViewModel
                        setFooter:footer
@@ -601,10 +608,13 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
 
 // Runs the additional action for the section identified by |sectionInfo|.
 - (void)runAdditionalActionForSection:
-    (ContentSuggestionsSectionInformation*)sectionInfo {
+            (ContentSuggestionsSectionInformation*)sectionInfo
+                             withItem:(ContentSuggestionsFooterItem*)item
+                                 cell:(ContentSuggestionsFooterCell*)cell {
   SectionIdentifier sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
 
-  // TODO(crbug.com/721229): Start spinner.
+  item.loading = YES;
+  [item configureCell:cell];
 
   NSMutableArray<ContentSuggestionIdentifier*>* knownSuggestionIdentifiers =
       [NSMutableArray array];
@@ -619,26 +629,65 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
   }
 
   __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
+  __weak ContentSuggestionsFooterItem* weakItem = item;
+  __weak ContentSuggestionsFooterCell* weakCell = cell;
   [self.dataSource
       fetchMoreSuggestionsKnowing:knownSuggestionIdentifiers
                   fromSectionInfo:sectionInfo
-                         callback:^(
-                             NSArray<CSCollectionViewItem*>* suggestions) {
+                         callback:^(NSArray<CSCollectionViewItem*>* suggestions,
+                                    content_suggestions::StatusCode status) {
                            [weakSelf moreSuggestionsFetched:suggestions
-                                              inSectionInfo:sectionInfo];
+                                              inSectionInfo:sectionInfo
+                                                   withItem:weakItem
+                                                       cell:weakCell
+                                                     status:status];
                          }];
 }
 
 // Adds the |suggestions| to the collection view. All the suggestions must have
-// the same sectionInfo.
+// the same |sectionInfo|. The fetch has been started by tapping the |cell| and
+// its associated |item|. |status| gives the status of the fetch result.
 - (void)moreSuggestionsFetched:(NSArray<CSCollectionViewItem*>*)suggestions
                  inSectionInfo:
-                     (ContentSuggestionsSectionInformation*)sectionInfo {
+                     (ContentSuggestionsSectionInformation*)sectionInfo
+                      withItem:(ContentSuggestionsFooterItem*)item
+                          cell:(ContentSuggestionsFooterCell*)cell
+                        status:(content_suggestions::StatusCode)status {
+  SectionIdentifier sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
+  item.loading = NO;
+  if (cell && item && cell.delegate == item) {
+    // The cell has not been reconfigured by another item. It should be safe to
+    // update it.
+    [item configureCell:cell];
+  }
+
   if (suggestions) {
     [self.collectionViewController addSuggestions:suggestions
                                     toSectionInfo:sectionInfo];
+
+  } else if (status == content_suggestions::StatusCodeSuccess ||
+             status == content_suggestions::StatusCodePermanentError) {
+    // No more suggestions.
+    UICollectionView* collectionView =
+        self.collectionViewController.collectionView;
+
+    [self.collectionViewController.collectionViewModel
+                       setFooter:nil
+        forSectionWithIdentifier:sectionIdentifier];
+
+    [collectionView performBatchUpdates:^{
+      [collectionView.collectionViewLayout invalidateLayout];
+    }
+                             completion:nil];
+
+  } else if (status == content_suggestions::StatusCodeError) {
+    NSString* text =
+        l10n_util::GetNSString(IDS_NTP_ARTICLE_SUGGESTIONS_NOT_AVAILABLE);
+    MDCSnackbarMessage* message = [MDCSnackbarMessage messageWithText:text];
+    message.accessibilityLabel = text;
+    message.category = kContentSuggestionsCollectionUpdaterSnackbarCategory;
+    [MDCSnackbarManager showMessage:message];
   }
-  // TODO(crbug.com/721229):Stop spinner.
 }
 
 // Returns a item to be displayed when the section identified by |sectionInfo|

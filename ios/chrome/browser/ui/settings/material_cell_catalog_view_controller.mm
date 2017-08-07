@@ -725,7 +725,7 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
       [[ContentSuggestionsFooterItem alloc]
           initWithType:ItemTypeContentSuggestions
                  title:@"Footer title"
-                 block:nil];
+              callback:nil];
   return footerItem;
 }
 
