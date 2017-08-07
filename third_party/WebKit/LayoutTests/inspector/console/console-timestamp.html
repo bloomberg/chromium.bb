@@ -11,14 +11,14 @@ function test()
     var tzOffset = new Date(baseDate).getTimezoneOffset() * 60 * 1000;
     var baseTimestamp = 1400000000000 + tzOffset;
 
-    function addMessageWithFixedTimestamp(messageText, timestamp)
+    function addMessageWithFixedTimestamp(messageText, timestamp, type)
     {
         var message = new ConsoleModel.ConsoleMessage(
             InspectorTest.runtimeModel,
             ConsoleModel.ConsoleMessage.MessageSource.Other, // source
             ConsoleModel.ConsoleMessage.MessageLevel.Info, // level
             messageText,
-            undefined, // type
+            type,
             undefined, // url
             undefined, // line
             undefined, // column
@@ -33,6 +33,8 @@ function test()
     addMessageWithFixedTimestamp("<Before>");
     addMessageWithFixedTimestamp("<Before>", baseTimestamp + 456);
     addMessageWithFixedTimestamp("<Before>");
+    addMessageWithFixedTimestamp("<Before> Command", baseTimestamp, ConsoleModel.ConsoleMessage.MessageType.Command);
+    addMessageWithFixedTimestamp("<Before> Result", baseTimestamp + 1, ConsoleModel.ConsoleMessage.MessageType.Result);
 
     InspectorTest.dumpConsoleMessages();
 
