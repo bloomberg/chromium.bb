@@ -6,6 +6,7 @@ from benchmarks import memory
 import page_sets
 
 from telemetry import benchmark
+from telemetry import story
 
 
 # pylint: disable=protected-access
@@ -35,7 +36,10 @@ class DualBrowserBenchmark(memory._MemoryInfra):
     return not memory._IGNORED_STATS_RE.search(value.name)
 
   def GetExpectations(self):
-    return page_sets.DualBrowserStoryExpectations()
+    class StoryExpectations(story.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing disabled.
+    return StoryExpectations()
 
 
 @benchmark.Owner(emails=['perezju@chromium.org'])
@@ -67,7 +71,10 @@ class LongRunningDualBrowserBenchmark(memory._MemoryInfra):
     return not memory._IGNORED_STATS_RE.search(value.name)
 
   def GetExpectations(self):
-    return page_sets.DualBrowserStoryExpectations()
+    class StoryExpectations(story.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing disabled.
+    return StoryExpectations()
 
 
 @benchmark.Owner(emails=['etienneb@chromium.org'])
@@ -115,4 +122,7 @@ class LongRunningMemoryBenchmarkSitesDesktop(memory._MemoryInfra):
     return not memory._IGNORED_STATS_RE.search(value.name)
 
   def GetExpectations(self):
-    return page_sets.DesktopMemoryStoryExpectations()
+    class StoryExpectations(story.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing disabled.
+    return StoryExpectations()
