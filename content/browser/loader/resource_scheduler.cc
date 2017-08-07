@@ -112,6 +112,16 @@ const char* RequestStartTriggerString(RequestStartTrigger trigger) {
   return "Unknown";
 }
 
+// Returns the net::EffectiveConnectionType that corresponds to
+// |connection_type_name|. If |connection_type_name| is invalid, the value
+// returned is net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN.
+net::EffectiveConnectionType GetEffectiveConnectionTypeForNameWrapper(
+    const std::string& connection_type_name) {
+  net::EffectiveConnectionType ect;
+  net::GetEffectiveConnectionTypeForName(connection_type_name, &ect);
+  return ect;
+}
+
 }  // namespace
 
 // The maximum number of delayable requests to allow to be in-flight at any
@@ -414,8 +424,9 @@ class ResourceScheduler::Client {
         max_requests_before_yielding_(max_requests_before_yielding),
         network_quality_estimator_(network_quality_estimator),
         max_delayable_requests_(
-            resource_scheduler->ComputeMaxDelayableRequestsNetworkOverride(
-                network_quality_estimator)),
+            resource_scheduler
+                ->max_delayable_requests_network_override_experiment_
+                .GetMaxDelayableRequests(network_quality_estimator)),
         resource_scheduler_(resource_scheduler),
         weak_ptr_factory_(this) {}
 
@@ -484,8 +495,8 @@ class ResourceScheduler::Client {
     has_html_body_ = false;
     is_loaded_ = false;
     max_delayable_requests_ =
-        resource_scheduler_->ComputeMaxDelayableRequestsNetworkOverride(
-            network_quality_estimator_);
+        resource_scheduler_->max_delayable_requests_network_override_experiment_
+            .GetMaxDelayableRequests(network_quality_estimator_);
   }
 
   void OnWillInsertBody() {
@@ -975,10 +986,7 @@ ResourceScheduler::ResourceScheduler()
       max_requests_before_yielding_(base::GetFieldTrialParamByFeatureAsInt(
           kNetworkSchedulerYielding,
           kMaxRequestsBeforeYieldingParam,
-          kMaxRequestsBeforeYieldingDefault)),
-      max_requests_for_bdp_ranges_(GetMaxDelayableRequestsExperimentConfig()),
-      max_delayable_requests_threshold_(
-          GetMaxDelayableRequestsExperimentMaxECT()) {}
+          kMaxRequestsBeforeYieldingDefault)) {}
 
 ResourceScheduler::~ResourceScheduler() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1189,8 +1197,44 @@ ResourceScheduler::ClientId ResourceScheduler::MakeClientId(
   return (static_cast<ResourceScheduler::ClientId>(child_id) << 32) | route_id;
 }
 
+ResourceScheduler::MaxDelayableRequestsNetworkOverrideExperiment::
+    MaxDelayableRequestsNetworkOverrideExperiment()
+    : max_requests_for_bdp_ranges_(GetConfig()),
+      max_effective_connection_type_(GetEffectiveConnectionTypeForNameWrapper(
+          base::GetFieldTrialParamValueByFeature(
+              kMaxDelayableRequestsNetworkOverride,
+              "MaxEffectiveConnectionType"))) {}
+
+ResourceScheduler::MaxDelayableRequestsNetworkOverrideExperiment::
+    ~MaxDelayableRequestsNetworkOverrideExperiment() {}
+
+size_t ResourceScheduler::MaxDelayableRequestsNetworkOverrideExperiment::
+    GetMaxDelayableRequests(
+        const net::NetworkQualityEstimator* network_quality_estimator) const {
+  if (max_requests_for_bdp_ranges_.empty() || !network_quality_estimator)
+    return kDefaultMaxNumDelayableRequestsPerClient;
+
+  if (network_quality_estimator->GetEffectiveConnectionType() >
+          max_effective_connection_type_ ||
+      network_quality_estimator->GetEffectiveConnectionType() <=
+          net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
+    return kDefaultMaxNumDelayableRequestsPerClient;
+  }
+
+  base::Optional<int32_t> bdp_kbits =
+      network_quality_estimator->GetBandwidthDelayProductKbits();
+  if (!bdp_kbits)
+    return kDefaultMaxNumDelayableRequestsPerClient;
+
+  for (const auto& range : max_requests_for_bdp_ranges_) {
+    if (bdp_kbits.value() <= range.max_bdp_kbits)
+      return range.max_requests;
+  }
+  return kDefaultMaxNumDelayableRequestsPerClient;
+}
+
 ResourceScheduler::MaxRequestsForBDPRanges
-ResourceScheduler::GetMaxDelayableRequestsExperimentConfig() {
+ResourceScheduler::MaxDelayableRequestsNetworkOverrideExperiment::GetConfig() {
   static const char kMaxBDPKbitsBase[] = "MaxBDPKbits";
   static const char kMaxDelayableRequestsBase[] = "MaxDelayableRequests";
 
@@ -1225,54 +1269,6 @@ ResourceScheduler::GetMaxDelayableRequestsExperimentConfig() {
     result.push_back({max_bdp_kbits, max_delayable_requests});
     config_param_index++;
   }
-}
-
-net::EffectiveConnectionType
-ResourceScheduler::GetMaxDelayableRequestsExperimentMaxECT() {
-  static const char kMaxEffectiveConnectionType[] =
-      "MaxEffectiveConnectionType";
-
-  if (!base::FeatureList::IsEnabled(kMaxDelayableRequestsNetworkOverride))
-    return net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-
-  net::EffectiveConnectionType ect;
-  if (!net::GetEffectiveConnectionTypeForName(
-          base::GetFieldTrialParamValueByFeature(
-              kMaxDelayableRequestsNetworkOverride,
-              kMaxEffectiveConnectionType),
-          &ect)) {
-    return net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-  }
-
-  return ect;
-}
-
-size_t ResourceScheduler::ComputeMaxDelayableRequestsNetworkOverride(
-    const net::NetworkQualityEstimator* network_quality_estimator) const {
-  if (max_requests_for_bdp_ranges_.empty() || !network_quality_estimator)
-    return kDefaultMaxNumDelayableRequestsPerClient;
-
-  if (network_quality_estimator->GetEffectiveConnectionType() <=
-          max_delayable_requests_threshold_ &&
-      network_quality_estimator->GetEffectiveConnectionType() >
-          net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
-    base::Optional<int32_t> bandwidth_delay_product =
-        network_quality_estimator->GetBandwidthDelayProductKbits();
-    if (bandwidth_delay_product) {
-      return GetNumberOfDelayableRequestsForBDP(
-          bandwidth_delay_product.value());
-    }
-  }
-  return kDefaultMaxNumDelayableRequestsPerClient;
-}
-
-int ResourceScheduler::GetNumberOfDelayableRequestsForBDP(
-    int64_t bdp_in_kbits) const {
-  for (const auto& range : max_requests_for_bdp_ranges_) {
-    if (bdp_in_kbits <= range.max_bdp_kbits)
-      return range.max_requests;
-  }
-  return kDefaultMaxNumDelayableRequestsPerClient;
 }
 
 }  // namespace content
