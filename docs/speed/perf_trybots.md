@@ -82,6 +82,11 @@ See above for how to choose a trybot and benchmark.
 Run `tools/perf/run_benchmark try --help` for more information about available
 options.
 
+## Specifying additional tracing categories
+
+You can add `--extra-chrome-categories` to specify additional tracing
+categories.
+
 ## Interpreting the results
 
 Perf trybots create a code review under the covers to hold the trybot results.
