@@ -11,9 +11,10 @@
 namespace blink {
 
 const CSSValue* CSSPropertyAPIWebkitOriginY::ParseSingleValue(
+    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) {
+    const CSSParserLocalContext&) const {
   return CSSPropertyPositionUtils::ConsumePositionLonghand<CSSValueTop,
                                                            CSSValueBottom>(
       range, context.Mode());

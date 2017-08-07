@@ -10,9 +10,10 @@
 namespace blink {
 
 const CSSValue* CSSPropertyAPIObjectPosition::ParseSingleValue(
+    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) {
+    const CSSParserLocalContext&) const {
   return ConsumePosition(range, context,
                          CSSPropertyParserHelpers::UnitlessQuirk::kForbid,
                          WebFeature::kThreeValuedPositionObjectPosition);

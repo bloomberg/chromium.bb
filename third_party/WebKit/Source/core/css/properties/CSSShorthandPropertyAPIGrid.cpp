@@ -38,11 +38,12 @@ CSSValueList* ConsumeImplicitAutoFlow(CSSParserTokenRange& range,
 }  // namespace
 
 bool CSSShorthandPropertyAPIGrid::ParseShorthand(
+    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     bool,
-    HeapVector<CSSProperty, 256>& properties) {
+    HeapVector<CSSProperty, 256>& properties) const {
   DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
   DCHECK_EQ(shorthandForProperty(CSSPropertyGrid).length(), 8u);
 

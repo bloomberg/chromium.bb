@@ -13,9 +13,10 @@ class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPITextIndent::ParseSingleValue(
+    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) {
+    const CSSParserLocalContext&) const {
   // [ <length> | <percentage> ] && hanging? && each-line?
   // Keywords only allowed when css3Text is enabled.
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();

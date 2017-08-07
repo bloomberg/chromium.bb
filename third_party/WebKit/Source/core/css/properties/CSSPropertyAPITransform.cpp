@@ -12,9 +12,10 @@
 namespace blink {
 
 const CSSValue* CSSPropertyAPITransform::ParseSingleValue(
+    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext& local_context) {
+    const CSSParserLocalContext& local_context) const {
   return CSSPropertyTransformUtils::ConsumeTransformList(range, context,
                                                          local_context);
 }

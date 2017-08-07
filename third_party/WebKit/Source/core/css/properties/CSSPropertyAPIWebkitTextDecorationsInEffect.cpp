@@ -9,9 +9,10 @@
 namespace blink {
 
 const CSSValue* CSSPropertyAPIWebkitTextDecorationsInEffect::ParseSingleValue(
+    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext&,
-    const CSSParserLocalContext&) {
+    const CSSParserLocalContext&) const {
   return CSSPropertyTextDecorationLineUtils::ConsumeTextDecorationLine(range);
 }
 

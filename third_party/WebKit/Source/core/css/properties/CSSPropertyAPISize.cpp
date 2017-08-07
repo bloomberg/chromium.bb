@@ -18,9 +18,10 @@ static CSSValue* ConsumePageSize(CSSParserTokenRange& range) {
 }
 
 const CSSValue* CSSPropertyAPISize::ParseSingleValue(
+    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) {
+    const CSSParserLocalContext&) const {
   CSSValueList* result = CSSValueList::CreateSpaceSeparated();
 
   if (range.Peek().Id() == CSSValueAuto) {

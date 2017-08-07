@@ -11,9 +11,10 @@ class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPIBaselineShift::ParseSingleValue(
+    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) {
+    const CSSParserLocalContext&) const {
   CSSValueID id = range.Peek().Id();
   if (id == CSSValueBaseline || id == CSSValueSub || id == CSSValueSuper)
     return CSSPropertyParserHelpers::ConsumeIdent(range);
