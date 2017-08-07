@@ -85,11 +85,17 @@ public class DialogOverlayImpl implements AndroidOverlay, DialogOverlayCore.Host
             @Override
             public void run() {
                 dialogCore.initialize(context, config, mHoppingHost, asPanel);
+                // Now that |mDialogCore| has been initialized, we are ready for token callbacks.
+                ThreadUtils.postOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mNativeHandle != 0) {
+                            nativeCompleteInit(mNativeHandle);
+                        }
+                    }
+                });
             }
         });
-
-        // Now that |mDialogCore| has been initialized, we are ready for token callbacks.
-        nativeCompleteInit(mNativeHandle);
     }
 
     // AndroidOverlay impl.
