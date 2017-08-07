@@ -248,9 +248,12 @@ class HistoryURLProviderTest : public testing::Test,
   }
 
   // Verifies that for the given |input_text|, the first match's contents
-  // are |expected_match_contents|.
+  // are |expected_match_contents|. Also verifies that there is a correctly
+  // positioned match classification within the contents.
   void ExpectFormattedFullMatch(const std::string& input_text,
-                                const wchar_t* expected_match_contents);
+                                const wchar_t* expected_match_contents,
+                                size_t expected_match_location,
+                                size_t expected_match_length);
 
   base::MessageLoop message_loop_;
   ACMatches matches_;
@@ -364,7 +367,17 @@ void HistoryURLProviderTest::RunTest(
 
 void HistoryURLProviderTest::ExpectFormattedFullMatch(
     const std::string& input_text,
-    const wchar_t* expected_match_contents) {
+    const wchar_t* expected_match_contents,
+    size_t expected_match_location,
+    size_t expected_match_length) {
+  base::string16 expected_match_contents_string =
+      base::WideToUTF16(expected_match_contents);
+  ASSERT_FALSE(expected_match_contents_string.empty());
+
+  SCOPED_TRACE("input = " + input_text);
+  SCOPED_TRACE(base::ASCIIToUTF16("expected_match_contents = ") +
+               expected_match_contents_string);
+
   AutocompleteInput input(ASCIIToUTF16(input_text), base::string16::npos,
                           std::string(), GURL(), base::string16(),
                           metrics::OmniboxEventProto::INVALID_SPEC, false,
@@ -374,8 +387,32 @@ void HistoryURLProviderTest::ExpectFormattedFullMatch(
     base::RunLoop().Run();
 
   // Test the variations of URL formatting on the first match.
-  EXPECT_EQ(base::WideToUTF16(expected_match_contents),
-            autocomplete_->matches().front().contents);
+  auto& match = autocomplete_->matches().front();
+  EXPECT_EQ(expected_match_contents_string, match.contents);
+
+  // Verify pre-match portion classification, if it should exist.
+  auto classification_it = match.contents_class.begin();
+  ASSERT_NE(classification_it, match.contents_class.end());
+  if (expected_match_location > 0) {
+    EXPECT_EQ(ACMatchClassification::URL, classification_it->style);
+    EXPECT_EQ(0U, classification_it->offset);
+    ++classification_it;
+  }
+
+  // Verify the match portion classification.
+  ASSERT_NE(classification_it, match.contents_class.end());
+  EXPECT_EQ(ACMatchClassification::URL | ACMatchClassification::MATCH,
+            classification_it->style);
+  EXPECT_EQ(expected_match_location, classification_it->offset);
+  ++classification_it;
+
+  // Verify post-match portion classification, if it should exist.
+  size_t post_match_offset = expected_match_location + expected_match_length;
+  if (post_match_offset < expected_match_contents_string.length()) {
+    ASSERT_NE(classification_it, match.contents_class.end());
+    EXPECT_EQ(ACMatchClassification::URL, classification_it->style);
+    EXPECT_EQ(post_match_offset, classification_it->offset);
+  }
 }
 
 TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
@@ -1155,8 +1192,8 @@ TEST_F(HistoryURLProviderTest, HUPScoringExperiment) {
 
 TEST_F(HistoryURLProviderTest, MatchURLFormatting) {
   // Sanity check behavior under default flags.
-  ExpectFormattedFullMatch("abc", L"https://www.abc.def.com/path");
-  ExpectFormattedFullMatch("hij", L"https://www.hij.com/path");
+  ExpectFormattedFullMatch("abc", L"https://www.abc.def.com/path", 12, 3);
+  ExpectFormattedFullMatch("hij", L"https://www.hij.com/path", 12, 3);
 
   auto feature_list = base::MakeUnique<base::test::ScopedFeatureList>();
   feature_list->InitWithFeatures(
@@ -1166,48 +1203,48 @@ TEST_F(HistoryURLProviderTest, MatchURLFormatting) {
       {});
 
   // Sanity check that scheme, subdomain, and path can all be trimmed or elided.
-  ExpectFormattedFullMatch("hij", L"hij.com/\x2026\x0000");
+  ExpectFormattedFullMatch("hij", L"hij.com/\x2026\x0000", 0, 3);
 
   // Verify that the scheme is preserved if part of match.
   ExpectFormattedFullMatch("https://www.hi",
-                           L"https://www.hij.com/\x2026\x0000");
+                           L"https://www.hij.com/\x2026\x0000", 0, 14);
 
   // Verify that the whole subdomain is preserved if part of match.
-  ExpectFormattedFullMatch("abc", L"www.abc.def.com/\x2026\x0000");
-  ExpectFormattedFullMatch("www.hij", L"www.hij.com/\x2026\x0000");
+  ExpectFormattedFullMatch("abc", L"www.abc.def.com/\x2026\x0000", 4, 3);
+  ExpectFormattedFullMatch("www.hij", L"www.hij.com/\x2026\x0000", 0, 7);
 
   // Verify that the path is preserved if part of the match.
-  ExpectFormattedFullMatch("hij.com/pa", L"hij.com/path");
+  ExpectFormattedFullMatch("hij.com/path", L"hij.com/path", 0, 12);
 
   // Verify preserving both the scheme and subdomain.
   ExpectFormattedFullMatch("https://www.hi",
-                           L"https://www.hij.com/\x2026\x0000");
+                           L"https://www.hij.com/\x2026\x0000", 0, 14);
 
   // Verify preserving everything.
-  ExpectFormattedFullMatch("https://www.hij.com/p",
-                           L"https://www.hij.com/path");
+  ExpectFormattedFullMatch("https://www.hij.com/p", L"https://www.hij.com/path",
+                           0, 21);
 
   // Verify that upper case input still works for subdomain matching.
-  ExpectFormattedFullMatch("WWW.hij", L"www.hij.com/\x2026\x0000");
+  ExpectFormattedFullMatch("WWW.hij", L"www.hij.com/\x2026\x0000", 0, 7);
 
   // Verify that matching in the subdomain-only preserves the subdomain.
-  ExpectFormattedFullMatch("ww", L"www.abc.def.com/\x2026\x0000");
+  ExpectFormattedFullMatch("ww", L"www.abc.def.com/\x2026\x0000", 0, 2);
   ExpectFormattedFullMatch("https://ww",
-                           L"https://www.abc.def.com/\x2026\x0000");
+                           L"https://www.abc.def.com/\x2026\x0000", 0, 10);
 
   // Test individual feature flags as a sanity check.
   feature_list.reset(new base::test::ScopedFeatureList);
   feature_list->InitAndEnableFeature(
       omnibox::kUIExperimentHideSuggestionUrlScheme);
-  ExpectFormattedFullMatch("hij", L"www.hij.com/path");
+  ExpectFormattedFullMatch("hij", L"www.hij.com/path", 4, 3);
 
   feature_list.reset(new base::test::ScopedFeatureList);
   feature_list->InitAndEnableFeature(
       omnibox::kUIExperimentHideSuggestionUrlTrivialSubdomains);
-  ExpectFormattedFullMatch("hij", L"https://hij.com/path");
+  ExpectFormattedFullMatch("hij", L"https://hij.com/path", 8, 3);
 
   feature_list.reset(new base::test::ScopedFeatureList);
   feature_list->InitAndEnableFeature(
       omnibox::kUIExperimentElideSuggestionUrlAfterHost);
-  ExpectFormattedFullMatch("hij", L"https://www.hij.com/\x2026\x0000");
+  ExpectFormattedFullMatch("hij", L"https://www.hij.com/\x2026\x0000", 12, 3);
 }
