@@ -12,11 +12,12 @@
 namespace blink {
 
 bool CSSShorthandPropertyAPIGridGap::ParseShorthand(
+    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     bool use_legacy_parsing,
-    HeapVector<CSSProperty, 256>& properties) {
+    HeapVector<CSSProperty, 256>& properties) const {
   DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
   DCHECK_EQ(shorthandForProperty(CSSPropertyGridGap).length(), 2u);
   CSSValue* row_gap = CSSPropertyParserHelpers::ConsumeLengthOrPercent(

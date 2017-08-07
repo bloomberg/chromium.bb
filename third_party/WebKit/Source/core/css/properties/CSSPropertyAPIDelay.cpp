@@ -10,9 +10,10 @@
 namespace blink {
 
 const CSSValue* CSSPropertyAPIDelay::ParseSingleValue(
+    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext&,
-    const CSSParserLocalContext&) {
+    const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
       CSSPropertyParserHelpers::ConsumeTime, range, kValueRangeAll);
 }
