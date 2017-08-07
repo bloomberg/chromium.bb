@@ -39037,6 +39037,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.HttpStreamFactoryJob.StreamReadyCallbackTime" units="ms">
+  <obsolete>
+    Deprecated 08/2017. No longer tracked.
+  </obsolete>
   <owner>zhongyi@chromium.org</owner>
   <summary>Time it takes for OnStreamReadyCallback to be called.</summary>
 </histogram>
