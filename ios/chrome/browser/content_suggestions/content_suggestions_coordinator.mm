@@ -366,7 +366,7 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=new_tab";
 
 #pragma mark - ContentSuggestionsViewControllerAudience
 
-- (void)contentSuggestionsDidScroll {
+- (void)contentOffsetDidChange {
   [self.delegate updateNtpBarShadowForPanelController:self];
 }
 
@@ -442,6 +442,7 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=new_tab";
   self.headerController.isShowing = YES;
   [self.suggestionsViewController.collectionView
           .collectionViewLayout invalidateLayout];
+  [self.delegate updateNtpBarShadowForPanelController:self];
 }
 
 - (void)wasHidden {
