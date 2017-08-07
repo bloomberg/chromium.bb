@@ -44,7 +44,11 @@ IOSUserEventServiceFactory::~IOSUserEventServiceFactory() {}
 std::unique_ptr<KeyedService>
 IOSUserEventServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* browser_state) const {
-  if (browser_state->IsOffTheRecord()) {
+  syncer::SyncService* sync_service =
+      IOSChromeProfileSyncServiceFactory::GetForBrowserState(
+          ios::ChromeBrowserState::FromBrowserState(browser_state));
+  if (!syncer::UserEventServiceImpl::MightRecordEvents(
+          browser_state->IsOffTheRecord(), sync_service)) {
     return base::MakeUnique<syncer::NoOpUserEventService>();
   }
 
@@ -55,9 +59,6 @@ IOSUserEventServiceFactory::BuildServiceInstanceFor(
       base::BindRepeating(&syncer::ModelTypeChangeProcessor::Create,
                           base::BindRepeating(&syncer::ReportUnrecoverableError,
                                               ::GetChannel()));
-  syncer::SyncService* sync_service =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(
-          ios::ChromeBrowserState::FromBrowserState(browser_state));
   auto bridge = base::MakeUnique<syncer::UserEventSyncBridge>(
       std::move(store_factory), std::move(processor_factory),
       sync_service->GetGlobalIdMapper());
