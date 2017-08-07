@@ -47,6 +47,7 @@ include("${AOM_ROOT}/aom_scale/aom_scale.cmake")
 include("${AOM_ROOT}/aom_util/aom_util.cmake")
 include("${AOM_ROOT}/av1/av1.cmake")
 include("${AOM_ROOT}/test/test.cmake")
+include("${AOM_ROOT}/build/cmake/sanitizers.cmake")
 include("${AOM_ROOT}/build/cmake/util.cmake")
 
 set(AOM_RTCD_SOURCES

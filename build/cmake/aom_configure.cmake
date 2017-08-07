@@ -293,12 +293,12 @@ endif()
 
 if (CONFIG_GCOV)
   message("--- Testing for CONFIG_GCOV support.")
-  require_flag("-fprofile-arcs -ftest-coverage" YES)
+  require_compiler_flag("-fprofile-arcs -ftest-coverage" YES)
 endif ()
 
 if (CONFIG_GPROF)
   message("--- Testing for CONFIG_GPROF support.")
-  require_flag("-pg" YES)
+  require_compiler_flag("-pg" YES)
 endif ()
 
 if (NOT MSVC)

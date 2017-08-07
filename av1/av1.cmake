@@ -480,7 +480,7 @@ function (setup_av1_targets)
   endif ()
 
   if (HAVE_SSE2)
-    require_flag_nomsvc("-msse2" NO)
+    require_compiler_flag_nomsvc("-msse2" NO)
     add_intrinsics_object_library("-msse2" "sse2" "aom_av1_common"
                                   "AOM_AV1_COMMON_INTRIN_SSE2" "aom")
     if (CONFIG_AV1_DECODER)
@@ -502,7 +502,7 @@ function (setup_av1_targets)
   endif ()
 
   if (HAVE_SSSE3)
-    require_flag_nomsvc("-mssse3" NO)
+    require_compiler_flag_nomsvc("-mssse3" NO)
     add_intrinsics_object_library("-mssse3" "ssse3" "aom_av1_common"
                                   "AOM_AV1_COMMON_INTRIN_SSSE3" "aom")
 
@@ -520,7 +520,7 @@ function (setup_av1_targets)
   endif ()
 
   if (HAVE_SSE4_1)
-    require_flag_nomsvc("-msse4.1" NO)
+    require_compiler_flag_nomsvc("-msse4.1" NO)
     add_intrinsics_object_library("-msse4.1" "sse4" "aom_av1_common"
                                   "AOM_AV1_COMMON_INTRIN_SSE4_1" "aom")
 
@@ -538,7 +538,7 @@ function (setup_av1_targets)
   endif ()
 
   if (HAVE_AVX2)
-    require_flag_nomsvc("-mavx2" NO)
+    require_compiler_flag_nomsvc("-mavx2" NO)
     add_intrinsics_object_library("-mavx2" "avx2" "aom_av1_common"
                                   "AOM_AV1_COMMON_INTRIN_AVX2" "aom")
 
