@@ -130,8 +130,8 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
 
                 assert TabModelUtils.getTabIndexById(mTabModel, assignedTabId)
                         == TabModel.INVALID_TAB_INDEX;
-                tab = Tab.createLiveTab(assignedTabId, mActivity, mIncognito,
-                        mNativeWindow, type, parentId, !openInForeground);
+                tab = Tab.createLiveTab(assignedTabId, mIncognito, mNativeWindow, type, parentId,
+                        !openInForeground);
                 tab.initialize(
                         webContents, mTabContentManager, delegateFactory, !openInForeground, false);
                 tab.setParentIntent(parentIntent);
@@ -140,12 +140,12 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
                 // On low memory devices the tabs opened in background are not loaded automatically
                 // to preserve resources (cpu, memory, strong renderer binding) for the foreground
                 // tab.
-                tab = Tab.createTabForLazyLoad(mActivity, mIncognito, mNativeWindow, type,
-                        parentId, loadUrlParams);
+                tab = Tab.createTabForLazyLoad(
+                        mIncognito, mNativeWindow, type, parentId, loadUrlParams);
                 tab.initialize(null, mTabContentManager, delegateFactory, !openInForeground, false);
             } else {
-                tab = Tab.createLiveTab(Tab.INVALID_TAB_ID, mActivity, mIncognito,
-                        mNativeWindow, type, parentId, !openInForeground);
+                tab = Tab.createLiveTab(Tab.INVALID_TAB_ID, mIncognito, mNativeWindow, type,
+                        parentId, !openInForeground);
                 tab.initialize(null, mTabContentManager, delegateFactory, !openInForeground, false);
                 tab.loadUrl(loadUrlParams);
             }
@@ -178,8 +178,8 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
         boolean openInForeground = mOrderController.willOpenInForeground(type, mIncognito);
         TabDelegateFactory delegateFactory = parent == null ? createDefaultTabDelegateFactory()
                 : parent.getDelegateFactory();
-        Tab tab = Tab.createLiveTab(Tab.INVALID_TAB_ID, mActivity, mIncognito,
-                mNativeWindow, type, parentId, !openInForeground);
+        Tab tab = Tab.createLiveTab(
+                Tab.INVALID_TAB_ID, mIncognito, mNativeWindow, type, parentId, !openInForeground);
         tab.initialize(webContents, mTabContentManager, delegateFactory, !openInForeground, false);
         mTabModel.addTab(tab, position, type);
         return true;
@@ -277,7 +277,7 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
     @Override
     public Tab createFrozenTab(TabState state, int id, int index) {
         Tab tab = Tab.createFrozenTabFromState(
-                id, mActivity, state.isIncognito(), mNativeWindow, state.parentId, state);
+                id, state.isIncognito(), mNativeWindow, state.parentId, state);
         boolean selectTab = mOrderController.willOpenInForeground(TabLaunchType.FROM_RESTORE,
                 state.isIncognito());
         tab.initialize(

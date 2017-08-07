@@ -48,7 +48,7 @@ public class FullscreenActivity extends SingleTabActivity {
             tab.attachAndFinishReparenting(this, createTabDelegateFactory(), params);
         } else {
             // TODO(peconn): Figure out how this arises - https://crbug.com/729094:37
-            tab = new Tab(Tab.INVALID_TAB_ID, Tab.INVALID_TAB_ID, false, this, getWindowAndroid(),
+            tab = new Tab(Tab.INVALID_TAB_ID, Tab.INVALID_TAB_ID, false, getWindowAndroid(),
                     TabLaunchType.FROM_CHROME_UI, null, null);
             tab.initialize(null, getTabContentManager(), createTabDelegateFactory(), false, false);
         }

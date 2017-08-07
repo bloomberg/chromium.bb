@@ -463,7 +463,7 @@ public class Tab
      * @param window    An instance of a {@link WindowAndroid}.
      */
     public Tab(int id, boolean incognito, WindowAndroid window) {
-        this(id, INVALID_TAB_ID, incognito, null, window, null, null, null);
+        this(id, INVALID_TAB_ID, incognito, window, null, null, null);
     }
 
     /**
@@ -475,36 +475,28 @@ public class Tab
      * @param id          The id this tab should be identified with.
      * @param parentId    The id id of the tab that caused this tab to be opened.
      * @param incognito   Whether or not this tab is incognito.
-     * @param context     An instance of a {@link Context}.
      * @param window      An instance of a {@link WindowAndroid}.
      * @param creationState State in which the tab is created, needed to initialize TabUma
      *                      accounting. When null, TabUma will not be initialized.
      * @param frozenState State containing information about this Tab, if it was persisted.
      */
     @SuppressLint("HandlerLeak")
-    public Tab(int id, int parentId, boolean incognito, Context context,
-            WindowAndroid window, TabLaunchType type, TabCreationState creationState,
-            TabState frozenState) {
+    public Tab(int id, int parentId, boolean incognito, WindowAndroid window, TabLaunchType type,
+            TabCreationState creationState, TabState frozenState) {
         mId = TabIdManager.getInstance().generateValidId(id);
         mParentId = parentId;
         mIncognito = incognito;
-        mThemedApplicationContext = context != null ? new ContextThemeWrapper(
-                context.getApplicationContext(), ChromeActivity.getThemeId()) : null;
+        mThemedApplicationContext = new ContextThemeWrapper(
+                ContextUtils.getApplicationContext(), ChromeActivity.getThemeId());
         mWindowAndroid = window;
         mLaunchType = type;
         if (mLaunchType == TabLaunchType.FROM_DETACHED) mIsDetached = true;
-        if (mThemedApplicationContext != null) {
-            Resources resources = mThemedApplicationContext.getResources();
-            mIdealFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
-            mDefaultThemeColor = mIncognito
-                    ? ApiCompatibilityUtils.getColor(resources, R.color.incognito_primary_color)
-                    : ApiCompatibilityUtils.getColor(resources, R.color.default_primary_color);
-            mThemeColor = calculateThemeColor(false);
-        } else {
-            mIdealFaviconSize = 16;
-            mDefaultThemeColor = 0;
-            mThemeColor = mDefaultThemeColor;
-        }
+        Resources resources = mThemedApplicationContext.getResources();
+        mIdealFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
+        mDefaultThemeColor = mIncognito
+                ? ApiCompatibilityUtils.getColor(resources, R.color.incognito_primary_color)
+                : ApiCompatibilityUtils.getColor(resources, R.color.default_primary_color);
+        mThemeColor = calculateThemeColor(false);
 
         // Restore data from the TabState, if it existed.
         if (frozenState != null) {
@@ -2887,11 +2879,10 @@ public class Tab
      * afterwards to complete the second level initialization.
      */
     public static Tab createFrozenTabFromState(
-            int id, ChromeActivity activity, boolean incognito,
-            WindowAndroid nativeWindow, int parentId, TabState state) {
+            int id, boolean incognito, WindowAndroid nativeWindow, int parentId, TabState state) {
         assert state != null;
-        return new Tab(id, parentId, incognito, activity, nativeWindow,
-                TabLaunchType.FROM_RESTORE, TabCreationState.FROZEN_ON_RESTORE, state);
+        return new Tab(id, parentId, incognito, nativeWindow, TabLaunchType.FROM_RESTORE,
+                TabCreationState.FROZEN_ON_RESTORE, state);
     }
 
     /**
@@ -2930,11 +2921,9 @@ public class Tab
      * that should be loaded when switched to. initialize() needs to be called afterwards to
      * complete the second level initialization.
      */
-    public static Tab createTabForLazyLoad(ChromeActivity activity, boolean incognito,
-            WindowAndroid nativeWindow, TabLaunchType type, int parentId,
-            LoadUrlParams loadUrlParams) {
-        Tab tab = new Tab(
-                INVALID_TAB_ID, parentId, incognito, activity, nativeWindow, type,
+    public static Tab createTabForLazyLoad(boolean incognito, WindowAndroid nativeWindow,
+            TabLaunchType type, int parentId, LoadUrlParams loadUrlParams) {
+        Tab tab = new Tab(INVALID_TAB_ID, parentId, incognito, nativeWindow, type,
                 TabCreationState.FROZEN_FOR_LAZY_LOAD, null);
         tab.setPendingLoadParams(loadUrlParams);
         return tab;
@@ -2945,11 +2934,12 @@ public class Tab
      * initialization.
      * @param initiallyHidden true iff the tab being created is initially in background
      */
-    public static Tab createLiveTab(int id, ChromeActivity activity, boolean incognito,
-            WindowAndroid nativeWindow, TabLaunchType type, int parentId, boolean initiallyHidden) {
-        return new Tab(id, parentId, incognito, activity, nativeWindow, type, initiallyHidden
-                ? TabCreationState.LIVE_IN_BACKGROUND
-                : TabCreationState.LIVE_IN_FOREGROUND, null);
+    public static Tab createLiveTab(int id, boolean incognito, WindowAndroid nativeWindow,
+            TabLaunchType type, int parentId, boolean initiallyHidden) {
+        return new Tab(id, parentId, incognito, nativeWindow, type,
+                initiallyHidden ? TabCreationState.LIVE_IN_BACKGROUND
+                                : TabCreationState.LIVE_IN_FOREGROUND,
+                null);
     }
 
     /**
@@ -2963,7 +2953,7 @@ public class Tab
     public static Tab createDetached(TabDelegateFactory delegateFactory) {
         Context context = ContextUtils.getApplicationContext();
         WindowAndroid windowAndroid = new WindowAndroid(context);
-        Tab tab = new Tab(INVALID_TAB_ID, INVALID_TAB_ID, false, context, windowAndroid,
+        Tab tab = new Tab(INVALID_TAB_ID, INVALID_TAB_ID, false, windowAndroid,
                 TabLaunchType.FROM_DETACHED, null, null);
         tab.initialize(null, null, delegateFactory, true, false);
 
