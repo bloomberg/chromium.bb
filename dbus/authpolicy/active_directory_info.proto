@@ -67,8 +67,10 @@ enum ErrorType {
   ERROR_KLIST_FAILED = 26;
   // Kinit failed because of bad machine name.
   ERROR_BAD_MACHINE_NAME = 27;
+  // Kinit failed to change the password because the password was rejected.
+  ERROR_PASSWORD_REJECTED = 28;
   // Should be the last.
-  ERROR_COUNT = 28;
+  ERROR_COUNT = 29;
 }
 
 // Message sent to Chromium by authpolicy service as a response of a successful
