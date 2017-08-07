@@ -89,15 +89,19 @@ sk_sp<PaintShader> PaintShader::MakeSweepGradient(SkScalar cx,
                                                   const SkColor colors[],
                                                   const SkScalar pos[],
                                                   int color_count,
+                                                  SkShader::TileMode mode,
+                                                  SkScalar start_degrees,
+                                                  SkScalar end_degrees,
                                                   uint32_t flags,
                                                   const SkMatrix* local_matrix,
                                                   SkColor fallback_color) {
   sk_sp<PaintShader> shader(new PaintShader(Type::kSweepGradient));
 
   shader->center_ = SkPoint::Make(cx, cy);
+  shader->start_degrees_ = start_degrees;
+  shader->end_degrees_ = end_degrees;
   shader->SetColorsAndPositions(colors, pos, color_count);
-  shader->SetMatrixAndTiling(local_matrix, SkShader::kClamp_TileMode,
-                             SkShader::kClamp_TileMode);
+  shader->SetMatrixAndTiling(local_matrix, mode, mode);
   shader->SetFlagsAndFallback(flags, fallback_color);
 
   return shader;
@@ -170,8 +174,8 @@ sk_sp<SkShader> PaintShader::GetSkShader() const {
       cached_shader_ = SkGradientShader::MakeSweep(
           center_.x(), center_.y(), colors_.data(),
           positions_.empty() ? nullptr : positions_.data(),
-          static_cast<int>(colors_.size()), flags_,
-          local_matrix_ ? &*local_matrix_ : nullptr);
+          static_cast<int>(colors_.size()), tx_, start_degrees_, end_degrees_,
+          flags_, local_matrix_ ? &*local_matrix_ : nullptr);
       break;
     case Type::kImage:
       cached_shader_ = image_.GetSkImage()->makeShader(

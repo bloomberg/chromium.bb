@@ -27,6 +27,7 @@
 #include "core/css/CSSGradientValue.h"
 
 #include <algorithm>
+#include <tuple>
 #include <utility>
 #include "core/CSSValueKeywords.h"
 #include "core/css/CSSCalculationValue.h"
@@ -191,7 +192,8 @@ struct CSSGradientValue::GradientDesc {
   Vector<Gradient::ColorStop> stops;
   FloatPoint p0, p1;
   float r0 = 0, r1 = 0;
-  GradientSpreadMethod spread_method = kSpreadMethodPad;
+  float start_angle = 0, end_angle = 360;
+  GradientSpreadMethod spread_method;
 };
 
 static void ReplaceColorHintsWithColorStops(
@@ -412,19 +414,17 @@ void ClampNegativeOffsets(Vector<GradientStop>& stops) {
   }
 }
 
-// Update the linear gradient points to align with the given offset range.
-void AdjustGradientPointsForOffsetRange(CSSGradientValue::GradientDesc& desc,
-                                        float first_offset,
-                                        float last_offset) {
+template <typename T>
+std::tuple<T, T> AdjustedGradientDomainForOffsetRange(const T& v0,
+                                                      const T& v1,
+                                                      float first_offset,
+                                                      float last_offset) {
   DCHECK_LE(first_offset, last_offset);
 
-  const FloatPoint p0 = desc.p0;
-  const FloatPoint p1 = desc.p1;
-  const FloatSize d(p1 - p0);
+  const auto d = v1 - v0;
 
-  // Linear offsets are relative to the [p0 , p1] segment.
-  desc.p0 = p0 + d * first_offset;
-  desc.p1 = p0 + d * last_offset;
+  // The offsets are relative to the [v0 , v1] segment.
+  return std::make_tuple(v0 + d * first_offset, v0 + d * last_offset);
 }
 
 // Update the radial gradient radii to align with the given offset range.
@@ -460,99 +460,6 @@ void AdjustGradientRadiiForOffsetRange(CSSGradientValue::GradientDesc& desc,
 
   desc.r0 = adjusted_r0;
   desc.r1 = adjusted_r1;
-}
-
-// Helper for performing on-the-fly out of range color stop interpolation.
-class ConicClamper {
-  STACK_ALLOCATED();
-
- public:
-  ConicClamper(CSSGradientValue::GradientDesc& desc) : desc_(desc) {}
-
-  void Add(float offset, const Color& color) {
-    AddInternal(offset, color);
-    prev_offset_ = offset;
-    prev_color_ = color;
-  }
-
- private:
-  void AddUnique(float offset, const Color& color) {
-    // Skip duplicates.
-    if (desc_.stops.IsEmpty() || offset != desc_.stops.back().stop ||
-        color != desc_.stops.back().color) {
-      desc_.stops.emplace_back(offset, color);
-    }
-  }
-
-  void AddInternal(float offset, const Color& color) {
-    if (offset < 0)
-      return;
-
-    if (prev_offset_ < 0 && offset > 0) {
-      AddUnique(0, Blend(prev_color_, color,
-                         -prev_offset_ / (offset - prev_offset_)));
-    }
-
-    if (offset <= 1) {
-      AddUnique(offset, color);
-      return;
-    }
-
-    if (prev_offset_ < 1) {
-      AddUnique(1, Blend(prev_color_, color,
-                         (1 - prev_offset_) / (offset - prev_offset_)));
-    }
-  }
-
-  CSSGradientValue::GradientDesc& desc_;
-
-  float prev_offset_ = 0;
-  Color prev_color_;
-};
-
-void NormalizeAndAddConicStops(const Vector<GradientStop>& stops,
-                               CSSGradientValue::GradientDesc& desc) {
-  DCHECK(!stops.IsEmpty());
-  ConicClamper clamper(desc);
-
-  if (desc.spread_method == kSpreadMethodPad) {
-    for (const auto& stop : stops)
-      clamper.Add(stop.offset, stop.color);
-    return;
-  }
-
-  DCHECK_EQ(desc.spread_method, kSpreadMethodRepeat);
-
-  // The normalization trick we use for linear and radial doesn't work here,
-  // because the underlying Skia implementation doesn't support conic gradient
-  // tiling.  So we emit synthetic stops to cover the whole unit interval.
-  float repeat_span = stops.back().offset - stops.front().offset;
-  DCHECK_GE(repeat_span, 0.0f);
-  if (repeat_span < std::numeric_limits<float>::epsilon()) {
-    // All stops are coincident -> use a single solid color.
-    desc.stops.emplace_back(0, stops.back().color);
-    return;
-  }
-
-  // Compute an offset base as a repetition of stops[0].offset such that
-  // [ offsetBase, offsetBase + repeatSpan ] contains 0
-  // (aka the largest repeat value for stops[0] less than 0).
-  float offset = fmodf(stops.front().offset, repeat_span) -
-                 (stops.front().offset < 0 ? 0 : repeat_span);
-  DCHECK_LE(offset, 0);
-  DCHECK_GE(offset + repeat_span, 0);
-
-  // Start throwing repeating values at the clamper.
-  do {
-    const float offset_base = offset;
-    for (const auto& stop : stops) {
-      offset = offset_base + stop.offset - stops.front().offset;
-      clamper.Add(offset, stop.color);
-
-      if (offset >= 1)
-        break;
-    }
-  } while (offset < 1);
 }
 
 }  // anonymous ns
@@ -696,8 +603,8 @@ void CSSGradientValue::AddStops(
   switch (GetClassType()) {
     case kLinearGradientClass:
       if (NormalizeAndAddStops(stops, desc)) {
-        AdjustGradientPointsForOffsetRange(desc, stops.front().offset,
-                                           stops.back().offset);
+        std::tie(desc.p0, desc.p1) = AdjustedGradientDomainForOffsetRange(
+            desc.p0, desc.p1, stops.front().offset, stops.back().offset);
       }
       break;
     case kRadialGradientClass:
@@ -714,7 +621,12 @@ void CSSGradientValue::AddStops(
       }
       break;
     case kConicGradientClass:
-      NormalizeAndAddConicStops(stops, desc);
+      if (NormalizeAndAddStops(stops, desc)) {
+        std::tie(desc.start_angle, desc.end_angle) =
+            AdjustedGradientDomainForOffsetRange(
+                desc.start_angle, desc.end_angle, stops.front().offset,
+                stops.back().offset);
+      }
       break;
     default:
       NOTREACHED();
@@ -1528,7 +1440,8 @@ RefPtr<Gradient> CSSConicGradientValue::CreateGradient(
   AddStops(desc, conversion_data, object);
 
   RefPtr<Gradient> gradient = Gradient::CreateConic(
-      position, angle, Gradient::ColorInterpolation::kPremultiplied);
+      position, angle, desc.start_angle, desc.end_angle, desc.spread_method,
+      Gradient::ColorInterpolation::kPremultiplied);
   gradient->AddColorStops(desc.stops);
 
   return gradient;

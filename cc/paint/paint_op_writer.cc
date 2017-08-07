@@ -144,6 +144,8 @@ void PaintOpWriter::Write(const PaintShader* shader) {
   WriteSimple(shader->tile_);
   WriteSimple(shader->start_point_);
   WriteSimple(shader->end_point_);
+  WriteSimple(shader->start_degrees_);
+  WriteSimple(shader->end_degrees_);
   // TODO(vmpstr): Write PaintImage image_. http://crbug.com/737629
   // TODO(vmpstr): Write sk_sp<PaintRecord> record_. http://crbug.com/737629
   WriteSimple(shader->colors_.size());

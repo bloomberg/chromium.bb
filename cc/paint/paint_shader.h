@@ -80,6 +80,9 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
       const SkColor colors[],
       const SkScalar pos[],
       int color_count,
+      SkShader::TileMode mode,
+      SkScalar start_degrees,
+      SkScalar end_degrees,
       uint32_t flags = 0,
       const SkMatrix* local_matrix = nullptr,
       SkColor fallback_color = SK_ColorTRANSPARENT);
@@ -147,6 +150,9 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
 
   SkPoint start_point_ = SkPoint::Make(0, 0);
   SkPoint end_point_ = SkPoint::Make(0, 0);
+
+  SkScalar start_degrees_ = 0;
+  SkScalar end_degrees_ = 0;
 
   PaintImage image_;
   sk_sp<PaintRecord> record_;
