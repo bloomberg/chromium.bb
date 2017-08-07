@@ -2946,25 +2946,6 @@
             ]
         }
     ],
-    "SyncUserEvents": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SyncUserEvents"
-                    ]
-                }
-            ]
-        }
-    ],
     "TLS13Variant": [
         {
             "platforms": [
@@ -3169,6 +3150,27 @@
                 },
                 {
                     "name": "EnabledTranslateLanguage"
+                }
+            ]
+        }
+    ],
+    "TranslateUserEvents": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SyncUserLanguageDetectionEvents",
+                        "SyncUserTranslationEvents"
+                    ]
                 }
             ]
         }
