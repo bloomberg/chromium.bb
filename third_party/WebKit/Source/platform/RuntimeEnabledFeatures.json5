@@ -388,10 +388,6 @@
       status: "stable",
     },
     {
-      name: "DurableStorage",
-      status: "stable",
-    },
-    {
       name: "EmbedderCSPEnforcement",
       status: "stable",
     },
@@ -493,10 +489,6 @@
     },
     {
       name: "GetUserMedia",
-      status: "stable",
-    },
-    {
-      name: "GlobalCacheStorage",
       status: "stable",
     },
     {
@@ -1010,10 +1002,6 @@
     {
       name: "StackedCSSPropertyAnimations",
       status: "experimental",
-    },
-    {
-      name: "StorageEstimate",
-      status: "stable",
     },
     {
       name: "Suborigins",
