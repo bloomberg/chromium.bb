@@ -80,7 +80,9 @@ QuicStream::QuicStream(QuicStreamId id, QuicSession* session)
       add_random_padding_after_fin_(false),
       ack_listener_(nullptr),
       send_buffer_(
-          session->connection()->helper()->GetStreamSendBufferAllocator()) {
+          session->connection()->helper()->GetStreamSendBufferAllocator()),
+      buffered_data_threshold_(
+          GetQuicFlag(FLAGS_quic_buffered_data_threshold)) {
   SetFromConfig();
 }
 
@@ -260,8 +262,7 @@ void QuicStream::OnCanWrite() {
     if (HasBufferedData() || (fin_buffered_ && !fin_sent_)) {
       WriteBufferedData();
     }
-    if (!fin_buffered_ && !fin_sent_ &&
-        queued_data_bytes() < GetQuicFlag(FLAGS_quic_buffered_data_threshold)) {
+    if (!fin_buffered_ && !fin_sent_ && CanWriteNewData()) {
       // Notify upper layer to write new data when buffered data size is below
       // low water mark.
       OnCanWriteNewData();
@@ -346,7 +347,7 @@ QuicConsumedData QuicStream::WritevData(
     }
 
     bool had_buffered_data = HasBufferedData();
-    if (queued_data_bytes() < GetQuicFlag(FLAGS_quic_buffered_data_threshold)) {
+    if (CanWriteNewData()) {
       // Save all data if buffered data size is below low water mark.
       QuicIOVector quic_iovec(iov, iov_count, write_length);
       consumed_data.bytes_consumed = write_length;
@@ -715,6 +716,10 @@ uint64_t QuicStream::queued_data_bytes() const {
     return send_buffer_.stream_offset() - stream_bytes_written_;
   }
   return queued_data_bytes_;
+}
+
+bool QuicStream::CanWriteNewData() const {
+  return queued_data_bytes() < buffered_data_threshold_;
 }
 
 }  // namespace net
