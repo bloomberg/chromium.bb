@@ -25,5 +25,5 @@ partial interface Navigator {
     [MeasureAs=PrefixedStorageQuota] readonly attribute DeprecatedStorageQuota webkitPersistentStorage;
 
     // https://storage.spec.whatwg.org/#api
-    [SecureContext, RuntimeEnabled=DurableStorage] readonly attribute StorageManager storage;
+    [SecureContext] readonly attribute StorageManager storage;
 };
