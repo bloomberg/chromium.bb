@@ -3666,7 +3666,11 @@ void Element::SetFloatingPointAttribute(const QualifiedName& attribute_name,
 
 void Element::SetContainsFullScreenElement(bool flag) {
   SetElementFlag(kContainsFullScreenElement, flag);
-  GetDocument().GetStyleEngine().EnsureUAStyleForFullscreen();
+  // When exiting fullscreen, the element's document may not be active.
+  if (flag) {
+    DCHECK(GetDocument().IsActive());
+    GetDocument().GetStyleEngine().EnsureUAStyleForFullscreen();
+  }
   PseudoStateChanged(CSSSelector::kPseudoFullScreenAncestor);
 }
 
