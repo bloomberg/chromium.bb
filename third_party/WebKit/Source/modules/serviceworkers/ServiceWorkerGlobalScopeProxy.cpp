@@ -76,7 +76,6 @@
 #include "modules/serviceworkers/ServiceWorkerWindowClient.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/CrossThreadFunctional.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WaitableEvent.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
@@ -453,12 +452,6 @@ void ServiceWorkerGlobalScopeProxy::DispatchSyncEvent(
     int event_id,
     const WebString& tag,
     LastChanceOption last_chance) {
-  if (!RuntimeEnabledFeatures::BackgroundSyncEnabled()) {
-    ServiceWorkerGlobalScopeClient::From(WorkerGlobalScope())
-        ->DidHandleSyncEvent(event_id, kWebServiceWorkerEventResultCompleted,
-                             WTF::CurrentTime());
-    return;
-  }
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kSync, event_id);
   Event* event = SyncEvent::Create(EventTypeNames::sync, tag,
