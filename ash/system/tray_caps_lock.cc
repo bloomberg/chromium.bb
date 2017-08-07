@@ -6,6 +6,7 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -17,11 +18,14 @@
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
 #include "base/sys_info.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/chromeos/events/pref_names.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
@@ -51,9 +55,23 @@ bool CapsLockIsEnabled() {
              : false;
 }
 
+bool IsSearchKeyMappedToCapsLock() {
+  PrefService* prefs = Shell::Get()->GetActiveUserPrefService();
+  // Null in tests and early in mash startup.
+  if (!prefs)
+    return false;
+  // Don't bother to observe for the pref changing because the system tray
+  // menu is rebuilt every time it is opened and the user has to close the
+  // menu to open settings to change the pref. It's not worth the complexity
+  // to worry about sync changing the pref while the menu or notification is
+  // visible.
+  return prefs->GetInteger(prefs::kLanguageRemapSearchKeyTo) ==
+         chromeos::input_method::kCapsLockKey;
+}
+
 std::unique_ptr<Notification> CreateNotification() {
   const int string_id =
-      Shell::Get()->system_tray_delegate()->IsSearchKeyMappedToCapsLock()
+      IsSearchKeyMappedToCapsLock()
           ? IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_SEARCH
           : IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_ALT_SEARCH;
   std::unique_ptr<Notification> notification(new Notification(
@@ -117,8 +135,7 @@ class CapsLockDefaultView : public ActionableView {
     text_label_->SetText(l10n_util::GetStringUTF16(text_string_id));
 
     int shortcut_string_id = 0;
-    bool search_mapped_to_caps_lock =
-        Shell::Get()->system_tray_delegate()->IsSearchKeyMappedToCapsLock();
+    const bool search_mapped_to_caps_lock = IsSearchKeyMappedToCapsLock();
     if (caps_lock_enabled) {
       shortcut_string_id =
           search_mapped_to_caps_lock
@@ -182,6 +199,13 @@ TrayCapsLock::~TrayCapsLock() {
     ime->GetImeKeyboard()->RemoveObserver(this);
 }
 
+// static
+void TrayCapsLock::RegisterForeignPrefs(PrefRegistrySimple* registry) {
+  DCHECK_EQ(Shell::GetAshConfig(), Config::MASH);
+  // Pref is owned by chrome and flagged as PUBLIC.
+  registry->RegisterForeignPref(prefs::kLanguageRemapSearchKeyTo);
+}
+
 void TrayCapsLock::OnCapsLockChanged(bool enabled) {
   caps_lock_enabled_ = enabled;
 
@@ -211,6 +235,8 @@ void TrayCapsLock::OnCapsLockChanged(bool enabled) {
     }
   }
 }
+
+void TrayCapsLock::OnLayoutChanging(const std::string& layout_name) {}
 
 bool TrayCapsLock::GetInitialVisibility() {
   return CapsLockIsEnabled();

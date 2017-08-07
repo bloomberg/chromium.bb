@@ -268,9 +268,9 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterStringPref(prefs::kLanguageEnabledExtensionImes, "");
 
   registry->RegisterIntegerPref(
-      prefs::kLanguageRemapSearchKeyTo,
-      input_method::kSearchKey,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+      prefs::kLanguageRemapSearchKeyTo, input_method::kSearchKey,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF |
+          PrefRegistry::PUBLIC);  // Used in ash.
   registry->RegisterIntegerPref(
       prefs::kLanguageRemapControlKeyTo,
       input_method::kControlKey,

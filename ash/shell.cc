@@ -88,6 +88,7 @@
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "ash/system/tray_caps_lock.h"
 #include "ash/touch/ash_touch_transform_controller.h"
 #include "ash/tray_action/tray_action.h"
 #include "ash/utility/screenshot_controller.h"
@@ -1253,6 +1254,7 @@ void Shell::OnActiveUserSessionChanged(const AccountId& account_id) {
     // while the connection is being made.
     auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
     RegisterProfilePrefs(pref_registry.get());
+    RegisterForeignPrefs(pref_registry.get());
     prefs::ConnectToPrefService(
         shell_delegate_->GetShellConnector(), pref_registry,
         base::Bind(&Shell::OnProfilePrefServiceInitialized,
@@ -1321,6 +1323,14 @@ void Shell::InitializeShelf() {
 
   for (RootWindowController* root : GetAllRootWindowControllers())
     root->InitializeShelf();
+}
+
+// static
+void Shell::RegisterForeignPrefs(PrefRegistrySimple* registry) {
+  DCHECK_EQ(GetAshConfig(), Config::MASH);
+  // Request access to prefs used by ash but owned by chrome.
+  // See //services/preferences/README.md
+  TrayCapsLock::RegisterForeignPrefs(registry);
 }
 
 void Shell::OnProfilePrefServiceInitialized(
