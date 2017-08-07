@@ -1,7 +1,7 @@
 # liblouis: Unified French 6 dots Braille table
 
 # Copyright (C) 1995-2004 by The BRLTTY Team
-# Copyright (C) 2012 Michel Such <michel.such@free.fr>
+# Copyright (C) 2012,1017 Michel Such <michel.such@free.fr>
 # Copyright (C) 2017 André-Abush CLAUSE <dev@andreabc.net>
 # Copyright (C) 2017 Ludovic Oger <oger.ludovic@gmail.com>
 
@@ -47,12 +47,12 @@ space \x000c 0    #
 space \x000D 0    # cr
 space \x00A0 a    # no-break space
 
-include digits6DotsPlusDot6.uti
-include latinLetterDef6Dots.uti
-
 # override zero
 digit 0 3456
 litdigit 0 3456
+
+include litdigits6DotsPlusDot6.uti
+include latinLetterDef6Dots.uti
 
 uplow Çç 12346		# c cédille
 uplow Éé 123456		# e accent aigu
@@ -260,17 +260,6 @@ begemphword italic 456
 emphletter italic 456
 begemphphrase bold 456-456
 endemphphrase bold before 456
-
-litdigit 0 3456		# zéro
-litdigit 1 16			# un
-litdigit 2 126		# deux
-litdigit 3 146		# trois
-litdigit 4 1456		# quatre
-litdigit 5 156		# cinq
-litdigit 6 1246		# six
-litdigit 7 12456	# sept
-litdigit 8 1256		# huit
-litdigit 9 246		# neuf
 
 repeated ... 256-256-256		#	points de suspension
 repeated --- 36-36-36

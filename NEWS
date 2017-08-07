@@ -12,6 +12,8 @@ issues]].
     contractions thanks to James Teh.
   - Fix back-translation for contractions followed by punctuation
     thanks to James Teh.
+- Unified French 6 dots
+  - Fix back-translation of accented characters thanks to Michel Such.
 ** Other changes
 ** Braille table improvements
 - Fix the character definition for the exclamation mark in the Spanish
