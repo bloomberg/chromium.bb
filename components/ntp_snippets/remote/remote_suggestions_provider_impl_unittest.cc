@@ -271,6 +271,12 @@ class MockPrefetchedPagesTracker : public PrefetchedPagesTracker {
   MOCK_CONST_METHOD1(PrefetchedOfflinePageExists, bool(const GURL& url));
 };
 
+class MockBreakingNewsListener : public BreakingNewsListener {
+ public:
+  MOCK_METHOD1(StartListening, void(OnNewRemoteSuggestionCallback callback));
+  MOCK_METHOD0(StopListening, void());
+};
+
 }  // namespace
 
 class RemoteSuggestionsProviderImplTest : public ::testing::Test {
@@ -301,14 +307,16 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   // instead of creating a new provider.
   std::unique_ptr<RemoteSuggestionsProviderImpl> MakeSuggestionsProvider() {
     auto provider = MakeSuggestionsProviderWithoutInitialization(
-        /*use_mock_prefetched_pages_tracker=*/false);
+        /*use_mock_prefetched_pages_tracker=*/false,
+        /*use_mock_breaking_news_listener=*/false);
     WaitForSuggestionsProviderInitialization(provider.get());
     return provider;
   }
 
   std::unique_ptr<RemoteSuggestionsProviderImpl>
   MakeSuggestionsProviderWithoutInitialization(
-      bool use_mock_prefetched_pages_tracker) {
+      bool use_mock_prefetched_pages_tracker,
+      bool use_mock_breaking_news_listener) {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner(
         base::ThreadTaskRunnerHandle::Get());
 
@@ -323,6 +331,17 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
           base::MakeUnique<StrictMock<MockPrefetchedPagesTracker>>();
     }
     prefetched_pages_tracker_ = prefetched_pages_tracker.get();
+
+    std::unique_ptr<BreakingNewsListener> breaking_news_listener;
+    if (use_mock_breaking_news_listener) {
+      auto mock_breaking_news_listener =
+          base::MakeUnique<StrictMock<MockBreakingNewsListener>>();
+      EXPECT_CALL(*mock_breaking_news_listener, StartListening(_))
+          .WillOnce(SaveArg<0>(&on_new_remote_suggestion_callback_));
+      EXPECT_CALL(*mock_breaking_news_listener, StopListening());
+      breaking_news_listener = std::move(mock_breaking_news_listener);
+    }
+    breaking_news_listener_ = breaking_news_listener.get();
 
     auto image_fetcher = base::MakeUnique<NiceMock<MockImageFetcher>>();
 
@@ -341,15 +360,15 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         std::move(image_fetcher), std::move(database),
         base::MakeUnique<RemoteSuggestionsStatusService>(
             utils_.fake_signin_manager(), utils_.pref_service(), std::string()),
-        std::move(prefetched_pages_tracker),
-        /*breaking_news_raw_data_provider=*/nullptr);
+        std::move(prefetched_pages_tracker), std::move(breaking_news_listener));
   }
 
   std::unique_ptr<RemoteSuggestionsProviderImpl>
   MakeSuggestionsProviderWithoutInitializationWithStrictScheduler() {
     scheduler_ = base::MakeUnique<StrictMock<MockScheduler>>();
     return MakeSuggestionsProviderWithoutInitialization(
-        /*use_mock_prefetched_pages_tracker=*/false);
+        /*use_mock_prefetched_pages_tracker=*/false,
+        /*use_mock_breaking_news_listener=*/false);
   }
 
   void WaitForSuggestionsProviderInitialization(
@@ -445,6 +464,12 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         .Run(Status::Success(), std::move(fetched_categories));
   }
 
+  void PushArticleSuggestionToTheFront(
+      std::unique_ptr<RemoteSuggestion> suggestion) {
+    EXPECT_FALSE(on_new_remote_suggestion_callback_.is_null());
+    on_new_remote_suggestion_callback_.Run(std::move(suggestion));
+  }
+
   void SetOrderNewRemoteCategoriesBasedOnArticlesCategoryParam(bool value) {
     // params_manager supports only one
     // |SetVariationParamsWithFeatureAssociations| at a time, so we clear
@@ -488,6 +513,10 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   NiceMock<MockImageFetcher>* image_fetcher_;
   FakeImageDecoder image_decoder_;
   std::unique_ptr<MockScheduler> scheduler_;
+  BreakingNewsListener* breaking_news_listener_;
+
+  BreakingNewsListener::OnNewRemoteSuggestionCallback
+      on_new_remote_suggestion_callback_;
 
   base::ScopedTempDir database_dir_;
   RemoteSuggestionsDatabase* database_;
@@ -1095,7 +1124,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldNotChangeSuggestionsInOtherSurfacesWhenFetchingMore) {
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_prefetched_pages_tracker=*/false);
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_mock_breaking_news_listener=*/false);
   WaitForSuggestionsProviderInitialization(provider.get());
 
   // Fetch a suggestion.
@@ -1148,7 +1178,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldNotAffectFetchMoreInOtherSurfacesWhenFetchingMore) {
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_prefetched_pages_tracker=*/false);
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_mock_breaking_news_listener=*/false);
   WaitForSuggestionsProviderInitialization(provider.get());
 
   // Fetch more on the surface A.
@@ -1283,7 +1314,8 @@ void SuggestionsLoaded(
 
 TEST_F(RemoteSuggestionsProviderImplTest, ReturnFetchRequestEmptyBeforeInit) {
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_prefetched_pages_tracker=*/false);
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_mock_breaking_news_listener=*/false);
   RemoteSuggestionsFetcher::SnippetsAvailableCallback snippets_callback;
   EXPECT_CALL(*mock_suggestions_fetcher(), FetchSnippets(_, _)).Times(0);
   MockFunction<void(Status, const std::vector<ContentSuggestion>&)> loaded;
@@ -1911,7 +1943,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   // is triggered since the suggestions DB is empty. Therefore the provider must
   // not be initialized until the test clock is set.
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_prefetched_pages_tracker=*/false);
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_mock_breaking_news_listener=*/false);
 
   auto simple_test_clock = base::MakeUnique<base::SimpleTestClock>();
   base::SimpleTestClock* simple_test_clock_ptr = simple_test_clock.get();
@@ -2021,7 +2054,8 @@ TEST_F(RemoteSuggestionsProviderImplTest, CallsSchedulerWhenSignedOut) {
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldExcludeKnownSuggestionsWithoutTruncatingWhenFetchingMore) {
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_prefetched_pages_tracker=*/false);
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_mock_breaking_news_listener=*/false);
   WaitForSuggestionsProviderInitialization(provider.get());
 
   std::set<std::string> known_ids;
@@ -2043,7 +2077,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldExcludeDismissedSuggestionsWhenFetchingMore) {
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_prefetched_pages_tracker=*/false);
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_mock_breaking_news_listener=*/false);
   WaitForSuggestionsProviderInitialization(provider.get());
 
   std::vector<FetchedCategory> fetched_categories;
@@ -2076,7 +2111,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldTruncateExcludedDismissedSuggestionsWhenFetchingMore) {
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_prefetched_pages_tracker=*/false);
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_mock_breaking_news_listener=*/false);
   WaitForSuggestionsProviderInitialization(provider.get());
 
   std::vector<FetchedCategory> fetched_categories;
@@ -2113,7 +2149,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldPreferLatestExcludedDismissedSuggestionsWhenFetchingMore) {
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_prefetched_pages_tracker=*/false);
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_mock_breaking_news_listener=*/false);
   WaitForSuggestionsProviderInitialization(provider.get());
 
   std::vector<FetchedCategory> fetched_categories;
@@ -2157,7 +2194,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldExcludeDismissedSuggestionsFromAllCategoriesWhenFetchingMore) {
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_prefetched_pages_tracker=*/false);
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_mock_breaking_news_listener=*/false);
   WaitForSuggestionsProviderInitialization(provider.get());
 
   // Add article suggestions.
@@ -2213,7 +2251,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldPreferTargetCategoryExcludedDismissedSuggestionsWhenFetchingMore) {
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_prefetched_pages_tracker=*/false);
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_mock_breaking_news_listener=*/false);
   WaitForSuggestionsProviderInitialization(provider.get());
 
   // Add article suggestions.
@@ -2289,7 +2328,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
       kMaxAgeForAdditionalPrefetchedSuggestion);
 
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_prefetched_pages_tracker=*/true);
+      /*use_mock_prefetched_pages_tracker=*/true,
+      /*use_mock_breaking_news_listener=*/false);
   auto* mock_tracker = static_cast<StrictMock<MockPrefetchedPagesTracker>*>(
       prefetched_pages_tracker());
   WaitForSuggestionsProviderInitialization(provider.get());
@@ -2340,7 +2380,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
       kMaxAgeForAdditionalPrefetchedSuggestion);
 
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_prefetched_pages_tracker=*/true);
+      /*use_mock_prefetched_pages_tracker=*/true,
+      /*use_mock_breaking_news_listener=*/false);
   auto* mock_tracker = static_cast<StrictMock<MockPrefetchedPagesTracker>*>(
       prefetched_pages_tracker());
   WaitForSuggestionsProviderInitialization(provider.get());
@@ -2389,7 +2430,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
       kMaxAgeForAdditionalPrefetchedSuggestion);
 
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_prefetched_pages_tracker=*/true);
+      /*use_mock_prefetched_pages_tracker=*/true,
+      /*use_mock_breaking_news_listener=*/false);
   auto* mock_tracker = static_cast<StrictMock<MockPrefetchedPagesTracker>*>(
       prefetched_pages_tracker());
   WaitForSuggestionsProviderInitialization(provider.get());
@@ -2444,7 +2486,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
       kMaxAgeForAdditionalPrefetchedSuggestion);
 
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_prefetched_pages_tracker=*/true);
+      /*use_mock_prefetched_pages_tracker=*/true,
+      /*use_mock_breaking_news_listener=*/false);
   auto* mock_tracker = static_cast<StrictMock<MockPrefetchedPagesTracker>*>(
       prefetched_pages_tracker());
   WaitForSuggestionsProviderInitialization(provider.get());
@@ -2515,7 +2558,8 @@ TEST_F(
       kMaxAgeForAdditionalPrefetchedSuggestion);
 
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_prefetched_pages_tracker=*/true);
+      /*use_mock_prefetched_pages_tracker=*/true,
+      /*use_mock_breaking_news_listener=*/false);
   auto* mock_tracker = static_cast<StrictMock<MockPrefetchedPagesTracker>*>(
       prefetched_pages_tracker());
   WaitForSuggestionsProviderInitialization(provider.get());
@@ -2570,7 +2614,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
       kMaxAgeForAdditionalPrefetchedSuggestion);
 
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_prefetched_pages_tracker=*/true);
+      /*use_mock_prefetched_pages_tracker=*/true,
+      /*use_mock_breaking_news_listener=*/false);
   auto* mock_tracker = static_cast<StrictMock<MockPrefetchedPagesTracker>*>(
       prefetched_pages_tracker());
 
@@ -2657,7 +2702,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
       kMaxAgeForAdditionalPrefetchedSuggestion);
 
   auto provider = MakeSuggestionsProviderWithoutInitialization(
-      /*use_mock_prefetched_pages_tracker=*/true);
+      /*use_mock_prefetched_pages_tracker=*/true,
+      /*use_mock_breaking_news_listener=*/false);
   auto* mock_tracker = static_cast<StrictMock<MockPrefetchedPagesTracker>*>(
       prefetched_pages_tracker());
   WaitForSuggestionsProviderInitialization(provider.get());
@@ -2766,7 +2812,10 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 TEST_F(RemoteSuggestionsProviderImplTest,
        PrependingShouldNotAffectOtherSuggestions) {
   // Set up the provider with some article suggestions.
-  auto provider = MakeSuggestionsProvider();
+  auto provider = MakeSuggestionsProviderWithoutInitialization(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_mock_breaking_news_listener=*/true);
+  WaitForSuggestionsProviderInitialization(provider.get());
   std::vector<FetchedCategory> fetched_categories;
   FetchedCategoryBuilder category_builder =
       FetchedCategoryBuilder().SetCategory(articles_category());
@@ -2787,10 +2836,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
           .SetUrl(prepended_url)
           .Build();
 
-  // TODO(vitaliii): Once the provider sets a callback in BreakingNewsListener,
-  // capture it instead of using this function here and below.
-  provider->PushArticleSuggestionToTheFrontForDebugging(
-      std::move(prepended_suggestion));
+  PushArticleSuggestionToTheFront(std::move(prepended_suggestion));
 
   // Check that the prepended suggestion is in the front, and all the others are
   // still there in the same order.
@@ -2808,7 +2854,10 @@ TEST_F(RemoteSuggestionsProviderImplTest,
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, ShouldNotPrependDismissedSuggestion) {
-  auto provider = MakeSuggestionsProvider();
+  auto provider = MakeSuggestionsProviderWithoutInitialization(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_mock_breaking_news_listener=*/true);
+  WaitForSuggestionsProviderInitialization(provider.get());
 
   // Prepend an article suggestion.
   const RemoteSuggestionBuilder suggestion_builder =
@@ -2816,8 +2865,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ShouldNotPrependDismissedSuggestion) {
           .AddId("http://prepended.com")
           .SetUrl("http://prepended.com");
 
-  provider->PushArticleSuggestionToTheFrontForDebugging(
-      suggestion_builder.Build());
+  PushArticleSuggestionToTheFront(suggestion_builder.Build());
   ASSERT_THAT(provider->GetSuggestionsForTesting(articles_category()),
               SizeIs(1));
 
@@ -2827,8 +2875,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ShouldNotPrependDismissedSuggestion) {
               IsEmpty());
 
   // Prepend it again and verify that it is ignored.
-  provider->PushArticleSuggestionToTheFrontForDebugging(
-      suggestion_builder.Build());
+  PushArticleSuggestionToTheFront(suggestion_builder.Build());
   EXPECT_THAT(provider->GetSuggestionsForTesting(articles_category()),
               IsEmpty());
 }
@@ -2836,7 +2883,10 @@ TEST_F(RemoteSuggestionsProviderImplTest, ShouldNotPrependDismissedSuggestion) {
 TEST_F(RemoteSuggestionsProviderImplTest,
        ShouldRestorePrependedSuggestionOnTopAfterRestart) {
   // Set up the provider with some article suggestions.
-  auto provider = MakeSuggestionsProvider();
+  auto provider = MakeSuggestionsProviderWithoutInitialization(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_mock_breaking_news_listener=*/true);
+  WaitForSuggestionsProviderInitialization(provider.get());
   std::vector<FetchedCategory> fetched_categories;
   FetchedCategoryBuilder category_builder =
       FetchedCategoryBuilder().SetCategory(articles_category());
@@ -2857,8 +2907,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
           .SetUrl(prepended_url)
           .Build();
 
-  provider->PushArticleSuggestionToTheFrontForDebugging(
-      std::move(prepended_suggestion));
+  PushArticleSuggestionToTheFront(std::move(prepended_suggestion));
 
   // Reset the provider to imitate browser restart.
   ResetSuggestionsProvider(&provider);
