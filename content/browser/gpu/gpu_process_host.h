@@ -227,7 +227,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // Update GPU crash counters.  Disable GPU if crash limit is reached.
   void RecordProcessCrash();
 
-  std::string GetShaderPrefixKey(const std::string& shader);
+  std::string GetShaderPrefixKey();
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;
@@ -292,7 +292,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
       ClientIdToShaderCacheMap;
   ClientIdToShaderCacheMap client_id_to_shader_cache_;
 
-  std::string shader_prefix_key_info_;
+  std::string shader_prefix_key_;
 
   ui::mojom::GpuMainAssociatedPtr gpu_main_ptr_;
   viz::mojom::GpuServicePtr gpu_service_ptr_;
