@@ -62,7 +62,6 @@
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/events/MouseEvent.h"
 #include "core/exported/WebRemoteFrameImpl.h"
-#include "core/exported/WebViewBase.h"
 #include "core/exported/WebViewImpl.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrame.h"
@@ -3217,7 +3216,7 @@ TEST_P(ParameterizedWebFrameTest, updateOverlayScrollbarLayers)
       view->LayoutViewportScrollableArea()->LayerForVerticalScrollbar());
 }
 
-void SetScaleAndScrollAndLayout(WebViewBase* web_view,
+void SetScaleAndScrollAndLayout(WebViewImpl* web_view,
                                 WebPoint scroll,
                                 float scale) {
   web_view->SetPageScaleFactor(scale);
@@ -3225,7 +3224,7 @@ void SetScaleAndScrollAndLayout(WebViewBase* web_view,
   web_view->UpdateAllLifecyclePhases();
 }
 
-void SimulatePageScale(WebViewBase* web_view_impl, float& scale) {
+void SimulatePageScale(WebViewImpl* web_view_impl, float& scale) {
   ScrollOffset scroll_delta =
       ToScrollOffset(
           web_view_impl->FakePageScaleAnimationTargetPositionForTesting()) -
@@ -3238,14 +3237,14 @@ void SimulatePageScale(WebViewBase* web_view_impl, float& scale) {
   scale = web_view_impl->PageScaleFactor();
 }
 
-void SimulateMultiTargetZoom(WebViewBase* web_view_impl,
+void SimulateMultiTargetZoom(WebViewImpl* web_view_impl,
                              const WebRect& rect,
                              float& scale) {
   if (web_view_impl->ZoomToMultipleTargetsRect(rect))
     SimulatePageScale(web_view_impl, scale);
 }
 
-void SimulateDoubleTap(WebViewBase* web_view_impl,
+void SimulateDoubleTap(WebViewImpl* web_view_impl,
                        WebPoint& point,
                        float& scale) {
   web_view_impl->AnimateDoubleTapZoom(point);
@@ -4206,7 +4205,7 @@ TEST_P(ParameterizedWebFrameTest, scrollbarIsNotHandlingTouchpadScroll) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.Initialize();
   web_view_helper.Resize(WebSize(200, 200));
-  WebViewBase* web_view = web_view_helper.WebView();
+  WebViewImpl* web_view = web_view_helper.WebView();
 
   InitializeWithHTML(
       *web_view->MainFrameImpl()->GetFrame(),
@@ -4400,7 +4399,7 @@ TEST_P(ParameterizedWebFrameTest, TabKeyCursorMoveTriggersOneSelectionChange) {
   ChangedSelectionCounter counter;
   FrameTestHelpers::WebViewHelper web_view_helper;
   RegisterMockedHttpURLLoad("editable_elements.html");
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "editable_elements.html", &counter);
 
   WebKeyboardEvent tab_down(WebInputEvent::kKeyDown,
@@ -6394,7 +6393,7 @@ TEST_P(ParameterizedWebFrameTest, DisambiguationPopupVisualViewport) {
   web_view_helper.InitializeAndLoad(base_url_ + html_file, nullptr, &client,
                                     nullptr, ConfigureAndroid);
 
-  WebViewBase* web_view_impl = web_view_helper.WebView();
+  WebViewImpl* web_view_impl = web_view_helper.WebView();
   ASSERT_TRUE(web_view_impl);
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   ASSERT_TRUE(frame);
@@ -7000,7 +6999,7 @@ TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentBody) {
 
   // Create another window that will try to access it.
   FrameTestHelpers::WebViewHelper new_web_view_helper;
-  WebViewBase* new_view = new_web_view_helper.InitializeWithOpener(
+  WebViewImpl* new_view = new_web_view_helper.InitializeWithOpener(
       web_view_helper.WebView()->MainFrame());
   RunPendingTasks();
   EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
@@ -7023,7 +7022,7 @@ TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentOpen) {
 
   // Create another window that will try to access it.
   FrameTestHelpers::WebViewHelper new_web_view_helper;
-  WebViewBase* new_view = new_web_view_helper.InitializeWithOpener(
+  WebViewImpl* new_view = new_web_view_helper.InitializeWithOpener(
       web_view_helper.WebView()->MainFrame());
   RunPendingTasks();
   EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
@@ -7047,7 +7046,7 @@ TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentNavigator) {
 
   // Create another window that will try to access it.
   FrameTestHelpers::WebViewHelper new_web_view_helper;
-  WebViewBase* new_view = new_web_view_helper.InitializeWithOpener(
+  WebViewImpl* new_view = new_web_view_helper.InitializeWithOpener(
       web_view_helper.WebView()->MainFrame());
   RunPendingTasks();
   EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
@@ -7087,7 +7086,7 @@ TEST_P(ParameterizedWebFrameTest,
 
   // Create another window that will try to access it.
   FrameTestHelpers::WebViewHelper new_web_view_helper;
-  WebViewBase* new_view = new_web_view_helper.InitializeWithOpener(
+  WebViewImpl* new_view = new_web_view_helper.InitializeWithOpener(
       web_view_helper.WebView()->MainFrame());
   RunPendingTasks();
   EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
@@ -7119,7 +7118,7 @@ TEST_P(ParameterizedWebFrameTest, DidWriteToInitialDocumentBeforeModalDialog) {
 
   // Create another window that will try to access it.
   FrameTestHelpers::WebViewHelper new_web_view_helper;
-  WebViewBase* new_view = new_web_view_helper.InitializeWithOpener(
+  WebViewImpl* new_view = new_web_view_helper.InitializeWithOpener(
       web_view_helper.WebView()->MainFrame());
   RunPendingTasks();
   EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
@@ -7746,7 +7745,7 @@ TEST_P(ParameterizedWebFrameTest, SameDocumentHistoryNavigationCommitType) {
   RegisterMockedHttpURLLoad("push_state.html");
   TestDidNavigateCommitTypeWebFrameClient client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl =
+  WebViewImpl* web_view_impl =
       web_view_helper.InitializeAndLoad(base_url_ + "push_state.html", &client);
   Persistent<HistoryItem> item =
       ToLocalFrame(web_view_impl->GetPage()->MainFrame())
@@ -7964,7 +7963,7 @@ TEST_P(ParameterizedWebFrameTest, fixedPositionInFixedViewport) {
       base_url_ + "fixed-position-in-fixed-viewport.html", nullptr, nullptr,
       nullptr, ConfigureAndroid);
 
-  WebViewBase* web_view = web_view_helper.WebView();
+  WebViewImpl* web_view = web_view_helper.WebView();
   web_view_helper.Resize(WebSize(100, 100));
 
   Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
@@ -8005,7 +8004,7 @@ TEST_P(ParameterizedWebFrameTest, FrameViewScrollAccountsForBrowserControls) {
   web_view_helper.InitializeAndLoad(base_url_ + "long_scroll.html", nullptr,
                                     &client, nullptr, ConfigureAndroid);
 
-  WebViewBase* web_view = web_view_helper.WebView();
+  WebViewImpl* web_view = web_view_helper.WebView();
   LocalFrameView* frame_view = web_view_helper.LocalMainFrame()->GetFrameView();
 
   float browser_controls_height = 40;
@@ -8103,7 +8102,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenLayerSize) {
   int viewport_height = 480;
   client.screen_info_.rect.width = viewport_width;
   client.screen_info_.rect.height = viewport_height;
-  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
       base_url_ + "fullscreen_div.html", nullptr, &client, nullptr,
       ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
@@ -8141,7 +8140,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenLayerNonScrollable) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   int viewport_width = 640;
   int viewport_height = 480;
-  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
       base_url_ + "fullscreen_div.html", nullptr, &client, nullptr,
       ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
@@ -8199,7 +8198,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenMainFrame) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   int viewport_width = 640;
   int viewport_height = 480;
-  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
       base_url_ + "fullscreen_div.html", nullptr, &client, nullptr,
       ConfigureAndroid);
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
@@ -8251,7 +8250,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenSubframe) {
   RegisterMockedHttpURLLoad("fullscreen_iframe.html");
   RegisterMockedHttpURLLoad("fullscreen_div.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
       base_url_ + "fullscreen_iframe.html", nullptr, &client, nullptr,
       ConfigureAndroid);
   int viewport_width = 640;
@@ -8292,7 +8291,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenNestedExit) {
   RegisterMockedHttpURLLoad("fullscreen_iframe.html");
   RegisterMockedHttpURLLoad("fullscreen_div.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl =
+  WebViewImpl* web_view_impl =
       web_view_helper.InitializeAndLoad(base_url_ + "fullscreen_iframe.html");
 
   web_view_impl->UpdateAllLifecyclePhases();
@@ -8337,7 +8336,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenWithTinyViewport) {
   FakeCompositingWebViewClient client;
   RegisterMockedHttpURLLoad("viewport-tiny.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
       base_url_ + "viewport-tiny.html", nullptr, &client, nullptr,
       ConfigureAndroid);
   int viewport_width = 384;
@@ -8382,7 +8381,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenResizeWithTinyViewport) {
   FakeCompositingWebViewClient client;
   RegisterMockedHttpURLLoad("viewport-tiny.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
       base_url_ + "viewport-tiny.html", nullptr, &client, nullptr,
       ConfigureAndroid);
   int viewport_width = 384;
@@ -8441,7 +8440,7 @@ TEST_P(ParameterizedWebFrameTest, FullscreenRestoreScaleFactorUponExiting) {
   FakeCompositingWebViewClient client;
   RegisterMockedHttpURLLoad("fullscreen_restore_scale_factor.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
       base_url_ + "fullscreen_restore_scale_factor.html", nullptr, &client,
       nullptr, &ConfigureAndroid);
   client.screen_info_.rect.width =
@@ -8509,7 +8508,7 @@ TEST_P(ParameterizedWebFrameTest, ClearFullscreenConstraintsOnNavigation) {
   int viewport_width = 100;
   int viewport_height = 200;
 
-  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
       base_url_ + "viewport-tiny.html", nullptr, nullptr, nullptr,
       ConfigureAndroid);
 
@@ -8593,7 +8592,7 @@ TEST_P(ParameterizedWebFrameTest, OverlayFullscreenVideo) {
   RegisterMockedHttpURLLoad("fullscreen_video.html");
   TestFullscreenWebViewClient web_view_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
       base_url_ + "fullscreen_video.html", nullptr, &web_view_client);
 
   const TestFullscreenWebLayerTreeView& layer_tree_view =
@@ -8626,7 +8625,7 @@ TEST_P(ParameterizedWebFrameTest, LayoutBlockPercentHeightDescendants) {
   web_view_helper.InitializeAndLoad(base_url_ +
                                     "percent-height-descendants.html");
 
-  WebViewBase* web_view = web_view_helper.WebView();
+  WebViewImpl* web_view = web_view_helper.WebView();
   web_view_helper.Resize(WebSize(800, 800));
   web_view->UpdateAllLifecyclePhases();
 
@@ -8661,7 +8660,7 @@ TEST_P(ParameterizedWebFrameTest, LayoutBlockPercentHeightDescendants) {
 TEST_P(ParameterizedWebFrameTest, HasVisibleContentOnVisibleFrames) {
   RegisterMockedHttpURLLoad("visible_frames.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl =
+  WebViewImpl* web_view_impl =
       web_view_helper.InitializeAndLoad(base_url_ + "visible_frames.html");
   for (WebFrame* frame = web_view_impl->MainFrameImpl()->TraverseNext(); frame;
        frame = frame->TraverseNext()) {
@@ -8672,7 +8671,7 @@ TEST_P(ParameterizedWebFrameTest, HasVisibleContentOnVisibleFrames) {
 TEST_P(ParameterizedWebFrameTest, HasVisibleContentOnHiddenFrames) {
   RegisterMockedHttpURLLoad("hidden_frames.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl =
+  WebViewImpl* web_view_impl =
       web_view_helper.InitializeAndLoad(base_url_ + "hidden_frames.html");
   for (WebFrame* frame = web_view_impl->MainFrameImpl()->TraverseNext(); frame;
        frame = frame->TraverseNext()) {
@@ -8948,7 +8947,7 @@ class WebFrameSwapTest : public ParameterizedWebFrameTest {
 
   void Reset() { web_view_helper_.Reset(); }
   WebLocalFrame* MainFrame() const { return web_view_helper_.LocalMainFrame(); }
-  WebViewBase* WebView() const { return web_view_helper_.WebView(); }
+  WebViewImpl* WebView() const { return web_view_helper_.WebView(); }
 
  private:
   FrameTestHelpers::WebViewHelper web_view_helper_;
@@ -8987,7 +8986,7 @@ TEST_P(WebFrameSwapTest, ValidateSizeOnRemoteToLocalMainFrameSwap) {
 
   // Verify that the size that was set with a remote main frame is correct
   // after swapping to a local frame.
-  Page* page = static_cast<WebViewBase*>(local_frame->View())
+  Page* page = static_cast<WebViewImpl*>(local_frame->View())
                    ->GetPage()
                    ->MainFrame()
                    ->GetPage();
@@ -9766,7 +9765,7 @@ TEST_P(ParameterizedWebFrameTest, CrossDomainAccessErrorsUseCallingWindow) {
   // first window.
   FrameTestHelpers::WebViewHelper popup_web_view_helper;
   TestConsoleMessageWebFrameClient popup_web_frame_client;
-  WebViewBase* popup_view = popup_web_view_helper.InitializeAndLoad(
+  WebViewImpl* popup_view = popup_web_view_helper.InitializeAndLoad(
       chrome_url_ + "hello_world.html", &popup_web_frame_client);
   popup_view->MainFrame()->SetOpener(web_view_helper.WebView()->MainFrame());
 
@@ -10266,7 +10265,7 @@ TEST_P(WebFrameOverscrollTest, ScaledPageRootLayerOverscrolled) {
   OverscrollWebViewClient client;
   RegisterMockedHttpURLLoad("overscroll/overscroll.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
       base_url_ + "overscroll/overscroll.html", nullptr, &client, nullptr,
       ConfigureAndroid);
   web_view_helper.Resize(WebSize(200, 200));
@@ -10367,7 +10366,7 @@ TEST_P(ParameterizedWebFrameTest, OrientationFrameDetach) {
   RuntimeEnabledFeatures::SetOrientationEventEnabled(true);
   RegisterMockedHttpURLLoad("orientation-frame-detach.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
       base_url_ + "orientation-frame-detach.html");
   web_view_impl->MainFrameImpl()->SendOrientationChangeEvent();
 }
@@ -10375,7 +10374,7 @@ TEST_P(ParameterizedWebFrameTest, OrientationFrameDetach) {
 TEST_P(ParameterizedWebFrameTest, DISABLE_ON_TSAN(MaxFramesDetach)) {
   RegisterMockedHttpURLLoad("max-frames-detach.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl =
+  WebViewImpl* web_view_impl =
       web_view_helper.InitializeAndLoad(base_url_ + "max-frames-detach.html");
   web_view_impl->MainFrameImpl()->CollectGarbage();
 }
@@ -10389,7 +10388,7 @@ TEST_P(ParameterizedWebFrameTest, ImageDocumentLoadFinishTime) {
   RegisterMockedHttpURLLoadWithMimeType("white-1x1.png", "image/png");
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "white-1x1.png");
-  WebViewBase* web_view = web_view_helper.WebView();
+  WebViewImpl* web_view = web_view_helper.WebView();
   Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
 
   EXPECT_TRUE(document);
@@ -10625,7 +10624,7 @@ TEST_P(ParameterizedWebFrameTest, SaveImageAt) {
 
   FrameTestHelpers::WebViewHelper helper;
   SaveImageFromDataURLWebFrameClient client;
-  WebViewBase* web_view = helper.InitializeAndLoad(url, &client);
+  WebViewImpl* web_view = helper.InitializeAndLoad(url, &client);
   web_view->Resize(WebSize(400, 400));
   web_view->UpdateAllLifecyclePhases();
 
@@ -10662,7 +10661,7 @@ TEST_P(ParameterizedWebFrameTest, SaveImageWithImageMap) {
 
   FrameTestHelpers::WebViewHelper helper;
   SaveImageFromDataURLWebFrameClient client;
-  WebViewBase* web_view = helper.InitializeAndLoad(url, &client);
+  WebViewImpl* web_view = helper.InitializeAndLoad(url, &client);
   web_view->Resize(WebSize(400, 400));
 
   WebLocalFrame* local_frame = web_view->MainFrameImpl();
@@ -10694,7 +10693,7 @@ TEST_P(ParameterizedWebFrameTest, CopyImageAt) {
   RegisterMockedURLLoadFromBase(base_url_, "canvas-copy-image.html");
 
   FrameTestHelpers::WebViewHelper helper;
-  WebViewBase* web_view = helper.InitializeAndLoad(url);
+  WebViewImpl* web_view = helper.InitializeAndLoad(url);
   web_view->Resize(WebSize(400, 400));
 
   uint64_t sequence = Platform::Current()->Clipboard()->SequenceNumber(
@@ -10718,7 +10717,7 @@ TEST_P(ParameterizedWebFrameTest, CopyImageAtWithPinchZoom) {
   RegisterMockedURLLoadFromBase(base_url_, "canvas-copy-image.html");
 
   FrameTestHelpers::WebViewHelper helper;
-  WebViewBase* web_view = helper.InitializeAndLoad(url);
+  WebViewImpl* web_view = helper.InitializeAndLoad(url);
   web_view->Resize(WebSize(400, 400));
   web_view->UpdateAllLifecyclePhases();
   web_view->SetPageScaleFactor(2);
@@ -10747,7 +10746,7 @@ TEST_P(ParameterizedWebFrameTest, CopyImageWithImageMap) {
   RegisterMockedURLLoadFromBase(base_url_, "image-map.html");
 
   FrameTestHelpers::WebViewHelper helper;
-  WebViewBase* web_view = helper.InitializeAndLoad(url, &client);
+  WebViewImpl* web_view = helper.InitializeAndLoad(url, &client);
   web_view->Resize(WebSize(400, 400));
 
   client.Reset();
@@ -10942,7 +10941,7 @@ TEST_P(ParameterizedWebFrameTest, RootLayerMinimumHeight) {
 
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.Initialize(nullptr, nullptr, nullptr, ConfigureAndroid);
-  WebViewBase* web_view = web_view_helper.WebView();
+  WebViewImpl* web_view = web_view_helper.WebView();
   web_view->ResizeWithBrowserControls(
       WebSize(kViewportWidth, kViewportHeight - kBrowserControlsHeight),
       kBrowserControlsHeight, 0, true);
@@ -11009,7 +11008,7 @@ TEST_P(ParameterizedWebFrameTest, ScrollBeforeLayoutDoesntCrash) {
   RegisterMockedHttpURLLoad("display-none.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "display-none.html");
-  WebViewBase* web_view = web_view_helper.WebView();
+  WebViewImpl* web_view = web_view_helper.WebView();
   web_view_helper.Resize(WebSize(640, 480));
 
   Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
@@ -11049,7 +11048,7 @@ TEST_P(ParameterizedWebFrameTest,
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.Initialize();
   web_view_helper.Resize(WebSize(800, 600));
-  WebViewBase* web_view = web_view_helper.WebView();
+  WebViewImpl* web_view = web_view_helper.WebView();
 
   InitializeWithHTML(
       *web_view->MainFrameImpl()->GetFrame(),
@@ -11115,7 +11114,7 @@ TEST_P(ParameterizedWebFrameTest, MouseOverDifferntNodeClearsTooltip) {
   web_view_helper.Initialize(nullptr, nullptr, nullptr,
                              [](WebSettings* settings) {});
   web_view_helper.Resize(WebSize(200, 200));
-  WebViewBase* web_view = web_view_helper.WebView();
+  WebViewImpl* web_view = web_view_helper.WebView();
 
   InitializeWithHTML(
       *web_view->MainFrameImpl()->GetFrame(),
@@ -11191,7 +11190,7 @@ TEST_P(ParameterizedWebFrameTest, MouseOverDifferntNodeClearsTooltip) {
 TEST_P(ParameterizedWebFrameTest, MouseOverScrollbarInCustomCursorElement) {
   RegisterMockedHttpURLLoad("scrollbar-in-custom-cursor-element.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "scrollbar-in-custom-cursor-element.html");
 
   web_view_helper.Resize(WebSize(250, 250));
@@ -11232,7 +11231,7 @@ TEST_P(ParameterizedWebFrameTest, MouseOverLinkAndOverlayScrollbar) {
   web_view_helper.Initialize(nullptr, nullptr, nullptr,
                              [](WebSettings* settings) {});
   web_view_helper.Resize(WebSize(20, 20));
-  WebViewBase* web_view = web_view_helper.WebView();
+  WebViewImpl* web_view = web_view_helper.WebView();
 
   InitializeWithHTML(*web_view->MainFrameImpl()->GetFrame(),
                      "<!DOCTYPE html>"
@@ -11348,7 +11347,7 @@ TEST_P(ParameterizedWebFrameTest, MouseOverLinkAndOverlayScrollbar) {
 TEST_P(ParameterizedWebFrameTest, MouseOverCustomScrollbar) {
   RegisterMockedHttpURLLoad("custom-scrollbar-hover.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "custom-scrollbar-hover.html");
 
   web_view_helper.Resize(WebSize(200, 200));
@@ -11406,7 +11405,7 @@ TEST_P(ParameterizedWebFrameTest, MouseOverCustomScrollbar) {
 TEST_P(ParameterizedWebFrameTest, MouseOverScrollbarAndIFrame) {
   RegisterMockedHttpURLLoad("scrollbar-and-iframe-hover.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "scrollbar-and-iframe-hover.html");
 
   web_view_helper.Resize(WebSize(200, 200));
@@ -11485,7 +11484,7 @@ TEST_P(ParameterizedWebFrameTest, MouseOverScrollbarAndParentElement) {
   RegisterMockedHttpURLLoad("scrollbar-and-element-hover.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
   RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(false);
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "scrollbar-and-element-hover.html");
 
   web_view_helper.Resize(WebSize(200, 200));
@@ -11570,7 +11569,7 @@ TEST_P(ParameterizedWebFrameTest, MouseOverRootScrollbar) {
   RegisterMockedHttpURLLoad("hover-root-scrollbar.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
   RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(false);
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "hover-root-scrollbar.html");
 
   web_view_helper.Resize(WebSize(200, 200));
@@ -11604,7 +11603,7 @@ TEST_P(ParameterizedWebFrameTest, MouseOverRootScrollbar) {
 TEST_P(ParameterizedWebFrameTest, MouseReleaseUpdatesScrollbarHoveredPart) {
   RegisterMockedHttpURLLoad("custom-scrollbar-hover.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "custom-scrollbar-hover.html");
 
   web_view_helper.Resize(WebSize(200, 200));
@@ -11675,7 +11674,7 @@ TEST_P(ParameterizedWebFrameTest,
   RegisterMockedHttpURLLoad(
       "custom-scrollbar-dcheck-failed-when-paint-scroll-corner.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ +
       "custom-scrollbar-dcheck-failed-when-paint-scroll-corner.html");
 
@@ -11695,7 +11694,7 @@ static void DisableCompositing(WebSettings* settings) {
 TEST_P(ParameterizedWebFrameTest,
        DISABLE_ON_TSAN(TestNonCompositedOverlayScrollbarsFade)) {
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl = web_view_helper.Initialize(
+  WebViewImpl* web_view_impl = web_view_helper.Initialize(
       nullptr, nullptr, nullptr, &DisableCompositing);
 
   constexpr double kMockOverlayFadeOutDelayMs = 5.0;
@@ -12071,7 +12070,7 @@ class ContextMenuWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 bool TestSelectAll(const std::string& html) {
   ContextMenuWebFrameClient frame;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.Initialize(&frame);
+  WebViewImpl* web_view = web_view_helper.Initialize(&frame);
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(), html,
                                    ToKURL("about:blank"));
   web_view->Resize(WebSize(500, 300));
@@ -12106,7 +12105,7 @@ TEST_P(ParameterizedWebFrameTest, ContextMenuDataSelectAll) {
 TEST_P(ParameterizedWebFrameTest, ContextMenuDataSelectedText) {
   ContextMenuWebFrameClient frame;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.Initialize(&frame);
+  WebViewImpl* web_view = web_view_helper.Initialize(&frame);
   const std::string& html = "<input value=' '>";
   FrameTestHelpers::LoadHTMLString(web_view->MainFrameImpl(), html,
                                    ToKURL("about:blank"));

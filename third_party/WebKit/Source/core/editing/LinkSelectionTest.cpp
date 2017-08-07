@@ -50,7 +50,7 @@ class LinkSelectionTestBase : public ::testing::Test {
   String GetSelectionText();
 
   FrameTestHelpers::WebViewHelper helper_;
-  WebViewBase* web_view_ = nullptr;
+  WebViewImpl* web_view_ = nullptr;
   Persistent<WebLocalFrameImpl> main_frame_ = nullptr;
 };
 

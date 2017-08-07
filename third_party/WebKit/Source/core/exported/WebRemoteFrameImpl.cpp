@@ -7,7 +7,7 @@
 #include "bindings/core/v8/WindowProxy.h"
 #include "core/dom/RemoteSecurityContext.h"
 #include "core/dom/SecurityContext.h"
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/RemoteFrameClientImpl.h"
 #include "core/frame/RemoteFrameOwner.h"
@@ -58,7 +58,7 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::CreateMainFrame(
   WebRemoteFrameImpl* frame =
       new WebRemoteFrameImpl(WebTreeScopeType::kDocument, client);
   frame->SetOpener(opener);
-  Page& page = *static_cast<WebViewBase*>(web_view)->GetPage();
+  Page& page = *static_cast<WebViewImpl*>(web_view)->GetPage();
   // It would be nice to DCHECK that the main frame is not set yet here.
   // Unfortunately, there is an edge case with a pending RenderFrameHost that
   // violates this: the embedder may create a pending RenderFrameHost for

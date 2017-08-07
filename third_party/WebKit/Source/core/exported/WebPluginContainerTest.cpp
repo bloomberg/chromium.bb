@@ -38,7 +38,7 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/exported/FakeWebPlugin.h"
 #include "core/exported/WebPluginContainerImpl.h"
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/WebLocalFrameImpl.h"
@@ -214,7 +214,7 @@ void EnablePlugins(WebView* web_view, const WebSize& size) {
   RunPendingTasks();
 }
 
-WebPluginContainer* GetWebPluginContainer(WebViewBase* web_view,
+WebPluginContainer* GetWebPluginContainer(WebViewImpl* web_view,
                                           const WebString& id) {
   WebElement element =
       web_view->MainFrameImpl()->GetDocument().GetElementById(id);
@@ -234,7 +234,7 @@ TEST_F(WebPluginContainerTest, WindowToLocalPointTest) {
   // Must outlive |web_view_helper|.
   TestPluginWebFrameClient plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_container.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
 
@@ -269,7 +269,7 @@ TEST_F(WebPluginContainerTest, PluginDocumentPluginIsFocused) {
   // Must outlive |web_view_helper|.
   TestPluginWebFrameClient plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "test.pdf", &plugin_web_frame_client);
   DCHECK(web_view);
   web_view->UpdateAllLifecyclePhases();
@@ -288,7 +288,7 @@ TEST_F(WebPluginContainerTest, IFramePluginDocumentNotFocused) {
   // Must outlive |web_view_helper|.
   TestPluginWebFrameClient plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "iframe_pdf.html", &plugin_web_frame_client);
   DCHECK(web_view);
   web_view->UpdateAllLifecyclePhases();
@@ -310,7 +310,7 @@ TEST_F(WebPluginContainerTest, PrintOnePage) {
   // Must outlive |web_view_helper|.
   TestPluginWebFrameClient plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "test.pdf", &plugin_web_frame_client);
   DCHECK(web_view);
   web_view->UpdateAllLifecyclePhases();
@@ -334,7 +334,7 @@ TEST_F(WebPluginContainerTest, PrintAllPages) {
   // Must outlive |web_view_helper|.
   TestPluginWebFrameClient plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "test.pdf", &plugin_web_frame_client);
   DCHECK(web_view);
   web_view->UpdateAllLifecyclePhases();
@@ -357,7 +357,7 @@ TEST_F(WebPluginContainerTest, LocalToWindowPointTest) {
   // Must outlive |web_view_helper|.
   TestPluginWebFrameClient plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_container.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
 
@@ -391,7 +391,7 @@ TEST_F(WebPluginContainerTest, Copy) {
   // Must outlive |web_view_helper|.
   TestPluginWebFrameClient plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_container.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
 
@@ -413,7 +413,7 @@ TEST_F(WebPluginContainerTest, CopyFromContextMenu) {
   // Must outlive |web_view_helper|.
   TestPluginWebFrameClient plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_container.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
 
@@ -451,7 +451,7 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest) {
   // Must outlive |web_view_helper|.
   TestPluginWebFrameClient plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_container.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
 
@@ -503,7 +503,7 @@ TEST_F(WebPluginContainerTest, CutDeleteKeyboardEventsTest) {
   // Use TestPluginWithEditableText for testing Cut().
   plugin_web_frame_client.SetHasEditableText(true);
 
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_container.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
 
@@ -609,7 +609,7 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin) {
   // Must outlive |web_view_helper|.
   CustomPluginWebFrameClient<EventTestPlugin> plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_container.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
 
@@ -654,7 +654,7 @@ TEST_F(WebPluginContainerTest, MouseWheelEventTranslated) {
   // Must outlive |web_view_helper|.
   CustomPluginWebFrameClient<EventTestPlugin> plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_container.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
 
@@ -686,7 +686,7 @@ TEST_F(WebPluginContainerTest, TouchEventScrolled) {
   // Must outlive |web_view_helper|.
   CustomPluginWebFrameClient<EventTestPlugin> plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_scroll.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
   web_view->SmoothScroll(0, 200, 0);
@@ -724,7 +724,7 @@ TEST_F(WebPluginContainerTest, TouchEventScrolledWithCoalescedTouches) {
   // Must outlive |web_view_helper|.
   CustomPluginWebFrameClient<EventTestPlugin> plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_scroll.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
   web_view->SmoothScroll(0, 200, 0);
@@ -802,7 +802,7 @@ TEST_F(WebPluginContainerTest, MouseWheelEventScrolled) {
   // Must outlive |web_view_helper|.
   CustomPluginWebFrameClient<EventTestPlugin> plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_scroll.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
   web_view->SmoothScroll(0, 200, 0);
@@ -839,7 +839,7 @@ TEST_F(WebPluginContainerTest, MouseEventScrolled) {
   // Must outlive |web_view_helper|.
   CustomPluginWebFrameClient<EventTestPlugin> plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_scroll.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
   web_view->SmoothScroll(0, 200, 0);
@@ -875,7 +875,7 @@ TEST_F(WebPluginContainerTest, MouseEventZoomed) {
   // Must outlive |web_view_helper|.
   CustomPluginWebFrameClient<EventTestPlugin> plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_scroll.html", &plugin_web_frame_client);
   DCHECK(web_view);
   web_view->GetSettings()->SetPluginsEnabled(true);
@@ -916,7 +916,7 @@ TEST_F(WebPluginContainerTest, MouseWheelEventZoomed) {
   // Must outlive |web_view_helper|.
   CustomPluginWebFrameClient<EventTestPlugin> plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_scroll.html", &plugin_web_frame_client);
   DCHECK(web_view);
   web_view->GetSettings()->SetPluginsEnabled(true);
@@ -958,7 +958,7 @@ TEST_F(WebPluginContainerTest, TouchEventZoomed) {
   // Must outlive |web_view_helper|.
   CustomPluginWebFrameClient<EventTestPlugin> plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_scroll.html", &plugin_web_frame_client);
   DCHECK(web_view);
   web_view->GetSettings()->SetPluginsEnabled(true);
@@ -1003,7 +1003,7 @@ TEST_F(WebPluginContainerTest, IsRectTopmostTest) {
   // Must outlive |web_view_helper|.
   TestPluginWebFrameClient plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_container.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
 
@@ -1059,7 +1059,7 @@ TEST_F(WebPluginContainerTest, ClippedRectsForSubpixelPositionedPlugin) {
   // Must outlive |web_view_helper|.
   TestPluginWebFrameClient plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_container.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
 
@@ -1107,7 +1107,7 @@ TEST_F(WebPluginContainerTest, TopmostAfterDetachTest) {
   // The client must outlive WebViewHelper.
   CustomPluginWebFrameClient<TopmostPlugin> plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_container.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
 
@@ -1166,7 +1166,7 @@ TEST_F(WebPluginContainerTest, CompositedPluginSPv2) {
   // Must outlive |web_view_helper|
   CustomPluginWebFrameClient<CompositedPlugin> web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin.html", &web_frame_client);
   EnablePlugins(web_view, WebSize(800, 600));
 
@@ -1204,7 +1204,7 @@ TEST_F(WebPluginContainerTest, NeedsWheelEvents) {
   // Must outlive |web_view_helper|
   TestPluginWebFrameClient plugin_web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_container.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
 

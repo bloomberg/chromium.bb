@@ -36,12 +36,12 @@
 
 namespace blink {
 
-class WebViewBase;
+class WebViewImpl;
 
 class CORE_EXPORT SpellCheckerClientImpl final
     : public NON_EXPORTED_BASE(SpellCheckerClient) {
  public:
-  explicit SpellCheckerClientImpl(WebViewBase*);
+  explicit SpellCheckerClientImpl(WebViewImpl*);
   ~SpellCheckerClientImpl() override;
 
   bool IsSpellCheckingEnabled() override;
@@ -57,7 +57,7 @@ class CORE_EXPORT SpellCheckerClientImpl final
   // for text fields and create a flag to over-write the default behavior.
   bool ShouldSpellcheckByDefault();
 
-  WebViewBase* web_view_;
+  WebViewImpl* web_view_;
 
   // This flag is set to false if spell check for this editor is manually
   // turned off. The default setting is SpellCheckAutomatic.

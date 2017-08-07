@@ -49,7 +49,7 @@ class PagePopupChromeClient;
 class PagePopupClient;
 class WebLayerTreeView;
 class WebLayer;
-class WebViewBase;
+class WebViewImpl;
 class LocalDOMWindow;
 
 class CORE_EXPORT WebPagePopupImpl final
@@ -62,7 +62,7 @@ class CORE_EXPORT WebPagePopupImpl final
 
  public:
   ~WebPagePopupImpl() override;
-  bool Initialize(WebViewBase*, PagePopupClient*);
+  bool Initialize(WebViewImpl*, PagePopupClient*);
   void ClosePopup();
   WebWidgetClient* WidgetClient() const { return widget_client_; }
   bool HasSamePopupClient(WebPagePopupImpl* other) {
@@ -117,7 +117,7 @@ class CORE_EXPORT WebPagePopupImpl final
   WebRect WindowRectInScreen() const;
 
   WebWidgetClient* widget_client_;
-  WebViewBase* web_view_;
+  WebViewImpl* web_view_;
   Persistent<Page> page_;
   Persistent<PagePopupChromeClient> chrome_client_;
   PagePopupClient* popup_client_;

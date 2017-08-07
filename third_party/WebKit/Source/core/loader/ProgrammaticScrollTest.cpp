@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/WebLocalFrameImpl.h"
@@ -47,7 +47,7 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale) {
   RegisterMockedHttpURLLoad("long_scroll.html");
 
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper.InitializeAndLoad(base_url_ + "long_scroll.html");
   web_view->Resize(WebSize(1000, 1000));
   web_view->UpdateAllLifecyclePhases();
@@ -79,7 +79,7 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale) {
   RegisterMockedHttpURLLoad("long_scroll.html");
 
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper.InitializeAndLoad(base_url_ + "long_scroll.html");
   web_view->Resize(WebSize(1000, 1000));
   web_view->UpdateAllLifecyclePhases();

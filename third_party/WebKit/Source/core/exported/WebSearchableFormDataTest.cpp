@@ -72,7 +72,7 @@ class WebSearchableFormDataTest : public ::testing::Test {
 TEST_F(WebSearchableFormDataTest, HttpSearchString) {
   std::string base_url("http://www.test.com/");
   RegisterMockedURLLoadFromBaseURL(base_url, "search_form_http.html");
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url + "search_form_http.html");
 
   WebVector<WebFormElement> forms;
@@ -88,7 +88,7 @@ TEST_F(WebSearchableFormDataTest, HttpSearchString) {
 TEST_F(WebSearchableFormDataTest, HttpsSearchString) {
   std::string base_url("https://www.test.com/");
   RegisterMockedURLLoadFromBaseURL(base_url, "search_form_https.html");
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url + "search_form_https.html");
 
   WebVector<WebFormElement> forms;

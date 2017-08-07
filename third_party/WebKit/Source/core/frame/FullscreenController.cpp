@@ -31,7 +31,7 @@
 #include "core/frame/FullscreenController.h"
 
 #include "core/dom/Document.h"
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/PageScaleConstraintsSet.h"
@@ -57,11 +57,11 @@ WebFrameClient& GetWebFrameClient(LocalFrame& frame) {
 }  // anonymous namespace
 
 std::unique_ptr<FullscreenController> FullscreenController::Create(
-    WebViewBase* web_view_base) {
+    WebViewImpl* web_view_base) {
   return WTF::WrapUnique(new FullscreenController(web_view_base));
 }
 
-FullscreenController::FullscreenController(WebViewBase* web_view_base)
+FullscreenController::FullscreenController(WebViewImpl* web_view_base)
     : web_view_base_(web_view_base) {}
 
 void FullscreenController::DidEnterFullscreen() {

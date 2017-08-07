@@ -30,13 +30,13 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/spellcheck/SpellChecker.h"
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/page/Page.h"
 
 namespace blink {
 
-SpellCheckerClientImpl::SpellCheckerClientImpl(WebViewBase* webview)
+SpellCheckerClientImpl::SpellCheckerClientImpl(WebViewImpl* webview)
     : web_view_(webview),
       spell_check_this_field_status_(kSpellCheckAutomatic) {}
 

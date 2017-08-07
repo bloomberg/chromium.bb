@@ -35,7 +35,7 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/Settings.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WebTaskRunner.h"
@@ -289,7 +289,7 @@ class WebViewHelper {
   // for ensuring that non-null clients outlive the created frame.
 
   // Creates and initializes the WebView with a main WebLocalFrame.
-  WebViewBase* InitializeWithOpener(
+  WebViewImpl* InitializeWithOpener(
       WebFrame* opener,
       TestWebFrameClient* = nullptr,
       TestWebViewClient* = nullptr,
@@ -297,14 +297,14 @@ class WebViewHelper {
       void (*update_settings_func)(WebSettings*) = nullptr);
 
   // Same as InitializeWithOpener(), but always sets the opener to null.
-  WebViewBase* Initialize(TestWebFrameClient* = nullptr,
+  WebViewImpl* Initialize(TestWebFrameClient* = nullptr,
                           TestWebViewClient* = nullptr,
                           TestWebWidgetClient* = nullptr,
                           void (*update_settings_func)(WebSettings*) = 0);
 
   // Same as Initialize() but also performs the initial load of the url. Only
   // returns once the load is complete.
-  WebViewBase* InitializeAndLoad(
+  WebViewImpl* InitializeAndLoad(
       const std::string& url,
       TestWebFrameClient* = nullptr,
       TestWebViewClient* = nullptr,
@@ -314,7 +314,7 @@ class WebViewHelper {
   // Creates and initializes the WebView with a main WebRemoteFrame. Passing
   // nullptr as the SecurityOrigin results in a frame with a unique security
   // origin.
-  WebViewBase* InitializeRemote(TestWebRemoteFrameClient* = nullptr,
+  WebViewImpl* InitializeRemote(TestWebRemoteFrameClient* = nullptr,
                                 RefPtr<SecurityOrigin> = nullptr,
                                 TestWebViewClient* = nullptr);
 
@@ -322,7 +322,7 @@ class WebViewHelper {
 
   void Reset();
 
-  WebViewBase* WebView() const { return web_view_; }
+  WebViewImpl* WebView() const { return web_view_; }
 
   WebLocalFrameImpl* LocalMainFrame() const;
   WebRemoteFrameImpl* RemoteMainFrame() const;
@@ -330,7 +330,7 @@ class WebViewHelper {
  private:
   void InitializeWebView(TestWebViewClient*);
 
-  WebViewBase* web_view_;
+  WebViewImpl* web_view_;
   UseMockScrollbarSettings mock_scrollbar_settings_;
   // Non-null if the WebViewHelper owns the TestWebViewClient.
   std::unique_ptr<TestWebViewClient> owned_test_web_view_client_;

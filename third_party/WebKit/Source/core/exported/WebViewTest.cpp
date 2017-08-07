@@ -45,7 +45,7 @@
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/exported/FakeWebPlugin.h"
 #include "core/exported/WebSettingsImpl.h"
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrame.h"
@@ -141,7 +141,7 @@ enum VerticalScrollbarState {
 class TestData {
  public:
   void SetWebView(WebView* web_view) {
-    web_view_ = static_cast<WebViewBase*>(web_view);
+    web_view_ = static_cast<WebViewImpl*>(web_view);
   }
   void SetSize(const WebSize& new_size) { size_ = new_size; }
   HorizontalScrollbarState GetHorizontalScrollbarState() const {
@@ -157,7 +157,7 @@ class TestData {
 
  private:
   WebSize size_;
-  WebViewBase* web_view_;
+  WebViewImpl* web_view_;
 };
 
 class AutoResizeWebViewClient : public FrameTestHelpers::TestWebViewClient {
@@ -367,7 +367,7 @@ TEST_P(WebViewTest, BrokenImage) {
       KURL(ToKURL(base_url_), "non_existent.png"));
   std::string url = RegisterMockedHttpURLLoad("image-broken.html");
 
-  WebViewBase* web_view = web_view_helper_.Initialize();
+  WebViewImpl* web_view = web_view_helper_.Initialize();
   web_view->GetSettings()->SetLoadsImagesAutomatically(true);
   LoadFrame(web_view->MainFrameImpl(), url);
   web_view->Resize(WebSize(400, 400));
@@ -384,7 +384,7 @@ TEST_P(WebViewTest, BrokenInputImage) {
       KURL(ToKURL(base_url_), "non_existent.png"));
   std::string url = RegisterMockedHttpURLLoad("input-image-broken.html");
 
-  WebViewBase* web_view = web_view_helper_.Initialize();
+  WebViewImpl* web_view = web_view_helper_.Initialize();
   web_view->GetSettings()->SetLoadsImagesAutomatically(true);
   LoadFrame(web_view->MainFrameImpl(), url);
   web_view->Resize(WebSize(400, 400));
@@ -403,7 +403,7 @@ TEST_P(WebViewTest, SetBaseBackgroundColor) {
   const WebColor kTranslucentPutty = 0x80BFB196;
   const WebColor kTransparent = 0x00000000;
 
-  WebViewBase* web_view = web_view_helper_.Initialize();
+  WebViewImpl* web_view = web_view_helper_.Initialize();
   EXPECT_EQ(kWhite, web_view->BackgroundColor());
 
   web_view->SetBaseBackgroundColor(kBlue);
@@ -459,7 +459,7 @@ TEST_P(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   // initialization code between WebView and WebLocalFrame creation.
   const WebColor kBlue = 0xFF0000FF;
   FrameTestHelpers::TestWebViewClient web_view_client;
-  WebViewBase* web_view = static_cast<WebViewBase*>(
+  WebViewImpl* web_view = static_cast<WebViewImpl*>(
       WebView::Create(&web_view_client, kWebPageVisibilityStateVisible));
   EXPECT_NE(kBlue, web_view->BackgroundColor());
   // webView does not have a frame yet, but we should still be able to set the
@@ -479,7 +479,7 @@ TEST_P(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
   const int kWidth = 100;
   const int kHeight = 100;
 
-  WebViewBase* web_view = web_view_helper_.Initialize();
+  WebViewImpl* web_view = web_view_helper_.Initialize();
 
   // Set WebView background to green with alpha.
   web_view->SetBaseBackgroundColor(kAlphaGreen);
@@ -515,7 +515,7 @@ TEST_P(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
 
 TEST_P(WebViewTest, FocusIsInactive) {
   RegisterMockedHttpURLLoad("visible_iframe.html");
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "visible_iframe.html");
 
   web_view->SetFocus(true);
@@ -581,7 +581,7 @@ TEST_P(WebViewTest, HitTestResultAtWithPageScaleAndPan) {
   std::string url = base_url_ + "specify_size.html?" + "50px" + ":" + "50px";
   URLTestHelpers::RegisterMockedURLLoad(
       ToKURL(url), testing::CoreTestDataPath("specify_size.html"));
-  WebViewBase* web_view = web_view_helper_.Initialize();
+  WebViewImpl* web_view = web_view_helper_.Initialize();
   LoadFrame(web_view->MainFrameImpl(), url);
   web_view->Resize(WebSize(100, 100));
   WebPoint hit_point(75, 75);
@@ -636,7 +636,7 @@ TEST_P(WebViewTest, HitTestResultForTapWithTapArea) {
 
 TEST_P(WebViewTest, HitTestResultForTapWithTapAreaPageScaleAndPan) {
   std::string url = RegisterMockedHttpURLLoad("hit_test.html");
-  WebViewBase* web_view = web_view_helper_.Initialize();
+  WebViewImpl* web_view = web_view_helper_.Initialize();
   LoadFrame(web_view->MainFrameImpl(), url);
   web_view->Resize(WebSize(100, 100));
   WebPoint hit_point(55, 55);
@@ -678,7 +678,7 @@ void WebViewTest::TestAutoResize(
       base_url_ + "specify_size.html?" + page_width + ":" + page_height;
   URLTestHelpers::RegisterMockedURLLoad(
       ToKURL(url), testing::CoreTestDataPath("specify_size.html"));
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(url, nullptr, &client);
   client.GetTestData().SetWebView(web_view);
 
@@ -787,7 +787,7 @@ TEST_P(WebViewTest, AutoResizeMaxSize) {
 void WebViewTest::TestTextInputType(WebTextInputType expected_type,
                                     const std::string& html_file) {
   RegisterMockedHttpURLLoad(html_file);
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + html_file);
   WebInputMethodController* controller =
       web_view->MainFrameImpl()->GetInputMethodController();
@@ -813,7 +813,7 @@ TEST_P(WebViewTest, TextInputType) {
 
 TEST_P(WebViewTest, TextInputInfoUpdateStyleAndLayout) {
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl = web_view_helper.Initialize();
+  WebViewImpl* web_view_impl = web_view_helper.Initialize();
 
   WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
   // Here, we need to construct a document that has a special property:
@@ -849,7 +849,7 @@ TEST_P(WebViewTest, TextInputInfoUpdateStyleAndLayout) {
 void WebViewTest::TestInputMode(WebTextInputMode expected_input_mode,
                                 const std::string& html_file) {
   RegisterMockedHttpURLLoad(html_file);
-  WebViewBase* web_view_impl =
+  WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + html_file);
   web_view_impl->SetInitialFocus(false);
   EXPECT_EQ(expected_input_mode, web_view_impl->MainFrameImpl()
@@ -900,7 +900,7 @@ TEST_P(WebViewTest, TextInputInfoWithReplacedElements) {
   URLTestHelpers::RegisterMockedURLLoad(
       ToKURL("http://www.test.com/foo.png"),
       testing::CoreTestDataPath("white-1x1.png"));
-  WebViewBase* web_view_impl = web_view_helper_.InitializeAndLoad(url);
+  WebViewImpl* web_view_impl = web_view_helper_.InitializeAndLoad(url);
   web_view_impl->SetInitialFocus(false);
   WebTextInputInfo info = web_view_impl->MainFrameImpl()
                               ->GetInputMethodController()
@@ -911,7 +911,7 @@ TEST_P(WebViewTest, TextInputInfoWithReplacedElements) {
 
 TEST_P(WebViewTest, SetEditableSelectionOffsetsAndTextInputInfo) {
   RegisterMockedHttpURLLoad("input_field_populated.html");
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
   web_view->SetInitialFocus(false);
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
@@ -945,7 +945,7 @@ TEST_P(WebViewTest, SetEditableSelectionOffsetsAndTextInputInfo) {
 // Regression test for crbug.com/663645
 TEST_P(WebViewTest, FinishComposingTextDoesNotAssert) {
   RegisterMockedHttpURLLoad("input_field_default.html");
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_default.html");
   web_view->SetInitialFocus(false);
 
@@ -975,7 +975,7 @@ TEST_P(WebViewTest, FinishComposingTextDoesNotAssert) {
 
 TEST_P(WebViewTest, FinishComposingTextCursorPositionChange) {
   RegisterMockedHttpURLLoad("input_field_populated.html");
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
   web_view->SetInitialFocus(false);
 
@@ -1027,7 +1027,7 @@ TEST_P(WebViewTest, FinishComposingTextCursorPositionChange) {
 
 TEST_P(WebViewTest, SetCompositionForNewCaretPositions) {
   RegisterMockedHttpURLLoad("input_field_populated.html");
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
   web_view->SetInitialFocus(false);
   WebInputMethodController* active_input_method_controller =
@@ -1143,7 +1143,7 @@ TEST_P(WebViewTest, SetCompositionForNewCaretPositions) {
 
 TEST_P(WebViewTest, SetCompositionWithEmptyText) {
   RegisterMockedHttpURLLoad("input_field_populated.html");
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
   web_view->SetInitialFocus(false);
   WebInputMethodController* active_input_method_controller =
@@ -1184,7 +1184,7 @@ TEST_P(WebViewTest, SetCompositionWithEmptyText) {
 
 TEST_P(WebViewTest, CommitTextForNewCaretPositions) {
   RegisterMockedHttpURLLoad("input_field_populated.html");
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
   web_view->SetInitialFocus(false);
   WebInputMethodController* active_input_method_controller =
@@ -1257,7 +1257,7 @@ TEST_P(WebViewTest, CommitTextForNewCaretPositions) {
 
 TEST_P(WebViewTest, CommitTextWhileComposing) {
   RegisterMockedHttpURLLoad("input_field_populated.html");
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
   web_view->SetInitialFocus(false);
   WebInputMethodController* active_input_method_controller =
@@ -1328,7 +1328,7 @@ TEST_P(WebViewTest, CommitTextWhileComposing) {
 
 TEST_P(WebViewTest, FinishCompositionDoesNotRevealSelection) {
   RegisterMockedHttpURLLoad("form_with_input.html");
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "form_with_input.html");
   web_view->Resize(WebSize(800, 600));
   web_view->SetInitialFocus(false);
@@ -1362,7 +1362,7 @@ TEST_P(WebViewTest, FinishCompositionDoesNotRevealSelection) {
 
 TEST_P(WebViewTest, InsertNewLinePlacementAfterFinishComposingText) {
   RegisterMockedHttpURLLoad("text_area_populated.html");
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "text_area_populated.html");
   web_view->SetInitialFocus(false);
 
@@ -1405,7 +1405,7 @@ TEST_P(WebViewTest, InsertNewLinePlacementAfterFinishComposingText) {
 
 TEST_P(WebViewTest, ExtendSelectionAndDelete) {
   RegisterMockedHttpURLLoad("input_field_populated.html");
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   web_view->SetInitialFocus(false);
@@ -1467,7 +1467,7 @@ TEST_P(WebViewTest, DeleteSurroundingText) {
 
 TEST_P(WebViewTest, SetCompositionFromExistingText) {
   RegisterMockedHttpURLLoad("input_field_populated.html");
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
   web_view->SetInitialFocus(false);
   WebVector<WebCompositionUnderline> underlines(static_cast<size_t>(1));
@@ -1493,7 +1493,7 @@ TEST_P(WebViewTest, SetCompositionFromExistingText) {
 
 TEST_P(WebViewTest, SetCompositionFromExistingTextInTextArea) {
   RegisterMockedHttpURLLoad("text_area_populated.html");
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "text_area_populated.html");
   web_view->SetInitialFocus(false);
   WebVector<WebCompositionUnderline> underlines(static_cast<size_t>(1));
@@ -1536,7 +1536,7 @@ TEST_P(WebViewTest, SetCompositionFromExistingTextInTextArea) {
 
 TEST_P(WebViewTest, SetCompositionFromExistingTextInRichText) {
   RegisterMockedHttpURLLoad("content_editable_rich_text.html");
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "content_editable_rich_text.html");
   web_view->SetInitialFocus(false);
   WebVector<WebCompositionUnderline> underlines(static_cast<size_t>(1));
@@ -1551,7 +1551,7 @@ TEST_P(WebViewTest, SetCompositionFromExistingTextInRichText) {
 
 TEST_P(WebViewTest, SetEditableSelectionOffsetsKeepsComposition) {
   RegisterMockedHttpURLLoad("input_field_populated.html");
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
   web_view->SetInitialFocus(false);
 
@@ -1621,7 +1621,7 @@ TEST_P(WebViewTest, SetEditableSelectionOffsetsKeepsComposition) {
 
 TEST_P(WebViewTest, IsSelectionAnchorFirst) {
   RegisterMockedHttpURLLoad("input_field_populated.html");
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
   WebLocalFrame* frame = web_view->MainFrameImpl();
 
@@ -1637,7 +1637,7 @@ TEST_P(WebViewTest, IsSelectionAnchorFirst) {
 
 TEST_P(WebViewTest, ExitingDeviceEmulationResetsPageScale) {
   RegisterMockedHttpURLLoad("200-by-300.html");
-  WebViewBase* web_view_impl =
+  WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
   web_view_impl->Resize(WebSize(200, 300));
 
@@ -1659,7 +1659,7 @@ TEST_P(WebViewTest, ExitingDeviceEmulationResetsPageScale) {
 
 TEST_P(WebViewTest, HistoryResetScrollAndScaleState) {
   RegisterMockedHttpURLLoad("200-by-300.html");
-  WebViewBase* web_view_impl =
+  WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
   web_view_impl->Resize(WebSize(100, 150));
   web_view_impl->UpdateAllLifecyclePhases();
@@ -1704,7 +1704,7 @@ TEST_P(WebViewTest, HistoryResetScrollAndScaleState) {
 
 TEST_P(WebViewTest, BackForwardRestoreScroll) {
   RegisterMockedHttpURLLoad("back_forward_restore_scroll.html");
-  WebViewBase* web_view_impl = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view_impl = web_view_helper_.InitializeAndLoad(
       base_url_ + "back_forward_restore_scroll.html");
   web_view_impl->Resize(WebSize(640, 480));
   web_view_impl->UpdateAllLifecyclePhases();
@@ -1762,7 +1762,7 @@ TEST_P(WebViewTest, BackForwardRestoreScroll) {
 // removed and the page is laid out. http://crbug.com/625683.
 TEST_P(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles) {
   RegisterMockedHttpURLLoad("fullscreen_style.html");
-  WebViewBase* web_view_impl =
+  WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "fullscreen_style.html");
   web_view_impl->Resize(WebSize(800, 600));
   web_view_impl->UpdateAllLifecyclePhases();
@@ -1802,7 +1802,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles) {
 // scroll and scale restoration to occur when we enter fullscreen again.
 TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
   RegisterMockedHttpURLLoad("fullscreen_style.html");
-  WebViewBase* web_view_impl =
+  WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "fullscreen_style.html");
   web_view_impl->Resize(WebSize(800, 600));
   web_view_impl->UpdateAllLifecyclePhases();
@@ -1851,7 +1851,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
 
 TEST_P(WebViewTest, EnterFullscreenResetScrollAndScaleState) {
   RegisterMockedHttpURLLoad("200-by-300.html");
-  WebViewBase* web_view_impl =
+  WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
   web_view_impl->Resize(WebSize(100, 150));
   web_view_impl->UpdateAllLifecyclePhases();
@@ -1910,7 +1910,7 @@ class PrintWebViewClient : public FrameTestHelpers::TestWebViewClient {
 TEST_P(WebViewTest, PrintWithXHRInFlight) {
   PrintWebViewClient client;
   RegisterMockedHttpURLLoad("print_with_xhr_inflight.html");
-  WebViewBase* web_view_impl = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view_impl = web_view_helper_.InitializeAndLoad(
       base_url_ + "print_with_xhr_inflight.html", nullptr, &client);
 
   ASSERT_TRUE(ToLocalFrame(web_view_impl->GetPage()->MainFrame())
@@ -1920,7 +1920,7 @@ TEST_P(WebViewTest, PrintWithXHRInFlight) {
   web_view_helper_.Reset();
 }
 
-static void DragAndDropURL(WebViewBase* web_view, const std::string& url) {
+static void DragAndDropURL(WebViewImpl* web_view, const std::string& url) {
   WebDragData drag_data;
   drag_data.Initialize();
 
@@ -1946,7 +1946,7 @@ TEST_P(WebViewTest, DragDropURL) {
   const std::string foo_url = base_url_ + "foo.html";
   const std::string bar_url = base_url_ + "bar.html";
 
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(foo_url);
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(foo_url);
 
   ASSERT_TRUE(web_view);
 
@@ -2047,7 +2047,7 @@ TEST_P(WebViewTest, ClientTapHandling) {
 TEST_P(WebViewTest, ClientTapHandlingNullWebViewClient) {
   // Note: this test doesn't use WebViewHelper since WebViewHelper creates an
   // internal WebViewClient on demand if the supplied WebViewClient is null.
-  WebViewBase* web_view = static_cast<WebViewBase*>(
+  WebViewImpl* web_view = static_cast<WebViewImpl*>(
       WebView::Create(nullptr, kWebPageVisibilityStateVisible));
   FrameTestHelpers::TestWebFrameClient web_frame_client;
   FrameTestHelpers::TestWebWidgetClient web_widget_client;
@@ -2069,7 +2069,7 @@ TEST_P(WebViewTest, ClientTapHandlingNullWebViewClient) {
 TEST_P(WebViewTest, LongPressEmptyDiv) {
   RegisterMockedHttpURLLoad("long_press_empty_div.html");
 
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "long_press_empty_div.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(false);
   web_view->Resize(WebSize(500, 300));
@@ -2090,7 +2090,7 @@ TEST_P(WebViewTest, LongPressEmptyDiv) {
 TEST_P(WebViewTest, LongPressEmptyDivAlwaysShow) {
   RegisterMockedHttpURLLoad("long_press_empty_div.html");
 
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "long_press_empty_div.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(true);
   web_view->Resize(WebSize(500, 300));
@@ -2111,7 +2111,7 @@ TEST_P(WebViewTest, LongPressEmptyDivAlwaysShow) {
 TEST_P(WebViewTest, LongPressObject) {
   RegisterMockedHttpURLLoad("long_press_object.html");
 
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "long_press_object.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(true);
   web_view->Resize(WebSize(500, 300));
@@ -2136,7 +2136,7 @@ TEST_P(WebViewTest, LongPressObject) {
 TEST_P(WebViewTest, LongPressObjectFallback) {
   RegisterMockedHttpURLLoad("long_press_object_fallback.html");
 
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "long_press_object_fallback.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(true);
   web_view->Resize(WebSize(500, 300));
@@ -2161,7 +2161,7 @@ TEST_P(WebViewTest, LongPressObjectFallback) {
 TEST_P(WebViewTest, LongPressImage) {
   RegisterMockedHttpURLLoad("long_press_image.html");
 
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "long_press_image.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(false);
   web_view->Resize(WebSize(500, 300));
@@ -2182,7 +2182,7 @@ TEST_P(WebViewTest, LongPressImage) {
 TEST_P(WebViewTest, LongPressVideo) {
   RegisterMockedHttpURLLoad("long_press_video.html");
 
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "long_press_video.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(false);
   web_view->Resize(WebSize(500, 300));
@@ -2203,7 +2203,7 @@ TEST_P(WebViewTest, LongPressVideo) {
 TEST_P(WebViewTest, LongPressLink) {
   RegisterMockedHttpURLLoad("long_press_link.html");
 
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "long_press_link.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(false);
   web_view->Resize(WebSize(500, 300));
@@ -2227,7 +2227,7 @@ TEST_P(WebViewTest, showContextMenuOnLongPressingLinks) {
   URLTestHelpers::RegisterMockedURLLoad(
       ToKURL("http://www.test.com/foo.png"),
       testing::CoreTestDataPath("white-1x1.png"));
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "long_press_links_and_images.html");
 
   web_view->SettingsImpl()->SetTouchDragDropEnabled(true);
@@ -2250,7 +2250,7 @@ TEST_P(WebViewTest, showContextMenuOnLongPressingLinks) {
 TEST_P(WebViewTest, LongPressEmptyEditableSelection) {
   RegisterMockedHttpURLLoad("long_press_empty_editable_selection.html");
 
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "long_press_empty_editable_selection.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(false);
   web_view->Resize(WebSize(500, 300));
@@ -2271,7 +2271,7 @@ TEST_P(WebViewTest, LongPressEmptyEditableSelection) {
 TEST_P(WebViewTest, LongPressEmptyNonEditableSelection) {
   RegisterMockedHttpURLLoad("long_press_image.html");
 
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "long_press_image.html");
   web_view->Resize(WebSize(500, 500));
   web_view->UpdateAllLifecyclePhases();
@@ -2293,7 +2293,7 @@ TEST_P(WebViewTest, LongPressEmptyNonEditableSelection) {
 TEST_P(WebViewTest, LongPressSelection) {
   RegisterMockedHttpURLLoad("longpress_selection.html");
 
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "longpress_selection.html");
   web_view->Resize(WebSize(500, 300));
   web_view->UpdateAllLifecyclePhases();
@@ -2313,7 +2313,7 @@ TEST_P(WebViewTest, LongPressSelection) {
 TEST_P(WebViewTest, FinishComposingTextDoesNotDismissHandles) {
   RegisterMockedHttpURLLoad("longpress_selection.html");
 
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "longpress_selection.html");
   web_view->Resize(WebSize(500, 300));
   web_view->UpdateAllLifecyclePhases();
@@ -2349,7 +2349,7 @@ TEST_P(WebViewTest, FinishComposingTextDoesNotDismissHandles) {
 TEST_P(WebViewTest, TouchDoesntSelectEmptyTextarea) {
   RegisterMockedHttpURLLoad("longpress_textarea.html");
 
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "longpress_textarea.html");
   web_view->Resize(WebSize(500, 300));
   web_view->UpdateAllLifecyclePhases();
@@ -2393,7 +2393,7 @@ TEST_P(WebViewTest, TouchDoesntSelectEmptyTextarea) {
 TEST_P(WebViewTest, LongPressImageTextarea) {
   RegisterMockedHttpURLLoad("longpress_image_contenteditable.html");
 
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "longpress_image_contenteditable.html");
   web_view->Resize(WebSize(500, 300));
   web_view->UpdateAllLifecyclePhases();
@@ -2413,7 +2413,7 @@ TEST_P(WebViewTest, LongPressImageTextarea) {
 TEST_P(WebViewTest, BlinkCaretAfterLongPress) {
   RegisterMockedHttpURLLoad("blink_caret_on_typing_after_long_press.html");
 
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "blink_caret_on_typing_after_long_press.html");
   web_view->Resize(WebSize(640, 480));
   web_view->UpdateAllLifecyclePhases();
@@ -2428,7 +2428,7 @@ TEST_P(WebViewTest, BlinkCaretAfterLongPress) {
 
 TEST_P(WebViewTest, BlinkCaretOnClosingContextMenu) {
   RegisterMockedHttpURLLoad("form.html");
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "form.html");
 
   web_view->SetInitialFocus(false);
@@ -2462,7 +2462,7 @@ TEST_P(WebViewTest, BlinkCaretOnClosingContextMenu) {
 
 TEST_P(WebViewTest, SelectionOnReadOnlyInput) {
   RegisterMockedHttpURLLoad("selection_readonly.html");
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "selection_readonly.html");
   web_view->Resize(WebSize(640, 480));
   web_view->UpdateAllLifecyclePhases();
@@ -2484,7 +2484,7 @@ TEST_P(WebViewTest, SelectionOnReadOnlyInput) {
 TEST_P(WebViewTest, KeyDownScrollsHandled) {
   RegisterMockedHttpURLLoad("content-width-1000.html");
 
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "content-width-1000.html");
   web_view->Resize(WebSize(100, 100));
   web_view->UpdateAllLifecyclePhases();
@@ -2594,7 +2594,7 @@ TEST_P(WebViewTest, MiddleClickAutoscrollCursor) {
   RuntimeEnabledFeatures::SetMiddleClickAutoscrollEnabled(true);
   RegisterMockedHttpURLLoad("content-width-1000.html");
 
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "content-width-1000.html", nullptr, nullptr, &client);
   web_view->Resize(WebSize(100, 100));
   web_view->UpdateAllLifecyclePhases();
@@ -2641,7 +2641,7 @@ static void ConfigueCompositingWebView(WebSettings* settings) {
 
 TEST_P(WebViewTest, ShowPressOnTransformedLink) {
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl = web_view_helper.Initialize(
+  WebViewImpl* web_view_impl = web_view_helper.Initialize(
       nullptr, nullptr, nullptr, &ConfigueCompositingWebView);
 
   int page_width = 640;
@@ -2701,7 +2701,7 @@ class MockAutofillClient : public WebAutofillClient {
 TEST_P(WebViewTest, LosingFocusDoesNotTriggerAutofillTextChange) {
   RegisterMockedHttpURLLoad("input_field_populated.html");
   MockAutofillClient client;
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   frame->SetAutofillClient(&client);
@@ -2726,7 +2726,7 @@ TEST_P(WebViewTest, LosingFocusDoesNotTriggerAutofillTextChange) {
   frame->SetAutofillClient(0);
 }
 
-static void VerifySelectionAndComposition(WebViewBase* web_view,
+static void VerifySelectionAndComposition(WebViewImpl* web_view,
                                           int selection_start,
                                           int selection_end,
                                           int composition_start,
@@ -2743,7 +2743,7 @@ static void VerifySelectionAndComposition(WebViewBase* web_view,
 TEST_P(WebViewTest, CompositionNotCancelledByBackspace) {
   RegisterMockedHttpURLLoad("composition_not_cancelled_by_backspace.html");
   MockAutofillClient client;
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "composition_not_cancelled_by_backspace.html");
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   frame->SetAutofillClient(&client);
@@ -2789,7 +2789,7 @@ TEST_P(WebViewTest, CompositionNotCancelledByBackspace) {
 TEST_P(WebViewTest, FinishComposingTextDoesntTriggerAutofillTextChange) {
   RegisterMockedHttpURLLoad("input_field_populated.html");
   MockAutofillClient client;
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   frame->SetAutofillClient(&client);
@@ -2831,7 +2831,7 @@ TEST_P(WebViewTest,
        SetCompositionFromExistingTextDoesntTriggerAutofillTextChange) {
   RegisterMockedHttpURLLoad("input_field_populated.html");
   MockAutofillClient client;
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   frame->SetAutofillClient(&client);
@@ -2886,7 +2886,7 @@ class ViewCreatingWebViewClient : public FrameTestHelpers::TestWebViewClient {
 TEST_P(WebViewTest, DoNotFocusCurrentFrameOnNavigateFromLocalFrame) {
   ViewCreatingWebViewClient client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl = web_view_helper.Initialize(nullptr, &client);
+  WebViewImpl* web_view_impl = web_view_helper.Initialize(nullptr, &client);
 
   WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
   FrameTestHelpers::LoadHTMLString(
@@ -2910,7 +2910,7 @@ TEST_P(WebViewTest, DoNotFocusCurrentFrameOnNavigateFromLocalFrame) {
 TEST_P(WebViewTest, FocusExistingFrameOnNavigate) {
   ViewCreatingWebViewClient client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl = web_view_helper.Initialize(nullptr, &client);
+  WebViewImpl* web_view_impl = web_view_helper.Initialize(nullptr, &client);
   WebLocalFrameImpl* frame = web_view_impl->MainFrameImpl();
   frame->SetName("_start");
 
@@ -2926,7 +2926,7 @@ TEST_P(WebViewTest, FocusExistingFrameOnNavigate) {
   WebURLRequest web_url_request_with_target_start;
   FrameLoadRequest request_with_target_start(
       0, web_url_request_with_target_start.ToResourceRequest(), "_start");
-  ToLocalFrame(static_cast<WebViewBase*>(client.CreatedWebView())
+  ToLocalFrame(static_cast<WebViewImpl*>(client.CreatedWebView())
                    ->GetPage()
                    ->MainFrame())
       ->Loader()
@@ -2938,7 +2938,7 @@ TEST_P(WebViewTest, FocusExistingFrameOnNavigate) {
 
 TEST_P(WebViewTest, DispatchesFocusOutFocusInOnViewToggleFocus) {
   RegisterMockedHttpURLLoad("focusout_focusin_events.html");
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "focusout_focusin_events.html");
 
   web_view->SetFocus(true);
@@ -2952,7 +2952,7 @@ TEST_P(WebViewTest, DispatchesFocusOutFocusInOnViewToggleFocus) {
 
 TEST_P(WebViewTest, DispatchesDomFocusOutDomFocusInOnViewToggleFocus) {
   RegisterMockedHttpURLLoad("domfocusout_domfocusin_events.html");
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "domfocusout_domfocusin_events.html");
 
   web_view->SetFocus(true);
@@ -2990,7 +2990,7 @@ TEST_P(WebViewTest, ChooseValueFromDateTimeChooser) {
   RuntimeEnabledFeatures::SetInputMultipleFieldsUIEnabled(false);
   DateTimeChooserWebViewClient client;
   std::string url = RegisterMockedHttpURLLoad("date_time_chooser.html");
-  WebViewBase* web_view_impl =
+  WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(url, nullptr, &client);
 
   Document* document =
@@ -3067,7 +3067,7 @@ TEST_P(WebViewTest, ChooseValueFromDateTimeChooser) {
 
 TEST_P(WebViewTest, DispatchesFocusBlurOnViewToggle) {
   RegisterMockedHttpURLLoad("focus_blur_events.html");
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "focus_blur_events.html");
 
   web_view->SetFocus(true);
@@ -3105,7 +3105,7 @@ TEST_P(WebViewTest, SmartClipData) {
   WebString clip_html;
   RegisterMockedHttpURLLoad("Ahem.ttf");
   RegisterMockedHttpURLLoad("smartclip.html");
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "smartclip.html");
   web_view->Resize(WebSize(500, 500));
   web_view->UpdateAllLifecyclePhases();
@@ -3141,7 +3141,7 @@ TEST_P(WebViewTest, SmartClipDataWithPinchZoom) {
   WebString clip_html;
   RegisterMockedHttpURLLoad("Ahem.ttf");
   RegisterMockedHttpURLLoad("smartclip.html");
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "smartclip.html");
   web_view->Resize(WebSize(500, 500));
   web_view->UpdateAllLifecyclePhases();
@@ -3159,7 +3159,7 @@ TEST_P(WebViewTest, SmartClipReturnsEmptyStringsWhenUserSelectIsNone) {
   WebString clip_html;
   RegisterMockedHttpURLLoad("Ahem.ttf");
   RegisterMockedHttpURLLoad("smartclip_user_select_none.html");
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "smartclip_user_select_none.html");
   web_view->Resize(WebSize(500, 500));
   web_view->UpdateAllLifecyclePhases();
@@ -3175,7 +3175,7 @@ TEST_P(WebViewTest, SmartClipDoesNotCrashPositionReversed) {
   WebString clip_html;
   RegisterMockedHttpURLLoad("Ahem.ttf");
   RegisterMockedHttpURLLoad("smartclip_reversed_positions.html");
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "smartclip_reversed_positions.html");
   web_view->Resize(WebSize(500, 500));
   web_view->UpdateAllLifecyclePhases();
@@ -3306,7 +3306,7 @@ TEST_P(WebViewTest, HasTouchEventHandlers) {
   // otherwise ChromeClient will default to assuming there are touch handlers.
   WebLayerTreeView* layer_tree_view = client.InitializeLayerTreeView();
   std::string url = RegisterMockedHttpURLLoad("has_touch_event_handlers.html");
-  WebViewBase* web_view_impl =
+  WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(url, nullptr, nullptr, &client);
   ASSERT_TRUE(layer_tree_view);
   const EventHandlerRegistry::EventHandlerClass kTouchEvent =
@@ -3434,7 +3434,7 @@ TEST_P(WebViewTest, HasTouchEventHandlers) {
 // by layout tests under fast/events/.
 TEST_P(WebViewTest, DeleteElementWithRegisteredHandler) {
   std::string url = RegisterMockedHttpURLLoad("simple_div.html");
-  WebViewBase* web_view_impl = web_view_helper_.InitializeAndLoad(url);
+  WebViewImpl* web_view_impl = web_view_helper_.InitializeAndLoad(url);
 
   Persistent<Document> document =
       web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
@@ -3460,7 +3460,7 @@ TEST_P(WebViewTest, DeleteElementWithRegisteredHandler) {
 // This test verifies the text input flags are correctly exposed to script.
 TEST_P(WebViewTest, TextInputFlags) {
   std::string url = RegisterMockedHttpURLLoad("text_input_flags.html");
-  WebViewBase* web_view_impl = web_view_helper_.InitializeAndLoad(url);
+  WebViewImpl* web_view_impl = web_view_helper_.InitializeAndLoad(url);
   web_view_impl->SetInitialFocus(false);
 
   WebLocalFrameImpl* frame = web_view_impl->MainFrameImpl();
@@ -3520,7 +3520,7 @@ TEST_P(WebViewTest, TextInputFlags) {
 TEST_P(WebViewTest, FirstUserGestureObservedKeyEvent) {
   RegisterMockedHttpURLLoad("form.html");
   MockAutofillClient client;
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "form.html");
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   frame->SetAutofillClient(&client);
@@ -3544,7 +3544,7 @@ TEST_P(WebViewTest, FirstUserGestureObservedKeyEvent) {
 TEST_P(WebViewTest, FirstUserGestureObservedMouseEvent) {
   RegisterMockedHttpURLLoad("form.html");
   MockAutofillClient client;
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "form.html");
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   frame->SetAutofillClient(&client);
@@ -3568,7 +3568,7 @@ TEST_P(WebViewTest, FirstUserGestureObservedMouseEvent) {
 
 TEST_P(WebViewTest, CompositionIsUserGesture) {
   RegisterMockedHttpURLLoad("input_field_populated.html");
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   MockAutofillClient client;
@@ -3588,7 +3588,7 @@ TEST_P(WebViewTest, CompositionIsUserGesture) {
 
 TEST_P(WebViewTest, CompareSelectAllToContentAsText) {
   RegisterMockedHttpURLLoad("longpress_selection.html");
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "longpress_selection.html");
 
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
@@ -3605,7 +3605,7 @@ TEST_P(WebViewTest, CompareSelectAllToContentAsText) {
 
 TEST_P(WebViewTest, AutoResizeSubtreeLayout) {
   std::string url = RegisterMockedHttpURLLoad("subtree-layout.html");
-  WebViewBase* web_view = web_view_helper_.Initialize();
+  WebViewImpl* web_view = web_view_helper_.Initialize();
 
   web_view->EnableAutoResizeMode(WebSize(200, 200), WebSize(200, 200));
   LoadFrame(web_view->MainFrameImpl(), url);
@@ -3661,7 +3661,7 @@ TEST_P(WebViewTest, PreferredSizeDirtyLayout) {
   std::string url = base_url_ + "specify_size.html?100px:100px";
   URLTestHelpers::RegisterMockedURLLoad(
       ToKURL(url), testing::CoreTestDataPath("specify_size.html"));
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(url);
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(url);
   WebElement document_element =
       web_view->MainFrameImpl()->GetDocument().DocumentElement();
 
@@ -3711,7 +3711,7 @@ TEST_P(WebViewTest, ShowUnhandledTapUIIfNeeded) {
   RegisterMockedHttpURLLoad("Ahem.ttf");
   RegisterMockedHttpURLLoad(test_file);
   UnhandledTapWebViewClient client;
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + test_file, nullptr, &client);
   web_view->Resize(WebSize(500, 300));
   web_view->UpdateAllLifecyclePhases();
@@ -3780,7 +3780,7 @@ TEST_P(WebViewTest, ShowUnhandledTapUIIfNeededWithMutateDom) {
   RegisterMockedHttpURLLoad("Ahem.ttf");
   RegisterMockedHttpURLLoad(test_file);
   UnhandledTapWebViewClient client;
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + test_file, nullptr, &client);
   web_view->Resize(WebSize(500, 300));
   web_view->UpdateAllLifecyclePhases();
@@ -3805,7 +3805,7 @@ TEST_P(WebViewTest, ShowUnhandledTapUIIfNeededWithMutateStyle) {
   RegisterMockedHttpURLLoad("Ahem.ttf");
   RegisterMockedHttpURLLoad(test_file);
   UnhandledTapWebViewClient client;
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + test_file, nullptr, &client);
   web_view->Resize(WebSize(500, 300));
   web_view->UpdateAllLifecyclePhases();
@@ -3839,7 +3839,7 @@ TEST_P(WebViewTest, ShowUnhandledTapUIIfNeededWithPreventDefault) {
   RegisterMockedHttpURLLoad("Ahem.ttf");
   RegisterMockedHttpURLLoad(test_file);
   UnhandledTapWebViewClient client;
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + test_file, nullptr, &client);
   web_view->Resize(WebSize(500, 300));
   web_view->UpdateAllLifecyclePhases();
@@ -3879,7 +3879,7 @@ TEST_P(WebViewTest, StopLoadingIfJavaScriptURLReturnsNoStringResult) {
 #if defined(OS_MACOSX)
 TEST_P(WebViewTest, WebSubstringUtil) {
   RegisterMockedHttpURLLoad("content_editable_populated.html");
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "content_editable_populated.html");
   web_view->GetSettings()->SetDefaultFontSize(12);
   web_view->Resize(WebSize(400, 400));
@@ -3909,7 +3909,7 @@ TEST_P(WebViewTest, WebSubstringUtil) {
 
 TEST_P(WebViewTest, WebSubstringUtilPinchZoom) {
   RegisterMockedHttpURLLoad("content_editable_populated.html");
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "content_editable_populated.html");
   web_view->GetSettings()->SetDefaultFontSize(12);
   web_view->Resize(WebSize(400, 400));
@@ -3937,7 +3937,7 @@ TEST_P(WebViewTest, WebSubstringUtilPinchZoom) {
 TEST_P(WebViewTest, WebSubstringUtilIframe) {
   RegisterMockedHttpURLLoad("single_iframe.html");
   RegisterMockedHttpURLLoad("visible_iframe.html");
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "single_iframe.html");
   web_view->GetSettings()->SetDefaultFontSize(12);
   web_view->GetSettings()->SetJavaScriptEnabled(true);
@@ -3975,7 +3975,7 @@ TEST_P(WebViewTest, WebSubstringUtilIframe) {
 TEST_P(WebViewTest, PasswordFieldEditingIsUserGesture) {
   RegisterMockedHttpURLLoad("input_field_password.html");
   MockAutofillClient client;
-  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+  WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_password.html");
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   frame->SetAutofillClient(&client);
@@ -3996,13 +3996,13 @@ TEST_P(WebViewTest, PasswordFieldEditingIsUserGesture) {
 // stack defers its loads.
 TEST_P(WebViewTest, CreatedDuringPageSuspension) {
   {
-    WebViewBase* web_view = web_view_helper_.Initialize();
+    WebViewImpl* web_view = web_view_helper_.Initialize();
     EXPECT_FALSE(web_view->GetPage()->Paused());
   }
 
   {
     ScopedPageSuspender suspender;
-    WebViewBase* web_view = web_view_helper_.Initialize();
+    WebViewImpl* web_view = web_view_helper_.Initialize();
     EXPECT_TRUE(web_view->GetPage()->Paused());
   }
 }
@@ -4012,7 +4012,7 @@ TEST_P(WebViewTest, CreatedDuringPageSuspension) {
 TEST_P(WebViewTest, SubframeBeforeUnloadUseCounter) {
   RegisterMockedHttpURLLoad("visible_iframe.html");
   RegisterMockedHttpURLLoad("single_iframe.html");
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "single_iframe.html");
 
   WebLocalFrame* frame = web_view_helper_.LocalMainFrame();
@@ -4055,7 +4055,7 @@ TEST_P(WebViewTest, SubframeBeforeUnloadUseCounter) {
 // Verify that page loads are deferred until all ScopedPageLoadDeferrers are
 // destroyed.
 TEST_P(WebViewTest, NestedPageSuspensions) {
-  WebViewBase* web_view = web_view_helper_.Initialize();
+  WebViewImpl* web_view = web_view_helper_.Initialize();
   EXPECT_FALSE(web_view->GetPage()->Paused());
 
   {
@@ -4074,7 +4074,7 @@ TEST_P(WebViewTest, NestedPageSuspensions) {
 }
 
 TEST_P(WebViewTest, ClosingPageIsSuspended) {
-  WebViewBase* web_view = web_view_helper_.Initialize();
+  WebViewImpl* web_view = web_view_helper_.Initialize();
   Page* page = web_view_helper_.WebView()->GetPage();
   EXPECT_FALSE(page->Paused());
 
@@ -4098,7 +4098,7 @@ TEST_P(WebViewTest, ClosingPageIsSuspended) {
 
 TEST_P(WebViewTest, ForceAndResetViewport) {
   RegisterMockedHttpURLLoad("200-by-300.html");
-  WebViewBase* web_view_impl =
+  WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
   web_view_impl->Resize(WebSize(100, 150));
   web_view_impl->LayerTreeView()->SetViewportSize(WebSize(100, 150));
@@ -4144,7 +4144,7 @@ TEST_P(WebViewTest, ForceAndResetViewport) {
 
 TEST_P(WebViewTest, ViewportOverrideIntegratesDeviceMetricsOffsetAndScale) {
   RegisterMockedHttpURLLoad("200-by-300.html");
-  WebViewBase* web_view_impl =
+  WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
   web_view_impl->Resize(WebSize(100, 150));
 
@@ -4173,7 +4173,7 @@ TEST_P(WebViewTest, ViewportOverrideIntegratesDeviceMetricsOffsetAndScale) {
 
 TEST_P(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
   RegisterMockedHttpURLLoad("200-by-300.html");
-  WebViewBase* web_view_impl =
+  WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
   web_view_impl->Resize(WebSize(100, 150));
   web_view_impl->LayerTreeView()->SetViewportSize(WebSize(100, 150));
@@ -4232,7 +4232,7 @@ TEST_P(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
 }
 
 TEST_P(WebViewTest, ResizeForPrintingViewportUnits) {
-  WebViewBase* web_view = web_view_helper_.Initialize();
+  WebViewImpl* web_view = web_view_helper_.Initialize();
   web_view->Resize(WebSize(800, 600));
 
   WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
@@ -4275,7 +4275,7 @@ TEST_P(WebViewTest, ResizeForPrintingViewportUnits) {
 }
 
 TEST_P(WebViewTest, WidthMediaQueryWithPageZoomAfterPrinting) {
-  WebViewBase* web_view = web_view_helper_.Initialize();
+  WebViewImpl* web_view = web_view_helper_.Initialize();
   web_view->Resize(WebSize(800, 600));
   web_view->SetZoomLevel(WebView::ZoomFactorToZoomLevel(2.0));
 
@@ -4310,7 +4310,7 @@ TEST_P(WebViewTest, WidthMediaQueryWithPageZoomAfterPrinting) {
 }
 
 TEST_P(WebViewTest, ViewportUnitsPrintingWithPageZoom) {
-  WebViewBase* web_view = web_view_helper_.Initialize();
+  WebViewImpl* web_view = web_view_helper_.Initialize();
   web_view->Resize(WebSize(800, 600));
   web_view->SetZoomLevel(WebView::ZoomFactorToZoomLevel(2.0));
 
@@ -4349,7 +4349,7 @@ TEST_P(WebViewTest, ViewportUnitsPrintingWithPageZoom) {
 }
 
 TEST_P(WebViewTest, DeviceEmulationResetScrollbars) {
-  WebViewBase* web_view = web_view_helper_.Initialize();
+  WebViewImpl* web_view = web_view_helper_.Initialize();
   web_view->Resize(WebSize(800, 600));
 
   WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
@@ -4405,7 +4405,7 @@ TEST_P(WebViewTest, SetZoomLevelWhilePluginFocused) {
     }
   };
   PluginCreatingWebFrameClient frame_client;
-  WebViewBase* web_view = web_view_helper_.Initialize(&frame_client);
+  WebViewImpl* web_view = web_view_helper_.Initialize(&frame_client);
   WebURL base_url = URLTestHelpers::ToKURL("https://example.com/");
   FrameTestHelpers::LoadHTMLString(
       web_view->MainFrameImpl(),
