@@ -30,7 +30,7 @@
 
 #include "public/web/WebFrameSerializer.h"
 
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "platform/testing/URLTestHelpers.h"

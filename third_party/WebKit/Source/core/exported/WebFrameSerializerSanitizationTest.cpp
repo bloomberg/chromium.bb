@@ -30,7 +30,7 @@
 
 #include "public/web/WebFrameSerializer.h"
 
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "platform/mhtml/MHTMLArchive.h"
@@ -181,7 +181,7 @@ class WebFrameSerializerSanitizationTest : public ::testing::Test {
         url, testing::CoreTestDataPath(file_path.Utf8().data()), mime_type);
   }
 
-  WebViewBase* WebView() { return helper_.WebView(); }
+  WebViewImpl* WebView() { return helper_.WebView(); }
 
   WebLocalFrameImpl* MainFrameImpl() { return helper_.LocalMainFrame(); }
 

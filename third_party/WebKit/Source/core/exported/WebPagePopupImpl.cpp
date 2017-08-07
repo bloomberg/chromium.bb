@@ -34,7 +34,7 @@
 #include "core/events/MessageEvent.h"
 #include "core/events/WebInputEventConversion.h"
 #include "core/exported/WebSettingsImpl.h"
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/LocalFrameView.h"
@@ -151,7 +151,7 @@ class PagePopupChromeClient final : public EmptyChromeClient {
                : WebScreenInfo();
   }
 
-  WebViewBase* GetWebView() const override { return popup_->web_view_; }
+  WebViewImpl* GetWebView() const override { return popup_->web_view_; }
 
   IntSize MinimumWindowSize() const override { return IntSize(0, 0); }
 
@@ -256,7 +256,7 @@ WebPagePopupImpl::~WebPagePopupImpl() {
   DCHECK(!page_);
 }
 
-bool WebPagePopupImpl::Initialize(WebViewBase* web_view,
+bool WebPagePopupImpl::Initialize(WebViewImpl* web_view,
                                   PagePopupClient* popup_client) {
   DCHECK(web_view);
   DCHECK(popup_client);
@@ -588,10 +588,10 @@ WebPagePopup* WebPagePopup::Create(WebWidgetClient* client) {
   CHECK(client);
   // A WebPagePopupImpl instance usually has two references.
   //  - One owned by the instance itself. It represents the visible widget.
-  //  - One owned by a WebViewBase. It's released when the WebViewBase ask the
+  //  - One owned by a WebViewImpl. It's released when the WebViewImpl ask the
   //    WebPagePopupImpl to close.
   // We need them because the closing operation is asynchronous and the widget
-  // can be closed while the WebViewBase is unaware of it.
+  // can be closed while the WebViewImpl is unaware of it.
   return AdoptRef(new WebPagePopupImpl(client)).LeakRef();
 }
 

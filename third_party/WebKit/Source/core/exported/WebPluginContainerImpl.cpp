@@ -52,7 +52,7 @@
 #include "core/events/WebInputEventConversion.h"
 #include "core/events/WheelEvent.h"
 #include "core/exported/WebDocumentLoaderImpl.h"
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"

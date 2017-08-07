@@ -42,14 +42,14 @@ namespace blink {
 
 class Element;
 class LocalFrame;
-class WebViewBase;
+class WebViewImpl;
 
 // FullscreenController is a per-WebView class that manages the transition into
 // and out of fullscreen, including restoring scroll offset and scale after
 // exiting fullscreen. It is (indirectly) used by the Fullscreen class.
 class CORE_EXPORT FullscreenController {
  public:
-  static std::unique_ptr<FullscreenController> Create(WebViewBase*);
+  static std::unique_ptr<FullscreenController> Create(WebViewImpl*);
 
   // Called by Fullscreen (via ChromeClient) to request entering or exiting
   // fullscreen.
@@ -73,13 +73,13 @@ class CORE_EXPORT FullscreenController {
   void DidUpdateLayout();
 
  protected:
-  explicit FullscreenController(WebViewBase*);
+  explicit FullscreenController(WebViewImpl*);
 
  private:
   void UpdatePageScaleConstraints(bool remove_constraints);
   void RestoreBackgroundColorOverride();
 
-  WebViewBase* web_view_base_;
+  WebViewImpl* web_view_base_;
 
   // State is used to avoid unnecessary enter/exit requests, and to restore the
   // initial*_ after the first layout upon exiting fullscreen. Typically, the

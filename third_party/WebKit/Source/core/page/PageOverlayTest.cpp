@@ -5,7 +5,7 @@
 #include "core/page/PageOverlay.h"
 
 #include <memory>
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/WebLocalFrameImpl.h"
@@ -82,7 +82,7 @@ class PageOverlayTest : public ::testing::Test {
               GetWebView()->IsAcceleratedCompositingActive());
   }
 
-  WebViewBase* GetWebView() const { return helper_.WebView(); }
+  WebViewImpl* GetWebView() const { return helper_.WebView(); }
 
   std::unique_ptr<PageOverlay> CreateSolidYellowOverlay() {
     return PageOverlay::Create(

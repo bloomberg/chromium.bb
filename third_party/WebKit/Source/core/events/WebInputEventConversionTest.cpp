@@ -37,7 +37,7 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/TouchEvent.h"
 #include "core/events/WheelEvent.h"
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -119,7 +119,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
 
   RegisterMockedURL(base_url, file_name);
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper.InitializeAndLoad(base_url + file_name);
   web_view->GetSettings()->SetViewportEnabled(true);
   int page_width = 640;
@@ -346,7 +346,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
 
   RegisterMockedURL(base_url, file_name);
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper.InitializeAndLoad(base_url + file_name);
   web_view->GetSettings()->SetViewportEnabled(true);
   int page_width = 640;
@@ -616,7 +616,7 @@ TEST(WebInputEventConversionTest, InputEventsConversions) {
 
   RegisterMockedURL(base_url, file_name);
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper.InitializeAndLoad(base_url + file_name);
   int page_width = 640;
   int page_height = 480;
@@ -655,7 +655,7 @@ TEST(WebInputEventConversionTest, VisualViewportOffset) {
 
   RegisterMockedURL(base_url, file_name);
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper.InitializeAndLoad(base_url + file_name);
   int page_width = 640;
   int page_height = 480;
@@ -756,7 +756,7 @@ TEST(WebInputEventConversionTest, ElasticOverscroll) {
 
   RegisterMockedURL(base_url, file_name);
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper.InitializeAndLoad(base_url + file_name);
   int page_width = 640;
   int page_height = 480;
@@ -832,7 +832,7 @@ TEST(WebInputEventConversionTest, ElasticOverscrollWithPageReload) {
 
   RegisterMockedURL(base_url, file_name);
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view =
+  WebViewImpl* web_view =
       web_view_helper.InitializeAndLoad(base_url + file_name);
   int page_width = 640;
   int page_height = 480;

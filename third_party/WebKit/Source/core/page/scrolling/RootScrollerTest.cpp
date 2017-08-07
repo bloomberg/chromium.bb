@@ -63,16 +63,16 @@ class RootScrollerTest : public ::testing::Test,
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 
-  WebViewBase* Initialize(const std::string& page_name,
+  WebViewImpl* Initialize(const std::string& page_name,
                           FrameTestHelpers::TestWebViewClient* client) {
     return InitializeInternal(base_url_ + page_name, client);
   }
 
-  WebViewBase* Initialize(const std::string& page_name) {
+  WebViewImpl* Initialize(const std::string& page_name) {
     return InitializeInternal(base_url_ + page_name, nullptr);
   }
 
-  WebViewBase* Initialize() {
+  WebViewImpl* Initialize() {
     return InitializeInternal("about:blank", nullptr);
   }
 
@@ -103,7 +103,7 @@ class RootScrollerTest : public ::testing::Test,
     RunPendingTasks();
   }
 
-  WebViewBase* GetWebView() const { return helper_.WebView(); }
+  WebViewImpl* GetWebView() const { return helper_.WebView(); }
 
   Page& GetPage() const { return *helper_.WebView()->GetPage(); }
 
@@ -163,7 +163,7 @@ class RootScrollerTest : public ::testing::Test,
     return WebCoalescedInputEvent(event);
   }
 
-  WebViewBase* InitializeInternal(const std::string& url,
+  WebViewImpl* InitializeInternal(const std::string& url,
                                   FrameTestHelpers::TestWebViewClient* client) {
     RuntimeEnabledFeatures::SetSetRootScrollerEnabled(true);
 

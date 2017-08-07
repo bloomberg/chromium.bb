@@ -4,7 +4,7 @@
 
 #include "core/editing/spellcheck/TextCheckerClientImpl.h"
 #include "core/exported/WebTextCheckingCompletionImpl.h"
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "public/web/WebTextCheckClient.h"
 #include "public/web/WebTextCheckingResult.h"

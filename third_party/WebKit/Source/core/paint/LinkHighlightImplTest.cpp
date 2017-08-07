@@ -29,7 +29,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Node.h"
 #include "core/events/WebInputEventConversion.h"
-#include "core/exported/WebViewBase.h"
+#include "core/exported/WebViewImpl.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/WebLocalFrameImpl.h"
@@ -56,7 +56,7 @@ namespace blink {
 
 namespace {
 
-GestureEventWithHitTestResults GetTargetedEvent(WebViewBase* web_view_impl,
+GestureEventWithHitTestResults GetTargetedEvent(WebViewImpl* web_view_impl,
                                                 WebGestureEvent& touch_event) {
   WebGestureEvent scaled_event = TransformWebGestureEvent(
       web_view_impl->MainFrameImpl()->GetFrameView(), touch_event);
@@ -78,7 +78,7 @@ std::string LinkRegisterMockedURLLoad() {
 TEST(LinkHighlightImplTest, verifyWebViewImplIntegration) {
   const std::string url = LinkRegisterMockedURLLoad();
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(url);
+  WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(url);
   int page_width = 640;
   int page_height = 480;
   web_view_impl->Resize(WebSize(page_width, page_height));
@@ -135,7 +135,7 @@ TEST(LinkHighlightImplTest, verifyWebViewImplIntegration) {
 TEST(LinkHighlightImplTest, resetDuringNodeRemoval) {
   const std::string url = LinkRegisterMockedURLLoad();
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(url);
+  WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(url);
 
   int page_width = 640;
   int page_height = 480;
@@ -175,7 +175,7 @@ TEST(LinkHighlightImplTest, resetDuringNodeRemoval) {
 TEST(LinkHighlightImplTest, resetLayerTreeView) {
   const std::string url = LinkRegisterMockedURLLoad();
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(url);
+  WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(url);
 
   int page_width = 640;
   int page_height = 480;
@@ -210,7 +210,7 @@ TEST(LinkHighlightImplTest, resetLayerTreeView) {
 TEST(LinkHighlightImplTest, multipleHighlights) {
   const std::string url = LinkRegisterMockedURLLoad();
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(url);
+  WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(url);
 
   int page_width = 640;
   int page_height = 480;

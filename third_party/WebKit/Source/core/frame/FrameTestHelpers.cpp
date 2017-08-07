@@ -242,7 +242,7 @@ WebViewHelper::~WebViewHelper() {
   Reset();
 }
 
-WebViewBase* WebViewHelper::InitializeWithOpener(
+WebViewImpl* WebViewHelper::InitializeWithOpener(
     WebFrame* opener,
     TestWebFrameClient* web_frame_client,
     TestWebViewClient* web_view_client,
@@ -273,7 +273,7 @@ WebViewBase* WebViewHelper::InitializeWithOpener(
   return web_view_;
 }
 
-WebViewBase* WebViewHelper::Initialize(
+WebViewImpl* WebViewHelper::Initialize(
     TestWebFrameClient* web_frame_client,
     TestWebViewClient* web_view_client,
     TestWebWidgetClient* web_widget_client,
@@ -282,7 +282,7 @@ WebViewBase* WebViewHelper::Initialize(
                               web_widget_client, update_settings_func);
 }
 
-WebViewBase* WebViewHelper::InitializeAndLoad(
+WebViewImpl* WebViewHelper::InitializeAndLoad(
     const std::string& url,
     TestWebFrameClient* web_frame_client,
     TestWebViewClient* web_view_client,
@@ -296,7 +296,7 @@ WebViewBase* WebViewHelper::InitializeAndLoad(
   return WebView();
 }
 
-WebViewBase* WebViewHelper::InitializeRemote(
+WebViewImpl* WebViewHelper::InitializeRemote(
     TestWebRemoteFrameClient* web_remote_frame_client,
     RefPtr<SecurityOrigin> security_origin,
     TestWebViewClient* web_view_client) {
@@ -342,7 +342,7 @@ void WebViewHelper::Resize(WebSize size) {
 
 void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client) {
   owned_test_web_view_client_ = CreateDefaultClientIfNeeded(web_view_client);
-  web_view_ = static_cast<WebViewBase*>(
+  web_view_ = static_cast<WebViewImpl*>(
       WebView::Create(web_view_client, kWebPageVisibilityStateVisible));
   web_view_->GetSettings()->SetJavaScriptEnabled(true);
   web_view_->GetSettings()->SetPluginsEnabled(true);
