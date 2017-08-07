@@ -109,6 +109,8 @@ class GitCL(object):
     @staticmethod
     def filter_latest(try_results):
         """Returns the latest entries from from a Build to TryJobStatus dict."""
+        if try_results is None:
+            return None
         latest_builds = filter_latest_builds(try_results.keys())
         return {b: s for b, s in try_results.items() if b in latest_builds}
 
