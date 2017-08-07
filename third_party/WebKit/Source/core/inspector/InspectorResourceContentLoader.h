@@ -15,6 +15,7 @@
 
 namespace blink {
 
+class KURL;
 class LocalFrame;
 class Resource;
 
@@ -34,6 +35,8 @@ class CORE_EXPORT InspectorResourceContentLoader final
   void EnsureResourcesContentLoaded(int client_id, WTF::Closure callback);
   void Cancel(int client_id);
   void DidCommitLoadForLocalFrame(LocalFrame*);
+
+  Resource* ResourceForURL(const KURL&);
 
  private:
   class ResourceClient;

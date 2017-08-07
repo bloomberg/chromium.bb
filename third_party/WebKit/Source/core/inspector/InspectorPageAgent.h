@@ -51,7 +51,6 @@ class Document;
 class DocumentLoader;
 class InspectedFrames;
 class InspectorResourceContentLoader;
-class KURL;
 class LocalFrame;
 class ScheduledNavigation;
 class SharedBuffer;
@@ -101,7 +100,6 @@ class CORE_EXPORT InspectorPageAgent final
                                   String* result,
                                   bool* base64_encoded);
 
-  static Resource* CachedResource(LocalFrame*, const KURL&);
   static String ResourceTypeJson(ResourceType);
   static ResourceType CachedResourceType(const Resource&);
   static String CachedResourceTypeJson(const Resource&);
