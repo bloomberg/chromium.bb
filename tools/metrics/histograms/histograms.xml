@@ -31427,6 +31427,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.UnderflowDuration" units="ms">
+  <obsolete>
+    Removed Aug 2017. Media.UnderflowDuration2.SRC removes zero-weighting so
+    that we only report actual underflows.
+  </obsolete>
   <owner>dalecurtis@chromium.org</owner>
   <summary>
     The amount of time taken to leave the underflow state (i.e. resume playback)
@@ -31435,6 +31439,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.UnderflowDuration.EME" units="ms">
+  <obsolete>
+    Removed Aug 2017. Media.UnderflowDuration2.EME removes zero-weighting so
+    that we only report actual underflows.
+  </obsolete>
   <owner>media-dev@chromium.org</owner>
   <summary>
     The amount of time taken to leave the underflow state (i.e. resume playback)
@@ -31443,10 +31451,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.UnderflowDuration.MSE" units="ms">
+  <obsolete>
+    Removed Aug 2017. Media.UnderflowDuration2.MSE removes zero-weighting so
+    that we only report actual underflows.
+  </obsolete>
   <owner>dalecurtis@chromium.org</owner>
   <summary>
     The amount of time taken to leave the underflow state (i.e. resume playback)
     for Media Source Extensions (MSE) based playbacks.
+  </summary>
+</histogram>
+
+<histogram base="true" name="Media.UnderflowDuration2" units="ms">
+<!-- Name completed by histogram_suffixes name="MediaUnderflowDuration2" -->
+
+  <owner>dalecurtis@chromium.org</owner>
+  <summary>
+    The amount of time taken to leave the underflow state (i.e. resume playback)
+    for playbacks. This doesn't report initial zero samples, which was
+    previously used to compensate for playbacks that don't rebuffer.
   </summary>
 </histogram>
 
@@ -93858,6 +93881,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="Media.Timeline.DragSumAbsTimeDelta"/>
   <affected-histogram name="Media.Timeline.DragTimeDelta"/>
   <affected-histogram name="Media.Timeline.SeekType"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="MediaUnderflowDuration2" separator=".">
+  <suffix name="EME"
+      label="Measures underflow state of Encrypted Media Extensions (EME)
+             based playbacks."/>
+  <suffix name="MSE"
+      label="Measures underflow state of Media Source Extensions (MSE) based
+             playbacks."/>
+  <suffix name="SRC" label="Measures underflow state for src= playbacks."/>
+  <affected-histogram name="Media.UnderflowDuration2"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="MediaVideoCaptureManagerTime" separator=".">
