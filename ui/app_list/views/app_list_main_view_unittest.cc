@@ -145,9 +145,7 @@ class AppListMainViewTest : public views::ViewsTestBase {
 
     gfx::Point translated =
         gfx::PointAtOffsetFromOrigin(point - view->origin());
-    ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED, translated, point,
-                                 ui::EventTimeForNow(), 0, 0);
-    grid_view->InitiateDrag(view, pointer, pressed_event);
+    grid_view->InitiateDrag(view, pointer, translated, point);
     return view;
   }
 

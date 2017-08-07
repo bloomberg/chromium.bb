@@ -95,7 +95,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   void InitiateDrag(AppListItemView* view,
                     Pointer pointer,
-                    const ui::LocatedEvent& event);
+                    const gfx::Point& location,
+                    const gfx::Point& root_location);
 
   void StartDragAndDropHostDragAfterLongPress(Pointer pointer);
   void TryStartDragAndDropHostDrag(Pointer pointer,
@@ -331,8 +332,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
                             bool animate_target,
                             const gfx::Rect& target);
 
-  // Extracts drag location info from |event| into |drag_point|.
-  void ExtractDragLocation(const ui::LocatedEvent& event,
+  // Extracts drag location info from |root_location| into |drag_point|.
+  void ExtractDragLocation(const gfx::Point& root_location,
                            gfx::Point* drag_point);
 
   // Updates |reorder_drop_target_|, |folder_drop_target_| and |drop_attempt_|
