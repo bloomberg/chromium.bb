@@ -19,7 +19,7 @@
 
     // - is_descriptor
     // Whether it is the name of a CSS descriptor.
-    // TODO(alancutter): Don't use CSSPropertyID for descriptors.
+    // TODO(crbug.com/752745): Don't use CSSPropertyID for descriptors.
     is_descriptor: {
     },
 
