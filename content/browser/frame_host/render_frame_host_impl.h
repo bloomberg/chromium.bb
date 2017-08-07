@@ -772,6 +772,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnAbortNavigation();
   void OnDispatchLoad();
   void OnAccessibilityEvents(
+      const AXContentTreeUpdate& update,
       const std::vector<AccessibilityHostMsg_EventParams>& params,
       int reset_token,
       int ack_token);
@@ -889,13 +890,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   ui::AXTreeIDRegistry::AXTreeID BrowserPluginInstanceIDToAXTreeID(
       int routing_id);
 
-  // Convert the content-layer-specific AXContentNodeData to a general-purpose
-  // AXNodeData structure.
+  // Convert content-layer-specific subclasses of accessibility data structures
+  // to general-purpose accessibility data structures that can be shared
+  // outside of content.
+  void AXContentTreeUpdateToAXTreeUpdate(const AXContentTreeUpdate& src,
+                                         ui::AXTreeUpdate* dst);
   void AXContentNodeDataToAXNodeData(const AXContentNodeData& src,
                                      ui::AXNodeData* dst);
-
-  // Convert the content-layer-specific AXContentTreeData to a general-purpose
-  // AXTreeData structure.
   void AXContentTreeDataToAXTreeData(ui::AXTreeData* dst);
 
   // Returns the RenderWidgetHostView used for accessibility. For subframes,

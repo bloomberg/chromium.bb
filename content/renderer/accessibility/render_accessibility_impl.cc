@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "content/common/accessibility_messages.h"
 #include "content/renderer/accessibility/blink_ax_enum_conversion.h"
@@ -380,6 +381,11 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   // If there's a layout complete message, we need to send location changes.
   bool had_layout_complete_messages = false;
 
+  // The changes to the accessibility tree will be captured here.
+  AXContentTreeUpdate update;
+  std::set<int32_t> updated_nodes;
+  size_t update_size = 0;
+
   // Loop over each event and generate an updated event message.
   for (size_t i = 0; i < src_events.size(); ++i) {
     AccessibilityHostMsg_EventParams& event = src_events[i];
@@ -408,35 +414,47 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     event_msg.event_type = event.event_type;
     event_msg.id = event.id;
     event_msg.event_from = event.event_from;
-    if (!serializer_.SerializeChanges(obj, &event_msg.update)) {
-      VLOG(1) << "Failed to serialize one accessibility event.";
-      continue;
+
+    // Serialize |obj| and any other nodes related to |obj| that need to
+    // be sent over, but not if |update| already includes |obj|.
+    if (!base::ContainsKey(updated_nodes, obj.AxID())) {
+      if (!serializer_.SerializeChanges(obj, &update)) {
+        VLOG(1) << "Failed to serialize one accessibility event.";
+        continue;
+      }
     }
 
-    if (plugin_tree_source_)
-      AddPluginTreeToUpdate(&event_msg.update);
+    // Keep track of the node ids in |update| so we can avoid serializing
+    // the same node twice, even if there are multiple events on that node.
+    for (size_t i = update_size; i < update.nodes.size(); ++i)
+      updated_nodes.insert(update.nodes[i].id);
+    update_size = update.nodes.size();
 
     event_msgs.push_back(event_msg);
 
-    // For each node in the update, set the location in our map from
-    // ids to locations.
-    for (size_t i = 0; i < event_msg.update.nodes.size(); ++i) {
-      ui::AXNodeData& src = event_msg.update.nodes[i];
-      ui::AXRelativeBounds& dst = locations_[event_msg.update.nodes[i].id];
-      dst.offset_container_id = src.offset_container_id;
-      dst.bounds = src.location;
-      dst.transform.reset(nullptr);
-      if (src.transform)
-        dst.transform.reset(new gfx::Transform(*src.transform));
-    }
-
     VLOG(1) << "Accessibility event: " << ui::ToString(event.event_type)
-            << " on node id " << event_msg.id
-            << "\n" << event_msg.update.ToString();
+            << " on node id " << event_msg.id;
   }
 
-  Send(new AccessibilityHostMsg_Events(routing_id(), event_msgs, reset_token_,
-                                       ack_token_));
+  if (plugin_tree_source_)
+    AddPluginTreeToUpdate(&update);
+
+  VLOG(1) << "Accessibility update:\n" << update.ToString();
+
+  // For each node in the update, set the location in our map from
+  // ids to locations.
+  for (size_t i = 0; i < update.nodes.size(); ++i) {
+    ui::AXNodeData& src = update.nodes[i];
+    ui::AXRelativeBounds& dst = locations_[update.nodes[i].id];
+    dst.offset_container_id = src.offset_container_id;
+    dst.bounds = src.location;
+    dst.transform.reset(nullptr);
+    if (src.transform)
+      dst.transform.reset(new gfx::Transform(*src.transform));
+  }
+
+  Send(new AccessibilityHostMsg_Events(routing_id(), update, event_msgs,
+                                       reset_token_, ack_token_));
   reset_token_ = 0;
 
   if (had_layout_complete_messages)

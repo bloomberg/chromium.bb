@@ -151,10 +151,15 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler,
   //
 
   // Handle accessibility events from the browser process.
-  void OnAccessibilityEvent(const ExtensionMsg_AccessibilityEventParams& params,
-                            bool is_active_profile);
-  void OnAccessibilityLocationChange(
-      const ExtensionMsg_AccessibilityLocationChangeParams& params);
+  void OnAccessibilityEvents(
+      int ax_tree_id,
+      const ui::AXTreeUpdate& update,
+      const std::vector<ExtensionMsg_AccessibilityEventParams>& events,
+      bool is_active_profile);
+  void OnAccessibilityLocationChanges(
+      int ax_tree_id,
+      const std::vector<ExtensionMsg_AccessibilityLocationChangeParams>&
+          params);
 
   void UpdateOverallTreeChangeObserverFilter();
 

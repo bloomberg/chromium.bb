@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/extension_id.h"
+#include "ui/accessibility/ax_tree_id_registry.h"
 
 class Profile;
 
@@ -48,11 +49,15 @@ class AutomationEventRouter : public content::NotificationObserver {
                                              int listener_process_id,
                                              int listener_routing_id);
 
-  void DispatchAccessibilityEvent(
-      const ExtensionMsg_AccessibilityEventParams& params);
+  void DispatchAccessibilityEvents(
+      ui::AXTreeIDRegistry::AXTreeID ax_tree_id,
+      const ui::AXTreeUpdate& update,
+      const std::vector<ExtensionMsg_AccessibilityEventParams>& events);
 
-  void DispatchAccessibilityLocationChange(
-      const ExtensionMsg_AccessibilityLocationChangeParams& params);
+  void DispatchAccessibilityLocationChanges(
+      ui::AXTreeIDRegistry::AXTreeID ax_tree_id,
+      const std::vector<ExtensionMsg_AccessibilityLocationChangeParams>&
+          params);
 
   // Notify all automation extensions that an accessibility tree was
   // destroyed. If |browser_context| is null,

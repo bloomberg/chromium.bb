@@ -238,14 +238,15 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   EXPECT_EQ(2, child3_accessible->GetIndexInParent());
 
   // Process a notification containing the changed subtree.
-  std::vector<AXEventNotificationDetails> params;
-  params.push_back(AXEventNotificationDetails());
-  AXEventNotificationDetails* msg = &params[0];
-  msg->event_type = ui::AX_EVENT_CHILDREN_CHANGED;
-  msg->update.nodes.push_back(tree2_root);
-  msg->update.nodes.push_back(tree2_child0);
-  msg->id = tree2_root.id;
-  manager->OnAccessibilityEvents(params);
+  ui::AXTreeUpdate update;
+  update.nodes.push_back(tree2_root);
+  update.nodes.push_back(tree2_child0);
+  std::vector<AXEventNotificationDetails> events;
+  events.push_back(AXEventNotificationDetails());
+  AXEventNotificationDetails* event = &events[0];
+  event->event_type = ui::AX_EVENT_CHILDREN_CHANGED;
+  event->id = tree2_root.id;
+  manager->OnAccessibilityEvents(update, events);
 
   // There should be 5 objects now: the 4 from the new tree, plus the
   // reference to child3 we kept.
@@ -403,15 +404,16 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
 
   // Process a notification containing the changed subtree rooted at
   // the container.
-  std::vector<AXEventNotificationDetails> params;
-  params.push_back(AXEventNotificationDetails());
-  AXEventNotificationDetails* msg = &params[0];
-  msg->event_type = ui::AX_EVENT_CHILDREN_CHANGED;
-  msg->update.nodes.push_back(tree2_container);
-  msg->update.nodes.push_back(tree2_child0);
-  msg->update.nodes.push_back(tree2_grandchild0);
-  msg->id = tree2_container.id;
-  manager->OnAccessibilityEvents(params);
+  ui::AXTreeUpdate update;
+  update.nodes.push_back(tree2_container);
+  update.nodes.push_back(tree2_child0);
+  update.nodes.push_back(tree2_grandchild0);
+  std::vector<AXEventNotificationDetails> events;
+  events.push_back(AXEventNotificationDetails());
+  AXEventNotificationDetails* event = &events[0];
+  event->event_type = ui::AX_EVENT_CHILDREN_CHANGED;
+  event->id = tree2_container.id;
+  manager->OnAccessibilityEvents(update, events);
 
   // There should be 9 objects now: the 8 from the new tree, plus the
   // reference to child3 we kept.
@@ -501,16 +503,17 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
   ASSERT_EQ(4, CountedBrowserAccessibility::global_obj_count_);
 
   // Process a notification containing the changed subtree.
-  std::vector<AXEventNotificationDetails> params;
-  params.push_back(AXEventNotificationDetails());
-  AXEventNotificationDetails* msg = &params[0];
-  msg->event_type = ui::AX_EVENT_CHILDREN_CHANGED;
-  msg->update.nodes.push_back(tree2_1);
-  msg->update.nodes.push_back(tree2_4);
-  msg->update.nodes.push_back(tree2_5);
-  msg->update.nodes.push_back(tree2_6);
-  msg->id = tree2_1.id;
-  manager->OnAccessibilityEvents(params);
+  ui::AXTreeUpdate update;
+  update.nodes.push_back(tree2_1);
+  update.nodes.push_back(tree2_4);
+  update.nodes.push_back(tree2_5);
+  update.nodes.push_back(tree2_6);
+  std::vector<AXEventNotificationDetails> events;
+  events.push_back(AXEventNotificationDetails());
+  AXEventNotificationDetails* event = &events[0];
+  event->event_type = ui::AX_EVENT_CHILDREN_CHANGED;
+  event->id = tree2_1.id;
+  manager->OnAccessibilityEvents(update, events);
 
   // There should be 4 objects now.
   EXPECT_EQ(4, CountedBrowserAccessibility::global_obj_count_);
@@ -1504,12 +1507,13 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash) {
   root2.id = 3;
   root2.role = ui::AX_ROLE_ROOT_WEB_AREA;
 
+  ui::AXTreeUpdate update;
+  update = MakeAXTreeUpdate(root2);
   std::vector<AXEventNotificationDetails> events2;
   events2.push_back(AXEventNotificationDetails());
-  events2[0].update = MakeAXTreeUpdate(root2);
   events2[0].id = -1;
   events2[0].event_type = ui::AX_EVENT_NONE;
-  manager->OnAccessibilityEvents(events2);
+  manager->OnAccessibilityEvents(update, events2);
 
   // Make sure that the focused node was updated to the new root and
   // that this doesn't crash.
@@ -1551,13 +1555,13 @@ TEST(BrowserAccessibilityManagerTest, DeletingFocusedNodeDoesNotCrash2) {
   root2.role = ui::AX_ROLE_ROOT_WEB_AREA;
 
   // Make an update the explicitly clears the previous root.
+  ui::AXTreeUpdate update = MakeAXTreeUpdate(root2);
+  update.node_id_to_clear = 1;
   std::vector<AXEventNotificationDetails> events2;
   events2.push_back(AXEventNotificationDetails());
-  events2[0].update = MakeAXTreeUpdate(root2);
-  events2[0].update.node_id_to_clear = 1;
   events2[0].id = -1;
   events2[0].event_type = ui::AX_EVENT_NONE;
-  manager->OnAccessibilityEvents(events2);
+  manager->OnAccessibilityEvents(update, events2);
 
   // Make sure that the focused node was updated to the new root and
   // that this doesn't crash.

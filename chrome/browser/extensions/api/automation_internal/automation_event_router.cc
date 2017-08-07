@@ -68,8 +68,10 @@ void AutomationEventRouter::RegisterListenerWithDesktopPermission(
            true);
 }
 
-void AutomationEventRouter::DispatchAccessibilityEvent(
-    const ExtensionMsg_AccessibilityEventParams& params) {
+void AutomationEventRouter::DispatchAccessibilityEvents(
+    ui::AXTreeIDRegistry::AXTreeID ax_tree_id,
+    const ui::AXTreeUpdate& update,
+    const std::vector<ExtensionMsg_AccessibilityEventParams>& events) {
   if (active_profile_ != ProfileManager::GetActiveUserProfile()) {
     active_profile_ = ProfileManager::GetActiveUserProfile();
     UpdateActiveProfile();
@@ -78,32 +80,32 @@ void AutomationEventRouter::DispatchAccessibilityEvent(
   for (const auto& listener : listeners_) {
     // Skip listeners that don't want to listen to this tree.
     if (!listener.desktop &&
-        listener.tree_ids.find(params.tree_id) == listener.tree_ids.end()) {
+        listener.tree_ids.find(ax_tree_id) == listener.tree_ids.end()) {
       continue;
     }
 
     content::RenderProcessHost* rph =
         content::RenderProcessHost::FromID(listener.process_id);
-    rph->Send(new ExtensionMsg_AccessibilityEvent(listener.routing_id,
-                                                  params,
-                                                  listener.is_active_profile));
+    rph->Send(new ExtensionMsg_AccessibilityEvents(listener.routing_id,
+                                                   ax_tree_id, update, events,
+                                                   listener.is_active_profile));
   }
 }
 
-void AutomationEventRouter::DispatchAccessibilityLocationChange(
-    const ExtensionMsg_AccessibilityLocationChangeParams& params) {
+void AutomationEventRouter::DispatchAccessibilityLocationChanges(
+    ui::AXTreeIDRegistry::AXTreeID ax_tree_id,
+    const std::vector<ExtensionMsg_AccessibilityLocationChangeParams>& params) {
   for (const auto& listener : listeners_) {
     // Skip listeners that don't want to listen to this tree.
     if (!listener.desktop &&
-        listener.tree_ids.find(params.tree_id) == listener.tree_ids.end()) {
+        listener.tree_ids.find(ax_tree_id) == listener.tree_ids.end()) {
       continue;
     }
 
     content::RenderProcessHost* rph =
         content::RenderProcessHost::FromID(listener.process_id);
-    rph->Send(new ExtensionMsg_AccessibilityLocationChange(
-        listener.routing_id,
-        params));
+    rph->Send(new ExtensionMsg_AccessibilityLocationChanges(
+        listener.routing_id, ax_tree_id, params));
   }
 }
 

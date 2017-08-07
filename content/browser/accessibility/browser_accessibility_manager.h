@@ -224,7 +224,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
 
   // Called when the renderer process has notified us of about tree changes.
   virtual void OnAccessibilityEvents(
-      const std::vector<AXEventNotificationDetails>& details);
+      const ui::AXTreeUpdate& update,
+      const std::vector<AXEventNotificationDetails>& events);
 
   // Called when the renderer process updates the location of accessibility
   // objects. Calls SendLocationChangeEvents(), which can be overridden.

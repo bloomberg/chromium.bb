@@ -40,7 +40,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
       BrowserAccessibility* node) override;
 
   void OnAccessibilityEvents(
-      const std::vector<AXEventNotificationDetails>& details) override;
+      const ui::AXTreeUpdate& update,
+      const std::vector<AXEventNotificationDetails>& events) override;
 
   NSView* GetParentView();
 
