@@ -386,10 +386,6 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
       action->action = ui::AX_ACTION_SHOW_CONTEXT_MENU;
       break;
     }
-    case api::automation_internal::ACTION_TYPE_SETACCESSIBILITYFOCUS: {
-      action->action = ui::AX_ACTION_SET_ACCESSIBILITY_FOCUS;
-      break;
-    }
     case api::automation_internal::
         ACTION_TYPE_SETSEQUENTIALFOCUSNAVIGATIONSTARTINGPOINT: {
       action->action =

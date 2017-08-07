@@ -126,7 +126,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void OnReset(int reset_token);
 
   void OnHitTest(const gfx::Point& point, ui::AXEvent event_to_fire);
-  void OnSetAccessibilityFocus(const blink::WebAXObject& obj);
+  void OnLoadInlineTextBoxes(const blink::WebAXObject& obj);
   void OnGetImageData(const blink::WebAXObject& obj, const gfx::Size& max_size);
   void AddPluginTreeToUpdate(AXContentTreeUpdate* update);
   void ScrollPlugin(int id_to_make_visible);

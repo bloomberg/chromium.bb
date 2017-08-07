@@ -72,7 +72,7 @@ class AndroidGranularityMovementBrowserTest : public ContentBrowserTest {
     AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                            ui::kAXModeComplete,
                                            ui::AX_EVENT_TREE_CHANGED);
-    node->manager()->SetAccessibilityFocus(*node);
+    node->manager()->LoadInlineTextBoxes(*node);
     waiter.WaitForNotification();
 
     int start_index = -1;

@@ -765,13 +765,13 @@ void BrowserAccessibilityManager::SetSelection(AXPlatformRange range) {
   delegate_->AccessibilityPerformAction(action_data);
 }
 
-void BrowserAccessibilityManager::SetAccessibilityFocus(
+void BrowserAccessibilityManager::LoadInlineTextBoxes(
     const BrowserAccessibility& node) {
   if (!delegate_)
     return;
 
   ui::AXActionData action_data;
-  action_data.action = ui::AX_ACTION_SET_ACCESSIBILITY_FOCUS;
+  action_data.action = ui::AX_ACTION_LOAD_INLINE_TEXT_BOXES;
   action_data.target_node_id = node.GetId();
   delegate_->AccessibilityPerformAction(action_data);
 }

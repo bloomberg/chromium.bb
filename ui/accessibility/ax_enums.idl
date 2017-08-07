@@ -263,6 +263,11 @@
     // Increment a slider or range control by one step value.
     increment,
 
+    // Load inline text boxes for this subtree, providing information
+    // about word boundaries, line layout, and individual character
+    // bounding boxes.
+    load_inline_text_boxes,
+
     // Delete any selected text in the control's text value and
     // insert |AXActionData::value| in its place, like when typing or pasting.
     replace_selected_text,
@@ -276,7 +281,6 @@
     // global screen coordinates. Pass a point in AXActionData.target_point.
     scroll_to_point,
 
-    set_accessibility_focus,
     set_scroll_offset,
     set_selection,
 
