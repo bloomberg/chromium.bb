@@ -1638,50 +1638,35 @@ static float usec_to_fps(uint64_t usec, unsigned int frames) {
 }
 
 static void test_decode(struct stream_state *stream,
-                        enum TestDecodeFatality fatal,
-                        const AvxInterface *codec) {
+                        enum TestDecodeFatality fatal) {
   aom_image_t enc_img, dec_img;
 
   if (stream->mismatch_seen) return;
 
   /* Get the internal reference frame */
-  if (strcmp(codec->name, "vp8") == 0) {
-    struct aom_ref_frame ref_enc, ref_dec;
-    const unsigned int frame_width = (stream->config.cfg.g_w + 15) & ~15;
-    const unsigned int frame_height = (stream->config.cfg.g_h + 15) & ~15;
-    aom_img_alloc(&ref_enc.img, AOM_IMG_FMT_I420, frame_width, frame_height, 1);
-    enc_img = ref_enc.img;
-    aom_img_alloc(&ref_dec.img, AOM_IMG_FMT_I420, frame_width, frame_height, 1);
-    dec_img = ref_dec.img;
-
-    ref_enc.frame_type = AOM_LAST_FRAME;
-    ref_dec.frame_type = AOM_LAST_FRAME;
-    aom_codec_control(&stream->encoder, AOM_COPY_REFERENCE, &ref_enc);
-    aom_codec_control(&stream->decoder, AOM_COPY_REFERENCE, &ref_dec);
-  } else {
-    aom_codec_control(&stream->encoder, AV1_GET_NEW_FRAME_IMAGE, &enc_img);
-    aom_codec_control(&stream->decoder, AV1_GET_NEW_FRAME_IMAGE, &dec_img);
+  aom_codec_control(&stream->encoder, AV1_GET_NEW_FRAME_IMAGE, &enc_img);
+  aom_codec_control(&stream->decoder, AV1_GET_NEW_FRAME_IMAGE, &dec_img);
 
 #if CONFIG_HIGHBITDEPTH
-    if ((enc_img.fmt & AOM_IMG_FMT_HIGHBITDEPTH) !=
-        (dec_img.fmt & AOM_IMG_FMT_HIGHBITDEPTH)) {
-      if (enc_img.fmt & AOM_IMG_FMT_HIGHBITDEPTH) {
-        aom_image_t enc_hbd_img;
-        aom_img_alloc(&enc_hbd_img, enc_img.fmt - AOM_IMG_FMT_HIGHBITDEPTH,
-                      enc_img.d_w, enc_img.d_h, 16);
-        aom_img_truncate_16_to_8(&enc_hbd_img, &enc_img);
-        enc_img = enc_hbd_img;
-      }
-      if (dec_img.fmt & AOM_IMG_FMT_HIGHBITDEPTH) {
-        aom_image_t dec_hbd_img;
-        aom_img_alloc(&dec_hbd_img, dec_img.fmt - AOM_IMG_FMT_HIGHBITDEPTH,
-                      dec_img.d_w, dec_img.d_h, 16);
-        aom_img_truncate_16_to_8(&dec_hbd_img, &dec_img);
-        dec_img = dec_hbd_img;
-      }
+  if ((enc_img.fmt & AOM_IMG_FMT_HIGHBITDEPTH) !=
+      (dec_img.fmt & AOM_IMG_FMT_HIGHBITDEPTH)) {
+    if (enc_img.fmt & AOM_IMG_FMT_HIGHBITDEPTH) {
+      aom_image_t enc_hbd_img;
+      aom_img_alloc(&enc_hbd_img, enc_img.fmt - AOM_IMG_FMT_HIGHBITDEPTH,
+                    enc_img.d_w, enc_img.d_h, 16);
+      aom_img_truncate_16_to_8(&enc_hbd_img, &enc_img);
+      enc_img = enc_hbd_img;
     }
-#endif
+    if (dec_img.fmt & AOM_IMG_FMT_HIGHBITDEPTH) {
+      aom_image_t dec_hbd_img;
+      aom_img_alloc(&dec_hbd_img, dec_img.fmt - AOM_IMG_FMT_HIGHBITDEPTH,
+                    dec_img.d_w, dec_img.d_h, 16);
+      aom_img_truncate_16_to_8(&dec_hbd_img, &dec_img);
+      dec_img = dec_hbd_img;
+    }
   }
+#endif
+
   ctx_exit_on_error(&stream->encoder, "Failed to get encoder reference frame");
   ctx_exit_on_error(&stream->decoder, "Failed to get decoder reference frame");
 
@@ -2103,7 +2088,7 @@ int main(int argc, const char **argv_) {
 
         if (got_data && global.test_decode != TEST_DECODE_OFF) {
           FOREACH_STREAM(stream, streams) {
-            test_decode(stream, global.test_decode, global.codec);
+            test_decode(stream, global.test_decode);
           }
         }
       }
