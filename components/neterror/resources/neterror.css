@@ -511,6 +511,7 @@ html[subframe] body {
 .arcade-mode,
 .arcade-mode .runner-container,
 .arcade-mode .runner-canvas {
+  image-rendering: pixelated;
   max-width: 100%;
   overflow: hidden;
 }
