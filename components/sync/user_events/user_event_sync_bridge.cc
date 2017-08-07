@@ -74,6 +74,7 @@ UserEventSyncBridge::UserEventSyncBridge(
     GlobalIdMapper* global_id_mapper)
     : ModelTypeSyncBridge(change_processor_factory, USER_EVENTS),
       global_id_mapper_(global_id_mapper) {
+  DCHECK(global_id_mapper_);
   store_factory.Run(
       base::Bind(&UserEventSyncBridge::OnStoreCreated, base::AsWeakPtr(this)));
   global_id_mapper_->AddGlobalIdChangeObserver(base::Bind(

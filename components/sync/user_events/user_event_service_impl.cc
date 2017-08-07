@@ -25,6 +25,8 @@ UserEventServiceImpl::UserEventServiceImpl(
     : sync_service_(sync_service),
       bridge_(std::move(bridge)),
       session_id_(base::RandUint64()) {
+  DCHECK(bridge_);
+  DCHECK(sync_service_);
   // TODO(skym): Subscribe to events about field trial membership changing.
 }
 
@@ -50,13 +52,19 @@ base::WeakPtr<ModelTypeSyncBridge> UserEventServiceImpl::GetSyncBridge() {
   return bridge_->AsWeakPtr();
 }
 
+// static
+bool UserEventServiceImpl::MightRecordEvents(bool off_the_record,
+                                             SyncService* sync_service) {
+  return !off_the_record && sync_service &&
+         base::FeatureList::IsEnabled(switches::kSyncUserEvents);
+}
+
 bool UserEventServiceImpl::ShouldRecordEvent(
     const UserEventSpecifics& specifics) {
   // We only record events if the user is syncing history and has not enabled
   // a custom passphrase. The type HISTORY_DELETE_DIRECTIVES is enabled in and
   // only in this exact scenario.
-  return base::FeatureList::IsEnabled(switches::kSyncUserEvents) &&
-         sync_service_ != nullptr && sync_service_->IsEngineInitialized() &&
+  return sync_service_->IsEngineInitialized() &&
          sync_service_->GetPreferredDataTypes().Has(HISTORY_DELETE_DIRECTIVES);
 }
 
