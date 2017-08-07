@@ -2358,8 +2358,10 @@ RenderWidgetHostViewBase* RenderFrameHostImpl::GetViewForAccessibility() {
 }
 
 void RenderFrameHostImpl::OnAccessibilityEvents(
+    const AXContentTreeUpdate& content_update,
     const std::vector<AccessibilityHostMsg_EventParams>& params,
-    int reset_token, int ack_token) {
+    int reset_token,
+    int ack_token) {
   // Don't process this IPC if either we're waiting on a reset and this
   // IPC doesn't have the matching token ID, or if we're not waiting on a
   // reset but this message includes a reset token.
@@ -2375,58 +2377,50 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
     if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs))
       GetOrCreateBrowserAccessibilityManager();
 
-    std::vector<AXEventNotificationDetails> details;
-    details.reserve(params.size());
+    ui::AXTreeUpdate update;
+    AXContentTreeUpdateToAXTreeUpdate(content_update, &update);
+
+    std::vector<AXEventNotificationDetails> events;
+    events.reserve(params.size());
     for (size_t i = 0; i < params.size(); ++i) {
       const AccessibilityHostMsg_EventParams& param = params[i];
-      AXEventNotificationDetails detail;
-      detail.event_type = param.event_type;
-      detail.id = param.id;
-      detail.ax_tree_id = GetAXTreeID();
-      detail.event_from = param.event_from;
-      if (param.update.has_tree_data) {
-        detail.update.has_tree_data = true;
-        ax_content_tree_data_ = param.update.tree_data;
-        AXContentTreeDataToAXTreeData(&detail.update.tree_data);
-      }
-      detail.update.root_id = param.update.root_id;
-      detail.update.node_id_to_clear = param.update.node_id_to_clear;
-      detail.update.nodes.resize(param.update.nodes.size());
-      for (size_t i = 0; i < param.update.nodes.size(); ++i) {
-        AXContentNodeDataToAXNodeData(param.update.nodes[i],
-                                      &detail.update.nodes[i]);
-      }
-      details.push_back(detail);
+      AXEventNotificationDetails event_detail;
+      event_detail.event_type = param.event_type;
+      event_detail.id = param.id;
+      event_detail.event_from = param.event_from;
+      events.push_back(event_detail);
     }
 
     if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs)) {
       if (browser_accessibility_manager_)
-        browser_accessibility_manager_->OnAccessibilityEvents(details);
+        browser_accessibility_manager_->OnAccessibilityEvents(update, events);
     }
 
-    delegate_->AccessibilityEventReceived(details);
+    delegate_->AccessibilityEventsReceived(GetAXTreeID(), update, events);
 
     // For testing only.
     if (!accessibility_testing_callback_.is_null()) {
-      for (size_t i = 0; i < details.size(); i++) {
-        const AXEventNotificationDetails& detail = details[i];
-        if (static_cast<int>(detail.event_type) < 0)
-          continue;
-
-        if (!ax_tree_for_testing_) {
-          if (browser_accessibility_manager_) {
-            ax_tree_for_testing_.reset(new ui::AXTree(
-                browser_accessibility_manager_->SnapshotAXTreeForTesting()));
-          } else {
-            ax_tree_for_testing_.reset(new ui::AXTree());
-            CHECK(ax_tree_for_testing_->Unserialize(detail.update))
-                << ax_tree_for_testing_->error();
-          }
+      if (!ax_tree_for_testing_) {
+        if (browser_accessibility_manager_) {
+          ax_tree_for_testing_.reset(new ui::AXTree(
+              browser_accessibility_manager_->SnapshotAXTreeForTesting()));
         } else {
-          CHECK(ax_tree_for_testing_->Unserialize(detail.update))
+          ax_tree_for_testing_.reset(new ui::AXTree());
+          CHECK(ax_tree_for_testing_->Unserialize(update))
               << ax_tree_for_testing_->error();
         }
-        accessibility_testing_callback_.Run(this, detail.event_type, detail.id);
+      } else {
+        CHECK(ax_tree_for_testing_->Unserialize(update))
+            << ax_tree_for_testing_->error();
+      }
+
+      for (size_t i = 0; i < events.size(); i++) {
+        const AXEventNotificationDetails& event_detail = events[i];
+        if (static_cast<int>(event_detail.event_type) < 0)
+          continue;
+
+        accessibility_testing_callback_.Run(this, event_detail.event_type,
+                                            event_detail.id);
       }
     }
   }
@@ -2458,11 +2452,10 @@ void RenderFrameHostImpl::OnAccessibilityLocationChanges(
       const AccessibilityHostMsg_LocationChangeParams& param = params[i];
       AXLocationChangeNotificationDetails detail;
       detail.id = param.id;
-      detail.ax_tree_id = GetAXTreeID();
       detail.new_location = param.new_location;
       details.push_back(detail);
     }
-    delegate_->AccessibilityLocationChangesReceived(details);
+    delegate_->AccessibilityLocationChangesReceived(GetAXTreeID(), details);
   }
 }
 
@@ -3596,18 +3589,16 @@ void RenderFrameHostImpl::UpdateAXTreeData() {
     return;
   }
 
-  std::vector<AXEventNotificationDetails> details;
-  details.reserve(1U);
-  AXEventNotificationDetails detail;
-  detail.ax_tree_id = GetAXTreeID();
-  detail.update.has_tree_data = true;
-  AXContentTreeDataToAXTreeData(&detail.update.tree_data);
-  details.push_back(detail);
+  ui::AXTreeUpdate update;
+  update.has_tree_data = true;
+  AXContentTreeDataToAXTreeData(&update.tree_data);
+
+  std::vector<AXEventNotificationDetails> empty_events;
 
   if (browser_accessibility_manager_)
-    browser_accessibility_manager_->OnAccessibilityEvents(details);
+    browser_accessibility_manager_->OnAccessibilityEvents(update, empty_events);
 
-  delegate_->AccessibilityEventReceived(details);
+  delegate_->AccessibilityEventsReceived(GetAXTreeID(), update, empty_events);
 }
 
 void RenderFrameHostImpl::SetTextTrackSettings(
@@ -3900,6 +3891,21 @@ RenderFrameHostImpl::BrowserPluginInstanceIDToAXTreeID(int instance_id) {
   guest->UpdateAXTreeData();
 
   return guest->GetAXTreeID();
+}
+
+void RenderFrameHostImpl::AXContentTreeUpdateToAXTreeUpdate(
+    const AXContentTreeUpdate& src,
+    ui::AXTreeUpdate* dst) {
+  if (src.has_tree_data) {
+    dst->has_tree_data = true;
+    ax_content_tree_data_ = src.tree_data;
+    AXContentTreeDataToAXTreeData(&dst->tree_data);
+  }
+  dst->root_id = src.root_id;
+  dst->node_id_to_clear = src.node_id_to_clear;
+  dst->nodes.resize(src.nodes.size());
+  for (size_t i = 0; i < src.nodes.size(); ++i)
+    AXContentNodeDataToAXNodeData(src.nodes[i], &dst->nodes[i]);
 }
 
 void RenderFrameHostImpl::AXContentNodeDataToAXNodeData(

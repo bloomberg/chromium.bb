@@ -2651,16 +2651,19 @@ ui::AXMode WebContentsImpl::GetAccessibilityMode() const {
   return accessibility_mode_;
 }
 
-void WebContentsImpl::AccessibilityEventReceived(
-    const std::vector<AXEventNotificationDetails>& details) {
+void WebContentsImpl::AccessibilityEventsReceived(
+    ui::AXTreeIDRegistry::AXTreeID ax_tree_id,
+    const ui::AXTreeUpdate& update,
+    const std::vector<AXEventNotificationDetails>& events) {
   for (auto& observer : observers_)
-    observer.AccessibilityEventReceived(details);
+    observer.AccessibilityEventsReceived(ax_tree_id, update, events);
 }
 
 void WebContentsImpl::AccessibilityLocationChangesReceived(
+    ui::AXTreeIDRegistry::AXTreeID ax_tree_id,
     const std::vector<AXLocationChangeNotificationDetails>& details) {
   for (auto& observer : observers_)
-    observer.AccessibilityLocationChangesReceived(details);
+    observer.AccessibilityLocationChangesReceived(ax_tree_id, details);
 }
 
 RenderFrameHost* WebContentsImpl::GetGuestByInstanceID(

@@ -765,11 +765,14 @@ void AutomationInternalCustomBindings::Invalidate() {
 
 void AutomationInternalCustomBindings::OnMessageReceived(
     const IPC::Message& message) {
+  // http://crbug.com/752788
+  // clang-format off
   IPC_BEGIN_MESSAGE_MAP(AutomationInternalCustomBindings, message)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_AccessibilityEvent, OnAccessibilityEvent)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_AccessibilityLocationChange,
-                        OnAccessibilityLocationChange)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_AccessibilityEvents, OnAccessibilityEvents)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_AccessibilityLocationChanges,
+                        OnAccessibilityLocationChanges)
   IPC_END_MESSAGE_MAP()
+  // clang-format on
 }
 
 TreeCache* AutomationInternalCustomBindings::GetTreeCacheFromTreeID(
@@ -1139,17 +1142,19 @@ void AutomationInternalCustomBindings::GetChildIDAtIndex(
 // Handle accessibility events from the browser process.
 //
 
-void AutomationInternalCustomBindings::OnAccessibilityEvent(
-    const ExtensionMsg_AccessibilityEventParams& params,
+void AutomationInternalCustomBindings::OnAccessibilityEvents(
+    int ax_tree_id,
+    const ui::AXTreeUpdate& update,
+    const std::vector<ExtensionMsg_AccessibilityEventParams>& events,
     bool is_active_profile) {
   is_active_profile_ = is_active_profile;
-  int tree_id = params.tree_id;
+  int tree_id = ax_tree_id;
   TreeCache* cache;
   auto iter = tree_id_to_tree_cache_map_.find(tree_id);
   if (iter == tree_id_to_tree_cache_map_.end()) {
     cache = new TreeCache();
     cache->tab_id = -1;
-    cache->tree_id = params.tree_id;
+    cache->tree_id = ax_tree_id;
     cache->parent_node_id_from_parent_tree = -1;
     cache->tree.SetDelegate(this);
     cache->owner = this;
@@ -1161,7 +1166,7 @@ void AutomationInternalCustomBindings::OnAccessibilityEvent(
 
   // Update the internal state whether it's the active profile or not.
   deleted_node_ids_.clear();
-  if (!cache->tree.Unserialize(params.update)) {
+  if (!cache->tree.Unserialize(update)) {
     LOG(ERROR) << cache->tree.error();
     base::ListValue args;
     args.AppendInteger(tree_id);
@@ -1178,14 +1183,14 @@ void AutomationInternalCustomBindings::OnAccessibilityEvent(
   SendNodesRemovedEvent(&cache->tree, deleted_node_ids_);
   deleted_node_ids_.clear();
 
-  {
+  for (auto& event : events) {
     auto event_params = base::MakeUnique<base::DictionaryValue>();
-    event_params->SetInteger("treeID", params.tree_id);
-    event_params->SetInteger("targetID", params.id);
-    event_params->SetString("eventType", ToString(params.event_type));
-    event_params->SetString("eventFrom", ToString(params.event_from));
-    event_params->SetInteger("mouseX", params.mouse_location.x());
-    event_params->SetInteger("mouseY", params.mouse_location.y());
+    event_params->SetInteger("treeID", ax_tree_id);
+    event_params->SetInteger("targetID", event.id);
+    event_params->SetString("eventType", ToString(event.event_type));
+    event_params->SetString("eventFrom", ToString(event.event_from));
+    event_params->SetInteger("mouseX", event.mouse_location.x());
+    event_params->SetInteger("mouseY", event.mouse_location.y());
     base::ListValue args;
     args.Append(std::move(event_params));
     bindings_system_->DispatchEventInContext(
@@ -1193,19 +1198,21 @@ void AutomationInternalCustomBindings::OnAccessibilityEvent(
   }
 }
 
-void AutomationInternalCustomBindings::OnAccessibilityLocationChange(
-    const ExtensionMsg_AccessibilityLocationChangeParams& params) {
-  int tree_id = params.tree_id;
+void AutomationInternalCustomBindings::OnAccessibilityLocationChanges(
+    int tree_id,
+    const std::vector<ExtensionMsg_AccessibilityLocationChangeParams>& params) {
   auto iter = tree_id_to_tree_cache_map_.find(tree_id);
   if (iter == tree_id_to_tree_cache_map_.end())
     return;
   TreeCache* cache = iter->second;
-  ui::AXNode* node = cache->tree.GetFromId(params.id);
-  if (!node)
-    return;
-  node->SetLocation(params.new_location.offset_container_id,
-                    params.new_location.bounds,
-                    params.new_location.transform.get());
+  for (auto& change : params) {
+    ui::AXNode* node = cache->tree.GetFromId(change.id);
+    if (!node)
+      return;
+    node->SetLocation(change.new_location.offset_container_id,
+                      change.new_location.bounds,
+                      change.new_location.transform.get());
+  }
 }
 
 void AutomationInternalCustomBindings::OnNodeDataWillChange(

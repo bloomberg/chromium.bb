@@ -21,6 +21,8 @@
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "net/http/http_response_headers.h"
 #include "services/device/public/interfaces/wake_lock.mojom.h"
+#include "ui/accessibility/ax_tree_id_registry.h"
+#include "ui/accessibility/ax_tree_update.h"
 #include "ui/base/window_open_disposition.h"
 
 #if defined(OS_WIN)
@@ -184,9 +186,12 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Called when accessibility events or location changes are received
   // from a render frame, when the accessibility mode has the
   // ui::AXMode::kWebContents flag set.
-  virtual void AccessibilityEventReceived(
-      const std::vector<AXEventNotificationDetails>& details) {}
+  virtual void AccessibilityEventsReceived(
+      ui::AXTreeIDRegistry::AXTreeID ax_tree_id,
+      const ui::AXTreeUpdate& update,
+      const std::vector<AXEventNotificationDetails>& events) {}
   virtual void AccessibilityLocationChangesReceived(
+      ui::AXTreeIDRegistry::AXTreeID ax_tree_id,
       const std::vector<AXLocationChangeNotificationDetails>& details) {}
 
   // Find a guest RenderFrameHost by its parent |render_frame_host| and

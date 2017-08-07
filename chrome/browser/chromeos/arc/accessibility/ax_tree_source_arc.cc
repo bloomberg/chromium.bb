@@ -299,18 +299,19 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(
     }
   }
 
-  ExtensionMsg_AccessibilityEventParams params;
-  params.event_type = ToAXEvent(event_data->event_type);
+  std::vector<ExtensionMsg_AccessibilityEventParams> events;
+  ExtensionMsg_AccessibilityEventParams event;
+  event.event_type = ToAXEvent(event_data->event_type);
+  event.id = event_data->source_id;
+  events.push_back(event);
 
-  params.tree_id = tree_id();
-  params.id = event_data->source_id;
-
+  ui::AXTreeUpdate update;
   current_tree_serializer_->SerializeChanges(GetFromId(event_data->source_id),
-                                             &params.update);
+                                             &update);
 
   extensions::AutomationEventRouter* router =
       extensions::AutomationEventRouter::GetInstance();
-  router->DispatchAccessibilityEvent(params);
+  router->DispatchAccessibilityEvents(tree_id(), update, events);
 }
 
 void AXTreeSourceArc::Focus(aura::Window* window) {

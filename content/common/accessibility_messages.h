@@ -90,9 +90,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::AXContentTreeUpdate)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_BEGIN(AccessibilityHostMsg_EventParams)
-  // The tree update.
-  IPC_STRUCT_MEMBER(content::AXContentTreeUpdate, update)
-
   // Type of event.
   IPC_STRUCT_MEMBER(ui::AXEvent, event_type)
 
@@ -180,15 +177,15 @@ IPC_MESSAGE_ROUTED1(AccessibilityMsg_SnapshotTree,
 // Sent to notify the browser about renderer accessibility events.
 // The browser responds with a AccessibilityMsg_Events_ACK with the same
 // ack_token.
-// The second parameter, reset_token, is set if this IPC was sent in response
+// The parameter |reset_token| is set if this IPC was sent in response
 // to a reset request from the browser. When the browser requests a reset,
 // it ignores incoming IPCs until it sees one with the correct reset token.
 // Any other time, it ignores IPCs with a reset token.
-IPC_MESSAGE_ROUTED3(
-    AccessibilityHostMsg_Events,
-    std::vector<AccessibilityHostMsg_EventParams> /* events */,
-    int /* reset_token */,
-    int /* ack_token */)
+IPC_MESSAGE_ROUTED4(AccessibilityHostMsg_Events,
+                    content::AXContentTreeUpdate /* update */,
+                    std::vector<AccessibilityHostMsg_EventParams> /* events */,
+                    int /* reset_token */,
+                    int /* ack_token */)
 
 // Sent to update the browser of the location of accessibility objects.
 IPC_MESSAGE_ROUTED1(

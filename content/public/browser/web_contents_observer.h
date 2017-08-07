@@ -22,6 +22,8 @@
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_tree_id_registry.h"
+#include "ui/accessibility/ax_tree_update.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -395,9 +397,12 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // Called when accessibility events or location changes are received
   // from a render frame, but only when the accessibility mode has the
   // ui::AXMode::kWebContents flag set.
-  virtual void AccessibilityEventReceived(
-      const std::vector<AXEventNotificationDetails>& details) {}
+  virtual void AccessibilityEventsReceived(
+      ui::AXTreeIDRegistry::AXTreeID ax_tree_id,
+      const ui::AXTreeUpdate& update,
+      const std::vector<AXEventNotificationDetails>& events) {}
   virtual void AccessibilityLocationChangesReceived(
+      ui::AXTreeIDRegistry::AXTreeID ax_tree_id,
       const std::vector<AXLocationChangeNotificationDetails>& details) {}
 
   // Invoked when theme color is changed to |theme_color|.

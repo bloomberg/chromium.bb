@@ -168,36 +168,39 @@ class AutomationWebContentsObserver
   ~AutomationWebContentsObserver() override {}
 
   // content::WebContentsObserver overrides.
-  void AccessibilityEventReceived(
-      const std::vector<content::AXEventNotificationDetails>& details)
-      override {
-    for (const auto& event : details) {
-      ExtensionMsg_AccessibilityEventParams params;
-      params.tree_id = event.ax_tree_id;
-      params.id = event.id;
-      params.event_type = event.event_type;
-      params.update = event.update;
-      params.event_from = event.event_from;
+  void AccessibilityEventsReceived(
+      ui::AXTreeIDRegistry::AXTreeID ax_tree_id,
+      const ui::AXTreeUpdate& update,
+      const std::vector<content::AXEventNotificationDetails>& events) override {
+    std::vector<ExtensionMsg_AccessibilityEventParams> dst_events;
+    for (const auto& event : events) {
+      ExtensionMsg_AccessibilityEventParams dst_event;
+      dst_event.id = event.id;
+      dst_event.event_type = event.event_type;
+      dst_event.event_from = event.event_from;
 #if defined(USE_AURA)
-      params.mouse_location = aura::Env::GetInstance()->last_mouse_location();
+      dst_event.mouse_location =
+          aura::Env::GetInstance()->last_mouse_location();
 #endif
-
-      AutomationEventRouter* router = AutomationEventRouter::GetInstance();
-      router->DispatchAccessibilityEvent(params);
+      dst_events.push_back(dst_event);
     }
+    AutomationEventRouter* router = AutomationEventRouter::GetInstance();
+    router->DispatchAccessibilityEvents(ax_tree_id, update, dst_events);
   }
 
   void AccessibilityLocationChangesReceived(
+      ui::AXTreeIDRegistry::AXTreeID ax_tree_id,
       const std::vector<content::AXLocationChangeNotificationDetails>& details)
       override {
+    std::vector<ExtensionMsg_AccessibilityLocationChangeParams> dst_details;
     for (const auto& src : details) {
       ExtensionMsg_AccessibilityLocationChangeParams dst;
       dst.id = src.id;
-      dst.tree_id = src.ax_tree_id;
       dst.new_location = src.new_location;
-      AutomationEventRouter* router = AutomationEventRouter::GetInstance();
-      router->DispatchAccessibilityLocationChange(dst);
+      dst_details.push_back(dst);
     }
+    AutomationEventRouter* router = AutomationEventRouter::GetInstance();
+    router->DispatchAccessibilityLocationChanges(ax_tree_id, dst_details);
   }
 
   void RenderFrameDeleted(
@@ -210,22 +213,22 @@ class AutomationWebContentsObserver
 
   void MediaStartedPlaying(const MediaPlayerInfo& video_type,
                            const MediaPlayerId& id) override {
+    ui::AXTreeUpdate update;
     std::vector<content::AXEventNotificationDetails> details;
     content::AXEventNotificationDetails detail;
-    detail.ax_tree_id = id.first->GetAXTreeID();
     detail.event_type = ui::AX_EVENT_MEDIA_STARTED_PLAYING;
     details.push_back(detail);
-    AccessibilityEventReceived(details);
+    AccessibilityEventsReceived(id.first->GetAXTreeID(), update, details);
   }
 
   void MediaStoppedPlaying(const MediaPlayerInfo& video_type,
                            const MediaPlayerId& id) override {
+    ui::AXTreeUpdate update;
     std::vector<content::AXEventNotificationDetails> details;
     content::AXEventNotificationDetails detail;
-    detail.ax_tree_id = id.first->GetAXTreeID();
     detail.event_type = ui::AX_EVENT_MEDIA_STOPPED_PLAYING;
     details.push_back(detail);
-    AccessibilityEventReceived(details);
+    AccessibilityEventsReceived(id.first->GetAXTreeID(), update, details);
   }
 
  private:
@@ -235,16 +238,16 @@ class AutomationWebContentsObserver
       : content::WebContentsObserver(web_contents),
         browser_context_(web_contents->GetBrowserContext()) {
     if (web_contents->WasRecentlyAudible()) {
-      std::vector<content::AXEventNotificationDetails> details;
       content::RenderFrameHost* rfh = web_contents->GetMainFrame();
       if (!rfh)
         return;
 
+      ui::AXTreeUpdate update;
+      std::vector<content::AXEventNotificationDetails> details;
       content::AXEventNotificationDetails detail;
-      detail.ax_tree_id = rfh->GetAXTreeID();
       detail.event_type = ui::AX_EVENT_MEDIA_STARTED_PLAYING;
       details.push_back(detail);
-      AccessibilityEventReceived(details);
+      AccessibilityEventsReceived(rfh->GetAXTreeID(), update, details);
     }
   }
 

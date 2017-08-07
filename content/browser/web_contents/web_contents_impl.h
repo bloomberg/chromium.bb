@@ -522,9 +522,12 @@ class CONTENT_EXPORT WebContentsImpl
   WebContents* GetAsWebContents() override;
   bool IsNeverVisible() override;
   ui::AXMode GetAccessibilityMode() const override;
-  void AccessibilityEventReceived(
-      const std::vector<AXEventNotificationDetails>& details) override;
+  void AccessibilityEventsReceived(
+      ui::AXTreeIDRegistry::AXTreeID ax_tree_id,
+      const ui::AXTreeUpdate& update,
+      const std::vector<AXEventNotificationDetails>& events) override;
   void AccessibilityLocationChangesReceived(
+      ui::AXTreeIDRegistry::AXTreeID ax_tree_id,
       const std::vector<AXLocationChangeNotificationDetails>& details) override;
   RenderFrameHost* GetGuestByInstanceID(
       RenderFrameHost* render_frame_host,
