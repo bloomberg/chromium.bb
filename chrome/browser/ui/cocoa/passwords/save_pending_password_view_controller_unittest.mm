@@ -114,6 +114,9 @@ TEST_F(SavePendingPasswordViewControllerTest,
   PendingPasswordItemView* row =
       [[controller().passwordItemContainer subviews] objectAtIndex:0];
 
+  // User modifies the username and loses focus. We expect modified username in
+  // the label.
+  [[row usernameField] setStringValue:@"newusername"];
   [[NSNotificationCenter defaultCenter]
       postNotificationName:NSControlTextDidEndEditingNotification
                     object:[row usernameField]];
@@ -122,6 +125,10 @@ TEST_F(SavePendingPasswordViewControllerTest,
   EXPECT_FALSE([[row usernameField] isEditable]);
   EXPECT_FALSE([[row usernameField] isSelectable]);
   EXPECT_TRUE([controller().editButton isEnabled]);
+  EXPECT_NSEQ(@"newusername", [[row usernameField] stringValue]);
+  EXPECT_NSEQ(@"newusername",
+              base::SysUTF16ToNSString(
+                  [delegate() model]->pending_password().username_value));
 }
 
 TEST_F(SavePendingPasswordViewControllerTest,
@@ -134,6 +141,9 @@ TEST_F(SavePendingPasswordViewControllerTest,
   PendingPasswordItemView* row =
       [[controller().passwordItemContainer subviews] objectAtIndex:0];
 
+  // User modifies the username and presses escape. We expect old username
+  // restored in the label.
+  [[row usernameField] setStringValue:@"tempusername"];
   [[test_window() contentView] addSubview:[row usernameField]];
   [test_window() makePretendKeyWindowAndSetFirstResponder:[row usernameField]];
   [[[row usernameField] currentEditor]
@@ -144,6 +154,12 @@ TEST_F(SavePendingPasswordViewControllerTest,
   EXPECT_FALSE([[row usernameField] isEditable]);
   EXPECT_FALSE([[row usernameField] isSelectable]);
   EXPECT_TRUE([controller().editButton isEnabled]);
+  EXPECT_NSEQ(base::SysUTF16ToNSString(
+                  [delegate() model]->pending_password().username_value),
+              [[row usernameField] stringValue]);
+  EXPECT_NSNE(@"tempusername",
+              base::SysUTF16ToNSString(
+                  [delegate() model]->pending_password().username_value));
 }
 
 TEST_F(SavePendingPasswordViewControllerTest,

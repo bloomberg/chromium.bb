@@ -61,7 +61,6 @@
                textView:(NSTextView*)textView
     doCommandBySelector:(SEL)commandSelector {
   if (commandSelector == @selector(cancelOperation:)) {
-    // TODO(crbug.com/734965): Update the username credential.
     return [self disableEditMode];
   }
   return FALSE;
@@ -69,8 +68,11 @@
 
 // Focus handler for editable username field.
 - (void)controlTextDidEndEditing:(NSNotification*)notification {
+  PendingPasswordItemView* row =
+      [[passwordItemContainer_ subviews] objectAtIndex:0];
+  self.model->OnUsernameEdited(
+      base::SysNSStringToUTF16([[row usernameField] stringValue]));
   [self disableEditMode];
-  // TODO(crbug.com/734965): Update the username credential.
 }
 
 - (BOOL)disableEditMode {
