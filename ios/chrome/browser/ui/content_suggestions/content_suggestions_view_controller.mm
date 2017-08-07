@@ -100,7 +100,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
     [self addEmptySectionPlaceholderIfNeeded:indexPath.section];
   }
       completion:^(BOOL) {
-        [self.audience contentSuggestionsDidScroll];
+        [self.audience contentOffsetDidChange];
         // The context menu could be displayed for the deleted entry.
         [self.suggestionCommandHandler dismissModals];
       }];
@@ -119,7 +119,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
     [self.collectionView deleteSections:[NSIndexSet indexSetWithIndex:section]];
   }
       completion:^(BOOL) {
-        [self.audience contentSuggestionsDidScroll];
+        [self.audience contentOffsetDidChange];
         // The context menu could be displayed for the deleted entries.
         [self.suggestionCommandHandler dismissModals];
       }];
@@ -137,7 +137,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
     [self.collectionView insertSections:addedSections];
   }
       completion:^(BOOL) {
-        [self.audience contentSuggestionsDidScroll];
+        [self.audience contentOffsetDidChange];
       }];
 
   [self.collectionView performBatchUpdates:^{
@@ -153,7 +153,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
     [self.collectionView insertItemsAtIndexPaths:addedItems];
   }
       completion:^(BOOL) {
-        [self.audience contentSuggestionsDidScroll];
+        [self.audience contentOffsetDidChange];
       }];
 }
 
@@ -200,6 +200,11 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
         setStyle:OverscrollStyle::NTP_NON_INCOGNITO];
     self.overscrollActionsController.delegate = self.overscrollDelegate;
   }
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+  // Update the shadow bar.
+  [self.audience contentOffsetDidChange];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
@@ -419,7 +424,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
   [super scrollViewDidScroll:scrollView];
-  [self.audience contentSuggestionsDidScroll];
+  [self.audience contentOffsetDidChange];
   [self.overscrollActionsController scrollViewDidScroll:scrollView];
   [self.headerCommandHandler unfocusOmniboxOnCollectionScroll];
   [self.headerCommandHandler updateFakeOmniboxForScrollView:scrollView];
