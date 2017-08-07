@@ -358,6 +358,11 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
         password_manager::features::kFillOnAccountSelect);
   }
 
+  void SetManualFallbacks() {
+    scoped_feature_list_.InitAndEnableFeature(
+        password_manager::features::kEnableManualFallbacksFilling);
+  }
+
   void EnableShowAutofillSignatures() {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kShowAutofillSignatures);
@@ -523,6 +528,11 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   bool GetCalledShowPasswordSuggestions() {
     base::RunLoop().RunUntilIdle();
     return fake_driver_.called_show_pw_suggestions();
+  }
+
+  bool GetCalledShowManualFallbackSuggestion() {
+    base::RunLoop().RunUntilIdle();
+    return fake_driver_.called_manual_fallback_suggestion();
   }
 
   void ExpectFormSubmittedWithUsernameAndPasswords(
@@ -3055,6 +3065,32 @@ TEST_F(PasswordAutofillAgentTest, GaiaReauthenticationFormIgnored) {
   // Check that no information about Gaia reauthentication is not sent.
   EXPECT_FALSE(fake_driver_.called_password_forms_parsed());
   EXPECT_FALSE(fake_driver_.called_password_forms_rendered());
+}
+
+// Tests that "Show all saved passwords" option is shown on a password field.
+TEST_F(PasswordAutofillAgentTest, ShowAllSavedPasswordsTest) {
+  SetManualFallbacks();
+  LoadHTML(kFormHTML);
+  SetFocused(username_element_);
+  SimulateElementClick("username");
+  EXPECT_FALSE(GetCalledShowManualFallbackSuggestion());
+  SetFocused(password_element_);
+  SimulateElementClick("password");
+  EXPECT_TRUE(GetCalledShowManualFallbackSuggestion());
+}
+
+// Tests that "Show all saved passwords" option isn't shown on credit card
+// field.
+TEST_F(PasswordAutofillAgentTest,
+       NotShowAllSavedPasswordsOnCreditCardFormTest) {
+  SetManualFallbacks();
+  LoadHTML(kCreditCardFormHTML);
+  SetFocused(username_element_);
+  SimulateElementClick("username");
+  EXPECT_FALSE(GetCalledShowManualFallbackSuggestion());
+  SetFocused(password_element_);
+  SimulateElementClick("password");
+  EXPECT_FALSE(GetCalledShowManualFallbackSuggestion());
 }
 
 }  // namespace autofill

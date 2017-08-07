@@ -30,6 +30,7 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/renderer/document_state.h"
@@ -654,6 +655,15 @@ blink::WebInputElement FindUsernameElementPrecedingPasswordElement(
   return blink::WebInputElement();
 }
 
+bool ShouldShowStandaloneManuallFallback(
+    const blink::WebInputElement& element) {
+  return (element.IsPasswordField() &&
+          !IsCreditCardVerificationPasswordField(element) &&
+          !HasCreditCardAutocompleteAttributes(element) &&
+          base::FeatureList::IsEnabled(
+              password_manager::features::kEnableManualFallbacksFilling));
+}
+
 }  // namespace
 
 class PasswordAutofillAgent::FormElementObserverCallback
@@ -1041,6 +1051,10 @@ bool PasswordAutofillAgent::ShowSuggestions(
                                                                 frame_url);
       }
 #endif
+      if (ShouldShowStandaloneManuallFallback(element)) {
+        ShowManualFallbackSuggestion(element);
+        return true;
+      }
       if (ShouldShowNotSecureWarning(element)) {
         autofill_agent_->ShowNotSecureWarning(element);
         return true;
@@ -1737,6 +1751,16 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
       render_frame()->GetRenderView()->ElementBoundsInWindow(user_input));
   username_query_prefix_ = username_string;
   return CanShowSuggestion(password_info.fill_data, username_string, show_all);
+}
+
+void PasswordAutofillAgent::ShowManualFallbackSuggestion(
+    const blink::WebInputElement& element) {
+  FormData form;
+  FormFieldData field;
+  form_util::FindFormAndFieldForFormControlElement(element, &form, &field);
+  GetPasswordManagerDriver()->ShowManualFallbackSuggestion(
+      field.text_direction,
+      render_frame()->GetRenderView()->ElementBoundsInWindow(element));
 }
 
 void PasswordAutofillAgent::FrameClosing() {

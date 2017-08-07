@@ -65,6 +65,11 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   void OnShowNotSecureWarning(base::i18n::TextDirection text_direction,
                               const gfx::RectF& bounds);
 
+  // Handles a request from the renderer to show a popup with an option to check
+  // user's saved passwords, used when a password field is not autofilled.
+  void OnShowManualFallbackSuggestion(base::i18n::TextDirection text_direction,
+                                      const gfx::RectF& bounds);
+
   // Called when main frame navigates. Not called for in-page navigations.
   void DidNavigateMainFrame();
 
@@ -103,6 +108,10 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
 
   // Finds login information for a |node| that was previously filled.
   bool FindLoginInfo(int key, autofill::PasswordFormFillData* found_password);
+
+  // Creates suggestion and records the metrics for the "Form not secure
+  // warning".
+  autofill::Suggestion CreateFormNotSecureWarning();
 
   // The logins we have filled so far with their associated info.
   LoginToPasswordInfoMap login_to_password_info_;

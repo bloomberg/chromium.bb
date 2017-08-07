@@ -12,5 +12,6 @@ specific_include_rules = {
   # launched. https://crbug.com/677295
   "password_autofill_agent\.cc" : [
     "+components/security_state/core",
+    "+components/password_manager/core/common",
   ],
 }
