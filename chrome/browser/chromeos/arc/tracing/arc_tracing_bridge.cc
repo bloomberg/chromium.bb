@@ -95,7 +95,7 @@ void ArcTracingBridge::OnCategoriesReady(
   }
 }
 
-void ArcTracingBridge::StartTracing(
+bool ArcTracingBridge::StartTracing(
     const base::trace_event::TraceConfig& trace_config,
     base::ScopedFD write_fd,
     const StartTracingCallback& callback) {
@@ -108,7 +108,7 @@ void ArcTracingBridge::StartTracing(
     // callback to be called after this function returns.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(callback, false));
-    return;
+    return false;
   }
 
   std::vector<std::string> selected_categories;
@@ -120,6 +120,8 @@ void ArcTracingBridge::StartTracing(
   tracing_instance->StartTracing(selected_categories,
                                  mojo::WrapPlatformFile(write_fd.release()),
                                  callback);
+
+  return true;
 }
 
 void ArcTracingBridge::StopTracing(const StopTracingCallback& callback) {
