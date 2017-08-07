@@ -2477,6 +2477,7 @@ cr.define('login', function() {
     /** @override */
     update: function() {
       this.imageElement.src = this.user.userImage;
+      this.animatedImageElement.src = this.user.userImage;
       this.nameElement.textContent = this.user.displayName;
       this.reauthNameHintElement.textContent = this.user.displayName;
 
@@ -2561,6 +2562,9 @@ cr.define('login', function() {
       this.imageElement.src = this.user.iconUrl;
       this.imageElement.alt = this.user.label;
       this.imageElement.title = this.user.label;
+      this.animatedImageElement.src = this.user.iconUrl;
+      this.animatedImageElement.alt = this.user.label;
+      this.animatedImageElement.title = this.user.label;
       this.passwordEntryContainerElement.hidden = true;
       this.launchAppButtonContainerElement.hidden = false;
       this.nameElement.textContent = this.user.label;
