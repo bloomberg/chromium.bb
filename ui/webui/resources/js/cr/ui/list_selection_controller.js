@@ -173,6 +173,20 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Called by the view when it receives either a touchstart, touchmove,
+     * touchend, or touchcancel event.
+     * Sub-classes may override this function to handle touch events separately
+     * from mouse events, instead of waiting for emulated mouse events sent
+     * after the touch events.
+     * @param {Event} e The event.
+     * @param {number} index The index that was under the touched point, -1 if
+     *     none.
+     */
+    handleTouchEvents: function(e, index) {
+      // Do nothing.
+    },
+
+    /**
      * Called by the view when it receives a keydown event.
      * @param {Event} e The keydown event.
      */
