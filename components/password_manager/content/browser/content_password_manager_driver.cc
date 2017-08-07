@@ -293,6 +293,13 @@ void ContentPasswordManagerDriver::ShowNotSecureWarning(
       text_direction, TransformToRootCoordinates(bounds));
 }
 
+void ContentPasswordManagerDriver::ShowManualFallbackSuggestion(
+    base::i18n::TextDirection text_direction,
+    const gfx::RectF& bounds) {
+  password_autofill_manager_.OnShowManualFallbackSuggestion(
+      text_direction, TransformToRootCoordinates(bounds));
+}
+
 void ContentPasswordManagerDriver::RecordSavePasswordProgress(
     const std::string& log) {
   client_->GetLogManager()->LogSavePasswordProgress(log);
