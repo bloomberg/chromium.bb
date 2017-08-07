@@ -36,7 +36,6 @@ namespace automationInternal {
     hitTest,
     makeVisible,
     resumeMedia,
-    setAccessibilityFocus,
     setSequentialFocusNavigationStartingPoint,
     setSelection,
     showContextMenu,

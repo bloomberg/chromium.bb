@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -254,6 +255,49 @@ void BlinkAXTreeSource::SetAccessibilityMode(ui::AXMode new_mode) {
   accessibility_mode_ = new_mode;
 }
 
+bool BlinkAXTreeSource::ShouldLoadInlineTextBoxes(
+    const blink::WebAXObject& obj) const {
+#if !defined(OS_ANDROID)
+  // If inline text boxes are enabled globally, no need to explicitly load them.
+  if (accessibility_mode_.has_mode(ui::AXMode::kInlineTextBoxes))
+    return false;
+#endif
+
+  // On some platforms, like Android, we only load inline text boxes for
+  // a subset of nodes:
+  //
+  // Within the subtree of a focused editable text area.
+  // When specifically enabled for a subtree via |load_inline_text_boxes_ids_|.
+
+  int32_t focus_id = focus().AxID();
+  WebAXObject ancestor = obj;
+  while (!ancestor.IsDetached()) {
+    int32_t ancestor_id = ancestor.AxID();
+    if (base::ContainsKey(load_inline_text_boxes_ids_, ancestor_id) ||
+        (ancestor_id == focus_id && ancestor.IsEditable())) {
+      return true;
+    }
+    ancestor = ancestor.ParentObject();
+  }
+
+  return false;
+}
+
+void BlinkAXTreeSource::SetLoadInlineTextBoxesForId(int32_t id) {
+  // Keeping stale IDs in the set is harmless but we don't want it to keep
+  // growing without bound, so clear out any unnecessary IDs whenever this
+  // method is called.
+  for (auto iter = load_inline_text_boxes_ids_.begin();
+       iter != load_inline_text_boxes_ids_.end();) {
+    if (GetFromId(*iter).IsDetached())
+      iter = load_inline_text_boxes_ids_.erase(iter);
+    else
+      ++iter;
+  }
+
+  load_inline_text_boxes_ids_.insert(id);
+}
+
 bool BlinkAXTreeSource::GetTreeData(AXContentTreeData* tree_data) const {
   CHECK(frozen_);
   tree_data->doctype = "html";
@@ -321,17 +365,10 @@ void BlinkAXTreeSource::GetChildren(
     std::vector<WebAXObject>* out_children) const {
   CHECK(frozen_);
 
-  if (parent.Role() == blink::kWebAXRoleStaticText) {
-    int32_t focus_id = focus().AxID();
-    WebAXObject ancestor = parent;
-    while (!ancestor.IsDetached()) {
-      if (ancestor.AxID() == accessibility_focus_id_ ||
-          (ancestor.AxID() == focus_id && ancestor.IsEditable())) {
-        parent.LoadInlineTextBoxes();
-        break;
-      }
-      ancestor = ancestor.ParentObject();
-    }
+  if ((parent.Role() == blink::kWebAXRoleStaticText ||
+       parent.Role() == blink::kWebAXRoleLineBreak) &&
+      ShouldLoadInlineTextBoxes(parent)) {
+    parent.LoadInlineTextBoxes();
   }
 
   bool is_iframe = false;

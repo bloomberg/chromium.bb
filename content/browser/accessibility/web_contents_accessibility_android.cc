@@ -1006,9 +1006,12 @@ void WebContentsAccessibilityAndroid::SetAccessibilityFocus(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jint unique_id) {
+  // When Android sets accessibility focus to a node, we load inline text
+  // boxes for that node so that subsequent requests for character bounding
+  // boxes will succeed.
   BrowserAccessibilityAndroid* node = GetAXFromUniqueID(unique_id);
   if (node)
-    node->manager()->SetAccessibilityFocus(*node);
+    node->manager()->LoadInlineTextBoxes(*node);
 }
 
 bool WebContentsAccessibilityAndroid::IsSlider(JNIEnv* env,

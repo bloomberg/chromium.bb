@@ -202,6 +202,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
                     const gfx::Size& max_size);
   void HitTest(const gfx::Point& point);
   void Increment(const BrowserAccessibility& node);
+  void LoadInlineTextBoxes(const BrowserAccessibility& node);
   void ScrollToMakeVisible(
       const BrowserAccessibility& node, gfx::Rect subfocus);
   void ScrollToPoint(
@@ -212,7 +213,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
       const BrowserAccessibility& node, const base::string16& value);
   void SetSelection(
       ui::AXRange<AXPlatformPosition::AXPositionInstance::element_type> range);
-  void SetAccessibilityFocus(const BrowserAccessibility& node);
   void ShowContextMenu(const BrowserAccessibility& node);
 
   // Retrieve the bounds of the parent View in screen coordinates.

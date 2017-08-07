@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <set>
+
 #include "content/common/ax_content_node_data.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -70,11 +72,9 @@ class BlinkAXTreeSource
     max_image_data_size_ = size;
   }
 
-  // Set the id of the node with accessibility focus. The node with
-  // accessibility focus will force loading inline text box children,
-  // which aren't always loaded by default on all platforms.
-  int accessibility_focus_id() { return accessibility_focus_id_; }
-  void set_accessibility_focus_id(int id) { accessibility_focus_id_ = id; }
+  // Query or update a set of IDs for which we should load inline text boxes.
+  bool ShouldLoadInlineTextBoxes(const blink::WebAXObject& obj) const;
+  void SetLoadInlineTextBoxesForId(int32_t id);
 
   // AXTreeSource implementation.
   bool GetTreeData(AXContentTreeData* tree_data) const override;
@@ -117,10 +117,10 @@ class BlinkAXTreeSource
   // An explicit root to use, otherwise it's taken from the WebDocument.
   blink::WebAXObject explicit_root_;
 
-  // The id of the object with accessibility focus.
-  int accessibility_focus_id_ = -1;
+  // A set of IDs for which we should always load inline text boxes.
+  std::set<int32_t> load_inline_text_boxes_ids_;
 
-  // The id of the object to fetch image data for.
+  // The ID of the object to fetch image data for.
   int image_data_node_id_ = -1;
 
   gfx::Size max_image_data_size_;
