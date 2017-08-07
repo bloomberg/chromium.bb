@@ -386,6 +386,12 @@
       <structure name="IDR_SETTINGS_CLEAR_BROWSING_DATA_DIALOG_JS"
                  file="clear_browsing_data_dialog/clear_browsing_data_dialog.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_CLEAR_BROWSING_DATA_DIALOG_TABS_HTML"
+                 file="clear_browsing_data_dialog/clear_browsing_data_dialog_tabs.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CLEAR_BROWSING_DATA_DIALOG_TABS_JS"
+                 file="clear_browsing_data_dialog/clear_browsing_data_dialog_tabs.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_HISTORY_DELETION_DIALOG_HTML"
                  file="clear_browsing_data_dialog/history_deletion_dialog.html"
                  type="chrome_html" />

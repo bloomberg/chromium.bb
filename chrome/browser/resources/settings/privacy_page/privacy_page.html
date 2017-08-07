@@ -10,6 +10,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../clear_browsing_data_dialog/clear_browsing_data_dialog.html">
+<link rel="import" href="../clear_browsing_data_dialog/clear_browsing_data_dialog_tabs.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../lifetime_browser_proxy.html">
 <link rel="import" href="../route.html">
@@ -40,9 +41,16 @@
     <style include="settings-shared">
     </style>
     <template is="dom-if" if="[[showClearBrowsingDataDialog_]]" restamp>
-      <settings-clear-browsing-data-dialog prefs="{{prefs}}"
-          on-close="onDialogClosed_">
-      </settings-clear-browsing-data-dialog>
+      <template is="dom-if" if="[[!tabsInCbd_]]" restamp>
+        <settings-clear-browsing-data-dialog prefs="{{prefs}}"
+            on-close="onDialogClosed_">
+        </settings-clear-browsing-data-dialog>
+      </template>
+      <template is="dom-if" if="[[tabsInCbd_]]" restamp>
+        <settings-clear-browsing-data-dialog-tabs prefs="{{prefs}}"
+            on-close="onDialogClosed_">
+        </settings-clear-browsing-data-dialog-tabs>
+      </template>
     </template>
     <template id="doNotTrackDialogIf" is="dom-if"
         if="[[showDoNotTrackDialog_]]" notify-dom-change>
