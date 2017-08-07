@@ -691,6 +691,54 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     else:
       return (403, response)
 
+  def SetProtoRepeatedField(self, group_message, field, field_value):
+    assert type(field_value) == list
+    entries = group_message.__getattribute__(field.name)
+    if field.message_type is None:
+      for list_item in field_value:
+        entries.append(list_item)
+    else:
+      # This field is itself a protobuf.
+      sub_type = field.message_type
+      for sub_value in field_value:
+        assert type(sub_value) == dict
+        # Add a new sub-protobuf per list entry.
+        sub_message = entries.add()
+        # Now iterate over its fields and recursively add them.
+        for sub_field in sub_message.DESCRIPTOR.fields:
+          if sub_field.name in sub_value:
+            sub_field_value = sub_value[sub_field.name]
+            self.SetProtobufMessageField(sub_message,
+                                         sub_field, sub_field_value)
+
+  def SetProtoMessageField(self, group_message, field, field_value):
+    if field.message_type.name == 'StringList':
+      assert type(field_value) == list
+      entries = group_message.__getattribute__(field.name).entries
+      for list_item in field_value:
+        entries.append(list_item)
+    else:
+      assert type(field_value) == dict
+      sub_message = group_message.__getattribute__(field.name)
+      for sub_field in sub_message.DESCRIPTOR.fields:
+        if sub_field.name in field_value:
+          sub_field_value = field_value[sub_field.name]
+          self.SetProtobufMessageField(sub_message, sub_field, sub_field_value)
+
+  def SetProtoField(self, group_message, field, field_value):
+    if field.type == field.TYPE_BOOL:
+      assert type(field_value) == bool
+    elif field.type == field.TYPE_STRING:
+      assert type(field_value) == str or type(field_value) == unicode
+    elif (field.type == field.TYPE_INT64 or
+          field.type == field.TYPE_INT32 or
+          field.type == field.TYPE_ENUM):
+      assert type(field_value) == int
+    else:
+      return False
+    group_message.__setattr__(field.name, field_value)
+    return True
+
   def SetProtobufMessageField(self, group_message, field, field_value):
     """Sets a field in a protobuf message.
 
@@ -701,40 +749,11 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       field_value: The value to set.
     """
     if field.label == field.LABEL_REPEATED:
-      assert type(field_value) == list
-      entries = group_message.__getattribute__(field.name)
-      if field.message_type is None:
-        for list_item in field_value:
-          entries.append(list_item)
-      else:
-        # This field is itself a protobuf.
-        sub_type = field.message_type
-        for sub_value in field_value:
-          assert type(sub_value) == dict
-          # Add a new sub-protobuf per list entry.
-          sub_message = entries.add()
-          # Now iterate over its fields and recursively add them.
-          for sub_field in sub_message.DESCRIPTOR.fields:
-            if sub_field.name in sub_value:
-              value = sub_value[sub_field.name]
-              self.SetProtobufMessageField(sub_message, sub_field, value)
-      return
-    elif field.type == field.TYPE_BOOL:
-      assert type(field_value) == bool
-    elif field.type == field.TYPE_STRING:
-      assert type(field_value) == str or type(field_value) == unicode
-    elif field.type == field.TYPE_INT64:
-      assert type(field_value) == int
-    elif (field.type == field.TYPE_MESSAGE and
-          field.message_type.name == 'StringList'):
-      assert type(field_value) == list
-      entries = group_message.__getattribute__(field.name).entries
-      for list_item in field_value:
-        entries.append(list_item)
-      return
-    else:
+      self.SetProtoRepeatedField(group_message, field, field_value)
+    elif field.type == field.TYPE_MESSAGE:
+      self.SetProtoMessageField(group_message, field, field_value)
+    elif not self.SetProtoField(group_message, field, field_value):
       raise Exception('Unknown field type %s' % field.type)
-    group_message.__setattr__(field.name, field_value)
 
   def GatherDevicePolicySettings(self, settings, policies):
     """Copies all the policies from a dictionary into a protobuf of type
