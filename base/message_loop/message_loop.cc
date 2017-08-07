@@ -236,14 +236,14 @@ void MessageLoop::SetNestableTasksAllowed(bool allowed) {
     CHECK(RunLoop::IsNestingAllowedOnCurrentThread());
 
     // Kick the native pump just in case we enter a OS-driven nested message
-    // loop.
+    // loop that does not go through RunLoop::Run().
     pump_->ScheduleWork();
   }
   nestable_tasks_allowed_ = allowed;
 }
 
 bool MessageLoop::NestableTasksAllowed() const {
-  return nestable_tasks_allowed_;
+  return nestable_tasks_allowed_ || run_loop_client_->ProcessingTasksAllowed();
 }
 
 // TODO(gab): Migrate TaskObservers to RunLoop as part of separating concerns
@@ -355,6 +355,13 @@ void MessageLoop::Quit() {
   pump_->Quit();
 }
 
+void MessageLoop::EnsureWorkScheduled() {
+  DCHECK_EQ(this, current());
+  ReloadWorkQueue();
+  if (!work_queue_.empty())
+    pump_->ScheduleWork();
+}
+
 void MessageLoop::SetThreadTaskRunnerHandle() {
   DCHECK_EQ(this, current());
   // Clear the previous thread task runner first, because only one can exist at
@@ -386,7 +393,7 @@ bool MessageLoop::ProcessNextDelayedNonNestableTask() {
 }
 
 void MessageLoop::RunTask(PendingTask* pending_task) {
-  DCHECK(nestable_tasks_allowed_);
+  DCHECK(NestableTasksAllowed());
   current_pending_task_ = pending_task;
 
 #if defined(OS_WIN)
@@ -491,7 +498,7 @@ void MessageLoop::ScheduleWork() {
 }
 
 bool MessageLoop::DoWork() {
-  if (!nestable_tasks_allowed_) {
+  if (!NestableTasksAllowed()) {
     // Task can't be executed right now.
     return false;
   }
@@ -529,7 +536,7 @@ bool MessageLoop::DoWork() {
 }
 
 bool MessageLoop::DoDelayedWork(TimeTicks* next_delayed_work_time) {
-  if (!nestable_tasks_allowed_ ||
+  if (!NestableTasksAllowed() ||
       !SweepDelayedWorkQueueAndReturnTrueIfStillHasWork()) {
     recent_time_ = *next_delayed_work_time = TimeTicks();
     return false;
