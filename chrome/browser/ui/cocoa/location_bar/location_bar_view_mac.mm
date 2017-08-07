@@ -758,8 +758,10 @@ void LocationBarViewMac::UpdateAccessibilityView(
 
 std::vector<LocationBarDecoration*> LocationBarViewMac::GetDecorations() {
   std::vector<LocationBarDecoration*> decorations;
-  // TODO(ellyjones): content setting decorations aren't included right now, nor
-  // are page actions and the keyword hint.
+
+  // TODO(ellyjones): page actions and keyword hints are not included right
+  // now. Keyword hints have no useful tooltip (issue 752592), and page actions
+  // are likewise.
   decorations.push_back(location_icon_decoration_.get());
   decorations.push_back(selected_keyword_decoration_.get());
   decorations.push_back(security_state_bubble_decoration_.get());
@@ -768,6 +770,8 @@ std::vector<LocationBarDecoration*> LocationBarViewMac::GetDecorations() {
   decorations.push_back(translate_decoration_.get());
   decorations.push_back(zoom_decoration_.get());
   decorations.push_back(manage_passwords_decoration_.get());
+  for (const auto& decoration : content_setting_decorations_)
+    decorations.push_back(decoration.get());
   return decorations;
 }
 
