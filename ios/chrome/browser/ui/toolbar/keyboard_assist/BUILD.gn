@@ -8,8 +8,14 @@ source_set("keyboard_assist") {
     "toolbar_assistive_keyboard_delegate.h",
     "toolbar_assistive_keyboard_views.h",
     "toolbar_assistive_keyboard_views.mm",
+    "toolbar_assistive_keyboard_views_utils.h",
+    "toolbar_assistive_keyboard_views_utils.mm",
+    "toolbar_input_assistant_items.h",
+    "toolbar_input_assistant_items.mm",
     "toolbar_keyboard_accessory_view.h",
     "toolbar_keyboard_accessory_view.mm",
+    "toolbar_ui_bar_button_item.h",
+    "toolbar_ui_bar_button_item.mm",
   ]
   deps = [
     "resources:keyboard_accessory_qr_scanner",

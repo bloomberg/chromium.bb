@@ -9,14 +9,14 @@
 
 @protocol ToolbarAssistiveKeyboardDelegate;
 
-// Returns the leading buttons of the assistive view.
-NSArray<UIButton*>* ToolbarAssistiveKeyboardLeadingButtons(
-    id<ToolbarAssistiveKeyboardDelegate> delegate);
-
-// Adds a keyboard assistive view to |textField|. The assistive view shows a
-// button to quickly enter |dotComTLD|, and the callbacks are handled via
-// |delegate|.
-// |dotComTLD| must not be nil.
+// Adds a keyboard assistive view [1] to |textField|. The assistive view
+// contains among other things a button to quickly enter |dotComTLD|, and the
+// callbacks are handled via |delegate|. |dotComTLD| must not be nil.
+//
+// [1]
+// On iPhone the assistive view is a keyboard accessory view.
+// On iPad, the assitive view is an inputAssistantItem to handle split
+// keyboards.
 void ConfigureAssistiveKeyboardViews(
     UITextField* textField,
     NSString* dotComTLD,
