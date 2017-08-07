@@ -133,7 +133,7 @@ class SpdyFramerTestUtil {
     }
 
     // All other methods just LOG(FATAL).
-    void OnError(SpdyFramer* framer) override { LOG(FATAL); }
+    void OnError(SpdyFramer::SpdyFramerError error) override { LOG(FATAL); }
     void OnDataFrameHeader(SpdyStreamId stream_id,
                            size_t length,
                            bool fin) override {
@@ -409,9 +409,9 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
         header_control_type_(SpdyFrameType::DATA),
         header_buffer_valid_(false) {}
 
-  void OnError(SpdyFramer* f) override {
+  void OnError(SpdyFramer::SpdyFramerError error) override {
     VLOG(1) << "SpdyFramer Error: "
-            << SpdyFramer::SpdyFramerErrorToString(f->spdy_framer_error());
+            << SpdyFramer::SpdyFramerErrorToString(error);
     ++error_count_;
   }
 
@@ -904,7 +904,7 @@ TEST_P(SpdyFramerTest, ExceedMaxFrameSizeSetting) {
   SpdySerializedFrame frame(reinterpret_cast<char*>(kH2FrameData),
                             sizeof(kH2FrameData), false);
 
-  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_CALL(visitor, OnError(SpdyFramer::SPDY_OVERSIZED_PAYLOAD));
   framer.ProcessInput(frame.data(), frame.size());
   EXPECT_TRUE(framer.HasError());
   EXPECT_EQ(SpdyFramer::SPDY_OVERSIZED_PAYLOAD, framer.spdy_framer_error())
@@ -938,7 +938,7 @@ TEST_P(SpdyFramerTest, OversizedDataPaddingError) {
     testing::InSequence seq;
     EXPECT_CALL(visitor, OnDataFrameHeader(1, 5, 1));
     EXPECT_CALL(visitor, OnStreamPadding(1, 1));
-    EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+    EXPECT_CALL(visitor, OnError(SpdyFramer::SPDY_INVALID_PADDING));
   }
   EXPECT_GT(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
   EXPECT_TRUE(framer.HasError());
@@ -969,7 +969,7 @@ TEST_P(SpdyFramerTest, CorrectlySizedDataPaddingNoError) {
     testing::InSequence seq;
     EXPECT_CALL(visitor, OnDataFrameHeader(1, 5, false));
     EXPECT_CALL(visitor, OnStreamPadding(1, 1));
-    EXPECT_CALL(visitor, OnError(testing::Eq(&framer))).Times(0);
+    EXPECT_CALL(visitor, OnError(_)).Times(0);
     // Note that OnStreamFrameData(1, _, 1)) is never called
     // since there is no data, only padding
     EXPECT_CALL(visitor, OnStreamPadding(1, 4));
@@ -1006,7 +1006,7 @@ TEST_P(SpdyFramerTest, OversizedHeadersPaddingError) {
 
   EXPECT_CALL(visitor, OnHeaders(1, false, 0, 0, false, false, false));
   EXPECT_CALL(visitor, OnHeaderFrameStart(1)).Times(1);
-  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_CALL(visitor, OnError(SpdyFramer::SPDY_INVALID_PADDING));
   EXPECT_EQ(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
   EXPECT_TRUE(framer.HasError());
   EXPECT_EQ(SpdyFramer::SPDY_INVALID_PADDING, framer.spdy_framer_error())
@@ -1053,7 +1053,7 @@ TEST_P(SpdyFramerTest, DataWithStreamIdZero) {
   SpdySerializedFrame frame(framer.SerializeData(data_ir));
 
   // We shouldn't have to read the whole frame before we signal an error.
-  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_CALL(visitor, OnError(SpdyFramer::SPDY_INVALID_STREAM_ID));
   EXPECT_GT(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
   EXPECT_TRUE(framer.HasError());
   EXPECT_EQ(SpdyFramer::SPDY_INVALID_STREAM_ID, framer.spdy_framer_error())
@@ -1073,7 +1073,7 @@ TEST_P(SpdyFramerTest, HeadersWithStreamIdZero) {
       SpdyFramerPeer::SerializeHeaders(&framer, headers, &output_));
 
   // We shouldn't have to read the whole frame before we signal an error.
-  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_CALL(visitor, OnError(SpdyFramer::SPDY_INVALID_STREAM_ID));
   EXPECT_GT(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
   EXPECT_TRUE(framer.HasError());
   EXPECT_EQ(SpdyFramer::SPDY_INVALID_STREAM_ID, framer.spdy_framer_error())
@@ -1098,7 +1098,7 @@ TEST_P(SpdyFramerTest, PriorityWithStreamIdZero) {
   }
 
   // We shouldn't have to read the whole frame before we signal an error.
-  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_CALL(visitor, OnError(SpdyFramer::SPDY_INVALID_STREAM_ID));
   EXPECT_GT(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
   EXPECT_TRUE(framer.HasError());
   EXPECT_EQ(SpdyFramer::SPDY_INVALID_STREAM_ID, framer.spdy_framer_error())
@@ -1120,7 +1120,7 @@ TEST_P(SpdyFramerTest, RstStreamWithStreamIdZero) {
   }
 
   // We shouldn't have to read the whole frame before we signal an error.
-  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_CALL(visitor, OnError(SpdyFramer::SPDY_INVALID_STREAM_ID));
   EXPECT_GT(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
   EXPECT_TRUE(framer.HasError());
   EXPECT_EQ(SpdyFramer::SPDY_INVALID_STREAM_ID, framer.spdy_framer_error())
@@ -1147,7 +1147,7 @@ TEST_P(SpdyFramerTest, SettingsWithStreamIdNotZero) {
   SpdySerializedFrame frame(kH2FrameData, sizeof(kH2FrameData), false);
 
   // We shouldn't have to read the whole frame before we signal an error.
-  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_CALL(visitor, OnError(SpdyFramer::SPDY_INVALID_STREAM_ID));
   EXPECT_GT(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
   EXPECT_TRUE(framer.HasError());
   EXPECT_EQ(SpdyFramer::SPDY_INVALID_STREAM_ID, framer.spdy_framer_error())
@@ -1175,7 +1175,7 @@ TEST_P(SpdyFramerTest, GoawayWithStreamIdNotZero) {
   SpdySerializedFrame frame(kH2FrameData, sizeof(kH2FrameData), false);
 
   // We shouldn't have to read the whole frame before we signal an error.
-  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_CALL(visitor, OnError(SpdyFramer::SPDY_INVALID_STREAM_ID));
   EXPECT_GT(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
   EXPECT_TRUE(framer.HasError());
   EXPECT_EQ(SpdyFramer::SPDY_INVALID_STREAM_ID, framer.spdy_framer_error())
@@ -1201,7 +1201,7 @@ TEST_P(SpdyFramerTest, ContinuationWithStreamIdZero) {
   }
 
   // We shouldn't have to read the whole frame before we signal an error.
-  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_CALL(visitor, OnError(SpdyFramer::SPDY_INVALID_STREAM_ID));
   EXPECT_GT(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
   EXPECT_TRUE(framer.HasError());
   EXPECT_EQ(SpdyFramer::SPDY_INVALID_STREAM_ID, framer.spdy_framer_error())
@@ -1222,7 +1222,7 @@ TEST_P(SpdyFramerTest, PushPromiseWithStreamIdZero) {
       &framer, push_promise, use_output_ ? &output_ : nullptr));
 
   // We shouldn't have to read the whole frame before we signal an error.
-  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_CALL(visitor, OnError(SpdyFramer::SPDY_INVALID_STREAM_ID));
   EXPECT_GT(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
   EXPECT_TRUE(framer.HasError());
   EXPECT_EQ(SpdyFramer::SPDY_INVALID_STREAM_ID, framer.spdy_framer_error())
@@ -1242,7 +1242,7 @@ TEST_P(SpdyFramerTest, PushPromiseWithPromisedStreamIdZero) {
   SpdySerializedFrame frame(SpdyFramerPeer::SerializePushPromise(
       &framer, push_promise, use_output_ ? &output_ : nullptr));
 
-  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_CALL(visitor, OnError(SpdyFramer::SPDY_INVALID_CONTROL_FRAME));
   framer.ProcessInput(frame.data(), frame.size());
   EXPECT_TRUE(framer.HasError());
   EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME, framer.spdy_framer_error())
@@ -2493,7 +2493,7 @@ TEST_P(SpdyFramerTest, SendUnexpectedContinuation) {
   SpdySerializedFrame frame(kH2FrameData, sizeof(kH2FrameData), false);
 
   // We shouldn't have to read the whole frame before we signal an error.
-  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_CALL(visitor, OnError(SpdyFramer::SPDY_UNEXPECTED_FRAME));
   EXPECT_GT(frame.size(), framer.ProcessInput(frame.data(), frame.size()));
   EXPECT_TRUE(framer.HasError());
   EXPECT_EQ(SpdyFramer::SPDY_UNEXPECTED_FRAME, framer.spdy_framer_error())
@@ -4492,7 +4492,7 @@ TEST_P(SpdyFramerTest, OnAltSvcEmptyProtocolId) {
   SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
   framer.set_visitor(&visitor);
 
-  EXPECT_CALL(visitor, OnError(testing::Eq(&framer)));
+  EXPECT_CALL(visitor, OnError(SpdyFramer::SPDY_INVALID_CONTROL_FRAME));
 
   SpdyAltSvcIR altsvc_ir(kStreamId);
   altsvc_ir.set_origin("o1");

@@ -727,7 +727,7 @@ class Http2DecoderAdapter : public SpdyFramerDecoderAdapter,
       spdy_framer_error_ = error;
       set_spdy_state(SpdyState::SPDY_ERROR);
       frame_decoder_->set_listener(&no_op_listener_);
-      visitor()->OnError(outer_framer_);
+      visitor()->OnError(error);
     }
   }
 
