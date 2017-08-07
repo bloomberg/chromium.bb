@@ -17,6 +17,8 @@
 #include "url/gurl.h"
 
 namespace offline_pages {
+const int kPrefetchStoreCommandFailed = -1;
+
 namespace {
 
 // Comma separated list of all columns in the table, by convention following
@@ -72,7 +74,7 @@ int CountPrefetchItemsSync(sql::Connection* db) {
   if (statement.Step())
     return statement.ColumnInt(0);
 
-  return PrefetchStoreTestUtil::kStoreCommandFailed;
+  return kPrefetchStoreCommandFailed;
 }
 
 // Populates the PrefetchItem with the data from the current row of the passed
@@ -147,7 +149,7 @@ int UpdateItemsStateSync(const std::string& name_space,
   if (statement.Run())
     return db->GetLastChangeCount();
 
-  return PrefetchStoreTestUtil::kStoreCommandFailed;
+  return kPrefetchStoreCommandFailed;
 }
 
 }  // namespace
@@ -237,6 +239,17 @@ int PrefetchStoreTestUtil::ZombifyPrefetchItems(const std::string& name_space,
 
 void PrefetchStoreTestUtil::RunUntilIdle() {
   task_runner_->RunUntilIdle();
+}
+
+int PrefetchStoreTestUtil::LastCommandChangeCount() {
+  int count = 0;
+  store_->Execute(
+      base::BindOnce([](sql::Connection* connection) {
+        return connection->GetLastChangeCount();
+      }),
+      base::BindOnce([](int* result, int count) { *result = count; }, &count));
+  RunUntilIdle();
+  return count;
 }
 
 }  // namespace offline_pages

@@ -7,6 +7,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/mock_callback.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/offline_pages/core/prefetch/prefetch_item.h"
+#include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
+#include "components/offline_pages/core/prefetch/store/prefetch_store_utils.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,6 +47,19 @@ void TaskTestBase::ExpectTaskCompletes(Task* task) {
 
   task->SetTaskCompletionCallbackForTesting(
       task_runner_.get(), completion_callbacks_.back()->Get());
+}
+
+int64_t TaskTestBase::InsertPrefetchItemInStateWithOperation(
+    std::string operation_name,
+    PrefetchItemState state) {
+  PrefetchItem item;
+  item.state = state;
+  item.offline_id = PrefetchStoreUtils::GenerateOfflineId();
+  std::string offline_id_string = std::to_string(item.offline_id);
+  item.url = GURL("http://www.example.com/?id=" + offline_id_string);
+  item.operation_name = operation_name;
+  EXPECT_TRUE(store_util()->InsertPrefetchItem(item));
+  return item.offline_id;
 }
 
 }  // namespace offline_pages

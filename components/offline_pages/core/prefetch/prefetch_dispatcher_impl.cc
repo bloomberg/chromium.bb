@@ -93,6 +93,13 @@ void PrefetchDispatcherImpl::BeginBackgroundTask(
 }
 
 void PrefetchDispatcherImpl::QueueActionTasks() {
+  std::unique_ptr<Task> get_operation_task = base::MakeUnique<GetOperationTask>(
+      service_->GetPrefetchStore(),
+      service_->GetPrefetchNetworkRequestFactory(),
+      base::Bind(&PrefetchDispatcherImpl::DidGetOperationRequest,
+                 weak_factory_.GetWeakPtr()));
+  task_queue_.AddTask(std::move(get_operation_task));
+
   std::unique_ptr<Task> generate_page_bundle_task =
       base::MakeUnique<GeneratePageBundleTask>(
           service_->GetPrefetchStore(), service_->GetPrefetchGCMHandler(),
