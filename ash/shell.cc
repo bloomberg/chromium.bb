@@ -1324,14 +1324,16 @@ void Shell::InitializeShelf() {
 }
 
 void Shell::OnProfilePrefServiceInitialized(
-    std::unique_ptr<::PrefService> pref_service) {
+    std::unique_ptr<PrefService> pref_service) {
+  // Keep the old PrefService object alive so OnActiveUserPrefServiceChanged()
+  // clients can unregister pref observers on the old service.
+  std::unique_ptr<PrefService> old_service = std::move(profile_pref_service_);
+  profile_pref_service_ = std::move(pref_service);
   // |pref_service| can be null if can't connect to Chrome (as happens when
   // running mash outside of chrome --mash and chrome isn't built).
   for (auto& observer : shell_observers_)
-    observer.OnActiveUserPrefServiceChanged(pref_service.get());
-  // Reset after notifying clients so they can unregister pref observers on the
-  // old PrefService.
-  profile_pref_service_ = std::move(pref_service);
+    observer.OnActiveUserPrefServiceChanged(profile_pref_service_.get());
+  // |old_service| is deleted.
 }
 
 void Shell::OnLocalStatePrefServiceInitialized(
