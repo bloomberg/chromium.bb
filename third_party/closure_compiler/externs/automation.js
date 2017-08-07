@@ -214,13 +214,11 @@ chrome.automation.RoleType = {
  * @see https://developer.chrome.com/extensions/automation#type-StateType
  */
 chrome.automation.StateType = {
-  BUSY: 'busy',
   COLLAPSED: 'collapsed',
   DEFAULT: 'default',
   EDITABLE: 'editable',
   EXPANDED: 'expanded',
   FOCUSABLE: 'focusable',
-  FOCUSED: 'focused',
   HASPOPUP: 'haspopup',
   HORIZONTAL: 'horizontal',
   HOVERED: 'hovered',
@@ -942,7 +940,7 @@ chrome.automation.AutomationNode.prototype.imageDataUrl;
 chrome.automation.AutomationNode.prototype.language;
 
 /**
- * State describing input restriction associated with an object: undefined - enabled control or other object that is not disabled  'disabled' - a control or group of controls that does not take input 'readOnly' - an edit field that allows focus and selection but not input
+ * Input restriction, if any, such as readonly or disabled: undefined - enabled control or other object that is not disabled  Restriction.DISABLED - disallows input in itself + any descendants Restriction.READONLY - allow focus/selection but not input
  * @type {(string|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-restriction
  */

@@ -22,7 +22,7 @@ namespace {
 
 bool HasFocusableChild(const AXNode* node) {
   for (auto* child : node->children()) {
-    if ((child->data().state & ui::AX_STATE_FOCUSABLE) != 0 ||
+    if (child->data().HasState(ui::AX_STATE_FOCUSABLE) ||
         HasFocusableChild(child)) {
       return true;
     }
@@ -39,13 +39,13 @@ bool HasOnlyTextChildren(const AXNode* node) {
 }
 
 // TODO(muyuanli): share with BrowserAccessibility.
-bool IsSimpleTextControl(AXRole role, uint32_t state) {
-  switch (role) {
+bool IsSimpleTextControl(const AXNode* node, uint32_t state) {
+  switch (node->data().role) {
     case ui::AX_ROLE_COMBO_BOX:
     case ui::AX_ROLE_SEARCH_BOX:
       return true;
     case ui::AX_ROLE_TEXT_FIELD:
-      return (state & ui::AX_STATE_RICHLY_EDITABLE) == 0;
+      return !node->data().HasState(ui::AX_STATE_RICHLY_EDITABLE);
     default:
       return false;
   }
@@ -53,9 +53,8 @@ bool IsSimpleTextControl(AXRole role, uint32_t state) {
 
 bool IsRichTextEditable(const AXNode* node) {
   const AXNode* parent = node->parent();
-  return (node->data().state & ui::AX_STATE_RICHLY_EDITABLE) != 0 &&
-         (!parent ||
-          (parent->data().state & ui::AX_STATE_RICHLY_EDITABLE) == 0);
+  return node->data().HasState(ui::AX_STATE_RICHLY_EDITABLE) &&
+         (!parent || !parent->data().HasState(ui::AX_STATE_RICHLY_EDITABLE));
 }
 
 bool IsNativeTextControl(const AXNode* node) {
@@ -112,13 +111,13 @@ base::string16 GetValue(const AXNode* node, bool show_password) {
   base::string16 value = node->data().GetString16Attribute(ui::AX_ATTR_VALUE);
 
   if (value.empty() &&
-      (IsSimpleTextControl(node->data().role, node->data().state) ||
+      (IsSimpleTextControl(node, node->data().state) ||
        IsRichTextEditable(node)) &&
       !IsNativeTextControl(node)) {
     value = GetInnerText(node);
   }
 
-  if ((node->data().state & ui::AX_STATE_PROTECTED) != 0) {
+  if (node->data().HasState(ui::AX_STATE_PROTECTED)) {
     if (!show_password) {
       value = base::string16(value.size(), kSecurePasswordBullet);
     }
@@ -143,7 +142,7 @@ bool IsFocusable(const AXNode* node) {
       (node->data().role == ui::AX_ROLE_ROOT_WEB_AREA && node->parent())) {
     return node->data().HasStringAttribute(ui::AX_ATTR_NAME);
   }
-  return (node->data().state & ui::AX_STATE_FOCUSABLE) != 0;
+  return node->data().HasState(ui::AX_STATE_FOCUSABLE);
 }
 
 base::string16 GetText(const AXNode* node, bool show_password) {
@@ -163,7 +162,7 @@ base::string16 GetText(const AXNode* node, bool show_password) {
   base::string16 value = GetValue(node, show_password);
 
   if (!value.empty()) {
-    if ((node->data().state & ui::AX_STATE_EDITABLE) != 0)
+    if (node->data().HasState(ui::AX_STATE_EDITABLE))
       return value;
 
     switch (node->data().role) {

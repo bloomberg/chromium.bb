@@ -111,6 +111,35 @@ IN_PROC_BROWSER_TEST_F(ArcVoiceInteractionArcHomeServiceTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ArcVoiceInteractionArcHomeServiceTest,
+                       VoiceInteractionStructureSectionTest) {
+  // Help ensure accessibility states are tested correctly.
+  // When the states are not tested correctly (bit shifted), the div appears to
+  // be focusable, causing the child text to be aggregated for the div.
+  auto result = GetVoiceInteractionStructure(
+      "<div role='section' aria-expanded='false'>"
+      "Hello<img>"
+      "</div>");
+  ASSERT_FALSE(result.is_null());
+
+  auto& child = result->children[0];
+  ASSERT_EQ(base::UTF16ToUTF8(child->text), "");
+}
+
+IN_PROC_BROWSER_TEST_F(ArcVoiceInteractionArcHomeServiceTest,
+                       VoiceInteractionStructureSelectTest) {
+  // Help ensure accessibility states are tested correctly.
+  // When the states are not tested correctly (bit shifted), the option appears
+  // to have AX_STATE_PROTECTED, and text is incorrectly set as password dots.
+  auto result = GetVoiceInteractionStructure(
+      "<div><select><option>1</option></select></div>");
+  ASSERT_FALSE(result.is_null());
+
+  auto& child = result->children[0];
+  ASSERT_EQ(base::UTF16ToUTF8(child->text), "");
+  ASSERT_EQ(base::UTF16ToUTF8(child->children[0]->text), "1");
+}
+
+IN_PROC_BROWSER_TEST_F(ArcVoiceInteractionArcHomeServiceTest,
                        VoiceInteractionStructureMultipleSelectionTest) {
   auto result = GetVoiceInteractionStructure(
       "<html>"
