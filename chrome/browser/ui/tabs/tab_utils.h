@@ -106,6 +106,14 @@ std::unique_ptr<gfx::Animation> CreateTabAlertIndicatorFadeAnimation(
 base::string16 AssembleTabTooltipText(const base::string16& title,
                                       TabAlertState alert_state);
 
+// Returns the text to use for a tab's accessibility label: the |title|,
+// followed by text describing |is_crashed|, |is_network_error|, and
+// |alert_state|.
+base::string16 AssembleTabAccessibilityLabel(const base::string16& title,
+                                             bool is_crashed,
+                                             bool is_network_error,
+                                             TabAlertState alert_state);
+
 // Returns true if experimental audio mute controls (UI or extension API) are
 // enabled.  Currently, toggling mute from a tab's context menu is the only
 // non-experimental control method.

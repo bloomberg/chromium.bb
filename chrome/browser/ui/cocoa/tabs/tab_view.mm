@@ -821,7 +821,7 @@ CGFloat LineWidthFromContext(CGContextRef context) {
   if ([attribute isEqual:NSAccessibilityRoleDescriptionAttribute])
     return l10n_util::GetNSStringWithFixup(IDS_ACCNAME_TAB_ROLE_DESCRIPTION);
   if ([attribute isEqual:NSAccessibilityTitleAttribute])
-    return [controller_ title];
+    return [controller_ accessibilityTitle];
   if ([attribute isEqual:NSAccessibilityValueAttribute])
     return [NSNumber numberWithInt:[controller_ selected]];
   if ([attribute isEqual:NSAccessibilityEnabledAttribute])

@@ -126,6 +126,9 @@ class MenuDelegate;
 
 // Update the title color to match the tabs current state.
 - (void)updateTitleColor;
+
+// Returns the accessibility title that should be used for this tab.
+- (NSString*)accessibilityTitle;
 @end
 
 @interface TabController(TestingAPI)
