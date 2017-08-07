@@ -1098,10 +1098,11 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
   const int col_start = (block_size_wide[bsize] == 4) && ss_x ? -1 : 0;
 
 #if CONFIG_MOTION_VAR
-  if (!build_for_obmc && sub8x8_inter) {
+  if (!build_for_obmc && sub8x8_inter)
 #else
-  if (sub8x8_inter) {
+  if (sub8x8_inter)
 #endif  // CONFIG_MOTION_VAR
+  {
     for (int row = row_start; row <= 0 && sub8x8_inter; ++row)
       for (int col = col_start; col <= 0; ++col)
         if (!is_inter_block(&xd->mi[row * xd->mi_stride + col]->mbmi))
@@ -1109,10 +1110,11 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
   }
 
 #if CONFIG_MOTION_VAR
-  if (!build_for_obmc && sub8x8_inter) {
+  if (!build_for_obmc && sub8x8_inter)
 #else
-  if (sub8x8_inter) {
+  if (sub8x8_inter)
 #endif  // CONFIG_MOTION_VAR
+  {
     // block size
     const int b4_w = block_size_wide[bsize] >> ss_x;
     const int b4_h = block_size_high[bsize] >> ss_y;
@@ -1317,10 +1319,11 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
 #endif  // CONFIG_CONVOLVE_ROUND
 
 #if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
-    for (ref = 0; ref < 1 + is_comp_mode_pred; ++ref) {
+    for (ref = 0; ref < 1 + is_comp_mode_pred; ++ref)
 #else
-    for (ref = 0; ref < 1 + is_compound; ++ref) {
+    for (ref = 0; ref < 1 + is_compound; ++ref)
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+    {
 #if CONFIG_INTRABC
       const struct scale_factors *const sf =
           is_intrabc ? &xd->sf_identity : &xd->block_refs[ref]->sf;
@@ -1403,10 +1406,11 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
 #endif  // CONFIG_CONVOLVE_ROUND
 
 #if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
-    for (ref = 0; ref < 1 + is_comp_mode_pred; ++ref) {
+    for (ref = 0; ref < 1 + is_comp_mode_pred; ++ref)
 #else
-    for (ref = 0; ref < 1 + is_compound; ++ref) {
+    for (ref = 0; ref < 1 + is_compound; ++ref)
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+    {
 #if CONFIG_INTRABC
       const struct scale_factors *const sf =
           is_intrabc ? &xd->sf_identity : &xd->block_refs[ref]->sf;
@@ -2230,14 +2234,19 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
     }
 #if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
     for (ref = 0; ref < 1 + (is_inter_anyref_comp_mode(above_mbmi->mode));
-         ++ref) {
+         ++ref)
+#else   // !(CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF)
+    for (ref = 0; ref < 1 + has_second_ref(above_mbmi); ++ref)
+#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+    {
+#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
       const MV_REFERENCE_FRAME frame = has_second_ref(above_mbmi)
                                            ? above_mbmi->ref_frame[ref]
                                            : above_mbmi->ref_frame[0];
-#else   // !(CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF)
-    for (ref = 0; ref < 1 + has_second_ref(above_mbmi); ++ref) {
+#else
       const MV_REFERENCE_FRAME frame = above_mbmi->ref_frame[ref];
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+
       const RefBuffer *const ref_buf = &cm->frame_refs[frame - LAST_FRAME];
 
       xd->block_refs[ref] = ref_buf;
@@ -2328,13 +2337,16 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                        pd->subsampling_x, pd->subsampling_y);
     }
 #if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
-    for (ref = 0; ref < 1 + (is_inter_anyref_comp_mode(left_mbmi->mode));
-         ++ref) {
+    for (ref = 0; ref < 1 + (is_inter_anyref_comp_mode(left_mbmi->mode)); ++ref)
+#else   // !(CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF)
+    for (ref = 0; ref < 1 + has_second_ref(left_mbmi); ++ref)
+#endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
+    {
+#if CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
       const MV_REFERENCE_FRAME frame = has_second_ref(left_mbmi)
                                            ? left_mbmi->ref_frame[ref]
                                            : left_mbmi->ref_frame[0];
-#else   // !(CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF)
-    for (ref = 0; ref < 1 + has_second_ref(left_mbmi); ++ref) {
+#else
       const MV_REFERENCE_FRAME frame = left_mbmi->ref_frame[ref];
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
       const RefBuffer *const ref_buf = &cm->frame_refs[frame - LAST_FRAME];
@@ -3257,10 +3269,11 @@ static void build_wedge_inter_predictor_from_buf(
 
 #if CONFIG_COMPOUND_SINGLEREF
   if ((is_compound || is_inter_singleref_comp_mode(mbmi->mode)) &&
-      is_masked_compound_type(mbmi->interinter_compound_type)) {
+      is_masked_compound_type(mbmi->interinter_compound_type))
 #else   // !CONFIG_COMPOUND_SINGLEREF
-  if (is_compound && is_masked_compound_type(mbmi->interinter_compound_type)) {
+  if (is_compound && is_masked_compound_type(mbmi->interinter_compound_type))
 #endif  // CONFIG_COMPOUND_SINGLEREF
+  {
 #if CONFIG_COMPOUND_SEGMENT
     if (!plane && comp_data.interinter_compound_type == COMPOUND_SEG) {
 #if CONFIG_HIGHBITDEPTH
