@@ -4,6 +4,10 @@
 
 #include "chrome/browser/page_load_metrics/observers/delay_navigation_page_load_metrics_observer.h"
 
+#include <memory>
+
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -19,6 +23,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/test/navigation_simulator.h"
+#include "content/public/test/test_navigation_throttle_inserter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -29,61 +34,12 @@ const int kDelayMillis = 100;
 
 }  // namespace
 
-// A WebContentsObserver that injects a DelayNavigationThrottle for main frame
-// navigations on each call to DidStartNavigation.
-class InjectDelayNavigationThrottleWebContentsObserver
-    : public content::WebContentsObserver,
-      public content::WebContentsUserData<
-          InjectDelayNavigationThrottleWebContentsObserver> {
- public:
-  static void CreateForWebContents(
-      content::WebContents* web_contents,
-      scoped_refptr<base::TestMockTimeTaskRunner> mock_time_task_runner);
-
-  void DidStartNavigation(
-      content::NavigationHandle* navigation_handle) override {
-    if (!navigation_handle->IsInMainFrame())
-      return;
-
-    navigation_handle->RegisterThrottleForTesting(
-        base::MakeUnique<DelayNavigationThrottle>(
-            navigation_handle, mock_time_task_runner_,
-            base::TimeDelta::FromMilliseconds(kDelayMillis)));
-  }
-
- private:
-  InjectDelayNavigationThrottleWebContentsObserver(
-      content::WebContents* web_contents,
-      scoped_refptr<base::TestMockTimeTaskRunner> mock_time_task_runner)
-      : content::WebContentsObserver(web_contents),
-        mock_time_task_runner_(mock_time_task_runner) {}
-
-  friend class content::WebContentsUserData<
-      InjectDelayNavigationThrottleWebContentsObserver>;
-
-  scoped_refptr<base::TestMockTimeTaskRunner> mock_time_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(InjectDelayNavigationThrottleWebContentsObserver);
-};
-
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(
-    InjectDelayNavigationThrottleWebContentsObserver);
-
-void InjectDelayNavigationThrottleWebContentsObserver::CreateForWebContents(
-    content::WebContents* web_contents,
-    scoped_refptr<base::TestMockTimeTaskRunner> mock_time_task_runner) {
-  InjectDelayNavigationThrottleWebContentsObserver* metrics =
-      FromWebContents(web_contents);
-  if (!metrics) {
-    metrics = new InjectDelayNavigationThrottleWebContentsObserver(
-        web_contents, mock_time_task_runner);
-    web_contents->SetUserData(UserDataKey(), base::WrapUnique(metrics));
-  }
-}
-
 class DelayNavigationPageLoadMetricsObserverTest
     : public page_load_metrics::PageLoadMetricsObserverTestHarness {
  public:
+  DelayNavigationPageLoadMetricsObserverTest() = default;
+  ~DelayNavigationPageLoadMetricsObserverTest() override = default;
+
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
         base::MakeUnique<DelayNavigationPageLoadMetricsObserver>());
@@ -93,11 +49,23 @@ class DelayNavigationPageLoadMetricsObserverTest
     PageLoadMetricsObserverTestHarness::SetUp();
     mock_time_task_runner_ = new base::TestMockTimeTaskRunner();
 
-    // Create a InjectDelayNavigationThrottleWebContentsObserver, which
-    // instantiates a DelayNavigationThrottle for each main frame navigation in
+    // Instantiates a DelayNavigationThrottle for each main frame navigation in
     // the web_contents().
-    InjectDelayNavigationThrottleWebContentsObserver::CreateForWebContents(
-        web_contents(), mock_time_task_runner_);
+    throttle_inserter_ =
+        base::MakeUnique<content::TestNavigationThrottleInserter>(
+            web_contents(),
+            base::BindRepeating(
+                &DelayNavigationPageLoadMetricsObserverTest::CreateThrottle,
+                base::Unretained(this)));
+  }
+
+  std::unique_ptr<content::NavigationThrottle> CreateThrottle(
+      content::NavigationHandle* handle) {
+    if (!handle->IsInMainFrame())
+      return nullptr;
+    return base::MakeUnique<DelayNavigationThrottle>(
+        handle, mock_time_task_runner_,
+        base::TimeDelta::FromMilliseconds(kDelayMillis));
   }
 
   bool AnyMetricsRecorded() {
@@ -124,7 +92,11 @@ class DelayNavigationPageLoadMetricsObserverTest
     EXPECT_EQ(url, web_contents()->GetLastCommittedURL());
   }
 
+ private:
+  std::unique_ptr<content::TestNavigationThrottleInserter> throttle_inserter_;
   scoped_refptr<base::TestMockTimeTaskRunner> mock_time_task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(DelayNavigationPageLoadMetricsObserverTest);
 };
 
 TEST_F(DelayNavigationPageLoadMetricsObserverTest, NoMetricsWithoutNavigation) {
