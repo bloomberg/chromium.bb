@@ -336,11 +336,12 @@ class FakeFullscreenDelegate : public WebContentsDelegate {
   DISALLOW_COPY_AND_ASSIGN(FakeFullscreenDelegate);
 };
 
-class FakeValidationMessageDelegate : public WebContentsDelegate {
+class FakeWebContentsDelegate : public WebContentsDelegate {
  public:
-  FakeValidationMessageDelegate()
-      : hide_validation_message_was_called_(false) {}
-  ~FakeValidationMessageDelegate() override {}
+  FakeWebContentsDelegate()
+      : hide_validation_message_was_called_(false),
+        loading_state_changed_was_called_(false) {}
+  ~FakeWebContentsDelegate() override {}
 
   void HideValidationMessage(WebContents* web_contents) override {
     hide_validation_message_was_called_ = true;
@@ -350,16 +351,28 @@ class FakeValidationMessageDelegate : public WebContentsDelegate {
     return hide_validation_message_was_called_;
   }
 
+  void LoadingStateChanged(WebContents* source,
+                           bool to_different_document) override {
+    loading_state_changed_was_called_ = true;
+  }
+
+  bool loading_state_changed_was_called() const {
+    return loading_state_changed_was_called_;
+  }
+
  private:
   bool hide_validation_message_was_called_;
+  bool loading_state_changed_was_called_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeValidationMessageDelegate);
+  DISALLOW_COPY_AND_ASSIGN(FakeWebContentsDelegate);
 };
 
 }  // namespace
 
-// Test to make sure that title updates get stripped of whitespace.
 TEST_F(WebContentsImplTest, UpdateTitle) {
+  FakeWebContentsDelegate fake_delegate;
+  contents()->SetDelegate(&fake_delegate);
+
   NavigationControllerImpl& cont =
       static_cast<NavigationControllerImpl&>(controller());
   cont.LoadURL(GURL(url::kAboutBlankURL), Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -371,10 +384,16 @@ TEST_F(WebContentsImplTest, UpdateTitle) {
 
   main_test_rfh()->SendNavigateWithParams(&params);
 
+  EXPECT_TRUE(contents()->IsWaitingForResponse());
   contents()->UpdateTitle(main_test_rfh(),
                           base::ASCIIToUTF16("    Lots O' Whitespace\n"),
                           base::i18n::LEFT_TO_RIGHT);
+  // Make sure that title updates get stripped of whitespace.
   EXPECT_EQ(base::ASCIIToUTF16("Lots O' Whitespace"), contents()->GetTitle());
+  EXPECT_FALSE(contents()->IsWaitingForResponse());
+  EXPECT_TRUE(fake_delegate.loading_state_changed_was_called());
+
+  contents()->SetDelegate(nullptr);
 }
 
 TEST_F(WebContentsImplTest, UpdateTitleBeforeFirstNavigation) {
@@ -1617,7 +1636,7 @@ TEST_F(WebContentsImplTest, HistoryNavigationExitsFullscreen) {
 }
 
 TEST_F(WebContentsImplTest, TerminateHidesValidationMessage) {
-  FakeValidationMessageDelegate fake_delegate;
+  FakeWebContentsDelegate fake_delegate;
   contents()->SetDelegate(&fake_delegate);
   EXPECT_FALSE(fake_delegate.hide_validation_message_was_called());
 

@@ -964,8 +964,10 @@ void Browser::TabInsertedAt(TabStripModel* tab_strip_model,
   SyncHistoryWithTabs(index);
 
   // Make sure the loading state is updated correctly, otherwise the throbber
-  // won't start if the page is loading.
-  LoadingStateChanged(contents, true);
+  // won't start if the page is loading. Note that we don't want to
+  // ScheduleUIUpdate() because the tab may not have been inserted in the UI
+  // yet if this function is called before TabStripModel::TabInsertedAt().
+  UpdateWindowForLoadingStateChanged(contents, true);
 
   interstitial_observers_.push_back(new InterstitialObserver(this, contents));
 
@@ -1532,19 +1534,9 @@ void Browser::ActivateContents(WebContents* contents) {
 }
 
 void Browser::LoadingStateChanged(WebContents* source,
-    bool to_different_document) {
-  window_->UpdateLoadingAnimations(tab_strip_model_->TabsAreLoading());
-  window_->UpdateTitleBar();
-
-  WebContents* selected_contents = tab_strip_model_->GetActiveWebContents();
-  if (source == selected_contents) {
-    bool is_loading = source->IsLoading() && to_different_document;
-    command_controller_->LoadingStateChanged(is_loading, false);
-    if (GetStatusBubble()) {
-      GetStatusBubble()->SetStatus(CoreTabHelper::FromWebContents(
-          tab_strip_model_->GetActiveWebContents())->GetStatusText());
-    }
-  }
+                                  bool to_different_document) {
+  ScheduleUIUpdate(source, content::INVALIDATE_TYPE_LOAD);
+  UpdateWindowForLoadingStateChanged(source, to_different_document);
 }
 
 void Browser::CloseContents(WebContents* source) {
@@ -2433,6 +2425,23 @@ void Browser::TabDetachedAtImpl(content::WebContents* contents,
     delete interstitial_observers_[i];
     interstitial_observers_.erase(interstitial_observers_.begin() + i);
     return;
+  }
+}
+
+void Browser::UpdateWindowForLoadingStateChanged(content::WebContents* source,
+                                                 bool to_different_document) {
+  window_->UpdateLoadingAnimations(tab_strip_model_->TabsAreLoading());
+  window_->UpdateTitleBar();
+
+  WebContents* selected_contents = tab_strip_model_->GetActiveWebContents();
+  if (source == selected_contents) {
+    bool is_loading = source->IsLoading() && to_different_document;
+    command_controller_->LoadingStateChanged(is_loading, false);
+    if (GetStatusBubble()) {
+      GetStatusBubble()->SetStatus(CoreTabHelper::FromWebContents(
+                                       tab_strip_model_->GetActiveWebContents())
+                                       ->GetStatusText());
+    }
   }
 }
 

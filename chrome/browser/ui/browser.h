@@ -830,6 +830,10 @@ class Browser : public TabStripModelObserver,
                          int index,
                          DetachType type);
 
+  // Updates the loading state for the window and tabstrip.
+  void UpdateWindowForLoadingStateChanged(content::WebContents* source,
+                                          bool to_different_document);
+
   // Shared code between Reload() and ReloadBypassingCache().
   void ReloadInternal(WindowOpenDisposition disposition, bool bypass_cache);
 
