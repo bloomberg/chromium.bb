@@ -5,6 +5,9 @@
 /**
  * @fileoverview 'settings-clear-browsing-data-dialog' allows the user to delete
  * browsing data that has been cached by Chromium.
+ *
+ * This file is forked as clear_browsing_data_dialog_tabs.js until the new
+ * CBD UI is launched.
  */
 Polymer({
   is: 'settings-clear-browsing-data-dialog',
