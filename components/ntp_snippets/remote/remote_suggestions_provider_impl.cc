@@ -324,8 +324,8 @@ void RemoteSuggestionsProviderImpl::ReloadSuggestions() {
 }
 
 void RemoteSuggestionsProviderImpl::RefetchInTheBackground(
-    const FetchStatusCallback& callback) {
-  FetchSuggestions(/*interactive_request=*/false, callback);
+    FetchStatusCallback callback) {
+  FetchSuggestions(/*interactive_request=*/false, std::move(callback));
 }
 
 const RemoteSuggestionsFetcher*
@@ -353,11 +353,11 @@ bool RemoteSuggestionsProviderImpl::IsDisabled() const {
 
 void RemoteSuggestionsProviderImpl::FetchSuggestions(
     bool interactive_request,
-    const FetchStatusCallback& callback) {
+    FetchStatusCallback callback) {
   if (!ready()) {
     fetch_when_ready_ = true;
     fetch_when_ready_interactive_ = interactive_request;
-    fetch_when_ready_callback_ = callback;
+    fetch_when_ready_callback_ = std::move(callback);
     return;
   }
 
@@ -366,9 +366,9 @@ void RemoteSuggestionsProviderImpl::FetchSuggestions(
   RequestParams params = BuildFetchParams(/*fetched_category=*/base::nullopt);
   params.interactive_request = interactive_request;
   suggestions_fetcher_->FetchSnippets(
-      params,
-      base::BindOnce(&RemoteSuggestionsProviderImpl::OnFetchFinished,
-                     base::Unretained(this), callback, interactive_request));
+      params, base::BindOnce(&RemoteSuggestionsProviderImpl::OnFetchFinished,
+                             base::Unretained(this), std::move(callback),
+                             interactive_request));
 }
 
 void RemoteSuggestionsProviderImpl::Fetch(
@@ -668,7 +668,7 @@ void RemoteSuggestionsProviderImpl::OnFetchMoreFinished(
 }
 
 void RemoteSuggestionsProviderImpl::OnFetchFinished(
-    const FetchStatusCallback& callback,
+    FetchStatusCallback callback,
     bool interactive_request,
     Status status,
     RemoteSuggestionsFetcher::OptionalFetchedCategories fetched_categories) {
@@ -683,8 +683,9 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
     // Wait until the tracker is initialized.
     prefetched_pages_tracker_->AddInitializationCompletedCallback(
         base::BindOnce(&RemoteSuggestionsProviderImpl::OnFetchFinished,
-                       base::Unretained(this), callback, interactive_request,
-                       status, std::move(fetched_categories)));
+                       base::Unretained(this), std::move(callback),
+                       interactive_request, status,
+                       std::move(fetched_categories)));
     return;
   }
 
@@ -771,7 +772,7 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
   }
 
   if (callback) {
-    callback.Run(status);
+    std::move(callback).Run(status);
   }
 }
 
@@ -1060,7 +1061,8 @@ void RemoteSuggestionsProviderImpl::EnterStateReady() {
   auto article_category_it = category_contents_.find(articles_category_);
   DCHECK(article_category_it != category_contents_.end());
   if (fetch_when_ready_) {
-    FetchSuggestions(fetch_when_ready_interactive_, fetch_when_ready_callback_);
+    FetchSuggestions(fetch_when_ready_interactive_,
+                     std::move(fetch_when_ready_callback_));
     fetch_when_ready_ = false;
   }
 
