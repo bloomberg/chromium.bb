@@ -12,6 +12,8 @@
 
 namespace mini_installer {
 
+class Configuration;
+
 // A container of a process exit code (eventually passed to ExitProcess) and
 // a Windows error code for cases where the exit code is non-zero.
 struct ProcessExitResult {
@@ -30,6 +32,12 @@ struct ProcessExitResult {
 // arguments. Figure that MAX_PATH (260) is sufficient breathing room for the
 // extra arguments.
 using CommandString = StackString<MAX_PATH * 4>;
+
+// Populates |path| with the path to the previous version's setup.exe, stripping
+// quotes if present.
+ProcessExitResult GetPreviousSetupExePath(const Configuration& configuration,
+                                          wchar_t* path,
+                                          size_t size);
 
 // Appends everything following the path to the executable in |command_line|
 // verbatim to |buffer|, including all whitespace, quoted arguments,

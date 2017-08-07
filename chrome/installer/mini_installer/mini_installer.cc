@@ -163,6 +163,16 @@ ProcessExitResult GetSetupExePathForAppGuid(bool system_level,
   if (!SearchStringI(path, previous_version))
     return ProcessExitResult(PATCH_NOT_FOR_INSTALLED_VERSION);
 
+  // Strip double-quotes surrounding the string, if present.
+  if (size >= 1 && path[0] == '\"') {
+    size_t path_length = SafeStrLen(path, size);
+    if (path_length >= 2 && path[path_length - 1] == '\"') {
+      if (!SafeStrCopy(path, size, path + 1))
+        return ProcessExitResult(PATH_STRING_OVERFLOW);
+      path[path_length - 2] = '\0';
+    }
+  }
+
   return ProcessExitResult(SUCCESS_EXIT_CODE);
 }
 
@@ -395,15 +405,11 @@ ProcessExitResult UnpackBinaryResources(const Configuration& configuration,
     exit_code = GetPreviousSetupExePath(configuration, exe_path.get(),
                                         exe_path.capacity());
     if (exit_code.IsSuccess()) {
-      if (!cmd_line.append(exe_path.get()) ||
-          !cmd_line.append(L" --") ||
-          !cmd_line.append(kCmdUpdateSetupExe) ||
-          !cmd_line.append(L"=\"") ||
-          !cmd_line.append(setup_path->get()) ||
-          !cmd_line.append(L"\" --") ||
-          !cmd_line.append(kCmdNewSetupExe) ||
-          !cmd_line.append(L"=\"") ||
-          !cmd_line.append(setup_dest_path.get()) ||
+      if (!cmd_line.append(L"\"") || !cmd_line.append(exe_path.get()) ||
+          !cmd_line.append(L"\" --") || !cmd_line.append(kCmdUpdateSetupExe) ||
+          !cmd_line.append(L"=\"") || !cmd_line.append(setup_path->get()) ||
+          !cmd_line.append(L"\" --") || !cmd_line.append(kCmdNewSetupExe) ||
+          !cmd_line.append(L"=\"") || !cmd_line.append(setup_dest_path.get()) ||
           !cmd_line.append(L"\"")) {
         exit_code = ProcessExitResult(COMMAND_STRING_OVERFLOW);
       }
@@ -470,22 +476,28 @@ ProcessExitResult UnpackBinaryResources(const Configuration& configuration,
 ProcessExitResult RunSetup(const Configuration& configuration,
                            const wchar_t* archive_path,
                            const wchar_t* setup_path) {
+  // Get the path to setup.exe.
+  PathString setup_exe;
+
+  if (*setup_path != L'\0') {
+    if (!setup_exe.assign(setup_path))
+      return ProcessExitResult(COMMAND_STRING_OVERFLOW);
+  } else {
+    ProcessExitResult exit_code = GetPreviousSetupExePath(
+        configuration, setup_exe.get(), setup_exe.capacity());
+    if (!exit_code.IsSuccess())
+      return exit_code;
+  }
+
   // There could be three full paths in the command line for setup.exe (path
   // to exe itself, path to archive and path to log file), so we declare
   // total size as three + one additional to hold command line options.
   CommandString cmd_line;
 
-  // Get the path to setup.exe first.
-  if (::lstrlen(setup_path) > 0) {
-    if (!cmd_line.assign(L"\"") ||
-        !cmd_line.append(setup_path) ||
-        !cmd_line.append(L"\""))
-      return ProcessExitResult(COMMAND_STRING_OVERFLOW);
-  } else {
-    ProcessExitResult exit_code = GetPreviousSetupExePath(
-        configuration, cmd_line.get(), cmd_line.capacity());
-    if (!exit_code.IsSuccess())
-      return exit_code;
+  // Put the quoted path to setup.exe in cmd_line first.
+  if (!cmd_line.assign(L"\"") || !cmd_line.append(setup_exe.get()) ||
+      !cmd_line.append(L"\"")) {
+    return ProcessExitResult(COMMAND_STRING_OVERFLOW);
   }
 
   // Append the command line param for chrome archive file.
@@ -497,12 +509,12 @@ ProcessExitResult RunSetup(const Configuration& configuration,
 #else
       !cmd_line.append(kCmdInstallArchive) ||
 #endif
-      !cmd_line.append(L"=\"") ||
-      !cmd_line.append(archive_path) ||
-      !cmd_line.append(L"\""))
+      !cmd_line.append(L"=\"") || !cmd_line.append(archive_path) ||
+      !cmd_line.append(L"\"")) {
     return ProcessExitResult(COMMAND_STRING_OVERFLOW);
+  }
 
-  // Append the command line param for chrome previous version.
+  // Append the command line param for the previous version of Chrome.
   if (configuration.previous_version() &&
       (!cmd_line.append(L" --") ||
        !cmd_line.append(kCmdPreviousVersion) ||
@@ -516,7 +528,7 @@ ProcessExitResult RunSetup(const Configuration& configuration,
   // on to setup.exe
   AppendCommandLineFlags(configuration.command_line(), &cmd_line);
 
-  return RunProcessAndWait(NULL, cmd_line.get(),
+  return RunProcessAndWait(setup_exe.get(), cmd_line.get(),
                            RUN_SETUP_FAILED_FILE_NOT_FOUND,
                            RUN_SETUP_FAILED_PATH_NOT_FOUND,
                            RUN_SETUP_FAILED_COULD_NOT_CREATE_PROCESS);
