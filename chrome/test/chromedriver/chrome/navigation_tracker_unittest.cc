@@ -93,7 +93,7 @@ TEST(NavigationTracker, FrameLoadStartStop) {
   base::DictionaryValue dict;
   DeterminingLoadStateDevToolsClient client(false, true, std::string(), &dict);
   BrowserInfo browser_info;
-  JavaScriptDialogManager dialog_manager(&client);
+  JavaScriptDialogManager dialog_manager(&client, &browser_info);
   NavigationTracker tracker(&client, &browser_info, &dialog_manager);
 
   base::DictionaryValue params;
@@ -114,7 +114,7 @@ TEST(NavigationTracker, FrameLoadStartStartStop) {
   base::DictionaryValue dict;
   DeterminingLoadStateDevToolsClient client(false, true, std::string(), &dict);
   BrowserInfo browser_info;
-  JavaScriptDialogManager dialog_manager(&client);
+  JavaScriptDialogManager dialog_manager(&client, &browser_info);
   NavigationTracker tracker(&client, &browser_info, &dialog_manager);
 
   base::DictionaryValue params;
@@ -135,7 +135,7 @@ TEST(NavigationTracker, MultipleFramesLoad) {
   base::DictionaryValue dict;
   DeterminingLoadStateDevToolsClient client(false, true, std::string(), &dict);
   BrowserInfo browser_info;
-  JavaScriptDialogManager dialog_manager(&client);
+  JavaScriptDialogManager dialog_manager(&client, &browser_info);
   NavigationTracker tracker(&client, &browser_info, &dialog_manager);
   base::DictionaryValue params;
 
@@ -175,7 +175,7 @@ TEST(NavigationTracker, NavigationScheduledThenLoaded) {
   base::DictionaryValue dict;
   DeterminingLoadStateDevToolsClient client(false, true, std::string(), &dict);
   BrowserInfo browser_info;
-  JavaScriptDialogManager dialog_manager(&client);
+  JavaScriptDialogManager dialog_manager(&client, &browser_info);
   NavigationTracker tracker(
       &client, NavigationTracker::kNotLoading, &browser_info, &dialog_manager);
   base::DictionaryValue params;
@@ -206,7 +206,7 @@ TEST(NavigationTracker, NavigationScheduledForOtherFrame) {
   base::DictionaryValue dict;
   DeterminingLoadStateDevToolsClient client(false, true, std::string(), &dict);
   BrowserInfo browser_info;
-  JavaScriptDialogManager dialog_manager(&client);
+  JavaScriptDialogManager dialog_manager(&client, &browser_info);
   NavigationTracker tracker(
       &client, NavigationTracker::kNotLoading, &browser_info, &dialog_manager);
   base::DictionaryValue params_scheduled;
@@ -224,7 +224,7 @@ TEST(NavigationTracker, NavigationScheduledThenCancelled) {
   base::DictionaryValue dict;
   DeterminingLoadStateDevToolsClient client(false, true, std::string(), &dict);
   BrowserInfo browser_info;
-  JavaScriptDialogManager dialog_manager(&client);
+  JavaScriptDialogManager dialog_manager(&client, &browser_info);
   NavigationTracker tracker(
       &client, NavigationTracker::kNotLoading, &browser_info, &dialog_manager);
   base::DictionaryValue params;
@@ -249,7 +249,7 @@ TEST(NavigationTracker, NavigationScheduledTooFarAway) {
   base::DictionaryValue dict;
   DeterminingLoadStateDevToolsClient client(false, true, std::string(), &dict);
   BrowserInfo browser_info;
-  JavaScriptDialogManager dialog_manager(&client);
+  JavaScriptDialogManager dialog_manager(&client, &browser_info);
   NavigationTracker tracker(
       &client, NavigationTracker::kNotLoading, &browser_info, &dialog_manager);
 
@@ -267,7 +267,7 @@ TEST(NavigationTracker, DiscardScheduledNavigationsOnMainFrameCommit) {
   base::DictionaryValue dict;
   DeterminingLoadStateDevToolsClient client(false, true, std::string(), &dict);
   BrowserInfo browser_info;
-  JavaScriptDialogManager dialog_manager(&client);
+  JavaScriptDialogManager dialog_manager(&client, &browser_info);
   NavigationTracker tracker(
       &client, NavigationTracker::kNotLoading, &browser_info, &dialog_manager);
 
@@ -327,7 +327,7 @@ class FailToEvalScriptDevToolsClient : public StubDevToolsClient {
 TEST(NavigationTracker, UnknownStateFailsToDetermineState) {
   FailToEvalScriptDevToolsClient client;
   BrowserInfo browser_info;
-  JavaScriptDialogManager dialog_manager(&client);
+  JavaScriptDialogManager dialog_manager(&client, &browser_info);
   NavigationTracker tracker(&client, &browser_info, &dialog_manager);
   bool is_pending;
   ASSERT_EQ(kUnknownError,
@@ -339,7 +339,7 @@ TEST(NavigationTracker, UnknownStatePageNotLoadAtAll) {
   DeterminingLoadStateDevToolsClient client(
       true, true, std::string(), &params);
   BrowserInfo browser_info;
-  JavaScriptDialogManager dialog_manager(&client);
+  JavaScriptDialogManager dialog_manager(&client, &browser_info);
   NavigationTracker tracker(&client, &browser_info, &dialog_manager);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
 }
@@ -349,7 +349,7 @@ TEST(NavigationTracker, UnknownStateForcesStart) {
   DeterminingLoadStateDevToolsClient client(
       false, true, std::string(), &params);
   BrowserInfo browser_info;
-  JavaScriptDialogManager dialog_manager(&client);
+  JavaScriptDialogManager dialog_manager(&client, &browser_info);
   NavigationTracker tracker(&client, &browser_info, &dialog_manager);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
 }
@@ -360,7 +360,7 @@ TEST(NavigationTracker, UnknownStateForcesStartReceivesStop) {
   DeterminingLoadStateDevToolsClient client(
       false, true, "Page.frameStoppedLoading", &params);
   BrowserInfo browser_info;
-  JavaScriptDialogManager dialog_manager(&client);
+  JavaScriptDialogManager dialog_manager(&client, &browser_info);
   NavigationTracker tracker(&client, &browser_info, &dialog_manager);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", false));
 }
@@ -373,7 +373,7 @@ TEST(NavigationTracker, OnSuccessfulNavigate) {
   std::string version_string = "{\"Browser\": \"Chrome/44.0.2403.125\","
                                " \"WebKit-Version\": \"537.36 (@199461)\"}";
   ASSERT_TRUE(ParseBrowserInfo(version_string, &browser_info).IsOk());
-  JavaScriptDialogManager dialog_manager(&client);
+  JavaScriptDialogManager dialog_manager(&client, &browser_info);
   NavigationTracker tracker(
       &client, NavigationTracker::kNotLoading, &browser_info, &dialog_manager);
   base::DictionaryValue result;

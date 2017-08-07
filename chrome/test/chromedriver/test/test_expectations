@@ -137,10 +137,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'CombinedInputActionsTest.testMouseMovementWorksWhenNavigatingToAnotherPage',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1138
     'AlertsTest.testSettingTheValueOfAnAlertThrows',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1910
-    'AlertsTest.testPromptShouldUseDefaultValueIfNoKeysSent',
-    'UnexpectedAlertBehaviorTest.canAcceptUnhandledAlert',
-    'UnexpectedAlertBehaviorTest.canSpecifyUnhandledAlertBehaviourUsingCapabilities',
 ]
 
 _OS_NEGATIVE_FILTER = {}

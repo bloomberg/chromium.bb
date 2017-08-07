@@ -5,11 +5,14 @@
 #include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
 
 #include "base/values.h"
+#include "chrome/test/chromedriver/chrome/browser_info.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 
-JavaScriptDialogManager::JavaScriptDialogManager(DevToolsClient* client)
-    : client_(client) {
+JavaScriptDialogManager::JavaScriptDialogManager(
+    DevToolsClient* client,
+    const BrowserInfo* browser_info)
+    : client_(client), browser_info_(browser_info) {
   client_->AddListener(this);
 }
 
@@ -44,6 +47,8 @@ Status JavaScriptDialogManager::HandleDialog(bool accept,
   params.SetBoolean("accept", accept);
   if (text)
     params.SetString("promptText", *text);
+  else if (browser_info_->build_no >= 3175)
+    params.SetString("promptText", prompt_text_);
   Status status = client_->SendCommand("Page.handleJavaScriptDialog", params);
   if (status.IsError()) {
     // Retry once to work around
@@ -52,7 +57,6 @@ Status JavaScriptDialogManager::HandleDialog(bool accept,
     if (status.IsError())
       return status;
   }
-
   // Remove a dialog from the queue. Need to check the queue is not empty here,
   // because it could have been cleared during waiting for the command
   // response.
@@ -87,6 +91,13 @@ Status JavaScriptDialogManager::OnEvent(DevToolsClient* client,
       return Status(kUnknownError, "dialog has invalid 'type'");
 
     dialog_type_queue_.push_back(type);
+
+    if (browser_info_->build_no >= 3175) {
+      if (!params.GetString("defaultPrompt", &prompt_text_))
+        return Status(kUnknownError,
+                      "dialog event missing or invalid 'defaultPrompt'");
+    }
+
   } else if (method == "Page.javascriptDialogClosed") {
     // Inspector only sends this event when all dialogs have been closed.
     // Clear the unhandled queue in case the user closed a dialog manually.
