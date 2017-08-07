@@ -618,8 +618,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
 #if BUILDFLAG(ENABLE_WEBRTC)
     clear_webrtc_logs_.Start();
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::FILE, FROM_HERE,
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
         base::BindOnce(
             &WebRtcLogUtil::DeleteOldAndRecentWebRtcLogFiles,
             WebRtcLogList::GetWebRtcLogDirectoryForProfile(profile_->GetPath()),
