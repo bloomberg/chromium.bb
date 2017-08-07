@@ -15,6 +15,10 @@
     </message>
   </if>
 
+  <message name="IDS_NTP_ARTICLE_SUGGESTIONS_NOT_AVAILABLE" desc="On the New Tab Page, text of a toast transiently shown to the user to indicate that no article could be fetched.">
+    Articles aren't available right now
+  </message>
+
   <message name="IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER" desc="Header of the articles section, which is a list of news articles displayed as cards on the New Tab Page.">
     Articles for you
   </message>

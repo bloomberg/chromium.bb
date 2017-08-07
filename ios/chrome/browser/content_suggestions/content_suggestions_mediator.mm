@@ -245,7 +245,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
                         (ContentSuggestionsSectionInformation*)sectionInfo
                            callback:(MoreSuggestionsFetched)callback {
   if (![self isRelatedToContentSuggestionsService:sectionInfo]) {
-    callback(nil);
+    callback(nil, content_suggestions::StatusCodeNotRun);
     return;
   }
 
@@ -256,17 +256,17 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
       self.contentService->GetCategoryInfo([wrapper category]);
 
   if (!categoryInfo) {
-    callback(nil);
+    callback(nil, content_suggestions::StatusCodeNotRun);
     return;
   }
 
   switch (categoryInfo->additional_action()) {
     case ntp_snippets::ContentSuggestionsAdditionalAction::NONE:
-      callback(nil);
+      callback(nil, content_suggestions::StatusCodeNotRun);
       return;
 
     case ntp_snippets::ContentSuggestionsAdditionalAction::VIEW_ALL:
-      callback(nil);
+      callback(nil, content_suggestions::StatusCodeNotRun);
       if ([wrapper category].IsKnownCategory(
               ntp_snippets::KnownCategories::READING_LIST)) {
         [self.commandHandler openReadingList];
@@ -282,6 +282,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
       }
 
       if (known_suggestion_ids.size() == 0) {
+        callback(nil, content_suggestions::StatusCodeNotRun);
         // No elements in the section, reloads everything to have suggestions
         // for the next NTP. Fetch() do not store the new data.
         self.contentService->ReloadSuggestions();
@@ -505,7 +506,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
             fromCategory:category
              toItemArray:contentSuggestions];
   }
-  callback(contentSuggestions);
+  callback(contentSuggestions, ConvertStatusCode(statusCode));
 }
 
 // Returns whether the |sectionInfo| is associated with a category from the

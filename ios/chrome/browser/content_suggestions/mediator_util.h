@@ -11,6 +11,7 @@
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/status.h"
 #include "components/ntp_tiles/ntp_tile.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_source.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 
 namespace ntp_snippets {
@@ -72,5 +73,7 @@ ContentSuggestionsSectionInformation* LearnMoreSectionInformation();
 ContentSuggestionsMostVisitedItem* ConvertNTPTile(
     const ntp_tiles::NTPTile& tile,
     ContentSuggestionsSectionInformation* sectionInfo);
+
+content_suggestions::StatusCode ConvertStatusCode(ntp_snippets::Status status);
 
 #endif  // IOS_CHROME_BROWSER_CONTENT_SUGGESTIONS_MEDIATOR_UTIL_H_
