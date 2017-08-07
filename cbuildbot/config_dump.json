@@ -3594,6 +3594,190 @@
             "chrome_internal"
         ]
     },
+    "betty-arc64-chrome-pfq": {
+        "_template": "chrome_pfq",
+        "boards": [
+            "betty-arc64"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "manifest": "official.xml"
+    },
+    "betty-arc64-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "betty-arc64"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "betty-arc64-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "betty-arc64"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "betty-arc64-factory": {
+        "_template": "factory",
+        "boards": [
+            "betty-arc64"
+        ]
+    },
+    "betty-arc64-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "betty-arc64"
+        ],
+        "manifest": "official.xml"
+    },
+    "betty-arc64-full": {
+        "_template": "full",
+        "boards": [
+            "betty-arc64"
+        ],
+        "buildslave_type": "baremetal",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "betty-arc64-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "betty-arc64"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "betty-arc64-paladin": {
+        "_template": "paladin",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "betty-arc64"
+        ],
+        "buildslave_type": "baremetal",
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "betty-arc64-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "betty-arc64"
+        ]
+    },
+    "betty-arc64-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "betty-arc64"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "betty-arc64-release": {
+        "_template": "release",
+        "boards": [
+            "betty-arc64"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "betty-arc64-release-afdo": {
+        "_template": "release_afdo_generate",
+        "boards": [
+            "betty-arc64"
+        ],
+        "buildslave_type": "baremetal",
+        "child_configs": [
+            {
+                "_template": "release_afdo_generate",
+                "boards": [
+                    "betty-arc64"
+                ],
+                "grouped": true,
+                "name": "betty-arc64-release-afdo-generate"
+            },
+            {
+                "_template": "release_afdo_use",
+                "boards": [
+                    "betty-arc64"
+                ],
+                "grouped": true,
+                "name": "betty-arc64-release-afdo-use"
+            }
+        ]
+    },
+    "betty-arc64-release-afdo-generate": {
+        "_template": "release_afdo_generate",
+        "boards": [
+            "betty-arc64"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "betty-arc64-release-afdo-use": {
+        "_template": "release_afdo_use",
+        "boards": [
+            "betty-arc64"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "betty-arc64-tot-chrome-pfq-informational": {
+        "_template": "chrome_pfq_informational",
+        "boards": [
+            "betty-arc64"
+        ],
+        "buildslave_type": "baremetal",
+        "manifest": "official.xml"
+    },
+    "betty-arc64-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "betty-arc64"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "betty-arc64-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "betty-arc64"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
     "betty-chrome-pfq": {
         "_template": "chrome_pfq",
         "active_waterfall": "chromeos",
@@ -14818,6 +15002,7 @@
             "auron_paine-paladin",
             "auron_yuna-paladin",
             "beaglebone-paladin",
+            "betty-arc64-paladin",
             "betty-paladin",
             "bob-paladin",
             "butterfly-paladin",
@@ -15937,6 +16122,189 @@
         "_template": "unittest_stress",
         "boards": [
             "ninja"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "novato-arc64-chrome-pfq": {
+        "_template": "chrome_pfq",
+        "boards": [
+            "novato-arc64"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "manifest": "official.xml"
+    },
+    "novato-arc64-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "novato-arc64"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "novato-arc64-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "novato-arc64"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "novato-arc64-factory": {
+        "_template": "factory",
+        "boards": [
+            "novato-arc64"
+        ]
+    },
+    "novato-arc64-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "novato-arc64"
+        ],
+        "manifest": "official.xml"
+    },
+    "novato-arc64-full": {
+        "_template": "full",
+        "boards": [
+            "novato-arc64"
+        ],
+        "buildslave_type": "baremetal",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "novato-arc64-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "novato-arc64"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "novato-arc64-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "novato-arc64"
+        ],
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "novato-arc64-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "novato-arc64"
+        ]
+    },
+    "novato-arc64-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "novato-arc64"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "novato-arc64-release": {
+        "_template": "release",
+        "boards": [
+            "novato-arc64"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "novato-arc64-release-afdo": {
+        "_template": "release_afdo_generate",
+        "boards": [
+            "novato-arc64"
+        ],
+        "buildslave_type": "baremetal",
+        "child_configs": [
+            {
+                "_template": "release_afdo_generate",
+                "boards": [
+                    "novato-arc64"
+                ],
+                "grouped": true,
+                "name": "novato-arc64-release-afdo-generate"
+            },
+            {
+                "_template": "release_afdo_use",
+                "boards": [
+                    "novato-arc64"
+                ],
+                "grouped": true,
+                "name": "novato-arc64-release-afdo-use"
+            }
+        ]
+    },
+    "novato-arc64-release-afdo-generate": {
+        "_template": "release_afdo_generate",
+        "boards": [
+            "novato-arc64"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "novato-arc64-release-afdo-use": {
+        "_template": "release_afdo_use",
+        "boards": [
+            "novato-arc64"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "novato-arc64-tot-chrome-pfq-informational": {
+        "_template": "chrome_pfq_informational",
+        "boards": [
+            "novato-arc64"
+        ],
+        "buildslave_type": "baremetal",
+        "manifest": "official.xml"
+    },
+    "novato-arc64-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "novato-arc64"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "novato-arc64-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "novato-arc64"
         ],
         "internal": true,
         "manifest": "official.xml",

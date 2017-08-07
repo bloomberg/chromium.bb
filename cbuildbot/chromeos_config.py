@@ -529,6 +529,7 @@ _x86_internal_release_boards = frozenset([
     'banjo',
     'banon',
     'betty',
+    'betty-arc64',
     'buddy',
     'butterfly',
     'candy',
@@ -574,6 +575,7 @@ _x86_internal_release_boards = frozenset([
     'newbie',
     'ninja',
     'novato',
+    'novato-arc64',
     'orco',
     'panther',
     'parrot',
@@ -638,6 +640,7 @@ _cheets_x86_boards = frozenset([
     'auron_yuna',
     'banon',
     'betty',
+    'betty-arc64',
     'buddy',
     'cave',
     'celes',
@@ -656,6 +659,7 @@ _cheets_x86_boards = frozenset([
     'lulu',
     'newbie',
     'novato',
+    'novato-arc64',
     'poppy',
     'pyro',
     'reef',
@@ -729,9 +733,11 @@ _no_unittest_boards = frozenset((
 _cheets_vmtest_boards = frozenset([
     'amd64-generic-cheets',
     'betty',
+    'betty-arc64',
     'cyan',
     'newbie',
     'novato',
+    'novato-arc64',
 ])
 
 # This is a list of configs that should be included on the main waterfall, but
@@ -2289,6 +2295,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # from landing, a red paladin from a bad CL in the CQ is a working paladin.
   _paladin_new_boards = frozenset([
       'auron_paine',
+      'betty-arc64',
       'kevin',
       'reef-uni',
   ])
@@ -2325,6 +2332,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'amd64-generic',
       'x86-generic',
       'betty',
+      'betty-arc64',
   ])
 
   _paladin_default_vmtest_boards = frozenset([
