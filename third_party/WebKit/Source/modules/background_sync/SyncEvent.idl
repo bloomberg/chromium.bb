@@ -6,8 +6,7 @@
 
 [
     Constructor(DOMString type, SyncEventInit init),
-    Exposed=ServiceWorker,
-    RuntimeEnabled=BackgroundSync
+    Exposed=ServiceWorker
 ] interface SyncEvent : ExtendableEvent {
     readonly attribute DOMString tag;
     readonly attribute boolean lastChance;
