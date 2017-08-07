@@ -6111,7 +6111,7 @@ class CompositedSelectionBoundsTest : public ParameterizedWebFrameTest {
     // selection behavior. However, such deviations from the expected value
     // should be consistent for the corresponding y coordinates.
     int y_bottom_epsilon = 0;
-    if (expected_result.Length() >= 13) {
+    if (expected_result.Length() == 13) {
       y_bottom_epsilon = expected_result.Get(context, 12)
                              .ToLocalChecked()
                              .As<v8::Int32>()
@@ -6122,20 +6122,6 @@ class CompositedSelectionBoundsTest : public ParameterizedWebFrameTest {
     EXPECT_GE(y_bottom_epsilon, std::abs(y_bottom_deviation));
     EXPECT_EQ(y_bottom_deviation,
               end_edge_bottom_in_layer_y - select_end->edge_bottom_in_layer.y);
-
-    if (expected_result.Length() >= 15) {
-      bool start_hidden = expected_result.Get(context, 13)
-                              .ToLocalChecked()
-                              .As<v8::Boolean>()
-                              ->Value();
-      bool end_hidden = expected_result.Get(context, 14)
-                            .ToLocalChecked()
-                            .As<v8::Boolean>()
-                            ->Value();
-
-      EXPECT_EQ(start_hidden, select_start->hidden);
-      EXPECT_EQ(end_hidden, select_end->hidden);
-    }
   }
 
   void RunTestWithMultipleFiles(const char* test_file, ...) {
@@ -6191,15 +6177,7 @@ TEST_P(CompositedSelectionBoundsTest, Editable) {
 TEST_P(CompositedSelectionBoundsTest, EditableDiv) {
   RunTest("composited_selection_bounds_editable_div.html");
 }
-// TODO(chrishtr): constants vary by platform.
-#if defined(OS_LINUX)
-TEST_P(CompositedSelectionBoundsTest, Input) {
-  RunTest("composited_selection_bounds_input.html");
-}
-TEST_P(CompositedSelectionBoundsTest, InputScrolled) {
-  RunTest("composited_selection_bounds_input_scrolled.html");
-}
-#endif
+
 class DisambiguationPopupTestWebViewClient
     : public FrameTestHelpers::TestWebViewClient {
  public:

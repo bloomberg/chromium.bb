@@ -2012,29 +2012,22 @@ static gfx::SelectionBound ComputeViewportSelectionBound(
   viewport_bound.SetEdgeTop(gfx::ScalePoint(screen_top, inv_scale));
   viewport_bound.SetEdgeBottom(gfx::ScalePoint(screen_bottom, inv_scale));
 
-  // If |layer_bound| is already hidden due to being occluded by painted content
-  // within the layer, it must remain hidden. Otherwise, check whether its
-  // position is outside the bounds of the layer.
-  if (layer_bound.hidden) {
-    viewport_bound.set_visible(false);
-  } else {
-    // The bottom edge point is used for visibility testing as it is the logical
-    // focal point for bound selection handles (this may change in the future).
-    // Shifting the visibility point fractionally inward ensures that
-    // neighboring or logically coincident layers aligned to integral DPI
-    // coordinates will not spuriously occlude the bound.
-    gfx::Vector2dF visibility_offset = layer_top - layer_bottom;
-    visibility_offset.Scale(device_scale_factor / visibility_offset.Length());
-    gfx::PointF visibility_point = layer_bottom + visibility_offset;
-    if (visibility_point.x() <= 0)
-      visibility_point.set_x(visibility_point.x() + device_scale_factor);
-    visibility_point =
-        MathUtil::MapPoint(screen_space_transform, visibility_point, &clipped);
+  // The bottom edge point is used for visibility testing as it is the logical
+  // focal point for bound selection handles (this may change in the future).
+  // Shifting the visibility point fractionally inward ensures that neighboring
+  // or logically coincident layers aligned to integral DPI coordinates will not
+  // spuriously occlude the bound.
+  gfx::Vector2dF visibility_offset = layer_top - layer_bottom;
+  visibility_offset.Scale(device_scale_factor / visibility_offset.Length());
+  gfx::PointF visibility_point = layer_bottom + visibility_offset;
+  if (visibility_point.x() <= 0)
+    visibility_point.set_x(visibility_point.x() + device_scale_factor);
+  visibility_point =
+      MathUtil::MapPoint(screen_space_transform, visibility_point, &clipped);
 
-    float intersect_distance = 0.f;
-    viewport_bound.set_visible(
-        PointHitsLayer(layer, visibility_point, &intersect_distance));
-  }
+  float intersect_distance = 0.f;
+  viewport_bound.set_visible(
+      PointHitsLayer(layer, visibility_point, &intersect_distance));
 
   return viewport_bound;
 }
