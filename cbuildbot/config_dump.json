@@ -1351,7 +1351,6 @@
         "boards": [
             "amd64-generic-cheets"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -1562,7 +1561,6 @@
         "boards": [
             "amd64-generic-goofy"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -1693,8 +1691,7 @@
         "_template": "pre_cq",
         "boards": [
             "amd64-generic"
-        ],
-        "buildslave_type": "baremetal"
+        ]
     },
     "amd64-generic-telem-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
@@ -2222,7 +2219,6 @@
         "boards": [
             "asuka"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -2409,7 +2405,6 @@
         "boards": [
             "auron"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -2991,7 +2986,6 @@
         "boards": [
             "banjo"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -3718,7 +3712,6 @@
         "boards": [
             "betty"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -3840,7 +3833,6 @@
         ],
         "build_packages_in_background": true,
         "build_type": "pre_cq",
-        "buildslave_type": "baremetal",
         "chrome_sdk_build_chrome": false,
         "cpe_export": false,
         "debug_symbols": false,
@@ -4415,7 +4407,6 @@
         "boards": [
             "butterfly"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -4602,7 +4593,6 @@
         "boards": [
             "candy"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -4737,8 +4727,7 @@
         "_template": "pre_cq",
         "boards": [
             "caroline-arc64"
-        ],
-        "buildslave_type": "baremetal"
+        ]
     },
     "caroline-arc64-release": {
         "_template": "release",
@@ -4901,7 +4890,6 @@
         "boards": [
             "caroline"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -5042,8 +5030,7 @@
         "_template": "pre_cq",
         "boards": [
             "caroline-userdebug"
-        ],
-        "buildslave_type": "baremetal"
+        ]
     },
     "caroline-userdebug-release": {
         "_template": "release",
@@ -5851,7 +5838,6 @@
         "boards": [
             "clapper"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -6423,7 +6409,6 @@
         "boards": [
             "cyan"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -7653,7 +7638,6 @@
         "boards": [
             "enguarde"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -8036,7 +8020,6 @@
         "boards": [
             "expresso"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -8247,7 +8230,6 @@
         "boards": [
             "falco"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -8434,7 +8416,6 @@
         "boards": [
             "falco_li"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -9334,7 +9315,6 @@
         "boards": [
             "glimmer"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -9521,7 +9501,6 @@
         "boards": [
             "gnawty"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -10049,7 +10028,6 @@
         "boards": [
             "guado"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -10236,7 +10214,6 @@
         "boards": [
             "guado_labstation"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -10870,7 +10847,6 @@
         "boards": [
             "heli"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -11251,7 +11227,6 @@
         "boards": [
             "jecht"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -11631,7 +11606,6 @@
         "boards": [
             "kefka"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -12039,7 +12013,6 @@
         "boards": [
             "kip"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -13844,7 +13817,6 @@
         "boards": [
             "leon"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -14072,7 +14044,6 @@
         "boards": [
             "link"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -14511,7 +14482,6 @@
         "boards": [
             "lumpy"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -15178,7 +15148,6 @@
         "boards": [
             "mccloud"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -15272,7 +15241,6 @@
         "boards": [
             "winky"
         ],
-        "buildslave_type": "baremetal",
         "child_configs": [
             {
                 "_template": "wificell_pre_cq",
@@ -15444,7 +15412,6 @@
         "boards": [
             "monroe"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -15706,7 +15673,6 @@
         "boards": [
             "newbie"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -15892,7 +15858,6 @@
         "boards": [
             "ninja"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -16079,7 +16044,6 @@
         "boards": [
             "novato"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -17437,7 +17401,6 @@
         "boards": [
             "orco"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -17624,7 +17587,6 @@
         "boards": [
             "panther"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -17834,7 +17796,6 @@
         "boards": [
             "parrot"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -18021,7 +17982,6 @@
         "boards": [
             "parrot_ivb"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -18659,7 +18619,6 @@
         "boards": [
             "peppy"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -18845,7 +18804,6 @@
         "boards": [
             "plaso"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -19457,7 +19415,6 @@
         "boards": [
             "quawks"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -19652,7 +19609,6 @@
         "boards": [
             "rambi"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -20494,7 +20450,6 @@
         "boards": [
             "relm"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -20681,7 +20636,6 @@
         "boards": [
             "rikku"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -22105,7 +22059,6 @@
         "boards": [
             "slippy"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -22983,7 +22936,6 @@
         "boards": [
             "squawks"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -23173,7 +23125,6 @@
         "boards": [
             "stout"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -23362,7 +23313,6 @@
         "boards": [
             "stumpy"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -23555,7 +23505,6 @@
         "boards": [
             "sumo"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -23742,7 +23691,6 @@
         "boards": [
             "swanky"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -24477,7 +24425,6 @@
         "boards": [
             "tidus"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -24670,7 +24617,6 @@
         "boards": [
             "tricky"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -27461,7 +27407,6 @@
         "boards": [
             "winky"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -27555,7 +27500,6 @@
         "boards": [
             "winky"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -27864,7 +27808,6 @@
         "boards": [
             "wolf"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -28183,7 +28126,6 @@
         "boards": [
             "x32-generic"
         ],
-        "buildslave_type": "baremetal",
         "usepkg_toolchain": false
     },
     "x32-generic-tot-chromium-pfq-informational": {
@@ -28302,7 +28244,6 @@
         "boards": [
             "x86-alex"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -28486,7 +28427,6 @@
         "boards": [
             "x86-alex_he"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -28665,8 +28605,7 @@
         "_template": "pre_cq",
         "boards": [
             "x86-generic"
-        ],
-        "buildslave_type": "baremetal"
+        ]
     },
     "x86-generic-telem-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
@@ -28810,7 +28749,6 @@
         "boards": [
             "x86-mario"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -28994,7 +28932,6 @@
         "boards": [
             "x86-zgb"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -29178,7 +29115,6 @@
         "boards": [
             "x86-zgb_he"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -29362,7 +29298,6 @@
         "boards": [
             "zako"
         ],
-        "buildslave_type": "baremetal",
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",

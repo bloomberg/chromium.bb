@@ -1159,6 +1159,7 @@ def GeneralTemplates(site_config, ge_build_config):
       vm_tests_override=None,
       gce_tests=[config_lib.GCETestConfig(constants.GCE_SANITY_TEST_TYPE),
                  config_lib.GCETestConfig(constants.GCE_SMOKE_TEST_TYPE)],
+      buildslave_type=constants.BAREMETAL_BUILD_SLAVE_TYPE
   )
 
   # Test customizations for lakitu boards' paladin builders.
@@ -3649,7 +3650,7 @@ def EnsureVmTestsOnBaremetal(site_config, _gs_build_config):
   """
   for c in site_config.itervalues():
     # We can only run vmtests on baremetal, so ensure we have it.
-    if c.vm_tests:
+    if c.vm_tests and c.build_type != 'pre_cq':
       c['buildslave_type'] = constants.BAREMETAL_BUILD_SLAVE_TYPE
 
 
