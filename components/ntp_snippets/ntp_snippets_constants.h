@@ -13,8 +13,6 @@ namespace ntp_snippets {
 // the name of the folder, not a full path - it must be appended to e.g. the
 // profile path.
 extern const base::FilePath::CharType kDatabaseFolder[];
-// TODO(mamir): Check if the same DB can be used.
-extern const base::FilePath::CharType kBreakingNewsDatabaseFolder[];
 
 // OAuth access token scope.
 extern const char kContentSuggestionsApiScope[];
