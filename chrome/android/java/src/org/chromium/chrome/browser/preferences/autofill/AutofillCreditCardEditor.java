@@ -44,7 +44,9 @@ abstract class AutofillCreditCardEditor extends AutofillEditorBase {
         List<AutofillProfile> profiles = PersonalDataManager.getInstance().getProfilesForSettings();
         for (int i = 0; i < profiles.size(); i++) {
             AutofillProfile profile = profiles.get(i);
-            if (profile.getIsLocal()) profilesAdapter.add(profile);
+            if (profile.getIsLocal() && !TextUtils.isEmpty(profile.getStreetAddress())) {
+                profilesAdapter.add(profile);
+            }
         }
 
         mBillingAddress =
