@@ -9547,12 +9547,12 @@ TEST_P(ParameterizedWebFrameTest, WindowOpenRemoteClose) {
 
   // Attempt to close the window, which should fail as it isn't opened
   // by a script.
-  remote_frame->DomWindow()->close(local_frame->GetDocument());
+  remote_frame->DomWindow()->close(local_frame->DomWindow());
   EXPECT_FALSE(view_client.Closed());
 
   // Marking it as opened by a script should now allow it to be closed.
   remote_frame->GetPage()->SetOpenedByDOM();
-  remote_frame->DomWindow()->close(local_frame->GetDocument());
+  remote_frame->DomWindow()->close(local_frame->DomWindow());
   EXPECT_TRUE(view_client.Closed());
 }
 

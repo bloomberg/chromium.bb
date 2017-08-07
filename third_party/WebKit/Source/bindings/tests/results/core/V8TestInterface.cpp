@@ -263,7 +263,9 @@ static void testEnumAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
       "EnumValue3",
   };
   if (!IsValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", dummyExceptionState)) {
-    CurrentExecutionContext(isolate)->AddConsoleMessage(ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel, dummyExceptionState.Message()));
+    ExecutionContext::ForCurrentRealm(info)->AddConsoleMessage(
+        ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+                               dummyExceptionState.Message()));
     return;
   }
 
@@ -998,7 +1000,7 @@ static void partialCallWithExecutionContextLongAttributeAttributeGetter(const v8
 
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExecutionContext* executionContext = CurrentExecutionContext(info.GetIsolate());
+  ExecutionContext* executionContext = ExecutionContext::ForRelevantRealm(info);
 
   V8SetReturnValueInt(info, TestInterfacePartial::partialCallWithExecutionContextLongAttribute(executionContext, *impl));
 }
@@ -1019,7 +1021,7 @@ static void partialCallWithExecutionContextLongAttributeAttributeSetter(v8::Loca
   if (exceptionState.HadException())
     return;
 
-  ExecutionContext* executionContext = CurrentExecutionContext(isolate);
+  ExecutionContext* executionContext = ExecutionContext::ForRelevantRealm(info);
 
   TestInterfacePartial::setPartialCallWithExecutionContextLongAttribute(executionContext, *impl, cppValue);
 }
@@ -1056,7 +1058,9 @@ static void partialPartialEnumTypeAttributeAttributeSetter(v8::Local<v8::Value> 
       "bar",
   };
   if (!IsValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "PartialEnumType", dummyExceptionState)) {
-    CurrentExecutionContext(isolate)->AddConsoleMessage(ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel, dummyExceptionState.Message()));
+    ExecutionContext::ForCurrentRealm(info)->AddConsoleMessage(
+        ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+                               dummyExceptionState.Message()));
     return;
   }
 
@@ -1733,7 +1737,7 @@ static void implementsComplexMethodMethod(const v8::FunctionCallbackInfo<v8::Val
     return;
   }
 
-  ExecutionContext* executionContext = CurrentExecutionContext(info.GetIsolate());
+  ExecutionContext* executionContext = ExecutionContext::ForRelevantRealm(info);
   TestInterfaceEmpty* result = impl->implementsComplexMethod(executionContext, strArg, testInterfaceEmptyArg, exceptionState);
   if (exceptionState.HadException()) {
     return;
@@ -1794,7 +1798,7 @@ static void partialCallWithExecutionContextRaisesExceptionVoidMethodMethod(const
 
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
 
-  ExecutionContext* executionContext = CurrentExecutionContext(info.GetIsolate());
+  ExecutionContext* executionContext = ExecutionContext::ForRelevantRealm(info);
   TestInterfacePartial::partialCallWithExecutionContextRaisesExceptionVoidMethod(executionContext, *impl, exceptionState);
   if (exceptionState.HadException()) {
     return;

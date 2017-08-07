@@ -99,8 +99,13 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% endif %}
 
   {% if attribute.is_call_with_execution_context %}
-  ExecutionContext* executionContext = CurrentExecutionContext(info.GetIsolate());
+  {% if attribute.is_static %}
+  ExecutionContext* executionContext = ExecutionContext::ForCurrentRealm(info);
+  {% else %}
+  ExecutionContext* executionContext = ExecutionContext::ForRelevantRealm(info);
   {% endif %}
+  {% endif %}
+
   {% if attribute.is_call_with_script_state %}
   {% if attribute.is_static %}
   ScriptState* scriptState = ScriptState::ForFunctionObject(info);
@@ -108,6 +113,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   ScriptState* scriptState = ScriptState::ForReceiverObject(info);
   {% endif %}
   {% endif %}
+
   {% if attribute.is_getter_raises_exception %}
   {{define_exception_state}}
   {% endif %}
@@ -386,13 +392,20 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   DummyExceptionStateForTesting dummyExceptionState;
   {{declare_enum_validation_variable(attribute.enum_values) | indent(2)}}
   if (!IsValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "{{attribute.enum_type}}", dummyExceptionState)) {
-    CurrentExecutionContext(isolate)->AddConsoleMessage(ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel, dummyExceptionState.Message()));
+    ExecutionContext::ForCurrentRealm(info)->AddConsoleMessage(
+        ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+                               dummyExceptionState.Message()));
     return;
   }
   {% endif %}
 
-  {% if attribute.is_call_with_execution_context or attribute.is_setter_call_with_execution_context %}
-  ExecutionContext* executionContext = CurrentExecutionContext(isolate);
+  {% if attribute.is_call_with_execution_context or
+        attribute.is_setter_call_with_execution_context %}
+  {% if attribute.is_static %}
+  ExecutionContext* executionContext = ExecutionContext::ForCurrentRealm(info);
+  {% else %}
+  ExecutionContext* executionContext = ExecutionContext::ForRelevantRealm(info);
+  {% endif %}
   {% endif %}
 
   {% if attribute.is_call_with_script_state %}

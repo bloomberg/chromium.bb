@@ -140,7 +140,7 @@ static void hrefCallWithAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
   if (!cppValue.Prepare())
     return;
 
-  ExecutionContext* executionContext = CurrentExecutionContext(isolate);
+  ExecutionContext* executionContext = ExecutionContext::ForRelevantRealm(info);
 
   impl->setHrefCallWith(executionContext, CurrentDOMWindow(info.GetIsolate()), EnteredDOMWindow(info.GetIsolate()), cppValue);
 }

@@ -100,7 +100,7 @@ void PresentationReceiver::TerminateConnection() {
   if (!window || window->closed())
     return;
 
-  window->close(GetFrame()->GetDocument());
+  window->close(window);
 }
 
 void PresentationReceiver::RemoveConnection(
