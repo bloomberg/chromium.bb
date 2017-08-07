@@ -683,7 +683,8 @@ class Port(object):
         suites = self.virtual_test_suites()
         if paths:
             tests.extend(self._virtual_tests_matching_paths(paths, suites))
-            tests.extend(self._wpt_test_urls_matching_paths(paths))
+            if any('external' in path for path in paths):
+                tests.extend(self._wpt_test_urls_matching_paths(paths))
         else:
             tests.extend(self._all_virtual_tests(suites))
             tests.extend(['external/wpt' + test for test in self._wpt_manifest().all_urls()])
