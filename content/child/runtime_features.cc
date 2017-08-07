@@ -356,6 +356,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       base::FeatureList::IsEnabled(features::kNetworkService))
     WebRuntimeFeatures::EnableLoadingWithMojo(true);
 
+  if (base::FeatureList::IsEnabled(features::kOutOfBlinkCORS))
+    WebRuntimeFeatures::EnableOutOfBlinkCORS(true);
+
   WebRuntimeFeatures::EnableMediaCastOverlayButton(
       base::FeatureList::IsEnabled(media::kMediaCastOverlayButton));
 

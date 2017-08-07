@@ -551,7 +551,7 @@
   {
     "prefix": "outofblink-cors",
     "base": "webexposed",
-    "args": ["--enable-blink-features=OutOfBlinkCORS"]
+    "args": ["--enable-features=OutOfBlinkCORS"]
   },
   {
     "prefix": "presentation",

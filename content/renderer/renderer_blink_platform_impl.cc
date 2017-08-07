@@ -329,7 +329,7 @@ std::unique_ptr<blink::WebURLLoader> RendererBlinkPlatformImpl::CreateURLLoader(
 
     // Attach the CORS-enabled URLLoader if we use the default (non-custom)
     // network URLLoader.
-    if (request.ShouldProcessCORSOutOfBlink()) {
+    if (base::FeatureList::IsEnabled(features::kOutOfBlinkCORS)) {
       mojom::URLLoaderFactoryPtr factory_ptr;
       CORSURLLoaderFactory::CreateAndBind(std::move(url_loader_factory_),
                                           mojo::MakeRequest(&factory_ptr));

@@ -22848,6 +22848,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1467332609" label="tab-management-experiment-type-anise"/>
   <int value="-1466990325" label="CrosCompUpdates:enabled"/>
   <int value="-1463410070" label="IPH_DemoMode:enabled"/>
+  <int value="-1461261930" label="OutOfBlinkCORS:disabled"/>
   <int value="-1460462432" label="disable-media-source"/>
   <int value="-1456004000" label="VrShell:disabled"/>
   <int value="-1450576851" label="OmniboxUIExperimentVerticalLayout:enabled"/>
@@ -23079,6 +23080,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-716953514" label="disable-password-separated-signin-flow"/>
   <int value="-715733307" label="force-effective-connection-type"/>
   <int value="-714710496" label="VideoFullscreenOrientationLock:disabled"/>
+  <int value="-714043324" label="OutOfBlinkCORS:enabled"/>
   <int value="-711890895" label="enable-website-settings-manager"/>
   <int value="-709058455" label="ui-slow-animations"/>
   <int value="-702477233" label="ContentFullscreen:enabled"/>

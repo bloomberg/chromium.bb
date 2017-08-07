@@ -3227,6 +3227,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNetworkServiceDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kNetworkService)},
 
+    {"out-of-blink-cors", flag_descriptions::kEnableOutOfBlinkCORSName,
+     flag_descriptions::kEnableOutOfBlinkCORSDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kOutOfBlinkCORS)},
+
 #if defined(OS_ANDROID)
     {"use-ddljson-api", flag_descriptions::kUseDdljsonApiName,
      flag_descriptions::kUseDdljsonApiDescription, kOsAndroid,
