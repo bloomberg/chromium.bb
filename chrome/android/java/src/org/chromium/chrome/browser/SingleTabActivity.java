@@ -93,13 +93,13 @@ public abstract class SingleTabActivity extends ChromeActivity {
         if (tabId != Tab.INVALID_TAB_ID && tabUrl != null && getActivityDirectory() != null) {
             // Restore the tab.
             TabState tabState = TabState.restoreTabState(getActivityDirectory(), tabId);
-            tab = new Tab(tabId, Tab.INVALID_TAB_ID, false, this, getWindowAndroid(),
+            tab = new Tab(tabId, Tab.INVALID_TAB_ID, false, getWindowAndroid(),
                     TabLaunchType.FROM_RESTORE, TabCreationState.FROZEN_ON_RESTORE, tabState);
             unfreeze = true;
         }
 
         if (tab == null) {
-            tab = new Tab(Tab.INVALID_TAB_ID, Tab.INVALID_TAB_ID, false, this, getWindowAndroid(),
+            tab = new Tab(Tab.INVALID_TAB_ID, Tab.INVALID_TAB_ID, false, getWindowAndroid(),
                     TabLaunchType.FROM_CHROME_UI, null, null);
         }
 

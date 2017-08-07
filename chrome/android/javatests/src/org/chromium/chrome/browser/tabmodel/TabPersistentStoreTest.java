@@ -101,8 +101,8 @@ public class TabPersistentStoreTest {
         @Override
         public Tab createNewTab(
                 LoadUrlParams loadUrlParams, TabModel.TabLaunchType type, Tab parent) {
-            Tab tab = Tab.createTabForLazyLoad(null, mIsIncognito, null,
-                    TabLaunchType.FROM_LINK, Tab.INVALID_TAB_ID, loadUrlParams);
+            Tab tab = Tab.createTabForLazyLoad(
+                    mIsIncognito, null, TabLaunchType.FROM_LINK, Tab.INVALID_TAB_ID, loadUrlParams);
             mSelector.getModel(mIsIncognito).addTab(tab, TabModel.INVALID_TAB_INDEX, type);
             storeTabInfo(null, tab.getId());
             return tab;
@@ -111,7 +111,7 @@ public class TabPersistentStoreTest {
         @Override
         public Tab createFrozenTab(TabState state, int id, int index) {
             Tab tab = Tab.createFrozenTabFromState(
-                    id, null, state.isIncognito(), null, state.parentId, state);
+                    id, state.isIncognito(), null, state.parentId, state);
             mSelector.getModel(mIsIncognito).addTab(tab, index, TabLaunchType.FROM_RESTORE);
             storeTabInfo(state, id);
             return tab;
