@@ -65,6 +65,8 @@ test("ui_arc_unittests") {
     "//base",
     "//base/test:test_support",
     "//components/arc:arc_test_support",
+    "//components/exo",
+    "//components/exo:test_support",
     "//mojo/edk/system",
     "//testing/gtest",
     "//ui/aura:test_support",
