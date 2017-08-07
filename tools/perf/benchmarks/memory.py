@@ -7,6 +7,7 @@ import re
 from core import perf_benchmark
 
 from telemetry import benchmark
+from telemetry import story
 from telemetry.timeline import chrome_trace_category_filter
 from telemetry.timeline import chrome_trace_config
 from telemetry.web_perf import timeline_based_measurement
@@ -81,7 +82,10 @@ class MemoryBenchmarkTrivialSitesDesktop(_MemoryInfra):
     return not _IGNORED_STATS_RE.search(value.name)
 
   def GetExpectations(self):
-    return page_sets.TrivialSitesMemoryStoryExpectations()
+    class StoryExpectations(story.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing disabled.
+    return StoryExpectations()
 
 
 @benchmark.Enabled('android')  # catapult:#3176
@@ -110,7 +114,10 @@ class MemoryBenchmarkTop10Mobile(_MemoryInfra):
     return not _IGNORED_STATS_RE.search(value.name)
 
   def GetExpectations(self):
-    return page_sets.MemoryTop10MobileStoryExpectations()
+    class StoryExpectations(story.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing disabled.
+    return StoryExpectations()
 
 
 class _MemoryV8Benchmark(_MemoryInfra):
@@ -164,7 +171,10 @@ class MemoryLongRunningIdleGmail(_MemoryV8Benchmark):
               possible_browser.platform.GetDeviceTypeName() == 'Nexus 5')))
 
   def GetExpectations(self):
-    return page_sets.LongRunningIdleGmailStoryExpectations()
+    class StoryExpectations(story.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing disabled.
+    return StoryExpectations()
 
 
 @benchmark.Enabled('has tabs')  # http://crbug.com/612210
@@ -183,4 +193,7 @@ class MemoryLongRunningIdleGmailBackground(_MemoryV8Benchmark):
     return cls.IsSvelte(possible_browser)
 
   def GetExpectations(self):
-    return page_sets.LongRunningIdleGmailBackgroundStoryExpectations()
+    class StoryExpectations(story.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing disabled.
+    return StoryExpectations()

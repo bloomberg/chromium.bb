@@ -287,7 +287,15 @@ class SmoothnessKeySilkCases(_Smoothness):
     return stories
 
   def GetExpectations(self):
-     return page_sets.KeySilkCasesStoryExpectations()
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        self.DisableStory('https://polymer-topeka.appspot.com/',
+                          [story_module.expectations.ALL], 'crbug.com/507865')
+        self.DisableStory('http://plus.google.com/app/basic/stream',
+                          [story_module.expectations.ALL], 'crbug.com/338838')
+        self.DisableStory('inbox_app.html?slide_drawer',
+                          [story_module.expectations.ALL], 'crbug.com/446332')
+    return StoryExpectations()
 
 
 @benchmark.Enabled('android')
