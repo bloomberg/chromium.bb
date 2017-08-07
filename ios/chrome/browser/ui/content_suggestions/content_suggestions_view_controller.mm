@@ -203,6 +203,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 }
 
 - (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
   // Update the shadow bar.
   [self.audience contentOffsetDidChange];
 }
