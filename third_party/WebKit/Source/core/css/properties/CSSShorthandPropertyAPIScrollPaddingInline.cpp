@@ -10,11 +10,12 @@
 namespace blink {
 
 bool CSSShorthandPropertyAPIScrollPaddingInline::ParseShorthand(
+    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     bool,
-    HeapVector<CSSProperty, 256>& properties) {
+    HeapVector<CSSProperty, 256>& properties) const {
   return CSSPropertyParserHelpers::ConsumeShorthandVia2LonghandAPIs(
       scrollPaddingInlineShorthand(), important, context, range, properties);
 }
