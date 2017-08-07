@@ -874,10 +874,6 @@
     "label": "//chrome/test:sync_integration_tests",
     "type": "windowed_test_launcher",
   },
-  "system_webview_apk": {
-    "label": "//android_webview:system_webview_apk",
-    "type": "additional_compile_target",
-  },
   "system_webview_shell_layout_test_apk": {
     "label": "//android_webview/tools/system_webview_shell:system_webview_shell_layout_test_apk",
     "type": "console_test_launcher",
