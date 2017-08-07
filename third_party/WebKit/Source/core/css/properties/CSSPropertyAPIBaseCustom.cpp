@@ -58,12 +58,6 @@ const CSSValue* CSSPropertyAPI::ParseSingleValue(
     case CSSPropertyMaxHeight:
       return CSSPropertyLengthUtils::ConsumeMaxWidthOrHeight(
           range, context, CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
-    case CSSPropertyMinWidth:
-    case CSSPropertyMinHeight:
-    case CSSPropertyWidth:
-    case CSSPropertyHeight:
-      return CSSPropertyLengthUtils::ConsumeWidthOrHeight(
-          range, context, CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
     case CSSPropertyTextDecoration:
       DCHECK(!RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
       return CSSPropertyTextDecorationLineUtils::ConsumeTextDecorationLine(
