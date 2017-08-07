@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_async_task_scheduler.h"
+#include "base/test/scoped_task_environment.h"
 #include "ios/web/public/test/test_web_thread.h"
 #include "ios/web/web_thread_impl.h"
 
@@ -47,40 +47,41 @@ TestWebThreadBundle::~TestWebThreadBundle() {
   ui_thread_.reset();
   base::RunLoop().RunUntilIdle();
 
-  scoped_async_task_scheduler_.reset();
+  scoped_task_environment_.reset();
 }
 
 void TestWebThreadBundle::Init(int options) {
-  if (options & TestWebThreadBundle::IO_MAINLOOP) {
-    message_loop_.reset(new base::MessageLoopForIO());
-  } else {
-    message_loop_.reset(new base::MessageLoopForUI());
-  }
+  scoped_task_environment_ =
+      base::MakeUnique<base::test::ScopedTaskEnvironment>(
+          options & TestWebThreadBundle::IO_MAINLOOP
+              ? base::test::ScopedTaskEnvironment::MainThreadType::IO
+              : base::test::ScopedTaskEnvironment::MainThreadType::UI);
 
-  ui_thread_.reset(new TestWebThread(WebThread::UI, message_loop_.get()));
-
-  scoped_async_task_scheduler_ =
-      base::MakeUnique<base::test::ScopedAsyncTaskScheduler>();
+  ui_thread_.reset(
+      new TestWebThread(WebThread::UI, base::MessageLoop::current()));
 
   if (options & TestWebThreadBundle::REAL_DB_THREAD) {
     db_thread_.reset(new TestWebThread(WebThread::DB));
     db_thread_->Start();
   } else {
-    db_thread_.reset(new TestWebThread(WebThread::DB, message_loop_.get()));
+    db_thread_.reset(
+        new TestWebThread(WebThread::DB, base::MessageLoop::current()));
   }
 
   if (options & TestWebThreadBundle::REAL_FILE_THREAD) {
     file_thread_.reset(new TestWebThread(WebThread::FILE));
     file_thread_->Start();
   } else {
-    file_thread_.reset(new TestWebThread(WebThread::FILE, message_loop_.get()));
+    file_thread_.reset(
+        new TestWebThread(WebThread::FILE, base::MessageLoop::current()));
   }
 
   if (options & TestWebThreadBundle::REAL_IO_THREAD) {
     io_thread_.reset(new TestWebThread(WebThread::IO));
     io_thread_->StartIOThread();
   } else {
-    io_thread_.reset(new TestWebThread(WebThread::IO, message_loop_.get()));
+    io_thread_.reset(
+        new TestWebThread(WebThread::IO, base::MessageLoop::current()));
   }
 }
 
