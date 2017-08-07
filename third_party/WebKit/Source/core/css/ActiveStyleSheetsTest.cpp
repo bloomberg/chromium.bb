@@ -524,7 +524,7 @@ TEST_F(ApplyRulesetsTest, RemoveSheetFromShadowTree) {
   shadow_root.setInnerHTML("<style>::slotted(#dummy){color:pink}</style>");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  EXPECT_EQ(1u, GetStyleEngine().TreeBoundaryCrossingScopes().size());
+  EXPECT_TRUE(GetStyleEngine().TreeBoundaryCrossingScopes().IsEmpty());
   ASSERT_EQ(1u, shadow_root.StyleSheets().length());
 
   StyleSheet* sheet = shadow_root.StyleSheets().item(0);
