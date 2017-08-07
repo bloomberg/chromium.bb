@@ -436,6 +436,10 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleAtomicInline(
   DCHECK_EQ(item.Type(), NGInlineItem::kAtomicInline);
   line_.should_create_line_box = true;
 
+  // TODO(kojii): For inline-blocks, the block layout algorithm needs to use
+  // :first-line style. We could pass UseFirstLineStyle() or style through
+  // constraint space, though it doesn't solve nested case. Revisit after
+  // discussion on nested case.
   LayoutBox* layout_box = ToLayoutBox(item.GetLayoutObject());
   NGBlockNode node = NGBlockNode(layout_box);
   const ComputedStyle& style = node.Style();

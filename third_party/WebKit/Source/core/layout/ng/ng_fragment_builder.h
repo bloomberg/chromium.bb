@@ -8,6 +8,7 @@
 #include "core/layout/ng/geometry/ng_static_position.h"
 #include "core/layout/ng/inline/ng_baseline.h"
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "core/layout/ng/ng_base_fragment_builder.h"
 #include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_layout_result.h"
@@ -19,21 +20,23 @@
 
 namespace blink {
 
-class CORE_EXPORT NGFragmentBuilder final {
+class CORE_EXPORT NGFragmentBuilder final : public NGBaseFragmentBuilder {
   DISALLOW_NEW();
 
  public:
-  NGFragmentBuilder(NGLayoutInputNode);
+  NGFragmentBuilder(NGLayoutInputNode,
+                    const ComputedStyle&,
+                    NGWritingMode,
+                    TextDirection);
 
   // Build a fragment for LayoutObject without NGLayoutInputNode. LayoutInline
   // has NGInlineItem but does not have corresponding NGLayoutInputNode.
-  NGFragmentBuilder(LayoutObject*);
+  NGFragmentBuilder(LayoutObject*,
+                    const ComputedStyle&,
+                    NGWritingMode,
+                    TextDirection);
 
   using WeakBoxList = PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>>;
-
-  NGWritingMode WritingMode() const { return writing_mode_; }
-  NGFragmentBuilder& SetWritingMode(NGWritingMode);
-  NGFragmentBuilder& SetDirection(TextDirection);
 
   NGFragmentBuilder& SetSize(const NGLogicalSize&);
   NGFragmentBuilder& SetBlockSize(LayoutUnit);
@@ -158,9 +161,6 @@ class CORE_EXPORT NGFragmentBuilder final {
     NGOutOfFlowPositionedDescendant descendant;
     NGLogicalOffset child_offset;
   };
-
-  NGWritingMode writing_mode_;
-  TextDirection direction_;
 
   NGLayoutInputNode node_;
   LayoutObject* layout_object_;

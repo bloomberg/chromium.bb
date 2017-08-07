@@ -7,11 +7,13 @@
 namespace blink {
 
 NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
+    const ComputedStyle& style,
     NGPhysicalSize size,
     Vector<RefPtr<NGPhysicalFragment>>& children,
     const NGLineHeightMetrics& metrics,
     RefPtr<NGBreakToken> break_token)
     : NGPhysicalFragment(nullptr,
+                         style,
                          size,
                          kFragmentLineBox,
                          std::move(break_token)),

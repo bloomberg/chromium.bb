@@ -53,7 +53,9 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
     NGInlineNode inline_node,
     NGConstraintSpace* space,
     NGInlineBreakToken* break_token)
-    : NGLayoutAlgorithm(inline_node, space, break_token),
+    // Use LTR direction since inline layout handles bidi by itself and lays out
+    // in visual order.
+    : NGLayoutAlgorithm(inline_node, space, TextDirection::kLtr, break_token),
       is_horizontal_writing_mode_(
           blink::IsHorizontalWritingMode(space->WritingMode())),
       space_builder_(space) {
@@ -140,12 +142,12 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   NGLineHeightMetrics line_metrics(line_style, baseline_type_);
   NGLineHeightMetrics line_metrics_with_leading = line_metrics;
   line_metrics_with_leading.AddLeading(line_style.ComputedLineHeightAsFixed());
-  NGLineBoxFragmentBuilder line_box(Node());
-  line_box.SetWritingMode(ConstraintSpace().WritingMode());
+  NGLineBoxFragmentBuilder line_box(Node(), line_style,
+                                    ConstraintSpace().WritingMode());
+  NGTextFragmentBuilder text_builder(Node(), ConstraintSpace().WritingMode());
 
   // Compute heights of all inline items by placing the dominant baseline at 0.
   // The baseline is adjusted after the height of the line box is computed.
-  NGTextFragmentBuilder text_builder(Node());
   NGInlineBoxState* box =
       box_states_.OnBeginPlaceItems(&line_style, baseline_type_);
 
@@ -159,6 +161,8 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
         item.Type() == NGInlineItem::kControl) {
       DCHECK(item.GetLayoutObject()->IsText());
       DCHECK(!box->text_metrics.IsEmpty());
+      DCHECK(item.Style());
+      text_builder.SetStyle(*item.Style());
       text_builder.SetSize(
           {item_result.inline_size, box->text_metrics.LineHeight()});
       if (item_result.shape_result) {
@@ -195,7 +199,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
       continue;
     } else if (item.Type() == NGInlineItem::kAtomicInline) {
       box = PlaceAtomicInline(item, &item_result, *line_info, position,
-                              &line_box, &text_builder);
+                              &line_box);
     } else if (item.Type() == NGInlineItem::kOutOfFlowPositioned) {
       // TODO(layout-dev): Report the correct static position for the out of
       // flow descendant. We can't do this here yet as it doesn't know the
@@ -277,8 +281,7 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
     NGInlineItemResult* item_result,
     const NGLineInfo& line_info,
     LayoutUnit position,
-    NGLineBoxFragmentBuilder* line_box,
-    NGTextFragmentBuilder* text_builder) {
+    NGLineBoxFragmentBuilder* line_box) {
   DCHECK(item_result->layout_result);
 
   // The input |position| is the line-left edge of the margin box.
@@ -306,9 +309,11 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
   // TODO(kojii): Try to eliminate the wrapping text fragment and use the
   // |fragment| directly. Currently |CopyFragmentDataToLayoutBlockFlow|
   // requires a text fragment.
-  text_builder->SetSize({fragment.InlineSize(), metrics.LineHeight()});
+  NGTextFragmentBuilder text_builder(Node(), style,
+                                     ConstraintSpace().WritingMode());
+  text_builder.SetSize({fragment.InlineSize(), metrics.LineHeight()});
   LayoutUnit line_top = item_result->margins.block_start - metrics.ascent;
-  RefPtr<NGPhysicalTextFragment> text_fragment = text_builder->ToTextFragment(
+  RefPtr<NGPhysicalTextFragment> text_fragment = text_builder.ToTextFragment(
       item_result->item_index, item_result->start_offset,
       item_result->end_offset);
   line_box->AddChild(std::move(text_fragment), {position, line_top});

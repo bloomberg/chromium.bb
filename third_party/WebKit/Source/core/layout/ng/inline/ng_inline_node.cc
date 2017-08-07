@@ -63,13 +63,15 @@ void CreateBidiRuns(BidiRunList<BidiRun>* bidi_runs,
   for (const auto& child : children) {
     if (child->Type() == NGPhysicalFragment::kFragmentText) {
       const auto* physical_fragment = ToNGPhysicalTextFragment(child.Get());
-      const NGInlineItem& item = items[physical_fragment->ItemIndex()];
+      const NGInlineItem& item =
+          items[physical_fragment->ItemIndexDeprecated()];
       BidiRun* run;
       if (item.Type() == NGInlineItem::kText ||
           item.Type() == NGInlineItem::kControl) {
         LayoutObject* layout_object = item.GetLayoutObject();
         DCHECK(layout_object->IsText());
-        unsigned text_offset = text_offsets[physical_fragment->ItemIndex()];
+        unsigned text_offset =
+            text_offsets[physical_fragment->ItemIndexDeprecated()];
         run = new BidiRun(physical_fragment->StartOffset() - text_offset,
                           physical_fragment->EndOffset() - text_offset,
                           item.BidiLevel(), LineLayoutItem(layout_object));
@@ -491,7 +493,8 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
           .SetAvailableSize({available_inline_size, NGSizeIndefinite})
           .ToConstraintSpace(writing_mode);
 
-  NGFragmentBuilder container_builder(node);
+  NGFragmentBuilder container_builder(node, node.Style(), space->WritingMode(),
+                                      TextDirection::kLtr);
   container_builder.SetBfcOffset(NGLogicalOffset{LayoutUnit(), LayoutUnit()});
 
   Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats;
