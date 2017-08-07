@@ -1,0 +1,36 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+{% from 'templates/macros.tmpl' import source_files_for_generated_file %}
+{{source_files_for_generated_file(template_file, input_files)}}
+
+#ifndef CSSPropertyDescriptor_h
+#define CSSPropertyDescriptor_h
+
+#include "core/CSSPropertyNames.h"
+#include "platform/heap/HeapAllocator.h"
+
+namespace blink {
+
+class CSSParserTokenRange;
+class CSSParserContext;
+class CSSParserLocalContext;
+class CSSProperty;
+class CSSValue;
+
+// Stores function pointers matching those declared in CSSPropertyAPI.
+struct CSSPropertyDescriptor {
+  {% for api_method_name in ordered_api_method_names %}
+  {{all_api_methods[api_method_name].return_type}} (*{{api_method_name}}){{all_api_methods[api_method_name].parameters}};
+  {% endfor %}
+
+  // Returns the corresponding CSSPropertyDescriptor for a given CSSPropertyID.
+  // Use this function to access the API for a property. Returns a descriptor
+  // with isValid set to false if no descriptor exists for this ID.
+  static const CSSPropertyDescriptor& Get(CSSPropertyID);
+};
+
+}  // namespace blink
+
+#endif  // CSSPropertyDescriptor_h

@@ -10,10 +10,9 @@
 namespace blink {
 
 const CSSValue* CSSPropertyAPIFontStyle::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
+    const CSSParserLocalContext&) {
   return CSSPropertyFontUtils::ConsumeFontStyle(range, context.Mode());
 }
 

@@ -14,8 +14,8 @@ namespace blink {
 
 namespace {
 
-CSSValue* ConsumeReflect(CSSParserTokenRange& range,
-                         const CSSParserContext& context) {
+static CSSValue* ConsumeReflect(CSSParserTokenRange& range,
+                                const CSSParserContext& context) {
   CSSIdentifierValue* direction = CSSPropertyParserHelpers::ConsumeIdent<
       CSSValueAbove, CSSValueBelow, CSSValueLeft, CSSValueRight>(range);
   if (!direction)
@@ -45,10 +45,9 @@ CSSValue* ConsumeReflect(CSSParserTokenRange& range,
 }  // namespace
 
 const CSSValue* CSSPropertyAPIWebkitBoxReflect::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
+    const CSSParserLocalContext&) {
   return ConsumeReflect(range, context);
 }
 

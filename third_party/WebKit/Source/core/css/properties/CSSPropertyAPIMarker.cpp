@@ -13,10 +13,9 @@ namespace blink {
 class CSSParserLocalContext;
 
 const CSSValue* CSSPropertyAPIMarker::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
+    const CSSParserLocalContext&) {
   if (range.Peek().Id() == CSSValueNone)
     return CSSPropertyParserHelpers::ConsumeIdent(range);
   return CSSPropertyParserHelpers::ConsumeUrl(range, &context);
