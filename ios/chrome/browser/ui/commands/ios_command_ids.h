@@ -38,7 +38,6 @@
 #define IDC_CLEAR_BROWSING_DATA_IOS                    40924
 #define IDC_SHOW_MAIL_COMPOSER                         40926
 #define IDC_REPORT_AN_ISSUE                            40936
-#define IDC_PRELOAD_VOICE_SEARCH                       40937
 #define IDC_CLOSE_SETTINGS                             40944
 #define IDC_SHOW_SAVE_PASSWORDS_SETTINGS               40945
 #define IDC_RATE_THIS_APP                              40948

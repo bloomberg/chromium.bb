@@ -449,11 +449,7 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
                 action:@selector(preloadVoiceSearch:)
       forControlEvents:UIControlEventTouchDown];
 
-  // Use a GenericChromeCommand because |sender| already has a tag set for a
-  // different command.
-  GenericChromeCommand* command =
-      [[GenericChromeCommand alloc] initWithTag:IDC_PRELOAD_VOICE_SEARCH];
-  [sender chromeExecuteCommand:command];
+  [self.dispatcher preloadVoiceSearch];
 }
 
 // Initialize and add a panel with most visited sites.

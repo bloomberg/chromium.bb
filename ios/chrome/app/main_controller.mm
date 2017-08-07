@@ -1424,7 +1424,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
       }
     } break;
 
-    case IDC_PRELOAD_VOICE_SEARCH:
     case IDC_SHOW_MAIL_COMPOSER:
       [self.currentBVC chromeExecuteCommand:sender];
       break;
