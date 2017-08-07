@@ -1820,13 +1820,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [_inputAccessoryViewController wasHidden];
 }
 
-#pragma mark - SadTabTabHelperDelegate
-
-- (BOOL)isTabVisibleForTabHelper:(SadTabTabHelper*)tabHelper {
-  UIApplicationState state = UIApplication.sharedApplication.applicationState;
-  return _visible && !IsApplicationStateNotActive(state);
-}
-
 #pragma mark - PagePlaceholderTabHelperDelegate
 
 - (void)displayPlaceholderForPagePlaceholderTabHelper:
