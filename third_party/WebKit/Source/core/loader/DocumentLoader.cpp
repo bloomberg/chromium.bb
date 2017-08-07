@@ -898,9 +898,12 @@ void DocumentLoader::EndWriting() {
   writer_.Clear();
 }
 
-void DocumentLoader::DidInstallNewDocument(Document* document) {
+void DocumentLoader::DidInstallNewDocument(Document* document,
+                                           InstallNewDocumentReason reason) {
   document->SetReadyState(Document::kLoading);
-  document->InitContentSecurityPolicy(content_security_policy_.Release());
+  if (content_security_policy_) {
+    document->InitContentSecurityPolicy(content_security_policy_.Release());
+  }
 
   if (history_item_ && IsBackForwardLoadType(load_type_))
     document->SetStateForNewFormElements(history_item_->GetDocumentState());
@@ -1116,7 +1119,7 @@ void DocumentLoader::InstallNewDocument(
   frame_->GetPage()->GetChromeClient().InstallSupplements(*frame_);
   if (!overriding_url.IsEmpty())
     document->SetBaseURLOverride(overriding_url);
-  DidInstallNewDocument(document);
+  DidInstallNewDocument(document, reason);
 
   // This must be called before DocumentWriter is created, otherwise HTML parser
   // will use stale values from HTMLParserOption.

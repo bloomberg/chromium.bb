@@ -244,7 +244,7 @@ class CORE_EXPORT DocumentLoader
                           InstallNewDocumentReason,
                           ParserSynchronizationPolicy,
                           const KURL& overriding_url);
-  void DidInstallNewDocument(Document*);
+  void DidInstallNewDocument(Document*, InstallNewDocumentReason);
   void WillCommitNavigation();
   void DidCommitNavigation();
 

@@ -1818,7 +1818,6 @@ void WebLocalFrameImpl::SetInputEventsScaleForEmulation(
 
 void WebLocalFrameImpl::LoadJavaScriptURL(const KURL& url) {
   DCHECK(GetFrame());
-
   // This is copied from ScriptController::executeScriptIfJavaScriptURL.
   // Unfortunately, we cannot just use that method since it is private, and
   // it also doesn't quite behave as we require it to for bookmarklets. The
