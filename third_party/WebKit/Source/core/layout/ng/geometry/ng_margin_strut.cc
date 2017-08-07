@@ -4,32 +4,27 @@
 
 #include "core/layout/ng/geometry/ng_margin_strut.h"
 
-#include "platform/wtf/text/WTFString.h"
-
 namespace blink {
 
 LayoutUnit NGMarginStrut::Sum() const {
-  return margin + negative_margin;
+  return positive_margin + negative_margin;
 }
 
-bool NGMarginStrut::operator==(const NGMarginStrut& other) const {
-  return margin == other.margin && negative_margin == other.negative_margin;
-}
+void NGMarginStrut::Append(const LayoutUnit& value, bool is_quirky) {
+  if (is_quirky_container_start && is_quirky)
+    return;
 
-void NGMarginStrut::Append(const LayoutUnit& value) {
   if (value < 0) {
     negative_margin = std::min(value, negative_margin);
   } else {
-    margin = std::max(value, margin);
+    positive_margin = std::max(value, positive_margin);
   }
 }
 
-String NGMarginStrut::ToString() const {
-  return String::Format("%d %d", margin.ToInt(), negative_margin.ToInt());
-}
-
-std::ostream& operator<<(std::ostream& stream, const NGMarginStrut& value) {
-  return stream << value.ToString();
+bool NGMarginStrut::operator==(const NGMarginStrut& other) const {
+  return positive_margin == other.positive_margin &&
+         negative_margin == other.negative_margin &&
+         is_quirky_container_start == other.is_quirky_container_start;
 }
 
 }  // namespace blink

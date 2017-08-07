@@ -43,6 +43,11 @@ class CORE_EXPORT NGLayoutInputNode {
   bool IsOutOfFlowPositioned() const;
   bool IsReplaced() const;
 
+  // If the node is a quirky container for margin collapsing, see:
+  // https://html.spec.whatwg.org/#margin-collapsing-quirks
+  // NOTE: The spec appears to only somewhat match reality.
+  bool IsQuirkyContainer() const;
+
   bool CreatesNewFormattingContext() const;
 
   // Performs layout on this input node, will return the layout result.

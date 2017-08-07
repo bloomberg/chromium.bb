@@ -12,21 +12,21 @@ namespace blink {
 
 // This struct is used for the margin collapsing calculation.
 struct CORE_EXPORT NGMarginStrut {
-  LayoutUnit margin;
+  LayoutUnit positive_margin;
   LayoutUnit negative_margin;
 
+  // If this flag is set, we only Append non-quirky margins to this strut.
+  // See comment inside NGBlockLayoutAlgorithm for when this occurs.
+  bool is_quirky_container_start = false;
+
   // Appends negative or positive value to the current margin strut.
-  void Append(const LayoutUnit& value);
+  void Append(const LayoutUnit& value, bool is_quirky);
 
   // Sum up negative and positive margins of this strut.
   LayoutUnit Sum() const;
 
   bool operator==(const NGMarginStrut& other) const;
-
-  String ToString() const;
 };
-
-CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGMarginStrut&);
 
 }  // namespace blink
 
