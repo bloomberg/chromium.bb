@@ -225,6 +225,8 @@ void PaintOpReader::Read(sk_sp<PaintShader>* shader) {
   ReadSimple(&ref.tile_);
   ReadSimple(&ref.start_point_);
   ReadSimple(&ref.end_point_);
+  ReadSimple(&ref.start_degrees_);
+  ReadSimple(&ref.end_degrees_);
   // TODO(vmpstr): Read PaintImage image_. http://crbug.com/737629
   // TODO(vmpstr): Read sk_sp<PaintRecord> record_. http://crbug.com/737629
   decltype(ref.colors_)::size_type colors_size = 0;

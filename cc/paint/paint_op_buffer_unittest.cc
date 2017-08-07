@@ -71,6 +71,8 @@ class PaintOpSerializationTestUtils {
     EXPECT_EQ(one->tile_, two->tile_);
     EXPECT_EQ(one->start_point_, two->start_point_);
     EXPECT_EQ(one->end_point_, two->end_point_);
+    EXPECT_EQ(one->start_degrees_, two->start_degrees_);
+    EXPECT_EQ(one->end_degrees_, two->end_degrees_);
     EXPECT_THAT(one->colors_, testing::ElementsAreArray(two->colors_));
     EXPECT_THAT(one->positions_, testing::ElementsAreArray(two->positions_));
   }
@@ -125,6 +127,8 @@ class PaintOpSerializationTestUtils {
     shader->tile_ = SkRect::MakeXYWH(7, 77, 777, 7777);
     shader->start_point_ = SkPoint::Make(-1, -5);
     shader->end_point_ = SkPoint::Make(13, -13);
+    shader->start_degrees_ = 123;
+    shader->end_degrees_ = 456;
     // TODO(vmpstr): Add PaintImage/PaintRecord.
     shader->colors_ = {SkColorSetARGB(1, 2, 3, 4), SkColorSetARGB(5, 6, 7, 8),
                        SkColorSetARGB(9, 0, 1, 2)};

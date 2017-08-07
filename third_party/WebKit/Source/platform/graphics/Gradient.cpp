@@ -263,11 +263,16 @@ class RadialGradient final : public Gradient {
 class ConicGradient final : public Gradient {
  public:
   ConicGradient(const FloatPoint& position,
-                float angle,
+                float rotation,
+                float start_angle,
+                float end_angle,
+                GradientSpreadMethod spread_method,
                 ColorInterpolation interpolation)
-      : Gradient(Type::kConic, kSpreadMethodPad, interpolation),
+      : Gradient(Type::kConic, spread_method, interpolation),
         position_(position),
-        angle_(angle) {}
+        rotation_(rotation),
+        start_angle_(start_angle),
+        end_angle_(end_angle) {}
 
  protected:
   sk_sp<PaintShader> CreateShader(const ColorBuffer& colors,
@@ -276,25 +281,25 @@ class ConicGradient final : public Gradient {
                                   uint32_t flags,
                                   const SkMatrix& local_matrix,
                                   SkColor fallback_color) const override {
-    DCHECK_NE(tile_mode, SkShader::kMirror_TileMode);
-
     // Skia's sweep gradient angles are relative to the x-axis, not the y-axis.
-    const float skia_angle = angle_ - 90;
+    const float skia_rotation = rotation_ - 90;
     SkTCopyOnFirstWrite<SkMatrix> adjusted_local_matrix(local_matrix);
-    if (skia_angle) {
-      adjusted_local_matrix.writable()->preRotate(skia_angle, position_.X(),
+    if (skia_rotation) {
+      adjusted_local_matrix.writable()->preRotate(skia_rotation, position_.X(),
                                                   position_.Y());
     }
 
     return PaintShader::MakeSweepGradient(
         position_.X(), position_.Y(), colors.data(), pos.data(),
-        static_cast<int>(colors.size()), flags, adjusted_local_matrix,
-        fallback_color);
+        static_cast<int>(colors.size()), tile_mode, start_angle_, end_angle_,
+        flags, adjusted_local_matrix, fallback_color);
   }
 
  private:
-  const FloatPoint position_;
-  const float angle_;
+  const FloatPoint position_;  // center point
+  const float rotation_;       // global rotation (deg)
+  const float start_angle_;    // angle (deg) corresponding to color position 0
+  const float end_angle_;      // angle (deg) corresponding to color position 1
 };
 
 }  // anonymous ns
@@ -318,9 +323,13 @@ PassRefPtr<Gradient> Gradient::CreateRadial(const FloatPoint& p0,
 }
 
 PassRefPtr<Gradient> Gradient::CreateConic(const FloatPoint& position,
-                                           float angle,
+                                           float rotation,
+                                           float start_angle,
+                                           float end_angle,
+                                           GradientSpreadMethod spread_method,
                                            ColorInterpolation interpolation) {
-  return AdoptRef(new ConicGradient(position, angle, interpolation));
+  return AdoptRef(new ConicGradient(position, rotation, start_angle, end_angle,
+                                    spread_method, interpolation));
 }
 
 }  // namespace blink
