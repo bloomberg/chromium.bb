@@ -1860,11 +1860,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   DCHECK(ios::GetChromeBrowserProvider()
              ->GetVoiceSearchProvider()
              ->IsVoiceSearchEnabled());
-  // Use a GenericChromeCommand because |sender| already has a tag set for a
-  // different command.
-  GenericChromeCommand* command =
-      [[GenericChromeCommand alloc] initWithTag:IDC_PRELOAD_VOICE_SEARCH];
-  [sender chromeExecuteCommand:command];
+  [self.dispatcher preloadVoiceSearch];
 }
 
 - (CGFloat)omniboxLeading {

@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/content_suggestions/content_suggestions_header_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #include "ios/chrome/browser/ui/commands/start_voice_search_command.h"
@@ -259,12 +260,7 @@ const CGFloat kHintLabelSidePadding = 12;
   [sender removeTarget:self
                 action:@selector(preloadVoiceSearch:)
       forControlEvents:UIControlEventTouchDown];
-
-  // Use a GenericChromeCommand because |sender| already has a tag set for a
-  // different command.
-  GenericChromeCommand* command =
-      [[GenericChromeCommand alloc] initWithTag:IDC_PRELOAD_VOICE_SEARCH];
-  [sender chromeExecuteCommand:command];
+  [self.dispatcher preloadVoiceSearch];
 }
 
 - (void)fakeOmniboxTapped:(id)sender {

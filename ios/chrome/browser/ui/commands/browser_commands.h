@@ -69,6 +69,9 @@ class NavigationItem;
 // of the current content.
 - (void)switchToReaderMode;
 
+// Preloads voice search on the current BVC.
+- (void)preloadVoiceSearch;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_BROWSER_COMMANDS_H_
