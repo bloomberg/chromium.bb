@@ -27,7 +27,7 @@ MessageView* MessageViewFactory::Create(MessageCenterController* controller,
     case NOTIFICATION_TYPE_MULTIPLE:
     case NOTIFICATION_TYPE_SIMPLE:
     case NOTIFICATION_TYPE_PROGRESS: {
-      bool new_style_notification_enabled = false;  // default value
+      bool new_style_notification_enabled = true;  // default value
       if (base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kEnableMessageCenterNewStyleNotification)) {
         new_style_notification_enabled = true;
