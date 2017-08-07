@@ -3076,7 +3076,7 @@
             ],
             "experiments": [
                 {
-                    "name": "QueryExperiment2",
+                    "name": "Query20170329",
                     "params": {
                         "translate-ranker-model-url": "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/translate/2017/03/translate_ranker_model_20170329.pb.bin"
                     },
@@ -3086,15 +3086,26 @@
                     "disable_features": [
                         "TranslateRankerEnforcement"
                     ]
-                },
+                }
+            ]
+        }
+    ],
+    "TranslateRankerModelAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
                 {
-                    "name": "EnforcementExperiment2",
+                    "name": "Query20170329",
                     "params": {
                         "translate-ranker-model-url": "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/translate/2017/03/translate_ranker_model_20170329.pb.bin"
                     },
                     "enable_features": [
-                        "TranslateRankerEnforcement",
                         "TranslateRankerQuery"
+                    ],
+                    "disable_features": [
+                        "TranslateRankerEnforcement"
                     ]
                 }
             ]
