@@ -16800,6 +16800,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.PolicyUpdatePeriod.Device" units="days">
+  <owner>antrim@chromium.org</owner>
+  <summary>Time since last device policy fetch.</summary>
+</histogram>
+
+<histogram name="Enterprise.PolicyUpdatePeriod.User" units="days">
+  <owner>antrim@chromium.org</owner>
+  <summary>Time since last user policy fetch.</summary>
+</histogram>
+
 <histogram name="Enterprise.PublicSession.ExtensionPermissions"
     enum="ExtensionPermission3">
   <owner>isandrk@chromium.org</owner>

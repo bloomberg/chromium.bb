@@ -223,6 +223,8 @@ class POLICY_EXPORT CloudPolicyClient {
     last_policy_timestamp_ = timestamp;
   }
 
+  const base::Time& last_policy_timestamp() { return last_policy_timestamp_; }
+
   void set_public_key_version(int public_key_version) {
     public_key_version_ = public_key_version;
     public_key_version_valid_ = true;

@@ -8,6 +8,9 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
 namespace em = enterprise_management;
@@ -115,6 +118,19 @@ void CloudPolicyService::OnStoreLoaded(CloudPolicyStore* store) {
   base::Time policy_timestamp;
   if (policy && policy->has_timestamp())
     policy_timestamp = base::Time::FromJavaTime(policy->timestamp());
+
+  const base::Time& old_timestamp = client_->last_policy_timestamp();
+  if (!policy_timestamp.is_null() && !old_timestamp.is_null() &&
+      policy_timestamp != old_timestamp) {
+    const base::TimeDelta age = policy_timestamp - old_timestamp;
+    if (policy_type_ == dm_protocol::kChromeUserPolicyType) {
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Enterprise.PolicyUpdatePeriod.User",
+                                  age.InDays(), 1, 1000, 100);
+    } else if (policy_type_ == dm_protocol::kChromeDevicePolicyType) {
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Enterprise.PolicyUpdatePeriod.Device",
+                                  age.InDays(), 1, 1000, 100);
+    }
+  }
   client_->set_last_policy_timestamp(policy_timestamp);
 
   // Public key version.
