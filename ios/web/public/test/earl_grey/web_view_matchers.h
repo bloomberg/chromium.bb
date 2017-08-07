@@ -16,9 +16,6 @@ namespace web {
 // Matcher for WKWebView which belogs to the given |webState|.
 id<GREYMatcher> WebViewInWebState(WebState* web_state);
 
-// Matcher for WKWebView containing |text|.
-id<GREYMatcher> WebViewContainingText(std::string text, WebState* web_state);
-
 // Matcher for WKWebView containing a blocked |image_id|.  When blocked, the
 // image element will be smaller actual image size.
 id<GREYMatcher> WebViewContainingBlockedImage(std::string image_id,
