@@ -21,7 +21,7 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSParserLocalContext.h"
-#include "core/css/properties/CSSPropertyAPI.h"
+#include "core/css/properties/CSSPropertyDescriptor.h"
 #include "core/css/properties/CSSPropertyTransformUtils.h"
 #include "core/frame/UseCounter.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -1561,8 +1561,10 @@ void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
 const CSSValue* ParseLonghandViaAPI(CSSPropertyID unresolved_property,
                                     CSSPropertyID current_shorthand,
                                     const CSSParserContext& context,
-                                    CSSParserTokenRange& range) {
+                                    CSSParserTokenRange& range,
+                                    bool& needs_legacy_parsing) {
   DCHECK(!isShorthandProperty(unresolved_property));
+  needs_legacy_parsing = false;
   CSSPropertyID property = resolveCSSPropertyID(unresolved_property);
   if (CSSParserFastPaths::IsKeywordPropertyID(property)) {
     if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
@@ -1572,12 +1574,16 @@ const CSSValue* ParseLonghandViaAPI(CSSPropertyID unresolved_property,
     return ConsumeIdent(range);
   }
 
-  const CSSPropertyAPI& api = CSSPropertyAPI::Get(property);
-  const CSSValue* result = api.ParseSingleValue(
-      property, range, context,
-      CSSParserLocalContext(isPropertyAlias(unresolved_property),
-                            current_shorthand));
-  return result;
+  const CSSPropertyDescriptor& css_property_desc =
+      CSSPropertyDescriptor::Get(property);
+  if (css_property_desc.ParseSingleValue) {
+    return css_property_desc.ParseSingleValue(
+        range, context,
+        CSSParserLocalContext(isPropertyAlias(unresolved_property),
+                              current_shorthand));
+  }
+  needs_legacy_parsing = true;
+  return nullptr;
 }
 
 bool ConsumeShorthandVia2LonghandAPIs(
@@ -1588,15 +1594,18 @@ bool ConsumeShorthandVia2LonghandAPIs(
     HeapVector<CSSProperty, 256>& properties) {
   DCHECK_EQ(shorthand.length(), 2u);
   const CSSPropertyID* longhands = shorthand.properties();
+  bool needs_legacy_parsing = false;
 
-  const CSSValue* start =
-      ParseLonghandViaAPI(longhands[0], shorthand.id(), context, range);
+  const CSSValue* start = ParseLonghandViaAPI(
+      longhands[0], shorthand.id(), context, range, needs_legacy_parsing);
+  DCHECK(!needs_legacy_parsing);
 
   if (!start)
     return false;
 
-  const CSSValue* end =
-      ParseLonghandViaAPI(longhands[1], shorthand.id(), context, range);
+  const CSSValue* end = ParseLonghandViaAPI(
+      longhands[1], shorthand.id(), context, range, needs_legacy_parsing);
+  DCHECK(!needs_legacy_parsing);
 
   if (!end)
     end = start;
@@ -1616,21 +1625,28 @@ bool ConsumeShorthandVia4LonghandAPIs(
     HeapVector<CSSProperty, 256>& properties) {
   DCHECK_EQ(shorthand.length(), 4u);
   const CSSPropertyID* longhands = shorthand.properties();
-  const CSSValue* top =
-      ParseLonghandViaAPI(longhands[0], shorthand.id(), context, range);
+  bool needs_legacy_parsing = false;
+  const CSSValue* top = ParseLonghandViaAPI(
+      longhands[0], shorthand.id(), context, range, needs_legacy_parsing);
+  DCHECK(!needs_legacy_parsing);
 
   if (!top)
     return false;
 
-  const CSSValue* right =
-      ParseLonghandViaAPI(longhands[1], shorthand.id(), context, range);
+  const CSSValue* right = ParseLonghandViaAPI(
+      longhands[1], shorthand.id(), context, range, needs_legacy_parsing);
+  DCHECK(!needs_legacy_parsing);
 
   const CSSValue* bottom = nullptr;
   const CSSValue* left = nullptr;
   if (right) {
-    bottom = ParseLonghandViaAPI(longhands[2], shorthand.id(), context, range);
+    bottom = ParseLonghandViaAPI(longhands[2], shorthand.id(), context, range,
+                                 needs_legacy_parsing);
+    DCHECK(!needs_legacy_parsing);
     if (bottom) {
-      left = ParseLonghandViaAPI(longhands[3], shorthand.id(), context, range);
+      left = ParseLonghandViaAPI(longhands[3], shorthand.id(), context, range,
+                                 needs_legacy_parsing);
+      DCHECK(!needs_legacy_parsing);
     }
   }
 
@@ -1663,14 +1679,18 @@ bool ConsumeShorthandGreedilyViaLonghandAPIs(
   DCHECK_LE(shorthand.length(), 6u);
   const CSSValue* longhands[6] = {nullptr, nullptr, nullptr,
                                   nullptr, nullptr, nullptr};
+  bool needs_legacy_parsing = false;
+
   const CSSPropertyID* shorthand_properties = shorthand.properties();
   do {
     bool found_longhand = false;
     for (size_t i = 0; !found_longhand && i < shorthand.length(); ++i) {
       if (longhands[i])
         continue;
-      longhands[i] = ParseLonghandViaAPI(shorthand_properties[i],
-                                         shorthand.id(), context, range);
+      longhands[i] =
+          ParseLonghandViaAPI(shorthand_properties[i], shorthand.id(), context,
+                              range, needs_legacy_parsing);
+      DCHECK(!needs_legacy_parsing);
 
       if (longhands[i])
         found_longhand = true;

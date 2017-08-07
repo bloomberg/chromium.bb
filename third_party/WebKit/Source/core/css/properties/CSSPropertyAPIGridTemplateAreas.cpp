@@ -16,10 +16,9 @@
 namespace blink {
 
 const CSSValue* CSSPropertyAPIGridTemplateAreas::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext&,
-    const CSSParserLocalContext&) const {
+    const CSSParserLocalContext&) {
   DCHECK(RuntimeEnabledFeatures::CSSGridLayoutEnabled());
   if (range.Peek().Id() == CSSValueNone)
     return CSSPropertyParserHelpers::ConsumeIdent(range);

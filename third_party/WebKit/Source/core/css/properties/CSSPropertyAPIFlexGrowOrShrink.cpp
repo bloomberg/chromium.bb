@@ -13,10 +13,9 @@ class CSSParserContext;
 class CSSParserLocalContext;
 
 const CSSValue* CSSPropertyAPIFlexGrowOrShrink::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext&,
-    const CSSParserLocalContext&) const {
+    const CSSParserLocalContext&) {
   return CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeNonNegative);
 }
 

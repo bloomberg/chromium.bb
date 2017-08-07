@@ -10,10 +10,9 @@
 namespace blink {
 
 const CSSValue* CSSPropertyAPIBoxShadow::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
+    const CSSParserLocalContext&) {
   return CSSPropertyBoxShadowUtils::ConsumeShadow(range, context.Mode(),
                                                   AllowInsetAndSpread::kAllow);
 }

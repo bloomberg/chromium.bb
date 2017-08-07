@@ -58,12 +58,11 @@ CSSValue* ConsumeAnimationValue(CSSPropertyID property,
 }  // namespace
 
 bool CSSShorthandPropertyAPIAnimation::ParseShorthand(
-    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     bool use_legacy_parsing,
-    HeapVector<CSSProperty, 256>& properties) const {
+    HeapVector<CSSProperty, 256>& properties) {
   const StylePropertyShorthand shorthand = animationShorthandForParsing();
   const unsigned longhand_count = shorthand.length();
 

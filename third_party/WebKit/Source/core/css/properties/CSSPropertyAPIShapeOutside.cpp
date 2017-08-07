@@ -15,10 +15,9 @@ namespace blink {
 using namespace CSSPropertyParserHelpers;
 
 const CSSValue* CSSPropertyAPIShapeOutside::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
+    const CSSParserLocalContext&) {
   if (CSSValue* image_value = ConsumeImageOrNone(range, &context))
     return image_value;
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();

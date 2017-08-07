@@ -10,12 +10,11 @@
 namespace blink {
 
 bool CSSShorthandPropertyAPITextDecoration::ParseShorthand(
-    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     bool,
-    HeapVector<CSSProperty, 256>& properties) const {
+    HeapVector<CSSProperty, 256>& properties) {
   DCHECK(RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
   return CSSPropertyParserHelpers::ConsumeShorthandGreedilyViaLonghandAPIs(
       textDecorationShorthand(), important, context, range, properties);

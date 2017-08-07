@@ -13,10 +13,9 @@
 namespace blink {
 
 const CSSValue* CSSPropertyAPIBorderWidth::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext& local_context) const {
+    const CSSParserLocalContext& local_context) {
   CSSPropertyID shorthand = local_context.CurrentShorthand();
   bool allow_quirky_lengths =
       IsQuirksModeBehavior(context.Mode()) &&
