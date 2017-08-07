@@ -17,7 +17,7 @@ const char* ScriptModuleStateToString(ScriptModuleState state) {
     case ScriptModuleState::kUninstantiated:
       return "uninstantiated";
     case ScriptModuleState::kInstantiating:
-      return "instatinating";
+      return "instantinating";
     case ScriptModuleState::kInstantiated:
       return "instantiated";
     case ScriptModuleState::kEvaluating:
@@ -202,13 +202,9 @@ v8::MaybeLocal<v8::Module> ScriptModule::ResolveModuleCallback(
                                  "ScriptModule", "resolveModuleCallback");
   ScriptModule resolved = modulator->GetScriptModuleResolver()->Resolve(
       ToCoreStringWithNullCheck(specifier), referrer_record, exception_state);
-  if (resolved.IsNull()) {
-    DCHECK(exception_state.HadException());
-    return v8::MaybeLocal<v8::Module>();
-  }
-
+  DCHECK(!resolved.IsNull());
   DCHECK(!exception_state.HadException());
-  return v8::MaybeLocal<v8::Module>(resolved.module_->NewLocal(isolate));
+  return resolved.module_->NewLocal(isolate);
 }
 
 }  // namespace blink

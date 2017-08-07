@@ -44,7 +44,7 @@ ScriptModule ScriptModuleResolverImpl::Resolve(
     const String& specifier,
     const ScriptModule& referrer,
     ExceptionState& exception_state) {
-  // https://html.spec.whatwg.org/commit-snapshots/f8e75a974ed9185e5b462bc5b2dfb32034bd1145#hostresolveimportedmodule(referencingmodule,-specifier)
+  // https://html.spec.whatwg.org/multipage/webappapis.html#hostresolveimportedmodule(referencingmodule,-specifier)
   DVLOG(1) << "ScriptModuleResolverImpl::resolve(specifier=\"" << specifier
            << ", referrer.hash=" << ScriptModuleHash::GetHash(referrer) << ")";
 
@@ -59,42 +59,26 @@ ScriptModule ScriptModuleResolverImpl::Resolve(
   // (Modulator) from context where HostResolveImportedModule was called.
 
   // Step 3. Let url be the result of resolving a module specifier given
-  // referencing module script and specifier. If the result is failure, then
-  // throw a TypeError exception and abort these steps.
+  // referencing module script and specifier.
   KURL url =
       Modulator::ResolveModuleSpecifier(specifier, referrer_module->BaseURL());
-  if (!url.IsValid()) {
-    exception_state.ThrowTypeError("Failed to resolve module specifier '" +
-                                   specifier + "'");
-    return ScriptModule();
-  }
 
-  // Step 4. Let resolved module script be moduleMap[url]. If no such entry
-  // exists, or if resolved module script is null or "fetching", then throw a
-  // TypeError exception and abort these steps.
+  // Step 4. Assert: url is never failure, because resolving a module specifier
+  // must have been previously successful with these same two arguments.
+  DCHECK(url.IsValid());
+
+  // Step 5. Let resolved module script be moduleMap[url]. (This entry must
+  // exist for us to have gotten to this point.)
   ModuleScript* module_script = modulator_->GetFetchedModuleScript(url);
-  if (!module_script) {
-    exception_state.ThrowTypeError(
-        "Failed to load module script for module specifier '" + specifier +
-        "'");
-    return ScriptModule();
-  }
 
-  // Step 5. If resolved module script's instantiation state is "errored", then
-  // throw resolved module script's instantiation error.
-  // TODO(kouhei): Update spec references.
-  if (module_script->IsErrored()) {
-    ScriptValue error = modulator_->GetError(module_script);
-    exception_state.RethrowV8Exception(error.V8Value());
-    return ScriptModule();
-  }
+  // Step 6. Assert: resolved module script is a module script (i.e., is not
+  // null or "fetching").
+  // Step 7. Assert: resolved module script is not errored.
+  DCHECK(module_script);
+  CHECK(!module_script->IsErrored());
 
-  // Step 6. Assert: resolved module script's module record is not null.
-  ScriptModule record = module_script->Record();
-  CHECK(!record.IsNull());
-
-  // Step 7. Return resolved module script's module record.
-  return record;
+  // Step 8. Return resolved module script's module record.
+  return module_script->Record();
 }
 
 void ScriptModuleResolverImpl::ContextDestroyed(ExecutionContext*) {
