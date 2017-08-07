@@ -204,6 +204,8 @@ class GitCLTest(unittest.TestCase):
                 Build('builder-b', 50): TryJobStatus('SCHEDULED'),
             })
 
+    def test_filter_latest_none(self):
+        self.assertIsNone(GitCL.filter_latest(None))
 
     def test_try_job_results_with_task_id_in_url(self):
         git_cl = GitCL(MockHost())
