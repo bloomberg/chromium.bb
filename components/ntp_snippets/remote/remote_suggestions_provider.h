@@ -20,9 +20,7 @@ class RemoteSuggestionsFetcher;
 class RemoteSuggestionsProvider : public ContentSuggestionsProvider {
  public:
   // Callback to notify with the result of a fetch.
-  // TODO(jkrcal): Change to OnceCallback? A OnceCallback does only have a
-  // move-constructor which seems problematic for google mock.
-  using FetchStatusCallback = base::Callback<void(Status status_code)>;
+  using FetchStatusCallback = base::OnceCallback<void(Status status_code)>;
 
   ~RemoteSuggestionsProvider() override;
 
@@ -32,7 +30,7 @@ class RemoteSuggestionsProvider : public ContentSuggestionsProvider {
   // triggered by the user and have lower priority on the server. After the
   // fetch finished, the provided |callback| will be triggered with the status
   // of the fetch (unless nullptr).
-  virtual void RefetchInTheBackground(const FetchStatusCallback& callback) = 0;
+  virtual void RefetchInTheBackground(FetchStatusCallback callback) = 0;
 
   virtual const RemoteSuggestionsFetcher* suggestions_fetcher_for_debugging()
       const = 0;

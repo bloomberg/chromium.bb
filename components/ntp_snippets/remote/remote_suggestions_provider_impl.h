@@ -84,7 +84,7 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   bool initialized() const { return ready() || state_ == State::DISABLED; }
 
   // RemoteSuggestionsProvider implementation.
-  void RefetchInTheBackground(const FetchStatusCallback& callback) override;
+  void RefetchInTheBackground(FetchStatusCallback callback) override;
 
   // TODO(fhorschig): Remove this getter when there is an interface for the
   // fetcher that allows better mocks.
@@ -246,8 +246,7 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   // quota for requests, etc.), useful for requests triggered by the user. After
   // the fetch finished, the provided |callback| will be triggered with the
   // status of the fetch.
-  void FetchSuggestions(bool interactive_request,
-                        const FetchStatusCallback& callback);
+  void FetchSuggestions(bool interactive_request, FetchStatusCallback callback);
 
   // Returns the URL of the image of a suggestion if it is among the current or
   // among the archived suggestions in the matching category. Returns an empty
@@ -266,7 +265,7 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
 
   // Callback for regular fetch requests with the RemoteSuggestionsFetcher.
   void OnFetchFinished(
-      const FetchStatusCallback& callback,
+      FetchStatusCallback callback,
       bool interactive_request,
       Status status,
       RemoteSuggestionsFetcher::OptionalFetchedCategories fetched_categories);
