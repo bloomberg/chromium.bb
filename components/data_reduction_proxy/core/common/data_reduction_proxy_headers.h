@@ -107,6 +107,10 @@ const char* lite_page_directive();
 // compressed video.
 const char* compressed_video_directive();
 
+// Gets the directive used by the data reduction proxy to tell the client to use
+// a specific page policy.
+const char* page_policies_directive();
+
 // Gets the Chrome-Proxy directive used by data reduction proxy lite page
 // preview requests and responses.
 const char* chrome_proxy_lite_page_directive();

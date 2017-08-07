@@ -249,6 +249,10 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // Forcefully detaches all connected DevTools clients.
   virtual void DetachDevToolsForTest() = 0;
 
+  // Sets the PreviewsState of this frame, a bitmask of potentially several
+  // Previews optimizations.
+  virtual void SetPreviewsState(PreviewsState previews_state) = 0;
+
   // Returns the PreviewsState of this frame, a bitmask of potentially several
   // Previews optimizations.
   virtual PreviewsState GetPreviewsState() const = 0;

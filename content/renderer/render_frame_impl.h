@@ -462,6 +462,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void AddMessageToConsole(ConsoleMessageLevel level,
                            const std::string& message) override;
   void DetachDevToolsForTest() override;
+  void SetPreviewsState(PreviewsState previews_state) override;
   PreviewsState GetPreviewsState() const override;
   bool IsPasting() const override;
   blink::WebPageVisibilityState GetVisibilityState() const override;

@@ -184,6 +184,10 @@ const char* compressed_video_directive() {
   return kCompressedVideoDirective;
 }
 
+const char* page_policies_directive() {
+  return kChromeProxyPagePoliciesDirective;
+}
+
 const char* chrome_proxy_experiment_force_lite_page() {
   return kChromeProxyExperimentForceLitePage;
 }

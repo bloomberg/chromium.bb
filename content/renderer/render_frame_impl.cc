@@ -135,7 +135,6 @@
 #include "content/renderer/pepper/pepper_audio_controller.h"
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 #include "content/renderer/presentation/presentation_dispatcher.h"
-#include "content/renderer/previews_state_helper.h"
 #include "content/renderer/push_messaging/push_messaging_client.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
@@ -2846,6 +2845,10 @@ void RenderFrameImpl::DetachDevToolsForTest() {
     devtools_agent_->DetachAllSessions();
 }
 
+void RenderFrameImpl::SetPreviewsState(PreviewsState previews_state) {
+  previews_state_ = previews_state;
+}
+
 PreviewsState RenderFrameImpl::GetPreviewsState() const {
   return previews_state_;
 }
@@ -3711,8 +3714,7 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   if (is_main_frame_ && !navigation_state->WasWithinSameDocument()) {
     previews_state_ = PREVIEWS_OFF;
     if (extra_data) {
-      previews_state_ = GetPreviewsStateFromMainFrameResponse(
-          extra_data->previews_state(), web_url_response);
+      previews_state_ = extra_data->previews_state();
       effective_connection_type_ =
           EffectiveConnectionTypeToWebEffectiveConnectionType(
               extra_data->effective_connection_type());
