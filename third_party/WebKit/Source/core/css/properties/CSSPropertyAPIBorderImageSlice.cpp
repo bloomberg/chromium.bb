@@ -9,10 +9,9 @@
 namespace blink {
 
 const CSSValue* CSSPropertyAPIBorderImageSlice::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext&,
-    const CSSParserLocalContext&) const {
+    const CSSParserLocalContext&) {
   return CSSPropertyBorderImageUtils::ConsumeBorderImageSlice(
       range, DefaultFill::kNoFill);
 }

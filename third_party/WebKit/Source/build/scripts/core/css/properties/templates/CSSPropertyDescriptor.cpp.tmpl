@@ -1,0 +1,61 @@
+{% from 'templates/macros.tmpl' import license, print_if, source_files_for_generated_file %}
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+{{source_files_for_generated_file(template_file, input_files)}}
+
+#include "core/css/properties/CSSPropertyDescriptor.h"
+
+{% for api_class in api_classes %}
+#include "core/css/properties/{{api_class.classname}}.h"
+{% endfor %}
+
+namespace blink {
+
+static_assert(
+    std::is_pod<CSSPropertyDescriptor>::value,
+    "CSSPropertyDescriptor must be a POD to support using initializer lists.");
+
+// This must refer to the invalid descriptor in cssPropertyDescriptors.
+#define INVALID_DESCRIPTOR_INDEX {{invalid_descriptor_index}}
+
+static constexpr CSSPropertyDescriptor cssPropertyDescriptors[] = {
+    // An invalid CSSPropertyDescriptor. Must be indexed by INVALID_DESCRIPTOR_INDEX.
+    {
+      {% for api_method in ordered_api_method_names %}
+        nullptr,
+      {% endfor %}
+    },
+    // CSSPropertyDescriptors for all valid properties.
+    {% for api_class in api_classes %}
+    {
+      {% for api_method_name in ordered_api_method_names %}
+      {% if api_method_name in api_class.methods_for_class %}
+      {{api_class.classname}}::{{api_method_name}},
+      {% else %}
+      nullptr,
+      {% endif %}
+      {% endfor %}
+    },
+    {% endfor %}
+};
+
+{% for api_method_name in ordered_api_method_names %}
+static_assert(cssPropertyDescriptors[INVALID_DESCRIPTOR_INDEX].{{api_method_name}} == nullptr, 
+              "Invalid CSSPropertyDescriptor contains non-nullptr member");
+{% endfor %}
+
+// Lookup table mapping CSSPropertyID to index in the cssPropertyDescriptors
+// table
+static size_t CSSDescriptorIndices[] = {
+   {% for item in descriptor_indices %}
+   {{descriptor_indices[item].id}},{{print_if(descriptor_indices[item].api != None, ' // ' ~ descriptor_indices[item].api)}}
+   {% endfor %}
+};
+
+const CSSPropertyDescriptor& CSSPropertyDescriptor::Get(CSSPropertyID id) {
+      return cssPropertyDescriptors[CSSDescriptorIndices[id]];
+}
+
+}  // namespace blink

@@ -10,12 +10,11 @@
 namespace blink {
 
 bool CSSShorthandPropertyAPIPageBreakInside::ParseShorthand(
-    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext&,
     bool use_legacy_parsing,
-    HeapVector<CSSProperty, 256>& properties) const {
+    HeapVector<CSSProperty, 256>& properties) {
   CSSValueID value;
   if (!CSSPropertyLegacyBreakUtils::ConsumeFromColumnOrPageBreakInside(range,
                                                                        value)) {

@@ -11,10 +11,9 @@ class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPILineHeight::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
+    const CSSParserLocalContext&) {
   return CSSPropertyFontUtils::ConsumeLineHeight(range, context.Mode());
 }
 

@@ -11,10 +11,9 @@
 namespace blink {
 
 const CSSValue* CSSPropertyAPIColor::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
+    const CSSParserLocalContext&) {
   return CSSPropertyParserHelpers::ConsumeColor(
       range, context.Mode(), IsQuirksModeBehavior(context.Mode()));
 }

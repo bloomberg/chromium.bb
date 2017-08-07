@@ -13,10 +13,9 @@ class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPIRotate::ParseSingleValue(
-    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
+    const CSSParserLocalContext&) {
   DCHECK(RuntimeEnabledFeatures::CSSIndependentTransformPropertiesEnabled());
 
   CSSValueID id = range.Peek().Id();

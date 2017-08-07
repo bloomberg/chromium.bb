@@ -35,12 +35,13 @@
     },
 
     // - api_class: true|"classname"
-    // Specifies the existence (and optionally name) of a CSSPropertyAPI for this
-    // property.
-    // * Add this flag if a property API has been implemented for this property.
+    // Specifies the existence (and optionally name) of a CSSPropertyAPI
+    // implementation for the property to be used by make_css_property_apis.py.
+    // See core/css/properties/CSSPropertyAPI<PropertyName>.h for API details.
+    // * Add this flag if the API has been implemented for this property.
     // * If the classname for this is different to the name of the property, specify a
-    //   value for this flag. e.g. api_class=CSSPropertyAPIWebkitPadding.
-    // TODO(meade): When most properties have been implemented, modify this so that
+    //   value for this flag. e.g. api_class=CSSPropertyAPIWebkitPadding
+    // TODO(aazzam): When most properties have been implemented, modify this so that
     // properties with default classnames do not get this flag, and introduce a
     // 'not_implemented' flag instead.
     api_class: {
@@ -48,9 +49,14 @@
 
     // - api_methods: ["method1", "method2"]
     // List of methods that are implemented in the CSSPropertyAPI for this property.
+    // This is used by make_css_property_apis.py to specify which functions are defined
+    // in the .h file for this property, and also used in CSSPropertyAPIFiles.h.tmpl to
+    // generate declarations for only the methods this property has implementations for.
     api_methods: {
       default: [],
       valid_type: "list",
+       // This list must be an ordered, complete list of methods whose names match those
+       // defined in CSSPropertyDescriptor.h.
       valid_values: ["ParseSingleValue", "ParseShorthand"],
     },
 
