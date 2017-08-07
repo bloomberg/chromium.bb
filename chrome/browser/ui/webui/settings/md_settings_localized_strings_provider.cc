@@ -1601,6 +1601,9 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
 
+  html_source->AddBoolean("tabsInCbd",
+                          base::FeatureList::IsEnabled(features::kTabsInCbd));
+
   html_source->AddBoolean(
       "importantSitesInCbd",
       base::FeatureList::IsEnabled(features::kImportantSitesInCbd));
