@@ -55,6 +55,7 @@ import java.util.concurrent.TimeUnit;
  * Tests the {@link HistoryActivity}.
  */
 @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+@RetryOnFailure(message = "crbug.com/752520")
 public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<HistoryActivity> {
     private static class TestObserver extends RecyclerView.AdapterDataObserver
             implements SelectionObserver<HistoryItem>, SignInStateObserver {
