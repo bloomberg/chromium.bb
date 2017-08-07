@@ -302,6 +302,7 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
 		/* Get a KMS handle. */
 		r = drmPrimeFDToHandle(dev->fd, shared_handle, &handle);
 		if (r) {
+			pthread_mutex_unlock(&dev->bo_table_mutex);
 			return r;
 		}
 
