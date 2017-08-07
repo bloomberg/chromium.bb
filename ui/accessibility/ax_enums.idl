@@ -212,7 +212,6 @@
   };
 
   enum AXState {
-    dummy_state,  // TODO(aleventhal) See crbug.com/750305
     collapsed,
     default,
     editable,

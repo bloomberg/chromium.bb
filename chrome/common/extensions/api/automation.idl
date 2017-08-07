@@ -200,7 +200,6 @@
 
   // Describes characteristics of an $(ref:automation.AutomationNode).
   enum StateType {
-    dummyState,  // TODO(aleventhal) See crbug.com/750305
     collapsed,
     default,
     editable,
