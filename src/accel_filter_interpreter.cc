@@ -256,14 +256,12 @@ void AccelFilterInterpreter::ConsumeGesture(const Gesture& gs) {
     }
     mag = sqrtf(*dx * *dx + *dy * *dy) / dt;
   }
-  if (mag < 0.00001) {
-    ProduceGesture(gs);
-    return;  // Avoid division by 0
-  }
 
   if (smooth_accel_.val_) {
     if (last_end_time_ == gs.start_time) {
       float new_mag = mag;
+      if (last_mags_size_ < arraysize(last_mags_))
+          last_mags_[last_mags_size_] = last_mags_[last_mags_size_ - 1];
       for (size_t i = last_mags_size_ - 1; i > 0; i--) {
         new_mag += last_mags_[i];
         last_mags_[i] = last_mags_[i - 1];
@@ -279,6 +277,12 @@ void AccelFilterInterpreter::ConsumeGesture(const Gesture& gs) {
       last_mags_[0] = mag;
     }
     last_end_time_ = gs.end_time;
+  }
+
+  if (mag < 0.00001) {
+    if (gs.type == kGestureTypeFling)
+      ProduceGesture(gs);  // Filter out zero length gestures
+    return;  // Avoid division by 0
   }
 
   for (size_t i = 0; i < max_segs; ++i) {

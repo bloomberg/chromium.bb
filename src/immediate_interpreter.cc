@@ -3066,6 +3066,7 @@ void ImmediateInterpreter::UpdateButtonsTimeout(stime_t now) {
 void ImmediateInterpreter::FillResultGesture(
     const HardwareState& hwstate,
     const FingerMap& fingers) {
+  bool zero_move = false;
   switch (current_gesture_type_) {
     case kGestureTypeMove: {
       if (fingers.empty())
@@ -3149,7 +3150,8 @@ void ImmediateInterpreter::FillResultGesture(
 
       float dsq_total_thresh =
           move_report_distance_.val_ * move_report_distance_.val_;
-      if (dsq_total >= dsq_total_thresh && dsq != 0.0) {
+      if (dsq_total >= dsq_total_thresh) {
+        zero_move = dsq == 0.0;
         result_ = Gesture(kGestureMove,
                           state_buffer_.Get(1)->timestamp,
                           hwstate.timestamp,
@@ -3279,7 +3281,7 @@ void ImmediateInterpreter::FillResultGesture(
   }
   scroll_manager_.UpdateScrollEventBuffer(current_gesture_type_,
                                           &scroll_buffer_);
-  if (result_.type == kGestureTypeMove ||
+  if ((result_.type == kGestureTypeMove && !zero_move) ||
       result_.type == kGestureTypeScroll)
     last_movement_timestamp_ = hwstate.timestamp;
 }
