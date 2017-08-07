@@ -42,7 +42,7 @@ ResourceCoordinatorWebContentsObserver::ResourceCoordinatorWebContentsObserver(
   // |tab_resource_coordinator_|.
   tab_resource_coordinator_->SetProperty(
       resource_coordinator::mojom::PropertyType::kVisible,
-      base::MakeUnique<base::Value>(web_contents->IsVisible()));
+      web_contents->IsVisible());
 
   connector->BindInterface(resource_coordinator::mojom::kServiceName,
                            mojo::MakeRequest(&service_callbacks_));
@@ -112,16 +112,14 @@ void ResourceCoordinatorWebContentsObserver::WasShown() {
   tab_resource_coordinator_->SendEvent(
       resource_coordinator::EventType::kOnWebContentsShown);
   tab_resource_coordinator_->SetProperty(
-      resource_coordinator::mojom::PropertyType::kVisible,
-      base::MakeUnique<base::Value>(true));
+      resource_coordinator::mojom::PropertyType::kVisible, true);
 }
 
 void ResourceCoordinatorWebContentsObserver::WasHidden() {
   tab_resource_coordinator_->SendEvent(
       resource_coordinator::EventType::kOnWebContentsHidden);
   tab_resource_coordinator_->SetProperty(
-      resource_coordinator::mojom::PropertyType::kVisible,
-      base::MakeUnique<base::Value>(false));
+      resource_coordinator::mojom::PropertyType::kVisible, false);
 }
 
 void ResourceCoordinatorWebContentsObserver::DidFinishNavigation(
@@ -153,13 +151,10 @@ void ResourceCoordinatorWebContentsObserver::UpdateUkmRecorder(
     return;
   }
 
+  // TODO(oysteine): Use NavigationID instead of a new sourceID, when it
+  // lands (https://chromium-review.googlesource.com/c/580586).
   ukm_source_id_ = CreateUkmSourceId();
-  g_browser_process->ukm_recorder()->UpdateSourceURL(ukm_source_id_, url);
-  // ukm::SourceId types need to be converted to a string because base::Value
-  // does not guarrantee that its int type will be 64 bits. Instead
-  // std:string is used as a canonical format. base::Int64ToString
-  // and base::StringToInt64 are used for encoding/decoding respectively.
+  ukm::UkmRecorder::Get()->UpdateSourceURL(ukm_source_id_, url);
   tab_resource_coordinator_->SetProperty(
-      resource_coordinator::mojom::PropertyType::kUkmSourceId,
-      base::MakeUnique<base::Value>(base::Int64ToString(ukm_source_id_)));
+      resource_coordinator::mojom::PropertyType::kUKMSourceId, ukm_source_id_);
 }

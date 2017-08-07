@@ -47,7 +47,7 @@ ProcessCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
 
 void ProcessCoordinationUnitImpl::PropagateProperty(
     mojom::PropertyType property_type,
-    const base::Value& value) {
+    int64_t value) {
   // Trigger tab coordination units to recalculate their CPU usage.
   if (property_type == mojom::PropertyType::kCPUUsage) {
     for (auto* tab_coordination_unit : GetAssociatedCoordinationUnitsOfType(

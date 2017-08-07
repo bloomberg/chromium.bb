@@ -29,7 +29,7 @@ class WebContentsCoordinationUnitImpl : public CoordinationUnitImpl {
  private:
   // CoordinationUnitImpl implementation.
   void OnPropertyChanged(const mojom::PropertyType property_type,
-                         const base::Value& value) override;
+                         int64_t value) override;
   double CalculateCPUUsage();
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsCoordinationUnitImpl);

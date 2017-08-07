@@ -1239,8 +1239,7 @@ void RenderFrameHostImpl::OnAudibleStateChanged(bool is_audible) {
   is_audible_ = is_audible;
 
   GetFrameResourceCoordinator()->SetProperty(
-      resource_coordinator::mojom::PropertyType::kAudible,
-      base::MakeUnique<base::Value>(is_audible_));
+      resource_coordinator::mojom::PropertyType::kAudible, is_audible_);
 }
 
 void RenderFrameHostImpl::OnDidAddMessageToConsole(
@@ -1305,9 +1304,6 @@ void RenderFrameHostImpl::SetLastCommittedOrigin(const url::Origin& origin) {
 
 void RenderFrameHostImpl::SetLastCommittedUrl(const GURL& url) {
   last_committed_url_ = url;
-  GetFrameResourceCoordinator()->SetProperty(
-      resource_coordinator::mojom::PropertyType::kURL,
-      base::MakeUnique<base::Value>(last_committed_url_.spec()));
 }
 
 void RenderFrameHostImpl::OnDetach() {

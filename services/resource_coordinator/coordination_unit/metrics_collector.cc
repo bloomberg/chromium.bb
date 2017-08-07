@@ -76,10 +76,10 @@ void MetricsCollector::OnBeforeCoordinationUnitDestroyed(
 void MetricsCollector::OnFramePropertyChanged(
     const FrameCoordinationUnitImpl* frame_coordination_unit,
     const mojom::PropertyType property_type,
-    const base::Value& value) {
+    int64_t value) {
   FrameData& frame_data = frame_data_map_[frame_coordination_unit->id()];
   if (property_type == mojom::PropertyType::kAudible) {
-    bool audible = value.GetBool();
+    bool audible = static_cast<bool>(value);
     if (!audible) {
       frame_data.last_audible_time = clock_->NowTicks();
       return;
@@ -110,10 +110,10 @@ void MetricsCollector::OnFramePropertyChanged(
 void MetricsCollector::OnWebContentsPropertyChanged(
     const WebContentsCoordinationUnitImpl* web_contents_coordination_unit,
     const mojom::PropertyType property_type,
-    const base::Value& value) {
+    int64_t value) {
   const auto web_contents_cu_id = web_contents_coordination_unit->id();
   if (property_type == mojom::PropertyType::kVisible) {
-    if (value.GetBool()) {
+    if (value) {
       // The web contents becomes visible again, clear all record in order to
       // report metrics when web contents becomes invisible next time.
       ResetMetricsReportRecord(web_contents_coordination_unit->id());
@@ -124,16 +124,11 @@ void MetricsCollector::OnWebContentsPropertyChanged(
   } else if (property_type == mojom::PropertyType::kCPUUsage) {
     if (IsCollectingCPUUsageForUkm(web_contents_cu_id)) {
       RecordCPUUsageForUkm(
-          web_contents_cu_id, value.GetDouble(),
+          web_contents_cu_id, static_cast<double>(value) / 1000,
           GetNumCoresidentTabs(web_contents_coordination_unit));
     }
-  } else if (property_type == mojom::PropertyType::kUkmSourceId) {
-    ukm::SourceId ukm_source_id;
-    // |mojom::PropertyType::kUkmSourceId| is stored as a string because
-    // |ukm::SourceId is not supported by the coordination unit property
-    // store, so it must  be converted before being used.
-    bool success = base::StringToInt64(value.GetString(), &ukm_source_id);
-    DCHECK(success);
+  } else if (property_type == mojom::PropertyType::kUKMSourceId) {
+    ukm::SourceId ukm_source_id = value;
 
     UpdateUkmSourceIdForWebContents(web_contents_cu_id, ukm_source_id);
   }

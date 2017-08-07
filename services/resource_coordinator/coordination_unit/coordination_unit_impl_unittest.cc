@@ -232,15 +232,16 @@ TEST_F(CoordinationUnitImplTest, GetSetProperty) {
       CreateCoordinationUnit(CoordinationUnitType::kWebContents);
 
   // An empty value should be returned if property is not found
-  EXPECT_EQ(base::Value(),
-            coordination_unit->GetProperty(mojom::PropertyType::kTest));
+  int64_t test_value;
+  EXPECT_FALSE(
+      coordination_unit->GetProperty(mojom::PropertyType::kTest, &test_value));
 
   // Perform a valid storage property set
-  coordination_unit->SetProperty(mojom::PropertyType::kTest,
-                                 base::MakeUnique<base::Value>(41));
+  coordination_unit->SetProperty(mojom::PropertyType::kTest, 41);
   EXPECT_EQ(1u, coordination_unit->properties_for_testing().size());
-  EXPECT_EQ(base::Value(41),
-            coordination_unit->GetProperty(mojom::PropertyType::kTest));
+  EXPECT_TRUE(
+      coordination_unit->GetProperty(mojom::PropertyType::kTest, &test_value));
+  EXPECT_EQ(41, test_value);
 }
 
 TEST_F(CoordinationUnitImplTest,

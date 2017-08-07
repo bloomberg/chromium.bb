@@ -23,52 +23,56 @@ TEST_F(WebContentsCoordinationUnitImplTest,
        CalculateTabCPUUsageForSingleTabInSingleProcess) {
   MockSingleTabInSingleProcessCoordinationUnitGraph cu_graph;
 
-  cu_graph.process->SetProperty(mojom::PropertyType::kCPUUsage,
-                                base::MakeUnique<base::Value>(40.0));
+  cu_graph.process->SetProperty(mojom::PropertyType::kCPUUsage, 40);
 
-  EXPECT_EQ(base::Value(40.0),
-            cu_graph.tab->GetProperty(mojom::PropertyType::kCPUUsage));
+  int64_t cpu_usage;
+  EXPECT_TRUE(
+      cu_graph.tab->GetProperty(mojom::PropertyType::kCPUUsage, &cpu_usage));
+  EXPECT_EQ(40, cpu_usage);
 }
 
 TEST_F(WebContentsCoordinationUnitImplTest,
        CalculateTabCPUUsageForMultipleTabsInSingleProcess) {
   MockMultipleTabsInSingleProcessCoordinationUnitGraph cu_graph;
 
-  cu_graph.process->SetProperty(mojom::PropertyType::kCPUUsage,
-                                base::MakeUnique<base::Value>(40.0));
+  cu_graph.process->SetProperty(mojom::PropertyType::kCPUUsage, 40);
 
-  EXPECT_EQ(base::Value(20.0),
-            cu_graph.tab->GetProperty(mojom::PropertyType::kCPUUsage));
-  EXPECT_EQ(base::Value(20.0),
-            cu_graph.tab->GetProperty(mojom::PropertyType::kCPUUsage));
+  int64_t cpu_usage;
+  EXPECT_TRUE(
+      cu_graph.tab->GetProperty(mojom::PropertyType::kCPUUsage, &cpu_usage));
+  EXPECT_EQ(20, cpu_usage);
+  EXPECT_TRUE(cu_graph.other_tab->GetProperty(mojom::PropertyType::kCPUUsage,
+                                              &cpu_usage));
+  EXPECT_EQ(20, cpu_usage);
 }
 
 TEST_F(WebContentsCoordinationUnitImplTest,
        CalculateTabCPUUsageForSingleTabWithMultipleProcesses) {
   MockSingleTabWithMultipleProcessesCoordinationUnitGraph cu_graph;
 
-  cu_graph.process->SetProperty(mojom::PropertyType::kCPUUsage,
-                                base::MakeUnique<base::Value>(40.0));
-  cu_graph.other_process->SetProperty(mojom::PropertyType::kCPUUsage,
-                                      base::MakeUnique<base::Value>(30.0));
+  cu_graph.process->SetProperty(mojom::PropertyType::kCPUUsage, 40);
+  cu_graph.other_process->SetProperty(mojom::PropertyType::kCPUUsage, 30);
 
-  EXPECT_EQ(base::Value(70.0),
-            cu_graph.tab->GetProperty(mojom::PropertyType::kCPUUsage));
+  int64_t cpu_usage;
+  EXPECT_TRUE(
+      cu_graph.tab->GetProperty(mojom::PropertyType::kCPUUsage, &cpu_usage));
+  EXPECT_EQ(70, cpu_usage);
 }
 
 TEST_F(WebContentsCoordinationUnitImplTest,
        CalculateTabCPUUsageForMultipleTabsWithMultipleProcesses) {
   MockMultipleTabsWithMultipleProcessesCoordinationUnitGraph cu_graph;
 
-  cu_graph.process->SetProperty(mojom::PropertyType::kCPUUsage,
-                                base::MakeUnique<base::Value>(40.0));
-  cu_graph.other_process->SetProperty(mojom::PropertyType::kCPUUsage,
-                                      base::MakeUnique<base::Value>(30.0));
+  cu_graph.process->SetProperty(mojom::PropertyType::kCPUUsage, 40);
+  cu_graph.other_process->SetProperty(mojom::PropertyType::kCPUUsage, 30);
 
-  EXPECT_EQ(base::Value(20.0),
-            cu_graph.tab->GetProperty(mojom::PropertyType::kCPUUsage));
-  EXPECT_EQ(base::Value(50.0),
-            cu_graph.other_tab->GetProperty(mojom::PropertyType::kCPUUsage));
+  int64_t cpu_usage;
+  EXPECT_TRUE(
+      cu_graph.tab->GetProperty(mojom::PropertyType::kCPUUsage, &cpu_usage));
+  EXPECT_EQ(20, cpu_usage);
+  EXPECT_TRUE(cu_graph.other_tab->GetProperty(mojom::PropertyType::kCPUUsage,
+                                              &cpu_usage));
+  EXPECT_EQ(50, cpu_usage);
 }
 
 }  // namespace resource_coordinator
