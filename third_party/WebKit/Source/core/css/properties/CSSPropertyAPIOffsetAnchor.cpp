@@ -15,9 +15,10 @@ namespace blink {
 using namespace CSSPropertyParserHelpers;
 
 const CSSValue* CSSPropertyAPIOffsetAnchor::ParseSingleValue(
+    CSSPropertyID,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&) {
+    const CSSParserLocalContext&) const {
   CSSValueID id = range.Peek().Id();
   if (id == CSSValueAuto)
     return ConsumeIdent(range);

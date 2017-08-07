@@ -9,19 +9,16 @@
 namespace blink {
 
 bool CSSShorthandPropertyAPIMarker::ParseShorthand(
+    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     bool use_legacy_parsing,
-    HeapVector<CSSProperty, 256>& properties) {
-  bool needs_legacy_parsing = false;
+    HeapVector<CSSProperty, 256>& properties) const {
   const CSSValue* marker = CSSPropertyParserHelpers::ParseLonghandViaAPI(
-      CSSPropertyMarkerStart, CSSPropertyMarker, context, range,
-      needs_legacy_parsing);
+      CSSPropertyMarkerStart, CSSPropertyMarker, context, range);
   if (!marker || !range.AtEnd())
     return false;
-
-  DCHECK(!needs_legacy_parsing);
 
   CSSPropertyParserHelpers::AddProperty(
       CSSPropertyMarkerStart, CSSPropertyMarker, *marker, important,

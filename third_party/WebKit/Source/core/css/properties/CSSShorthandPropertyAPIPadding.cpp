@@ -10,11 +10,12 @@
 namespace blink {
 
 bool CSSShorthandPropertyAPIPadding::ParseShorthand(
+    CSSPropertyID,
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     bool,
-    HeapVector<CSSProperty, 256>& properties) {
+    HeapVector<CSSProperty, 256>& properties) const {
   return CSSPropertyParserHelpers::ConsumeShorthandVia4LonghandAPIs(
       paddingShorthand(), important, context, range, properties);
 }
