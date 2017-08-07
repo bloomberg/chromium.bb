@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_HTTP2_HPACK_HUFFMAN_HTTP2_HPACK_HUFFMAN_DECODER_H_
-#define NET_HTTP2_HPACK_HUFFMAN_HTTP2_HPACK_HUFFMAN_DECODER_H_
+#ifndef NET_HTTP2_HPACK_HUFFMAN_HPACK_HUFFMAN_DECODER_H_
+#define NET_HTTP2_HPACK_HUFFMAN_HPACK_HUFFMAN_DECODER_H_
 
 // HpackHuffmanDecoder is an incremental decoder of strings that have been
 // encoded using the Huffman table defined in the HPACK spec.
@@ -146,4 +146,4 @@ inline std::ostream& operator<<(std::ostream& out,
 
 }  // namespace net
 
-#endif  // NET_HTTP2_HPACK_HUFFMAN_HTTP2_HPACK_HUFFMAN_DECODER_H_
+#endif  // NET_HTTP2_HPACK_HUFFMAN_HPACK_HUFFMAN_DECODER_H_

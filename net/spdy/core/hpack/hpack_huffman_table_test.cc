@@ -11,7 +11,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "net/http2/hpack/huffman/http2_hpack_huffman_decoder.h"
+#include "net/http2/hpack/huffman/hpack_huffman_decoder.h"
 #include "net/spdy/core/hpack/hpack_constants.h"
 #include "net/spdy/core/hpack/hpack_output_stream.h"
 #include "net/spdy/platform/api/spdy_string_utils.h"
