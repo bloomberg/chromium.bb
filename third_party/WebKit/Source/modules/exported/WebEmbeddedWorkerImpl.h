@@ -46,7 +46,6 @@
 namespace blink {
 
 class ContentSecurityPolicy;
-class ServiceWorkerGlobalScopeProxy;
 class ServiceWorkerInstalledScriptsManager;
 class WorkerInspectorProxy;
 class WorkerScriptLoader;
@@ -120,7 +119,6 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   RefPtr<WorkerScriptLoader> main_script_loader_;
 
   std::unique_ptr<WorkerThread> worker_thread_;
-  Persistent<ServiceWorkerGlobalScopeProxy> worker_global_scope_proxy_;
   Persistent<WorkerInspectorProxy> worker_inspector_proxy_;
 
   std::unique_ptr<WorkerShadowPage> shadow_page_;
