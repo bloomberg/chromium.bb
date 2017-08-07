@@ -163,13 +163,13 @@ repack("repack_pack") {
 
 repack("repack_100_percent") {
   sources = [
-    "$root_gen_dir/blink/public/resources/blink_image_resources_100_percent.pak",
+    "$root_gen_dir/blink/public/resources/blink_scaled_resources_100_percent.pak",
     "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
   ]
   deps = [
     "//content/app/resources",
-    "//third_party/WebKit/public:image_resources",
+    "//third_party/WebKit/public:scaled_resources_100_percent",
     "//ui/resources",
   ]
   output = "$target_gen_dir/chrome_100_percent.pak"

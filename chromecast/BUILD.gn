@@ -411,8 +411,8 @@ cast_executable("cast_shell") {
 
 repack("cast_shell_pak") {
   sources = [
-    "$root_gen_dir/blink/public/resources/blink_image_resources_100_percent.pak",
     "$root_gen_dir/blink/public/resources/blink_resources.pak",
+    "$root_gen_dir/blink/public/resources/blink_scaled_resources_100_percent.pak",
     "$root_gen_dir/chromecast/app/shell_resources.pak",
     "$root_gen_dir/chromecast/browser/cast_browser_resources.pak",
     "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
@@ -434,8 +434,8 @@ repack("cast_shell_pak") {
     "//content/app/resources",
     "//content/app/strings",
     "//net:net_resources",
-    "//third_party/WebKit/public:image_resources_grit",
     "//third_party/WebKit/public:resources",
+    "//third_party/WebKit/public:scaled_resources_100_percent",
     "//ui/resources",
     "//ui/strings",
   ]
