@@ -105,10 +105,10 @@ class MockClientProcess : public mojom::ClientProcess {
     test_coordinator->RegisterClientProcess(std::move(client_process), pid,
                                             process_type);
 
-    ON_CALL(*this, RequestProcessMemoryDump(_, _))
+    ON_CALL(*this, RequestChromeMemoryDump(_, _))
         .WillByDefault(
             Invoke([](const MemoryDumpRequestArgs& args,
-                      const RequestProcessMemoryDumpCallback& callback) {
+                      const RequestChromeMemoryDumpCallback& callback) {
               callback.Run(true, args.dump_guid, nullptr);
 
             }));
@@ -124,9 +124,9 @@ class MockClientProcess : public mojom::ClientProcess {
 
   ~MockClientProcess() override {}
 
-  MOCK_METHOD2(RequestProcessMemoryDump,
+  MOCK_METHOD2(RequestChromeMemoryDump,
                void(const MemoryDumpRequestArgs& args,
-                    const RequestProcessMemoryDumpCallback& callback));
+                    const RequestChromeMemoryDumpCallback& callback));
 
   MOCK_METHOD3(RequestOSMemoryDump,
                void(bool want_mmaps,
@@ -173,8 +173,8 @@ TEST_F(CoordinatorImplTest, SeveralClients) {
   NiceMock<MockClientProcess> client_process_1(this, 1,
                                                mojom::ProcessType::BROWSER);
   NiceMock<MockClientProcess> client_process_2(this);
-  EXPECT_CALL(client_process_1, RequestProcessMemoryDump(_, _)).Times(1);
-  EXPECT_CALL(client_process_2, RequestProcessMemoryDump(_, _)).Times(1);
+  EXPECT_CALL(client_process_1, RequestChromeMemoryDump(_, _)).Times(1);
+  EXPECT_CALL(client_process_2, RequestChromeMemoryDump(_, _)).Times(1);
 
   base::trace_event::MemoryDumpRequestArgs args = {
       0, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
@@ -197,16 +197,12 @@ TEST_F(CoordinatorImplTest, MissingChromeDump) {
   NiceMock<MockClientProcess> client_process(this, 1,
                                              mojom::ProcessType::BROWSER);
 
-  EXPECT_CALL(client_process, RequestProcessMemoryDump(_, _))
+  EXPECT_CALL(client_process, RequestChromeMemoryDump(_, _))
       .WillOnce(
           Invoke([](const MemoryDumpRequestArgs& args,
-                    const MockClientProcess::RequestProcessMemoryDumpCallback&
+                    const MockClientProcess::RequestChromeMemoryDumpCallback&
                         callback) {
-            auto dump = mojom::RawProcessMemoryDump::New();
-            dump->chrome_dump = mojom::ChromeMemDump::New();
-            dump->os_dump = mojom::RawOSMemDump::New();
-            dump->os_dump->platform_private_footprint =
-                mojom::PlatformPrivateFootprint::New();
+            auto dump = mojom::ChromeMemDump::New();
             callback.Run(true, args.dump_guid, std::move(dump));
           }));
 
@@ -267,20 +263,20 @@ TEST_F(CoordinatorImplTest, ClientCrashDuringGlobalDump) {
   // dump attempt has failed.
 
   // Whichever client is called first destroys the other client.
-  ON_CALL(*client_process_1, RequestProcessMemoryDump(_, _))
+  ON_CALL(*client_process_1, RequestChromeMemoryDump(_, _))
       .WillByDefault(
           Invoke([&client_process_2](
                      const MemoryDumpRequestArgs& args,
-                     const MockClientProcess::RequestProcessMemoryDumpCallback&
+                     const MockClientProcess::RequestChromeMemoryDumpCallback&
                          callback) {
             client_process_2.reset();
             callback.Run(true, args.dump_guid, nullptr);
           }));
-  ON_CALL(*client_process_2, RequestProcessMemoryDump(_, _))
+  ON_CALL(*client_process_2, RequestChromeMemoryDump(_, _))
       .WillByDefault(
           Invoke([&client_process_1](
                      const MemoryDumpRequestArgs& args,
-                     const MockClientProcess::RequestProcessMemoryDumpCallback&
+                     const MockClientProcess::RequestChromeMemoryDumpCallback&
                          callback) {
             client_process_1.reset();
             callback.Run(true, args.dump_guid, nullptr);
@@ -305,11 +301,11 @@ TEST_F(CoordinatorImplTest, SingleClientCrashDuringGlobalDump) {
   auto client_process = base::MakeUnique<NiceMock<MockClientProcess>>(
       this, 1, mojom::ProcessType::BROWSER);
 
-  ON_CALL(*client_process, RequestProcessMemoryDump(_, _))
+  ON_CALL(*client_process, RequestChromeMemoryDump(_, _))
       .WillByDefault(
           Invoke([&client_process](
                      const MemoryDumpRequestArgs& args,
-                     const MockClientProcess::RequestProcessMemoryDumpCallback&
+                     const MockClientProcess::RequestChromeMemoryDumpCallback&
                          callback) {
             // The dtor here will cause mojo to post an UnregisterClient call to
             // the coordinator.
@@ -327,98 +323,25 @@ TEST_F(CoordinatorImplTest, SingleClientCrashDuringGlobalDump) {
 TEST_F(CoordinatorImplTest, GlobalMemoryDumpStruct) {
   base::RunLoop run_loop;
 
-  NiceMock<MockClientProcess> client_process_1(this, 1,
-                                               mojom::ProcessType::BROWSER);
-  NiceMock<MockClientProcess> client_process_2(this, 2,
-                                               mojom::ProcessType::RENDERER);
-  EXPECT_CALL(client_process_1, RequestProcessMemoryDump(_, _))
-      .WillOnce(
-          Invoke([](const MemoryDumpRequestArgs& args,
-                    const MockClientProcess::RequestProcessMemoryDumpCallback&
-                        callback) {
-            auto dump = mojom::RawProcessMemoryDump::New();
-            dump->chrome_dump = mojom::ChromeMemDump::New();
-            dump->os_dump = mojom::RawOSMemDump::New();
-            dump->os_dump->platform_private_footprint =
-                mojom::PlatformPrivateFootprint::New();
-            dump->chrome_dump->malloc_total_kb = 1;
-            dump->os_dump->resident_set_kb = 1;
-            callback.Run(true, args.dump_guid, std::move(dump));
-
-          }));
-  EXPECT_CALL(client_process_2, RequestProcessMemoryDump(_, _))
-      .WillOnce(
-          Invoke([](const MemoryDumpRequestArgs& args,
-                    const MockClientProcess::RequestProcessMemoryDumpCallback&
-                        callback) {
-            auto dump = mojom::RawProcessMemoryDump::New();
-            dump->chrome_dump = mojom::ChromeMemDump::New();
-            dump->os_dump = mojom::RawOSMemDump::New();
-            dump->os_dump->platform_private_footprint =
-                mojom::PlatformPrivateFootprint::New();
-            dump->chrome_dump->malloc_total_kb = 2;
-            dump->os_dump->resident_set_kb = 2;
-            callback.Run(true, args.dump_guid, std::move(dump));
-          }));
-
-  MockGlobalMemoryDumpCallback callback;
-  EXPECT_CALL(callback, OnCall(true, Ne(0u), NotNull()))
-      .WillOnce(Invoke([&run_loop](uint64_t dump_guid, bool success,
-                                   GlobalMemoryDump* dump) {
-
-        EXPECT_EQ(2U, dump->process_dumps.size());
-        EXPECT_THAT(dump->process_dumps,
-                    Contains(Property(
-                        &mojom::ProcessMemoryDumpPtr::get,
-                        Pointee(Field(&mojom::ProcessMemoryDump::process_type,
-                                      Eq(mojom::ProcessType::BROWSER))))));
-
-        EXPECT_THAT(dump->process_dumps,
-                    Contains(Property(
-                        &mojom::ProcessMemoryDumpPtr::get,
-                        Pointee(Field(&mojom::ProcessMemoryDump::process_type,
-                                      Eq(mojom::ProcessType::RENDERER))))));
-
-        run_loop.Quit();
-      }));
-
-  base::trace_event::MemoryDumpRequestArgs args = {
-      0, base::trace_event::MemoryDumpType::SUMMARY_ONLY,
-      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND};
-  RequestGlobalMemoryDump(args, callback.Get());
-  run_loop.Run();
-}
-
-TEST_F(CoordinatorImplTest, OsDumps) {
-  base::RunLoop run_loop;
-
   MockClientProcess browser_client(this, 1, mojom::ProcessType::BROWSER);
   MockClientProcess renderer_client(this, 2, mojom::ProcessType::RENDERER);
 
-  EXPECT_CALL(browser_client, RequestProcessMemoryDump(_, _))
+  EXPECT_CALL(browser_client, RequestChromeMemoryDump(_, _))
       .WillOnce(
           Invoke([](const MemoryDumpRequestArgs& args,
-                    const MockClientProcess::RequestProcessMemoryDumpCallback&
+                    const MockClientProcess::RequestChromeMemoryDumpCallback&
                         callback) {
-            auto dump = mojom::RawProcessMemoryDump::New();
-            dump->chrome_dump = mojom::ChromeMemDump::New();
-            dump->os_dump = mojom::RawOSMemDump::New();
-            dump->os_dump->platform_private_footprint =
-                mojom::PlatformPrivateFootprint::New();
-            dump->chrome_dump->malloc_total_kb = 1;
+            auto dump = mojom::ChromeMemDump::New();
+            dump->malloc_total_kb = 1;
             callback.Run(args.dump_guid, true, std::move(dump));
           }));
-  EXPECT_CALL(renderer_client, RequestProcessMemoryDump(_, _))
+  EXPECT_CALL(renderer_client, RequestChromeMemoryDump(_, _))
       .WillOnce(
           Invoke([](const MemoryDumpRequestArgs& args,
-                    const MockClientProcess::RequestProcessMemoryDumpCallback&
+                    const MockClientProcess::RequestChromeMemoryDumpCallback&
                         callback) {
-            auto dump = mojom::RawProcessMemoryDump::New();
-            dump->chrome_dump = mojom::ChromeMemDump::New();
-            dump->os_dump = mojom::RawOSMemDump::New();
-            dump->os_dump->platform_private_footprint =
-                mojom::PlatformPrivateFootprint::New();
-            dump->chrome_dump->malloc_total_kb = 2;
+            auto dump = mojom::ChromeMemDump::New();
+            dump->malloc_total_kb = 2;
             callback.Run(args.dump_guid, true, std::move(dump));
           }));
 #if defined(OS_LINUX)
@@ -480,6 +403,8 @@ TEST_F(CoordinatorImplTest, OsDumps) {
         }
         EXPECT_EQ(browser_dump->os_dump->resident_set_kb, 1u);
         EXPECT_EQ(renderer_dump->os_dump->resident_set_kb, 2u);
+        EXPECT_EQ(browser_dump->chrome_dump->malloc_total_kb, 1u);
+        EXPECT_EQ(renderer_dump->chrome_dump->malloc_total_kb, 2u);
         run_loop.Quit();
       }));
 

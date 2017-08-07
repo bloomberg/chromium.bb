@@ -77,7 +77,7 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
 
     struct PendingResponse {
       enum Type {
-        kProcessDump,
+        kChromeDump,
         kOSDump,
       };
       PendingResponse(const mojom::ClientProcess* client, const Type type);
@@ -94,12 +94,12 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
 
       base::ProcessId process_id;
       mojom::ProcessType process_type;
-      mojom::RawProcessMemoryDumpPtr dump_ptr;
+      mojom::ChromeMemDumpPtr chrome_dump_ptr;
       OSMemDumpMap os_dumps;
     };
 
     // When a dump, requested via RequestGlobalMemoryDump(), is in progress this
-    // set contains a |PendingResponse| for each |RequestProcessMemoryDump| and
+    // set contains a |PendingResponse| for each |RequestChromeMemoryDump| and
     // |RequestOSMemoryDump| call that has not yet replied or been canceled (due
     // to the client disconnecting).
     std::set<QueuedMemoryDumpRequest::PendingResponse> pending_responses;
@@ -122,12 +122,11 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
     const mojom::ProcessType process_type;
   };
 
-  // Callback of RequestProcessMemoryDump.
-  void OnProcessMemoryDumpResponse(
-      mojom::ClientProcess*,
-      bool success,
-      uint64_t dump_guid,
-      mojom::RawProcessMemoryDumpPtr process_memory_dump);
+  // Callback of RequestChromeMemoryDump.
+  void OnChromeMemoryDumpResponse(mojom::ClientProcess*,
+                                  bool success,
+                                  uint64_t dump_guid,
+                                  mojom::ChromeMemDumpPtr chrome_memory_dump);
 
   // Callback of RequestOSMemoryDump.
   void OnOSMemoryDumpResponse(mojom::ClientProcess*,

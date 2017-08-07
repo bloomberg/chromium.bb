@@ -60,13 +60,13 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ClientProcessImpl
       const base::trace_event::MemoryDumpRequestArgs&);
 
   // mojom::ClientProcess implementation. The Coordinator calls this.
-  void RequestProcessMemoryDump(
+  void RequestChromeMemoryDump(
       const base::trace_event::MemoryDumpRequestArgs& args,
-      const RequestProcessMemoryDumpCallback& callback) override;
+      const RequestChromeMemoryDumpCallback& callback) override;
 
   // Callback passed to base::MemoryDumpManager::CreateProcessDump().
-  void OnProcessMemoryDumpDone(
-      const RequestProcessMemoryDumpCallback&,
+  void OnChromeMemoryDumpDone(
+      const RequestChromeMemoryDumpCallback&,
       const base::trace_event::MemoryDumpRequestArgs& req_args,
       bool success,
       uint64_t dump_guid,
