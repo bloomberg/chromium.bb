@@ -16,7 +16,7 @@ namespace zucchini {
 // Files bigger than 4GB are not supported.
 using offset_t = uint32_t;
 
-// Used to uniquely identify a reference group.
+// Used to uniquely identify a reference type.
 // Strongly typed objects are used to avoid ambiguitees with PoolTag.
 struct TypeTag : public TypedValue<TypeTag, uint8_t> {
   // inheriting constructor:
@@ -29,7 +29,7 @@ struct PoolTag : public TypedValue<PoolTag, uint8_t> {
   using TypedValue<PoolTag, uint8_t>::TypedValue;
 };
 
-constexpr TypeTag kNoTypeTag(0xFF);
+constexpr TypeTag kNoTypeTag(0xFF);  // Typically used to identify raw data.
 constexpr PoolTag kNoPoolTag(0xFF);
 
 // Specification of references in an image file.
