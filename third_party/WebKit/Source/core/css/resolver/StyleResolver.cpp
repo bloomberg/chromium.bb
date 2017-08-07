@@ -245,7 +245,7 @@ static void MatchSlottedRules(const Element& element,
   }
   for (auto it = resolvers.rbegin(); it != resolvers.rend(); ++it) {
     collector.ClearMatchedRules();
-    (*it)->CollectMatchingTreeBoundaryCrossingRules(collector);
+    (*it)->CollectMatchingSlottedRules(collector);
     collector.SortAndTransferMatchedRules();
     collector.FinishAddingAuthorRulesForTreeScope();
   }
